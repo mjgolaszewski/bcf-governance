@@ -1,7 +1,7 @@
 document:
   kind: template_governance_pack_manifest
   name: Swerbo-Inspired Template And Governance Pack
-  id: sse-template-governance-pack
+  id: bcf-governace
   version: 1.0.0
   generated_at_utc: "2026-04-11T00:00:00Z"
   status: generated_untracked_artifact
