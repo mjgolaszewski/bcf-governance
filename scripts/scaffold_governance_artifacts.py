@@ -1,0 +1,268 @@
+"""Scaffold governed phase and hotfix artifacts for the template governance pack."""
+
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+from typing import Any
+
+import yaml  # type: ignore[import-untyped]
+
+
+def _phase_number(phase_id: str) -> int:
+    if not phase_id.startswith("P") or not phase_id[1:].isdigit():
+        raise ValueError(f"invalid phase id {phase_id!r}; expected values like 'P01'")
+    return int(phase_id[1:])
+
+
+def _phase_stem(phase_id: str) -> str:
+    return f"phase-{_phase_number(phase_id):02d}"
+
+
+def _write_yaml(path: Path, payload: dict[str, Any], *, force: bool) -> None:
+    if path.exists() and not force:
+        raise FileExistsError(f"{path} already exists; pass --force to overwrite")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+
+def scaffold_phase_artifacts(
+    *,
+    repo_root: Path,
+    project_id: str,
+    phase_id: str,
+    build_block: str,
+    objective: str,
+    planner: str,
+    date: str,
+    hard_dependencies: list[str],
+    deliverables: list[str],
+    workstreams: list[str],
+    verification_commands: list[str],
+    force: bool,
+) -> dict[str, Path]:
+    stem = _phase_stem(phase_id)
+    phase_number = _phase_number(phase_id)
+    plan_path = repo_root / "plans" / f"{stem}-plan.yml"
+    workitems_path = repo_root / "plans" / f"{stem}-workitems.yml"
+    log_path = repo_root / "phases" / f"{stem}-log.yml"
+
+    plan_payload = {
+        "document": {
+            "kind": "execution_phase_plan",
+            "name": f"Phase {phase_number:02d} Plan",
+            "id": f"{project_id}-{stem}-plan",
+            "version": "1.0.0",
+            "generated_at_utc": f"{date}T00:00:00Z",
+            "status": "planned",
+            "path": str(plan_path),
+        },
+        "phase": {
+            "id": phase_id,
+            "build_block": build_block,
+            "planner": planner,
+            "date": date,
+            "scope_source": [
+                "AGENTS.yml",
+                "plans/product-spec.yml",
+                "plans/build-plan.yml",
+                "plans/phase-ledger.yml",
+                "MEMORY.yml",
+            ],
+        },
+        "delivery_contract": {
+            "tightly_scoped_deliverables": deliverables,
+            "parallelizable_workstreams": [
+                {"id": f"{phase_id}-WS{index + 1}", "name": workstream}
+                for index, workstream in enumerate(workstreams)
+            ],
+            "hard_dependencies": hard_dependencies,
+            "docker_first_local_runtime": "repo_native_validation_and_governance_commands",
+            "completeness_standard": "full_completeness_for_declared_scope",
+        },
+        "scope_lock": [
+            {
+                "order": 1,
+                "statement": (
+                    "keep the phase narrowly scoped to declared deliverables and update "
+                    "canonical governed artifacts in the same change"
+                ),
+            }
+        ],
+        "verification_plan": verification_commands,
+    }
+
+    workitem_entries = [
+        {
+            "id": f"{phase_id}-P0-{index + 1:02d}",
+            "priority": "P0",
+            "status": "TODO",
+            "summary": f"deliver {deliverable}",
+            "acceptance": [f"{deliverable}_is_complete"],
+        }
+        for index, deliverable in enumerate(deliverables)
+    ]
+
+    workitems_payload = {
+        "document": {
+            "kind": "execution_phase_workitem_ledger",
+            "name": f"Phase {phase_number:02d} Workitems",
+            "id": f"{project_id}-{stem}-workitems",
+            "version": "1.0.0",
+            "generated_at_utc": f"{date}T00:00:00Z",
+            "status": "planned",
+            "path": str(workitems_path),
+            "phase_id": phase_id,
+        },
+        "workitems": workitem_entries,
+    }
+
+    log_payload = {
+        "document": {
+            "kind": "execution_phase_log",
+            "name": f"Phase {phase_number:02d} Log",
+            "id": f"{project_id}-{stem}-log",
+            "version": "1.0.0",
+            "generated_at_utc": f"{date}T00:00:00Z",
+            "status": "planned",
+            "path": str(log_path),
+        },
+        "phase": {"id": phase_id, "build_block": build_block},
+        "summary": {
+            "outcome": "planned",
+            "highlights": [
+                f"{phase_id} is opened for {objective}",
+                "phase artifacts were scaffolded from the governance template",
+            ],
+        },
+        "workitems": [
+            {"id": workitem["id"], "status": workitem["status"], "summary": workitem["summary"]}
+            for workitem in workitem_entries
+        ],
+        "execution_evidence": {
+            "planned_commands": verification_commands,
+            "executed_commands": [],
+            "notes": ["phase scaffolding was generated by scaffold_governance_artifacts.py"],
+        },
+        "known_constraints": [
+            "update canonical governed artifacts together when behavior or environment contracts change"
+        ],
+        "next_work": ["implement scoped workitems and record execution evidence in this log"],
+    }
+
+    _write_yaml(plan_path, plan_payload, force=force)
+    _write_yaml(workitems_path, workitems_payload, force=force)
+    _write_yaml(log_path, log_payload, force=force)
+    return {"plan": plan_path, "workitems": workitems_path, "log": log_path}
+
+
+def scaffold_hotfix_log(
+    *,
+    repo_root: Path,
+    project_id: str,
+    hotfix_id: str,
+    summary: str,
+    related_phase_id: str,
+    date: str,
+    validation_commands: list[str],
+    force: bool,
+) -> Path:
+    hotfix_stem = hotfix_id.lower().replace("_", "-")
+    log_path = repo_root / "phases" / f"{hotfix_stem}.yml"
+    payload = {
+        "document": {
+            "kind": "hotfix_execution_log",
+            "name": f"{hotfix_id} Hotfix Log",
+            "id": f"{project_id}-{hotfix_stem}",
+            "version": "1.0.0",
+            "generated_at_utc": f"{date}T00:00:00Z",
+            "status": "planned",
+            "path": str(log_path),
+        },
+        "hotfix": {
+            "id": hotfix_id,
+            "related_phase_id": related_phase_id,
+            "summary": summary,
+        },
+        "execution_evidence": {
+            "planned_commands": validation_commands,
+            "executed_commands": [],
+            "notes": [
+                "record failing workflows, diagnosed root cause, remediation scope, and merge-back status"
+            ],
+        },
+        "reconciliation": {
+            "required_before_closeout": [
+                "update canonical artifacts if the hotfix changes behavior or environment contracts",
+                "record the hotfix in plans/phase-ledger.yml hotfix_lane",
+            ]
+        },
+    }
+    _write_yaml(log_path, payload, force=force)
+    return log_path
+
+
+def _parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Scaffold governed phase or hotfix artifacts.")
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument("--project-id", default="project")
+    parser.add_argument("--force", action="store_true")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    phase = subparsers.add_parser("phase")
+    phase.add_argument("--phase-id", required=True)
+    phase.add_argument("--build-block", required=True)
+    phase.add_argument("--objective", required=True)
+    phase.add_argument("--planner", default="codex")
+    phase.add_argument("--date", required=True)
+    phase.add_argument("--hard-dependency", action="append", default=[])
+    phase.add_argument("--deliverable", action="append", required=True)
+    phase.add_argument("--workstream", action="append", required=True)
+    phase.add_argument("--verification-command", action="append", required=True)
+
+    hotfix = subparsers.add_parser("hotfix")
+    hotfix.add_argument("--hotfix-id", required=True)
+    hotfix.add_argument("--summary", required=True)
+    hotfix.add_argument("--related-phase-id", required=True)
+    hotfix.add_argument("--date", required=True)
+    hotfix.add_argument("--validation-command", action="append", required=True)
+    return parser
+
+
+def main() -> None:
+    args = _parser().parse_args()
+    repo_root = args.repo_root.resolve()
+    if args.command == "phase":
+        created = scaffold_phase_artifacts(
+            repo_root=repo_root,
+            project_id=args.project_id,
+            phase_id=args.phase_id,
+            build_block=args.build_block,
+            objective=args.objective,
+            planner=args.planner,
+            date=args.date,
+            hard_dependencies=args.hard_dependency,
+            deliverables=args.deliverable,
+            workstreams=args.workstream,
+            verification_commands=args.verification_command,
+            force=args.force,
+        )
+        for artifact_type, path in created.items():
+            print(f"{artifact_type}: {path.relative_to(repo_root)}")
+        return
+    if args.command == "hotfix":
+        created_path = scaffold_hotfix_log(
+            repo_root=repo_root,
+            project_id=args.project_id,
+            hotfix_id=args.hotfix_id,
+            summary=args.summary,
+            related_phase_id=args.related_phase_id,
+            date=args.date,
+            validation_commands=args.validation_command,
+            force=args.force,
+        )
+        print(f"hotfix_log: {created_path.relative_to(repo_root)}")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,56 @@
+document:
+  kind: active_execution_phase_ledger
+  name: "{{PROJECT_NAME}} Active Phase Ledger"
+  id: "{{PROJECT_ID}}-phase-ledger"
+  version: 1.0.0
+  generated_at_utc: "{{DATE}}T00:00:00Z"
+  status: active_phase_planned
+  path: "{{REPO_ROOT}}/plans/phase-ledger.yml"
+build_plan_mandate:
+  format: yaml
+  required_fields:
+    - tightly_scoped_deliverables
+    - parallelizable_workstreams
+    - hard_dependencies
+    - docker_first_local_runtime
+    - completeness_standard
+  completeness_standard: full_completeness_for_declared_scope
+active_phase:
+  id: P01
+  build_block: "{{BUILD_BLOCK}}"
+  plan: plans/phase-01-plan.yml
+  workitems: plans/phase-01-workitems.yml
+  log: phases/phase-01-log.yml
+  memory: MEMORY.yml
+  spec: plans/product-spec.yml
+  build_plan: plans/build-plan.yml
+  lifecycle_status: definition_of_ready_complete_pending_execution
+  validation_commands:
+    - make governance-validate
+    - make architecture-test
+    - make lint
+    - make typecheck
+    - make test
+    - make release-check
+hotfix_lane:
+  scaffold_script: scripts/scaffold_governance_artifacts.py
+  open_records: []
+  remediation_history: []
+operator_requirements_choices_disambiguations:
+  - type: decision
+    statement: all governance, memory, specs, plans, workitem ledgers, and phase logs remain YAML-native
+active_delivery_priorities:
+  current_tranche:
+    - "{{CURRENT_TRANCHE}}"
+release_trains:
+  release_1:
+    target_version: "0.1.0"
+    status: active
+    focus:
+      - governed_foundation
+release_readiness:
+  status: initial_governed_delivery_active
+  validating_command: make release-check
+definition_of_ready_before_execution:
+  - active phase has a plan, workitem ledger, and log
+  - validation commands are listed before implementation starts

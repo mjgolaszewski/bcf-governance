@@ -1,0 +1,31 @@
+document:
+  kind: execution_phase_log
+  name: "Phase {{PHASE_NUMBER}} Log"
+  id: "{{PROJECT_ID}}-phase-{{PHASE_NUMBER}}-log"
+  version: 1.0.0
+  generated_at_utc: "{{DATE}}T00:00:00Z"
+  status: planned
+  path: "{{REPO_ROOT}}/phases/phase-{{PHASE_NUMBER}}-log.yml"
+phase:
+  id: "{{ACTIVE_PHASE_ID}}"
+  build_block: "{{BUILD_BLOCK}}"
+summary:
+  outcome: planned
+  highlights:
+    - "{{ACTIVE_PHASE_ID}} is opened for {{PHASE_OBJECTIVE}}"
+workitems:
+  - id: "{{ACTIVE_PHASE_ID}}-P0-01"
+    status: TODO
+    summary: "deliver {{DELIVERABLE}}"
+execution_evidence:
+  planned_commands:
+    - make governance-validate
+    - make architecture-test
+    - make test
+    - make release-check
+  executed_commands: []
+  notes: []
+known_constraints:
+  - update canonical governed artifacts together when this phase changes behavior or environment contracts
+next_work:
+  - implement scoped workitems and record execution evidence in this log

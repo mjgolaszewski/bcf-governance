@@ -1,0 +1,160 @@
+document:
+  kind: governance
+  name: "{{PROJECT_NAME}} Governance"
+  id: "{{PROJECT_ID}}-agents"
+  version: 1.0.0
+  generated_at_utc: "{{DATE}}T00:00:00Z"
+  status: active
+  path: "{{REPO_ROOT}}/AGENTS.yml"
+project:
+  repo_root: "{{REPO_ROOT}}"
+  project_name: "{{PROJECT_NAME}}"
+  product_name: "{{PRODUCT_NAME}}"
+regression_shield:
+  purpose: keep this file machine-readable and instruction-only
+  invariants:
+    - record execution evidence in phases/*.yml, not here
+    - keep plans/product-spec.yml as the canonical product authority
+    - keep plans/build-plan.yml as the canonical machine-readable build plan
+    - keep plans/phase-ledger.yml as the active planning ledger
+    - update this file only when governance or authority ordering changes
+authorities:
+  precedence:
+    - user_instructions
+    - AGENTS.yml
+    - plans/product-spec.yml
+    - plans/build-plan.yml
+    - plans/phase-ledger.yml
+    - MEMORY.yml
+  execution_evidence_location:
+    - phases/*.yml
+governance:
+  file_format_policy:
+    canonical_machine_readable_artifacts:
+      - AGENTS.yml
+      - MEMORY.yml
+      - plans/*.yml
+      - phases/*.yml
+    note: audit metadata and regression-shield intent live as YAML data, not comment headers
+  build_plan_contract:
+    format: yaml
+    required_properties:
+      - tightly_scoped_deliverables
+      - parallelizable_workstreams
+      - hard_dependencies
+      - docker_first_local_runtime
+      - ast_architecture_tests
+      - strict_boundaries
+      - observability_reference_model
+      - completeness_standard
+    completeness_standard: full_completeness_for_declared_scope
+  phase_log_contract:
+    status_taxonomy:
+      planned: phase evidence exists and current phase is defined but not yet executed
+      completed: implementation is finished and acceptance-critical checks are ready or partially run
+      verified: acceptance-critical checks passed in the required environment
+      closed: verified and included in the latest required rerun for the touched scope
+    final_closeout_required_fields:
+      - all_tickets_closed
+      - required_suites_green
+      - ast_architecture_gates_green
+      - health_checks_green
+      - known_warnings
+      - known_constraints
+  semantic_validation_contract:
+    validator: scripts/validate_governance_yaml.py
+    required_checks:
+      - governed_yaml_parses
+      - active_phase_paths_exist
+      - active_phase_ids_align_across_plan_workitems_and_log
+      - MEMORY_active_artifacts_match_phase_ledger_active_phase
+      - verified_or_closed_active_phase_logs_contain_required_closeout_fields
+      - instantiated_governed_artifacts_have_no_unresolved_placeholders
+  hotfix_lane_contract:
+    eligibility:
+      - default_branch_red_ci
+      - release_blocking_regression
+      - security_or_expiring_external_breakage
+    minimum_required_artifacts:
+      - phase_ledger_hotfix_record
+      - hotfix_phase_log_entry
+      - canonical_artifact_sync_when_behavior_or_environment_contracts_change
+    machine_assist:
+      scaffold_script: scripts/scaffold_governance_artifacts.py
+      required_record_fields:
+        - id
+        - status
+        - triggered_by_commits
+        - failing_workflows
+        - root_cause
+        - remediated_in_phase
+        - hotfix_log
+        - canonical_artifacts
+  artifact_ownership_contract:
+    canonical_owners:
+      governance_rules_and_authority_order: AGENTS.yml
+      product_scope_and_phase_catalog: plans/product-spec.yml
+      machine_readable_phase_sequence_and_delivery_contracts: plans/build-plan.yml
+      active_phase_state_blockers_and_validation_commands: plans/phase-ledger.yml
+      durable_context_and_active_artifact_pointers: MEMORY.yml
+    duplication_rules:
+      - repeated_fields_must_have_a_declared_canonical_owner
+      - mirrored_or_derived_fields_must_update_in_the_same_change_as_their_canonical_source
+  phase_transition_contract:
+    rollover_rules:
+      - activating_a_successor_phase_must_update_plans_phase_ledger_yml_and_MEMORY_yml_in_the_same_change
+      - unresolved_outgoing_phase_risks_must_be_recorded_before_successor_activation
+  instruction_only: true
+runtime_surfaces:
+  authoritative_surfaces:
+    - local_runtime
+    - ci_runner
+  rules:
+    - CI must not rely on ambient workstation state
+    - runtime evidence must come from the environment declared by the phase
+engineering:
+  architecture:
+    style: strict_layered_or_hexagonal_boundaries
+    backend_code_root: backend/src
+    frontend_code_root: frontend/src
+    enforcement:
+      - ast_enforced_import_boundaries
+      - framework_free_domain_model_where_applicable
+      - centralized_dispatch_or_orchestration_primitives
+      - dry_adapter_composition
+  backend_boundary_rules:
+    - domain layer stays framework-free and side-effect free
+    - application layer coordinates use cases without HTTP or persistence client imports
+    - interfaces expose transport contracts and delegate to application handlers
+    - infrastructure adapters own persistence, cache, telemetry, and external service integration
+  frontend_boundary_rules:
+    - presentation components do not call HTTP directly
+    - route modules stay thin and delegate orchestration
+    - API DTOs are mapped at the boundary before UI consumption
+quality:
+  required_suites:
+    - governance_validation
+    - architecture
+    - unit
+    - integration
+    - contract
+    - lint
+    - typecheck
+    - security
+    - runtime_smoke
+  mandatory_sync_rules:
+    - update specs, plans, and MEMORY together when behavior or environment contracts change
+    - record unresolved blockers in the active phase ledger before implementation proceeds
+    - semantic governance validation must pass when governed artifacts change
+    - emergency hotfixes must satisfy the hotfix lane contract and reconcile into canonical artifacts before closeout
+git_scope:
+  default_root: "{{REPO_ROOT}}"
+  rules:
+    - stage explicit scopes when work spans multiple surfaces
+    - verify staged files before commit
+references:
+  canonical_product_spec: plans/product-spec.yml
+  canonical_build_plan: plans/build-plan.yml
+  canonical_active_ledger: plans/phase-ledger.yml
+  canonical_memory: MEMORY.yml
+  governance_validator: scripts/validate_governance_yaml.py

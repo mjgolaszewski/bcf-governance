@@ -1,0 +1,55 @@
+document:
+  kind: machine_readable_build_plan
+  name: "{{PROJECT_NAME}} Build Plan"
+  id: "{{PROJECT_ID}}-build-plan"
+  version: 1.0.0
+  generated_at_utc: "{{DATE}}T00:00:00Z"
+  status: active
+  path: "{{REPO_ROOT}}/plans/build-plan.yml"
+planning_contract:
+  format: yaml
+  mandatory_properties:
+    - tightly_scoped_deliverables
+    - parallelizable_workstreams
+    - hard_dependency_ordering
+    - docker_first_local_runtime
+    - ast_architecture_tests
+    - strict_boundaries
+    - observability_reference_model
+    - completeness_standard
+  completeness_standard: full_completeness_for_declared_scope
+planning_inputs:
+  date: "{{DATE}}"
+  planner: "{{PLANNER}}"
+  primary_source_of_truth: plans/product-spec.yml
+  governance_references:
+    - AGENTS.yml
+    - MEMORY.yml
+    - plans/phase-ledger.yml
+global_delivery_rules:
+  - every behavior change must update specs, plans, MEMORY, and tests together
+  - release gates must run in a declared runtime environment
+  - architecture boundaries must be encoded in tests, not left as convention-only prose
+  - governance changes must pass semantic validation, not only YAML parse checks
+  - emergency red-CI and release-blocking fixes must use the governed hotfix lane
+global_gates:
+  - id: G1
+    name: governed_foundation
+    applies_before: P02
+    required_completion_criteria:
+      - canonical governance artifacts exist
+      - phase ledger points to active phase artifacts
+      - semantic governance validation passes
+      - architecture boundary test lane exists
+phase_sequence:
+  - phase_id: P01
+    build_block: "{{BUILD_BLOCK}}"
+    objective: "{{PHASE_OBJECTIVE}}"
+    hard_dependencies: []
+    tightly_scoped_deliverables:
+      - "{{DELIVERABLE}}"
+    parallelizable_workstreams:
+      - "{{WORKSTREAM}}"
+    verification_commands:
+      - make governance-validate
+      - make test

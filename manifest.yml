@@ -1,0 +1,43 @@
+document:
+  kind: template_governance_pack_manifest
+  name: Swerbo-Inspired Template And Governance Pack
+  id: sse-template-governance-pack
+  version: 1.0.0
+  generated_at_utc: "2026-04-11T00:00:00Z"
+  status: generated_untracked_artifact
+source_repo:
+  repo_root: /docker/sse
+  governance_sources:
+    - AGENTS.yml
+    - MEMORY.yml
+    - plans/build-plan.yml
+    - plans/phase-ledger.yml
+    - scripts/validate_governance_yaml.py
+    - scripts/scaffold_governance_artifacts.py
+    - backend/tests/architecture/
+    - docs/OPERATIONS.md
+pack_contents:
+  template_repo:
+    - root governance templates
+    - explicit governance dependency requirements
+    - phase planning templates
+    - hotfix log template
+    - operations template
+    - Makefile target fragment
+    - GitHub Actions governance workflow template
+    - architecture test skeleton
+  governance_playbooks:
+    - governance operating model
+    - artifact ownership
+    - release gates
+    - architecture boundaries
+    - hotfix lane
+    - model risk and provenance
+    - AI drift review
+  scripts:
+    - generic phase and hotfix scaffold helper
+    - generic governance YAML validator with instantiated placeholder detection
+tracking:
+  intended_location: artifacts/
+  tracked_by_git: false
+  repo_ignore_rule: artifacts/
