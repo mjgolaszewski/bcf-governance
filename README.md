@@ -6,7 +6,7 @@ It is intentionally split into two parts:
 
 - `template-repo/`: files you can copy into a new repository and replace placeholder values.
 - `governance/`: playbooks that explain the operating model behind the templates.
-- `scripts/`: lightweight helper scripts for scaffolding and validating governed artifacts.
+- `scripts/`: lightweight helper scripts for installing, scaffolding, and validating governed artifacts.
 - `template-repo/schemas/`: structural schemas for governed YAML artifacts.
 
 ## Source Model
@@ -27,6 +27,7 @@ This pack is based on these repo conventions:
 - `scripts/validate_governance_yaml.py` now runs structural schema validation before semantic cross-artifact checks.
 - `scripts/validate_governance_yaml.py` fails on unresolved placeholders in instantiated governed artifacts.
 - `scripts/validate_governance_yaml.py` rejects placeholder or echo-only release gates before `make release-check` is trusted.
+- `scripts/install_governance_pack.py` installs the pack into a target repo, replaces placeholders, applies a profile, and opens the first governed phase.
 - `scripts/scaffold_governance_artifacts.py` creates phase and hotfix artifacts with the expected shape and names hotfix logs as `phase-NN-hotfix##.yml`.
 - backend governance defaults to CQRS-lite with strict ports rather than full CQRS.
 - backend delivery defaults to contract-first vertical slices with public-contract preservation by default.
@@ -36,36 +37,58 @@ This pack is based on these repo conventions:
 
 ## Bootstrap A New Repo
 
-The simplest path is:
-
-1. Clone or copy `bcf-governance` somewhere local.
-2. Copy the contents of `template-repo/` into the new repo root so the repo gets `AGENTS.yml`, `MEMORY.yml`, `governance-profile.yml`, `architecture-boundaries.yml`, `plans/`, `phases/`, `schemas/`, `backend/tests/architecture/`, `docs/`, `requirements-governance.txt`, and `Makefile.fragment`.
-3. Copy `scripts/` into the new repo root.
-4. Merge `Makefile.fragment` into the repo Makefile and wire the repo-specific `lint`, `typecheck`, `test`, and `contract-test` commands. The starter targets fail closed and validation rejects them until they are real.
-5. Replace placeholders in the copied governed files. The easiest way to find what is still unresolved is:
+The simplest path is to run the installer from a local clone of this pack:
 
 ```bash
-rg -n '\{\{[A-Z0-9_]+\}\}' .
-```
-
-6. Generate the first active phase artifacts instead of editing the `phase-NN` placeholders by hand:
-
-```bash
-python3 scripts/scaffold_governance_artifacts.py phase \
+python3 scripts/install_governance_pack.py \
+  --target /path/to/target-repo \
+  --profile standard \
   --project-id your-project \
-  --phase-id P01 \
-  --build-block foundation \
-  --objective "governed foundation" \
-  --planner codex \
-  --date 2026-04-24 \
-  --deliverable "initial governed foundation" \
-  --workstream "bootstrap governance pack" \
-  --verification-command "make governance-validate" \
-  --verification-command "make architecture-test" \
-  --verification-command "make release-check"
+  --project-name "Your Project" \
+  --product-name "Your Product" \
+  --date "$(date -u +%F)"
 ```
 
-7. Generate hotfix logs with the helper if urgent repair work appears:
+The installer:
+
+- copies `template-repo/` into the target repo
+- removes the `phase-NN` example artifacts after copying
+- replaces known placeholders, including hidden workflow files
+- applies the requested `lite`, `standard`, or `regulated` profile
+- generates the first active phase artifacts with `scripts/scaffold_governance_artifacts.py`
+- refuses to overwrite existing governance files unless `--force` is passed
+- runs strict validation when possible and falls back to bootstrap validation when standard or regulated release gates still need repo-specific commands
+
+For a minimal installation that can pass strict validation before repo-specific release gates are wired:
+
+```bash
+python3 scripts/install_governance_pack.py \
+  --target /path/to/target-repo \
+  --profile lite \
+  --project-id your-project \
+  --project-name "Your Project" \
+  --require-strict-validation
+```
+
+For standard or regulated installs, wire real gate commands during install when they are already known:
+
+```bash
+python3 scripts/install_governance_pack.py \
+  --target /path/to/target-repo \
+  --profile standard \
+  --project-id your-project \
+  --date "$(date -u +%F)" \
+  --gate-command "architecture-test=python3 -m pytest backend/tests/architecture" \
+  --gate-command "lint=ruff check ." \
+  --gate-command "typecheck=mypy ." \
+  --gate-command "test=pytest tests" \
+  --gate-command "contract-test=pytest tests/contracts" \
+  --require-strict-validation
+```
+
+The installer intentionally does not edit an existing repo Makefile. After installation, merge `Makefile.fragment` into the repo Makefile or include it from the repo Makefile.
+
+Generate hotfix logs with the helper if urgent repair work appears:
 
 ```bash
 python3 scripts/scaffold_governance_artifacts.py hotfix \
@@ -75,12 +98,12 @@ python3 scripts/scaffold_governance_artifacts.py hotfix \
   --hotfix-number 1 \
   --summary "release-blocking fix" \
   --related-phase-id P01 \
-  --date 2026-04-24 \
+  --date "$(date -u +%F)" \
   --validation-command "make governance-validate" \
   --validation-command "make release-check"
 ```
 
-8. Install governance dependencies and run validation before the first governed commit:
+Install governance dependencies and run validation before the first governed commit:
 
 ```bash
 python3 -m pip install -r requirements-governance.txt

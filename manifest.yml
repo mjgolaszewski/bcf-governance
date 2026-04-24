@@ -41,6 +41,7 @@ pack_contents:
     - model risk and provenance
     - AI drift review
   scripts:
+    - installer helper that copies the template pack, replaces placeholders, applies profiles, opens the first phase, and reports release-gate wiring gaps
     - generic phase and hotfix scaffold helper that emits repo-relative document paths
     - generic governance YAML validator with structural and semantic checks, compact json output, release-gate placeholder detection, path portability checks, and instantiated placeholder detection
 tracking:

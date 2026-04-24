@@ -24,11 +24,13 @@ jobs:
           python -m py_compile \
             scripts/validate_governance_yaml.py \
             scripts/scaffold_governance_artifacts.py \
+            scripts/install_governance_pack.py \
             template-repo/scripts/validate_governance_yaml.py \
             template-repo/scripts/scaffold_governance_artifacts.py \
             template-repo/backend/tests/architecture/test_boundaries_ast.py \
             tests/test_validate_governance_yaml.py \
             tests/test_scaffold_governance_artifacts.py \
+            tests/test_install_governance_pack.py \
             tests/test_pack_sync.py \
             tests/test_template_architecture_gate.py \
             .github/scripts/run_validator_mutants.py

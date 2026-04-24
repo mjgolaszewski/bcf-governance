@@ -93,9 +93,10 @@ A verified or closed phase log should include:
 
 ## Operating Rhythm
 
-1. Open a phase with the scaffold script.
-2. Execute only the scoped workitems.
-3. Record command evidence in the phase log.
-4. Update `MEMORY.yml` only for stable decisions and durable facts, and revalidate aging environment facts on phase rollover.
-5. Run governance validation before closeout.
-6. Open the successor phase before moving the active pointer.
+1. Install the pack with `scripts/install_governance_pack.py` for new repos.
+2. Open successor phases with the scaffold script.
+3. Execute only the scoped workitems.
+4. Record command evidence in the phase log.
+5. Update `MEMORY.yml` only for stable decisions and durable facts, and revalidate aging environment facts on phase rollover.
+6. Run governance validation before closeout.
+7. Open the successor phase before moving the active pointer.
