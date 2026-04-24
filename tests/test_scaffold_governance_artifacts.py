@@ -52,6 +52,7 @@ def test_scaffold_phase_artifacts_creates_expected_files_and_payloads(tmp_path: 
     }
 
     plan_payload = yaml.safe_load(created["plan"].read_text(encoding="utf-8"))
+    assert plan_payload["document"]["path"] == "plans/phase-03-plan.yml"
     assert plan_payload["phase"] == {
         "id": "P03",
         "build_block": "hardening",
@@ -75,12 +76,14 @@ def test_scaffold_phase_artifacts_creates_expected_files_and_payloads(tmp_path: 
     ]
 
     workitems_payload = yaml.safe_load(created["workitems"].read_text(encoding="utf-8"))
+    assert workitems_payload["document"]["path"] == "plans/phase-03-workitems.yml"
     assert [item["summary"] for item in workitems_payload["workitems"]] == [
         "deliver validator coverage",
         "deliver scaffold coverage",
     ]
 
     log_payload = yaml.safe_load(created["log"].read_text(encoding="utf-8"))
+    assert log_payload["document"]["path"] == "phases/phase-03-log.yml"
     assert log_payload["summary"]["highlights"][0] == "P03 is opened for close validation gaps"
     assert log_payload["execution_evidence"]["planned_commands"] == [
         "pytest tests",
@@ -124,6 +127,7 @@ def test_scaffold_hotfix_log_uses_phase_numbered_filename_and_mode(tmp_path: Pat
 
     assert created.relative_to(tmp_path).as_posix() == "phases/phase-03-hotfix02.yml"
     payload = yaml.safe_load(created.read_text(encoding="utf-8"))
+    assert payload["document"]["path"] == "phases/phase-03-hotfix02.yml"
     assert payload["hotfix"] == {
         "id": "HF-002",
         "mode": "lite",

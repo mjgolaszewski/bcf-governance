@@ -5,7 +5,7 @@ document:
   version: 1.0.0
   generated_at_utc: "{{DATE}}T00:00:00Z"
   status: planned
-  path: "{{REPO_ROOT}}/plans/phase-01-plan.yml"
+  path: plans/phase-01-plan.yml
 phase:
   id: P01
   build_block: "{{BUILD_BLOCK}}"

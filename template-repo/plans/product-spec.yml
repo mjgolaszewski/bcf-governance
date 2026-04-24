@@ -5,7 +5,7 @@ document:
   version: 1.0.0
   generated_at_utc: "{{DATE}}T00:00:00Z"
   status: active_delivery
-  path: "{{REPO_ROOT}}/plans/product-spec.yml"
+  path: plans/product-spec.yml
 product:
   name: "{{PRODUCT_NAME}}"
   project_name: "{{PROJECT_NAME}}"

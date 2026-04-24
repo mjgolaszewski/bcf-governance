@@ -17,16 +17,20 @@ architecture-test:
 	$(PYTEST) backend/tests/architecture
 
 lint:
-	@echo "replace with repo lint commands"
+	@echo "configure repo-specific lint commands before release-check can pass"
+	@false
 
 typecheck:
-	@echo "replace with repo typecheck commands"
+	@echo "configure repo-specific typecheck commands before release-check can pass"
+	@false
 
 test:
-	@echo "replace with repo test commands"
+	@echo "configure repo-specific test commands before release-check can pass"
+	@false
 
 contract-test:
-	@echo "replace with repo contract-test commands"
+	@echo "configure repo-specific contract-test commands before release-check can pass"
+	@false
 
 release-check:
 	$(MAKE) governance-validate

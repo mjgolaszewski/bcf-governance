@@ -91,6 +91,24 @@ def _replace_placeholders(repo_root: Path) -> None:
             path.write_text(updated, encoding="utf-8")
 
 
+def _configure_release_gates(repo_root: Path) -> None:
+    makefile_path = repo_root / "Makefile.fragment"
+    text = makefile_path.read_text(encoding="utf-8")
+    replacements = {
+        '\t@echo "configure repo-specific lint commands before release-check can pass"\n\t@false':
+            "\t@$(PYTHON) -m py_compile scripts/validate_governance_yaml.py",
+        '\t@echo "configure repo-specific typecheck commands before release-check can pass"\n\t@false':
+            "\t@$(PYTHON) -m py_compile scripts/scaffold_governance_artifacts.py",
+        '\t@echo "configure repo-specific test commands before release-check can pass"\n\t@false':
+            "\t@$(PYTEST) --version >/dev/null",
+        '\t@echo "configure repo-specific contract-test commands before release-check can pass"\n\t@false':
+            "\t@$(PYTHON) -m py_compile backend/tests/architecture/test_boundaries_ast.py",
+    }
+    for placeholder, configured in replacements.items():
+        text = text.replace(placeholder, configured)
+    makefile_path.write_text(text, encoding="utf-8")
+
+
 def _copy_fixture_overrides(repo_root: Path, fixture_name: str) -> None:
     fixture_repo_root = FIXTURES_ROOT / fixture_name / "repo"
     if fixture_repo_root.exists():
@@ -154,10 +172,14 @@ def _apply_mutations(repo_root: Path, fixture_name: str) -> None:
         target_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
 
 
-def _instantiate_fixture_repo(tmp_path: Path, fixture_name: str) -> Path:
+def _instantiate_fixture_repo(
+    tmp_path: Path, fixture_name: str, *, configure_release_gates: bool = True
+) -> Path:
     repo_root = tmp_path / fixture_name
     shutil.copytree(TEMPLATE_REPO_ROOT, repo_root)
     _replace_placeholders(repo_root)
+    if configure_release_gates:
+        _configure_release_gates(repo_root)
     _copy_fixture_overrides(repo_root, fixture_name)
     _apply_mutations(repo_root, fixture_name)
     return repo_root
@@ -276,6 +298,118 @@ def test_validate_template_repo_emits_compact_json_output_for_placeholder_failur
         "semantic": "pass",
     }
     assert "unresolved template placeholders remain in governed artifacts" in payload["error"]
+
+
+def test_validate_repo_root_rejects_absolute_document_path(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    plan_path = repo_root / "plans/phase-01-plan.yml"
+    payload = yaml.safe_load(plan_path.read_text(encoding="utf-8"))
+    payload["document"]["path"] = str(plan_path)
+    plan_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "document.path must be a repo-relative path" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_document_path_mismatch(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    log_path = repo_root / "phases/phase-01-log.yml"
+    payload = yaml.safe_load(log_path.read_text(encoding="utf-8"))
+    payload["document"]["path"] = "phases/not-the-active-log.yml"
+    log_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "document.path must be 'phases/phase-01-log.yml'" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_placeholder_release_gates(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(
+        tmp_path, "valid_repo", configure_release_gates=False
+    )
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "release gate placeholder marker" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_missing_required_release_gate(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    makefile_path = repo_root / "Makefile.fragment"
+    makefile_path.write_text(
+        makefile_path.read_text(encoding="utf-8").replace("\t$(MAKE) typecheck\n", ""),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "release-check must invoke required release gate targets: typecheck" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_product_build_phase_mismatch(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    build_plan_path = repo_root / "plans/build-plan.yml"
+    payload = yaml.safe_load(build_plan_path.read_text(encoding="utf-8"))
+    payload["phase_sequence"][0]["phase_id"] = "P02"
+    build_plan_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "must declare the same phase ids" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_completed_release_train_with_planned_log(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    ledger_path = repo_root / "plans/phase-ledger.yml"
+    payload = yaml.safe_load(ledger_path.read_text(encoding="utf-8"))
+    payload["release_trains"]["release_1"]["status"] = "completed"
+    ledger_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "cannot reference planned phase log" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_stale_memory_active_artifacts(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    memory_path = repo_root / "MEMORY.yml"
+    payload = yaml.safe_load(memory_path.read_text(encoding="utf-8"))
+    payload["environment_facts"]["active_artifacts"]["active_phase_log"] = "phases/stale-log.yml"
+    memory_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "MEMORY.yml active_artifacts.active_phase_log" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_workitems_missing_plan_deliverable(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    workitems_path = repo_root / "plans/phase-01-workitems.yml"
+    payload = yaml.safe_load(workitems_path.read_text(encoding="utf-8"))
+    payload["workitems"][0]["summary"] = "deliver a different scope"
+    payload["workitems"][0]["acceptance"] = ["different_scope_is_complete"]
+    workitems_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "workitems must cover phase deliverables" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_log_workitem_status_drift(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    log_path = repo_root / "phases/phase-01-log.yml"
+    payload = yaml.safe_load(log_path.read_text(encoding="utf-8"))
+    payload["workitems"][0]["status"] = "DONE"
+    log_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "workitem statuses must match" in str(excinfo.value)
 
 
 @pytest.mark.parametrize(

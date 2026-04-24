@@ -1,0 +1,97 @@
+document:
+  kind: architecture_boundary_rules
+  name: "{{PROJECT_NAME}} Architecture Boundary Rules"
+  id: "{{PROJECT_ID}}-architecture-boundaries"
+  version: 1.0.0
+  generated_at_utc: "{{DATE}}T00:00:00Z"
+  status: active
+  path: architecture-boundaries.yml
+architecture:
+  source_roots:
+    - backend/src
+  layers:
+    domain:
+      path_tokens:
+        - domain
+      required: true
+      forbidden_import_prefixes:
+        - fastapi
+        - sqlalchemy
+        - requests
+        - httpx
+        - psycopg
+        - redis
+        - pydantic_settings
+      forbidden_layer_imports:
+        - use_cases
+        - routers
+        - infrastructure
+        - ports
+      forbidden_import_names: []
+    use_cases:
+      path_tokens:
+        - use_case
+        - use_cases
+        - commands
+        - queries
+        - handlers
+        - application
+      required: true
+      forbidden_import_prefixes:
+        - fastapi
+        - sqlalchemy
+        - requests
+        - httpx
+        - psycopg
+        - redis
+        - pydantic_settings
+      forbidden_layer_imports:
+        - routers
+        - infrastructure
+      forbidden_import_names:
+        - Request
+        - Response
+    ports:
+      path_tokens:
+        - ports
+        - repositories
+        - repos
+      required: true
+      forbidden_import_prefixes:
+        - fastapi
+        - sqlalchemy
+        - psycopg
+        - redis
+        - requests
+        - httpx
+      forbidden_layer_imports:
+        - routers
+        - infrastructure
+      forbidden_import_names: []
+    routers:
+      path_tokens:
+        - router
+        - routers
+        - http
+        - api
+      required: true
+      forbidden_import_prefixes:
+        - sqlalchemy
+        - psycopg
+        - redis
+        - requests
+        - httpx
+      forbidden_layer_imports:
+        - domain
+        - ports
+        - infrastructure
+      forbidden_import_names: []
+    infrastructure:
+      path_tokens:
+        - infra
+        - infrastructure
+        - adapters
+      required: false
+      forbidden_import_prefixes: []
+      forbidden_layer_imports: []
+      forbidden_import_names: []

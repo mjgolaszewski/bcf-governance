@@ -25,6 +25,10 @@ That command should cover:
 - security and supply-chain scans when applicable
 - Docker or runtime smoke checks when applicable
 
+`Makefile.fragment` starts with fail-closed placeholder targets. Replace them with repo-specific commands and keep `governance-profile.yml` aligned with any gate marked `required`, `optional`, `deferred`, or `not_applicable`.
+
+If the repo layout differs from the starter backend shape, update `architecture-boundaries.yml` before relying on `make architecture-test`.
+
 ## Governance Helpers
 
 ```bash
@@ -34,7 +38,7 @@ python3 scripts/scaffold_governance_artifacts.py hotfix --help
 ```
 
 Generate real hotfix logs with the scaffold helper rather than copying the template example file; the governed filename convention is `phases/phase-NN-hotfix##.yml`.
-Governance validation should cover structural schema checks from `schemas/` and semantic cross-artifact consistency checks.
+Governance validation should cover structural schema checks from `schemas/`, repo-relative `document.path` checks, configured release-gate checks, and semantic cross-artifact consistency checks.
 
 ## Runtime Diagnostics
 

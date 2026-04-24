@@ -18,6 +18,9 @@ class GovernanceValidationError(ValueError):
 
 
 PLACEHOLDER_PATTERN = re.compile(r"\{\{[^{}\n]+\}\}")
+WINDOWS_ABSOLUTE_PATH_PATTERN = re.compile(r"^[A-Za-z]:[\\/]")
+MAKE_TARGET_PATTERN = re.compile(r"^([A-Za-z0-9_.-]+)\s*:(?:\s|$)")
+MAKE_INVOKED_TARGET_PATTERN = re.compile(r"(?:\$\((?:MAKE|make)\)|\bmake)\s+([A-Za-z0-9_.-]+)")
 OPTIONAL_PLACEHOLDER_SCAN_PATHS = (
     "docs/OPERATIONS.md",
     "Makefile.fragment",
@@ -39,6 +42,21 @@ ACTIVE_PHASE_LIFECYCLE_STATUSES = {
 COMPLETED_RELEASE_TRAIN_STATUSES = {"completed", "closed", "released"}
 HOTFIX_MODES = {"lite", "full"}
 VALIDATION_OUTPUT_FORMATS = {"text", "json"}
+RELEASE_GATE_PLACEHOLDER_MARKERS = (
+    "replace with repo",
+    "configure repo-specific",
+    "placeholder",
+)
+RELEASE_GATE_ENFORCED_STATUSES = {"required", "optional"}
+RELEASE_GATE_INACTIVE_STATUSES = {"deferred", "not_applicable"}
+DEFAULT_RELEASE_GATE_TARGETS = {
+    "governance-validate",
+    "architecture-test",
+    "lint",
+    "typecheck",
+    "test",
+    "contract-test",
+}
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -109,7 +127,24 @@ def _require_string_sequence(
     return strings
 
 
+def _validate_portable_relative_path(value: str, *, context: str) -> None:
+    if Path(value).is_absolute() or WINDOWS_ABSOLUTE_PATH_PATTERN.match(value):
+        raise GovernanceValidationError(f"{context} must be a repo-relative path, not an absolute path")
+    if "\\" in value:
+        raise GovernanceValidationError(f"{context} must use POSIX '/' separators")
+    if any(part == ".." for part in value.split("/")):
+        raise GovernanceValidationError(f"{context} must not escape the repository root")
+
+
+def _repo_relative_path(repo_root: Path, path: Path) -> str:
+    try:
+        return path.relative_to(repo_root).as_posix()
+    except ValueError as exc:
+        raise GovernanceValidationError(f"{path} is outside repo root {repo_root}") from exc
+
+
 def _require_path(repo_root: Path, relative_path: str, *, context: str) -> Path:
+    _validate_portable_relative_path(relative_path, context=context)
     path = repo_root / relative_path
     if not path.exists():
         raise GovernanceValidationError(f"{context} references missing path {relative_path}")
@@ -261,12 +296,198 @@ def _validate_no_unresolved_placeholders(repo_root: Path, paths: list[Path]) -> 
         )
 
 
+def _load_governance_profile(
+    repo_root: Path, schema_cache: dict[str, dict[str, Any]]
+) -> tuple[dict[str, Any] | None, Path | None]:
+    profile_path = repo_root / "governance-profile.yml"
+    if not profile_path.exists():
+        return None, None
+    profile = _load_yaml(profile_path)
+    _validate_schema(
+        repo_root,
+        schema_cache,
+        profile,
+        schema_name="governance-profile.schema.json",
+        context=str(profile_path),
+    )
+    _validate_document_path(repo_root, profile, profile_path, context=str(profile_path))
+    return profile, profile_path
+
+
+def _load_architecture_boundaries(
+    repo_root: Path, schema_cache: dict[str, dict[str, Any]]
+) -> Path | None:
+    architecture_path = repo_root / "architecture-boundaries.yml"
+    if not architecture_path.exists():
+        return None
+    architecture_rules = _load_yaml(architecture_path)
+    _validate_schema(
+        repo_root,
+        schema_cache,
+        architecture_rules,
+        schema_name="architecture-boundaries.schema.json",
+        context=str(architecture_path),
+    )
+    _validate_document_path(
+        repo_root, architecture_rules, architecture_path, context=str(architecture_path)
+    )
+    return architecture_path
+
+
+def _makefile_target_bodies(makefile_path: Path) -> dict[str, list[str]]:
+    targets: dict[str, list[str]] = {}
+    current_target: str | None = None
+    for line in makefile_path.read_text(encoding="utf-8").splitlines():
+        match = MAKE_TARGET_PATTERN.match(line)
+        if match is not None:
+            current_target = match.group(1)
+            targets.setdefault(current_target, [])
+            continue
+        if current_target is not None:
+            targets[current_target].append(line)
+    return targets
+
+
+def _meaningful_make_commands(lines: list[str]) -> list[str]:
+    commands: list[str] = []
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if stripped.startswith("@"):
+            stripped = stripped[1:].strip()
+        if stripped.startswith(("-", "+")):
+            stripped = stripped[1:].strip()
+        if not stripped or stripped.startswith(("#", "echo ", "printf ")):
+            continue
+        if stripped in {":", "true", "/bin/true"}:
+            continue
+        commands.append(stripped)
+    return commands
+
+
+def _release_gate_targets_from_profile(profile: dict[str, Any] | None) -> dict[str, str]:
+    if profile is None:
+        return {target: "required" for target in sorted(DEFAULT_RELEASE_GATE_TARGETS)}
+    release_gate_profile = _require_mapping(
+        profile.get("release_gate_profile"), context="governance-profile.yml release_gate_profile"
+    )
+    gates = _require_mapping(
+        release_gate_profile.get("gates"), context="governance-profile.yml release_gate_profile.gates"
+    )
+    targets: dict[str, str] = {}
+    for gate_id, payload in gates.items():
+        gate = _require_mapping(payload, context=f"governance-profile.yml release_gate_profile.gates.{gate_id}")
+        target = _require_string(
+            gate.get("target"), context=f"governance-profile.yml release_gate_profile.gates.{gate_id}.target"
+        )
+        status = _require_string(
+            gate.get("status"), context=f"governance-profile.yml release_gate_profile.gates.{gate_id}.status"
+        )
+        targets[target] = status
+    return targets
+
+
+def _release_gate_makefile_path(repo_root: Path) -> Path | None:
+    for relative_path in ("Makefile", "Makefile.fragment"):
+        path = repo_root / relative_path
+        if path.exists():
+            return path
+    return None
+
+
+def _validate_release_gate_targets(
+    repo_root: Path,
+    profile: dict[str, Any] | None,
+    *,
+    allow_placeholders: bool,
+) -> None:
+    if allow_placeholders:
+        return
+    makefile_path = _release_gate_makefile_path(repo_root)
+    if makefile_path is None:
+        raise GovernanceValidationError("Makefile or Makefile.fragment must define release-check")
+    makefile_display = _repo_relative_path(repo_root, makefile_path)
+
+    makefile_text = makefile_path.read_text(encoding="utf-8")
+    lowered_makefile = makefile_text.lower()
+    for marker in RELEASE_GATE_PLACEHOLDER_MARKERS:
+        if marker in lowered_makefile:
+            raise GovernanceValidationError(
+                f"{makefile_display} contains unresolved release gate placeholder marker {marker!r}"
+            )
+
+    target_bodies = _makefile_target_bodies(makefile_path)
+    release_check_body = target_bodies.get("release-check")
+    if release_check_body is None:
+        raise GovernanceValidationError(f"{makefile_display} must define release-check")
+    if not _meaningful_make_commands(release_check_body):
+        raise GovernanceValidationError(
+            f"{makefile_display} release-check must run real validation commands"
+        )
+
+    gate_statuses = _release_gate_targets_from_profile(profile)
+    invoked_targets = {
+        match.group(1)
+        for line in release_check_body
+        for match in MAKE_INVOKED_TARGET_PATTERN.finditer(line)
+    }
+    inactive_invocations = sorted(
+        target
+        for target, status in gate_statuses.items()
+        if status in RELEASE_GATE_INACTIVE_STATUSES and target in invoked_targets
+    )
+    if inactive_invocations:
+        raise GovernanceValidationError(
+            f"{makefile_display} release-check invokes inactive release gate targets: "
+            + ", ".join(inactive_invocations)
+        )
+
+    required_targets = {
+        target for target, status in gate_statuses.items() if status in RELEASE_GATE_ENFORCED_STATUSES
+    }
+    missing_from_release_check = sorted(required_targets - invoked_targets)
+    if missing_from_release_check:
+        raise GovernanceValidationError(
+            f"{makefile_display} release-check must invoke required release gate targets: "
+            + ", ".join(missing_from_release_check)
+        )
+
+    for target in sorted(required_targets):
+        target_body = target_bodies.get(target)
+        if target_body is None:
+            raise GovernanceValidationError(
+                f"{makefile_display} must define release gate target {target}"
+            )
+        if not _meaningful_make_commands(target_body):
+            raise GovernanceValidationError(
+                f"{makefile_display} target {target} must run a non-placeholder command"
+            )
+
+
 def _document_status(payload: dict[str, Any], *, context: str) -> str:
     document = _require_mapping(payload.get("document"), context=f"{context}.document")
     status = document.get("status")
     if not isinstance(status, str):
         raise GovernanceValidationError(f"{context}.document.status must be a string")
     return status
+
+
+def _validate_document_path(
+    repo_root: Path,
+    payload: dict[str, Any],
+    actual_path: Path,
+    *,
+    context: str,
+) -> None:
+    document = _require_mapping(payload.get("document"), context=f"{context}.document")
+    document_path = _require_string(document.get("path"), context=f"{context}.document.path")
+    _validate_portable_relative_path(document_path, context=f"{context}.document.path")
+    expected_path = _repo_relative_path(repo_root, actual_path)
+    if document_path != expected_path:
+        raise GovernanceValidationError(
+            f"{context}.document.path must be {expected_path!r}, got {document_path!r}"
+        )
 
 
 def _phase_number(phase_id: str) -> int:
@@ -310,6 +531,93 @@ def _validate_phase_log_closeout(log: dict[str, Any], *, log_path: Path) -> None
     _require_sequence(log["known_constraints"], context=f"{log_path} known_constraints")
 
 
+def _validate_phase_workitem_consistency(
+    plan: dict[str, Any],
+    workitems: dict[str, Any],
+    log: dict[str, Any],
+    *,
+    plan_path: Path,
+    workitems_path: Path,
+    log_path: Path,
+) -> None:
+    delivery_contract = _require_mapping(
+        plan.get("delivery_contract"), context=f"{plan_path} delivery_contract"
+    )
+    deliverables = _require_string_sequence(
+        delivery_contract.get("tightly_scoped_deliverables"),
+        context=f"{plan_path} delivery_contract.tightly_scoped_deliverables",
+        min_items=1,
+    )
+    workitem_entries = _require_sequence(
+        workitems.get("workitems"), context=f"{workitems_path} workitems"
+    )
+    log_workitem_entries = _require_sequence(log.get("workitems"), context=f"{log_path} workitems")
+
+    workitem_text = "\n".join(
+        " ".join(
+            [
+                str(_require_mapping(item, context=f"{workitems_path} workitems[{index}]").get("summary", "")),
+                " ".join(str(value) for value in item.get("acceptance", []))
+                if isinstance(item.get("acceptance"), list)
+                else "",
+            ]
+        )
+        for index, item in enumerate(workitem_entries, start=1)
+    )
+    missing_deliverables = [
+        deliverable for deliverable in deliverables if deliverable not in workitem_text
+    ]
+    if missing_deliverables:
+        raise GovernanceValidationError(
+            f"{workitems_path} workitems must cover phase deliverables from {plan_path}: "
+            + ", ".join(missing_deliverables)
+        )
+
+    workitem_statuses: dict[str, str] = {}
+    for index, item in enumerate(workitem_entries, start=1):
+        item_mapping = _require_mapping(item, context=f"{workitems_path} workitems[{index}]")
+        item_id = _require_string(item_mapping.get("id"), context=f"{workitems_path} workitems[{index}].id")
+        if item_id in workitem_statuses:
+            raise GovernanceValidationError(f"{workitems_path} contains duplicate workitem id {item_id}")
+        workitem_statuses[item_id] = _require_string(
+            item_mapping.get("status"), context=f"{workitems_path} workitems[{index}].status"
+        )
+
+    log_statuses: dict[str, str] = {}
+    for index, item in enumerate(log_workitem_entries, start=1):
+        item_mapping = _require_mapping(item, context=f"{log_path} workitems[{index}]")
+        item_id = _require_string(item_mapping.get("id"), context=f"{log_path} workitems[{index}].id")
+        if item_id in log_statuses:
+            raise GovernanceValidationError(f"{log_path} contains duplicate workitem id {item_id}")
+        log_statuses[item_id] = _require_string(
+            item_mapping.get("status"), context=f"{log_path} workitems[{index}].status"
+        )
+
+    if set(workitem_statuses) != set(log_statuses):
+        missing_in_log = sorted(set(workitem_statuses) - set(log_statuses))
+        missing_in_workitems = sorted(set(log_statuses) - set(workitem_statuses))
+        details: list[str] = []
+        if missing_in_log:
+            details.append(f"missing in phase log: {', '.join(missing_in_log)}")
+        if missing_in_workitems:
+            details.append(f"missing in workitem ledger: {', '.join(missing_in_workitems)}")
+        raise GovernanceValidationError(
+            f"{log_path} workitems must match {workitems_path}"
+            + (f" ({'; '.join(details)})" if details else "")
+        )
+
+    mismatched_statuses = sorted(
+        item_id
+        for item_id, status in workitem_statuses.items()
+        if log_statuses[item_id] != status
+    )
+    if mismatched_statuses:
+        raise GovernanceValidationError(
+            f"{log_path} workitem statuses must match {workitems_path}: "
+            + ", ".join(mismatched_statuses)
+        )
+
+
 def _validate_phase_artifact_triplet(
     repo_root: Path,
     schema_cache: dict[str, dict[str, Any]],
@@ -342,6 +650,9 @@ def _validate_phase_artifact_triplet(
         schema_name="phase-log.schema.json",
         context=str(log_path),
     )
+    _validate_document_path(repo_root, plan, plan_path, context=str(plan_path))
+    _validate_document_path(repo_root, workitems, workitems_path, context=str(workitems_path))
+    _validate_document_path(repo_root, log, log_path, context=str(log_path))
 
     plan_phase = _require_mapping(plan.get("phase"), context=f"{plan_path} phase")
     if plan_phase.get("id") != phase_id:
@@ -367,6 +678,14 @@ def _validate_phase_artifact_triplet(
             f"{log_path} phase.build_block must match declared build block {build_block}"
         )
 
+    _validate_phase_workitem_consistency(
+        plan,
+        workitems,
+        log,
+        plan_path=plan_path,
+        workitems_path=workitems_path,
+        log_path=log_path,
+    )
     _validate_phase_log_closeout(log, log_path=log_path)
     return plan_path, workitems_path, log_path
 
@@ -455,16 +774,6 @@ def _validate_declared_phase_catalog(
             context=f"plans/build-plan.yml phase_sequence[{index}].phase_id",
         )
         build_phase_map[phase_id] = phase_mapping
-        build_block = _require_string(
-            phase_mapping.get("build_block"),
-            context=f"plans/build-plan.yml phase_sequence[{index}].build_block",
-        )
-        declared_phase_paths[phase_id] = _validate_phase_artifact_triplet(
-            repo_root,
-            schema_cache,
-            phase_id=phase_id,
-            build_block=build_block,
-        )
 
     if set(product_phase_map) != set(build_phase_map):
         missing_in_build_plan = sorted(set(product_phase_map) - set(build_phase_map))
@@ -486,6 +795,25 @@ def _validate_declared_phase_catalog(
             raise GovernanceValidationError(
                 f"phase {phase_id} build_block must align between product spec and build plan"
             )
+
+    for index, phase in enumerate(phase_sequence, start=1):
+        phase_mapping = _require_mapping(
+            phase, context=f"plans/build-plan.yml phase_sequence[{index}]"
+        )
+        phase_id = _require_string(
+            phase_mapping.get("phase_id"),
+            context=f"plans/build-plan.yml phase_sequence[{index}].phase_id",
+        )
+        build_block = _require_string(
+            phase_mapping.get("build_block"),
+            context=f"plans/build-plan.yml phase_sequence[{index}].build_block",
+        )
+        declared_phase_paths[phase_id] = _validate_phase_artifact_triplet(
+            repo_root,
+            schema_cache,
+            phase_id=phase_id,
+            build_block=build_block,
+        )
 
     release_trains = _require_mapping(
         ledger.get("release_trains"), context="plans/phase-ledger.yml release_trains"
@@ -566,12 +894,13 @@ def _validate_hotfix_log(
             f"{hotfix_log_path} must follow the filename convention {expected_filename}"
         )
 
+    expected_relative_path = f"phases/{expected_filename}"
+    _validate_document_path(repo_root, hotfix_log, hotfix_log_path, context=str(hotfix_log_path))
     document = _require_mapping(hotfix_log.get("document"), context=f"{hotfix_log_path} document")
     document_path = _require_string(document.get("path"), context=f"{hotfix_log_path} document.path")
-    expected_relative_path = f"phases/{expected_filename}"
-    if not document_path.endswith(expected_relative_path):
+    if document_path != expected_relative_path:
         raise GovernanceValidationError(
-            f"{hotfix_log_path} document.path must end with {expected_relative_path}"
+            f"{hotfix_log_path} document.path must be {expected_relative_path}"
         )
 
     execution_evidence = _require_mapping(
@@ -937,6 +1266,8 @@ def validate_repo_root(repo_root: Path, *, allow_placeholders: bool = False) -> 
     product_spec = _load_yaml(product_spec_path)
     build_plan = _load_yaml(build_plan_path)
     ledger = _load_yaml(phase_ledger_path)
+    governance_profile, governance_profile_path = _load_governance_profile(repo_root, schema_cache)
+    architecture_boundaries_path = _load_architecture_boundaries(repo_root, schema_cache)
 
     _validate_schema(repo_root, schema_cache, agents, schema_name="agents.schema.json", context="AGENTS.yml")
     _validate_schema(repo_root, schema_cache, memory, schema_name="memory.schema.json", context="MEMORY.yml")
@@ -961,6 +1292,11 @@ def validate_repo_root(repo_root: Path, *, allow_placeholders: bool = False) -> 
         schema_name="phase-ledger.schema.json",
         context=str(phase_ledger_path),
     )
+    _validate_document_path(repo_root, agents, repo_root / "AGENTS.yml", context="AGENTS.yml")
+    _validate_document_path(repo_root, memory, repo_root / "MEMORY.yml", context="MEMORY.yml")
+    _validate_document_path(repo_root, product_spec, product_spec_path, context=str(product_spec_path))
+    _validate_document_path(repo_root, build_plan, build_plan_path, context=str(build_plan_path))
+    _validate_document_path(repo_root, ledger, phase_ledger_path, context=str(phase_ledger_path))
 
     _validate_agents(repo_root, agents)
     declared_phase_paths = _validate_declared_phase_catalog(
@@ -988,8 +1324,17 @@ def validate_repo_root(repo_root: Path, *, allow_placeholders: bool = False) -> 
                 *[path for triplet in declared_phase_paths.values() for path in triplet],
                 *hotfix_paths,
                 *active_phase_paths,
+                *([governance_profile_path] if governance_profile_path is not None else []),
+                *(
+                    [architecture_boundaries_path]
+                    if architecture_boundaries_path is not None
+                    else []
+                ),
                 *optional_paths,
             ],
+        )
+        _validate_release_gate_targets(
+            repo_root, governance_profile, allow_placeholders=allow_placeholders
         )
 
 

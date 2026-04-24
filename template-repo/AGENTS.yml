@@ -5,7 +5,7 @@ document:
   version: 1.0.0
   generated_at_utc: "{{DATE}}T00:00:00Z"
   status: active
-  path: "{{REPO_ROOT}}/AGENTS.yml"
+  path: AGENTS.yml
 project:
   repo_root: "{{REPO_ROOT}}"
   project_name: "{{PROJECT_NAME}}"
@@ -31,9 +31,11 @@ authorities:
 governance:
   file_format_policy:
     canonical_machine_readable_artifacts:
-      - AGENTS.yml
-      - MEMORY.yml
-      - schemas/*.json
+    - AGENTS.yml
+    - MEMORY.yml
+    - architecture-boundaries.yml
+    - governance-profile.yml
+    - schemas/*.json
       - plans/*.yml
       - phases/*.yml
     note: audit metadata and regression-shield intent live as YAML data, not comment headers
@@ -44,6 +46,8 @@ governance:
     root: schemas/
     required_schemas:
       - schemas/agents.schema.json
+      - schemas/architecture-boundaries.schema.json
+      - schemas/governance-profile.schema.json
       - schemas/memory.schema.json
       - schemas/product-spec.schema.json
       - schemas/build-plan.schema.json
@@ -90,6 +94,8 @@ governance:
       - blocked_paused_or_abandoned_active_phases_record_control_metadata
       - MEMORY_active_artifacts_match_phase_ledger_active_phase
       - completed_release_trains_have_non_planned_phase_history
+      - document_paths_are_repo_relative_posix_and_match_artifact_location
+      - release_gate_targets_are_configured_before_release_check_is_trusted
       - hotfix_records_align_with_logs_and_filename_convention
       - hotfix_modes_align_between_records_and_logs
       - remediation_history_entries_contain_closeout_validation_metadata
@@ -142,6 +148,8 @@ governance:
   artifact_ownership_contract:
     canonical_owners:
       governance_rules_and_authority_order: AGENTS.yml
+      adoption_profile_and_release_gate_classification: governance-profile.yml
+      architecture_boundary_rule_config: architecture-boundaries.yml
       product_scope_and_phase_catalog: plans/product-spec.yml
       machine_readable_phase_sequence_and_delivery_contracts: plans/build-plan.yml
       active_phase_state_blockers_and_validation_commands: plans/phase-ledger.yml

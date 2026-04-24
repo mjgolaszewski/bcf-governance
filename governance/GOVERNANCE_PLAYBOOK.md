@@ -13,14 +13,17 @@ Use this order when artifacts disagree:
 3. product spec
 4. build plan
 5. phase ledger
-6. `MEMORY.yml`
-7. phase logs
+6. `governance-profile.yml` and `architecture-boundaries.yml`
+7. `MEMORY.yml`
+8. phase logs
 
 `AGENTS.yml` defines how the system works. It should not become a transcript.
 
 ## Canonical Artifacts
 
 - `AGENTS.yml`: governance rules, authority ordering, architecture policy, quality policy.
+- `governance-profile.yml`: selected adoption profile and release gate classification.
+- `architecture-boundaries.yml`: configurable source roots, layer tokens, and AST import rules.
 - `schemas/*.json`: structural contracts for governed YAML artifact shapes.
 - `MEMORY.yml`: stable decisions, environment facts, reusable commands, active artifact pointers.
 - `plans/product-spec.yml`: product scope, positioning, constraints, phase catalog.
@@ -37,12 +40,23 @@ Use this order when artifacts disagree:
 - Behavior or environment contract changes update the spec, build plan, phase ledger, memory, and tests together.
 - Public contracts are preserved by default unless an explicit instruction authorizes a breaking change and the migration note is recorded.
 - Active phase rollover updates `plans/phase-ledger.yml` and `MEMORY.yml` in the same change.
+- `document.path` values must be repo-relative POSIX paths and must exactly match artifact locations.
 - Governance validation should run structural schema checks before semantic cross-artifact checks.
 - Governance changes run semantic validation, not only YAML parsing.
 - Declared phase catalogs in the product spec and build plan must stay aligned.
+- Phase workitems must cover phase-plan deliverables, and phase-log workitem status must stay aligned with the workitem ledger.
 - Completed release trains must retain non-planned governed history for every declared phase they include.
+- Release gates must fail closed until repo-specific commands are wired; placeholder or echo-only gates are not acceptable release evidence.
 - Execution evidence goes in phase logs.
 - Repeated fields need a declared canonical owner.
+
+## Adoption Profiles
+
+- `lite`: use for prototypes or small internal services that need active state, memory, build sequence, and validation without full evidence overhead.
+- `standard`: use for production-bound agent-led work that needs phase plans, workitems, logs, architecture gates, and configured release checks.
+- `regulated`: use when provenance, hotfix reconciliation, security evidence, SBOM/vulnerability checks, or formal release closeout are mandatory.
+
+Start with the smallest profile that matches the risk. Raise the profile when release, audit, security, or team coordination pressure increases.
 
 ## Active Phase Lifecycle
 

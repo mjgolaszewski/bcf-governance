@@ -5,7 +5,7 @@ document:
   version: 1.0.0
   generated_at_utc: "{{DATE}}T00:00:00Z"
   status: active
-  path: "{{REPO_ROOT}}/MEMORY.yml"
+  path: MEMORY.yml
 regression_shield:
   purpose: keep this file as durable project memory, not as an execution transcript
   invariants:
@@ -57,7 +57,8 @@ environment_facts:
     active_workitem_ledger: plans/phase-01-workitems.yml
     active_phase_log: phases/phase-01-log.yml
 known_constraints:
-  - replace placeholder architecture and release commands before first release gate
+  - replace fail-closed release command placeholders before first release gate
+  - update architecture-boundaries.yml when source roots or layer names differ from the starter layout
 reusable_commands:
   - make governance-validate
   - make architecture-test
@@ -68,6 +69,8 @@ reusable_commands:
 references:
   governance:
     - AGENTS.yml
+    - governance-profile.yml
+    - architecture-boundaries.yml
     - schemas/
     - plans/phase-ledger.yml
     - docs/OPERATIONS.md

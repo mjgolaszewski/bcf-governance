@@ -1,0 +1,78 @@
+document:
+  kind: governance_profile
+  name: "{{PROJECT_NAME}} Governance Profile"
+  id: "{{PROJECT_ID}}-governance-profile"
+  version: 1.0.0
+  generated_at_utc: "{{DATE}}T00:00:00Z"
+  status: active
+  path: governance-profile.yml
+profile:
+  selected: standard
+  rationale: balanced governance for agent-led delivery without regulated evidence overhead
+  available_profiles:
+    - name: lite
+      use_when: small internal service, prototype, or single-agent delivery lane
+      required_artifacts:
+        - AGENTS.yml
+        - MEMORY.yml
+        - plans/product-spec.yml
+        - plans/build-plan.yml
+        - plans/phase-ledger.yml
+        - scripts/validate_governance_yaml.py
+    - name: standard
+      use_when: production-bound project with phase evidence, workitems, and architecture gates
+      required_artifacts:
+        - AGENTS.yml
+        - MEMORY.yml
+        - governance-profile.yml
+        - plans/product-spec.yml
+        - plans/build-plan.yml
+        - plans/phase-ledger.yml
+        - plans/phase-NN-plan.yml
+        - plans/phase-NN-workitems.yml
+        - phases/phase-NN-log.yml
+        - backend/tests/architecture/
+        - scripts/validate_governance_yaml.py
+        - scripts/scaffold_governance_artifacts.py
+    - name: regulated
+      use_when: release evidence, provenance, security artifacts, and hotfix reconciliation are mandatory
+      required_artifacts:
+        - AGENTS.yml
+        - MEMORY.yml
+        - governance-profile.yml
+        - plans/product-spec.yml
+        - plans/build-plan.yml
+        - plans/phase-ledger.yml
+        - plans/phase-NN-plan.yml
+        - plans/phase-NN-workitems.yml
+        - phases/phase-NN-log.yml
+        - phases/phase-NN-hotfixNN.yml
+        - governance/MODEL_RISK_AND_PROVENANCE.md
+        - governance/HOTFIX_LANE.md
+        - SBOM or vulnerability scan evidence
+release_gate_profile:
+  gates:
+    governance_validate:
+      target: governance-validate
+      status: required
+      rationale: governed YAML must pass schema, semantic, path, and placeholder validation
+    architecture_test:
+      target: architecture-test
+      status: required
+      rationale: architecture boundaries must be executable, not prose-only
+    lint:
+      target: lint
+      status: required
+      rationale: repository lint rules must be wired before release-check is trusted
+    typecheck:
+      target: typecheck
+      status: required
+      rationale: type or static analysis must be wired before release-check is trusted
+    test:
+      target: test
+      status: required
+      rationale: unit and integration tests for touched scope must be wired before release-check is trusted
+    contract_test:
+      target: contract-test
+      status: required
+      rationale: public contract and adapter behavior checks must be explicit or marked not_applicable with rationale

@@ -52,6 +52,10 @@ def _write_yaml(path: Path, payload: dict[str, Any], *, force: bool) -> None:
     path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
 
 
+def _repo_relative_path(repo_root: Path, path: Path) -> str:
+    return path.relative_to(repo_root).as_posix()
+
+
 def scaffold_phase_artifacts(
     *,
     repo_root: Path,
@@ -81,7 +85,7 @@ def scaffold_phase_artifacts(
             "version": "1.0.0",
             "generated_at_utc": f"{date}T00:00:00Z",
             "status": "planned",
-            "path": str(plan_path),
+            "path": _repo_relative_path(repo_root, plan_path),
         },
         "phase": {
             "id": phase_id,
@@ -137,7 +141,7 @@ def scaffold_phase_artifacts(
             "version": "1.0.0",
             "generated_at_utc": f"{date}T00:00:00Z",
             "status": "planned",
-            "path": str(workitems_path),
+            "path": _repo_relative_path(repo_root, workitems_path),
             "phase_id": phase_id,
         },
         "workitems": workitem_entries,
@@ -151,7 +155,7 @@ def scaffold_phase_artifacts(
             "version": "1.0.0",
             "generated_at_utc": f"{date}T00:00:00Z",
             "status": "planned",
-            "path": str(log_path),
+            "path": _repo_relative_path(repo_root, log_path),
         },
         "phase": {"id": phase_id, "build_block": build_block},
         "summary": {
@@ -205,7 +209,7 @@ def scaffold_hotfix_log(
             "version": "1.0.0",
             "generated_at_utc": f"{date}T00:00:00Z",
             "status": "planned",
-            "path": str(log_path),
+            "path": _repo_relative_path(repo_root, log_path),
         },
         "hotfix": {
             "id": hotfix_id,

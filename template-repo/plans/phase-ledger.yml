@@ -5,7 +5,7 @@ document:
   version: 1.0.0
   generated_at_utc: "{{DATE}}T00:00:00Z"
   status: active_phase_planned
-  path: "{{REPO_ROOT}}/plans/phase-ledger.yml"
+  path: plans/phase-ledger.yml
 build_plan_mandate:
   format: yaml
   required_fields:

@@ -44,9 +44,20 @@ Use this as the default feature-local shape when the repo does not already defin
 
 Commands and queries are operation kinds, not required directory names. Repos may model them in separate modules or as clearly named operations inside `use_case.py`.
 
-## Template Rule Set
+## Configurable Rule Set
 
-Adapt the rules to the target stack:
+The starter rules live in `architecture-boundaries.yml`. Adapt that file to the target stack before treating `make architecture-test` as release evidence.
+
+The config declares:
+
+- `source_roots`: repo-relative roots scanned for Python files.
+- `layers`: named boundary layers.
+- `path_tokens`: directory names that identify each layer.
+- `forbidden_import_prefixes`: framework, client, or persistence imports denied in that layer.
+- `forbidden_layer_imports`: layer names this layer must not import.
+- `forbidden_import_names`: specific imported symbols denied in that layer.
+
+The default policy encodes these rules:
 
 - domain code must not import HTTP frameworks, database clients, or cloud SDKs
 - commands and queries must not import HTTP frameworks, request objects, or infrastructure clients directly
@@ -71,4 +82,4 @@ Recommended lanes:
 - contract tests at public API boundaries
 - fixtures that exercise real code paths rather than no-op green checks
 
-The included `template-repo/backend/tests/architecture/test_boundaries_ast.py` is a starter skeleton for the CQRS-lite with strict ports layout.
+The included `template-repo/backend/tests/architecture/test_boundaries_ast.py` is a config-driven starter skeleton for the CQRS-lite with strict ports layout. It defaults to `backend/src`, but reads `architecture-boundaries.yml` so non-default source roots and layer names do not require editing the test code first.

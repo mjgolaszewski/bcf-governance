@@ -5,7 +5,7 @@ document:
   version: 1.0.0
   generated_at_utc: "{{DATE}}T00:00:00Z"
   status: active
-  path: "{{REPO_ROOT}}/plans/build-plan.yml"
+  path: plans/build-plan.yml
 planning_contract:
   format: yaml
   mandatory_properties:

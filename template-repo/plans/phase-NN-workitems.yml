@@ -5,7 +5,7 @@ document:
   version: 1.0.0
   generated_at_utc: "{{DATE}}T00:00:00Z"
   status: planned
-  path: "{{REPO_ROOT}}/plans/phase-{{PHASE_NUMBER}}-workitems.yml"
+  path: plans/phase-{{PHASE_NUMBER}}-workitems.yml
   phase_id: "{{ACTIVE_PHASE_ID}}"
 workitems:
   - id: "{{ACTIVE_PHASE_ID}}-P0-01"

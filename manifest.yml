@@ -10,6 +10,8 @@ source_repo:
   governance_sources:
     - AGENTS.yml
     - MEMORY.yml
+    - governance-profile.yml
+    - architecture-boundaries.yml
     - plans/build-plan.yml
     - plans/phase-ledger.yml
     - scripts/validate_governance_yaml.py
@@ -19,6 +21,8 @@ source_repo:
 pack_contents:
   template_repo:
     - root governance templates
+    - profile and release-gate classification template
+    - configurable architecture boundary rule template
     - governed artifact structural schemas
     - explicit governance dependency requirements
     - phase planning templates
@@ -37,8 +41,8 @@ pack_contents:
     - model risk and provenance
     - AI drift review
   scripts:
-    - generic phase and hotfix scaffold helper
-    - generic governance YAML validator with structural and semantic checks, compact json output, and instantiated placeholder detection
+    - generic phase and hotfix scaffold helper that emits repo-relative document paths
+    - generic governance YAML validator with structural and semantic checks, compact json output, release-gate placeholder detection, path portability checks, and instantiated placeholder detection
 tracking:
   intended_location: artifacts/
   tracked_by_git: false
