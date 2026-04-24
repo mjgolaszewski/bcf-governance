@@ -37,7 +37,11 @@ Adapt these to the target stack:
 ## Gate Policy
 
 - A phase can be complete only for its declared scope.
+- Contract-first sequencing is the default: contracts, ports, tests, use case, router, and infrastructure only as required.
+- Public contracts are preserved by default; breaking changes require explicit authorization, a migration note, and updated contract tests.
 - A release candidate should run the broadest gate that covers touched surfaces.
+- Router contract tests should cover request validation, response schemas, and HTTP status mapping when public behavior changes.
+- Repository or adapter contract tests should run when ports, query semantics, persistence mappings, or transaction behavior change.
 - Security scans should publish machine-readable artifacts.
 - Runtime smoke checks should run outside the dev-only dependency environment.
 - Generated clients or SDKs should be checked for drift when API contracts change.

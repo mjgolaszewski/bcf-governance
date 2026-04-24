@@ -27,10 +27,17 @@ planning_inputs:
     - MEMORY.yml
     - plans/phase-ledger.yml
 global_delivery_rules:
+  - change units default to the smallest valid vertical slice with low blast radius
   - every behavior change must update specs, plans, MEMORY, and tests together
+  - preserve public contracts unless an explicit instruction and migration note authorize a breaking change
   - release gates must run in a declared runtime environment
   - architecture boundaries must be encoded in tests, not left as convention-only prose
+  - backend delivery defaults to CQRS-lite with strict ports unless repo governance changes it explicitly
+  - backend delivery follows contract-first sequencing: contracts, ports, tests, use case, router, and infrastructure only as required
   - governance changes must pass semantic validation, not only YAML parse checks
+  - governed build artifacts must follow the template-pack naming and validation conventions
+  - completed release trains must preserve governed phase history for each declared phase
+  - new abstractions require proven reuse across at least two real call sites unless explicitly authorized
   - emergency red-CI and release-blocking fixes must use the governed hotfix lane
 global_gates:
   - id: G1

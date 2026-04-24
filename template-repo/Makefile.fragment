@@ -2,7 +2,7 @@ SHELL := /bin/bash
 PYTHON ?= python3
 PYTEST ?= $(PYTHON) -m pytest
 
-.PHONY: governance-deps governance-validate governance-scaffold-help architecture-test lint typecheck test release-check
+.PHONY: governance-deps governance-validate governance-scaffold-help architecture-test lint typecheck test contract-test release-check
 
 governance-deps:
 	$(PYTHON) -m pip install -r requirements-governance.txt
@@ -25,9 +25,13 @@ typecheck:
 test:
 	@echo "replace with repo test commands"
 
+contract-test:
+	@echo "replace with repo contract-test commands"
+
 release-check:
 	$(MAKE) governance-validate
 	$(MAKE) architecture-test
 	$(MAKE) lint
 	$(MAKE) typecheck
+	$(MAKE) contract-test
 	$(MAKE) test

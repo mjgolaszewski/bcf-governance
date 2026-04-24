@@ -33,6 +33,8 @@ python3 scripts/scaffold_governance_artifacts.py phase --help
 python3 scripts/scaffold_governance_artifacts.py hotfix --help
 ```
 
+Generate real hotfix logs with the scaffold helper rather than copying the template example file; the governed filename convention is `phases/phase-NN-hotfix##.yml`.
+
 ## Runtime Diagnostics
 
 Document service health, release metadata, metrics, traces, logs, and operator-safe diagnostic endpoints here.

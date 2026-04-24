@@ -1,9 +1,9 @@
 document:
   kind: template_governance_pack_manifest
   name: Swerbo-Inspired Template And Governance Pack
-  id: bcf-governace
+  id: bcf-governance
   version: 1.0.0
-  generated_at_utc: "2026-04-11T00:00:00Z"
+  generated_at_utc: "2026-04-24T00:00:00Z"
   status: generated_untracked_artifact
 source_repo:
   repo_root: /docker/sse
@@ -21,13 +21,14 @@ pack_contents:
     - root governance templates
     - explicit governance dependency requirements
     - phase planning templates
-    - hotfix log template
+    - governed phase-numbered hotfix log template
     - operations template
     - Makefile target fragment
     - GitHub Actions governance workflow template
-    - architecture test skeleton
+    - CQRS-lite architecture test skeleton
   governance_playbooks:
     - governance operating model
+    - agent task contract
     - artifact ownership
     - release gates
     - architecture boundaries

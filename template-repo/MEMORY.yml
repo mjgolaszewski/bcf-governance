@@ -33,6 +33,7 @@ stable_decisions:
     hotfix_lane: governed_and_machine_readable
     artifact_ownership: canonical_owner_map_recorded_in_AGENTS
     phase_rollover: phase_ledger_and_MEMORY_must_move_together
+    build_artifact_convention: follow_local_template_pack_shapes_and_naming
 environment_facts:
   current_repo_state:
     - initial governance template installed on {{DATE}}

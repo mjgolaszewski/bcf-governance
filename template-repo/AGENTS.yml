@@ -36,6 +36,9 @@ governance:
       - plans/*.yml
       - phases/*.yml
     note: audit metadata and regression-shield intent live as YAML data, not comment headers
+    template_pack_alignment:
+      - governed build artifacts follow the naming, ownership, and validation conventions established by the local template pack
+      - any new phase or hotfix artifacts must remain scaffold-compatible with scripts/scaffold_governance_artifacts.py
   build_plan_contract:
     format: yaml
     required_properties:
@@ -66,8 +69,13 @@ governance:
     required_checks:
       - governed_yaml_parses
       - active_phase_paths_exist
+      - declared_phase_catalogs_align_between_product_spec_and_build_plan
+      - declared_phase_artifacts_exist_for_every_build_plan_phase
       - active_phase_ids_align_across_plan_workitems_and_log
       - MEMORY_active_artifacts_match_phase_ledger_active_phase
+      - completed_release_trains_have_non_planned_phase_history
+      - hotfix_records_align_with_logs_and_filename_convention
+      - remediation_history_entries_contain_closeout_validation_metadata
       - verified_or_closed_active_phase_logs_contain_required_closeout_fields
       - instantiated_governed_artifacts_have_no_unresolved_placeholders
   hotfix_lane_contract:
@@ -90,6 +98,17 @@ governance:
         - remediated_in_phase
         - hotfix_log
         - canonical_artifacts
+      remediation_history_required_fields:
+        - id
+        - recorded_at_utc
+        - action
+        - remediated_in_phase
+        - hotfix_log
+        - canonical_artifacts
+        - local_validation
+      filename_convention:
+        - hotfix log filenames use the stem phase-NN-hotfix##
+        - the phase number comes from hotfix.related_phase_id
   artifact_ownership_contract:
     canonical_owners:
       governance_rules_and_authority_order: AGENTS.yml
@@ -100,6 +119,7 @@ governance:
     duplication_rules:
       - repeated_fields_must_have_a_declared_canonical_owner
       - mirrored_or_derived_fields_must_update_in_the_same_change_as_their_canonical_source
+      - governed build artifacts retain the template-pack ownership boundaries unless this file changes them explicitly
   phase_transition_contract:
     rollover_rules:
       - activating_a_successor_phase_must_update_plans_phase_ledger_yml_and_MEMORY_yml_in_the_same_change
@@ -112,25 +132,135 @@ runtime_surfaces:
   rules:
     - CI must not rely on ambient workstation state
     - runtime evidence must come from the environment declared by the phase
+prime_directive:
+  statement: agents implement changes inside the smallest valid vertical slice, preserve public contracts unless explicitly instructed, and prove behavior through tests
+  forbidden_default_behavior:
+    - broad_refactors_without_explicit_authorization
+    - public_contract_changes_without_migration_note_and_tests
+    - new_architectural_patterns_without_governance_updates
+    - business_logic_in_routers_repositories_or_adapters
+    - generic_helpers_without_two_real_call_sites
 engineering:
   architecture:
-    style: strict_layered_or_hexagonal_boundaries
+    style: cqrs_lite_with_strict_ports
     backend_code_root: backend/src
     frontend_code_root: frontend/src
+    slice_strategy: contract_first_vertical_slice
+    operation_model:
+      command: mutation_use_case
+      query: read_use_case
+      handler: orchestration_only
+      domain: business_rules
+      port_or_repository: persistence_contract
+      infrastructure: sqlalchemy_and_external_systems
+      router: http_translation_only
     enforcement:
       - ast_enforced_import_boundaries
+      - command_and_query_use_cases_kept_separate
+      - handlers_remain_orchestration_only
       - framework_free_domain_model_where_applicable
-      - centralized_dispatch_or_orchestration_primitives
+      - persistence_contracts_live_in_ports_or_repositories
+      - routers_remain_http_translation_only
       - dry_adapter_composition
   backend_boundary_rules:
-    - domain layer stays framework-free and side-effect free
-    - application layer coordinates use cases without HTTP or persistence client imports
-    - interfaces expose transport contracts and delegate to application handlers
-    - infrastructure adapters own persistence, cache, telemetry, and external service integration
+    - commands model mutation use cases
+    - queries model read use cases
+    - handlers orchestrate use cases and do not own business rules, persistence details, or HTTP translation
+    - domain layer owns business rules and stays framework-free and side-effect free
+    - repository or port abstractions define persistence contracts without SQLAlchemy or external client details
+    - infrastructure adapters own SQLAlchemy, cache, telemetry, and external service integration behind ports
+    - routers translate HTTP to application inputs and outputs only
   frontend_boundary_rules:
     - presentation components do not call HTTP directly
     - route modules stay thin and delegate orchestration
     - API DTOs are mapped at the boundary before UI consumption
+contract_first_rules:
+  required_sequence:
+    - define_or_update_contract_models
+    - define_or_update_ports
+    - add_or_update_tests
+    - implement_use_case_or_handler
+    - wire_router
+    - update_infrastructure_adapter_only_if_required
+  public_contract_policy:
+    preserve_public_contracts_by_default: true
+    backward_compatible_changes_allowed: true
+    breaking_changes_require:
+      - explicit_instruction
+      - migration_note
+      - versioned_route_or_compatibility_shim
+      - updated_router_contract_tests
+testing_governance:
+  required_for_every_change:
+    - documentation_only_changes_are_the_only_default_exception_to_test_updates
+    - all_affected_tests_pass_before_completion
+    - tests_assert_behavior_not_implementation_trivia
+  command_tests_should_cover_when_applicable:
+    - successful_mutation
+    - authorization_or_policy_failure
+    - domain_invariant_failure
+    - idempotency_or_safe_retry_behavior
+    - persistence_calls_through_ports
+  query_tests_should_cover_when_applicable:
+    - successful_read
+    - empty_result_behavior
+    - filtering_sorting_or_pagination_rules
+    - no_mutation_or_external_side_effect
+  router_tests_should_cover_when_applicable:
+    - http_status_mapping
+    - request_validation
+    - response_schema
+    - authentication_or_authorization_dependency_behavior
+transaction_policy:
+  owner: use_case_or_handler
+  rules:
+    - use_cases_or_handlers_coordinate_transaction_boundaries
+    - repositories_do_not_commit_unless_explicitly_designed_as_unit_of_work_boundaries
+    - external_side_effects_must_not_occur_before_irreversible_commit_unless_idempotent
+    - retries_require_idempotency_keys_or_safe_retry_semantics
+error_policy:
+  rules:
+    - domain_errors_live_in_domain_or_feature_local_error_modules
+    - use_cases_or_handlers_return_or_raise_typed_application_errors
+    - routers_map_typed_errors_to_http_status_codes
+    - raw_infrastructure_errors_must_not_cross_http_boundaries
+security_policy:
+  rules:
+    - authorization_must_occur_before_mutation
+    - agents_must_not_weaken_auth_to_make_tests_pass
+    - agents_must_not_bypass_policy_checks
+    - agents_must_not_remove_validation_without_explicit_instruction
+    - secrets_must_not_appear_in_code_logs_or_non_fake_tests
+persistence_policy:
+  rules:
+    - use_cases_depend_on_ports_or_repository_contracts
+    - sqlalchemy_models_must_not_leak_into_domain_or_router_responses
+    - adapters_translate_persistence_models_to_domain_or_contract_models
+    - migrations_require_explicit_escalation_and_rollback_consideration
+api_policy:
+  rules:
+    - router_functions_must_be_thin
+    - router_functions_validate_http_input_and_call_one_use_case_or_handler
+    - router_functions_map_typed_errors_to_http_responses
+    - responses_use_declared_contract_models
+    - orm_objects_must_not_be_returned_directly
+review_gate:
+  required_before_merge:
+    - changed_files_are_limited_to_the_authorized_slice_or_have_explicit_escalation
+    - tests_were_added_or_updated_when_behavior_changed
+    - all_relevant_tests_pass
+    - no_unauthorized_public_contract_changes
+    - no_forbidden_dependency_direction_violations
+    - no_new_generic_utilities_without_justification
+    - no_hidden_auth_or_security_weakening
+    - no_unrelated_formatting_churn
+  automatic_rejection_triggers:
+    - router_contains_business_logic
+    - domain_imports_infrastructure
+    - use_case_or_handler_imports_fastapi_request_or_response_objects
+    - repository_decides_authorization
+    - public_schema_changed_without_migration_note
+    - tests_removed_instead_of_fixed
 quality:
   required_suites:
     - governance_validation

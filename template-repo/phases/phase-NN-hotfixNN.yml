@@ -5,10 +5,11 @@ document:
   version: 1.0.0
   generated_at_utc: "{{DATE}}T00:00:00Z"
   status: planned
-  path: "{{REPO_ROOT}}/phases/{{HOTFIX_ID}}.yml"
+  path: "{{REPO_ROOT}}/phases/phase-{{PHASE_NUMBER}}-hotfix{{HOTFIX_NUMBER}}.yml"
 hotfix:
   id: "{{HOTFIX_ID}}"
   related_phase_id: "{{RELATED_PHASE_ID}}"
+  hotfix_number: "{{HOTFIX_NUMBER}}"
   summary: "{{HOTFIX_SUMMARY}}"
 execution_evidence:
   planned_commands:

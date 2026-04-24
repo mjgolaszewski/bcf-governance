@@ -19,6 +19,24 @@ def _phase_stem(phase_id: str) -> str:
     return f"phase-{_phase_number(phase_id):02d}"
 
 
+def _hotfix_number(hotfix_number: int | str) -> int:
+    try:
+        number = int(hotfix_number)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"invalid hotfix number {hotfix_number!r}; expected a positive integer"
+        ) from exc
+    if number <= 0:
+        raise ValueError(
+            f"invalid hotfix number {hotfix_number!r}; expected a positive integer"
+        )
+    return number
+
+
+def _hotfix_stem(related_phase_id: str, hotfix_number: int | str) -> str:
+    return f"{_phase_stem(related_phase_id)}-hotfix{_hotfix_number(hotfix_number):02d}"
+
+
 def _write_yaml(path: Path, payload: dict[str, Any], *, force: bool) -> None:
     if path.exists() and not force:
         raise FileExistsError(f"{path} already exists; pass --force to overwrite")
@@ -161,13 +179,14 @@ def scaffold_hotfix_log(
     repo_root: Path,
     project_id: str,
     hotfix_id: str,
+    hotfix_number: int,
     summary: str,
     related_phase_id: str,
     date: str,
     validation_commands: list[str],
     force: bool,
 ) -> Path:
-    hotfix_stem = hotfix_id.lower().replace("_", "-")
+    hotfix_stem = _hotfix_stem(related_phase_id, hotfix_number)
     log_path = repo_root / "phases" / f"{hotfix_stem}.yml"
     payload = {
         "document": {
@@ -182,6 +201,7 @@ def scaffold_hotfix_log(
         "hotfix": {
             "id": hotfix_id,
             "related_phase_id": related_phase_id,
+            "hotfix_number": hotfix_number,
             "summary": summary,
         },
         "execution_evidence": {
@@ -222,6 +242,7 @@ def _parser() -> argparse.ArgumentParser:
 
     hotfix = subparsers.add_parser("hotfix")
     hotfix.add_argument("--hotfix-id", required=True)
+    hotfix.add_argument("--hotfix-number", type=int, required=True)
     hotfix.add_argument("--summary", required=True)
     hotfix.add_argument("--related-phase-id", required=True)
     hotfix.add_argument("--date", required=True)
@@ -255,6 +276,7 @@ def main() -> None:
             repo_root=repo_root,
             project_id=args.project_id,
             hotfix_id=args.hotfix_id,
+            hotfix_number=args.hotfix_number,
             summary=args.summary,
             related_phase_id=args.related_phase_id,
             date=args.date,

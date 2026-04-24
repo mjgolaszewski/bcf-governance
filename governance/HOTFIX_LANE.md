@@ -22,6 +22,11 @@ Do not use it to bypass normal planning for ordinary feature work.
 - validation command evidence
 - reconciliation note explaining whether canonical phase artifacts changed
 
+Hotfix execution logs should be named from the last landed phase plus the hotfix number:
+
+- `phases/phase-NN-hotfix##.yml`
+- the phase portion comes from `hotfix.related_phase_id`
+
 ## Required Hotfix Record Fields
 
 - `id`
@@ -32,6 +37,21 @@ Do not use it to bypass normal planning for ordinary feature work.
 - `remediated_in_phase`
 - `hotfix_log`
 - `canonical_artifacts`
+
+## Required Remediation History Fields
+
+- `id`
+- `recorded_at_utc`
+- `action`
+- `remediated_in_phase`
+- `hotfix_log`
+- `canonical_artifacts`
+- `local_validation`
+
+Optional when remote CI confirmation exists:
+
+- `remote_validation_completed.commit`
+- `remote_validation_completed.workflows`
 
 ## Closeout Rules
 

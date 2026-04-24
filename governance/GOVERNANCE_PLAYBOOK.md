@@ -28,12 +28,17 @@ Use this order when artifacts disagree:
 - `plans/phase-NN-plan.yml`: scoped phase contract.
 - `plans/phase-NN-workitems.yml`: phase workitem ledger.
 - `phases/phase-NN-log.yml`: execution evidence and closeout.
+- `phases/phase-NN-hotfix##.yml`: governed hotfix execution evidence tied to the last landed phase.
 
 ## Change Rules
 
+- Default to the smallest valid vertical slice rather than broad cross-cutting refactors.
 - Behavior or environment contract changes update the spec, build plan, phase ledger, memory, and tests together.
+- Public contracts are preserved by default unless an explicit instruction authorizes a breaking change and the migration note is recorded.
 - Active phase rollover updates `plans/phase-ledger.yml` and `MEMORY.yml` in the same change.
 - Governance changes run semantic validation, not only YAML parsing.
+- Declared phase catalogs in the product spec and build plan must stay aligned.
+- Completed release trains must retain non-planned governed history for every declared phase they include.
 - Execution evidence goes in phase logs.
 - Repeated fields need a declared canonical owner.
 
