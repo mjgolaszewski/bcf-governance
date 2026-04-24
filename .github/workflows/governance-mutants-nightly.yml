@@ -1,0 +1,22 @@
+name: governance-mutants-nightly
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 3 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  high-value-mutants:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install governance dependencies
+        run: python -m pip install -r requirements-governance.txt
+      - name: Run high-value validator mutants
+        run: python .github/scripts/run_validator_mutants.py --profile high-value

@@ -1,0 +1,52 @@
+name: governance-pack
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  pack-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install governance dependencies
+        run: python -m pip install -r requirements-governance.txt
+      - name: Compile governance scripts and tests
+        run: |
+          python -m py_compile \
+            scripts/validate_governance_yaml.py \
+            scripts/scaffold_governance_artifacts.py \
+            template-repo/scripts/validate_governance_yaml.py \
+            template-repo/scripts/scaffold_governance_artifacts.py \
+            template-repo/backend/tests/architecture/test_boundaries_ast.py \
+            tests/test_validate_governance_yaml.py \
+            tests/test_scaffold_governance_artifacts.py \
+            tests/test_pack_sync.py \
+            tests/test_template_architecture_gate.py \
+            .github/scripts/run_validator_mutants.py
+      - name: Run governance pack tests
+        run: pytest tests
+      - name: Validate template repo from root script
+        run: python scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders
+      - name: Validate template repo from template script
+        run: python template-repo/scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders
+
+  ast-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install governance dependencies
+        run: python -m pip install -r requirements-governance.txt
+      - name: Run template architecture gate regression tests
+        run: pytest tests/test_template_architecture_gate.py

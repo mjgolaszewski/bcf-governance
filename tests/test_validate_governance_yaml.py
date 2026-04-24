@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -15,7 +16,12 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[1]
 FIXTURES_ROOT = REPO_ROOT / "tests" / "fixtures"
 TEMPLATE_REPO_ROOT = REPO_ROOT / "template-repo"
-VALIDATOR_MODULE_PATH = REPO_ROOT / "scripts" / "validate_governance_yaml.py"
+VALIDATOR_MODULE_PATH = Path(
+    os.environ.get(
+        "BCF_VALIDATOR_MODULE_PATH",
+        str(REPO_ROOT / "scripts" / "validate_governance_yaml.py"),
+    )
+).resolve()
 
 
 def _load_validator_module() -> Any:
@@ -157,6 +163,15 @@ def _instantiate_fixture_repo(tmp_path: Path, fixture_name: str) -> Path:
     return repo_root
 
 
+def _run_validator_command(*args: str, check: bool) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(VALIDATOR_MODULE_PATH), *args],
+        check=check,
+        capture_output=True,
+        text=True,
+    )
+
+
 def test_validate_repo_root_accepts_valid_fixture(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
     validate_repo_root(repo_root)
@@ -164,19 +179,13 @@ def test_validate_repo_root_accepts_valid_fixture(tmp_path: Path) -> None:
 
 def test_validate_repo_root_emits_compact_json_output(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(VALIDATOR_MODULE_PATH),
-            "--repo-root",
-            str(repo_root),
-            "--format",
-            "json",
-            "--compact",
-        ],
+    result = _run_validator_command(
+        "--repo-root",
+        str(repo_root),
+        "--format",
+        "json",
+        "--compact",
         check=True,
-        capture_output=True,
-        text=True,
     )
     payload = json.loads(result.stdout)
     assert payload == {
@@ -184,6 +193,89 @@ def test_validate_repo_root_emits_compact_json_output(tmp_path: Path) -> None:
         "checks": {"placeholders": "pass", "schema": "pass", "semantic": "pass"},
         "status": "pass",
     }
+
+
+def test_validate_template_repo_emits_compact_json_output_with_allowed_placeholders() -> None:
+    result = _run_validator_command(
+        "--repo-root",
+        str(TEMPLATE_REPO_ROOT),
+        "--allow-placeholders",
+        "--format",
+        "json",
+        "--compact",
+        check=True,
+    )
+    payload = json.loads(result.stdout)
+    assert payload == {
+        "active_phase": "P01",
+        "checks": {"placeholders": "skipped", "schema": "pass", "semantic": "pass"},
+        "status": "pass",
+    }
+
+
+def test_validate_repo_root_emits_compact_json_output_for_schema_failure(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "missing_schema_field")
+    result = _run_validator_command(
+        "--repo-root",
+        str(repo_root),
+        "--format",
+        "json",
+        "--compact",
+        check=False,
+    )
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "fail"
+    assert payload["active_phase"] == "P01"
+    assert payload["checks"] == {
+        "placeholders": "not_run",
+        "schema": "fail",
+        "semantic": "not_run",
+    }
+    assert "schemas/build-plan.schema.json" in payload["error"]
+
+
+def test_validate_repo_root_emits_compact_json_output_for_semantic_failure(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "bad_hotfix_mode")
+    result = _run_validator_command(
+        "--repo-root",
+        str(repo_root),
+        "--format",
+        "json",
+        "--compact",
+        check=False,
+    )
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "fail"
+    assert payload["active_phase"] == "P01"
+    assert payload["checks"] == {
+        "placeholders": "not_run",
+        "schema": "pass",
+        "semantic": "fail",
+    }
+    assert "hotfix.mode must match phase-ledger hotfix mode full" in payload["error"]
+
+
+def test_validate_template_repo_emits_compact_json_output_for_placeholder_failure() -> None:
+    result = _run_validator_command(
+        "--repo-root",
+        str(TEMPLATE_REPO_ROOT),
+        "--format",
+        "json",
+        "--compact",
+        check=False,
+    )
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "fail"
+    assert payload["active_phase"] == "P01"
+    assert payload["checks"] == {
+        "placeholders": "fail",
+        "schema": "pass",
+        "semantic": "pass",
+    }
+    assert "unresolved template placeholders remain in governed artifacts" in payload["error"]
 
 
 @pytest.mark.parametrize(

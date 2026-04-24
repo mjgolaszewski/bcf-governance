@@ -109,3 +109,9 @@ To sanity-check this uninstantiated template pack before replacing placeholders,
 ```bash
 python3 scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders
 ```
+
+For pack maintenance in this repo itself, the main self-checks are:
+
+- `pytest tests`
+- `python3 .github/scripts/run_validator_mutants.py --profile high-value`
+- `python3 .github/scripts/run_validator_mutants.py --profile full`
