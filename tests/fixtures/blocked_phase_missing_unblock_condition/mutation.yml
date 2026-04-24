@@ -1,0 +1,9 @@
+mutations:
+  - file: plans/phase-ledger.yml
+    op: set
+    path: active_phase.lifecycle_status
+    value: blocked
+  - file: plans/phase-ledger.yml
+    op: set
+    path: active_phase.blocked_reason
+    value: waiting_on_external_dependency

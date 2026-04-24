@@ -1,0 +1,4 @@
+mutations:
+  - file: plans/build-plan.yml
+    op: delete
+    path: document.version

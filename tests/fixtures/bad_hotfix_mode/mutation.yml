@@ -1,0 +1,18 @@
+mutations:
+  - file: plans/phase-ledger.yml
+    op: set
+    path: hotfix_lane.open_records
+    value:
+      - id: HF-001
+        mode: full
+        status: active
+        triggered_by_commits:
+          - abc1234
+        failing_workflows:
+          - ci-enterprise-gate
+        root_cause: hotfix mode mismatch fixture
+        remediated_in_phase: P01
+        hotfix_log: phases/phase-01-hotfix01.yml
+        canonical_artifacts:
+          - plans/phase-ledger.yml
+          - phases/phase-01-hotfix01.yml

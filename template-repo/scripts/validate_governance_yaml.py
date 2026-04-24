@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -37,6 +38,7 @@ ACTIVE_PHASE_LIFECYCLE_STATUSES = {
 }
 COMPLETED_RELEASE_TRAIN_STATUSES = {"completed", "closed", "released"}
 HOTFIX_MODES = {"lite", "full"}
+VALIDATION_OUTPUT_FORMATS = {"text", "json"}
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -131,6 +133,76 @@ def _relative_display(repo_root: Path, path: Path) -> str:
         return str(path.relative_to(repo_root))
     except ValueError:
         return str(path)
+
+
+def _active_phase_id(repo_root: Path) -> str | None:
+    ledger_path = repo_root / "plans" / "phase-ledger.yml"
+    if not ledger_path.exists():
+        return None
+    try:
+        ledger = _load_yaml(ledger_path)
+    except GovernanceValidationError:
+        return None
+    active_phase = ledger.get("active_phase")
+    if not isinstance(active_phase, dict):
+        return None
+    phase_id = active_phase.get("id")
+    return phase_id if isinstance(phase_id, str) and phase_id else None
+
+
+def _classify_failure(error: GovernanceValidationError) -> dict[str, str]:
+    message = str(error)
+    checks = {"schema": "pass", "semantic": "pass", "placeholders": "pass"}
+    if "failed structural schema" in message:
+        checks["schema"] = "fail"
+        checks["semantic"] = "not_run"
+        checks["placeholders"] = "not_run"
+        return checks
+    if "unresolved template placeholders remain" in message:
+        checks["placeholders"] = "fail"
+        return checks
+    checks["semantic"] = "fail"
+    checks["placeholders"] = "not_run"
+    return checks
+
+
+def _success_report(repo_root: Path, *, allow_placeholders: bool) -> dict[str, Any]:
+    return {
+        "status": "pass",
+        "checks": {
+            "schema": "pass",
+            "semantic": "pass",
+            "placeholders": "skipped" if allow_placeholders else "pass",
+        },
+        "active_phase": _active_phase_id(repo_root),
+    }
+
+
+def _failure_report(repo_root: Path, error: GovernanceValidationError) -> dict[str, Any]:
+    return {
+        "status": "fail",
+        "checks": _classify_failure(error),
+        "active_phase": _active_phase_id(repo_root),
+        "error": str(error),
+    }
+
+
+def _emit_output(
+    report: dict[str, Any],
+    *,
+    output_format: str,
+    compact: bool,
+    default_text: str | None = None,
+) -> None:
+    if output_format == "text":
+        if default_text is not None:
+            print(default_text)
+            return
+        print(report["error"], file=sys.stderr)
+        return
+    separators = (",", ":") if compact else None
+    indent = None if compact else 2
+    print(json.dumps(report, indent=indent, separators=separators, sort_keys=True))
 
 
 def _load_schema(
@@ -925,13 +997,39 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Validate governed YAML artifacts.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument(
+        "--format",
+        dest="output_format",
+        choices=sorted(VALIDATION_OUTPUT_FORMATS),
+        default="text",
+        help="Output format for validation results.",
+    )
+    parser.add_argument(
+        "--compact",
+        action="store_true",
+        help="Use compact output formatting when combined with --format json.",
+    )
+    parser.add_argument(
         "--allow-placeholders",
         action="store_true",
         help="Allow unresolved {{PLACEHOLDER}} tokens while validating the uninstantiated template pack.",
     )
     args = parser.parse_args()
-    validate_repo_root(args.repo_root.resolve(), allow_placeholders=args.allow_placeholders)
-    print("governance-yaml-ok")
+    repo_root = args.repo_root.resolve()
+    try:
+        validate_repo_root(repo_root, allow_placeholders=args.allow_placeholders)
+    except GovernanceValidationError as error:
+        _emit_output(
+            _failure_report(repo_root, error),
+            output_format=args.output_format,
+            compact=args.compact,
+        )
+        raise SystemExit(1)
+    _emit_output(
+        _success_report(repo_root, allow_placeholders=args.allow_placeholders),
+        output_format=args.output_format,
+        compact=args.compact,
+        default_text="governance-yaml-ok",
+    )
 
 
 if __name__ == "__main__":

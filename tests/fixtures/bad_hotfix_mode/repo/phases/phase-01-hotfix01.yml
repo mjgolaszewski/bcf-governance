@@ -1,0 +1,24 @@
+document:
+  kind: hotfix_execution_log
+  name: HF-001 Hotfix Log
+  id: demo-phase-01-hotfix01
+  version: 1.0.0
+  generated_at_utc: "2026-04-24T00:00:00Z"
+  status: planned
+  path: /tmp/demo/phases/phase-01-hotfix01.yml
+hotfix:
+  id: HF-001
+  mode: lite
+  related_phase_id: P01
+  hotfix_number: 1
+  summary: semantic mismatch fixture
+execution_evidence:
+  planned_commands:
+    - make governance-validate
+  executed_commands: []
+  notes:
+    - record mismatch
+reconciliation:
+  required_before_closeout:
+    - update canonical artifacts if the hotfix changes behavior or environment contracts
+    - record the hotfix in plans/phase-ledger.yml hotfix_lane

@@ -27,6 +27,7 @@ This pack is based on these repo conventions:
 - backend governance defaults to CQRS-lite with strict ports rather than full CQRS.
 - backend delivery defaults to contract-first vertical slices with public-contract preservation by default.
 - architecture rules are enforced with tests, not prose alone.
+- validator output can stay human-readable by default or switch to compact machine-readable JSON.
 - release gates include governance validation, lint, typecheck, tests, contract checks, security checks, and Docker/runtime checks as appropriate for the repo.
 
 ## Bootstrap A New Repo
@@ -80,6 +81,7 @@ python3 scripts/scaffold_governance_artifacts.py hotfix \
 ```bash
 python3 -m pip install -r requirements-governance.txt
 python3 scripts/validate_governance_yaml.py
+python3 scripts/validate_governance_yaml.py --format json --compact
 ```
 
 Use the scaffold helpers for real `plans/phase-*.yml` and `phases/phase-*.yml` artifacts. The `phase-NN` files in the pack are templates, not long-term working files.
