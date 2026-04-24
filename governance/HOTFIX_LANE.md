@@ -22,6 +22,11 @@ Do not use it to bypass normal planning for ordinary feature work.
 - validation command evidence
 - reconciliation note explaining whether canonical phase artifacts changed
 
+## Modes
+
+- `full`: default mode for default-branch red CI, release-blocking regressions, and security or expiring-external breakage.
+- `lite`: allowed only for a single-commit repair with no public-contract change and no security-scope change.
+
 Hotfix execution logs should be named from the last landed phase plus the hotfix number:
 
 - `phases/phase-NN-hotfix##.yml`
@@ -30,6 +35,7 @@ Hotfix execution logs should be named from the last landed phase plus the hotfix
 ## Required Hotfix Record Fields
 
 - `id`
+- `mode`
 - `status`
 - `triggered_by_commits`
 - `failing_workflows`
@@ -41,6 +47,7 @@ Hotfix execution logs should be named from the last landed phase plus the hotfix
 ## Required Remediation History Fields
 
 - `id`
+- `mode`
 - `recorded_at_utc`
 - `action`
 - `remediated_in_phase`
@@ -57,4 +64,5 @@ Optional when remote CI confirmation exists:
 
 - Narrow scope is allowed.
 - Machine-readable evidence is not optional.
+- Lite mode still records machine-readable evidence; it only narrows when the hotfix lane is appropriate, not whether the lane is governed.
 - Temporary paths must merge back into canonical phase artifacts before closeout if they alter behavior or environment contracts.

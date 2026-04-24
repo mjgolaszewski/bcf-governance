@@ -7,6 +7,7 @@ It is intentionally split into two parts:
 - `template-repo/`: files you can copy into a new repository and replace placeholder values.
 - `governance/`: playbooks that explain the operating model behind the templates.
 - `scripts/`: lightweight helper scripts for scaffolding and validating governed artifacts.
+- `template-repo/schemas/`: structural schemas for governed YAML artifacts.
 
 ## Source Model
 
@@ -18,7 +19,9 @@ This pack is based on these repo conventions:
 - `plans/phase-ledger.yml` is the active-phase pointer and validation command ledger.
 - `plans/phase-NN-plan.yml`, `plans/phase-NN-workitems.yml`, and `phases/phase-NN-log.yml` keep execution scoped and auditable.
 - `scripts/validate_governance_yaml.py` prevents cross-artifact drift.
+- `schemas/*.json` define the structural contract for governed YAML artifacts.
 - `scripts/validate_governance_yaml.py` now checks the full declared phase catalog, completed release-train history coverage, and hotfix log alignment.
+- `scripts/validate_governance_yaml.py` now runs structural schema validation before semantic cross-artifact checks.
 - `scripts/validate_governance_yaml.py` fails on unresolved placeholders in instantiated governed artifacts.
 - `scripts/scaffold_governance_artifacts.py` creates phase and hotfix artifacts with the expected shape and names hotfix logs as `phase-NN-hotfix##.yml`.
 - backend governance defaults to CQRS-lite with strict ports rather than full CQRS.
@@ -26,52 +29,60 @@ This pack is based on these repo conventions:
 - architecture rules are enforced with tests, not prose alone.
 - release gates include governance validation, lint, typecheck, tests, contract checks, security checks, and Docker/runtime checks as appropriate for the repo.
 
-## Instantiate In Another Repo
+## Bootstrap A New Repo
 
-1. Copy `template-repo/` into the target repo root.
-2. Rename template files where needed:
-   - `plans/product-spec.yml` may become the product-specific spec name.
-   - `plans/phase-NN-plan.yml`, `plans/phase-NN-workitems.yml`, and `phases/phase-NN-log.yml` should be replaced by generated phase artifacts.
-   - `phases/phase-NN-hotfixNN.yml` documents the governed hotfix log shape; real hotfix logs should be generated with the scaffold helper so they follow the `phase-NN-hotfix##.yml` convention.
-3. Copy `scripts/` into the target repo.
-4. Replace placeholder tokens:
-   - `{{ACTIVE_PHASE_ID}}`
-   - `{{BACKEND_ARCHITECTURE}}`
-   - `{{BUILD_BLOCK}}`
-   - `{{CURRENT_TRANCHE}}`
-   - `{{DATA_ARCHITECTURE}}`
-   - `{{DATE}}`
-   - `{{DELIVERABLE}}`
-   - `{{DEPENDENCY_PHASE_ID}}`
-   - `{{EXTERNAL_DEPENDENCY}}`
-   - `{{FRONTEND_ARCHITECTURE}}`
-   - `{{HOTFIX_ID}}`
-   - `{{HOTFIX_NUMBER}}`
-   - `{{HOTFIX_SUMMARY}}`
-   - `{{NON_GOAL}}`
-   - `{{OPERATING_CONSTRAINT}}`
-   - `{{PHASE_NUMBER}}`
-   - `{{PHASE_OBJECTIVE}}`
-   - `{{PLANNER}}`
-   - `{{PRODUCT_NAME}}`
-   - `{{PRODUCT_POSITIONING}}`
-   - `{{PROJECT_NAME}}`
-   - `{{PROJECT_ID}}`
-   - `{{RELATED_PHASE_ID}}`
-   - `{{REPO_ROOT}}`
-   - `{{RUNNER_LABELS}}`
-   - `{{TARGET_USER}}`
-   - `{{VALIDATION_COMMAND}}`
-   - `{{WORKSTREAM}}`
-5. Add the `Makefile.fragment` targets to the target repo Makefile.
-6. Run:
+The simplest path is:
+
+1. Clone or copy `bcf-governance` somewhere local.
+2. Copy the contents of `template-repo/` into the new repo root so the repo gets `AGENTS.yml`, `MEMORY.yml`, `plans/`, `phases/`, `schemas/`, `backend/tests/architecture/`, `docs/`, `requirements-governance.txt`, and `Makefile.fragment`.
+3. Copy `scripts/` into the new repo root.
+4. Merge `Makefile.fragment` into the repo Makefile and wire the repo-specific `lint`, `typecheck`, `test`, and `contract-test` commands.
+5. Replace placeholders in the copied governed files. The easiest way to find what is still unresolved is:
+
+```bash
+rg -n '\{\{[A-Z0-9_]+\}\}' .
+```
+
+6. Generate the first active phase artifacts instead of editing the `phase-NN` placeholders by hand:
+
+```bash
+python3 scripts/scaffold_governance_artifacts.py phase \
+  --project-id your-project \
+  --phase-id P01 \
+  --build-block foundation \
+  --objective "governed foundation" \
+  --planner codex \
+  --date 2026-04-24 \
+  --deliverable "initial governed foundation" \
+  --workstream "bootstrap governance pack" \
+  --verification-command "make governance-validate" \
+  --verification-command "make architecture-test" \
+  --verification-command "make release-check"
+```
+
+7. Generate hotfix logs with the helper if urgent repair work appears:
+
+```bash
+python3 scripts/scaffold_governance_artifacts.py hotfix \
+  --project-id your-project \
+  --hotfix-id HF-001 \
+  --mode full \
+  --hotfix-number 1 \
+  --summary "release-blocking fix" \
+  --related-phase-id P01 \
+  --date 2026-04-24 \
+  --validation-command "make governance-validate" \
+  --validation-command "make release-check"
+```
+
+8. Install governance dependencies and run validation before the first governed commit:
 
 ```bash
 python3 -m pip install -r requirements-governance.txt
 python3 scripts/validate_governance_yaml.py
-python3 scripts/scaffold_governance_artifacts.py phase --help
-python3 scripts/scaffold_governance_artifacts.py hotfix --help
 ```
+
+Use the scaffold helpers for real `plans/phase-*.yml` and `phases/phase-*.yml` artifacts. The `phase-NN` files in the pack are templates, not long-term working files.
 
 ## Recommended First Commit Shape
 
@@ -87,6 +98,7 @@ For a new repo, keep the first governance commit small:
 ## Notes
 
 The templates use YAML because the source repo treats governance as machine-readable project state. Keep execution evidence in phase logs, not in `AGENTS.yml`.
+Structural shape lives in `schemas/`; semantic truth lives in `scripts/validate_governance_yaml.py`.
 
 For AI task-scoping guidance that should remain optional rather than validator-enforced, use `governance/AGENT_TASK_CONTRACT.md`.
 

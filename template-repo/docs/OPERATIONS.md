@@ -34,6 +34,7 @@ python3 scripts/scaffold_governance_artifacts.py hotfix --help
 ```
 
 Generate real hotfix logs with the scaffold helper rather than copying the template example file; the governed filename convention is `phases/phase-NN-hotfix##.yml`.
+Governance validation should cover structural schema checks from `schemas/` and semantic cross-artifact consistency checks.
 
 ## Runtime Diagnostics
 

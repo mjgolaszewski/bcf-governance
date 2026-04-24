@@ -33,12 +33,25 @@ governance:
     canonical_machine_readable_artifacts:
       - AGENTS.yml
       - MEMORY.yml
+      - schemas/*.json
       - plans/*.yml
       - phases/*.yml
     note: audit metadata and regression-shield intent live as YAML data, not comment headers
     template_pack_alignment:
       - governed build artifacts follow the naming, ownership, and validation conventions established by the local template pack
       - any new phase or hotfix artifacts must remain scaffold-compatible with scripts/scaffold_governance_artifacts.py
+  structural_schema_contract:
+    root: schemas/
+    required_schemas:
+      - schemas/agents.schema.json
+      - schemas/memory.schema.json
+      - schemas/product-spec.schema.json
+      - schemas/build-plan.schema.json
+      - schemas/phase-ledger.schema.json
+      - schemas/phase-plan.schema.json
+      - schemas/phase-workitems.schema.json
+      - schemas/phase-log.schema.json
+      - schemas/hotfix-log.schema.json
   build_plan_contract:
     format: yaml
     required_properties:
@@ -67,14 +80,18 @@ governance:
   semantic_validation_contract:
     validator: scripts/validate_governance_yaml.py
     required_checks:
+      - governed_artifacts_match_structural_schemas
       - governed_yaml_parses
       - active_phase_paths_exist
       - declared_phase_catalogs_align_between_product_spec_and_build_plan
       - declared_phase_artifacts_exist_for_every_build_plan_phase
       - active_phase_ids_align_across_plan_workitems_and_log
+      - active_phase_lifecycle_status_uses_governed_taxonomy
+      - blocked_paused_or_abandoned_active_phases_record_control_metadata
       - MEMORY_active_artifacts_match_phase_ledger_active_phase
       - completed_release_trains_have_non_planned_phase_history
       - hotfix_records_align_with_logs_and_filename_convention
+      - hotfix_modes_align_between_records_and_logs
       - remediation_history_entries_contain_closeout_validation_metadata
       - verified_or_closed_active_phase_logs_contain_required_closeout_fields
       - instantiated_governed_artifacts_have_no_unresolved_placeholders
@@ -87,10 +104,22 @@ governance:
       - phase_ledger_hotfix_record
       - hotfix_phase_log_entry
       - canonical_artifact_sync_when_behavior_or_environment_contracts_change
+    modes:
+      lite:
+        allowed_when:
+          - single_commit_fix
+          - no_public_contract_change
+          - no_security_scope_change
+      full:
+        required_when:
+          - default_branch_red_ci
+          - release_blocking_regression
+          - security_or_expiring_external_breakage
     machine_assist:
       scaffold_script: scripts/scaffold_governance_artifacts.py
       required_record_fields:
         - id
+        - mode
         - status
         - triggered_by_commits
         - failing_workflows
@@ -100,6 +129,7 @@ governance:
         - canonical_artifacts
       remediation_history_required_fields:
         - id
+        - mode
         - recorded_at_utc
         - action
         - remediated_in_phase
@@ -121,6 +151,15 @@ governance:
       - mirrored_or_derived_fields_must_update_in_the_same_change_as_their_canonical_source
       - governed build artifacts retain the template-pack ownership boundaries unless this file changes them explicitly
   phase_transition_contract:
+    active_phase_lifecycle_taxonomy:
+      planned: phase is defined and ready for execution handoff
+      active: implementation is in flight for the declared scope
+      blocked: execution is stopped until an explicit unblock condition is met
+      paused: execution is intentionally paused and can resume under a declared condition
+      completed: implementation is done and acceptance-critical checks are ready or partially run
+      verified: required checks passed in the required environment
+      closed: verified and reconciled for the touched scope
+      abandoned: phase will not continue and the abandonment reason is recorded
     rollover_rules:
       - activating_a_successor_phase_must_update_plans_phase_ledger_yml_and_MEMORY_yml_in_the_same_change
       - unresolved_outgoing_phase_risks_must_be_recorded_before_successor_activation

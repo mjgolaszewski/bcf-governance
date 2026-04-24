@@ -8,6 +8,8 @@ from typing import Any
 
 import yaml  # type: ignore[import-untyped]
 
+HOTFIX_MODES = {"lite", "full"}
+
 
 def _phase_number(phase_id: str) -> int:
     if not phase_id.startswith("P") or not phase_id[1:].isdigit():
@@ -35,6 +37,12 @@ def _hotfix_number(hotfix_number: int | str) -> int:
 
 def _hotfix_stem(related_phase_id: str, hotfix_number: int | str) -> str:
     return f"{_phase_stem(related_phase_id)}-hotfix{_hotfix_number(hotfix_number):02d}"
+
+
+def _hotfix_mode(mode: str) -> str:
+    if mode not in HOTFIX_MODES:
+        raise ValueError(f"invalid hotfix mode {mode!r}; expected one of {sorted(HOTFIX_MODES)}")
+    return mode
 
 
 def _write_yaml(path: Path, payload: dict[str, Any], *, force: bool) -> None:
@@ -179,6 +187,7 @@ def scaffold_hotfix_log(
     repo_root: Path,
     project_id: str,
     hotfix_id: str,
+    mode: str,
     hotfix_number: int,
     summary: str,
     related_phase_id: str,
@@ -200,6 +209,7 @@ def scaffold_hotfix_log(
         },
         "hotfix": {
             "id": hotfix_id,
+            "mode": _hotfix_mode(mode),
             "related_phase_id": related_phase_id,
             "hotfix_number": hotfix_number,
             "summary": summary,
@@ -242,6 +252,7 @@ def _parser() -> argparse.ArgumentParser:
 
     hotfix = subparsers.add_parser("hotfix")
     hotfix.add_argument("--hotfix-id", required=True)
+    hotfix.add_argument("--mode", choices=sorted(HOTFIX_MODES), default="full")
     hotfix.add_argument("--hotfix-number", type=int, required=True)
     hotfix.add_argument("--summary", required=True)
     hotfix.add_argument("--related-phase-id", required=True)
@@ -276,6 +287,7 @@ def main() -> None:
             repo_root=repo_root,
             project_id=args.project_id,
             hotfix_id=args.hotfix_id,
+            mode=args.mode,
             hotfix_number=args.hotfix_number,
             summary=args.summary,
             related_phase_id=args.related_phase_id,

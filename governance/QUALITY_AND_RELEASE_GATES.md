@@ -37,6 +37,7 @@ Adapt these to the target stack:
 ## Gate Policy
 
 - A phase can be complete only for its declared scope.
+- Governance validation should cover structural schema validation and semantic cross-artifact validation.
 - Contract-first sequencing is the default: contracts, ports, tests, use case, router, and infrastructure only as required.
 - Public contracts are preserved by default; breaking changes require explicit authorization, a migration note, and updated contract tests.
 - A release candidate should run the broadest gate that covers touched surfaces.

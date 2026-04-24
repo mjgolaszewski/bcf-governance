@@ -24,7 +24,8 @@ active_phase:
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: definition_of_ready_complete_pending_execution
+  lifecycle_status: planned
+  owner: "{{PLANNER}}"
   validation_commands:
     - make governance-validate
     - make architecture-test
@@ -34,6 +35,18 @@ active_phase:
     - make release-check
 hotfix_lane:
   scaffold_script: scripts/scaffold_governance_artifacts.py
+  default_mode: full
+  modes:
+    lite:
+      allowed_when:
+        - single_commit_fix
+        - no_public_contract_change
+        - no_security_scope_change
+    full:
+      required_when:
+        - default_branch_red_ci
+        - release_blocking_regression
+        - security_or_expiring_external_breakage
   open_records: []
   remediation_history: []
 operator_requirements_choices_disambiguations:

@@ -8,6 +8,7 @@ document:
   path: "{{REPO_ROOT}}/phases/phase-{{PHASE_NUMBER}}-hotfix{{HOTFIX_NUMBER}}.yml"
 hotfix:
   id: "{{HOTFIX_ID}}"
+  mode: "{{HOTFIX_MODE}}"
   related_phase_id: "{{RELATED_PHASE_ID}}"
   hotfix_number: "{{HOTFIX_NUMBER}}"
   summary: "{{HOTFIX_SUMMARY}}"

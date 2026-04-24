@@ -30,10 +30,21 @@ stable_decisions:
     observability: structured_logs_plus_request_correlation
   governance_process:
     semantic_validator: scripts/validate_governance_yaml.py
+    structural_schema_root: schemas/
     hotfix_lane: governed_and_machine_readable
     artifact_ownership: canonical_owner_map_recorded_in_AGENTS
     phase_rollover: phase_ledger_and_MEMORY_must_move_together
     build_artifact_convention: follow_local_template_pack_shapes_and_naming
+memory_retention_policy:
+  stable_decisions:
+    review_frequency: per_phase_rollover
+  environment_facts:
+    revalidate_after_days: 30
+  reusable_commands:
+    validate_on_release_gate: true
+  stale_entry_handling:
+    - mark_deprecated_before_removal
+    - preserve_replacement_reference_when_available
 environment_facts:
   current_repo_state:
     - initial governance template installed on {{DATE}}
@@ -57,6 +68,7 @@ reusable_commands:
 references:
   governance:
     - AGENTS.yml
+    - schemas/
     - plans/phase-ledger.yml
     - docs/OPERATIONS.md
   product:

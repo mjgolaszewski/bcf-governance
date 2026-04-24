@@ -19,6 +19,7 @@ source_repo:
 pack_contents:
   template_repo:
     - root governance templates
+    - governed artifact structural schemas
     - explicit governance dependency requirements
     - phase planning templates
     - governed phase-numbered hotfix log template
@@ -37,7 +38,7 @@ pack_contents:
     - AI drift review
   scripts:
     - generic phase and hotfix scaffold helper
-    - generic governance YAML validator with instantiated placeholder detection
+    - generic governance YAML validator with structural and semantic checks plus instantiated placeholder detection
 tracking:
   intended_location: artifacts/
   tracked_by_git: false
