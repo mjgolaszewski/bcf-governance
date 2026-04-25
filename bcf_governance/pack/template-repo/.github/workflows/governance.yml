@@ -1,0 +1,21 @@
+name: governance
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  governance:
+    runs-on: [{{RUNNER_LABELS}}]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install validation dependencies
+        run: python3 -m pip install -r requirements-governance.txt
+      - name: Validate governance YAML
+        run: python3 scripts/validate_governance_yaml.py

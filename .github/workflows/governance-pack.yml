@@ -25,21 +25,25 @@ jobs:
             scripts/validate_governance_yaml.py \
             scripts/scaffold_governance_artifacts.py \
             scripts/install_governance_pack.py \
+            scripts/doctor_governance_pack.py \
+            bcf_governance/cli.py \
+            bcf_governance/__init__.py \
             template-repo/scripts/validate_governance_yaml.py \
             template-repo/scripts/scaffold_governance_artifacts.py \
             template-repo/backend/tests/architecture/test_boundaries_ast.py \
             tests/test_validate_governance_yaml.py \
             tests/test_scaffold_governance_artifacts.py \
             tests/test_install_governance_pack.py \
+            tests/test_cli.py \
             tests/test_pack_sync.py \
             tests/test_template_architecture_gate.py \
             .github/scripts/run_validator_mutants.py
       - name: Run governance pack tests
         run: pytest tests
       - name: Validate template repo from root script
-        run: python scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders
+        run: python scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders --allow-release-gate-placeholders
       - name: Validate template repo from template script
-        run: python template-repo/scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders
+        run: python template-repo/scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders --allow-release-gate-placeholders
 
   ast-checks:
     runs-on: ubuntu-latest

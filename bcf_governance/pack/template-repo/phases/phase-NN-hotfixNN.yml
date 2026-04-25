@@ -1,0 +1,24 @@
+document:
+  kind: hotfix_execution_log
+  name: "{{HOTFIX_ID}} Hotfix Log"
+  id: "{{PROJECT_ID}}-{{HOTFIX_ID}}"
+  version: 1.0.0
+  generated_at_utc: "{{DATE}}T00:00:00Z"
+  status: planned
+  path: phases/phase-{{PHASE_NUMBER}}-hotfix{{HOTFIX_NUMBER}}.yml
+hotfix:
+  id: "{{HOTFIX_ID}}"
+  mode: "{{HOTFIX_MODE}}"
+  related_phase_id: "{{RELATED_PHASE_ID}}"
+  hotfix_number: "{{HOTFIX_NUMBER}}"
+  summary: "{{HOTFIX_SUMMARY}}"
+execution_evidence:
+  planned_commands:
+    - "{{VALIDATION_COMMAND}}"
+  executed_commands: []
+  notes:
+    - record failing workflow ids, diagnosed root cause, remediation scope, and merge-back status here
+reconciliation:
+  required_before_closeout:
+    - update canonical phase artifacts if the hotfix changes behavior or environment contracts
+    - record the hotfix in plans/phase-ledger.yml hotfix_lane

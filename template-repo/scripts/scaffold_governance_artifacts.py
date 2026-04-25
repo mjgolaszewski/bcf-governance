@@ -265,8 +265,8 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> None:
-    args = _parser().parse_args()
+def main(argv: list[str] | None = None) -> None:
+    args = _parser().parse_args(argv)
     repo_root = args.repo_root.resolve()
     if args.command == "phase":
         created = scaffold_phase_artifacts(

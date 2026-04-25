@@ -46,7 +46,7 @@ Use this order when artifacts disagree:
 - Declared phase catalogs in the product spec and build plan must stay aligned.
 - Phase workitems must cover phase-plan deliverables, and phase-log workitem status must stay aligned with the workitem ledger.
 - Completed release trains must retain non-planned governed history for every declared phase they include.
-- Release gates must fail closed until repo-specific commands are wired; placeholder or echo-only gates are not acceptable release evidence.
+- Release gates must fail closed until repo-specific commands are wired; placeholder, echo-only, version-probe, or no-op gates are not acceptable release evidence.
 - Execution evidence goes in phase logs.
 - Repeated fields need a declared canonical owner.
 

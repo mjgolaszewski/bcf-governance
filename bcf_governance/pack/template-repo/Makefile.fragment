@@ -1,0 +1,41 @@
+SHELL := /bin/bash
+PYTHON ?= python3
+PYTEST ?= $(PYTHON) -m pytest
+
+.PHONY: governance-deps governance-validate governance-scaffold-help architecture-test lint typecheck test contract-test release-check
+
+governance-deps:
+	$(PYTHON) -m pip install -r requirements-governance.txt
+
+governance-validate:
+	$(PYTHON) scripts/validate_governance_yaml.py
+
+governance-scaffold-help:
+	$(PYTHON) scripts/scaffold_governance_artifacts.py --help
+
+architecture-test:
+	$(PYTEST) backend/tests/architecture
+
+lint:
+	@echo "configure repo-specific lint commands before release-check can pass"
+	@false
+
+typecheck:
+	@echo "configure repo-specific typecheck commands before release-check can pass"
+	@false
+
+test:
+	@echo "configure repo-specific test commands before release-check can pass"
+	@false
+
+contract-test:
+	@echo "configure repo-specific contract-test commands before release-check can pass"
+	@false
+
+release-check:
+	$(MAKE) governance-validate
+	$(MAKE) architecture-test
+	$(MAKE) lint
+	$(MAKE) typecheck
+	$(MAKE) contract-test
+	$(MAKE) test

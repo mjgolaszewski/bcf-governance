@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import importlib.resources
 import re
 import shutil
 import subprocess
@@ -50,7 +51,22 @@ def _pack_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
+def _template_root() -> Path:
+    source_template = _pack_root() / "template-repo"
+    if source_template.exists():
+        return source_template
+    packaged_template = importlib.resources.files("bcf_governance").joinpath("pack", "template-repo")
+    return Path(str(packaged_template))
+
+
 def _load_scaffold_module() -> Any:
+    try:
+        from scripts import scaffold_governance_artifacts
+
+        return scaffold_governance_artifacts
+    except ImportError:
+        pass
+
     scaffold_path = _pack_root() / "scripts" / "scaffold_governance_artifacts.py"
     spec = importlib.util.spec_from_file_location("scaffold_governance_artifacts", scaffold_path)
     if spec is None or spec.loader is None:
@@ -86,8 +102,14 @@ def _parse_gate_command(value: str) -> tuple[str, str]:
     return target, command
 
 
+def _is_template_artifact(path: Path) -> bool:
+    return "__pycache__" not in path.parts and path.suffix != ".pyc"
+
+
 def _iter_template_files(template_root: Path) -> list[Path]:
-    return sorted(path for path in template_root.rglob("*") if path.is_file())
+    return sorted(
+        path for path in template_root.rglob("*") if path.is_file() and _is_template_artifact(path)
+    )
 
 
 def _copy_template(
@@ -282,7 +304,12 @@ def _generate_phase_artifacts(args: argparse.Namespace, target_root: Path) -> di
     )
 
 
-def _run_validation(target_root: Path, *, allow_placeholders: bool) -> subprocess.CompletedProcess[str]:
+def _run_validation(
+    target_root: Path,
+    *,
+    allow_placeholders: bool,
+    allow_release_gate_placeholders: bool,
+) -> subprocess.CompletedProcess[str]:
     command = [
         sys.executable,
         str(target_root / "scripts" / "validate_governance_yaml.py"),
@@ -294,6 +321,8 @@ def _run_validation(target_root: Path, *, allow_placeholders: bool) -> subproces
     ]
     if allow_placeholders:
         command.append("--allow-placeholders")
+    if allow_release_gate_placeholders:
+        command.append("--allow-release-gate-placeholders")
     return subprocess.run(command, capture_output=True, text=True)
 
 
@@ -309,7 +338,7 @@ def install(args: argparse.Namespace) -> InstallResult:
     if not target_root.is_dir():
         raise NotADirectoryError(f"{target_root} is not a directory")
 
-    template_root = _pack_root() / "template-repo"
+    template_root = _template_root()
     copied_files = _copy_template(
         template_root=template_root,
         target_root=target_root,
@@ -328,11 +357,19 @@ def install(args: argparse.Namespace) -> InstallResult:
     strict_output = ""
     bootstrap_output = ""
     if not args.skip_validation:
-        strict_result = _run_validation(target_root, allow_placeholders=False)
+        strict_result = _run_validation(
+            target_root,
+            allow_placeholders=False,
+            allow_release_gate_placeholders=False,
+        )
         strict_validation_passed = strict_result.returncode == 0
         strict_output = (strict_result.stdout or strict_result.stderr).strip()
         if not strict_validation_passed:
-            bootstrap_result = _run_validation(target_root, allow_placeholders=True)
+            bootstrap_result = _run_validation(
+                target_root,
+                allow_placeholders=True,
+                allow_release_gate_placeholders=True,
+            )
             bootstrap_validation_passed = bootstrap_result.returncode == 0
             bootstrap_output = (bootstrap_result.stdout or bootstrap_result.stderr).strip()
             if args.require_strict_validation:
@@ -444,8 +481,8 @@ def _print_summary(args: argparse.Namespace, result: InstallResult) -> None:
     print("next: merge Makefile.fragment into the repo Makefile or include it from the repo Makefile")
 
 
-def main() -> None:
-    args = _finalize_args(_parser().parse_args())
+def main(argv: list[str] | None = None) -> None:
+    args = _finalize_args(_parser().parse_args(argv))
     try:
         result = install(args)
     except Exception as exc:

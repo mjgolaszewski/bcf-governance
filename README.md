@@ -1,12 +1,15 @@
 # Template And Governance Pack
 
-This pack is a reusable version of the governance system used by the Swerbo Simulation Engine repo.
+This pack is a reusable governance system for agent-led software delivery.
+
+Current release: `v0.1.0`.
 
 It is intentionally split into two parts:
 
 - `template-repo/`: files you can copy into a new repository and replace placeholder values.
 - `governance/`: playbooks that explain the operating model behind the templates.
-- `scripts/`: lightweight helper scripts for installing, scaffolding, and validating governed artifacts.
+- `bcf`: installable CLI for installing, validating, scaffolding, and diagnosing governed artifacts.
+- `scripts/`: source-compatible helper scripts kept for direct repo use and template installs.
 - `template-repo/schemas/`: structural schemas for governed YAML artifacts.
 
 ## Source Model
@@ -20,15 +23,16 @@ This pack is based on these repo conventions:
 - `plans/build-plan.yml` is the machine-readable delivery sequence.
 - `plans/phase-ledger.yml` is the active-phase pointer and validation command ledger.
 - `plans/phase-NN-plan.yml`, `plans/phase-NN-workitems.yml`, and `phases/phase-NN-log.yml` keep execution scoped and auditable.
-- `scripts/validate_governance_yaml.py` prevents cross-artifact drift.
+- `bcf validate` prevents cross-artifact drift.
 - `schemas/*.json` define the structural contract for governed YAML artifacts.
 - `document.path` values are repo-relative POSIX paths and must exactly match each artifact location.
-- `scripts/validate_governance_yaml.py` now checks the full declared phase catalog, workitem/log consistency, completed release-train history coverage, and hotfix log alignment.
-- `scripts/validate_governance_yaml.py` now runs structural schema validation before semantic cross-artifact checks.
-- `scripts/validate_governance_yaml.py` fails on unresolved placeholders in instantiated governed artifacts.
-- `scripts/validate_governance_yaml.py` rejects placeholder or echo-only release gates before `make release-check` is trusted.
-- `scripts/install_governance_pack.py` installs the pack into a target repo, replaces placeholders, applies a profile, and opens the first governed phase.
-- `scripts/scaffold_governance_artifacts.py` creates phase and hotfix artifacts with the expected shape and names hotfix logs as `phase-NN-hotfix##.yml`.
+- `bcf validate` now checks the full declared phase catalog, workitem/log consistency, completed release-train history coverage, and hotfix log alignment.
+- `bcf validate` now runs structural schema validation before semantic cross-artifact checks.
+- `bcf validate` fails on unresolved placeholders in instantiated governed artifacts.
+- `bcf validate` rejects placeholder, echo-only, no-op, and version-probe release gates before `make release-check` is trusted.
+- `bcf install` installs the pack into a target repo, replaces placeholders, applies a profile, and opens the first governed phase.
+- `bcf scaffold` creates phase and hotfix artifacts with the expected shape and names hotfix logs as `phase-NN-hotfix##.yml`.
+- `bcf doctor` reports unresolved placeholders, unwired release gates, inactive gate invocations, and non-evidence gate commands.
 - backend governance defaults to CQRS-lite with strict ports rather than full CQRS.
 - backend delivery defaults to contract-first vertical slices with public-contract preservation by default.
 - architecture rules are enforced with tests, not prose alone.
@@ -37,10 +41,17 @@ This pack is based on these repo conventions:
 
 ## Bootstrap A New Repo
 
-The simplest path is to run the installer from a local clone of this pack:
+Install the CLI from a released source archive, local checkout, or Git URL:
 
 ```bash
-python3 scripts/install_governance_pack.py \
+python3 -m pip install .
+bcf --version
+```
+
+Then install the pack into a target repo:
+
+```bash
+bcf install \
   --target /path/to/target-repo \
   --profile standard \
   --project-id your-project \
@@ -55,14 +66,14 @@ The installer:
 - removes the `phase-NN` example artifacts after copying
 - replaces known placeholders, including hidden workflow files
 - applies the requested `lite`, `standard`, or `regulated` profile
-- generates the first active phase artifacts with `scripts/scaffold_governance_artifacts.py`
+- generates the first active phase artifacts
 - refuses to overwrite existing governance files unless `--force` is passed
 - runs strict validation when possible and falls back to bootstrap validation when standard or regulated release gates still need repo-specific commands
 
 For a minimal installation that can pass strict validation before repo-specific release gates are wired:
 
 ```bash
-python3 scripts/install_governance_pack.py \
+bcf install \
   --target /path/to/target-repo \
   --profile lite \
   --project-id your-project \
@@ -73,7 +84,7 @@ python3 scripts/install_governance_pack.py \
 For standard or regulated installs, wire real gate commands during install when they are already known:
 
 ```bash
-python3 scripts/install_governance_pack.py \
+bcf install \
   --target /path/to/target-repo \
   --profile standard \
   --project-id your-project \
@@ -88,10 +99,17 @@ python3 scripts/install_governance_pack.py \
 
 The installer intentionally does not edit an existing repo Makefile. After installation, merge `Makefile.fragment` into the repo Makefile or include it from the repo Makefile.
 
+Use doctor to see remaining wiring gaps:
+
+```bash
+bcf doctor --repo-root /path/to/target-repo
+bcf doctor --repo-root /path/to/target-repo --format json --compact
+```
+
 Generate hotfix logs with the helper if urgent repair work appears:
 
 ```bash
-python3 scripts/scaffold_governance_artifacts.py hotfix \
+bcf scaffold hotfix \
   --project-id your-project \
   --hotfix-id HF-001 \
   --mode full \
@@ -107,8 +125,8 @@ Install governance dependencies and run validation before the first governed com
 
 ```bash
 python3 -m pip install -r requirements-governance.txt
-python3 scripts/validate_governance_yaml.py
-python3 scripts/validate_governance_yaml.py --format json --compact
+bcf validate
+bcf validate --format json --compact
 ```
 
 Use the scaffold helpers for real `plans/phase-*.yml` and `phases/phase-*.yml` artifacts. The `phase-NN` files in the pack are templates, not long-term working files.
@@ -121,7 +139,18 @@ Choose the smallest profile that proves the current risk:
 - `standard`: lite plus phase plans, workitems, logs, architecture gates, and configured release gates.
 - `regulated`: standard plus provenance, hotfix formalism, security/SBOM evidence, and full release-gate closeout.
 
-The template defaults to `standard` in `governance-profile.yml`. If a gate is genuinely not applicable, mark it `not_applicable` or `deferred` there with a rationale and remove it from `release-check`; do not leave a fake Make target in place.
+The template defaults to `standard` in `governance-profile.yml`. Gate statuses mean:
+
+- `required`: `release-check` must invoke the gate and the target must satisfy its declared command policy.
+- `optional`: `release-check` may omit the gate, but if invoked the target must satisfy its declared command policy.
+- `deferred`: known future gate; do not invoke it from `release-check` yet.
+- `not_applicable`: intentionally absent; do not invoke it from `release-check`.
+
+If a gate is genuinely not applicable, mark it `not_applicable` or `deferred` with a rationale and remove it from `release-check`; do not leave a fake Make target in place.
+
+## Example Walkthrough
+
+See `examples/lifecycle-walkthrough/` for a complete adoption walkthrough: strict lite install, standard promotion with real gate commands, and phase closeout evidence.
 
 ## Recommended First Commit Shape
 
@@ -146,7 +175,7 @@ For AI task-scoping guidance that should remain optional rather than validator-e
 To sanity-check this uninstantiated template pack before replacing placeholders, run:
 
 ```bash
-python3 scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders
+bcf validate --repo-root template-repo --allow-placeholders --allow-release-gate-placeholders
 ```
 
 For pack maintenance in this repo itself, the main self-checks are:

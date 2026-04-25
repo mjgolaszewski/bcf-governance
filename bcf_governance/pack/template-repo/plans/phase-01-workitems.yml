@@ -1,0 +1,16 @@
+document:
+  kind: execution_phase_workitem_ledger
+  name: Phase 01 Workitems
+  id: "{{PROJECT_ID}}-phase-01-workitems"
+  version: 1.0.0
+  generated_at_utc: "{{DATE}}T00:00:00Z"
+  status: planned
+  path: plans/phase-01-workitems.yml
+  phase_id: P01
+workitems:
+  - id: P01-P0-01
+    priority: P0
+    status: TODO
+    summary: "deliver {{DELIVERABLE}}"
+    acceptance:
+      - "{{DELIVERABLE}}_is_complete"

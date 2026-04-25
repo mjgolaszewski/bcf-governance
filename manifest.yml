@@ -1,12 +1,12 @@
 document:
   kind: template_governance_pack_manifest
-  name: Swerbo-Inspired Template And Governance Pack
+  name: BCF Template And Governance Pack
   id: bcf-governance
-  version: 1.0.0
+  version: 0.1.0
   generated_at_utc: "2026-04-24T00:00:00Z"
   status: generated_untracked_artifact
-source_repo:
-  repo_root: /docker/sse
+source_model:
+  origin: public reusable governance pack
   governance_sources:
     - AGENTS.yml
     - MEMORY.yml
@@ -42,6 +42,7 @@ pack_contents:
     - AI drift review
   scripts:
     - installer helper that copies the template pack, replaces placeholders, applies profiles, opens the first phase, and reports release-gate wiring gaps
+    - doctor helper that reports remaining placeholder and release-gate wiring gaps
     - generic phase and hotfix scaffold helper that emits repo-relative document paths
     - generic governance YAML validator with structural and semantic checks, compact json output, release-gate placeholder detection, path portability checks, and instantiated placeholder detection
 tracking:

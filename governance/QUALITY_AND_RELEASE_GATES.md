@@ -39,9 +39,11 @@ Adapt these to the target stack:
 - A phase can be complete only for its declared scope.
 - Governance validation should cover structural schema validation and semantic cross-artifact validation.
 - `governance-profile.yml` declares whether each gate is `required`, `optional`, `deferred`, or `not_applicable`.
-- `make release-check` must invoke every required or optional gate declared by the active profile.
+- `required` gates must be invoked by `make release-check`.
+- `optional` gates may be omitted from `make release-check`, but if they are invoked they must be real commands that satisfy their declared command policy.
+- `deferred` and `not_applicable` gates must not be invoked by `make release-check`.
 - Starter placeholder targets must fail closed. An instantiated repo must replace them with repo-specific commands before validation can pass.
-- Echo-only, placeholder, or no-op gates are not release evidence.
+- Echo-only, placeholder, version-probe, or no-op gates are not release evidence.
 - Contract-first sequencing is the default: contracts, ports, tests, use case, router, and infrastructure only as required.
 - Public contracts are preserved by default; breaking changes require explicit authorization, a migration note, and updated contract tests.
 - A release candidate should run the broadest gate that covers touched surfaces.

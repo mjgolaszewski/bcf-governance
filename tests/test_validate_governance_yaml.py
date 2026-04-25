@@ -96,13 +96,13 @@ def _configure_release_gates(repo_root: Path) -> None:
     text = makefile_path.read_text(encoding="utf-8")
     replacements = {
         '\t@echo "configure repo-specific lint commands before release-check can pass"\n\t@false':
-            "\t@$(PYTHON) -m py_compile scripts/validate_governance_yaml.py",
+            "\t@ruff check .",
         '\t@echo "configure repo-specific typecheck commands before release-check can pass"\n\t@false':
-            "\t@$(PYTHON) -m py_compile scripts/scaffold_governance_artifacts.py",
+            "\t@mypy .",
         '\t@echo "configure repo-specific test commands before release-check can pass"\n\t@false':
-            "\t@$(PYTEST) --version >/dev/null",
+            "\t@$(PYTEST) tests",
         '\t@echo "configure repo-specific contract-test commands before release-check can pass"\n\t@false':
-            "\t@$(PYTHON) -m py_compile backend/tests/architecture/test_boundaries_ast.py",
+            "\t@$(PYTEST) tests/contracts",
     }
     for placeholder, configured in replacements.items():
         text = text.replace(placeholder, configured)
@@ -222,6 +222,7 @@ def test_validate_template_repo_emits_compact_json_output_with_allowed_placehold
         "--repo-root",
         str(TEMPLATE_REPO_ROOT),
         "--allow-placeholders",
+        "--allow-release-gate-placeholders",
         "--format",
         "json",
         "--compact",
@@ -233,6 +234,26 @@ def test_validate_template_repo_emits_compact_json_output_with_allowed_placehold
         "checks": {"placeholders": "skipped", "schema": "pass", "semantic": "pass"},
         "status": "pass",
     }
+
+
+def test_allow_placeholders_does_not_allow_release_gate_placeholders() -> None:
+    result = _run_validator_command(
+        "--repo-root",
+        str(TEMPLATE_REPO_ROOT),
+        "--allow-placeholders",
+        "--format",
+        "json",
+        "--compact",
+        check=False,
+    )
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["checks"] == {
+        "placeholders": "not_run",
+        "schema": "pass",
+        "semantic": "fail",
+    }
+    assert "release gate placeholder marker" in payload["error"]
 
 
 def test_validate_repo_root_emits_compact_json_output_for_schema_failure(tmp_path: Path) -> None:
@@ -345,6 +366,34 @@ def test_validate_repo_root_rejects_missing_required_release_gate(tmp_path: Path
     with pytest.raises(GovernanceValidationError) as excinfo:
         validate_repo_root(repo_root)
     assert "release-check must invoke required release gate targets: typecheck" in str(excinfo.value)
+
+
+def test_validate_repo_root_allows_omitted_optional_release_gate(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    profile_path = repo_root / "governance-profile.yml"
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    profile["release_gate_profile"]["gates"]["contract_test"]["status"] = "optional"
+    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
+
+    makefile_path = repo_root / "Makefile.fragment"
+    makefile_path.write_text(
+        makefile_path.read_text(encoding="utf-8").replace("\t$(MAKE) contract-test\n", ""),
+        encoding="utf-8",
+    )
+
+    validate_repo_root(repo_root)
+
+
+def test_validate_repo_root_rejects_meaningless_release_gate_command(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    makefile_path = repo_root / "Makefile.fragment"
+    text = makefile_path.read_text(encoding="utf-8")
+    text = text.replace("\t@ruff check .", "\t@python3 --version >/dev/null")
+    makefile_path.write_text(text, encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "uses a version/probe command" in str(excinfo.value)
 
 
 def test_validate_repo_root_rejects_product_build_phase_mismatch(tmp_path: Path) -> None:

@@ -1,0 +1,83 @@
+document:
+  kind: durable_project_memory
+  name: "{{PROJECT_NAME}} Working Memory"
+  id: "{{PROJECT_ID}}-memory"
+  version: 1.0.0
+  generated_at_utc: "{{DATE}}T00:00:00Z"
+  status: active
+  path: MEMORY.yml
+regression_shield:
+  purpose: keep this file as durable project memory, not as an execution transcript
+  invariants:
+    - store stable decisions, constraints, environment facts, reusable commands, and references
+    - keep workitem execution evidence in phases/*.yml
+    - update high-signal entries instead of duplicating them
+    - never record secrets or local environment values here
+stable_decisions:
+  canonical_repo_root: "{{REPO_ROOT}}"
+  canonical_governance_guide: AGENTS.yml
+  canonical_product_spec: plans/product-spec.yml
+  canonical_build_plan: plans/build-plan.yml
+  canonical_active_phase_ledger: plans/phase-ledger.yml
+  canonical_phase_log_root: phases/
+  code_roots:
+    backend: backend/src
+    frontend: frontend/src
+  delivery_architecture:
+    backend: "{{BACKEND_ARCHITECTURE}}"
+    frontend: "{{FRONTEND_ARCHITECTURE}}"
+    data: "{{DATA_ARCHITECTURE}}"
+    observability: structured_logs_plus_request_correlation
+  governance_process:
+    semantic_validator: scripts/validate_governance_yaml.py
+    structural_schema_root: schemas/
+    hotfix_lane: governed_and_machine_readable
+    artifact_ownership: canonical_owner_map_recorded_in_AGENTS
+    phase_rollover: phase_ledger_and_MEMORY_must_move_together
+    build_artifact_convention: follow_local_template_pack_shapes_and_naming
+memory_retention_policy:
+  stable_decisions:
+    review_frequency: per_phase_rollover
+  environment_facts:
+    revalidate_after_days: 30
+  reusable_commands:
+    validate_on_release_gate: true
+  stale_entry_handling:
+    - mark_deprecated_before_removal
+    - preserve_replacement_reference_when_available
+environment_facts:
+  current_repo_state:
+    - initial governance template installed on {{DATE}}
+    - all governance, memory, specs, plans, workitem ledgers, and phase logs are YAML-native
+  active_artifacts:
+    spec: plans/product-spec.yml
+    build_plan: plans/build-plan.yml
+    active_phase_ledger: plans/phase-ledger.yml
+    active_phase_plan: plans/phase-01-plan.yml
+    active_workitem_ledger: plans/phase-01-workitems.yml
+    active_phase_log: phases/phase-01-log.yml
+known_constraints:
+  - replace fail-closed release command placeholders before first release gate
+  - update architecture-boundaries.yml when source roots or layer names differ from the starter layout
+reusable_commands:
+  - make governance-validate
+  - make architecture-test
+  - make lint
+  - make typecheck
+  - make test
+  - make release-check
+references:
+  governance:
+    - AGENTS.yml
+    - governance-profile.yml
+    - architecture-boundaries.yml
+    - schemas/
+    - plans/phase-ledger.yml
+    - docs/OPERATIONS.md
+  product:
+    - plans/product-spec.yml
+    - plans/build-plan.yml
+  execution:
+    - plans/phase-01-plan.yml
+    - plans/phase-01-workitems.yml
+    - phases/phase-01-log.yml

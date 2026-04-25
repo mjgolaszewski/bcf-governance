@@ -1,0 +1,33 @@
+document:
+  kind: product_spec
+  name: "{{PRODUCT_NAME}} Product Spec"
+  id: "{{PROJECT_ID}}-product-spec"
+  version: 1.0.0
+  generated_at_utc: "{{DATE}}T00:00:00Z"
+  status: active_delivery
+  path: plans/product-spec.yml
+product:
+  name: "{{PRODUCT_NAME}}"
+  project_name: "{{PROJECT_NAME}}"
+  positioning: "{{PRODUCT_POSITIONING}}"
+  target_users:
+    - "{{TARGET_USER}}"
+  non_goals:
+    - "{{NON_GOAL}}"
+constraints:
+  operating_constraints:
+    - "{{OPERATING_CONSTRAINT}}"
+  known_external_dependencies:
+    - "{{EXTERNAL_DEPENDENCY}}"
+architecture:
+  backend: "{{BACKEND_ARCHITECTURE}}"
+  frontend: "{{FRONTEND_ARCHITECTURE}}"
+  data: "{{DATA_ARCHITECTURE}}"
+execution_phases:
+  - phase_id: P01
+    build_block: "{{BUILD_BLOCK}}"
+    objective: "{{PHASE_OBJECTIVE}}"
+    release_train: release_1
+acceptance:
+  release_gate: make release-check
+  evidence_location: phases/

@@ -47,8 +47,22 @@ RELEASE_GATE_PLACEHOLDER_MARKERS = (
     "configure repo-specific",
     "placeholder",
 )
-RELEASE_GATE_ENFORCED_STATUSES = {"required", "optional"}
+RELEASE_GATE_REQUIRED_STATUSES = {"required"}
+RELEASE_GATE_CONFIGURED_IF_INVOKED_STATUSES = {"required", "optional"}
 RELEASE_GATE_INACTIVE_STATUSES = {"deferred", "not_applicable"}
+RELEASE_GATE_MEANINGLESS_VERSION_PATTERN = re.compile(
+    r"\b(?:python3?|pytest|node|npm|pnpm|yarn|ruff|mypy|pyright|go|cargo)\s+(?:--version|-V|version)\b"
+)
+RELEASE_GATE_POLICY_MARKERS = {
+    "governance_validation": ("validate_governance_yaml.py", "bcf validate", "governance-validate"),
+    "architecture_tests": ("architecture",),
+    "lint": ("ruff", "flake8", "pylint", "eslint", "biome", "clippy", "golangci-lint"),
+    "typecheck": ("mypy", "pyright", "pyre", "tsc", "typecheck"),
+    "automated_tests": ("pytest", "go test", "cargo test", "npm test", "pnpm test", "yarn test"),
+    "contract_tests": ("contract",),
+    "security_scan": ("pip-audit", "safety", "trivy", "grype", "semgrep", "npm audit"),
+    "runtime_smoke": ("smoke", "docker", "compose", "health"),
+}
 DEFAULT_RELEASE_GATE_TARGETS = {
     "governance-validate",
     "architecture-test",
@@ -56,6 +70,14 @@ DEFAULT_RELEASE_GATE_TARGETS = {
     "typecheck",
     "test",
     "contract-test",
+}
+DEFAULT_RELEASE_GATE_POLICIES = {
+    "governance-validate": "governance_validation",
+    "architecture-test": "architecture_tests",
+    "lint": "lint",
+    "typecheck": "typecheck",
+    "test": "automated_tests",
+    "contract-test": "contract_tests",
 }
 
 
@@ -366,16 +388,22 @@ def _meaningful_make_commands(lines: list[str]) -> list[str]:
     return commands
 
 
-def _release_gate_targets_from_profile(profile: dict[str, Any] | None) -> dict[str, str]:
+def _release_gates_from_profile(profile: dict[str, Any] | None) -> dict[str, dict[str, str]]:
     if profile is None:
-        return {target: "required" for target in sorted(DEFAULT_RELEASE_GATE_TARGETS)}
+        return {
+            target: {
+                "status": "required",
+                "command_policy": DEFAULT_RELEASE_GATE_POLICIES[target],
+            }
+            for target in sorted(DEFAULT_RELEASE_GATE_TARGETS)
+        }
     release_gate_profile = _require_mapping(
         profile.get("release_gate_profile"), context="governance-profile.yml release_gate_profile"
     )
     gates = _require_mapping(
         release_gate_profile.get("gates"), context="governance-profile.yml release_gate_profile.gates"
     )
-    targets: dict[str, str] = {}
+    gates_by_target: dict[str, dict[str, str]] = {}
     for gate_id, payload in gates.items():
         gate = _require_mapping(payload, context=f"governance-profile.yml release_gate_profile.gates.{gate_id}")
         target = _require_string(
@@ -384,8 +412,17 @@ def _release_gate_targets_from_profile(profile: dict[str, Any] | None) -> dict[s
         status = _require_string(
             gate.get("status"), context=f"governance-profile.yml release_gate_profile.gates.{gate_id}.status"
         )
-        targets[target] = status
-    return targets
+        command_policy = _require_string(
+            gate.get("command_policy"),
+            context=f"governance-profile.yml release_gate_profile.gates.{gate_id}.command_policy",
+        )
+        if command_policy not in RELEASE_GATE_POLICY_MARKERS:
+            raise GovernanceValidationError(
+                "governance-profile.yml release_gate_profile.gates."
+                f"{gate_id}.command_policy must be one of {sorted(RELEASE_GATE_POLICY_MARKERS)}"
+            )
+        gates_by_target[target] = {"status": status, "command_policy": command_policy}
+    return gates_by_target
 
 
 def _release_gate_makefile_path(repo_root: Path) -> Path | None:
@@ -396,13 +433,36 @@ def _release_gate_makefile_path(repo_root: Path) -> Path | None:
     return None
 
 
+def _validate_release_gate_command_semantics(
+    *,
+    makefile_display: str,
+    target: str,
+    commands: list[str],
+    command_policy: str,
+) -> None:
+    lowered_commands = [command.lower() for command in commands]
+    for command in lowered_commands:
+        if RELEASE_GATE_MEANINGLESS_VERSION_PATTERN.search(command):
+            raise GovernanceValidationError(
+                f"{makefile_display} target {target} uses a version/probe command, not release evidence"
+            )
+
+    joined_commands = "\n".join(lowered_commands)
+    required_markers = RELEASE_GATE_POLICY_MARKERS[command_policy]
+    if not any(marker in joined_commands for marker in required_markers):
+        raise GovernanceValidationError(
+            f"{makefile_display} target {target} must look like {command_policy} evidence "
+            f"(expected one of: {', '.join(required_markers)})"
+        )
+
+
 def _validate_release_gate_targets(
     repo_root: Path,
     profile: dict[str, Any] | None,
     *,
-    allow_placeholders: bool,
+    allow_release_gate_placeholders: bool,
 ) -> None:
-    if allow_placeholders:
+    if allow_release_gate_placeholders:
         return
     makefile_path = _release_gate_makefile_path(repo_root)
     if makefile_path is None:
@@ -426,16 +486,23 @@ def _validate_release_gate_targets(
             f"{makefile_display} release-check must run real validation commands"
         )
 
-    gate_statuses = _release_gate_targets_from_profile(profile)
+    gates_by_target = _release_gates_from_profile(profile)
     invoked_targets = {
         match.group(1)
         for line in release_check_body
         for match in MAKE_INVOKED_TARGET_PATTERN.finditer(line)
     }
+    unknown_invocations = sorted(invoked_targets - set(gates_by_target))
+    if unknown_invocations:
+        raise GovernanceValidationError(
+            f"{makefile_display} release-check invokes targets missing from governance-profile.yml: "
+            + ", ".join(unknown_invocations)
+        )
+
     inactive_invocations = sorted(
         target
-        for target, status in gate_statuses.items()
-        if status in RELEASE_GATE_INACTIVE_STATUSES and target in invoked_targets
+        for target, gate in gates_by_target.items()
+        if gate["status"] in RELEASE_GATE_INACTIVE_STATUSES and target in invoked_targets
     )
     if inactive_invocations:
         raise GovernanceValidationError(
@@ -444,7 +511,7 @@ def _validate_release_gate_targets(
         )
 
     required_targets = {
-        target for target, status in gate_statuses.items() if status in RELEASE_GATE_ENFORCED_STATUSES
+        target for target, gate in gates_by_target.items() if gate["status"] in RELEASE_GATE_REQUIRED_STATUSES
     }
     missing_from_release_check = sorted(required_targets - invoked_targets)
     if missing_from_release_check:
@@ -453,16 +520,28 @@ def _validate_release_gate_targets(
             + ", ".join(missing_from_release_check)
         )
 
-    for target in sorted(required_targets):
+    configured_targets = {
+        target
+        for target, gate in gates_by_target.items()
+        if gate["status"] in RELEASE_GATE_CONFIGURED_IF_INVOKED_STATUSES and target in invoked_targets
+    }
+    for target in sorted(configured_targets):
         target_body = target_bodies.get(target)
         if target_body is None:
             raise GovernanceValidationError(
                 f"{makefile_display} must define release gate target {target}"
             )
-        if not _meaningful_make_commands(target_body):
+        commands = _meaningful_make_commands(target_body)
+        if not commands:
             raise GovernanceValidationError(
                 f"{makefile_display} target {target} must run a non-placeholder command"
             )
+        _validate_release_gate_command_semantics(
+            makefile_display=makefile_display,
+            target=target,
+            commands=commands,
+            command_policy=gates_by_target[target]["command_policy"],
+        )
 
 
 def _document_status(payload: dict[str, Any], *, context: str) -> str:
@@ -1256,7 +1335,12 @@ def _validate_active_phase(
     return [plan_path, workitems_path, log_path]
 
 
-def validate_repo_root(repo_root: Path, *, allow_placeholders: bool = False) -> None:
+def validate_repo_root(
+    repo_root: Path,
+    *,
+    allow_placeholders: bool = False,
+    allow_release_gate_placeholders: bool = False,
+) -> None:
     schema_cache: dict[str, dict[str, Any]] = {}
     agents = _load_yaml(repo_root / "AGENTS.yml")
     memory = _load_yaml(repo_root / "MEMORY.yml")
@@ -1333,12 +1417,14 @@ def validate_repo_root(repo_root: Path, *, allow_placeholders: bool = False) -> 
                 *optional_paths,
             ],
         )
-        _validate_release_gate_targets(
-            repo_root, governance_profile, allow_placeholders=allow_placeholders
-        )
+    _validate_release_gate_targets(
+        repo_root,
+        governance_profile,
+        allow_release_gate_placeholders=allow_release_gate_placeholders,
+    )
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Validate governed YAML artifacts.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument(
@@ -1358,10 +1444,19 @@ def main() -> None:
         action="store_true",
         help="Allow unresolved {{PLACEHOLDER}} tokens while validating the uninstantiated template pack.",
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--allow-release-gate-placeholders",
+        action="store_true",
+        help="Allow fail-closed starter release gates while validating the uninstantiated template pack.",
+    )
+    args = parser.parse_args(argv)
     repo_root = args.repo_root.resolve()
     try:
-        validate_repo_root(repo_root, allow_placeholders=args.allow_placeholders)
+        validate_repo_root(
+            repo_root,
+            allow_placeholders=args.allow_placeholders,
+            allow_release_gate_placeholders=args.allow_release_gate_placeholders,
+        )
     except GovernanceValidationError as error:
         _emit_output(
             _failure_report(repo_root, error),

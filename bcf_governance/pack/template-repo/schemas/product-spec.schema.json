@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document", "product", "constraints", "architecture", "execution_phases", "acceptance"],
+  "properties": {
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "id", "version", "generated_at_utc", "status", "path"],
+      "properties": {
+        "kind": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "id": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "generated_at_utc": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 }
+      }
+    },
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "project_name", "positioning", "target_users", "non_goals"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "project_name": { "type": "string", "minLength": 1 },
+        "positioning": { "type": "string", "minLength": 1 },
+        "target_users": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "non_goals": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operating_constraints", "known_external_dependencies"],
+      "properties": {
+        "operating_constraints": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "known_external_dependencies": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "architecture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backend", "frontend", "data"],
+      "properties": {
+        "backend": { "type": "string", "minLength": 1 },
+        "frontend": { "type": "string", "minLength": 1 },
+        "data": { "type": "string", "minLength": 1 }
+      }
+    },
+    "execution_phases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["phase_id", "build_block", "objective", "release_train"],
+        "properties": {
+          "phase_id": { "type": "string", "minLength": 1 },
+          "build_block": { "type": "string", "minLength": 1 },
+          "objective": { "type": "string", "minLength": 1 },
+          "release_train": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["release_gate", "evidence_location"],
+      "properties": {
+        "release_gate": { "type": "string", "minLength": 1 },
+        "evidence_location": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
