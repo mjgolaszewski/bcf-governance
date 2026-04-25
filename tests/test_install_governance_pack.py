@@ -1,18 +1,27 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 import subprocess
 import sys
 from pathlib import Path
 
 import yaml
 
-from scripts import install_governance_pack as installer
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 INSTALLER = REPO_ROOT / "scripts" / "install_governance_pack.py"
 DOCTOR = REPO_ROOT / "scripts" / "doctor_governance_pack.py"
+
+
+def _load_installer_module():
+    spec = importlib.util.spec_from_file_location("install_governance_pack", INSTALLER)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 def _run_installer(target: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -77,6 +86,7 @@ def _run_doctor(target: Path) -> subprocess.CompletedProcess[str]:
 
 
 def test_template_file_iterator_skips_generated_python_cache_files(tmp_path: Path) -> None:
+    installer = _load_installer_module()
     template_root = tmp_path / "template"
     (template_root / "scripts/__pycache__").mkdir(parents=True)
     (template_root / "scripts/keep.py").write_text("print('ok')\n", encoding="utf-8")
