@@ -22,7 +22,7 @@ def test_cli_reports_version() -> None:
     result = _run_bcf("--version")
 
     assert result.returncode == 0
-    assert "bcf 0.1.0" in result.stdout
+    assert "bcf 0.2.0" in result.stdout
 
 
 def test_cli_validate_dispatches_to_validator() -> None:

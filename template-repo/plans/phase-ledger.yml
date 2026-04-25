@@ -57,7 +57,7 @@ active_delivery_priorities:
     - "{{CURRENT_TRANCHE}}"
 release_trains:
   release_1:
-    target_version: "0.1.0"
+    target_version: "0.2.0"
     status: active
     focus:
       - governed_foundation

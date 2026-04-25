@@ -110,6 +110,8 @@ def test_installer_bootstraps_standard_profile_and_reports_unwired_gates(tmp_pat
     assert not (target / "plans/phase-NN-plan.yml").exists()
     assert not (target / "phases/phase-NN-log.yml").exists()
     assert (target / ".github/workflows/governance.yml").exists()
+    assert "AGENTS.yml" in (target / "AGENTS.md").read_text(encoding="utf-8")
+    assert "AGENTS.yml" in (target / "CLAUDE.md").read_text(encoding="utf-8")
 
     plan = yaml.safe_load((target / "plans/phase-01-plan.yml").read_text(encoding="utf-8"))
     assert plan["document"]["path"] == "plans/phase-01-plan.yml"

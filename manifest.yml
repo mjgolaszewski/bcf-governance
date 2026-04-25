@@ -2,7 +2,7 @@ document:
   kind: template_governance_pack_manifest
   name: BCF Template And Governance Pack
   id: bcf-governance
-  version: 0.1.0
+  version: 0.2.0
   generated_at_utc: "2026-04-24T00:00:00Z"
   status: generated_untracked_artifact
 source_model:

@@ -1,8 +1,12 @@
+<p align="center">
+  <img src="docs/assets/bcf-governance-pack-hero.jpg" alt="BCF AI Governance Pack" width="520">
+</p>
+
 # Template And Governance Pack
 
 This pack is a reusable governance system for agent-led software delivery.
 
-Current release: `v0.1.0`.
+Current release: `v0.2.0`.
 
 It is intentionally split into two parts:
 
