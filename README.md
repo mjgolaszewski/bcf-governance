@@ -24,6 +24,7 @@ This pack is based on these repo conventions:
 - `MEMORY.yml` is durable project memory, not a transcript.
 - `governance-profile.yml` declares whether the repo is using the lite, standard, or regulated profile and how release gates are classified.
 - `architecture-boundaries.yml` configures source roots, layer path tokens, and forbidden imports for the AST architecture gate.
+- `contracts/observability/v1/` provides scaffolded telemetry and logging contract templates for trace-linked, privacy-safe observability.
 - `plans/build-plan.yml` is the machine-readable delivery sequence.
 - `plans/phase-ledger.yml` is the active-phase pointer and validation command ledger.
 - `plans/phase-NN-plan.yml`, `plans/phase-NN-workitems.yml`, and `phases/phase-NN-log.yml` keep execution scoped and auditable.

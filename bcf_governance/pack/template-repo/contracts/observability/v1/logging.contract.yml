@@ -1,0 +1,145 @@
+"$schema": https://json-schema.org/draft/2020-12/schema
+contract_id: "{{PROJECT_ID}}.observability.logging.v1"
+schema_version: 1.0.0
+status: active
+created_at_utc: "{{DATE}}T00:00:00Z"
+canonical_format: json
+field_naming: snake_case
+required_fields:
+  - timestamp
+  - level
+  - service
+  - environment
+  - version
+  - build_sha
+  - event
+  - message
+  - trace_id
+  - span_id
+  - correlation_id
+  - request_id
+  - operation
+  - domain_action
+  - outcome
+  - duration_ms
+conditional_fields:
+  - tenant_id
+  - user_id
+  - http_method
+  - http_route
+  - http_status_code
+  - request_size
+  - response_size
+  - client_ip
+  - user_agent
+  - job_id
+  - job_name
+  - attempt
+  - queue
+  - retry_count
+levels:
+  DEBUG: dev_only_diagnostic
+  INFO: meaningful_lifecycle_event
+  WARN: degraded_but_operating
+  ERROR: operation_failed_needs_attention
+  CRITICAL: service_or_core_dependency_unusable
+  FATAL: service_or_core_dependency_unusable
+event_naming:
+  pattern: domain.entity.action.outcome
+  examples:
+    - http.request.started
+    - http.request.completed
+    - http.request.failed
+    - auth.login.failed
+    - job.execution.completed
+identity_context:
+  canonical_idp: repo_identity_provider
+  user_id_source: principal sub claim
+  tenant_id_source: tenant_id claim when present
+  raw_token_logging: forbidden
+shared_backend:
+  repo: repo_observability_backend
+  collector: alloy_or_equivalent
+  store: loki_or_equivalent
+  transport: structured_stdout_or_platform_log_collector
+request_logging:
+  start_event: http.request.started
+  completed_event: http.request.completed
+  failed_event: http.request.failed
+  required_fields:
+    - http_method
+    - http_route
+    - http_status_code
+    - duration_ms
+    - client_ip
+    - request_size
+    - response_size
+  body_logging: disabled_by_default
+job_logging:
+  required_fields:
+    - job_id
+    - job_name
+    - attempt
+    - queue
+    - retry_count
+    - outcome
+    - duration_ms
+    - correlation_id
+error_logging:
+  required_fields:
+    - error_type
+    - error_message
+    - error_code
+    - retryable
+    - operation
+    - dependency
+    - duration_ms
+    - retry_count
+    - user_impacted
+  stack_trace_policy: environment_gated
+  message_policy: sanitized_no_secrets
+audit_logs:
+  separate_from_operational_logs: true
+  required_fields:
+    - actor_id
+    - actor_type
+    - action
+    - resource_type
+    - resource_id
+    - decision
+    - timestamp
+    - source_ip
+    - user_agent
+    - correlation_id
+  storage: immutable_or_append_only
+privacy:
+  default: no_secrets_no_raw_pii
+  allowlist_required: true
+  forbidden_fields:
+    - password
+    - token
+    - api_key
+    - session_cookie
+    - authorization
+    - full_account_number
+    - ssn
+    - dob
+    - raw_address
+    - request_body
+    - response_body
+trace_alignment:
+  required_fields:
+    - trace_id
+    - span_id
+    - correlation_id
+retention:
+  debug: dev_only_or_short_lived
+  info_operational: 30-90_days
+  warn_error: 90-180_days
+  security_audit: 1-7_years
+enforcement:
+  - structured_logger_or_formatter_only
+  - request_context_middleware
+  - shared_log_extra_builder
+  - contract_tests
+  - ci_blocks_schema_drift

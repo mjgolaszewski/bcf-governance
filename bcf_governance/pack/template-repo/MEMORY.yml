@@ -27,7 +27,7 @@ stable_decisions:
     backend: "{{BACKEND_ARCHITECTURE}}"
     frontend: "{{FRONTEND_ARCHITECTURE}}"
     data: "{{DATA_ARCHITECTURE}}"
-    observability: structured_logs_plus_request_correlation
+    observability: open_telemetry_traces_plus_structured_trace_linked_logs
   governance_process:
     semantic_validator: scripts/validate_governance_yaml.py
     structural_schema_root: schemas/
@@ -49,6 +49,7 @@ environment_facts:
   current_repo_state:
     - initial governance template installed on {{DATE}}
     - all governance, memory, specs, plans, workitem ledgers, and phase logs are YAML-native
+    - observability contracts are scaffolded under contracts/observability/v1/
   active_artifacts:
     spec: plans/product-spec.yml
     build_plan: plans/build-plan.yml
@@ -59,6 +60,7 @@ environment_facts:
 known_constraints:
   - replace fail-closed release command placeholders before first release gate
   - update architecture-boundaries.yml when source roots or layer names differ from the starter layout
+  - specialize repo_identity_provider and repo_observability_backend in the observability contracts before production use
 reusable_commands:
   - make governance-validate
   - make architecture-test
@@ -72,6 +74,7 @@ references:
     - governance-profile.yml
     - architecture-boundaries.yml
     - schemas/
+    - contracts/observability/v1/
     - plans/phase-ledger.yml
     - docs/OPERATIONS.md
   product:

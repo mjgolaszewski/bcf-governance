@@ -12,6 +12,7 @@ source_model:
     - MEMORY.yml
     - governance-profile.yml
     - architecture-boundaries.yml
+    - contracts/observability/v1/
     - plans/build-plan.yml
     - plans/phase-ledger.yml
     - scripts/validate_governance_yaml.py
@@ -24,6 +25,7 @@ pack_contents:
     - profile and release-gate classification template
     - configurable architecture boundary rule template
     - governed artifact structural schemas
+    - observability telemetry and logging contract templates
     - explicit governance dependency requirements
     - phase planning templates
     - governed phase-numbered hotfix log template

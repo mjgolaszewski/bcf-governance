@@ -1,0 +1,119 @@
+"$schema": https://json-schema.org/draft/2020-12/schema
+contract_id: "{{PROJECT_ID}}.observability.telemetry.v1"
+schema_version: 1.0.0
+status: active
+standard: OpenTelemetry
+created_at_utc: "{{DATE}}T00:00:00Z"
+attribute_naming: otel_dot_notation
+trace_model:
+  required_span_fields:
+    - trace_id
+    - span_id
+    - parent_span_id
+    - service.name
+    - span.kind
+  service_name_case: kebab-case
+  span_name_pattern: verb resource
+  span_kinds:
+    - server
+    - client
+    - consumer
+    - producer
+    - internal
+correlation:
+  header: x-correlation-id
+  required: true
+  separate_from_trace_id: true
+  propagate_across:
+    - http
+    - message_queue
+    - background_job
+    - cron
+  purpose: business_user_journey
+identity_context:
+  canonical_idp: repo_identity_provider
+  principal_attribute: user.id
+  principal_claim: sub
+  tenant_attribute: tenant.id
+  tenant_claim: tenant_id
+  token_policy: never_record_raw_tokens
+shared_backend:
+  repo: repo_observability_backend
+  otlp_endpoint: repo_defined_otlp_endpoint
+  trace_store: tempo_or_equivalent
+  metric_store: mimir_or_equivalent
+  log_store: loki_or_equivalent
+  log_collector: alloy_or_equivalent
+propagation:
+  required_formats:
+    - w3c_trace_context
+    - w3c_baggage
+  headers:
+    - traceparent
+    - tracestate
+    - baggage
+    - x-correlation-id
+    - x-request-id
+  compatibility_headers:
+    - x-trace-id
+required_span_attributes:
+  core:
+    - http.method
+    - http.route
+    - http.status_code
+    - request.size
+    - response.size
+    - duration_ms
+    - operation.name
+    - outcome
+  conditional:
+    - user.id
+    - tenant.id
+    - db.system
+    - db.operation
+    - external.service
+  error:
+    - error
+    - error.type
+    - error.message
+  optional_error:
+    - error.stack
+outcomes:
+  - success
+  - failure
+  - partial
+error_contract:
+  required_on_failure:
+    error: true
+    error.type: sanitized_exception_class
+    error.message: sanitized_secret_free_summary
+  stack_policy: environment_gated
+sampling:
+  errors: "100%"
+  critical_flows: "100%"
+  normal_traffic: "5-20%"
+  preferred_advanced: tail_based_keep_slow_error_anomalous
+log_alignment:
+  required_log_fields:
+    - trace_id
+    - span_id
+    - correlation_id
+slo_dimensions:
+  - http.route
+  - tenant.id
+  - operation.name
+  - outcome
+privacy:
+  default: no_pii_or_secrets
+  pii_policy: allowlist_only
+  forbidden_headers:
+    - authorization
+    - cookie
+    - set-cookie
+    - x-api-key
+enforcement:
+  - request_middleware_injects_trace_and_correlation
+  - shared_span_wrappers_or_decorators
+  - contract_tests_for_required_attributes
+  - ci_blocks_schema_drift
+  - shared_logging_and_telemetry_helpers

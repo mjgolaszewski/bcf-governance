@@ -36,6 +36,7 @@ global_delivery_rules:
   - backend delivery defaults to CQRS-lite with strict ports unless repo governance changes it explicitly
   - "backend delivery follows contract-first sequencing: contracts, ports, tests, use case, router, and infrastructure only as required"
   - governance changes must pass semantic validation, not only YAML parse checks
+  - observability changes must preserve the shared telemetry and logging contract baseline
   - active phase lifecycle uses the governed taxonomy and records control metadata when work is blocked, paused, or abandoned
   - governed build artifacts must follow the template-pack naming and validation conventions
   - completed release trains must preserve governed phase history for each declared phase

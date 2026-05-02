@@ -109,6 +109,8 @@ def test_installer_bootstraps_standard_profile_and_reports_unwired_gates(tmp_pat
     assert "wire release gates: architecture-test, lint, typecheck, test, contract-test" in result.stdout
     assert not (target / "plans/phase-NN-plan.yml").exists()
     assert not (target / "phases/phase-NN-log.yml").exists()
+    assert (target / "contracts/observability/v1/telemetry.contract.yml").exists()
+    assert (target / "contracts/observability/v1/logging.contract.yml").exists()
     assert (target / ".github/workflows/governance.yml").exists()
     assert "AGENTS.yml" in (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "AGENTS.yml" in (target / "CLAUDE.md").read_text(encoding="utf-8")
@@ -121,6 +123,19 @@ def test_installer_bootstraps_standard_profile_and_reports_unwired_gates(tmp_pat
 
     profile = yaml.safe_load((target / "governance-profile.yml").read_text(encoding="utf-8"))
     assert profile["profile"]["selected"] == "standard"
+
+    telemetry_contract = yaml.safe_load(
+        (target / "contracts/observability/v1/telemetry.contract.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    logging_contract = yaml.safe_load(
+        (target / "contracts/observability/v1/logging.contract.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert telemetry_contract["contract_id"] == "demo.observability.telemetry.v1"
+    assert logging_contract["contract_id"] == "demo.observability.logging.v1"
 
     strict = _run_installed_validator(target)
     assert strict.returncode == 1

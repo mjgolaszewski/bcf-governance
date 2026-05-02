@@ -27,6 +27,11 @@ OPTIONAL_PLACEHOLDER_SCAN_PATHS = (
     ".github/workflows/governance.yml",
     "phases/phase-NN-hotfixNN.yml",
 )
+OBSERVABILITY_CONTRACT_PATHS = (
+    "contracts/observability/v1/telemetry.contract.yml",
+    "contracts/observability/v1/logging.contract.yml",
+)
+OBSERVABILITY_CONTRACT_SCHEMA = "observability-contract.schema.json"
 SCHEMA_ROOT = "schemas"
 PHASE_CLOSEOUT_STATUSES = {"verified", "closed"}
 ACTIVE_PHASE_LIFECYCLE_STATUSES = {
@@ -817,6 +822,36 @@ def _validate_agents(repo_root: Path, agents: dict[str, Any]) -> None:
         _require_path(repo_root, value, context=f"AGENTS.yml references.{key}")
 
 
+def _validate_observability_contracts(
+    repo_root: Path, schema_cache: dict[str, dict[str, Any]]
+) -> list[Path]:
+    paths: list[Path] = []
+    for relative_path in OBSERVABILITY_CONTRACT_PATHS:
+        path = _require_path(
+            repo_root,
+            relative_path,
+            context="observability contract template",
+        )
+        payload = _load_yaml(path)
+        _validate_schema(
+            repo_root,
+            schema_cache,
+            payload,
+            schema_name=OBSERVABILITY_CONTRACT_SCHEMA,
+            context=relative_path,
+        )
+        contract_id = _require_string(
+            payload.get("contract_id"), context=f"{relative_path} contract_id"
+        )
+        expected_domain = "telemetry" if "telemetry" in relative_path else "logging"
+        if f".{expected_domain}." not in contract_id:
+            raise GovernanceValidationError(
+                f"{relative_path} contract_id must include .{expected_domain}."
+            )
+        paths.append(path)
+    return paths
+
+
 def _validate_declared_phase_catalog(
     repo_root: Path,
     schema_cache: dict[str, dict[str, Any]],
@@ -1383,6 +1418,7 @@ def validate_repo_root(
     _validate_document_path(repo_root, ledger, phase_ledger_path, context=str(phase_ledger_path))
 
     _validate_agents(repo_root, agents)
+    observability_contract_paths = _validate_observability_contracts(repo_root, schema_cache)
     declared_phase_paths = _validate_declared_phase_catalog(
         repo_root, schema_cache, product_spec, build_plan, ledger
     )
@@ -1407,6 +1443,7 @@ def validate_repo_root(
                 phase_ledger_path,
                 *[path for triplet in declared_phase_paths.values() for path in triplet],
                 *hotfix_paths,
+                *observability_contract_paths,
                 *active_phase_paths,
                 *([governance_profile_path] if governance_profile_path is not None else []),
                 *(

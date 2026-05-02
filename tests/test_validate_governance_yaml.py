@@ -199,6 +199,29 @@ def test_validate_repo_root_accepts_valid_fixture(tmp_path: Path) -> None:
     validate_repo_root(repo_root)
 
 
+def test_validate_repo_root_rejects_missing_observability_contract(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    (repo_root / "contracts/observability/v1/telemetry.contract.yml").unlink()
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+
+    assert "observability contract template references missing path" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_invalid_observability_contract(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    contract_path = repo_root / "contracts/observability/v1/logging.contract.yml"
+    contract = yaml.safe_load(contract_path.read_text(encoding="utf-8"))
+    del contract["trace_alignment"]
+    contract_path.write_text(yaml.safe_dump(contract, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+
+    assert "schemas/observability-contract.schema.json" in str(excinfo.value)
+
+
 def test_validate_repo_root_emits_compact_json_output(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
     result = _run_validator_command(

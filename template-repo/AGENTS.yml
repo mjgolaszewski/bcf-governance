@@ -36,8 +36,9 @@ governance:
     - architecture-boundaries.yml
     - governance-profile.yml
     - schemas/*.json
-      - plans/*.yml
-      - phases/*.yml
+    - contracts/observability/v1/*.contract.yml
+    - plans/*.yml
+    - phases/*.yml
     note: audit metadata and regression-shield intent live as YAML data, not comment headers
     template_pack_alignment:
       - governed build artifacts follow the naming, ownership, and validation conventions established by the local template pack
@@ -56,6 +57,7 @@ governance:
       - schemas/phase-workitems.schema.json
       - schemas/phase-log.schema.json
       - schemas/hotfix-log.schema.json
+      - schemas/observability-contract.schema.json
   build_plan_contract:
     format: yaml
     required_properties:
@@ -100,6 +102,7 @@ governance:
       - hotfix_modes_align_between_records_and_logs
       - remediation_history_entries_contain_closeout_validation_metadata
       - verified_or_closed_active_phase_logs_contain_required_closeout_fields
+      - observability_contract_templates_match_schema_and_required_baseline
       - instantiated_governed_artifacts_have_no_unresolved_placeholders
   hotfix_lane_contract:
     eligibility:
@@ -154,6 +157,7 @@ governance:
       machine_readable_phase_sequence_and_delivery_contracts: plans/build-plan.yml
       active_phase_state_blockers_and_validation_commands: plans/phase-ledger.yml
       durable_context_and_active_artifact_pointers: MEMORY.yml
+      observability_contract_templates: contracts/observability/v1/
     duplication_rules:
       - repeated_fields_must_have_a_declared_canonical_owner
       - mirrored_or_derived_fields_must_update_in_the_same_change_as_their_canonical_source
@@ -321,6 +325,7 @@ quality:
     - runtime_smoke
   mandatory_sync_rules:
     - update specs, plans, and MEMORY together when behavior or environment contracts change
+    - update observability contracts and contract tests together when telemetry or logging shape changes
     - record unresolved blockers in the active phase ledger before implementation proceeds
     - semantic governance validation must pass when governed artifacts change
     - emergency hotfixes must satisfy the hotfix lane contract and reconcile into canonical artifacts before closeout
