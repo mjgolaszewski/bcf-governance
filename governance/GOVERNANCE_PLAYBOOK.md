@@ -24,6 +24,7 @@ Use this order when artifacts disagree:
 - `AGENTS.yml`: governance rules, authority ordering, architecture policy, quality policy.
 - `governance-profile.yml`: selected adoption profile and release gate classification.
 - `architecture-boundaries.yml`: configurable source roots, layer tokens, and AST import rules.
+- `governance/EXISTING_REPO_ADOPTION.md` and `governance/existing-repo-adoption.yml`: human and machine-readable conversion guidance for established repos.
 - `schemas/*.json`: structural contracts for governed YAML artifact shapes.
 - `MEMORY.yml`: stable decisions, environment facts, reusable commands, active artifact pointers.
 - `plans/product-spec.yml`: product scope, positioning, constraints, phase catalog.
@@ -47,6 +48,7 @@ Use this order when artifacts disagree:
 - Phase workitems must cover phase-plan deliverables, and phase-log workitem status must stay aligned with the workitem ledger.
 - Completed release trains must retain non-planned governed history for every declared phase they include.
 - Release gates must fail closed until repo-specific commands are wired; placeholder, echo-only, version-probe, or no-op gates are not acceptable release evidence.
+- Mandatory structural rules must have executable baseline gates or explicit human-review-only rationale.
 - Execution evidence goes in phase logs.
 - Repeated fields need a declared canonical owner.
 

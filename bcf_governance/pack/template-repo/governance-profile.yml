@@ -34,6 +34,7 @@ profile:
         - backend/tests/architecture/
         - scripts/validate_governance_yaml.py
         - scripts/scaffold_governance_artifacts.py
+        - .github/workflows/governance.yml
     - name: regulated
       use_when: release evidence, provenance, security artifacts, and hotfix reconciliation are mandatory
       required_artifacts:
@@ -62,6 +63,41 @@ release_gate_profile:
       status: required
       command_policy: architecture_tests
       rationale: architecture boundaries must be executable, not prose-only
+    architecture_module_size:
+      target: architecture-module-size
+      status: required
+      command_policy: architecture_module_size
+      rationale: production modules must stay below the configured LOC cap or split before editing
+    architecture_layer_membership:
+      target: architecture-layer-membership
+      status: required
+      command_policy: architecture_layer_membership
+      rationale: every production module must map to exactly one architectural layer
+    architecture_context_membership:
+      target: architecture-context-membership
+      status: required
+      command_policy: architecture_context_membership
+      rationale: every production module must map to exactly one bounded context or domain concern
+    architecture_import_boundaries:
+      target: architecture-import-boundaries
+      status: required
+      command_policy: architecture_import_boundaries
+      rationale: layer import purity prevents framework and infrastructure drift
+    architecture_cqrs_side:
+      target: architecture-cqrs-side
+      status: required
+      command_policy: architecture_cqrs_side
+      rationale: command and query sides must keep mutation and read-model responsibilities separate
+    architecture_router_thinness:
+      target: architecture-router-thinness
+      status: required
+      command_policy: architecture_router_thinness
+      rationale: routers and controllers must remain transport adapters, not business logic owners
+    architecture_duplication:
+      target: architecture-duplication
+      status: required
+      command_policy: architecture_duplication
+      rationale: repeated production logic inside a bounded context must be found before shared abstractions drift
     lint:
       target: lint
       status: required
@@ -82,3 +118,55 @@ release_gate_profile:
       status: required
       command_policy: contract_tests
       rationale: public contract and adapter behavior checks must be explicit or marked not_applicable with rationale
+    security_secret_scan:
+      target: security-secret-scan
+      status: required
+      command_policy: security_secret_scan
+      rationale: pushed code must be scanned for committed secrets before release-check is trusted
+    security_dependency_audit:
+      target: security-dependency-audit
+      status: required
+      command_policy: security_dependency_audit
+      rationale: application dependencies must have an explicit vulnerability audit lane
+    security_sbom:
+      target: security-sbom
+      status: required
+      command_policy: security_sbom
+      rationale: production-bound artifacts must produce a software bill of materials
+    security_vulnerability_scan:
+      target: security-vulnerability-scan
+      status: required
+      command_policy: security_vulnerability_scan
+      rationale: source and image vulnerability scans must be wired before release-check is trusted
+    runtime_smoke:
+      target: runtime-smoke
+      status: required
+      command_policy: runtime_smoke
+      rationale: runtime behavior must be proven in a declared environment, not inferred from unit tests
+ci_profile:
+  push_lanes_required: true
+  self_hosted_runner_preferred_when_available: true
+  runner_labels:
+    - "{{RUNNER_LABELS}}"
+  required_push_jobs:
+    - governance-validate
+    - architecture-module-size
+    - architecture-layer-membership
+    - architecture-context-membership
+    - architecture-import-boundaries
+    - architecture-cqrs-side
+    - architecture-router-thinness
+    - architecture-duplication
+    - lint
+    - typecheck
+    - test
+    - contract-test
+    - security-secret-scan
+    - security-dependency-audit
+    - security-sbom
+    - security-vulnerability-scan
+    - runtime-smoke
+  runner_rules:
+    - CI jobs must be self-seeding and must not rely on ambient workstation state
+    - runner capabilities and required secrets must be declared before release evidence is trusted
+    - jobs using Docker or mutable workspaces must clean up generated containers, volumes, credentials, and build artifacts

@@ -2,7 +2,7 @@ SHELL := /bin/bash
 PYTHON ?= python3
 PYTEST ?= $(PYTHON) -m pytest
 
-.PHONY: governance-deps governance-validate governance-scaffold-help architecture-test lint typecheck test contract-test release-check
+.PHONY: governance-deps governance-validate governance-scaffold-help architecture-test architecture-module-size architecture-layer-membership architecture-context-membership architecture-import-boundaries architecture-cqrs-side architecture-router-thinness architecture-duplication lint typecheck test contract-test security-secret-scan security-dependency-audit security-sbom security-vulnerability-scan runtime-smoke release-check
 
 governance-deps:
 	$(PYTHON) -m pip install -r requirements-governance.txt
@@ -15,6 +15,27 @@ governance-scaffold-help:
 
 architecture-test:
 	$(PYTEST) backend/tests/architecture
+
+architecture-module-size:
+	$(PYTEST) backend/tests/architecture -k production_modules_respect_loc_cap
+
+architecture-layer-membership:
+	$(PYTEST) backend/tests/architecture -k production_modules_map_to_exactly_one_layer
+
+architecture-context-membership:
+	$(PYTEST) backend/tests/architecture -k production_modules_map_to_exactly_one_bounded_context
+
+architecture-import-boundaries:
+	$(PYTEST) backend/tests/architecture -k "domain_layer or use_cases_do_not_import or ports_do_not_import or routers_do_not_import"
+
+architecture-cqrs-side:
+	$(PYTEST) backend/tests/architecture -k cqrs
+
+architecture-router-thinness:
+	$(PYTEST) backend/tests/architecture -k routers_remain_thin
+
+architecture-duplication:
+	$(PYTEST) backend/tests/architecture -k duplication
 
 lint:
 	@echo "configure repo-specific lint commands before release-check can pass"
@@ -32,10 +53,42 @@ contract-test:
 	@echo "configure repo-specific contract-test commands before release-check can pass"
 	@false
 
+security-secret-scan:
+	@echo "configure repo-specific gitleaks or equivalent secret scan before release-check can pass"
+	@false
+
+security-dependency-audit:
+	@echo "configure repo-specific dependency audit before release-check can pass"
+	@false
+
+security-sbom:
+	@echo "configure repo-specific SBOM generation before release-check can pass"
+	@false
+
+security-vulnerability-scan:
+	@echo "configure repo-specific vulnerability scan before release-check can pass"
+	@false
+
+runtime-smoke:
+	@echo "configure repo-specific runtime smoke command before release-check can pass"
+	@false
+
 release-check:
 	$(MAKE) governance-validate
 	$(MAKE) architecture-test
+	$(MAKE) architecture-module-size
+	$(MAKE) architecture-layer-membership
+	$(MAKE) architecture-context-membership
+	$(MAKE) architecture-import-boundaries
+	$(MAKE) architecture-cqrs-side
+	$(MAKE) architecture-router-thinness
+	$(MAKE) architecture-duplication
 	$(MAKE) lint
 	$(MAKE) typecheck
 	$(MAKE) contract-test
 	$(MAKE) test
+	$(MAKE) security-secret-scan
+	$(MAKE) security-dependency-audit
+	$(MAKE) security-sbom
+	$(MAKE) security-vulnerability-scan
+	$(MAKE) runtime-smoke

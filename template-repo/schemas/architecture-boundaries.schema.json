@@ -21,12 +21,180 @@
     "architecture": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["source_roots", "layers"],
+      "required": [
+        "source_roots",
+        "mandatory_rule_gate_policy",
+        "production_module_policy",
+        "bounded_contexts",
+        "layer_membership_policy",
+        "context_membership_policy",
+        "cqrs_policy",
+        "thin_router_policy",
+        "duplication_policy",
+        "shared_abstraction_policy",
+        "layers"
+      ],
       "properties": {
         "source_roots": {
           "type": "array",
           "minItems": 1,
           "items": { "type": "string", "minLength": 1 }
+        },
+        "mandatory_rule_gate_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "every_mandatory_rule_has_executable_gate",
+            "human_review_only_allowed_with_rationale",
+            "human_review_only_rules"
+          ],
+          "properties": {
+            "every_mandatory_rule_has_executable_gate": { "type": "boolean" },
+            "human_review_only_allowed_with_rationale": { "type": "boolean" },
+            "human_review_only_rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["rule_id", "rationale", "reviewer_role", "phase_log_evidence"],
+                "properties": {
+                  "rule_id": { "type": "string", "minLength": 1 },
+                  "rationale": { "type": "string", "minLength": 1 },
+                  "reviewer_role": { "type": "string", "minLength": 1 },
+                  "phase_log_evidence": { "type": "string", "minLength": 1 }
+                }
+              }
+            }
+          }
+        },
+        "production_module_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max_loc", "excluded_path_tokens", "excluded_file_suffixes"],
+          "properties": {
+            "max_loc": { "type": "integer", "minimum": 1 },
+            "excluded_path_tokens": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "excluded_file_suffixes": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "bounded_contexts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["required", "context_root_tokens", "shared_context_tokens"],
+          "properties": {
+            "required": { "type": "boolean" },
+            "context_root_tokens": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "shared_context_tokens": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "layer_membership_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["exactly_one_layer"],
+          "properties": {
+            "exactly_one_layer": { "type": "boolean" }
+          }
+        },
+        "context_membership_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["exactly_one_context"],
+          "properties": {
+            "exactly_one_context": { "type": "boolean" }
+          }
+        },
+        "cqrs_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "command_path_tokens",
+            "query_path_tokens",
+            "read_model_tokens",
+            "write_method_names"
+          ],
+          "properties": {
+            "command_path_tokens": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "query_path_tokens": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "read_model_tokens": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "write_method_names": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "thin_router_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max_branch_nodes", "max_loop_nodes", "delegate_call_name_tokens"],
+          "properties": {
+            "max_branch_nodes": { "type": "integer", "minimum": 0 },
+            "max_loop_nodes": { "type": "integer", "minimum": 0 },
+            "delegate_call_name_tokens": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "duplication_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "enabled",
+            "min_duplicate_lines",
+            "scoped_to_bounded_context",
+            "allowed_cross_context_duplication"
+          ],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "min_duplicate_lines": { "type": "integer", "minimum": 2 },
+            "scoped_to_bounded_context": { "type": "boolean" },
+            "allowed_cross_context_duplication": { "type": "boolean" }
+          }
+        },
+        "shared_abstraction_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["shared_path_tokens", "min_real_call_sites", "required_metadata"],
+          "properties": {
+            "shared_path_tokens": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "min_real_call_sites": { "type": "integer", "minimum": 1 },
+            "required_metadata": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            }
+          }
         },
         "layers": {
           "type": "object",

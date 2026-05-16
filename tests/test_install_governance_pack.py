@@ -106,11 +106,16 @@ def test_installer_bootstraps_standard_profile_and_reports_unwired_gates(tmp_pat
     result = _run_installer(target)
 
     assert "validation: bootstrap pass" in result.stdout
-    assert "wire release gates: architecture-test, lint, typecheck, test, contract-test" in result.stdout
+    assert "wire release gates:" in result.stdout
+    assert "architecture-module-size" in result.stdout
+    assert "security-secret-scan" in result.stdout
+    assert "runtime-smoke" in result.stdout
     assert not (target / "plans/phase-NN-plan.yml").exists()
     assert not (target / "phases/phase-NN-log.yml").exists()
     assert (target / "contracts/observability/v1/telemetry.contract.yml").exists()
     assert (target / "contracts/observability/v1/logging.contract.yml").exists()
+    assert (target / "governance/EXISTING_REPO_ADOPTION.md").exists()
+    assert (target / "governance/existing-repo-adoption.yml").exists()
     assert (target / ".github/workflows/governance.yml").exists()
     assert "AGENTS.yml" in (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "AGENTS.yml" in (target / "CLAUDE.md").read_text(encoding="utf-8")
@@ -167,6 +172,7 @@ def test_installer_lite_profile_passes_strict_validation(tmp_path: Path) -> None
     makefile = (target / "Makefile.fragment").read_text(encoding="utf-8")
     assert "$(MAKE) governance-validate" in makefile
     assert "$(MAKE) lint" not in makefile
+    assert "configure repo-specific" not in makefile
 
     strict = _run_installed_validator(target)
     assert strict.returncode == 0
@@ -180,6 +186,20 @@ def test_installer_gate_commands_can_make_standard_profile_strict(tmp_path: Path
         "--gate-command",
         "architecture-test=pytest backend/tests/architecture",
         "--gate-command",
+        "architecture-module-size=pytest backend/tests/architecture -k production_modules_respect_loc_cap",
+        "--gate-command",
+        "architecture-layer-membership=pytest backend/tests/architecture -k production_modules_map_to_exactly_one_layer",
+        "--gate-command",
+        "architecture-context-membership=pytest backend/tests/architecture -k production_modules_map_to_exactly_one_bounded_context",
+        "--gate-command",
+        "architecture-import-boundaries=pytest backend/tests/architecture -k do_not_import",
+        "--gate-command",
+        "architecture-cqrs-side=pytest backend/tests/architecture -k cqrs",
+        "--gate-command",
+        "architecture-router-thinness=pytest backend/tests/architecture -k routers_remain_thin",
+        "--gate-command",
+        "architecture-duplication=pytest backend/tests/architecture -k duplication",
+        "--gate-command",
         "lint=ruff check .",
         "--gate-command",
         "typecheck=mypy .",
@@ -187,6 +207,16 @@ def test_installer_gate_commands_can_make_standard_profile_strict(tmp_path: Path
         "test=pytest tests",
         "--gate-command",
         "contract-test=pytest tests/contracts",
+        "--gate-command",
+        "security-secret-scan=gitleaks detect --source .",
+        "--gate-command",
+        "security-dependency-audit=pip-audit",
+        "--gate-command",
+        "security-sbom=syft dir:.",
+        "--gate-command",
+        "security-vulnerability-scan=trivy fs .",
+        "--gate-command",
+        "runtime-smoke=docker compose config",
         "--require-strict-validation",
     )
 
@@ -208,3 +238,20 @@ def test_installer_refuses_to_overwrite_without_force(tmp_path: Path) -> None:
 
     assert result.returncode == 1
     assert "--force" in result.stderr
+
+
+def test_installer_existing_adoption_mode_labels_conversion_phase(tmp_path: Path) -> None:
+    target = tmp_path / "existing-mode"
+    result = _run_installer(target, "--profile", "lite", "--adoption-mode", "existing")
+
+    assert "adoption mode: existing" in result.stdout
+    assert "governance/EXISTING_REPO_ADOPTION.md" in result.stdout
+
+    plan = yaml.safe_load((target / "plans/phase-01-plan.yml").read_text(encoding="utf-8"))
+    assert plan["phase"]["build_block"] == "existing_repo_adoption"
+    assert "inventory existing architecture, tests, CI, and release gates" in plan[
+        "delivery_contract"
+    ]["tightly_scoped_deliverables"]
+
+    memory = yaml.safe_load((target / "MEMORY.yml").read_text(encoding="utf-8"))
+    assert "existing adoption mode" in memory["environment_facts"]["current_repo_state"][0]

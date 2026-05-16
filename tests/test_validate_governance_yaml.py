@@ -41,6 +41,7 @@ validate_repo_root = VALIDATOR_MODULE.validate_repo_root
 def _placeholder_values(repo_root: Path) -> dict[str, str]:
     return {
         "ACTIVE_PHASE_ID": "P01",
+        "ADOPTION_MODE": "fresh",
         "BACKEND_ARCHITECTURE": "cqrs_lite_with_strict_ports",
         "BUILD_BLOCK": "foundation",
         "CURRENT_TRANCHE": "governed_bootstrap",
@@ -103,6 +104,16 @@ def _configure_release_gates(repo_root: Path) -> None:
             "\t@$(PYTEST) tests",
         '\t@echo "configure repo-specific contract-test commands before release-check can pass"\n\t@false':
             "\t@$(PYTEST) tests/contracts",
+        '\t@echo "configure repo-specific gitleaks or equivalent secret scan before release-check can pass"\n\t@false':
+            "\t@gitleaks detect --source .",
+        '\t@echo "configure repo-specific dependency audit before release-check can pass"\n\t@false':
+            "\t@pip-audit",
+        '\t@echo "configure repo-specific SBOM generation before release-check can pass"\n\t@false':
+            "\t@syft dir:.",
+        '\t@echo "configure repo-specific vulnerability scan before release-check can pass"\n\t@false':
+            "\t@trivy fs .",
+        '\t@echo "configure repo-specific runtime smoke command before release-check can pass"\n\t@false':
+            "\t@docker compose config",
     }
     for placeholder, configured in replacements.items():
         text = text.replace(placeholder, configured)

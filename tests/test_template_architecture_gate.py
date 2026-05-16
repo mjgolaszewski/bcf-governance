@@ -72,10 +72,17 @@ def test_template_architecture_gate_accepts_valid_sample_slice(tmp_path: Path) -
     module = _load_module(repo_root / "backend/tests/architecture/test_boundaries_ast.py")
 
     module.test_cqrs_lite_architecture_gate_has_files_to_check()
+    module.test_production_modules_respect_loc_cap()
+    module.test_production_modules_map_to_exactly_one_layer()
+    module.test_production_modules_map_to_exactly_one_bounded_context()
     module.test_domain_layer_does_not_import_frameworks_clients_or_outer_layers()
     module.test_use_cases_do_not_import_http_objects_or_infrastructure_clients()
     module.test_ports_do_not_import_sqlalchemy_or_concrete_adapters()
     module.test_routers_do_not_import_persistence_models_or_external_clients_directly()
+    module.test_cqrs_query_side_does_not_mutate_state()
+    module.test_cqrs_command_side_does_not_return_read_model_shapes()
+    module.test_routers_remain_thin_transport_adapters()
+    module.test_bounded_context_duplication_is_explicit()
 
 
 def test_template_architecture_gate_rejects_use_case_http_objects(tmp_path: Path) -> None:
@@ -92,3 +99,34 @@ def test_template_architecture_gate_rejects_use_case_http_objects(tmp_path: Path
     with pytest.raises(AssertionError) as excinfo:
         module.test_use_cases_do_not_import_http_objects_or_infrastructure_clients()
     assert "fastapi.Request" in str(excinfo.value)
+
+
+def test_template_architecture_gate_rejects_query_side_mutation(tmp_path: Path) -> None:
+    repo_root = _instantiate_template_repo(tmp_path)
+    _seed_valid_cqrs_lite_slice(repo_root)
+    _write_python(
+        repo_root / "backend/src/app/features/orders/list_orders/queries/list_orders.py",
+        "class Repo:\n"
+        "    def save(self) -> None: ...\n\n"
+        "def list_orders(repo: Repo) -> None:\n"
+        "    repo.save()\n",
+    )
+    module = _load_module(repo_root / "backend/tests/architecture/test_boundaries_ast.py")
+
+    with pytest.raises(AssertionError) as excinfo:
+        module.test_cqrs_query_side_does_not_mutate_state()
+    assert "query-side mutation" in str(excinfo.value)
+
+
+def test_template_architecture_gate_rejects_oversized_modules(tmp_path: Path) -> None:
+    repo_root = _instantiate_template_repo(tmp_path)
+    _seed_valid_cqrs_lite_slice(repo_root)
+    _write_python(
+        repo_root / "backend/src/app/features/orders/create_order/commands/oversized.py",
+        "\n".join(f"VALUE_{index} = {index}" for index in range(810)),
+    )
+    module = _load_module(repo_root / "backend/tests/architecture/test_boundaries_ast.py")
+
+    with pytest.raises(AssertionError) as excinfo:
+        module.test_production_modules_respect_loc_cap()
+    assert "LOC cap" in str(excinfo.value)

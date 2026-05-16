@@ -24,6 +24,7 @@ This pack is based on these repo conventions:
 - `MEMORY.yml` is durable project memory, not a transcript.
 - `governance-profile.yml` declares whether the repo is using the lite, standard, or regulated profile and how release gates are classified.
 - `architecture-boundaries.yml` configures source roots, layer path tokens, and forbidden imports for the AST architecture gate.
+- `architecture-boundaries.yml` also configures mandatory structural anti-drift gates: LOC caps, layer/context membership, CQRS side rules, router thinness, and bounded-context duplication.
 - `contracts/observability/v1/` provides scaffolded telemetry and logging contract templates for trace-linked, privacy-safe observability.
 - `plans/build-plan.yml` is the machine-readable delivery sequence.
 - `plans/phase-ledger.yml` is the active-phase pointer and validation command ledger.
@@ -36,11 +37,14 @@ This pack is based on these repo conventions:
 - `bcf validate` fails on unresolved placeholders in instantiated governed artifacts.
 - `bcf validate` rejects placeholder, echo-only, no-op, and version-probe release gates before `make release-check` is trusted.
 - `bcf install` installs the pack into a target repo, replaces placeholders, applies a profile, and opens the first governed phase.
+- `bcf install --adoption-mode existing` labels the first phase as an existing-repo conversion and installs human and machine-readable adoption playbooks.
 - `bcf scaffold` creates phase and hotfix artifacts with the expected shape and names hotfix logs as `phase-NN-hotfix##.yml`.
 - `bcf doctor` reports unresolved placeholders, unwired release gates, inactive gate invocations, and non-evidence gate commands.
 - backend governance defaults to CQRS-lite with strict ports rather than full CQRS.
 - backend delivery defaults to contract-first vertical slices with public-contract preservation by default.
 - architecture rules are enforced with tests, not prose alone.
+- every mandatory structural rule must have an executable baseline gate or an explicit human-review-only rationale.
+- push CI lanes are declared for required gates when a hosted or local runner is available, and jobs must be self-seeding.
 - validator output can stay human-readable by default or switch to compact machine-readable JSON.
 - release gates include governance validation, lint, typecheck, tests, contract checks, security checks, and Docker/runtime checks as appropriate for the repo.
 
@@ -86,6 +90,20 @@ bcf install \
   --require-strict-validation
 ```
 
+For an existing repository, use conversion mode to generate an adoption/inventory phase and install the existing-repo playbooks:
+
+```bash
+bcf install \
+  --target /path/to/existing-repo \
+  --adoption-mode existing \
+  --profile lite \
+  --project-id your-project \
+  --project-name "Your Project" \
+  --require-strict-validation
+```
+
+The human playbook is `governance/EXISTING_REPO_ADOPTION.md`; the machine-readable equivalent is `governance/existing-repo-adoption.yml`.
+
 For standard or regulated installs, wire real gate commands during install when they are already known:
 
 ```bash
@@ -95,10 +113,22 @@ bcf install \
   --project-id your-project \
   --date "$(date -u +%F)" \
   --gate-command "architecture-test=python3 -m pytest backend/tests/architecture" \
+  --gate-command "architecture-module-size=python3 -m pytest backend/tests/architecture -k production_modules_respect_loc_cap" \
+  --gate-command "architecture-layer-membership=python3 -m pytest backend/tests/architecture -k production_modules_map_to_exactly_one_layer" \
+  --gate-command "architecture-context-membership=python3 -m pytest backend/tests/architecture -k production_modules_map_to_exactly_one_bounded_context" \
+  --gate-command "architecture-import-boundaries=python3 -m pytest backend/tests/architecture -k do_not_import" \
+  --gate-command "architecture-cqrs-side=python3 -m pytest backend/tests/architecture -k cqrs" \
+  --gate-command "architecture-router-thinness=python3 -m pytest backend/tests/architecture -k routers_remain_thin" \
+  --gate-command "architecture-duplication=python3 -m pytest backend/tests/architecture -k duplication" \
   --gate-command "lint=ruff check ." \
   --gate-command "typecheck=mypy ." \
   --gate-command "test=pytest tests" \
   --gate-command "contract-test=pytest tests/contracts" \
+  --gate-command "security-secret-scan=gitleaks detect --source ." \
+  --gate-command "security-dependency-audit=pip-audit" \
+  --gate-command "security-sbom=syft dir:." \
+  --gate-command "security-vulnerability-scan=trivy fs ." \
+  --gate-command "runtime-smoke=docker compose config" \
   --require-strict-validation
 ```
 

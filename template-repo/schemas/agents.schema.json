@@ -10,6 +10,8 @@
     "governance",
     "runtime_surfaces",
     "prime_directive",
+    "pre_edit_contract",
+    "structural_guardrails",
     "engineering",
     "contract_first_rules",
     "testing_governance",
@@ -329,6 +331,118 @@
       "properties": {
         "statement": { "type": "string", "minLength": 1 },
         "forbidden_default_behavior": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "pre_edit_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_before_editing", "rule", "ambiguity_response"],
+      "properties": {
+        "required_before_editing": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "rule": { "type": "string", "minLength": 1 },
+        "ambiguity_response": { "type": "string", "minLength": 1 }
+      }
+    },
+    "structural_guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "executable_gate_policy",
+        "production_module_policy",
+        "module_ownership_policy",
+        "cqrs_policy",
+        "ddd_dry_policy",
+        "boundary_violation_response"
+      ],
+      "properties": {
+        "executable_gate_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["rule", "human_review_only_requires"],
+          "properties": {
+            "rule": { "type": "string", "minLength": 1 },
+            "human_review_only_requires": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "production_module_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max_loc", "applies_to", "excluded_path_tokens", "violation_response"],
+          "properties": {
+            "max_loc": { "type": "integer", "minimum": 1 },
+            "applies_to": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "excluded_path_tokens": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "violation_response": { "type": "string", "minLength": 1 }
+          }
+        },
+        "module_ownership_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["required_mappings", "ambiguity_response"],
+          "properties": {
+            "required_mappings": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "ambiguity_response": { "type": "string", "minLength": 1 }
+          }
+        },
+        "cqrs_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["command_side", "query_side"],
+          "properties": {
+            "command_side": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "query_side": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "ddd_dry_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "duplication_scope",
+            "cross_context_reuse_requires",
+            "shared_abstraction_requires"
+          ],
+          "properties": {
+            "duplication_scope": { "type": "string", "minLength": 1 },
+            "cross_context_reuse_requires": { "type": "string", "minLength": 1 },
+            "shared_abstraction_requires": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "boundary_violation_response": {
           "type": "array",
           "minItems": 1,
           "items": { "type": "string", "minLength": 1 }
