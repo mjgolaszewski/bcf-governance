@@ -16,18 +16,20 @@ make release-check
 That command should cover:
 
 - governance YAML validation
-- architecture boundary tests
+- granular architecture gates for module size, layer membership, bounded-context membership, import boundaries, CQRS side rules, router thinness, and bounded-context duplication
 - lint
 - typecheck
 - unit tests
 - integration or contract tests
 - frontend tests when applicable
-- security and supply-chain scans when applicable
-- Docker or runtime smoke checks when applicable
+- secret scanning, dependency audit, SBOM generation, and vulnerability scans
+- Docker or runtime smoke checks
 
 `Makefile.fragment` starts with fail-closed placeholder targets. Replace required gates with repo-specific commands and keep `governance-profile.yml` aligned with any gate marked `required`, `optional`, `deferred`, or `not_applicable`. Optional gates may be omitted from `release-check`; if invoked, they must still be real evidence commands.
 
 If the repo layout differs from the starter backend shape, update `architecture-boundaries.yml` before relying on `make architecture-test`.
+
+For existing repositories, follow `governance/EXISTING_REPO_ADOPTION.md` and keep the first adoption commit focused on governance artifacts, inventory, and gate wiring.
 
 ## Governance Helpers
 

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "required": ["document", "profile", "release_gate_profile"],
+  "required": ["document", "profile", "release_gate_profile", "ci_profile"],
   "properties": {
     "document": {
       "type": "object",
@@ -68,17 +68,57 @@
                 "enum": [
                   "governance_validation",
                   "architecture_tests",
+                  "architecture_module_size",
+                  "architecture_layer_membership",
+                  "architecture_context_membership",
+                  "architecture_import_boundaries",
+                  "architecture_cqrs_side",
+                  "architecture_router_thinness",
+                  "architecture_duplication",
                   "lint",
                   "typecheck",
                   "automated_tests",
                   "contract_tests",
-                  "security_scan",
+                  "security_secret_scan",
+                  "security_dependency_audit",
+                  "security_sbom",
+                  "security_vulnerability_scan",
                   "runtime_smoke"
                 ]
               },
               "rationale": { "type": "string", "minLength": 1 }
             }
           }
+        }
+      }
+    },
+    "ci_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "push_lanes_required",
+        "self_hosted_runner_preferred_when_available",
+        "runner_labels",
+        "required_push_jobs",
+        "runner_rules"
+      ],
+      "properties": {
+        "push_lanes_required": { "type": "boolean" },
+        "self_hosted_runner_preferred_when_available": { "type": "boolean" },
+        "runner_labels": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "required_push_jobs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "runner_rules": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
         }
       }
     }

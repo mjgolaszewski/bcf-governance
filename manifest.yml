@@ -24,8 +24,10 @@ pack_contents:
     - root governance templates
     - profile and release-gate classification template
     - configurable architecture boundary rule template
+    - mandatory structural anti-drift gate configuration
     - governed artifact structural schemas
     - observability telemetry and logging contract templates
+    - existing-repo adoption playbooks in human and machine-readable forms
     - explicit governance dependency requirements
     - phase planning templates
     - governed phase-numbered hotfix log template
@@ -44,6 +46,7 @@ pack_contents:
     - AI drift review
   scripts:
     - installer helper that copies the template pack, replaces placeholders, applies profiles, opens the first phase, and reports release-gate wiring gaps
+    - installer existing-repo adoption mode for conversion and inventory phases
     - doctor helper that reports remaining placeholder and release-gate wiring gaps
     - generic phase and hotfix scaffold helper that emits repo-relative document paths
     - generic governance YAML validator with structural and semantic checks, compact json output, release-gate placeholder detection, path portability checks, and instantiated placeholder detection

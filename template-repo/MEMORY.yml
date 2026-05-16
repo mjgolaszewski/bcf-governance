@@ -47,9 +47,10 @@ memory_retention_policy:
     - preserve_replacement_reference_when_available
 environment_facts:
   current_repo_state:
-    - initial governance template installed on {{DATE}}
+    - initial governance template installed on {{DATE}} using {{ADOPTION_MODE}} adoption mode
     - all governance, memory, specs, plans, workitem ledgers, and phase logs are YAML-native
     - observability contracts are scaffolded under contracts/observability/v1/
+    - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
   active_artifacts:
     spec: plans/product-spec.yml
     build_plan: plans/build-plan.yml
@@ -75,6 +76,8 @@ references:
     - architecture-boundaries.yml
     - schemas/
     - contracts/observability/v1/
+    - governance/EXISTING_REPO_ADOPTION.md
+    - governance/existing-repo-adoption.yml
     - plans/phase-ledger.yml
     - docs/OPERATIONS.md
   product:

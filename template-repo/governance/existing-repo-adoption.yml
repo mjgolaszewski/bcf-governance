@@ -1,0 +1,61 @@
+document:
+  kind: existing_repo_adoption_playbook
+  name: Existing Repo Adoption Playbook
+  id: "{{PROJECT_ID}}-existing-repo-adoption"
+  version: 1.0.0
+  status: active
+  path: governance/existing-repo-adoption.yml
+adoption_mode:
+  installer_flag: --adoption-mode existing
+  recommended_starting_profile: lite
+  promote_to_standard_when:
+    - architecture_boundaries_match_existing_source_roots
+    - mandatory_structural_gates_are_executable_or_classified
+    - release_check_invokes_required_gates
+    - push_ci_lanes_are_declared_when_runner_is_available
+conversion_sequence:
+  - install_pack_with_existing_mode
+  - keep_first_commit_to_governance_artifacts
+  - inventory_existing_source_roots_layers_contexts_and_ci
+  - adapt_architecture_boundaries_yml
+  - merge_or_include_makefile_fragment
+  - wire_or_classify_release_gates
+  - add_push_ci_lanes_when_runner_is_available
+  - record_adoption_evidence_in_active_phase_log
+  - promote_profile_after_gates_are_executable
+required_inventory:
+  source_roots: []
+  generated_or_vendor_exclusions: []
+  bounded_context_tokens: []
+  layer_tokens: []
+  command_path_tokens: []
+  query_path_tokens: []
+  read_model_tokens: []
+  write_method_names: []
+  forbidden_import_prefixes: []
+  ci_runner_labels:
+    - "{{RUNNER_LABELS}}"
+  ci_runner_capabilities: []
+  secrets_sources: []
+  cleanup_expectations:
+    - remove generated containers, volumes, credentials, and build artifacts after CI jobs
+required_gate_families:
+  - governance_validation
+  - architecture_module_size
+  - architecture_layer_membership
+  - architecture_context_membership
+  - architecture_import_boundaries
+  - architecture_cqrs_side
+  - architecture_router_thinness
+  - architecture_duplication
+  - lint
+  - typecheck
+  - automated_tests
+  - contract_tests
+  - security_secret_scan
+  - security_dependency_audit
+  - security_sbom
+  - security_vulnerability_scan
+  - runtime_smoke
+evidence_location: phases/*.yml
+completion_rule: governance validation, doctor diagnostics, and declared release gates must agree before adoption is complete

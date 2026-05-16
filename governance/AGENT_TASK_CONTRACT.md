@@ -10,13 +10,18 @@ Every task should specify:
 
 - intent
 - bounded context
+- architectural layer
+- command/query side
 - feature name
+- target modules
 - allowed files
 - forbidden files
 - acceptance criteria
 - tests to add or update
 - commands to run
 - rollback notes
+
+Before editing production code, the agent must identify the bounded context, architectural layer, command/query side, target modules, expected tests, and files that must not be touched. If any of those fields are ambiguous, narrow the scope before editing.
 
 ## Scope Heuristics
 
@@ -38,8 +43,17 @@ Intent:
 Bounded context:
   <name>
 
+Architectural layer:
+  <domain|use_case|port|router|infrastructure|frontend_route|presentation>
+
+Command/query side:
+  <command|query|not_applicable>
+
 Feature:
   <name>
+
+Target modules:
+  - <paths>
 
 Allowed files:
   - <paths>
