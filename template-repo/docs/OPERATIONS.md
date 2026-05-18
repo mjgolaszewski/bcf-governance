@@ -54,4 +54,4 @@ Document service health, release metadata, metrics, traces, logs, and operator-s
 
 ## Evidence Policy
 
-Record validation evidence in `phases/phase-NN-log.yml`.
+Record validation evidence in the active `phases/phase-*.yml` log.

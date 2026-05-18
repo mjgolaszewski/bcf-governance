@@ -2,100 +2,39 @@
 
 ## Purpose
 
-Use this playbook when assigning a bounded coding task to an AI agent. This is guidance for task scoping and review. It is not a validator-enforced repo contract.
+Use this optional playbook when assigning bounded coding tasks to an AI agent. Canonical enforcement remains in `AGENTS.yml`, `architecture-boundaries.yml`, release gates, and tests.
 
-## Default Task Shape
+Repo evidence: `template-repo/AGENTS.yml`, `template-repo/backend/tests/architecture/test_boundaries_ast.py`.
 
-Every task should specify:
+## Required Task Shape
 
-- intent
-- bounded context
-- architectural layer
-- command/query side
-- feature name
-- target modules
-- allowed files
-- forbidden files
-- acceptance criteria
-- tests to add or update
-- commands to run
-- rollback notes
+Specify intent, bounded context, architectural layer, command/query side, target modules, allowed files, forbidden files, acceptance criteria, tests, commands to run, and rollback notes.
 
-Before editing production code, the agent must identify the bounded context, architectural layer, command/query side, target modules, expected tests, and files that must not be touched. If any of those fields are ambiguous, narrow the scope before editing.
+Before editing production code, the agent must identify scope and forbidden surfaces. If scope is ambiguous, narrow it before editing.
 
-## Scope Heuristics
-
-- Default to the smallest valid vertical slice.
-- Prefer feature-local files over shared modules.
-- Do not change public contracts unless explicitly instructed.
-- Do not introduce cross-cutting middleware, migrations, dependency upgrades, or auth-framework changes without escalation.
-- Prefer touching the feature slice and its tests before shared or infrastructure surfaces.
-
-## Suggested Prompt Template
+## Prompt Template
 
 ```text
 Task:
-  <specific change>
-
 Intent:
-  <command|query|router|repo|test|refactor>
-
 Bounded context:
-  <name>
-
 Architectural layer:
-  <domain|use_case|port|router|infrastructure|frontend_route|presentation>
-
 Command/query side:
-  <command|query|not_applicable>
-
-Feature:
-  <name>
-
 Target modules:
-  - <paths>
-
 Allowed files:
-  - <paths>
-
 Forbidden files:
-  - <paths>
-
 Acceptance criteria:
-  - <observable behavior>
-
 Tests:
-  - <tests to add/update/run>
-
-Constraints:
-  - Preserve public contracts unless explicitly listed.
-  - Do not introduce cross-cutting changes.
-  - Do not move code outside the slice without authorization.
-  - Do not modify unrelated files.
-
-Completion proof:
-  - Show changed files.
-  - Show tests run.
-  - Summarize behavior change.
-  - List risks or follow-ups.
+Commands:
+Rollback notes:
 ```
 
 ## Escalation Triggers
 
-Escalate before proceeding when the task requires:
-
-- database migrations
-- dependency upgrades
-- authentication or authorization framework changes
-- cross-cutting middleware
-- global exception handling changes
-- logging or telemetry framework changes
-- public API contract changes
+Escalate before database migrations, dependency upgrades, auth changes, cross-cutting middleware, global exception handling, logging or telemetry framework changes, or public API contract changes.
 
 ## Review Heuristics
 
-- Reject changes that leave the authorized slice without explanation.
-- Reject changes that remove tests instead of fixing behavior.
-- Reject changes that add generic helpers without proven reuse.
-- Reject changes that weaken auth or validation to make tests pass.
-- Prefer low-churn diffs with explicit rollback notes.
+Reject slice drift, removed tests, unjustified generic helpers, weakened auth or validation, and unrelated formatting churn.
+
+Repo evidence: `template-repo/AGENTS.yml` review gate and structural guardrails.

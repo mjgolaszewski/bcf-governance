@@ -2,31 +2,14 @@
 
 ## Purpose
 
-When AI-assisted implementation is used, schedule recurring reviews for common drift patterns.
+Schedule recurring reviews for AI-assisted implementation drift.
 
-## Cadence
+## Scope
 
-The source repo records reviews every other sprint. Adapt the cadence to the target repo, but make it explicit in `AGENTS.yml` or the build plan.
+Check for fabricated precision, inert UI controls, mock-heavy tests, duplicated orchestration, undocumented environment assumptions, and generated artifacts drifting from contracts.
 
-## Review Scope
-
-Check for:
-
-- fabricated precision in product claims
-- generic UI copy that implies unavailable behavior
-- hidden recommendation or advice framing
-- inert controls or placeholder flows presented as live
-- mock-heavy tests that bypass runtime behavior
-- duplicated orchestration that weakens architecture boundaries
-- undocumented environment assumptions
-- generated artifacts that drift from source contracts
+Repo evidence: architecture tests, contract tests, `scripts/validate_governance_yaml.py`, and phase logs.
 
 ## Evidence
 
-Record the review in the relevant phase log:
-
-- reviewed surfaces
-- findings
-- remediations
-- known residual risks
-- validation commands
+Record reviewed surfaces, findings, remediations, residual risks, and validation commands in the relevant phase log. Keep entries terse but include full intent and consequence.

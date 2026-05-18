@@ -13,7 +13,7 @@ It is intentionally split into two parts:
 - `template-repo/`: files you can copy into a new repository and replace placeholder values.
 - `governance/`: playbooks that explain the operating model behind the templates.
 - `bcf`: installable CLI for installing, validating, scaffolding, and diagnosing governed artifacts.
-- `scripts/`: source-compatible helper scripts kept for direct repo use and template installs.
+- `scripts/`: source-compatible helper scripts; `validate` and `scaffold` helpers are copied into template installs.
 - `template-repo/schemas/`: structural schemas for governed YAML artifacts.
 
 ## Source Model
@@ -32,8 +32,8 @@ This pack is based on these repo conventions:
 - `bcf validate` prevents cross-artifact drift.
 - `schemas/*.json` define the structural contract for governed YAML artifacts.
 - `document.path` values are repo-relative POSIX paths and must exactly match each artifact location.
-- `bcf validate` now checks the full declared phase catalog, workitem/log consistency, completed release-train history coverage, and hotfix log alignment.
-- `bcf validate` now runs structural schema validation before semantic cross-artifact checks.
+- `bcf validate` checks the full declared phase catalog, workitem/log consistency, completed release-train history coverage, and hotfix log alignment.
+- `bcf validate` runs structural schema validation before semantic cross-artifact checks.
 - `bcf validate` fails on unresolved placeholders in instantiated governed artifacts.
 - `bcf validate` rejects placeholder, echo-only, no-op, and version-probe release gates before `make release-check` is trusted.
 - `bcf install` installs the pack into a target repo, replaces placeholders, applies a profile, and opens the first governed phase.

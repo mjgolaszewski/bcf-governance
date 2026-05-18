@@ -2,37 +2,34 @@
 
 ## Canonical Owner Map
 
-Use one canonical owner for each repeated concept:
-
 | Concept | Canonical owner |
 | --- | --- |
-| Governance rules and authority order | `AGENTS.yml` |
-| Adoption profile and release-gate classification | `governance-profile.yml` |
-| Architecture source roots, layer/context tokens, structural gate config, and import rules | `architecture-boundaries.yml` |
-| Governed artifact structural shape | `schemas/*.json` |
+| Agent rules and authority order | `AGENTS.yml` |
+| Profile and release-gate classification | `governance-profile.yml` |
+| Architecture source roots, layer/context tokens, structural rules | `architecture-boundaries.yml` |
+| Structural shapes | `schemas/*.json` |
 | Product scope and phase catalog | `plans/product-spec.yml` |
 | Delivery sequence and dependencies | `plans/build-plan.yml` |
-| Active phase and validation commands | `plans/phase-ledger.yml` |
+| Active phase, validation commands, hotfix records | `plans/phase-ledger.yml` |
 | Durable context and active artifact pointers | `MEMORY.yml` |
 | Execution evidence | `phases/*.yml` |
-| Release and operations commands | `docs/OPERATIONS.md` and Makefile |
-| Existing-repo conversion playbook | `governance/EXISTING_REPO_ADOPTION.md` and `governance/existing-repo-adoption.yml` |
+| Runtime and release commands | `Makefile.fragment`, `docs/OPERATIONS.md` |
+| Existing-repo conversion | installed only with `--adoption-mode existing` |
+
+Repo evidence: `template-repo/AGENTS.yml`, `scripts/install_governance_pack.py`, `tests/test_install_governance_pack.py`.
 
 ## Duplication Rules
 
-- Mirrored fields must change with their canonical source.
-- Derived fields should say what they derive from.
-- Phase ids, build blocks, and artifact paths should be validated across files.
-- `document.path` values should be repo-relative POSIX paths and exact matches for the owning artifact.
-- Active phase lifecycle metadata and hotfix mode metadata should stay aligned across records and logs.
-- Phase workitems and phase logs should carry the same workitem ids and statuses.
-- Historical phase artifacts should not remain `planned` after a successor is active.
-- CI lane declarations should stay aligned with release-gate targets in `governance-profile.yml`.
+- Change derived fields with their canonical source.
+- Keep `document.path` repo-relative, POSIX, and exact.
+- Keep active phase, phase workitems, phase logs, hotfix records, and release-gate targets aligned.
+- Do not write execution evidence into `AGENTS.yml` or `MEMORY.yml`.
 
-## Practical Review Checklist
+Repo evidence: `scripts/validate_governance_yaml.py`, `tests/test_validate_governance_yaml.py`.
 
-- Does this change alter product behavior, environment assumptions, release gates, or governance?
-- If yes, did the relevant canonical owner change?
-- Did `MEMORY.yml` change only for durable facts?
-- Did phase logs receive execution evidence instead of governance prose?
-- Did validation commands run and get recorded?
+## Review Checklist
+
+- Did behavior, environment, release gates, or governance change?
+- Did the canonical owner change in the same patch?
+- Are append entries terse while preserving intent, action/evidence, and consequence?
+- Did validation run and get recorded in the phase log when applicable?
