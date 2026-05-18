@@ -6,6 +6,8 @@ Use this playbook when converting an established repository into a BCF-governed 
 
 The adoption goal is structural truth first: install governed artifacts, inventory the existing architecture and CI surface, classify gaps, and wire executable gates before claiming release readiness.
 
+Repo evidence: `scripts/install_governance_pack.py` keeps these playbooks only for `--adoption-mode existing`; fresh installs omit them.
+
 ## Installer Mode
 
 Use the existing-repo mode when bootstrapping into a non-empty repository:

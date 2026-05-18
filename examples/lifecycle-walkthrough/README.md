@@ -9,7 +9,7 @@ This walkthrough shows the expected adoption path for a new repo:
 ## 1. Lite Install
 
 ```bash
-python3 -m pip install bcf-governance
+python3 -m pip install .
 
 bcf install \
   --target /tmp/demo-governed-app \
@@ -51,7 +51,7 @@ bcf install \
   --gate-command "architecture-import-boundaries=python3 -m pytest backend/tests/architecture -k do_not_import" \
   --gate-command "architecture-cqrs-side=python3 -m pytest backend/tests/architecture -k cqrs" \
   --gate-command "architecture-router-thinness=python3 -m pytest backend/tests/architecture -k routers_remain_thin" \
-  --gate-command "architecture-duplication=python3 -m pytest backend/tests/architecture -k duplication" \
+  --gate-command "architecture-duplication=python3 -m pytest backend/tests/architecture -k 'duplication or shared_abstraction'" \
   --gate-command "lint=ruff check ." \
   --gate-command "typecheck=mypy ." \
   --gate-command "test=pytest tests" \

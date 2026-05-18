@@ -76,8 +76,6 @@ references:
     - architecture-boundaries.yml
     - schemas/
     - contracts/observability/v1/
-    - governance/EXISTING_REPO_ADOPTION.md
-    - governance/existing-repo-adoption.yml
     - plans/phase-ledger.yml
     - docs/OPERATIONS.md
   product:
