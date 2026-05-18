@@ -5,7 +5,13 @@
 Adapt these to the target stack:
 
 - governance validation
-- architecture boundary tests
+- architecture module-size tests
+- architecture layer-membership tests
+- architecture bounded-context membership tests
+- architecture import-boundary tests
+- architecture CQRS side-effect and read-model separation tests
+- architecture router-thinness tests
+- architecture bounded-context duplication tests
 - lint
 - typecheck
 - unit tests
@@ -25,13 +31,22 @@ Adapt these to the target stack:
 
 - `make governance-validate`
 - `make architecture-test`
+- `make architecture-module-size`
+- `make architecture-layer-membership`
+- `make architecture-context-membership`
+- `make architecture-import-boundaries`
+- `make architecture-cqrs-side`
+- `make architecture-router-thinness`
+- `make architecture-duplication`
 - `make lint`
 - `make typecheck`
 - `make test`
 - `make contract-test`
-- `make security-scan`
-- `make docker-build`
-- `make docker-runtime-smoke`
+- `make security-secret-scan`
+- `make security-dependency-audit`
+- `make security-sbom`
+- `make security-vulnerability-scan`
+- `make runtime-smoke`
 - `make release-check`
 
 ## Gate Policy
@@ -52,6 +67,8 @@ Adapt these to the target stack:
 - Security scans should publish machine-readable artifacts.
 - Runtime smoke checks should run outside the dev-only dependency environment.
 - Generated clients or SDKs should be checked for drift when API contracts change.
+- Required push CI lanes should be declared when a hosted or local runner is available, and jobs must be self-seeding rather than relying on ambient workstation state.
+- Every mandatory architectural rule should have an executable baseline gate or an explicit `human_review_only` rationale.
 
 ## Evidence Policy
 

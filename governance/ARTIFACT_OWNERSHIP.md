@@ -8,7 +8,7 @@ Use one canonical owner for each repeated concept:
 | --- | --- |
 | Governance rules and authority order | `AGENTS.yml` |
 | Adoption profile and release-gate classification | `governance-profile.yml` |
-| Architecture source roots, layer tokens, and import rules | `architecture-boundaries.yml` |
+| Architecture source roots, layer/context tokens, structural gate config, and import rules | `architecture-boundaries.yml` |
 | Governed artifact structural shape | `schemas/*.json` |
 | Product scope and phase catalog | `plans/product-spec.yml` |
 | Delivery sequence and dependencies | `plans/build-plan.yml` |
@@ -16,6 +16,7 @@ Use one canonical owner for each repeated concept:
 | Durable context and active artifact pointers | `MEMORY.yml` |
 | Execution evidence | `phases/*.yml` |
 | Release and operations commands | `docs/OPERATIONS.md` and Makefile |
+| Existing-repo conversion playbook | `governance/EXISTING_REPO_ADOPTION.md` and `governance/existing-repo-adoption.yml` |
 
 ## Duplication Rules
 
@@ -26,6 +27,7 @@ Use one canonical owner for each repeated concept:
 - Active phase lifecycle metadata and hotfix mode metadata should stay aligned across records and logs.
 - Phase workitems and phase logs should carry the same workitem ids and statuses.
 - Historical phase artifacts should not remain `planned` after a successor is active.
+- CI lane declarations should stay aligned with release-gate targets in `governance-profile.yml`.
 
 ## Practical Review Checklist
 

@@ -14,6 +14,20 @@ The template pack now encodes CQRS-lite with strict ports:
 
 This is intentionally lighter than full CQRS. The template does not require buses, event sourcing, or separate read models by default. It does require an explicit separation between mutation use cases, read use cases, orchestration, domain rules, ports, and adapters.
 
+The starter policy also requires deliberate structural guardrails:
+
+- production modules must stay under the configured LOC cap, defaulting to 800 lines
+- every production module must map to exactly one architectural layer
+- every production module must map to exactly one bounded context or domain concern
+- command-side code may mutate state through ports but must not return read-model shapes
+- query-side code may return read models but must not mutate state
+- routers and controllers validate transport input, invoke application commands or queries, and map responses only
+- domain services and entities contain business rules only and must not import infrastructure, framework, persistence, cache, queue, cloud, HTTP, or telemetry clients directly
+- repositories and adapters contain persistence and integration details only
+- shared abstractions require ownership, tests, rationale, and at least two real call sites unless an explicit shared-kernel decision exists
+
+If a requested change would violate the LOC cap or cross a DDD/CQRS boundary, stop and propose a module split or boundary update before editing.
+
 ## Delivery Default
 
 Changes should land in the smallest valid vertical slice.
@@ -67,6 +81,7 @@ The default policy encodes these rules:
 - infrastructure adapters should implement ports rather than leak client details into domain logic
 - preserve public contracts by default; breaking changes require an explicit migration note and updated contract tests
 - generic shared helpers are a last resort and require proven reuse
+- duplicated logic inside one bounded context should be detected by executable gates before it becomes structural drift
 - frontend presentation components should not call HTTP directly
 - route modules should be thin and delegate orchestration
 - API DTOs should be mapped at the boundary before UI consumption
@@ -78,6 +93,11 @@ Put boundary rules in tests. Prose is useful, but tests prevent drift.
 Recommended lanes:
 
 - AST import boundary tests
+- production module LOC tests
+- layer and bounded-context membership tests
+- command/query side-effect and read-model separation tests
+- router thinness tests
+- bounded-context duplication tests
 - dependency direction tests
 - contract tests at public API boundaries
 - fixtures that exercise real code paths rather than no-op green checks

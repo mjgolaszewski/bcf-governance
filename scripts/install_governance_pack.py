@@ -16,6 +16,7 @@ from typing import Any
 
 
 PROFILE_CHOICES = ("lite", "standard", "regulated")
+ADOPTION_MODE_CHOICES = ("fresh", "existing")
 DEFAULT_TARGET_USER = "operators"
 DEFAULT_RUNNER_LABELS = "ubuntu-latest"
 TEMPLATE_EXAMPLE_ARTIFACTS = (
@@ -24,14 +25,44 @@ TEMPLATE_EXAMPLE_ARTIFACTS = (
     "phases/phase-NN-log.yml",
     "phases/phase-NN-hotfixNN.yml",
 )
-LITE_DEFERRED_GATES = ("architecture-test", "lint", "typecheck", "test", "contract-test")
-REQUIRED_STANDARD_GATES = (
-    "governance-validate",
+LITE_DEFERRED_GATES = (
     "architecture-test",
+    "architecture-module-size",
+    "architecture-layer-membership",
+    "architecture-context-membership",
+    "architecture-import-boundaries",
+    "architecture-cqrs-side",
+    "architecture-router-thinness",
+    "architecture-duplication",
     "lint",
     "typecheck",
     "test",
     "contract-test",
+    "security-secret-scan",
+    "security-dependency-audit",
+    "security-sbom",
+    "security-vulnerability-scan",
+    "runtime-smoke",
+)
+REQUIRED_STANDARD_GATES = (
+    "governance-validate",
+    "architecture-test",
+    "architecture-module-size",
+    "architecture-layer-membership",
+    "architecture-context-membership",
+    "architecture-import-boundaries",
+    "architecture-cqrs-side",
+    "architecture-router-thinness",
+    "architecture-duplication",
+    "lint",
+    "typecheck",
+    "test",
+    "contract-test",
+    "security-secret-scan",
+    "security-dependency-audit",
+    "security-sbom",
+    "security-vulnerability-scan",
+    "runtime-smoke",
 )
 MAKE_TARGET_PATTERN = re.compile(r"^([A-Za-z0-9_.-]+)\s*:(?:\s|$)")
 
@@ -158,6 +189,7 @@ def _placeholder_values(args: argparse.Namespace, target_root: Path) -> dict[str
     workstream = args.workstream[0]
     return {
         "ACTIVE_PHASE_ID": args.phase_id,
+        "ADOPTION_MODE": args.adoption_mode,
         "BACKEND_ARCHITECTURE": args.backend_architecture,
         "BUILD_BLOCK": args.build_block,
         "CURRENT_TRANCHE": args.build_block,
@@ -211,6 +243,12 @@ def _replace_first_after_marker(text: str, marker: str, old: str, new: str) -> s
     return text[:old_index] + new + text[old_index + len(old) :]
 
 
+def _replace_block_between_markers(text: str, start_marker: str, end_marker: str, new_block: str) -> str:
+    start_index = text.index(start_marker)
+    end_index = text.index(end_marker, start_index)
+    return text[:start_index] + new_block + text[end_index:]
+
+
 def _configure_governance_profile(target_root: Path, profile: str) -> None:
     path = target_root / "governance-profile.yml"
     text = path.read_text(encoding="utf-8")
@@ -228,9 +266,59 @@ def _configure_governance_profile(target_root: Path, profile: str) -> None:
     )
 
     if profile == "lite":
-        deferred_gate_ids = ("architecture_test", "lint", "typecheck", "test", "contract_test")
+        deferred_gate_ids = (
+            "architecture_test",
+            "architecture_module_size",
+            "architecture_layer_membership",
+            "architecture_context_membership",
+            "architecture_import_boundaries",
+            "architecture_cqrs_side",
+            "architecture_router_thinness",
+            "architecture_duplication",
+            "lint",
+            "typecheck",
+            "test",
+            "contract_test",
+            "security_secret_scan",
+            "security_dependency_audit",
+            "security_sbom",
+            "security_vulnerability_scan",
+            "runtime_smoke",
+        )
         for gate_id in deferred_gate_ids:
             text = _replace_first_after_marker(text, f"    {gate_id}:", "status: required", "status: deferred")
+        text = _replace_block_between_markers(
+            text,
+            "  required_push_jobs:\n",
+            "  runner_rules:\n",
+            "  required_push_jobs:\n    - governance-validate\n",
+        )
+    path.write_text(text, encoding="utf-8")
+
+
+def _configure_architecture_boundaries(target_root: Path, profile: str) -> None:
+    if profile != "lite":
+        return
+    path = target_root / "architecture-boundaries.yml"
+    text = path.read_text(encoding="utf-8")
+    human_review_rules = "\n".join(
+        [
+            "    human_review_only_rules:",
+            *[
+                "\n".join(
+                    [
+                        f"      - rule_id: {target}",
+                        "        rationale: lite profile defers this structural gate until standard promotion",
+                        "        reviewer_role: technical_lead",
+                        "        phase_log_evidence: phases/phase-01-log.yml",
+                    ]
+                )
+                for target in LITE_DEFERRED_GATES
+                if target.startswith("architecture-") and target != "architecture-test"
+            ],
+        ]
+    )
+    text = text.replace("    human_review_only_rules: []", human_review_rules, 1)
     path.write_text(text, encoding="utf-8")
 
 
@@ -278,6 +366,31 @@ def _configure_makefile(
         text = _rewrite_make_target(text, target, [command])
 
     path.write_text(text, encoding="utf-8")
+
+
+def _customized_default(args: argparse.Namespace, name: str) -> bool:
+    return getattr(args, name) != _parser().get_default(name)
+
+
+def _apply_adoption_mode_defaults(args: argparse.Namespace) -> None:
+    if args.adoption_mode != "existing":
+        return
+    if not _customized_default(args, "phase_objective"):
+        args.phase_objective = "convert existing repository into governed delivery"
+    if args.deliverable == _parser().get_default("deliverable"):
+        args.deliverable = [
+            "inventory existing architecture, tests, CI, and release gates",
+            "install governed artifacts without rewriting application code",
+            "wire or classify mandatory structural gates",
+        ]
+    if args.workstream == _parser().get_default("workstream"):
+        args.workstream = [
+            "existing_repo_inventory",
+            "governance_artifact_install",
+            "gate_gap_analysis",
+        ]
+    if not _customized_default(args, "build_block"):
+        args.build_block = "existing_repo_adoption"
 
 
 def _validation_commands(profile: str) -> list[str]:
@@ -348,6 +461,7 @@ def install(args: argparse.Namespace) -> InstallResult:
     values = _placeholder_values(args, target_root)
     _replace_placeholders(target_root, values)
     _configure_governance_profile(target_root, args.profile)
+    _configure_architecture_boundaries(target_root, args.profile)
     gate_commands = dict(args.gate_command)
     _configure_makefile(target_root=target_root, profile=args.profile, gate_commands=gate_commands)
     generated_artifacts = _generate_phase_artifacts(args, target_root)
@@ -398,6 +512,12 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Install the governance pack into a target repository.")
     parser.add_argument("--target", type=Path, required=True, help="Target repository root.")
     parser.add_argument("--profile", choices=PROFILE_CHOICES, default="standard")
+    parser.add_argument(
+        "--adoption-mode",
+        choices=ADOPTION_MODE_CHOICES,
+        default="fresh",
+        help="Use fresh for new repositories or existing to label conversion/inventory phase artifacts.",
+    )
     parser.add_argument("--project-id", help="Machine-readable project id. Defaults from --target name.")
     parser.add_argument("--project-name", help="Human-readable project name. Defaults from --project-id.")
     parser.add_argument("--product-name", help="Product name. Defaults from --project-name.")
@@ -445,6 +565,7 @@ def _finalize_args(args: argparse.Namespace) -> argparse.Namespace:
         args.project_name = _title_from_id(args.project_id)
     if args.product_name is None:
         args.product_name = args.project_name
+    _apply_adoption_mode_defaults(args)
     return args
 
 
@@ -452,6 +573,7 @@ def _print_summary(args: argparse.Namespace, result: InstallResult) -> None:
     target_root = args.target.resolve()
     print(f"installed governance pack into {target_root}")
     print(f"profile: {args.profile}")
+    print(f"adoption mode: {args.adoption_mode}")
     print(f"copied files: {result.copied_files}")
     if result.removed_template_examples:
         print("removed template examples: " + ", ".join(result.removed_template_examples))
@@ -478,6 +600,11 @@ def _print_summary(args: argparse.Namespace, result: InstallResult) -> None:
         if result.bootstrap_validation_output:
             print(result.bootstrap_validation_output)
 
+    if args.adoption_mode == "existing":
+        print(
+            "next: follow governance/EXISTING_REPO_ADOPTION.md and "
+            "governance/existing-repo-adoption.yml to inventory existing boundaries and wire gates"
+        )
     print("next: merge Makefile.fragment into the repo Makefile or include it from the repo Makefile")
 
 

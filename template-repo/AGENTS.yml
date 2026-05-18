@@ -103,6 +103,7 @@ governance:
       - remediation_history_entries_contain_closeout_validation_metadata
       - verified_or_closed_active_phase_logs_contain_required_closeout_fields
       - observability_contract_templates_match_schema_and_required_baseline
+      - mandatory_structural_rules_have_executable_gates_or_human_review_rationale
       - instantiated_governed_artifacts_have_no_unresolved_placeholders
   hotfix_lane_contract:
     eligibility:
@@ -191,6 +192,62 @@ prime_directive:
     - new_architectural_patterns_without_governance_updates
     - business_logic_in_routers_repositories_or_adapters
     - generic_helpers_without_two_real_call_sites
+pre_edit_contract:
+  required_before_editing:
+    - bounded_context
+    - architectural_layer
+    - command_or_query_side
+    - target_modules
+    - expected_tests
+    - forbidden_files
+  rule: identify the bounded context, layer, CQRS side, target modules, expected tests, and files that must not be touched before editing production code
+  ambiguity_response: stop and narrow scope before editing when any required field is ambiguous
+structural_guardrails:
+  executable_gate_policy:
+    rule: every mandatory structural rule must have an executable baseline gate or be explicitly marked human_review_only with rationale
+    human_review_only_requires:
+      - rule_id
+      - rationale
+      - reviewer_role
+      - phase_log_evidence
+  production_module_policy:
+    max_loc: 800
+    applies_to:
+      - production_source_modules
+    excluded_path_tokens:
+      - generated
+      - migrations
+      - vendor
+      - fixtures
+      - snapshots
+      - testdata
+      - tests
+    violation_response: stop_and_propose_module_split_before_editing
+  module_ownership_policy:
+    required_mappings:
+      - exactly_one_architectural_layer
+      - exactly_one_bounded_context_or_domain_concern
+    ambiguity_response: stop_and_update_architecture_boundaries_before_editing
+  cqrs_policy:
+    command_side:
+      - may_mutate_state_through_ports
+      - must_not_return_read_model_shapes
+    query_side:
+      - may_return_read_models
+      - must_not_mutate_state
+  ddd_dry_policy:
+    duplication_scope: bounded_context_first
+    cross_context_reuse_requires: explicit_shared_kernel_decision
+    shared_abstraction_requires:
+      - two_real_call_sites
+      - owning_context_or_shared_kernel
+      - owning_layer
+      - tests
+      - rationale
+  boundary_violation_response:
+    - stop_before_editing
+    - propose_module_split_or_boundary_update
+    - update_executable_gate_config_and_tests_with_approved_rule_changes
 engineering:
   architecture:
     style: cqrs_lite_with_strict_ports
@@ -213,14 +270,22 @@ engineering:
       - persistence_contracts_live_in_ports_or_repositories
       - routers_remain_http_translation_only
       - dry_adapter_composition
+      - production_modules_remain_under_configured_loc_cap
+      - modules_map_to_exactly_one_layer_and_one_bounded_context
+      - command_side_does_not_return_read_model_shapes
+      - query_side_does_not_mutate_state
+      - ddd_dry_reuse_requires_context_and_layer_ownership
   backend_boundary_rules:
     - commands model mutation use cases
+    - command-side code may mutate state through ports but must not return read-model shapes
     - queries model read use cases
+    - query-side code may return read models but must not mutate state
     - handlers orchestrate use cases and do not own business rules, persistence details, or HTTP translation
-    - domain layer owns business rules and stays framework-free and side-effect free
+    - domain services and entities own business rules only and must not import infrastructure, framework, persistence, cache, HTTP, queue, cloud, or telemetry clients directly
     - repository or port abstractions define persistence contracts without SQLAlchemy or external client details
+    - repositories and adapters own persistence and integration details only
     - infrastructure adapters own SQLAlchemy, cache, telemetry, and external service integration behind ports
-    - routers translate HTTP to application inputs and outputs only
+    - routers and controllers validate transport input, invoke application commands or queries, and map responses only
   frontend_boundary_rules:
     - presentation components do not call HTTP directly
     - route modules stay thin and delegate orchestration
@@ -246,6 +311,7 @@ testing_governance:
     - documentation_only_changes_are_the_only_default_exception_to_test_updates
     - all_affected_tests_pass_before_completion
     - tests_assert_behavior_not_implementation_trivia
+    - mandatory_structural_rules_have_executable_baseline_tests_or_human_review_only_rationale
   command_tests_should_cover_when_applicable:
     - successful_mutation
     - authorization_or_policy_failure
@@ -312,16 +378,29 @@ review_gate:
     - repository_decides_authorization
     - public_schema_changed_without_migration_note
     - tests_removed_instead_of_fixed
+    - production_module_exceeds_configured_loc_cap_without_split_plan
+    - module_maps_to_multiple_layers_or_bounded_contexts
+    - command_side_returns_read_model_shape
+    - query_side_mutates_state
 quality:
   required_suites:
     - governance_validation
-    - architecture
+    - architecture_module_size
+    - architecture_layer_membership
+    - architecture_context_membership
+    - architecture_import_boundaries
+    - architecture_cqrs_side
+    - architecture_router_thinness
+    - architecture_duplication
     - unit
     - integration
     - contract
     - lint
     - typecheck
-    - security
+    - security_secret_scan
+    - security_dependency_audit
+    - security_sbom
+    - security_vulnerability_scan
     - runtime_smoke
   mandatory_sync_rules:
     - update specs, plans, and MEMORY together when behavior or environment contracts change

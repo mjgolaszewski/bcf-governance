@@ -17,12 +17,14 @@ class GovernanceValidationError(ValueError):
     """Raised when governance artifacts are syntactically valid but semantically inconsistent."""
 
 
-PLACEHOLDER_PATTERN = re.compile(r"\{\{[^{}\n]+\}\}")
+PLACEHOLDER_PATTERN = re.compile(r"(?<!\$)\{\{[^{}\n]+\}\}")
 WINDOWS_ABSOLUTE_PATH_PATTERN = re.compile(r"^[A-Za-z]:[\\/]")
 MAKE_TARGET_PATTERN = re.compile(r"^([A-Za-z0-9_.-]+)\s*:(?:\s|$)")
 MAKE_INVOKED_TARGET_PATTERN = re.compile(r"(?:\$\((?:MAKE|make)\)|\bmake)\s+([A-Za-z0-9_.-]+)")
 OPTIONAL_PLACEHOLDER_SCAN_PATHS = (
     "docs/OPERATIONS.md",
+    "governance/EXISTING_REPO_ADOPTION.md",
+    "governance/existing-repo-adoption.yml",
     "Makefile.fragment",
     ".github/workflows/governance.yml",
     "phases/phase-NN-hotfixNN.yml",
@@ -61,29 +63,85 @@ RELEASE_GATE_MEANINGLESS_VERSION_PATTERN = re.compile(
 RELEASE_GATE_POLICY_MARKERS = {
     "governance_validation": ("validate_governance_yaml.py", "bcf validate", "governance-validate"),
     "architecture_tests": ("architecture",),
+    "architecture_module_size": ("architecture-module-size", "production_modules_respect_loc_cap", "module_size"),
+    "architecture_layer_membership": (
+        "architecture-layer-membership",
+        "production_modules_map_to_exactly_one_layer",
+        "layer_membership",
+    ),
+    "architecture_context_membership": (
+        "architecture-context-membership",
+        "production_modules_map_to_exactly_one_bounded_context",
+        "context_membership",
+    ),
+    "architecture_import_boundaries": (
+        "architecture-import-boundaries",
+        "boundary",
+        "import_boundaries",
+        "do_not_import",
+    ),
+    "architecture_cqrs_side": ("architecture-cqrs-side", "cqrs", "command_side", "query_side"),
+    "architecture_router_thinness": ("architecture-router-thinness", "routers_remain_thin", "router_thinness"),
+    "architecture_duplication": ("architecture-duplication", "duplication", "bounded_context_duplication"),
     "lint": ("ruff", "flake8", "pylint", "eslint", "biome", "clippy", "golangci-lint"),
     "typecheck": ("mypy", "pyright", "pyre", "tsc", "typecheck"),
     "automated_tests": ("pytest", "go test", "cargo test", "npm test", "pnpm test", "yarn test"),
     "contract_tests": ("contract",),
-    "security_scan": ("pip-audit", "safety", "trivy", "grype", "semgrep", "npm audit"),
+    "security_secret_scan": ("gitleaks", "trufflehog", "detect-secrets", "secret"),
+    "security_dependency_audit": ("pip-audit", "safety", "npm audit", "osv", "cargo audit"),
+    "security_sbom": ("syft", "cyclonedx", "sbom"),
+    "security_vulnerability_scan": ("trivy", "grype", "semgrep", "vulnerability"),
     "runtime_smoke": ("smoke", "docker", "compose", "health"),
 }
 DEFAULT_RELEASE_GATE_TARGETS = {
     "governance-validate",
     "architecture-test",
+    "architecture-module-size",
+    "architecture-layer-membership",
+    "architecture-context-membership",
+    "architecture-import-boundaries",
+    "architecture-cqrs-side",
+    "architecture-router-thinness",
+    "architecture-duplication",
     "lint",
     "typecheck",
     "test",
     "contract-test",
+    "security-secret-scan",
+    "security-dependency-audit",
+    "security-sbom",
+    "security-vulnerability-scan",
+    "runtime-smoke",
 }
 DEFAULT_RELEASE_GATE_POLICIES = {
     "governance-validate": "governance_validation",
     "architecture-test": "architecture_tests",
+    "architecture-module-size": "architecture_module_size",
+    "architecture-layer-membership": "architecture_layer_membership",
+    "architecture-context-membership": "architecture_context_membership",
+    "architecture-import-boundaries": "architecture_import_boundaries",
+    "architecture-cqrs-side": "architecture_cqrs_side",
+    "architecture-router-thinness": "architecture_router_thinness",
+    "architecture-duplication": "architecture_duplication",
     "lint": "lint",
     "typecheck": "typecheck",
     "test": "automated_tests",
     "contract-test": "contract_tests",
+    "security-secret-scan": "security_secret_scan",
+    "security-dependency-audit": "security_dependency_audit",
+    "security-sbom": "security_sbom",
+    "security-vulnerability-scan": "security_vulnerability_scan",
+    "runtime-smoke": "runtime_smoke",
 }
+MANDATORY_STRUCTURAL_GATE_TARGETS = (
+    "architecture-module-size",
+    "architecture-layer-membership",
+    "architecture-context-membership",
+    "architecture-import-boundaries",
+    "architecture-cqrs-side",
+    "architecture-router-thinness",
+    "architecture-duplication",
+)
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -343,10 +401,10 @@ def _load_governance_profile(
 
 def _load_architecture_boundaries(
     repo_root: Path, schema_cache: dict[str, dict[str, Any]]
-) -> Path | None:
+) -> tuple[dict[str, Any] | None, Path | None]:
     architecture_path = repo_root / "architecture-boundaries.yml"
     if not architecture_path.exists():
-        return None
+        return None, None
     architecture_rules = _load_yaml(architecture_path)
     _validate_schema(
         repo_root,
@@ -358,7 +416,7 @@ def _load_architecture_boundaries(
     _validate_document_path(
         repo_root, architecture_rules, architecture_path, context=str(architecture_path)
     )
-    return architecture_path
+    return architecture_rules, architecture_path
 
 
 def _makefile_target_bodies(makefile_path: Path) -> dict[str, list[str]]:
@@ -546,6 +604,96 @@ def _validate_release_gate_targets(
             target=target,
             commands=commands,
             command_policy=gates_by_target[target]["command_policy"],
+        )
+
+
+def _validate_ci_profile(profile: dict[str, Any] | None) -> None:
+    if profile is None:
+        return
+    ci_profile = _require_mapping(
+        profile.get("ci_profile"), context="governance-profile.yml ci_profile"
+    )
+    required_push_jobs = _require_string_sequence(
+        ci_profile.get("required_push_jobs"),
+        context="governance-profile.yml ci_profile.required_push_jobs",
+        min_items=1,
+    )
+    gates_by_target = _release_gates_from_profile(profile)
+    missing_jobs = sorted(job for job in required_push_jobs if job not in gates_by_target)
+    if missing_jobs:
+        raise GovernanceValidationError(
+            "governance-profile.yml ci_profile.required_push_jobs must reference release gate "
+            "targets: " + ", ".join(missing_jobs)
+        )
+    inactive_jobs = sorted(
+        job
+        for job in required_push_jobs
+        if gates_by_target[job]["status"] in RELEASE_GATE_INACTIVE_STATUSES
+    )
+    if inactive_jobs:
+        raise GovernanceValidationError(
+            "governance-profile.yml ci_profile.required_push_jobs cannot reference inactive "
+            "release gates: " + ", ".join(inactive_jobs)
+        )
+
+
+def _validate_structural_gate_contract(
+    profile: dict[str, Any] | None,
+    architecture_rules: dict[str, Any] | None,
+) -> None:
+    if architecture_rules is None:
+        return
+    architecture = _require_mapping(
+        architecture_rules.get("architecture"), context="architecture-boundaries.yml architecture"
+    )
+    gate_policy = _require_mapping(
+        architecture.get("mandatory_rule_gate_policy"),
+        context="architecture-boundaries.yml architecture.mandatory_rule_gate_policy",
+    )
+    if not gate_policy.get("every_mandatory_rule_has_executable_gate", False):
+        return
+    human_review_rules = _require_sequence(
+        gate_policy.get("human_review_only_rules"),
+        context="architecture-boundaries.yml architecture.mandatory_rule_gate_policy.human_review_only_rules",
+    )
+    human_review_ids = {
+        _require_string(
+            _require_mapping(
+                rule,
+                context=(
+                    "architecture-boundaries.yml "
+                    f"architecture.mandatory_rule_gate_policy.human_review_only_rules[{index}]"
+                ),
+            ).get("rule_id"),
+            context=(
+                "architecture-boundaries.yml "
+                f"architecture.mandatory_rule_gate_policy.human_review_only_rules[{index}].rule_id"
+            ),
+        )
+        for index, rule in enumerate(human_review_rules, start=1)
+    }
+    gates_by_target = _release_gates_from_profile(profile)
+    missing_targets = sorted(
+        target
+        for target in MANDATORY_STRUCTURAL_GATE_TARGETS
+        if target not in gates_by_target and target not in human_review_ids
+    )
+    if missing_targets:
+        raise GovernanceValidationError(
+            "mandatory structural rules must have executable release gates or human_review_only "
+            "rationale: " + ", ".join(missing_targets)
+        )
+    inactive_targets = sorted(
+        target
+        for target in MANDATORY_STRUCTURAL_GATE_TARGETS
+        if target in gates_by_target
+        and gates_by_target[target]["status"] in RELEASE_GATE_INACTIVE_STATUSES
+        and target not in human_review_ids
+    )
+    if inactive_targets:
+        raise GovernanceValidationError(
+            "mandatory structural release gates cannot be inactive without human_review_only "
+            "rationale: " + ", ".join(inactive_targets)
         )
 
 
@@ -1386,7 +1534,7 @@ def validate_repo_root(
     build_plan = _load_yaml(build_plan_path)
     ledger = _load_yaml(phase_ledger_path)
     governance_profile, governance_profile_path = _load_governance_profile(repo_root, schema_cache)
-    architecture_boundaries_path = _load_architecture_boundaries(repo_root, schema_cache)
+    architecture_rules, architecture_boundaries_path = _load_architecture_boundaries(repo_root, schema_cache)
 
     _validate_schema(repo_root, schema_cache, agents, schema_name="agents.schema.json", context="AGENTS.yml")
     _validate_schema(repo_root, schema_cache, memory, schema_name="memory.schema.json", context="MEMORY.yml")
@@ -1426,6 +1574,8 @@ def validate_repo_root(
     active_phase_paths = _validate_active_phase(
         repo_root, schema_cache, ledger, memory, declared_phase_paths
     )
+    _validate_ci_profile(governance_profile)
+    _validate_structural_gate_contract(governance_profile, architecture_rules)
 
     if not allow_placeholders:
         optional_paths = [

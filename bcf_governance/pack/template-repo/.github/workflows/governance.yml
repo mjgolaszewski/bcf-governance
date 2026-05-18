@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  governance:
+  governance-validate:
     runs-on: [{{RUNNER_LABELS}}]
     steps:
       - uses: actions/checkout@v4
@@ -19,3 +19,70 @@ jobs:
         run: python3 -m pip install -r requirements-governance.txt
       - name: Validate governance YAML
         run: python3 scripts/validate_governance_yaml.py
+
+  architecture:
+    runs-on: [{{RUNNER_LABELS}}]
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - architecture-module-size
+          - architecture-layer-membership
+          - architecture-context-membership
+          - architecture-import-boundaries
+          - architecture-cqrs-side
+          - architecture-router-thinness
+          - architecture-duplication
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install validation dependencies
+        run: python3 -m pip install -r requirements-governance.txt
+      - name: Run ${{ matrix.target }}
+        run: make ${{ matrix.target }}
+
+  quality:
+    runs-on: [{{RUNNER_LABELS}}]
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - lint
+          - typecheck
+          - test
+          - contract-test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install validation dependencies
+        run: python3 -m pip install -r requirements-governance.txt
+      - name: Run ${{ matrix.target }}
+        run: make ${{ matrix.target }}
+
+  security:
+    runs-on: [{{RUNNER_LABELS}}]
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - security-secret-scan
+          - security-dependency-audit
+          - security-sbom
+          - security-vulnerability-scan
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ${{ matrix.target }}
+        run: make ${{ matrix.target }}
+
+  runtime-smoke:
+    runs-on: [{{RUNNER_LABELS}}]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run runtime smoke
+        run: make runtime-smoke

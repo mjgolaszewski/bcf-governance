@@ -9,18 +9,117 @@ document:
 architecture:
   source_roots:
     - backend/src
+  mandatory_rule_gate_policy:
+    every_mandatory_rule_has_executable_gate: true
+    human_review_only_allowed_with_rationale: true
+    human_review_only_rules: []
+  production_module_policy:
+    max_loc: 800
+    excluded_path_tokens:
+      - generated
+      - migrations
+      - migration
+      - vendor
+      - fixtures
+      - snapshots
+      - testdata
+      - tests
+    excluded_file_suffixes:
+      - _pb2.py
+      - _pb2_grpc.py
+  bounded_contexts:
+    required: true
+    context_root_tokens:
+      - domain
+      - domains
+      - feature
+      - features
+      - context
+      - contexts
+      - bounded_context
+      - bounded_contexts
+      - infra
+      - infrastructure
+      - adapter
+      - adapters
+    shared_context_tokens:
+      - shared
+      - shared_kernel
+  layer_membership_policy:
+    exactly_one_layer: true
+  context_membership_policy:
+    exactly_one_context: true
+  cqrs_policy:
+    command_path_tokens:
+      - command
+      - commands
+    query_path_tokens:
+      - query
+      - queries
+    read_model_tokens:
+      - read_model
+      - read_models
+      - view_model
+      - view_models
+      - projection
+      - projections
+    write_method_names:
+      - bulk_save_objects
+      - commit
+      - create
+      - delete
+      - enqueue
+      - execute_write
+      - flush
+      - merge
+      - publish
+      - remove
+      - save
+      - update
+  thin_router_policy:
+    max_branch_nodes: 4
+    max_loop_nodes: 0
+    delegate_call_name_tokens:
+      - command
+      - query
+      - handler
+      - use_case
+      - service
+  duplication_policy:
+    enabled: true
+    min_duplicate_lines: 12
+    scoped_to_bounded_context: true
+    allowed_cross_context_duplication: true
+  shared_abstraction_policy:
+    shared_path_tokens:
+      - common
+      - helpers
+      - shared
+      - utils
+    min_real_call_sites: 2
+    required_metadata:
+      - owning_layer
+      - owning_context_or_shared_kernel
+      - rationale
+      - tests
   layers:
     domain:
       path_tokens:
         - domain
       required: true
       forbidden_import_prefixes:
+        - boto3
+        - botocore
         - fastapi
-        - sqlalchemy
-        - requests
+        - google.cloud
+        - grpc
         - httpx
+        - opentelemetry
         - psycopg
+        - requests
         - redis
+        - sentry_sdk
+        - sqlalchemy
         - pydantic_settings
       forbidden_layer_imports:
         - use_cases
@@ -42,6 +141,7 @@ architecture:
         - sqlalchemy
         - requests
         - httpx
+        - opentelemetry
         - psycopg
         - redis
         - pydantic_settings
@@ -64,6 +164,7 @@ architecture:
         - redis
         - requests
         - httpx
+        - opentelemetry
       forbidden_layer_imports:
         - routers
         - infrastructure
