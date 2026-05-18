@@ -11,144 +11,46 @@ project:
   project_name: "{{PROJECT_NAME}}"
   product_name: "{{PRODUCT_NAME}}"
 regression_shield:
-  purpose: keep this file machine-readable and instruction-only
-  invariants:
-    - record execution evidence in phases/*.yml, not here
-    - keep plans/product-spec.yml as the canonical product authority
-    - keep plans/build-plan.yml as the canonical machine-readable build plan
-    - keep plans/phase-ledger.yml as the active planning ledger
-    - update this file only when governance or authority ordering changes
+  purpose: machine-readable agent policy; do not use as an execution log
+  invariants: [record evidence in phases/*.yml, keep product scope in plans/product-spec.yml, keep delivery sequence in plans/build-plan.yml, keep active state in plans/phase-ledger.yml and MEMORY.yml, append entries tersely but with full intent action evidence and consequence]
 authorities:
-  precedence:
-    - user_instructions
-    - AGENTS.yml
-    - plans/product-spec.yml
-    - plans/build-plan.yml
-    - plans/phase-ledger.yml
-    - MEMORY.yml
-  execution_evidence_location:
-    - phases/*.yml
+  precedence: [user_instructions, AGENTS.yml, plans/product-spec.yml, plans/build-plan.yml, plans/phase-ledger.yml, MEMORY.yml]
+  execution_evidence_location: [phases/*.yml]
 governance:
   file_format_policy:
-    canonical_machine_readable_artifacts:
-    - AGENTS.yml
-    - MEMORY.yml
-    - architecture-boundaries.yml
-    - governance-profile.yml
-    - schemas/*.json
-    - contracts/observability/v1/*.contract.yml
-    - plans/*.yml
-    - phases/*.yml
-    note: audit metadata and regression-shield intent live as YAML data, not comment headers
-    template_pack_alignment:
-      - governed build artifacts follow the naming, ownership, and validation conventions established by the local template pack
-      - any new phase or hotfix artifacts must remain scaffold-compatible with scripts/scaffold_governance_artifacts.py
+    canonical_machine_readable_artifacts: [AGENTS.yml, MEMORY.yml, architecture-boundaries.yml, governance-profile.yml, schemas/*.json, contracts/observability/v1/*.contract.yml, plans/*.yml, phases/*.yml]
+    note: YAML data is canonical; prose docs explain but do not override governed state
+    template_pack_alignment: [new phase and hotfix artifacts must stay scaffold-compatible, mirrored template files must update together]
   structural_schema_contract:
     root: schemas/
-    required_schemas:
-      - schemas/agents.schema.json
-      - schemas/architecture-boundaries.schema.json
-      - schemas/governance-profile.schema.json
-      - schemas/memory.schema.json
-      - schemas/product-spec.schema.json
-      - schemas/build-plan.schema.json
-      - schemas/phase-ledger.schema.json
-      - schemas/phase-plan.schema.json
-      - schemas/phase-workitems.schema.json
-      - schemas/phase-log.schema.json
-      - schemas/hotfix-log.schema.json
-      - schemas/observability-contract.schema.json
+    required_schemas: [schemas/agents.schema.json, schemas/architecture-boundaries.schema.json, schemas/governance-profile.schema.json, schemas/memory.schema.json, schemas/product-spec.schema.json, schemas/build-plan.schema.json, schemas/phase-ledger.schema.json, schemas/phase-plan.schema.json, schemas/phase-workitems.schema.json, schemas/phase-log.schema.json, schemas/hotfix-log.schema.json, schemas/observability-contract.schema.json]
   build_plan_contract:
     format: yaml
-    required_properties:
-      - tightly_scoped_deliverables
-      - parallelizable_workstreams
-      - hard_dependencies
-      - docker_first_local_runtime
-      - ast_architecture_tests
-      - strict_boundaries
-      - observability_reference_model
-      - completeness_standard
+    required_properties: [tightly_scoped_deliverables, parallelizable_workstreams, hard_dependencies, docker_first_local_runtime, ast_architecture_tests, strict_boundaries, observability_reference_model, completeness_standard]
     completeness_standard: full_completeness_for_declared_scope
   phase_log_contract:
     status_taxonomy:
-      planned: phase evidence exists and current phase is defined but not yet executed
-      completed: implementation is finished and acceptance-critical checks are ready or partially run
-      verified: acceptance-critical checks passed in the required environment
-      closed: verified and included in the latest required rerun for the touched scope
-    final_closeout_required_fields:
-      - all_tickets_closed
-      - required_suites_green
-      - ast_architecture_gates_green
-      - health_checks_green
-      - known_warnings
-      - known_constraints
+      planned: defined_not_executed
+      completed: implementation_done_checks_pending_or_partial
+      verified: required_checks_passed
+      closed: verified_and_reconciled
+    final_closeout_required_fields: [all_tickets_closed, required_suites_green, ast_architecture_gates_green, health_checks_green, known_warnings, known_constraints]
   semantic_validation_contract:
     validator: scripts/validate_governance_yaml.py
-    required_checks:
-      - governed_artifacts_match_structural_schemas
-      - governed_yaml_parses
-      - active_phase_paths_exist
-      - declared_phase_catalogs_align_between_product_spec_and_build_plan
-      - declared_phase_artifacts_exist_for_every_build_plan_phase
-      - active_phase_ids_align_across_plan_workitems_and_log
-      - active_phase_lifecycle_status_uses_governed_taxonomy
-      - blocked_paused_or_abandoned_active_phases_record_control_metadata
-      - MEMORY_active_artifacts_match_phase_ledger_active_phase
-      - completed_release_trains_have_non_planned_phase_history
-      - document_paths_are_repo_relative_posix_and_match_artifact_location
-      - release_gate_targets_are_configured_before_release_check_is_trusted
-      - hotfix_records_align_with_logs_and_filename_convention
-      - hotfix_modes_align_between_records_and_logs
-      - remediation_history_entries_contain_closeout_validation_metadata
-      - verified_or_closed_active_phase_logs_contain_required_closeout_fields
-      - observability_contract_templates_match_schema_and_required_baseline
-      - mandatory_structural_rules_have_executable_gates_or_human_review_rationale
-      - instantiated_governed_artifacts_have_no_unresolved_placeholders
+    required_checks: [schemas, YAML_parse, document_paths, placeholders, phase_catalog_alignment, active_phase_alignment, memory_alignment, release_gate_wiring, hotfix_alignment, observability_contracts, mandatory_structural_gates]
   hotfix_lane_contract:
-    eligibility:
-      - default_branch_red_ci
-      - release_blocking_regression
-      - security_or_expiring_external_breakage
-    minimum_required_artifacts:
-      - phase_ledger_hotfix_record
-      - hotfix_phase_log_entry
-      - canonical_artifact_sync_when_behavior_or_environment_contracts_change
+    eligibility: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
+    minimum_required_artifacts: [phase_ledger_hotfix_record, hotfix_phase_log_entry, canonical_artifact_sync_when_contracts_change]
     modes:
       lite:
-        allowed_when:
-          - single_commit_fix
-          - no_public_contract_change
-          - no_security_scope_change
+        allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]
       full:
-        required_when:
-          - default_branch_red_ci
-          - release_blocking_regression
-          - security_or_expiring_external_breakage
+        required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
     machine_assist:
       scaffold_script: scripts/scaffold_governance_artifacts.py
-      required_record_fields:
-        - id
-        - mode
-        - status
-        - triggered_by_commits
-        - failing_workflows
-        - root_cause
-        - remediated_in_phase
-        - hotfix_log
-        - canonical_artifacts
-      remediation_history_required_fields:
-        - id
-        - mode
-        - recorded_at_utc
-        - action
-        - remediated_in_phase
-        - hotfix_log
-        - canonical_artifacts
-        - local_validation
-      filename_convention:
-        - hotfix log filenames use the stem phase-NN-hotfix##
-        - the phase number comes from hotfix.related_phase_id
+      required_record_fields: [id, mode, status, triggered_by_commits, failing_workflows, root_cause, remediated_in_phase, hotfix_log, canonical_artifacts]
+      remediation_history_required_fields: [id, mode, recorded_at_utc, action, remediated_in_phase, hotfix_log, canonical_artifacts, local_validation]
+      filename_convention: [hotfix log filenames use phase-NN-hotfix##, phase number comes from hotfix.related_phase_id]
   artifact_ownership_contract:
     canonical_owners:
       governance_rules_and_authority_order: AGENTS.yml
@@ -159,95 +61,49 @@ governance:
       active_phase_state_blockers_and_validation_commands: plans/phase-ledger.yml
       durable_context_and_active_artifact_pointers: MEMORY.yml
       observability_contract_templates: contracts/observability/v1/
-    duplication_rules:
-      - repeated_fields_must_have_a_declared_canonical_owner
-      - mirrored_or_derived_fields_must_update_in_the_same_change_as_their_canonical_source
-      - governed build artifacts retain the template-pack ownership boundaries unless this file changes them explicitly
+    duplication_rules: [repeated fields need a canonical owner, derived fields update with their source, template-pack ownership boundaries remain unless this file changes]
   phase_transition_contract:
     active_phase_lifecycle_taxonomy:
-      planned: phase is defined and ready for execution handoff
-      active: implementation is in flight for the declared scope
-      blocked: execution is stopped until an explicit unblock condition is met
-      paused: execution is intentionally paused and can resume under a declared condition
-      completed: implementation is done and acceptance-critical checks are ready or partially run
-      verified: required checks passed in the required environment
-      closed: verified and reconciled for the touched scope
-      abandoned: phase will not continue and the abandonment reason is recorded
-    rollover_rules:
-      - activating_a_successor_phase_must_update_plans_phase_ledger_yml_and_MEMORY_yml_in_the_same_change
-      - unresolved_outgoing_phase_risks_must_be_recorded_before_successor_activation
+      planned: ready_for_handoff
+      active: implementation_in_flight
+      blocked: stopped_until_unblock_condition
+      paused: intentionally_parked_until_resume_condition
+      completed: implementation_done_checks_pending_or_partial
+      verified: required_checks_passed
+      closed: verified_and_reconciled
+      abandoned: stopped_with_reason
+    rollover_rules: [successor activation updates phase-ledger and MEMORY together, unresolved outgoing risks are recorded before successor activation]
   instruction_only: true
 runtime_surfaces:
-  authoritative_surfaces:
-    - local_runtime
-    - ci_runner
-  rules:
-    - CI must not rely on ambient workstation state
-    - runtime evidence must come from the environment declared by the phase
+  authoritative_surfaces: [local_runtime, ci_runner]
+  rules: [CI must be self-seeding, runtime evidence must come from the declared environment]
 prime_directive:
-  statement: agents implement changes inside the smallest valid vertical slice, preserve public contracts unless explicitly instructed, and prove behavior through tests
-  forbidden_default_behavior:
-    - broad_refactors_without_explicit_authorization
-    - public_contract_changes_without_migration_note_and_tests
-    - new_architectural_patterns_without_governance_updates
-    - business_logic_in_routers_repositories_or_adapters
-    - generic_helpers_without_two_real_call_sites
+  statement: implement the smallest valid vertical slice, preserve public contracts unless explicitly instructed, and prove behavior with tests
+  forbidden_default_behavior: [broad_refactors_without_explicit_authorization, public_contract_changes_without_migration_note_and_tests, new_architectural_patterns_without_governance_updates, business_logic_in_routers_repositories_or_adapters, generic_helpers_without_two_real_call_sites]
 pre_edit_contract:
-  required_before_editing:
-    - bounded_context
-    - architectural_layer
-    - command_or_query_side
-    - target_modules
-    - expected_tests
-    - forbidden_files
-  rule: identify the bounded context, layer, CQRS side, target modules, expected tests, and files that must not be touched before editing production code
-  ambiguity_response: stop and narrow scope before editing when any required field is ambiguous
+  required_before_editing: [bounded_context, architectural_layer, command_or_query_side, target_modules, expected_tests, forbidden_files]
+  rule: identify scope and forbidden surfaces before editing production code
+  ambiguity_response: stop_and_narrow_scope_before_editing
 structural_guardrails:
   executable_gate_policy:
-    rule: every mandatory structural rule must have an executable baseline gate or be explicitly marked human_review_only with rationale
-    human_review_only_requires:
-      - rule_id
-      - rationale
-      - reviewer_role
-      - phase_log_evidence
+    rule: mandatory structural rules need executable gates or human_review_only rationale
+    human_review_only_requires: [rule_id, rationale, reviewer_role, phase_log_evidence]
   production_module_policy:
     max_loc: 800
-    applies_to:
-      - production_source_modules
-    excluded_path_tokens:
-      - generated
-      - migrations
-      - vendor
-      - fixtures
-      - snapshots
-      - testdata
-      - tests
+    applies_to: [production_source_modules]
+    excluded_path_tokens: [generated, migrations, vendor, fixtures, snapshots, testdata, tests]
     violation_response: stop_and_propose_module_split_before_editing
   module_ownership_policy:
-    required_mappings:
-      - exactly_one_architectural_layer
-      - exactly_one_bounded_context_or_domain_concern
+    required_mappings: [exactly_one_architectural_layer, exactly_one_bounded_context_or_domain_concern]
     ambiguity_response: stop_and_update_architecture_boundaries_before_editing
   cqrs_policy:
-    command_side:
-      - may_mutate_state_through_ports
-      - must_not_return_read_model_shapes
-    query_side:
-      - may_return_read_models
-      - must_not_mutate_state
+    command_side: [may_mutate_state_through_ports, must_not_return_read_model_shapes]
+    query_side: [may_return_read_models, must_not_mutate_state]
   ddd_dry_policy:
     duplication_scope: bounded_context_first
     cross_context_reuse_requires: explicit_shared_kernel_decision
-    shared_abstraction_requires:
-      - two_real_call_sites
-      - owning_context_or_shared_kernel
-      - owning_layer
-      - tests
-      - rationale
-  boundary_violation_response:
-    - stop_before_editing
-    - propose_module_split_or_boundary_update
-    - update_executable_gate_config_and_tests_with_approved_rule_changes
+    shared_abstraction_requires: [two_real_call_sites, owning_context_or_shared_kernel, owning_layer, tests, rationale]
+  boundary_violation_response: [stop_before_editing, propose_module_split_or_boundary_update, update_gate_config_and_tests_with_approved_rule_changes]
 engineering:
   architecture:
     style: cqrs_lite_with_strict_ports
@@ -260,159 +116,42 @@ engineering:
       handler: orchestration_only
       domain: business_rules
       port_or_repository: persistence_contract
-      infrastructure: sqlalchemy_and_external_systems
+      infrastructure: external_systems_behind_ports
       router: http_translation_only
-    enforcement:
-      - ast_enforced_import_boundaries
-      - command_and_query_use_cases_kept_separate
-      - handlers_remain_orchestration_only
-      - framework_free_domain_model_where_applicable
-      - persistence_contracts_live_in_ports_or_repositories
-      - routers_remain_http_translation_only
-      - dry_adapter_composition
-      - production_modules_remain_under_configured_loc_cap
-      - modules_map_to_exactly_one_layer_and_one_bounded_context
-      - command_side_does_not_return_read_model_shapes
-      - query_side_does_not_mutate_state
-      - ddd_dry_reuse_requires_context_and_layer_ownership
-  backend_boundary_rules:
-    - commands model mutation use cases
-    - command-side code may mutate state through ports but must not return read-model shapes
-    - queries model read use cases
-    - query-side code may return read models but must not mutate state
-    - handlers orchestrate use cases and do not own business rules, persistence details, or HTTP translation
-    - domain services and entities own business rules only and must not import infrastructure, framework, persistence, cache, HTTP, queue, cloud, or telemetry clients directly
-    - repository or port abstractions define persistence contracts without SQLAlchemy or external client details
-    - repositories and adapters own persistence and integration details only
-    - infrastructure adapters own SQLAlchemy, cache, telemetry, and external service integration behind ports
-    - routers and controllers validate transport input, invoke application commands or queries, and map responses only
-  frontend_boundary_rules:
-    - presentation components do not call HTTP directly
-    - route modules stay thin and delegate orchestration
-    - API DTOs are mapped at the boundary before UI consumption
+    enforcement: [ast_enforced_import_boundaries, command_query_separation, orchestration_only_handlers, framework_free_domain, ports_for_persistence_contracts, thin_routers, dry_adapter_composition, configured_module_loc_cap, exactly_one_layer_and_context, ddd_dry_reuse_requires_ownership]
+  backend_boundary_rules: [commands mutate through ports and do not return read models, queries return read models and do not mutate state, handlers orchestrate only, domain owns business rules and imports no outer layers or clients, ports define contracts without concrete clients, adapters own persistence and integration details, routers translate HTTP and delegate]
+  frontend_boundary_rules: [presentation components do not call HTTP directly, route modules stay thin, DTOs are mapped at the boundary]
 contract_first_rules:
-  required_sequence:
-    - define_or_update_contract_models
-    - define_or_update_ports
-    - add_or_update_tests
-    - implement_use_case_or_handler
-    - wire_router
-    - update_infrastructure_adapter_only_if_required
+  required_sequence: [contracts, ports, tests, use_case_or_handler, router, infrastructure_adapter_if_required]
   public_contract_policy:
     preserve_public_contracts_by_default: true
     backward_compatible_changes_allowed: true
-    breaking_changes_require:
-      - explicit_instruction
-      - migration_note
-      - versioned_route_or_compatibility_shim
-      - updated_router_contract_tests
+    breaking_changes_require: [explicit_instruction, migration_note, versioned_route_or_compatibility_shim, updated_router_contract_tests]
 testing_governance:
-  required_for_every_change:
-    - documentation_only_changes_are_the_only_default_exception_to_test_updates
-    - all_affected_tests_pass_before_completion
-    - tests_assert_behavior_not_implementation_trivia
-    - mandatory_structural_rules_have_executable_baseline_tests_or_human_review_only_rationale
-  command_tests_should_cover_when_applicable:
-    - successful_mutation
-    - authorization_or_policy_failure
-    - domain_invariant_failure
-    - idempotency_or_safe_retry_behavior
-    - persistence_calls_through_ports
-  query_tests_should_cover_when_applicable:
-    - successful_read
-    - empty_result_behavior
-    - filtering_sorting_or_pagination_rules
-    - no_mutation_or_external_side_effect
-  router_tests_should_cover_when_applicable:
-    - http_status_mapping
-    - request_validation
-    - response_schema
-    - authentication_or_authorization_dependency_behavior
+  required_for_every_change: [docs_only_changes_are_default_test_exception, affected_tests_pass_before_completion, tests_assert_behavior, mandatory_structural_rules_have_gate_or_human_review_rationale]
+  command_tests_should_cover_when_applicable: [successful_mutation, authorization_or_policy_failure, domain_invariant_failure, idempotency_or_safe_retry_behavior, persistence_calls_through_ports]
+  query_tests_should_cover_when_applicable: [successful_read, empty_result_behavior, filtering_sorting_or_pagination_rules, no_mutation_or_external_side_effect]
+  router_tests_should_cover_when_applicable: [http_status_mapping, request_validation, response_schema, auth_dependency_behavior]
 transaction_policy:
   owner: use_case_or_handler
-  rules:
-    - use_cases_or_handlers_coordinate_transaction_boundaries
-    - repositories_do_not_commit_unless_explicitly_designed_as_unit_of_work_boundaries
-    - external_side_effects_must_not_occur_before_irreversible_commit_unless_idempotent
-    - retries_require_idempotency_keys_or_safe_retry_semantics
+  rules: [handlers_coordinate_transactions, repositories_do_not_commit_unless_unit_of_work, external_side_effects_wait_for_irreversible_commit_unless_idempotent, retries_need_idempotency_or_safe_retry_semantics]
 error_policy:
-  rules:
-    - domain_errors_live_in_domain_or_feature_local_error_modules
-    - use_cases_or_handlers_return_or_raise_typed_application_errors
-    - routers_map_typed_errors_to_http_status_codes
-    - raw_infrastructure_errors_must_not_cross_http_boundaries
+  rules: [domain_errors_stay_domain_or_feature_local, handlers_raise_or_return_typed_application_errors, routers_map_typed_errors_to_http, raw_infrastructure_errors_do_not_cross_http]
 security_policy:
-  rules:
-    - authorization_must_occur_before_mutation
-    - agents_must_not_weaken_auth_to_make_tests_pass
-    - agents_must_not_bypass_policy_checks
-    - agents_must_not_remove_validation_without_explicit_instruction
-    - secrets_must_not_appear_in_code_logs_or_non_fake_tests
+  rules: [authorize_before_mutation, do_not_weaken_auth_for_tests, do_not_bypass_policy_checks, do_not_remove_validation_without_instruction, no_secrets_in_code_logs_or_non_fake_tests]
 persistence_policy:
-  rules:
-    - use_cases_depend_on_ports_or_repository_contracts
-    - sqlalchemy_models_must_not_leak_into_domain_or_router_responses
-    - adapters_translate_persistence_models_to_domain_or_contract_models
-    - migrations_require_explicit_escalation_and_rollback_consideration
+  rules: [use_cases_depend_on_ports_or_repository_contracts, sqlalchemy_models_do_not_leak_to_domain_or_router_responses, adapters_translate_persistence_models, migrations_require_escalation_and_rollback_consideration]
 api_policy:
-  rules:
-    - router_functions_must_be_thin
-    - router_functions_validate_http_input_and_call_one_use_case_or_handler
-    - router_functions_map_typed_errors_to_http_responses
-    - responses_use_declared_contract_models
-    - orm_objects_must_not_be_returned_directly
+  rules: [routers_are_thin, routers_validate_input_call_one_use_case_and_map_errors, responses_use_contract_models, orm_objects_are_not_returned_directly]
 review_gate:
-  required_before_merge:
-    - changed_files_are_limited_to_the_authorized_slice_or_have_explicit_escalation
-    - tests_were_added_or_updated_when_behavior_changed
-    - all_relevant_tests_pass
-    - no_unauthorized_public_contract_changes
-    - no_forbidden_dependency_direction_violations
-    - no_new_generic_utilities_without_justification
-    - no_hidden_auth_or_security_weakening
-    - no_unrelated_formatting_churn
-  automatic_rejection_triggers:
-    - router_contains_business_logic
-    - domain_imports_infrastructure
-    - use_case_or_handler_imports_fastapi_request_or_response_objects
-    - repository_decides_authorization
-    - public_schema_changed_without_migration_note
-    - tests_removed_instead_of_fixed
-    - production_module_exceeds_configured_loc_cap_without_split_plan
-    - module_maps_to_multiple_layers_or_bounded_contexts
-    - command_side_returns_read_model_shape
-    - query_side_mutates_state
+  required_before_merge: [changed_files_limited_to_authorized_slice_or_escalated, tests_updated_when_behavior_changed, relevant_tests_pass, no_unauthorized_public_contract_changes, no_forbidden_dependency_direction, no_new_generic_utilities_without_justification, no_hidden_auth_or_security_weakening, no_unrelated_formatting_churn]
+  automatic_rejection_triggers: [router_contains_business_logic, domain_imports_infrastructure, handler_imports_http_objects, repository_decides_authorization, public_schema_changed_without_migration_note, tests_removed_instead_of_fixed, production_module_exceeds_loc_cap_without_split_plan, module_maps_to_multiple_layers_or_contexts, command_side_returns_read_model_shape, query_side_mutates_state]
 quality:
-  required_suites:
-    - governance_validation
-    - architecture_module_size
-    - architecture_layer_membership
-    - architecture_context_membership
-    - architecture_import_boundaries
-    - architecture_cqrs_side
-    - architecture_router_thinness
-    - architecture_duplication
-    - unit
-    - integration
-    - contract
-    - lint
-    - typecheck
-    - security_secret_scan
-    - security_dependency_audit
-    - security_sbom
-    - security_vulnerability_scan
-    - runtime_smoke
-  mandatory_sync_rules:
-    - update specs, plans, and MEMORY together when behavior or environment contracts change
-    - update observability contracts and contract tests together when telemetry or logging shape changes
-    - record unresolved blockers in the active phase ledger before implementation proceeds
-    - semantic governance validation must pass when governed artifacts change
-    - emergency hotfixes must satisfy the hotfix lane contract and reconcile into canonical artifacts before closeout
+  required_suites: [governance_validation, architecture_module_size, architecture_layer_membership, architecture_context_membership, architecture_import_boundaries, architecture_cqrs_side, architecture_router_thinness, architecture_duplication, unit, integration, contract, lint, typecheck, security_secret_scan, security_dependency_audit, security_sbom, security_vulnerability_scan, runtime_smoke]
+  mandatory_sync_rules: [update specs plans and MEMORY when behavior or environment contracts change, update observability contracts and tests together, record blockers before implementation proceeds, governance validation passes when governed artifacts change, hotfixes reconcile into canonical artifacts before closeout]
 git_scope:
   default_root: "{{REPO_ROOT}}"
-  rules:
-    - stage explicit scopes when work spans multiple surfaces
-    - verify staged files before commit
+  rules: [stage explicit scopes, verify staged files before commit]
 references:
   canonical_product_spec: plans/product-spec.yml
   canonical_build_plan: plans/build-plan.yml

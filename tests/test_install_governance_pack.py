@@ -114,8 +114,8 @@ def test_installer_bootstraps_standard_profile_and_reports_unwired_gates(tmp_pat
     assert not (target / "phases/phase-NN-log.yml").exists()
     assert (target / "contracts/observability/v1/telemetry.contract.yml").exists()
     assert (target / "contracts/observability/v1/logging.contract.yml").exists()
-    assert (target / "governance/EXISTING_REPO_ADOPTION.md").exists()
-    assert (target / "governance/existing-repo-adoption.yml").exists()
+    assert not (target / "governance/EXISTING_REPO_ADOPTION.md").exists()
+    assert not (target / "governance/existing-repo-adoption.yml").exists()
     assert (target / ".github/workflows/governance.yml").exists()
     assert "AGENTS.yml" in (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "AGENTS.yml" in (target / "CLAUDE.md").read_text(encoding="utf-8")
@@ -246,6 +246,8 @@ def test_installer_existing_adoption_mode_labels_conversion_phase(tmp_path: Path
 
     assert "adoption mode: existing" in result.stdout
     assert "governance/EXISTING_REPO_ADOPTION.md" in result.stdout
+    assert (target / "governance/EXISTING_REPO_ADOPTION.md").exists()
+    assert (target / "governance/existing-repo-adoption.yml").exists()
 
     plan = yaml.safe_load((target / "plans/phase-01-plan.yml").read_text(encoding="utf-8"))
     assert plan["phase"]["build_block"] == "existing_repo_adoption"

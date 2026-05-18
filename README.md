@@ -37,7 +37,7 @@ This pack is based on these repo conventions:
 - `bcf validate` fails on unresolved placeholders in instantiated governed artifacts.
 - `bcf validate` rejects placeholder, echo-only, no-op, and version-probe release gates before `make release-check` is trusted.
 - `bcf install` installs the pack into a target repo, replaces placeholders, applies a profile, and opens the first governed phase.
-- `bcf install --adoption-mode existing` labels the first phase as an existing-repo conversion and installs human and machine-readable adoption playbooks.
+- `bcf install --adoption-mode existing` labels the first phase as an existing-repo conversion and keeps the conversion playbooks in the install.
 - `bcf scaffold` creates phase and hotfix artifacts with the expected shape and names hotfix logs as `phase-NN-hotfix##.yml`.
 - `bcf doctor` reports unresolved placeholders, unwired release gates, inactive gate invocations, and non-evidence gate commands.
 - backend governance defaults to CQRS-lite with strict ports rather than full CQRS.
@@ -73,6 +73,7 @@ The installer:
 
 - copies `template-repo/` into the target repo
 - removes the `phase-NN` example artifacts after copying
+- omits existing-repo adoption playbooks from fresh installs
 - replaces known placeholders, including hidden workflow files
 - applies the requested `lite`, `standard`, or `regulated` profile
 - generates the first active phase artifacts

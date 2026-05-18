@@ -29,7 +29,7 @@ That command should cover:
 
 If the repo layout differs from the starter backend shape, update `architecture-boundaries.yml` before relying on `make architecture-test`.
 
-For existing repositories, follow `governance/EXISTING_REPO_ADOPTION.md` and keep the first adoption commit focused on governance artifacts, inventory, and gate wiring.
+For existing repositories, install with `--adoption-mode existing` to include conversion playbooks; keep the first adoption commit focused on governance artifacts, inventory, and gate wiring.
 
 ## Governance Helpers
 

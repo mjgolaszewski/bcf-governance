@@ -25,6 +25,10 @@ TEMPLATE_EXAMPLE_ARTIFACTS = (
     "phases/phase-NN-log.yml",
     "phases/phase-NN-hotfixNN.yml",
 )
+EXISTING_ADOPTION_ARTIFACTS = (
+    "governance/EXISTING_REPO_ADOPTION.md",
+    "governance/existing-repo-adoption.yml",
+)
 LITE_DEFERRED_GATES = (
     "architecture-test",
     "architecture-module-size",
@@ -181,6 +185,15 @@ def _remove_template_examples(target_root: Path) -> list[str]:
             path.unlink()
             removed.append(relative_path)
     return removed
+
+
+def _remove_fresh_adoption_artifacts(target_root: Path, adoption_mode: str) -> None:
+    if adoption_mode != "fresh":
+        return
+    for relative_path in EXISTING_ADOPTION_ARTIFACTS:
+        path = target_root / relative_path
+        if path.exists():
+            path.unlink()
 
 
 def _placeholder_values(args: argparse.Namespace, target_root: Path) -> dict[str, str]:
@@ -458,6 +471,7 @@ def install(args: argparse.Namespace) -> InstallResult:
         force=args.force,
     )
     removed_examples = _remove_template_examples(target_root)
+    _remove_fresh_adoption_artifacts(target_root, args.adoption_mode)
     values = _placeholder_values(args, target_root)
     _replace_placeholders(target_root, values)
     _configure_governance_profile(target_root, args.profile)
