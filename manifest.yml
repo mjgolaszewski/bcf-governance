@@ -4,7 +4,7 @@ document:
   id: bcf-governance
   version: 0.3.0
   generated_at_utc: "2026-05-18T00:00:00Z"
-  status: generated_untracked_artifact
+  status: tracked_inventory
 source_model:
   origin: public reusable governance pack
   governance_sources:
@@ -51,6 +51,6 @@ pack_contents:
     - generic phase and hotfix scaffold helper that emits repo-relative document paths
     - generic governance YAML validator with structural and semantic checks, compact json output, release-gate placeholder detection, path portability checks, and instantiated placeholder detection
 tracking:
-  intended_location: artifacts/
-  tracked_by_git: false
-  repo_ignore_rule: artifacts/
+  intended_location: manifest.yml
+  tracked_by_git: true
+  generated_artifact_ignore_rule: artifacts/
