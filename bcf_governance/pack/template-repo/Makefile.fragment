@@ -35,7 +35,7 @@ architecture-router-thinness:
 	$(PYTEST) backend/tests/architecture -k routers_remain_thin
 
 architecture-duplication:
-	$(PYTEST) backend/tests/architecture -k duplication
+	$(PYTEST) backend/tests/architecture -k "duplication or shared_abstraction"
 
 lint:
 	@echo "configure repo-specific lint commands before release-check can pass"

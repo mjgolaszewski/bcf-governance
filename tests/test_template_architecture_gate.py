@@ -83,6 +83,7 @@ def test_template_architecture_gate_accepts_valid_sample_slice(tmp_path: Path) -
     module.test_cqrs_command_side_does_not_return_read_model_shapes()
     module.test_routers_remain_thin_transport_adapters()
     module.test_bounded_context_duplication_is_explicit()
+    module.test_shared_abstraction_duplication_has_minimum_real_call_sites()
 
 
 def test_template_architecture_gate_rejects_use_case_http_objects(tmp_path: Path) -> None:
@@ -130,3 +131,18 @@ def test_template_architecture_gate_rejects_oversized_modules(tmp_path: Path) ->
     with pytest.raises(AssertionError) as excinfo:
         module.test_production_modules_respect_loc_cap()
     assert "LOC cap" in str(excinfo.value)
+
+
+def test_template_architecture_gate_rejects_underused_shared_abstraction(tmp_path: Path) -> None:
+    repo_root = _instantiate_template_repo(tmp_path)
+    _seed_valid_cqrs_lite_slice(repo_root)
+    _write_python(
+        repo_root / "backend/src/app/features/orders/create_order/commands/shared/formatting.py",
+        "def normalize_order_number(value: str) -> str:\n"
+        "    return value.strip().upper()\n",
+    )
+    module = _load_module(repo_root / "backend/tests/architecture/test_boundaries_ast.py")
+
+    with pytest.raises(AssertionError) as excinfo:
+        module.test_shared_abstraction_duplication_has_minimum_real_call_sites()
+    assert "shared abstraction call-site" in str(excinfo.value)

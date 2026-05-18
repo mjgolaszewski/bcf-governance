@@ -6,7 +6,7 @@
 
 This pack is a reusable governance system for agent-led software delivery.
 
-Current release: `v0.2.1`.
+Current release: `v0.3.0`.
 
 It is intentionally split into two parts:
 
@@ -119,7 +119,7 @@ bcf install \
   --gate-command "architecture-import-boundaries=python3 -m pytest backend/tests/architecture -k do_not_import" \
   --gate-command "architecture-cqrs-side=python3 -m pytest backend/tests/architecture -k cqrs" \
   --gate-command "architecture-router-thinness=python3 -m pytest backend/tests/architecture -k routers_remain_thin" \
-  --gate-command "architecture-duplication=python3 -m pytest backend/tests/architecture -k duplication" \
+  --gate-command "architecture-duplication=python3 -m pytest backend/tests/architecture -k 'duplication or shared_abstraction'" \
   --gate-command "lint=ruff check ." \
   --gate-command "typecheck=mypy ." \
   --gate-command "test=pytest tests" \

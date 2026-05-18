@@ -220,6 +220,10 @@ def _duplication_policy() -> dict[str, Any]:
     return dict(_architecture_config().get("duplication_policy", {}))
 
 
+def _shared_abstraction_policy() -> dict[str, Any]:
+    return dict(_architecture_config().get("shared_abstraction_policy", {}))
+
+
 def _python_files(root: Path) -> list[Path]:
     if not root.exists():
         return []
@@ -332,6 +336,26 @@ def _assert_layer_rules(layer_name: str) -> None:
 
 def _path_has_any_token(path: Path, tokens: list[str]) -> bool:
     return bool(set(path.relative_to(REPO_ROOT).parent.parts).intersection(str(token) for token in tokens))
+
+
+def _module_name_for_path(path: Path) -> str:
+    for source_root in _source_roots():
+        try:
+            relative_path = path.relative_to(source_root)
+        except ValueError:
+            continue
+        parts = list(relative_path.with_suffix("").parts)
+        if parts and parts[-1] == "__init__":
+            parts = parts[:-1]
+        return ".".join(parts)
+    return ""
+
+
+def _is_shared_abstraction_file(path: Path) -> bool:
+    policy = _shared_abstraction_policy()
+    shared_tokens = {str(token) for token in policy.get("shared_path_tokens", [])}
+    parent_parts = set(path.relative_to(REPO_ROOT).parent.parts)
+    return path.name != "__init__.py" and bool(parent_parts.intersection(shared_tokens))
 
 
 def _call_name(node: ast.AST) -> str:
@@ -510,3 +534,37 @@ def test_bounded_context_duplication_is_explicit() -> None:
             if len(unique_paths) > 1:
                 violations.append(f"{context}: duplicate block in {', '.join(unique_paths)}")
     assert not violations, "bounded-context duplication violations:\n" + "\n".join(violations)
+
+
+def test_shared_abstraction_duplication_has_minimum_real_call_sites() -> None:
+    policy = _shared_abstraction_policy()
+    min_call_sites = int(policy.get("min_real_call_sites", 2))
+    shared_modules = {
+        path: _module_name_for_path(path)
+        for path in _production_python_files()
+        if _is_shared_abstraction_file(path)
+    }
+    imports_by_file = {path: _imports(path) for path in _production_python_files()}
+
+    violations: list[str] = []
+    for shared_path, module_name in sorted(shared_modules.items()):
+        if not module_name:
+            continue
+        callers = sorted(
+            {
+                path.relative_to(REPO_ROOT).as_posix()
+                for path, imports in imports_by_file.items()
+                if path != shared_path
+                and any(
+                    imported == module_name or imported.startswith(f"{module_name}.")
+                    for imported in imports
+                )
+            }
+        )
+        if len(callers) < min_call_sites:
+            violations.append(
+                f"{shared_path.relative_to(REPO_ROOT)} has {len(callers)} real call site(s); "
+                f"expected at least {min_call_sites}"
+            )
+
+    assert not violations, "shared abstraction call-site violations:\n" + "\n".join(violations)

@@ -198,7 +198,7 @@ def test_installer_gate_commands_can_make_standard_profile_strict(tmp_path: Path
         "--gate-command",
         "architecture-router-thinness=pytest backend/tests/architecture -k routers_remain_thin",
         "--gate-command",
-        "architecture-duplication=pytest backend/tests/architecture -k duplication",
+        "architecture-duplication=pytest backend/tests/architecture -k 'duplication or shared_abstraction'",
         "--gate-command",
         "lint=ruff check .",
         "--gate-command",
