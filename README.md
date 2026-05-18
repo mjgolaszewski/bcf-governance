@@ -6,7 +6,7 @@
 
 This pack is a reusable governance system for agent-led software delivery.
 
-Current release: `v0.3.0`.
+Current release: `v0.3.1`.
 
 It is intentionally split into two parts:
 
