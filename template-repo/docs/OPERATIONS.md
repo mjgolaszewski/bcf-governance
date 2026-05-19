@@ -58,6 +58,7 @@ bcf cleanup --repo-root . --apply
 ```
 
 Do not use cleanup as a substitute for semantic review. Product specs, phase history, architecture docs, security docs, runbooks, and vendored governance require owner judgment before rewriting or removal.
+Use `governance/repo-cleanup-contract.yml` for machine-readable cleanup rules and `governance/REPO_CLEANUP.md` for the human sequence.
 
 ## Runtime Diagnostics
 

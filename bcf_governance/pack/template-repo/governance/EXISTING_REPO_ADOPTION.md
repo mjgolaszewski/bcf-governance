@@ -40,18 +40,21 @@ bcf cleanup --repo-root /path/to/existing-repo --apply
 
 `bcf cleanup` moves legacy audit/review evidence into `audits/` and rewrites exact path references. It only reports semantic compaction work; it does not rewrite product specs, phase history, architecture docs, security docs, runbooks, or vendored governance.
 
+Use `governance/repo-cleanup-contract.yml` as the cleanup contract and `governance/REPO_CLEANUP.md` as the terse human sequence. Documentation currency is semantic work: update each section against current repo evidence before closeout.
+
 ## Conversion Sequence
 
 1. Install the pack in `existing` adoption mode.
 2. Run `bcf cleanup` when legacy audit or governance evidence exists outside canonical roots.
-3. Keep the first commit limited to governance artifacts, docs, scripts, schemas, CI fragments, and phase records.
-4. Inventory source roots, bounded contexts, architectural layers, command/query paths, read-model names, write API names, generated-file exclusions, and runtime surfaces.
-5. Update `architecture-boundaries.yml` to match the repo before treating architecture tests as release evidence.
-6. Merge or include `Makefile.fragment`.
-7. Wire real gate commands or mark genuinely unavailable gates as `deferred` or `not_applicable` with rationale.
-8. Add push CI lanes for required gates when a local or hosted runner is available.
-9. Record adoption evidence and known gaps in the active phase log.
-10. Promote from `lite` to `standard` only after structural gates are executable or deliberately classified.
+3. Review documentation currency section by section against repo files, commands, and tests.
+4. Keep the first commit limited to governance artifacts, docs, scripts, schemas, CI fragments, and phase records.
+5. Inventory source roots, bounded contexts, architectural layers, command/query paths, read-model names, write API names, generated-file exclusions, and runtime surfaces.
+6. Update `architecture-boundaries.yml` to match the repo before treating architecture tests as release evidence.
+7. Merge or include `Makefile.fragment`.
+8. Wire real gate commands or mark genuinely unavailable gates as `deferred` or `not_applicable` with rationale.
+9. Add push CI lanes for required gates when a local or hosted runner is available.
+10. Record adoption evidence and known gaps in the active phase log.
+11. Promote from `lite` to `standard` only after structural gates are executable or deliberately classified.
 
 ## Required Inventory
 

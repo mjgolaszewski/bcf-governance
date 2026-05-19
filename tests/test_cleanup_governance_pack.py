@@ -42,6 +42,9 @@ def test_cleanup_plan_reports_safe_moves_and_manual_work(tmp_path: Path) -> None
     (repo / "docs/audits/security.md").write_text("# Security\n", encoding="utf-8")
     (repo / "governance/parity-reviews").mkdir(parents=True)
     (repo / "governance/parity-reviews/p1.md").write_text("# P1\n", encoding="utf-8")
+    (repo / "governance/repo-cleanup-contract.yml").write_text(
+        "document: {}\n", encoding="utf-8"
+    )
     (repo / "ops/shared-runtime").mkdir(parents=True)
     (repo / "ops/shared-runtime/AGENTS.yml").write_text("document: {}\n", encoding="utf-8")
     (repo / "plans").mkdir()
@@ -49,6 +52,7 @@ def test_cleanup_plan_reports_safe_moves_and_manual_work(tmp_path: Path) -> None
     report = cleanup.plan_cleanup(repo)
 
     assert report.status == "actionable"
+    assert report.cleanup_contract == "governance/repo-cleanup-contract.yml"
     assert any(action.destination == "audits/security.md" for action in report.actions)
     assert any(action.destination == "audits/parity-reviews/p1.md" for action in report.actions)
     assert any(action.destination == "audits/README.md" for action in report.actions)

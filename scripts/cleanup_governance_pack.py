@@ -79,6 +79,7 @@ class ManualAction:
 class CleanupReport:
     status: str
     repo_root: str
+    cleanup_contract: str | None
     applied: bool
     actions: list[CleanupAction]
     manual_actions: list[ManualAction]
@@ -88,6 +89,11 @@ class CleanupReport:
 
 def _repo_relative(repo_root: Path, path: Path) -> str:
     return path.relative_to(repo_root).as_posix()
+
+
+def _cleanup_contract(repo_root: Path) -> str | None:
+    path = repo_root / "governance/repo-cleanup-contract.yml"
+    return "governance/repo-cleanup-contract.yml" if path.exists() else None
 
 
 def _iter_repo_files(repo_root: Path) -> list[Path]:
@@ -214,6 +220,7 @@ def plan_cleanup(repo_root: Path) -> CleanupReport:
     return CleanupReport(
         status=status,
         repo_root=str(repo_root),
+        cleanup_contract=_cleanup_contract(repo_root),
         applied=False,
         actions=actions,
         manual_actions=manual_actions,
@@ -318,6 +325,7 @@ def apply_cleanup(repo_root: Path, *, assume_yes: bool) -> CleanupReport:
     return CleanupReport(
         status="changed" if safe_actions or rewritten_files else report.status,
         repo_root=str(repo_root),
+        cleanup_contract=_cleanup_contract(repo_root),
         applied=True,
         actions=safe_actions,
         manual_actions=report.manual_actions,
@@ -339,6 +347,8 @@ def _emit_json(report: CleanupReport, *, compact: bool) -> None:
 def _emit_text(report: CleanupReport) -> None:
     print(f"status: {report.status}")
     print(f"repo_root: {report.repo_root}")
+    if report.cleanup_contract:
+        print(f"cleanup_contract: {report.cleanup_contract}")
     print(f"applied: {str(report.applied).lower()}")
     if report.actions:
         print("safe actions:")

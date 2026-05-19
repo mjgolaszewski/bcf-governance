@@ -37,7 +37,9 @@ Use `bcf cleanup` before rescaffolding or hand-editing a drifted repo. It is dry
 
 Safe cleanup actions are deterministic: create `audits/README.md`, move audit/review evidence from legacy roots into `audits/`, and rewrite exact path references. Semantic compaction remains manual or LLM-assisted: product specs, phase history, architecture docs, security docs, runbooks, and nested vendored governance need owner judgment before removal or rewriting.
 
-Repo evidence: `scripts/cleanup_governance_pack.py`, `scripts/validate_governance_yaml.py`, `template-repo/governance/artifact-manifest.yml`.
+Installed repos include `governance/repo-cleanup-contract.yml` for the machine cleanup contract and `governance/REPO_CLEANUP.md` for the human sequence. Documentation currency is a required semantic review item: compare each section to repo files, commands, tests, and canonical governance before closeout.
+
+Repo evidence: `scripts/cleanup_governance_pack.py`, `scripts/validate_governance_yaml.py`, `template-repo/governance/artifact-manifest.yml`, `template-repo/governance/repo-cleanup-contract.yml`.
 
 ## Change Rules
 

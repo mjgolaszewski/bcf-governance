@@ -20,6 +20,7 @@ def test_agent_facing_governance_files_remain_small_context_friendly() -> None:
         "architecture-boundaries.yml": 120,
         "governance-profile.yml": 95,
         "governance/artifact-manifest.yml": 80,
+        "governance/repo-cleanup-contract.yml": 90,
         "plans/build-plan.yml": 95,
         "plans/phase-ledger.yml": 95,
         "plans/product-spec.yml": 40,
