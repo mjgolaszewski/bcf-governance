@@ -67,6 +67,7 @@ ci_profile:
     - Docker or mutable workspaces clean up containers volumes credentials and artifacts
 drift_guardrails:
   artifact_manifest: governance/artifact-manifest.yml
+  cleanup_contract: governance/repo-cleanup-contract.yml
   audit_root: audits/
   nested_governance_policy: declared_vendor_only
   test_root_source: AGENTS.yml testing_governance.test_roots

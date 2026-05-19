@@ -1,0 +1,83 @@
+document:
+  kind: repo_cleanup_contract
+  name: "{{PROJECT_NAME}} Repo Cleanup Contract"
+  id: "{{PROJECT_ID}}-repo-cleanup-contract"
+  version: 1.0.0
+  generated_at_utc: "{{DATE}}T00:00:00Z"
+  status: active
+  path: governance/repo-cleanup-contract.yml
+intent:
+  - shrink active governance without losing audit evidence
+  - restore canonical roots before judging build quality
+  - keep cleanup reviewable by separating deterministic moves from semantic decisions
+canonical_roots:
+  active_governance: [AGENTS.yml, CLAUDE.md, AGENTS.md, MEMORY.yml, governance/, plans/, phases/]
+  historical_evidence: [audits/]
+  documentation: [README.md, docs/, runbooks/]
+  tests: [tests/, backend/tests/, browser_tests/]
+  ephemeral_evidence: [artifacts/, .artifacts/] # non-authoritative roots
+drift_patterns:
+  - id: misplaced_audits
+    detect: audit or review evidence under docs/audits governance/parity-reviews governance/test-audits or governance/code-reviews
+    action: move to audits/ and rewrite exact references
+    deterministic: true
+    llm_review: none
+  - id: active_phase_sprawl
+    detect: many historical phase logs or vertical shards remain in active phases/
+    action: index history then rescaffold compact active phase state
+    deterministic: false
+    llm_review: required
+  - id: abandoned_governance_yaml
+    detect: YAML not referenced by AGENTS MEMORY manifest ledger docs tests or scripts
+    action: classify as active historical vendored or removable before deleting
+    deterministic: false
+    llm_review: required
+  - id: nested_governance_pack
+    detect: nested AGENTS.yml MEMORY.yml governance-profile.yml plans/ or phases/
+    action: declare vendored pack in governance/artifact-manifest.yml or remove after owner approval
+    deterministic: false
+    llm_review: required
+  - id: stale_human_documentation
+    detect: README docs runbooks or audits disagree with repo code tests or canonical governance
+    action: update or consolidate section by section with cited repo evidence
+    deterministic: false
+    llm_review: required
+deterministic_actions:
+  - id: plan_cleanup
+    command: bcf cleanup --repo-root .
+    applies_when: drifted repo needs a safe cleanup report
+    safety: dry-run only
+    outputs: [safe_actions, manual_actions, warnings]
+  - id: apply_safe_cleanup
+    command: bcf cleanup --repo-root . --apply
+    applies_when: safe audit-root moves are approved
+    safety: asks before moving files and rewriting exact references
+    outputs: [audits_root, rewritten_references, remaining_manual_actions]
+  - id: force_rescaffold
+    command: bcf install --target . --force-rescaffold
+    applies_when: owner accepts destructive replacement of active BCF-owned files
+    safety: asks before deleting known BCF governance paths
+    outputs: [fresh_active_governance, validation_report]
+llm_review_required:
+  - id: documentation_currency
+    reason: prose can be stale while schemas still pass
+    required_output: section-by-section updates tied to current files commands and tests
+  - id: architecture_gate_tuning
+    reason: generic scaffold gates may not match an existing repo layout
+    required_output: executable architecture checks that enforce the repo's real boundaries
+  - id: semantic_compaction
+    reason: phase history specs runbooks and audits need intent-preserving consolidation
+    required_output: compact active files plus history index or explicit git-history reliance
+validation_required:
+  commands: [bcf validate, make governance-validate, make release-check]
+  status_policy: record pass fail or blocked with exact command and reason in the active phase log
+evidence_required:
+  - cleanup report or cleanup index
+  - moved artifact summary
+  - vendored pack declarations
+  - documentation currency notes
+  - validation command outcomes
+closeout_rules:
+  - do not claim cleanup complete while manual actions remain unexplained
+  - do not delete historical evidence unless git history is the declared retention source
+  - do not remove tests to fit the scaffold; tune tests to the accepted repo shape

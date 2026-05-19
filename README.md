@@ -17,7 +17,7 @@ ledgers, schemas, architecture boundary gates, release-gate profiles,
 observability contracts, and helper commands that keep agents from treating
 docs, plans, and tests as disconnected prose.
 
-Current release: `v0.3.3`.
+Current release: `v0.3.4`.
 
 ## Why It Matters
 
@@ -31,6 +31,8 @@ BCF turns those failure modes into executable contracts:
 - one active phase ledger and durable memory pointer set
 - one artifact manifest for audits, vendored packs, context budgets, and
   nested-governance boundaries
+- one cleanup contract for deterministic moves, semantic review, documentation
+  currency, and cleanup closeout evidence
 - one release-gate profile that classifies required, optional, deferred, and
   not-applicable checks
 - one validator that catches schema drift, path drift, phase drift, stale
@@ -85,6 +87,8 @@ The main installed artifacts are:
 - `governance-profile.yml` for profile and release-gate classification
 - `governance/artifact-manifest.yml` for artifact roots, `audits/`, vendored
   packs, context budgets, and nested-governance policy
+- `governance/repo-cleanup-contract.yml` and `governance/REPO_CLEANUP.md` for
+  drift cleanup, documentation currency, and cleanup closeout rules
 - `architecture-boundaries.yml` for source roots, layers, bounded contexts, and
   AST architecture gates
 - `plans/product-spec.yml`, `plans/build-plan.yml`, and
@@ -244,6 +248,13 @@ Cleanup deliberately does not rewrite product specs, phase history,
 architecture docs, security docs, runbooks, or vendored governance. Those are
 reported as manual actions because they require semantic review and often
 benefit from LLM support.
+
+New installs also include `governance/repo-cleanup-contract.yml`. The contract
+standardizes cleanup intent, canonical roots, drift patterns, deterministic
+commands, LLM-required review, validation, evidence, and closeout rules. Use
+`governance/REPO_CLEANUP.md` as the human summary. Keep documentation currency
+terse but complete: update sections against repo evidence, remove stale claims,
+and record validation outcomes.
 
 ## Rescaffolding
 

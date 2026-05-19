@@ -234,6 +234,23 @@ def test_validate_repo_root_rejects_invalid_observability_contract(tmp_path: Pat
     assert "schemas/observability-contract.schema.json" in str(excinfo.value)
 
 
+def test_validate_repo_root_rejects_cleanup_contract_without_documentation_currency(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    contract_path = repo_root / "governance/repo-cleanup-contract.yml"
+    contract = yaml.safe_load(contract_path.read_text(encoding="utf-8"))
+    contract["llm_review_required"] = [
+        item for item in contract["llm_review_required"] if item["id"] != "documentation_currency"
+    ]
+    contract_path.write_text(yaml.safe_dump(contract, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+
+    assert "llm_review_required must include documentation_currency" in str(excinfo.value)
+
+
 def test_validate_repo_root_emits_compact_json_output(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
     result = _run_validator_command(

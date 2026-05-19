@@ -128,6 +128,7 @@
       "required": ["artifact_manifest", "audit_root", "nested_governance_policy", "test_root_source"],
       "properties": {
         "artifact_manifest": { "type": "string", "minLength": 1 },
+        "cleanup_contract": { "type": "string", "minLength": 1 },
         "audit_root": { "type": "string", "minLength": 1 },
         "nested_governance_policy": { "type": "string", "const": "declared_vendor_only" },
         "test_root_source": { "type": "string", "const": "AGENTS.yml testing_governance.test_roots" }

@@ -16,6 +16,7 @@ adoption_mode:
 conversion_sequence:
   - install_pack_with_existing_mode
   - run_cleanup_plan_when_legacy_governance_or_audit_roots_exist
+  - review_documentation_currency_against_repo_evidence
   - keep_first_commit_to_governance_artifacts
   - inventory_existing_source_roots_layers_contexts_and_ci
   - adapt_architecture_boundaries_yml
@@ -25,6 +26,8 @@ conversion_sequence:
   - record_adoption_evidence_in_active_phase_log
   - promote_profile_after_gates_are_executable
 cleanup_helper:
+  contract: governance/repo-cleanup-contract.yml
+  human_guide: governance/REPO_CLEANUP.md
   command: bcf cleanup --repo-root .
   apply_command: bcf cleanup --repo-root . --apply
   deterministic_scope:
@@ -37,6 +40,7 @@ cleanup_helper:
     - architecture_doc_consolidation
     - security_doc_consolidation
     - runbook_rewrite
+    - documentation_currency_review
     - vendored_governance_boundary_decisions
 required_inventory:
   source_roots: []

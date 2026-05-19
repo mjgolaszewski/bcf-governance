@@ -117,6 +117,8 @@ def test_installer_bootstraps_standard_profile_and_reports_unwired_gates(tmp_pat
     assert not (target / "phases/phase-NN-log.yml").exists()
     assert (target / "contracts/observability/v1/telemetry.contract.yml").exists()
     assert (target / "contracts/observability/v1/logging.contract.yml").exists()
+    assert (target / "governance/repo-cleanup-contract.yml").exists()
+    assert (target / "governance/REPO_CLEANUP.md").exists()
     assert not (target / "governance/EXISTING_REPO_ADOPTION.md").exists()
     assert not (target / "governance/existing-repo-adoption.yml").exists()
     assert (target / ".github/workflows/governance.yml").exists()
@@ -131,6 +133,7 @@ def test_installer_bootstraps_standard_profile_and_reports_unwired_gates(tmp_pat
 
     profile = yaml.safe_load((target / "governance-profile.yml").read_text(encoding="utf-8"))
     assert profile["profile"]["selected"] == "standard"
+    assert profile["drift_guardrails"]["cleanup_contract"] == "governance/repo-cleanup-contract.yml"
 
     telemetry_contract = yaml.safe_load(
         (target / "contracts/observability/v1/telemetry.contract.yml").read_text(
