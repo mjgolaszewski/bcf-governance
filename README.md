@@ -6,7 +6,7 @@
 
 This pack is a reusable governance system for agent-led software delivery.
 
-Current release: `v0.3.1`.
+Current release: `v0.3.2`.
 
 It is intentionally split into two parts:
 
@@ -23,20 +23,24 @@ This pack is based on these repo conventions:
 - `AGENTS.yml` is the canonical governance authority.
 - `MEMORY.yml` is durable project memory, not a transcript.
 - `governance-profile.yml` declares whether the repo is using the lite, standard, or regulated profile and how release gates are classified.
+- `governance/artifact-manifest.yml` declares artifact roots, the root `audits/` lane, vendored packs, context budgets, and nested-governance policy.
 - `architecture-boundaries.yml` configures source roots, layer path tokens, and forbidden imports for the AST architecture gate.
 - `architecture-boundaries.yml` also configures mandatory structural anti-drift gates: LOC caps, layer/context membership, CQRS side rules, router thinness, and bounded-context duplication.
 - `contracts/observability/v1/` provides scaffolded telemetry and logging contract templates for trace-linked, privacy-safe observability.
 - `plans/build-plan.yml` is the machine-readable delivery sequence.
 - `plans/phase-ledger.yml` is the active-phase pointer and validation command ledger.
 - `plans/phase-NN-plan.yml`, `plans/phase-NN-workitems.yml`, and `phases/phase-NN-log.yml` keep execution scoped and auditable.
+- `audits/` is the canonical root for human-requested codebase audits and sprint reports.
 - `bcf validate` prevents cross-artifact drift.
 - `schemas/*.json` define the structural contract for governed YAML artifacts.
 - `document.path` values are repo-relative POSIX paths and must exactly match each artifact location.
 - `bcf validate` checks the full declared phase catalog, workitem/log consistency, completed release-train history coverage, and hotfix log alignment.
+- `bcf validate` checks artifact root ownership, audit placement, nested-governance declarations, vendored artifact hashes, context budgets, and declared test roots.
 - `bcf validate` runs structural schema validation before semantic cross-artifact checks.
 - `bcf validate` fails on unresolved placeholders in instantiated governed artifacts.
 - `bcf validate` rejects placeholder, echo-only, no-op, and version-probe release gates before `make release-check` is trusted.
 - `bcf install` installs the pack into a target repo, replaces placeholders, applies a profile, and opens the first governed phase.
+- `bcf install --force-rescaffold` warns for confirmation, deletes known BCF governance artifacts, and reinstalls a fresh pack.
 - `bcf install --adoption-mode existing` labels the first phase as an existing-repo conversion and keeps the conversion playbooks in the install.
 - `bcf scaffold` creates phase and hotfix artifacts with the expected shape and names hotfix logs as `phase-NN-hotfix##.yml`.
 - `bcf doctor` reports unresolved placeholders, unwired release gates, inactive gate invocations, and non-evidence gate commands.
@@ -123,8 +127,8 @@ bcf install \
   --gate-command "architecture-duplication=python3 -m pytest backend/tests/architecture -k 'duplication or shared_abstraction'" \
   --gate-command "lint=ruff check ." \
   --gate-command "typecheck=mypy ." \
-  --gate-command "test=pytest tests" \
-  --gate-command "contract-test=pytest tests/contracts" \
+  --gate-command "test=pytest backend/tests" \
+  --gate-command "contract-test=pytest backend/tests/contracts" \
   --gate-command "security-secret-scan=gitleaks detect --source ." \
   --gate-command "security-dependency-audit=pip-audit" \
   --gate-command "security-sbom=syft dir:." \
@@ -134,6 +138,12 @@ bcf install \
 ```
 
 The installer intentionally does not edit an existing repo Makefile. After installation, merge `Makefile.fragment` into the repo Makefile or include it from the repo Makefile.
+
+To deliberately replace a stale governance layer, run the destructive rescaffold mode and answer the prompt:
+
+```bash
+bcf install --target /path/to/target-repo --force-rescaffold --profile standard
+```
 
 Use doctor to see remaining wiring gaps:
 

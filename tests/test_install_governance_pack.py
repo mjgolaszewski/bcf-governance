@@ -24,7 +24,9 @@ def _load_installer_module():
     return module
 
 
-def _run_installer(target: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
+def _run_installer(
+    target: Path, *args: str, check: bool = True, input_text: str | None = None
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [
             sys.executable,
@@ -44,6 +46,7 @@ def _run_installer(target: Path, *args: str, check: bool = True) -> subprocess.C
         check=check,
         capture_output=True,
         text=True,
+        input=input_text,
     )
 
 
@@ -204,9 +207,9 @@ def test_installer_gate_commands_can_make_standard_profile_strict(tmp_path: Path
         "--gate-command",
         "typecheck=mypy .",
         "--gate-command",
-        "test=pytest tests",
+        "test=pytest backend/tests",
         "--gate-command",
-        "contract-test=pytest tests/contracts",
+        "contract-test=pytest backend/tests/contracts",
         "--gate-command",
         "security-secret-scan=gitleaks detect --source .",
         "--gate-command",
@@ -238,6 +241,43 @@ def test_installer_refuses_to_overwrite_without_force(tmp_path: Path) -> None:
 
     assert result.returncode == 1
     assert "--force" in result.stderr
+
+
+def test_force_rescaffold_requires_confirmation_and_preserves_app_files(tmp_path: Path) -> None:
+    target = tmp_path / "rescaffold"
+    _run_installer(target, "--profile", "lite", "--require-strict-validation")
+    (target / "plans/stale.yml").write_text("stale: true\n", encoding="utf-8")
+    (target / "governance/stale.md").write_text("# stale\n", encoding="utf-8")
+    (target / "app.py").write_text("print('keep')\n", encoding="utf-8")
+
+    aborted = _run_installer(
+        target,
+        "--profile",
+        "lite",
+        "--force-rescaffold",
+        "--require-strict-validation",
+        check=False,
+        input_text="n\n",
+    )
+
+    assert aborted.returncode == 1
+    assert "WARNING: --force-rescaffold deletes" in aborted.stderr
+    assert (target / "plans/stale.yml").exists()
+
+    result = _run_installer(
+        target,
+        "--profile",
+        "lite",
+        "--force-rescaffold",
+        "--require-strict-validation",
+        input_text="y\n",
+    )
+
+    assert "validation: strict pass" in result.stdout
+    assert "force-rescaffold removed:" in result.stdout
+    assert not (target / "plans/stale.yml").exists()
+    assert not (target / "governance/stale.md").exists()
+    assert (target / "app.py").read_text(encoding="utf-8") == "print('keep')\n"
 
 
 def test_installer_existing_adoption_mode_labels_conversion_phase(tmp_path: Path) -> None:

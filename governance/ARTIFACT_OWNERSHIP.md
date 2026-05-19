@@ -6,6 +6,7 @@
 | --- | --- |
 | Agent rules and authority order | `AGENTS.yml` |
 | Profile and release-gate classification | `governance-profile.yml` |
+| Artifact roots, vendored packs, audit lane, context budgets | `governance/artifact-manifest.yml` |
 | Architecture source roots, layer/context tokens, structural rules | `architecture-boundaries.yml` |
 | Structural shapes | `schemas/*.json` |
 | Product scope and phase catalog | `plans/product-spec.yml` |
@@ -13,6 +14,7 @@
 | Active phase, validation commands, hotfix records | `plans/phase-ledger.yml` |
 | Durable context and active artifact pointers | `MEMORY.yml` |
 | Execution evidence | `phases/*.yml` |
+| Human-requested codebase audits and sprint reports | `audits/` |
 | Runtime and release commands | `Makefile.fragment`, `docs/OPERATIONS.md` |
 | Existing-repo conversion | installed only with `--adoption-mode existing` |
 
@@ -23,6 +25,8 @@ Repo evidence: `template-repo/AGENTS.yml`, `scripts/install_governance_pack.py`,
 - Change derived fields with their canonical source.
 - Keep `document.path` repo-relative, POSIX, and exact.
 - Keep active phase, phase workitems, phase logs, hotfix records, and release-gate targets aligned.
+- Keep audits in `audits/`; `docs/` is for user and operator documentation.
+- Declare nested governance packs and vendored artifacts in `governance/artifact-manifest.yml`.
 - Do not write execution evidence into `AGENTS.yml` or `MEMORY.yml`.
 
 Repo evidence: `scripts/validate_governance_yaml.py`, `tests/test_validate_governance_yaml.py`.

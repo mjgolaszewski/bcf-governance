@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import os
@@ -101,9 +102,9 @@ def _configure_release_gates(repo_root: Path) -> None:
         '\t@echo "configure repo-specific typecheck commands before release-check can pass"\n\t@false':
             "\t@mypy .",
         '\t@echo "configure repo-specific test commands before release-check can pass"\n\t@false':
-            "\t@$(PYTEST) tests",
+            "\t@$(PYTEST) backend/tests",
         '\t@echo "configure repo-specific contract-test commands before release-check can pass"\n\t@false':
-            "\t@$(PYTEST) tests/contracts",
+            "\t@$(PYTEST) backend/tests/contracts",
         '\t@echo "configure repo-specific gitleaks or equivalent secret scan before release-check can pass"\n\t@false':
             "\t@gitleaks detect --source .",
         '\t@echo "configure repo-specific dependency audit before release-check can pass"\n\t@false':
@@ -405,9 +406,12 @@ def test_validate_repo_root_rejects_missing_required_release_gate(tmp_path: Path
 def test_validate_repo_root_allows_omitted_optional_release_gate(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
     profile_path = repo_root / "governance-profile.yml"
-    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
-    profile["release_gate_profile"]["gates"]["contract_test"]["status"] = "optional"
-    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
+    profile_text = profile_path.read_text(encoding="utf-8")
+    profile_text = profile_text.replace(
+        "    contract_test: {target: contract-test, status: required,",
+        "    contract_test: {target: contract-test, status: optional,",
+    )
+    profile_path.write_text(profile_text, encoding="utf-8")
 
     makefile_path = repo_root / "Makefile.fragment"
     makefile_path.write_text(
@@ -493,6 +497,180 @@ def test_validate_repo_root_rejects_log_workitem_status_drift(tmp_path: Path) ->
     with pytest.raises(GovernanceValidationError) as excinfo:
         validate_repo_root(repo_root)
     assert "workitem statuses must match" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_closed_phase_with_open_workitems(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    log_path = repo_root / "phases/phase-01-log.yml"
+    payload = yaml.safe_load(log_path.read_text(encoding="utf-8"))
+    payload["document"]["status"] = "closed"
+    payload["all_tickets_closed"] = True
+    payload["required_suites_green"] = ["make test"]
+    payload["ast_architecture_gates_green"] = True
+    payload["health_checks_green"] = True
+    payload["known_warnings"] = []
+    log_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "cannot be verified or closed while workitems remain open" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_phase_sequence_gaps(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    product_spec_path = repo_root / "plans/product-spec.yml"
+    product_spec = yaml.safe_load(product_spec_path.read_text(encoding="utf-8"))
+    product_spec["execution_phases"].append(
+        {
+            "phase_id": "P03",
+            "build_block": "later",
+            "objective": "skip a phase",
+            "release_train": "release_1",
+        }
+    )
+    product_spec_path.write_text(yaml.safe_dump(product_spec, sort_keys=False), encoding="utf-8")
+
+    build_plan_path = repo_root / "plans/build-plan.yml"
+    build_plan = yaml.safe_load(build_plan_path.read_text(encoding="utf-8"))
+    build_plan["phase_sequence"].append(
+        {
+            "phase_id": "P03",
+            "build_block": "later",
+            "objective": "skip a phase",
+            "hard_dependencies": [],
+            "tightly_scoped_deliverables": ["later deliverable"],
+            "parallelizable_workstreams": ["later"],
+            "verification_commands": ["make test"],
+        }
+    )
+    build_plan_path.write_text(yaml.safe_dump(build_plan, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "phase_sequence must use contiguous phase ids" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_undeclared_phase_artifacts(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    source = repo_root / "phases/phase-01-log.yml"
+    target = repo_root / "phases/phase-02-log.yml"
+    target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "artifacts exist without build-plan declarations: P02" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_audits_outside_audit_root(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    audit_path = repo_root / "docs/audits/sprint-review.md"
+    audit_path.parent.mkdir(parents=True)
+    audit_path.write_text("# Sprint Review\n", encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "audit artifacts must live under the declared audit root audits/" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_undeclared_nested_governance(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    nested_agents = repo_root / "vendor/client/AGENTS.yml"
+    nested_agents.parent.mkdir(parents=True)
+    nested_agents.write_text("document: {}\n", encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "nested governance artifacts must be declared as vendored packs" in str(excinfo.value)
+
+
+def test_validate_repo_root_allows_declared_nested_vendor(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    nested_agents = repo_root / "vendor/client/AGENTS.yml"
+    nested_agents.parent.mkdir(parents=True)
+    nested_agents.write_text("document: {}\n", encoding="utf-8")
+
+    manifest_path = repo_root / "governance/artifact-manifest.yml"
+    manifest_text = manifest_path.read_text(encoding="utf-8").replace(
+        "  declared_vendors: []",
+        (
+            "  declared_vendors:\n"
+            "    - {path: vendor/client, source_repo: ../client, "
+            "refresh_policy: pinned snapshot refreshed by explicit phase work, "
+            "ownership: vendored read-only integration fixture}"
+        ),
+    )
+    manifest_path.write_text(manifest_text, encoding="utf-8")
+
+    validate_repo_root(repo_root)
+
+
+def test_validate_repo_root_rejects_undeclared_test_root_invocation(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    browser_root = repo_root / "browser_tests"
+    browser_root.mkdir()
+    (browser_root / "test_browser.py").write_text("def test_browser():\n    assert True\n", encoding="utf-8")
+    makefile_path = repo_root / "Makefile.fragment"
+    makefile_path.write_text(
+        makefile_path.read_text(encoding="utf-8")
+        + "\nbrowser-test:\n\t@$(PYTEST) browser_tests\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "testing_governance.test_roots: browser_tests" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_context_budget_overrun(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    memory_path = repo_root / "MEMORY.yml"
+    memory = yaml.safe_load(memory_path.read_text(encoding="utf-8"))
+    memory["environment_facts"]["current_repo_state"].extend(
+        f"extra context entry {index}" for index in range(120)
+    )
+    memory_path.write_text(yaml.safe_dump(memory, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "agent-required governance files exceeded context budgets" in str(excinfo.value)
+
+
+def test_validate_repo_root_checks_vendored_artifact_provenance(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    artifact_path = repo_root / "vendor/client/client.whl"
+    artifact_path.parent.mkdir(parents=True)
+    artifact_path.write_bytes(b"client wheel")
+    digest = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+
+    manifest_path = repo_root / "governance/artifact-manifest.yml"
+    manifest_text = manifest_path.read_text(encoding="utf-8").replace(
+        "  artifacts: []",
+        (
+            "  artifacts:\n"
+            "    - {artifact_path: vendor/client/client.whl, source_repo: ../client, "
+            "source_commit: abc123, artifact_sha256: "
+            f"\"{digest}\", refresh_policy: pinned snapshot refreshed by explicit phase work}}"
+        ),
+    )
+    manifest_path.write_text(manifest_text, encoding="utf-8")
+    validate_repo_root(repo_root)
+
+    manifest_path.write_text(manifest_text.replace(digest, "0" * 64), encoding="utf-8")
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "artifact_sha256 mismatch" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_ephemeral_evidence_without_durable_marker(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    audit_path = repo_root / "audits/security-review.md"
+    audit_path.write_text("Evidence: .artifacts/security/report.json\n", encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "ephemeral artifact references" in str(excinfo.value)
 
 
 @pytest.mark.parametrize(

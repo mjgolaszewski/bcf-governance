@@ -1,0 +1,39 @@
+document:
+  kind: governance_artifact_manifest
+  name: "{{PROJECT_NAME}} Governance Artifact Manifest"
+  id: "{{PROJECT_ID}}-artifact-manifest"
+  version: 1.0.0
+  generated_at_utc: "{{DATE}}T00:00:00Z"
+  status: active
+  path: governance/artifact-manifest.yml
+artifact_roots:
+  audits: {path: audits/, status: active, purpose: codebase audit evidence and reports}
+  docs: {path: docs/, status: active, purpose: user and operator documentation}
+  governance: {path: governance/, status: active, purpose: governance policy and adoption records}
+  plans: {path: plans/, status: active, purpose: product build phase and workitem state}
+  phases: {path: phases/, status: active, purpose: execution evidence and closeout logs}
+  schemas: {path: schemas/, status: active, purpose: governed YAML structural contracts}
+nested_governance:
+  policy: declared_vendor_only
+  declared_vendors: []
+vendored_artifacts:
+  required_fields: [artifact_path, source_repo, source_commit, artifact_sha256, refresh_policy]
+  artifacts: []
+ephemeral_evidence:
+  roots: [artifacts/, .artifacts/]
+  durable_reference_required: true
+append_only_contract:
+  style: terse_full_intent
+  required_fields: [intent, evidence, result, next_action]
+context_budgets:
+  agent_required_files:
+    AGENTS.md: 8
+    CLAUDE.md: 8
+    AGENTS.yml: 190
+    MEMORY.yml: 105
+    architecture-boundaries.yml: 120
+    governance-profile.yml: 95
+    governance/artifact-manifest.yml: 80
+    plans/build-plan.yml: 95
+    plans/phase-ledger.yml: 95
+    plans/product-spec.yml: 40

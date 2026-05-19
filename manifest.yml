@@ -2,7 +2,7 @@ document:
   kind: template_governance_pack_manifest
   name: BCF Template And Governance Pack
   id: bcf-governance
-  version: 0.3.1
+  version: 0.3.2
   generated_at_utc: "2026-05-18T00:00:00Z"
   status: tracked_inventory
 source_model:
@@ -12,7 +12,9 @@ source_model:
     - MEMORY.yml
     - governance-profile.yml
     - architecture-boundaries.yml
+    - governance/artifact-manifest.yml
     - contracts/observability/v1/
+    - audits/
     - plans/build-plan.yml
     - plans/phase-ledger.yml
     - scripts/validate_governance_yaml.py
@@ -25,6 +27,7 @@ pack_contents:
     - profile and release-gate classification template
     - configurable architecture boundary rule template
     - mandatory structural anti-drift gate configuration
+    - artifact root manifest with audits, vendored packs, context budgets, and nested-governance rules
     - governed artifact structural schemas
     - observability telemetry and logging contract templates
     - existing-repo adoption playbooks in human and machine-readable forms
@@ -49,7 +52,7 @@ pack_contents:
     - installer existing-repo adoption mode for conversion and inventory phases
     - doctor helper that reports remaining placeholder and release-gate wiring gaps
     - generic phase and hotfix scaffold helper that emits repo-relative document paths
-    - generic governance YAML validator with structural and semantic checks, compact json output, release-gate placeholder detection, path portability checks, and instantiated placeholder detection
+    - generic governance YAML validator with structural and semantic checks, compact json output, release-gate placeholder detection, path portability checks, governance drift guardrails, and instantiated placeholder detection
 tracking:
   intended_location: manifest.yml
   tracked_by_git: true

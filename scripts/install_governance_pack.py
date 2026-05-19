@@ -25,6 +25,26 @@ TEMPLATE_EXAMPLE_ARTIFACTS = (
     "phases/phase-NN-log.yml",
     "phases/phase-NN-hotfixNN.yml",
 )
+RESCAFFOLD_REMOVE_PATHS = (
+    "AGENTS.yml",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "MEMORY.yml",
+    "architecture-boundaries.yml",
+    "governance-profile.yml",
+    "Makefile.fragment",
+    "requirements-governance.txt",
+    "audits",
+    "governance",
+    "phases",
+    "plans",
+    "schemas",
+    "contracts/observability",
+    "backend/tests/architecture/test_boundaries_ast.py",
+    ".github/workflows/governance.yml",
+    "scripts/scaffold_governance_artifacts.py",
+    "scripts/validate_governance_yaml.py",
+)
 EXISTING_ADOPTION_ARTIFACTS = (
     "governance/EXISTING_REPO_ADOPTION.md",
     "governance/existing-repo-adoption.yml",
@@ -74,6 +94,7 @@ MAKE_TARGET_PATTERN = re.compile(r"^([A-Za-z0-9_.-]+)\s*:(?:\s|$)")
 @dataclass(frozen=True)
 class InstallResult:
     copied_files: int
+    rescaffold_removed_paths: list[str]
     removed_template_examples: list[str]
     generated_artifacts: dict[str, Path]
     strict_validation_passed: bool
@@ -175,6 +196,49 @@ def _copy_template(
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
     return len(template_files)
+
+
+def _prune_empty_parents(target_root: Path, start: Path) -> None:
+    current = start.parent
+    while current != target_root and current.is_relative_to(target_root):
+        try:
+            current.rmdir()
+        except OSError:
+            return
+        current = current.parent
+
+
+def _confirm_force_rescaffold(target_root: Path, assume_yes: bool) -> None:
+    if assume_yes:
+        return
+    print(
+        "WARNING: --force-rescaffold deletes existing BCF governance artifacts under "
+        f"{target_root} before reinstalling them.",
+        file=sys.stderr,
+    )
+    print(
+        "It removes pack-owned roots such as plans/, phases/, governance/, audits/, "
+        "schemas/, and BCF validator/scaffold files.",
+        file=sys.stderr,
+    )
+    response = input("Continue with destructive rescaffold? [y/N]: ").strip().lower()
+    if response not in {"y", "yes"}:
+        raise RuntimeError("force rescaffold aborted by user")
+
+
+def _force_rescaffold_cleanup(target_root: Path) -> list[str]:
+    removed: list[str] = []
+    for relative_path in RESCAFFOLD_REMOVE_PATHS:
+        path = target_root / relative_path
+        if not path.exists():
+            continue
+        if path.is_dir():
+            shutil.rmtree(path)
+        else:
+            path.unlink()
+            _prune_empty_parents(target_root, path)
+        removed.append(relative_path)
+    return removed
 
 
 def _remove_template_examples(target_root: Path) -> list[str]:
@@ -465,10 +529,15 @@ def install(args: argparse.Namespace) -> InstallResult:
         raise NotADirectoryError(f"{target_root} is not a directory")
 
     template_root = _template_root()
+    rescaffold_removed_paths: list[str] = []
+    if args.force_rescaffold:
+        _confirm_force_rescaffold(target_root, args.yes)
+        rescaffold_removed_paths = _force_rescaffold_cleanup(target_root)
+
     copied_files = _copy_template(
         template_root=template_root,
         target_root=target_root,
-        force=args.force,
+        force=args.force or args.force_rescaffold,
     )
     removed_examples = _remove_template_examples(target_root)
     _remove_fresh_adoption_artifacts(target_root, args.adoption_mode)
@@ -513,6 +582,7 @@ def install(args: argparse.Namespace) -> InstallResult:
 
     return InstallResult(
         copied_files=copied_files,
+        rescaffold_removed_paths=rescaffold_removed_paths,
         removed_template_examples=removed_examples,
         generated_artifacts=generated_artifacts,
         strict_validation_passed=strict_validation_passed,
@@ -563,6 +633,16 @@ def _parser() -> argparse.ArgumentParser:
         help="Replace a Makefile.fragment gate target body. Repeat for lint, typecheck, test, etc.",
     )
     parser.add_argument("--force", action="store_true", help="Overwrite existing governance pack files.")
+    parser.add_argument(
+        "--force-rescaffold",
+        action="store_true",
+        help="Delete known BCF governance artifacts, then install a fresh governance pack.",
+    )
+    parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Confirm destructive --force-rescaffold without an interactive prompt.",
+    )
     parser.add_argument("--skip-validation", action="store_true")
     parser.add_argument(
         "--require-strict-validation",
@@ -589,6 +669,8 @@ def _print_summary(args: argparse.Namespace, result: InstallResult) -> None:
     print(f"profile: {args.profile}")
     print(f"adoption mode: {args.adoption_mode}")
     print(f"copied files: {result.copied_files}")
+    if result.rescaffold_removed_paths:
+        print("force-rescaffold removed: " + ", ".join(result.rescaffold_removed_paths))
     if result.removed_template_examples:
         print("removed template examples: " + ", ".join(result.removed_template_examples))
     for artifact_type, path in result.generated_artifacts.items():

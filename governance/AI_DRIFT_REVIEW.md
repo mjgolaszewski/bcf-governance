@@ -6,9 +6,9 @@ Schedule recurring reviews for AI-assisted implementation drift.
 
 ## Scope
 
-Check for fabricated precision, inert UI controls, mock-heavy tests, duplicated orchestration, undocumented environment assumptions, and generated artifacts drifting from contracts.
+Check for fabricated precision, inert UI controls, mock-heavy tests, duplicated orchestration, undocumented environment assumptions, generated artifacts drifting from contracts, audits outside `audits/`, undeclared nested governance, stale vendored artifacts, and oversized agent-facing files.
 
-Repo evidence: architecture tests, contract tests, `scripts/validate_governance_yaml.py`, and phase logs.
+Repo evidence: architecture tests, contract tests, `governance/artifact-manifest.yml`, `scripts/validate_governance_yaml.py`, and phase or audit logs.
 
 ## Evidence
 

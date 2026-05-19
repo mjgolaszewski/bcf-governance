@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import re
+import shlex
 import sys
 from pathlib import Path
 from typing import Any
@@ -34,6 +37,7 @@ OBSERVABILITY_CONTRACT_PATHS = (
     "contracts/observability/v1/logging.contract.yml",
 )
 OBSERVABILITY_CONTRACT_SCHEMA = "observability-contract.schema.json"
+ARTIFACT_MANIFEST_SCHEMA = "artifact-manifest.schema.json"
 SCHEMA_ROOT = "schemas"
 PHASE_CLOSEOUT_STATUSES = {"verified", "closed"}
 ACTIVE_PHASE_LIFECYCLE_STATUSES = {
@@ -142,6 +146,32 @@ MANDATORY_STRUCTURAL_GATE_TARGETS = (
     "architecture-router-thinness",
     "architecture-duplication",
 )
+GOVERNANCE_MARKER_FILENAMES = {
+    "AGENTS.yml",
+    "CLAUDE.md",
+    "MEMORY.yml",
+    "architecture-boundaries.yml",
+    "governance-profile.yml",
+}
+GOVERNANCE_MARKER_DIRS = {"plans", "phases"}
+AUDIT_PATH_COMPONENTS = {"audit", "audits"}
+CLOSED_WORKITEM_STATUSES = {"done", "complete", "completed", "verified", "closed"}
+SKIPPED_DISCOVERY_DIRS = {
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".tox",
+    ".venv",
+    "__pycache__",
+    "artifacts",
+    ".artifacts",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+}
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -253,6 +283,30 @@ def _relative_display(repo_root: Path, path: Path) -> str:
         return str(path.relative_to(repo_root))
     except ValueError:
         return str(path)
+
+
+def _iter_repo_files(repo_root: Path) -> list[Path]:
+    files: list[Path] = []
+    for current_root, dirnames, filenames in os.walk(repo_root):
+        dirnames[:] = [name for name in dirnames if name not in SKIPPED_DISCOVERY_DIRS]
+        root_path = Path(current_root)
+        for filename in filenames:
+            files.append(root_path / filename)
+    return files
+
+
+def _normalized_prefix(value: str) -> str:
+    _validate_portable_relative_path(value, context="repo relative prefix")
+    return value.rstrip("/")
+
+
+def _relative_path_is_under(relative_path: str, prefix: str) -> bool:
+    normalized = _normalized_prefix(prefix)
+    return relative_path == normalized or relative_path.startswith(f"{normalized}/")
+
+
+def _relative_path_is_under_any(relative_path: str, prefixes: list[str]) -> bool:
+    return any(_relative_path_is_under(relative_path, prefix) for prefix in prefixes)
 
 
 def _active_phase_id(repo_root: Path) -> str | None:
@@ -417,6 +471,37 @@ def _load_architecture_boundaries(
         repo_root, architecture_rules, architecture_path, context=str(architecture_path)
     )
     return architecture_rules, architecture_path
+
+
+def _load_artifact_manifest(
+    repo_root: Path,
+    schema_cache: dict[str, dict[str, Any]],
+    profile: dict[str, Any] | None,
+) -> tuple[dict[str, Any] | None, Path | None]:
+    if profile is None:
+        return None, None
+    drift_guardrails = _require_mapping(
+        profile.get("drift_guardrails"), context="governance-profile.yml drift_guardrails"
+    )
+    manifest_rel = _require_string(
+        drift_guardrails.get("artifact_manifest"),
+        context="governance-profile.yml drift_guardrails.artifact_manifest",
+    )
+    manifest_path = _require_path(
+        repo_root,
+        manifest_rel,
+        context="governance-profile.yml drift_guardrails.artifact_manifest",
+    )
+    manifest = _load_yaml(manifest_path)
+    _validate_schema(
+        repo_root,
+        schema_cache,
+        manifest,
+        schema_name=ARTIFACT_MANIFEST_SCHEMA,
+        context=str(manifest_path),
+    )
+    _validate_document_path(repo_root, manifest, manifest_path, context=str(manifest_path))
+    return manifest, manifest_path
 
 
 def _makefile_target_bodies(makefile_path: Path) -> dict[str, list[str]]:
@@ -849,6 +934,18 @@ def _validate_phase_workitem_consistency(
             + ", ".join(mismatched_statuses)
         )
 
+    if _document_status(log, context=str(log_path)) in PHASE_CLOSEOUT_STATUSES:
+        open_workitems = sorted(
+            item_id
+            for item_id, status in workitem_statuses.items()
+            if status.strip().lower() not in CLOSED_WORKITEM_STATUSES
+        )
+        if open_workitems:
+            raise GovernanceValidationError(
+                f"{log_path} cannot be verified or closed while workitems remain open: "
+                + ", ".join(open_workitems)
+            )
+
 
 def _validate_phase_artifact_triplet(
     repo_root: Path,
@@ -969,6 +1066,14 @@ def _validate_agents(repo_root: Path, agents: dict[str, Any]) -> None:
             raise GovernanceValidationError(f"AGENTS.yml references.{key} must be a string")
         _require_path(repo_root, value, context=f"AGENTS.yml references.{key}")
 
+    testing = _require_mapping(agents.get("testing_governance"), context="AGENTS.yml testing_governance")
+    for test_root in _require_string_sequence(
+        testing.get("test_roots"),
+        context="AGENTS.yml testing_governance.test_roots",
+        min_items=1,
+    ):
+        _require_path(repo_root, test_root, context="AGENTS.yml testing_governance.test_roots")
+
 
 def _validate_observability_contracts(
     repo_root: Path, schema_cache: dict[str, dict[str, Any]]
@@ -998,6 +1103,420 @@ def _validate_observability_contracts(
             )
         paths.append(path)
     return paths
+
+
+def _artifact_root_paths(manifest: dict[str, Any]) -> dict[str, str]:
+    roots = _require_mapping(
+        manifest.get("artifact_roots"), context="governance/artifact-manifest.yml artifact_roots"
+    )
+    root_paths: dict[str, str] = {}
+    for root_id, payload in roots.items():
+        root = _require_mapping(
+            payload, context=f"governance/artifact-manifest.yml artifact_roots.{root_id}"
+        )
+        path = _require_string(
+            root.get("path"), context=f"governance/artifact-manifest.yml artifact_roots.{root_id}.path"
+        )
+        _validate_portable_relative_path(
+            path, context=f"governance/artifact-manifest.yml artifact_roots.{root_id}.path"
+        )
+        root_paths[str(root_id)] = path
+    return root_paths
+
+
+def _declared_vendor_prefixes(manifest: dict[str, Any]) -> list[str]:
+    nested = _require_mapping(
+        manifest.get("nested_governance"), context="governance/artifact-manifest.yml nested_governance"
+    )
+    vendors = _require_sequence(
+        nested.get("declared_vendors"),
+        context="governance/artifact-manifest.yml nested_governance.declared_vendors",
+    )
+    prefixes: list[str] = []
+    for index, vendor in enumerate(vendors, start=1):
+        vendor_mapping = _require_mapping(
+            vendor,
+            context=f"governance/artifact-manifest.yml nested_governance.declared_vendors[{index}]",
+        )
+        path = _require_string(
+            vendor_mapping.get("path"),
+            context=(
+                "governance/artifact-manifest.yml "
+                f"nested_governance.declared_vendors[{index}].path"
+            ),
+        )
+        _validate_portable_relative_path(
+            path,
+            context=(
+                "governance/artifact-manifest.yml "
+                f"nested_governance.declared_vendors[{index}].path"
+            ),
+        )
+        prefixes.append(path)
+    return prefixes
+
+
+def _is_nested_governance_marker(relative_path: str) -> bool:
+    path = Path(relative_path)
+    parts = path.parts
+    if len(parts) > 1 and path.name in GOVERNANCE_MARKER_FILENAMES:
+        return True
+    if path.suffix not in {".yml", ".yaml"}:
+        return False
+    for marker_dir in GOVERNANCE_MARKER_DIRS:
+        if marker_dir in parts[:-1] and parts[0] != marker_dir:
+            return True
+    return False
+
+
+def _validate_audit_root_policy(
+    repo_root: Path,
+    manifest: dict[str, Any],
+    *,
+    root_paths: dict[str, str],
+    vendor_prefixes: list[str],
+) -> None:
+    audit_root = root_paths.get("audits")
+    if audit_root is None:
+        raise GovernanceValidationError("governance/artifact-manifest.yml must declare artifact_roots.audits")
+    _require_path(repo_root, audit_root, context="governance/artifact-manifest.yml artifact_roots.audits.path")
+
+    violations: list[str] = []
+    for path in _iter_repo_files(repo_root):
+        relative_path = _repo_relative_path(repo_root, path)
+        if _relative_path_is_under(relative_path, audit_root) or _relative_path_is_under_any(
+            relative_path, vendor_prefixes
+        ):
+            continue
+        if any(part.lower() in AUDIT_PATH_COMPONENTS for part in Path(relative_path).parts[:-1]):
+            violations.append(relative_path)
+
+    if violations:
+        raise GovernanceValidationError(
+            "audit artifacts must live under the declared audit root "
+            f"{audit_root}: " + ", ".join(sorted(violations)[:20])
+        )
+
+
+def _validate_nested_governance_policy(
+    repo_root: Path,
+    manifest: dict[str, Any],
+    *,
+    vendor_prefixes: list[str],
+) -> None:
+    nested = _require_mapping(
+        manifest.get("nested_governance"), context="governance/artifact-manifest.yml nested_governance"
+    )
+    policy = _require_string(
+        nested.get("policy"), context="governance/artifact-manifest.yml nested_governance.policy"
+    )
+    if policy != "declared_vendor_only":
+        raise GovernanceValidationError(
+            "governance/artifact-manifest.yml nested_governance.policy must be declared_vendor_only"
+        )
+
+    violations = []
+    for path in _iter_repo_files(repo_root):
+        relative_path = _repo_relative_path(repo_root, path)
+        if _relative_path_is_under_any(relative_path, vendor_prefixes):
+            continue
+        if _is_nested_governance_marker(relative_path):
+            violations.append(relative_path)
+
+    if violations:
+        raise GovernanceValidationError(
+            "nested governance artifacts must be declared as vendored packs: "
+            + ", ".join(sorted(violations)[:20])
+        )
+
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _validate_vendored_artifacts(repo_root: Path, manifest: dict[str, Any]) -> None:
+    vendored = _require_mapping(
+        manifest.get("vendored_artifacts"), context="governance/artifact-manifest.yml vendored_artifacts"
+    )
+    required_fields = _require_string_sequence(
+        vendored.get("required_fields"),
+        context="governance/artifact-manifest.yml vendored_artifacts.required_fields",
+        min_items=1,
+    )
+    artifacts = _require_sequence(
+        vendored.get("artifacts"), context="governance/artifact-manifest.yml vendored_artifacts.artifacts"
+    )
+    for index, artifact in enumerate(artifacts, start=1):
+        artifact_mapping = _require_mapping(
+            artifact, context=f"governance/artifact-manifest.yml vendored_artifacts.artifacts[{index}]"
+        )
+        missing_fields = sorted(field for field in required_fields if not artifact_mapping.get(field))
+        if missing_fields:
+            raise GovernanceValidationError(
+                "governance/artifact-manifest.yml vendored_artifacts.artifacts"
+                f"[{index}] missing required fields: " + ", ".join(missing_fields)
+            )
+        artifact_rel = _require_string(
+            artifact_mapping.get("artifact_path"),
+            context=f"governance/artifact-manifest.yml vendored_artifacts.artifacts[{index}].artifact_path",
+        )
+        artifact_path = _require_path(
+            repo_root,
+            artifact_rel,
+            context=f"governance/artifact-manifest.yml vendored_artifacts.artifacts[{index}].artifact_path",
+        )
+        expected_sha = _require_string(
+            artifact_mapping.get("artifact_sha256"),
+            context=f"governance/artifact-manifest.yml vendored_artifacts.artifacts[{index}].artifact_sha256",
+        )
+        actual_sha = _file_sha256(artifact_path)
+        if actual_sha != expected_sha:
+            raise GovernanceValidationError(
+                "governance/artifact-manifest.yml vendored_artifacts.artifacts"
+                f"[{index}] artifact_sha256 mismatch for {artifact_rel}"
+            )
+
+
+def _validate_context_budgets(repo_root: Path, manifest: dict[str, Any]) -> None:
+    context_budgets = _require_mapping(
+        manifest.get("context_budgets"), context="governance/artifact-manifest.yml context_budgets"
+    )
+    agent_required_files = _require_mapping(
+        context_budgets.get("agent_required_files"),
+        context="governance/artifact-manifest.yml context_budgets.agent_required_files",
+    )
+    violations: list[str] = []
+    for relative_path, budget in agent_required_files.items():
+        budget_value = _require_positive_int(
+            budget,
+            context=(
+                "governance/artifact-manifest.yml "
+                f"context_budgets.agent_required_files.{relative_path}"
+            ),
+        )
+        path = _require_path(
+            repo_root,
+            str(relative_path),
+            context=(
+                "governance/artifact-manifest.yml "
+                f"context_budgets.agent_required_files.{relative_path}"
+            ),
+        )
+        line_count = len(path.read_text(encoding="utf-8").splitlines())
+        if line_count > budget_value:
+            violations.append(f"{relative_path} has {line_count} lines; budget is {budget_value}")
+    if violations:
+        raise GovernanceValidationError(
+            "agent-required governance files exceeded context budgets:\n" + "\n".join(violations)
+        )
+
+
+def _pytest_paths_from_command(command: str) -> list[str]:
+    normalized = command.replace("$(PYTEST)", "pytest")
+    try:
+        tokens = shlex.split(normalized)
+    except ValueError:
+        tokens = normalized.split()
+    paths: list[str] = []
+    pytest_index: int | None = None
+    for index, token in enumerate(tokens):
+        if token == "pytest":
+            pytest_index = index
+            break
+        if token == "pytest;" or token.endswith("/pytest"):
+            pytest_index = index
+            break
+        if token == "-m" and index > 0 and tokens[index - 1].startswith("python") and index + 1 < len(tokens):
+            if tokens[index + 1] == "pytest":
+                pytest_index = index + 1
+                break
+    if pytest_index is None:
+        return []
+    options_with_value = {
+        "-k",
+        "-m",
+        "-o",
+        "--basetemp",
+        "--cache-clear",
+        "--confcutdir",
+        "--cov",
+        "--cov-report",
+        "--ignore",
+        "--ignore-glob",
+        "--junitxml",
+        "--maxfail",
+        "--rootdir",
+    }
+    skip_next = False
+    for token in tokens[pytest_index + 1 :]:
+        if skip_next:
+            skip_next = False
+            continue
+        if token in {";", "&&", "||", "|"}:
+            break
+        if token in options_with_value:
+            skip_next = True
+            continue
+        if any(token.startswith(f"{option}=") for option in options_with_value):
+            continue
+        if token.startswith("-") or "=" in token:
+            continue
+        if token == ".":
+            continue
+        if "/" in token or token in {"test", "tests"} or token.endswith("_tests"):
+            paths.append(token.rstrip("/"))
+    return paths
+
+
+def _discover_invoked_test_paths(repo_root: Path) -> list[str]:
+    discovered: set[str] = set()
+    for relative_path in ("Makefile", "Makefile.fragment"):
+        makefile_path = repo_root / relative_path
+        if makefile_path.exists():
+            for line in makefile_path.read_text(encoding="utf-8").splitlines():
+                stripped = line.strip()
+                if stripped.startswith("@"):
+                    stripped = stripped[1:].strip()
+                for test_path in _pytest_paths_from_command(stripped):
+                    discovered.add(test_path)
+
+    workflow_root = repo_root / ".github" / "workflows"
+    if workflow_root.exists():
+        for workflow_path in sorted(workflow_root.glob("*.yml")) + sorted(workflow_root.glob("*.yaml")):
+            for line in workflow_path.read_text(encoding="utf-8").splitlines():
+                for test_path in _pytest_paths_from_command(line.strip()):
+                    discovered.add(test_path)
+
+    for child in repo_root.iterdir():
+        if child.is_dir() and (child.name in {"test", "tests"} or child.name.endswith("_tests")):
+            discovered.add(child.name)
+    return sorted(discovered)
+
+
+def _declared_test_roots(agents: dict[str, Any]) -> list[str]:
+    testing = _require_mapping(agents.get("testing_governance"), context="AGENTS.yml testing_governance")
+    return _require_string_sequence(
+        testing.get("test_roots"),
+        context="AGENTS.yml testing_governance.test_roots",
+        min_items=1,
+    )
+
+
+def _validate_declared_test_roots(repo_root: Path, agents: dict[str, Any]) -> None:
+    declared_roots = _declared_test_roots(agents)
+    violations = [
+        test_path
+        for test_path in _discover_invoked_test_paths(repo_root)
+        if not _relative_path_is_under_any(test_path, declared_roots)
+    ]
+    if violations:
+        raise GovernanceValidationError(
+            "test paths invoked by Makefile or CI must be declared in AGENTS.yml "
+            "testing_governance.test_roots: " + ", ".join(violations)
+        )
+
+
+def _validate_ephemeral_evidence_references(repo_root: Path, manifest: dict[str, Any]) -> None:
+    ephemeral = _require_mapping(
+        manifest.get("ephemeral_evidence"), context="governance/artifact-manifest.yml ephemeral_evidence"
+    )
+    if not ephemeral.get("durable_reference_required", False):
+        return
+    roots = _require_string_sequence(
+        ephemeral.get("roots"),
+        context="governance/artifact-manifest.yml ephemeral_evidence.roots",
+    )
+    governed_prefixes = ["audits/", "docs/", "governance/", "plans/", "phases/"]
+    durable_markers = ("sha256", "ci artifact", "non-authoritative", "uploaded artifact")
+    violations: list[str] = []
+    for path in _iter_repo_files(repo_root):
+        relative_path = _repo_relative_path(repo_root, path)
+        if relative_path == "governance/artifact-manifest.yml":
+            continue
+        if relative_path not in {"AGENTS.yml", "MEMORY.yml"} and not _relative_path_is_under_any(
+            relative_path, governed_prefixes
+        ):
+            continue
+        if path.suffix.lower() not in {".md", ".yml", ".yaml"}:
+            continue
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except UnicodeDecodeError:
+            continue
+        for line_number, line in enumerate(lines, start=1):
+            lowered = line.lower()
+            if not any(root.lower() in lowered for root in roots):
+                continue
+            window = "\n".join(lines[line_number - 1 : line_number + 2]).lower()
+            if not any(marker in window for marker in durable_markers):
+                violations.append(f"{relative_path}:{line_number}")
+    if violations:
+        raise GovernanceValidationError(
+            "ephemeral artifact references in governed docs need sha256, CI artifact, "
+            "uploaded artifact, or non-authoritative marker: " + ", ".join(violations[:20])
+        )
+
+
+def _validate_artifact_manifest(
+    repo_root: Path,
+    manifest: dict[str, Any] | None,
+    agents: dict[str, Any],
+) -> list[Path]:
+    if manifest is None:
+        return []
+
+    root_paths = _artifact_root_paths(manifest)
+    for root_id, root_path in root_paths.items():
+        _require_path(repo_root, root_path, context=f"governance/artifact-manifest.yml artifact_roots.{root_id}.path")
+
+    vendor_prefixes = _declared_vendor_prefixes(manifest)
+    for vendor_prefix in vendor_prefixes:
+        _require_path(
+            repo_root,
+            vendor_prefix,
+            context="governance/artifact-manifest.yml nested_governance.declared_vendors.path",
+        )
+
+    _validate_audit_root_policy(
+        repo_root, manifest, root_paths=root_paths, vendor_prefixes=vendor_prefixes
+    )
+    _validate_nested_governance_policy(repo_root, manifest, vendor_prefixes=vendor_prefixes)
+    _validate_vendored_artifacts(repo_root, manifest)
+    _validate_context_budgets(repo_root, manifest)
+    _validate_declared_test_roots(repo_root, agents)
+    _validate_ephemeral_evidence_references(repo_root, manifest)
+    return [repo_root / root_path for root_path in root_paths.values()]
+
+
+def _declared_phase_ids_are_contiguous(phase_ids: set[str]) -> tuple[bool, list[str]]:
+    if not phase_ids:
+        return True, []
+    phase_numbers = sorted(_phase_number(phase_id) for phase_id in phase_ids)
+    expected_numbers = set(range(phase_numbers[0], phase_numbers[-1] + 1))
+    missing = sorted(expected_numbers - set(phase_numbers))
+    return not missing, [f"P{number:02d}" for number in missing]
+
+
+def _phase_ids_from_existing_artifacts(repo_root: Path) -> set[str]:
+    phase_ids: set[str] = set()
+    patterns = (
+        (repo_root / "plans", re.compile(r"phase-(\d+)-(?:plan|workitems)\.ya?ml$")),
+        (repo_root / "phases", re.compile(r"phase-(\d+)-log\.ya?ml$")),
+    )
+    for root, pattern in patterns:
+        if not root.exists():
+            continue
+        for path in root.iterdir():
+            if not path.is_file():
+                continue
+            match = pattern.match(path.name)
+            if match is not None:
+                phase_ids.add(f"P{int(match.group(1)):02d}")
+    return phase_ids
 
 
 def _validate_declared_phase_catalog(
@@ -1049,6 +1568,21 @@ def _validate_declared_phase_catalog(
             "plans/product-spec.yml execution_phases and plans/build-plan.yml phase_sequence must "
             "declare the same phase ids"
             + (f" ({'; '.join(details)})" if details else "")
+        )
+
+    contiguous, missing_phase_ids = _declared_phase_ids_are_contiguous(set(build_phase_map))
+    if not contiguous:
+        raise GovernanceValidationError(
+            "plans/build-plan.yml phase_sequence must use contiguous phase ids; missing: "
+            + ", ".join(missing_phase_ids)
+        )
+
+    existing_phase_ids = _phase_ids_from_existing_artifacts(repo_root)
+    undeclared_phase_ids = sorted(existing_phase_ids - set(build_phase_map))
+    if undeclared_phase_ids:
+        raise GovernanceValidationError(
+            "phase plan, workitem, or log artifacts exist without build-plan declarations: "
+            + ", ".join(undeclared_phase_ids)
         )
 
     for phase_id, product_phase in product_phase_map.items():
@@ -1534,6 +2068,9 @@ def validate_repo_root(
     build_plan = _load_yaml(build_plan_path)
     ledger = _load_yaml(phase_ledger_path)
     governance_profile, governance_profile_path = _load_governance_profile(repo_root, schema_cache)
+    artifact_manifest, artifact_manifest_path = _load_artifact_manifest(
+        repo_root, schema_cache, governance_profile
+    )
     architecture_rules, architecture_boundaries_path = _load_architecture_boundaries(repo_root, schema_cache)
 
     _validate_schema(repo_root, schema_cache, agents, schema_name="agents.schema.json", context="AGENTS.yml")
@@ -1566,6 +2103,7 @@ def validate_repo_root(
     _validate_document_path(repo_root, ledger, phase_ledger_path, context=str(phase_ledger_path))
 
     _validate_agents(repo_root, agents)
+    _validate_artifact_manifest(repo_root, artifact_manifest, agents)
     observability_contract_paths = _validate_observability_contracts(repo_root, schema_cache)
     declared_phase_paths = _validate_declared_phase_catalog(
         repo_root, schema_cache, product_spec, build_plan, ledger
@@ -1596,6 +2134,7 @@ def validate_repo_root(
                 *observability_contract_paths,
                 *active_phase_paths,
                 *([governance_profile_path] if governance_profile_path is not None else []),
+                *([artifact_manifest_path] if artifact_manifest_path is not None else []),
                 *(
                     [architecture_boundaries_path]
                     if architecture_boundaries_path is not None
