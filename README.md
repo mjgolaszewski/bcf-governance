@@ -1,67 +1,140 @@
+#!/usr/bin/env markdown
+# -*- coding: utf-8 -*-
+
 <p align="center">
-  <img src="docs/assets/bcf-governance-pack-hero.jpg" alt="BCF AI Governance Pack" width="520">
+  <img src="docs/assets/bcf-governance-pack-hero.jpg" alt="BCF AI Governance Pack" width="760">
 </p>
 
-# Template And Governance Pack
+# BCF Governance
 
-This pack is a reusable governance system for agent-led software delivery.
+**A reusable governance pack for agent-led software delivery where product
+scope, delivery plans, active work, release gates, and audit evidence stay
+machine-readable, validated, and small enough for agents to follow.**
 
-Current release: `v0.3.2`.
+BCF Governance gives a repository an executable operating model for AI-assisted
+engineering. It installs canonical agent instructions, phase plans, active
+ledgers, schemas, architecture boundary gates, release-gate profiles,
+observability contracts, and helper commands that keep agents from treating
+docs, plans, and tests as disconnected prose.
 
-It is intentionally split into two parts:
+Current release: `v0.3.3`.
 
-- `template-repo/`: files you can copy into a new repository and replace placeholder values.
-- `governance/`: playbooks that explain the operating model behind the templates.
-- `bcf`: installable CLI for installing, validating, scaffolding, and diagnosing governed artifacts.
-- `scripts/`: source-compatible helper scripts; `validate` and `scaffold` helpers are copied into template installs.
-- `template-repo/schemas/`: structural schemas for governed YAML artifacts.
+## Why It Matters
 
-## Source Model
+AI agents drift when the repository lets them. They add evidence in arbitrary
+folders, grow memory files into transcripts, close phases while work remains
+open, invent new governance lanes, or run tests that are not declared anywhere.
+BCF turns those failure modes into executable contracts:
 
-This pack is based on these repo conventions:
+- one canonical authority file for agent instructions
+- one product spec and build plan for declared scope
+- one active phase ledger and durable memory pointer set
+- one artifact manifest for audits, vendored packs, context budgets, and
+  nested-governance boundaries
+- one release-gate profile that classifies required, optional, deferred, and
+  not-applicable checks
+- one validator that catches schema drift, path drift, phase drift, stale
+  active pointers, unwired release gates, oversized context files, undeclared
+  test roots, and misplaced audit evidence
 
-- `AGENTS.yml` is the canonical governance authority.
-- `MEMORY.yml` is durable project memory, not a transcript.
-- `governance-profile.yml` declares whether the repo is using the lite, standard, or regulated profile and how release gates are classified.
-- `governance/artifact-manifest.yml` declares artifact roots, the root `audits/` lane, vendored packs, context budgets, and nested-governance policy.
-- `architecture-boundaries.yml` configures source roots, layer path tokens, and forbidden imports for the AST architecture gate.
-- `architecture-boundaries.yml` also configures mandatory structural anti-drift gates: LOC caps, layer/context membership, CQRS side rules, router thinness, and bounded-context duplication.
-- `contracts/observability/v1/` provides scaffolded telemetry and logging contract templates for trace-linked, privacy-safe observability.
-- `plans/build-plan.yml` is the machine-readable delivery sequence.
-- `plans/phase-ledger.yml` is the active-phase pointer and validation command ledger.
-- `plans/phase-NN-plan.yml`, `plans/phase-NN-workitems.yml`, and `phases/phase-NN-log.yml` keep execution scoped and auditable.
-- `audits/` is the canonical root for human-requested codebase audits and sprint reports.
-- `bcf validate` prevents cross-artifact drift.
-- `schemas/*.json` define the structural contract for governed YAML artifacts.
-- `document.path` values are repo-relative POSIX paths and must exactly match each artifact location.
-- `bcf validate` checks the full declared phase catalog, workitem/log consistency, completed release-train history coverage, and hotfix log alignment.
-- `bcf validate` checks artifact root ownership, audit placement, nested-governance declarations, vendored artifact hashes, context budgets, and declared test roots.
-- `bcf validate` runs structural schema validation before semantic cross-artifact checks.
-- `bcf validate` fails on unresolved placeholders in instantiated governed artifacts.
-- `bcf validate` rejects placeholder, echo-only, no-op, and version-probe release gates before `make release-check` is trusted.
-- `bcf install` installs the pack into a target repo, replaces placeholders, applies a profile, and opens the first governed phase.
-- `bcf install --force-rescaffold` warns for confirmation, deletes known BCF governance artifacts, and reinstalls a fresh pack.
-- `bcf install --adoption-mode existing` labels the first phase as an existing-repo conversion and keeps the conversion playbooks in the install.
-- `bcf scaffold` creates phase and hotfix artifacts with the expected shape and names hotfix logs as `phase-NN-hotfix##.yml`.
-- `bcf doctor` reports unresolved placeholders, unwired release gates, inactive gate invocations, and non-evidence gate commands.
-- backend governance defaults to CQRS-lite with strict ports rather than full CQRS.
-- backend delivery defaults to contract-first vertical slices with public-contract preservation by default.
-- architecture rules are enforced with tests, not prose alone.
-- every mandatory structural rule must have an executable baseline gate or an explicit human-review-only rationale.
-- push CI lanes are declared for required gates when a hosted or local runner is available, and jobs must be self-seeding.
-- validator output can stay human-readable by default or switch to compact machine-readable JSON.
-- release gates include governance validation, lint, typecheck, tests, contract checks, security checks, and Docker/runtime checks as appropriate for the repo.
+The result is not more ceremony for its own sake. It is a smaller, stricter
+surface that agents can actually read and obey.
 
-## Bootstrap A New Repo
+## Who Benefits
 
-Install the CLI from a released source archive, local checkout, or Git URL:
+**Repository owners** get a repeatable way to bootstrap or repair governance
+without relying on tribal memory. They can compare repositories against the
+same artifact map, gate taxonomy, and cleanup expectations instead of
+debugging a different governance style in every repo.
+
+**Engineering teams** get a local CLI for installing the pack, scaffolding
+phases and hotfixes, validating governed artifacts, diagnosing release-gate
+wiring, and cleaning up drifted audit paths. They can make repo-specific gate
+commands explicit while keeping the governance shape consistent.
+
+**Reviewers and release owners** get a compact set of files that define what is
+in scope, what phase is active, which checks are required, and where evidence
+belongs. Release readiness becomes a set of inspectable files and commands, not
+a reconstruction exercise from chat history.
+
+**Security, compliance, and platform teams** get declared audit roots,
+vendored-artifact provenance, secret-scan and vulnerability-scan gate slots,
+and explicit ownership for runtime, observability, and evidence contracts.
+
+**AI agents** get explicit instructions, machine-readable schemas, small-context
+budgets, and fail-closed commands that make the expected behavior hard to miss.
+The pack is intentionally biased toward small required files and deterministic
+checks because agents follow executable rails better than long prose.
+
+## What It Installs
+
+The pack is intentionally split into installable templates, playbooks, and CLI
+helpers:
+
+- `template-repo/` contains files copied into governed repositories.
+- `governance/` contains human playbooks for the operating model.
+- `bcf` is the installable CLI.
+- `scripts/` contains source-compatible helper scripts copied into template
+  installs where appropriate.
+- `template-repo/schemas/` contains JSON schemas for governed YAML artifacts.
+
+The main installed artifacts are:
+
+- `AGENTS.yml`, `AGENTS.md`, and `CLAUDE.md` for agent instruction routing
+- `MEMORY.yml` for durable project memory, not transcripts
+- `governance-profile.yml` for profile and release-gate classification
+- `governance/artifact-manifest.yml` for artifact roots, `audits/`, vendored
+  packs, context budgets, and nested-governance policy
+- `architecture-boundaries.yml` for source roots, layers, bounded contexts, and
+  AST architecture gates
+- `plans/product-spec.yml`, `plans/build-plan.yml`, and
+  `plans/phase-ledger.yml` for scope, sequencing, and active state
+- `plans/phase-NN-plan.yml`, `plans/phase-NN-workitems.yml`, and
+  `phases/phase-NN-log.yml` for scoped execution evidence
+- `contracts/observability/v1/` for telemetry and logging contract baselines
+- `audits/` as the canonical root for human-requested audits, sprint reports,
+  code reviews, parity reviews, and test-audit evidence
+- `Makefile.fragment` with fail-closed release-gate targets
+
+## Local Setup
+
+Install the CLI from this repo or a released package:
 
 ```bash
 python3 -m pip install .
 bcf --version
 ```
 
-Then install the pack into a target repo:
+For pack development in this repo:
+
+```bash
+python3 -m pip install -e ".[dev]"
+pytest tests
+```
+
+Target repositories should install their copied governance requirements before
+running local validation:
+
+```bash
+python3 -m pip install -r requirements-governance.txt
+```
+
+## Command Surface
+
+The CLI exposes five workflows:
+
+- `bcf install` installs or updates the governance pack.
+- `bcf validate` validates governed YAML, semantic alignment, release-gate
+  wiring, artifact ownership, context budgets, vendored hashes, and test roots.
+- `bcf scaffold` creates phase and hotfix artifacts with the expected names.
+- `bcf doctor` reports placeholder, release-gate, inactive-gate, and
+  non-evidence command gaps.
+- `bcf cleanup` plans or applies conservative audit-root cleanup for drifted
+  repos.
+
+## Bootstrap A New Repo
+
+For a standard new repo:
 
 ```bash
 bcf install \
@@ -73,18 +146,13 @@ bcf install \
   --date "$(date -u +%F)"
 ```
 
-The installer:
+The installer copies `template-repo/`, removes template-only phase examples,
+replaces placeholders, applies the selected profile, opens the first phase, and
+runs validation. It refuses to overwrite existing governance files unless
+`--force` is passed.
 
-- copies `template-repo/` into the target repo
-- removes the `phase-NN` example artifacts after copying
-- omits existing-repo adoption playbooks from fresh installs
-- replaces known placeholders, including hidden workflow files
-- applies the requested `lite`, `standard`, or `regulated` profile
-- generates the first active phase artifacts
-- refuses to overwrite existing governance files unless `--force` is passed
-- runs strict validation when possible and falls back to bootstrap validation when standard or regulated release gates still need repo-specific commands
-
-For a minimal installation that can pass strict validation before repo-specific release gates are wired:
+For a minimal install that can pass strict validation before repo-specific
+release gates are wired:
 
 ```bash
 bcf install \
@@ -95,7 +163,9 @@ bcf install \
   --require-strict-validation
 ```
 
-For an existing repository, use conversion mode to generate an adoption/inventory phase and install the existing-repo playbooks:
+## Existing Repo Adoption
+
+Use adoption mode when converting a non-empty repository:
 
 ```bash
 bcf install \
@@ -107,9 +177,15 @@ bcf install \
   --require-strict-validation
 ```
 
-The human playbook is `governance/EXISTING_REPO_ADOPTION.md`; the machine-readable equivalent is `governance/existing-repo-adoption.yml`.
+Existing adoption keeps `governance/EXISTING_REPO_ADOPTION.md` and
+`governance/existing-repo-adoption.yml` in the target repo. Start with `lite`
+when the repo has not yet mapped architecture, CI, and release gates. Promote
+to `standard` after mandatory gates are executable or explicitly classified.
 
-For standard or regulated installs, wire real gate commands during install when they are already known:
+## Release Gates
+
+Standard and regulated profiles expect real release-gate commands. You can wire
+them during install:
 
 ```bash
 bcf install \
@@ -137,22 +213,54 @@ bcf install \
   --require-strict-validation
 ```
 
-The installer intentionally does not edit an existing repo Makefile. After installation, merge `Makefile.fragment` into the repo Makefile or include it from the repo Makefile.
+After install, merge `Makefile.fragment` into the repo Makefile or include it
+from the repo Makefile.
 
-To deliberately replace a stale governance layer, run the destructive rescaffold mode and answer the prompt:
+## Governance Cleanup
+
+Use cleanup when an existing repo has accumulated governance drift. The command
+is dry-run by default:
+
+```bash
+bcf cleanup --repo-root /path/to/target-repo
+bcf cleanup --repo-root /path/to/target-repo --format json --compact
+```
+
+Safe apply mode asks for confirmation:
+
+```bash
+bcf cleanup --repo-root /path/to/target-repo --apply
+```
+
+Deterministic cleanup can:
+
+- create `audits/README.md`
+- move `docs/audits/` files to `audits/`
+- move `governance/parity-reviews/`, `governance/test-audits/`, and
+  `governance/code-reviews/` into `audits/`
+- rewrite exact path references in text files
+
+Cleanup deliberately does not rewrite product specs, phase history,
+architecture docs, security docs, runbooks, or vendored governance. Those are
+reported as manual actions because they require semantic review and often
+benefit from LLM support.
+
+## Rescaffolding
+
+Use destructive rescaffold mode only when you intentionally want a fresh BCF
+governance layer:
 
 ```bash
 bcf install --target /path/to/target-repo --force-rescaffold --profile standard
 ```
 
-Use doctor to see remaining wiring gaps:
+The command warns for confirmation and removes known BCF governance-owned paths
+before reinstalling the pack. It does not try to preserve or summarize old
+phase history; run `bcf cleanup` and create any needed historical index first.
 
-```bash
-bcf doctor --repo-root /path/to/target-repo
-bcf doctor --repo-root /path/to/target-repo --format json --compact
-```
+## Phase And Hotfix Work
 
-Generate hotfix logs with the helper if urgent repair work appears:
+Generate governed hotfix logs with the scaffold helper:
 
 ```bash
 bcf scaffold hotfix \
@@ -167,65 +275,73 @@ bcf scaffold hotfix \
   --validation-command "make release-check"
 ```
 
-Install governance dependencies and run validation before the first governed commit:
+Use scaffold helpers for real `plans/phase-*.yml` and `phases/phase-*.yml`
+artifacts. The `phase-NN` files in the pack are templates, not long-term
+working files.
+
+## Validation
+
+Install governance dependencies and validate before the first governed commit:
 
 ```bash
 python3 -m pip install -r requirements-governance.txt
 bcf validate
 bcf validate --format json --compact
+bcf doctor --repo-root /path/to/target-repo
 ```
 
-Use the scaffold helpers for real `plans/phase-*.yml` and `phases/phase-*.yml` artifacts. The `phase-NN` files in the pack are templates, not long-term working files.
+`bcf validate` checks structural schemas before semantic alignment. It fails on
+unresolved placeholders, non-portable `document.path` values, phase catalog
+gaps, stale active-phase pointers, hotfix drift, release-gate placeholders,
+audit files outside `audits/`, undeclared nested governance, stale vendored
+artifact hashes, context-budget overruns, and invoked test roots missing from
+`AGENTS.yml`.
 
-## Governance Profiles
+## Profiles
 
 Choose the smallest profile that proves the current risk:
 
-- `lite`: `AGENTS.yml`, `MEMORY.yml`, product/build/ledger state, scaffolding, and validation.
-- `standard`: lite plus phase plans, workitems, logs, architecture gates, and configured release gates.
-- `regulated`: standard plus provenance, hotfix formalism, security/SBOM evidence, and full release-gate closeout.
+- `lite`: core governance files, product/build/ledger state, scaffolding, and
+  validation.
+- `standard`: lite plus phase plans, workitems, logs, architecture gates, and
+  configured release gates.
+- `regulated`: standard plus provenance, hotfix formalism, security/SBOM
+  evidence, and full release-gate closeout.
 
-The template defaults to `standard` in `governance-profile.yml`. Gate statuses mean:
+Gate statuses in `governance-profile.yml` mean:
 
-- `required`: `release-check` must invoke the gate and the target must satisfy its declared command policy.
-- `optional`: `release-check` may omit the gate, but if invoked the target must satisfy its declared command policy.
+- `required`: `release-check` must invoke the gate and the target must satisfy
+  its declared command policy.
+- `optional`: `release-check` may omit the gate, but if invoked the target must
+  satisfy its declared command policy.
 - `deferred`: known future gate; do not invoke it from `release-check` yet.
-- `not_applicable`: intentionally absent; do not invoke it from `release-check`.
+- `not_applicable`: intentionally absent; do not invoke it from
+  `release-check`.
 
-If a gate is genuinely not applicable, mark it `not_applicable` or `deferred` with a rationale and remove it from `release-check`; do not leave a fake Make target in place.
+## Repository Boundaries
 
-## Example Walkthrough
+This repo owns the governance pack and its tests. Target repositories own their
+product scope, architecture mapping, release commands, docs, runbooks, and
+audit evidence. BCF can scaffold and validate structure, but it cannot know
+whether a product decision, security claim, or runbook statement is true
+without repo evidence.
 
-See `examples/lifecycle-walkthrough/` for a complete adoption walkthrough: strict lite install, standard promotion with real gate commands, and phase closeout evidence.
+Semantic consolidation remains a human or LLM-assisted task. Deterministic
+helpers should move files, detect drift, enforce schemas, and report gaps; they
+should not invent product intent.
 
-## Recommended First Commit Shape
+## Maintainer Checks
 
-For a new repo, keep the first governance commit small:
+For pack maintenance in this repo:
 
-- root governance files: `AGENTS.yml`, `MEMORY.yml`
-- profile and architecture config: `governance-profile.yml`, `architecture-boundaries.yml`
-- plan files: `plans/product-spec.yml`, `plans/build-plan.yml`, `plans/phase-ledger.yml`
-- first phase files generated by the scaffold script
-- hotfix logs generated by the scaffold script when urgent repair work is required
-- scripts: `scripts/validate_governance_yaml.py`, `scripts/scaffold_governance_artifacts.py`
-- release and architecture test hooks appropriate to the stack
+```bash
+pytest tests
+python3 .github/scripts/run_validator_mutants.py --profile high-value
+python3 .github/scripts/run_validator_mutants.py --profile full
+```
 
-## Notes
-
-The templates use YAML because the source repo treats governance as machine-readable project state. Keep execution evidence in phase logs, not in `AGENTS.yml`.
-Structural shape lives in `schemas/`; semantic truth lives in `scripts/validate_governance_yaml.py`.
-Keep `document.path` values repo-relative, POSIX-style, and exact; generated artifacts already do this.
-
-For AI task-scoping guidance that should remain optional rather than validator-enforced, use `governance/AGENT_TASK_CONTRACT.md`.
-
-To sanity-check this uninstantiated template pack before replacing placeholders, run:
+To sanity-check the uninstantiated template pack:
 
 ```bash
 bcf validate --repo-root template-repo --allow-placeholders --allow-release-gate-placeholders
 ```
-
-For pack maintenance in this repo itself, the main self-checks are:
-
-- `pytest tests`
-- `python3 .github/scripts/run_validator_mutants.py --profile high-value`
-- `python3 .github/scripts/run_validator_mutants.py --profile full`

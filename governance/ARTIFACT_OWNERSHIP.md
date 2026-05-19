@@ -27,9 +27,10 @@ Repo evidence: `template-repo/AGENTS.yml`, `scripts/install_governance_pack.py`,
 - Keep active phase, phase workitems, phase logs, hotfix records, and release-gate targets aligned.
 - Keep audits in `audits/`; `docs/` is for user and operator documentation.
 - Declare nested governance packs and vendored artifacts in `governance/artifact-manifest.yml`.
+- Use `bcf cleanup` for deterministic audit-root moves and exact reference rewrites before manual documentation compaction.
 - Do not write execution evidence into `AGENTS.yml` or `MEMORY.yml`.
 
-Repo evidence: `scripts/validate_governance_yaml.py`, `tests/test_validate_governance_yaml.py`.
+Repo evidence: `scripts/validate_governance_yaml.py`, `scripts/cleanup_governance_pack.py`, `tests/test_validate_governance_yaml.py`.
 
 ## Review Checklist
 

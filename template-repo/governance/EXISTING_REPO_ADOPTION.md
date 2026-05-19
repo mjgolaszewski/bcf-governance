@@ -6,6 +6,8 @@ Use this playbook when converting an established repository into a BCF-governed 
 
 The adoption goal is structural truth first: install governed artifacts, inventory the existing architecture and CI surface, classify gaps, and wire executable gates before claiming release readiness.
 
+Repo evidence: `scripts/install_governance_pack.py` keeps these playbooks only for `--adoption-mode existing`; fresh installs omit them.
+
 ## Installer Mode
 
 Use the existing-repo mode when bootstrapping into a non-empty repository:
@@ -23,17 +25,33 @@ bcf install \
 
 Start with `lite` when the existing repo has not yet mapped its architecture, CI, and release gates. Promote to `standard` after the mandatory gates are wired or explicitly classified.
 
+Before deleting or rescaffolding a drifted governance tree, run a dry cleanup plan:
+
+```bash
+bcf cleanup --repo-root /path/to/existing-repo
+bcf cleanup --repo-root /path/to/existing-repo --format json --compact
+```
+
+Apply only the deterministic path moves when the plan looks correct:
+
+```bash
+bcf cleanup --repo-root /path/to/existing-repo --apply
+```
+
+`bcf cleanup` moves legacy audit/review evidence into `audits/` and rewrites exact path references. It only reports semantic compaction work; it does not rewrite product specs, phase history, architecture docs, security docs, runbooks, or vendored governance.
+
 ## Conversion Sequence
 
 1. Install the pack in `existing` adoption mode.
-2. Keep the first commit limited to governance artifacts, docs, scripts, schemas, CI fragments, and phase records.
-3. Inventory source roots, bounded contexts, architectural layers, command/query paths, read-model names, write API names, generated-file exclusions, and runtime surfaces.
-4. Update `architecture-boundaries.yml` to match the repo before treating architecture tests as release evidence.
-5. Merge or include `Makefile.fragment`.
-6. Wire real gate commands or mark genuinely unavailable gates as `deferred` or `not_applicable` with rationale.
-7. Add push CI lanes for required gates when a local or hosted runner is available.
-8. Record adoption evidence and known gaps in the active phase log.
-9. Promote from `lite` to `standard` only after structural gates are executable or deliberately classified.
+2. Run `bcf cleanup` when legacy audit or governance evidence exists outside canonical roots.
+3. Keep the first commit limited to governance artifacts, docs, scripts, schemas, CI fragments, and phase records.
+4. Inventory source roots, bounded contexts, architectural layers, command/query paths, read-model names, write API names, generated-file exclusions, and runtime surfaces.
+5. Update `architecture-boundaries.yml` to match the repo before treating architecture tests as release evidence.
+6. Merge or include `Makefile.fragment`.
+7. Wire real gate commands or mark genuinely unavailable gates as `deferred` or `not_applicable` with rationale.
+8. Add push CI lanes for required gates when a local or hosted runner is available.
+9. Record adoption evidence and known gaps in the active phase log.
+10. Promote from `lite` to `standard` only after structural gates are executable or deliberately classified.
 
 ## Required Inventory
 
