@@ -25,11 +25,19 @@ Repo evidence: `template-repo/AGENTS.yml` authorities and regression shield.
 
 ## Canonical Artifacts
 
-Canonical owner details live in `governance/ARTIFACT_OWNERSHIP.md`. The validator enforces schema shape, repo-relative `document.path`, active-phase alignment, phase/workitem/log consistency, release-gate wiring, hotfix alignment, and observability contract shape.
+Canonical owner details live in `governance/ARTIFACT_OWNERSHIP.md`. The validator enforces schema shape, repo-relative `document.path`, active-phase alignment, phase/workitem/log consistency, release-gate wiring, hotfix alignment, observability contract shape, artifact-root ownership, audit placement, nested-governance declarations, vendored artifact hashes, context budgets, and declared test roots.
 
 Fresh installs omit existing-repo adoption playbooks; installs with `--adoption-mode existing` keep `governance/EXISTING_REPO_ADOPTION.md` and `governance/existing-repo-adoption.yml`.
 
 Repo evidence: `scripts/install_governance_pack.py`, `scripts/validate_governance_yaml.py`, `template-repo/governance-profile.yml`.
+
+## Cleanup And Compaction
+
+Use `bcf cleanup` before rescaffolding or hand-editing a drifted repo. It is dry-run by default and reports safe actions separately from semantic/manual actions.
+
+Safe cleanup actions are deterministic: create `audits/README.md`, move audit/review evidence from legacy roots into `audits/`, and rewrite exact path references. Semantic compaction remains manual or LLM-assisted: product specs, phase history, architecture docs, security docs, runbooks, and nested vendored governance need owner judgment before removal or rewriting.
+
+Repo evidence: `scripts/cleanup_governance_pack.py`, `scripts/validate_governance_yaml.py`, `template-repo/governance/artifact-manifest.yml`.
 
 ## Change Rules
 
@@ -53,9 +61,10 @@ Repo evidence: `template-repo/schemas/phase-ledger.schema.json`, `template-repo/
 ## Operating Rhythm
 
 1. Install with `bcf install` or `scripts/install_governance_pack.py`.
-2. Open phases and hotfix logs with `bcf scaffold` or `scripts/scaffold_governance_artifacts.py`.
-3. Execute scoped workitems only.
-4. Record terse evidence in phase logs.
-5. Run `bcf validate`; run `bcf doctor` after release gates are wired.
+2. For existing drifted repos, run `bcf cleanup` and address manual actions before claiming compaction.
+3. Open phases and hotfix logs with `bcf scaffold` or `scripts/scaffold_governance_artifacts.py`.
+4. Execute scoped workitems only.
+5. Record terse evidence in phase logs or audits.
+6. Run `bcf validate`; run `bcf doctor` after release gates are wired.
 
-Repo evidence: `bcf_governance/cli.py`, `scripts/scaffold_governance_artifacts.py`, `scripts/doctor_governance_pack.py`.
+Repo evidence: `bcf_governance/cli.py`, `scripts/cleanup_governance_pack.py`, `scripts/scaffold_governance_artifacts.py`, `scripts/doctor_governance_pack.py`.

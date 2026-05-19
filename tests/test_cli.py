@@ -22,7 +22,7 @@ def test_cli_reports_version() -> None:
     result = _run_bcf("--version")
 
     assert result.returncode == 0
-    assert "bcf 0.3.2" in result.stdout
+    assert "bcf 0.3.3" in result.stdout
 
 
 def test_cli_validate_dispatches_to_validator() -> None:
@@ -39,3 +39,23 @@ def test_cli_validate_dispatches_to_validator() -> None:
 
     assert result.returncode == 0
     assert json.loads(result.stdout)["status"] == "pass"
+
+
+def test_cli_cleanup_dispatches_to_cleanup_planner(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "docs/audits").mkdir(parents=True)
+    (repo / "docs/audits/security.md").write_text("# Security\n", encoding="utf-8")
+
+    result = _run_bcf(
+        "cleanup",
+        "--repo-root",
+        str(repo),
+        "--format",
+        "json",
+        "--compact",
+    )
+
+    assert result.returncode == 0
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "actionable"
+    assert payload["actions"][0]["kind"] == "create_audit_readme"

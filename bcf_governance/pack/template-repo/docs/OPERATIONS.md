@@ -42,6 +42,23 @@ python3 scripts/scaffold_governance_artifacts.py hotfix --help
 Generate real hotfix logs with the scaffold helper rather than copying the template example file; the governed filename convention is `phases/phase-NN-hotfix##.yml`.
 Governance validation should cover structural schema checks from `schemas/`, repo-relative `document.path` checks, configured release-gate checks, and semantic cross-artifact consistency checks.
 
+## Cleanup Helpers
+
+Use `bcf cleanup` from an installed BCF CLI when this repo accumulates audit or governance drift:
+
+```bash
+bcf cleanup --repo-root .
+bcf cleanup --repo-root . --format json --compact
+```
+
+The command is dry-run by default. Safe apply mode moves legacy audit/review evidence into `audits/` and rewrites exact path references:
+
+```bash
+bcf cleanup --repo-root . --apply
+```
+
+Do not use cleanup as a substitute for semantic review. Product specs, phase history, architecture docs, security docs, runbooks, and vendored governance require owner judgment before rewriting or removal.
+
 ## Runtime Diagnostics
 
 Document service health, release metadata, metrics, traces, logs, and operator-safe diagnostic endpoints here.
