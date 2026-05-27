@@ -40,8 +40,10 @@ OBSERVABILITY_CONTRACT_PATHS = (
 OBSERVABILITY_CONTRACT_SCHEMA = "observability-contract.schema.json"
 ARTIFACT_MANIFEST_SCHEMA = "artifact-manifest.schema.json"
 REPO_CLEANUP_CONTRACT_SCHEMA = "repo-cleanup-contract.schema.json"
+PHASE_HISTORY_SCHEMA = "phase-history.schema.json"
 SCHEMA_ROOT = "schemas"
 PHASE_CLOSEOUT_STATUSES = {"verified", "closed"}
+PHASE_HISTORY_STATUSES = {"completed", "verified", "closed", "abandoned"}
 ACTIVE_PHASE_LIFECYCLE_STATUSES = {
     "planned",
     "active",
@@ -68,6 +70,7 @@ RELEASE_GATE_MEANINGLESS_VERSION_PATTERN = re.compile(
 )
 RELEASE_GATE_POLICY_MARKERS = {
     "governance_validation": ("validate_governance_yaml.py", "bcf validate", "governance-validate"),
+    "governance_exposure_scan": ("check_governance_exposure.py", "governance-exposure-scan"),
     "architecture_tests": ("architecture",),
     "architecture_module_size": ("architecture-module-size", "production_modules_respect_loc_cap", "module_size"),
     "architecture_layer_membership": (
@@ -101,6 +104,7 @@ RELEASE_GATE_POLICY_MARKERS = {
 }
 DEFAULT_RELEASE_GATE_TARGETS = {
     "governance-validate",
+    "governance-exposure-scan",
     "architecture-test",
     "architecture-module-size",
     "architecture-layer-membership",
@@ -121,6 +125,7 @@ DEFAULT_RELEASE_GATE_TARGETS = {
 }
 DEFAULT_RELEASE_GATE_POLICIES = {
     "governance-validate": "governance_validation",
+    "governance-exposure-scan": "governance_exposure_scan",
     "architecture-test": "architecture_tests",
     "architecture-module-size": "architecture_module_size",
     "architecture-layer-membership": "architecture_layer_membership",
@@ -222,6 +227,16 @@ def _require_positive_int(value: object, *, context: str) -> int:
         raise GovernanceValidationError(f"{context} must be a positive integer") from exc
     if number <= 0:
         raise GovernanceValidationError(f"{context} must be a positive integer")
+    return number
+
+
+def _require_non_negative_int(value: object, *, context: str) -> int:
+    try:
+        number = int(value)
+    except (TypeError, ValueError) as exc:
+        raise GovernanceValidationError(f"{context} must be a non-negative integer") from exc
+    if number < 0:
+        raise GovernanceValidationError(f"{context} must be a non-negative integer")
     return number
 
 
@@ -1476,6 +1491,190 @@ def _validate_context_budgets(repo_root: Path, manifest: dict[str, Any]) -> None
         )
 
 
+def _phase_retention_policy(manifest: dict[str, Any]) -> dict[str, Any] | None:
+    policy = manifest.get("phase_retention_policy")
+    if policy is None:
+        return None
+    return _require_mapping(
+        policy, context="governance/artifact-manifest.yml phase_retention_policy"
+    )
+
+
+def _phase_history_path_from_policy(
+    repo_root: Path, manifest: dict[str, Any]
+) -> Path | None:
+    policy = _phase_retention_policy(manifest)
+    if policy is None:
+        return None
+    history_path = _require_string(
+        policy.get("history_path"),
+        context="governance/artifact-manifest.yml phase_retention_policy.history_path",
+    )
+    return _require_path(
+        repo_root,
+        history_path,
+        context="governance/artifact-manifest.yml phase_retention_policy.history_path",
+    )
+
+
+def _load_phase_history(
+    repo_root: Path,
+    schema_cache: dict[str, dict[str, Any]],
+    manifest: dict[str, Any],
+) -> tuple[dict[str, Any] | None, Path | None]:
+    history_path = _phase_history_path_from_policy(repo_root, manifest)
+    if history_path is None:
+        return None, None
+    phase_history = _load_yaml(history_path)
+    _validate_schema(
+        repo_root,
+        schema_cache,
+        phase_history,
+        schema_name=PHASE_HISTORY_SCHEMA,
+        context=str(history_path),
+    )
+    _validate_document_path(repo_root, phase_history, history_path, context=str(history_path))
+    return phase_history, history_path
+
+
+def _phase_history_entries(phase_history: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
+    if phase_history is None:
+        return {}
+    entries = _require_sequence(phase_history.get("entries"), context="plans/phase-history.yml entries")
+    by_phase: dict[str, dict[str, Any]] = {}
+    for index, entry in enumerate(entries, start=1):
+        entry_mapping = _require_mapping(
+            entry, context=f"plans/phase-history.yml entries[{index}]"
+        )
+        phase_id = _require_string(
+            entry_mapping.get("phase_id"),
+            context=f"plans/phase-history.yml entries[{index}].phase_id",
+        )
+        if phase_id in by_phase:
+            raise GovernanceValidationError(
+                f"plans/phase-history.yml contains duplicate entry for {phase_id}"
+            )
+        by_phase[phase_id] = entry_mapping
+    return by_phase
+
+
+def _validate_phase_history_entries(
+    repo_root: Path,
+    phase_history: dict[str, Any] | None,
+    *,
+    product_phase_map: dict[str, dict[str, Any]],
+    build_phase_map: dict[str, dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    history_entries = _phase_history_entries(phase_history)
+    for phase_id, entry in history_entries.items():
+        if phase_id not in build_phase_map:
+            raise GovernanceValidationError(
+                f"plans/phase-history.yml entry {phase_id} is not declared in the build plan"
+            )
+        build_block = _require_string(
+            entry.get("build_block"),
+            context=f"plans/phase-history.yml entries.{phase_id}.build_block",
+        )
+        if build_block != build_phase_map[phase_id].get("build_block"):
+            raise GovernanceValidationError(
+                f"plans/phase-history.yml entry {phase_id} build_block must match build plan"
+            )
+        release_train = entry.get("release_train")
+        if release_train is not None and release_train != product_phase_map[phase_id].get("release_train"):
+            raise GovernanceValidationError(
+                f"plans/phase-history.yml entry {phase_id} release_train must match product spec"
+            )
+        status = _require_string(
+            entry.get("status"), context=f"plans/phase-history.yml entries.{phase_id}.status"
+        )
+        if status not in PHASE_HISTORY_STATUSES:
+            raise GovernanceValidationError(
+                f"plans/phase-history.yml entry {phase_id} status must be one of "
+                f"{sorted(PHASE_HISTORY_STATUSES)}"
+            )
+        artifacts = _require_sequence(
+            entry.get("archived_artifacts"),
+            context=f"plans/phase-history.yml entries.{phase_id}.archived_artifacts",
+        )
+        for artifact_index, artifact in enumerate(artifacts, start=1):
+            artifact_mapping = _require_mapping(
+                artifact,
+                context=(
+                    "plans/phase-history.yml "
+                    f"entries.{phase_id}.archived_artifacts[{artifact_index}]"
+                ),
+            )
+            artifact_path = _require_path(
+                repo_root,
+                _require_string(
+                    artifact_mapping.get("path"),
+                    context=(
+                        "plans/phase-history.yml "
+                        f"entries.{phase_id}.archived_artifacts[{artifact_index}].path"
+                    ),
+                ),
+                context=(
+                    "plans/phase-history.yml "
+                    f"entries.{phase_id}.archived_artifacts[{artifact_index}].path"
+                ),
+            )
+            expected_sha = _require_string(
+                artifact_mapping.get("sha256"),
+                context=(
+                    "plans/phase-history.yml "
+                    f"entries.{phase_id}.archived_artifacts[{artifact_index}].sha256"
+                ),
+            )
+            if _file_sha256(artifact_path) != expected_sha:
+                raise GovernanceValidationError(
+                    f"plans/phase-history.yml entry {phase_id} archived artifact "
+                    f"{_repo_relative_path(repo_root, artifact_path)} has a sha256 mismatch"
+                )
+    return history_entries
+
+
+def _retained_phase_ids(
+    *,
+    build_phase_map: dict[str, dict[str, Any]],
+    ledger: dict[str, Any],
+    manifest: dict[str, Any],
+) -> set[str] | None:
+    policy = _phase_retention_policy(manifest)
+    if policy is None:
+        return None
+    active_window = _require_mapping(
+        policy.get("active_window"),
+        context="governance/artifact-manifest.yml phase_retention_policy.active_window",
+    )
+    active_phase = _require_mapping(
+        ledger.get("active_phase"), context="plans/phase-ledger.yml active_phase"
+    )
+    active_id = _require_string(active_phase.get("id"), context="plans/phase-ledger.yml active_phase.id")
+    retained: set[str] = set()
+    sorted_phase_ids = sorted(build_phase_map, key=_phase_number)
+    if active_window.get("include_active", True):
+        retained.add(active_id)
+    if active_window.get("include_next", True):
+        for phase_id in sorted_phase_ids:
+            if _phase_number(phase_id) > _phase_number(active_id):
+                retained.add(phase_id)
+                break
+    keep_recent_closed = _require_non_negative_int(
+        active_window.get("keep_recent_closed", 0),
+        context=(
+            "governance/artifact-manifest.yml "
+            "phase_retention_policy.active_window.keep_recent_closed"
+        ),
+    )
+    prior_phase_ids = [
+        phase_id
+        for phase_id in sorted_phase_ids
+        if _phase_number(phase_id) < _phase_number(active_id)
+    ]
+    retained.update(prior_phase_ids[-keep_recent_closed:] if keep_recent_closed else [])
+    return retained
+
+
 def _pytest_paths_from_command(command: str) -> list[str]:
     normalized = command.replace("$(PYTEST)", "pytest")
     try:
@@ -1610,7 +1809,7 @@ def _validate_ephemeral_evidence_references(repo_root: Path, manifest: dict[str,
             continue
         for line_number, line in enumerate(lines, start=1):
             lowered = line.lower()
-            if not any(root.lower() in lowered for root in roots):
+            if not _line_mentions_ephemeral_root(lowered, roots):
                 continue
             window = "\n".join(lines[line_number - 1 : line_number + 2]).lower()
             if not any(marker in window for marker in durable_markers):
@@ -1620,6 +1819,19 @@ def _validate_ephemeral_evidence_references(repo_root: Path, manifest: dict[str,
             "ephemeral artifact references in governed docs need sha256, CI artifact, "
             "uploaded artifact, or non-authoritative marker: " + ", ".join(violations[:20])
         )
+
+
+def _line_mentions_ephemeral_root(line: str, roots: list[str]) -> bool:
+    for root in roots:
+        root_value = root.lower().strip()
+        normalized = root_value.rstrip("/")
+        if not normalized:
+            continue
+        suffix = "/" if root_value.endswith("/") else r"(?:/|$)"
+        pattern = rf"(?<![A-Za-z0-9_.-]){re.escape(normalized)}{suffix}"
+        if re.search(pattern, line):
+            return True
+    return False
 
 
 def _validate_artifact_manifest(
@@ -1686,6 +1898,8 @@ def _validate_declared_phase_catalog(
     product_spec: dict[str, Any],
     build_plan: dict[str, Any],
     ledger: dict[str, Any],
+    manifest: dict[str, Any],
+    phase_history: dict[str, Any] | None,
 ) -> dict[str, tuple[Path, Path, Path]]:
     execution_phases = _require_sequence(
         product_spec.get("execution_phases"), context="plans/product-spec.yml execution_phases"
@@ -1738,6 +1952,18 @@ def _validate_declared_phase_catalog(
             + ", ".join(missing_phase_ids)
         )
 
+    history_entries = _validate_phase_history_entries(
+        repo_root,
+        phase_history,
+        product_phase_map=product_phase_map,
+        build_phase_map=build_phase_map,
+    )
+    retained_phase_ids = _retained_phase_ids(
+        build_phase_map=build_phase_map,
+        ledger=ledger,
+        manifest=manifest,
+    )
+
     existing_phase_ids = _phase_ids_from_existing_artifacts(repo_root)
     undeclared_phase_ids = sorted(existing_phase_ids - set(build_phase_map))
     if undeclared_phase_ids:
@@ -1765,12 +1991,19 @@ def _validate_declared_phase_catalog(
             phase_mapping.get("build_block"),
             context=f"plans/build-plan.yml phase_sequence[{index}].build_block",
         )
-        declared_phase_paths[phase_id] = _validate_phase_artifact_triplet(
-            repo_root,
-            schema_cache,
-            phase_id=phase_id,
-            build_block=build_block,
-        )
+        must_retain_triplet = retained_phase_ids is None or phase_id in retained_phase_ids
+        triplet_exists = phase_id in existing_phase_ids
+        if must_retain_triplet or triplet_exists:
+            declared_phase_paths[phase_id] = _validate_phase_artifact_triplet(
+                repo_root,
+                schema_cache,
+                phase_id=phase_id,
+                build_block=build_block,
+            )
+        elif phase_id not in history_entries:
+            raise GovernanceValidationError(
+                f"phase {phase_id} has no active triplet and no plans/phase-history.yml entry"
+            )
 
     release_trains = _require_mapping(
         ledger.get("release_trains"), context="plans/phase-ledger.yml release_trains"
@@ -1798,12 +2031,20 @@ def _validate_declared_phase_catalog(
             )
 
         for phase_id in phase_ids:
-            log = _load_yaml(declared_phase_paths[phase_id][2])
-            log_path = declared_phase_paths[phase_id][2]
-            if _document_status(log, context=str(log_path)) == "planned":
+            if phase_id in declared_phase_paths:
+                log = _load_yaml(declared_phase_paths[phase_id][2])
+                status = _document_status(log, context=str(declared_phase_paths[phase_id][2]))
+                display = declared_phase_paths[phase_id][2].relative_to(repo_root).as_posix()
+            else:
+                status = _require_string(
+                    history_entries[phase_id].get("status"),
+                    context=f"plans/phase-history.yml entries.{phase_id}.status",
+                )
+                display = "plans/phase-history.yml"
+            if status == "planned":
                 raise GovernanceValidationError(
                     f"completed release train {release_name} cannot reference planned phase log "
-                    f"{log_path.relative_to(repo_root)}"
+                    f"{display}"
                 )
 
     return declared_phase_paths
@@ -2232,6 +2473,9 @@ def validate_repo_root(
     artifact_manifest, artifact_manifest_path = _load_artifact_manifest(
         repo_root, schema_cache, governance_profile
     )
+    phase_history, phase_history_path = _load_phase_history(
+        repo_root, schema_cache, artifact_manifest
+    )
     _, cleanup_contract_path = _load_repo_cleanup_contract(
         repo_root, schema_cache, governance_profile
     )
@@ -2270,7 +2514,7 @@ def validate_repo_root(
     _validate_artifact_manifest(repo_root, artifact_manifest, agents)
     observability_contract_paths = _validate_observability_contracts(repo_root, schema_cache)
     declared_phase_paths = _validate_declared_phase_catalog(
-        repo_root, schema_cache, product_spec, build_plan, ledger
+        repo_root, schema_cache, product_spec, build_plan, ledger, artifact_manifest, phase_history
     )
     hotfix_paths = _validate_hotfix_lane(repo_root, schema_cache, ledger)
     active_phase_paths = _validate_active_phase(
@@ -2297,6 +2541,7 @@ def validate_repo_root(
                 *hotfix_paths,
                 *observability_contract_paths,
                 *active_phase_paths,
+                *([phase_history_path] if phase_history_path is not None else []),
                 *([governance_profile_path] if governance_profile_path is not None else []),
                 *([artifact_manifest_path] if artifact_manifest_path is not None else []),
                 *([cleanup_contract_path] if cleanup_contract_path is not None else []),

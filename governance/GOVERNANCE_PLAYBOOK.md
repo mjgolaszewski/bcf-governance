@@ -25,7 +25,7 @@ Repo evidence: `template-repo/AGENTS.yml` authorities and regression shield.
 
 ## Canonical Artifacts
 
-Canonical owner details live in `governance/ARTIFACT_OWNERSHIP.md`. The validator enforces schema shape, repo-relative `document.path`, active-phase alignment, phase/workitem/log consistency, release-gate wiring, hotfix alignment, observability contract shape, artifact-root ownership, audit placement, nested-governance declarations, vendored artifact hashes, context budgets, and declared test roots.
+Canonical owner details live in `governance/ARTIFACT_OWNERSHIP.md`. The validator enforces schema shape, repo-relative `document.path`, active-phase alignment, phase/workitem/log consistency, phase-history retention, release-gate wiring, hotfix alignment, observability contract shape, artifact-root ownership, audit placement, nested-governance declarations, vendored artifact hashes, context budgets, and declared test roots.
 
 Fresh installs omit existing-repo adoption playbooks; installs with `--adoption-mode existing` keep `governance/EXISTING_REPO_ADOPTION.md` and `governance/existing-repo-adoption.yml`.
 
@@ -35,7 +35,7 @@ Repo evidence: `scripts/install_governance_pack.py`, `scripts/validate_governanc
 
 Use `bcf cleanup` before rescaffolding or hand-editing a drifted repo. It is dry-run by default and reports safe actions separately from semantic/manual actions.
 
-Safe cleanup actions are deterministic: create `audits/README.md`, move audit/review evidence from legacy roots into `audits/`, and rewrite exact path references. Semantic compaction remains manual or LLM-assisted: product specs, phase history, architecture docs, security docs, runbooks, and nested vendored governance need owner judgment before removal or rewriting.
+Safe cleanup actions are deterministic: create `audits/README.md`, move audit/review evidence from legacy roots into `audits/`, rewrite exact path references, and, when `--archive-closed-phases` is passed, move verified or closed phase triplets outside the retained active window into `governance/archive/phase-artifacts/` after updating `plans/phase-history.yml` with summaries and hashes. Semantic compaction remains manual or LLM-assisted: product specs, architecture docs, security docs, runbooks, and nested vendored governance need owner judgment before removal or rewriting.
 
 Installed repos include `governance/repo-cleanup-contract.yml` for the machine cleanup contract and `governance/REPO_CLEANUP.md` for the human sequence. Documentation currency is a required semantic review item: compare each section to repo files, commands, tests, and canonical governance before closeout.
 
@@ -48,6 +48,7 @@ Repo evidence: `scripts/cleanup_governance_pack.py`, `scripts/validate_governanc
 - Update canonical governed artifacts together when behavior, environment, release gates, or governance changes.
 - Keep append-heavy entries terse, but include full intent, action/evidence, and consequence.
 - Run semantic governance validation when governed artifacts change.
+- Run the exposure scan before release evidence is trusted; governed artifacts must not carry local workspace paths or private infrastructure markers unless explicitly allowed.
 - Keep release gates fail-closed until repo-specific commands are wired.
 
 Repo evidence: `template-repo/AGENTS.yml`, `template-repo/Makefile.fragment`, `scripts/doctor_governance_pack.py`.
@@ -62,11 +63,11 @@ Repo evidence: `template-repo/schemas/phase-ledger.schema.json`, `template-repo/
 
 ## Operating Rhythm
 
-1. Install with `bcf install` or `scripts/install_governance_pack.py`.
+1. Install with `bcf install` or upgrade pack-owned support files with `bcf install --upgrade`.
 2. For existing drifted repos, run `bcf cleanup` and address manual actions before claiming compaction.
 3. Open phases and hotfix logs with `bcf scaffold` or `scripts/scaffold_governance_artifacts.py`.
 4. Execute scoped workitems only.
 5. Record terse evidence in phase logs or audits.
-6. Run `bcf validate`; run `bcf doctor` after release gates are wired.
+6. Run `bcf validate` and `bcf exposure-scan`; run `bcf doctor` after release gates are wired.
 
 Repo evidence: `bcf_governance/cli.py`, `scripts/cleanup_governance_pack.py`, `scripts/scaffold_governance_artifacts.py`, `scripts/doctor_governance_pack.py`.

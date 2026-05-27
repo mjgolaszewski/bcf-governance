@@ -40,6 +40,38 @@
         }
       }
     },
+    "phase_retention_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["history_path", "active_window", "archive"],
+      "properties": {
+        "history_path": { "type": "string", "minLength": 1 },
+        "active_window": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["include_active", "include_next", "keep_recent_closed"],
+          "properties": {
+            "include_active": { "type": "boolean" },
+            "include_next": { "type": "boolean" },
+            "keep_recent_closed": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "archive": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["root", "closed_phase_statuses", "preserve_hotfix_logs"],
+          "properties": {
+            "root": { "type": "string", "minLength": 1 },
+            "closed_phase_statuses": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "enum": ["completed", "verified", "closed"] }
+            },
+            "preserve_hotfix_logs": { "type": "boolean" }
+          }
+        }
+      }
+    },
     "nested_governance": {
       "type": "object",
       "additionalProperties": false,

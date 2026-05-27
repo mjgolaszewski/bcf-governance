@@ -23,6 +23,7 @@ def test_agent_facing_governance_files_remain_small_context_friendly() -> None:
         "governance/repo-cleanup-contract.yml": 90,
         "plans/build-plan.yml": 95,
         "plans/phase-ledger.yml": 95,
+        "plans/phase-history.yml": 40,
         "plans/product-spec.yml": 40,
         "contracts/observability/v1/telemetry.contract.yml": 70,
         "contracts/observability/v1/logging.contract.yml": 70,

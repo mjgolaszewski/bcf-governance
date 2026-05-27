@@ -49,6 +49,7 @@
         "canonical_product_spec",
         "canonical_build_plan",
         "canonical_active_phase_ledger",
+        "canonical_phase_history",
         "canonical_phase_log_root",
         "code_roots",
         "delivery_architecture",
@@ -60,6 +61,7 @@
         "canonical_product_spec": { "type": "string", "minLength": 1 },
         "canonical_build_plan": { "type": "string", "minLength": 1 },
         "canonical_active_phase_ledger": { "type": "string", "minLength": 1 },
+        "canonical_phase_history": { "type": "string", "minLength": 1 },
         "canonical_phase_log_root": { "type": "string", "minLength": 1 },
         "code_roots": {
           "type": "object",
@@ -161,6 +163,7 @@
             "spec",
             "build_plan",
             "active_phase_ledger",
+            "phase_history",
             "active_phase_plan",
             "active_workitem_ledger",
             "active_phase_log"
@@ -169,6 +172,7 @@
             "spec": { "type": "string", "minLength": 1 },
             "build_plan": { "type": "string", "minLength": 1 },
             "active_phase_ledger": { "type": "string", "minLength": 1 },
+            "phase_history": { "type": "string", "minLength": 1 },
             "active_phase_plan": { "type": "string", "minLength": 1 },
             "active_workitem_ledger": { "type": "string", "minLength": 1 },
             "active_phase_log": { "type": "string", "minLength": 1 }

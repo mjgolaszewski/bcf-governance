@@ -1,0 +1,12 @@
+document:
+  kind: phase_history
+  name: "{{PROJECT_NAME}} Phase History"
+  id: "{{PROJECT_ID}}-phase-history"
+  version: 1.0.0
+  generated_at_utc: "{{DATE}}T00:00:00Z"
+  status: active
+  path: plans/phase-history.yml
+retention_policy:
+  source: governance/artifact-manifest.yml
+  purpose: compact machine-readable history for archived closed phase artifacts
+entries: []

@@ -17,6 +17,10 @@ def _read_text(relative_path: str) -> str:
 def test_duplicated_governance_scripts_and_requirements_stay_in_sync() -> None:
     pairs = [
         (
+            "scripts/check_governance_exposure.py",
+            "template-repo/scripts/check_governance_exposure.py",
+        ),
+        (
             "scripts/validate_governance_yaml.py",
             "template-repo/scripts/validate_governance_yaml.py",
         ),

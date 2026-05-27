@@ -42,6 +42,7 @@ RESCAFFOLD_REMOVE_PATHS = (
     "contracts/observability",
     "backend/tests/architecture/test_boundaries_ast.py",
     ".github/workflows/governance.yml",
+    "scripts/check_governance_exposure.py",
     "scripts/scaffold_governance_artifacts.py",
     "scripts/validate_governance_yaml.py",
 )
@@ -70,6 +71,7 @@ LITE_DEFERRED_GATES = (
 )
 REQUIRED_STANDARD_GATES = (
     "governance-validate",
+    "governance-exposure-scan",
     "architecture-test",
     "architecture-module-size",
     "architecture-layer-membership",
@@ -87,6 +89,21 @@ REQUIRED_STANDARD_GATES = (
     "security-sbom",
     "security-vulnerability-scan",
     "runtime-smoke",
+)
+UPGRADE_REFRESH_PATHS = (
+    "requirements-governance.txt",
+    "schemas",
+    ".github/workflows/governance.yml",
+    "backend/tests/architecture/test_boundaries_ast.py",
+    "governance/REPO_CLEANUP.md",
+    "scripts/check_governance_exposure.py",
+    "scripts/scaffold_governance_artifacts.py",
+    "scripts/validate_governance_yaml.py",
+)
+UPGRADE_RESET_OPTION_PATHS = (
+    "Makefile.fragment",
+    "architecture-boundaries.yml",
+    "governance-profile.yml",
 )
 MAKE_TARGET_PATTERN = re.compile(r"^([A-Za-z0-9_.-]+)\s*:(?:\s|$)")
 
@@ -198,6 +215,35 @@ def _copy_template(
     return len(template_files)
 
 
+def _copy_selected_template_paths(
+    *,
+    template_root: Path,
+    target_root: Path,
+    relative_paths: tuple[str, ...],
+) -> tuple[int, list[Path]]:
+    copied_files = 0
+    destinations: list[Path] = []
+    for relative_path in relative_paths:
+        source = template_root / relative_path
+        destination = target_root / relative_path
+        if not source.exists():
+            continue
+        if source.is_dir():
+            for source_file in _iter_template_files(source):
+                nested_relative = source_file.relative_to(source)
+                destination_file = destination / nested_relative
+                destination_file.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source_file, destination_file)
+                destinations.append(destination_file)
+                copied_files += 1
+            continue
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+        destinations.append(destination)
+        copied_files += 1
+    return copied_files, destinations
+
+
 def _prune_empty_parents(target_root: Path, start: Path) -> None:
     current = start.parent
     while current != target_root and current.is_relative_to(target_root):
@@ -291,7 +337,7 @@ def _placeholder_values(args: argparse.Namespace, target_root: Path) -> dict[str
         "PROJECT_ID": args.project_id,
         "PROJECT_NAME": args.project_name,
         "RELATED_PHASE_ID": args.phase_id,
-        "REPO_ROOT": str(target_root),
+        "REPO_ROOT": ".",
         "RUNNER_LABELS": args.runner_labels,
         "TARGET_USER": args.target_user,
         "VALIDATION_COMMAND": "make governance-validate",
@@ -301,6 +347,21 @@ def _placeholder_values(args: argparse.Namespace, target_root: Path) -> dict[str
 
 def _replace_placeholders(target_root: Path, values: dict[str, str]) -> None:
     for path in sorted(target_root.rglob("*")):
+        if not path.is_file() or ".git" in path.parts:
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        updated = text
+        for key, value in values.items():
+            updated = updated.replace(f"{{{{{key}}}}}", value)
+        if updated != text:
+            path.write_text(updated, encoding="utf-8")
+
+
+def _replace_placeholders_in_files(paths: list[Path], values: dict[str, str]) -> None:
+    for path in sorted(set(paths)):
         if not path.is_file() or ".git" in path.parts:
             continue
         try:
@@ -368,7 +429,7 @@ def _configure_governance_profile(target_root: Path, profile: str) -> None:
             text,
             "  required_push_jobs:\n",
             "  runner_rules:\n",
-            "  required_push_jobs:\n    - governance-validate\n",
+            "  required_push_jobs:\n    - governance-validate\n    - governance-exposure-scan\n",
         )
     path.write_text(text, encoding="utf-8")
 
@@ -435,7 +496,11 @@ def _configure_makefile(
     text = path.read_text(encoding="utf-8")
 
     if profile == "lite":
-        text = _rewrite_make_target(text, "release-check", ["$(MAKE) governance-validate"])
+        text = _rewrite_make_target(
+            text,
+            "release-check",
+            ["$(MAKE) governance-validate", "$(MAKE) governance-exposure-scan"],
+        )
         for target in LITE_DEFERRED_GATES:
             text = _rewrite_make_target(text, target, ["true"])
 
@@ -519,11 +584,90 @@ def _run_validation(
 def _all_required_gates_wired(profile: str, gate_commands: dict[str, str]) -> bool:
     if profile == "lite":
         return True
-    return all(target in gate_commands for target in REQUIRED_STANDARD_GATES if target != "governance-validate")
+    built_in_targets = {"governance-validate", "governance-exposure-scan"}
+    return all(target in gate_commands for target in REQUIRED_STANDARD_GATES if target not in built_in_targets)
+
+
+def _upgrade_paths(args: argparse.Namespace) -> tuple[str, ...]:
+    paths = list(UPGRADE_REFRESH_PATHS)
+    if args.reset_options:
+        paths.extend(UPGRADE_RESET_OPTION_PATHS)
+    return tuple(dict.fromkeys(paths))
+
+
+def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
+    if not target_root.exists() or not target_root.is_dir():
+        raise NotADirectoryError(f"{target_root} is not an existing directory; use install without --upgrade")
+    if args.force or args.force_rescaffold:
+        raise RuntimeError("--upgrade cannot be combined with --force or --force-rescaffold")
+    if args.gate_command and not args.reset_options:
+        raise RuntimeError("--gate-command with --upgrade requires --reset-options")
+
+    template_root = _template_root()
+    copied_files, destinations = _copy_selected_template_paths(
+        template_root=template_root,
+        target_root=target_root,
+        relative_paths=_upgrade_paths(args),
+    )
+    values = _placeholder_values(args, target_root)
+    _replace_placeholders_in_files(destinations, values)
+    if args.reset_options:
+        _configure_governance_profile(target_root, args.profile)
+        _configure_architecture_boundaries(target_root, args.profile)
+        _configure_makefile(
+            target_root=target_root,
+            profile=args.profile,
+            gate_commands=dict(args.gate_command),
+        )
+
+    strict_validation_passed = False
+    bootstrap_validation_passed = False
+    strict_output = ""
+    bootstrap_output = ""
+    if not args.skip_validation:
+        strict_result = _run_validation(
+            target_root,
+            allow_placeholders=False,
+            allow_release_gate_placeholders=False,
+        )
+        strict_validation_passed = strict_result.returncode == 0
+        strict_output = (strict_result.stdout or strict_result.stderr).strip()
+        if not strict_validation_passed:
+            bootstrap_result = _run_validation(
+                target_root,
+                allow_placeholders=True,
+                allow_release_gate_placeholders=True,
+            )
+            bootstrap_validation_passed = bootstrap_result.returncode == 0
+            bootstrap_output = (bootstrap_result.stdout or bootstrap_result.stderr).strip()
+            if args.require_strict_validation:
+                raise RuntimeError(
+                    "strict governance validation failed after upgrade:\n"
+                    f"{strict_output}\n"
+                    "bootstrap validation output:\n"
+                    f"{bootstrap_output}"
+                )
+        else:
+            bootstrap_validation_passed = True
+            bootstrap_output = strict_output
+
+    return InstallResult(
+        copied_files=copied_files,
+        rescaffold_removed_paths=[],
+        removed_template_examples=[],
+        generated_artifacts={},
+        strict_validation_passed=strict_validation_passed,
+        bootstrap_validation_passed=bootstrap_validation_passed,
+        strict_validation_output=strict_output,
+        bootstrap_validation_output=bootstrap_output,
+    )
 
 
 def install(args: argparse.Namespace) -> InstallResult:
     target_root = args.target.resolve()
+    if args.upgrade:
+        return _upgrade_pack(args, target_root)
+
     target_root.mkdir(parents=True, exist_ok=True)
     if not target_root.is_dir():
         raise NotADirectoryError(f"{target_root} is not a directory")
@@ -639,6 +783,16 @@ def _parser() -> argparse.ArgumentParser:
         help="Delete known BCF governance artifacts, then install a fresh governance pack.",
     )
     parser.add_argument(
+        "--upgrade",
+        action="store_true",
+        help="Refresh latest pack-owned support files while preserving product and phase state.",
+    )
+    parser.add_argument(
+        "--reset-options",
+        action="store_true",
+        help="With --upgrade, reset profile, Makefile, and architecture option surfaces from current flags.",
+    )
+    parser.add_argument(
         "--yes",
         action="store_true",
         help="Confirm destructive --force-rescaffold without an interactive prompt.",
@@ -665,7 +819,8 @@ def _finalize_args(args: argparse.Namespace) -> argparse.Namespace:
 
 def _print_summary(args: argparse.Namespace, result: InstallResult) -> None:
     target_root = args.target.resolve()
-    print(f"installed governance pack into {target_root}")
+    verb = "upgraded" if args.upgrade else "installed"
+    print(f"{verb} governance pack into {target_root}")
     print(f"profile: {args.profile}")
     print(f"adoption mode: {args.adoption_mode}")
     print(f"copied files: {result.copied_files}")
@@ -683,10 +838,11 @@ def _print_summary(args: argparse.Namespace, result: InstallResult) -> None:
     elif result.bootstrap_validation_passed:
         print("validation: bootstrap pass; strict validation is blocked by unwired release gates")
         if not _all_required_gates_wired(args.profile, dict(args.gate_command)):
+            built_in_targets = {"governance-validate", "governance-exposure-scan"}
             missing = [
                 target
                 for target in REQUIRED_STANDARD_GATES
-                if target != "governance-validate" and target not in dict(args.gate_command)
+                if target not in built_in_targets and target not in dict(args.gate_command)
             ]
             print("wire release gates: " + ", ".join(missing))
     else:

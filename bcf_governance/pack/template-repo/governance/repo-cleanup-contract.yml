@@ -27,6 +27,11 @@ drift_patterns:
     action: index history then rescaffold compact active phase state
     deterministic: false
     llm_review: required
+  - id: closed_phase_triplet_retention
+    detect: verified or closed phase triplets are outside the artifact-manifest retained active window
+    action: update plans/phase-history.yml with summaries and hashes, then move triplets to governance/archive/phase-artifacts/
+    deterministic: true
+    llm_review: none
   - id: abandoned_governance_yaml
     detect: YAML not referenced by AGENTS MEMORY manifest ledger docs tests or scripts
     action: classify as active historical vendored or removable before deleting
@@ -53,11 +58,17 @@ deterministic_actions:
     applies_when: safe audit-root moves are approved
     safety: asks before moving files and rewriting exact references
     outputs: [audits_root, rewritten_references, remaining_manual_actions]
+  - id: archive_closed_phase_triplets
+    command: bcf cleanup --repo-root . --archive-closed-phases --apply
+    applies_when: verified or closed phase triplets fall outside phase_retention_policy.active_window
+    safety: records compact history and sha256 values before moving phase artifacts
+    outputs: [plans/phase-history.yml, governance/archive/phase-artifacts]
   - id: force_rescaffold
     command: bcf install --target . --force-rescaffold
     applies_when: owner accepts destructive replacement of active BCF-owned files
     safety: asks before deleting known BCF governance paths
     outputs: [fresh_active_governance, validation_report]
+  - {id: remove_governance_pack, command: "bcf cleanup --repo-root . --remove-governance-pack --apply", applies_when: "owner decommissions BCF governance", safety: "dry-run first; asks before deleting BCF-owned paths", outputs: [removed_governance_artifacts, manual_ci_references]}
 llm_review_required:
   - id: documentation_currency
     reason: prose can be stale while schemas still pass
@@ -71,12 +82,7 @@ llm_review_required:
 validation_required:
   commands: [bcf validate, make governance-validate, make release-check]
   status_policy: record pass fail or blocked with exact command and reason in the active phase log
-evidence_required:
-  - cleanup report or cleanup index
-  - moved artifact summary
-  - vendored pack declarations
-  - documentation currency notes
-  - validation command outcomes
+evidence_required: [cleanup report or cleanup index, moved artifact summary, vendored pack declarations, documentation currency notes, validation command outcomes]
 closeout_rules:
   - do not claim cleanup complete while manual actions remain unexplained
   - do not delete historical evidence unless git history is the declared retention source

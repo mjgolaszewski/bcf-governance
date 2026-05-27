@@ -59,3 +59,17 @@ def test_cli_cleanup_dispatches_to_cleanup_planner(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["status"] == "actionable"
     assert payload["actions"][0]["kind"] == "create_audit_readme"
+
+
+def test_cli_exposure_scan_dispatches_to_scanner() -> None:
+    result = _run_bcf(
+        "exposure-scan",
+        "--repo-root",
+        "template-repo",
+        "--format",
+        "json",
+        "--compact",
+    )
+
+    assert result.returncode == 0
+    assert json.loads(result.stdout)["status"] == "pass"
