@@ -1250,6 +1250,41 @@ def _validate_agents(repo_root: Path, agents: dict[str, Any]) -> None:
     ):
         _require_path(repo_root, test_root, context="AGENTS.yml testing_governance.test_roots")
 
+    guardrails = _require_mapping(
+        agents.get("structural_guardrails"), context="AGENTS.yml structural_guardrails"
+    )
+    deconstruction = _require_mapping(
+        guardrails.get("agent_deconstruction_contract"),
+        context="AGENTS.yml structural_guardrails.agent_deconstruction_contract",
+    )
+    if deconstruction.get("max_loc") != 800:
+        raise GovernanceValidationError(
+            "AGENTS.yml structural_guardrails.agent_deconstruction_contract.max_loc must be 800"
+        )
+    phase_rules = set(
+        _require_string_sequence(
+            deconstruction.get("required_phase_rules"),
+            context="AGENTS.yml structural_guardrails.agent_deconstruction_contract.required_phase_rules",
+            min_items=1,
+        )
+    )
+    required_rules = {
+        "one_fatty_per_phase",
+        "characterization_test_first",
+        "preserve_cli_entrypoint",
+        "split_by_responsibility",
+        "split_shape_plan_validate_execute_report",
+        "ast_boundary_gate",
+        "targeted_tests",
+        "delete_dead_code_immediately",
+    }
+    missing_rules = sorted(required_rules - phase_rules)
+    if missing_rules:
+        raise GovernanceValidationError(
+            "AGENTS.yml structural_guardrails.agent_deconstruction_contract.required_phase_rules "
+            f"missing required rules: {', '.join(missing_rules)}"
+        )
+
 
 def _validate_observability_contracts(
     repo_root: Path, schema_cache: dict[str, dict[str, Any]]

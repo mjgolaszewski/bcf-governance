@@ -97,6 +97,11 @@ structural_guardrails:
     applies_to: [production_source_modules]
     excluded_path_tokens: [generated, migrations, vendor, fixtures, snapshots, testdata, tests]
     violation_response: stop_and_propose_module_split_before_editing
+  agent_deconstruction_contract:
+    max_loc: 800
+    applies_to: [agent_touched_source_files, governance_scripts, package_modules]
+    oversized_file_response: start_deconstruction_phase_before_adding_feature_behavior
+    required_phase_rules: [one_fatty_per_phase, characterization_test_first, preserve_cli_entrypoint, split_by_responsibility, split_shape_plan_validate_execute_report, ast_boundary_gate, targeted_tests, delete_dead_code_immediately]
   module_ownership_policy:
     required_mappings: [exactly_one_architectural_layer, exactly_one_bounded_context_or_domain_concern]
     ambiguity_response: stop_and_update_architecture_boundaries_before_editing

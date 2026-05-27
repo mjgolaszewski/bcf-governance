@@ -759,6 +759,20 @@ def test_validate_repo_root_rejects_context_budget_overrun(tmp_path: Path) -> No
     assert "agent-required governance files exceeded context budgets" in str(excinfo.value)
 
 
+def test_validate_repo_root_rejects_changed_agent_deconstruction_loc_cap(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    agents_path = repo_root / "AGENTS.yml"
+    agents = yaml.safe_load(agents_path.read_text(encoding="utf-8"))
+    agents["structural_guardrails"]["agent_deconstruction_contract"]["max_loc"] = 1000
+    agents_path.write_text(yaml.safe_dump(agents, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "agent_deconstruction_contract.max_loc must be 800" in str(excinfo.value)
+
+
 def test_validate_repo_root_checks_vendored_artifact_provenance(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
     artifact_path = repo_root / "vendor/client/client.whl"
