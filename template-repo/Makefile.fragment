@@ -2,13 +2,16 @@ SHELL := /bin/bash
 PYTHON ?= python3
 PYTEST ?= $(PYTHON) -m pytest
 
-.PHONY: governance-deps governance-validate governance-scaffold-help architecture-test architecture-module-size architecture-layer-membership architecture-context-membership architecture-import-boundaries architecture-cqrs-side architecture-router-thinness architecture-duplication lint typecheck test contract-test security-secret-scan security-dependency-audit security-sbom security-vulnerability-scan runtime-smoke release-check
+.PHONY: governance-deps governance-validate governance-exposure-scan governance-scaffold-help architecture-test architecture-module-size architecture-layer-membership architecture-context-membership architecture-import-boundaries architecture-cqrs-side architecture-router-thinness architecture-duplication lint typecheck test contract-test security-secret-scan security-dependency-audit security-sbom security-vulnerability-scan runtime-smoke release-check
 
 governance-deps:
 	$(PYTHON) -m pip install -r requirements-governance.txt
 
 governance-validate:
 	$(PYTHON) scripts/validate_governance_yaml.py
+
+governance-exposure-scan:
+	$(PYTHON) scripts/check_governance_exposure.py --repo-root .
 
 governance-scaffold-help:
 	$(PYTHON) scripts/scaffold_governance_artifacts.py --help
@@ -75,6 +78,7 @@ runtime-smoke:
 
 release-check:
 	$(MAKE) governance-validate
+	$(MAKE) governance-exposure-scan
 	$(MAKE) architecture-test
 	$(MAKE) architecture-module-size
 	$(MAKE) architecture-layer-membership

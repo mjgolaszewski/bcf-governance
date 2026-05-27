@@ -6,13 +6,14 @@
 | --- | --- |
 | Agent rules and authority order | `AGENTS.yml` |
 | Profile and release-gate classification | `governance-profile.yml` |
-| Artifact roots, vendored packs, audit lane, context budgets | `governance/artifact-manifest.yml` |
+| Artifact roots, vendored packs, audit lane, context budgets, phase retention policy | `governance/artifact-manifest.yml` |
 | Repo cleanup contract and documentation currency rules | `governance/repo-cleanup-contract.yml` |
 | Architecture source roots, layer/context tokens, structural rules | `architecture-boundaries.yml` |
 | Structural shapes | `schemas/*.json` |
 | Product scope and phase catalog | `plans/product-spec.yml` |
 | Delivery sequence and dependencies | `plans/build-plan.yml` |
 | Active phase, validation commands, hotfix records | `plans/phase-ledger.yml` |
+| Compact archived phase history and artifact hashes | `plans/phase-history.yml` |
 | Durable context and active artifact pointers | `MEMORY.yml` |
 | Execution evidence | `phases/*.yml` |
 | Human-requested codebase audits and sprint reports | `audits/` |
@@ -26,6 +27,9 @@ Repo evidence: `template-repo/AGENTS.yml`, `scripts/install_governance_pack.py`,
 - Change derived fields with their canonical source.
 - Keep `document.path` repo-relative, POSIX, and exact.
 - Keep active phase, phase workitems, phase logs, hotfix records, and release-gate targets aligned.
+- Keep closed phase triplets active only while retained by `phase_retention_policy`; archive deterministic triplets with `bcf cleanup --archive-closed-phases --apply`.
+- Keep phase-history entries compact and evidence-backed; an entry without retained artifact hashes is not a valid substitute for removed triplets.
+- Keep governance scripts and installed validator modules below 800 LOC; split by stable concept and preserve characterized behavior.
 - Keep audits in `audits/`; `docs/` is for user and operator documentation.
 - Declare nested governance packs and vendored artifacts in `governance/artifact-manifest.yml`.
 - Use `bcf cleanup` for deterministic audit-root moves and exact reference rewrites before manual documentation compaction.

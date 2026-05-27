@@ -7,6 +7,7 @@ import sys
 
 from bcf_governance import __version__
 from scripts import cleanup_governance_pack
+from scripts import check_governance_exposure
 from scripts import doctor_governance_pack
 from scripts import install_governance_pack
 from scripts import scaffold_governance_artifacts
@@ -15,6 +16,7 @@ from scripts import validate_governance_yaml
 
 COMMANDS = {
     "cleanup": cleanup_governance_pack.main,
+    "exposure-scan": check_governance_exposure.main,
     "install": install_governance_pack.main,
     "validate": validate_governance_yaml.main,
     "scaffold": scaffold_governance_artifacts.main,

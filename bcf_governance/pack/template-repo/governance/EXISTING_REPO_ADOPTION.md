@@ -25,6 +25,11 @@ bcf install \
 
 Start with `lite` when the existing repo has not yet mapped its architecture, CI, and release gates. Promote to `standard` after the mandatory gates are wired or explicitly classified.
 
+Use `bcf install --upgrade` for normal pack updates. It refreshes support
+scripts, schemas, workflow, and missing current governance fields while
+preserving product and phase state. Use `--force-rescaffold` only when the
+owner intends to replace the active BCF layer.
+
 Before deleting or rescaffolding a drifted governance tree, run a dry cleanup plan:
 
 ```bash
@@ -38,7 +43,7 @@ Apply only the deterministic path moves when the plan looks correct:
 bcf cleanup --repo-root /path/to/existing-repo --apply
 ```
 
-`bcf cleanup` moves legacy audit/review evidence into `audits/` and rewrites exact path references. It only reports semantic compaction work; it does not rewrite product specs, phase history, architecture docs, security docs, runbooks, or vendored governance.
+`bcf cleanup` moves legacy audit/review evidence into `audits/` and rewrites exact path references. It only reports semantic compaction work; it does not rewrite product specs, phase history, architecture docs, security docs, runbooks, or vendored governance. Archived phase-history rows must retain artifact hashes.
 
 Use `governance/repo-cleanup-contract.yml` as the cleanup contract and `governance/REPO_CLEANUP.md` as the terse human sequence. Documentation currency is semantic work: update each section against current repo evidence before closeout.
 

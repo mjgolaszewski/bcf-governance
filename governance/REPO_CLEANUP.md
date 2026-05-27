@@ -11,9 +11,15 @@ contract and `governance/REPO_CLEANUP.md` as the human guide.
 Separate deterministic cleanup from semantic cleanup.
 
 Deterministic work may move files, rewrite exact references, create canonical
-roots, and rescaffold known BCF-owned files after confirmation. Semantic work
-needs human or LLM review: documentation currency, product specs, phase
-history, runbooks, architecture gates, and vendored governance.
+roots, archive verified or closed phase triplets after `plans/phase-history.yml`
+is updated with compact summaries and artifact hashes, and rescaffold known BCF-owned files after
+confirmation. It may also remove known BCF-owned files and dedicated governance
+CI gates when decommissioning the pack. Semantic work needs human or LLM
+review: documentation currency, product specs, semantic phase-history
+compaction, runbooks, architecture gates, and vendored governance.
+
+Archived phase-history entries are not narrative logs. They must stay terse,
+name the outcome, and point to retained artifacts with hashes.
 
 ## Closeout
 

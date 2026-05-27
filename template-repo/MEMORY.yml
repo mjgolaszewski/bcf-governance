@@ -19,6 +19,7 @@ stable_decisions:
   canonical_product_spec: plans/product-spec.yml
   canonical_build_plan: plans/build-plan.yml
   canonical_active_phase_ledger: plans/phase-ledger.yml
+  canonical_phase_history: plans/phase-history.yml
   canonical_phase_log_root: phases/
   code_roots:
     backend: backend/src
@@ -55,6 +56,7 @@ environment_facts:
     spec: plans/product-spec.yml
     build_plan: plans/build-plan.yml
     active_phase_ledger: plans/phase-ledger.yml
+    phase_history: plans/phase-history.yml
     active_phase_plan: plans/phase-01-plan.yml
     active_workitem_ledger: plans/phase-01-workitems.yml
     active_phase_log: phases/phase-01-log.yml
@@ -77,6 +79,7 @@ references:
     - schemas/
     - contracts/observability/v1/
     - plans/phase-ledger.yml
+    - plans/phase-history.yml
     - docs/OPERATIONS.md
   product:
     - plans/product-spec.yml

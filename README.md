@@ -17,7 +17,7 @@ ledgers, schemas, architecture boundary gates, release-gate profiles,
 observability contracts, and helper commands that keep agents from treating
 docs, plans, and tests as disconnected prose.
 
-Current release: `v0.3.4`.
+Current release: `v0.4.0`.
 
 ## Why It Matters
 
@@ -29,15 +29,15 @@ BCF turns those failure modes into executable contracts:
 - one canonical authority file for agent instructions
 - one product spec and build plan for declared scope
 - one active phase ledger and durable memory pointer set
-- one artifact manifest for audits, vendored packs, context budgets, and
-  nested-governance boundaries
+- one artifact manifest for audits, vendored packs, context budgets,
+  phase-artifact retention, and nested-governance boundaries
 - one cleanup contract for deterministic moves, semantic review, documentation
   currency, and cleanup closeout evidence
 - one release-gate profile that classifies required, optional, deferred, and
   not-applicable checks
 - one validator that catches schema drift, path drift, phase drift, stale
   active pointers, unwired release gates, oversized context files, undeclared
-  test roots, and misplaced audit evidence
+  test roots, misplaced audit evidence, and retained phase-history drift
 
 The result is not more ceremony for its own sake. It is a smaller, stricter
 surface that agents can actually read and obey.
@@ -86,13 +86,15 @@ The main installed artifacts are:
 - `MEMORY.yml` for durable project memory, not transcripts
 - `governance-profile.yml` for profile and release-gate classification
 - `governance/artifact-manifest.yml` for artifact roots, `audits/`, vendored
-  packs, context budgets, and nested-governance policy
+  packs, context budgets, phase-retention policy, and nested-governance policy
 - `governance/repo-cleanup-contract.yml` and `governance/REPO_CLEANUP.md` for
   drift cleanup, documentation currency, and cleanup closeout rules
 - `architecture-boundaries.yml` for source roots, layers, bounded contexts, and
   AST architecture gates
 - `plans/product-spec.yml`, `plans/build-plan.yml`, and
   `plans/phase-ledger.yml` for scope, sequencing, and active state
+- `plans/phase-history.yml` for compact machine-readable history of archived
+  closed phase artifacts
 - `plans/phase-NN-plan.yml`, `plans/phase-NN-workitems.yml`, and
   `phases/phase-NN-log.yml` for scoped execution evidence
 - `contracts/observability/v1/` for telemetry and logging contract baselines
@@ -125,11 +127,13 @@ python3 -m pip install -r requirements-governance.txt
 
 ## Command Surface
 
-The CLI exposes five workflows:
+The CLI exposes six workflows:
 
-- `bcf install` installs or updates the governance pack.
+- `bcf install` installs, upgrades, or updates the governance pack.
 - `bcf validate` validates governed YAML, semantic alignment, release-gate
   wiring, artifact ownership, context budgets, vendored hashes, and test roots.
+- `bcf exposure-scan` checks governed artifacts for local paths and private
+  infrastructure markers before CI or release evidence is trusted.
 - `bcf scaffold` creates phase and hotfix artifacts with the expected names.
 - `bcf doctor` reports placeholder, release-gate, inactive-gate, and
   non-evidence command gaps.
@@ -166,6 +170,38 @@ bcf install \
   --project-name "Your Project" \
   --require-strict-validation
 ```
+
+## Upgrade A Governed Repo
+
+Use upgrade mode when a repo already has BCF governance and should receive the
+latest pack-owned scripts, validator support modules, schemas, workflow,
+requirements, cleanup docs, and architecture gate test without resetting
+product or phase state. Upgrade also migrates missing current governance fields
+such as phase-history retention, exposure-scan wiring, and agent
+deconstruction rules:
+
+```bash
+bcf install --target /path/to/target-repo --upgrade
+```
+
+To also reset generated option surfaces such as `Makefile.fragment`,
+`governance-profile.yml`, and `architecture-boundaries.yml`, add
+`--reset-options` and pass the intended profile and gate commands:
+
+```bash
+bcf install \
+  --target /path/to/target-repo \
+  --upgrade \
+  --reset-options \
+  --profile standard
+```
+
+Use `--force-rescaffold` only when you intend to replace active BCF-owned
+state, not for normal upgrades.
+
+Upgrade preserves `plans/product-spec.yml`, build/phase ledgers, active phase
+logs, and existing phase history entries. It creates `plans/phase-history.yml`
+only when missing.
 
 ## Existing Repo Adoption
 
@@ -236,6 +272,13 @@ Safe apply mode asks for confirmation:
 bcf cleanup --repo-root /path/to/target-repo --apply
 ```
 
+To intentionally remove BCF governance from a repo, dry-run first:
+
+```bash
+bcf cleanup --repo-root /path/to/target-repo --remove-governance-pack
+bcf cleanup --repo-root /path/to/target-repo --remove-governance-pack --apply
+```
+
 Deterministic cleanup can:
 
 - create `audits/README.md`
@@ -243,11 +286,22 @@ Deterministic cleanup can:
 - move `governance/parity-reviews/`, `governance/test-audits/`, and
   `governance/code-reviews/` into `audits/`
 - rewrite exact path references in text files
+- with `--archive-closed-phases`, move verified or closed phase triplets
+  outside the retained active window into `governance/archive/phase-artifacts/`
+  and update compact `plans/phase-history.yml` entries with summaries and
+  artifact hashes
+- with `--remove-governance-pack`, delete known pack-owned files, directories,
+  dedicated governance workflow, and BCF architecture gate test files
 
-Cleanup deliberately does not rewrite product specs, phase history,
-architecture docs, security docs, runbooks, or vendored governance. Those are
-reported as manual actions because they require semantic review and often
-benefit from LLM support.
+Cleanup deliberately does not rewrite product specs, architecture docs,
+security docs, runbooks, or vendored governance. Those are reported as manual
+actions because they require semantic review and often benefit from LLM
+support. Phase triplet archiving is deterministic only when the log status and
+`governance/artifact-manifest.yml` retention policy make it unambiguous.
+Archived phase-history entries must retain artifact pointers and hashes; empty
+history entries do not satisfy validation.
+Mixed CI workflows that contain BCF steps are reported for manual editing
+instead of deleting unrelated jobs.
 
 New installs also include `governance/repo-cleanup-contract.yml`. The contract
 standardizes cleanup intent, canonical roots, drift patterns, deterministic
@@ -297,6 +351,7 @@ Install governance dependencies and validate before the first governed commit:
 ```bash
 python3 -m pip install -r requirements-governance.txt
 bcf validate
+bcf exposure-scan
 bcf validate --format json --compact
 bcf doctor --repo-root /path/to/target-repo
 ```
@@ -307,6 +362,19 @@ gaps, stale active-phase pointers, hotfix drift, release-gate placeholders,
 audit files outside `audits/`, undeclared nested governance, stale vendored
 artifact hashes, context-budget overruns, and invoked test roots missing from
 `AGENTS.yml`.
+
+`bcf exposure-scan` is a separate CI-friendly gate for governed text artifacts.
+It flags common local workspace paths and private infrastructure markers, with
+inline allow markers reserved for intentional examples.
+
+## Agent Deconstruction
+
+BCF governance scripts and installed validator modules must stay below 800 LOC.
+When a file approaches that cap, split around stable concepts only, add or keep
+characterization coverage before behavior changes, and avoid vague shared
+helpers for security-sensitive semantics. Current split points are installer
+argument/reporting/upgrade migration, cleanup models/phase retention, and
+validator common/release-gate/phase/artifact/catalog/runner surfaces.
 
 ## Profiles
 

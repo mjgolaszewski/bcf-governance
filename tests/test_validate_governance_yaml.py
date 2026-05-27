@@ -67,7 +67,7 @@ def _placeholder_values(repo_root: Path) -> dict[str, str]:
         "PROJECT_ID": "demo",
         "PROJECT_NAME": "Demo Project",
         "RELATED_PHASE_ID": "P01",
-        "REPO_ROOT": str(repo_root),
+        "REPO_ROOT": ".",
         "RUNNER_LABELS": "ubuntu-latest",
         "TARGET_USER": "operators",
         "VALIDATION_COMMAND": "make governance-validate",
@@ -195,6 +195,114 @@ def _instantiate_fixture_repo(
     _copy_fixture_overrides(repo_root, fixture_name)
     _apply_mutations(repo_root, fixture_name)
     return repo_root
+
+
+def _write_yaml(path: Path, payload: dict[str, Any]) -> None:
+    path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+
+def _copy_phase_triplet(repo_root: Path, source_number: str, target_number: str) -> None:
+    replacements = {
+        f"P{source_number}": f"P{target_number}",
+        f"phase-{source_number}": f"phase-{target_number}",
+        f"Phase {source_number}": f"Phase {target_number}",
+    }
+    for relative_path in (
+        f"plans/phase-{source_number}-plan.yml",
+        f"plans/phase-{source_number}-workitems.yml",
+        f"phases/phase-{source_number}-log.yml",
+    ):
+        target_relative_path = relative_path.replace(
+            f"phase-{source_number}", f"phase-{target_number}"
+        )
+        text = (repo_root / relative_path).read_text(encoding="utf-8")
+        for old, new in replacements.items():
+            text = text.replace(old, new)
+        (repo_root / target_relative_path).write_text(text, encoding="utf-8")
+
+
+def _advance_catalog_to_p02(repo_root: Path, *, add_history_entry: bool) -> None:
+    product_spec_path = repo_root / "plans/product-spec.yml"
+    product_spec = yaml.safe_load(product_spec_path.read_text(encoding="utf-8"))
+    product_spec["execution_phases"].append(
+        {
+            "phase_id": "P02",
+            "build_block": "foundation",
+            "objective": "continue governed delivery",
+            "release_train": "release_1",
+        }
+    )
+    _write_yaml(product_spec_path, product_spec)
+
+    build_plan_path = repo_root / "plans/build-plan.yml"
+    build_plan = yaml.safe_load(build_plan_path.read_text(encoding="utf-8"))
+    p02_phase = dict(build_plan["phase_sequence"][0])
+    p02_phase["phase_id"] = "P02"
+    p02_phase["objective"] = "continue governed delivery"
+    build_plan["phase_sequence"].append(p02_phase)
+    _write_yaml(build_plan_path, build_plan)
+
+    _copy_phase_triplet(repo_root, "01", "02")
+
+    ledger_path = repo_root / "plans/phase-ledger.yml"
+    ledger = yaml.safe_load(ledger_path.read_text(encoding="utf-8"))
+    ledger["active_phase"]["id"] = "P02"
+    ledger["active_phase"]["plan"] = "plans/phase-02-plan.yml"
+    ledger["active_phase"]["workitems"] = "plans/phase-02-workitems.yml"
+    ledger["active_phase"]["log"] = "phases/phase-02-log.yml"
+    _write_yaml(ledger_path, ledger)
+
+    memory_path = repo_root / "MEMORY.yml"
+    memory = yaml.safe_load(memory_path.read_text(encoding="utf-8"))
+    active_artifacts = memory["environment_facts"]["active_artifacts"]
+    active_artifacts["active_phase_plan"] = "plans/phase-02-plan.yml"
+    active_artifacts["active_workitem_ledger"] = "plans/phase-02-workitems.yml"
+    active_artifacts["active_phase_log"] = "phases/phase-02-log.yml"
+    _write_yaml(memory_path, memory)
+
+    archived_artifacts: list[dict[str, str]] = []
+    if add_history_entry:
+        archive_root = repo_root / "governance/archive/phase-artifacts"
+        archive_root.mkdir(parents=True, exist_ok=True)
+        for relative_path in (
+            "plans/phase-01-plan.yml",
+            "plans/phase-01-workitems.yml",
+            "phases/phase-01-log.yml",
+        ):
+            source = repo_root / relative_path
+            destination = archive_root / source.name
+            shutil.copy2(source, destination)
+            archived_artifacts.append(
+                {
+                    "path": destination.relative_to(repo_root).as_posix(),
+                    "sha256": hashlib.sha256(destination.read_bytes()).hexdigest(),
+                }
+            )
+
+    for relative_path in (
+        "plans/phase-01-plan.yml",
+        "plans/phase-01-workitems.yml",
+        "phases/phase-01-log.yml",
+    ):
+        (repo_root / relative_path).unlink()
+
+    if not add_history_entry:
+        return
+    history_path = repo_root / "plans/phase-history.yml"
+    history = yaml.safe_load(history_path.read_text(encoding="utf-8"))
+    history["entries"].append(
+        {
+            "phase_id": "P01",
+            "build_block": "foundation",
+            "release_train": "release_1",
+            "status": "verified",
+            "outcome": "foundation verified",
+            "summary": ["foundation phase retained in compact history"],
+            "validation": ["make governance-validate"],
+            "archived_artifacts": archived_artifacts,
+        }
+    )
+    _write_yaml(history_path, history)
 
 
 def _run_validator_command(*args: str, check: bool) -> subprocess.CompletedProcess[str]:
@@ -463,6 +571,39 @@ def test_validate_repo_root_rejects_product_build_phase_mismatch(tmp_path: Path)
     assert "must declare the same phase ids" in str(excinfo.value)
 
 
+def test_validate_repo_root_accepts_archived_phase_history_entry(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    _advance_catalog_to_p02(repo_root, add_history_entry=True)
+
+    validate_repo_root(repo_root)
+
+
+def test_validate_repo_root_rejects_archived_phase_missing_history(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    _advance_catalog_to_p02(repo_root, add_history_entry=False)
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "no active triplet and no plans/phase-history.yml entry" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_phase_history_entry_without_artifacts(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    _advance_catalog_to_p02(repo_root, add_history_entry=True)
+    history_path = repo_root / "plans/phase-history.yml"
+    history = yaml.safe_load(history_path.read_text(encoding="utf-8"))
+    history["entries"][0]["archived_artifacts"] = []
+    _write_yaml(history_path, history)
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "archived_artifacts" in str(excinfo.value)
+
+
 def test_validate_repo_root_rejects_completed_release_train_with_planned_log(
     tmp_path: Path,
 ) -> None:
@@ -650,6 +791,20 @@ def test_validate_repo_root_rejects_context_budget_overrun(tmp_path: Path) -> No
     with pytest.raises(GovernanceValidationError) as excinfo:
         validate_repo_root(repo_root)
     assert "agent-required governance files exceeded context budgets" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_changed_agent_deconstruction_loc_cap(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    agents_path = repo_root / "AGENTS.yml"
+    agents = yaml.safe_load(agents_path.read_text(encoding="utf-8"))
+    agents["structural_guardrails"]["agent_deconstruction_contract"]["max_loc"] = 1000
+    agents_path.write_text(yaml.safe_dump(agents, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "agent_deconstruction_contract.max_loc must be 800" in str(excinfo.value)
 
 
 def test_validate_repo_root_checks_vendored_artifact_provenance(tmp_path: Path) -> None:

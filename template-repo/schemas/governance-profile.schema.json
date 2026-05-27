@@ -67,6 +67,7 @@
                 "type": "string",
                 "enum": [
                   "governance_validation",
+                  "governance_exposure_scan",
                   "architecture_tests",
                   "architecture_module_size",
                   "architecture_layer_membership",

@@ -22,6 +22,7 @@ profile:
 release_gate_profile:
   gates:
     governance_validate: {target: governance-validate, status: required, command_policy: governance_validation, rationale: governed YAML passes schema semantic path and placeholder validation}
+    governance_exposure_scan: {target: governance-exposure-scan, status: required, command_policy: governance_exposure_scan, rationale: governed artifacts do not expose local paths or private infrastructure markers}
     architecture_test: {target: architecture-test, status: required, command_policy: architecture_tests, rationale: architecture boundaries are executable}
     architecture_module_size: {target: architecture-module-size, status: required, command_policy: architecture_module_size, rationale: production modules stay below configured LOC cap}
     architecture_layer_membership: {target: architecture-layer-membership, status: required, command_policy: architecture_layer_membership, rationale: production modules map to one layer}
@@ -45,6 +46,7 @@ ci_profile:
   runner_labels: ["{{RUNNER_LABELS}}"]
   required_push_jobs:
     - governance-validate
+    - governance-exposure-scan
     - architecture-module-size
     - architecture-layer-membership
     - architecture-context-membership
