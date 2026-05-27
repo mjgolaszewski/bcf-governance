@@ -123,6 +123,7 @@ def test_cleanup_remove_governance_pack_deletes_owned_artifacts_only(tmp_path: P
         "phases",
         "plans",
         "schemas",
+        "scripts/governance_validation",
     ]
     for relative_path in owned_files:
         path = repo / relative_path
@@ -282,3 +283,75 @@ def test_cleanup_archives_closed_phase_triplet_and_writes_history(tmp_path: Path
         "governance/archive/phase-artifacts/phase-01-log.yml",
     }
     assert all(len(artifact["sha256"]) == 64 for artifact in entry["archived_artifacts"])
+
+
+def test_cleanup_phase_history_stays_within_context_budget_for_multiple_phases(
+    tmp_path: Path,
+) -> None:
+    cleanup = _load_cleanup_module()
+    repo = tmp_path / "repo"
+    phase_ids = [f"P{number:02d}" for number in range(1, 5)]
+    _write_yaml(
+        repo / "governance/artifact-manifest.yml",
+        {
+            "phase_retention_policy": {
+                "history_path": "plans/phase-history.yml",
+                "active_window": {
+                    "include_active": True,
+                    "include_next": True,
+                    "keep_recent_closed": 0,
+                },
+                "archive": {
+                    "root": "governance/archive/phase-artifacts/",
+                    "closed_phase_statuses": ["verified", "closed"],
+                    "preserve_hotfix_logs": True,
+                },
+            },
+            "context_budgets": {
+                "agent_required_files": {"plans/phase-history.yml": 40}
+            },
+        },
+    )
+    _write_yaml(
+        repo / "plans/build-plan.yml",
+        {
+            "phase_sequence": [
+                {"phase_id": phase_id, "build_block": f"block_{phase_id.lower()}"}
+                for phase_id in phase_ids
+            ]
+        },
+    )
+    _write_yaml(repo / "plans/phase-ledger.yml", {"active_phase": {"id": "P04"}})
+    _write_yaml(
+        repo / "plans/product-spec.yml",
+        {
+            "execution_phases": [
+                {
+                    "phase_id": phase_id,
+                    "build_block": f"block_{phase_id.lower()}",
+                    "release_train": "release_1",
+                }
+                for phase_id in phase_ids
+            ]
+        },
+    )
+    for phase_id in phase_ids:
+        phase_number = int(phase_id[1:])
+        stem = f"phase-{phase_number:02d}"
+        build_block = f"block_{phase_id.lower()}"
+        _write_yaml(repo / f"plans/{stem}-plan.yml", {"phase": {"id": phase_id, "build_block": build_block}})
+        _write_yaml(repo / f"plans/{stem}-workitems.yml", {"workitems": [{"id": f"{phase_id}-W01", "status": "DONE"}]})
+        _write_yaml(
+            repo / f"phases/{stem}-log.yml",
+            {
+                "document": {"status": "verified"},
+                "phase": {"id": phase_id, "build_block": build_block},
+                "summary": {"outcome": "verified", "highlights": [f"{phase_id} done"]},
+                "execution_evidence": {"executed_commands": ["make test"]},
+            },
+        )
+
+    cleanup.apply_cleanup(repo, assume_yes=True, archive_closed_phases=True)
+
+    history_lines = (repo / "plans/phase-history.yml").read_text(encoding="utf-8").splitlines()
+    assert len(history_lines) <= 40

@@ -17,7 +17,7 @@ ledgers, schemas, architecture boundary gates, release-gate profiles,
 observability contracts, and helper commands that keep agents from treating
 docs, plans, and tests as disconnected prose.
 
-Current release: `v0.3.4`.
+Current release: `v0.4.0`.
 
 ## Why It Matters
 
@@ -174,8 +174,11 @@ bcf install \
 ## Upgrade A Governed Repo
 
 Use upgrade mode when a repo already has BCF governance and should receive the
-latest pack-owned scripts, schemas, workflow, requirements, cleanup docs, and
-architecture gate test without resetting product or phase state:
+latest pack-owned scripts, validator support modules, schemas, workflow,
+requirements, cleanup docs, and architecture gate test without resetting
+product or phase state. Upgrade also migrates missing current governance fields
+such as phase-history retention, exposure-scan wiring, and agent
+deconstruction rules:
 
 ```bash
 bcf install --target /path/to/target-repo --upgrade
@@ -195,6 +198,10 @@ bcf install \
 
 Use `--force-rescaffold` only when you intend to replace active BCF-owned
 state, not for normal upgrades.
+
+Upgrade preserves `plans/product-spec.yml`, build/phase ledgers, active phase
+logs, and existing phase history entries. It creates `plans/phase-history.yml`
+only when missing.
 
 ## Existing Repo Adoption
 
@@ -281,7 +288,8 @@ Deterministic cleanup can:
 - rewrite exact path references in text files
 - with `--archive-closed-phases`, move verified or closed phase triplets
   outside the retained active window into `governance/archive/phase-artifacts/`
-  and update `plans/phase-history.yml` with summaries and hashes
+  and update compact `plans/phase-history.yml` entries with summaries and
+  artifact hashes
 - with `--remove-governance-pack`, delete known pack-owned files, directories,
   dedicated governance workflow, and BCF architecture gate test files
 
@@ -290,6 +298,8 @@ security docs, runbooks, or vendored governance. Those are reported as manual
 actions because they require semantic review and often benefit from LLM
 support. Phase triplet archiving is deterministic only when the log status and
 `governance/artifact-manifest.yml` retention policy make it unambiguous.
+Archived phase-history entries must retain artifact pointers and hashes; empty
+history entries do not satisfy validation.
 Mixed CI workflows that contain BCF steps are reported for manual editing
 instead of deleting unrelated jobs.
 
@@ -356,6 +366,15 @@ artifact hashes, context-budget overruns, and invoked test roots missing from
 `bcf exposure-scan` is a separate CI-friendly gate for governed text artifacts.
 It flags common local workspace paths and private infrastructure markers, with
 inline allow markers reserved for intentional examples.
+
+## Agent Deconstruction
+
+BCF governance scripts and installed validator modules must stay below 800 LOC.
+When a file approaches that cap, split around stable concepts only, add or keep
+characterization coverage before behavior changes, and avoid vague shared
+helpers for security-sensitive semantics. Current split points are installer
+argument/reporting/upgrade migration, cleanup models/phase retention, and
+validator common/release-gate/phase/artifact/catalog/runner surfaces.
 
 ## Profiles
 

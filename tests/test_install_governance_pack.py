@@ -309,7 +309,68 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         encoding="utf-8"
     )
     assert (target / "scripts/check_governance_exposure.py").exists()
+    assert (target / "scripts/governance_validation/runner.py").exists()
     assert (target / "schemas/phase-history.schema.json").exists()
+    assert (target / "plans/product-spec.yml").read_text(encoding="utf-8") == product_spec_before
+
+
+def test_installer_upgrade_migrates_older_pack_state_to_strict_validation(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "upgrade-old-state"
+    _run_installer(target, "--profile", "lite", "--require-strict-validation")
+    product_spec_before = (target / "plans/product-spec.yml").read_text(encoding="utf-8")
+
+    agents_path = target / "AGENTS.yml"
+    agents = yaml.safe_load(agents_path.read_text(encoding="utf-8"))
+    agents["governance"]["structural_schema_contract"]["required_schemas"].remove(
+        "schemas/phase-history.schema.json"
+    )
+    agents["governance"]["semantic_validation_contract"]["required_checks"].remove(
+        "phase_history_retention"
+    )
+    agents["governance"]["artifact_ownership_contract"]["canonical_owners"].pop(
+        "compact_phase_history_and_archive_hashes"
+    )
+    agents["structural_guardrails"].pop("agent_deconstruction_contract")
+    agents_path.write_text(yaml.safe_dump(agents, sort_keys=False), encoding="utf-8")
+
+    memory_path = target / "MEMORY.yml"
+    memory = yaml.safe_load(memory_path.read_text(encoding="utf-8"))
+    memory["stable_decisions"].pop("canonical_phase_history")
+    memory["environment_facts"]["active_artifacts"].pop("phase_history")
+    memory["references"]["governance"].remove("plans/phase-history.yml")
+    memory_path.write_text(yaml.safe_dump(memory, sort_keys=False), encoding="utf-8")
+
+    manifest_path = target / "governance/artifact-manifest.yml"
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    manifest["artifact_roots"].pop("phase_archive")
+    manifest.pop("phase_retention_policy")
+    manifest["context_budgets"]["agent_required_files"].pop("plans/phase-history.yml")
+    manifest_path.write_text(yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8")
+
+    profile_path = target / "governance-profile.yml"
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    profile["release_gate_profile"]["gates"].pop("governance_exposure_scan")
+    profile["ci_profile"]["required_push_jobs"].remove("governance-exposure-scan")
+    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
+
+    makefile_path = target / "Makefile.fragment"
+    makefile = makefile_path.read_text(encoding="utf-8")
+    makefile = makefile.replace(" governance-exposure-scan", "")
+    makefile = makefile.replace(
+        "\ngovernance-exposure-scan:\n\t$(PYTHON) scripts/check_governance_exposure.py --repo-root .\n",
+        "\n",
+    )
+    makefile = makefile.replace("\n\t$(MAKE) governance-exposure-scan\n", "\n")
+    makefile_path.write_text(makefile, encoding="utf-8")
+
+    (target / "plans/phase-history.yml").unlink()
+    (target / "scripts/check_governance_exposure.py").unlink()
+
+    result = _run_installer(target, "--upgrade", "--profile", "lite")
+
+    assert "validation: strict pass" in result.stdout
     assert (target / "plans/product-spec.yml").read_text(encoding="utf-8") == product_spec_before
 
 

@@ -14,6 +14,14 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+_SCRIPT_ROOT = Path(__file__).resolve().parent
+if str(_SCRIPT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_ROOT))
+
+from governance_install.args import build_parser  # noqa: E402
+from governance_install.reporting import print_summary  # noqa: E402
+from governance_install.upgrade import replace_placeholders_in_files, upgrade_state_files  # noqa: E402
+
 
 PROFILE_CHOICES = ("lite", "standard", "regulated")
 ADOPTION_MODE_CHOICES = ("fresh", "existing")
@@ -43,6 +51,7 @@ RESCAFFOLD_REMOVE_PATHS = (
     "backend/tests/architecture/test_boundaries_ast.py",
     ".github/workflows/governance.yml",
     "scripts/check_governance_exposure.py",
+    "scripts/governance_validation",
     "scripts/scaffold_governance_artifacts.py",
     "scripts/validate_governance_yaml.py",
 )
@@ -97,6 +106,7 @@ UPGRADE_REFRESH_PATHS = (
     "backend/tests/architecture/test_boundaries_ast.py",
     "governance/REPO_CLEANUP.md",
     "scripts/check_governance_exposure.py",
+    "scripts/governance_validation",
     "scripts/scaffold_governance_artifacts.py",
     "scripts/validate_governance_yaml.py",
 )
@@ -360,21 +370,6 @@ def _replace_placeholders(target_root: Path, values: dict[str, str]) -> None:
             path.write_text(updated, encoding="utf-8")
 
 
-def _replace_placeholders_in_files(paths: list[Path], values: dict[str, str]) -> None:
-    for path in sorted(set(paths)):
-        if not path.is_file() or ".git" in path.parts:
-            continue
-        try:
-            text = path.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
-            continue
-        updated = text
-        for key, value in values.items():
-            updated = updated.replace(f"{{{{{key}}}}}", value)
-        if updated != text:
-            path.write_text(updated, encoding="utf-8")
-
-
 def _replace_first_after_marker(text: str, marker: str, old: str, new: str) -> str:
     marker_index = text.index(marker)
     old_index = text.index(old, marker_index)
@@ -610,7 +605,15 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
         relative_paths=_upgrade_paths(args),
     )
     values = _placeholder_values(args, target_root)
-    _replace_placeholders_in_files(destinations, values)
+    replace_placeholders_in_files(destinations, values)
+    copied_files += len(
+        upgrade_state_files(
+        template_root=template_root,
+        target_root=target_root,
+        values=values,
+        reset_options=args.reset_options,
+    )
+    )
     if args.reset_options:
         _configure_governance_profile(target_root, args.profile)
         _configure_architecture_boundaries(target_root, args.profile)
@@ -737,73 +740,14 @@ def install(args: argparse.Namespace) -> InstallResult:
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Install the governance pack into a target repository.")
-    parser.add_argument("--target", type=Path, required=True, help="Target repository root.")
-    parser.add_argument("--profile", choices=PROFILE_CHOICES, default="standard")
-    parser.add_argument(
-        "--adoption-mode",
-        choices=ADOPTION_MODE_CHOICES,
-        default="fresh",
-        help="Use fresh for new repositories or existing to label conversion/inventory phase artifacts.",
+    return build_parser(
+        profile_choices=PROFILE_CHOICES,
+        adoption_mode_choices=ADOPTION_MODE_CHOICES,
+        default_target_user=DEFAULT_TARGET_USER,
+        default_runner_labels=DEFAULT_RUNNER_LABELS,
+        default_date=datetime.now(UTC).date().isoformat(),
+        parse_gate_command=_parse_gate_command,
     )
-    parser.add_argument("--project-id", help="Machine-readable project id. Defaults from --target name.")
-    parser.add_argument("--project-name", help="Human-readable project name. Defaults from --project-id.")
-    parser.add_argument("--product-name", help="Product name. Defaults from --project-name.")
-    parser.add_argument(
-        "--product-positioning",
-        default="governed agent-led software delivery",
-        help="Short product positioning used in product-spec.yml.",
-    )
-    parser.add_argument("--target-user", default=DEFAULT_TARGET_USER)
-    parser.add_argument("--runner-labels", default=DEFAULT_RUNNER_LABELS)
-    parser.add_argument("--phase-id", default="P01")
-    parser.add_argument("--build-block", default="foundation")
-    parser.add_argument("--phase-objective", default="establish governed foundation")
-    parser.add_argument("--planner", default="codex")
-    parser.add_argument("--date", default=datetime.now(UTC).date().isoformat())
-    parser.add_argument("--hard-dependency", action="append", default=[])
-    parser.add_argument("--deliverable", action="append", default=["initial governed foundation"])
-    parser.add_argument("--workstream", action="append", default=["bootstrap governance pack"])
-    parser.add_argument("--backend-architecture", default="cqrs_lite_with_strict_ports")
-    parser.add_argument("--frontend-architecture", default="route_modules_thin_components")
-    parser.add_argument("--data-architecture", default="repo_defined")
-    parser.add_argument("--operating-constraint", default="repo_native_runtime")
-    parser.add_argument(
-        "--gate-command",
-        action="append",
-        type=_parse_gate_command,
-        default=[],
-        metavar="TARGET=COMMAND",
-        help="Replace a Makefile.fragment gate target body. Repeat for lint, typecheck, test, etc.",
-    )
-    parser.add_argument("--force", action="store_true", help="Overwrite existing governance pack files.")
-    parser.add_argument(
-        "--force-rescaffold",
-        action="store_true",
-        help="Delete known BCF governance artifacts, then install a fresh governance pack.",
-    )
-    parser.add_argument(
-        "--upgrade",
-        action="store_true",
-        help="Refresh latest pack-owned support files while preserving product and phase state.",
-    )
-    parser.add_argument(
-        "--reset-options",
-        action="store_true",
-        help="With --upgrade, reset profile, Makefile, and architecture option surfaces from current flags.",
-    )
-    parser.add_argument(
-        "--yes",
-        action="store_true",
-        help="Confirm destructive --force-rescaffold without an interactive prompt.",
-    )
-    parser.add_argument("--skip-validation", action="store_true")
-    parser.add_argument(
-        "--require-strict-validation",
-        action="store_true",
-        help="Fail installation if strict validation does not pass after install.",
-    )
-    return parser
 
 
 def _finalize_args(args: argparse.Namespace) -> argparse.Namespace:
@@ -817,49 +761,6 @@ def _finalize_args(args: argparse.Namespace) -> argparse.Namespace:
     return args
 
 
-def _print_summary(args: argparse.Namespace, result: InstallResult) -> None:
-    target_root = args.target.resolve()
-    verb = "upgraded" if args.upgrade else "installed"
-    print(f"{verb} governance pack into {target_root}")
-    print(f"profile: {args.profile}")
-    print(f"adoption mode: {args.adoption_mode}")
-    print(f"copied files: {result.copied_files}")
-    if result.rescaffold_removed_paths:
-        print("force-rescaffold removed: " + ", ".join(result.rescaffold_removed_paths))
-    if result.removed_template_examples:
-        print("removed template examples: " + ", ".join(result.removed_template_examples))
-    for artifact_type, path in result.generated_artifacts.items():
-        print(f"{artifact_type}: {path.relative_to(target_root).as_posix()}")
-
-    if args.skip_validation:
-        print("validation: skipped")
-    elif result.strict_validation_passed:
-        print("validation: strict pass")
-    elif result.bootstrap_validation_passed:
-        print("validation: bootstrap pass; strict validation is blocked by unwired release gates")
-        if not _all_required_gates_wired(args.profile, dict(args.gate_command)):
-            built_in_targets = {"governance-validate", "governance-exposure-scan"}
-            missing = [
-                target
-                for target in REQUIRED_STANDARD_GATES
-                if target not in built_in_targets and target not in dict(args.gate_command)
-            ]
-            print("wire release gates: " + ", ".join(missing))
-    else:
-        print("validation: failed")
-        if result.strict_validation_output:
-            print(result.strict_validation_output)
-        if result.bootstrap_validation_output:
-            print(result.bootstrap_validation_output)
-
-    if args.adoption_mode == "existing":
-        print(
-            "next: follow governance/EXISTING_REPO_ADOPTION.md and "
-            "governance/existing-repo-adoption.yml to inventory existing boundaries and wire gates"
-        )
-    print("next: merge Makefile.fragment into the repo Makefile or include it from the repo Makefile")
-
-
 def main(argv: list[str] | None = None) -> None:
     args = _finalize_args(_parser().parse_args(argv))
     try:
@@ -867,7 +768,12 @@ def main(argv: list[str] | None = None) -> None:
     except Exception as exc:
         print(f"install-governance-pack failed: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
-    _print_summary(args, result)
+    print_summary(
+        args,
+        result,
+        required_standard_gates=REQUIRED_STANDARD_GATES,
+        all_required_gates_wired=_all_required_gates_wired,
+    )
 
 
 if __name__ == "__main__":

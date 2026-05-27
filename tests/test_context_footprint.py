@@ -63,3 +63,21 @@ def test_agent_deconstruction_contract_caps_source_files_at_800_loc() -> None:
         "targeted_tests",
         "delete_dead_code_immediately",
     }
+
+
+def test_governance_scripts_stay_under_deconstruction_cap() -> None:
+    roots = [
+        REPO_ROOT / "scripts",
+        TEMPLATE_ROOT / "scripts",
+        REPO_ROOT / "bcf_governance/pack/template-repo/scripts",
+    ]
+    violations: list[str] = []
+    for root in roots:
+        for path in sorted(root.rglob("*.py")):
+            if "__pycache__" in path.parts:
+                continue
+            line_count = len(path.read_text(encoding="utf-8").splitlines())
+            if line_count > 800:
+                violations.append(f"{path.relative_to(REPO_ROOT)} has {line_count} lines")
+
+    assert not violations, "governance scripts exceeded 800 LOC:\n" + "\n".join(violations)

@@ -9,7 +9,7 @@ Machine contract: `governance/repo-cleanup-contract.yml`.
 
 1. Run `bcf cleanup --repo-root .` and read safe actions separately from manual actions.
 2. Apply only approved deterministic moves with `bcf cleanup --repo-root . --apply`.
-3. Archive verified or closed phase triplets only when `bcf cleanup --repo-root . --archive-closed-phases` reports safe actions.
+3. Archive verified or closed phase triplets only when `bcf cleanup --repo-root . --archive-closed-phases` reports safe actions and retained artifact hashes.
 4. Index retained history or declare git history as the retention source.
 5. Use `bcf install --target . --force-rescaffold` only after accepting the destructive warning.
 6. Use `bcf cleanup --repo-root . --remove-governance-pack` only when intentionally decommissioning BCF governance.
@@ -24,6 +24,9 @@ rewrite exact path references, archive closed phase triplets into
 `governance/archive/phase-artifacts/` with `plans/phase-history.yml` hashes,
 remove known BCF-owned files and dedicated governance CI gates, and reinstall
 known BCF-owned files.
+
+Phase-history entries must be compact and evidence-backed; do not replace
+removed triplets with empty history rows.
 
 ## LLM Or Human Review
 

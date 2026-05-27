@@ -260,6 +260,25 @@ def _advance_catalog_to_p02(repo_root: Path, *, add_history_entry: bool) -> None
     active_artifacts["active_phase_log"] = "phases/phase-02-log.yml"
     _write_yaml(memory_path, memory)
 
+    archived_artifacts: list[dict[str, str]] = []
+    if add_history_entry:
+        archive_root = repo_root / "governance/archive/phase-artifacts"
+        archive_root.mkdir(parents=True, exist_ok=True)
+        for relative_path in (
+            "plans/phase-01-plan.yml",
+            "plans/phase-01-workitems.yml",
+            "phases/phase-01-log.yml",
+        ):
+            source = repo_root / relative_path
+            destination = archive_root / source.name
+            shutil.copy2(source, destination)
+            archived_artifacts.append(
+                {
+                    "path": destination.relative_to(repo_root).as_posix(),
+                    "sha256": hashlib.sha256(destination.read_bytes()).hexdigest(),
+                }
+            )
+
     for relative_path in (
         "plans/phase-01-plan.yml",
         "plans/phase-01-workitems.yml",
@@ -280,7 +299,7 @@ def _advance_catalog_to_p02(repo_root: Path, *, add_history_entry: bool) -> None
             "outcome": "foundation verified",
             "summary": ["foundation phase retained in compact history"],
             "validation": ["make governance-validate"],
-            "archived_artifacts": [],
+            "archived_artifacts": archived_artifacts,
         }
     )
     _write_yaml(history_path, history)
@@ -568,6 +587,21 @@ def test_validate_repo_root_rejects_archived_phase_missing_history(
     with pytest.raises(GovernanceValidationError) as excinfo:
         validate_repo_root(repo_root)
     assert "no active triplet and no plans/phase-history.yml entry" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_phase_history_entry_without_artifacts(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    _advance_catalog_to_p02(repo_root, add_history_entry=True)
+    history_path = repo_root / "plans/phase-history.yml"
+    history = yaml.safe_load(history_path.read_text(encoding="utf-8"))
+    history["entries"][0]["archived_artifacts"] = []
+    _write_yaml(history_path, history)
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "archived_artifacts" in str(excinfo.value)
 
 
 def test_validate_repo_root_rejects_completed_release_train_with_planned_log(
