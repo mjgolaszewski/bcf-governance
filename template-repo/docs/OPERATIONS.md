@@ -71,10 +71,12 @@ bcf cleanup --repo-root . --phase-retention-mode --apply
 bcf cleanup --repo-root . --phase-retention-mode archive --apply
 ```
 
-The first command uses `git-history` retention and removes stale closed triplets
-after recording hashes and git refs. The archive mode moves stale closed
-triplets into ignored `governance/archive/phase-artifacts/` storage. With no
-phase-retention switch, cleanup keeps existing historical triplet behavior.
+The first command uses `git-history` retention and removes stale closed phase
+artifacts after recording hashes and git refs. The archive mode moves stale
+closed phase artifacts into ignored `governance/archive/phase-artifacts/`
+storage. Phase-scoped hotfix logs and matching hotfix lane records leave active
+governance with their related phase. With no phase-retention switch, cleanup
+keeps existing historical triplet and hotfix behavior.
 
 ## Runtime Diagnostics
 

@@ -2,7 +2,7 @@ document:
   kind: template_governance_pack_manifest
   name: BCF Template And Governance Pack
   id: bcf-governance
-  version: 0.4.1
+  version: 0.4.2
   generated_at_utc: "2026-05-28T00:00:00Z"
   status: tracked_inventory
 source_model:
@@ -53,7 +53,7 @@ pack_contents:
     - installer helper that copies the template pack, replaces placeholders, applies profiles, opens the first phase, and reports release-gate wiring gaps
     - installer existing-repo adoption mode for conversion and inventory phases
     - doctor helper that reports remaining placeholder and release-gate wiring gaps
-    - cleanup helper that plans or applies safe audit-root consolidation, opted-in phase-retention cleanup, governance-pack removal, and semantic compaction reports
+    - cleanup helper that plans or applies safe audit-root consolidation, opted-in phase and hotfix retention cleanup, governance-pack removal, and semantic compaction reports
     - generic phase and hotfix scaffold helper that emits repo-relative document paths
     - generic governance YAML validator with structural and semantic checks, compact json output, release-gate placeholder detection, path portability checks, governance drift guardrails, repo cleanup contract validation, and instantiated placeholder detection
 tracking:

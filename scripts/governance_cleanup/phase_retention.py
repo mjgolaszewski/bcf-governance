@@ -51,6 +51,30 @@ def _phase_triplet_paths(phase_id: str) -> tuple[str, str, str]:
     )
 
 
+def _phase_hotfix_paths(repo_root: Path, phase_id: str) -> list[str]:
+    phases_root = repo_root / "phases"
+    if not phases_root.exists():
+        return []
+    pattern = re.compile(rf"{re.escape(_phase_stem(phase_id))}-hotfix\d+\.ya?ml$")
+    return [
+        f"phases/{path.name}"
+        for path in sorted(phases_root.iterdir())
+        if path.is_file() and pattern.match(path.name)
+    ]
+
+
+def _phase_retained_artifact_paths(repo_root: Path, phase_id: str) -> list[str]:
+    return [*_phase_triplet_paths(phase_id), *_phase_hotfix_paths(repo_root, phase_id)]
+
+
+def _phase_id_from_retained_artifact_path(relative_path: str) -> str | None:
+    match = re.match(
+        r"(?:plans|phases)/phase-(\d+)-(?:plan|workitems|log|hotfix\d+)\.ya?ml$",
+        relative_path,
+    )
+    return f"P{int(match.group(1)):02d}" if match else None
+
+
 def _phase_retention_policy(repo_root: Path) -> dict[str, Any]:
     manifest = _load_yaml(repo_root / "governance" / "artifact-manifest.yml") or {}
     policy = manifest.get("phase_retention_policy")
@@ -134,6 +158,32 @@ def _phase_log_status(repo_root: Path, phase_id: str) -> str | None:
     return status if isinstance(status, str) else None
 
 
+def _phase_history_entries(repo_root: Path) -> dict[str, dict[str, Any]]:
+    history = _load_yaml(repo_root / _phase_history_path(repo_root)) or {}
+    entries = history.get("entries")
+    if not isinstance(entries, list):
+        return {}
+    by_phase: dict[str, dict[str, Any]] = {}
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        phase_id = entry.get("phase_id")
+        if isinstance(phase_id, str):
+            by_phase[phase_id] = entry
+    return by_phase
+
+
+def _phase_status_for_retention(repo_root: Path, phase_id: str) -> str | None:
+    log_status = _phase_log_status(repo_root, phase_id)
+    if log_status is not None:
+        return log_status
+    history_entry = _phase_history_entries(repo_root).get(phase_id)
+    if not isinstance(history_entry, dict):
+        return None
+    status = history_entry.get("status")
+    return status if isinstance(status, str) else None
+
+
 def _retained_phase_ids(repo_root: Path) -> set[str]:
     phase_ids = _build_phase_ids(repo_root)
     active_id = _active_phase_id(repo_root)
@@ -188,6 +238,37 @@ def _ignore_archive_root_action(repo_root: Path) -> CleanupAction | None:
     )
 
 
+def _is_phase_hotfix_path(relative_path: str) -> bool:
+    return re.match(r"phases/phase-\d+-hotfix\d+\.ya?ml$", relative_path) is not None
+
+
+def _phase_hotfix_ledger_prune_action(
+    repo_root: Path, artifact_actions: list[CleanupAction]
+) -> CleanupAction | None:
+    hotfix_sources = {
+        action.source for action in artifact_actions if _is_phase_hotfix_path(action.source)
+    }
+    if not hotfix_sources:
+        return None
+    ledger = _load_yaml(repo_root / "plans" / "phase-ledger.yml") or {}
+    hotfix_lane = ledger.get("hotfix_lane")
+    if not isinstance(hotfix_lane, dict):
+        return None
+    for key in ("open_records", "remediation_history"):
+        records = hotfix_lane.get(key)
+        if not isinstance(records, list):
+            continue
+        if any(isinstance(record, dict) and record.get("hotfix_log") in hotfix_sources for record in records):
+            return CleanupAction(
+                kind="prune_phase_hotfix_records",
+                source="plans/phase-ledger.yml",
+                destination=None,
+                reason="phase-scoped hotfix lane records move out of active governance with their phase",
+                safe_to_apply=True,
+            )
+    return None
+
+
 def _phase_retention_actions(
     repo_root: Path, *, mode: str | None = None
 ) -> tuple[list[CleanupAction], list[str]]:
@@ -210,9 +291,9 @@ def _phase_retention_actions(
             continue
         if phase_id in retained:
             continue
-        if _phase_log_status(repo_root, phase_id) not in statuses:
+        if _phase_status_for_retention(repo_root, phase_id) not in statuses:
             continue
-        for source in _phase_triplet_paths(phase_id):
+        for source in _phase_retained_artifact_paths(repo_root, phase_id):
             source_path = repo_root / source
             if not source_path.exists():
                 continue
@@ -234,12 +315,15 @@ def _phase_retention_actions(
                     source=source,
                     destination=destination,
                     reason=(
-                        "closed phase triplet is outside the retained phase window "
+                        "closed phase artifact is outside the retained phase window "
                         "after compact phase-history is recorded"
                     ),
                     safe_to_apply=True,
                 )
             )
+    prune_action = _phase_hotfix_ledger_prune_action(repo_root, actions)
+    if prune_action is not None:
+        actions.append(prune_action)
     return actions, warnings
 
 
@@ -287,10 +371,12 @@ def _phase_history_entry(
     phase_actions: list[CleanupAction],
     mode: str,
     retention_ref: str | None,
+    existing_entry: dict[str, Any] | None,
 ) -> dict[str, Any]:
     plan = _load_yaml(repo_root / f"plans/{_phase_stem(phase_id)}-plan.yml") or {}
     log = _load_yaml(repo_root / f"phases/{_phase_stem(phase_id)}-log.yml") or {}
     product_spec = _load_yaml(repo_root / "plans" / "product-spec.yml") or {}
+    build_plan = _load_yaml(repo_root / "plans" / "build-plan.yml") or {}
 
     phase = plan.get("phase") if isinstance(plan.get("phase"), dict) else {}
     summary = log.get("summary") if isinstance(log.get("summary"), dict) else {}
@@ -305,13 +391,28 @@ def _phase_history_entry(
         if isinstance(entry, dict) and entry.get("phase_id") == phase_id:
             release_train = entry.get("release_train")
             break
+    build_block = phase.get("build_block")
+    if not isinstance(build_block, str) or not build_block:
+        for entry in build_plan.get("phase_sequence", []) or []:
+            if isinstance(entry, dict) and entry.get("phase_id") == phase_id:
+                build_block = entry.get("build_block")
+                break
+    if (not isinstance(release_train, str) or not release_train) and existing_entry is not None:
+        release_train = existing_entry.get("release_train")
+    if (not isinstance(build_block, str) or not build_block) and existing_entry is not None:
+        build_block = existing_entry.get("build_block")
 
-    artifact_entries = []
+    artifact_entries_by_path: dict[str, dict[str, Any]] = {}
+    if existing_entry is not None and isinstance(existing_entry.get("archived_artifacts"), list):
+        for artifact in existing_entry["archived_artifacts"]:
+            if isinstance(artifact, dict) and isinstance(artifact.get("path"), str):
+                artifact_entries_by_path[artifact["path"]] = dict(artifact)
     retained_action_kinds = {"archive_phase_artifact", "remove_phase_artifact"}
+    phase_artifact_paths = set(_phase_retained_artifact_paths(repo_root, phase_id))
     for action in phase_actions:
         if action.kind not in retained_action_kinds:
             continue
-        if action.source not in _phase_triplet_paths(phase_id):
+        if action.source not in phase_artifact_paths:
             continue
         artifact_entry = {
             "path": action.destination or action.source,
@@ -319,24 +420,28 @@ def _phase_history_entry(
         }
         if retention_ref is not None:
             artifact_entry["git_commit"] = retention_ref
-        artifact_entries.append(artifact_entry)
+        artifact_entries_by_path[artifact_entry["path"]] = artifact_entry
 
     highlights = summary.get("highlights")
+    status = document.get("status")
+    outcome = summary.get("outcome") or document.get("status")
+    validation = execution_evidence.get("executed_commands")
+    if existing_entry is not None:
+        status = status or existing_entry.get("status")
+        outcome = outcome or existing_entry.get("outcome")
+        highlights = highlights or existing_entry.get("summary")
+        validation = validation or existing_entry.get("validation")
     return {
         "phase_id": phase_id,
-        "build_block": str(phase.get("build_block") or ""),
+        "build_block": str(build_block or ""),
         **({"release_train": release_train} if isinstance(release_train, str) else {}),
         "retention_source": mode,
         **({"retention_ref": retention_ref} if retention_ref is not None else {}),
-        "status": str(document.get("status") or "completed"),
-        "outcome": str(summary.get("outcome") or document.get("status") or "completed"),
+        "status": str(status or "completed"),
+        "outcome": str(outcome or "completed"),
         "summary": highlights if isinstance(highlights, list) and highlights else ["closed phase retained"],
-        "validation": (
-            execution_evidence.get("executed_commands")
-            if isinstance(execution_evidence.get("executed_commands"), list)
-            else []
-        ),
-        "archived_artifacts": artifact_entries,
+        "validation": validation if isinstance(validation, list) else [],
+        "archived_artifacts": list(artifact_entries_by_path.values()),
     }
 
 
@@ -350,11 +455,11 @@ def _write_phase_history(
     retained_action_kinds = {"archive_phase_artifact", "remove_phase_artifact"}
     phase_ids = sorted(
         {
-            f"P{int(match.group(1)):02d}"
+            phase_id
             for action in phase_actions
             if action.kind in retained_action_kinds
-            for match in [re.match(r"plans/phase-(\d+)-plan\.ya?ml", action.source)]
-            if match is not None
+            for phase_id in [_phase_id_from_retained_artifact_path(action.source)]
+            if phase_id is not None
         },
         key=_phase_number,
     )
@@ -390,6 +495,11 @@ def _write_phase_history(
     entries = history.get("entries")
     if not isinstance(entries, list):
         entries = []
+    existing_entries = {
+        entry.get("phase_id"): entry
+        for entry in entries
+        if isinstance(entry, dict) and isinstance(entry.get("phase_id"), str)
+    }
     retained_entries = [
         entry
         for entry in entries
@@ -402,6 +512,7 @@ def _write_phase_history(
             phase_actions=phase_actions,
             mode=retention_mode,
             retention_ref=retention_ref,
+            existing_entry=existing_entries.get(phase_id),
         )
         for phase_id in phase_ids
     )
@@ -415,6 +526,42 @@ def _write_phase_history(
         encoding="utf-8",
     )
     return history_rel
+
+
+def _prune_phase_hotfix_records(repo_root: Path, phase_actions: list[CleanupAction]) -> str | None:
+    hotfix_sources = {
+        action.source for action in phase_actions if _is_phase_hotfix_path(action.source)
+    }
+    if not hotfix_sources:
+        return None
+    ledger_path = repo_root / "plans" / "phase-ledger.yml"
+    ledger = _load_yaml(ledger_path)
+    if ledger is None:
+        return None
+    hotfix_lane = ledger.get("hotfix_lane")
+    if not isinstance(hotfix_lane, dict):
+        return None
+    changed = False
+    for key in ("open_records", "remediation_history"):
+        records = hotfix_lane.get(key)
+        if not isinstance(records, list):
+            continue
+        retained = [
+            record
+            for record in records
+            if not (isinstance(record, dict) and record.get("hotfix_log") in hotfix_sources)
+        ]
+        if len(retained) != len(records):
+            hotfix_lane[key] = retained
+            changed = True
+    if not changed:
+        return None
+    ledger_path.write_text(
+        yaml.safe_dump(ledger, sort_keys=False, default_flow_style=None, width=4096),
+        encoding="utf-8",
+    )
+    return "plans/phase-ledger.yml"
+
 
 def _write_archive_gitignore(repo_root: Path) -> None:
     gitignore = repo_root / ".gitignore"
@@ -473,3 +620,4 @@ phase_retention_actions = _phase_retention_actions
 write_phase_history = _write_phase_history
 write_archive_gitignore = _write_archive_gitignore
 set_phase_retention_mode = _set_phase_retention_mode
+prune_phase_hotfix_records = _prune_phase_hotfix_records

@@ -644,6 +644,31 @@ def test_validate_repo_root_archive_mode_rejects_stale_active_triplet(
     assert "outside the retained phase window" in str(excinfo.value)
 
 
+def test_validate_repo_root_archive_mode_rejects_stale_hotfix_artifact(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    _advance_catalog_to_p02(repo_root, add_history_entry=True)
+    _set_manifest_retention_mode(repo_root, "archive")
+    (repo_root / ".gitignore").write_text(
+        "governance/archive/phase-artifacts/*\n"
+        "!governance/archive/phase-artifacts/.gitkeep\n",
+        encoding="utf-8",
+    )
+    history_path = repo_root / "plans/phase-history.yml"
+    history = yaml.safe_load(history_path.read_text(encoding="utf-8"))
+    history["entries"][0]["retention_source"] = "archive"
+    _write_yaml(history_path, history)
+    _write_yaml(
+        repo_root / "phases/phase-01-hotfix01.yml",
+        {"document": {"status": "closed"}, "hotfix": {"id": "HF-001", "related_phase_id": "P01"}},
+    )
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "outside the retained phase window but active hotfix artifacts remain" in str(excinfo.value)
+
+
 def test_validate_repo_root_archive_mode_allows_ignored_missing_archive_artifacts(
     tmp_path: Path,
 ) -> None:

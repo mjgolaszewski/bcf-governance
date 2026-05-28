@@ -12,7 +12,7 @@ artifact_roots:
   governance: {path: governance/, status: active, purpose: governance policy and adoption records}
   plans: {path: plans/, status: active, purpose: product build phase and workitem state}
   phases: {path: phases/, status: active, purpose: execution evidence and closeout logs}
-  phase_archive: {path: governance/archive/phase-artifacts/, status: historical, purpose: archived closed phase triplets with hashes}
+  phase_archive: {path: governance/archive/phase-artifacts/, status: historical, purpose: archived closed phase and hotfix artifacts with hashes}
   schemas: {path: schemas/, status: active, purpose: governed YAML structural contracts}
 phase_retention_policy:
   # Set mode with `bcf cleanup --phase-retention-mode`: git_history or archive.

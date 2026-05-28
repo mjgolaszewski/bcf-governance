@@ -228,7 +228,21 @@ def test_cleanup_archives_closed_phase_triplet_and_writes_history(tmp_path: Path
             ]
         },
     )
-    _write_yaml(repo / "plans/phase-ledger.yml", {"active_phase": {"id": "P02"}})
+    _write_yaml(
+        repo / "plans/phase-ledger.yml",
+        {
+            "active_phase": {"id": "P02"},
+            "hotfix_lane": {
+                "open_records": [],
+                "remediation_history": [
+                    {
+                        "id": "HF-001",
+                        "hotfix_log": "phases/phase-01-hotfix01.yml",
+                    }
+                ],
+            },
+        },
+    )
     _write_yaml(
         repo / "plans/product-spec.yml",
         {
@@ -263,6 +277,13 @@ def test_cleanup_archives_closed_phase_triplet_and_writes_history(tmp_path: Path
             "execution_evidence": {"executed_commands": ["make test"]},
         },
     )
+    _write_yaml(
+        repo / "phases/phase-01-hotfix01.yml",
+        {
+            "document": {"status": "closed"},
+            "hotfix": {"id": "HF-001", "related_phase_id": "P01"},
+        },
+    )
 
     plan = cleanup.plan_cleanup(repo, archive_closed_phases=True)
     archive_sources = {
@@ -272,7 +293,9 @@ def test_cleanup_archives_closed_phase_triplet_and_writes_history(tmp_path: Path
         "plans/phase-01-plan.yml",
         "plans/phase-01-workitems.yml",
         "phases/phase-01-log.yml",
+        "phases/phase-01-hotfix01.yml",
     }
+    assert any(action.kind == "prune_phase_hotfix_records" for action in plan.actions)
 
     report = cleanup.apply_cleanup(repo, assume_yes=True, archive_closed_phases=True)
 
@@ -280,9 +303,13 @@ def test_cleanup_archives_closed_phase_triplet_and_writes_history(tmp_path: Path
     assert not (repo / "plans/phase-01-plan.yml").exists()
     assert not (repo / "plans/phase-01-workitems.yml").exists()
     assert not (repo / "phases/phase-01-log.yml").exists()
+    assert not (repo / "phases/phase-01-hotfix01.yml").exists()
     assert (repo / "governance/archive/phase-artifacts/phase-01-plan.yml").exists()
     assert (repo / "governance/archive/phase-artifacts/phase-01-workitems.yml").exists()
     assert (repo / "governance/archive/phase-artifacts/phase-01-log.yml").exists()
+    assert (repo / "governance/archive/phase-artifacts/phase-01-hotfix01.yml").exists()
+    ledger = yaml.safe_load((repo / "plans/phase-ledger.yml").read_text(encoding="utf-8"))
+    assert ledger["hotfix_lane"]["remediation_history"] == []
 
     history = yaml.safe_load((repo / "plans/phase-history.yml").read_text(encoding="utf-8"))
     entry = history["entries"][0]
@@ -296,6 +323,7 @@ def test_cleanup_archives_closed_phase_triplet_and_writes_history(tmp_path: Path
         "governance/archive/phase-artifacts/phase-01-plan.yml",
         "governance/archive/phase-artifacts/phase-01-workitems.yml",
         "governance/archive/phase-artifacts/phase-01-log.yml",
+        "governance/archive/phase-artifacts/phase-01-hotfix01.yml",
     }
     assert all(len(artifact["sha256"]) == 64 for artifact in entry["archived_artifacts"])
 
@@ -325,7 +353,21 @@ def test_cleanup_archive_mode_persists_policy_and_ignores_archive_root(tmp_path:
         repo / "plans/build-plan.yml",
         {"phase_sequence": [{"phase_id": "P01"}, {"phase_id": "P02"}]},
     )
-    _write_yaml(repo / "plans/phase-ledger.yml", {"active_phase": {"id": "P02"}})
+    _write_yaml(
+        repo / "plans/phase-ledger.yml",
+        {
+            "active_phase": {"id": "P02"},
+            "hotfix_lane": {
+                "open_records": [],
+                "remediation_history": [
+                    {
+                        "id": "HF-001",
+                        "hotfix_log": "phases/phase-01-hotfix01.yml",
+                    }
+                ],
+            },
+        },
+    )
     _write_yaml(repo / "plans/product-spec.yml", {"execution_phases": [{"phase_id": "P01"}]})
     _write_yaml(repo / "plans/phase-01-plan.yml", {"phase": {"build_block": "foundation"}})
     _write_yaml(repo / "plans/phase-01-workitems.yml", {"workitems": []})
@@ -348,6 +390,105 @@ def test_cleanup_archive_mode_persists_policy_and_ignores_archive_root(tmp_path:
     assert "!governance/archive/phase-artifacts/.gitkeep" in gitignore
     history = yaml.safe_load((repo / "plans/phase-history.yml").read_text(encoding="utf-8"))
     assert history["entries"][0]["retention_source"] == "archive"
+
+
+def test_cleanup_archive_mode_collects_hotfix_left_after_triplet_removal(
+    tmp_path: Path,
+) -> None:
+    cleanup = _load_cleanup_module()
+    repo = tmp_path / "repo"
+    _write_yaml(
+        repo / "governance/artifact-manifest.yml",
+        {
+            "phase_retention_policy": {
+                "history_path": "plans/phase-history.yml",
+                "active_window": {
+                    "include_active": True,
+                    "include_next": True,
+                    "keep_recent_closed": 0,
+                },
+                "archive": {
+                    "root": "governance/archive/phase-artifacts/",
+                    "closed_phase_statuses": ["verified", "closed"],
+                    "preserve_hotfix_logs": True,
+                },
+            }
+        },
+    )
+    _write_yaml(
+        repo / "plans/build-plan.yml",
+        {
+            "phase_sequence": [
+                {"phase_id": "P01", "build_block": "foundation"},
+                {"phase_id": "P02", "build_block": "delivery"},
+            ]
+        },
+    )
+    _write_yaml(
+        repo / "plans/phase-ledger.yml",
+        {
+            "active_phase": {"id": "P02"},
+            "hotfix_lane": {
+                "open_records": [],
+                "remediation_history": [
+                    {"id": "HF-001", "hotfix_log": "phases/phase-01-hotfix01.yml"}
+                ],
+            },
+        },
+    )
+    _write_yaml(
+        repo / "plans/product-spec.yml",
+        {
+            "execution_phases": [
+                {"phase_id": "P01", "build_block": "foundation"},
+                {"phase_id": "P02", "build_block": "delivery"},
+            ]
+        },
+    )
+    _write_yaml(
+        repo / "plans/phase-history.yml",
+        {
+            "document": {"kind": "phase_history", "path": "plans/phase-history.yml"},
+            "retention_policy": {
+                "source": "governance/artifact-manifest.yml",
+                "purpose": "compact history",
+            },
+            "entries": [
+                {
+                    "phase_id": "P01",
+                    "build_block": "foundation",
+                    "retention_source": "archive",
+                    "status": "verified",
+                    "outcome": "verified",
+                    "summary": ["foundation retained"],
+                    "validation": ["make test"],
+                    "archived_artifacts": [
+                        {
+                            "path": "governance/archive/phase-artifacts/phase-01-plan.yml",
+                            "sha256": "0" * 64,
+                        }
+                    ],
+                }
+            ],
+        },
+    )
+    _write_yaml(
+        repo / "phases/phase-01-hotfix01.yml",
+        {"document": {"status": "closed"}, "hotfix": {"id": "HF-001", "related_phase_id": "P01"}},
+    )
+
+    report = cleanup.apply_cleanup(repo, assume_yes=True, phase_retention_mode="archive")
+
+    assert report.applied
+    assert not (repo / "phases/phase-01-hotfix01.yml").exists()
+    assert (repo / "governance/archive/phase-artifacts/phase-01-hotfix01.yml").exists()
+    ledger = yaml.safe_load((repo / "plans/phase-ledger.yml").read_text(encoding="utf-8"))
+    assert ledger["hotfix_lane"]["remediation_history"] == []
+    history = yaml.safe_load((repo / "plans/phase-history.yml").read_text(encoding="utf-8"))
+    assert {artifact["path"] for artifact in history["entries"][0]["archived_artifacts"]} == {
+        "governance/archive/phase-artifacts/phase-01-plan.yml",
+        "governance/archive/phase-artifacts/phase-01-hotfix01.yml",
+    }
 
 
 def test_cleanup_git_history_mode_removes_triplet_after_verifying_head(
@@ -382,7 +523,21 @@ def test_cleanup_git_history_mode_removes_triplet_after_verifying_head(
             ]
         },
     )
-    _write_yaml(repo / "plans/phase-ledger.yml", {"active_phase": {"id": "P02"}})
+    _write_yaml(
+        repo / "plans/phase-ledger.yml",
+        {
+            "active_phase": {"id": "P02"},
+            "hotfix_lane": {
+                "open_records": [],
+                "remediation_history": [
+                    {
+                        "id": "HF-001",
+                        "hotfix_log": "phases/phase-01-hotfix01.yml",
+                    }
+                ],
+            },
+        },
+    )
     _write_yaml(
         repo / "plans/product-spec.yml",
         {
@@ -402,6 +557,13 @@ def test_cleanup_git_history_mode_removes_triplet_after_verifying_head(
             "summary": {"highlights": ["done"]},
         },
     )
+    _write_yaml(
+        repo / "phases/phase-01-hotfix01.yml",
+        {
+            "document": {"status": "closed"},
+            "hotfix": {"id": "HF-001", "related_phase_id": "P01"},
+        },
+    )
     commit = _init_git_repo(repo)
 
     report = cleanup.apply_cleanup(repo, assume_yes=True, phase_retention_mode="git-history")
@@ -410,6 +572,9 @@ def test_cleanup_git_history_mode_removes_triplet_after_verifying_head(
     assert not (repo / "plans/phase-01-plan.yml").exists()
     assert not (repo / "plans/phase-01-workitems.yml").exists()
     assert not (repo / "phases/phase-01-log.yml").exists()
+    assert not (repo / "phases/phase-01-hotfix01.yml").exists()
+    ledger = yaml.safe_load((repo / "plans/phase-ledger.yml").read_text(encoding="utf-8"))
+    assert ledger["hotfix_lane"]["remediation_history"] == []
     history = yaml.safe_load((repo / "plans/phase-history.yml").read_text(encoding="utf-8"))
     entry = history["entries"][0]
     assert entry["retention_source"] == "git_history"
@@ -418,6 +583,7 @@ def test_cleanup_git_history_mode_removes_triplet_after_verifying_head(
         "plans/phase-01-plan.yml",
         "plans/phase-01-workitems.yml",
         "phases/phase-01-log.yml",
+        "phases/phase-01-hotfix01.yml",
     }
     assert all(artifact["git_commit"] == commit for artifact in entry["archived_artifacts"])
 
