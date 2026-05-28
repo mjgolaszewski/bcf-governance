@@ -15,6 +15,7 @@ artifact_roots:
   phase_archive: {path: governance/archive/phase-artifacts/, status: historical, purpose: archived closed phase triplets with hashes}
   schemas: {path: schemas/, status: active, purpose: governed YAML structural contracts}
 phase_retention_policy:
+  # Set mode with `bcf cleanup --phase-retention-mode`: git_history or archive.
   history_path: plans/phase-history.yml
   active_window: {include_active: true, include_next: true, keep_recent_closed: 0}
   archive: {root: governance/archive/phase-artifacts/, closed_phase_statuses: [verified, closed], preserve_hotfix_logs: true}

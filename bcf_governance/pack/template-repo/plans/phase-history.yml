@@ -8,5 +8,5 @@ document:
   path: plans/phase-history.yml
 retention_policy:
   source: governance/artifact-manifest.yml
-  purpose: compact machine-readable history for archived closed phase artifacts
+  purpose: compact machine-readable history for removed or archived closed phase artifacts
 entries: []

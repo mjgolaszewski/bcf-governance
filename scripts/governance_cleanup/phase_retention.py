@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +15,7 @@ from .models import CleanupAction
 ARCHIVABLE_PHASE_STATUSES = {"verified", "closed"}
 DEFAULT_PHASE_ARCHIVE_ROOT = "governance/archive/phase-artifacts"
 DEFAULT_PHASE_HISTORY_PATH = "plans/phase-history.yml"
+PHASE_RETENTION_MODES = {"archive", "git_history"}
 
 def _load_yaml(path: Path) -> dict[str, Any] | None:
     if not path.exists():
@@ -69,6 +71,18 @@ def _phase_archive_root(repo_root: Path) -> str:
         if isinstance(root, str) and root:
             return root.rstrip("/")
     return DEFAULT_PHASE_ARCHIVE_ROOT
+
+
+def _phase_retention_mode(repo_root: Path, mode: str | None) -> str:
+    if mode is not None:
+        normalized = mode.replace("-", "_")
+    else:
+        policy = _phase_retention_policy(repo_root)
+        configured = policy.get("mode")
+        normalized = str(configured).replace("-", "_") if configured else "archive"
+    if normalized not in PHASE_RETENTION_MODES:
+        raise ValueError(f"phase retention mode must be one of {sorted(PHASE_RETENTION_MODES)}")
+    return normalized
 
 
 def _closed_phase_statuses(repo_root: Path) -> set[str]:
@@ -143,13 +157,57 @@ def _retained_phase_ids(repo_root: Path) -> set[str]:
     return retained
 
 
-def _phase_archive_actions(repo_root: Path) -> tuple[list[CleanupAction], list[str]]:
+def _archive_gitignore_patterns(repo_root: Path) -> tuple[str, str]:
+    archive_root = _phase_archive_root(repo_root).rstrip("/")
+    return f"{archive_root}/*", f"!{archive_root}/.gitkeep"
+
+
+def _archive_root_is_ignored(repo_root: Path) -> bool:
+    gitignore = repo_root / ".gitignore"
+    if not gitignore.exists():
+        return False
+    ignored_pattern, _ = _archive_gitignore_patterns(repo_root)
+    lines = {
+        line.strip()
+        for line in gitignore.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    }
+    archive_root = _phase_archive_root(repo_root).rstrip("/")
+    return ignored_pattern in lines or f"{archive_root}/" in lines
+
+
+def _ignore_archive_root_action(repo_root: Path) -> CleanupAction | None:
+    if _archive_root_is_ignored(repo_root):
+        return None
+    return CleanupAction(
+        kind="ignore_phase_archive_root",
+        source="",
+        destination=".gitignore",
+        reason="phase archive contents are local history and must not be retained in git",
+        safe_to_apply=True,
+    )
+
+
+def _phase_retention_actions(
+    repo_root: Path, *, mode: str | None = None
+) -> tuple[list[CleanupAction], list[str]]:
     actions: list[CleanupAction] = []
     warnings: list[str] = []
+    retention_mode = _phase_retention_mode(repo_root, mode)
     archive_root = _phase_archive_root(repo_root)
     retained = _retained_phase_ids(repo_root)
     statuses = _closed_phase_statuses(repo_root)
+    active_id = _active_phase_id(repo_root)
+    active_number = _phase_number(active_id) if active_id else None
+
+    if retention_mode == "archive":
+        ignore_action = _ignore_archive_root_action(repo_root)
+        if ignore_action is not None:
+            actions.append(ignore_action)
+
     for phase_id in _build_phase_ids(repo_root):
+        if active_number is not None and _phase_number(phase_id) >= active_number:
+            continue
         if phase_id in retained:
             continue
         if _phase_log_status(repo_root, phase_id) not in statuses:
@@ -158,17 +216,25 @@ def _phase_archive_actions(repo_root: Path) -> tuple[list[CleanupAction], list[s
             source_path = repo_root / source
             if not source_path.exists():
                 continue
-            destination = f"{archive_root}/{Path(source).name}"
-            if (repo_root / destination).exists():
+            destination = (
+                f"{archive_root}/{Path(source).name}"
+                if retention_mode == "archive"
+                else None
+            )
+            if destination is not None and (repo_root / destination).exists():
                 warnings.append(f"phase archive destination already exists: {destination}")
                 continue
             actions.append(
                 CleanupAction(
-                    kind="archive_phase_artifact",
+                    kind=(
+                        "archive_phase_artifact"
+                        if retention_mode == "archive"
+                        else "remove_phase_artifact"
+                    ),
                     source=source,
                     destination=destination,
                     reason=(
-                        "closed phase triplet can be moved out of active governance "
+                        "closed phase triplet is outside the retained phase window "
                         "after compact phase-history is recorded"
                     ),
                     safe_to_apply=True,
@@ -176,11 +242,51 @@ def _phase_archive_actions(repo_root: Path) -> tuple[list[CleanupAction], list[s
             )
     return actions, warnings
 
+
+def _git_head(repo_root: Path) -> str:
+    result = subprocess.run(
+        ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError("git-history phase retention requires a git repository with HEAD")
+    return result.stdout.strip()
+
+
+def _sha256_bytes(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _verify_git_history_sources(
+    repo_root: Path, actions: list[CleanupAction], retention_ref: str
+) -> None:
+    for action in actions:
+        if action.kind != "remove_phase_artifact":
+            continue
+        path = repo_root / action.source
+        result = subprocess.run(
+            ["git", "-C", str(repo_root), "show", f"{retention_ref}:{action.source}"],
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(
+                f"git-history phase retention requires {action.source} to exist at {retention_ref}"
+            )
+        if _sha256_bytes(result.stdout) != _file_sha256(path):
+            raise RuntimeError(
+                f"git-history phase retention requires {action.source} to match {retention_ref}"
+            )
+
 def _phase_history_entry(
     repo_root: Path,
     phase_id: str,
     *,
-    archive_actions: list[CleanupAction],
+    phase_actions: list[CleanupAction],
+    mode: str,
+    retention_ref: str | None,
 ) -> dict[str, Any]:
     plan = _load_yaml(repo_root / f"plans/{_phase_stem(phase_id)}-plan.yml") or {}
     log = _load_yaml(repo_root / f"phases/{_phase_stem(phase_id)}-log.yml") or {}
@@ -201,26 +307,30 @@ def _phase_history_entry(
             break
 
     artifact_entries = []
-    for action in archive_actions:
-        if action.kind != "archive_phase_artifact" or action.destination is None:
+    retained_action_kinds = {"archive_phase_artifact", "remove_phase_artifact"}
+    for action in phase_actions:
+        if action.kind not in retained_action_kinds:
             continue
         if action.source not in _phase_triplet_paths(phase_id):
             continue
-        artifact_entries.append(
-            {
-                "path": action.destination,
-                "sha256": _file_sha256(repo_root / action.source),
-            }
-        )
+        artifact_entry = {
+            "path": action.destination or action.source,
+            "sha256": _file_sha256(repo_root / action.source),
+        }
+        if retention_ref is not None:
+            artifact_entry["git_commit"] = retention_ref
+        artifact_entries.append(artifact_entry)
 
     highlights = summary.get("highlights")
     return {
         "phase_id": phase_id,
         "build_block": str(phase.get("build_block") or ""),
         **({"release_train": release_train} if isinstance(release_train, str) else {}),
+        "retention_source": mode,
+        **({"retention_ref": retention_ref} if retention_ref is not None else {}),
         "status": str(document.get("status") or "completed"),
         "outcome": str(summary.get("outcome") or document.get("status") or "completed"),
-        "summary": highlights if isinstance(highlights, list) and highlights else ["archived closed phase"],
+        "summary": highlights if isinstance(highlights, list) and highlights else ["closed phase retained"],
         "validation": (
             execution_evidence.get("executed_commands")
             if isinstance(execution_evidence.get("executed_commands"), list)
@@ -230,12 +340,19 @@ def _phase_history_entry(
     }
 
 
-def _write_phase_history(repo_root: Path, archive_actions: list[CleanupAction]) -> str | None:
+def _write_phase_history(
+    repo_root: Path,
+    phase_actions: list[CleanupAction],
+    *,
+    mode: str | None = None,
+) -> str | None:
+    retention_mode = _phase_retention_mode(repo_root, mode)
+    retained_action_kinds = {"archive_phase_artifact", "remove_phase_artifact"}
     phase_ids = sorted(
         {
             f"P{int(match.group(1)):02d}"
-            for action in archive_actions
-            if action.kind == "archive_phase_artifact"
+            for action in phase_actions
+            if action.kind in retained_action_kinds
             for match in [re.match(r"plans/phase-(\d+)-plan\.ya?ml", action.source)]
             if match is not None
         },
@@ -243,6 +360,10 @@ def _write_phase_history(repo_root: Path, archive_actions: list[CleanupAction]) 
     )
     if not phase_ids:
         return None
+
+    retention_ref = _git_head(repo_root) if retention_mode == "git_history" else None
+    if retention_ref is not None:
+        _verify_git_history_sources(repo_root, phase_actions, retention_ref)
 
     history_rel = _phase_history_path(repo_root)
     history_path = repo_root / history_rel
@@ -261,7 +382,7 @@ def _write_phase_history(repo_root: Path, archive_actions: list[CleanupAction]) 
             },
             "retention_policy": {
                 "source": "governance/artifact-manifest.yml",
-                "purpose": "compact machine-readable history for archived closed phase artifacts",
+                "purpose": "compact machine-readable history for removed closed phase artifacts",
             },
             "entries": [],
         }
@@ -275,7 +396,13 @@ def _write_phase_history(repo_root: Path, archive_actions: list[CleanupAction]) 
         if not (isinstance(entry, dict) and entry.get("phase_id") in set(phase_ids))
     ]
     retained_entries.extend(
-        _phase_history_entry(repo_root, phase_id, archive_actions=archive_actions)
+        _phase_history_entry(
+            repo_root,
+            phase_id,
+            phase_actions=phase_actions,
+            mode=retention_mode,
+            retention_ref=retention_ref,
+        )
         for phase_id in phase_ids
     )
     history["entries"] = sorted(
@@ -289,5 +416,60 @@ def _write_phase_history(repo_root: Path, archive_actions: list[CleanupAction]) 
     )
     return history_rel
 
+def _write_archive_gitignore(repo_root: Path) -> None:
+    gitignore = repo_root / ".gitignore"
+    ignored_pattern, keep_pattern = _archive_gitignore_patterns(repo_root)
+    gitkeep = repo_root / _phase_archive_root(repo_root) / ".gitkeep"
+    gitkeep.parent.mkdir(parents=True, exist_ok=True)
+    gitkeep.touch()
+    existing = gitignore.read_text(encoding="utf-8").splitlines() if gitignore.exists() else []
+    lines = list(existing)
+    if ignored_pattern not in {line.strip() for line in lines}:
+        lines.append(ignored_pattern)
+    if keep_pattern not in {line.strip() for line in lines}:
+        lines.append(keep_pattern)
+    gitignore.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+
+
+def _set_phase_retention_mode(repo_root: Path, mode: str) -> None:
+    retention_mode = _phase_retention_mode(repo_root, mode)
+    manifest_path = repo_root / "governance" / "artifact-manifest.yml"
+    if not manifest_path.exists():
+        return
+    lines = manifest_path.read_text(encoding="utf-8").splitlines()
+    policy_index = next(
+        (index for index, line in enumerate(lines) if line == "phase_retention_policy:"),
+        None,
+    )
+    if policy_index is None:
+        manifest = _load_yaml(manifest_path) or {}
+        manifest["phase_retention_policy"] = {"mode": retention_mode}
+        manifest_path.write_text(
+            yaml.safe_dump(manifest, sort_keys=False, default_flow_style=None, width=4096),
+            encoding="utf-8",
+        )
+        return
+    insert_at = policy_index + 1
+    while insert_at < len(lines) and lines[insert_at].startswith("  #"):
+        insert_at += 1
+    for index in range(policy_index + 1, len(lines)):
+        line = lines[index]
+        if line and not line.startswith(" "):
+            break
+        if line.startswith("  mode:"):
+            lines[index] = f"  mode: {retention_mode}"
+            manifest_path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+            return
+    lines.insert(insert_at, f"  mode: {retention_mode}")
+    manifest_path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+
+
+def _phase_archive_actions(repo_root: Path) -> tuple[list[CleanupAction], list[str]]:
+    return _phase_retention_actions(repo_root, mode="archive")
+
+
 phase_archive_actions = _phase_archive_actions
+phase_retention_actions = _phase_retention_actions
 write_phase_history = _write_phase_history
+write_archive_gitignore = _write_archive_gitignore
+set_phase_retention_mode = _set_phase_retention_mode

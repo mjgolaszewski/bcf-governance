@@ -45,6 +45,7 @@
       "additionalProperties": false,
       "required": ["history_path", "active_window", "archive"],
       "properties": {
+        "mode": { "type": "string", "enum": ["archive", "git_history"] },
         "history_path": { "type": "string", "minLength": 1 },
         "active_window": {
           "type": "object",

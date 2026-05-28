@@ -156,6 +156,11 @@ def _upgrade_agents_yaml(template_root: Path, target_root: Path) -> None:
             for key, value in template_owners.items():
                 canonical_owners.setdefault(key, value)
 
+    governance.setdefault(
+        "phase_retention_contract",
+        template_governance.get("phase_retention_contract"),
+    )
+
     guardrails = _ensure_mapping(
         payload,
         "structural_guardrails",
@@ -214,6 +219,12 @@ def _upgrade_artifact_manifest(template_root: Path, target_root: Path) -> None:
             artifact_roots.setdefault(key, template_roots.get(key))
 
     payload.setdefault("phase_retention_policy", template.get("phase_retention_policy"))
+    policy = payload.get("phase_retention_policy")
+    template_policy = template.get("phase_retention_policy")
+    if isinstance(policy, dict) and isinstance(template_policy, dict):
+        policy.setdefault("history_path", template_policy.get("history_path"))
+        policy.setdefault("active_window", template_policy.get("active_window"))
+        policy.setdefault("archive", template_policy.get("archive"))
     context_budgets = _ensure_mapping(
         payload,
         "context_budgets",
@@ -234,6 +245,8 @@ def _upgrade_artifact_manifest(template_root: Path, target_root: Path) -> None:
             )
     _write_yaml_mapping(path, payload)
     (target_root / "governance/archive/phase-artifacts").mkdir(parents=True, exist_ok=True)
+    if isinstance(policy, dict) and str(policy.get("mode")).replace("-", "_") == "archive":
+        _ensure_archive_gitignore(target_root, policy)
 
 
 
@@ -294,6 +307,27 @@ def _upgrade_makefile_fragment(target_root: Path) -> None:
         lines.insert(insert_at, "\t@$(MAKE) governance-exposure-scan")
         text = "\n".join(lines) + "\n"
     path.write_text(text, encoding="utf-8")
+
+
+def _ensure_archive_gitignore(target_root: Path, policy: dict[str, Any]) -> None:
+    archive = policy.get("archive")
+    archive_root = "governance/archive/phase-artifacts"
+    if isinstance(archive, dict) and isinstance(archive.get("root"), str):
+        archive_root = archive["root"].rstrip("/")
+    gitkeep = target_root / archive_root / ".gitkeep"
+    gitkeep.parent.mkdir(parents=True, exist_ok=True)
+    gitkeep.touch()
+    ignored_pattern = f"{archive_root}/*"
+    keep_pattern = f"!{archive_root}/.gitkeep"
+    gitignore = target_root / ".gitignore"
+    existing = gitignore.read_text(encoding="utf-8").splitlines() if gitignore.exists() else []
+    normalized = {line.strip() for line in existing}
+    lines = list(existing)
+    if ignored_pattern not in normalized:
+        lines.append(ignored_pattern)
+    if keep_pattern not in normalized:
+        lines.append(keep_pattern)
+    gitignore.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
 
 
 

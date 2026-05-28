@@ -17,7 +17,7 @@ ledgers, schemas, architecture boundary gates, release-gate profiles,
 observability contracts, and helper commands that keep agents from treating
 docs, plans, and tests as disconnected prose.
 
-Current release: `v0.4.0`.
+Current release: `v0.4.1`.
 
 ## Why It Matters
 
@@ -93,8 +93,8 @@ The main installed artifacts are:
   AST architecture gates
 - `plans/product-spec.yml`, `plans/build-plan.yml`, and
   `plans/phase-ledger.yml` for scope, sequencing, and active state
-- `plans/phase-history.yml` for compact machine-readable history of archived
-  closed phase artifacts
+- `plans/phase-history.yml` for compact machine-readable history of removed or
+  archived closed phase artifacts
 - `plans/phase-NN-plan.yml`, `plans/phase-NN-workitems.yml`, and
   `phases/phase-NN-log.yml` for scoped execution evidence
 - `contracts/observability/v1/` for telemetry and logging contract baselines
@@ -177,7 +177,7 @@ Use upgrade mode when a repo already has BCF governance and should receive the
 latest pack-owned scripts, validator support modules, schemas, workflow,
 requirements, cleanup docs, and architecture gate test without resetting
 product or phase state. Upgrade also migrates missing current governance fields
-such as phase-history retention, exposure-scan wiring, and agent
+such as phase-retention policy structure, exposure-scan wiring, and agent
 deconstruction rules:
 
 ```bash
@@ -201,7 +201,8 @@ state, not for normal upgrades.
 
 Upgrade preserves `plans/product-spec.yml`, build/phase ledgers, active phase
 logs, and existing phase history entries. It creates `plans/phase-history.yml`
-only when missing.
+only when missing and does not enable strict historical triplet cleanup unless
+the repo opts in through `bcf cleanup --phase-retention-mode`.
 
 ## Existing Repo Adoption
 
@@ -286,20 +287,31 @@ Deterministic cleanup can:
 - move `governance/parity-reviews/`, `governance/test-audits/`, and
   `governance/code-reviews/` into `audits/`
 - rewrite exact path references in text files
-- with `--archive-closed-phases`, move verified or closed phase triplets
-  outside the retained active window into `governance/archive/phase-artifacts/`
-  and update compact `plans/phase-history.yml` entries with summaries and
-  artifact hashes
+- with `--phase-retention-mode` and no value, use `git-history`: verify closed
+  historical triplets are present at `HEAD`, record compact
+  `plans/phase-history.yml` entries with hashes and git refs, and remove old
+  active triplet files
+- with `--phase-retention-mode archive`, move closed historical triplets into
+  ignored `governance/archive/phase-artifacts/` storage and record compact
+  `plans/phase-history.yml` entries with artifact hashes
+- with `--archive-closed-phases`, use the backward-compatible alias for
+  `--phase-retention-mode archive`
 - with `--remove-governance-pack`, delete known pack-owned files, directories,
   dedicated governance workflow, and BCF architecture gate test files
 
 Cleanup deliberately does not rewrite product specs, architecture docs,
 security docs, runbooks, or vendored governance. Those are reported as manual
 actions because they require semantic review and often benefit from LLM
-support. Phase triplet archiving is deterministic only when the log status and
+support. With no phase-retention switch, cleanup preserves existing historical
+triplet behavior. After a repo opts into a retention mode, validation enforces
+that historical triplets outside the retained active window are no longer
+active, while current phase artifacts, already scaffolded future phase
+artifacts, and future artifacts in the current train remain retained. Phase
+triplet cleanup is deterministic only when the log status and
 `governance/artifact-manifest.yml` retention policy make it unambiguous.
-Archived phase-history entries must retain artifact pointers and hashes; empty
-history entries do not satisfy validation.
+Phase-history entries must retain artifact hashes and a declared retention
+source; empty history entries do not satisfy validation. CI should use a full
+checkout for `git-history` mode so recorded refs can be verified.
 Mixed CI workflows that contain BCF steps are reported for manual editing
 instead of deleting unrelated jobs.
 
@@ -360,8 +372,8 @@ bcf doctor --repo-root /path/to/target-repo
 unresolved placeholders, non-portable `document.path` values, phase catalog
 gaps, stale active-phase pointers, hotfix drift, release-gate placeholders,
 audit files outside `audits/`, undeclared nested governance, stale vendored
-artifact hashes, context-budget overruns, and invoked test roots missing from
-`AGENTS.yml`.
+artifact hashes, opted-in phase-retention drift, context-budget overruns, and
+invoked test roots missing from `AGENTS.yml`.
 
 `bcf exposure-scan` is a separate CI-friendly gate for governed text artifacts.
 It flags common local workspace paths and private infrastructure markers, with

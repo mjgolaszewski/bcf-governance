@@ -16,9 +16,15 @@ if str(_SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_ROOT))
 
 from governance_cleanup.models import CleanupAction, CleanupReport, ManualAction  # noqa: E402
-from governance_cleanup.phase_retention import phase_archive_actions, write_phase_history  # noqa: E402
+from governance_cleanup.phase_retention import (  # noqa: E402
+    phase_retention_actions,
+    set_phase_retention_mode,
+    write_archive_gitignore,
+    write_phase_history,
+)
 
 OUTPUT_FORMATS = {"text", "json"}
+PHASE_RETENTION_MODE_CHOICES = {"archive", "git-history"}
 SKIP_DIRS = {
     ".git",
     ".hg",
@@ -263,6 +269,7 @@ def plan_cleanup(
     repo_root: Path,
     *,
     archive_closed_phases: bool = False,
+    phase_retention_mode: str | None = None,
     remove_governance_pack: bool = False,
 ) -> CleanupReport:
     repo_root = repo_root.resolve()
@@ -291,10 +298,16 @@ def plan_cleanup(
 
     actions = _audit_move_actions(repo_root)
     warnings: list[str] = []
-    if archive_closed_phases:
-        archive_actions, archive_warnings = phase_archive_actions(repo_root)
-        actions.extend(archive_actions)
-        warnings.extend(archive_warnings)
+    effective_retention_mode = _effective_phase_retention_mode(
+        archive_closed_phases=archive_closed_phases,
+        phase_retention_mode=phase_retention_mode,
+    )
+    if effective_retention_mode is not None:
+        retention_actions, retention_warnings = phase_retention_actions(
+            repo_root, mode=effective_retention_mode
+        )
+        actions.extend(retention_actions)
+        warnings.extend(retention_warnings)
     readme_action = _ensure_audit_readme(repo_root)
     if readme_action is not None:
         actions.insert(0, readme_action)
@@ -402,6 +415,19 @@ def _reference_replacements(actions: list[CleanupAction]) -> dict[str, str]:
     return replacements
 
 
+def _effective_phase_retention_mode(
+    *,
+    archive_closed_phases: bool,
+    phase_retention_mode: str | None,
+) -> str | None:
+    if phase_retention_mode is None:
+        return "archive" if archive_closed_phases else None
+    normalized = phase_retention_mode.replace("-", "_")
+    if archive_closed_phases and normalized != "archive":
+        raise ValueError("--archive-closed-phases cannot be combined with --phase-retention-mode git-history")
+    return normalized
+
+
 def _rewrite_references(repo_root: Path, replacements: dict[str, str]) -> list[str]:
     rewritten: list[str] = []
     for path in _iter_repo_files(repo_root):
@@ -425,12 +451,18 @@ def apply_cleanup(
     *,
     assume_yes: bool,
     archive_closed_phases: bool = False,
+    phase_retention_mode: str | None = None,
     remove_governance_pack: bool = False,
 ) -> CleanupReport:
     repo_root = repo_root.resolve()
+    effective_retention_mode = _effective_phase_retention_mode(
+        archive_closed_phases=archive_closed_phases,
+        phase_retention_mode=phase_retention_mode,
+    )
     report = plan_cleanup(
         repo_root,
         archive_closed_phases=archive_closed_phases,
+        phase_retention_mode=phase_retention_mode,
         remove_governance_pack=remove_governance_pack,
     )
     safe_actions = [action for action in report.actions if action.safe_to_apply]
@@ -454,16 +486,26 @@ def apply_cleanup(
             warnings=warnings,
         )
 
-    phase_history_path = write_phase_history(repo_root, safe_actions)
+    phase_history_path = write_phase_history(
+        repo_root,
+        safe_actions,
+        mode=effective_retention_mode,
+    )
     if phase_history_path is not None:
         warnings.append(f"phase history updated: {phase_history_path}")
+    if effective_retention_mode is not None:
+        set_phase_retention_mode(repo_root, effective_retention_mode)
     for action in safe_actions:
         if action.kind == "create_audit_readme":
             _write_audit_readme(repo_root)
+        elif action.kind == "ignore_phase_archive_root":
+            write_archive_gitignore(repo_root)
         elif action.kind == "move_audit_artifact" and action.destination is not None:
             _move_file(repo_root, action.source, action.destination)
         elif action.kind == "archive_phase_artifact" and action.destination is not None:
             _move_file(repo_root, action.source, action.destination)
+        elif action.kind == "remove_phase_artifact":
+            _remove_path(repo_root, action.source)
     _prune_empty_dirs(repo_root)
     rewritten_files = _rewrite_references(repo_root, _reference_replacements(safe_actions))
     if report.manual_actions:
@@ -525,7 +567,19 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--archive-closed-phases",
         action="store_true",
-        help="Plan or apply closed phase triplet archival using phase_retention_policy.",
+        help="Alias for --phase-retention-mode archive.",
+    )
+    parser.add_argument(
+        "--phase-retention-mode",
+        nargs="?",
+        const="git-history",
+        choices=sorted(PHASE_RETENTION_MODE_CHOICES),
+        help=(
+            "Plan or apply closed phase triplet retention cleanup. With no value, "
+            "defaults to git-history. archive moves old triplets to the ignored "
+            "archive root; git-history records hashes and removes old triplets "
+            "after verifying HEAD contains them."
+        ),
     )
     parser.add_argument(
         "--remove-governance-pack",
@@ -551,12 +605,14 @@ def main(argv: list[str] | None = None) -> None:
                 args.repo_root,
                 assume_yes=args.yes,
                 archive_closed_phases=args.archive_closed_phases,
+                phase_retention_mode=args.phase_retention_mode,
                 remove_governance_pack=args.remove_governance_pack,
             )
             if args.apply
             else plan_cleanup(
                 args.repo_root,
                 archive_closed_phases=args.archive_closed_phases,
+                phase_retention_mode=args.phase_retention_mode,
                 remove_governance_pack=args.remove_governance_pack,
             )
         )
