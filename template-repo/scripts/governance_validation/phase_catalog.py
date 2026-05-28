@@ -43,6 +43,23 @@ def _phase_ids_from_existing_artifacts(repo_root: Path) -> set[str]:
     return phase_ids
 
 
+def _phase_hotfix_paths_by_phase(repo_root: Path) -> dict[str, list[Path]]:
+    phases_root = repo_root / "phases"
+    if not phases_root.exists():
+        return {}
+    pattern = re.compile(r"phase-(\d+)-hotfix\d+\.ya?ml$")
+    paths_by_phase: dict[str, list[Path]] = {}
+    for path in sorted(phases_root.iterdir()):
+        if not path.is_file():
+            continue
+        match = pattern.match(path.name)
+        if match is None:
+            continue
+        phase_id = f"P{int(match.group(1)):02d}"
+        paths_by_phase.setdefault(phase_id, []).append(path)
+    return paths_by_phase
+
+
 def _validate_declared_phase_catalog(
     repo_root: Path,
     schema_cache: dict[str, dict[str, Any]],
@@ -122,12 +139,20 @@ def _validate_declared_phase_catalog(
     active_id = _require_string(active_phase.get("id"), context="plans/phase-ledger.yml active_phase.id")
 
     existing_phase_ids = _phase_ids_from_existing_artifacts(repo_root)
+    existing_hotfix_paths = _phase_hotfix_paths_by_phase(repo_root)
     undeclared_phase_ids = sorted(existing_phase_ids - set(build_phase_map))
     if undeclared_phase_ids:
         raise GovernanceValidationError(
             "phase plan, workitem, or log artifacts exist without build-plan declarations: "
             + ", ".join(undeclared_phase_ids)
         )
+    if strict_retention:
+        undeclared_hotfix_phase_ids = sorted(set(existing_hotfix_paths) - set(build_phase_map))
+        if undeclared_hotfix_phase_ids:
+            raise GovernanceValidationError(
+                "phase hotfix artifacts exist without build-plan declarations: "
+                + ", ".join(undeclared_hotfix_phase_ids)
+            )
 
     for phase_id, product_phase in product_phase_map.items():
         build_phase = build_phase_map[phase_id]
@@ -157,6 +182,12 @@ def _validate_declared_phase_catalog(
         if strict_retention and is_historical and not must_retain_triplet and triplet_exists:
             raise GovernanceValidationError(
                 f"phase {phase_id} is outside the retained phase window but active triplet artifacts remain"
+            )
+        if strict_retention and is_historical and not must_retain_triplet and phase_id in existing_hotfix_paths:
+            paths = ", ".join(path.relative_to(repo_root).as_posix() for path in existing_hotfix_paths[phase_id])
+            raise GovernanceValidationError(
+                f"phase {phase_id} is outside the retained phase window but active hotfix artifacts remain: "
+                f"{paths}"
             )
         if strict_retention and is_future and not triplet_exists:
             continue

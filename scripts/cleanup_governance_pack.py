@@ -18,6 +18,7 @@ if str(_SCRIPT_ROOT) not in sys.path:
 from governance_cleanup.models import CleanupAction, CleanupReport, ManualAction  # noqa: E402
 from governance_cleanup.phase_retention import (  # noqa: E402
     phase_retention_actions,
+    prune_phase_hotfix_records,
     set_phase_retention_mode,
     write_archive_gitignore,
     write_phase_history,
@@ -495,6 +496,9 @@ def apply_cleanup(
         warnings.append(f"phase history updated: {phase_history_path}")
     if effective_retention_mode is not None:
         set_phase_retention_mode(repo_root, effective_retention_mode)
+    hotfix_ledger_path = prune_phase_hotfix_records(repo_root, safe_actions)
+    if hotfix_ledger_path is not None:
+        warnings.append(f"phase hotfix records pruned: {hotfix_ledger_path}")
     for action in safe_actions:
         if action.kind == "create_audit_readme":
             _write_audit_readme(repo_root)
@@ -506,6 +510,8 @@ def apply_cleanup(
             _move_file(repo_root, action.source, action.destination)
         elif action.kind == "remove_phase_artifact":
             _remove_path(repo_root, action.source)
+        elif action.kind == "prune_phase_hotfix_records":
+            continue
     _prune_empty_dirs(repo_root)
     rewritten_files = _rewrite_references(repo_root, _reference_replacements(safe_actions))
     if report.manual_actions:

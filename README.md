@@ -17,7 +17,7 @@ ledgers, schemas, architecture boundary gates, release-gate profiles,
 observability contracts, and helper commands that keep agents from treating
 docs, plans, and tests as disconnected prose.
 
-Current release: `v0.4.1`.
+Current release: `v0.4.2`.
 
 ## Why It Matters
 
@@ -94,7 +94,7 @@ The main installed artifacts are:
 - `plans/product-spec.yml`, `plans/build-plan.yml`, and
   `plans/phase-ledger.yml` for scope, sequencing, and active state
 - `plans/phase-history.yml` for compact machine-readable history of removed or
-  archived closed phase artifacts
+  archived closed phase and phase-scoped hotfix artifacts
 - `plans/phase-NN-plan.yml`, `plans/phase-NN-workitems.yml`, and
   `phases/phase-NN-log.yml` for scoped execution evidence
 - `contracts/observability/v1/` for telemetry and logging contract baselines
@@ -288,12 +288,14 @@ Deterministic cleanup can:
   `governance/code-reviews/` into `audits/`
 - rewrite exact path references in text files
 - with `--phase-retention-mode` and no value, use `git-history`: verify closed
-  historical triplets are present at `HEAD`, record compact
+  historical phase artifacts are present at `HEAD`, record compact
   `plans/phase-history.yml` entries with hashes and git refs, and remove old
-  active triplet files
-- with `--phase-retention-mode archive`, move closed historical triplets into
-  ignored `governance/archive/phase-artifacts/` storage and record compact
+  active triplet and phase-scoped hotfix files
+- with `--phase-retention-mode archive`, move closed historical phase artifacts
+  into ignored `governance/archive/phase-artifacts/` storage and record compact
   `plans/phase-history.yml` entries with artifact hashes
+- prune phase-scoped hotfix lane records from `plans/phase-ledger.yml` when
+  their related phase leaves active governance
 - with `--archive-closed-phases`, use the backward-compatible alias for
   `--phase-retention-mode archive`
 - with `--remove-governance-pack`, delete known pack-owned files, directories,
@@ -303,11 +305,12 @@ Cleanup deliberately does not rewrite product specs, architecture docs,
 security docs, runbooks, or vendored governance. Those are reported as manual
 actions because they require semantic review and often benefit from LLM
 support. With no phase-retention switch, cleanup preserves existing historical
-triplet behavior. After a repo opts into a retention mode, validation enforces
-that historical triplets outside the retained active window are no longer
-active, while current phase artifacts, already scaffolded future phase
-artifacts, and future artifacts in the current train remain retained. Phase
-triplet cleanup is deterministic only when the log status and
+triplet and hotfix behavior. After a repo opts into a retention mode,
+validation enforces that historical phase triplets and phase-scoped hotfix logs
+outside the retained active window are no longer active, while current phase
+artifacts, already scaffolded future phase artifacts, and future artifacts in
+the current train remain retained. Phase artifact cleanup is deterministic only
+when the log status and
 `governance/artifact-manifest.yml` retention policy make it unambiguous.
 Phase-history entries must retain artifact hashes and a declared retention
 source; empty history entries do not satisfy validation. CI should use a full
@@ -372,8 +375,8 @@ bcf doctor --repo-root /path/to/target-repo
 unresolved placeholders, non-portable `document.path` values, phase catalog
 gaps, stale active-phase pointers, hotfix drift, release-gate placeholders,
 audit files outside `audits/`, undeclared nested governance, stale vendored
-artifact hashes, opted-in phase-retention drift, context-budget overruns, and
-invoked test roots missing from `AGENTS.yml`.
+artifact hashes, opted-in phase and hotfix retention drift, context-budget
+overruns, and invoked test roots missing from `AGENTS.yml`.
 
 `bcf exposure-scan` is a separate CI-friendly gate for governed text artifacts.
 It flags common local workspace paths and private infrastructure markers, with

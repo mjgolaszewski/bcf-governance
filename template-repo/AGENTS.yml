@@ -81,7 +81,7 @@ governance:
     default_cleanup_mode: git_history
     modes: [git_history, archive]
     retained_triplets: [current_phase, already_scaffolded_future_phases, future_phases_in_current_phase_train]
-    enforcement: [mode_is_opt_in, old_triplets_outside_retention_window_are_removed_or_archived, compact_phase_history_records_hashes, archive_mode_ignores_archive_contents]
+    enforcement: [mode_is_opt_in, old_triplets_outside_retention_window_are_removed_or_archived, phase_scoped_hotfix_records_follow_related_phase, compact_phase_history_records_hashes, archive_mode_ignores_archive_contents]
   instruction_only: true
 runtime_surfaces:
   authoritative_surfaces: [local_runtime, ci_runner]
