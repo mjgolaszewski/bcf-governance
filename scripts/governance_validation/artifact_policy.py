@@ -8,6 +8,7 @@ import shlex
 import subprocess
 
 from .common import *  # noqa: F403,F405
+from .context_budgets import _validate_context_budgets
 from .phase_artifacts import _phase_number
 
 def _validate_observability_contracts(
@@ -214,40 +215,6 @@ def _validate_vendored_artifacts(repo_root: Path, manifest: dict[str, Any]) -> N
                 "governance/artifact-manifest.yml vendored_artifacts.artifacts"
                 f"[{index}] artifact_sha256 mismatch for {artifact_rel}"
             )
-
-
-def _validate_context_budgets(repo_root: Path, manifest: dict[str, Any]) -> None:
-    context_budgets = _require_mapping(
-        manifest.get("context_budgets"), context="governance/artifact-manifest.yml context_budgets"
-    )
-    agent_required_files = _require_mapping(
-        context_budgets.get("agent_required_files"),
-        context="governance/artifact-manifest.yml context_budgets.agent_required_files",
-    )
-    violations: list[str] = []
-    for relative_path, budget in agent_required_files.items():
-        budget_value = _require_positive_int(
-            budget,
-            context=(
-                "governance/artifact-manifest.yml "
-                f"context_budgets.agent_required_files.{relative_path}"
-            ),
-        )
-        path = _require_path(
-            repo_root,
-            str(relative_path),
-            context=(
-                "governance/artifact-manifest.yml "
-                f"context_budgets.agent_required_files.{relative_path}"
-            ),
-        )
-        line_count = len(path.read_text(encoding="utf-8").splitlines())
-        if line_count > budget_value:
-            violations.append(f"{relative_path} has {line_count} lines; budget is {budget_value}")
-    if violations:
-        raise GovernanceValidationError(
-            "agent-required governance files exceeded context budgets:\n" + "\n".join(violations)
-        )
 
 
 def _phase_retention_policy(manifest: dict[str, Any]) -> dict[str, Any] | None:

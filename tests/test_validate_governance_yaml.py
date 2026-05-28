@@ -983,6 +983,60 @@ def test_validate_repo_root_rejects_context_budget_overrun(tmp_path: Path) -> No
     with pytest.raises(GovernanceValidationError) as excinfo:
         validate_repo_root(repo_root)
     assert "agent-required governance files exceeded context budgets" in str(excinfo.value)
+    assert "MEMORY.yml has" in str(excinfo.value)
+    assert "line budget is" in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_context_kib_budget_overrun(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    manifest_path = repo_root / "governance/artifact-manifest.yml"
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    budget = manifest["context_budgets"]["agent_required_files"]["governance/artifact-manifest.yml"]
+    budget["line_hard_cap"] = 500
+    budget["kib_hard_cap"] = 1
+    manifest_path.write_text(yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "governance/artifact-manifest.yml is" in str(excinfo.value)
+    assert "KiB budget is 1" in str(excinfo.value)
+
+
+def test_validate_repo_root_accepts_legacy_integer_context_budget(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    manifest_path = repo_root / "governance/artifact-manifest.yml"
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    manifest["context_budgets"]["agent_required_files"]["governance/artifact-manifest.yml"][
+        "line_hard_cap"
+    ] = 200
+    manifest["context_budgets"]["agent_required_files"]["MEMORY.yml"] = 500
+    manifest_path.write_text(yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8")
+
+    validate_repo_root(repo_root)
+
+
+def test_validator_json_reports_aggregate_context_budget_advisory(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    manifest_path = repo_root / "governance/artifact-manifest.yml"
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    manifest["context_budgets"]["agent_required_files"]["governance/artifact-manifest.yml"][
+        "line_hard_cap"
+    ] = 200
+    manifest["context_budgets"]["aggregate_agent_required_kib_advisory"] = 1
+    manifest_path.write_text(yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8")
+
+    result = _run_validator_command(
+        "--repo-root",
+        str(repo_root),
+        "--format",
+        "json",
+        "--compact",
+        check=True,
+    )
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "pass"
+    assert "agent-required governance context is" in payload["advisories"][0]
+    assert "recommended maximum is 1 KiB" in payload["advisories"][0]
 
 
 def test_validate_repo_root_rejects_changed_agent_deconstruction_loc_cap(

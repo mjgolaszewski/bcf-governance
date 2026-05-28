@@ -6,7 +6,7 @@
 | --- | --- |
 | Agent rules and authority order | `AGENTS.yml` |
 | Profile and release-gate classification | `governance-profile.yml` |
-| Artifact roots, vendored packs, audit lane, context budgets, phase retention policy | `governance/artifact-manifest.yml` |
+| Artifact roots, vendored packs, audit lane, line and KiB context budgets, phase retention policy | `governance/artifact-manifest.yml` |
 | Repo cleanup contract and documentation currency rules | `governance/repo-cleanup-contract.yml` |
 | Architecture source roots, layer/context tokens, structural rules | `architecture-boundaries.yml` |
 | Structural shapes | `schemas/*.json` |
@@ -32,6 +32,7 @@ Repo evidence: `template-repo/AGENTS.yml`, `scripts/install_governance_pack.py`,
 - Keep governance scripts and installed validator modules below 800 LOC; split by stable concept and preserve characterized behavior.
 - Keep audits in `audits/`; `docs/` is for user and operator documentation.
 - Declare nested governance packs and vendored artifacts in `governance/artifact-manifest.yml`.
+- Keep agent-required context budgets two-dimensional: line caps protect scanability, KiB caps protect context loading.
 - Use `bcf cleanup` for deterministic audit-root moves and exact reference rewrites before manual documentation compaction.
 - Use `governance/repo-cleanup-contract.yml` to separate deterministic cleanup from LLM or human semantic review.
 - Do not write execution evidence into `AGENTS.yml` or `MEMORY.yml`.

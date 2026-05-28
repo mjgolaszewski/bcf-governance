@@ -13,31 +13,42 @@ def _line_count(relative_path: str) -> int:
     return len((TEMPLATE_ROOT / relative_path).read_text(encoding="utf-8").splitlines())
 
 
+def _kib_size(relative_path: str) -> float:
+    return (TEMPLATE_ROOT / relative_path).stat().st_size / 1024
+
+
+def _budget_value(budget: object, key: str) -> int | None:
+    if isinstance(budget, int):
+        return budget if key == "line_hard_cap" else None
+    if isinstance(budget, dict) and isinstance(budget.get(key), int):
+        return int(budget[key])
+    return None
+
+
 def test_agent_facing_governance_files_remain_small_context_friendly() -> None:
-    budgets = {
-        "AGENTS.md": 8,
-        "CLAUDE.md": 8,
-        "AGENTS.yml": 180,
-        "MEMORY.yml": 105,
-        "architecture-boundaries.yml": 120,
-        "governance-profile.yml": 95,
-        "governance/artifact-manifest.yml": 80,
-        "governance/repo-cleanup-contract.yml": 90,
-        "plans/build-plan.yml": 95,
-        "plans/phase-ledger.yml": 95,
-        "plans/phase-history.yml": 40,
-        "plans/product-spec.yml": 40,
-        "contracts/observability/v1/telemetry.contract.yml": 70,
-        "contracts/observability/v1/logging.contract.yml": 70,
-    }
+    manifest = yaml.safe_load(
+        (TEMPLATE_ROOT / "governance/artifact-manifest.yml").read_text(encoding="utf-8")
+    )
+    budgets = dict(manifest["context_budgets"]["agent_required_files"])
+    budgets.update(
+        {
+            "contracts/observability/v1/telemetry.contract.yml": {"line_hard_cap": 70},
+            "contracts/observability/v1/logging.contract.yml": {"line_hard_cap": 70},
+        }
+    )
 
-    violations = [
-        f"{path} has {_line_count(path)} lines; budget is {budget}"
-        for path, budget in budgets.items()
-        if _line_count(path) > budget
-    ]
+    violations: list[str] = []
+    for path, budget in budgets.items():
+        line_hard_cap = _budget_value(budget, "line_hard_cap")
+        kib_hard_cap = _budget_value(budget, "kib_hard_cap")
+        if line_hard_cap is not None and _line_count(path) > line_hard_cap:
+            violations.append(
+                f"{path} has {_line_count(path)} lines; line budget is {line_hard_cap}"
+            )
+        if kib_hard_cap is not None and _kib_size(path) > kib_hard_cap:
+            violations.append(f"{path} is {_kib_size(path):.1f} KiB; KiB budget is {kib_hard_cap}")
 
-    assert not violations, "agent-facing context files exceeded line budgets:\n" + "\n".join(violations)
+    assert not violations, "agent-facing context files exceeded context budgets:\n" + "\n".join(violations)
 
 
 def test_append_policy_requires_terse_entries_with_full_intent() -> None:

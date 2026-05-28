@@ -205,6 +205,32 @@ def _upgrade_memory_yaml(template_root: Path, target_root: Path) -> None:
     _write_yaml_mapping(path, payload)
 
 
+def _upgrade_context_budget(existing: Any, template_budget: Any) -> Any:
+    if not isinstance(template_budget, dict):
+        return template_budget if existing is None else existing
+
+    if isinstance(existing, int):
+        upgraded = {"line_hard_cap": existing}
+    elif isinstance(existing, dict):
+        upgraded = dict(existing)
+    else:
+        upgraded = {}
+
+    if isinstance(existing, dict) and "line_hard_cap" not in upgraded:
+        legacy_line_cap = existing.get("line_budget") or existing.get("budget")
+        if isinstance(legacy_line_cap, int):
+            upgraded["line_hard_cap"] = legacy_line_cap
+    if isinstance(upgraded.get("target"), str) and "intent" not in upgraded:
+        upgraded["intent"] = upgraded["target"]
+    for legacy_key in ("line_budget", "budget", "target"):
+        upgraded.pop(legacy_key, None)
+
+    for key in ("line_hard_cap", "kib_hard_cap", "line_target", "kib_target", "intent"):
+        if key in template_budget:
+            upgraded.setdefault(key, template_budget[key])
+    return upgraded
+
+
 
 def _upgrade_artifact_manifest(template_root: Path, target_root: Path) -> None:
     path = target_root / "governance" / "artifact-manifest.yml"
@@ -232,6 +258,10 @@ def _upgrade_artifact_manifest(template_root: Path, target_root: Path) -> None:
     )
     template_budgets = template.get("context_budgets")
     if isinstance(template_budgets, dict):
+        context_budgets.setdefault(
+            "aggregate_agent_required_kib_advisory",
+            template_budgets.get("aggregate_agent_required_kib_advisory"),
+        )
         agent_required = _ensure_mapping(
             context_budgets,
             "agent_required_files",
@@ -239,10 +269,11 @@ def _upgrade_artifact_manifest(template_root: Path, target_root: Path) -> None:
         )
         template_required = template_budgets.get("agent_required_files")
         if isinstance(template_required, dict):
-            agent_required.setdefault(
-                "plans/phase-history.yml",
-                template_required.get("plans/phase-history.yml"),
-            )
+            for relative_path, template_budget in template_required.items():
+                agent_required[relative_path] = _upgrade_context_budget(
+                    agent_required.get(relative_path),
+                    template_budget,
+                )
     _write_yaml_mapping(path, payload)
     (target_root / "governance/archive/phase-artifacts").mkdir(parents=True, exist_ok=True)
     if isinstance(policy, dict) and str(policy.get("mode")).replace("-", "_") == "archive":

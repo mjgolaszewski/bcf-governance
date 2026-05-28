@@ -153,10 +153,27 @@
       "additionalProperties": false,
       "required": ["agent_required_files"],
       "properties": {
+        "aggregate_agent_required_kib_advisory": { "type": "integer", "minimum": 1 },
         "agent_required_files": {
           "type": "object",
           "minProperties": 1,
-          "additionalProperties": { "type": "integer", "minimum": 1 }
+          "additionalProperties": {
+            "anyOf": [
+              { "type": "integer", "minimum": 1 },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["line_hard_cap", "kib_hard_cap"],
+                "properties": {
+                  "line_hard_cap": { "type": "integer", "minimum": 1 },
+                  "kib_hard_cap": { "type": "integer", "minimum": 1 },
+                  "line_target": { "type": "integer", "minimum": 1 },
+                  "kib_target": { "type": "integer", "minimum": 1 },
+                  "intent": { "type": "string", "minLength": 1 }
+                }
+              }
+            ]
+          }
         }
       }
     }
