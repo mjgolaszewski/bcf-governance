@@ -9,7 +9,11 @@ from .phase_artifacts import (
     _phase_number,
     _validate_phase_artifact_triplet,
 )
-from .artifact_policy import _retained_phase_ids, _validate_phase_history_entries
+from .artifact_policy import (
+    _retained_phase_ids,
+    _strict_phase_retention_enabled,
+    _validate_phase_history_entries,
+)
 
 
 def _declared_phase_ids_are_contiguous(phase_ids: set[str]) -> tuple[bool, list[str]]:
@@ -104,12 +108,18 @@ def _validate_declared_phase_catalog(
         phase_history,
         product_phase_map=product_phase_map,
         build_phase_map=build_phase_map,
+        manifest=manifest,
     )
     retained_phase_ids = _retained_phase_ids(
         build_phase_map=build_phase_map,
         ledger=ledger,
         manifest=manifest,
     )
+    strict_retention = _strict_phase_retention_enabled(manifest)
+    active_phase = _require_mapping(
+        ledger.get("active_phase"), context="plans/phase-ledger.yml active_phase"
+    )
+    active_id = _require_string(active_phase.get("id"), context="plans/phase-ledger.yml active_phase.id")
 
     existing_phase_ids = _phase_ids_from_existing_artifacts(repo_root)
     undeclared_phase_ids = sorted(existing_phase_ids - set(build_phase_map))
@@ -140,6 +150,16 @@ def _validate_declared_phase_catalog(
         )
         must_retain_triplet = retained_phase_ids is None or phase_id in retained_phase_ids
         triplet_exists = phase_id in existing_phase_ids
+        phase_number = _phase_number(phase_id)
+        active_number = _phase_number(active_id)
+        is_historical = phase_number < active_number
+        is_future = phase_number > active_number
+        if strict_retention and is_historical and not must_retain_triplet and triplet_exists:
+            raise GovernanceValidationError(
+                f"phase {phase_id} is outside the retained phase window but active triplet artifacts remain"
+            )
+        if strict_retention and is_future and not triplet_exists:
+            continue
         if must_retain_triplet or triplet_exists:
             declared_phase_paths[phase_id] = _validate_phase_artifact_triplet(
                 repo_root,

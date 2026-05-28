@@ -61,8 +61,20 @@ The command is dry-run by default. Safe apply mode moves legacy audit/review evi
 bcf cleanup --repo-root . --apply
 ```
 
-Do not use cleanup as a substitute for semantic review. Product specs, phase history, architecture docs, security docs, runbooks, and vendored governance require owner judgment before rewriting or removal. Archived phase-history entries must stay compact and point to retained artifacts with hashes.
+Do not use cleanup as a substitute for semantic review. Product specs, phase history, architecture docs, security docs, runbooks, and vendored governance require owner judgment before rewriting or removal. Phase-history entries must stay compact and point to retained artifacts or git-history refs with hashes.
 Use `governance/repo-cleanup-contract.yml` for machine-readable cleanup rules and `governance/REPO_CLEANUP.md` for the human sequence.
+
+To opt into strict historical phase retention, run one of the retention modes:
+
+```bash
+bcf cleanup --repo-root . --phase-retention-mode --apply
+bcf cleanup --repo-root . --phase-retention-mode archive --apply
+```
+
+The first command uses `git-history` retention and removes stale closed triplets
+after recording hashes and git refs. The archive mode moves stale closed
+triplets into ignored `governance/archive/phase-artifacts/` storage. With no
+phase-retention switch, cleanup keeps existing historical triplet behavior.
 
 ## Runtime Diagnostics
 

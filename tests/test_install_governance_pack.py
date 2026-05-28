@@ -312,6 +312,10 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
     assert (target / "scripts/governance_validation/runner.py").exists()
     assert (target / "schemas/phase-history.schema.json").exists()
     assert (target / "plans/product-spec.yml").read_text(encoding="utf-8") == product_spec_before
+    agents = yaml.safe_load((target / "AGENTS.yml").read_text(encoding="utf-8"))
+    assert agents["governance"]["phase_retention_contract"]["default_cleanup_mode"] == "git_history"
+    manifest = yaml.safe_load((target / "governance/artifact-manifest.yml").read_text(encoding="utf-8"))
+    assert "mode" not in manifest["phase_retention_policy"]
 
 
 def test_installer_upgrade_migrates_older_pack_state_to_strict_validation(
@@ -332,6 +336,7 @@ def test_installer_upgrade_migrates_older_pack_state_to_strict_validation(
     agents["governance"]["artifact_ownership_contract"]["canonical_owners"].pop(
         "compact_phase_history_and_archive_hashes"
     )
+    agents["governance"].pop("phase_retention_contract")
     agents["structural_guardrails"].pop("agent_deconstruction_contract")
     agents_path.write_text(yaml.safe_dump(agents, sort_keys=False), encoding="utf-8")
 
@@ -372,6 +377,8 @@ def test_installer_upgrade_migrates_older_pack_state_to_strict_validation(
 
     assert "validation: strict pass" in result.stdout
     assert (target / "plans/product-spec.yml").read_text(encoding="utf-8") == product_spec_before
+    agents = yaml.safe_load(agents_path.read_text(encoding="utf-8"))
+    assert agents["governance"]["phase_retention_contract"]["default_cleanup_mode"] == "git_history"
 
 
 def test_installer_upgrade_can_reset_profile_and_makefile_options(tmp_path: Path) -> None:

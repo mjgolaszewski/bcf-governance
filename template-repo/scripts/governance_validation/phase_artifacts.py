@@ -275,6 +275,25 @@ def _validate_agents(repo_root: Path, agents: dict[str, Any]) -> None:
             "AGENTS.yml governance.semantic_validation_contract.validator must be "
             "scripts/validate_governance_yaml.py"
         )
+    retention_contract = _require_mapping(
+        governance.get("phase_retention_contract"),
+        context="AGENTS.yml governance.phase_retention_contract",
+    )
+    if retention_contract.get("default_cleanup_mode") != "git_history":
+        raise GovernanceValidationError(
+            "AGENTS.yml governance.phase_retention_contract.default_cleanup_mode must be git_history"
+        )
+    modes = set(
+        _require_string_sequence(
+            retention_contract.get("modes"),
+            context="AGENTS.yml governance.phase_retention_contract.modes",
+            min_items=2,
+        )
+    )
+    if modes != {"git_history", "archive"}:
+        raise GovernanceValidationError(
+            "AGENTS.yml governance.phase_retention_contract.modes must be archive and git_history"
+        )
 
     references = _require_mapping(agents.get("references"), context="AGENTS.yml references")
     for key in (

@@ -9,6 +9,8 @@ dist/
 build/
 coverage/
 artifacts/
+governance/archive/phase-artifacts/*
+!governance/archive/phase-artifacts/.gitkeep
 logs/
 *.log
 

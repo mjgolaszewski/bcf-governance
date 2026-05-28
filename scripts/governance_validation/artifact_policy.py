@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import shlex
+import subprocess
 
 from .common import *  # noqa: F403,F405
 from .phase_artifacts import _phase_number
@@ -258,6 +259,75 @@ def _phase_retention_policy(manifest: dict[str, Any]) -> dict[str, Any] | None:
     )
 
 
+def _phase_retention_mode(manifest: dict[str, Any]) -> str | None:
+    policy = _phase_retention_policy(manifest)
+    if policy is None or policy.get("mode") is None:
+        return None
+    mode = _require_string(
+        policy.get("mode"),
+        context="governance/artifact-manifest.yml phase_retention_policy.mode",
+    )
+    normalized = mode.replace("-", "_")
+    if normalized not in PHASE_RETENTION_MODES:
+        raise GovernanceValidationError(
+            "governance/artifact-manifest.yml phase_retention_policy.mode must be one of "
+            f"{sorted(PHASE_RETENTION_MODES)}"
+        )
+    return normalized
+
+
+def _phase_archive_root(manifest: dict[str, Any]) -> str:
+    policy = _phase_retention_policy(manifest)
+    if policy is None:
+        return "governance/archive/phase-artifacts/"
+    archive = _require_mapping(
+        policy.get("archive"),
+        context="governance/artifact-manifest.yml phase_retention_policy.archive",
+    )
+    root = _require_string(
+        archive.get("root"),
+        context="governance/artifact-manifest.yml phase_retention_policy.archive.root",
+    )
+    return root.rstrip("/") + "/"
+
+
+def _gitignore_lines(repo_root: Path) -> set[str]:
+    gitignore = repo_root / ".gitignore"
+    if not gitignore.exists():
+        return set()
+    return {
+        line.strip()
+        for line in gitignore.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    }
+
+
+def _archive_root_is_ignored(repo_root: Path, manifest: dict[str, Any]) -> bool:
+    archive_root = _phase_archive_root(manifest).rstrip("/")
+    lines = _gitignore_lines(repo_root)
+    return f"{archive_root}/*" in lines and f"!{archive_root}/.gitkeep" in lines
+
+
+def _git_show_sha256(repo_root: Path, git_ref: str, relative_path: str) -> str | None:
+    result = subprocess.run(
+        ["git", "-C", str(repo_root), "show", f"{git_ref}:{relative_path}"],
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    return hashlib.sha256(result.stdout).hexdigest()
+
+
+def _validate_phase_retention_policy(repo_root: Path, manifest: dict[str, Any]) -> None:
+    mode = _phase_retention_mode(manifest)
+    if mode == "archive" and not _archive_root_is_ignored(repo_root, manifest):
+        raise GovernanceValidationError(
+            "archive phase retention mode requires .gitignore to ignore "
+            f"{_phase_archive_root(manifest).rstrip('/')}/* and keep .gitkeep"
+        )
+
+
 def _phase_history_path_from_policy(
     repo_root: Path, manifest: dict[str, Any]
 ) -> Path | None:
@@ -322,8 +392,11 @@ def _validate_phase_history_entries(
     *,
     product_phase_map: dict[str, dict[str, Any]],
     build_phase_map: dict[str, dict[str, Any]],
+    manifest: dict[str, Any],
 ) -> dict[str, dict[str, Any]]:
     history_entries = _phase_history_entries(phase_history)
+    policy_mode = _phase_retention_mode(manifest)
+    archive_root = _phase_archive_root(manifest)
     for phase_id, entry in history_entries.items():
         if phase_id not in build_phase_map:
             raise GovernanceValidationError(
@@ -350,6 +423,26 @@ def _validate_phase_history_entries(
                 f"plans/phase-history.yml entry {phase_id} status must be one of "
                 f"{sorted(PHASE_HISTORY_STATUSES)}"
             )
+        entry_source = entry.get("retention_source")
+        if policy_mode is not None:
+            retention_source = _require_string(
+                entry_source,
+                context=f"plans/phase-history.yml entries.{phase_id}.retention_source",
+            ).replace("-", "_")
+            if retention_source != policy_mode:
+                raise GovernanceValidationError(
+                    f"plans/phase-history.yml entry {phase_id} retention_source "
+                    "must match phase_retention_policy.mode"
+                )
+        else:
+            retention_source = str(entry_source).replace("-", "_") if entry_source else None
+
+        retention_ref = entry.get("retention_ref")
+        if retention_source == "git_history":
+            retention_ref = _require_string(
+                retention_ref,
+                context=f"plans/phase-history.yml entries.{phase_id}.retention_ref",
+            )
         artifacts = _require_sequence(
             entry.get("archived_artifacts"),
             context=f"plans/phase-history.yml entries.{phase_id}.archived_artifacts",
@@ -367,20 +460,21 @@ def _validate_phase_history_entries(
                     f"entries.{phase_id}.archived_artifacts[{artifact_index}]"
                 ),
             )
-            artifact_path = _require_path(
-                repo_root,
-                _require_string(
-                    artifact_mapping.get("path"),
-                    context=(
-                        "plans/phase-history.yml "
-                        f"entries.{phase_id}.archived_artifacts[{artifact_index}].path"
-                    ),
-                ),
+            artifact_rel = _require_string(
+                artifact_mapping.get("path"),
                 context=(
                     "plans/phase-history.yml "
                     f"entries.{phase_id}.archived_artifacts[{artifact_index}].path"
                 ),
             )
+            _validate_portable_relative_path(
+                artifact_rel,
+                context=(
+                    "plans/phase-history.yml "
+                    f"entries.{phase_id}.archived_artifacts[{artifact_index}].path"
+                ),
+            )
+            artifact_path = repo_root / artifact_rel
             expected_sha = _require_string(
                 artifact_mapping.get("sha256"),
                 context=(
@@ -388,7 +482,34 @@ def _validate_phase_history_entries(
                     f"entries.{phase_id}.archived_artifacts[{artifact_index}].sha256"
                 ),
             )
-            if _file_sha256(artifact_path) != expected_sha:
+            if artifact_path.exists():
+                actual_sha = _file_sha256(artifact_path)
+            elif retention_source == "git_history":
+                artifact_ref = str(artifact_mapping.get("git_commit") or retention_ref)
+                actual_sha = _git_show_sha256(
+                    repo_root,
+                    artifact_ref,
+                    str(artifact_mapping.get("path")),
+                )
+                if actual_sha is None:
+                    raise GovernanceValidationError(
+                        f"plans/phase-history.yml entry {phase_id} archived artifact "
+                        f"{artifact_mapping.get('path')} is missing and not available from git history"
+                    )
+            elif retention_source == "archive":
+                if not _relative_path_is_under(artifact_rel, archive_root):
+                    raise GovernanceValidationError(
+                        f"plans/phase-history.yml entry {phase_id} archived artifact "
+                        "must live under the phase archive root"
+                    )
+                actual_sha = expected_sha
+            else:
+                raise GovernanceValidationError(
+                    f"plans/phase-history.yml entry {phase_id} archived artifact "
+                    f"{artifact_rel} is missing"
+                )
+
+            if actual_sha != expected_sha:
                 raise GovernanceValidationError(
                     f"plans/phase-history.yml entry {phase_id} archived artifact "
                     f"{_repo_relative_path(repo_root, artifact_path)} has a sha256 mismatch"
@@ -436,6 +557,10 @@ def _retained_phase_ids(
     ]
     retained.update(prior_phase_ids[-keep_recent_closed:] if keep_recent_closed else [])
     return retained
+
+
+def _strict_phase_retention_enabled(manifest: dict[str, Any]) -> bool:
+    return _phase_retention_mode(manifest) is not None
 
 
 def _pytest_paths_from_command(command: str) -> list[str]:
@@ -622,6 +747,7 @@ def _validate_artifact_manifest(
     )
     _validate_nested_governance_policy(repo_root, manifest, vendor_prefixes=vendor_prefixes)
     _validate_vendored_artifacts(repo_root, manifest)
+    _validate_phase_retention_policy(repo_root, manifest)
     _validate_context_budgets(repo_root, manifest)
     _validate_declared_test_roots(repo_root, agents)
     _validate_ephemeral_evidence_references(repo_root, manifest)

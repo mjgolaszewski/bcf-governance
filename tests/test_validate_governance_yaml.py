@@ -4,6 +4,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -199,6 +200,41 @@ def _instantiate_fixture_repo(
 
 def _write_yaml(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+
+def _set_manifest_retention_mode(repo_root: Path, mode: str) -> None:
+    manifest_path = repo_root / "governance/artifact-manifest.yml"
+    text = manifest_path.read_text(encoding="utf-8")
+    if "  mode:" in text:
+        text = re.sub(r"(?m)^  mode: .*$", f"  mode: {mode}", text)
+    else:
+        text = text.replace("phase_retention_policy:\n", f"phase_retention_policy:\n  mode: {mode}\n", 1)
+    manifest_path.write_text(text, encoding="utf-8")
+
+
+def _init_git_repo(repo_root: Path) -> str:
+    subprocess.run(["git", "init"], cwd=repo_root, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "config", "user.email", "test@example.test"], cwd=repo_root, check=True)
+    subprocess.run(["git", "config", "user.name", "Test User"], cwd=repo_root, check=True)
+    subprocess.run(["git", "add", "."], cwd=repo_root, check=True)
+    subprocess.run(["git", "commit", "-m", "seed"], cwd=repo_root, check=True, capture_output=True, text=True)
+    return subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+
+def _git_blob_sha256(repo_root: Path, git_ref: str, relative_path: str) -> str:
+    blob = subprocess.run(
+        ["git", "show", f"{git_ref}:{relative_path}"],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+    ).stdout
+    return hashlib.sha256(blob).hexdigest()
 
 
 def _copy_phase_triplet(repo_root: Path, source_number: str, target_number: str) -> None:
@@ -574,6 +610,137 @@ def test_validate_repo_root_rejects_product_build_phase_mismatch(tmp_path: Path)
 def test_validate_repo_root_accepts_archived_phase_history_entry(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
     _advance_catalog_to_p02(repo_root, add_history_entry=True)
+
+    validate_repo_root(repo_root)
+
+
+def test_validate_repo_root_archive_mode_rejects_stale_active_triplet(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    _advance_catalog_to_p02(repo_root, add_history_entry=True)
+    _set_manifest_retention_mode(repo_root, "archive")
+    (repo_root / ".gitignore").write_text(
+        "governance/archive/phase-artifacts/*\n"
+        "!governance/archive/phase-artifacts/.gitkeep\n",
+        encoding="utf-8",
+    )
+    history_path = repo_root / "plans/phase-history.yml"
+    history = yaml.safe_load(history_path.read_text(encoding="utf-8"))
+    history["entries"][0]["retention_source"] = "archive"
+    _write_yaml(history_path, history)
+    for relative_path in (
+        "plans/phase-01-plan.yml",
+        "plans/phase-01-workitems.yml",
+        "phases/phase-01-log.yml",
+    ):
+        source = repo_root / "governance/archive/phase-artifacts" / Path(relative_path).name
+        destination = repo_root / relative_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "outside the retained phase window" in str(excinfo.value)
+
+
+def test_validate_repo_root_archive_mode_allows_ignored_missing_archive_artifacts(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    _advance_catalog_to_p02(repo_root, add_history_entry=True)
+    _set_manifest_retention_mode(repo_root, "archive")
+    (repo_root / ".gitignore").write_text(
+        "governance/archive/phase-artifacts/*\n"
+        "!governance/archive/phase-artifacts/.gitkeep\n",
+        encoding="utf-8",
+    )
+    history_path = repo_root / "plans/phase-history.yml"
+    history = yaml.safe_load(history_path.read_text(encoding="utf-8"))
+    history["entries"][0]["retention_source"] = "archive"
+    _write_yaml(history_path, history)
+    shutil.rmtree(repo_root / "governance/archive/phase-artifacts")
+    (repo_root / "governance/archive/phase-artifacts").mkdir(parents=True)
+    (repo_root / "governance/archive/phase-artifacts/.gitkeep").touch()
+
+    validate_repo_root(repo_root)
+
+
+def test_validate_repo_root_retention_mode_allows_unscaffolded_future_phase(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    _advance_catalog_to_p02(repo_root, add_history_entry=True)
+    _set_manifest_retention_mode(repo_root, "archive")
+    (repo_root / ".gitignore").write_text(
+        "governance/archive/phase-artifacts/*\n"
+        "!governance/archive/phase-artifacts/.gitkeep\n",
+        encoding="utf-8",
+    )
+    history_path = repo_root / "plans/phase-history.yml"
+    history = yaml.safe_load(history_path.read_text(encoding="utf-8"))
+    history["entries"][0]["retention_source"] = "archive"
+    _write_yaml(history_path, history)
+
+    product_spec_path = repo_root / "plans/product-spec.yml"
+    product_spec = yaml.safe_load(product_spec_path.read_text(encoding="utf-8"))
+    product_spec["execution_phases"].append(
+        {
+            "phase_id": "P03",
+            "build_block": "delivery",
+            "objective": "future phase",
+            "release_train": "release_1",
+        }
+    )
+    _write_yaml(product_spec_path, product_spec)
+
+    build_plan_path = repo_root / "plans/build-plan.yml"
+    build_plan = yaml.safe_load(build_plan_path.read_text(encoding="utf-8"))
+    p03_phase = dict(build_plan["phase_sequence"][-1])
+    p03_phase["phase_id"] = "P03"
+    p03_phase["build_block"] = "delivery"
+    p03_phase["objective"] = "future phase"
+    build_plan["phase_sequence"].append(p03_phase)
+    _write_yaml(build_plan_path, build_plan)
+
+    manifest_path = repo_root / "governance/artifact-manifest.yml"
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    manifest["context_budgets"]["agent_required_files"]["plans/product-spec.yml"] = 80
+    manifest["context_budgets"]["agent_required_files"]["governance/artifact-manifest.yml"] = 120
+    _write_yaml(manifest_path, manifest)
+
+    validate_repo_root(repo_root)
+
+
+def test_validate_repo_root_git_history_mode_accepts_commit_backed_history(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    commit = _init_git_repo(repo_root)
+    _advance_catalog_to_p02(repo_root, add_history_entry=True)
+    _set_manifest_retention_mode(repo_root, "git_history")
+    history_path = repo_root / "plans/phase-history.yml"
+    history = yaml.safe_load(history_path.read_text(encoding="utf-8"))
+    artifacts = []
+    for relative_path in (
+        "plans/phase-01-plan.yml",
+        "plans/phase-01-workitems.yml",
+        "phases/phase-01-log.yml",
+    ):
+        artifacts.append(
+            {
+                "path": relative_path,
+                "sha256": _git_blob_sha256(repo_root, commit, relative_path),
+                "git_commit": commit,
+            }
+        )
+    history["entries"][0]["retention_source"] = "git_history"
+    history["entries"][0]["retention_ref"] = commit
+    history["entries"][0]["archived_artifacts"] = artifacts
+    _write_yaml(history_path, history)
+    shutil.rmtree(repo_root / "governance/archive/phase-artifacts")
+    (repo_root / "governance/archive/phase-artifacts").mkdir(parents=True)
+    (repo_root / "governance/archive/phase-artifacts/.gitkeep").touch()
 
     validate_repo_root(repo_root)
 

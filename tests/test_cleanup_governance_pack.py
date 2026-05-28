@@ -183,6 +183,21 @@ def _write_yaml(path: Path, payload: dict) -> None:
     path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
 
 
+def _init_git_repo(repo: Path) -> str:
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "config", "user.email", "test@example.test"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.name", "Test User"], cwd=repo, check=True)
+    subprocess.run(["git", "add", "."], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-m", "seed"], cwd=repo, check=True, capture_output=True, text=True)
+    return subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+
 def test_cleanup_archives_closed_phase_triplet_and_writes_history(tmp_path: Path) -> None:
     cleanup = _load_cleanup_module()
     repo = tmp_path / "repo"
@@ -283,6 +298,128 @@ def test_cleanup_archives_closed_phase_triplet_and_writes_history(tmp_path: Path
         "governance/archive/phase-artifacts/phase-01-log.yml",
     }
     assert all(len(artifact["sha256"]) == 64 for artifact in entry["archived_artifacts"])
+
+
+def test_cleanup_archive_mode_persists_policy_and_ignores_archive_root(tmp_path: Path) -> None:
+    cleanup = _load_cleanup_module()
+    repo = tmp_path / "repo"
+    _write_yaml(
+        repo / "governance/artifact-manifest.yml",
+        {
+            "phase_retention_policy": {
+                "history_path": "plans/phase-history.yml",
+                "active_window": {
+                    "include_active": True,
+                    "include_next": True,
+                    "keep_recent_closed": 0,
+                },
+                "archive": {
+                    "root": "governance/archive/phase-artifacts/",
+                    "closed_phase_statuses": ["verified", "closed"],
+                    "preserve_hotfix_logs": True,
+                },
+            }
+        },
+    )
+    _write_yaml(
+        repo / "plans/build-plan.yml",
+        {"phase_sequence": [{"phase_id": "P01"}, {"phase_id": "P02"}]},
+    )
+    _write_yaml(repo / "plans/phase-ledger.yml", {"active_phase": {"id": "P02"}})
+    _write_yaml(repo / "plans/product-spec.yml", {"execution_phases": [{"phase_id": "P01"}]})
+    _write_yaml(repo / "plans/phase-01-plan.yml", {"phase": {"build_block": "foundation"}})
+    _write_yaml(repo / "plans/phase-01-workitems.yml", {"workitems": []})
+    _write_yaml(
+        repo / "phases/phase-01-log.yml",
+        {"document": {"status": "verified"}, "phase": {"build_block": "foundation"}},
+    )
+
+    report = cleanup.apply_cleanup(
+        repo,
+        assume_yes=True,
+        phase_retention_mode="archive",
+    )
+
+    assert report.applied
+    manifest = yaml.safe_load((repo / "governance/artifact-manifest.yml").read_text(encoding="utf-8"))
+    assert manifest["phase_retention_policy"]["mode"] == "archive"
+    gitignore = (repo / ".gitignore").read_text(encoding="utf-8")
+    assert "governance/archive/phase-artifacts/*" in gitignore
+    assert "!governance/archive/phase-artifacts/.gitkeep" in gitignore
+    history = yaml.safe_load((repo / "plans/phase-history.yml").read_text(encoding="utf-8"))
+    assert history["entries"][0]["retention_source"] == "archive"
+
+
+def test_cleanup_git_history_mode_removes_triplet_after_verifying_head(
+    tmp_path: Path,
+) -> None:
+    cleanup = _load_cleanup_module()
+    repo = tmp_path / "repo"
+    _write_yaml(
+        repo / "governance/artifact-manifest.yml",
+        {
+            "phase_retention_policy": {
+                "history_path": "plans/phase-history.yml",
+                "active_window": {
+                    "include_active": True,
+                    "include_next": True,
+                    "keep_recent_closed": 0,
+                },
+                "archive": {
+                    "root": "governance/archive/phase-artifacts/",
+                    "closed_phase_statuses": ["verified", "closed"],
+                    "preserve_hotfix_logs": True,
+                },
+            }
+        },
+    )
+    _write_yaml(
+        repo / "plans/build-plan.yml",
+        {
+            "phase_sequence": [
+                {"phase_id": "P01", "build_block": "foundation"},
+                {"phase_id": "P02", "build_block": "delivery"},
+            ]
+        },
+    )
+    _write_yaml(repo / "plans/phase-ledger.yml", {"active_phase": {"id": "P02"}})
+    _write_yaml(
+        repo / "plans/product-spec.yml",
+        {
+            "execution_phases": [
+                {"phase_id": "P01", "build_block": "foundation"},
+                {"phase_id": "P02", "build_block": "delivery"},
+            ]
+        },
+    )
+    _write_yaml(repo / "plans/phase-01-plan.yml", {"phase": {"build_block": "foundation"}})
+    _write_yaml(repo / "plans/phase-01-workitems.yml", {"workitems": []})
+    _write_yaml(
+        repo / "phases/phase-01-log.yml",
+        {
+            "document": {"status": "verified"},
+            "phase": {"build_block": "foundation"},
+            "summary": {"highlights": ["done"]},
+        },
+    )
+    commit = _init_git_repo(repo)
+
+    report = cleanup.apply_cleanup(repo, assume_yes=True, phase_retention_mode="git-history")
+
+    assert report.applied
+    assert not (repo / "plans/phase-01-plan.yml").exists()
+    assert not (repo / "plans/phase-01-workitems.yml").exists()
+    assert not (repo / "phases/phase-01-log.yml").exists()
+    history = yaml.safe_load((repo / "plans/phase-history.yml").read_text(encoding="utf-8"))
+    entry = history["entries"][0]
+    assert entry["retention_source"] == "git_history"
+    assert entry["retention_ref"] == commit
+    assert {artifact["path"] for artifact in entry["archived_artifacts"]} == {
+        "plans/phase-01-plan.yml",
+        "plans/phase-01-workitems.yml",
+        "phases/phase-01-log.yml",
+    }
+    assert all(artifact["git_commit"] == commit for artifact in entry["archived_artifacts"])
 
 
 def test_cleanup_phase_history_stays_within_context_budget_for_multiple_phases(

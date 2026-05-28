@@ -29,7 +29,7 @@ drift_patterns:
     llm_review: required
   - id: closed_phase_triplet_retention
     detect: verified or closed phase triplets are outside the artifact-manifest retained active window
-    action: update plans/phase-history.yml with summaries and hashes, then move triplets to governance/archive/phase-artifacts/
+    action: update plans/phase-history.yml with summaries, hashes, and retention source, then remove triplets through git-history mode or move them to ignored archive storage
     deterministic: true
     llm_review: none
   - id: abandoned_governance_yaml
@@ -58,16 +58,17 @@ deterministic_actions:
     applies_when: safe audit-root moves are approved
     safety: asks before moving files and rewriting exact references
     outputs: [audits_root, rewritten_references, remaining_manual_actions]
-  - id: archive_closed_phase_triplets
-    command: bcf cleanup --repo-root . --archive-closed-phases --apply
+  - id: retain_closed_phase_triplets_in_git_history
+    command: bcf cleanup --repo-root . --phase-retention-mode --apply
     applies_when: verified or closed phase triplets fall outside phase_retention_policy.active_window
-    safety: records compact history and sha256 values before moving phase artifacts
+    safety: verifies HEAD contains the artifact bytes and records compact history, git refs, and sha256 values before removing active phase artifacts
+    outputs: [plans/phase-history.yml]
+  - id: archive_closed_phase_triplets
+    command: bcf cleanup --repo-root . --phase-retention-mode archive --apply
+    applies_when: verified or closed phase triplets fall outside phase_retention_policy.active_window and local ignored archive storage is preferred
+    safety: records compact history and sha256 values before moving phase artifacts into ignored archive storage
     outputs: [plans/phase-history.yml, governance/archive/phase-artifacts]
-  - id: force_rescaffold
-    command: bcf install --target . --force-rescaffold
-    applies_when: owner accepts destructive replacement of active BCF-owned files
-    safety: asks before deleting known BCF governance paths
-    outputs: [fresh_active_governance, validation_report]
+  - {id: force_rescaffold, command: "bcf install --target . --force-rescaffold", applies_when: "owner accepts destructive replacement of active BCF-owned files", safety: "asks before deleting known BCF governance paths", outputs: [fresh_active_governance, validation_report]}
   - {id: remove_governance_pack, command: "bcf cleanup --repo-root . --remove-governance-pack --apply", applies_when: "owner decommissions BCF governance", safety: "dry-run first; asks before deleting BCF-owned paths", outputs: [removed_governance_artifacts, manual_ci_references]}
 llm_review_required:
   - id: documentation_currency
@@ -85,5 +86,5 @@ validation_required:
 evidence_required: [cleanup report or cleanup index, moved artifact summary, vendored pack declarations, documentation currency notes, validation command outcomes]
 closeout_rules:
   - do not claim cleanup complete while manual actions remain unexplained
-  - do not delete historical evidence unless git history is the declared retention source
+  - do not delete historical evidence unless git history is the declared retention source and the validator can verify the recorded refs
   - do not remove tests to fit the scaffold; tune tests to the accepted repo shape

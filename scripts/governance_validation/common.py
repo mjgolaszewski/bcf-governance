@@ -41,6 +41,7 @@ PHASE_HISTORY_SCHEMA = "phase-history.schema.json"
 SCHEMA_ROOT = "schemas"
 PHASE_CLOSEOUT_STATUSES = {"verified", "closed"}
 PHASE_HISTORY_STATUSES = {"completed", "verified", "closed", "abandoned"}
+PHASE_RETENTION_MODES = {"archive", "git_history"}
 ACTIVE_PHASE_LIFECYCLE_STATUSES = {
     "planned",
     "active",
