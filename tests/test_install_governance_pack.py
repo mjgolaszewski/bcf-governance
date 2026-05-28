@@ -351,6 +351,8 @@ def test_installer_upgrade_migrates_older_pack_state_to_strict_validation(
     manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
     manifest["artifact_roots"].pop("phase_archive")
     manifest.pop("phase_retention_policy")
+    manifest["context_budgets"].pop("aggregate_agent_required_kib_advisory")
+    manifest["context_budgets"]["agent_required_files"]["MEMORY.yml"] = 105
     manifest["context_budgets"]["agent_required_files"].pop("plans/phase-history.yml")
     manifest_path.write_text(yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8")
 
@@ -379,6 +381,13 @@ def test_installer_upgrade_migrates_older_pack_state_to_strict_validation(
     assert (target / "plans/product-spec.yml").read_text(encoding="utf-8") == product_spec_before
     agents = yaml.safe_load(agents_path.read_text(encoding="utf-8"))
     assert agents["governance"]["phase_retention_contract"]["default_cleanup_mode"] == "git_history"
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    memory_budget = manifest["context_budgets"]["agent_required_files"]["MEMORY.yml"]
+    assert memory_budget["line_hard_cap"] == 105
+    assert memory_budget["kib_hard_cap"] == 28
+    assert (
+        manifest["context_budgets"]["aggregate_agent_required_kib_advisory"] == 350
+    )
 
 
 def test_installer_upgrade_can_reset_profile_and_makefile_options(tmp_path: Path) -> None:

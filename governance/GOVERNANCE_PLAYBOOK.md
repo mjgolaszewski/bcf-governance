@@ -25,7 +25,7 @@ Repo evidence: `template-repo/AGENTS.yml` authorities and regression shield.
 
 ## Canonical Artifacts
 
-Canonical owner details live in `governance/ARTIFACT_OWNERSHIP.md`. The validator enforces schema shape, repo-relative `document.path`, active-phase alignment, phase/workitem/log consistency, phase-history retention, release-gate wiring, hotfix alignment, observability contract shape, artifact-root ownership, audit placement, nested-governance declarations, vendored artifact hashes, context budgets, and declared test roots.
+Canonical owner details live in `governance/ARTIFACT_OWNERSHIP.md`. The validator enforces schema shape, repo-relative `document.path`, active-phase alignment, phase/workitem/log consistency, phase-history retention, release-gate wiring, hotfix alignment, observability contract shape, artifact-root ownership, audit placement, nested-governance declarations, vendored artifact hashes, line and KiB context budgets, and declared test roots.
 
 Fresh installs omit existing-repo adoption playbooks; installs with `--adoption-mode existing` keep `governance/EXISTING_REPO_ADOPTION.md` and `governance/existing-repo-adoption.yml`. `bcf install --upgrade` refreshes pack-owned support files and migrates missing current governance fields without overwriting product or phase state.
 

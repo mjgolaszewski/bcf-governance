@@ -17,7 +17,7 @@ ledgers, schemas, architecture boundary gates, release-gate profiles,
 observability contracts, and helper commands that keep agents from treating
 docs, plans, and tests as disconnected prose.
 
-Current release: `v0.4.2`.
+Current release: `v0.4.3`.
 
 ## Why It Matters
 
@@ -29,7 +29,7 @@ BCF turns those failure modes into executable contracts:
 - one canonical authority file for agent instructions
 - one product spec and build plan for declared scope
 - one active phase ledger and durable memory pointer set
-- one artifact manifest for audits, vendored packs, context budgets,
+- one artifact manifest for audits, vendored packs, line and KiB context budgets,
   phase-artifact retention, and nested-governance boundaries
 - one cleanup contract for deterministic moves, semantic review, documentation
   currency, and cleanup closeout evidence
@@ -86,7 +86,8 @@ The main installed artifacts are:
 - `MEMORY.yml` for durable project memory, not transcripts
 - `governance-profile.yml` for profile and release-gate classification
 - `governance/artifact-manifest.yml` for artifact roots, `audits/`, vendored
-  packs, context budgets, phase-retention policy, and nested-governance policy
+  packs, line and KiB context budgets, phase-retention policy, and
+  nested-governance policy
 - `governance/repo-cleanup-contract.yml` and `governance/REPO_CLEANUP.md` for
   drift cleanup, documentation currency, and cleanup closeout rules
 - `architecture-boundaries.yml` for source roots, layers, bounded contexts, and
@@ -131,7 +132,8 @@ The CLI exposes six workflows:
 
 - `bcf install` installs, upgrades, or updates the governance pack.
 - `bcf validate` validates governed YAML, semantic alignment, release-gate
-  wiring, artifact ownership, context budgets, vendored hashes, and test roots.
+  wiring, artifact ownership, line and KiB context budgets, vendored hashes,
+  and test roots.
 - `bcf exposure-scan` checks governed artifacts for local paths and private
   infrastructure markers before CI or release evidence is trusted.
 - `bcf scaffold` creates phase and hotfix artifacts with the expected names.
@@ -376,7 +378,12 @@ unresolved placeholders, non-portable `document.path` values, phase catalog
 gaps, stale active-phase pointers, hotfix drift, release-gate placeholders,
 audit files outside `audits/`, undeclared nested governance, stale vendored
 artifact hashes, opted-in phase and hotfix retention drift, context-budget
-overruns, and invoked test roots missing from `AGENTS.yml`.
+overruns, and invoked test roots missing from `AGENTS.yml`. Context budgets
+accept legacy integer line caps, but new pack output uses explicit
+`line_hard_cap` and `kib_hard_cap` values for each agent-required file. The
+validator treats both dimensions as hard per-file gates and reports aggregate
+agent-required context size as an advisory in JSON output when it exceeds the
+manifest recommendation.
 
 `bcf exposure-scan` is a separate CI-friendly gate for governed text artifacts.
 It flags common local workspace paths and private infrastructure markers, with

@@ -32,16 +32,17 @@ append_only_contract:
   style: terse_full_intent
   required_fields: [intent, evidence, result, next_action]
 context_budgets:
+  aggregate_agent_required_kib_advisory: 350
   agent_required_files:
-    AGENTS.md: 8
-    CLAUDE.md: 8
-    AGENTS.yml: 190
-    MEMORY.yml: 105
-    architecture-boundaries.yml: 120
-    governance-profile.yml: 95
-    governance/artifact-manifest.yml: 80
-    governance/repo-cleanup-contract.yml: 90
-    plans/build-plan.yml: 95
-    plans/phase-ledger.yml: 95
-    plans/phase-history.yml: 40
-    plans/product-spec.yml: 40
+    AGENTS.md: {line_hard_cap: 8, kib_hard_cap: 2, intent: tiny pointer only}
+    CLAUDE.md: {line_hard_cap: 8, kib_hard_cap: 2, intent: tiny pointer only}
+    AGENTS.yml: {line_hard_cap: 190, kib_hard_cap: 18, intent: terse procedural agent policy}
+    MEMORY.yml: {line_hard_cap: 105, kib_hard_cap: 28, intent: compact active memory only}
+    architecture-boundaries.yml: {line_hard_cap: 120, kib_hard_cap: 8, intent: boundary map only}
+    governance-profile.yml: {line_hard_cap: 95, kib_hard_cap: 12, intent: profile knobs only}
+    governance/artifact-manifest.yml: {line_hard_cap: 80, kib_hard_cap: 8, intent: artifact index only}
+    governance/repo-cleanup-contract.yml: {line_hard_cap: 90, kib_hard_cap: 12, intent: cleanup rules only}
+    plans/build-plan.yml: {line_hard_cap: 95, kib_hard_cap: 24, intent: active roadmap index}
+    plans/phase-ledger.yml: {line_hard_cap: 95, kib_hard_cap: 16, intent: current phase state}
+    plans/phase-history.yml: {line_hard_cap: 40, kib_hard_cap: 48, intent: compact history index}
+    plans/product-spec.yml: {line_hard_cap: 40, kib_hard_cap: 8, intent: compact product intent}

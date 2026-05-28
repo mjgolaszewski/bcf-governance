@@ -55,7 +55,7 @@ governance:
     canonical_owners:
       governance_rules_and_authority_order: AGENTS.yml
       adoption_profile_and_release_gate_classification: governance-profile.yml
-      artifact_roots_vendors_and_context_budgets: governance/artifact-manifest.yml
+      artifact_roots_vendors_and_line_kib_context_budgets: governance/artifact-manifest.yml
       repo_cleanup_policy: governance/repo-cleanup-contract.yml
       architecture_boundary_rule_config: architecture-boundaries.yml
       audit_reports: audits/

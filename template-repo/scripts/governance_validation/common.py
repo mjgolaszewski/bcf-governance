@@ -355,8 +355,10 @@ def _classify_failure(error: GovernanceValidationError) -> dict[str, str]:
     return checks
 
 
-def _success_report(repo_root: Path, *, allow_placeholders: bool) -> dict[str, Any]:
-    return {
+def _success_report(
+    repo_root: Path, *, allow_placeholders: bool, advisories: list[str] | None = None
+) -> dict[str, Any]:
+    report = {
         "status": "pass",
         "checks": {
             "schema": "pass",
@@ -365,6 +367,9 @@ def _success_report(repo_root: Path, *, allow_placeholders: bool) -> dict[str, A
         },
         "active_phase": _active_phase_id(repo_root),
     }
+    if advisories:
+        report["advisories"] = advisories
+    return report
 
 
 def _failure_report(repo_root: Path, error: GovernanceValidationError) -> dict[str, Any]:

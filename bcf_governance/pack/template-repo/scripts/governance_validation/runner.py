@@ -7,6 +7,7 @@ import argparse
 
 from .common import *  # noqa: F403,F405
 from .artifact_policy import _load_phase_history, _validate_artifact_manifest, _validate_observability_contracts
+from .context_budgets import _context_budget_advisories
 from .phase_artifacts import _validate_agents
 from .phase_catalog import _validate_active_phase, _validate_declared_phase_catalog, _validate_hotfix_lane
 from .release_gates import _validate_ci_profile, _validate_release_gate_targets, _validate_structural_gate_contract
@@ -160,7 +161,11 @@ def main(argv: list[str] | None = None) -> None:
         )
         raise SystemExit(1)
     _emit_output(
-        _success_report(repo_root, allow_placeholders=args.allow_placeholders),
+        _success_report(
+            repo_root,
+            allow_placeholders=args.allow_placeholders,
+            advisories=_context_budget_advisories(repo_root),
+        ),
         output_format=args.output_format,
         compact=args.compact,
         default_text="governance-yaml-ok",
