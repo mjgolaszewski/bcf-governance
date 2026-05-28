@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -11,6 +12,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR_PATH = REPO_ROOT / "scripts" / "validate_governance_yaml.py"
+VALIDATION_PACKAGE_PATH = REPO_ROOT / "scripts" / "governance_validation"
 
 
 @dataclass(frozen=True)
@@ -20,6 +22,7 @@ class Mutant:
     search: str
     replace: str
     profiles: tuple[str, ...]
+    target_path: str = "scripts/validate_governance_yaml.py"
 
 
 MUTANTS = (
@@ -29,6 +32,7 @@ MUTANTS = (
         search='    if "failed structural schema" in message:\n',
         replace='    if "failed structural schema NEVER" in message:\n',
         profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/common.py",
     ),
     Mutant(
         mutant_id="placeholder-classifier",
@@ -36,6 +40,7 @@ MUTANTS = (
         search='    if "unresolved template placeholders remain" in message:\n',
         replace='    if "unresolved template placeholders remain NEVER" in message:\n',
         profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/common.py",
     ),
     Mutant(
         mutant_id="allow-placeholders-report",
@@ -43,6 +48,7 @@ MUTANTS = (
         search='            "placeholders": "skipped" if allow_placeholders else "pass",\n',
         replace='            "placeholders": "pass",\n',
         profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/common.py",
     ),
     Mutant(
         mutant_id="active-phase-report",
@@ -50,6 +56,7 @@ MUTANTS = (
         search="    return phase_id if isinstance(phase_id, str) and phase_id else None\n",
         replace="    return None\n",
         profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/common.py",
     ),
     Mutant(
         mutant_id="semantic-failure-report",
@@ -57,6 +64,7 @@ MUTANTS = (
         search='    checks["semantic"] = "fail"\n',
         replace='    checks["semantic"] = "pass"\n',
         profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/common.py",
     ),
     Mutant(
         mutant_id="failure-exit-code",
@@ -64,6 +72,7 @@ MUTANTS = (
         search="        raise SystemExit(1)\n",
         replace="        raise SystemExit(0)\n",
         profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/runner.py",
     ),
     Mutant(
         mutant_id="document-path-equality",
@@ -71,6 +80,7 @@ MUTANTS = (
         search="    if document_path != expected_path:\n",
         replace="    if False and document_path != expected_path:\n",
         profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/phase_artifacts.py",
     ),
     Mutant(
         mutant_id="release-gate-placeholder-marker",
@@ -78,6 +88,7 @@ MUTANTS = (
         search="        if marker in lowered_makefile:\n",
         replace="        if False and marker in lowered_makefile:\n",
         profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/release_gates.py",
     ),
     Mutant(
         mutant_id="phase-catalog-set-match",
@@ -85,13 +96,15 @@ MUTANTS = (
         search="    if set(product_phase_map) != set(build_phase_map):\n",
         replace="    if False and set(product_phase_map) != set(build_phase_map):\n",
         profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/phase_catalog.py",
     ),
     Mutant(
         mutant_id="planned-log-in-completed-release",
         description="completed release trains must not reference planned phase logs",
-        search='            if _document_status(log, context=str(log_path)) == "planned":\n',
-        replace='            if False and _document_status(log, context=str(log_path)) == "planned":\n',
+        search='            if status == "planned":\n',
+        replace='            if False and status == "planned":\n',
         profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/phase_catalog.py",
     ),
     Mutant(
         mutant_id="memory-active-artifact-sync",
@@ -99,6 +112,7 @@ MUTANTS = (
         search="        if active_artifacts.get(key) != expected:\n",
         replace="        if False and active_artifacts.get(key) != expected:\n",
         profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/phase_catalog.py",
     ),
     Mutant(
         mutant_id="workitems-cover-deliverables",
@@ -106,6 +120,7 @@ MUTANTS = (
         search="    if missing_deliverables:\n",
         replace="    if False and missing_deliverables:\n",
         profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/phase_artifacts.py",
     ),
     Mutant(
         mutant_id="phase-log-workitem-status-sync",
@@ -113,6 +128,7 @@ MUTANTS = (
         search="    if mismatched_statuses:\n",
         replace="    if False and mismatched_statuses:\n",
         profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/phase_artifacts.py",
     ),
     Mutant(
         mutant_id="success-status",
@@ -120,6 +136,7 @@ MUTANTS = (
         search='        "status": "pass",\n',
         replace='        "status": "fail",\n',
         profiles=("full",),
+        target_path="scripts/governance_validation/common.py",
     ),
     Mutant(
         mutant_id="failure-status",
@@ -127,6 +144,7 @@ MUTANTS = (
         search='        "status": "fail",\n',
         replace='        "status": "pass",\n',
         profiles=("full",),
+        target_path="scripts/governance_validation/common.py",
     ),
 )
 
@@ -135,18 +153,45 @@ def _selected_mutants(profile: str) -> tuple[Mutant, ...]:
     return tuple(mutant for mutant in MUTANTS if profile in mutant.profiles)
 
 
+def _copy_validator_sources(temp_dir: Path) -> Path:
+    temp_scripts = temp_dir / "scripts"
+    temp_scripts.mkdir()
+    shutil.copy2(VALIDATOR_PATH, temp_scripts / VALIDATOR_PATH.name)
+    shutil.copytree(
+        VALIDATION_PACKAGE_PATH,
+        temp_scripts / VALIDATION_PACKAGE_PATH.name,
+        ignore=shutil.ignore_patterns("__pycache__"),
+    )
+    return temp_scripts / VALIDATOR_PATH.name
+
+
+def _target_path(mutant: Mutant, temp_dir: Path) -> Path:
+    relative_path = Path(mutant.target_path)
+    if relative_path.is_absolute() or ".." in relative_path.parts:
+        raise RuntimeError(
+            f"mutant {mutant.mutant_id} has unsafe target path {mutant.target_path!r}"
+        )
+    target_path = temp_dir / relative_path
+    if not target_path.exists():
+        raise RuntimeError(
+            f"mutant {mutant.mutant_id} target does not exist: {mutant.target_path}"
+        )
+    return target_path
+
+
 def _mutate_source(mutant: Mutant, temp_dir: Path) -> Path:
-    source = VALIDATOR_PATH.read_text(encoding="utf-8")
+    validator_entrypoint = _copy_validator_sources(temp_dir)
+    target_path = _target_path(mutant, temp_dir)
+    source = target_path.read_text(encoding="utf-8")
     if mutant.search not in source:
         raise RuntimeError(
-            f"mutant {mutant.mutant_id} could not find its target in {VALIDATOR_PATH}"
+            f"mutant {mutant.mutant_id} could not find its target in {mutant.target_path}"
         )
     mutated = source.replace(mutant.search, mutant.replace, 1)
     if mutated == source:
         raise RuntimeError(f"mutant {mutant.mutant_id} did not change the validator source")
-    mutated_path = temp_dir / VALIDATOR_PATH.name
-    mutated_path.write_text(mutated, encoding="utf-8")
-    return mutated_path
+    target_path.write_text(mutated, encoding="utf-8")
+    return validator_entrypoint
 
 
 def _run_tests(mutated_path: Path) -> subprocess.CompletedProcess[str]:
