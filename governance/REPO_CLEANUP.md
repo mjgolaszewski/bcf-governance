@@ -10,6 +10,10 @@ contract and `governance/REPO_CLEANUP.md` as the human guide.
 
 Separate deterministic cleanup from semantic cleanup.
 
+Interactive apply requests confirmation. Non-TTY apply must include `--yes` or
+it fails before mutation. Proposed changes are validated in a temporary shadow
+worktree and transferred atomically with rollback.
+
 Deterministic work may move files, rewrite exact references, create canonical
 roots, remove or archive verified/closed historical phase artifacts only after
 `plans/phase-history.yml` is updated with compact summaries, artifact hashes,

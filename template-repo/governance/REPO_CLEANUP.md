@@ -5,6 +5,10 @@ the wrong roots, nested governance, stale docs, or abandoned YAML.
 
 Machine contract: `governance/repo-cleanup-contract.yml`.
 
+Interactive apply requests confirmation. Non-TTY apply must include `--yes` or
+it fails before mutation. Proposed changes are validated in a temporary shadow
+worktree and transferred atomically with rollback.
+
 ## Sequence
 
 1. Run `bcf cleanup --repo-root .` and read safe actions separately from manual actions.

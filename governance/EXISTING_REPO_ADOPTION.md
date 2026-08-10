@@ -38,6 +38,9 @@ Apply only the deterministic path moves when the plan looks correct:
 bcf cleanup --repo-root /path/to/existing-repo --apply
 ```
 
+In non-TTY automation, append `--yes` only after reviewing the dry-run;
+otherwise apply refuses before mutation.
+
 `bcf cleanup` moves legacy audit/review evidence into `audits/` and rewrites exact path references. It only reports semantic compaction work; it does not rewrite product specs, phase history, architecture docs, security docs, runbooks, or vendored governance.
 
 Use `governance/repo-cleanup-contract.yml` as the cleanup contract and `governance/REPO_CLEANUP.md` as the terse human sequence. Documentation currency is semantic work: update each section against current repo evidence before closeout.

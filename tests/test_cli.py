@@ -5,7 +5,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -22,7 +21,21 @@ def test_cli_reports_version() -> None:
     result = _run_bcf("--version")
 
     assert result.returncode == 0
-    assert "bcf 0.4.5" in result.stdout
+    assert "bcf 0.4.6" in result.stdout
+
+
+def test_cli_publish_audit_requires_explicit_history() -> None:
+    result = _run_bcf("publish-audit", "--repo-root", ".")
+
+    assert result.returncode != 0
+    assert "requires --history" in result.stderr
+
+
+def test_cli_ci_cleanup_rejects_broad_run_identifier() -> None:
+    result = _run_bcf("ci-cleanup", "--run-id", "all")
+
+    assert result.returncode != 0
+    assert "run id must be" in result.stderr
 
 
 def test_cli_validate_dispatches_to_validator() -> None:

@@ -61,6 +61,10 @@ The command is dry-run by default. Safe apply mode moves legacy audit/review evi
 bcf cleanup --repo-root . --apply
 ```
 
+Interactive apply asks for confirmation. In non-TTY automation, append `--yes`
+only after the dry-run has been reviewed; otherwise cleanup refuses before any
+mutation.
+
 Do not use cleanup as a substitute for semantic review. Product specs, phase history, architecture docs, security docs, runbooks, and vendored governance require owner judgment before rewriting or removal. Phase-history entries must stay compact and point to retained artifacts or git-history refs with hashes.
 Use `governance/repo-cleanup-contract.yml` for machine-readable cleanup rules and `governance/REPO_CLEANUP.md` for the human sequence.
 
@@ -70,6 +74,8 @@ To opt into strict historical phase retention, run one of the retention modes:
 bcf cleanup --repo-root . --phase-retention-mode --apply
 bcf cleanup --repo-root . --phase-retention-mode archive --apply
 ```
+
+Append `--yes` to either retention command in noninteractive automation.
 
 The first command uses `git-history` retention and removes stale closed phase
 artifacts after recording hashes and git refs. The archive mode moves stale
@@ -81,6 +87,26 @@ keeps existing historical triplet and hotfix behavior.
 ## Runtime Diagnostics
 
 Document service health, release metadata, metrics, traces, logs, and operator-safe diagnostic endpoints here.
+
+## CI Resource Ownership
+
+Give every CI run a unique identifier and label every Docker resource it owns
+with `io.bcf-governance.ci-run=<run-id>`. Use a run-scoped Compose project such
+as `bcf-ci-<run-id>`, run-scoped image tags, and the same label on containers,
+networks, volumes, and images created outside Compose. Build labels should use
+the same key and value where the builder supports OCI labels.
+
+Preview cleanup first, then apply it explicitly in automation:
+
+```bash
+bcf ci-cleanup --run-id "$BCF_CI_RUN_ID"
+bcf ci-cleanup --run-id "$BCF_CI_RUN_ID" --apply --yes
+```
+
+The helper selects only resources with that exact label. It never infers
+ownership from names and never performs global Docker or build-cache pruning.
+Do not hard-code runner labels into the governance pack; runner selection is a
+repository-owned CI decision.
 
 ## Secrets Policy
 

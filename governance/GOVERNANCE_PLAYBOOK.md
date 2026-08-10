@@ -33,13 +33,19 @@ Repo evidence: `scripts/install_governance_pack.py`, `scripts/validate_governanc
 
 ## Cleanup And Compaction
 
-Use `bcf cleanup` before rescaffolding or hand-editing a drifted repo. It is dry-run by default and reports safe actions separately from semantic/manual actions.
+Use `bcf cleanup` before rescaffolding or hand-editing a drifted repo. It is dry-run by default and reports safe actions separately from semantic/manual actions. Apply mode stages current tracked and untracked governance state in a shadow worktree, validates the proposal, and uses atomic replacement with rollback. Non-TTY apply requires `--yes` and refuses before mutation without it.
 
 Safe cleanup actions are deterministic: create `audits/README.md`, move audit/review evidence from legacy roots into `audits/`, rewrite exact path references, and, when `--phase-retention-mode` is passed, remove or archive verified/closed historical phase artifacts outside the retained active window after updating compact `plans/phase-history.yml` entries with summaries, hashes, and the declared retention source. Phase-scoped hotfix logs and matching hotfix lane records leave active governance with their related phase. `--phase-retention-mode` without a value uses `git-history`; `--phase-retention-mode archive` uses ignored local archive storage; `--archive-closed-phases` remains an archive alias. Phase-history entries must point to retained artifacts or git-history refs. Semantic compaction remains manual or LLM-assisted: product specs, architecture docs, security docs, runbooks, and nested vendored governance need owner judgment before removal or rewriting.
 
 Installed repos include `governance/repo-cleanup-contract.yml` for the machine cleanup contract and `governance/REPO_CLEANUP.md` for the human sequence. Documentation currency is a required semantic review item: compare each section to repo files, commands, tests, and canonical governance before closeout.
 
 Repo evidence: `scripts/cleanup_governance_pack.py`, `scripts/validate_governance_yaml.py`, `template-repo/governance/artifact-manifest.yml`, `template-repo/governance/repo-cleanup-contract.yml`.
+
+Docker CI resources are owned only through the exact label
+`io.bcf-governance.ci-run=<run-id>`. `bcf ci-cleanup` never infers ownership
+from names or performs global pruning. Before public release, operators may run
+the deliberately opt-in `bcf publish-audit --history` from a complete clone;
+normal generated CI does not receive this full-history scan.
 
 ## Change Rules
 
@@ -71,4 +77,4 @@ Repo evidence: `template-repo/schemas/phase-ledger.schema.json`, `template-repo/
 5. Record terse evidence in phase logs or audits.
 6. Run `bcf validate` and `bcf exposure-scan`; run `bcf doctor` after release gates are wired.
 
-Repo evidence: `bcf_governance/cli.py`, `scripts/cleanup_governance_pack.py`, `scripts/scaffold_governance_artifacts.py`, `scripts/doctor_governance_pack.py`.
+Repo evidence: `bcf_governance/cli.py`, `scripts/cleanup_governance_pack.py`, `scripts/cleanup_ci_resources.py`, `scripts/publish_audit.py`, `scripts/scaffold_governance_artifacts.py`, `scripts/doctor_governance_pack.py`.

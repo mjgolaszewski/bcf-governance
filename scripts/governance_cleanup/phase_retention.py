@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import subprocess
 from pathlib import Path
@@ -30,6 +31,56 @@ def _file_sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _context_budget(repo_root: Path, relative_path: str) -> tuple[int | None, int | None]:
+    manifest = _load_yaml(repo_root / "governance" / "artifact-manifest.yml") or {}
+    budgets = manifest.get("context_budgets")
+    required = budgets.get("agent_required_files") if isinstance(budgets, dict) else None
+    value = required.get(relative_path) if isinstance(required, dict) else None
+    if isinstance(value, int):
+        return value, None
+    if not isinstance(value, dict):
+        return None, None
+    line_cap = value.get("line_hard_cap")
+    kib_cap = value.get("kib_hard_cap")
+    return (
+        line_cap if isinstance(line_cap, int) else None,
+        kib_cap if isinstance(kib_cap, int) else None,
+    )
+
+
+def _flow_line(value: Any) -> str:
+    return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+
+
+def _budgeted_yaml(repo_root: Path, relative_path: str, payload: dict[str, Any]) -> str:
+    line_cap, kib_cap = _context_budget(repo_root, relative_path)
+    if relative_path.endswith("phase-history.yml") and isinstance(payload.get("entries"), list):
+        lines = [
+            f"document: {_flow_line(payload.get('document', {}))}",
+            f"retention_policy: {_flow_line(payload.get('retention_policy', {}))}",
+            "entries:",
+            *[f"- {_flow_line(entry)}" for entry in payload["entries"]],
+        ]
+        rendered = "\n".join(lines) + "\n"
+        if line_cap is not None and len(lines) > line_cap:
+            rendered = "\n".join(
+                [
+                    f"document: {_flow_line(payload.get('document', {}))}",
+                    f"retention_policy: {_flow_line(payload.get('retention_policy', {}))}",
+                    f"entries: {_flow_line(payload['entries'])}",
+                ]
+            ) + "\n"
+    else:
+        rendered = yaml.safe_dump(payload, sort_keys=False, default_flow_style=None, width=4096)
+        if line_cap is not None and len(rendered.splitlines()) > line_cap:
+            rendered = _flow_line(payload) + "\n"
+    if line_cap is not None and len(rendered.splitlines()) > line_cap:
+        raise RuntimeError(f"{relative_path} would exceed line budget {line_cap}")
+    if kib_cap is not None and len(rendered.encode("utf-8")) > kib_cap * 1024:
+        raise RuntimeError(f"{relative_path} would exceed size budget {kib_cap} KiB")
+    return rendered
 
 
 def _phase_number(phase_id: str) -> int:
@@ -521,10 +572,7 @@ def _write_phase_history(
         key=lambda entry: _phase_number(str(entry.get("phase_id", "P0"))) if isinstance(entry, dict) else 0,
     )
     history_path.parent.mkdir(parents=True, exist_ok=True)
-    history_path.write_text(
-        yaml.safe_dump(history, sort_keys=False, default_flow_style=None, width=4096),
-        encoding="utf-8",
-    )
+    history_path.write_text(_budgeted_yaml(repo_root, history_rel, history), encoding="utf-8")
     return history_rel
 
 
@@ -557,8 +605,7 @@ def _prune_phase_hotfix_records(repo_root: Path, phase_actions: list[CleanupActi
     if not changed:
         return None
     ledger_path.write_text(
-        yaml.safe_dump(ledger, sort_keys=False, default_flow_style=None, width=4096),
-        encoding="utf-8",
+        _budgeted_yaml(repo_root, "plans/phase-ledger.yml", ledger), encoding="utf-8"
     )
     return "plans/phase-ledger.yml"
 
