@@ -298,7 +298,28 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
 ) -> None:
     target = tmp_path / "upgrade"
     _run_installer(target, "--profile", "lite", "--require-strict-validation")
-    product_spec_before = (target / "plans/product-spec.yml").read_text(encoding="utf-8")
+    protected_paths = (
+        "AGENTS.yml",
+        ".github/workflows/governance.yml",
+        "MEMORY.yml",
+        "Makefile.fragment",
+        "governance-profile.yml",
+        "governance/artifact-manifest.yml",
+        "plans/product-spec.yml",
+        "plans/build-plan.yml",
+        "plans/phase-ledger.yml",
+        "requirements-governance.txt",
+    )
+    for relative_path in protected_paths:
+        path = target / relative_path
+        path.write_text(
+            path.read_text(encoding="utf-8") + "# local customization\n",
+            encoding="utf-8",
+        )
+    state_before = {
+        relative_path: (target / relative_path).read_bytes()
+        for relative_path in protected_paths
+    }
     (target / "scripts/validate_governance_yaml.py").write_text("old validator\n", encoding="utf-8")
     (target / "scripts/check_governance_exposure.py").unlink()
 
@@ -311,14 +332,13 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
     assert (target / "scripts/check_governance_exposure.py").exists()
     assert (target / "scripts/governance_validation/runner.py").exists()
     assert (target / "schemas/phase-history.schema.json").exists()
-    assert (target / "plans/product-spec.yml").read_text(encoding="utf-8") == product_spec_before
-    agents = yaml.safe_load((target / "AGENTS.yml").read_text(encoding="utf-8"))
-    assert agents["governance"]["phase_retention_contract"]["default_cleanup_mode"] == "git_history"
-    manifest = yaml.safe_load((target / "governance/artifact-manifest.yml").read_text(encoding="utf-8"))
-    assert "mode" not in manifest["phase_retention_policy"]
+    assert {
+        relative_path: (target / relative_path).read_bytes()
+        for relative_path in protected_paths
+    } == state_before
 
 
-def test_installer_upgrade_migrates_older_pack_state_to_strict_validation(
+def test_installer_upgrade_does_not_silently_migrate_older_pack_state(
     tmp_path: Path,
 ) -> None:
     target = tmp_path / "upgrade-old-state"
@@ -375,19 +395,22 @@ def test_installer_upgrade_migrates_older_pack_state_to_strict_validation(
     (target / "plans/phase-history.yml").unlink()
     (target / "scripts/check_governance_exposure.py").unlink()
 
-    result = _run_installer(target, "--upgrade", "--profile", "lite")
-
-    assert "validation: strict pass" in result.stdout
-    assert (target / "plans/product-spec.yml").read_text(encoding="utf-8") == product_spec_before
-    agents = yaml.safe_load(agents_path.read_text(encoding="utf-8"))
-    assert agents["governance"]["phase_retention_contract"]["default_cleanup_mode"] == "git_history"
-    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
-    memory_budget = manifest["context_budgets"]["agent_required_files"]["MEMORY.yml"]
-    assert memory_budget["line_hard_cap"] == 105
-    assert memory_budget["kib_hard_cap"] == 28
-    assert (
-        manifest["context_budgets"]["aggregate_agent_required_kib_advisory"] == 350
+    protected_paths = (
+        agents_path,
+        memory_path,
+        manifest_path,
+        profile_path,
+        makefile_path,
     )
+    state_before = {path: path.read_bytes() for path in protected_paths}
+
+    result = _run_installer(target, "--upgrade", "--profile", "lite", "--skip-validation")
+
+    assert "upgraded governance pack into" in result.stdout
+    assert (target / "plans/product-spec.yml").read_text(encoding="utf-8") == product_spec_before
+    assert {path: path.read_bytes() for path in protected_paths} == state_before
+    assert (target / "plans/phase-history.yml").exists()
+    assert (target / "scripts/check_governance_exposure.py").exists()
 
 
 def test_installer_upgrade_can_reset_profile_and_makefile_options(tmp_path: Path) -> None:
