@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 from pathlib import Path
 
-from scripts import doctor_governance_pack as doctor
-from scripts.governance_validation import phase_catalog
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT))
+try:
+    from scripts import doctor_governance_pack as doctor
+    from scripts.governance_validation import phase_catalog
+finally:
+    sys.path.pop(0)
 
 
 def test_hotfix_filename_helper_is_available_to_phase_catalog() -> None:
