@@ -41,3 +41,13 @@ def test_placeholder_scan_honors_gitignore_and_keeps_unignored_files(tmp_path: P
     assert doctor._scan_placeholders(tmp_path) == [
         "plans/product-spec.yml:1: {{ real_placeholder }}"
     ]
+
+
+def test_doctor_reports_running_version_source_and_public_install(tmp_path: Path) -> None:
+    report = doctor.doctor_repo(tmp_path)
+
+    assert report["tooling"]["version"] == "0.4.6"
+    assert report["tooling"]["package_source"]
+    assert report["tooling"]["public_install"].endswith(
+        "/v0.4.6/bcf_governance-0.4.6-py3-none-any.whl"
+    )

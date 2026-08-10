@@ -82,6 +82,26 @@ keeps existing historical triplet and hotfix behavior.
 
 Document service health, release metadata, metrics, traces, logs, and operator-safe diagnostic endpoints here.
 
+## CI Resource Ownership
+
+Give every CI run a unique identifier and label every Docker resource it owns
+with `io.bcf-governance.ci-run=<run-id>`. Use a run-scoped Compose project such
+as `bcf-ci-<run-id>`, run-scoped image tags, and the same label on containers,
+networks, volumes, and images created outside Compose. Build labels should use
+the same key and value where the builder supports OCI labels.
+
+Preview cleanup first, then apply it explicitly in automation:
+
+```bash
+bcf ci-cleanup --run-id "$BCF_CI_RUN_ID"
+bcf ci-cleanup --run-id "$BCF_CI_RUN_ID" --apply --yes
+```
+
+The helper selects only resources with that exact label. It never infers
+ownership from names and never performs global Docker or build-cache pruning.
+Do not hard-code runner labels into the governance pack; runner selection is a
+repository-owned CI decision.
+
 ## Secrets Policy
 
 - Do not store live secrets in governance files.

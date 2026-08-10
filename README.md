@@ -17,7 +17,7 @@ ledgers, schemas, architecture boundary gates, release-gate profiles,
 observability contracts, and helper commands that keep agents from treating
 docs, plans, and tests as disconnected prose.
 
-Current release: `v0.4.5`.
+Current release: `v0.4.6`.
 
 ## Why It Matters
 
@@ -105,7 +105,14 @@ The main installed artifacts are:
 
 ## Local Setup
 
-Install the CLI from this repo or a released package:
+Install the CLI from this repo or from the public release wheel without GitHub
+authentication:
+
+```bash
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v0.4.6/bcf_governance-0.4.6-py3-none-any.whl
+```
+
+For a source checkout:
 
 ```bash
 python3 -m pip install .
@@ -128,7 +135,7 @@ python3 -m pip install -r requirements-governance.txt
 
 ## Command Surface
 
-The CLI exposes six workflows:
+The CLI exposes eight workflows:
 
 - `bcf install` installs, upgrades, or updates the governance pack.
 - `bcf validate` validates governed YAML, semantic alignment, release-gate
@@ -141,6 +148,10 @@ The CLI exposes six workflows:
   non-evidence command gaps.
 - `bcf cleanup` plans or applies conservative audit-root cleanup for drifted
   repos.
+- `bcf ci-cleanup` plans or removes Docker resources bearing one exact BCF CI
+  run-ownership label.
+- `bcf publish-audit --history` performs an opt-in, redacted scan of every
+  unique blob reachable from local Git refs before publication.
 
 ## Bootstrap A New Repo
 
@@ -324,6 +335,11 @@ checkout for `git-history` mode so recorded refs can be verified.
 Mixed CI workflows that contain BCF steps are reported for manual editing
 instead of deleting unrelated jobs.
 
+Cleanup applies changes in a temporary shadow worktree, validates the proposed
+governance state, and transfers files atomically with rollback. In unattended
+environments, `--apply` requires `--yes`; it fails before mutation instead of
+attempting to read interactive input.
+
 New installs also include `governance/repo-cleanup-contract.yml`. The contract
 standardizes cleanup intent, canonical roots, drift patterns, deterministic
 commands, LLM-required review, validation, evidence, and closeout rules. Use
@@ -392,6 +408,30 @@ manifest recommendation.
 `bcf exposure-scan` is a separate CI-friendly gate for governed text artifacts.
 It flags common local workspace paths and private infrastructure markers, with
 inline allow markers reserved for intentional examples.
+
+Before publishing a repository, opt into a complete-history audit from a
+non-shallow clone:
+
+```bash
+bcf publish-audit --repo-root . --history
+```
+
+The audit deduplicates reachable blobs, includes deleted historical files, and
+reports only rule IDs, object/provenance identifiers, and remediation guidance.
+It never prints matched secret values. Reserved `.invalid` and `.test` examples
+are accepted. This command is intentionally not added to generated per-commit
+CI.
+
+Docker CI cleanup follows exact ownership labels and is dry-run by default:
+
+```bash
+bcf ci-cleanup --run-id "$BCF_CI_RUN_ID"
+bcf ci-cleanup --run-id "$BCF_CI_RUN_ID" --apply --yes
+```
+
+Label owned resources with `io.bcf-governance.ci-run=<run-id>` and use
+run-scoped Compose projects and image tags. The helper never performs global
+Docker or build-cache pruning.
 
 ## Agent Deconstruction
 

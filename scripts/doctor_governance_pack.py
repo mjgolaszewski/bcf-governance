@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import importlib.metadata
 import json
 import subprocess
 from pathlib import Path
 from typing import Any
+
+from bcf_governance import __version__
 
 try:
     from scripts import validate_governance_yaml as validator
@@ -166,8 +169,21 @@ def doctor_repo(repo_root: Path) -> dict[str, Any]:
             blockers.append(str(exc))
 
     status = "fail" if blockers else "warn" if warnings else "pass"
+    try:
+        distribution = importlib.metadata.distribution("bcf-governance")
+        package_source = str(distribution.locate_file(""))
+    except importlib.metadata.PackageNotFoundError:
+        package_source = str(Path(__file__).resolve().parents[1])
     return {
         "status": status,
+        "tooling": {
+            "version": __version__,
+            "package_source": package_source,
+            "public_install": (
+                "https://github.com/mjgolaszewski/bcf-governance/releases/"
+                f"download/v{__version__}/bcf_governance-{__version__}-py3-none-any.whl"
+            ),
+        },
         "blockers": blockers,
         "warnings": warnings,
         "next_actions": list(dict.fromkeys(next_actions)),
@@ -176,6 +192,8 @@ def doctor_repo(repo_root: Path) -> dict[str, Any]:
 
 def _emit_text(report: dict[str, Any]) -> None:
     print(f"doctor-{report['status']}")
+    print(f"tooling: bcf {report['tooling']['version']} from {report['tooling']['package_source']}")
+    print(f"public install: {report['tooling']['public_install']}")
     if report["blockers"]:
         print("blockers:")
         for blocker in report["blockers"]:

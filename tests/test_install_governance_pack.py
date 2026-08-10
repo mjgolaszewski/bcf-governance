@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import json
 import importlib.util
+import json
 import subprocess
 import sys
 from pathlib import Path
 
 import yaml
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 INSTALLER = REPO_ROOT / "scripts" / "install_governance_pack.py"
@@ -303,11 +302,16 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         ".github/workflows/governance.yml",
         "MEMORY.yml",
         "Makefile.fragment",
+        "architecture-boundaries.yml",
         "governance-profile.yml",
         "governance/artifact-manifest.yml",
         "plans/product-spec.yml",
         "plans/build-plan.yml",
         "plans/phase-ledger.yml",
+        "plans/phase-history.yml",
+        "plans/phase-01-plan.yml",
+        "plans/phase-01-workitems.yml",
+        "phases/phase-01-log.yml",
         "requirements-governance.txt",
     )
     for relative_path in protected_paths:
