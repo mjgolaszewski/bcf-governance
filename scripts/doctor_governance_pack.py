@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -14,14 +15,34 @@ except ImportError:  # pragma: no cover - used when executed directly from scrip
 
 
 DOCTOR_OUTPUT_FORMATS = {"text", "json"}
-PLACEHOLDER_SCAN_EXCLUDE_PARTS = {".git", "__pycache__"}
+PLACEHOLDER_SCAN_EXCLUDE_PARTS = {
+    ".git", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".venv",
+    "__pycache__", "artifacts", "build", "coverage", "dist", "logs", "node_modules",
+}
 PLACEHOLDER_SCAN_EXTENSIONS = {".yml", ".yaml", ".json", ".md", ".toml", ".txt"}
+
+
+def _placeholder_scan_paths(repo_root: Path) -> list[Path]:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo_root), "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+            check=True,
+            capture_output=True,
+        )
+        return sorted(
+            repo_root / relative.decode("utf-8")
+            for relative in result.stdout.split(b"\0")
+            if relative
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError, UnicodeDecodeError):
+        return sorted(repo_root.rglob("*"))
 
 
 def _scan_placeholders(repo_root: Path) -> list[str]:
     violations: list[str] = []
-    for path in sorted(repo_root.rglob("*")):
-        if not path.is_file() or any(part in PLACEHOLDER_SCAN_EXCLUDE_PARTS for part in path.parts):
+    for path in _placeholder_scan_paths(repo_root):
+        relative = path.relative_to(repo_root)
+        if not path.is_file() or any(part in PLACEHOLDER_SCAN_EXCLUDE_PARTS for part in relative.parts):
             continue
         if path.suffix not in PLACEHOLDER_SCAN_EXTENSIONS and path.name not in {"Makefile", "Makefile.fragment"}:
             continue
@@ -32,7 +53,7 @@ def _scan_placeholders(repo_root: Path) -> list[str]:
         for line_number, line in enumerate(text.splitlines(), start=1):
             for match in validator.PLACEHOLDER_PATTERN.finditer(line):
                 violations.append(
-                    f"{path.relative_to(repo_root).as_posix()}:{line_number}: {match.group(0)}"
+                    f"{relative.as_posix()}:{line_number}: {match.group(0)}"
                 )
     return violations
 
