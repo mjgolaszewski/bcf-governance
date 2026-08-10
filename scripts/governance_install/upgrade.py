@@ -369,10 +369,23 @@ def _upgrade_state_files(
     values: dict[str, str],
     reset_options: bool = False,
 ) -> list[Path]:
+    """Create newly introduced state artifacts without rewriting existing state.
+
+    Upgrade refreshes pack-owned executable/support files elsewhere.  Product-owned
+    governance files are deliberately byte-preserved: parsing and re-emitting YAML
+    here used to normalize formatting and could also merge template assumptions
+    into a repository's intentionally customized governance model.
+    """
     created = _copy_template_file_if_missing(
         template_root=template_root,
         target_root=target_root,
         relative_path="plans/phase-history.yml",
+        values=values,
+    )
+    created += _copy_template_file_if_missing(
+        template_root=template_root,
+        target_root=target_root,
+        relative_path="requirements-governance.txt",
         values=values,
     )
     _copy_template_file_if_missing(
@@ -381,12 +394,6 @@ def _upgrade_state_files(
         relative_path="governance/archive/phase-artifacts/.gitkeep",
         values=values,
     )
-    _upgrade_agents_yaml(template_root, target_root)
-    _upgrade_memory_yaml(template_root, target_root)
-    _upgrade_artifact_manifest(template_root, target_root)
-    if not reset_options:
-        _upgrade_governance_profile(template_root, target_root)
-        _upgrade_makefile_fragment(target_root)
     return created
 
 

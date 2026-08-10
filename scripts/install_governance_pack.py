@@ -100,9 +100,7 @@ REQUIRED_STANDARD_GATES = (
     "runtime-smoke",
 )
 UPGRADE_REFRESH_PATHS = (
-    "requirements-governance.txt",
     "schemas",
-    ".github/workflows/governance.yml",
     "backend/tests/architecture/test_boundaries_ast.py",
     "governance/REPO_CLEANUP.md",
     "scripts/check_governance_exposure.py",
@@ -111,6 +109,7 @@ UPGRADE_REFRESH_PATHS = (
     "scripts/validate_governance_yaml.py",
 )
 UPGRADE_RESET_OPTION_PATHS = (
+    ".github/workflows/governance.yml",
     "Makefile.fragment",
     "architecture-boundaries.yml",
     "governance-profile.yml",

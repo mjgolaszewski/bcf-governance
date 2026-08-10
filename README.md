@@ -17,7 +17,7 @@ ledgers, schemas, architecture boundary gates, release-gate profiles,
 observability contracts, and helper commands that keep agents from treating
 docs, plans, and tests as disconnected prose.
 
-Current release: `v0.4.4`.
+Current release: `v0.4.5`.
 
 ## Why It Matters
 
@@ -176,11 +176,11 @@ bcf install \
 ## Upgrade A Governed Repo
 
 Use upgrade mode when a repo already has BCF governance and should receive the
-latest pack-owned scripts, validator support modules, schemas, workflow,
-requirements, cleanup docs, and architecture gate test without resetting
-product or phase state. Upgrade also migrates missing current governance fields
-such as phase-retention policy structure, exposure-scan wiring, and agent
-deconstruction rules:
+latest pack-owned scripts, validator support modules, schemas, cleanup docs,
+and architecture gate test without resetting
+product or phase state. Existing governance state files are preserved byte for
+byte; upgrade never parses and re-emits them or merges template assumptions
+into repository-owned policy:
 
 ```bash
 bcf install --target /path/to/target-repo --upgrade
@@ -201,10 +201,14 @@ bcf install \
 Use `--force-rescaffold` only when you intend to replace active BCF-owned
 state, not for normal upgrades.
 
-Upgrade preserves `plans/product-spec.yml`, build/phase ledgers, active phase
-logs, and existing phase history entries. It creates `plans/phase-history.yml`
-only when missing and does not enable strict historical triplet cleanup unless
-the repo opts in through `bcf cleanup --phase-retention-mode`.
+Upgrade preserves `AGENTS.yml`, `MEMORY.yml`, `governance-profile.yml`,
+`governance/artifact-manifest.yml`, `Makefile.fragment`,
+`requirements-governance.txt`, the governance CI workflow, product/build/phase
+plans, active phase logs, and existing phase history entries byte for byte. It
+creates `plans/phase-history.yml` only when missing and does not enable strict
+historical triplet cleanup unless the repo opts in through
+`bcf cleanup --phase-retention-mode`. `--reset-options` is the explicit opt-in
+for regenerating option surfaces.
 
 ## Existing Repo Adoption
 
