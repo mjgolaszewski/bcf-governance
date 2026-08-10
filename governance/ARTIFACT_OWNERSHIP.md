@@ -34,6 +34,8 @@ Repo evidence: `template-repo/AGENTS.yml`, `scripts/install_governance_pack.py`,
 - Declare nested governance packs and vendored artifacts in `governance/artifact-manifest.yml`.
 - Keep agent-required context budgets two-dimensional: line caps protect scanability, KiB caps protect context loading.
 - Use `bcf cleanup` for deterministic audit-root moves and exact reference rewrites before manual documentation compaction.
+- Use exact `io.bcf-governance.ci-run=<run-id>` labels with `bcf ci-cleanup`; names alone never establish Docker resource ownership.
+- Keep complete-history publication auditing opt-in with `bcf publish-audit --history`; do not silently add it to generated per-commit CI.
 - Use `governance/repo-cleanup-contract.yml` to separate deterministic cleanup from LLM or human semantic review.
 - Do not write execution evidence into `AGENTS.yml` or `MEMORY.yml`.
 

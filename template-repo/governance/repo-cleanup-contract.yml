@@ -54,22 +54,22 @@ deterministic_actions:
     safety: dry-run only
     outputs: [safe_actions, manual_actions, warnings]
   - id: apply_safe_cleanup
-    command: bcf cleanup --repo-root . --apply
+    command: bcf cleanup --repo-root . --apply --yes
     applies_when: safe audit-root moves are approved
     safety: asks before moving files and rewriting exact references
     outputs: [audits_root, rewritten_references, remaining_manual_actions]
   - id: retain_closed_phase_triplets_in_git_history
-    command: bcf cleanup --repo-root . --phase-retention-mode --apply
+    command: bcf cleanup --repo-root . --phase-retention-mode --apply --yes
     applies_when: verified or closed phase artifacts fall outside phase_retention_policy.active_window
     safety: verifies HEAD contains the artifact bytes, records compact history refs and sha256 values, and prunes related hotfix lane records
     outputs: [plans/phase-history.yml]
   - id: archive_closed_phase_triplets
-    command: bcf cleanup --repo-root . --phase-retention-mode archive --apply
+    command: bcf cleanup --repo-root . --phase-retention-mode archive --apply --yes
     applies_when: verified or closed phase artifacts fall outside phase_retention_policy.active_window and local ignored archive storage is preferred
     safety: records compact history and sha256 values before moving phase artifacts into ignored archive storage and pruning related hotfix lane records
     outputs: [plans/phase-history.yml, governance/archive/phase-artifacts]
   - {id: force_rescaffold, command: "bcf install --target . --force-rescaffold", applies_when: "owner accepts destructive replacement of active BCF-owned files", safety: "asks before deleting known BCF governance paths", outputs: [fresh_active_governance, validation_report]}
-  - {id: remove_governance_pack, command: "bcf cleanup --repo-root . --remove-governance-pack --apply", applies_when: "owner decommissions BCF governance", safety: "dry-run first; asks before deleting BCF-owned paths", outputs: [removed_governance_artifacts, manual_ci_references]}
+  - {id: remove_governance_pack, command: "bcf cleanup --repo-root . --remove-governance-pack --apply --yes", applies_when: "owner decommissions BCF governance", safety: "dry-run first; --yes records explicit noninteractive approval before deleting BCF-owned paths", outputs: [removed_governance_artifacts, manual_ci_references]}
 llm_review_required:
   - id: documentation_currency
     reason: prose can be stale while schemas still pass

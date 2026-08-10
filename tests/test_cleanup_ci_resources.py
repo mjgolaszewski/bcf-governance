@@ -1,14 +1,21 @@
 from __future__ import annotations
 
 import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 
-from scripts.cleanup_ci_resources import (
-    discover_resources,
-    remove_resources,
-    validate_run_id,
-)
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT))
+try:
+    from scripts.cleanup_ci_resources import (
+        discover_resources,
+        remove_resources,
+        validate_run_id,
+    )
+finally:
+    sys.path.pop(0)
 
 
 class DockerRunner:

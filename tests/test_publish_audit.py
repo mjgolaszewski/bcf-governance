@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
-from scripts.publish_audit import audit_history
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT))
+try:
+    from scripts.publish_audit import audit_history
+finally:
+    sys.path.pop(0)
 
 
 def _git(repo: Path, *args: str) -> None:

@@ -5,11 +5,23 @@ from __future__ import annotations
 import argparse
 import importlib.metadata
 import json
+import re
 import subprocess
 from pathlib import Path
 from typing import Any
 
-from bcf_governance import __version__
+try:
+    from bcf_governance import __version__
+except ModuleNotFoundError:  # direct source-script execution without installation
+    package_init = Path(__file__).resolve().parents[1] / "bcf_governance" / "__init__.py"
+    version_match = re.search(
+        r'^__version__\s*=\s*["\']([^"\']+)["\']',
+        package_init.read_text(encoding="utf-8"),
+        flags=re.MULTILINE,
+    )
+    if version_match is None:  # pragma: no cover - corrupt source checkout
+        raise RuntimeError("unable to determine BCF package version")
+    __version__ = version_match.group(1)
 
 try:
     from scripts import validate_governance_yaml as validator

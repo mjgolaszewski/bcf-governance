@@ -145,7 +145,8 @@ The CLI exposes eight workflows:
   infrastructure markers before CI or release evidence is trusted.
 - `bcf scaffold` creates phase and hotfix artifacts with the expected names.
 - `bcf doctor` reports placeholder, release-gate, inactive-gate, and
-  non-evidence command gaps.
+  non-evidence command gaps plus the running package version, source, and public
+  installation path.
 - `bcf cleanup` plans or applies conservative audit-root cleanup for drifted
   repos.
 - `bcf ci-cleanup` plans or removes Docker resources bearing one exact BCF CI
@@ -290,12 +291,21 @@ Safe apply mode asks for confirmation:
 bcf cleanup --repo-root /path/to/target-repo --apply
 ```
 
+For noninteractive automation, express approval explicitly:
+
+```bash
+bcf cleanup --repo-root /path/to/target-repo --apply --yes
+```
+
 To intentionally remove BCF governance from a repo, dry-run first:
 
 ```bash
 bcf cleanup --repo-root /path/to/target-repo --remove-governance-pack
 bcf cleanup --repo-root /path/to/target-repo --remove-governance-pack --apply
 ```
+
+Add `--yes` only after reviewing the dry-run when this command executes without
+a TTY.
 
 Deterministic cleanup can:
 
@@ -490,3 +500,16 @@ To sanity-check the uninstantiated template pack:
 ```bash
 bcf validate --repo-root template-repo --allow-placeholders --allow-release-gate-placeholders
 ```
+
+## Release Process
+
+Release changes are merged through a reviewed pull request. After every version
+surface agrees and CI passes, push an immutable `vX.Y.Z` tag at the merge
+commit. The tag workflow verifies the package version, runs the full test and
+template-validation suite, builds and checks the wheel and sdist, emits
+`SHA256SUMS`, creates GitHub build-provenance attestations, and publishes all
+three files on the GitHub Release. Release actions are pinned to commit SHAs and
+receive only contents, identity-token, and attestation write permissions.
+
+PyPI is not used. Consumers can install the public wheel URL shown in Local
+Setup without repository authentication.

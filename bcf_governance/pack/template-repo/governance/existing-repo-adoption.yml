@@ -29,7 +29,7 @@ cleanup_helper:
   contract: governance/repo-cleanup-contract.yml
   human_guide: governance/REPO_CLEANUP.md
   command: bcf cleanup --repo-root .
-  apply_command: bcf cleanup --repo-root . --apply
+  apply_command: bcf cleanup --repo-root . --apply --yes
   deterministic_scope:
     - create_audits_readme_when_missing
     - move_legacy_audit_and_review_evidence_under_audits
