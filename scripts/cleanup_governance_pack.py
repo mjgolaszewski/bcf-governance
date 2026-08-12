@@ -6,8 +6,10 @@ import argparse
 import json
 import os
 import shutil
+import subprocess
 import sys
-from dataclasses import asdict
+import tempfile
+from dataclasses import asdict, replace
 from pathlib import Path
 from typing import Any
 
@@ -15,7 +17,11 @@ _SCRIPT_ROOT = Path(__file__).resolve().parent
 if str(_SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_ROOT))
 
-from governance_cleanup.models import CleanupAction, CleanupReport, ManualAction  # noqa: E402
+from governance_cleanup.models import (  # noqa: E402
+    CleanupAction,
+    CleanupReport,
+    ManualAction,
+)
 from governance_cleanup.phase_retention import (  # noqa: E402
     load_truth_reports,
     phase_retention_actions,
@@ -106,17 +112,11 @@ TEXT_SUFFIXES = {
     ".yaml",
     ".yml",
 }
-
-
 def _repo_relative(repo_root: Path, path: Path) -> str:
     return path.relative_to(repo_root).as_posix()
-
-
 def _cleanup_contract(repo_root: Path) -> str | None:
     path = repo_root / "governance/repo-cleanup-contract.yml"
     return "governance/repo-cleanup-contract.yml" if path.exists() else None
-
-
 def _iter_repo_files(repo_root: Path) -> list[Path]:
     files: list[Path] = []
     for current_root, dirnames, filenames in os.walk(repo_root):
@@ -125,27 +125,19 @@ def _iter_repo_files(repo_root: Path) -> list[Path]:
         for filename in filenames:
             files.append(root_path / filename)
     return sorted(files)
-
-
 def _is_text_file(path: Path) -> bool:
     if path.suffix.lower() in TEXT_SUFFIXES:
         return True
     return path.name in {"Makefile", "Makefile.fragment", "README", "LICENSE"}
-
-
 def _path_is_under(relative_path: str, prefix: str) -> bool:
     normalized = prefix.rstrip("/")
     return relative_path == normalized or relative_path.startswith(f"{normalized}/")
-
-
 def _destination_for_move(relative_path: str) -> str | None:
     for source_root, destination_root in AUDIT_MOVE_ROOTS.items():
         if _path_is_under(relative_path, source_root):
             suffix = relative_path.removeprefix(source_root).lstrip("/")
             return f"{destination_root}/{suffix}" if suffix else destination_root
     return None
-
-
 def _governance_pack_remove_actions(repo_root: Path) -> list[CleanupAction]:
     actions: list[CleanupAction] = []
     for relative_path in GOVERNANCE_PACK_REMOVE_PATHS:
@@ -349,6 +341,8 @@ def _confirm_apply(repo_root: Path, assume_yes: bool, *, remove_governance_pack:
             file=sys.stderr,
         )
     print(f"Target repo: {repo_root}", file=sys.stderr)
+    if not sys.stdin.isatty():
+        raise RuntimeError("cleanup --apply requires --yes when stdin is not a TTY")
     response = input("Continue with cleanup apply? [y/N]: ").strip().lower()
     if response not in {"y", "yes"}:
         raise RuntimeError("cleanup apply aborted by user")
@@ -454,7 +448,7 @@ def _rewrite_references(repo_root: Path, replacements: dict[str, str]) -> list[s
     return rewritten
 
 
-def apply_cleanup(
+def _apply_cleanup_direct(
     repo_root: Path,
     *,
     assume_yes: bool,
@@ -537,6 +531,149 @@ def apply_cleanup(
         rewritten_files=rewritten_files,
         warnings=warnings,
     )
+
+
+def _copy_working_tree(source: Path, destination: Path) -> None:
+    for path in _iter_repo_files(source):
+        relative = path.relative_to(source)
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, target)
+
+
+def _remove_shadow_files_absent_from_source(source: Path, shadow: Path) -> None:
+    source_paths = {
+        path.relative_to(source).as_posix() for path in _iter_repo_files(source)
+    }
+    for path in _iter_repo_files(shadow):
+        relative = path.relative_to(shadow).as_posix()
+        if relative not in source_paths:
+            path.unlink()
+            _prune_empty_parent_dirs(shadow, path.parent)
+
+
+def _shadow_repository(repo_root: Path, parent: Path) -> Path:
+    shadow = parent / "repo"
+    if (repo_root / ".git").exists():
+        result = subprocess.run(
+            ["git", "clone", "--shared", "--quiet", str(repo_root), str(shadow)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(result.stderr.strip() or "failed to create cleanup shadow repository")
+        _remove_shadow_files_absent_from_source(repo_root, shadow)
+        _copy_working_tree(repo_root, shadow)
+    else:
+        shadow.mkdir(parents=True)
+        _copy_working_tree(repo_root, shadow)
+    return shadow
+
+
+def _file_snapshot(repo_root: Path) -> dict[str, bytes]:
+    return {
+        path.relative_to(repo_root).as_posix(): path.read_bytes()
+        for path in _iter_repo_files(repo_root)
+    }
+
+
+def _file_modes(repo_root: Path) -> dict[str, int]:
+    return {
+        path.relative_to(repo_root).as_posix(): path.stat().st_mode
+        for path in _iter_repo_files(repo_root)
+    }
+
+
+def _validate_shadow(repo_root: Path, *, remove_governance_pack: bool) -> None:
+    if remove_governance_pack:
+        return
+    required = ("AGENTS.yml", "MEMORY.yml", "governance-profile.yml", "plans/phase-ledger.yml")
+    if not all((repo_root / path).exists() for path in required):
+        return
+    from scripts import check_governance_exposure, validate_governance_yaml
+
+    validate_governance_yaml.validate_repo_root(repo_root)
+    exposure = check_governance_exposure.scan_exposures(repo_root)
+    if exposure.findings:
+        raise RuntimeError("cleanup proposal failed governance exposure validation")
+
+
+def _commit_shadow(
+    repo_root: Path,
+    before: dict[str, bytes],
+    after: dict[str, bytes],
+    before_modes: dict[str, int],
+    after_modes: dict[str, int],
+) -> None:
+    changed = sorted(set(before) | set(after))
+    changed = [path for path in changed if before.get(path) != after.get(path)]
+    applied: list[str] = []
+    try:
+        for relative in changed:
+            target = repo_root / relative
+            if relative not in after:
+                if target.exists():
+                    target.unlink()
+                    _prune_empty_parent_dirs(repo_root, target.parent)
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                with tempfile.NamedTemporaryFile(dir=target.parent, delete=False) as handle:
+                    handle.write(after[relative])
+                    staged = Path(handle.name)
+                try:
+                    os.chmod(staged, after_modes[relative])
+                    staged.replace(target)
+                finally:
+                    if staged.exists():
+                        staged.unlink()
+            applied.append(relative)
+    except Exception:
+        for relative in reversed(applied):
+            target = repo_root / relative
+            if relative not in before:
+                if target.exists():
+                    target.unlink()
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(before[relative])
+                os.chmod(target, before_modes[relative])
+        raise
+    _prune_empty_dirs(repo_root)
+
+
+def apply_cleanup(
+    repo_root: Path,
+    *,
+    assume_yes: bool,
+    archive_closed_phases: bool = False,
+    phase_retention_mode: str | None = None,
+    truth_report_paths: list[Path] | None = None,
+    remove_governance_pack: bool = False,
+) -> CleanupReport:
+    repo_root = repo_root.resolve()
+    _confirm_apply(repo_root, assume_yes, remove_governance_pack=remove_governance_pack)
+    normalized_truth_paths = [
+        (path if path.is_absolute() else repo_root / path).resolve()
+        for path in truth_report_paths or []
+    ]
+    before = _file_snapshot(repo_root)
+    before_modes = _file_modes(repo_root)
+    with tempfile.TemporaryDirectory(prefix="bcf-cleanup-") as temporary:
+        shadow = _shadow_repository(repo_root, Path(temporary))
+        report = _apply_cleanup_direct(
+            shadow,
+            assume_yes=True,
+            archive_closed_phases=archive_closed_phases,
+            phase_retention_mode=phase_retention_mode,
+            truth_report_paths=normalized_truth_paths,
+            remove_governance_pack=remove_governance_pack,
+        )
+        _validate_shadow(shadow, remove_governance_pack=remove_governance_pack)
+        after = _file_snapshot(shadow)
+        after_modes = _file_modes(shadow)
+        _commit_shadow(repo_root, before, after, before_modes, after_modes)
+    return replace(report, repo_root=str(repo_root))
 
 
 def _report_to_dict(report: CleanupReport) -> dict[str, Any]:

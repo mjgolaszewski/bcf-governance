@@ -6,24 +6,29 @@ import argparse
 import sys
 
 from bcf_governance import __version__
-from scripts import cleanup_governance_pack
-from scripts import check_governance_exposure
-from scripts import doctor_governance_pack
-from scripts import install_governance_pack
-from scripts import governance_evidence
-from scripts import governance_truth
-from scripts import migrate_governance_evidence
-from scripts import scaffold_governance_artifacts
-from scripts import validate_governance_yaml
-
+from scripts import (
+    check_governance_exposure,
+    cleanup_ci_resources,
+    cleanup_governance_pack,
+    doctor_governance_pack,
+    governance_evidence,
+    governance_truth,
+    install_governance_pack,
+    migrate_governance_evidence,
+    publish_audit,
+    scaffold_governance_artifacts,
+    validate_governance_yaml,
+)
 
 COMMANDS = {
     "cleanup": cleanup_governance_pack.main,
+    "ci-cleanup": cleanup_ci_resources.main,
     "exposure-scan": check_governance_exposure.main,
     "install": install_governance_pack.main,
     "evidence": governance_evidence.main,
     "truth": governance_truth.main,
     "migrate-evidence": migrate_governance_evidence.main,
+    "publish-audit": publish_audit.main,
     "validate": validate_governance_yaml.main,
     "scaffold": scaffold_governance_artifacts.main,
     "doctor": doctor_governance_pack.main,

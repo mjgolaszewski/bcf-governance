@@ -12,6 +12,7 @@ from typing import Any
 import yaml  # type: ignore[import-untyped]
 
 from .models import CleanupAction
+from .truth_reports import load_truth_reports
 
 ARCHIVABLE_PHASE_STATUSES = {"completed"}
 DEFAULT_PHASE_ARCHIVE_ROOT = "governance/archive/phase-artifacts"
@@ -31,6 +32,56 @@ def _file_sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _context_budget(repo_root: Path, relative_path: str) -> tuple[int | None, int | None]:
+    manifest = _load_yaml(repo_root / "governance" / "artifact-manifest.yml") or {}
+    budgets = manifest.get("context_budgets")
+    required = budgets.get("agent_required_files") if isinstance(budgets, dict) else None
+    value = required.get(relative_path) if isinstance(required, dict) else None
+    if isinstance(value, int):
+        return value, None
+    if not isinstance(value, dict):
+        return None, None
+    line_cap = value.get("line_hard_cap")
+    kib_cap = value.get("kib_hard_cap")
+    return (
+        line_cap if isinstance(line_cap, int) else None,
+        kib_cap if isinstance(kib_cap, int) else None,
+    )
+
+
+def _flow_line(value: Any) -> str:
+    return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+
+
+def _budgeted_yaml(repo_root: Path, relative_path: str, payload: dict[str, Any]) -> str:
+    line_cap, kib_cap = _context_budget(repo_root, relative_path)
+    if relative_path.endswith("phase-history.yml") and isinstance(payload.get("entries"), list):
+        lines = [
+            f"document: {_flow_line(payload.get('document', {}))}",
+            f"retention_policy: {_flow_line(payload.get('retention_policy', {}))}",
+            "entries:",
+            *[f"- {_flow_line(entry)}" for entry in payload["entries"]],
+        ]
+        rendered = "\n".join(lines) + "\n"
+        if line_cap is not None and len(lines) > line_cap:
+            rendered = "\n".join(
+                [
+                    f"document: {_flow_line(payload.get('document', {}))}",
+                    f"retention_policy: {_flow_line(payload.get('retention_policy', {}))}",
+                    f"entries: {_flow_line(payload['entries'])}",
+                ]
+            ) + "\n"
+    else:
+        rendered = yaml.safe_dump(payload, sort_keys=False, default_flow_style=None, width=4096)
+        if line_cap is not None and len(rendered.splitlines()) > line_cap:
+            rendered = _flow_line(payload) + "\n"
+    if line_cap is not None and len(rendered.splitlines()) > line_cap:
+        raise RuntimeError(f"{relative_path} would exceed line budget {line_cap}")
+    if kib_cap is not None and len(rendered.encode("utf-8")) > kib_cap * 1024:
+        raise RuntimeError(f"{relative_path} would exceed size budget {kib_cap} KiB")
+    return rendered
 
 
 def _phase_number(phase_id: str) -> int:
@@ -578,10 +629,7 @@ def _write_phase_history(
         key=lambda entry: _phase_number(str(entry.get("phase_id", "P0"))) if isinstance(entry, dict) else 0,
     )
     history_path.parent.mkdir(parents=True, exist_ok=True)
-    history_path.write_text(
-        yaml.safe_dump(history, sort_keys=False, default_flow_style=None, width=4096),
-        encoding="utf-8",
-    )
+    history_path.write_text(_budgeted_yaml(repo_root, history_rel, history), encoding="utf-8")
     return history_rel
 
 
@@ -614,8 +662,7 @@ def _prune_phase_hotfix_records(repo_root: Path, phase_actions: list[CleanupActi
     if not changed:
         return None
     ledger_path.write_text(
-        yaml.safe_dump(ledger, sort_keys=False, default_flow_style=None, width=4096),
-        encoding="utf-8",
+        _budgeted_yaml(repo_root, "plans/phase-ledger.yml", ledger), encoding="utf-8"
     )
     return "plans/phase-ledger.yml"
 
@@ -676,102 +723,8 @@ def _phase_archive_actions(
     return _phase_retention_actions(repo_root, mode="archive", truth_reports=truth_reports)
 
 
-def _load_truth_reports(repo_root: Path, paths: list[Path] | None) -> dict[str, dict[str, Any]]:
-    reports: dict[str, dict[str, Any]] = {}
-    for supplied_path in paths or []:
-        path = supplied_path if supplied_path.is_absolute() else repo_root / supplied_path
-        if not path.is_file():
-            raise FileNotFoundError(f"truth report does not exist: {supplied_path}")
-        try:
-            report = json.loads(path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError as exc:
-            raise ValueError(f"truth report is not valid JSON: {supplied_path}: {exc}") from exc
-        if not isinstance(report, dict):
-            raise ValueError(f"truth report must be an object: {supplied_path}")
-        phase_id = report.get("phase_id")
-        subject = report.get("subject")
-        verifier = report.get("verifier")
-        release = report.get("release_readiness")
-        checks = report.get("checks")
-        claims = report.get("claims")
-        reconciliation = report.get("reconciliation")
-        findings = report.get("findings")
-        durable_ref = report.get("durable_ref")
-        valid = (
-            isinstance(phase_id, str)
-            and report.get("schema_version") == "1.0"
-            and report.get("engine") == "evidence_truthfulness"
-            and report.get("status") == "pass"
-            and report.get("effective_state") == "closed"
-            and report.get("issues") == []
-            and isinstance(checks, dict)
-            and bool(checks)
-            and all(value == "pass" for value in checks.values())
-            and isinstance(claims, dict)
-            and bool(claims)
-            and all(
-                isinstance(claim, dict) and claim.get("effective_state") == "verified"
-                for claim in claims.values()
-            )
-            and isinstance(reconciliation, dict)
-            and reconciliation.get("effective_state") == "verified"
-            and isinstance(findings, dict)
-            and findings.get("open_count") == 0
-            and findings.get("issues") == []
-            and isinstance(release, dict)
-            and release.get("effective_state") == "closed"
-            and isinstance(subject, dict)
-            and subject.get("tracked_clean") is True
-            and re.fullmatch(r"[a-f0-9]{40,64}", str(subject.get("commit_sha", "")))
-            and re.fullmatch(r"[a-f0-9]{40,64}", str(subject.get("tree_sha", "")))
-            and re.fullmatch(r"[a-f0-9]{64}", str(report.get("bundle_sha256", "")))
-            and isinstance(verifier, dict)
-            and isinstance(verifier.get("kind"), str)
-            and bool(verifier.get("kind"))
-            and isinstance(verifier.get("id"), str)
-            and bool(verifier.get("id"))
-            and isinstance(durable_ref, str)
-            and bool(durable_ref)
-        )
-        if not valid:
-            raise ValueError(
-                f"truth report must be a passing internally consistent closed computation with "
-                f"subject, bundle, release, and verifier provenance: {supplied_path}"
-            )
-        commit_check = subprocess.run(
-            ["git", "-C", str(repo_root), "cat-file", "-e", f"{subject['commit_sha']}^{{commit}}"],
-            capture_output=True,
-            check=False,
-        )
-        tree_check = subprocess.run(
-            ["git", "-C", str(repo_root), "rev-parse", f"{subject['commit_sha']}^{{tree}}"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if commit_check.returncode != 0 or tree_check.returncode != 0:
-            raise ValueError(f"truth report subject is not present in repository git history: {supplied_path}")
-        if tree_check.stdout.strip() != subject["tree_sha"]:
-            raise ValueError(f"truth report tree does not match its commit: {supplied_path}")
-        if phase_id in reports:
-            raise ValueError(f"duplicate truth report for phase {phase_id}")
-        reports[phase_id] = {
-            "report": report,
-            "verification_snapshot": {
-                "commit_sha": subject["commit_sha"],
-                "tree_sha": subject["tree_sha"],
-                "truth_report_sha256": _file_sha256(path),
-                "evidence_bundle_sha256": report["bundle_sha256"],
-                "durable_ref": durable_ref,
-                "verifier": {"kind": verifier["kind"], "id": verifier["id"]},
-            },
-        }
-    return reports
-
-
 phase_archive_actions = _phase_archive_actions
 phase_retention_actions = _phase_retention_actions
-load_truth_reports = _load_truth_reports
 write_phase_history = _write_phase_history
 write_archive_gitignore = _write_archive_gitignore
 set_phase_retention_mode = _set_phase_retention_mode

@@ -6,6 +6,7 @@ from __future__ import annotations
 from .common import *  # noqa: F403,F405
 from .phase_artifacts import (
     _document_status,
+    _hotfix_stem,
     _phase_number,
     _validate_phase_artifact_triplet,
 )

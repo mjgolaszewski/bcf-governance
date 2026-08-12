@@ -109,7 +109,14 @@ The main installed artifacts are:
 
 ## Local Setup
 
-Install the CLI from this repo or a released package:
+Install the CLI from this repo or from the public release wheel without GitHub
+authentication:
+
+```bash
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v0.5.0/bcf_governance-0.5.0-py3-none-any.whl
+```
+
+For a source checkout:
 
 ```bash
 python3 -m pip install .
@@ -132,7 +139,7 @@ python3 -m pip install -r requirements-governance.txt
 
 ## Command Surface
 
-The CLI exposes nine workflows:
+The CLI exposes eleven workflows:
 
 - `bcf install` installs, upgrades, or updates the governance pack.
 - `bcf validate` validates governed YAML, semantic alignment, release-gate
@@ -142,7 +149,8 @@ The CLI exposes nine workflows:
   infrastructure markers before CI or release evidence is trusted.
 - `bcf scaffold` creates phase and hotfix artifacts with the expected names.
 - `bcf doctor` reports placeholder, release-gate, inactive-gate, and
-  non-evidence command gaps.
+  non-evidence command gaps plus the running package version, source, and public
+  installation path.
 - `bcf cleanup` plans or applies conservative audit-root cleanup for drifted
   repos.
 - `bcf evidence run` captures typed, content-addressed gate evidence and
@@ -150,6 +158,10 @@ The CLI exposes nine workflows:
   creates a detached DSSE/Ed25519 attestation for a bundle.
 - `bcf truth` computes phase and release state from current-tree evidence.
 - `bcf migrate-evidence` previews or applies the idempotent 0.5 migration.
+- `bcf ci-cleanup` plans or removes Docker resources bearing one exact BCF CI
+  run-ownership label.
+- `bcf publish-audit --history` performs an opt-in, redacted scan of every
+  unique blob reachable from local Git refs before publication.
 
 ## Bootstrap A New Repo
 
@@ -185,13 +197,13 @@ bcf install \
 ## Upgrade A Governed Repo
 
 Use upgrade mode when a repo already has BCF governance and should receive the
-latest pack-owned scripts, validator support modules, schemas, workflow,
-requirements, cleanup docs, and architecture gate test without resetting
-product or phase state. Upgrade also migrates missing current governance fields
-such as phase-retention policy structure, exposure-scan wiring, and agent
-deconstruction rules. The evidence migration downgrades authored terminal
-states to `completed`, removes terminal booleans, writes requirement stubs, and
-retains legacy values only in a non-authoritative migration report:
+latest pack-owned scripts, validator support modules, schemas, cleanup docs,
+and architecture gate test without resetting repository-owned policy. Existing
+policy files are preserved byte for byte; upgrade never parses and re-emits
+them or merges template assumptions into customized governance. The sole state
+exception is the targeted evidence migration: it downgrades authored terminal
+states to `completed`, removes terminal booleans, writes closeout requirement
+stubs, and retains legacy values only in a non-authoritative migration report:
 
 ```bash
 bcf install --target /path/to/target-repo --upgrade
@@ -212,10 +224,15 @@ bcf install \
 Use `--force-rescaffold` only when you intend to replace active BCF-owned
 state, not for normal upgrades.
 
-Upgrade preserves `plans/product-spec.yml`, build/phase ledgers, active phase
-logs, and existing phase history entries. It creates `plans/phase-history.yml`
-only when missing and does not enable strict historical triplet cleanup unless
-the repo opts in through `bcf cleanup --phase-retention-mode`.
+Upgrade preserves `AGENTS.yml`, `MEMORY.yml`, `governance-profile.yml`,
+`governance/artifact-manifest.yml`, `governance/evidence-policy.yml`,
+`governance/findings.yml`, `Makefile.fragment`, `requirements-governance.txt`,
+the governance CI workflow, and product/build plans byte for byte. It creates
+missing evidence-policy, finding-registry, and phase-history stubs. Lifecycle
+artifacts are changed only by the evidence migration described above. Upgrade
+does not enable strict historical triplet cleanup unless the repo opts in through
+`bcf cleanup --phase-retention-mode`. `--reset-options` is the explicit opt-in
+for regenerating option surfaces.
 
 ## Existing Repo Adoption
 
@@ -301,12 +318,21 @@ Safe apply mode asks for confirmation:
 bcf cleanup --repo-root /path/to/target-repo --apply
 ```
 
+For noninteractive automation, express approval explicitly:
+
+```bash
+bcf cleanup --repo-root /path/to/target-repo --apply --yes
+```
+
 To intentionally remove BCF governance from a repo, dry-run first:
 
 ```bash
 bcf cleanup --repo-root /path/to/target-repo --remove-governance-pack
 bcf cleanup --repo-root /path/to/target-repo --remove-governance-pack --apply
 ```
+
+Add `--yes` only after reviewing the dry-run when this command executes without
+a TTY.
 
 Deterministic cleanup can:
 
@@ -345,6 +371,11 @@ source; empty history entries do not satisfy validation. CI should use a full
 checkout for `git-history` mode so recorded refs can be verified.
 Mixed CI workflows that contain BCF steps are reported for manual editing
 instead of deleting unrelated jobs.
+
+Cleanup applies changes in a temporary shadow worktree, validates the proposed
+governance state, and transfers files atomically with rollback. In unattended
+environments, `--apply` requires `--yes`; it fails before mutation instead of
+attempting to read interactive input.
 
 New installs also include `governance/repo-cleanup-contract.yml`. The contract
 standardizes cleanup intent, canonical roots, drift patterns, deterministic
@@ -415,6 +446,30 @@ manifest recommendation.
 It flags common local workspace paths and private infrastructure markers, with
 inline allow markers reserved for intentional examples.
 
+Before publishing a repository, opt into a complete-history audit from a
+non-shallow clone:
+
+```bash
+bcf publish-audit --repo-root . --history
+```
+
+The audit deduplicates reachable blobs, includes deleted historical files, and
+reports only rule IDs, object/provenance identifiers, and remediation guidance.
+It never prints matched secret values. Reserved `.invalid` and `.test` examples
+are accepted. This command is intentionally not added to generated per-commit
+CI.
+
+Docker CI cleanup follows exact ownership labels and is dry-run by default:
+
+```bash
+bcf ci-cleanup --run-id "$BCF_CI_RUN_ID"
+bcf ci-cleanup --run-id "$BCF_CI_RUN_ID" --apply --yes
+```
+
+Label owned resources with `io.bcf-governance.ci-run=<run-id>` and use
+run-scoped Compose projects and image tags. The helper never performs global
+Docker or build-cache pruning.
+
 ## Agent Deconstruction
 
 BCF governance scripts and installed validator modules must stay below 800 LOC.
@@ -472,3 +527,16 @@ To sanity-check the uninstantiated template pack:
 ```bash
 bcf validate --repo-root template-repo --allow-placeholders --allow-release-gate-placeholders
 ```
+
+## Release Process
+
+Release changes are merged through a reviewed pull request. After every version
+surface agrees and CI passes, push an immutable `vX.Y.Z` tag at the merge
+commit. The tag workflow verifies the package version, runs the full test and
+template-validation suite, builds and checks the wheel and sdist, emits
+`SHA256SUMS`, creates GitHub build-provenance attestations, and publishes all
+three files on the GitHub Release. Release actions are pinned to commit SHAs and
+receive only contents, identity-token, and attestation write permissions.
+
+PyPI is not used. Consumers can install the public wheel URL shown in Local
+Setup without repository authentication.

@@ -6,8 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CLEANUP = REPO_ROOT / "scripts" / "cleanup_governance_pack.py"
@@ -148,6 +148,20 @@ def test_cleanup_command_outputs_compact_json(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["status"] == "actionable"
     assert payload["actions"][0]["kind"] == "create_audit_readme"
+
+
+def test_cleanup_apply_non_tty_requires_yes_before_mutation(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    source = repo / "docs/audits/security.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Security\n", encoding="utf-8")
+
+    result = _run_cleanup(repo, "--apply")
+
+    assert result.returncode == 1
+    assert "requires --yes when stdin is not a TTY" in result.stderr
+    assert source.exists()
+    assert not (repo / "audits/security.md").exists()
 
 
 def test_cleanup_remove_governance_pack_deletes_owned_artifacts_only(tmp_path: Path) -> None:
@@ -680,7 +694,7 @@ def test_cleanup_phase_history_stays_within_context_budget_for_multiple_phases(
 ) -> None:
     cleanup = _load_cleanup_module()
     repo = tmp_path / "repo"
-    phase_ids = [f"P{number:02d}" for number in range(1, 5)]
+    phase_ids = [f"P{number:02d}" for number in range(1, 25)]
     _write_yaml(
         repo / "governance/artifact-manifest.yml",
         {
@@ -711,7 +725,7 @@ def test_cleanup_phase_history_stays_within_context_budget_for_multiple_phases(
             ]
         },
     )
-    _write_yaml(repo / "plans/phase-ledger.yml", {"active_phase": {"id": "P04"}})
+    _write_yaml(repo / "plans/phase-ledger.yml", {"active_phase": {"id": "P24"}})
     _write_yaml(
         repo / "plans/product-spec.yml",
         {
@@ -754,3 +768,122 @@ def test_cleanup_phase_history_stays_within_context_budget_for_multiple_phases(
 
     history_lines = (repo / "plans/phase-history.yml").read_text(encoding="utf-8").splitlines()
     assert len(history_lines) <= 160
+    history = yaml.safe_load((repo / "plans/phase-history.yml").read_text(encoding="utf-8"))
+    assert len(history["entries"]) == 23
+
+
+def test_cleanup_over_budget_failure_leaves_repository_byte_identical(tmp_path: Path) -> None:
+    cleanup = _load_cleanup_module()
+    repo = tmp_path / "repo"
+    _write_yaml(
+        repo / "governance/artifact-manifest.yml",
+        {
+            "phase_retention_policy": {
+                "history_path": "plans/phase-history.yml",
+                "active_window": {"include_active": True, "include_next": True, "keep_recent_closed": 0},
+                    "archive": {
+                        "root": "governance/archive/phase-artifacts/",
+                        "closed_phase_statuses": ["completed"],
+                    "preserve_hotfix_logs": True,
+                },
+            },
+            "context_budgets": {
+                "agent_required_files": {
+                    "plans/phase-history.yml": {"line_hard_cap": 40, "kib_hard_cap": 1}
+                }
+            },
+        },
+    )
+    phase_ids = [f"P{number:02d}" for number in range(1, 9)]
+    _write_yaml(
+        repo / "plans/build-plan.yml",
+        {"phase_sequence": [{"phase_id": value, "build_block": value.lower()} for value in phase_ids]},
+    )
+    _write_yaml(repo / "plans/phase-ledger.yml", {"active_phase": {"id": "P08"}})
+    _write_yaml(
+        repo / "plans/product-spec.yml",
+        {"execution_phases": [{"phase_id": value, "build_block": value.lower()} for value in phase_ids]},
+    )
+    for phase_id in phase_ids[:-1]:
+        stem = f"phase-{int(phase_id[1:]):02d}"
+        _write_yaml(repo / f"plans/{stem}-plan.yml", {"phase": {"id": phase_id, "build_block": phase_id.lower()}})
+        _write_yaml(repo / f"plans/{stem}-workitems.yml", {"workitems": []})
+        _write_yaml(
+                repo / f"phases/{stem}-log.yml",
+                {
+                    "document": {"status": "completed"},
+                    "summary": {"outcome": "verified", "highlights": ["x" * 256]},
+                    "execution_evidence": {"executed_commands": ["make test"]},
+                },
+            )
+    _init_git_repo(repo)
+    truth_reports = [
+        _write_closed_truth_report(repo, phase_id) for phase_id in phase_ids[:-1]
+    ]
+    before = {
+        path.relative_to(repo).as_posix(): path.read_bytes()
+        for path in repo.rglob("*")
+        if path.is_file()
+    }
+
+    with pytest.raises(RuntimeError, match="would exceed size budget"):
+        cleanup.apply_cleanup(
+            repo,
+            assume_yes=True,
+            archive_closed_phases=True,
+            truth_report_paths=truth_reports,
+        )
+
+    after = {
+        path.relative_to(repo).as_posix(): path.read_bytes()
+        for path in repo.rglob("*")
+        if path.is_file()
+    }
+    assert after == before
+
+
+def test_cleanup_validation_failure_leaves_repository_byte_identical(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cleanup = _load_cleanup_module()
+    repo = tmp_path / "repo"
+    source = repo / "docs/audits/security.md"
+    source.parent.mkdir(parents=True)
+    source.write_text("# Security\n", encoding="utf-8")
+    before = cleanup._file_snapshot(repo)
+
+    def reject(_repo_root: Path, *, remove_governance_pack: bool) -> None:
+        raise RuntimeError("injected validation failure")
+
+    monkeypatch.setattr(cleanup, "_validate_shadow", reject)
+    with pytest.raises(RuntimeError, match="injected validation failure"):
+        cleanup.apply_cleanup(repo, assume_yes=True)
+
+    assert cleanup._file_snapshot(repo) == before
+
+
+def test_cleanup_transfer_failure_rolls_back_byte_identically(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cleanup = _load_cleanup_module()
+    repo = tmp_path / "repo"
+    for name in ("one.md", "two.md"):
+        path = repo / "docs/audits" / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"# {name}\n", encoding="utf-8")
+    before = cleanup._file_snapshot(repo)
+    real_replace = Path.replace
+    replacements = 0
+
+    def fail_second_replace(path: Path, target: Path) -> Path:
+        nonlocal replacements
+        replacements += 1
+        if replacements == 2:
+            raise OSError("injected replacement failure")
+        return real_replace(path, target)
+
+    monkeypatch.setattr(Path, "replace", fail_second_replace)
+    with pytest.raises(OSError, match="injected replacement failure"):
+        cleanup.apply_cleanup(repo, assume_yes=True)
+
+    assert cleanup._file_snapshot(repo) == before

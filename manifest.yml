@@ -3,7 +3,7 @@ document:
   name: BCF Template And Governance Pack
   id: bcf-governance
   version: 0.5.0
-  generated_at_utc: "2026-05-28T00:00:00Z"
+  generated_at_utc: "2026-08-12T00:00:00Z"
   status: tracked_inventory
 source_model:
   origin: public reusable governance pack
@@ -58,11 +58,14 @@ pack_contents:
     - installer helper that copies the template pack, replaces placeholders, applies profiles, opens the first phase, and reports release-gate wiring gaps
     - installer existing-repo adoption mode for conversion and inventory phases
     - doctor helper that reports remaining placeholder and release-gate wiring gaps
-    - cleanup helper that plans or applies safe audit-root consolidation, opted-in phase and hotfix retention cleanup, governance-pack removal, and semantic compaction reports
+    - transactional cleanup helper that validates a shadow worktree before atomic replacement and rollback-safe transfer
+    - exact-label Docker CI resource cleanup helper with dry-run and explicit apply modes
+    - opt-in redacted publication audit across unique blobs reachable from complete local Git history
     - generic phase and hotfix scaffold helper that emits repo-relative document paths
     - portable evidence capture and truthfulness helpers with exact-tree binding
     - idempotent evidence-integrity migration helper
     - generic governance YAML validator with structural and semantic checks, compact json output, release-gate placeholder detection, path portability checks, governance drift guardrails, repo cleanup contract validation, line and KiB context budgets, and instantiated placeholder detection
+    - tag-triggered release workflow for tested, attested wheel, sdist, and checksum assets
 tracking:
   intended_location: manifest.yml
   tracked_by_git: true

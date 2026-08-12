@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import json
 import importlib.util
+import json
 import subprocess
 import sys
 from pathlib import Path
 
 import yaml
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 INSTALLER = REPO_ROOT / "scripts" / "install_governance_pack.py"
@@ -300,18 +299,33 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
 ) -> None:
     target = tmp_path / "upgrade"
     _run_installer(target, "--profile", "lite", "--require-strict-validation")
-    product_spec_before = (target / "plans/product-spec.yml").read_text(encoding="utf-8")
+    protected_paths = (
+        "AGENTS.yml",
+        ".github/workflows/governance.yml",
+        "MEMORY.yml",
+        "Makefile.fragment",
+        "architecture-boundaries.yml",
+        "governance-profile.yml",
+        "governance/artifact-manifest.yml",
+        "governance/evidence-policy.yml",
+        "governance/findings.yml",
+        "plans/product-spec.yml",
+        "plans/build-plan.yml",
+        "plans/phase-01-plan.yml",
+        "requirements-governance.txt",
+    )
+    for relative_path in protected_paths:
+        path = target / relative_path
+        path.write_text(
+            path.read_text(encoding="utf-8") + "# local customization\n",
+            encoding="utf-8",
+        )
+    state_before = {
+        relative_path: (target / relative_path).read_bytes()
+        for relative_path in protected_paths
+    }
     (target / "scripts/validate_governance_yaml.py").write_text("old validator\n", encoding="utf-8")
     (target / "scripts/check_governance_exposure.py").unlink()
-    profile_path = target / "governance-profile.yml"
-    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
-    profile["release_gate_profile"]["gates"].pop("security_review")
-    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
-    gitignore_path = target / ".gitignore"
-    gitignore_path.write_text(
-        gitignore_path.read_text(encoding="utf-8").replace(".artifacts/\n", ""),
-        encoding="utf-8",
-    )
 
     result = _run_installer(target, "--upgrade", "--skip-validation")
 
@@ -322,17 +336,13 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
     assert (target / "scripts/check_governance_exposure.py").exists()
     assert (target / "scripts/governance_validation/runner.py").exists()
     assert (target / "schemas/phase-history.schema.json").exists()
-    assert ".artifacts/" in gitignore_path.read_text(encoding="utf-8").splitlines()
-    assert (target / "plans/product-spec.yml").read_text(encoding="utf-8") == product_spec_before
-    agents = yaml.safe_load((target / "AGENTS.yml").read_text(encoding="utf-8"))
-    assert agents["governance"]["phase_retention_contract"]["default_cleanup_mode"] == "git_history"
-    manifest = yaml.safe_load((target / "governance/artifact-manifest.yml").read_text(encoding="utf-8"))
-    assert "mode" not in manifest["phase_retention_policy"]
-    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
-    assert profile["release_gate_profile"]["gates"]["security_review"]["status"] == "deferred"
+    assert {
+        relative_path: (target / relative_path).read_bytes()
+        for relative_path in protected_paths
+    } == state_before
 
 
-def test_installer_upgrade_migrates_older_pack_state_to_strict_validation(
+def test_installer_upgrade_runs_targeted_evidence_migration_without_rewriting_policy(
     tmp_path: Path,
 ) -> None:
     target = tmp_path / "upgrade-old-state"
@@ -386,22 +396,53 @@ def test_installer_upgrade_migrates_older_pack_state_to_strict_validation(
     makefile = makefile.replace("\n\t$(MAKE) governance-exposure-scan\n", "\n")
     makefile_path.write_text(makefile, encoding="utf-8")
 
+    phase_log_path = target / "phases/phase-01-log.yml"
+    phase_log = yaml.safe_load(phase_log_path.read_text(encoding="utf-8"))
+    phase_log["document"]["status"] = "verified"
+    phase_log.pop("closeout_requirements")
+    phase_log["security_review_complete"] = True
+    phase_log_path.write_text(yaml.safe_dump(phase_log, sort_keys=False), encoding="utf-8")
+
+    ledger_path = target / "plans/phase-ledger.yml"
+    ledger = yaml.safe_load(ledger_path.read_text(encoding="utf-8"))
+    ledger["active_phase"]["lifecycle_status"] = "closed"
+    ledger["release_readiness"]["status"] = "release_ready"
+    ledger_path.write_text(yaml.safe_dump(ledger, sort_keys=False), encoding="utf-8")
+
+    workitems_path = target / "plans/phase-01-workitems.yml"
+    workitems = yaml.safe_load(workitems_path.read_text(encoding="utf-8"))
+    workitems["workitems"][0].pop("acceptance_evidence")
+    workitems_path.write_text(yaml.safe_dump(workitems, sort_keys=False), encoding="utf-8")
+
     (target / "plans/phase-history.yml").unlink()
     (target / "scripts/check_governance_exposure.py").unlink()
 
-    result = _run_installer(target, "--upgrade", "--profile", "lite")
-
-    assert "validation: strict pass" in result.stdout
-    assert (target / "plans/product-spec.yml").read_text(encoding="utf-8") == product_spec_before
-    agents = yaml.safe_load(agents_path.read_text(encoding="utf-8"))
-    assert agents["governance"]["phase_retention_contract"]["default_cleanup_mode"] == "git_history"
-    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
-    memory_budget = manifest["context_budgets"]["agent_required_files"]["MEMORY.yml"]
-    assert memory_budget["line_hard_cap"] == 105
-    assert memory_budget["kib_hard_cap"] == 28
-    assert (
-        manifest["context_budgets"]["aggregate_agent_required_kib_advisory"] == 350
+    protected_paths = (
+        agents_path,
+        memory_path,
+        manifest_path,
+        profile_path,
+        makefile_path,
     )
+    state_before = {path: path.read_bytes() for path in protected_paths}
+
+    result = _run_installer(target, "--upgrade", "--profile", "lite", "--skip-validation")
+
+    assert "upgraded governance pack into" in result.stdout
+    assert (target / "plans/product-spec.yml").read_text(encoding="utf-8") == product_spec_before
+    assert {path: path.read_bytes() for path in protected_paths} == state_before
+    assert (target / "plans/phase-history.yml").exists()
+    assert (target / "scripts/check_governance_exposure.py").exists()
+    migrated_phase = yaml.safe_load(phase_log_path.read_text(encoding="utf-8"))
+    assert migrated_phase["document"]["status"] == "completed"
+    assert "security_review_complete" not in migrated_phase
+    assert "closeout_requirements" in migrated_phase
+    migrated_ledger = yaml.safe_load(ledger_path.read_text(encoding="utf-8"))
+    assert migrated_ledger["active_phase"]["lifecycle_status"] == "completed"
+    assert "status" not in migrated_ledger["release_readiness"]
+    migrated_workitems = yaml.safe_load(workitems_path.read_text(encoding="utf-8"))
+    assert migrated_workitems["workitems"][0]["acceptance_evidence"]
+    assert (target / "governance/migrations/evidence-integrity-v1.yml").exists()
 
 
 def test_installer_upgrade_can_reset_profile_and_makefile_options(tmp_path: Path) -> None:

@@ -30,6 +30,9 @@ jobs:
             scripts/migrate_governance_evidence.py \
             scripts/install_governance_pack.py \
             scripts/doctor_governance_pack.py \
+            scripts/cleanup_ci_resources.py \
+            scripts/cleanup_governance_pack.py \
+            scripts/publish_audit.py \
             bcf_governance/cli.py \
             bcf_governance/__init__.py \
             template-repo/scripts/validate_governance_yaml.py \
@@ -44,7 +47,10 @@ jobs:
             tests/test_evidence_migration.py \
             tests/test_scaffold_governance_artifacts.py \
             tests/test_install_governance_pack.py \
+            tests/test_cleanup_ci_resources.py \
+            tests/test_cleanup_governance_pack.py \
             tests/test_cli.py \
+            tests/test_publish_audit.py \
             tests/test_pack_sync.py \
             tests/test_template_architecture_gate.py \
             .github/scripts/run_validator_mutants.py

@@ -26,3 +26,15 @@ Required test lanes default to one collected and executed test and zero skips. C
 Semantic mutants run on pull requests, high-value implementation and semantic mutants nightly, and the full profiles weekly.
 
 Repo evidence: `template-repo/AGENTS.yml`, `template-repo/phases/phase-NN-log.yml`, `template-repo/schemas/phase-log.schema.json`.
+
+## CI Resource Ownership
+
+Docker-based release gates must mark disposable resources with the exact label
+`io.bcf-governance.ci-run=<run-id>`. Use run-scoped Compose projects and image
+tags. `bcf ci-cleanup` is dry-run by default and may remove only exact-label
+matches; global Docker and build-cache pruning are forbidden. Runner labels
+remain repository-owned and are not embedded in installed templates.
+
+Full-history publication review is deliberately separate from normal commit
+CI. Before making a repository public, use `bcf publish-audit --history` from a
+complete, non-shallow clone and remediate every redacted finding.
