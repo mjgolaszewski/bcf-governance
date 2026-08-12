@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "required": ["document", "hotfix", "execution_evidence", "reconciliation"],
+  "required": ["document", "hotfix", "execution_evidence", "closeout_requirements"],
   "properties": {
     "document": {
       "type": "object",
@@ -16,7 +16,7 @@
         "generated_at_utc": { "type": "string", "minLength": 1 },
         "status": {
           "type": "string",
-          "enum": ["planned", "completed", "verified", "closed"]
+          "enum": ["planned", "completed"]
         },
         "path": { "type": "string", "minLength": 1 }
       }
@@ -53,16 +53,32 @@
         }
       }
     },
-    "reconciliation": {
+    "closeout_requirements": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["required_before_closeout"],
+      "required": ["claims", "reconciliation", "finding_registry"],
       "properties": {
-        "required_before_closeout": {
-          "type": "array",
-          "minItems": 1,
-          "items": { "type": "string", "minLength": 1 }
-        }
+        "claims": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["required_evidence"],
+            "properties": {
+              "required_evidence": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+            }
+          }
+        },
+        "reconciliation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["required_evidence"],
+          "properties": {
+            "required_evidence": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+          }
+        },
+        "finding_registry": {"const": "governance/findings.yml"}
       }
     }
   }

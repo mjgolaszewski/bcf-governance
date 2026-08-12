@@ -8,6 +8,7 @@ import argparse
 from .common import *  # noqa: F403,F405
 from .artifact_policy import _load_phase_history, _validate_artifact_manifest, _validate_observability_contracts
 from .context_budgets import _context_budget_advisories
+from .evidence_contracts import _load_evidence_contracts
 from .phase_artifacts import _validate_agents
 from .phase_catalog import _validate_active_phase, _validate_declared_phase_catalog, _validate_hotfix_lane
 from .release_gates import _validate_ci_profile, _validate_release_gate_targets, _validate_structural_gate_contract
@@ -40,6 +41,7 @@ def validate_repo_root(
         repo_root, schema_cache, governance_profile
     )
     architecture_rules, architecture_boundaries_path = _load_architecture_boundaries(repo_root, schema_cache)
+    _, evidence_policy_path, _, findings_path = _load_evidence_contracts(repo_root, schema_cache)
 
     _validate_schema(repo_root, schema_cache, agents, schema_name="agents.schema.json", context="AGENTS.yml")
     _validate_schema(repo_root, schema_cache, memory, schema_name="memory.schema.json", context="MEMORY.yml")
@@ -111,6 +113,8 @@ def validate_repo_root(
                     else []
                 ),
                 *optional_paths,
+                evidence_policy_path,
+                findings_path,
             ],
         )
     _validate_release_gate_targets(

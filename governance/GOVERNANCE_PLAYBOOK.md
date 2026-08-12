@@ -35,7 +35,7 @@ Repo evidence: `scripts/install_governance_pack.py`, `scripts/validate_governanc
 
 Use `bcf cleanup` before rescaffolding or hand-editing a drifted repo. It is dry-run by default and reports safe actions separately from semantic/manual actions.
 
-Safe cleanup actions are deterministic: create `audits/README.md`, move audit/review evidence from legacy roots into `audits/`, rewrite exact path references, and, when `--phase-retention-mode` is passed, remove or archive verified/closed historical phase artifacts outside the retained active window after updating compact `plans/phase-history.yml` entries with summaries, hashes, and the declared retention source. Phase-scoped hotfix logs and matching hotfix lane records leave active governance with their related phase. `--phase-retention-mode` without a value uses `git-history`; `--phase-retention-mode archive` uses ignored local archive storage; `--archive-closed-phases` remains an archive alias. Phase-history entries must point to retained artifacts or git-history refs. Semantic compaction remains manual or LLM-assisted: product specs, architecture docs, security docs, runbooks, and nested vendored governance need owner judgment before removal or rewriting.
+Safe cleanup actions are deterministic: create `audits/README.md`, move audit/review evidence from legacy roots into `audits/`, rewrite exact path references, and, when `--phase-retention-mode` is passed, remove or archive completed historical phase artifacts outside the retained active window only when a supplied current truth report computed them closed. Cleanup records the governed commit/tree, truth and evidence digests, durable reference, verifier provenance, summaries, hashes, and retention source in `plans/phase-history.yml`. Phase-scoped hotfix logs and matching hotfix lane records leave active governance with their related phase. `--phase-retention-mode` without a value uses `git-history`; `--phase-retention-mode archive` uses ignored local archive storage; `--archive-closed-phases` remains an archive alias. Semantic compaction remains manual or LLM-assisted: product specs, architecture docs, security docs, runbooks, and nested vendored governance need owner judgment before removal or rewriting.
 
 Installed repos include `governance/repo-cleanup-contract.yml` for the machine cleanup contract and `governance/REPO_CLEANUP.md` for the human sequence. Documentation currency is a required semantic review item: compare each section to repo files, commands, tests, and canonical governance before closeout.
 
@@ -56,11 +56,11 @@ Repo evidence: `template-repo/AGENTS.yml`, `template-repo/Makefile.fragment`, `s
 
 ## Lifecycle
 
-Use phase status values from `plans/phase-ledger.yml`: `planned`, `active`, `blocked`, `paused`, `completed`, `verified`, `closed`, `abandoned`.
+Authored phase state may progress through planning and execution states and ends at `completed`. `verified` and `closed` are never writable lifecycle values.
 
-Phase logs use the closeout status values validated by schema and semantic checks: `planned`, `completed`, `verified`, `closed`. Verified or closed logs need closeout fields for tickets, suites, architecture gates, health checks, warnings, and constraints.
+`bcf truth` computes `verified` only when every required direct claim has valid, current-tree, independently measurable evidence. It computes `closed` only when the phase is verified, reconciliation is current, and no profile-blocking finding remains. Any relevant tree mutation makes affected evidence stale and returns effective state to `completed`; structural consistency cannot promote state.
 
-Repo evidence: `template-repo/schemas/phase-ledger.schema.json`, `template-repo/schemas/phase-log.schema.json`, `scripts/validate_governance_yaml.py`.
+Repo evidence: `template-repo/schemas/phase-ledger.schema.json`, `template-repo/schemas/phase-log.schema.json`, `template-repo/governance/evidence-policy.yml`, `scripts/governance_truth.py`.
 
 ## Operating Rhythm
 
@@ -68,7 +68,7 @@ Repo evidence: `template-repo/schemas/phase-ledger.schema.json`, `template-repo/
 2. For existing drifted repos, run `bcf cleanup` and address manual actions before claiming compaction.
 3. Open phases and hotfix logs with `bcf scaffold` or `scripts/scaffold_governance_artifacts.py`.
 4. Execute scoped workitems only.
-5. Record terse evidence in phase logs or audits.
-6. Run `bcf validate` and `bcf exposure-scan`; run `bcf doctor` after release gates are wired.
+5. Keep narrative context in phase logs or audits; capture measurable evidence with `bcf evidence run` into an untracked artifact directory.
+6. Run `bcf validate` for structure and `bcf truth --evidence-dir .artifacts/bcf` for factual truthfulness; run `bcf exposure-scan` and `bcf doctor` as supporting diagnostics.
 
 Repo evidence: `bcf_governance/cli.py`, `scripts/cleanup_governance_pack.py`, `scripts/scaffold_governance_artifacts.py`, `scripts/doctor_governance_pack.py`.

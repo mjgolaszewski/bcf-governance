@@ -25,6 +25,16 @@ execution_evidence:
     - make release-check
   executed_commands: []
   notes: []
+closeout_requirements:
+  claims:
+    workitems_closed: {required_evidence: [governance-validate]}
+    required_suites_green: {required_evidence: [lint, typecheck, test, contract-test]}
+    architecture_gates_green: {required_evidence: [architecture-test]}
+    health_checks_green: {required_evidence: [runtime-smoke]}
+    security_review_complete: {required_evidence: [security-review]}
+    findings_resolved: {required_evidence: [security-vulnerability-scan]}
+  reconciliation: {required_evidence: [governance-validate, governance-exposure-scan]}
+  finding_registry: governance/findings.yml
 known_constraints:
   - update canonical governed artifacts together when this phase changes behavior or environment contracts
 next_work:

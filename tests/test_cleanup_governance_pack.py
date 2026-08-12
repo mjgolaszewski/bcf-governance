@@ -37,6 +37,59 @@ def _run_cleanup(target: Path, *args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
+def _write_closed_truth_report(
+    repo: Path,
+    phase_id: str,
+    *,
+    commit_sha: str | None = None,
+    tree_sha: str | None = None,
+) -> Path:
+    commit_sha = commit_sha or subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip()
+    tree_sha = tree_sha or subprocess.run(
+        ["git", "rev-parse", "HEAD^{tree}"], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout.strip()
+    path = repo / ".artifacts" / "bcf" / f"{phase_id}-truth-report.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "engine": "evidence_truthfulness",
+                "phase_id": phase_id,
+                "status": "pass",
+                "effective_state": "closed",
+                "issues": [],
+                "checks": {
+                    "evidence_integrity": "pass",
+                    "exact_tree": "pass",
+                    "workflow_execution": "pass",
+                    "test_execution": "pass",
+                    "finding_accounting": "pass",
+                    "provenance": "pass",
+                },
+                "subject": {
+                    "commit_sha": commit_sha,
+                    "tree_sha": tree_sha,
+                    "tracked_clean": True,
+                },
+                "bundle_sha256": "c" * 64,
+                "durable_ref": f"ci-artifact://bcf/{phase_id}/truth-report.json",
+                "claims": {"phase_requirements": {"effective_state": "verified"}},
+                "reconciliation": {"effective_state": "verified"},
+                "findings": {"open_count": 0, "issues": []},
+                "release_readiness": {"effective_state": "closed"},
+                "verifier": {"kind": "service", "id": "test-verifier"},
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
 def test_cleanup_plan_reports_safe_moves_and_manual_work(tmp_path: Path) -> None:
     cleanup = _load_cleanup_module()
     repo = tmp_path / "repo"
@@ -213,7 +266,7 @@ def test_cleanup_archives_closed_phase_triplet_and_writes_history(tmp_path: Path
                 },
                 "archive": {
                     "root": "governance/archive/phase-artifacts/",
-                    "closed_phase_statuses": ["verified", "closed"],
+                        "closed_phase_statuses": ["completed"],
                     "preserve_hotfix_logs": True,
                 },
             }
@@ -271,7 +324,7 @@ def test_cleanup_archives_closed_phase_triplet_and_writes_history(tmp_path: Path
     _write_yaml(
         repo / "phases/phase-01-log.yml",
         {
-            "document": {"status": "verified"},
+            "document": {"status": "completed"},
             "phase": {"id": "P01", "build_block": "foundation"},
             "summary": {"outcome": "verified", "highlights": ["foundation complete"]},
             "execution_evidence": {"executed_commands": ["make test"]},
@@ -280,12 +333,16 @@ def test_cleanup_archives_closed_phase_triplet_and_writes_history(tmp_path: Path
     _write_yaml(
         repo / "phases/phase-01-hotfix01.yml",
         {
-            "document": {"status": "closed"},
+            "document": {"status": "completed"},
             "hotfix": {"id": "HF-001", "related_phase_id": "P01"},
         },
     )
 
-    plan = cleanup.plan_cleanup(repo, archive_closed_phases=True)
+    _init_git_repo(repo)
+    truth_report = _write_closed_truth_report(repo, "P01")
+    plan = cleanup.plan_cleanup(
+        repo, archive_closed_phases=True, truth_report_paths=[truth_report]
+    )
     archive_sources = {
         action.source for action in plan.actions if action.kind == "archive_phase_artifact"
     }
@@ -297,7 +354,12 @@ def test_cleanup_archives_closed_phase_triplet_and_writes_history(tmp_path: Path
     }
     assert any(action.kind == "prune_phase_hotfix_records" for action in plan.actions)
 
-    report = cleanup.apply_cleanup(repo, assume_yes=True, archive_closed_phases=True)
+    report = cleanup.apply_cleanup(
+        repo,
+        assume_yes=True,
+        archive_closed_phases=True,
+        truth_report_paths=[truth_report],
+    )
 
     assert report.applied
     assert not (repo / "plans/phase-01-plan.yml").exists()
@@ -314,7 +376,9 @@ def test_cleanup_archives_closed_phase_triplet_and_writes_history(tmp_path: Path
     history = yaml.safe_load((repo / "plans/phase-history.yml").read_text(encoding="utf-8"))
     entry = history["entries"][0]
     assert entry["phase_id"] == "P01"
-    assert entry["status"] == "verified"
+    assert entry["status"] == "completed"
+    assert entry["derived_state_at_capture"] == "closed"
+    assert entry["verification_snapshot"]["truth_report_sha256"]
     assert entry["summary"] == ["foundation complete"]
     assert entry["validation"] == ["make test"]
     assert {
@@ -343,7 +407,7 @@ def test_cleanup_archive_mode_persists_policy_and_ignores_archive_root(tmp_path:
                 },
                 "archive": {
                     "root": "governance/archive/phase-artifacts/",
-                    "closed_phase_statuses": ["verified", "closed"],
+                        "closed_phase_statuses": ["completed"],
                     "preserve_hotfix_logs": True,
                 },
             }
@@ -373,13 +437,16 @@ def test_cleanup_archive_mode_persists_policy_and_ignores_archive_root(tmp_path:
     _write_yaml(repo / "plans/phase-01-workitems.yml", {"workitems": []})
     _write_yaml(
         repo / "phases/phase-01-log.yml",
-        {"document": {"status": "verified"}, "phase": {"build_block": "foundation"}},
+        {"document": {"status": "completed"}, "phase": {"build_block": "foundation"}},
     )
 
+    _init_git_repo(repo)
+    truth_report = _write_closed_truth_report(repo, "P01")
     report = cleanup.apply_cleanup(
         repo,
         assume_yes=True,
         phase_retention_mode="archive",
+        truth_report_paths=[truth_report],
     )
 
     assert report.applied
@@ -409,7 +476,7 @@ def test_cleanup_archive_mode_collects_hotfix_left_after_triplet_removal(
                 },
                 "archive": {
                     "root": "governance/archive/phase-artifacts/",
-                    "closed_phase_statuses": ["verified", "closed"],
+                        "closed_phase_statuses": ["completed"],
                     "preserve_hotfix_logs": True,
                 },
             }
@@ -458,7 +525,7 @@ def test_cleanup_archive_mode_collects_hotfix_left_after_triplet_removal(
                     "phase_id": "P01",
                     "build_block": "foundation",
                     "retention_source": "archive",
-                    "status": "verified",
+                    "status": "completed",
                     "outcome": "verified",
                     "summary": ["foundation retained"],
                     "validation": ["make test"],
@@ -474,10 +541,17 @@ def test_cleanup_archive_mode_collects_hotfix_left_after_triplet_removal(
     )
     _write_yaml(
         repo / "phases/phase-01-hotfix01.yml",
-        {"document": {"status": "closed"}, "hotfix": {"id": "HF-001", "related_phase_id": "P01"}},
+        {"document": {"status": "completed"}, "hotfix": {"id": "HF-001", "related_phase_id": "P01"}},
     )
 
-    report = cleanup.apply_cleanup(repo, assume_yes=True, phase_retention_mode="archive")
+    _init_git_repo(repo)
+    truth_report = _write_closed_truth_report(repo, "P01")
+    report = cleanup.apply_cleanup(
+        repo,
+        assume_yes=True,
+        phase_retention_mode="archive",
+        truth_report_paths=[truth_report],
+    )
 
     assert report.applied
     assert not (repo / "phases/phase-01-hotfix01.yml").exists()
@@ -508,7 +582,7 @@ def test_cleanup_git_history_mode_removes_triplet_after_verifying_head(
                 },
                 "archive": {
                     "root": "governance/archive/phase-artifacts/",
-                    "closed_phase_statuses": ["verified", "closed"],
+                        "closed_phase_statuses": ["completed"],
                     "preserve_hotfix_logs": True,
                 },
             }
@@ -552,7 +626,7 @@ def test_cleanup_git_history_mode_removes_triplet_after_verifying_head(
     _write_yaml(
         repo / "phases/phase-01-log.yml",
         {
-            "document": {"status": "verified"},
+            "document": {"status": "completed"},
             "phase": {"build_block": "foundation"},
             "summary": {"highlights": ["done"]},
         },
@@ -560,13 +634,26 @@ def test_cleanup_git_history_mode_removes_triplet_after_verifying_head(
     _write_yaml(
         repo / "phases/phase-01-hotfix01.yml",
         {
-            "document": {"status": "closed"},
+            "document": {"status": "completed"},
             "hotfix": {"id": "HF-001", "related_phase_id": "P01"},
         },
     )
     commit = _init_git_repo(repo)
+    tree = subprocess.run(
+        ["git", "rev-parse", "HEAD^{tree}"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    truth_report = _write_closed_truth_report(repo, "P01", commit_sha=commit, tree_sha=tree)
 
-    report = cleanup.apply_cleanup(repo, assume_yes=True, phase_retention_mode="git-history")
+    report = cleanup.apply_cleanup(
+        repo,
+        assume_yes=True,
+        phase_retention_mode="git-history",
+        truth_report_paths=[truth_report],
+    )
 
     assert report.applied
     assert not (repo / "plans/phase-01-plan.yml").exists()
@@ -606,7 +693,7 @@ def test_cleanup_phase_history_stays_within_context_budget_for_multiple_phases(
                 },
                 "archive": {
                     "root": "governance/archive/phase-artifacts/",
-                    "closed_phase_statuses": ["verified", "closed"],
+                        "closed_phase_statuses": ["completed"],
                     "preserve_hotfix_logs": True,
                 },
             },
@@ -647,14 +734,23 @@ def test_cleanup_phase_history_stays_within_context_budget_for_multiple_phases(
         _write_yaml(
             repo / f"phases/{stem}-log.yml",
             {
-                "document": {"status": "verified"},
+                "document": {"status": "completed"},
                 "phase": {"id": phase_id, "build_block": build_block},
                 "summary": {"outcome": "verified", "highlights": [f"{phase_id} done"]},
                 "execution_evidence": {"executed_commands": ["make test"]},
             },
         )
 
-    cleanup.apply_cleanup(repo, assume_yes=True, archive_closed_phases=True)
+    _init_git_repo(repo)
+    truth_reports = [
+        _write_closed_truth_report(repo, phase_id) for phase_id in phase_ids[:-1]
+    ]
+    cleanup.apply_cleanup(
+        repo,
+        assume_yes=True,
+        archive_closed_phases=True,
+        truth_report_paths=truth_reports,
+    )
 
     history_lines = (repo / "plans/phase-history.yml").read_text(encoding="utf-8").splitlines()
-    assert len(history_lines) <= 40
+    assert len(history_lines) <= 160

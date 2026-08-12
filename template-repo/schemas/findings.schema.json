@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {"enum": ["human", "model", "service", "workflow"]},
+        "id": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document", "reviews", "findings"],
+  "properties": {
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "id", "version", "generated_at_utc", "status", "path"],
+      "properties": {
+        "kind": {"const": "finding_registry"},
+        "name": {"type": "string", "minLength": 1},
+        "id": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "generated_at_utc": {"type": "string", "minLength": 1},
+        "status": {"const": "active"},
+        "path": {"const": "governance/findings.yml"}
+      }
+    },
+    "reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "source_path", "source_sha256", "reviewer", "finding_ids"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "source_path": {"type": "string", "minLength": 1},
+          "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "reviewer": {"$ref": "#/$defs/actor"},
+          "finding_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "summary": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["findings_total", "open_count"],
+            "properties": {
+              "findings_total": {"type": "integer", "minimum": 0},
+              "open_count": {"type": "integer", "minimum": 0},
+              "severity_counts": {
+                "type": "object",
+                "additionalProperties": {"type": "integer", "minimum": 0}
+              },
+              "disposition_counts": {
+                "type": "object",
+                "additionalProperties": {"type": "integer", "minimum": 0}
+              }
+            }
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "review_id", "severity", "disposition", "provenance", "proofs"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "review_id": {"type": "string", "minLength": 1},
+          "severity": {"enum": ["critical", "high", "medium", "low", "informational"]},
+          "disposition": {"enum": ["open", "remediation_completed", "deferred", "accepted_risk", "false_positive"]},
+          "provenance": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["producers", "reviewer", "remediators"],
+            "properties": {
+              "producers": {"type": "array", "items": {"$ref": "#/$defs/actor"}},
+              "reviewer": {"$ref": "#/$defs/actor"},
+              "remediators": {"type": "array", "items": {"$ref": "#/$defs/actor"}},
+              "verifier": {"$ref": "#/$defs/actor"}
+            }
+          },
+            "proofs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "gate_id", "negative_control_id"],
+              "allOf": [
+                {
+                  "if": {"properties": {"kind": {"const": "test_node"}}},
+                  "then": {"required": ["node_id"]}
+                }
+              ],
+              "properties": {
+                "kind": {"enum": ["test_node", "behavioral_probe"]},
+                "gate_id": {"type": "string", "minLength": 1},
+                "node_id": {"type": "string", "minLength": 1},
+                "negative_control_id": {"type": "string", "minLength": 1},
+                "supplemental_paths": {"type": "array", "items": {"type": "string", "minLength": 1}}
+                }
+              }
+            },
+            "risk_acceptance": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["authority", "reference"],
+              "properties": {
+                "authority": {"$ref": "#/$defs/actor"},
+                "reference": {"type": "string", "minLength": 1}
+              }
+            }
+        }
+      }
+    }
+  }
+}

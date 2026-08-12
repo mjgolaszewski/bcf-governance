@@ -39,8 +39,8 @@ ARTIFACT_MANIFEST_SCHEMA = "artifact-manifest.schema.json"
 REPO_CLEANUP_CONTRACT_SCHEMA = "repo-cleanup-contract.schema.json"
 PHASE_HISTORY_SCHEMA = "phase-history.schema.json"
 SCHEMA_ROOT = "schemas"
-PHASE_CLOSEOUT_STATUSES = {"verified", "closed"}
-PHASE_HISTORY_STATUSES = {"completed", "verified", "closed", "abandoned"}
+PHASE_CLOSEOUT_STATUSES = {"completed"}
+PHASE_HISTORY_STATUSES = {"completed", "abandoned"}
 PHASE_RETENTION_MODES = {"archive", "git_history"}
 ACTIVE_PHASE_LIFECYCLE_STATUSES = {
     "planned",
@@ -48,11 +48,9 @@ ACTIVE_PHASE_LIFECYCLE_STATUSES = {
     "blocked",
     "paused",
     "completed",
-    "verified",
-    "closed",
     "abandoned",
 }
-COMPLETED_RELEASE_TRAIN_STATUSES = {"completed", "closed", "released"}
+COMPLETED_RELEASE_TRAIN_STATUSES = {"completed"}
 HOTFIX_MODES = {"lite", "full"}
 VALIDATION_OUTPUT_FORMATS = {"text", "json"}
 RELEASE_GATE_PLACEHOLDER_MARKERS = (
@@ -98,6 +96,7 @@ RELEASE_GATE_POLICY_MARKERS = {
     "security_dependency_audit": ("pip-audit", "safety", "npm audit", "osv", "cargo audit"),
     "security_sbom": ("syft", "cyclonedx", "sbom"),
     "security_vulnerability_scan": ("trivy", "grype", "semgrep", "vulnerability"),
+    "security_review": ("security-review", "security review", "findings"),
     "runtime_smoke": ("smoke", "docker", "compose", "health"),
 }
 DEFAULT_RELEASE_GATE_TARGETS = {
@@ -119,6 +118,7 @@ DEFAULT_RELEASE_GATE_TARGETS = {
     "security-dependency-audit",
     "security-sbom",
     "security-vulnerability-scan",
+    "security-review",
     "runtime-smoke",
 }
 DEFAULT_RELEASE_GATE_POLICIES = {
@@ -140,6 +140,7 @@ DEFAULT_RELEASE_GATE_POLICIES = {
     "security-dependency-audit": "security_dependency_audit",
     "security-sbom": "security_sbom",
     "security-vulnerability-scan": "security_vulnerability_scan",
+    "security-review": "security_review",
     "runtime-smoke": "runtime_smoke",
 }
 MANDATORY_STRUCTURAL_GATE_TARGETS = (
@@ -360,6 +361,7 @@ def _success_report(
 ) -> dict[str, Any]:
     report = {
         "status": "pass",
+        "engine": "structural_validation",
         "checks": {
             "schema": "pass",
             "semantic": "pass",
@@ -373,9 +375,16 @@ def _success_report(
 
 
 def _failure_report(repo_root: Path, error: GovernanceValidationError) -> dict[str, Any]:
+    checks = _classify_failure(error)
+    failure_class = next(
+        (name for name in ("schema", "semantic", "placeholders") if checks[name] == "fail"),
+        "structural_validation",
+    )
     return {
         "status": "fail",
-        "checks": _classify_failure(error),
+        "engine": "structural_validation",
+        "failure_class": failure_class,
+        "checks": checks,
         "active_phase": _active_phase_id(repo_root),
         "error": str(error),
     }

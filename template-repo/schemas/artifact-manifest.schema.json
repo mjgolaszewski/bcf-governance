@@ -66,7 +66,7 @@
             "closed_phase_statuses": {
               "type": "array",
               "minItems": 1,
-              "items": { "type": "string", "enum": ["completed", "verified", "closed"] }
+              "items": { "type": "string", "const": "completed" }
             },
             "preserve_hotfix_logs": { "type": "boolean" }
           }

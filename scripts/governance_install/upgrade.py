@@ -126,6 +126,19 @@ def _upgrade_agents_yaml(template_root: Path, target_root: Path) -> None:
             template_schema_contract.get("required_schemas"),
         )
 
+    phase_log_contract = _ensure_mapping(
+        governance,
+        "phase_log_contract",
+        template_governance.get("phase_log_contract"),
+    )
+    template_phase_log = template_governance.get("phase_log_contract")
+    if isinstance(template_phase_log, dict):
+        phase_log_contract["status_taxonomy"] = template_phase_log.get("status_taxonomy")
+        phase_log_contract["computed_states"] = template_phase_log.get("computed_states")
+        phase_log_contract["final_closeout_required_fields"] = template_phase_log.get(
+            "final_closeout_required_fields"
+        )
+
     semantic_contract = _ensure_mapping(
         governance,
         "semantic_validation_contract",
@@ -138,6 +151,18 @@ def _upgrade_agents_yaml(template_root: Path, target_root: Path) -> None:
             "required_checks",
             template_semantic_contract.get("required_checks"),
         )
+
+    phase_transition = _ensure_mapping(
+        governance,
+        "phase_transition_contract",
+        template_governance.get("phase_transition_contract"),
+    )
+    template_transition = template_governance.get("phase_transition_contract")
+    if isinstance(template_transition, dict):
+        phase_transition["active_phase_lifecycle_taxonomy"] = template_transition.get(
+            "active_phase_lifecycle_taxonomy"
+        )
+        phase_transition["rollover_rules"] = template_transition.get("rollover_rules")
 
     ownership_contract = _ensure_mapping(
         governance,
@@ -251,6 +276,10 @@ def _upgrade_artifact_manifest(template_root: Path, target_root: Path) -> None:
         policy.setdefault("history_path", template_policy.get("history_path"))
         policy.setdefault("active_window", template_policy.get("active_window"))
         policy.setdefault("archive", template_policy.get("archive"))
+        if isinstance(policy.get("archive"), dict) and isinstance(template_policy.get("archive"), dict):
+            policy["archive"]["closed_phase_statuses"] = template_policy["archive"].get(
+                "closed_phase_statuses"
+            )
     context_budgets = _ensure_mapping(
         payload,
         "context_budgets",
@@ -276,6 +305,7 @@ def _upgrade_artifact_manifest(template_root: Path, target_root: Path) -> None:
                 )
     _write_yaml_mapping(path, payload)
     (target_root / "governance/archive/phase-artifacts").mkdir(parents=True, exist_ok=True)
+    _ensure_gitignore_pattern(target_root, ".artifacts/")
     if isinstance(policy, dict) and str(policy.get("mode")).replace("-", "_") == "archive":
         _ensure_archive_gitignore(target_root, policy)
 
@@ -302,11 +332,21 @@ def _upgrade_governance_profile(template_root: Path, target_root: Path) -> None:
     template_release = template.get("release_gate_profile")
     if isinstance(template_release, dict) and isinstance(template_release.get("gates"), dict):
         gates.setdefault("governance_exposure_scan", template_release["gates"].get("governance_exposure_scan"))
+        security_review = template_release["gates"].get("security_review")
+        if isinstance(security_review, dict) and "security_review" not in gates:
+            security_review = dict(security_review)
+            selected = payload.get("profile")
+            if isinstance(selected, dict) and selected.get("selected") == "lite":
+                security_review["status"] = "deferred"
+            gates["security_review"] = security_review
 
     ci_profile = _ensure_mapping(payload, "ci_profile", template.get("ci_profile"))
     template_ci = template.get("ci_profile")
     if isinstance(template_ci, dict):
         _ensure_list_items(ci_profile, "required_push_jobs", ["governance-exposure-scan"])
+        selected = payload.get("profile")
+        if not (isinstance(selected, dict) and selected.get("selected") == "lite"):
+            _ensure_list_items(ci_profile, "required_push_jobs", ["security-review"])
     _write_yaml_mapping(path, payload)
 
 
@@ -316,28 +356,62 @@ def _upgrade_makefile_fragment(target_root: Path) -> None:
     if not path.exists():
         return
     text = path.read_text(encoding="utf-8")
-    if ".PHONY:" in text and "governance-exposure-scan" not in text.splitlines()[0]:
-        text = text.replace(
-            "governance-validate",
-            "governance-validate governance-exposure-scan",
-            1,
-        )
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        if line.startswith(".PHONY:"):
+            for target in ("governance-exposure-scan", "governance-truthfulness"):
+                if target not in line.split():
+                    line += f" {target}"
+            lines[index] = line
+            break
+    text = "\n".join(lines) + "\n"
+    if "BCF_EVIDENCE_DIR ?=" not in text:
+        marker = ".PHONY:"
+        text = text.replace(marker, "BCF_EVIDENCE_DIR ?= .artifacts/bcf\n\n" + marker, 1)
     if "\ngovernance-exposure-scan:" not in text:
         marker = "\ngovernance-scaffold-help:"
         block = "\ngovernance-exposure-scan:\n\t$(PYTHON) scripts/check_governance_exposure.py --repo-root .\n"
         text = text.replace(marker, f"{block}{marker}", 1) if marker in text else text + block
+    if "\ngovernance-truthfulness:" not in text:
+        marker = "\ngovernance-scaffold-help:"
+        block = (
+            "\ngovernance-truthfulness:\n"
+            "\t$(PYTHON) scripts/governance_truth.py --repo-root . "
+            "--evidence-dir $(BCF_EVIDENCE_DIR)\n"
+        )
+        text = text.replace(marker, f"{block}{marker}", 1) if marker in text else text + block
+    profile = _load_yaml_mapping(target_root / "governance-profile.yml")
+    release_profile = profile.get("release_gate_profile")
+    gates = release_profile.get("gates") if isinstance(release_profile, dict) else {}
+    gate_targets = [
+        str(gate["target"])
+        for gate in gates.values()
+        if isinstance(gate, dict)
+        and gate.get("status") != "not_applicable"
+        and isinstance(gate.get("target"), str)
+    ] if isinstance(gates, dict) else []
     release_span = _find_target_span(text.splitlines(), "release-check")
-    if release_span is not None and "$(MAKE) governance-exposure-scan" not in text:
+    if release_span is not None and gate_targets:
         lines = text.splitlines()
-        start, _ = release_span
-        insert_at = start + 1
-        for index in range(start + 1, len(lines)):
-            if lines[index].strip() == "@$(MAKE) governance-validate":
-                insert_at = index + 1
-                break
-        lines.insert(insert_at, "\t@$(MAKE) governance-exposure-scan")
-        text = "\n".join(lines) + "\n"
+        start, end = release_span
+        replacement = [
+            lines[start],
+            "\t@mkdir -p $(BCF_EVIDENCE_DIR)",
+            f"\t@for gate in {' '.join(gate_targets)}; do \\",
+            "\t\t$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output $(BCF_EVIDENCE_DIR)/$$gate || exit $$?; \\",
+            "\tdone",
+            "\t$(MAKE) governance-truthfulness",
+        ]
+        text = "\n".join([*lines[:start], *replacement, *lines[end:]]) + "\n"
     path.write_text(text, encoding="utf-8")
+
+
+def _ensure_gitignore_pattern(target_root: Path, pattern: str) -> None:
+    gitignore = target_root / ".gitignore"
+    existing = gitignore.read_text(encoding="utf-8").splitlines() if gitignore.exists() else []
+    if pattern not in {line.strip() for line in existing}:
+        existing.append(pattern)
+        gitignore.write_text("\n".join(existing).rstrip() + "\n", encoding="utf-8")
 
 
 def _ensure_archive_gitignore(target_root: Path, policy: dict[str, Any]) -> None:
@@ -350,15 +424,8 @@ def _ensure_archive_gitignore(target_root: Path, policy: dict[str, Any]) -> None
     gitkeep.touch()
     ignored_pattern = f"{archive_root}/*"
     keep_pattern = f"!{archive_root}/.gitkeep"
-    gitignore = target_root / ".gitignore"
-    existing = gitignore.read_text(encoding="utf-8").splitlines() if gitignore.exists() else []
-    normalized = {line.strip() for line in existing}
-    lines = list(existing)
-    if ignored_pattern not in normalized:
-        lines.append(ignored_pattern)
-    if keep_pattern not in normalized:
-        lines.append(keep_pattern)
-    gitignore.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+    _ensure_gitignore_pattern(target_root, ignored_pattern)
+    _ensure_gitignore_pattern(target_root, keep_pattern)
 
 
 
@@ -380,6 +447,22 @@ def _upgrade_state_files(
         target_root=target_root,
         relative_path="governance/archive/phase-artifacts/.gitkeep",
         values=values,
+    )
+    created.extend(
+        _copy_template_file_if_missing(
+            template_root=template_root,
+            target_root=target_root,
+            relative_path="governance/evidence-policy.yml",
+            values=values,
+        )
+    )
+    created.extend(
+        _copy_template_file_if_missing(
+            template_root=template_root,
+            target_root=target_root,
+            relative_path="governance/findings.yml",
+            values=values,
+        )
     )
     _upgrade_agents_yaml(template_root, target_root)
     _upgrade_memory_yaml(template_root, target_root)

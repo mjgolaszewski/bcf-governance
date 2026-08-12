@@ -144,15 +144,22 @@
         "phase_log_contract": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["status_taxonomy", "final_closeout_required_fields"],
+          "required": ["status_taxonomy", "computed_states", "final_closeout_required_fields"],
           "properties": {
             "status_taxonomy": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["planned", "completed", "verified", "closed"],
+              "required": ["planned", "completed"],
               "properties": {
                 "planned": { "type": "string", "minLength": 1 },
-                "completed": { "type": "string", "minLength": 1 },
+                "completed": { "type": "string", "minLength": 1 }
+              }
+            },
+            "computed_states": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["verified", "closed"],
+              "properties": {
                 "verified": { "type": "string", "minLength": 1 },
                 "closed": { "type": "string", "minLength": 1 }
               }
@@ -283,8 +290,6 @@
                 "blocked",
                 "paused",
                 "completed",
-                "verified",
-                "closed",
                 "abandoned"
               ],
               "properties": {
@@ -293,8 +298,6 @@
                 "blocked": { "type": "string", "minLength": 1 },
                 "paused": { "type": "string", "minLength": 1 },
                 "completed": { "type": "string", "minLength": 1 },
-                "verified": { "type": "string", "minLength": 1 },
-                "closed": { "type": "string", "minLength": 1 },
                 "abandoned": { "type": "string", "minLength": 1 }
               }
             },

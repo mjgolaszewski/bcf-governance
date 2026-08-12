@@ -12,13 +12,13 @@ profile:
   available_profiles:
     - name: lite
       use_when: prototype, small internal service, or single-agent lane
-      required_artifacts: [AGENTS.yml, MEMORY.yml, plans/product-spec.yml, plans/build-plan.yml, plans/phase-ledger.yml, scripts/validate_governance_yaml.py]
+      required_artifacts: [AGENTS.yml, MEMORY.yml, plans/product-spec.yml, plans/build-plan.yml, plans/phase-ledger.yml, governance/evidence-policy.yml, governance/findings.yml, scripts/validate_governance_yaml.py, scripts/governance_truth.py]
     - name: standard
       use_when: production-bound project with phase evidence and architecture gates
-      required_artifacts: [AGENTS.yml, MEMORY.yml, governance-profile.yml, architecture-boundaries.yml, plans/product-spec.yml, plans/build-plan.yml, plans/phase-ledger.yml, plans/phase-NN-plan.yml, plans/phase-NN-workitems.yml, phases/phase-NN-log.yml, backend/tests/architecture/, scripts/validate_governance_yaml.py, scripts/scaffold_governance_artifacts.py, .github/workflows/governance.yml]
+      required_artifacts: [AGENTS.yml, MEMORY.yml, governance-profile.yml, architecture-boundaries.yml, governance/evidence-policy.yml, governance/findings.yml, plans/product-spec.yml, plans/build-plan.yml, plans/phase-ledger.yml, plans/phase-NN-plan.yml, plans/phase-NN-workitems.yml, phases/phase-NN-log.yml, backend/tests/architecture/, scripts/validate_governance_yaml.py, scripts/governance_evidence.py, scripts/governance_truth.py, scripts/migrate_governance_evidence.py, scripts/scaffold_governance_artifacts.py, .github/workflows/governance.yml]
     - name: regulated
       use_when: provenance, security evidence, SBOM, or formal hotfix reconciliation is mandatory
-      required_artifacts: [AGENTS.yml, MEMORY.yml, governance-profile.yml, architecture-boundaries.yml, plans/product-spec.yml, plans/build-plan.yml, plans/phase-ledger.yml, plans/phase-NN-plan.yml, plans/phase-NN-workitems.yml, phases/phase-NN-log.yml, phases/phase-NN-hotfixNN.yml, governance/MODEL_RISK_AND_PROVENANCE.md, governance/HOTFIX_LANE.md, SBOM or vulnerability scan evidence]
+      required_artifacts: [AGENTS.yml, MEMORY.yml, governance-profile.yml, architecture-boundaries.yml, governance/evidence-policy.yml, governance/findings.yml, plans/product-spec.yml, plans/build-plan.yml, plans/phase-ledger.yml, plans/phase-NN-plan.yml, plans/phase-NN-workitems.yml, phases/phase-NN-log.yml, phases/phase-NN-hotfixNN.yml, scripts/governance_evidence.py, scripts/governance_truth.py, scripts/migrate_governance_evidence.py, governance/MODEL_RISK_AND_PROVENANCE.md, governance/HOTFIX_LANE.md, SBOM or vulnerability scan evidence]
 release_gate_profile:
   gates:
     governance_validate: {target: governance-validate, status: required, command_policy: governance_validation, rationale: governed YAML passes schema semantic path and placeholder validation}
@@ -39,6 +39,7 @@ release_gate_profile:
     security_dependency_audit: {target: security-dependency-audit, status: required, command_policy: security_dependency_audit, rationale: dependencies have a vulnerability audit lane}
     security_sbom: {target: security-sbom, status: required, command_policy: security_sbom, rationale: production-bound artifacts produce an SBOM}
     security_vulnerability_scan: {target: security-vulnerability-scan, status: required, command_policy: security_vulnerability_scan, rationale: source or image vulnerability scan is wired}
+    security_review: {target: security-review, status: required, command_policy: security_review, rationale: canonical review findings and remediation proofs bind to the governed tree}
     runtime_smoke: {target: runtime-smoke, status: required, command_policy: runtime_smoke, rationale: runtime behavior is proven in a declared environment}
 ci_profile:
   push_lanes_required: true
@@ -62,6 +63,7 @@ ci_profile:
     - security-dependency-audit
     - security-sbom
     - security-vulnerability-scan
+    - security-review
     - runtime-smoke
   runner_rules:
     - CI jobs are self-seeding

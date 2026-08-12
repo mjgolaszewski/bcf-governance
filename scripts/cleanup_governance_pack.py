@@ -17,6 +17,7 @@ if str(_SCRIPT_ROOT) not in sys.path:
 
 from governance_cleanup.models import CleanupAction, CleanupReport, ManualAction  # noqa: E402
 from governance_cleanup.phase_retention import (  # noqa: E402
+    load_truth_reports,
     phase_retention_actions,
     prune_phase_hotfix_records,
     set_phase_retention_mode,
@@ -67,6 +68,10 @@ GOVERNANCE_PACK_REMOVE_PATHS = (
     "schemas",
     "backend/tests/architecture/test_boundaries_ast.py",
     "scripts/check_governance_exposure.py",
+    "scripts/governance_evidence.py",
+    "scripts/governance_truth.py",
+    "scripts/governance_truth_support.py",
+    "scripts/migrate_governance_evidence.py",
     "scripts/governance_validation",
     "scripts/scaffold_governance_artifacts.py",
     "scripts/validate_governance_yaml.py",
@@ -271,6 +276,7 @@ def plan_cleanup(
     *,
     archive_closed_phases: bool = False,
     phase_retention_mode: str | None = None,
+    truth_report_paths: list[Path] | None = None,
     remove_governance_pack: bool = False,
 ) -> CleanupReport:
     repo_root = repo_root.resolve()
@@ -304,8 +310,9 @@ def plan_cleanup(
         phase_retention_mode=phase_retention_mode,
     )
     if effective_retention_mode is not None:
+        truth_reports = load_truth_reports(repo_root, truth_report_paths)
         retention_actions, retention_warnings = phase_retention_actions(
-            repo_root, mode=effective_retention_mode
+            repo_root, mode=effective_retention_mode, truth_reports=truth_reports
         )
         actions.extend(retention_actions)
         warnings.extend(retention_warnings)
@@ -453,6 +460,7 @@ def apply_cleanup(
     assume_yes: bool,
     archive_closed_phases: bool = False,
     phase_retention_mode: str | None = None,
+    truth_report_paths: list[Path] | None = None,
     remove_governance_pack: bool = False,
 ) -> CleanupReport:
     repo_root = repo_root.resolve()
@@ -464,6 +472,7 @@ def apply_cleanup(
         repo_root,
         archive_closed_phases=archive_closed_phases,
         phase_retention_mode=phase_retention_mode,
+        truth_report_paths=truth_report_paths,
         remove_governance_pack=remove_governance_pack,
     )
     safe_actions = [action for action in report.actions if action.safe_to_apply]
@@ -491,6 +500,7 @@ def apply_cleanup(
         repo_root,
         safe_actions,
         mode=effective_retention_mode,
+        truth_reports=load_truth_reports(repo_root, truth_report_paths),
     )
     if phase_history_path is not None:
         warnings.append(f"phase history updated: {phase_history_path}")
@@ -592,6 +602,13 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Plan or apply removal of BCF governance pack-owned artifacts and dedicated CI gates.",
     )
+    parser.add_argument(
+        "--truth-report",
+        dest="truth_report_paths",
+        action="append",
+        type=Path,
+        help="Passing closed truth report required for each phase selected for retention.",
+    )
     parser.add_argument("--yes", action="store_true", help="Confirm destructive --apply without prompting.")
     parser.add_argument(
         "--format",
@@ -612,6 +629,7 @@ def main(argv: list[str] | None = None) -> None:
                 assume_yes=args.yes,
                 archive_closed_phases=args.archive_closed_phases,
                 phase_retention_mode=args.phase_retention_mode,
+                truth_report_paths=args.truth_report_paths,
                 remove_governance_pack=args.remove_governance_pack,
             )
             if args.apply
@@ -619,6 +637,7 @@ def main(argv: list[str] | None = None) -> None:
                 args.repo_root,
                 archive_closed_phases=args.archive_closed_phases,
                 phase_retention_mode=args.phase_retention_mode,
+                truth_report_paths=args.truth_report_paths,
                 remove_governance_pack=args.remove_governance_pack,
             )
         )

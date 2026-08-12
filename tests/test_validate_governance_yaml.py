@@ -114,6 +114,8 @@ def _configure_release_gates(repo_root: Path) -> None:
             "\t@syft dir:.",
         '\t@echo "configure repo-specific vulnerability scan before release-check can pass"\n\t@false':
             "\t@trivy fs .",
+        '\t@echo "configure repo-specific security review command before release-check can pass"\n\t@false':
+            "\t@python3 scripts/run_security_review.py",
         '\t@echo "configure repo-specific runtime smoke command before release-check can pass"\n\t@false':
             "\t@docker compose config",
     }
@@ -331,7 +333,8 @@ def _advance_catalog_to_p02(repo_root: Path, *, add_history_entry: bool) -> None
             "phase_id": "P01",
             "build_block": "foundation",
             "release_train": "release_1",
-            "status": "verified",
+            "status": "completed",
+            "legacy_terminal_status": "verified",
             "outcome": "foundation verified",
             "summary": ["foundation phase retained in compact history"],
             "validation": ["make governance-validate"],
@@ -408,6 +411,7 @@ def test_validate_repo_root_emits_compact_json_output(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload == {
         "active_phase": "P01",
+        "engine": "structural_validation",
         "checks": {"placeholders": "pass", "schema": "pass", "semantic": "pass"},
         "status": "pass",
     }
@@ -427,6 +431,7 @@ def test_validate_template_repo_emits_compact_json_output_with_allowed_placehold
     payload = json.loads(result.stdout)
     assert payload == {
         "active_phase": "P01",
+        "engine": "structural_validation",
         "checks": {"placeholders": "skipped", "schema": "pass", "semantic": "pass"},
         "status": "pass",
     }
@@ -551,7 +556,7 @@ def test_validate_repo_root_rejects_placeholder_release_gates(tmp_path: Path) ->
     assert "release gate placeholder marker" in str(excinfo.value)
 
 
-def test_validate_repo_root_rejects_missing_required_release_gate(tmp_path: Path) -> None:
+def test_validate_repo_root_does_not_certify_release_loop_from_command_text(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
     makefile_path = repo_root / "Makefile.fragment"
     makefile_path.write_text(
@@ -559,9 +564,7 @@ def test_validate_repo_root_rejects_missing_required_release_gate(tmp_path: Path
         encoding="utf-8",
     )
 
-    with pytest.raises(GovernanceValidationError) as excinfo:
-        validate_repo_root(repo_root)
-    assert "release-check must invoke required release gate targets: typecheck" in str(excinfo.value)
+    validate_repo_root(repo_root)
 
 
 def test_validate_repo_root_allows_omitted_optional_release_gate(tmp_path: Path) -> None:
@@ -583,16 +586,14 @@ def test_validate_repo_root_allows_omitted_optional_release_gate(tmp_path: Path)
     validate_repo_root(repo_root)
 
 
-def test_validate_repo_root_rejects_meaningless_release_gate_command(tmp_path: Path) -> None:
+def test_validate_repo_root_leaves_gate_behavior_to_truth_engine(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
     makefile_path = repo_root / "Makefile.fragment"
     text = makefile_path.read_text(encoding="utf-8")
     text = text.replace("\t@ruff check .", "\t@python3 --version >/dev/null")
     makefile_path.write_text(text, encoding="utf-8")
 
-    with pytest.raises(GovernanceValidationError) as excinfo:
-        validate_repo_root(repo_root)
-    assert "uses a version/probe command" in str(excinfo.value)
+    validate_repo_root(repo_root)
 
 
 def test_validate_repo_root_rejects_product_build_phase_mismatch(tmp_path: Path) -> None:
@@ -731,7 +732,7 @@ def test_validate_repo_root_retention_mode_allows_unscaffolded_future_phase(
     manifest_path = repo_root / "governance/artifact-manifest.yml"
     manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
     manifest["context_budgets"]["agent_required_files"]["plans/product-spec.yml"] = 80
-    manifest["context_budgets"]["agent_required_files"]["governance/artifact-manifest.yml"] = 120
+    manifest["context_budgets"]["agent_required_files"]["governance/artifact-manifest.yml"] = 160
     _write_yaml(manifest_path, manifest)
 
     validate_repo_root(repo_root)
@@ -849,7 +850,7 @@ def test_validate_repo_root_rejects_log_workitem_status_drift(tmp_path: Path) ->
     assert "workitem statuses must match" in str(excinfo.value)
 
 
-def test_validate_repo_root_rejects_closed_phase_with_open_workitems(tmp_path: Path) -> None:
+def test_validate_repo_root_rejects_authored_terminal_state_and_booleans(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
     log_path = repo_root / "phases/phase-01-log.yml"
     payload = yaml.safe_load(log_path.read_text(encoding="utf-8"))
@@ -863,7 +864,8 @@ def test_validate_repo_root_rejects_closed_phase_with_open_workitems(tmp_path: P
 
     with pytest.raises(GovernanceValidationError) as excinfo:
         validate_repo_root(repo_root)
-    assert "cannot be verified or closed while workitems remain open" in str(excinfo.value)
+    assert "failed structural schema" in str(excinfo.value)
+    assert "closed" in str(excinfo.value) or "unexpected" in str(excinfo.value)
 
 
 def test_validate_repo_root_rejects_phase_sequence_gaps(tmp_path: Path) -> None:

@@ -18,6 +18,6 @@ Repo evidence: `scripts/validate_governance_yaml.py`, `tests/fixtures/bad_hotfix
 
 ## Required Artifacts
 
-Record the hotfix in `plans/phase-ledger.yml`, create a log named `phases/phase-NN-hotfix##.yml`, capture validation evidence, and reconcile canonical artifacts before closeout when behavior or environment contracts changed.
+Record the hotfix in `plans/phase-ledger.yml`, create a log named `phases/phase-NN-hotfix##.yml`, and declare its gate and reconciliation requirements. The log may author `completed`; `bcf truth` computes hotfix verification and closure from current-tree evidence and blocks release while an applicable hotfix is not closed.
 
 Repo evidence: `template-repo/phases/phase-NN-hotfixNN.yml`, `template-repo/schemas/hotfix-log.schema.json`.

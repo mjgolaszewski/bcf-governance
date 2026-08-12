@@ -84,6 +84,7 @@
                   "security_dependency_audit",
                   "security_sbom",
                   "security_vulnerability_scan",
+                  "security_review",
                   "runtime_smoke"
                 ]
               },

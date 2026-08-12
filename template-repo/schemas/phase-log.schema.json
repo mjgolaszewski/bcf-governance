@@ -8,6 +8,7 @@
     "summary",
     "workitems",
     "execution_evidence",
+    "closeout_requirements",
     "known_constraints",
     "next_work"
   ],
@@ -24,7 +25,7 @@
         "generated_at_utc": { "type": "string", "minLength": 1 },
         "status": {
           "type": "string",
-          "enum": ["planned", "completed", "verified", "closed"]
+          "enum": ["planned", "completed"]
         },
         "path": { "type": "string", "minLength": 1 }
       }
@@ -84,13 +85,28 @@
         }
       }
     },
-    "all_tickets_closed": { "type": "boolean" },
-    "required_suites_green": {
-      "type": "array",
-      "items": { "type": "string", "minLength": 1 }
+    "closeout_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claims", "reconciliation", "finding_registry"],
+      "properties": {
+        "claims": {
+          "type": "object",
+          "required": ["workitems_closed", "required_suites_green", "architecture_gates_green", "health_checks_green", "security_review_complete", "findings_resolved"],
+          "additionalProperties": false,
+          "properties": {
+            "workitems_closed": { "$ref": "#/$defs/evidenceRequirement" },
+            "required_suites_green": { "$ref": "#/$defs/evidenceRequirement" },
+            "architecture_gates_green": { "$ref": "#/$defs/evidenceRequirement" },
+            "health_checks_green": { "$ref": "#/$defs/evidenceRequirement" },
+            "security_review_complete": { "$ref": "#/$defs/evidenceRequirement" },
+            "findings_resolved": { "$ref": "#/$defs/evidenceRequirement" }
+          }
+        },
+        "reconciliation": { "$ref": "#/$defs/evidenceRequirement" },
+        "finding_registry": { "type": "string", "const": "governance/findings.yml" }
+      }
     },
-    "ast_architecture_gates_green": { "type": "boolean" },
-    "health_checks_green": { "type": "boolean" },
     "known_warnings": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 }
@@ -106,28 +122,19 @@
       "items": { "type": "string", "minLength": 1 }
     }
   },
-  "allOf": [
-    {
-      "if": {
-        "properties": {
-          "document": {
-            "properties": {
-              "status": { "enum": ["verified", "closed"] }
-            },
-            "required": ["status"]
-          }
-        },
-        "required": ["document"]
-      },
-      "then": {
-        "required": [
-          "all_tickets_closed",
-          "required_suites_green",
-          "ast_architecture_gates_green",
-          "health_checks_green",
-          "known_warnings"
-        ]
+  "$defs": {
+    "evidenceRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_evidence"],
+      "properties": {
+        "required_evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
       }
     }
-  ]
+  }
 }

@@ -47,7 +47,30 @@
           "release_train": { "type": "string", "minLength": 1 },
           "retention_source": { "type": "string", "enum": ["archive", "git_history"] },
           "retention_ref": { "type": "string", "minLength": 1 },
-          "status": { "type": "string", "enum": ["completed", "verified", "closed", "abandoned"] },
+          "status": { "type": "string", "enum": ["completed", "abandoned"] },
+          "legacy_terminal_status": { "type": "string", "enum": ["verified", "closed"] },
+          "derived_state_at_capture": { "type": "string", "enum": ["verified", "closed"] },
+          "verification_snapshot": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["commit_sha", "tree_sha", "truth_report_sha256", "evidence_bundle_sha256", "durable_ref", "verifier"],
+            "properties": {
+              "commit_sha": { "type": "string", "pattern": "^[a-f0-9]{40,64}$" },
+              "tree_sha": { "type": "string", "pattern": "^[a-f0-9]{40,64}$" },
+              "truth_report_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "evidence_bundle_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "durable_ref": { "type": "string", "minLength": 1 },
+              "verifier": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["kind", "id"],
+                "properties": {
+                  "kind": { "enum": ["human", "model", "service", "workflow"] },
+                  "id": { "type": "string", "minLength": 1 }
+                }
+              }
+            }
+          },
           "outcome": { "type": "string", "minLength": 1 },
           "summary": {
             "type": "array",

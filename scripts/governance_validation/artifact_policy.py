@@ -390,6 +390,30 @@ def _validate_phase_history_entries(
                 f"plans/phase-history.yml entry {phase_id} status must be one of "
                 f"{sorted(PHASE_HISTORY_STATUSES)}"
             )
+        derived_state = entry.get("derived_state_at_capture")
+        if derived_state is not None:
+            if derived_state not in {"verified", "closed"}:
+                raise GovernanceValidationError(
+                    f"plans/phase-history.yml entry {phase_id} derived_state_at_capture "
+                    "must be verified or closed"
+                )
+            snapshot = _require_mapping(
+                entry.get("verification_snapshot"),
+                context=f"plans/phase-history.yml entries.{phase_id}.verification_snapshot",
+            )
+            for field in (
+                "commit_sha",
+                "tree_sha",
+                "truth_report_sha256",
+                "evidence_bundle_sha256",
+                "durable_ref",
+                "verifier",
+            ):
+                if field not in snapshot:
+                    raise GovernanceValidationError(
+                        f"plans/phase-history.yml entry {phase_id} verification_snapshot "
+                        f"missing {field}"
+                    )
         entry_source = entry.get("retention_source")
         if policy_mode is not None:
             retention_source = _require_string(

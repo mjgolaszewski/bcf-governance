@@ -2,7 +2,9 @@ SHELL := /bin/bash
 PYTHON ?= python3
 PYTEST ?= $(PYTHON) -m pytest
 
-.PHONY: governance-deps governance-validate governance-exposure-scan governance-scaffold-help architecture-test architecture-module-size architecture-layer-membership architecture-context-membership architecture-import-boundaries architecture-cqrs-side architecture-router-thinness architecture-duplication lint typecheck test contract-test security-secret-scan security-dependency-audit security-sbom security-vulnerability-scan runtime-smoke release-check
+.PHONY: governance-deps governance-validate governance-exposure-scan governance-scaffold-help governance-truthfulness architecture-test architecture-module-size architecture-layer-membership architecture-context-membership architecture-import-boundaries architecture-cqrs-side architecture-router-thinness architecture-duplication lint typecheck test contract-test security-secret-scan security-dependency-audit security-sbom security-vulnerability-scan security-review runtime-smoke release-check
+
+BCF_EVIDENCE_DIR ?= .artifacts/bcf
 
 governance-deps:
 	$(PYTHON) -m pip install -r requirements-governance.txt
@@ -15,6 +17,9 @@ governance-exposure-scan:
 
 governance-scaffold-help:
 	$(PYTHON) scripts/scaffold_governance_artifacts.py --help
+
+governance-truthfulness:
+	$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)
 
 architecture-test:
 	$(PYTEST) backend/tests/architecture
@@ -72,27 +77,17 @@ security-vulnerability-scan:
 	@echo "configure repo-specific vulnerability scan before release-check can pass"
 	@false
 
+security-review:
+	@echo "configure repo-specific security review command before release-check can pass"
+	@false
+
 runtime-smoke:
 	@echo "configure repo-specific runtime smoke command before release-check can pass"
 	@false
 
 release-check:
-	$(MAKE) governance-validate
-	$(MAKE) governance-exposure-scan
-	$(MAKE) architecture-test
-	$(MAKE) architecture-module-size
-	$(MAKE) architecture-layer-membership
-	$(MAKE) architecture-context-membership
-	$(MAKE) architecture-import-boundaries
-	$(MAKE) architecture-cqrs-side
-	$(MAKE) architecture-router-thinness
-	$(MAKE) architecture-duplication
-	$(MAKE) lint
-	$(MAKE) typecheck
-	$(MAKE) contract-test
-	$(MAKE) test
-	$(MAKE) security-secret-scan
-	$(MAKE) security-dependency-audit
-	$(MAKE) security-sbom
-	$(MAKE) security-vulnerability-scan
-	$(MAKE) runtime-smoke
+	@mkdir -p $(BCF_EVIDENCE_DIR)
+	@for gate in governance-validate governance-exposure-scan architecture-test architecture-module-size architecture-layer-membership architecture-context-membership architecture-import-boundaries architecture-cqrs-side architecture-router-thinness architecture-duplication lint typecheck test contract-test security-secret-scan security-dependency-audit security-sbom security-vulnerability-scan security-review runtime-smoke; do \
+		$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output $(BCF_EVIDENCE_DIR)/$$gate || exit $$?; \
+	done
+	$(MAKE) governance-truthfulness

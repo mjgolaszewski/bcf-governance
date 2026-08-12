@@ -54,21 +54,36 @@ def _hotfix_stem(related_phase_id: str, hotfix_number: int) -> str:
 
 
 def _validate_phase_log_closeout(log: dict[str, Any], *, log_path: Path) -> None:
-    if _document_status(log, context=str(log_path)) not in PHASE_CLOSEOUT_STATUSES:
-        return
     for field in (
         "all_tickets_closed",
         "required_suites_green",
         "ast_architecture_gates_green",
         "health_checks_green",
-        "known_warnings",
-        "known_constraints",
+        "security_review_complete",
+        "release_ready",
+        "zero_findings",
     ):
-        if field not in log:
-            raise GovernanceValidationError(f"{log_path} missing closeout field {field}")
-    _require_sequence(log["required_suites_green"], context=f"{log_path} required_suites_green")
-    _require_sequence(log["known_warnings"], context=f"{log_path} known_warnings")
-    _require_sequence(log["known_constraints"], context=f"{log_path} known_constraints")
+        if field in log:
+            raise GovernanceValidationError(
+                f"{log_path} contains self-attested terminal field {field}; "
+                "completed is authored while verified and closed are computed by bcf truth"
+            )
+    closeout = _require_mapping(
+        log.get("closeout_requirements"), context=f"{log_path} closeout_requirements"
+    )
+    claims = _require_mapping(
+        closeout.get("claims"), context=f"{log_path} closeout_requirements.claims"
+    )
+    for claim_id, requirement in claims.items():
+        mapping = _require_mapping(
+            requirement,
+            context=f"{log_path} closeout_requirements.claims.{claim_id}",
+        )
+        _require_string_sequence(
+            mapping.get("required_evidence"),
+            context=f"{log_path} closeout_requirements.claims.{claim_id}.required_evidence",
+            min_items=1,
+        )
 
 
 def _validate_phase_workitem_consistency(
@@ -157,7 +172,7 @@ def _validate_phase_workitem_consistency(
             + ", ".join(mismatched_statuses)
         )
 
-    if _document_status(log, context=str(log_path)) in PHASE_CLOSEOUT_STATUSES:
+    if _document_status(log, context=str(log_path)) == "completed":
         open_workitems = sorted(
             item_id
             for item_id, status in workitem_statuses.items()
@@ -165,7 +180,7 @@ def _validate_phase_workitem_consistency(
         )
         if open_workitems:
             raise GovernanceValidationError(
-                f"{log_path} cannot be verified or closed while workitems remain open: "
+                f"{log_path} cannot be completed while workitems remain open: "
                 + ", ".join(open_workitems)
             )
 

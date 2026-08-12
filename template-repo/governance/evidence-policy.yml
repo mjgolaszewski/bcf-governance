@@ -1,0 +1,80 @@
+document:
+  kind: evidence_integrity_policy
+  name: "{{PROJECT_NAME}} Evidence Integrity Policy"
+  id: "{{PROJECT_ID}}-evidence-policy"
+  version: 1.0.0
+  generated_at_utc: "{{DATE}}T00:00:00Z"
+  status: active
+  path: governance/evidence-policy.yml
+settings:
+  authored_terminal_states: []
+  computed_states: [verified, closed]
+  default_binding: exact_tree
+  tree_independent_allowlist: []
+  require_negative_control_for_required_gates: true
+  required_test_defaults: {min_collected: 1, min_executed: 1, max_skipped: 0}
+claim_dependencies:
+  workitems_closed: [source, test, governance]
+  required_suites_green: [source, test, config, workflow]
+  architecture_gates_green: [source, test, config, workflow]
+  health_checks_green: [source, config, workflow]
+  security_review_complete: [source, config, test, workflow, audit, governance, security_impact]
+  findings_resolved: [source, test, audit, governance, security_impact]
+  phase_closed: [workitems_closed, required_suites_green, architecture_gates_green, health_checks_green, security_review_complete, findings_resolved]
+  release_ready: [phase_closed]
+security_impact_categories:
+  - authentication
+  - authorization
+  - cryptography
+  - session_and_token_lifecycle
+  - federation
+  - tenant_containment
+  - secrets_and_custody
+  - security_middleware
+  - authority_migrations
+  - security_ci
+workflow_contract:
+  paths: [.github/workflows/governance.yml]
+  required_events: [pull_request, push]
+gate_overrides:
+  governance-validate:
+    evidence_kind: gate
+    negative_controls:
+      - id: authored-verified-state-is-rejected
+        mutation:
+          path: "@active_phase_log"
+          yaml_path: document.status
+          value: verified
+  governance-exposure-scan:
+    evidence_kind: gate
+    negative_controls:
+      - id: local-workspace-path-is-rejected
+        mutation:
+          path: MEMORY.yml
+          search: '  canonical_repo_root: "."'
+          replace_base64: ICBjYW5vbmljYWxfcmVwb19yb290OiAiL1VzZXJzL2V4YW1wbGUvcHJpdmF0ZSI=
+  security-sbom:
+    output_requirements:
+      - {path: .artifacts/sbom.json, media_type: application/json} # non-authoritative until captured and hashed
+  security-vulnerability-scan:
+    output_requirements:
+      - {path: .artifacts/vulnerability-scan.json, media_type: application/json} # non-authoritative until captured and hashed
+  security-review:
+    evidence_kind: security_review
+    freshness_limit_seconds: 86400
+    environment_assertions:
+      - {name: BCF_SECURITY_REVIEW_PROFILE, operator: equals, value: production}
+    output_requirements:
+      - {path: governance/findings.yml, media_type: application/yaml}
+  runtime-smoke:
+    evidence_kind: runtime_health
+    environment_assertions:
+      - {name: BCF_DEPLOYMENT_PROFILE, operator: equals, value: production}
+    output_requirements:
+      - {path: .artifacts/runtime-smoke.json, media_type: application/json} # non-authoritative until captured and hashed
+provenance:
+  standard_same_actor_policy: warn
+  regulated_independent_severities: [critical, high]
+  regulated_requires_attestation: true
+  trusted_verifier_keys: {}
+  permitted_risk_authorities: []
