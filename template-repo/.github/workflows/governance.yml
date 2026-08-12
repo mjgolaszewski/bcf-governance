@@ -3,44 +3,21 @@ name: governance
 on:
   pull_request:
   push:
-    branches:
-      - main
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
-  governance-validate:
-    runs-on: [{{RUNNER_LABELS}}]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install validation dependencies
-        run: python3 -m pip install -r requirements-governance.txt
-      - name: Validate governance YAML
-        run: python3 scripts/validate_governance_yaml.py
-
-  governance-exposure-scan:
-    runs-on: [{{RUNNER_LABELS}}]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install validation dependencies
-        run: python3 -m pip install -r requirements-governance.txt
-      - name: Scan governed artifacts for local exposure
-        run: python3 scripts/check_governance_exposure.py --repo-root .
-
-  architecture:
+  evidence:
     runs-on: [{{RUNNER_LABELS}}]
     strategy:
       fail-fast: false
       matrix:
-        target:
+        gate:
+          - governance-validate
+          - governance-exposure-scan
+          - architecture-test
           - architecture-module-size
           - architecture-layer-membership
           - architecture-context-membership
@@ -48,56 +25,66 @@ jobs:
           - architecture-cqrs-side
           - architecture-router-thinness
           - architecture-duplication
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install validation dependencies
-        run: python3 -m pip install -r requirements-governance.txt
-      - name: Run ${{ matrix.target }}
-        run: make ${{ matrix.target }}
-
-  quality:
-    runs-on: [{{RUNNER_LABELS}}]
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
           - lint
           - typecheck
           - test
           - contract-test
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install validation dependencies
-        run: python3 -m pip install -r requirements-governance.txt
-      - name: Run ${{ matrix.target }}
-        run: make ${{ matrix.target }}
-
-  security:
-    runs-on: [{{RUNNER_LABELS}}]
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
           - security-secret-scan
           - security-dependency-audit
           - security-sbom
           - security-vulnerability-scan
+          - security-review
+          - runtime-smoke
     steps:
       - uses: actions/checkout@v4
-      - name: Run ${{ matrix.target }}
-        run: make ${{ matrix.target }}
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install governance dependencies
+        run: python3 -m pip install -r requirements-governance.txt
+      - name: Capture ${{ matrix.gate }} evidence
+        run: >-
+          python3 scripts/governance_evidence.py --repo-root . run
+          --gate "${{ matrix.gate }}"
+          --output ".artifacts/bcf/${{ matrix.gate }}"
+      - name: Upload ${{ matrix.gate }} evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bcf-evidence-${{ matrix.gate }}
+          path: .artifacts/bcf/${{ matrix.gate }}
+          if-no-files-found: error
 
-  runtime-smoke:
+  governance-truthfulness:
+    if: always()
+    needs: [evidence]
     runs-on: [{{RUNNER_LABELS}}]
     steps:
       - uses: actions/checkout@v4
-      - name: Run runtime smoke
-        run: make runtime-smoke
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install governance dependencies
+        run: python3 -m pip install -r requirements-governance.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: bcf-evidence-*
+          path: .artifacts/bcf
+          merge-multiple: true
+      - name: Derive governance lifecycle truth
+        run: >-
+          python3 scripts/governance_truth.py --repo-root .
+          --evidence-dir .artifacts/bcf --format json
+          --durable-ref "github-actions://${{ github.repository }}/runs/${{ github.run_id }}/bcf-governance-truth"
+          --output .artifacts/bcf/truth-report.json
+      - name: Upload truth report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bcf-governance-truth
+          path: .artifacts/bcf/truth-report.json
+          if-no-files-found: error

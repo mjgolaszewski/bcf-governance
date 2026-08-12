@@ -18,7 +18,7 @@ phase_retention_policy:
   # Set mode with `bcf cleanup --phase-retention-mode`: git_history or archive.
   history_path: plans/phase-history.yml
   active_window: {include_active: true, include_next: true, keep_recent_closed: 0}
-  archive: {root: governance/archive/phase-artifacts/, closed_phase_statuses: [verified, closed], preserve_hotfix_logs: true}
+  archive: {root: governance/archive/phase-artifacts/, closed_phase_statuses: [completed], preserve_hotfix_logs: true}
 nested_governance:
   policy: declared_vendor_only
   declared_vendors: []
@@ -41,8 +41,10 @@ context_budgets:
     architecture-boundaries.yml: {line_hard_cap: 120, kib_hard_cap: 8, intent: boundary map only}
     governance-profile.yml: {line_hard_cap: 95, kib_hard_cap: 12, intent: profile knobs only}
     governance/artifact-manifest.yml: {line_hard_cap: 80, kib_hard_cap: 8, intent: artifact index only}
+    governance/evidence-policy.yml: {line_hard_cap: 100, kib_hard_cap: 16, intent: computed lifecycle and evidence policy}
+    governance/findings.yml: {line_hard_cap: 400, kib_hard_cap: 96, intent: canonical finding accounting}
     governance/repo-cleanup-contract.yml: {line_hard_cap: 90, kib_hard_cap: 12, intent: cleanup rules only}
     plans/build-plan.yml: {line_hard_cap: 95, kib_hard_cap: 24, intent: active roadmap index}
     plans/phase-ledger.yml: {line_hard_cap: 95, kib_hard_cap: 16, intent: current phase state}
-    plans/phase-history.yml: {line_hard_cap: 40, kib_hard_cap: 48, intent: compact history index}
+    plans/phase-history.yml: {line_hard_cap: 160, kib_hard_cap: 96, intent: evidence-backed compact history index}
     plans/product-spec.yml: {line_hard_cap: 40, kib_hard_cap: 8, intent: compact product intent}

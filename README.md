@@ -17,7 +17,7 @@ ledgers, schemas, architecture boundary gates, release-gate profiles,
 observability contracts, and helper commands that keep agents from treating
 docs, plans, and tests as disconnected prose.
 
-Current release: `v0.4.6`.
+Current release: `v0.5.0`.
 
 ## Why It Matters
 
@@ -35,9 +35,11 @@ BCF turns those failure modes into executable contracts:
   currency, and cleanup closeout evidence
 - one release-gate profile that classifies required, optional, deferred, and
   not-applicable checks
-- one validator that catches schema drift, path drift, phase drift, stale
+- one structural validator that catches schema drift, path drift, phase drift, stale
   active pointers, unwired release gates, oversized context files, undeclared
   test roots, misplaced audit evidence, and retained phase-history drift
+- one truth engine that derives verification, closure, finding accounting, and
+  release readiness from content-addressed evidence bound to the current Git tree
 
 The result is not more ceremony for its own sake. It is a smaller, stricter
 surface that agents can actually read and obey.
@@ -56,8 +58,8 @@ commands explicit while keeping the governance shape consistent.
 
 **Reviewers and release owners** get a compact set of files that define what is
 in scope, what phase is active, which checks are required, and where evidence
-belongs. Release readiness becomes a set of inspectable files and commands, not
-a reconstruction exercise from chat history.
+belongs. Release readiness is a computed report over inspectable evidence, not
+an authored boolean or a reconstruction exercise from chat history.
 
 **Security, compliance, and platform teams** get declared audit roots,
 vendored-artifact provenance, secret-scan and vulnerability-scan gate slots,
@@ -92,6 +94,8 @@ The main installed artifacts are:
   drift cleanup, documentation currency, and cleanup closeout rules
 - `architecture-boundaries.yml` for source roots, layers, bounded contexts, and
   AST architecture gates
+- `governance/evidence-policy.yml` and `governance/findings.yml` for evidence
+  requirements, invalidation rules, actors, and canonical finding accounting
 - `plans/product-spec.yml`, `plans/build-plan.yml`, and
   `plans/phase-ledger.yml` for scope, sequencing, and active state
 - `plans/phase-history.yml` for compact machine-readable history of removed or
@@ -101,7 +105,7 @@ The main installed artifacts are:
 - `contracts/observability/v1/` for telemetry and logging contract baselines
 - `audits/` as the canonical root for human-requested audits, sprint reports,
   code reviews, parity reviews, and test-audit evidence
-- `Makefile.fragment` with fail-closed release-gate targets
+- `Makefile.fragment` with evidence capture and truthfulness targets
 
 ## Local Setup
 
@@ -109,7 +113,7 @@ Install the CLI from this repo or from the public release wheel without GitHub
 authentication:
 
 ```bash
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v0.4.6/bcf_governance-0.4.6-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v0.5.0/bcf_governance-0.5.0-py3-none-any.whl
 ```
 
 For a source checkout:
@@ -135,7 +139,7 @@ python3 -m pip install -r requirements-governance.txt
 
 ## Command Surface
 
-The CLI exposes eight workflows:
+The CLI exposes eleven workflows:
 
 - `bcf install` installs, upgrades, or updates the governance pack.
 - `bcf validate` validates governed YAML, semantic alignment, release-gate
@@ -149,6 +153,11 @@ The CLI exposes eight workflows:
   installation path.
 - `bcf cleanup` plans or applies conservative audit-root cleanup for drifted
   repos.
+- `bcf evidence run` captures typed, content-addressed gate evidence and
+  executes the gate's negative behavioral control; `bcf evidence attest`
+  creates a detached DSSE/Ed25519 attestation for a bundle.
+- `bcf truth` computes phase and release state from current-tree evidence.
+- `bcf migrate-evidence` previews or applies the idempotent 0.5 migration.
 - `bcf ci-cleanup` plans or removes Docker resources bearing one exact BCF CI
   run-ownership label.
 - `bcf publish-audit --history` performs an opt-in, redacted scan of every
@@ -189,10 +198,12 @@ bcf install \
 
 Use upgrade mode when a repo already has BCF governance and should receive the
 latest pack-owned scripts, validator support modules, schemas, cleanup docs,
-and architecture gate test without resetting
-product or phase state. Existing governance state files are preserved byte for
-byte; upgrade never parses and re-emits them or merges template assumptions
-into repository-owned policy:
+and architecture gate test without resetting repository-owned policy. Existing
+policy files are preserved byte for byte; upgrade never parses and re-emits
+them or merges template assumptions into customized governance. The sole state
+exception is the targeted evidence migration: it downgrades authored terminal
+states to `completed`, removes terminal booleans, writes closeout requirement
+stubs, and retains legacy values only in a non-authoritative migration report:
 
 ```bash
 bcf install --target /path/to/target-repo --upgrade
@@ -214,11 +225,12 @@ Use `--force-rescaffold` only when you intend to replace active BCF-owned
 state, not for normal upgrades.
 
 Upgrade preserves `AGENTS.yml`, `MEMORY.yml`, `governance-profile.yml`,
-`governance/artifact-manifest.yml`, `Makefile.fragment`,
-`requirements-governance.txt`, the governance CI workflow, product/build/phase
-plans, active phase logs, and existing phase history entries byte for byte. It
-creates `plans/phase-history.yml` only when missing and does not enable strict
-historical triplet cleanup unless the repo opts in through
+`governance/artifact-manifest.yml`, `governance/evidence-policy.yml`,
+`governance/findings.yml`, `Makefile.fragment`, `requirements-governance.txt`,
+the governance CI workflow, and product/build plans byte for byte. It creates
+missing evidence-policy, finding-registry, and phase-history stubs. Lifecycle
+artifacts are changed only by the evidence migration described above. Upgrade
+does not enable strict historical triplet cleanup unless the repo opts in through
 `bcf cleanup --phase-retention-mode`. `--reset-options` is the explicit opt-in
 for regenerating option surfaces.
 
@@ -243,8 +255,10 @@ to `standard` after mandatory gates are executable or explicitly classified.
 
 ## Release Gates
 
-Standard and regulated profiles expect real release-gate commands. You can wire
-them during install:
+Standard and regulated profiles expect real release-gate commands and evidence
+requirements. You can wire developer aliases during install, then configure
+the corresponding entries and negative controls in
+`governance/evidence-policy.yml`:
 
 ```bash
 bcf install \
@@ -268,12 +282,25 @@ bcf install \
   --gate-command "security-dependency-audit=pip-audit" \
   --gate-command "security-sbom=syft dir:." \
   --gate-command "security-vulnerability-scan=trivy fs ." \
+  --gate-command "security-review=python3 scripts/run_security_review.py" \
   --gate-command "runtime-smoke=docker compose config" \
   --require-strict-validation
 ```
 
 After install, merge `Makefile.fragment` into the repo Makefile or include it
-from the repo Makefile.
+from the repo Makefile. Required workflows must invoke the BCF evidence wrapper
+for their gate IDs; Make targets are developer aliases, not verification.
+
+Capture evidence and compute truth outside the governed tree:
+
+```bash
+bcf evidence run --gate test --output .artifacts/bcf/test
+bcf truth --evidence-dir .artifacts/bcf
+```
+
+`bcf validate` can pass while `bcf truth` fails: the former establishes legal
+structure, while the latter asks whether terminal factual claims are supported
+by current, independently measurable evidence.
 
 ## Governance Cleanup
 

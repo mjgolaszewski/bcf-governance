@@ -18,7 +18,11 @@ execution_evidence:
   executed_commands: []
   notes:
     - record failing workflow ids, diagnosed root cause, remediation scope, and merge-back status here
-reconciliation:
-  required_before_closeout:
-    - update canonical phase artifacts if the hotfix changes behavior or environment contracts
-    - record the hotfix in plans/phase-ledger.yml hotfix_lane
+closeout_requirements:
+  claims:
+    required_suites_green: {required_evidence: [test, contract-test]}
+    security_review_complete: {required_evidence: [security-review]}
+    health_checks_green: {required_evidence: [runtime-smoke]}
+  reconciliation:
+    required_evidence: [governance-validate, governance-exposure-scan]
+  finding_registry: governance/findings.yml

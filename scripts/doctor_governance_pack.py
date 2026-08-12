@@ -99,6 +99,9 @@ def _release_gate_diagnostics(repo_root: Path) -> tuple[list[str], list[str], li
     for marker in validator.RELEASE_GATE_PLACEHOLDER_MARKERS:
         if marker in lowered:
             blockers.append(f"{makefile_display} still contains release-gate placeholder marker {marker!r}")
+            next_actions.append(
+                f"replace commands marked {marker!r} with executable gate implementations"
+            )
 
     target_bodies = validator._makefile_target_bodies(makefile_path)
     release_check_body = target_bodies.get("release-check")
@@ -107,33 +110,17 @@ def _release_gate_diagnostics(repo_root: Path) -> tuple[list[str], list[str], li
         next_actions.append("define release-check and invoke required release gate targets")
         return blockers, warnings, next_actions
 
-    invoked_targets = {
-        match.group(1)
-        for line in release_check_body
-        for match in validator.MAKE_INVOKED_TARGET_PATTERN.finditer(line)
-    }
-    unknown_invocations = sorted(invoked_targets - set(gates))
-    for target in unknown_invocations:
-        blockers.append(f"release-check invokes undeclared target {target}")
-        next_actions.append(f"declare {target} in governance-profile.yml or remove it from release-check")
-
+    release_text = "\n".join(release_check_body)
+    if "governance_evidence.py" not in release_text and "bcf evidence run" not in release_text:
+        blockers.append("release-check does not capture typed gate evidence")
+        next_actions.append("run required gates through scripts/governance_evidence.py")
+    if "governance-truthfulness" not in release_text and "governance_truth.py" not in release_text:
+        blockers.append("release-check does not derive computed lifecycle truth")
+        next_actions.append("invoke governance-truthfulness after evidence capture")
     for target, gate in sorted(gates.items()):
         status = gate["status"]
-        if status == "required" and target not in invoked_targets:
-            blockers.append(f"required release gate {target} is not invoked by release-check")
-            next_actions.append(f"add $(MAKE) {target} to release-check")
-            continue
-        if status == "optional" and target not in invoked_targets:
-            warnings.append(f"optional release gate {target} is omitted")
-            continue
         if status in validator.RELEASE_GATE_INACTIVE_STATUSES:
-            if target in invoked_targets:
-                blockers.append(f"inactive release gate {target} is still invoked by release-check")
-                next_actions.append(f"remove $(MAKE) {target} from release-check")
             continue
-        if target not in invoked_targets:
-            continue
-
         target_body = target_bodies.get(target)
         if target_body is None:
             blockers.append(f"release gate target {target} is not defined")
@@ -142,17 +129,6 @@ def _release_gate_diagnostics(repo_root: Path) -> tuple[list[str], list[str], li
         commands = validator._meaningful_make_commands(target_body)
         if not commands:
             blockers.append(f"release gate target {target} has no meaningful command")
-            next_actions.append(f"replace {target} with a real {gate['command_policy']} command")
-            continue
-        try:
-            validator._validate_release_gate_command_semantics(
-                makefile_display=makefile_display,
-                target=target,
-                commands=commands,
-                command_policy=gate["command_policy"],
-            )
-        except validator.GovernanceValidationError as exc:
-            blockers.append(str(exc))
             next_actions.append(f"replace {target} with a real {gate['command_policy']} command")
 
     return blockers, warnings, next_actions

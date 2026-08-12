@@ -2,23 +2,28 @@
 
 ## Baseline Gates
 
-The template declares these required standard-profile gates: governance validation, architecture test, module size, layer membership, bounded-context membership, import boundaries, CQRS side rules, router thinness, duplication/shared-abstraction checks, lint, typecheck, tests, contract tests, secret scan, dependency audit, SBOM, vulnerability scan, and runtime smoke.
+The template declares these required standard-profile gates: governance validation, architecture test, module size, layer membership, bounded-context membership, import boundaries, CQRS side rules, router thinness, duplication/shared-abstraction checks, lint, typecheck, tests, contract tests, secret scan, dependency audit, SBOM, vulnerability scan, security review, and runtime smoke.
 
 Repo evidence: `template-repo/governance-profile.yml`, `template-repo/Makefile.fragment`.
 
-## Gate Policy
+## Structural Gate Policy
 
-- `required` gates must be invoked by `make release-check`.
-- `optional` gates may be omitted, but if invoked must be real evidence commands.
-- `deferred` and `not_applicable` gates must not be invoked by `make release-check`.
-- Placeholder, echo-only, no-op, and version-probe commands are not release evidence.
-- CI lanes should be self-seeding and aligned with required push jobs when a runner is available.
+- `bcf validate` checks artifact structure, cross-file consistency, required target declarations, and unresolved bootstrap placeholders.
+- Make targets are aliases. Their names and command text never prove execution or promote lifecycle state.
+- Required CI jobs invoke `bcf evidence run` (or the copied script), upload content-addressed per-gate bundles, and finish with `bcf truth`.
+- Mandatory gates need a passing normal execution and a failing behavioral control in an isolated worktree. Dynamic or unresolved workflow paths fail closed.
 
 Repo evidence: `scripts/validate_governance_yaml.py`, `scripts/doctor_governance_pack.py`, `template-repo/.github/workflows/governance.yml`.
 
-## Evidence Policy
+## Evidence Integrity
 
-Record terse evidence in `phases/phase-NN-log.yml`: command, result, warnings, constraints, and follow-up work. Keep full intent visible; do not turn phase logs into transcripts.
+Phase logs author `planned` or `completed` plus requirement declarations. They never author `verified`, `closed`, suite/health/security booleans, zero-findings, or release readiness.
+
+`bcf truth` recomputes every receipt from exact-tree identity, tracked cleanliness, raw artifact hashes, process exit, test counts/node IDs, environment assertions, behavioral controls, finding accounting, and provenance. Valid direct evidence computes `verified`; current reconciliation and no profile-blocking findings compute `closed`. A relevant mutation returns the effective state to `completed` without an authored reopening edit.
+
+Required test lanes default to one collected and executed test and zero skips. Critical/High remediation binds to an executed node and a control that makes it fail. A review that discovers and fixes nineteen findings reports total nineteen and open zero.
+
+Semantic mutants run on pull requests, high-value implementation and semantic mutants nightly, and the full profiles weekly.
 
 Repo evidence: `template-repo/AGENTS.yml`, `template-repo/phases/phase-NN-log.yml`, `template-repo/schemas/phase-log.schema.json`.
 

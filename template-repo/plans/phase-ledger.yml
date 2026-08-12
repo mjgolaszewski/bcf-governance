@@ -62,7 +62,8 @@ release_trains:
     focus:
       - governed_foundation
 release_readiness:
-  status: initial_governed_delivery_active
+  computed_by: bcf truth
+  requirements_source: governance/evidence-policy.yml
   validating_command: make release-check
 definition_of_ready_before_execution:
   - active phase has a plan, workitem ledger, and log

@@ -25,7 +25,13 @@ That command should cover:
 - secret scanning, dependency audit, SBOM generation, and vulnerability scans
 - Docker or runtime smoke checks
 
-`Makefile.fragment` starts with fail-closed placeholder targets. Replace required gates with repo-specific commands and keep `governance-profile.yml` aligned with any gate marked `required`, `optional`, `deferred`, or `not_applicable`. Optional gates may be omitted from `release-check`; if invoked, they must still be real evidence commands.
+`Makefile.fragment` starts with fail-closed placeholder targets. Replace required gates with repo-specific commands and keep `governance-profile.yml` aligned with any gate marked `required`, `optional`, `deferred`, or `not_applicable`. Configure typed requirements and negative controls in `governance/evidence-policy.yml`. Make targets remain developer aliases; their command text is not verification.
+
+Required CI jobs invoke the evidence wrapper for their gate IDs, upload the
+content-addressed bundles, and feed them to the final truthfulness job. The
+wrapper runs each gate normally and runs its configured negative behavioral
+control in a temporary worktree; the normal tree must pass and the broken tree
+must fail. Dynamic or unresolved mandatory workflow paths fail closed.
 
 If the repo layout differs from the starter backend shape, update `architecture-boundaries.yml` before relying on `make architecture-test`.
 
@@ -35,12 +41,18 @@ For existing repositories, install with `--adoption-mode existing` to include co
 
 ```bash
 python3 scripts/validate_governance_yaml.py
+python3 scripts/governance_evidence.py run --gate test --output .artifacts/bcf/test # non-authoritative local bundle; retain by sha256 as a CI artifact
+python3 scripts/governance_truth.py --evidence-dir .artifacts/bcf # non-authoritative local report; retain by sha256 as a CI artifact
 python3 scripts/scaffold_governance_artifacts.py phase --help
 python3 scripts/scaffold_governance_artifacts.py hotfix --help
 ```
 
 Generate real hotfix logs with the scaffold helper rather than copying the template example file; the governed filename convention is `phases/phase-NN-hotfix##.yml`.
 Governance validation should cover structural schema checks from `schemas/`, repo-relative `document.path` checks, configured release-gate checks, and semantic cross-artifact consistency checks.
+
+Structural validation never promotes lifecycle state. Phase logs may author
+`completed`; `verified`, `closed`, and release readiness are computed by the
+truth engine from current-tree evidence and canonical finding accounting.
 
 The installed validator is split into `scripts/governance_validation/` support
 modules. Keep those files below 800 LOC and split future growth by stable
@@ -71,8 +83,8 @@ Use `governance/repo-cleanup-contract.yml` for machine-readable cleanup rules an
 To opt into strict historical phase retention, run one of the retention modes:
 
 ```bash
-bcf cleanup --repo-root . --phase-retention-mode --apply
-bcf cleanup --repo-root . --phase-retention-mode archive --apply
+bcf cleanup --repo-root . --phase-retention-mode --truth-report .artifacts/bcf/truth.json --apply # non-authoritative path; verify sha256 against its CI artifact
+bcf cleanup --repo-root . --phase-retention-mode archive --truth-report .artifacts/bcf/truth.json --apply # non-authoritative path; verify sha256 against its CI artifact
 ```
 
 Append `--yes` to either retention command in noninteractive automation.
@@ -116,4 +128,8 @@ repository-owned CI decision.
 
 ## Evidence Policy
 
-Record validation evidence in the active `phases/phase-*.yml` log.
+Keep narrative execution notes in the active phase log. Store measurable
+evidence bundles and truth reports outside the tracked tree, normally under
+ignored `.artifacts/bcf/`, and retain them in CI artifact or release storage by sha256.
+Receipt result fields are descriptive only: BCF recomputes results from process
+outcomes, raw artifact hashes, test reports, declared expectations, and probes.

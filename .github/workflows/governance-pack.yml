@@ -24,6 +24,10 @@ jobs:
           python -m py_compile \
             scripts/validate_governance_yaml.py \
             scripts/scaffold_governance_artifacts.py \
+            scripts/governance_evidence.py \
+            scripts/governance_truth.py \
+            scripts/governance_truth_support.py \
+            scripts/migrate_governance_evidence.py \
             scripts/install_governance_pack.py \
             scripts/doctor_governance_pack.py \
             scripts/cleanup_ci_resources.py \
@@ -33,8 +37,14 @@ jobs:
             bcf_governance/__init__.py \
             template-repo/scripts/validate_governance_yaml.py \
             template-repo/scripts/scaffold_governance_artifacts.py \
+            template-repo/scripts/governance_evidence.py \
+            template-repo/scripts/governance_truth.py \
+            template-repo/scripts/governance_truth_support.py \
+            template-repo/scripts/migrate_governance_evidence.py \
             template-repo/backend/tests/architecture/test_boundaries_ast.py \
             tests/test_validate_governance_yaml.py \
+            tests/test_governance_truth.py \
+            tests/test_evidence_migration.py \
             tests/test_scaffold_governance_artifacts.py \
             tests/test_install_governance_pack.py \
             tests/test_cleanup_ci_resources.py \
@@ -46,6 +56,8 @@ jobs:
             .github/scripts/run_validator_mutants.py
       - name: Run governance pack tests
         run: pytest tests
+      - name: Run pull-request semantic mutants
+        run: python .github/scripts/run_validator_mutants.py --profile semantic-high-value
       - name: Validate template repo from root script
         run: python scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders --allow-release-gate-placeholders
       - name: Validate template repo from template script

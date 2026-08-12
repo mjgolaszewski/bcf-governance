@@ -14,3 +14,4 @@ workitems:
     summary: "deliver {{DELIVERABLE}}"
     acceptance:
       - "{{DELIVERABLE}}_is_complete"
+    acceptance_evidence: [test, contract-test]

@@ -11,7 +11,10 @@ from scripts import (
     cleanup_ci_resources,
     cleanup_governance_pack,
     doctor_governance_pack,
+    governance_evidence,
+    governance_truth,
     install_governance_pack,
+    migrate_governance_evidence,
     publish_audit,
     scaffold_governance_artifacts,
     validate_governance_yaml,
@@ -22,6 +25,9 @@ COMMANDS = {
     "ci-cleanup": cleanup_ci_resources.main,
     "exposure-scan": check_governance_exposure.main,
     "install": install_governance_pack.main,
+    "evidence": governance_evidence.main,
+    "truth": governance_truth.main,
+    "migrate-evidence": migrate_governance_evidence.main,
     "publish-audit": publish_audit.main,
     "validate": validate_governance_yaml.main,
     "scaffold": scaffold_governance_artifacts.main,
@@ -49,6 +55,9 @@ def main(argv: list[str] | None = None) -> None:
     if not args:
         parser.print_help()
         raise SystemExit(2)
+    if args[0] in COMMANDS:
+        COMMANDS[args[0]](args[1:])
+        return
     namespace, remainder = parser.parse_known_args(args)
     COMMANDS[namespace.command](remainder)
 

@@ -2,8 +2,8 @@ document:
   kind: template_governance_pack_manifest
   name: BCF Template And Governance Pack
   id: bcf-governance
-  version: 0.4.6
-  generated_at_utc: "2026-08-10T00:00:00Z"
+  version: 0.5.0
+  generated_at_utc: "2026-08-12T00:00:00Z"
   status: tracked_inventory
 source_model:
   origin: public reusable governance pack
@@ -13,6 +13,8 @@ source_model:
     - governance-profile.yml
     - architecture-boundaries.yml
     - governance/artifact-manifest.yml
+    - governance/evidence-policy.yml
+    - governance/findings.yml
     - governance/repo-cleanup-contract.yml
     - contracts/observability/v1/
     - audits/
@@ -20,6 +22,8 @@ source_model:
     - plans/phase-ledger.yml
     - scripts/validate_governance_yaml.py
     - scripts/scaffold_governance_artifacts.py
+    - scripts/governance_evidence.py
+    - scripts/governance_truth.py
     - backend/tests/architecture/
     - docs/OPERATIONS.md
 pack_contents:
@@ -36,6 +40,7 @@ pack_contents:
     - explicit governance dependency requirements
     - phase planning templates
     - governed phase-numbered hotfix log template
+    - typed evidence, finding registry, and computed lifecycle contracts
     - operations template
     - Makefile target fragment
     - GitHub Actions governance workflow template
@@ -57,6 +62,8 @@ pack_contents:
     - exact-label Docker CI resource cleanup helper with dry-run and explicit apply modes
     - opt-in redacted publication audit across unique blobs reachable from complete local Git history
     - generic phase and hotfix scaffold helper that emits repo-relative document paths
+    - portable evidence capture and truthfulness helpers with exact-tree binding
+    - idempotent evidence-integrity migration helper
     - generic governance YAML validator with structural and semantic checks, compact json output, release-gate placeholder detection, path portability checks, governance drift guardrails, repo cleanup contract validation, line and KiB context budgets, and instantiated placeholder detection
     - tag-triggered release workflow for tested, attested wheel, sdist, and checksum assets
 tracking:

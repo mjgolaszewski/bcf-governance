@@ -12,8 +12,9 @@ from typing import Any
 import yaml  # type: ignore[import-untyped]
 
 from .models import CleanupAction
+from .truth_reports import load_truth_reports
 
-ARCHIVABLE_PHASE_STATUSES = {"verified", "closed"}
+ARCHIVABLE_PHASE_STATUSES = {"completed"}
 DEFAULT_PHASE_ARCHIVE_ROOT = "governance/archive/phase-artifacts"
 DEFAULT_PHASE_HISTORY_PATH = "plans/phase-history.yml"
 PHASE_RETENTION_MODES = {"archive", "git_history"}
@@ -321,7 +322,10 @@ def _phase_hotfix_ledger_prune_action(
 
 
 def _phase_retention_actions(
-    repo_root: Path, *, mode: str | None = None
+    repo_root: Path,
+    *,
+    mode: str | None = None,
+    truth_reports: dict[str, dict[str, Any]] | None = None,
 ) -> tuple[list[CleanupAction], list[str]]:
     actions: list[CleanupAction] = []
     warnings: list[str] = []
@@ -331,6 +335,7 @@ def _phase_retention_actions(
     statuses = _closed_phase_statuses(repo_root)
     active_id = _active_phase_id(repo_root)
     active_number = _phase_number(active_id) if active_id else None
+    reports = truth_reports or {}
 
     if retention_mode == "archive":
         ignore_action = _ignore_archive_root_action(repo_root)
@@ -343,6 +348,12 @@ def _phase_retention_actions(
         if phase_id in retained:
             continue
         if _phase_status_for_retention(repo_root, phase_id) not in statuses:
+            continue
+        if phase_id not in reports:
+            warnings.append(
+                f"phase {phase_id} is completed but cannot be retained without a passing "
+                "closed truth report"
+            )
             continue
         for source in _phase_retained_artifact_paths(repo_root, phase_id):
             source_path = repo_root / source
@@ -415,6 +426,29 @@ def _verify_git_history_sources(
                 f"git-history phase retention requires {action.source} to match {retention_ref}"
             )
 
+
+def _verify_truth_bound_sources(
+    repo_root: Path,
+    actions: list[CleanupAction],
+    reports: dict[str, dict[str, Any]],
+) -> None:
+    for action in actions:
+        if action.kind not in {"archive_phase_artifact", "remove_phase_artifact"}:
+            continue
+        phase_id = _phase_id_from_retained_artifact_path(action.source)
+        if phase_id is None:
+            continue
+        commit_sha = reports[phase_id]["report"]["subject"]["commit_sha"]
+        result = subprocess.run(
+            ["git", "-C", str(repo_root), "show", f"{commit_sha}:{action.source}"],
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0 or _sha256_bytes(result.stdout) != _file_sha256(repo_root / action.source):
+            raise RuntimeError(
+                f"phase retention requires {action.source} to match its closed truth-report tree"
+            )
+
 def _phase_history_entry(
     repo_root: Path,
     phase_id: str,
@@ -423,6 +457,7 @@ def _phase_history_entry(
     mode: str,
     retention_ref: str | None,
     existing_entry: dict[str, Any] | None,
+    truth_snapshot: dict[str, Any],
 ) -> dict[str, Any]:
     plan = _load_yaml(repo_root / f"plans/{_phase_stem(phase_id)}-plan.yml") or {}
     log = _load_yaml(repo_root / f"phases/{_phase_stem(phase_id)}-log.yml") or {}
@@ -488,7 +523,9 @@ def _phase_history_entry(
         **({"release_train": release_train} if isinstance(release_train, str) else {}),
         "retention_source": mode,
         **({"retention_ref": retention_ref} if retention_ref is not None else {}),
-        "status": str(status or "completed"),
+        "status": "completed",
+        "derived_state_at_capture": "closed",
+        "verification_snapshot": truth_snapshot,
         "outcome": str(outcome or "completed"),
         "summary": highlights if isinstance(highlights, list) and highlights else ["closed phase retained"],
         "validation": validation if isinstance(validation, list) else [],
@@ -501,6 +538,7 @@ def _write_phase_history(
     phase_actions: list[CleanupAction],
     *,
     mode: str | None = None,
+    truth_reports: dict[str, dict[str, Any]] | None = None,
 ) -> str | None:
     retention_mode = _phase_retention_mode(repo_root, mode)
     retained_action_kinds = {"archive_phase_artifact", "remove_phase_artifact"}
@@ -516,10 +554,28 @@ def _write_phase_history(
     )
     if not phase_ids:
         return None
+    reports = truth_reports or {}
+    missing_reports = sorted(set(phase_ids) - set(reports))
+    if missing_reports:
+        raise RuntimeError(
+            "phase history requires passing closed truth reports for: "
+            + ", ".join(missing_reports)
+        )
+    _verify_truth_bound_sources(repo_root, phase_actions, reports)
 
     retention_ref = _git_head(repo_root) if retention_mode == "git_history" else None
     if retention_ref is not None:
         _verify_git_history_sources(repo_root, phase_actions, retention_ref)
+        stale_reports = sorted(
+            phase_id
+            for phase_id in phase_ids
+            if reports[phase_id]["report"]["subject"]["commit_sha"] != retention_ref
+        )
+        if stale_reports:
+            raise RuntimeError(
+                "git-history phase retention requires truth reports captured at HEAD for: "
+                + ", ".join(stale_reports)
+            )
 
     history_rel = _phase_history_path(repo_root)
     history_path = repo_root / history_rel
@@ -564,6 +620,7 @@ def _write_phase_history(
             mode=retention_mode,
             retention_ref=retention_ref,
             existing_entry=existing_entries.get(phase_id),
+            truth_snapshot=reports[phase_id]["verification_snapshot"],
         )
         for phase_id in phase_ids
     )
@@ -658,8 +715,12 @@ def _set_phase_retention_mode(repo_root: Path, mode: str) -> None:
     manifest_path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
 
 
-def _phase_archive_actions(repo_root: Path) -> tuple[list[CleanupAction], list[str]]:
-    return _phase_retention_actions(repo_root, mode="archive")
+def _phase_archive_actions(
+    repo_root: Path,
+    *,
+    truth_reports: dict[str, dict[str, Any]] | None = None,
+) -> tuple[list[CleanupAction], list[str]]:
+    return _phase_retention_actions(repo_root, mode="archive", truth_reports=truth_reports)
 
 
 phase_archive_actions = _phase_archive_actions

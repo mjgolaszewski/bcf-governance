@@ -123,7 +123,8 @@ def test_installer_bootstraps_standard_profile_and_reports_unwired_gates(tmp_pat
     assert (target / ".github/workflows/governance.yml").exists()
     workflow = (target / ".github/workflows/governance.yml").read_text(encoding="utf-8")
     assert "governance-exposure-scan" in workflow
-    assert "scripts/check_governance_exposure.py --repo-root ." in workflow
+    assert "scripts/governance_evidence.py --repo-root . run" in workflow
+    assert "scripts/governance_truth.py --repo-root ." in workflow
     assert "AGENTS.yml" in (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "AGENTS.yml" in (target / "CLAUDE.md").read_text(encoding="utf-8")
 
@@ -171,7 +172,7 @@ def test_installer_bootstraps_standard_profile_and_reports_unwired_gates(tmp_pat
     doctor_payload = json.loads(doctor.stdout)
     assert doctor_payload["status"] == "fail"
     assert any("placeholder marker" in blocker for blocker in doctor_payload["blockers"])
-    assert any("replace lint" in action for action in doctor_payload["next_actions"])
+    assert doctor_payload["next_actions"]
 
 
 def test_installer_lite_profile_passes_strict_validation(tmp_path: Path) -> None:
@@ -184,9 +185,8 @@ def test_installer_lite_profile_passes_strict_validation(tmp_path: Path) -> None
     assert profile["release_gate_profile"]["gates"]["lint"]["status"] == "deferred"
 
     makefile = (target / "Makefile.fragment").read_text(encoding="utf-8")
-    assert "$(MAKE) governance-validate" in makefile
-    assert "$(MAKE) governance-exposure-scan" in makefile
-    assert "$(MAKE) lint" not in makefile
+    assert "scripts/governance_evidence.py" in makefile
+    assert "$(MAKE) governance-truthfulness" in makefile
     assert "configure repo-specific" not in makefile
 
     strict = _run_installed_validator(target)
@@ -230,6 +230,8 @@ def test_installer_gate_commands_can_make_standard_profile_strict(tmp_path: Path
         "security-sbom=syft dir:.",
         "--gate-command",
         "security-vulnerability-scan=trivy fs .",
+        "--gate-command",
+        "security-review=python scripts/review_security.py --findings governance/findings.yml",
         "--gate-command",
         "runtime-smoke=docker compose config",
         "--require-strict-validation",
@@ -305,13 +307,11 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         "architecture-boundaries.yml",
         "governance-profile.yml",
         "governance/artifact-manifest.yml",
+        "governance/evidence-policy.yml",
+        "governance/findings.yml",
         "plans/product-spec.yml",
         "plans/build-plan.yml",
-        "plans/phase-ledger.yml",
-        "plans/phase-history.yml",
         "plans/phase-01-plan.yml",
-        "plans/phase-01-workitems.yml",
-        "phases/phase-01-log.yml",
         "requirements-governance.txt",
     )
     for relative_path in protected_paths:
@@ -342,7 +342,7 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
     } == state_before
 
 
-def test_installer_upgrade_does_not_silently_migrate_older_pack_state(
+def test_installer_upgrade_runs_targeted_evidence_migration_without_rewriting_policy(
     tmp_path: Path,
 ) -> None:
     target = tmp_path / "upgrade-old-state"
@@ -396,6 +396,24 @@ def test_installer_upgrade_does_not_silently_migrate_older_pack_state(
     makefile = makefile.replace("\n\t$(MAKE) governance-exposure-scan\n", "\n")
     makefile_path.write_text(makefile, encoding="utf-8")
 
+    phase_log_path = target / "phases/phase-01-log.yml"
+    phase_log = yaml.safe_load(phase_log_path.read_text(encoding="utf-8"))
+    phase_log["document"]["status"] = "verified"
+    phase_log.pop("closeout_requirements")
+    phase_log["security_review_complete"] = True
+    phase_log_path.write_text(yaml.safe_dump(phase_log, sort_keys=False), encoding="utf-8")
+
+    ledger_path = target / "plans/phase-ledger.yml"
+    ledger = yaml.safe_load(ledger_path.read_text(encoding="utf-8"))
+    ledger["active_phase"]["lifecycle_status"] = "closed"
+    ledger["release_readiness"]["status"] = "release_ready"
+    ledger_path.write_text(yaml.safe_dump(ledger, sort_keys=False), encoding="utf-8")
+
+    workitems_path = target / "plans/phase-01-workitems.yml"
+    workitems = yaml.safe_load(workitems_path.read_text(encoding="utf-8"))
+    workitems["workitems"][0].pop("acceptance_evidence")
+    workitems_path.write_text(yaml.safe_dump(workitems, sort_keys=False), encoding="utf-8")
+
     (target / "plans/phase-history.yml").unlink()
     (target / "scripts/check_governance_exposure.py").unlink()
 
@@ -415,6 +433,16 @@ def test_installer_upgrade_does_not_silently_migrate_older_pack_state(
     assert {path: path.read_bytes() for path in protected_paths} == state_before
     assert (target / "plans/phase-history.yml").exists()
     assert (target / "scripts/check_governance_exposure.py").exists()
+    migrated_phase = yaml.safe_load(phase_log_path.read_text(encoding="utf-8"))
+    assert migrated_phase["document"]["status"] == "completed"
+    assert "security_review_complete" not in migrated_phase
+    assert "closeout_requirements" in migrated_phase
+    migrated_ledger = yaml.safe_load(ledger_path.read_text(encoding="utf-8"))
+    assert migrated_ledger["active_phase"]["lifecycle_status"] == "completed"
+    assert "status" not in migrated_ledger["release_readiness"]
+    migrated_workitems = yaml.safe_load(workitems_path.read_text(encoding="utf-8"))
+    assert migrated_workitems["workitems"][0]["acceptance_evidence"]
+    assert (target / "governance/migrations/evidence-integrity-v1.yml").exists()
 
 
 def test_installer_upgrade_can_reset_profile_and_makefile_options(tmp_path: Path) -> None:
@@ -437,8 +465,8 @@ def test_installer_upgrade_can_reset_profile_and_makefile_options(tmp_path: Path
 
     assert "upgraded governance pack into" in result.stdout
     makefile = (target / "Makefile.fragment").read_text(encoding="utf-8")
-    assert "$(MAKE) governance-validate" in makefile
-    assert "$(MAKE) governance-exposure-scan" in makefile
+    assert "scripts/governance_evidence.py" in makefile
+    assert "$(MAKE) governance-truthfulness" in makefile
     profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
     assert profile["profile"]["selected"] == "lite"
 

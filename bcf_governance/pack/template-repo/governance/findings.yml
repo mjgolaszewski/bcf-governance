@@ -1,0 +1,10 @@
+document:
+  kind: finding_registry
+  name: "{{PROJECT_NAME}} Finding Registry"
+  id: "{{PROJECT_ID}}-findings"
+  version: 1.0.0
+  generated_at_utc: "{{DATE}}T00:00:00Z"
+  status: active
+  path: governance/findings.yml
+reviews: []
+findings: []

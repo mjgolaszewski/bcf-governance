@@ -23,7 +23,7 @@ governance:
     template_pack_alignment: [new phase and hotfix artifacts must stay scaffold-compatible, mirrored template files must update together]
   structural_schema_contract:
     root: schemas/
-    required_schemas: [schemas/agents.schema.json, schemas/architecture-boundaries.schema.json, schemas/governance-profile.schema.json, schemas/artifact-manifest.schema.json, schemas/repo-cleanup-contract.schema.json, schemas/memory.schema.json, schemas/product-spec.schema.json, schemas/build-plan.schema.json, schemas/phase-ledger.schema.json, schemas/phase-history.schema.json, schemas/phase-plan.schema.json, schemas/phase-workitems.schema.json, schemas/phase-log.schema.json, schemas/hotfix-log.schema.json, schemas/observability-contract.schema.json]
+    required_schemas: [schemas/agents.schema.json, schemas/architecture-boundaries.schema.json, schemas/governance-profile.schema.json, schemas/artifact-manifest.schema.json, schemas/evidence-policy.schema.json, schemas/evidence-receipt.schema.json, schemas/findings.schema.json, schemas/repo-cleanup-contract.schema.json, schemas/memory.schema.json, schemas/product-spec.schema.json, schemas/build-plan.schema.json, schemas/phase-ledger.schema.json, schemas/phase-history.schema.json, schemas/phase-plan.schema.json, schemas/phase-workitems.schema.json, schemas/phase-log.schema.json, schemas/hotfix-log.schema.json, schemas/observability-contract.schema.json]
   build_plan_contract:
     format: yaml
     required_properties: [tightly_scoped_deliverables, parallelizable_workstreams, hard_dependencies, docker_first_local_runtime, ast_architecture_tests, strict_boundaries, observability_reference_model, completeness_standard]
@@ -32,12 +32,13 @@ governance:
     status_taxonomy:
       planned: defined_not_executed
       completed: implementation_done_checks_pending_or_partial
-      verified: required_checks_passed
-      closed: verified_and_reconciled
-    final_closeout_required_fields: [all_tickets_closed, required_suites_green, ast_architecture_gates_green, health_checks_green, known_warnings, known_constraints]
+    computed_states:
+      verified: current_tree_required_evidence_passed
+      closed: verified_reconciled_and_no_blocking_findings_on_same_tree
+    final_closeout_required_fields: [closeout_requirements, known_constraints]
   semantic_validation_contract:
     validator: scripts/validate_governance_yaml.py
-    required_checks: [schemas, YAML_parse, document_paths, placeholders, phase_catalog_alignment, phase_history_retention, active_phase_alignment, memory_alignment, release_gate_wiring, hotfix_alignment, observability_contracts, mandatory_structural_gates, artifact_manifest_alignment, repo_cleanup_contract, audit_root_enforcement, nested_governance_boundaries, vendored_artifact_provenance, context_budgets, declared_test_roots]
+    required_checks: [schemas, YAML_parse, document_paths, placeholders, phase_catalog_alignment, phase_history_retention, active_phase_alignment, memory_alignment, release_gate_wiring, hotfix_alignment, observability_contracts, mandatory_structural_gates, artifact_manifest_alignment, evidence_policy, finding_registry, repo_cleanup_contract, audit_root_enforcement, nested_governance_boundaries, vendored_artifact_provenance, context_budgets, declared_test_roots]
   hotfix_lane_contract:
     eligibility: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
     minimum_required_artifacts: [phase_ledger_hotfix_record, hotfix_phase_log_entry, canonical_artifact_sync_when_contracts_change]
@@ -63,6 +64,8 @@ governance:
       machine_readable_phase_sequence_and_delivery_contracts: plans/build-plan.yml
       active_phase_state_blockers_and_validation_commands: plans/phase-ledger.yml
       compact_phase_history_and_archive_hashes: plans/phase-history.yml
+      evidence_integrity_policy: governance/evidence-policy.yml
+      finding_accounting: governance/findings.yml
       durable_context_and_active_artifact_pointers: MEMORY.yml
       observability_contract_templates: contracts/observability/v1/
     duplication_rules: [repeated fields need a canonical owner, derived fields update with their source, template-pack ownership boundaries remain unless this file changes]
@@ -73,10 +76,8 @@ governance:
       blocked: stopped_until_unblock_condition
       paused: intentionally_parked_until_resume_condition
       completed: implementation_done_checks_pending_or_partial
-      verified: required_checks_passed
-      closed: verified_and_reconciled
       abandoned: stopped_with_reason
-    rollover_rules: [successor activation updates phase-ledger and MEMORY together, unresolved outgoing risks are recorded before successor activation]
+    rollover_rules: [verified and closed are computed only by bcf truth, successor activation updates phase-ledger and MEMORY together, unresolved outgoing risks are recorded before successor activation]
   phase_retention_contract:
     default_cleanup_mode: git_history
     modes: [git_history, archive]

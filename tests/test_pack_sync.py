@@ -29,6 +29,22 @@ def test_duplicated_governance_scripts_and_requirements_stay_in_sync() -> None:
             "template-repo/scripts/scaffold_governance_artifacts.py",
         ),
         (
+            "scripts/governance_evidence.py",
+            "template-repo/scripts/governance_evidence.py",
+        ),
+        (
+            "scripts/governance_truth.py",
+            "template-repo/scripts/governance_truth.py",
+        ),
+        (
+            "scripts/governance_truth_support.py",
+            "template-repo/scripts/governance_truth_support.py",
+        ),
+        (
+            "scripts/migrate_governance_evidence.py",
+            "template-repo/scripts/migrate_governance_evidence.py",
+        ),
+        (
             "requirements-governance.txt",
             "template-repo/requirements-governance.txt",
         ),

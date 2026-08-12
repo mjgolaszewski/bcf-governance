@@ -21,6 +21,7 @@ if str(_SCRIPT_ROOT) not in sys.path:
 from governance_install.args import build_parser  # noqa: E402
 from governance_install.reporting import print_summary  # noqa: E402
 from governance_install.upgrade import replace_placeholders_in_files, upgrade_state_files  # noqa: E402
+import migrate_governance_evidence  # noqa: E402
 
 
 PROFILE_CHOICES = ("lite", "standard", "regulated")
@@ -51,6 +52,10 @@ RESCAFFOLD_REMOVE_PATHS = (
     "backend/tests/architecture/test_boundaries_ast.py",
     ".github/workflows/governance.yml",
     "scripts/check_governance_exposure.py",
+    "scripts/governance_evidence.py",
+    "scripts/governance_truth.py",
+    "scripts/governance_truth_support.py",
+    "scripts/migrate_governance_evidence.py",
     "scripts/governance_validation",
     "scripts/scaffold_governance_artifacts.py",
     "scripts/validate_governance_yaml.py",
@@ -76,6 +81,7 @@ LITE_DEFERRED_GATES = (
     "security-dependency-audit",
     "security-sbom",
     "security-vulnerability-scan",
+    "security-review",
     "runtime-smoke",
 )
 REQUIRED_STANDARD_GATES = (
@@ -97,6 +103,7 @@ REQUIRED_STANDARD_GATES = (
     "security-dependency-audit",
     "security-sbom",
     "security-vulnerability-scan",
+    "security-review",
     "runtime-smoke",
 )
 UPGRADE_REFRESH_PATHS = (
@@ -104,6 +111,10 @@ UPGRADE_REFRESH_PATHS = (
     "backend/tests/architecture/test_boundaries_ast.py",
     "governance/REPO_CLEANUP.md",
     "scripts/check_governance_exposure.py",
+    "scripts/governance_evidence.py",
+    "scripts/governance_truth.py",
+    "scripts/governance_truth_support.py",
+    "scripts/migrate_governance_evidence.py",
     "scripts/governance_validation",
     "scripts/scaffold_governance_artifacts.py",
     "scripts/validate_governance_yaml.py",
@@ -415,6 +426,7 @@ def _configure_governance_profile(target_root: Path, profile: str) -> None:
             "security_dependency_audit",
             "security_sbom",
             "security_vulnerability_scan",
+            "security_review",
             "runtime_smoke",
         )
         for gate_id in deferred_gate_ids:
@@ -490,11 +502,6 @@ def _configure_makefile(
     text = path.read_text(encoding="utf-8")
 
     if profile == "lite":
-        text = _rewrite_make_target(
-            text,
-            "release-check",
-            ["$(MAKE) governance-validate", "$(MAKE) governance-exposure-scan"],
-        )
         for target in LITE_DEFERRED_GATES:
             text = _rewrite_make_target(text, target, ["true"])
 
@@ -611,8 +618,9 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
         target_root=target_root,
         values=values,
         reset_options=args.reset_options,
+        )
     )
-    )
+    migrate_governance_evidence.migration_plan(target_root, apply=True)
     if args.reset_options:
         _configure_governance_profile(target_root, args.profile)
         _configure_architecture_boundaries(target_root, args.profile)

@@ -13,6 +13,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR_PATH = REPO_ROOT / "scripts" / "validate_governance_yaml.py"
 VALIDATION_PACKAGE_PATH = REPO_ROOT / "scripts" / "governance_validation"
+TRUTH_PATH = REPO_ROOT / "scripts" / "governance_truth.py"
+TRUTH_SUPPORT_PATH = REPO_ROOT / "scripts" / "governance_truth_support.py"
 
 
 @dataclass(frozen=True)
@@ -148,9 +150,76 @@ MUTANTS = (
     ),
 )
 
+TRUTH_MUTANTS = (
+    Mutant(
+        mutant_id="truth-all-skipped-suite",
+        description="required suites must execute tests and reject all-skipped evidence",
+        search='    if counts["executed"] < int(thresholds.get("min_executed", 1)):\n',
+        replace='    if False and counts["executed"] < int(thresholds.get("min_executed", 1)):\n',
+        profiles=("semantic-high-value", "semantic-full"),
+        target_path="scripts/governance_truth.py",
+    ),
+    Mutant(
+        mutant_id="truth-negative-control",
+        description="a semantically inert gate must never verify",
+        search='        if not isinstance(exit_code, int) or exit_code == 0:\n',
+        replace='        if False and (not isinstance(exit_code, int) or exit_code == 0):\n',
+        profiles=("semantic-high-value", "semantic-full"),
+        target_path="scripts/governance_truth.py",
+    ),
+    Mutant(
+        mutant_id="truth-current-head",
+        description="old-commit evidence must stale after HEAD changes",
+        search='        if subject.get("commit_sha") != current["commit_sha"]:\n',
+        replace='        if False and subject.get("commit_sha") != current["commit_sha"]:\n',
+        profiles=("semantic-high-value", "semantic-full"),
+        target_path="scripts/governance_truth.py",
+    ),
+    Mutant(
+        mutant_id="truth-current-tree",
+        description="internally consistent old-tree hashes must not verify current HEAD",
+        search='        if subject.get("tree_sha") != current["tree_sha"]:\n',
+        replace='        if False and subject.get("tree_sha") != current["tree_sha"]:\n',
+        profiles=("semantic-high-value", "semantic-full"),
+        target_path="scripts/governance_truth.py",
+    ),
+    Mutant(
+        mutant_id="truth-node-binding",
+        description="finding proof must bind to an executed test node",
+        search='                        (proof_kind == "test_node" and node_id in nodes and control_id in control_ids)\n',
+        replace='                        (proof_kind == "test_node" and control_id in control_ids)\n',
+        profiles=("semantic-high-value", "semantic-full"),
+        target_path="scripts/governance_truth_support.py",
+    ),
+    Mutant(
+        mutant_id="truth-finding-accounting",
+        description="review summaries cannot erase discovered corrections",
+        search='                if summary.get("findings_total") != findings_by_review[review_id]:\n',
+        replace='                if False and summary.get("findings_total") != findings_by_review[review_id]:\n',
+        profiles=("semantic-high-value", "semantic-full"),
+        target_path="scripts/governance_truth_support.py",
+    ),
+    Mutant(
+        mutant_id="truth-production-environment",
+        description="development preflight cannot satisfy production assertions",
+        search='        if not isinstance(raw, dict) or raw.get("satisfied") is not True\n',
+        replace='        if False and (not isinstance(raw, dict) or raw.get("satisfied") is not True)\n',
+        profiles=("semantic-full",),
+        target_path="scripts/governance_truth.py",
+    ),
+    Mutant(
+        mutant_id="truth-authored-verified",
+        description="verified remains computed and absent from authored state taxonomy",
+        search='AUTHORED_STATES = {"planned", "completed"}\n',
+        replace='AUTHORED_STATES = {"planned", "completed", "verified"}\n',
+        profiles=("semantic-full",),
+        target_path="scripts/governance_truth.py",
+    ),
+)
+
 
 def _selected_mutants(profile: str) -> tuple[Mutant, ...]:
-    return tuple(mutant for mutant in MUTANTS if profile in mutant.profiles)
+    return tuple(mutant for mutant in (*MUTANTS, *TRUTH_MUTANTS) if profile in mutant.profiles)
 
 
 def _copy_validator_sources(temp_dir: Path) -> Path:
@@ -163,6 +232,16 @@ def _copy_validator_sources(temp_dir: Path) -> Path:
         ignore=shutil.ignore_patterns("__pycache__"),
     )
     return temp_scripts / VALIDATOR_PATH.name
+
+
+def _copy_truth_sources(temp_dir: Path) -> Path:
+    temp_scripts = temp_dir / "scripts"
+    temp_scripts.mkdir()
+    shutil.copy2(TRUTH_PATH, temp_scripts / TRUTH_PATH.name)
+    shutil.copy2(REPO_ROOT / "scripts/governance_evidence.py", temp_scripts / "governance_evidence.py")
+    shutil.copy2(TRUTH_SUPPORT_PATH, temp_scripts / TRUTH_SUPPORT_PATH.name)
+    (temp_scripts / "__init__.py").write_text("\n", encoding="utf-8")
+    return temp_scripts / TRUTH_PATH.name
 
 
 def _target_path(mutant: Mutant, temp_dir: Path) -> Path:
@@ -180,7 +259,14 @@ def _target_path(mutant: Mutant, temp_dir: Path) -> Path:
 
 
 def _mutate_source(mutant: Mutant, temp_dir: Path) -> Path:
-    validator_entrypoint = _copy_validator_sources(temp_dir)
+    validator_entrypoint = (
+        _copy_truth_sources(temp_dir)
+        if mutant.target_path in {
+            "scripts/governance_truth.py",
+            "scripts/governance_truth_support.py",
+        }
+        else _copy_validator_sources(temp_dir)
+    )
     target_path = _target_path(mutant, temp_dir)
     source = target_path.read_text(encoding="utf-8")
     if mutant.search not in source:
@@ -194,11 +280,19 @@ def _mutate_source(mutant: Mutant, temp_dir: Path) -> Path:
     return validator_entrypoint
 
 
-def _run_tests(mutated_path: Path) -> subprocess.CompletedProcess[str]:
+def _run_tests(mutant: Mutant, mutated_path: Path) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
-    env["BCF_VALIDATOR_MODULE_PATH"] = str(mutated_path)
+    if mutant.target_path in {
+        "scripts/governance_truth.py",
+        "scripts/governance_truth_support.py",
+    }:
+        env["BCF_TRUTH_MODULE_PATH"] = str(mutated_path)
+        test_path = "tests/test_governance_truth.py"
+    else:
+        env["BCF_VALIDATOR_MODULE_PATH"] = str(mutated_path)
+        test_path = "tests/test_validate_governance_yaml.py"
     return subprocess.run(
-        [sys.executable, "-m", "pytest", "-q", "tests/test_validate_governance_yaml.py"],
+        [sys.executable, "-m", "pytest", "-q", test_path],
         cwd=REPO_ROOT,
         env=env,
         capture_output=True,
@@ -210,17 +304,27 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run deterministic validator mutation checks.")
     parser.add_argument(
         "--profile",
-        choices=("high-value", "full"),
+        choices=("high-value", "full", "semantic-high-value", "semantic-full"),
         default="high-value",
         help="Mutation profile to execute.",
+    )
+    parser.add_argument(
+        "--mutant",
+        choices=tuple(mutant.mutant_id for mutant in (*MUTANTS, *TRUTH_MUTANTS)),
+        help="Run one mutant from the selected profile (useful for deterministic sharding).",
     )
     args = parser.parse_args()
 
     survivors: list[str] = []
-    for mutant in _selected_mutants(args.profile):
+    selected = _selected_mutants(args.profile)
+    if args.mutant:
+        selected = tuple(mutant for mutant in selected if mutant.mutant_id == args.mutant)
+        if not selected:
+            parser.error(f"mutant {args.mutant!r} is not part of profile {args.profile!r}")
+    for mutant in selected:
         with tempfile.TemporaryDirectory() as temp_dir_name:
             mutated_path = _mutate_source(mutant, Path(temp_dir_name))
-            result = _run_tests(mutated_path)
+            result = _run_tests(mutant, mutated_path)
         print(f"[{mutant.mutant_id}] {mutant.description}")
         if result.returncode == 0:
             survivors.append(mutant.mutant_id)

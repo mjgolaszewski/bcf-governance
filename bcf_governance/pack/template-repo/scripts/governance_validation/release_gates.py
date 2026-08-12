@@ -136,60 +136,14 @@ def _validate_release_gate_targets(
         )
 
     gates_by_target = _release_gates_from_profile(profile)
-    invoked_targets = {
-        match.group(1)
-        for line in release_check_body
-        for match in MAKE_INVOKED_TARGET_PATTERN.finditer(line)
-    }
-    unknown_invocations = sorted(invoked_targets - set(gates_by_target))
-    if unknown_invocations:
-        raise GovernanceValidationError(
-            f"{makefile_display} release-check invokes targets missing from governance-profile.yml: "
-            + ", ".join(unknown_invocations)
-        )
-
-    inactive_invocations = sorted(
-        target
-        for target, gate in gates_by_target.items()
-        if gate["status"] in RELEASE_GATE_INACTIVE_STATUSES and target in invoked_targets
-    )
-    if inactive_invocations:
-        raise GovernanceValidationError(
-            f"{makefile_display} release-check invokes inactive release gate targets: "
-            + ", ".join(inactive_invocations)
-        )
-
     required_targets = {
         target for target, gate in gates_by_target.items() if gate["status"] in RELEASE_GATE_REQUIRED_STATUSES
     }
-    missing_from_release_check = sorted(required_targets - invoked_targets)
-    if missing_from_release_check:
+    missing_targets = sorted(required_targets - set(target_bodies))
+    if missing_targets:
         raise GovernanceValidationError(
-            f"{makefile_display} release-check must invoke required release gate targets: "
-            + ", ".join(missing_from_release_check)
-        )
-
-    configured_targets = {
-        target
-        for target, gate in gates_by_target.items()
-        if gate["status"] in RELEASE_GATE_CONFIGURED_IF_INVOKED_STATUSES and target in invoked_targets
-    }
-    for target in sorted(configured_targets):
-        target_body = target_bodies.get(target)
-        if target_body is None:
-            raise GovernanceValidationError(
-                f"{makefile_display} must define release gate target {target}"
-            )
-        commands = _meaningful_make_commands(target_body)
-        if not commands:
-            raise GovernanceValidationError(
-                f"{makefile_display} target {target} must run a non-placeholder command"
-            )
-        _validate_release_gate_command_semantics(
-            makefile_display=makefile_display,
-            target=target,
-            commands=commands,
-            command_policy=gates_by_target[target]["command_policy"],
+            f"{makefile_display} must define required release gate targets: "
+            + ", ".join(missing_targets)
         )
 
 

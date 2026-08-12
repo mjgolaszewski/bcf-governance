@@ -616,13 +616,9 @@ def _validate_active_phase(
 
     active_log = _load_yaml(log_path)
     active_log_status = _document_status(active_log, context=str(log_path))
-    if lifecycle_status == "verified" and active_log_status not in {"verified", "closed"}:
+    if lifecycle_status == "completed" and active_log_status != "completed":
         raise GovernanceValidationError(
-            f"{log_path} must be verified or closed when the active phase lifecycle_status is verified"
-        )
-    if lifecycle_status == "closed" and active_log_status != "closed":
-        raise GovernanceValidationError(
-            f"{log_path} must be closed when the active phase lifecycle_status is closed"
+            f"{log_path} must be completed when the active phase lifecycle_status is completed"
         )
     if lifecycle_status == "completed" and active_log_status == "planned":
         raise GovernanceValidationError(

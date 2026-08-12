@@ -23,6 +23,7 @@ from governance_cleanup.models import (  # noqa: E402
     ManualAction,
 )
 from governance_cleanup.phase_retention import (  # noqa: E402
+    load_truth_reports,
     phase_retention_actions,
     prune_phase_hotfix_records,
     set_phase_retention_mode,
@@ -73,6 +74,10 @@ GOVERNANCE_PACK_REMOVE_PATHS = (
     "schemas",
     "backend/tests/architecture/test_boundaries_ast.py",
     "scripts/check_governance_exposure.py",
+    "scripts/governance_evidence.py",
+    "scripts/governance_truth.py",
+    "scripts/governance_truth_support.py",
+    "scripts/migrate_governance_evidence.py",
     "scripts/governance_validation",
     "scripts/scaffold_governance_artifacts.py",
     "scripts/validate_governance_yaml.py",
@@ -107,17 +112,11 @@ TEXT_SUFFIXES = {
     ".yaml",
     ".yml",
 }
-
-
 def _repo_relative(repo_root: Path, path: Path) -> str:
     return path.relative_to(repo_root).as_posix()
-
-
 def _cleanup_contract(repo_root: Path) -> str | None:
     path = repo_root / "governance/repo-cleanup-contract.yml"
     return "governance/repo-cleanup-contract.yml" if path.exists() else None
-
-
 def _iter_repo_files(repo_root: Path) -> list[Path]:
     files: list[Path] = []
     for current_root, dirnames, filenames in os.walk(repo_root):
@@ -126,27 +125,19 @@ def _iter_repo_files(repo_root: Path) -> list[Path]:
         for filename in filenames:
             files.append(root_path / filename)
     return sorted(files)
-
-
 def _is_text_file(path: Path) -> bool:
     if path.suffix.lower() in TEXT_SUFFIXES:
         return True
     return path.name in {"Makefile", "Makefile.fragment", "README", "LICENSE"}
-
-
 def _path_is_under(relative_path: str, prefix: str) -> bool:
     normalized = prefix.rstrip("/")
     return relative_path == normalized or relative_path.startswith(f"{normalized}/")
-
-
 def _destination_for_move(relative_path: str) -> str | None:
     for source_root, destination_root in AUDIT_MOVE_ROOTS.items():
         if _path_is_under(relative_path, source_root):
             suffix = relative_path.removeprefix(source_root).lstrip("/")
             return f"{destination_root}/{suffix}" if suffix else destination_root
     return None
-
-
 def _governance_pack_remove_actions(repo_root: Path) -> list[CleanupAction]:
     actions: list[CleanupAction] = []
     for relative_path in GOVERNANCE_PACK_REMOVE_PATHS:
@@ -277,6 +268,7 @@ def plan_cleanup(
     *,
     archive_closed_phases: bool = False,
     phase_retention_mode: str | None = None,
+    truth_report_paths: list[Path] | None = None,
     remove_governance_pack: bool = False,
 ) -> CleanupReport:
     repo_root = repo_root.resolve()
@@ -310,8 +302,9 @@ def plan_cleanup(
         phase_retention_mode=phase_retention_mode,
     )
     if effective_retention_mode is not None:
+        truth_reports = load_truth_reports(repo_root, truth_report_paths)
         retention_actions, retention_warnings = phase_retention_actions(
-            repo_root, mode=effective_retention_mode
+            repo_root, mode=effective_retention_mode, truth_reports=truth_reports
         )
         actions.extend(retention_actions)
         warnings.extend(retention_warnings)
@@ -461,6 +454,7 @@ def _apply_cleanup_direct(
     assume_yes: bool,
     archive_closed_phases: bool = False,
     phase_retention_mode: str | None = None,
+    truth_report_paths: list[Path] | None = None,
     remove_governance_pack: bool = False,
 ) -> CleanupReport:
     repo_root = repo_root.resolve()
@@ -472,6 +466,7 @@ def _apply_cleanup_direct(
         repo_root,
         archive_closed_phases=archive_closed_phases,
         phase_retention_mode=phase_retention_mode,
+        truth_report_paths=truth_report_paths,
         remove_governance_pack=remove_governance_pack,
     )
     safe_actions = [action for action in report.actions if action.safe_to_apply]
@@ -499,6 +494,7 @@ def _apply_cleanup_direct(
         repo_root,
         safe_actions,
         mode=effective_retention_mode,
+        truth_reports=load_truth_reports(repo_root, truth_report_paths),
     )
     if phase_history_path is not None:
         warnings.append(f"phase history updated: {phase_history_path}")
@@ -652,10 +648,15 @@ def apply_cleanup(
     assume_yes: bool,
     archive_closed_phases: bool = False,
     phase_retention_mode: str | None = None,
+    truth_report_paths: list[Path] | None = None,
     remove_governance_pack: bool = False,
 ) -> CleanupReport:
     repo_root = repo_root.resolve()
     _confirm_apply(repo_root, assume_yes, remove_governance_pack=remove_governance_pack)
+    normalized_truth_paths = [
+        (path if path.is_absolute() else repo_root / path).resolve()
+        for path in truth_report_paths or []
+    ]
     before = _file_snapshot(repo_root)
     before_modes = _file_modes(repo_root)
     with tempfile.TemporaryDirectory(prefix="bcf-cleanup-") as temporary:
@@ -665,6 +666,7 @@ def apply_cleanup(
             assume_yes=True,
             archive_closed_phases=archive_closed_phases,
             phase_retention_mode=phase_retention_mode,
+            truth_report_paths=normalized_truth_paths,
             remove_governance_pack=remove_governance_pack,
         )
         _validate_shadow(shadow, remove_governance_pack=remove_governance_pack)
@@ -737,6 +739,13 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Plan or apply removal of BCF governance pack-owned artifacts and dedicated CI gates.",
     )
+    parser.add_argument(
+        "--truth-report",
+        dest="truth_report_paths",
+        action="append",
+        type=Path,
+        help="Passing closed truth report required for each phase selected for retention.",
+    )
     parser.add_argument("--yes", action="store_true", help="Confirm destructive --apply without prompting.")
     parser.add_argument(
         "--format",
@@ -757,6 +766,7 @@ def main(argv: list[str] | None = None) -> None:
                 assume_yes=args.yes,
                 archive_closed_phases=args.archive_closed_phases,
                 phase_retention_mode=args.phase_retention_mode,
+                truth_report_paths=args.truth_report_paths,
                 remove_governance_pack=args.remove_governance_pack,
             )
             if args.apply
@@ -764,6 +774,7 @@ def main(argv: list[str] | None = None) -> None:
                 args.repo_root,
                 archive_closed_phases=args.archive_closed_phases,
                 phase_retention_mode=args.phase_retention_mode,
+                truth_report_paths=args.truth_report_paths,
                 remove_governance_pack=args.remove_governance_pack,
             )
         )
