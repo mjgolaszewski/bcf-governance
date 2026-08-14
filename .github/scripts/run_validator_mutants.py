@@ -35,6 +35,13 @@ class Mutant:
     target_path: str = "scripts/validate_governance_yaml.py"
 
 
+def _pytest_environment() -> dict[str, str]:
+    env = os.environ.copy()
+    existing = env.get("PYTHONPATH")
+    env["PYTHONPATH"] = str(REPO_ROOT) + (os.pathsep + existing if existing else "")
+    return env
+
+
 MUTANTS = (
     Mutant(
         mutant_id="schema-classifier",
@@ -390,7 +397,7 @@ def _mutate_source(mutant: Mutant, temp_dir: Path) -> Path:
 
 
 def _run_tests(mutant: Mutant, mutated_path: Path) -> subprocess.CompletedProcess[str]:
-    env = os.environ.copy()
+    env = _pytest_environment()
     if mutant.target_path in TRUTH_TARGETS:
         env["BCF_TRUTH_MODULE_PATH"] = str(mutated_path)
         test_paths = KILLER_NODES[mutant.mutant_id]
@@ -434,6 +441,7 @@ def main() -> None:
     baseline = subprocess.run(
         [*PYTEST.split(), "-q", *baseline_nodes],
         cwd=REPO_ROOT,
+        env=_pytest_environment(),
         capture_output=True,
         text=True,
     )
