@@ -79,8 +79,7 @@ def test_agent_deconstruction_contract_caps_source_files_at_800_loc() -> None:
 def test_governance_scripts_stay_under_deconstruction_cap() -> None:
     roots = [
         REPO_ROOT / "scripts",
-        TEMPLATE_ROOT / "scripts",
-        REPO_ROOT / "bcf_governance/pack/template-repo/scripts",
+        REPO_ROOT / "bcf_governance/tooling",
     ]
     violations: list[str] = []
     for root in roots:

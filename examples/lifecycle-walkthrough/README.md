@@ -1,15 +1,16 @@
 # Lifecycle Walkthrough
 
-This walkthrough shows the expected adoption path for a new repo:
+This walkthrough demonstrates the BCF 0.6 lifecycle: bootstrap with the only
+partial profile (`lite`), promote transactionally with a complete executable
+gate contract, author `completed`, and let evidence compute `verified` and
+`closed`.
 
-1. install a strict `lite` profile,
-2. promote to `standard` by wiring real release gates,
-3. close the first phase with recorded evidence.
+## 1. Bootstrap Lite
 
-## 1. Lite Install
+The target must be the root of an initialized Git repository.
 
 ```bash
-python3 -m pip install .
+git -C /tmp/demo-governed-app init
 
 bcf install \
   --target /tmp/demo-governed-app \
@@ -21,109 +22,114 @@ bcf install \
   --require-strict-validation
 ```
 
-Expected result:
+Lite generates exactly two mandatory gates—`governance-validate` and
+`governance-exposure-scan`—with contained negative controls. It does not
+generate `true` aliases or CI jobs for deferred standard gates.
 
-```text
-installed governance pack into /tmp/demo-governed-app
-profile: lite
-validation: strict pass
+## 2. Define And Check Standard Gates
+
+Create `/tmp/demo-standard-gates.yml` with `schema_version: "1.0"`,
+`target_profile: standard`, and a `gates` mapping for every non-built-in target
+listed in `governance-profile.yml`. Each gate must contain:
+
+```yaml
+invocation:
+  argv: [python3, scripts/run_gate.py, test]
+  cwd: .
+  env: {}
+  required_env: []
+evidence:
+  kind: test_suite
+  test_contract:
+    junit_xml: .artifacts/junit/test.xml
+    min_collected: 1
+    min_executed: 1
+    max_skipped: 0
+negative_controls:
+  - id: test-assertion-is-required
+    mutation:
+      path: tests/test_gate.py
+      search: "EXPECTED = True"
+      replace: "EXPECTED = False"
+    oracle:
+      kind: test_node_failure
+      node_ids: [tests/test_gate.py::test_gate]
 ```
 
-The lite profile installs the core governed state and keeps release validation focused on `make governance-validate`.
+Use argv only. Complex behavior belongs in a tracked script. Production gates
+also declare their non-secret environment, required environment names, output
+artifacts, and environment assertions. Every control must identify the
+specific expected diagnostic or test-node transition; an arbitrary nonzero
+exit is not a valid oracle.
 
-## 2. Promote To Standard
-
-Replace placeholder gate commands with real commands for the target stack. For a Python service:
+Preview promotion, then apply the exact reviewed transaction:
 
 ```bash
-bcf install \
-  --target /tmp/demo-governed-app \
-  --profile standard \
-  --project-id demo-governed-app \
-  --project-name "Demo Governed App" \
-  --product-name "Demo Governed App" \
-  --date "$(date -u +%F)" \
-  --force \
-  --gate-command "architecture-test=python3 -m pytest backend/tests/architecture" \
-  --gate-command "architecture-module-size=python3 -m pytest backend/tests/architecture -k production_modules_respect_loc_cap" \
-  --gate-command "architecture-layer-membership=python3 -m pytest backend/tests/architecture -k production_modules_map_to_exactly_one_layer" \
-  --gate-command "architecture-context-membership=python3 -m pytest backend/tests/architecture -k production_modules_map_to_exactly_one_bounded_context" \
-  --gate-command "architecture-import-boundaries=python3 -m pytest backend/tests/architecture -k do_not_import" \
-  --gate-command "architecture-cqrs-side=python3 -m pytest backend/tests/architecture -k cqrs" \
-  --gate-command "architecture-router-thinness=python3 -m pytest backend/tests/architecture -k routers_remain_thin" \
-  --gate-command "architecture-duplication=python3 -m pytest backend/tests/architecture -k 'duplication or shared_abstraction'" \
-  --gate-command "lint=ruff check ." \
-  --gate-command "typecheck=mypy ." \
-  --gate-command "test=pytest tests" \
-  --gate-command "contract-test=pytest tests/contracts" \
-  --gate-command "security-secret-scan=gitleaks detect --source ." \
-  --gate-command "security-dependency-audit=pip-audit" \
-  --gate-command "security-sbom=syft dir:." \
-  --gate-command "security-vulnerability-scan=trivy fs ." \
-  --gate-command "runtime-smoke=docker compose config" \
-  --require-strict-validation
+bcf profile promote \
+  --repo-root /tmp/demo-governed-app \
+  --to standard \
+  --config /tmp/demo-standard-gates.yml \
+  --check
+
+bcf profile promote \
+  --repo-root /tmp/demo-governed-app \
+  --to standard \
+  --config /tmp/demo-standard-gates.yml \
+  --apply
 ```
 
-Then inspect remaining adoption work:
+Promotion is monotonic and does not regenerate or overwrite phase artifacts.
+Any conflict or validation failure leaves the repository byte-identical.
 
-```bash
-bcf doctor --repo-root /tmp/demo-governed-app
-```
+## 3. Author Completion
 
-Expected result:
-
-```text
-doctor-pass
-```
-
-If a command is still a placeholder, echo, no-op, or version probe, `bcf doctor` names the target to replace.
-
-## 3. Phase Closeout
-
-After implementing the first scoped workitems, update `phases/phase-01-log.yml` from `planned` to `verified` or `closed` and record evidence:
+After implementation, set the active phase log status to `completed`, set its
+workitems and the matching plan workitems to `DONE`, and set the active ledger
+lifecycle to `completed`:
 
 ```yaml
 document:
-  status: verified
-summary:
-  outcome: governed foundation installed and validated
-all_tickets_closed: true
-required_suites_green:
-  - make governance-validate
-  - make architecture-test
-  - make architecture-module-size
-  - make architecture-layer-membership
-  - make architecture-context-membership
-  - make architecture-import-boundaries
-  - make architecture-cqrs-side
-  - make architecture-router-thinness
-  - make architecture-duplication
-  - make lint
-  - make typecheck
-  - make contract-test
-  - make test
-  - make security-secret-scan
-  - make security-dependency-audit
-  - make security-sbom
-  - make security-vulnerability-scan
-  - make runtime-smoke
-ast_architecture_gates_green: true
-health_checks_green: true
-known_warnings: []
-known_constraints:
-  - release gates are wired to repo-native commands
-execution_evidence:
-  executed_commands:
-    - command: make release-check
-      result: pass
-      executed_at_utc: "2026-04-25T00:00:00Z"
+  status: completed
 ```
 
-Move `plans/phase-ledger.yml` active phase lifecycle to `verified` or `closed` in the same change. Then run:
+Do not write `verified`, `closed`, `all_tickets_closed`, suite/health booleans,
+or a release-ready status. Those assertions are computed and writable schema
+fields for them do not exist.
+
+Commit the completed governed tree before capturing evidence:
 
 ```bash
-bcf validate --repo-root /tmp/demo-governed-app
-bcf doctor --repo-root /tmp/demo-governed-app
+git -C /tmp/demo-governed-app add .
+git -C /tmp/demo-governed-app commit -m "Complete governed phase"
 ```
 
-A closeout is complete only when validation and doctor both pass.
+## 4. Capture Evidence And Compute Truth
+
+Capture every required gate into an ignored directory. Each command executes
+the positive gate and every negative control in separate pristine detached
+worktrees:
+
+```bash
+cd /tmp/demo-governed-app
+for gate in $(python3 - <<'PY'
+import yaml
+payload = yaml.safe_load(open('governance/gate-contracts.yml', encoding='utf-8'))
+print(' '.join(payload['gates']))
+PY
+); do
+  bcf evidence run --gate "$gate" --output .artifacts/bcf
+done
+
+bcf validate --repo-root .
+bcf truth --evidence-dir .artifacts/bcf --output .artifacts/bcf/truth-report.json
+```
+
+`bcf validate` answers whether governance artifacts are structurally legal.
+`bcf truth` independently recomputes factual claims from schema-2.0 receipts.
+Current evidence computes `verified`; current reconciliation plus balanced,
+evidence-backed finding closure computes `closed` and release readiness.
+
+Any staged, unstaged, or non-ignored untracked content prevents capture. Any
+subsequent governed-tree change makes the receipts stale and returns effective
+state to `completed`. Evidence produced by BCF 0.5 is intentionally rejected as
+`unsupported_schema_version` and must be recaptured.

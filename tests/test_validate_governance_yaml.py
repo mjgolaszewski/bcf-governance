@@ -437,7 +437,7 @@ def test_validate_template_repo_emits_compact_json_output_with_allowed_placehold
     }
 
 
-def test_allow_placeholders_does_not_allow_release_gate_placeholders() -> None:
+def test_lite_template_has_no_release_gate_placeholders() -> None:
     result = _run_validator_command(
         "--repo-root",
         str(TEMPLATE_REPO_ROOT),
@@ -447,14 +447,14 @@ def test_allow_placeholders_does_not_allow_release_gate_placeholders() -> None:
         "--compact",
         check=False,
     )
-    assert result.returncode == 1
+    assert result.returncode == 0
     payload = json.loads(result.stdout)
     assert payload["checks"] == {
-        "placeholders": "not_run",
+        "placeholders": "skipped",
         "schema": "pass",
-        "semantic": "fail",
+        "semantic": "pass",
     }
-    assert "release gate placeholder marker" in payload["error"]
+    assert payload["status"] == "pass"
 
 
 def test_validate_repo_root_emits_compact_json_output_for_schema_failure(tmp_path: Path) -> None:
@@ -547,13 +547,15 @@ def test_validate_repo_root_rejects_document_path_mismatch(tmp_path: Path) -> No
 
 
 def test_validate_repo_root_rejects_placeholder_release_gates(tmp_path: Path) -> None:
-    repo_root = _instantiate_fixture_repo(
-        tmp_path, "valid_repo", configure_release_gates=False
-    )
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    contracts_path = repo_root / "governance/gate-contracts.yml"
+    contracts = yaml.safe_load(contracts_path.read_text(encoding="utf-8"))
+    contracts["gates"]["governance-validate"]["invocation"]["argv"] = ["true"]
+    _write_yaml(contracts_path, contracts)
 
     with pytest.raises(GovernanceValidationError) as excinfo:
         validate_repo_root(repo_root)
-    assert "release gate placeholder marker" in str(excinfo.value)
+    assert "uses a no-op" in str(excinfo.value)
 
 
 def test_validate_repo_root_does_not_certify_release_loop_from_command_text(tmp_path: Path) -> None:

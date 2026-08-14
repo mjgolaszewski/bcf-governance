@@ -29,7 +29,7 @@
         "properties": {
           "id": { "type": "string", "minLength": 1 },
           "priority": { "type": "string", "minLength": 1 },
-          "status": { "type": "string", "minLength": 1 },
+          "status": { "enum": ["TODO", "IN_PROGRESS", "BLOCKED", "DONE"] },
           "summary": { "type": "string", "minLength": 1 },
           "acceptance": {
             "type": "array",

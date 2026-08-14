@@ -1,50 +1,9 @@
-"""Validate core YAML governance artifacts for the template governance pack."""
-
-from __future__ import annotations
-
-from pathlib import Path
+"""Compatibility wrapper for packaged BCF tooling."""
 import sys
+from pathlib import Path
 
-_SCRIPT_ROOT = Path(__file__).resolve().parent
-if str(_SCRIPT_ROOT) not in sys.path:
-    sys.path.insert(0, str(_SCRIPT_ROOT))
-
-from governance_validation.runner import (  # noqa: E402
-    GovernanceValidationError,
-    main,
-    validate_repo_root,
-)
-from governance_validation.common import (  # noqa: E402
-    MAKE_INVOKED_TARGET_PATTERN,
-    PLACEHOLDER_PATTERN,
-    RELEASE_GATE_INACTIVE_STATUSES,
-    RELEASE_GATE_PLACEHOLDER_MARKERS,
-    _load_yaml,
-)
-from governance_validation.release_gates import (  # noqa: E402
-    _makefile_target_bodies,
-    _meaningful_make_commands,
-    _release_gate_makefile_path,
-    _release_gates_from_profile,
-    _validate_release_gate_command_semantics,
-)
-
-__all__ = [
-    "GovernanceValidationError",
-    "MAKE_INVOKED_TARGET_PATTERN",
-    "PLACEHOLDER_PATTERN",
-    "RELEASE_GATE_INACTIVE_STATUSES",
-    "RELEASE_GATE_PLACEHOLDER_MARKERS",
-    "_load_yaml",
-    "_makefile_target_bodies",
-    "_meaningful_make_commands",
-    "_release_gate_makefile_path",
-    "_release_gates_from_profile",
-    "_validate_release_gate_command_semantics",
-    "main",
-    "validate_repo_root",
-]
-
-
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from bcf_governance.tooling import validate_governance_yaml as _implementation
+globals().update({name: getattr(_implementation, name) for name in dir(_implementation) if name != "__name__"})
 if __name__ == "__main__":
-    main()
+    _implementation.main()

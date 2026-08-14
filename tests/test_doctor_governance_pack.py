@@ -46,8 +46,8 @@ def test_placeholder_scan_honors_gitignore_and_keeps_unignored_files(tmp_path: P
 def test_doctor_reports_running_version_source_and_public_install(tmp_path: Path) -> None:
     report = doctor.doctor_repo(tmp_path)
 
-    assert report["tooling"]["version"] == "0.5.0"
+    assert report["tooling"]["version"] == "0.6.0"
     assert report["tooling"]["package_source"]
     assert report["tooling"]["public_install"].endswith(
-        "/v0.5.0/bcf_governance-0.5.0-py3-none-any.whl"
+        "/v0.6.0/bcf_governance-0.6.0-py3-none-any.whl"
     )

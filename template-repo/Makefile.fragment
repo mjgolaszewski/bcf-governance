@@ -1,93 +1,21 @@
 SHELL := /bin/bash
 PYTHON ?= python3
-PYTEST ?= $(PYTHON) -m pytest
-
-.PHONY: governance-deps governance-validate governance-exposure-scan governance-scaffold-help governance-truthfulness architecture-test architecture-module-size architecture-layer-membership architecture-context-membership architecture-import-boundaries architecture-cqrs-side architecture-router-thinness architecture-duplication lint typecheck test contract-test security-secret-scan security-dependency-audit security-sbom security-vulnerability-scan security-review runtime-smoke release-check
-
 BCF_EVIDENCE_DIR ?= .artifacts/bcf
 
-governance-deps:
-	$(PYTHON) -m pip install -r requirements-governance.txt
-
-governance-validate:
-	$(PYTHON) scripts/validate_governance_yaml.py
-
-governance-exposure-scan:
-	$(PYTHON) scripts/check_governance_exposure.py --repo-root .
-
-governance-scaffold-help:
-	$(PYTHON) scripts/scaffold_governance_artifacts.py --help
+.PHONY: governance-truthfulness release-check governance-exposure-scan governance-validate
 
 governance-truthfulness:
 	$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)
 
-architecture-test:
-	$(PYTEST) backend/tests/architecture
+governance-exposure-scan:
+	@cd . && python3 scripts/check_governance_exposure.py --repo-root .
 
-architecture-module-size:
-	$(PYTEST) backend/tests/architecture -k production_modules_respect_loc_cap
-
-architecture-layer-membership:
-	$(PYTEST) backend/tests/architecture -k production_modules_map_to_exactly_one_layer
-
-architecture-context-membership:
-	$(PYTEST) backend/tests/architecture -k production_modules_map_to_exactly_one_bounded_context
-
-architecture-import-boundaries:
-	$(PYTEST) backend/tests/architecture -k "domain_layer or use_cases_do_not_import or ports_do_not_import or routers_do_not_import"
-
-architecture-cqrs-side:
-	$(PYTEST) backend/tests/architecture -k cqrs
-
-architecture-router-thinness:
-	$(PYTEST) backend/tests/architecture -k routers_remain_thin
-
-architecture-duplication:
-	$(PYTEST) backend/tests/architecture -k "duplication or shared_abstraction"
-
-lint:
-	@echo "configure repo-specific lint commands before release-check can pass"
-	@false
-
-typecheck:
-	@echo "configure repo-specific typecheck commands before release-check can pass"
-	@false
-
-test:
-	@echo "configure repo-specific test commands before release-check can pass"
-	@false
-
-contract-test:
-	@echo "configure repo-specific contract-test commands before release-check can pass"
-	@false
-
-security-secret-scan:
-	@echo "configure repo-specific gitleaks or equivalent secret scan before release-check can pass"
-	@false
-
-security-dependency-audit:
-	@echo "configure repo-specific dependency audit before release-check can pass"
-	@false
-
-security-sbom:
-	@echo "configure repo-specific SBOM generation before release-check can pass"
-	@false
-
-security-vulnerability-scan:
-	@echo "configure repo-specific vulnerability scan before release-check can pass"
-	@false
-
-security-review:
-	@echo "configure repo-specific security review command before release-check can pass"
-	@false
-
-runtime-smoke:
-	@echo "configure repo-specific runtime smoke command before release-check can pass"
-	@false
+governance-validate:
+	@cd . && python3 scripts/validate_governance_yaml.py --repo-root .
 
 release-check:
 	@mkdir -p $(BCF_EVIDENCE_DIR)
-	@for gate in governance-validate governance-exposure-scan architecture-test architecture-module-size architecture-layer-membership architecture-context-membership architecture-import-boundaries architecture-cqrs-side architecture-router-thinness architecture-duplication lint typecheck test contract-test security-secret-scan security-dependency-audit security-sbom security-vulnerability-scan security-review runtime-smoke; do \
+	@for gate in governance-exposure-scan governance-validate; do \
 		$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output $(BCF_EVIDENCE_DIR)/$$gate || exit $$?; \
 	done
 	$(MAKE) governance-truthfulness

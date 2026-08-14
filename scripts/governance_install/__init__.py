@@ -1,1 +1,1 @@
-"""BCF governance install support package."""
+"""Compatibility package for bcf_governance.tooling.governance_install."""

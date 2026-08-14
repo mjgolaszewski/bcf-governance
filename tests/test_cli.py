@@ -21,7 +21,16 @@ def test_cli_reports_version() -> None:
     result = _run_bcf("--version")
 
     assert result.returncode == 0
-    assert "bcf 0.5.0" in result.stdout
+    assert "bcf 0.6.0" in result.stdout
+
+
+def test_cli_exposes_profile_promote_contract() -> None:
+    result = _run_bcf("profile", "promote", "--help")
+
+    assert result.returncode == 0
+    assert "usage: bcf profile promote" in result.stdout
+    assert "--check" in result.stdout
+    assert "--apply" in result.stdout
 
 
 def test_cli_publish_audit_requires_explicit_history() -> None:

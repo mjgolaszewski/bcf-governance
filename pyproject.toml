@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bcf-governance"
-version = "0.5.0"
+dynamic = ["version"]
 description = "Executable governance templates and validators for agent-led development."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -22,7 +22,10 @@ dev = ["pytest>=8.0,<9"]
 bcf = "bcf_governance.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["bcf_governance*", "scripts*"]
+include = ["bcf_governance*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "bcf_governance._version.__version__"}
 
 [tool.setuptools.package-data]
 bcf_governance = ["pack/template-repo/**/*"]

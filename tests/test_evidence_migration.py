@@ -133,6 +133,46 @@ def test_migration_is_idempotent_and_previewable(tmp_path: Path) -> None:
     assert second["changed_paths"] == []
 
 
+def test_migration_normalizes_workitem_synonyms_and_records_original_values(
+    tmp_path: Path,
+) -> None:
+    repo = _seed_legacy_repo(tmp_path)
+    log_path = repo / "phases/phase-01-log.yml"
+    log = yaml.safe_load(log_path.read_text(encoding="utf-8"))
+    log["workitems"] = [
+        {"id": "P01-W01", "status": "complete"},
+        {"id": "P01-W02", "status": "in-progress"},
+    ]
+    _write_yaml(log_path, log)
+    workitems_path = repo / "plans/phase-01-workitems.yml"
+    _write_yaml(
+        workitems_path,
+        {"workitems": [{"id": "P01-W01", "status": "closed"}]},
+    )
+
+    migration_plan(repo, apply=True)
+
+    migrated_log = yaml.safe_load(log_path.read_text(encoding="utf-8"))
+    migrated_plan = yaml.safe_load(workitems_path.read_text(encoding="utf-8"))
+    assert [item["status"] for item in migrated_log["workitems"]] == [
+        "DONE",
+        "IN_PROGRESS",
+    ]
+    assert migrated_plan["workitems"][0]["status"] == "DONE"
+    report = yaml.safe_load(
+        (repo / "governance/migrations/evidence-integrity-v1.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    records = {entry["path"]: entry for entry in report["legacy_records"]}
+    assert records["phases/phase-01-log.yml"]["legacy_attestations"][
+        "workitems.0.status"
+    ] == "complete"
+    assert records["plans/phase-01-workitems.yml"]["legacy_attestations"][
+        "workitems.0.status"
+    ] == "closed"
+
+
 def test_migration_preserves_valid_historical_computation_as_derived_state(
     tmp_path: Path,
 ) -> None:

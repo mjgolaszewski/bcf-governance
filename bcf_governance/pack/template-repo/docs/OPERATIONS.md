@@ -25,13 +25,19 @@ That command should cover:
 - secret scanning, dependency audit, SBOM generation, and vulnerability scans
 - Docker or runtime smoke checks
 
-`Makefile.fragment` starts with fail-closed placeholder targets. Replace required gates with repo-specific commands and keep `governance-profile.yml` aligned with any gate marked `required`, `optional`, `deferred`, or `not_applicable`. Configure typed requirements and negative controls in `governance/evidence-policy.yml`. Make targets remain developer aliases; their command text is not verification.
+`Makefile.fragment`, the static CI matrix, evidence overrides, and closeout
+requirements are generated from `governance/gate-contracts.yml`. Do not hand
+author applicability. Use `bcf profile promote --check|--apply` with a complete
+profile contract to change profiles. Make targets remain developer aliases;
+their command text is not verification.
 
 Required CI jobs invoke the evidence wrapper for their gate IDs, upload the
 content-addressed bundles, and feed them to the final truthfulness job. The
-wrapper runs each gate normally and runs its configured negative behavioral
-control in a temporary worktree; the normal tree must pass and the broken tree
-must fail. Dynamic or unresolved mandatory workflow paths fail closed.
+wrapper rejects dirty or untracked influence, then runs the positive gate and
+each configured negative behavioral control in separate pristine detached
+worktrees. A control must satisfy its typed failure oracle; command-not-found,
+timeout, signal, or an arbitrary crash is never proof. Dynamic or unresolved
+mandatory workflow paths fail closed.
 
 If the repo layout differs from the starter backend shape, update `architecture-boundaries.yml` before relying on `make architecture-test`.
 
@@ -53,10 +59,13 @@ Governance validation should cover structural schema checks from `schemas/`, rep
 Structural validation never promotes lifecycle state. Phase logs may author
 `completed`; `verified`, `closed`, and release readiness are computed by the
 truth engine from current-tree evidence and canonical finding accounting.
+Receipt and truth schemas are `2.0`; 0.5 bundles fail as
+`unsupported_schema_version` and must be recaptured.
 
-The installed validator is split into `scripts/governance_validation/` support
-modules. Keep those files below 800 LOC and split future growth by stable
-validation surface, not by incidental helper sharing.
+Standalone tooling is exported under the private `scripts/_bcf_runtime/`
+namespace; public scripts are thin wrappers. Keep runtime modules below 800 LOC
+and split future growth by stable validation surface, not incidental helper
+sharing.
 
 ## Cleanup Helpers
 

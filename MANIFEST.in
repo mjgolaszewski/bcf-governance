@@ -1,4 +1,10 @@
 recursive-include bcf_governance/pack/template-repo *
 recursive-include docs/assets *
-include README.md LICENSE requirements-governance.txt
+recursive-include template-repo *
+recursive-include tests *
+recursive-include examples *
+recursive-include scripts *.py
+recursive-include .github/scripts *.py
+recursive-include .github/workflows *.yml *.yaml
+include README.md LICENSE manifest.yml requirements-governance.txt
 global-exclude __pycache__ *.py[cod]

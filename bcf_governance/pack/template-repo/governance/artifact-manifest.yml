@@ -39,9 +39,10 @@ context_budgets:
     AGENTS.yml: {line_hard_cap: 190, kib_hard_cap: 18, intent: terse procedural agent policy}
     MEMORY.yml: {line_hard_cap: 105, kib_hard_cap: 28, intent: compact active memory only}
     architecture-boundaries.yml: {line_hard_cap: 120, kib_hard_cap: 8, intent: boundary map only}
-    governance-profile.yml: {line_hard_cap: 95, kib_hard_cap: 12, intent: profile knobs only}
+    governance-profile.yml: {line_hard_cap: 220, kib_hard_cap: 28, intent: profile knobs and generated required-gate classification}
     governance/artifact-manifest.yml: {line_hard_cap: 80, kib_hard_cap: 8, intent: artifact index only}
-    governance/evidence-policy.yml: {line_hard_cap: 100, kib_hard_cap: 16, intent: computed lifecycle and evidence policy}
+    governance/evidence-policy.yml: {line_hard_cap: 500, kib_hard_cap: 64, intent: computed lifecycle and generated evidence policy}
+    governance/gate-contracts.yml: {line_hard_cap: 800, kib_hard_cap: 96, intent: canonical executable gate contracts}
     governance/findings.yml: {line_hard_cap: 400, kib_hard_cap: 96, intent: canonical finding accounting}
     governance/repo-cleanup-contract.yml: {line_hard_cap: 90, kib_hard_cap: 12, intent: cleanup rules only}
     plans/build-plan.yml: {line_hard_cap: 95, kib_hard_cap: 24, intent: active roadmap index}
