@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import subprocess
+import sys
 from pathlib import Path
 
 import yaml
@@ -44,6 +46,28 @@ def test_public_wrappers_are_thin_and_private_runtime_stays_in_sync() -> None:
     assert _read_text("requirements-governance.txt") == _read_text(
         "template-repo/requirements-governance.txt"
     )
+
+
+def test_root_wrapper_bootstraps_an_uninstalled_source_checkout(tmp_path: Path) -> None:
+    wrapper = REPO_ROOT / "scripts/install_governance_pack.py"
+    site_packages = Path(yaml.__file__).resolve().parent.parent
+    launcher = (
+        "import runpy, sys; "
+        f"sys.path.append({str(site_packages)!r}); "
+        f"sys.argv = [{str(wrapper)!r}, '--help']; "
+        f"runpy.run_path({str(wrapper)!r}, run_name='__main__')"
+    )
+
+    result = subprocess.run(
+        [sys.executable, "-S", "-c", launcher],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "usage:" in result.stdout
 
 
 def test_packaged_template_resource_stays_in_sync() -> None:
