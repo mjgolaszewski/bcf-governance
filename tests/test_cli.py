@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from bcf_governance import __version__
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -21,7 +23,7 @@ def test_cli_reports_version() -> None:
     result = _run_bcf("--version")
 
     assert result.returncode == 0
-    assert "bcf 0.6.0" in result.stdout
+    assert f"bcf {__version__}" in result.stdout
 
 
 def test_cli_exposes_profile_promote_contract() -> None:

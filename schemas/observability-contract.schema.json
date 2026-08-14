@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "stringList": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/nonEmptyString" }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "contract_id",
+    "schema_version",
+    "status",
+    "created_at_utc",
+    "identity_context",
+    "shared_backend",
+    "privacy",
+    "enforcement"
+  ],
+  "properties": {
+    "$schema": { "$ref": "#/$defs/nonEmptyString" },
+    "contract_id": { "$ref": "#/$defs/nonEmptyString" },
+    "schema_version": { "$ref": "#/$defs/nonEmptyString" },
+    "status": { "$ref": "#/$defs/nonEmptyString" },
+    "standard": { "$ref": "#/$defs/nonEmptyString" },
+    "created_at_utc": { "$ref": "#/$defs/nonEmptyString" },
+    "attribute_naming": { "$ref": "#/$defs/nonEmptyString" },
+    "canonical_format": { "$ref": "#/$defs/nonEmptyString" },
+    "field_naming": { "$ref": "#/$defs/nonEmptyString" },
+    "trace_model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_span_fields", "service_name_case", "span_name_pattern", "span_kinds"],
+      "properties": {
+        "required_span_fields": { "$ref": "#/$defs/stringList" },
+        "service_name_case": { "$ref": "#/$defs/nonEmptyString" },
+        "span_name_pattern": { "$ref": "#/$defs/nonEmptyString" },
+        "span_kinds": { "$ref": "#/$defs/stringList" }
+      }
+    },
+    "correlation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["header", "required", "separate_from_trace_id", "propagate_across", "purpose"],
+      "properties": {
+        "header": { "$ref": "#/$defs/nonEmptyString" },
+        "required": { "type": "boolean" },
+        "separate_from_trace_id": { "type": "boolean" },
+        "propagate_across": { "$ref": "#/$defs/stringList" },
+        "purpose": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "identity_context": {
+      "type": "object",
+      "additionalProperties": { "type": ["string", "boolean"] },
+      "minProperties": 1
+    },
+    "shared_backend": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "minLength": 1 },
+      "minProperties": 1
+    },
+    "propagation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_formats", "headers"],
+      "properties": {
+        "required_formats": { "$ref": "#/$defs/stringList" },
+        "headers": { "$ref": "#/$defs/stringList" },
+        "compatibility_headers": { "$ref": "#/$defs/stringList" }
+      }
+    },
+    "required_span_attributes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["core", "conditional", "error"],
+      "properties": {
+        "core": { "$ref": "#/$defs/stringList" },
+        "conditional": { "$ref": "#/$defs/stringList" },
+        "error": { "$ref": "#/$defs/stringList" },
+        "optional_error": { "$ref": "#/$defs/stringList" }
+      }
+    },
+    "outcomes": { "$ref": "#/$defs/stringList" },
+    "error_contract": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "sampling": {
+      "type": "object",
+      "additionalProperties": { "type": ["string", "number", "boolean"] },
+      "minProperties": 1
+    },
+    "log_alignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_log_fields"],
+      "properties": {
+        "required_log_fields": { "$ref": "#/$defs/stringList" }
+      }
+    },
+    "slo_dimensions": { "$ref": "#/$defs/stringList" },
+    "required_fields": { "$ref": "#/$defs/stringList" },
+    "conditional_fields": { "$ref": "#/$defs/stringList" },
+    "levels": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "minLength": 1 },
+      "minProperties": 1
+    },
+    "event_naming": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pattern", "examples"],
+      "properties": {
+        "pattern": { "$ref": "#/$defs/nonEmptyString" },
+        "examples": { "$ref": "#/$defs/stringList" }
+      }
+    },
+    "request_logging": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_event", "completed_event", "failed_event", "required_fields", "body_logging"],
+      "properties": {
+        "start_event": { "$ref": "#/$defs/nonEmptyString" },
+        "completed_event": { "$ref": "#/$defs/nonEmptyString" },
+        "failed_event": { "$ref": "#/$defs/nonEmptyString" },
+        "required_fields": { "$ref": "#/$defs/stringList" },
+        "body_logging": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "job_logging": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_fields"],
+      "properties": {
+        "required_fields": { "$ref": "#/$defs/stringList" }
+      }
+    },
+    "error_logging": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_fields", "stack_trace_policy", "message_policy"],
+      "properties": {
+        "required_fields": { "$ref": "#/$defs/stringList" },
+        "stack_trace_policy": { "$ref": "#/$defs/nonEmptyString" },
+        "message_policy": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "audit_logs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["separate_from_operational_logs", "required_fields", "storage"],
+      "properties": {
+        "separate_from_operational_logs": { "type": "boolean" },
+        "required_fields": { "$ref": "#/$defs/stringList" },
+        "storage": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": true,
+      "minProperties": 1
+    },
+    "trace_alignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_fields"],
+      "properties": {
+        "required_fields": { "$ref": "#/$defs/stringList" }
+      }
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "minLength": 1 },
+      "minProperties": 1
+    },
+    "enforcement": { "$ref": "#/$defs/stringList" }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "standard",
+        "attribute_naming",
+        "trace_model",
+        "correlation",
+        "propagation",
+        "required_span_attributes",
+        "outcomes",
+        "error_contract",
+        "sampling",
+        "log_alignment",
+        "slo_dimensions"
+      ]
+    },
+    {
+      "required": [
+        "canonical_format",
+        "field_naming",
+        "required_fields",
+        "conditional_fields",
+        "levels",
+        "event_naming",
+        "request_logging",
+        "job_logging",
+        "error_logging",
+        "audit_logs",
+        "trace_alignment",
+        "retention"
+      ]
+    }
+  ]
+}

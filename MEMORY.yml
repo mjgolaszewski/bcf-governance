@@ -1,0 +1,91 @@
+document:
+  kind: durable_project_memory
+  name: "BCF Governance Working Memory"
+  id: "bcf-governance-memory"
+  version: 1.0.0
+  generated_at_utc: "2026-08-14T00:00:00Z"
+  status: active
+  path: MEMORY.yml
+regression_shield:
+  purpose: keep this file as durable project memory, not as an execution transcript
+  invariants:
+    - store stable decisions, constraints, environment facts, reusable commands, and references
+    - keep workitem execution evidence in phases/*.yml
+    - update high-signal entries instead of duplicating them
+    - never record secrets or local environment values here
+stable_decisions:
+  canonical_repo_root: "."
+  canonical_governance_guide: AGENTS.yml
+  canonical_product_spec: plans/product-spec.yml
+  canonical_build_plan: plans/build-plan.yml
+  canonical_active_phase_ledger: plans/phase-ledger.yml
+  canonical_phase_history: plans/phase-history.yml
+  canonical_phase_log_root: phases/
+  code_roots:
+    backend: bcf_governance
+    frontend: docs
+  delivery_architecture:
+    backend: "python_package_with_private_portable_runtime"
+    frontend: "canonical_operator_and_maintainer_guides"
+    data: "yaml_json_contracts_and_content_addressed_evidence"
+    observability: governed_reference_contracts
+  governance_process:
+    semantic_validator: scripts/validate_governance_yaml.py
+    structural_schema_root: schemas/
+    hotfix_lane: governed_and_machine_readable
+    artifact_ownership: canonical_owner_map_recorded_in_AGENTS
+    phase_rollover: phase_ledger_and_MEMORY_must_move_together
+    build_artifact_convention: follow_local_template_pack_shapes_and_naming
+memory_retention_policy:
+  stable_decisions:
+    review_frequency: per_phase_rollover
+  environment_facts:
+    revalidate_after_days: 30
+  reusable_commands:
+    validate_on_release_gate: true
+  stale_entry_handling:
+    - mark_deprecated_before_removal
+    - preserve_replacement_reference_when_available
+environment_facts:
+  current_repo_state:
+    - BCF 0.6.1 standard self-governance adopted on 2026-08-14
+    - all governance, memory, specs, plans, workitem ledgers, and phase logs are YAML-native
+    - observability contracts are scaffolded under contracts/observability/v1/
+    - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
+  active_artifacts:
+    spec: plans/product-spec.yml
+    build_plan: plans/build-plan.yml
+    active_phase_ledger: plans/phase-ledger.yml
+    phase_history: plans/phase-history.yml
+    active_phase_plan: plans/phase-01-plan.yml
+    active_workitem_ledger: plans/phase-01-workitems.yml
+    active_phase_log: phases/phase-01-log.yml
+known_constraints:
+  - schema-2 evidence must be recaptured after every governed tree mutation
+  - template runtime and packaged template copies must remain byte-identical to canonical sources
+  - release tags are created only at a merge commit whose source and governance CI passed
+reusable_commands:
+  - make governance-validate
+  - make architecture-test
+  - make lint
+  - make typecheck
+  - make test
+  - make release-check
+references:
+  governance:
+    - AGENTS.yml
+    - governance-profile.yml
+    - architecture-boundaries.yml
+    - schemas/
+    - contracts/observability/v1/
+    - plans/phase-ledger.yml
+    - plans/phase-history.yml
+    - docs/USAGE.md
+    - docs/MAINTAINING.md
+  product:
+    - plans/product-spec.yml
+    - plans/build-plan.yml
+  execution:
+    - plans/phase-01-plan.yml
+    - plans/phase-01-workitems.yml
+    - phases/phase-01-log.yml

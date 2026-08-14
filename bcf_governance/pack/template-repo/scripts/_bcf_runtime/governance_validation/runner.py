@@ -97,7 +97,7 @@ def validate_repo_root(
     _validate_document_path(repo_root, ledger, phase_ledger_path, context=str(phase_ledger_path))
 
     _validate_agents(repo_root, agents)
-    _validate_artifact_manifest(repo_root, artifact_manifest, agents)
+    required_artifact_paths = _validate_artifact_manifest(repo_root, artifact_manifest, agents)
     observability_contract_paths = _validate_observability_contracts(repo_root, schema_cache)
     declared_phase_paths = _validate_declared_phase_catalog(
         repo_root, schema_cache, product_spec, build_plan, ledger, artifact_manifest, phase_history
@@ -130,6 +130,7 @@ def validate_repo_root(
                 *([phase_history_path] if phase_history_path is not None else []),
                 *([governance_profile_path] if governance_profile_path is not None else []),
                 *([artifact_manifest_path] if artifact_manifest_path is not None else []),
+                *required_artifact_paths,
                 *([cleanup_contract_path] if cleanup_contract_path is not None else []),
                 *(
                     [architecture_boundaries_path]

@@ -6,5 +6,13 @@ recursive-include examples *
 recursive-include scripts *.py
 recursive-include .github/scripts *.py
 recursive-include .github/workflows *.yml *.yaml
-include README.md LICENSE manifest.yml requirements-governance.txt
+recursive-include audits *.md *.yml *.yaml *.json
+recursive-include contracts *.md *.yml *.yaml *.json
+recursive-include governance *.md *.yml *.yaml *.json
+include governance/archive/phase-artifacts/.gitkeep
+recursive-include phases *.md *.yml *.yaml *.json
+recursive-include plans *.md *.yml *.yaml *.json
+recursive-include schemas *.json
+include AGENTS.md AGENTS.yml CHANGELOG.md CLAUDE.md LICENSE MEMORY.yml Makefile.fragment README.md
+include architecture-boundaries.yml governance-profile.yml manifest.yml requirements-governance.txt
 global-exclude __pycache__ *.py[cod]

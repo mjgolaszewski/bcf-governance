@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "document",
+    "planning_contract",
+    "planning_inputs",
+    "global_delivery_rules",
+    "global_gates",
+    "phase_sequence"
+  ],
+  "properties": {
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "id", "version", "generated_at_utc", "status", "path"],
+      "properties": {
+        "kind": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "id": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "generated_at_utc": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 }
+      }
+    },
+    "planning_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "mandatory_properties", "completeness_standard"],
+      "properties": {
+        "format": { "type": "string", "minLength": 1 },
+        "mandatory_properties": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "completeness_standard": { "type": "string", "minLength": 1 }
+      }
+    },
+    "planning_inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["date", "planner", "primary_source_of_truth", "governance_references"],
+      "properties": {
+        "date": { "type": "string", "minLength": 1 },
+        "planner": { "type": "string", "minLength": 1 },
+        "primary_source_of_truth": { "type": "string", "minLength": 1 },
+        "governance_references": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "global_delivery_rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "global_gates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "applies_before", "required_completion_criteria"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "applies_before": { "type": "string", "minLength": 1 },
+          "required_completion_criteria": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "phase_sequence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "phase_id",
+          "build_block",
+          "objective",
+          "hard_dependencies",
+          "tightly_scoped_deliverables",
+          "parallelizable_workstreams",
+          "verification_commands"
+        ],
+        "properties": {
+          "phase_id": { "type": "string", "minLength": 1 },
+          "build_block": { "type": "string", "minLength": 1 },
+          "objective": { "type": "string", "minLength": 1 },
+          "hard_dependencies": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "tightly_scoped_deliverables": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "parallelizable_workstreams": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "verification_commands": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    }
+  }
+}

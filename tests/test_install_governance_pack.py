@@ -150,6 +150,50 @@ def test_installer_lite_profile_passes_strict_validation(tmp_path: Path) -> None
     strict = _run_installed_validator(target)
     assert strict.returncode == 0
     assert json.loads(strict.stdout)["status"] == "pass"
+    assert (target / "README.md").read_text(encoding="utf-8").startswith("# Demo Project\n")
+    assert "Copyright (c) 2026-04-24 Demo Project" in (target / "LICENSE").read_text(
+        encoding="utf-8"
+    )
+    assert (target / "CHANGELOG.md").read_text(encoding="utf-8").startswith("# Changelog\n")
+
+
+def test_existing_required_repository_artifacts_are_preserved_byte_identically(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "existing-required-artifacts"
+    target.mkdir()
+    expected = {
+        "README.md": b"# Existing product\n\nApplication documentation.\n",
+        "LICENSE": b"MIT License\n\nCopyright 2025 Existing Owner\n",
+        "CHANGELOG.md": b"# Changelog\n\n## [Unreleased]\n\n- Existing history.\n",
+    }
+    for relative_path, content in expected.items():
+        (target / relative_path).write_bytes(content)
+
+    _run_installer(
+        target,
+        "--profile",
+        "lite",
+        "--adoption-mode",
+        "existing",
+        "--require-strict-validation",
+    )
+
+    assert {path: (target / path).read_bytes() for path in expected} == expected
+
+
+def test_invalid_existing_required_artifact_rolls_back_install(tmp_path: Path) -> None:
+    target = tmp_path / "invalid-existing-artifact"
+    target.mkdir()
+    readme = target / "README.md"
+    readme.write_bytes(b"not a project readme\n")
+
+    result = _run_installer(target, "--profile", "lite", check=False)
+
+    assert result.returncode == 1
+    assert "README.md must begin" in result.stderr
+    assert readme.read_bytes() == b"not a project readme\n"
+    assert not (target / "governance").exists()
 
 
 def test_installer_rejects_removed_gate_command_option(tmp_path: Path) -> None:

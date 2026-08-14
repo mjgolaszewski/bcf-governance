@@ -14,6 +14,10 @@ artifact_roots:
   phases: {path: phases/, status: active, purpose: execution evidence and closeout logs}
   phase_archive: {path: governance/archive/phase-artifacts/, status: historical, purpose: archived closed phase and hotfix artifacts with hashes}
   schemas: {path: schemas/, status: active, purpose: governed YAML structural contracts}
+required_artifacts:
+  readme: {path: README.md, contract: project_readme}
+  license: {path: LICENSE, contract: license_text}
+  changelog: {path: CHANGELOG.md, contract: keep_a_changelog, pull_request_policy: required_update}
 phase_retention_policy:
   # Set mode with `bcf cleanup --phase-retention-mode`: git_history or archive.
   history_path: plans/phase-history.yml

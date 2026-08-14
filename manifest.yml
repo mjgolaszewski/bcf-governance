@@ -2,30 +2,20 @@ document:
   kind: template_governance_pack_manifest
   name: BCF Template And Governance Pack
   id: bcf-governance
-  version: 0.6.0
+  version: 0.6.1
   generated_at_utc: "2026-08-14T00:00:00Z"
   status: tracked_inventory
 source_model:
   origin: public reusable governance pack
   governance_sources:
-    - AGENTS.yml
-    - MEMORY.yml
-    - governance-profile.yml
-    - architecture-boundaries.yml
-    - governance/artifact-manifest.yml
-    - governance/evidence-policy.yml
-    - governance/findings.yml
-    - governance/repo-cleanup-contract.yml
-    - contracts/observability/v1/
-    - audits/
-    - plans/build-plan.yml
-    - plans/phase-ledger.yml
-    - scripts/validate_governance_yaml.py
-    - scripts/scaffold_governance_artifacts.py
-    - scripts/governance_evidence.py
-    - scripts/governance_truth.py
-    - backend/tests/architecture/
-    - docs/OPERATIONS.md
+    - README.md
+    - docs/USAGE.md
+    - docs/MAINTAINING.md
+    - template-repo/AGENTS.yml
+    - template-repo/governance/artifact-manifest.yml
+    - template-repo/governance/evidence-policy.yml
+    - template-repo/governance/gate-contracts.yml
+    - template-repo/docs/OPERATIONS.md
 pack_contents:
   template_repo:
     - root governance templates
@@ -45,15 +35,11 @@ pack_contents:
     - Makefile target fragment
     - GitHub Actions governance workflow template
     - CQRS-lite architecture test skeleton
-  governance_playbooks:
-    - governance operating model
-    - agent task contract
-    - artifact ownership
-    - release gates
-    - architecture boundaries
-    - hotfix lane
-    - model risk and provenance
-    - AI drift review
+  documentation:
+    - concise project overview and lifecycle contract
+    - canonical install, adoption, evidence, and cleanup guide
+    - canonical maintainer and release guide
+    - installed repository operations runbook
   scripts:
     - installer helper that copies the template pack, replaces placeholders, applies profiles, opens the first phase, and reports release-gate wiring gaps
     - installer existing-repo adoption mode for conversion and inventory phases
@@ -69,4 +55,4 @@ pack_contents:
 tracking:
   intended_location: manifest.yml
   tracked_by_git: true
-  generated_artifact_ignore_rule: artifacts/
+  generated_artifact_ignore_rule: .artifacts/

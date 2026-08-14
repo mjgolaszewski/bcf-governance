@@ -204,6 +204,144 @@ def _write_yaml(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
 
 
+def test_artifact_manifest_requires_standard_repository_artifact_contracts(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    manifest_path = repo_root / "governance/artifact-manifest.yml"
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+
+    assert manifest["required_artifacts"] == {
+        "readme": {"path": "README.md", "contract": "project_readme"},
+        "license": {"path": "LICENSE", "contract": "license_text"},
+        "changelog": {
+            "path": "CHANGELOG.md",
+            "contract": "keep_a_changelog",
+            "pull_request_policy": "required_update",
+        },
+    }
+    profile = yaml.safe_load((repo_root / "governance-profile.yml").read_text(encoding="utf-8"))
+    for profile_contract in profile["profile"]["available_profiles"]:
+        assert {"README.md", "LICENSE", "CHANGELOG.md"} <= set(
+            profile_contract["required_artifacts"]
+        )
+    validate_repo_root(repo_root)
+
+
+@pytest.mark.parametrize("relative_path", ["README.md", "LICENSE", "CHANGELOG.md"])
+def test_validate_repo_root_rejects_missing_required_repository_artifact(
+    tmp_path: Path, relative_path: str
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    (repo_root / relative_path).unlink()
+
+    with pytest.raises(
+        GovernanceValidationError,
+        match=rf"required artifact {re.escape(relative_path)} must be a regular file",
+    ):
+        validate_repo_root(repo_root)
+
+
+@pytest.mark.parametrize(
+    ("relative_path", "content", "message"),
+    [
+        ("README.md", "Demo without a heading\n", "non-empty level-one heading"),
+        ("LICENSE", "TBD\n", "substantive license or copyright text"),
+    ],
+)
+def test_validate_repo_root_rejects_malformed_readme_or_license_contract(
+    tmp_path: Path, relative_path: str, content: str, message: str
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    (repo_root / relative_path).write_text(content, encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError, match=message):
+        validate_repo_root(repo_root)
+
+
+@pytest.mark.parametrize(
+    ("content", "message"),
+    [
+        ("# Changes\n\n## [Unreleased]\n", "must begin with '# Changelog'"),
+        ("# Changelog\n", "exactly one '## \\[Unreleased\\]'"),
+        (
+            "# Changelog\n\n## [Unreleased]\n\n## 1.2.3\n",
+            "release headings must use",
+        ),
+    ],
+)
+def test_validate_repo_root_rejects_malformed_changelog_contract(
+    tmp_path: Path, content: str, message: str
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    (repo_root / "CHANGELOG.md").write_text(content, encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError, match=message):
+        validate_repo_root(repo_root)
+
+
+def test_pull_request_validation_requires_changelog_update(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    subprocess.run(["git", "init", "--quiet"], cwd=repo_root, check=True)
+    subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=repo_root, check=True)
+    subprocess.run(["git", "config", "user.name", "Contract Test"], cwd=repo_root, check=True)
+    subprocess.run(["git", "add", "."], cwd=repo_root, check=True)
+    subprocess.run(["git", "commit", "--quiet", "-m", "baseline"], cwd=repo_root, check=True)
+    base_sha = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    (repo_root / "MEMORY.yml").write_text(
+        (repo_root / "MEMORY.yml").read_text(encoding="utf-8") + "\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "add", "MEMORY.yml"], cwd=repo_root, check=True)
+    subprocess.run(["git", "commit", "--quiet", "-m", "change"], cwd=repo_root, check=True)
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
+    monkeypatch.setenv("BCF_ENFORCE_PR_CHANGELOG", "true")
+    monkeypatch.setenv("BCF_PR_BASE_SHA", base_sha)
+
+    with pytest.raises(
+        GovernanceValidationError, match="every pull request must update CHANGELOG.md"
+    ):
+        validate_repo_root(repo_root)
+
+    changelog = repo_root / "CHANGELOG.md"
+    changelog.write_text(
+        changelog.read_text(encoding="utf-8").replace(
+            "## [Unreleased]", "## [Unreleased]\n\n- Describe the pull request."
+        ),
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "add", "CHANGELOG.md"], cwd=repo_root, check=True)
+    subprocess.run(["git", "commit", "--quiet", "-m", "document change"], cwd=repo_root, check=True)
+
+    validate_repo_root(repo_root)
+
+
+def test_governance_workflow_must_wire_changelog_pr_enforcement(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    workflow_path = repo_root / ".github/workflows/governance.yml"
+    workflow_path.write_text(
+        workflow_path.read_text(encoding="utf-8").replace(
+            "BCF_ENFORCE_PR_CHANGELOG: ${{ github.event_name == 'pull_request' }}",
+            "BCF_ENFORCE_PR_CHANGELOG: false",
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        GovernanceValidationError,
+        match="must enforce CHANGELOG.md against the exact pull-request base SHA",
+    ):
+        validate_repo_root(repo_root)
+
+
 def _set_manifest_retention_mode(repo_root: Path, mode: str) -> None:
     manifest_path = repo_root / "governance/artifact-manifest.yml"
     text = manifest_path.read_text(encoding="utf-8")

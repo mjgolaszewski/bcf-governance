@@ -1,0 +1,63 @@
+document:
+  kind: architecture_boundary_rules
+  name: "BCF Governance Architecture Boundary Rules"
+  id: "bcf-governance-architecture-boundaries"
+  version: 1.0.0
+  generated_at_utc: "2026-08-14T00:00:00Z"
+  status: active
+  path: architecture-boundaries.yml
+architecture:
+  source_roots: [bcf_governance]
+  mandatory_rule_gate_policy:
+    every_mandatory_rule_has_executable_gate: true
+    human_review_only_allowed_with_rationale: true
+    human_review_only_rules: []
+  production_module_policy:
+    max_loc: 800
+    excluded_path_tokens: [generated, migrations, migration, vendor, fixtures, snapshots, testdata, tests]
+    excluded_file_suffixes: [_pb2.py, _pb2_grpc.py]
+  bounded_contexts:
+    required: true
+    context_root_tokens: [tooling, pack, governance]
+    shared_context_tokens: [shared, runtime]
+  layer_membership_policy:
+    exactly_one_layer: true
+  context_membership_policy:
+    exactly_one_context: true
+  cqrs_policy:
+    command_path_tokens: [cleanup, install, migrate, profile, scaffold, evidence]
+    query_path_tokens: [doctor, exposure, publish_audit, truth, validate]
+    read_model_tokens: [report, receipt, truth, plan]
+    write_method_names: [apply, cleanup, create, install, migrate, promote, remove, scaffold, write]
+  thin_router_policy:
+    max_branch_nodes: 4
+    max_loop_nodes: 0
+    delegate_call_name_tokens: [main, command, validate, derive, capture]
+  duplication_policy:
+    enabled: true
+    min_duplicate_lines: 12
+    scoped_to_bounded_context: true
+    allowed_cross_context_duplication: true
+  shared_abstraction_policy:
+    shared_path_tokens: [common, support, shared, utils]
+    min_real_call_sites: 2
+    required_metadata: [owning_layer, owning_context_or_shared_kernel, rationale, tests]
+  layers:
+    public:
+      path_tokens: [__init__, _version, cli]
+      required: true
+      forbidden_import_prefixes: [scripts]
+      forbidden_layer_imports: []
+      forbidden_import_names: []
+    tooling:
+      path_tokens: [tooling]
+      required: true
+      forbidden_import_prefixes: [scripts]
+      forbidden_layer_imports: []
+      forbidden_import_names: [Request, Response]
+    pack:
+      path_tokens: [pack]
+      required: true
+      forbidden_import_prefixes: []
+      forbidden_layer_imports: []
+      forbidden_import_names: []

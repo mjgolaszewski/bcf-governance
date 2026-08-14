@@ -1,0 +1,72 @@
+document:
+  kind: active_execution_phase_ledger
+  name: "BCF Governance Active Phase Ledger"
+  id: "bcf-governance-phase-ledger"
+  version: 1.0.0
+  generated_at_utc: "2026-08-14T00:00:00Z"
+  status: active_phase_completed
+  path: plans/phase-ledger.yml
+build_plan_mandate:
+  format: yaml
+  required_fields:
+    - tightly_scoped_deliverables
+    - parallelizable_workstreams
+    - hard_dependencies
+    - docker_first_local_runtime
+    - completeness_standard
+  completeness_standard: full_completeness_for_declared_scope
+active_phase:
+  id: P01
+  build_block: "self-governance-0.6.1"
+  plan: plans/phase-01-plan.yml
+  workitems: plans/phase-01-workitems.yml
+  log: phases/phase-01-log.yml
+  memory: MEMORY.yml
+  spec: plans/product-spec.yml
+  build_plan: plans/build-plan.yml
+  lifecycle_status: completed
+  owner: "codex"
+  validation_commands:
+    - make governance-validate
+    - make architecture-test
+    - make lint
+    - make typecheck
+    - make test
+    - make release-check
+hotfix_lane:
+  scaffold_script: scripts/scaffold_governance_artifacts.py
+  default_mode: full
+  modes:
+    lite:
+      allowed_when:
+        - single_commit_fix
+        - no_public_contract_change
+        - no_security_scope_change
+    full:
+      required_when:
+        - default_branch_red_ci
+        - release_blocking_regression
+        - security_or_expiring_external_breakage
+  open_records: []
+  remediation_history: []
+operator_requirements_choices_disambiguations:
+  - type: decision
+    statement: all governance, memory, specs, plans, workitem ledgers, and phase logs remain YAML-native
+active_delivery_priorities:
+  current_tranche:
+    - "self-governance-0.6.1"
+release_trains:
+  release_1:
+    target_version: "0.6.1"
+    status: active
+    focus:
+      - required_repository_artifacts
+      - consolidated_governance_documentation
+      - standard_self_governance
+release_readiness:
+  computed_by: bcf truth
+  requirements_source: governance/evidence-policy.yml
+  validating_command: make release-check
+definition_of_ready_before_execution:
+  - active phase has a plan, workitem ledger, and log
+  - validation commands are listed before implementation starts

@@ -1,0 +1,434 @@
+document:
+  kind: evidence_integrity_policy
+  name: BCF Governance Evidence Integrity Policy
+  id: bcf-governance-evidence-policy
+  version: 1.0.0
+  generated_at_utc: '2026-08-14T00:00:00Z'
+  status: active
+  path: governance/evidence-policy.yml
+settings:
+  authored_terminal_states: []
+  computed_states:
+  - verified
+  - closed
+  default_binding: exact_tree
+  tree_independent_allowlist: []
+  require_negative_control_for_required_gates: true
+  required_test_defaults:
+    min_collected: 1
+    min_executed: 1
+    max_skipped: 0
+claim_dependencies:
+  workitems_closed:
+  - source
+  - test
+  - governance
+  required_suites_green:
+  - source
+  - test
+  - config
+  - workflow
+  architecture_gates_green:
+  - source
+  - test
+  - config
+  - workflow
+  health_checks_green:
+  - source
+  - config
+  - workflow
+  security_review_complete:
+  - source
+  - config
+  - test
+  - workflow
+  - audit
+  - governance
+  - security_impact
+  findings_resolved:
+  - source
+  - test
+  - audit
+  - governance
+  - security_impact
+  phase_closed:
+  - workitems_closed
+  - required_suites_green
+  - architecture_gates_green
+  - health_checks_green
+  - security_review_complete
+  - findings_resolved
+  release_ready:
+  - phase_closed
+security_impact_categories:
+- authentication
+- authorization
+- cryptography
+- session_and_token_lifecycle
+- federation
+- tenant_containment
+- secrets_and_custody
+- security_middleware
+- authority_migrations
+- security_ci
+workflow_contract:
+  paths:
+  - .github/workflows/governance.yml
+  required_events:
+  - pull_request
+  - push
+gate_overrides:
+  architecture-context-membership:
+    evidence_kind: test_suite
+    negative_controls:
+    - id: architecture-context-membership-behavior-must-fail
+      mutation:
+        path: governance/self-governance-policy.yml
+        search: 'validation: [check_governance_exposure.py, doctor_governance_pack.py, validate_governance_yaml.py, governance_validation/]'
+        replace: 'validation: [check_governance_exposure.py, doctor_governance_pack.py, validate_governance_yaml.py, missing_validation/]'
+      oracle:
+        kind: test_node_failure
+        node_ids:
+        - tests.test_self_governance_contracts::test_tooling_modules_map_to_exactly_one_context
+    test_contract:
+      junit_xml: .artifacts/junit/architecture-context-membership.xml
+      min_collected: 1
+      min_executed: 1
+      max_skipped: 0
+      artifact_binding: non_authoritative_until_captured
+  architecture-cqrs-side:
+    evidence_kind: test_suite
+    negative_controls:
+    - id: architecture-cqrs-side-behavior-must-fail
+      mutation:
+        path: governance/self-governance-policy.yml
+        search: 'read_only: [doctor, exposure-scan, publish-audit, truth, validate]'
+        replace: 'read_only: [doctor, exposure-scan, publish-audit, validate]'
+      oracle:
+        kind: test_node_failure
+        node_ids:
+        - tests.test_self_governance_contracts::test_cli_command_query_sides_are_complete_and_disjoint
+    test_contract:
+      junit_xml: .artifacts/junit/architecture-cqrs-side.xml
+      min_collected: 1
+      min_executed: 1
+      max_skipped: 0
+      artifact_binding: non_authoritative_until_captured
+  architecture-duplication:
+    evidence_kind: test_suite
+    negative_controls:
+    - id: architecture-duplication-behavior-must-fail
+      mutation:
+        path: template-repo/scripts/_bcf_runtime/governance_validation/required_artifacts.py
+        search: '"""Semantic contracts for standard repository root artifacts."""'
+        replace: '"""Mutated standalone runtime contract."""'
+      oracle:
+        kind: test_node_failure
+        node_ids:
+        - tests.test_self_governance_contracts::test_template_and_private_runtime_copies_are_exact
+    test_contract:
+      junit_xml: .artifacts/junit/architecture-duplication.xml
+      min_collected: 1
+      min_executed: 1
+      max_skipped: 0
+      artifact_binding: non_authoritative_until_captured
+  architecture-import-boundaries:
+    evidence_kind: test_suite
+    negative_controls:
+    - id: architecture-import-boundaries-behavior-must-fail
+      mutation:
+        path: bcf_governance/__init__.py
+        search: from ._version import __version__
+        replace: 'import scripts
+
+          from ._version import __version__'
+      oracle:
+        kind: test_node_failure
+        node_ids:
+        - tests.test_self_governance_contracts::test_packaged_code_does_not_import_public_wrapper_package
+    test_contract:
+      junit_xml: .artifacts/junit/architecture-import-boundaries.xml
+      min_collected: 1
+      min_executed: 1
+      max_skipped: 0
+      artifact_binding: non_authoritative_until_captured
+  architecture-layer-membership:
+    evidence_kind: test_suite
+    negative_controls:
+    - id: architecture-layer-membership-behavior-must-fail
+      mutation:
+        path: architecture-boundaries.yml
+        search: 'path_tokens: [pack]'
+        replace: 'path_tokens: [missing_pack]'
+      oracle:
+        kind: test_node_failure
+        node_ids:
+        - tests.test_self_governance_contracts::test_source_layout_maps_to_declared_package_layers
+    test_contract:
+      junit_xml: .artifacts/junit/architecture-layer-membership.xml
+      min_collected: 1
+      min_executed: 1
+      max_skipped: 0
+      artifact_binding: non_authoritative_until_captured
+  architecture-module-size:
+    evidence_kind: test_suite
+    negative_controls:
+    - id: architecture-module-size-behavior-must-fail
+      mutation:
+        path: architecture-boundaries.yml
+        search: 'max_loc: 800'
+        replace: 'max_loc: 1'
+      oracle:
+        kind: test_node_failure
+        node_ids:
+        - tests.test_self_governance_contracts::test_production_modules_respect_self_governance_loc_cap
+    test_contract:
+      junit_xml: .artifacts/junit/architecture-module-size.xml
+      min_collected: 1
+      min_executed: 1
+      max_skipped: 0
+      artifact_binding: non_authoritative_until_captured
+  architecture-router-thinness:
+    evidence_kind: test_suite
+    negative_controls:
+    - id: architecture-router-thinness-behavior-must-fail
+      mutation:
+        path: governance/self-governance-policy.yml
+        search: 'thin_wrapper_loc_cap: 20'
+        replace: 'thin_wrapper_loc_cap: 1'
+      oracle:
+        kind: test_node_failure
+        node_ids:
+        - tests.test_self_governance_contracts::test_cli_and_source_wrappers_remain_thin
+    test_contract:
+      junit_xml: .artifacts/junit/architecture-router-thinness.xml
+      min_collected: 1
+      min_executed: 1
+      max_skipped: 0
+      artifact_binding: non_authoritative_until_captured
+  architecture-test:
+    evidence_kind: test_suite
+    negative_controls:
+    - id: architecture-test-behavior-must-fail
+      mutation:
+        path: architecture-boundaries.yml
+        search: 'source_roots: [bcf_governance]'
+        replace: 'source_roots: [missing_package]'
+      oracle:
+        kind: test_node_failure
+        node_ids:
+        - tests.test_self_governance_contracts::test_source_roots_match_packaged_implementation
+    test_contract:
+      junit_xml: .artifacts/junit/architecture-test.xml
+      min_collected: 1
+      min_executed: 1
+      max_skipped: 0
+      artifact_binding: non_authoritative_until_captured
+  contract-test:
+    evidence_kind: test_suite
+    negative_controls:
+    - id: contract-test-behavior-must-fail
+      mutation:
+        path: template-repo/governance/artifact-manifest.yml
+        search: 'pull_request_policy: required_update'
+        replace: 'pull_request_policy: optional'
+      oracle:
+        kind: test_node_failure
+        node_ids:
+        - tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts
+    test_contract:
+      junit_xml: .artifacts/junit/contract-test.xml
+      min_collected: 1
+      min_executed: 1
+      max_skipped: 0
+      artifact_binding: non_authoritative_until_captured
+  governance-exposure-scan:
+    evidence_kind: gate
+    negative_controls:
+    - id: local-workspace-path-is-rejected
+      mutation:
+        path: MEMORY.yml
+        search: '  canonical_repo_root: "."'
+        replace_base64: ICBjYW5vbmljYWxfcmVwb19yb290OiAiL1VzZXJzL2V4YW1wbGUvcHJpdmF0ZSI=
+      oracle:
+        kind: diagnostic
+        exit_codes:
+        - 1
+        stream: stdout
+        regex: local_workspace_path
+  governance-validate:
+    evidence_kind: gate
+    negative_controls:
+    - id: authored-verified-state-is-rejected
+      mutation:
+        path: '@active_phase_log'
+        yaml_path: document.status
+        value: verified
+      oracle:
+        kind: diagnostic
+        exit_codes:
+        - 1
+        stream: stderr
+        regex: verified.*(?:not one of|computed)
+  lint:
+    evidence_kind: gate
+    negative_controls:
+    - id: lint-behavior-must-fail
+      mutation:
+        path: README.md
+        search: '# BCF Governance'
+        replace: '# BCF Governance  '
+      oracle:
+        kind: diagnostic
+        exit_codes:
+        - 1
+        stream: stderr
+        regex: 'self-governance gate lint failed:'
+  runtime-smoke:
+    evidence_kind: runtime_health
+    negative_controls:
+    - id: runtime-smoke-behavior-must-fail
+      mutation:
+        path: manifest.yml
+        search: 'version: 0.6.1'
+        replace: 'version: 0.0.0'
+      oracle:
+        kind: diagnostic
+        exit_codes:
+        - 1
+        stream: stderr
+        regex: 'self-governance gate runtime-smoke failed:'
+    output_requirements:
+    - path: .artifacts/runtime-smoke.json
+      media_type: application/json
+      authority: non_authoritative_until_captured
+    environment_assertions:
+    - name: BCF_EXECUTION_PROFILE
+      operator: equals
+      value: production
+  security-dependency-audit:
+    evidence_kind: gate
+    negative_controls:
+    - id: security-dependency-audit-behavior-must-fail
+      mutation:
+        path: pyproject.toml
+        search: '"jsonschema>=4.21,<5",'
+        replace: '"jsonschema>=4.21,<4",'
+      oracle:
+        kind: diagnostic
+        exit_codes:
+        - 1
+        stream: stderr
+        regex: 'self-governance gate security-dependency-audit failed:'
+  security-review:
+    evidence_kind: security_review
+    negative_controls:
+    - id: security-review-behavior-must-fail
+      mutation:
+        path: governance/findings.yml
+        search: 'reviews: []'
+        replace: "reviews:\n  - invalid"
+      oracle:
+        kind: diagnostic
+        exit_codes:
+        - 1
+        stream: stderr
+        regex: 'self-governance gate security-review failed:'
+    output_requirements:
+    - path: governance/findings.yml
+      media_type: application/yaml
+      authority: non_authoritative_until_captured
+    environment_assertions:
+    - name: BCF_EXECUTION_PROFILE
+      operator: equals
+      value: production
+  security-sbom:
+    evidence_kind: gate
+    negative_controls:
+    - id: security-sbom-behavior-must-fail
+      mutation:
+        path: governance/self-governance-policy.yml
+        search: 'sbom_format: CycloneDX'
+        replace: 'sbom_format: Unknown'
+      oracle:
+        kind: diagnostic
+        exit_codes:
+        - 1
+        stream: stderr
+        regex: 'self-governance gate security-sbom failed:'
+    output_requirements:
+    - path: .artifacts/sbom.json
+      media_type: application/json
+      authority: non_authoritative_until_captured
+  security-secret-scan:
+    evidence_kind: gate
+    negative_controls:
+    - id: security-secret-scan-behavior-must-fail
+      mutation:
+        path: README.md
+        search: BCF is an executable governance framework
+        replace_base64: QUtJQUlPU0ZPRE5ON0VYQU1QTEUgQkNGIGlzIGFuIGV4ZWN1dGFibGUgZ292ZXJuYW5jZSBmcmFtZXdvcms=
+      oracle:
+        kind: diagnostic
+        exit_codes:
+        - 1
+        stream: stderr
+        regex: 'self-governance gate security-secret-scan failed:'
+  security-vulnerability-scan:
+    evidence_kind: gate
+    negative_controls:
+    - id: security-vulnerability-scan-behavior-must-fail
+      mutation:
+        path: governance/self-governance-policy.yml
+        search: 'forbid_subprocess_shell: true'
+        replace: 'forbid_subprocess_shell: false'
+      oracle:
+        kind: diagnostic
+        exit_codes:
+        - 1
+        stream: stderr
+        regex: 'self-governance gate security-vulnerability-scan failed:'
+    output_requirements:
+    - path: .artifacts/vulnerability-scan.json
+      media_type: application/json
+      authority: non_authoritative_until_captured
+  test:
+    evidence_kind: test_suite
+    negative_controls:
+    - id: test-behavior-must-fail
+      mutation:
+        path: template-repo/governance/artifact-manifest.yml
+        search: 'readme: {path: README.md, contract: project_readme}'
+        replace: 'readme: {path: README.md, contract: broken_readme}'
+      oracle:
+        kind: test_node_failure
+        node_ids:
+        - tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts
+    test_contract:
+      junit_xml: .artifacts/junit/test.xml
+      min_collected: 1
+      min_executed: 1
+      max_skipped: 0
+      artifact_binding: non_authoritative_until_captured
+  typecheck:
+    evidence_kind: gate
+    negative_controls:
+    - id: typecheck-behavior-must-fail
+      mutation:
+        path: bcf_governance/_version.py
+        search: __version__ = "0.6.1"
+        replace: VERSION = "0.6.1"
+      oracle:
+        kind: diagnostic
+        exit_codes:
+        - 1
+        stream: stderr
+        regex: 'self-governance gate typecheck failed:'
+provenance:
+  standard_same_actor_policy: warn
+  regulated_independent_severities:
+  - critical
+  - high
+  regulated_requires_attestation: true
+  trusted_verifier_keys: {}
+  permitted_risk_authorities: []

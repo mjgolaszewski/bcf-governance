@@ -6,10 +6,10 @@ from __future__ import annotations
 import hashlib
 import shlex
 import subprocess
-
 from .common import *  # noqa: F403,F405
 from .context_budgets import _validate_context_budgets
 from .phase_artifacts import _phase_number
+from .required_artifacts import _validate_required_artifacts
 
 def _validate_observability_contracts(
     repo_root: Path, schema_cache: dict[str, dict[str, Any]]
@@ -740,10 +740,11 @@ def _validate_artifact_manifest(
     _validate_audit_root_policy(
         repo_root, manifest, root_paths=root_paths, vendor_prefixes=vendor_prefixes
     )
+    required_artifact_paths = _validate_required_artifacts(repo_root, manifest)
     _validate_nested_governance_policy(repo_root, manifest, vendor_prefixes=vendor_prefixes)
     _validate_vendored_artifacts(repo_root, manifest)
     _validate_phase_retention_policy(repo_root, manifest)
     _validate_context_budgets(repo_root, manifest)
     _validate_declared_test_roots(repo_root, agents)
     _validate_ephemeral_evidence_references(repo_root, manifest)
-    return [repo_root / root_path for root_path in root_paths.values()]
+    return required_artifact_paths
