@@ -10,47 +10,22 @@ permissions:
 
 jobs:
   evidence:
-    runs-on: [{{RUNNER_LABELS}}]
+    runs-on: ['{{RUNNER_LABELS}}']
     strategy:
       fail-fast: false
       matrix:
         gate:
-          - governance-validate
           - governance-exposure-scan
-          - architecture-test
-          - architecture-module-size
-          - architecture-layer-membership
-          - architecture-context-membership
-          - architecture-import-boundaries
-          - architecture-cqrs-side
-          - architecture-router-thinness
-          - architecture-duplication
-          - lint
-          - typecheck
-          - test
-          - contract-test
-          - security-secret-scan
-          - security-dependency-audit
-          - security-sbom
-          - security-vulnerability-scan
-          - security-review
-          - runtime-smoke
+          - governance-validate
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        with: {fetch-depth: 0}
       - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install governance dependencies
-        run: python3 -m pip install -r requirements-governance.txt
+        with: {python-version: "3.12"}
+      - run: python3 -m pip install -r requirements-governance.txt
       - name: Capture ${{ matrix.gate }} evidence
-        run: >-
-          python3 scripts/governance_evidence.py --repo-root . run
-          --gate "${{ matrix.gate }}"
-          --output ".artifacts/bcf/${{ matrix.gate }}"
-      - name: Upload ${{ matrix.gate }} evidence
-        if: always()
+        run: python3 scripts/governance_evidence.py --repo-root . run --gate "${{ matrix.gate }}" --output ".artifacts/bcf/${{ matrix.gate }}"
+      - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: bcf-evidence-${{ matrix.gate }}
@@ -60,31 +35,16 @@ jobs:
   governance-truthfulness:
     if: always()
     needs: [evidence]
-    runs-on: [{{RUNNER_LABELS}}]
+    runs-on: ['{{RUNNER_LABELS}}']
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        with: {fetch-depth: 0}
       - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install governance dependencies
-        run: python3 -m pip install -r requirements-governance.txt
+        with: {python-version: "3.12"}
+      - run: python3 -m pip install -r requirements-governance.txt
       - uses: actions/download-artifact@v4
-        with:
-          pattern: bcf-evidence-*
-          path: .artifacts/bcf
-          merge-multiple: true
-      - name: Derive governance lifecycle truth
-        run: >-
-          python3 scripts/governance_truth.py --repo-root .
-          --evidence-dir .artifacts/bcf --format json
-          --durable-ref "github-actions://${{ github.repository }}/runs/${{ github.run_id }}/bcf-governance-truth"
-          --output .artifacts/bcf/truth-report.json
-      - name: Upload truth report
-        if: always()
+        with: {pattern: bcf-evidence-*, path: .artifacts/bcf, merge-multiple: true}
+      - run: python3 scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf --format json --durable-ref "github-actions://${{ github.repository }}/runs/${{ github.run_id }}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
+      - if: always()
         uses: actions/upload-artifact@v4
-        with:
-          name: bcf-governance-truth
-          path: .artifacts/bcf/truth-report.json
-          if-no-files-found: error
+        with: {name: bcf-governance-truth, path: .artifacts/bcf/truth-report.json, if-no-files-found: error}

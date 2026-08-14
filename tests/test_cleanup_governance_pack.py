@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import importlib.util
+import importlib
 import json
 import subprocess
 import sys
@@ -14,13 +14,7 @@ CLEANUP = REPO_ROOT / "scripts" / "cleanup_governance_pack.py"
 
 
 def _load_cleanup_module():
-    spec = importlib.util.spec_from_file_location("cleanup_governance_pack", CLEANUP)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+    return importlib.import_module("bcf_governance.tooling.cleanup_governance_pack")
 
 
 def _run_cleanup(target: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -55,7 +49,7 @@ def _write_closed_truth_report(
     path.write_text(
         json.dumps(
             {
-                "schema_version": "1.0",
+                "schema_version": "2.0",
                 "engine": "evidence_truthfulness",
                 "phase_id": phase_id,
                 "status": "pass",
@@ -73,6 +67,7 @@ def _write_closed_truth_report(
                     "commit_sha": commit_sha,
                     "tree_sha": tree_sha,
                     "tracked_clean": True,
+                    "untracked_clean": True,
                 },
                 "bundle_sha256": "c" * 64,
                 "durable_ref": f"ci-artifact://bcf/{phase_id}/truth-report.json",

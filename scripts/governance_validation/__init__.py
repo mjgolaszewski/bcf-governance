@@ -1,1 +1,1 @@
-"""BCF governance YAML validator support package."""
+"""Compatibility package for bcf_governance.tooling.governance_validation."""

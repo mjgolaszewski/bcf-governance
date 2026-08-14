@@ -67,7 +67,7 @@
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["id", "mutation"],
+              "required": ["id", "mutation", "oracle"],
               "properties": {
                 "id": {"type": "string", "minLength": 1},
                 "mutation": {
@@ -87,6 +87,30 @@
                     "yaml_path": {"type": "string", "minLength": 1},
                     "value": {}
                   }
+                },
+                "oracle": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["kind", "exit_codes", "stream", "regex"],
+                      "properties": {
+                        "kind": {"const": "diagnostic"},
+                        "exit_codes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "minimum": 1, "maximum": 125}},
+                        "stream": {"enum": ["stdout", "stderr"]},
+                        "regex": {"type": "string", "minLength": 1}
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["kind", "node_ids"],
+                      "properties": {
+                        "kind": {"const": "test_node_failure"},
+                        "node_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -100,7 +124,8 @@
               "max_skipped": {"type": "integer", "minimum": 0},
               "junit_xml": {"type": "string", "minLength": 1},
               "expected_node_manifest": {"type": "string", "minLength": 1},
-              "expected_nodes_mode": {"enum": ["contains", "exact"]}
+              "expected_nodes_mode": {"enum": ["contains", "exact"]},
+              "artifact_binding": {"const": "non_authoritative_until_captured"}
             }
           },
           "environment_assertions": {
@@ -121,10 +146,11 @@
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["path", "media_type"],
+              "required": ["path", "media_type", "authority"],
               "properties": {
                 "path": {"type": "string", "minLength": 1},
-                "media_type": {"type": "string", "minLength": 1}
+                "media_type": {"type": "string", "minLength": 1},
+                "authority": {"const": "non_authoritative_until_captured"}
               }
             }
           },

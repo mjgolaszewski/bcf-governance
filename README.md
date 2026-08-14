@@ -17,7 +17,7 @@ ledgers, schemas, architecture boundary gates, release-gate profiles,
 observability contracts, and helper commands that keep agents from treating
 docs, plans, and tests as disconnected prose.
 
-Current release: `v0.5.0`.
+Current release: `v0.6.0`.
 
 ## Why It Matters
 
@@ -113,7 +113,7 @@ Install the CLI from this repo or from the public release wheel without GitHub
 authentication:
 
 ```bash
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v0.5.0/bcf_governance-0.5.0-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v0.6.0/bcf_governance-0.6.0-py3-none-any.whl
 ```
 
 For a source checkout:
@@ -157,7 +157,7 @@ The CLI exposes eleven workflows:
   executes the gate's negative behavioral control; `bcf evidence attest`
   creates a detached DSSE/Ed25519 attestation for a bundle.
 - `bcf truth` computes phase and release state from current-tree evidence.
-- `bcf migrate-evidence` previews or applies the idempotent 0.5 migration.
+- `bcf migrate-evidence` previews or applies the idempotent 0.5-to-0.6 migration.
 - `bcf ci-cleanup` plans or removes Docker resources bearing one exact BCF CI
   run-ownership label.
 - `bcf publish-audit --history` performs an opt-in, redacted scan of every
@@ -165,25 +165,8 @@ The CLI exposes eleven workflows:
 
 ## Bootstrap A New Repo
 
-For a standard new repo:
-
-```bash
-bcf install \
-  --target /path/to/target-repo \
-  --profile standard \
-  --project-id your-project \
-  --project-name "Your Project" \
-  --product-name "Your Product" \
-  --date "$(date -u +%F)"
-```
-
-The installer copies `template-repo/`, removes template-only phase examples,
-replaces placeholders, applies the selected profile, opens the first phase, and
-runs validation. It refuses to overwrite existing governance files unless
-`--force` is passed.
-
-For a minimal install that can pass strict validation before repo-specific
-release gates are wired:
+Initialize Git, then bootstrap with `lite`, the only profile allowed to be
+partially configured:
 
 ```bash
 bcf install \
@@ -191,6 +174,27 @@ bcf install \
   --profile lite \
   --project-id your-project \
   --project-name "Your Project" \
+  --require-strict-validation
+```
+
+Installation uses a checksummed pack manifest and a rollback-safe transaction.
+It never recursively rewrites the target repository, follows symlink
+destinations, or replaces an existing `.gitignore`. Conflicts are reported as a
+complete write-set preview and leave the target unchanged. The removed
+`--force` option is not an escape hatch; `--force-rescaffold` is the explicit,
+confirmed destructive operation.
+
+Fresh `standard` and `regulated` installs require a complete gate contract
+before any mutation:
+
+```bash
+bcf install \
+  --target /path/to/target-repo \
+  --profile standard \
+  --profile-config /path/to/standard-gates.yml \
+  --project-id your-project \
+  --project-name "Your Project" \
+  --product-name "Your Product" \
   --require-strict-validation
 ```
 
@@ -211,14 +215,15 @@ bcf install --target /path/to/target-repo --upgrade
 
 To also reset generated option surfaces such as `Makefile.fragment`,
 `governance-profile.yml`, and `architecture-boundaries.yml`, add
-`--reset-options` and pass the intended profile and gate commands:
+`--reset-options` and pass the intended complete profile contract:
 
 ```bash
 bcf install \
   --target /path/to/target-repo \
   --upgrade \
   --reset-options \
-  --profile standard
+  --profile standard \
+  --profile-config /path/to/standard-gates.yml
 ```
 
 Use `--force-rescaffold` only when you intend to replace active BCF-owned
@@ -255,52 +260,49 @@ to `standard` after mandatory gates are executable or explicitly classified.
 
 ## Release Gates
 
-Standard and regulated profiles expect real release-gate commands and evidence
-requirements. You can wire developer aliases during install, then configure
-the corresponding entries and negative controls in
-`governance/evidence-policy.yml`:
+Standard and regulated profiles require a complete `--profile-config` YAML
+document. It declares exact argv/cwd/non-secret environment, required
+environment names, evidence measurements, declared outputs, and one or more
+contained negative controls for every non-built-in gate. Shell command strings,
+no-ops, dynamic mandatory execution paths, and incomplete gate sets fail before
+the repository is mutated. The installer writes the normalized contract to
+`governance/gate-contracts.yml` and derives the exact Make aliases, static CI
+matrix, claim applicability, and closeout requirements from it.
+
+To move an installed lite repository to standard or regulated without
+regenerating phase state, preview and apply a monotonic promotion:
 
 ```bash
-bcf install \
-  --target /path/to/target-repo \
-  --profile standard \
-  --project-id your-project \
-  --date "$(date -u +%F)" \
-  --gate-command "architecture-test=python3 -m pytest backend/tests/architecture" \
-  --gate-command "architecture-module-size=python3 -m pytest backend/tests/architecture -k production_modules_respect_loc_cap" \
-  --gate-command "architecture-layer-membership=python3 -m pytest backend/tests/architecture -k production_modules_map_to_exactly_one_layer" \
-  --gate-command "architecture-context-membership=python3 -m pytest backend/tests/architecture -k production_modules_map_to_exactly_one_bounded_context" \
-  --gate-command "architecture-import-boundaries=python3 -m pytest backend/tests/architecture -k do_not_import" \
-  --gate-command "architecture-cqrs-side=python3 -m pytest backend/tests/architecture -k cqrs" \
-  --gate-command "architecture-router-thinness=python3 -m pytest backend/tests/architecture -k routers_remain_thin" \
-  --gate-command "architecture-duplication=python3 -m pytest backend/tests/architecture -k 'duplication or shared_abstraction'" \
-  --gate-command "lint=ruff check ." \
-  --gate-command "typecheck=mypy ." \
-  --gate-command "test=pytest backend/tests" \
-  --gate-command "contract-test=pytest backend/tests/contracts" \
-  --gate-command "security-secret-scan=gitleaks detect --source ." \
-  --gate-command "security-dependency-audit=pip-audit" \
-  --gate-command "security-sbom=syft dir:." \
-  --gate-command "security-vulnerability-scan=trivy fs ." \
-  --gate-command "security-review=python3 scripts/run_security_review.py" \
-  --gate-command "runtime-smoke=docker compose config" \
-  --require-strict-validation
+bcf profile promote \
+  --repo-root /path/to/target-repo \
+  --to standard \
+  --config /path/to/standard-gates.yml \
+  --check
+
+bcf profile promote \
+  --repo-root /path/to/target-repo \
+  --to standard \
+  --config /path/to/standard-gates.yml \
+  --apply
 ```
 
-After install, merge `Makefile.fragment` into the repo Makefile or include it
-from the repo Makefile. Required workflows must invoke the BCF evidence wrapper
-for their gate IDs; Make targets are developer aliases, not verification.
+Required workflows invoke the BCF evidence wrapper for each generated gate ID;
+Make targets are developer aliases, never proof of execution. Regulated
+configuration additionally supplies trusted verifier keys and permitted risk
+authorities.
 
 Capture evidence and compute truth outside the governed tree:
 
 ```bash
-bcf evidence run --gate test --output .artifacts/bcf/test
+bcf evidence run --gate test --output .artifacts/bcf
 bcf truth --evidence-dir .artifacts/bcf
 ```
 
 `bcf validate` can pass while `bcf truth` fails: the former establishes legal
 structure, while the latter asks whether terminal factual claims are supported
-by current, independently measurable evidence.
+by current, independently measurable evidence. Receipts and truth reports use
+schema `2.0`; BCF 0.5 evidence is rejected with
+`unsupported_schema_version` and must be recaptured.
 
 ## Governance Cleanup
 
@@ -390,7 +392,11 @@ Use destructive rescaffold mode only when you intentionally want a fresh BCF
 governance layer:
 
 ```bash
-bcf install --target /path/to/target-repo --force-rescaffold --profile standard
+bcf install \
+  --target /path/to/target-repo \
+  --force-rescaffold \
+  --profile standard \
+  --profile-config /path/to/standard-gates.yml
 ```
 
 The command warns for confirmation and removes known BCF governance-owned paths

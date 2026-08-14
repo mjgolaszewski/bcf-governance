@@ -27,23 +27,29 @@ jobs:
         run: |
           python - <<'PY'
           import os
-          import tomllib
-          from pathlib import Path
+          from bcf_governance._version import __version__
 
-          version = tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]
           tag = os.environ["GITHUB_REF_NAME"]
-          if tag != f"v{version}":
-              raise SystemExit(f"tag {tag!r} does not match package version v{version}")
+          if tag != f"v{__version__}":
+              raise SystemExit(f"tag {tag!r} does not match package version v{__version__}")
           PY
       - name: Run complete test suite
         run: pytest -q tests
+      - name: Run full implementation and semantic mutants
+        run: |
+          python .github/scripts/run_validator_mutants.py --profile full
+          python .github/scripts/run_validator_mutants.py --profile semantic-full
       - name: Validate source and packaged templates
         run: |
           python scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders --allow-release-gate-placeholders
           python bcf_governance/pack/template-repo/scripts/validate_governance_yaml.py --repo-root bcf_governance/pack/template-repo --allow-placeholders --allow-release-gate-placeholders
-      - name: Build and check distributions
+      - name: Build distributions
         run: |
           python -m build
+      - name: Test clean wheel and complete sdist
+        run: python .github/scripts/test_release_artifacts.py --dist-dir dist
+      - name: Check verified distributions
+        run: |
           python -m twine check dist/*
           (cd dist && sha256sum bcf_governance-* > SHA256SUMS)
       - name: Attest release artifacts

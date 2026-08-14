@@ -4,7 +4,7 @@
   "additionalProperties": false,
   "required": ["schema_version", "kind", "evidence_id", "gate_id", "producer", "invocation", "subject", "artifacts", "observations", "behavioral_probes", "result", "started_at", "timestamp"],
   "properties": {
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"const": "2.0"},
     "kind": {"enum": ["gate", "test_suite", "runtime_health", "security_review", "finding_verification", "phase_closeout", "release"]},
     "evidence_id": {"type": "string", "minLength": 1},
     "gate_id": {"type": "string", "minLength": 1},
@@ -20,9 +20,11 @@
     "invocation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["argv", "workflow"],
+      "required": ["argv", "cwd", "environment", "workflow"],
       "properties": {
         "argv": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "cwd": {"type": "string", "minLength": 1},
+        "environment": {"type": "object"},
         "workflow": {
           "type": "object",
           "additionalProperties": false,
@@ -41,12 +43,15 @@
     "subject": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["commit_sha", "tree_sha", "binding", "tracked_clean"],
+      "required": ["commit_sha", "tree_sha", "execution_tree_sha", "binding", "tracked_clean", "untracked_clean", "status_porcelain_sha256"],
       "properties": {
         "commit_sha": {"type": "string", "pattern": "^[a-f0-9]{40,64}$"},
         "tree_sha": {"type": "string", "pattern": "^[a-f0-9]{40,64}$"},
+        "execution_tree_sha": {"type": "string", "pattern": "^[a-f0-9]{40,64}$"},
         "binding": {"enum": ["exact_tree", "tree_independent"]},
-        "tracked_clean": {"type": "boolean"}
+        "tracked_clean": {"const": true},
+        "untracked_clean": {"const": true},
+        "status_porcelain_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
       }
     },
     "artifacts": {
@@ -64,7 +69,22 @@
       }
     },
     "observations": {"type": "object"},
-    "behavioral_probes": {"type": "array"},
+    "behavioral_probes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "mutation_applied", "oracle", "oracle_observation", "observed_exit_code", "raw_artifacts"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "mutation_applied": {"const": true},
+          "oracle": {"type": "object"},
+          "oracle_observation": {"type": "object"},
+          "observed_exit_code": {"type": "integer"},
+          "raw_artifacts": {"type": "object"}
+        }
+      }
+    },
     "result": {"enum": ["passed", "failed"]},
     "freshness_limit_seconds": {"type": "integer", "minimum": 1},
     "started_at": {"type": "string", "minLength": 1},

@@ -1,1 +1,1 @@
-"""BCF governance cleanup support package."""
+"""Compatibility package for bcf_governance.tooling.governance_cleanup."""

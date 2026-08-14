@@ -105,6 +105,32 @@ def _make_repo(
         },
     )
     _write_yaml(
+        repo / "governance/gate-contracts.yml",
+        {
+            "document": {
+                "kind": "gate_contract_registry",
+                "version": "1.0",
+                "path": "governance/gate-contracts.yml",
+            },
+            "schema_version": "1.0",
+            "target_profile": "standard",
+            "gates": {
+                gate: {
+                    "invocation": {
+                        "argv": ["python3", "gate.py", gate],
+                        "cwd": ".",
+                        "env": {},
+                        "required_env": [],
+                    },
+                    "evidence": {},
+                    "negative_controls": [],
+                }
+                for gate in ("test", "security-review", "reconcile")
+            },
+            "provenance": {},
+        },
+    )
+    _write_yaml(
         repo / "governance/evidence-policy.yml",
         {
             "settings": {
@@ -160,6 +186,7 @@ jobs:
                 "id": "P01",
                 "log": "phases/phase-01-log.yml",
                 "workitems": "plans/phase-01-workitems.yml",
+                "lifecycle_status": "completed",
             }
         },
     )
@@ -257,6 +284,16 @@ def _write_receipt(
         "collected 2 items\n2 passed\n" if is_test else "gate output\n",
         encoding="utf-8",
     )
+    probe_stdout = evidence_dir / f"{gate_id}.probe.stdout.txt"
+    probe_stderr = evidence_dir / f"{gate_id}.probe.stderr.txt"
+    probe_stdout.write_text("expected mutation failure\n", encoding="utf-8")
+    probe_stderr.write_text("", encoding="utf-8")
+    probe_junit = evidence_dir / f"{gate_id}.probe.junit.xml"
+    if is_test:
+        probe_junit.write_text(
+            '<testsuite tests="1" failures="1"><testcase classname="tests/test_security.py" name="test_auth"><failure>mutated</failure></testcase></testsuite>',
+            encoding="utf-8",
+        )
     observations: dict[str, Any] = {
         "exit_code": 0,
         "environment_assertions": [
@@ -296,13 +333,15 @@ def _write_receipt(
         )
     timestamp = datetime.now(UTC).isoformat().replace("+00:00", "Z")
     receipt = {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
         "kind": "test_suite" if is_test else "gate",
         "evidence_id": f"{gate_id}-evidence",
         "gate_id": gate_id,
         "producer": {"kind": "workflow", "id": "test-ci"},
         "invocation": {
-            "argv": ["make", gate_id],
+            "argv": ["python3", "gate.py", gate_id],
+            "cwd": ".",
+            "environment": {"declared": {}, "required_present": []},
             "workflow": {
                 "provider": "test",
                 "path": ".github/workflows/governance.yml",
@@ -315,23 +354,71 @@ def _write_receipt(
         "subject": {
             "commit_sha": _git(repo, "rev-parse", "HEAD"),
             "tree_sha": _git(repo, "rev-parse", "HEAD^{tree}"),
+            "execution_tree_sha": _git(repo, "rev-parse", "HEAD^{tree}"),
             "binding": "exact_tree",
             "tracked_clean": True,
+            "untracked_clean": True,
+            "status_porcelain_sha256": hashlib.sha256(b"").hexdigest(),
         },
         "artifacts": [
             {
                 "path": artifact.name,
                 "media_type": "text/plain",
                 "sha256": hashlib.sha256(artifact.read_bytes()).hexdigest(),
-            }
+            },
+            {
+                "path": probe_stdout.name,
+                "media_type": "text/plain",
+                "sha256": hashlib.sha256(probe_stdout.read_bytes()).hexdigest(),
+            },
+            {
+                "path": probe_stderr.name,
+                "media_type": "text/plain",
+                "sha256": hashlib.sha256(probe_stderr.read_bytes()).hexdigest(),
+            },
+            *(
+                [
+                    {
+                        "path": probe_junit.name,
+                        "media_type": "application/junit+xml",
+                        "sha256": hashlib.sha256(probe_junit.read_bytes()).hexdigest(),
+                    }
+                ]
+                if is_test
+                else []
+            ),
         ],
-        "observations": observations,
+        "observations": {
+            **observations,
+            "execution_tree_clean": True,
+            "output_requirements": [],
+        },
         "behavioral_probes": [
             {
                 "id": "assertion-removed" if is_test else "gate-broken",
                 "mutation_applied": True,
-                "expected_exit": "nonzero",
                 "observed_exit_code": probe_exit,
+                "oracle": (
+                    {
+                        "kind": "test_node_failure",
+                        "node_ids": ["tests/test_security.py::test_auth"],
+                    }
+                    if is_test
+                    else {
+                        "kind": "diagnostic",
+                        "exit_codes": [1],
+                        "stream": "stdout",
+                        "regex": "expected mutation failure",
+                    }
+                ),
+                "oracle_observation": {"satisfied": probe_exit == 1},
+                "baseline_test_nodes_passed": True,
+                "unexpected_worktree_changes": [],
+                "raw_artifacts": {
+                    "stdout": probe_stdout.name,
+                    "stderr": probe_stderr.name,
+                    **({"junit": probe_junit.name} if is_test else {}),
+                },
             }
         ],
         "result": "passed",
@@ -486,7 +573,7 @@ def test_remediated_finding_counts_as_finding_and_closes_with_node_proof(tmp_pat
             lambda receipt: receipt["behavioral_probes"][0].update(
                 {"observed_exit_code": 0}
             ),
-            "did_not_fail",
+            "oracle_not_satisfied",
         ),
         (
             "all-required-tests-skipped",
@@ -583,6 +670,20 @@ def test_commit_identity_mismatch_alone_invalidates_receipt(tmp_path: Path) -> N
     assert report["checks"]["exact_tree"] == "fail"
 
 
+def test_legacy_0_5_receipt_is_rejected_with_distinct_classification(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+    evidence_dir = _write_complete_bundle(repo)
+    _rewrite_receipt(
+        evidence_dir / "test.evidence.json",
+        lambda receipt: receipt.update({"schema_version": "1.0"}),
+    )
+
+    report = derive_truth(repo, evidence_dir)
+
+    assert "test:unsupported_schema_version" in report["issues"]
+    assert report["claims"]["required_suites_green"]["effective_state"] == "completed"
+
+
 def test_tree_identity_mismatch_alone_invalidates_receipt(tmp_path: Path) -> None:
     repo = _make_repo(tmp_path)
     evidence_dir = _write_complete_bundle(repo)
@@ -609,8 +710,24 @@ def test_finding_closure_requires_node_even_without_suite_manifest(tmp_path: Pat
 
     report = derive_truth(repo, evidence_dir)
 
-    assert report["effective_state"] == "verified"
+    assert report["effective_state"] == "completed"
     assert "finding_SEC-001_behavioral_proof_missing" in report["issues"]
+
+
+def test_finding_proof_rejects_unexecuted_node_id(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path, finding_disposition="remediation_completed")
+    registry_path = repo / "governance/findings.yml"
+    registry = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
+    registry["findings"][0]["proofs"][0]["node_id"] = (
+        "tests/test_security.py::test_nonexistent"
+    )
+    _write_yaml(registry_path, registry)
+    _commit(repo, "bind finding to an unexecuted test node")
+
+    report = derive_truth(repo, _write_complete_bundle(repo))
+
+    assert "finding_SEC-001_behavioral_proof_missing" in report["issues"]
+    assert report["effective_state"] == "verified"
 
 
 def test_terminal_claims_never_accept_allowlisted_tree_independent_evidence(

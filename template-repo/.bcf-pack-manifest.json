@@ -1,0 +1,433 @@
+{
+  "files": {
+    ".github/workflows/governance.yml": {
+      "operation": "generate",
+      "sha256": "a00de23bbe05e71c76f129be56c28347f0b221fc7d7b8845bf492db179fe133c"
+    },
+    ".gitignore": {
+      "operation": "merge",
+      "sha256": "52cece8211416b3390bd5b03c74ba1e904695bdf751abaf190ccdaddb0ab24d7"
+    },
+    "AGENTS.md": {
+      "operation": "copy",
+      "sha256": "a5203b1fe4f3f74d9408dd6d568a1c06781201db25c55f03319ee34fc30ef4a9"
+    },
+    "AGENTS.yml": {
+      "operation": "copy",
+      "sha256": "d1ddcc0e101665c3983c47766046073fc54a93e273dcbcdc71189e1e298af5be"
+    },
+    "CLAUDE.md": {
+      "operation": "copy",
+      "sha256": "8a360d201eb35ce7d1f4718b53f23ca93ffa8ea93b1682e4c92ce0cee6c99310"
+    },
+    "MEMORY.yml": {
+      "operation": "copy",
+      "sha256": "bff2d56a65db4d17635dd419f3f24c2692eefa1761c5ae9c31d2e4e17232ea5f"
+    },
+    "Makefile.fragment": {
+      "operation": "generate",
+      "sha256": "e252ea7cd777aa7324af76fcaba58d7ffd0f1a0f862a6f1c38a64f258bb428a6"
+    },
+    "architecture-boundaries.yml": {
+      "operation": "copy",
+      "sha256": "0467ab0c73255df164cf81864e9f70e52ff832f2547c531aa0b6fe84bccf5b11"
+    },
+    "audits/README.md": {
+      "operation": "copy",
+      "sha256": "2e4b6c9c9bd0a967cceb71a15bdc4e3caa5190fa23b582fbb3c48565d1382c13"
+    },
+    "backend/tests/architecture/test_boundaries_ast.py": {
+      "operation": "copy",
+      "sha256": "d0dfc6eb29506030f89b4a697bbc3429d962cd8d70574e99ab6ba8e17c842b26"
+    },
+    "contracts/observability/v1/logging.contract.yml": {
+      "operation": "copy",
+      "sha256": "e096ae5d506f419d481679dc570018cc940f89b3338bcd5f7339def38c43515e"
+    },
+    "contracts/observability/v1/telemetry.contract.yml": {
+      "operation": "copy",
+      "sha256": "663211990c45a7e0d3d174ac6c683c02b272d18cead5e31b63b997d66b774369"
+    },
+    "docs/OPERATIONS.md": {
+      "operation": "copy",
+      "sha256": "fbdc5dadbabef6ee39c54f18f8169be5d2d7c4cfe2bd70eb452e7bdce9049bc1"
+    },
+    "governance-profile.yml": {
+      "operation": "generate",
+      "sha256": "3827efc0795c9d5da30856c66d5138a6484f2dd11ef982f63ad19d6941b954df"
+    },
+    "governance/EXISTING_REPO_ADOPTION.md": {
+      "operation": "copy",
+      "sha256": "dae418a250fc8c2638e89b866fcc5547c9c83bc0291ec90a5604d79896cf30ff"
+    },
+    "governance/HOTFIX_LANE.md": {
+      "operation": "copy",
+      "profiles": [
+        "regulated"
+      ],
+      "sha256": "5cb2e54930dfc5b3b638fdec0d49fee9ef801bd17c7151b37f40de24d82150cc"
+    },
+    "governance/MODEL_RISK_AND_PROVENANCE.md": {
+      "operation": "copy",
+      "profiles": [
+        "regulated"
+      ],
+      "sha256": "0e7dd246bb6b1fb8cde9b9f770a5a2fb9db0b5cbe21beb1a9c5596e59787e84a"
+    },
+    "governance/REPO_CLEANUP.md": {
+      "operation": "copy",
+      "sha256": "7501f4782894380fdf32867b9554620a8591f36504d27db772fe660cdf5a1d59"
+    },
+    "governance/archive/phase-artifacts/.gitkeep": {
+      "operation": "copy",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "governance/artifact-manifest.yml": {
+      "operation": "copy",
+      "sha256": "1084fa4f4b7cfe65f40af36eee1725691cc6ed098c81c2f3c482aba91cf4f54d"
+    },
+    "governance/evidence-policy.yml": {
+      "operation": "generate",
+      "sha256": "349c7c022a0f80993216f44965c6838cee5a5fad9062b2716695c3371247ba5b"
+    },
+    "governance/existing-repo-adoption.yml": {
+      "operation": "copy",
+      "sha256": "6c462b743fdf9cfab596704cdd6b1d77f4b500c3169fba33ea59a6aec062a3cd"
+    },
+    "governance/findings.yml": {
+      "operation": "copy",
+      "sha256": "124738ab7309ee19b994f56e596f4e37f477be33f9f0f35fc09ae72defdf8d3d"
+    },
+    "governance/gate-contracts.yml": {
+      "operation": "generate",
+      "sha256": "f6471205ff79c4feb23776ce6e13c5cc99f13546f165f8d0be20328cc11564ba"
+    },
+    "governance/repo-cleanup-contract.yml": {
+      "operation": "copy",
+      "sha256": "31d01a7e1417657659773905f734b88d659ed1551327a2ebd32898dce784e0b7"
+    },
+    "phases/phase-01-log.yml": {
+      "operation": "copy",
+      "sha256": "5c67091b1d71360e54930f8bd7cf8b0c8b7fb1b99fe19ead8df68444d60b33e7"
+    },
+    "phases/phase-NN-hotfixNN.yml": {
+      "operation": "copy",
+      "sha256": "85d4320b22f0f998b23834a5cde8d59c86b8d919d9abcd51b5205f48708e63df"
+    },
+    "phases/phase-NN-log.yml": {
+      "operation": "copy",
+      "sha256": "545af60645ac10ea8e1d9072e13cb7d052dd56e22a03b35b369fb46f782b4372"
+    },
+    "plans/build-plan.yml": {
+      "operation": "copy",
+      "sha256": "b811f5951307f813b1a27be728bc736f53963822b036a8a5bc280efa30d9af5b"
+    },
+    "plans/phase-01-plan.yml": {
+      "operation": "copy",
+      "sha256": "9b0fcbb0d58d48d93c08a64f5807f47b8a9304deb706fd38694964fc0d1ff95e"
+    },
+    "plans/phase-01-workitems.yml": {
+      "operation": "copy",
+      "sha256": "f96b09a64873b1c8821edeef235466360cd1110222c9c8553f347e912885adf8"
+    },
+    "plans/phase-NN-plan.yml": {
+      "operation": "copy",
+      "sha256": "80c04541310f67f0756f8afc871833012adf6fcf881cad85718fd837a0356307"
+    },
+    "plans/phase-NN-workitems.yml": {
+      "operation": "copy",
+      "sha256": "435fa6f86df3cfa3bdd2f01c9113090e915401521e18b88286db909edfd4081c"
+    },
+    "plans/phase-history.yml": {
+      "operation": "copy",
+      "sha256": "88fcf88c6c70204bac2e040f88b73bcd1cb438a29b348cd94fff2d70ed377232"
+    },
+    "plans/phase-ledger.yml": {
+      "operation": "copy",
+      "sha256": "682e1c78c1f00868e9b4b00629e1f33c0c27b941f7d704add0ff07505826fcc3"
+    },
+    "plans/product-spec.yml": {
+      "operation": "copy",
+      "sha256": "3abee11d98b7fd30e8c3fb335ab5e76153d3f63132de7b194adc34e479c40450"
+    },
+    "requirements-governance.txt": {
+      "operation": "copy",
+      "sha256": "1b5b1327e4f6323fb5b5cc8b50e8004448196dd2d8f5b89a67c8847c9d01ddb5"
+    },
+    "schemas/agents.schema.json": {
+      "operation": "copy",
+      "sha256": "8b0817ca99db767515f644afc8429ab5ab3f5fc460ef2ca8330f8e23affb5fff"
+    },
+    "schemas/architecture-boundaries.schema.json": {
+      "operation": "copy",
+      "sha256": "4dc4cbb4e874f1ef00c797bc022b1fd463f9e9364503a1c3864717f74817c98a"
+    },
+    "schemas/artifact-manifest.schema.json": {
+      "operation": "copy",
+      "sha256": "51d8c9a93ed2145ccd5917a3766de277a76430769462011d8c3fa7a5554b03be"
+    },
+    "schemas/build-plan.schema.json": {
+      "operation": "copy",
+      "sha256": "01c9dd1270409461ac767a9100c97ce329a799e4ddbefe0b694b48162f6ac12f"
+    },
+    "schemas/evidence-policy.schema.json": {
+      "operation": "copy",
+      "sha256": "8a8edd67921b5ef35e54e67f7d63ca084bc4a38edbacced82cdc119acd279d86"
+    },
+    "schemas/evidence-receipt.schema.json": {
+      "operation": "copy",
+      "sha256": "fd4c3eec3e875dc7f190482b757a61047b7e8af5da4d6d910d9d27332fbb211e"
+    },
+    "schemas/findings.schema.json": {
+      "operation": "copy",
+      "sha256": "1920e7216eb71f47a4127180968626013bc8d8317656cd304035e25b87826dda"
+    },
+    "schemas/gate-contracts.schema.json": {
+      "operation": "copy",
+      "sha256": "2c8e34adee9eb5c9a4b07f123ff6223aa9e7ece58f0f6f0bc495258e1a4f6ad9"
+    },
+    "schemas/governance-profile.schema.json": {
+      "operation": "copy",
+      "sha256": "15b9157ebc951a819ce579c2838ef2837da7aac8cef2e039b30463eccb4fe27c"
+    },
+    "schemas/hotfix-log.schema.json": {
+      "operation": "copy",
+      "sha256": "1488764d6a4a84418b0d4830147da2c8216c08d698cb12ed0625b9e810befb2a"
+    },
+    "schemas/memory.schema.json": {
+      "operation": "copy",
+      "sha256": "f9bb4a5f66b11e806bb166331b6ae6d515baee11e1d33979b98577ce8ec0a4e2"
+    },
+    "schemas/observability-contract.schema.json": {
+      "operation": "copy",
+      "sha256": "fd87d65939e09aa889dac0a31bc22bf491c525d9eb8580420c115bd9d27c5762"
+    },
+    "schemas/phase-history.schema.json": {
+      "operation": "copy",
+      "sha256": "24ec4489091f01f75ca11ee0dd5514924e0588e16a544b3ce788b625b753b555"
+    },
+    "schemas/phase-ledger.schema.json": {
+      "operation": "copy",
+      "sha256": "e622c083e2b18603d1e0413058abef0def9ae958078340609a2282efa8475eee"
+    },
+    "schemas/phase-log.schema.json": {
+      "operation": "copy",
+      "sha256": "8e040df37749c2c2203dcce0613aa1bdcc8ba5a53e323993c421d3ab76192bda"
+    },
+    "schemas/phase-plan.schema.json": {
+      "operation": "copy",
+      "sha256": "0559c956ef86a72a6397b849515fd69e11407c765311578962245f140699cdbe"
+    },
+    "schemas/phase-workitems.schema.json": {
+      "operation": "copy",
+      "sha256": "073f15d70ffc16b379dcdadafa96a6eb32eabebbdf83b3845317efa3dcca5add"
+    },
+    "schemas/product-spec.schema.json": {
+      "operation": "copy",
+      "sha256": "592d1131953925172eab4b84f07b1dd69f47208ca2227b8edc997db4dd988106"
+    },
+    "schemas/repo-cleanup-contract.schema.json": {
+      "operation": "copy",
+      "sha256": "311cb3b6965f4a8ee83e76da2f88056b260554618fcf3bf4ec0a63eb1891c045"
+    },
+    "scripts/_bcf_runtime/__init__.py": {
+      "operation": "copy",
+      "sha256": "d5b0e0b77de83a84e44fd4e5d37d22a809a6524c30f79c8f74a43f248968a118"
+    },
+    "scripts/_bcf_runtime/_version.py": {
+      "operation": "copy",
+      "sha256": "1433b43894792faaa21155768090cee519f5c1003ccf861bcb64bb7ad88a8edc"
+    },
+    "scripts/_bcf_runtime/check_governance_exposure.py": {
+      "operation": "copy",
+      "sha256": "a7451f68c0701fb964dfeafb2d7de5ed10cce519b0d4ab29d198bf4f0935cdfb"
+    },
+    "scripts/_bcf_runtime/cleanup_ci_resources.py": {
+      "operation": "copy",
+      "sha256": "ae20f1eb1aeba65685ea5fdd597a4a02f0ebb26d6926563e4c364a9474cdcee8"
+    },
+    "scripts/_bcf_runtime/cleanup_governance_pack.py": {
+      "operation": "copy",
+      "sha256": "6c2733833465597bd4d61d2c9d8b097e528e617dd93b5bc898df049d3cb06012"
+    },
+    "scripts/_bcf_runtime/doctor_governance_pack.py": {
+      "operation": "copy",
+      "sha256": "3c8ec2ba2896226997404578389e22f4296de5c7f4fbd98cdafe778bcaca593f"
+    },
+    "scripts/_bcf_runtime/evidence_attestation.py": {
+      "operation": "copy",
+      "sha256": "3666d17ccd9953d6a3d2f907942caf4477301f7a5fb7b1930b440825bfc0bf31"
+    },
+    "scripts/_bcf_runtime/evidence_test_adapters.py": {
+      "operation": "copy",
+      "sha256": "6f64bb1d572c347d0ba1bcb1380ee155c4f263d41ac4f4c178df573a86c8eb44"
+    },
+    "scripts/_bcf_runtime/governance_cleanup/__init__.py": {
+      "operation": "copy",
+      "sha256": "cdd74fa03e4574b27445f06dd41c1dc74c81f68841c84558ad6248e117b93d9b"
+    },
+    "scripts/_bcf_runtime/governance_cleanup/models.py": {
+      "operation": "copy",
+      "sha256": "b1c78e3dbde06f75aa7e5962468222b7b4a765d20e36402c1742177f37ddc972"
+    },
+    "scripts/_bcf_runtime/governance_cleanup/phase_retention.py": {
+      "operation": "copy",
+      "sha256": "bdbce8f1592c4c7c3fffc309a640539f4bcd4f1938b468c7f51e2954d48662a5"
+    },
+    "scripts/_bcf_runtime/governance_cleanup/truth_reports.py": {
+      "operation": "copy",
+      "sha256": "c06cd65e9cfd3ea9deb628d5dd28b8f2208a67511aca52237de2dd94f709d686"
+    },
+    "scripts/_bcf_runtime/governance_evidence.py": {
+      "operation": "copy",
+      "sha256": "a8c1bd09c08310bde710a6ce5e31fe83e08883cde1ac98a930f3c3104e0a2020"
+    },
+    "scripts/_bcf_runtime/governance_install/__init__.py": {
+      "operation": "copy",
+      "sha256": "0a41f9a6ded87f2e9f71f1860d4b4734a41c8ad2859de6fe3eb0de518f067541"
+    },
+    "scripts/_bcf_runtime/governance_install/args.py": {
+      "operation": "copy",
+      "sha256": "e533bd3eb9e1524b7e969873c02f8e3db578379a4b8bf1d84ba6713f624ee0c8"
+    },
+    "scripts/_bcf_runtime/governance_install/reporting.py": {
+      "operation": "copy",
+      "sha256": "efeb033f7c6c0abc2f902641096a259b55f8e63d60d729bf88363902ed2a767c"
+    },
+    "scripts/_bcf_runtime/governance_install/transaction.py": {
+      "operation": "copy",
+      "sha256": "ea3ce135ec4ba488e8884a2aa3806ff71624983b47ff898993469e121af7dc37"
+    },
+    "scripts/_bcf_runtime/governance_install/upgrade.py": {
+      "operation": "copy",
+      "sha256": "ee572a81ba2346055434e611b22a99d74752b2f6b323fda68ff179831d3cdec5"
+    },
+    "scripts/_bcf_runtime/governance_profiles.py": {
+      "operation": "copy",
+      "sha256": "748f2e62cbda57dbdc1bec36fac15fef31c553fc5c37768f23cc9db67b47a6ae"
+    },
+    "scripts/_bcf_runtime/governance_truth.py": {
+      "operation": "copy",
+      "sha256": "392d70678d14b0c4ea006c1714beb94306329e2f16c9b273f47521e53c40b4dc"
+    },
+    "scripts/_bcf_runtime/governance_truth_support.py": {
+      "operation": "copy",
+      "sha256": "a7b97d146009701db2a68ce6892e0c600297e6764b4476046608453b79673f3a"
+    },
+    "scripts/_bcf_runtime/governance_validation/__init__.py": {
+      "operation": "copy",
+      "sha256": "6021917dc1981367d674d97678c1d81514ea770a20e81a6486d672805a4c138a"
+    },
+    "scripts/_bcf_runtime/governance_validation/artifact_policy.py": {
+      "operation": "copy",
+      "sha256": "9bda1a60ba90e2ccd6df86ea9f15fa59ac73db60c5be291019ab45ae9fa5cf73"
+    },
+    "scripts/_bcf_runtime/governance_validation/common.py": {
+      "operation": "copy",
+      "sha256": "23fecb93aa2d63e37aa64dea59aaeb712217c0de4c05a84679b2f11c07ff3422"
+    },
+    "scripts/_bcf_runtime/governance_validation/context_budgets.py": {
+      "operation": "copy",
+      "sha256": "da5180e3ff5cd4bfa9ae1dc3d6feb41c1b52fc6d2bf7aa44ef13893af6c20b84"
+    },
+    "scripts/_bcf_runtime/governance_validation/evidence_contracts.py": {
+      "operation": "copy",
+      "sha256": "08da5a1ebaa6826f43ebdefc2d61d1509be3b9666283c3190caca886eedafe49"
+    },
+    "scripts/_bcf_runtime/governance_validation/phase_artifacts.py": {
+      "operation": "copy",
+      "sha256": "d697c61c9be8af0f4b4c1d75b69f2f9cf55babed327383d1b161825628473bdb"
+    },
+    "scripts/_bcf_runtime/governance_validation/phase_catalog.py": {
+      "operation": "copy",
+      "sha256": "f6348ce894bb233d4cdc400c5c65b2f6662a9b3879c002aff3d12e214db6c4b0"
+    },
+    "scripts/_bcf_runtime/governance_validation/release_gates.py": {
+      "operation": "copy",
+      "sha256": "80e29a2d5c08b35c98730ad9fd03e464c9f68e598ee178688913b4406795c630"
+    },
+    "scripts/_bcf_runtime/governance_validation/repo_cleanup.py": {
+      "operation": "copy",
+      "sha256": "1e4fc8fe8f5d0e3a70950ea0cd239b52a11fe023acab5ce44a3fdaa350f6ac60"
+    },
+    "scripts/_bcf_runtime/governance_validation/runner.py": {
+      "operation": "copy",
+      "sha256": "91eba6947a13844f32fbf3426360f05738881d353b6554ac1de695e8c3dec10f"
+    },
+    "scripts/_bcf_runtime/install_governance_pack.py": {
+      "operation": "copy",
+      "sha256": "8e863c9596768121c87fdb02e6d7a771bd3d62e43189d3d21bb213d6ae7e780d"
+    },
+    "scripts/_bcf_runtime/migrate_governance_evidence.py": {
+      "operation": "copy",
+      "sha256": "f684d916b71d37298b29d5eecd02288c7c1bec51012fb746102155dcde06b4ec"
+    },
+    "scripts/_bcf_runtime/profile_governance.py": {
+      "operation": "copy",
+      "sha256": "03356e71f25ef8edc7fc8f874c41e7097ff3bf93128b12512c0e31d365eb28b5"
+    },
+    "scripts/_bcf_runtime/publish_audit.py": {
+      "operation": "copy",
+      "sha256": "63abb8dfd3f2acae183bc0b6b8b315aad401c20e32a3bc9ed8955a7a4359dc5e"
+    },
+    "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
+      "operation": "copy",
+      "sha256": "fa77fc6e7a159c7b4c1ac23aff9219c1cdac7f5eadc74e9ffbb08c7c10a36099"
+    },
+    "scripts/_bcf_runtime/truth_receipts.py": {
+      "operation": "copy",
+      "sha256": "490cf1ba78fbc733a51862232d50d0bdffa8cfcd91850543d4962d6ce96a500e"
+    },
+    "scripts/_bcf_runtime/validate_governance_yaml.py": {
+      "operation": "copy",
+      "sha256": "f88570a9864e1a04d0825b0bea5b3b837c36bfd31b18d317281b1da846deda0d"
+    },
+    "scripts/check_governance_exposure.py": {
+      "operation": "copy",
+      "sha256": "cac23e4156f7a2c85e30058ac2e73b829ca6660d77d64538c26a6e614e53d0f6"
+    },
+    "scripts/governance_evidence.py": {
+      "operation": "copy",
+      "sha256": "76c39beceee6f44c776f1788291ba9b4e3d21bbedb1e18cbec472c97ae8c2cc5"
+    },
+    "scripts/governance_truth.py": {
+      "operation": "copy",
+      "sha256": "1b05d9323ae96eb1f8388e808efc2b131acffcd6d9ba83b712e08b5ae5601295"
+    },
+    "scripts/governance_truth_support.py": {
+      "operation": "copy",
+      "sha256": "70a21968b500ae3ceb6f1202f4fcbf707c0571473053a6c76032e742f2d2e272"
+    },
+    "scripts/migrate_governance_evidence.py": {
+      "operation": "copy",
+      "sha256": "9fd10d739f1f573c65c64c327e99a479bba8f0a2df34fdd3f4c70fe2291002b2"
+    },
+    "scripts/profile_governance.py": {
+      "operation": "copy",
+      "sha256": "87c80b65909c047bc966cc925ea32cf7e895bf33f8841c5db762412dbbed7ce2"
+    },
+    "scripts/scaffold_governance_artifacts.py": {
+      "operation": "copy",
+      "sha256": "7dae16284e72cf0711ec897ee7a691c9fdd5eb432ff75ff63337266390d50854"
+    },
+    "scripts/validate_governance_yaml.py": {
+      "operation": "copy",
+      "sha256": "b09f27b45431b0e3e9b57adc1586be563e17c49093cd2c42fa1d8c492bc8af88"
+    }
+  },
+  "generated": [
+    {
+      "operation": "generate",
+      "path_template": "plans/phase-{NN}-plan.yml"
+    },
+    {
+      "operation": "generate",
+      "path_template": "plans/phase-{NN}-workitems.yml"
+    },
+    {
+      "operation": "generate",
+      "path_template": "phases/phase-{NN}-log.yml"
+    }
+  ],
+  "schema_version": "1.0"
+}

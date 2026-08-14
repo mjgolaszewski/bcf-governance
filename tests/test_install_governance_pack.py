@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
+
+from bcf_governance.tooling.governance_install import transaction
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 INSTALLER = REPO_ROOT / "scripts" / "install_governance_pack.py"
@@ -26,6 +30,15 @@ def _load_installer_module():
 def _run_installer(
     target: Path, *args: str, check: bool = True, input_text: str | None = None
 ) -> subprocess.CompletedProcess[str]:
+    target.mkdir(parents=True, exist_ok=True)
+    if not (target / ".git").exists():
+        subprocess.run(["git", "init", "--quiet"], cwd=target, check=True)
+        subprocess.run(
+            ["git", "config", "user.email", "installer@example.invalid"],
+            cwd=target,
+            check=True,
+        )
+        subprocess.run(["git", "config", "user.name", "Installer Test"], cwd=target, check=True)
     return subprocess.run(
         [
             sys.executable,
@@ -103,76 +116,21 @@ def test_template_file_iterator_skips_generated_python_cache_files(tmp_path: Pat
     assert relative_files == ["scripts/keep.py"]
 
 
-def test_installer_bootstraps_standard_profile_and_reports_unwired_gates(tmp_path: Path) -> None:
+def test_installer_rejects_standard_profile_without_complete_config_before_mutation(tmp_path: Path) -> None:
     target = tmp_path / "demo-standard"
-    result = _run_installer(target)
+    target.mkdir()
+    subprocess.run(["git", "init", "--quiet"], cwd=target, check=True)
+    before = subprocess.run(
+        ["git", "status", "--porcelain=v1"], cwd=target, capture_output=True, text=True, check=True
+    ).stdout
+    result = _run_installer(target, check=False)
 
-    assert "validation: bootstrap pass" in result.stdout
-    assert "wire release gates:" in result.stdout
-    assert "architecture-module-size" in result.stdout
-    assert "security-secret-scan" in result.stdout
-    assert "runtime-smoke" in result.stdout
-    assert not (target / "plans/phase-NN-plan.yml").exists()
-    assert not (target / "phases/phase-NN-log.yml").exists()
-    assert (target / "contracts/observability/v1/telemetry.contract.yml").exists()
-    assert (target / "contracts/observability/v1/logging.contract.yml").exists()
-    assert (target / "governance/repo-cleanup-contract.yml").exists()
-    assert (target / "governance/REPO_CLEANUP.md").exists()
-    assert not (target / "governance/EXISTING_REPO_ADOPTION.md").exists()
-    assert not (target / "governance/existing-repo-adoption.yml").exists()
-    assert (target / ".github/workflows/governance.yml").exists()
-    workflow = (target / ".github/workflows/governance.yml").read_text(encoding="utf-8")
-    assert "governance-exposure-scan" in workflow
-    assert "scripts/governance_evidence.py --repo-root . run" in workflow
-    assert "scripts/governance_truth.py --repo-root ." in workflow
-    assert "AGENTS.yml" in (target / "AGENTS.md").read_text(encoding="utf-8")
-    assert "AGENTS.yml" in (target / "CLAUDE.md").read_text(encoding="utf-8")
-
-    agents = yaml.safe_load((target / "AGENTS.yml").read_text(encoding="utf-8"))
-    memory = yaml.safe_load((target / "MEMORY.yml").read_text(encoding="utf-8"))
-    assert agents["project"]["repo_root"] == "."
-    assert agents["git_scope"]["default_root"] == "."
-    assert memory["stable_decisions"]["canonical_repo_root"] == "."
-
-    plan = yaml.safe_load((target / "plans/phase-01-plan.yml").read_text(encoding="utf-8"))
-    assert plan["document"]["path"] == "plans/phase-01-plan.yml"
-    assert plan["delivery_contract"]["tightly_scoped_deliverables"] == [
-        "initial governed foundation"
-    ]
-
-    profile = yaml.safe_load((target / "governance-profile.yml").read_text(encoding="utf-8"))
-    assert profile["profile"]["selected"] == "standard"
-    assert profile["drift_guardrails"]["cleanup_contract"] == "governance/repo-cleanup-contract.yml"
-
-    telemetry_contract = yaml.safe_load(
-        (target / "contracts/observability/v1/telemetry.contract.yml").read_text(
-            encoding="utf-8"
-        )
-    )
-    logging_contract = yaml.safe_load(
-        (target / "contracts/observability/v1/logging.contract.yml").read_text(
-            encoding="utf-8"
-        )
-    )
-    assert telemetry_contract["contract_id"] == "demo.observability.telemetry.v1"
-    assert logging_contract["contract_id"] == "demo.observability.logging.v1"
-
-    strict = _run_installed_validator(target)
-    assert strict.returncode == 1
-    assert "release gate placeholder marker" in json.loads(strict.stdout)["error"]
-
-    bootstrap = _run_installed_validator(
-        target, allow_placeholders=True, allow_release_gate_placeholders=True
-    )
-    assert bootstrap.returncode == 0
-    assert json.loads(bootstrap.stdout)["status"] == "pass"
-
-    doctor = _run_doctor(target)
-    assert doctor.returncode == 1
-    doctor_payload = json.loads(doctor.stdout)
-    assert doctor_payload["status"] == "fail"
-    assert any("placeholder marker" in blocker for blocker in doctor_payload["blockers"])
-    assert doctor_payload["next_actions"]
+    assert result.returncode == 1
+    assert "--profile-config is required for standard" in result.stderr
+    after = subprocess.run(
+        ["git", "status", "--porcelain=v1"], cwd=target, capture_output=True, text=True, check=True
+    ).stdout
+    assert after == before
 
 
 def test_installer_lite_profile_passes_strict_validation(tmp_path: Path) -> None:
@@ -194,56 +152,16 @@ def test_installer_lite_profile_passes_strict_validation(tmp_path: Path) -> None
     assert json.loads(strict.stdout)["status"] == "pass"
 
 
-def test_installer_gate_commands_can_make_standard_profile_strict(tmp_path: Path) -> None:
+def test_installer_rejects_removed_gate_command_option(tmp_path: Path) -> None:
     target = tmp_path / "demo-standard-strict"
     result = _run_installer(
         target,
         "--gate-command",
-        "architecture-test=pytest backend/tests/architecture",
-        "--gate-command",
-        "architecture-module-size=pytest backend/tests/architecture -k production_modules_respect_loc_cap",
-        "--gate-command",
-        "architecture-layer-membership=pytest backend/tests/architecture -k production_modules_map_to_exactly_one_layer",
-        "--gate-command",
-        "architecture-context-membership=pytest backend/tests/architecture -k production_modules_map_to_exactly_one_bounded_context",
-        "--gate-command",
-        "architecture-import-boundaries=pytest backend/tests/architecture -k do_not_import",
-        "--gate-command",
-        "architecture-cqrs-side=pytest backend/tests/architecture -k cqrs",
-        "--gate-command",
-        "architecture-router-thinness=pytest backend/tests/architecture -k routers_remain_thin",
-        "--gate-command",
-        "architecture-duplication=pytest backend/tests/architecture -k 'duplication or shared_abstraction'",
-        "--gate-command",
-        "lint=ruff check .",
-        "--gate-command",
-        "typecheck=mypy .",
-        "--gate-command",
-        "test=pytest backend/tests",
-        "--gate-command",
-        "contract-test=pytest backend/tests/contracts",
-        "--gate-command",
-        "security-secret-scan=gitleaks detect --source .",
-        "--gate-command",
-        "security-dependency-audit=pip-audit",
-        "--gate-command",
-        "security-sbom=syft dir:.",
-        "--gate-command",
-        "security-vulnerability-scan=trivy fs .",
-        "--gate-command",
-        "security-review=python scripts/review_security.py --findings governance/findings.yml",
-        "--gate-command",
-        "runtime-smoke=docker compose config",
-        "--require-strict-validation",
+        "test=true",
+        check=False,
     )
-
-    assert "validation: strict pass" in result.stdout
-    strict = _run_installed_validator(target)
-    assert strict.returncode == 0
-
-    doctor = _run_doctor(target)
-    assert doctor.returncode == 0
-    assert json.loads(doctor.stdout)["status"] == "pass"
+    assert result.returncode == 2
+    assert "unrecognized arguments: --gate-command" in result.stderr
 
 
 def test_installer_refuses_to_overwrite_without_force(tmp_path: Path) -> None:
@@ -251,7 +169,7 @@ def test_installer_refuses_to_overwrite_without_force(tmp_path: Path) -> None:
     target.mkdir()
     (target / "AGENTS.yml").write_text("existing\n", encoding="utf-8")
 
-    result = _run_installer(target, check=False)
+    result = _run_installer(target, "--profile", "lite", check=False)
 
     assert result.returncode == 1
     assert "--force" in result.stderr
@@ -301,13 +219,9 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
     _run_installer(target, "--profile", "lite", "--require-strict-validation")
     protected_paths = (
         "AGENTS.yml",
-        ".github/workflows/governance.yml",
         "MEMORY.yml",
-        "Makefile.fragment",
         "architecture-boundaries.yml",
-        "governance-profile.yml",
         "governance/artifact-manifest.yml",
-        "governance/evidence-policy.yml",
         "governance/findings.yml",
         "plans/product-spec.yml",
         "plans/build-plan.yml",
@@ -327,15 +241,16 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
     (target / "scripts/validate_governance_yaml.py").write_text("old validator\n", encoding="utf-8")
     (target / "scripts/check_governance_exposure.py").unlink()
 
-    result = _run_installer(target, "--upgrade", "--skip-validation")
+    result = _run_installer(target, "--upgrade", "--profile", "lite", "--skip-validation")
 
     assert "upgraded governance pack into" in result.stdout
     assert "old validator" not in (target / "scripts/validate_governance_yaml.py").read_text(
         encoding="utf-8"
     )
     assert (target / "scripts/check_governance_exposure.py").exists()
-    assert (target / "scripts/governance_validation/runner.py").exists()
+    assert (target / "scripts/_bcf_runtime/governance_validation/runner.py").exists()
     assert (target / "schemas/phase-history.schema.json").exists()
+    assert (target / "governance/gate-contracts.yml").exists()
     assert {
         relative_path: (target / relative_path).read_bytes()
         for relative_path in protected_paths
@@ -421,8 +336,6 @@ def test_installer_upgrade_runs_targeted_evidence_migration_without_rewriting_po
         agents_path,
         memory_path,
         manifest_path,
-        profile_path,
-        makefile_path,
     )
     state_before = {path: path.read_bytes() for path in protected_paths}
 
@@ -431,6 +344,11 @@ def test_installer_upgrade_runs_targeted_evidence_migration_without_rewriting_po
     assert "upgraded governance pack into" in result.stdout
     assert (target / "plans/product-spec.yml").read_text(encoding="utf-8") == product_spec_before
     assert {path: path.read_bytes() for path in protected_paths} == state_before
+    migrated_profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    assert migrated_profile["profile"]["selected"] == "lite"
+    assert "governance_exposure_scan" in migrated_profile["release_gate_profile"]["gates"]
+    assert "governance-exposure-scan" in makefile_path.read_text(encoding="utf-8")
+    assert (target / "governance/gate-contracts.yml").exists()
     assert (target / "plans/phase-history.yml").exists()
     assert (target / "scripts/check_governance_exposure.py").exists()
     migrated_phase = yaml.safe_load(phase_log_path.read_text(encoding="utf-8"))
@@ -488,3 +406,158 @@ def test_installer_existing_adoption_mode_labels_conversion_phase(tmp_path: Path
 
     memory = yaml.safe_load((target / "MEMORY.yml").read_text(encoding="utf-8"))
     assert "existing adoption mode" in memory["environment_facts"]["current_repo_state"][0]
+
+
+def test_existing_install_never_rewrites_unrelated_placeholders_and_merges_gitignore(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "existing-app"
+    target.mkdir()
+    app = target / "app.py"
+    app.write_text('BANNER = "{{PROJECT_NAME}}"\n', encoding="utf-8")
+    gitignore = target / ".gitignore"
+    original_gitignore = b"custom-cache/\n\n\n"
+    gitignore.write_bytes(original_gitignore)
+
+    _run_installer(
+        target,
+        "--profile",
+        "lite",
+        "--adoption-mode",
+        "existing",
+        "--require-strict-validation",
+    )
+
+    assert app.read_text(encoding="utf-8") == 'BANNER = "{{PROJECT_NAME}}"\n'
+    merged_bytes = gitignore.read_bytes()
+    assert merged_bytes.startswith(original_gitignore)
+    merged = merged_bytes.decode("utf-8")
+    assert merged.count("# BEGIN BCF GOVERNANCE") == 1
+    assert merged.count("# END BCF GOVERNANCE") == 1
+    installer = _load_installer_module()
+    assert installer._merge_gitignore(
+        merged_bytes, (REPO_ROOT / "template-repo/.gitignore").read_bytes()
+    ) == merged_bytes
+
+
+def test_existing_application_symlink_is_not_followed_or_rewritten(tmp_path: Path) -> None:
+    target = tmp_path / "symlink-app"
+    target.mkdir()
+    external = tmp_path / "external.txt"
+    external.write_text("{{PROJECT_NAME}}\n", encoding="utf-8")
+    (target / "app-link.txt").symlink_to(external)
+
+    _run_installer(target, "--profile", "lite", "--adoption-mode", "existing")
+
+    assert external.read_text(encoding="utf-8") == "{{PROJECT_NAME}}\n"
+    assert (target / "app-link.txt").is_symlink()
+
+
+def test_install_rejects_managed_symlink_parent_without_outside_writes(tmp_path: Path) -> None:
+    target = tmp_path / "symlink-destination"
+    target.mkdir()
+    external = tmp_path / "external-governance"
+    external.mkdir()
+    sentinel = external / "sentinel.txt"
+    sentinel.write_text("unchanged\n", encoding="utf-8")
+    (target / "governance").symlink_to(external, target_is_directory=True)
+
+    result = _run_installer(target, "--profile", "lite", check=False)
+
+    assert result.returncode == 1
+    assert "symlink" in result.stderr
+    assert sentinel.read_text(encoding="utf-8") == "unchanged\n"
+    assert sorted(path.name for path in external.iterdir()) == ["sentinel.txt"]
+
+
+def test_upgrade_rejects_managed_file_symlink_without_outside_writes(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "upgrade-symlink"
+    target.mkdir()
+    _run_installer(target, "--profile", "lite")
+    external = tmp_path / "external-validator.py"
+    external.write_text("# unchanged\n", encoding="utf-8")
+    validator = target / "scripts/validate_governance_yaml.py"
+    validator.unlink()
+    validator.symlink_to(external)
+
+    result = _run_installer(
+        target,
+        "--upgrade",
+        "--profile",
+        "lite",
+        check=False,
+    )
+
+    assert result.returncode == 1
+    assert "symlink" in result.stderr
+    assert external.read_text(encoding="utf-8") == "# unchanged\n"
+
+
+def test_manifest_path_escape_is_rejected() -> None:
+    installer = _load_installer_module()
+    with pytest.raises(ValueError, match="unsafe pack path"):
+        installer._validate_relative_path(Path("../outside"))
+    with pytest.raises(ValueError, match="unsafe pack path"):
+        installer._validate_relative_path(Path("/outside"))
+
+
+def test_pack_manifest_rejects_duplicate_destinations(tmp_path: Path) -> None:
+    installer = _load_installer_module()
+    (tmp_path / "a.txt").write_text("a\n", encoding="utf-8")
+    digest = hashlib.sha256(b"a\n").hexdigest()
+    (tmp_path / ".bcf-pack-manifest.json").write_text(
+        '{"schema_version":"1.0","files":{'
+        f'"a.txt":{{"sha256":"{digest}","operation":"copy"}},'
+        f'"a.txt":{{"sha256":"{digest}","operation":"copy"}}'
+        '},"generated":[]}',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="duplicates destination a.txt"):
+        installer._pack_manifest_entries(tmp_path)
+
+
+def test_transaction_interrupt_restores_all_touched_files_byte_identically(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = tmp_path / "transaction"
+    repo.mkdir()
+    first = repo / "a.txt"
+    second = repo / "b.txt"
+    first.write_bytes(b"first-before\n")
+    second.write_bytes(b"second-before\n")
+    first.chmod(0o640)
+    second.chmod(0o600)
+    before = {
+        path.name: (path.read_bytes(), path.stat().st_mode)
+        for path in (first, second)
+    }
+    original = transaction._atomic_write
+    writes = 0
+
+    def interrupted(path: Path, data: bytes, mode: int) -> None:
+        nonlocal writes
+        writes += 1
+        if writes == 2:
+            raise KeyboardInterrupt("injected interruption")
+        original(path, data, mode)
+
+    monkeypatch.setattr(transaction, "_atomic_write", interrupted)
+
+    def mutate(shadow: Path) -> None:
+        (shadow / "a.txt").write_bytes(b"first-after\n")
+        (shadow / "b.txt").write_bytes(b"second-after\n")
+
+    with pytest.raises(KeyboardInterrupt, match="injected interruption"):
+        transaction.apply_transaction(
+            repo,
+            managed_paths=("a.txt", "b.txt"),
+            mutate_shadow=mutate,
+        )
+
+    assert {
+        path.name: (path.read_bytes(), path.stat().st_mode)
+        for path in (first, second)
+    } == before
