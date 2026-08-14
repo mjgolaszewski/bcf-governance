@@ -22,6 +22,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 - Consolidated duplicated governance guidance and removed stale lifecycle,
   adoption, upgrade, and release instructions.
+- Made repository-specific evidence gates bootstrap the isolated source checkout
+  without relying on an ambient editable installation.
 
 ## [0.6.0] - 2026-08-14
 

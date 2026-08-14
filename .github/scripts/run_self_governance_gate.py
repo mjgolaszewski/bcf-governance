@@ -6,6 +6,7 @@ import argparse
 import ast
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -14,6 +15,8 @@ import yaml
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 POLICY_PATH = REPO_ROOT / "governance/self-governance-policy.yml"
 TEST_NODES = {
     "architecture-test": ["tests/test_self_governance_contracts.py::test_source_roots_match_packaged_implementation"],
@@ -54,9 +57,12 @@ def _run_tests(gate: str) -> None:
     junit = REPO_ROOT / f".artifacts/junit/{gate}.xml"
     junit.parent.mkdir(parents=True, exist_ok=True)
     nodes = ["tests"] if gate == "test" else TEST_NODES[gate]
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(REPO_ROOT)
     result = subprocess.run(
         ["pytest", "-q", *nodes, f"--junitxml={junit}"],
         cwd=REPO_ROOT,
+        env=environment,
         check=False,
     )
     raise SystemExit(result.returncode)

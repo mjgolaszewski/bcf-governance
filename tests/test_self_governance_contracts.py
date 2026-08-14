@@ -143,6 +143,22 @@ def test_changelog_pr_enforcement_is_wired_into_repository_ci() -> None:
         assert all(step.get("with", {}).get("fetch-depth") == 0 for step in checkout_steps)
 
 
+def test_self_gate_runner_bootstraps_an_uninstalled_source_checkout() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-I",
+            ".github/scripts/run_self_governance_gate.py",
+            "runtime-smoke",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_self_profile_builder_matches_canonical_negative_controls() -> None:
     generated = yaml.safe_load(
         subprocess.run(
