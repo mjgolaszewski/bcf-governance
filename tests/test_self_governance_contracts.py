@@ -132,7 +132,6 @@ def test_changelog_pr_enforcement_is_wired_into_repository_ci() -> None:
     workflow = yaml.safe_load(
         (REPO_ROOT / ".github/workflows/governance-pack.yml").read_text(encoding="utf-8")
     )
-    assert workflow["env"]["BCF_PR_BASE_SHA"] == "${{ github.event.pull_request.base.sha }}"
     for job in workflow["jobs"].values():
         checkout_steps = [
             step
@@ -141,6 +140,16 @@ def test_changelog_pr_enforcement_is_wired_into_repository_ci() -> None:
         ]
         assert checkout_steps
         assert all(step.get("with", {}).get("fetch-depth") == 0 for step in checkout_steps)
+    changelog_step = next(
+        step
+        for step in workflow["jobs"]["pack-checks"]["steps"]
+        if step.get("name") == "Enforce pull-request changelog contract"
+    )
+    assert changelog_step["if"] == "github.event_name == 'pull_request'"
+    assert changelog_step["env"] == {
+        "BCF_ENFORCE_PR_CHANGELOG": "true",
+        "BCF_PR_BASE_SHA": "${{ github.event.pull_request.base.sha }}",
+    }
 
 
 def test_self_gate_runner_bootstraps_an_uninstalled_source_checkout() -> None:

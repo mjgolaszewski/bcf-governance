@@ -404,6 +404,9 @@ def test_full_profile_install_evidence_truth_flow(
         (repo / ".github/workflows/governance.yml").read_text(encoding="utf-8")
     )
     matrix = workflow["jobs"]["evidence"]["strategy"]["matrix"]["gate"]
+    assert workflow["env"]["BCF_ENFORCE_PR_CHANGELOG"] == (
+        "${{ github.event_name == 'pull_request' }}"
+    )
     assert workflow["env"]["BCF_PR_BASE_SHA"] == "${{ github.event.pull_request.base.sha }}"
     assert matrix == list(contracts["gates"])
     for target in contracts["gates"]:

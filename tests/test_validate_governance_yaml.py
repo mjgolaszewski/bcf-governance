@@ -303,6 +303,7 @@ def test_pull_request_validation_requires_changelog_update(
     subprocess.run(["git", "add", "MEMORY.yml"], cwd=repo_root, check=True)
     subprocess.run(["git", "commit", "--quiet", "-m", "change"], cwd=repo_root, check=True)
     monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
+    monkeypatch.setenv("BCF_ENFORCE_PR_CHANGELOG", "true")
     monkeypatch.setenv("BCF_PR_BASE_SHA", base_sha)
 
     with pytest.raises(
@@ -321,6 +322,24 @@ def test_pull_request_validation_requires_changelog_update(
     subprocess.run(["git", "commit", "--quiet", "-m", "document change"], cwd=repo_root, check=True)
 
     validate_repo_root(repo_root)
+
+
+def test_governance_workflow_must_wire_changelog_pr_enforcement(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    workflow_path = repo_root / ".github/workflows/governance.yml"
+    workflow_path.write_text(
+        workflow_path.read_text(encoding="utf-8").replace(
+            "BCF_ENFORCE_PR_CHANGELOG: ${{ github.event_name == 'pull_request' }}",
+            "BCF_ENFORCE_PR_CHANGELOG: false",
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        GovernanceValidationError,
+        match="must enforce CHANGELOG.md against the exact pull-request base SHA",
+    ):
+        validate_repo_root(repo_root)
 
 
 def _set_manifest_retention_mode(repo_root: Path, mode: str) -> None:

@@ -106,13 +106,36 @@ def _validate_required_artifacts(repo_root: Path, manifest: dict[str, Any]) -> l
     ]
     if len(versions) != len(set(versions)):
         raise GovernanceValidationError("CHANGELOG.md release versions must be unique")
+    _validate_changelog_workflow_contract(repo_root)
     _validate_pull_request_changelog_update(repo_root)
     return list(paths.values())
 
 
+def _validate_changelog_workflow_contract(repo_root: Path) -> None:
+    workflow_path = repo_root / ".github/workflows/governance.yml"
+    workflow = _load_yaml(workflow_path)
+    environment = _require_mapping(
+        workflow.get("env"), context=".github/workflows/governance.yml env"
+    )
+    expected = {
+        "BCF_ENFORCE_PR_CHANGELOG": "${{ github.event_name == 'pull_request' }}",
+        "BCF_PR_BASE_SHA": "${{ github.event.pull_request.base.sha }}",
+    }
+    if any(environment.get(name) != value for name, value in expected.items()):
+        raise GovernanceValidationError(
+            ".github/workflows/governance.yml must enforce CHANGELOG.md against "
+            "the exact pull-request base SHA"
+        )
+
+
 def _validate_pull_request_changelog_update(repo_root: Path) -> None:
-    if os.environ.get("GITHUB_EVENT_NAME") not in {"pull_request", "pull_request_target"}:
+    enforce = os.environ.get("BCF_ENFORCE_PR_CHANGELOG", "").lower()
+    if enforce not in {"1", "true"}:
         return
+    if os.environ.get("GITHUB_EVENT_NAME") not in {"pull_request", "pull_request_target"}:
+        raise GovernanceValidationError(
+            "pull-request changelog enforcement requires a pull-request event"
+        )
     base_sha = os.environ.get("BCF_PR_BASE_SHA", "")
     if re.fullmatch(r"[a-fA-F0-9]{40}", base_sha) is None:
         raise GovernanceValidationError(

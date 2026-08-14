@@ -2,7 +2,7 @@
   "files": {
     ".github/workflows/governance.yml": {
       "operation": "generate",
-      "sha256": "4f4fbf4bb3e1df9bfcad9f17e52a8e9b9baebee3d4629cf0533c5357d159dcbe"
+      "sha256": "20deaaac28eb32fb057f027899498f2eac857808cf8e3f7814b630594002a4e8"
     },
     ".gitignore": {
       "operation": "merge",
@@ -320,7 +320,7 @@
     },
     "scripts/_bcf_runtime/governance_profiles.py": {
       "operation": "copy",
-      "sha256": "dc6eab733436a0d2cf104635ac3b51933a55808305728ad28598abf76f382753"
+      "sha256": "6d2eb0a59ae75930aaad4243a5ffd9f01b8e9f254a79458b4e7618677615714f"
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
@@ -368,7 +368,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/required_artifacts.py": {
       "operation": "copy",
-      "sha256": "d01659662882ab3aa6a8f62b2c7c9587b27f1314348f60dcdded4a9007719196"
+      "sha256": "9cb72d48fd2d9f8b83c983fad36d572e73efd7272f6467effb890f6ad8f796b3"
     },
     "scripts/_bcf_runtime/governance_validation/runner.py": {
       "operation": "copy",

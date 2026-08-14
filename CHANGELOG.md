@@ -24,6 +24,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   adoption, upgrade, and release instructions.
 - Made repository-specific evidence gates bootstrap the isolated source checkout
   without relying on an ambient editable installation.
+- Scoped pull-request changelog enforcement to an explicit, semantically
+  validated CI contract so nested test repositories remain hermetic.
 
 ## [0.6.0] - 2026-08-14
 
