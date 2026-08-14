@@ -22,6 +22,10 @@ if str(_SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_ROOT))
 
 from .governance_install.args import build_parser  # noqa: E402
+from .governance_install.artifacts import (  # noqa: E402
+    ensure_required_artifacts,
+    merge_gitignore as _merge_gitignore,
+)
 from .governance_install.reporting import print_summary  # noqa: E402
 from .governance_install.transaction import apply_transaction  # noqa: E402
 from .governance_install.upgrade import replace_placeholders_in_files, upgrade_state_files  # noqa: E402
@@ -72,8 +76,18 @@ RESCAFFOLD_REMOVE_PATHS = (
     "scripts/validate_governance_yaml.py",
 )
 INSTALL_MANAGED_PATHS = tuple(
-    dict.fromkeys((*RESCAFFOLD_REMOVE_PATHS, "docs/OPERATIONS.md", ".gitignore"))
+    dict.fromkeys(
+        (
+            *RESCAFFOLD_REMOVE_PATHS,
+            "docs/OPERATIONS.md",
+            ".gitignore",
+            "README.md",
+            "LICENSE",
+            "CHANGELOG.md",
+        )
+    )
 )
+PRESERVED_REQUIRED_ARTIFACTS = ("README.md", "LICENSE", "CHANGELOG.md")
 EXISTING_ADOPTION_ARTIFACTS = (
     "governance/EXISTING_REPO_ADOPTION.md",
     "governance/existing-repo-adoption.yml",
@@ -98,9 +112,7 @@ LITE_DEFERRED_GATES = (
     "security-review",
     "runtime-smoke",
 )
-REQUIRED_STANDARD_GATES = (
-    "governance-validate", "governance-exposure-scan", *LITE_DEFERRED_GATES
-)
+REQUIRED_STANDARD_GATES = ("governance-validate", "governance-exposure-scan", *LITE_DEFERRED_GATES)
 UPGRADE_REFRESH_PATHS = (
     "schemas",
     "backend/tests/architecture/test_boundaries_ast.py",
@@ -199,39 +211,6 @@ def _reject_symlink_destination(target_root: Path, relative_path: Path) -> None:
             raise ValueError(f"refusing to install through symlink: {relative_path}")
 
 
-def _merge_gitignore(existing: bytes | None, template: bytes) -> bytes:
-    begin = b"# BEGIN BCF GOVERNANCE"
-    end = b"# END BCF GOVERNANCE"
-    template_lines = [
-        line
-        for line in template.decode("utf-8").splitlines()
-        if line.strip()
-        and line.strip() not in {begin.decode("ascii"), end.decode("ascii")}
-    ]
-    block = b"\n".join(
-        [begin, *[line.encode("utf-8") for line in template_lines], end]
-    ) + b"\n"
-    original = existing or b""
-    if begin in original or end in original:
-        if not (
-            begin in original
-            and end in original
-            and original.index(begin) < original.index(end)
-        ):
-            raise ValueError("existing .gitignore contains an incomplete BCF managed block")
-        start = original.index(begin)
-        suffix_start = original.index(end, start) + len(end)
-        if original[suffix_start : suffix_start + 2] == b"\r\n":
-            suffix_start += 2
-        elif original[suffix_start : suffix_start + 1] == b"\n":
-            suffix_start += 1
-        return original[:start] + block + original[suffix_start:]
-    separator = b"" if not original or original.endswith(b"\n\n") else (
-        b"\n" if original.endswith((b"\n", b"\r\n")) else b"\n\n"
-    )
-    return original + separator + block
-
-
 def _pack_manifest_entries(template_root: Path) -> dict[str, dict[str, Any]]:
     manifest_path = template_root / ".bcf-pack-manifest.json"
     if not manifest_path.is_file() or manifest_path.is_symlink():
@@ -259,7 +238,7 @@ def _pack_manifest_entries(template_root: Path) -> dict[str, dict[str, Any]]:
         digest = raw_entry.get("sha256")
         if not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest):
             raise ValueError(f"pack manifest has invalid digest for {raw_path}")
-        if raw_entry.get("operation") not in {"copy", "merge", "generate"}:
+        if raw_entry.get("operation") not in {"copy", "merge", "generate", "preserve"}:
             raise ValueError(f"pack manifest has invalid operation for {raw_path}")
         profiles = raw_entry.get("profiles")
         if profiles is not None and (
@@ -308,7 +287,12 @@ def _copy_template(
     for relative_path in relative_paths:
         _reject_symlink_destination(target_root, relative_path)
         destination = target_root / relative_path
-        if destination.exists() and relative_path.as_posix() != ".gitignore" and not allow_replace:
+        operation = entries[relative_path.as_posix()]["operation"]
+        if (
+            destination.exists()
+            and operation not in {"merge", "preserve"}
+            and not allow_replace
+        ):
             conflicts.append(relative_path.as_posix())
 
     if conflicts:
@@ -324,13 +308,16 @@ def _copy_template(
         source = template_root / relative_path
         destination = target_root / relative_path
         destination.parent.mkdir(parents=True, exist_ok=True)
-        if entries[relative_path.as_posix()]["operation"] == "merge":
+        operation = entries[relative_path.as_posix()]["operation"]
+        if operation == "preserve" and destination.exists():
+            continue
+        if operation == "merge":
             existing = destination.read_bytes() if destination.exists() else None
             destination.write_bytes(_merge_gitignore(existing, source.read_bytes()))
         else:
             shutil.copy2(source, destination)
         destinations.append(destination)
-    return len(relative_paths), destinations
+    return len(destinations), destinations
 
 
 def _copy_selected_template_paths(
@@ -564,13 +551,6 @@ def _run_validation(
     return subprocess.run(command, capture_output=True, text=True)
 
 
-def _upgrade_paths(args: argparse.Namespace) -> tuple[str, ...]:
-    paths = list(UPGRADE_REFRESH_PATHS)
-    if args.reset_options:
-        paths.extend(UPGRADE_RESET_OPTION_PATHS)
-    return tuple(dict.fromkeys(paths))
-
-
 def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
     if not target_root.exists() or not target_root.is_dir():
         raise NotADirectoryError(f"{target_root} is not an existing directory; use install without --upgrade")
@@ -578,11 +558,22 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
         raise RuntimeError("--upgrade cannot be combined with --force-rescaffold")
 
     template_root = _template_root()
+    upgrade_paths = UPGRADE_REFRESH_PATHS + (
+        UPGRADE_RESET_OPTION_PATHS if args.reset_options else ()
+    )
     copied_files, destinations = _copy_selected_template_paths(
         template_root=template_root,
         target_root=target_root,
-        relative_paths=_upgrade_paths(args),
+        relative_paths=tuple(dict.fromkeys(upgrade_paths)),
     )
+    required_count, required_destinations = ensure_required_artifacts(
+        template_root=template_root,
+        target_root=target_root,
+        relative_paths=PRESERVED_REQUIRED_ARTIFACTS,
+        reject_destination=_reject_symlink_destination,
+    )
+    copied_files += required_count
+    destinations.extend(required_destinations)
     values = _placeholder_values(args, target_root)
     replace_placeholders_in_files(destinations, values)
     copied_files += len(
@@ -618,6 +609,11 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
             )
             bootstrap_validation_passed = bootstrap_result.returncode == 0
             bootstrap_output = (bootstrap_result.stdout or bootstrap_result.stderr).strip()
+            if not bootstrap_validation_passed:
+                raise RuntimeError(
+                    "bootstrap governance validation failed after upgrade:\n"
+                    f"{bootstrap_output}"
+                )
             if args.require_strict_validation:
                 raise RuntimeError(
                     "strict governance validation failed after upgrade:\n"
@@ -683,6 +679,11 @@ def _install_direct(args: argparse.Namespace, target_root: Path) -> InstallResul
             )
             bootstrap_validation_passed = bootstrap_result.returncode == 0
             bootstrap_output = (bootstrap_result.stdout or bootstrap_result.stderr).strip()
+            if not bootstrap_validation_passed:
+                raise RuntimeError(
+                    "bootstrap governance validation failed:\n"
+                    f"{bootstrap_output}"
+                )
             if args.require_strict_validation:
                 raise RuntimeError(
                     "strict governance validation failed:\n"

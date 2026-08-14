@@ -1,0 +1,71 @@
+name: governance
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  BCF_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+
+jobs:
+  evidence:
+    runs-on: [ubuntu-latest]
+    strategy:
+      fail-fast: false
+      matrix:
+        gate:
+          - architecture-context-membership
+          - architecture-cqrs-side
+          - architecture-duplication
+          - architecture-import-boundaries
+          - architecture-layer-membership
+          - architecture-module-size
+          - architecture-router-thinness
+          - architecture-test
+          - contract-test
+          - governance-exposure-scan
+          - governance-validate
+          - lint
+          - runtime-smoke
+          - security-dependency-audit
+          - security-review
+          - security-sbom
+          - security-secret-scan
+          - security-vulnerability-scan
+          - test
+          - typecheck
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: python3 -m pip install -r requirements-governance.txt
+      - name: Capture ${{ matrix.gate }} evidence
+        run: python3 scripts/governance_evidence.py --repo-root . run --gate "${{ matrix.gate }}" --output ".artifacts/bcf/${{ matrix.gate }}"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bcf-evidence-${{ matrix.gate }}
+          path: .artifacts/bcf/${{ matrix.gate }}
+          if-no-files-found: error
+
+  governance-truthfulness:
+    if: always()
+    needs: [evidence]
+    runs-on: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: python3 -m pip install -r requirements-governance.txt
+      - uses: actions/download-artifact@v4
+        with: {pattern: bcf-evidence-*, path: .artifacts/bcf, merge-multiple: true}
+      - run: python3 scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf --format json --durable-ref "github-actions://${{ github.repository }}/runs/${{ github.run_id }}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with: {name: bcf-governance-truth, path: .artifacts/bcf/truth-report.json, if-no-files-found: error}

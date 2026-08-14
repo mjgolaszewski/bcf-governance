@@ -1,0 +1,59 @@
+document:
+  kind: governance_artifact_manifest
+  name: "BCF Governance Governance Artifact Manifest"
+  id: "bcf-governance-artifact-manifest"
+  version: 1.0.0
+  generated_at_utc: "2026-08-14T00:00:00Z"
+  status: active
+  path: governance/artifact-manifest.yml
+artifact_roots:
+  audits: {path: audits/, status: active, purpose: codebase audit evidence and reports}
+  docs: {path: docs/, status: active, purpose: user and operator documentation}
+  governance: {path: governance/, status: active, purpose: governance policy and adoption records}
+  plans: {path: plans/, status: active, purpose: product build phase and workitem state}
+  phases: {path: phases/, status: active, purpose: execution evidence and closeout logs}
+  phase_archive: {path: governance/archive/phase-artifacts/, status: historical, purpose: archived closed phase and hotfix artifacts with hashes}
+  schemas: {path: schemas/, status: active, purpose: governed YAML structural contracts}
+required_artifacts:
+  readme: {path: README.md, contract: project_readme}
+  license: {path: LICENSE, contract: license_text}
+  changelog: {path: CHANGELOG.md, contract: keep_a_changelog, pull_request_policy: required_update}
+phase_retention_policy:
+  # Set mode with `bcf cleanup --phase-retention-mode`: git_history or archive.
+  history_path: plans/phase-history.yml
+  active_window: {include_active: true, include_next: true, keep_recent_closed: 0}
+  archive: {root: governance/archive/phase-artifacts/, closed_phase_statuses: [completed], preserve_hotfix_logs: true}
+nested_governance:
+  policy: declared_vendor_only
+  declared_vendors:
+    - {path: template-repo/, source_repo: self, refresh_policy: canonical_template_source, ownership: bcf_governance}
+    - {path: bcf_governance/pack/template-repo/, source_repo: self, refresh_policy: generated_exact_copy, ownership: bcf_governance}
+    - {path: tests/fixtures/, source_repo: self, refresh_policy: contract_test_fixture, ownership: bcf_governance_tests}
+vendored_artifacts:
+  required_fields: [artifact_path, source_repo, source_commit, artifact_sha256, refresh_policy]
+  artifacts: []
+ephemeral_evidence:
+  roots: [artifacts/, .artifacts/]
+  durable_reference_required: true
+append_only_contract:
+  style: terse_full_intent
+  required_fields: [intent, evidence, result, next_action]
+context_budgets:
+  aggregate_agent_required_kib_advisory: 350
+  agent_required_files:
+    AGENTS.md: {line_hard_cap: 8, kib_hard_cap: 2, intent: tiny pointer only}
+    CLAUDE.md: {line_hard_cap: 8, kib_hard_cap: 2, intent: tiny pointer only}
+    AGENTS.yml: {line_hard_cap: 190, kib_hard_cap: 18, intent: terse procedural agent policy}
+    MEMORY.yml: {line_hard_cap: 105, kib_hard_cap: 28, intent: compact active memory only}
+    architecture-boundaries.yml: {line_hard_cap: 120, kib_hard_cap: 8, intent: boundary map only}
+    governance-profile.yml: {line_hard_cap: 220, kib_hard_cap: 28, intent: profile knobs and generated required-gate classification}
+    governance/artifact-manifest.yml: {line_hard_cap: 80, kib_hard_cap: 8, intent: artifact index only}
+    governance/evidence-policy.yml: {line_hard_cap: 500, kib_hard_cap: 64, intent: computed lifecycle and generated evidence policy}
+    governance/gate-contracts.yml: {line_hard_cap: 800, kib_hard_cap: 96, intent: canonical executable gate contracts}
+    governance/findings.yml: {line_hard_cap: 400, kib_hard_cap: 96, intent: canonical finding accounting}
+    governance/repo-cleanup-contract.yml: {line_hard_cap: 90, kib_hard_cap: 12, intent: cleanup rules only}
+    governance/self-governance-policy.yml: {line_hard_cap: 60, kib_hard_cap: 8, intent: source-repository-specific executable policy}
+    plans/build-plan.yml: {line_hard_cap: 95, kib_hard_cap: 24, intent: active roadmap index}
+    plans/phase-ledger.yml: {line_hard_cap: 95, kib_hard_cap: 16, intent: current phase state}
+    plans/phase-history.yml: {line_hard_cap: 160, kib_hard_cap: 96, intent: evidence-backed compact history index}
+    plans/product-spec.yml: {line_hard_cap: 40, kib_hard_cap: 8, intent: compact product intent}

@@ -23,7 +23,9 @@ bcf install \
   --require-strict-validation
 ```
 
-Start with `lite` when the existing repo has not yet mapped its architecture, CI, and release gates. Promote to `standard` after the mandatory gates are wired or explicitly classified.
+Start with `lite` when the existing repo has not yet mapped its architecture,
+CI, and release gates. Promote to `standard` only after every mandatory gate
+has a complete executable contract and behavioral control.
 
 Use `bcf install --upgrade` for normal pack updates. It refreshes support
 scripts, schemas, workflow, and missing current governance fields while
@@ -59,10 +61,12 @@ Use `governance/repo-cleanup-contract.yml` as the cleanup contract and `governan
 5. Inventory source roots, bounded contexts, architectural layers, command/query paths, read-model names, write API names, generated-file exclusions, and runtime surfaces.
 6. Update `architecture-boundaries.yml` to match the repo before treating architecture tests as release evidence.
 7. Merge or include `Makefile.fragment`.
-8. Wire real gate commands or mark genuinely unavailable gates as `deferred` or `not_applicable` with rationale.
-9. Add push CI lanes for required gates when a local or hosted runner is available.
+8. Build a complete standard profile config with real argv, measurements,
+   outputs, environment assertions, and negative controls for every gate.
+9. Preview and apply `bcf profile promote`; use the generated static CI matrix.
 10. Record adoption evidence and known gaps in the active phase log.
-11. Promote from `lite` to `standard` only after structural gates are executable or deliberately classified.
+11. Treat unavailable mandatory gates as adoption work; standard and regulated
+    profiles do not permit partial gate configuration.
 
 ## Required Inventory
 
@@ -82,8 +86,8 @@ Use `governance/repo-cleanup-contract.yml` as the cleanup contract and `governan
 Record conversion evidence in the active phase log:
 
 - commands run
-- CI jobs wired or deferred
-- structural gates passing or classified
+- CI jobs wired by the generated profile matrix
+- structural gate contracts and controls passing
 - known warnings
 - known constraints
 - follow-up phase work

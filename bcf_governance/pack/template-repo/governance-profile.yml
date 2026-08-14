@@ -13,6 +13,9 @@ profile:
   - name: lite
     use_when: prototype, small internal service, or single-agent lane
     required_artifacts:
+    - README.md
+    - LICENSE
+    - CHANGELOG.md
     - AGENTS.yml
     - MEMORY.yml
     - plans/product-spec.yml
@@ -25,6 +28,9 @@ profile:
   - name: standard
     use_when: production-bound project with phase evidence and architecture gates
     required_artifacts:
+    - README.md
+    - LICENSE
+    - CHANGELOG.md
     - AGENTS.yml
     - MEMORY.yml
     - governance-profile.yml
@@ -47,6 +53,9 @@ profile:
   - name: regulated
     use_when: provenance, security evidence, SBOM, or formal hotfix reconciliation is mandatory
     required_artifacts:
+    - README.md
+    - LICENSE
+    - CHANGELOG.md
     - AGENTS.yml
     - MEMORY.yml
     - governance-profile.yml

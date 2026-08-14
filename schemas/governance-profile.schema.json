@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document", "profile", "release_gate_profile", "ci_profile", "drift_guardrails"],
+  "properties": {
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "id", "version", "generated_at_utc", "status", "path"],
+      "properties": {
+        "kind": { "type": "string", "const": "governance_profile" },
+        "name": { "type": "string", "minLength": 1 },
+        "id": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "generated_at_utc": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["selected", "rationale", "available_profiles"],
+      "properties": {
+        "selected": { "type": "string", "enum": ["lite", "standard", "regulated"] },
+        "rationale": { "type": "string", "minLength": 1 },
+        "available_profiles": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "use_when", "required_artifacts"],
+            "properties": {
+              "name": { "type": "string", "enum": ["lite", "standard", "regulated"] },
+              "use_when": { "type": "string", "minLength": 1 },
+              "required_artifacts": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "release_gate_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gates"],
+      "properties": {
+        "gates": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["target", "status", "command_policy", "rationale"],
+            "properties": {
+              "target": { "type": "string", "minLength": 1 },
+              "status": {
+                "type": "string",
+                "enum": ["required", "optional", "deferred", "not_applicable"]
+              },
+              "command_policy": {
+                "type": "string",
+                "enum": [
+                  "governance_validation",
+                  "governance_exposure_scan",
+                  "architecture_tests",
+                  "architecture_module_size",
+                  "architecture_layer_membership",
+                  "architecture_context_membership",
+                  "architecture_import_boundaries",
+                  "architecture_cqrs_side",
+                  "architecture_router_thinness",
+                  "architecture_duplication",
+                  "lint",
+                  "typecheck",
+                  "automated_tests",
+                  "contract_tests",
+                  "security_secret_scan",
+                  "security_dependency_audit",
+                  "security_sbom",
+                  "security_vulnerability_scan",
+                  "security_review",
+                  "runtime_smoke"
+                ]
+              },
+              "rationale": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "ci_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "push_lanes_required",
+        "self_hosted_runner_preferred_when_available",
+        "runner_labels",
+        "required_push_jobs",
+        "runner_rules"
+      ],
+      "properties": {
+        "push_lanes_required": { "type": "boolean" },
+        "self_hosted_runner_preferred_when_available": { "type": "boolean" },
+        "runner_labels": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "required_push_jobs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "runner_rules": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "drift_guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_manifest", "audit_root", "nested_governance_policy", "test_root_source"],
+      "properties": {
+        "artifact_manifest": { "type": "string", "minLength": 1 },
+        "cleanup_contract": { "type": "string", "minLength": 1 },
+        "audit_root": { "type": "string", "minLength": 1 },
+        "nested_governance_policy": { "type": "string", "const": "declared_vendor_only" },
+        "test_root_source": { "type": "string", "const": "AGENTS.yml testing_governance.test_roots" }
+      }
+    }
+  }
+}

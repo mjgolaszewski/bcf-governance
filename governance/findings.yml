@@ -1,0 +1,10 @@
+document:
+  kind: finding_registry
+  name: "BCF Governance Finding Registry"
+  id: "bcf-governance-findings"
+  version: 1.0.0
+  generated_at_utc: "2026-08-14T00:00:00Z"
+  status: active
+  path: governance/findings.yml
+reviews: []
+findings: []

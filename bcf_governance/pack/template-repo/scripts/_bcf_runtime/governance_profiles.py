@@ -530,6 +530,9 @@ on:
 permissions:
   contents: read
 
+env:
+  BCF_PR_BASE_SHA: ${{{{ github.event.pull_request.base.sha }}}}
+
 jobs:
   evidence:
     runs-on: {label_yaml}

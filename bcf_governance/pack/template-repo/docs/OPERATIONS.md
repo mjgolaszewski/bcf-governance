@@ -6,14 +6,15 @@ This runbook describes how to validate and run `{{PROJECT_NAME}}`.
 
 ## Release Validation
 
-Run the full release gate from the repo root:
+Run the configured release gate from the repo root:
 
 ```bash
 python3 -m pip install -r requirements-governance.txt
 make release-check
 ```
 
-That command should cover:
+Lite runs only governance validation and exposure scanning. Standard and
+regulated contracts must cover:
 
 - governance YAML validation
 - granular architecture gates for module size, layer membership, bounded-context membership, import boundaries, CQRS side rules, router thinness, and bounded-context duplication
@@ -38,6 +39,11 @@ each configured negative behavioral control in separate pristine detached
 worktrees. A control must satisfy its typed failure oracle; command-not-found,
 timeout, signal, or an arbitrary crash is never proof. Dynamic or unresolved
 mandatory workflow paths fail closed.
+
+`README.md`, `LICENSE`, and `CHANGELOG.md` are standard required root
+artifacts. Preserve their application-specific content. Every pull request must
+update `CHANGELOG.md`; governance CI verifies the exact base-to-HEAD diff and
+requires a full Git checkout.
 
 If the repo layout differs from the starter backend shape, update `architecture-boundaries.yml` before relying on `make architecture-test`.
 

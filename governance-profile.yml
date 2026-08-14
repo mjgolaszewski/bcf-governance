@@ -1,0 +1,215 @@
+document:
+  kind: governance_profile
+  name: BCF Governance Profile
+  id: bcf-governance-governance-profile
+  version: 1.0.0
+  generated_at_utc: '2026-08-14T00:00:00Z'
+  status: active
+  path: governance-profile.yml
+profile:
+  selected: standard
+  rationale: balanced governance for agent-led delivery without regulated evidence overhead
+  available_profiles:
+  - name: lite
+    use_when: prototype, small internal service, or single-agent lane
+    required_artifacts:
+    - README.md
+    - LICENSE
+    - CHANGELOG.md
+    - AGENTS.yml
+    - MEMORY.yml
+    - plans/product-spec.yml
+    - plans/build-plan.yml
+    - plans/phase-ledger.yml
+    - governance/evidence-policy.yml
+    - governance/findings.yml
+    - scripts/validate_governance_yaml.py
+    - scripts/governance_truth.py
+  - name: standard
+    use_when: production-bound project with phase evidence and architecture gates
+    required_artifacts:
+    - README.md
+    - LICENSE
+    - CHANGELOG.md
+    - AGENTS.yml
+    - MEMORY.yml
+    - governance-profile.yml
+    - architecture-boundaries.yml
+    - governance/evidence-policy.yml
+    - governance/findings.yml
+    - plans/product-spec.yml
+    - plans/build-plan.yml
+    - plans/phase-ledger.yml
+    - plans/phase-NN-plan.yml
+    - plans/phase-NN-workitems.yml
+    - phases/phase-NN-log.yml
+    - tests/test_self_governance_contracts.py
+    - scripts/validate_governance_yaml.py
+    - scripts/governance_evidence.py
+    - scripts/governance_truth.py
+    - scripts/migrate_governance_evidence.py
+    - scripts/scaffold_governance_artifacts.py
+    - .github/workflows/governance.yml
+  - name: regulated
+    use_when: provenance, security evidence, SBOM, or formal hotfix reconciliation is mandatory
+    required_artifacts:
+    - README.md
+    - LICENSE
+    - CHANGELOG.md
+    - AGENTS.yml
+    - MEMORY.yml
+    - governance-profile.yml
+    - architecture-boundaries.yml
+    - governance/evidence-policy.yml
+    - governance/findings.yml
+    - plans/product-spec.yml
+    - plans/build-plan.yml
+    - plans/phase-ledger.yml
+    - plans/phase-NN-plan.yml
+    - plans/phase-NN-workitems.yml
+    - phases/phase-NN-log.yml
+    - phases/phase-NN-hotfixNN.yml
+    - scripts/governance_evidence.py
+    - scripts/governance_truth.py
+    - scripts/migrate_governance_evidence.py
+    - governance/MODEL_RISK_AND_PROVENANCE.md
+    - governance/HOTFIX_LANE.md
+    - SBOM or vulnerability scan evidence
+release_gate_profile:
+  gates:
+    governance_validate:
+      target: governance-validate
+      status: required
+      command_policy: governance_validation
+      rationale: governed YAML passes schema semantic path and placeholder validation
+    governance_exposure_scan:
+      target: governance-exposure-scan
+      status: required
+      command_policy: governance_exposure_scan
+      rationale: governed artifacts do not expose local paths or private infrastructure markers
+    architecture_test:
+      target: architecture-test
+      status: required
+      command_policy: architecture_tests
+      rationale: architecture boundaries are executable
+    architecture_module_size:
+      target: architecture-module-size
+      status: required
+      command_policy: architecture_module_size
+      rationale: production modules stay below configured LOC cap
+    architecture_layer_membership:
+      target: architecture-layer-membership
+      status: required
+      command_policy: architecture_layer_membership
+      rationale: production modules map to one layer
+    architecture_context_membership:
+      target: architecture-context-membership
+      status: required
+      command_policy: architecture_context_membership
+      rationale: production modules map to one bounded context
+    architecture_import_boundaries:
+      target: architecture-import-boundaries
+      status: required
+      command_policy: architecture_import_boundaries
+      rationale: layer import purity prevents drift
+    architecture_cqrs_side:
+      target: architecture-cqrs-side
+      status: required
+      command_policy: architecture_cqrs_side
+      rationale: command and query sides stay separate
+    architecture_router_thinness:
+      target: architecture-router-thinness
+      status: required
+      command_policy: architecture_router_thinness
+      rationale: routers remain transport adapters
+    architecture_duplication:
+      target: architecture-duplication
+      status: required
+      command_policy: architecture_duplication
+      rationale: duplication and shared helpers stay explicit
+    lint:
+      target: lint
+      status: required
+      command_policy: lint
+      rationale: lint rules are wired before release-check is trusted
+    typecheck:
+      target: typecheck
+      status: required
+      command_policy: typecheck
+      rationale: static analysis is wired before release-check is trusted
+    test:
+      target: test
+      status: required
+      command_policy: automated_tests
+      rationale: touched behavior has automated tests
+    contract_test:
+      target: contract-test
+      status: required
+      command_policy: contract_tests
+      rationale: public contracts and adapters have explicit checks
+    security_secret_scan:
+      target: security-secret-scan
+      status: required
+      command_policy: security_secret_scan
+      rationale: pushed code is scanned for secrets
+    security_dependency_audit:
+      target: security-dependency-audit
+      status: required
+      command_policy: security_dependency_audit
+      rationale: dependencies have a vulnerability audit lane
+    security_sbom:
+      target: security-sbom
+      status: required
+      command_policy: security_sbom
+      rationale: production-bound artifacts produce an SBOM
+    security_vulnerability_scan:
+      target: security-vulnerability-scan
+      status: required
+      command_policy: security_vulnerability_scan
+      rationale: source or image vulnerability scan is wired
+    security_review:
+      target: security-review
+      status: required
+      command_policy: security_review
+      rationale: canonical review findings and remediation proofs bind to the governed tree
+    runtime_smoke:
+      target: runtime-smoke
+      status: required
+      command_policy: runtime_smoke
+      rationale: runtime behavior is proven in a declared environment
+ci_profile:
+  push_lanes_required: true
+  self_hosted_runner_preferred_when_available: true
+  runner_labels:
+  - ubuntu-latest
+  required_push_jobs:
+  - architecture-context-membership
+  - architecture-cqrs-side
+  - architecture-duplication
+  - architecture-import-boundaries
+  - architecture-layer-membership
+  - architecture-module-size
+  - architecture-router-thinness
+  - architecture-test
+  - contract-test
+  - governance-exposure-scan
+  - governance-validate
+  - lint
+  - runtime-smoke
+  - security-dependency-audit
+  - security-review
+  - security-sbom
+  - security-secret-scan
+  - security-vulnerability-scan
+  - test
+  - typecheck
+  runner_rules:
+  - CI jobs are self-seeding
+  - runner capabilities and secrets are declared before release evidence is trusted
+  - Docker or mutable workspaces clean up containers volumes credentials and artifacts
+drift_guardrails:
+  artifact_manifest: governance/artifact-manifest.yml
+  cleanup_contract: governance/repo-cleanup-contract.yml
+  audit_root: audits/
+  nested_governance_policy: declared_vendor_only
+  test_root_source: AGENTS.yml testing_governance.test_roots

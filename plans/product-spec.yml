@@ -1,0 +1,33 @@
+document:
+  kind: product_spec
+  name: "BCF Governance Framework Product Spec"
+  id: "bcf-governance-product-spec"
+  version: 1.0.0
+  generated_at_utc: "2026-08-14T00:00:00Z"
+  status: active_delivery
+  path: plans/product-spec.yml
+product:
+  name: "BCF Governance Framework"
+  project_name: "BCF Governance"
+  positioning: "evidence-integrity governance for agent-led software delivery"
+  target_users:
+    - "framework maintainers and governed repository operators"
+  non_goals:
+    - "proving application behavior without repository-specific executable evidence"
+constraints:
+  operating_constraints:
+    - "repo_native_runtime"
+  known_external_dependencies:
+    - "github_actions"
+architecture:
+  backend: "python_package_with_private_portable_runtime"
+  frontend: "canonical_markdown_operator_and_maintainer_guides"
+  data: "closed_yaml_json_contracts_and_content_addressed_evidence"
+execution_phases:
+  - phase_id: P01
+    build_block: "self-governance-0.6.1"
+    objective: "adopt BCF 0.6.1 standard governance in the framework repository"
+    release_train: release_1
+acceptance:
+  release_gate: make release-check
+  evidence_location: phases/

@@ -15,6 +15,7 @@ GENERATED_PATHS = {
     "governance/evidence-policy.yml",
     "governance/gate-contracts.yml",
 }
+PRESERVED_REQUIRED_ARTIFACTS = {"README.md", "LICENSE", "CHANGELOG.md"}
 
 
 def build(template_root: Path) -> dict[str, object]:
@@ -24,6 +25,8 @@ def build(template_root: Path) -> dict[str, object]:
             "operation": (
                 "merge"
                 if path.relative_to(template_root).as_posix() == ".gitignore"
+                else "preserve"
+                if path.relative_to(template_root).as_posix() in PRESERVED_REQUIRED_ARTIFACTS
                 else "generate"
                 if path.relative_to(template_root).as_posix() in GENERATED_PATHS
                 else "copy"

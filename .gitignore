@@ -24,3 +24,9 @@ logs/
 Thumbs.db
 *.sqlite3
 *.db
+
+# BEGIN BCF GOVERNANCE
+.artifacts/
+governance/archive/phase-artifacts/*
+!governance/archive/phase-artifacts/.gitkeep
+# END BCF GOVERNANCE

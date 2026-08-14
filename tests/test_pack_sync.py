@@ -95,6 +95,7 @@ def test_packaged_template_resource_stays_in_sync() -> None:
 def test_generated_version_surfaces_match_authoritative_version() -> None:
     manifest = yaml.safe_load(_read_text("manifest.yml"))
     assert manifest["document"]["version"] == __version__
+    assert f"## [{__version__}] - " in _read_text("CHANGELOG.md")
     assert _read_text("bcf_governance/_version.py") == _read_text(
         "template-repo/scripts/_bcf_runtime/_version.py"
     )

@@ -17,14 +17,33 @@ import yaml
 REQUIRED_SDIST_PATHS = (
     ".github/scripts",
     ".github/workflows",
+    "audits",
     "bcf_governance/pack/template-repo",
+    "contracts",
     "examples",
+    "governance",
+    "governance/archive/phase-artifacts",
+    "phases",
+    "plans",
+    "schemas",
     "template-repo",
     "template-repo/schemas",
     "tests",
     "tests/fixtures",
 )
-REQUIRED_SDIST_FILES = ("manifest.yml",)
+REQUIRED_SDIST_FILES = (
+    "AGENTS.yml",
+    "CHANGELOG.md",
+    "LICENSE",
+    "MEMORY.yml",
+    "README.md",
+    "architecture-boundaries.yml",
+    "governance-profile.yml",
+    "governance/artifact-manifest.yml",
+    "governance/gate-contracts.yml",
+    "governance/self-governance-policy.yml",
+    "manifest.yml",
+)
 
 
 def run(*argv: str, cwd: Path | None = None, env: dict[str, str] | None = None) -> None:

@@ -5,6 +5,7 @@
   "required": [
     "document",
     "artifact_roots",
+    "required_artifacts",
     "nested_governance",
     "vendored_artifacts",
     "ephemeral_evidence",
@@ -37,6 +38,41 @@
           "path": { "type": "string", "minLength": 1 },
           "status": { "type": "string", "enum": ["active", "historical", "generated", "external"] },
           "purpose": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "required_artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["readme", "license", "changelog"],
+      "properties": {
+        "readme": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "contract"],
+          "properties": {
+            "path": { "type": "string", "const": "README.md" },
+            "contract": { "type": "string", "const": "project_readme" }
+          }
+        },
+        "license": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "contract"],
+          "properties": {
+            "path": { "type": "string", "const": "LICENSE" },
+            "contract": { "type": "string", "const": "license_text" }
+          }
+        },
+        "changelog": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "contract", "pull_request_policy"],
+          "properties": {
+            "path": { "type": "string", "const": "CHANGELOG.md" },
+            "contract": { "type": "string", "const": "keep_a_changelog" },
+            "pull_request_policy": { "type": "string", "const": "required_update" }
+          }
         }
       }
     },

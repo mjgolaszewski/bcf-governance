@@ -1,0 +1,12 @@
+document:
+  kind: phase_history
+  name: "BCF Governance Phase History"
+  id: "bcf-governance-phase-history"
+  version: 1.0.0
+  generated_at_utc: "2026-08-14T00:00:00Z"
+  status: active
+  path: plans/phase-history.yml
+retention_policy:
+  source: governance/artifact-manifest.yml
+  purpose: compact machine-readable history for removed or archived closed phase artifacts
+entries: []

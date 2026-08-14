@@ -26,8 +26,8 @@ def test_missing_sdist_payload_mutant_is_rejected(tmp_path: Path) -> None:
         path = tmp_path / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.touch()
-    missing = tmp_path / "template-repo/schemas"
+    missing = tmp_path / "audits"
     missing.rmdir()
 
-    with pytest.raises(RuntimeError, match="sdist payload missing: template-repo/schemas"):
+    with pytest.raises(RuntimeError, match="sdist payload missing: audits"):
         release_artifacts.validate_sdist_payload(tmp_path)
