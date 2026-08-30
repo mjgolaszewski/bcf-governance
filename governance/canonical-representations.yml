@@ -2,8 +2,8 @@ document: {kind: canonical_representation_registry, id: bcf-governance-canonical
 enforcement:
   phase: P04
   default_mode: declared_families_blocking
-  declared_families: [docker_resource_ownership, evidence_session_identity, exposure_report]
-  blocking_semantic_ids: [governance.docker-resource.v1, governance.evidence-session.v1, governance.exposure-report.v1]
+  declared_families: [ci_authority_state, docker_resource_ownership, evidence_session_identity, exposure_report]
+  blocking_semantic_ids: [governance.ci-authority-state.v1, governance.docker-resource.v1, governance.evidence-session.v1, governance.exposure-report.v1]
   report_path: .artifacts/semantic-ownership/report.json # non-authoritative until captured in evidence
   unresolved_dynamic_policy: report
 source_authority:
@@ -15,6 +15,26 @@ source_authority:
   authoritative_python_roots: [bcf_governance/tooling]
   generated_mirror_roots: [bcf_governance/pack/template-repo]
 representations:
+- semantic_id: governance.ci-authority-state.v1
+  family: ci_authority_state
+  schema_version: 1
+  lifecycle: enforced
+  finding_ids: []
+  canonical_type: {language: python, symbol: bcf_governance/tooling/ci_authority_state.py::AuthorityEvaluation}
+  authoritative_owner: {symbol: bcf_governance/tooling/ci_authority_state.py::evaluate_authority, owner_kind: analyzer}
+  authorized_constructors_and_factories: [bcf_governance/tooling/ci_authority_state.py::evaluate_authority]
+  authorized_pure_delegates: []
+  hostile_boundary_decoder: {symbol: bcf_governance/tooling/ci_authority_state.py::evaluate_authority, trust_boundary: authenticated normalized provider observations and trusted workflow contracts}
+  field_invariants: [{field: admission_ordinal, invariant: highest unique positive authenticated ordinal always wins regardless of callback order}, {field: state, invariant: certified is computed only after normalized exact-commit evidence passes truth verification}]
+  permitted_defaults_and_single_application_point: [{field: stage, value: provider_observed, owner: bcf_governance/tooling/ci_authority_state.py::evaluate_authority}]
+  accepted_aliases_and_single_ingress_boundary: []
+  persistence_codec_and_envelope: {applicability: not_applicable, codec_symbol: bcf_governance/tooling/ci_authority_state.py::evaluate_authority, semantic_id: governance.ci-authority-state.v1, schema_version: 1, exact_byte_format: frozen in-memory value objects, integrity_algorithm: exact identity and inventory comparison, identity_bindings: [repository_id, workflow_id, active_path, workflow_sha256, candidate_commit, candidate_tree, admission_ordinal, run_attempt], migration_dispatch: schema version in serialized authority contracts}
+  protocol_translations: []
+  intentional_projections: []
+  declared_consumer_layers_and_sinks: {read: [], authorization: [bcf_governance/tooling/ci_authority_state.py::evaluate_authority], persistence: [], cache: [], queue: [], network: [], api: [], browser: []}
+  generated_source_authority: {authoritative_roots: [bcf_governance/tooling/ci_authority_contracts.py, bcf_governance/tooling/ci_authority_state.py], generated_mirrors: [template-repo/scripts/_bcf_runtime/ci_authority_contracts.py, template-repo/scripts/_bcf_runtime/ci_authority_state.py, bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_authority_contracts.py, bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_authority_state.py], generator: .github/scripts/build_pack_manifest.py::main, parity_proof: tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact}
+  migration_policy: {source_versions: [], destination_version: 1, owner: bcf_governance/tooling/ci_authority_state.py::evaluate_authority, runtime_exclusion: pure state values are reconstructed from authenticated observations, removal_condition: superseded by a reviewed CI authority contract version}
+  narrow_suppressions: []
 - semantic_id: governance.evidence-session.v1
   family: evidence_session_identity
   schema_version: 1

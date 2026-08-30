@@ -34,6 +34,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Added a compact exact-consumer reference proof and reproducible benchmark
   harness; the current Identity main proves 62 representations and 220 required
   browser traces with no unresolved or uncovered flow.
+- Added provider-neutral CI authority, normalized certification, and typed N/A
+  schemas plus a pure total-order state machine that authenticates workflow
+  identity before admission precedence and binds exact producer, job, matrix,
+  attempt, commit, and tree identity.
 
 ### Changed
 

@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BCF provider-neutral CI authority contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "repository", "producers", "trusted_external_inputs"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "repository": {"$ref": "#/$defs/repository"},
+    "producers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/producer"}
+    },
+    "trusted_external_inputs": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/trustedExternalInput"}
+    }
+  },
+  "$defs": {
+    "nonEmpty": {"type": "string", "minLength": 1},
+    "providerId": {"type": "string", "pattern": "^[A-Za-z0-9._:-]+$"},
+    "sha": {"type": "string", "pattern": "^[a-f0-9]{40,64}$"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "safePath": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)[A-Za-z0-9._/-]+$"
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "repository_id"],
+      "properties": {
+        "provider": {"$ref": "#/$defs/providerId"},
+        "repository_id": {"$ref": "#/$defs/providerId"}
+      }
+    },
+    "workflow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workflow_id",
+        "active_path",
+        "trusted_workflow_blob_oid",
+        "trusted_workflow_sha256",
+        "trusted_workflow_definition_commit",
+        "allowed_events"
+      ],
+      "properties": {
+        "workflow_id": {"$ref": "#/$defs/providerId"},
+        "active_path": {"$ref": "#/$defs/safePath"},
+        "trusted_workflow_blob_oid": {"$ref": "#/$defs/sha"},
+        "trusted_workflow_sha256": {"$ref": "#/$defs/sha256"},
+        "trusted_workflow_definition_commit": {"$ref": "#/$defs/sha"},
+        "allowed_events": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/providerId"}
+        }
+      }
+    },
+    "scalar": {"type": ["string", "number", "boolean"]},
+    "job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["job_id"],
+      "properties": {
+        "job_id": {"$ref": "#/$defs/nonEmpty"},
+        "matrix": {
+          "type": "object",
+          "propertyNames": {"pattern": "^[A-Za-z0-9_.-]+$"},
+          "additionalProperties": {"$ref": "#/$defs/scalar"}
+        }
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer_id", "workflow", "expected_jobs"],
+      "properties": {
+        "producer_id": {"$ref": "#/$defs/providerId"},
+        "workflow": {"$ref": "#/$defs/workflow"},
+        "expected_jobs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/job"}
+        }
+      }
+    },
+    "trustedExternalInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_id",
+        "source_repository",
+        "producer_ref",
+        "artifact_name",
+        "digest_algorithm",
+        "required"
+      ],
+      "properties": {
+        "input_id": {"$ref": "#/$defs/providerId"},
+        "source_repository": {"$ref": "#/$defs/repository"},
+        "producer_ref": {"$ref": "#/$defs/sha"},
+        "artifact_name": {"$ref": "#/$defs/nonEmpty"},
+        "digest_algorithm": {"const": "sha256"},
+        "required": {"type": "boolean"}
+      }
+    }
+  }
+}

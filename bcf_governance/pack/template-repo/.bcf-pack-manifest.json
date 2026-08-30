@@ -14,7 +14,7 @@
     },
     "AGENTS.yml": {
       "operation": "copy",
-      "sha256": "9a495587a107f2096c01a1b2a8cd35dd2b2d077a915250d0519dd883839136d9"
+      "sha256": "3e7668643b8587e5323fec99c56d90c7ca4201685a67e5b02f65857bd55dc316"
     },
     "CHANGELOG.md": {
       "operation": "preserve",
@@ -186,6 +186,18 @@
       "operation": "copy",
       "sha256": "48811d590c61af7376b1a601179b4c63e640c1a88fb350c74ac7ca0d1fbe68cc"
     },
+    "schemas/capability-na.schema.json": {
+      "operation": "copy",
+      "sha256": "3894ee3c78ea90e6fc7131b3bfbc03ceae12b79098a49517fb6827ad46b2e8ca"
+    },
+    "schemas/ci-authority.schema.json": {
+      "operation": "copy",
+      "sha256": "cfd40e237b14bed6a742bb6c5606bce93918628490f67f277751c0f8cb389d46"
+    },
+    "schemas/ci-certification.schema.json": {
+      "operation": "copy",
+      "sha256": "f1fdbee287005655379eb712c27bd28be43d11f66964f07f1c8188756dfd97d5"
+    },
     "schemas/evidence-policy.schema.json": {
       "operation": "copy",
       "sha256": "8dd00a6ca9d439b9e6d84fd95f5ff57e7db40ac44e7fac5f745cf98a05600487"
@@ -261,6 +273,14 @@
     "scripts/_bcf_runtime/check_governance_exposure.py": {
       "operation": "copy",
       "sha256": "a7451f68c0701fb964dfeafb2d7de5ed10cce519b0d4ab29d198bf4f0935cdfb"
+    },
+    "scripts/_bcf_runtime/ci_authority_contracts.py": {
+      "operation": "copy",
+      "sha256": "86c99621ea9e2a28887f630f8416dbb303eed3572d94d1139c472f27fe8ce77d"
+    },
+    "scripts/_bcf_runtime/ci_authority_state.py": {
+      "operation": "copy",
+      "sha256": "6b025d396fe474279925300454a69a4bb207f3ed239f9c0ac1b767297a4ac7b9"
     },
     "scripts/_bcf_runtime/cleanup_ci_resources.py": {
       "operation": "copy",

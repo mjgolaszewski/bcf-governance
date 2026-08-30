@@ -425,6 +425,16 @@ gate_overrides:
         exit_codes: [1]
         stream: stderr
         regex: 'owner must be an authorized constructor'
+    - id: ci-authority-owner-behavior-must-fail
+      mutation:
+        path: governance/canonical-representations.yml
+        search: 'authorized_constructors_and_factories: [bcf_governance/tooling/ci_authority_state.py::evaluate_authority]'
+        replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'
+      oracle:
+        kind: diagnostic
+        exit_codes: [1]
+        stream: stderr
+        regex: 'governance.ci-authority-state.v1 owner must be an authorized constructor'
     output_requirements:
     - path: .artifacts/semantic-ownership/report.json
       media_type: application/json
