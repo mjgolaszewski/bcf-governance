@@ -16,7 +16,7 @@ VALIDATION_PACKAGE_PATH = REPO_ROOT / "bcf_governance/tooling/governance_validat
 TRUTH_PATH = REPO_ROOT / "bcf_governance/tooling/governance_truth.py"
 TRUTH_SUPPORT_PATH = REPO_ROOT / "bcf_governance/tooling/governance_truth_support.py"
 TRUTH_RECEIPTS_PATH = REPO_ROOT / "bcf_governance/tooling/truth_receipts.py"
-PYTEST = shutil.which("pytest") or f"{sys.executable} -m pytest"
+PYTEST = (sys.executable, "-m", "pytest")
 TRUTH_TARGETS = {
     "scripts/governance_truth.py",
     "scripts/governance_truth_support.py",
@@ -177,8 +177,8 @@ TRUTH_MUTANTS = (
     Mutant(
         mutant_id="evidence-isolated-positive",
         description="positive gates must execute in a pristine detached tree",
-        search="            result = _run(command, cwd=_execution_cwd(worktree, contract), env=env)\n",
-        replace="            result = _run(command, cwd=_execution_cwd(repo_root, contract), env=env)\n",
+        search="runtime_command, cwd=_execution_cwd(worktree, contract), env=env\n",
+        replace="runtime_command, cwd=_execution_cwd(repo_root, contract), env=env\n",
         profiles=("semantic-high-value", "semantic-full"),
         target_path="scripts/governance_evidence.py",
     ),
@@ -323,7 +323,11 @@ def _copy_truth_sources(temp_dir: Path) -> Path:
     shutil.copy2(REPO_ROOT / "bcf_governance/tooling/governance_evidence.py", temp_scripts / "governance_evidence.py")
     shutil.copy2(TRUTH_SUPPORT_PATH, temp_scripts / TRUTH_SUPPORT_PATH.name)
     shutil.copy2(TRUTH_RECEIPTS_PATH, temp_scripts / TRUTH_RECEIPTS_PATH.name)
-    for name in ("evidence_attestation.py", "evidence_test_adapters.py"):
+    for name in (
+        "evidence_attestation.py",
+        "evidence_execution.py",
+        "evidence_test_adapters.py",
+    ):
         shutil.copy2(REPO_ROOT / "bcf_governance/tooling" / name, temp_scripts / name)
     (temp_scripts / "__init__.py").write_text("\n", encoding="utf-8")
     for path in (
@@ -342,6 +346,7 @@ def _copy_truth_sources(temp_dir: Path) -> Path:
     evidence.write_text(
         evidence.read_text(encoding="utf-8")
         .replace("from .evidence_attestation", "from evidence_attestation")
+        .replace("from .evidence_execution", "from evidence_execution")
         .replace("from .evidence_test_adapters", "from evidence_test_adapters"),
         encoding="utf-8",
     )
@@ -408,7 +413,7 @@ def _run_tests(mutant: Mutant, mutated_path: Path) -> subprocess.CompletedProces
         env["BCF_VALIDATOR_MODULE_PATH"] = str(mutated_path)
         test_paths = KILLER_NODES[mutant.mutant_id]
     return subprocess.run(
-        [*PYTEST.split(), "-q", *test_paths],
+        [*PYTEST, "-q", *test_paths],
         cwd=REPO_ROOT,
         env=env,
         capture_output=True,
@@ -439,7 +444,7 @@ def main() -> None:
             parser.error(f"mutant {args.mutant!r} is not part of profile {args.profile!r}")
     baseline_nodes = sorted({node for mutant in selected for node in KILLER_NODES[mutant.mutant_id]})
     baseline = subprocess.run(
-        [*PYTEST.split(), "-q", *baseline_nodes],
+        [*PYTEST, "-q", *baseline_nodes],
         cwd=REPO_ROOT,
         env=_pytest_environment(),
         capture_output=True,
