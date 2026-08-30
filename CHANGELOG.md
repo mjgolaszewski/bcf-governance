@@ -68,6 +68,11 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Separated workflow adoption from profile lifecycle: normal upgrades and
   promotions preserve installed workflow bytes, while fresh installs generate
   the selected profile's workflow surface.
+- Promoted BCF itself to Standard profile contract v2 through the public
+  promoter while retaining its 21 required gates, ten semantic-owner controls,
+  and existing four-shard hosted execution topology.
+- Bound BCF's four evidence shards and terminal truth to one immutable session
+  and exact Actions run attempt without adding jobs, polling, or waiter capacity.
 
 ### Fixed
 

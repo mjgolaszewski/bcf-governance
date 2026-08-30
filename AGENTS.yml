@@ -18,7 +18,7 @@ authorities:
   execution_evidence_location: [phases/*.yml, audits/]
 governance:
   file_format_policy:
-    canonical_machine_readable_artifacts: [README.md, LICENSE, CHANGELOG.md, AGENTS.yml, MEMORY.yml, architecture-boundaries.yml, governance-profile.yml, governance/artifact-manifest.yml, governance/canonical-representations.yml, governance/evidence-policy.yml, governance/gate-contracts.yml, governance/findings.yml, governance/repo-cleanup-contract.yml, governance/self-governance-policy.yml, schemas/*.json, contracts/observability/v1/*.contract.yml, plans/*.yml, phases/*.yml]
+    canonical_machine_readable_artifacts: [README.md, LICENSE, CHANGELOG.md, AGENTS.yml, MEMORY.yml, architecture-boundaries.yml, governance-profile.yml, governance/artifact-manifest.yml, governance/canonical-representations.yml, governance/ci-authority.yml, governance/github-ci-topology.yml, governance/ci-runtime.yml, governance/capability-na/*.yml, governance/evidence-policy.yml, governance/gate-contracts.yml, governance/findings.yml, governance/repo-cleanup-contract.yml, governance/self-governance-policy.yml, schemas/*.json, contracts/observability/v1/*.contract.yml, plans/*.yml, phases/*.yml]
     note: YAML data is canonical; prose docs explain but do not override governed state
     template_pack_alignment: [new phase and hotfix artifacts must stay scaffold-compatible, mirrored template files must update together]
   structural_schema_contract:
@@ -66,6 +66,10 @@ governance:
       compact_phase_history_and_archive_hashes: plans/phase-history.yml
       evidence_integrity_policy: governance/evidence-policy.yml
       canonical_semantic_representation_ownership: governance/canonical-representations.yml
+      ci_authority: governance/ci-authority.yml
+      provider_topology: governance/github-ci-topology.yml
+      ci_runtime_capacity: governance/ci-runtime.yml
+      typed_capability_applicability: governance/capability-na/
       finding_accounting: governance/findings.yml
       durable_context_and_active_artifact_pointers: MEMORY.yml
       observability_contract_templates: contracts/observability/v1/

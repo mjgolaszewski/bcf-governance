@@ -46,21 +46,19 @@ environment_facts:
     - all governance, memory, specs, plans, workitem ledgers, and phase logs are YAML-native
     - observability contracts are scaffolded under contracts/observability/v1/
     - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
-    - P05 reproduced exact Identity main with 62 representations and 220 required browser traces; P06 and P07 completed provider-neutral authority, certification, revocation, cancellation/status authority, and acyclic release receipts; P08 completed the explicit GitHub adopter, runtime and trusted-input contracts, and exact local PR parity; P09 is integrating backward-compatible profile-contract v2 lifecycle and packaged surfaces
+    - P05 reproduced exact Identity main with 62 representations and 220 required browser traces; P06-P08 completed provider-neutral authority, certification, GitHub adoption, runtime, trusted inputs, and local PR parity; P09 completed packaged profile-v2 lifecycle integration; P10 is self-adopting it
     - every candidate job uses a fresh standard GitHub-hosted VM; the public repository receives free unlimited standard-runner execution and has no self-hosted fallback
     - main is protected by active repository ruleset 21862678 requiring pull requests, current governance-truthfulness, pack-checks, ast-checks, resolved conversations, and no force push or deletion
-    - the local implementation host provides Docker but no disposable VM hypervisor or clone manager
     - evidence execution uses the explicitly selected Python and propagates its lexical executable directory and required loader environment into detached positive and negative-control worktrees
     - P03's canonical preflight runs before evidence; exact contract-owned pytest manifests and run-attempt-specific, disjoint artifact namespaces prevent stale fan-in while profile-v2 truth independently verifies immutable session bindings
-    - P01-HF01 merged as main commit a0faa8dc5948e3f9cbac9ef0fbddb9e3357f76a3 and exact-main runs 33321545239 and 33321545295 passed entirely on the local pool
   active_artifacts:
     spec: plans/product-spec.yml
     build_plan: plans/build-plan.yml
     active_phase_ledger: plans/phase-ledger.yml
     phase_history: plans/phase-history.yml
-    active_phase_plan: plans/phase-09-plan.yml
-    active_workitem_ledger: plans/phase-09-workitems.yml
-    active_phase_log: phases/phase-09-log.yml
+    active_phase_plan: plans/phase-10-plan.yml
+    active_workitem_ledger: plans/phase-10-workitems.yml
+    active_phase_log: phases/phase-10-log.yml
 known_constraints:
   - schema-2 evidence must be recaptured after every governed tree mutation
   - template runtime and packaged template copies must remain byte-identical to canonical sources
@@ -76,6 +74,8 @@ known_constraints:
   - profile promotion never rewrites installed workflows; GitHub workflow adoption remains a separate explicit transaction
   - fresh Lite installations default to v1 while fresh Standard and Regulated installations default to v2
   - expired evidence sessions are pruned only from the ignored fixed session root under declared retention with immediate identity revalidation
+  - BCF Standard-v2 evidence preserves its four mechanically derived hosted shards while binding every receipt to one preflight session and exact run attempt
+  - TypeScript source analysis and external producer acquisition use typed N/A until their tracked-path triggers make them applicable
   - normalized CI certification is an input to truth and cannot claim certified; only independently verified truth may emit the final output-only release receipt
   - cleanup revalidates exact Docker IDs/run labels before scoped deletion; retention-removable phase artifacts are consumed only through phase-history plus exact Git commit/hash custody, never live fixture paths
 reusable_commands:
@@ -98,8 +98,8 @@ references:
     - plans/product-spec.yml
     - plans/build-plan.yml
   execution:
-    - plans/phase-09-plan.yml
-    - plans/phase-09-workitems.yml
-    - phases/phase-09-log.yml
+    - plans/phase-10-plan.yml
+    - plans/phase-10-workitems.yml
+    - phases/phase-10-log.yml
     - phases/phase-02-hotfix01.yml
     - phases/phase-01-hotfix01.yml

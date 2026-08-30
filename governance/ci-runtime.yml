@@ -1,0 +1,10 @@
+schema_version: '1.0'
+runtime_root: .artifacts/runtime # non-authoritative local path
+minimum_free_bytes: 2147483648
+maximum_owned_containers: 8
+database: {storage: repository_bind_mount, relative_path: .artifacts/database} # non-authoritative local path
+cleanup:
+  caller_globs: false
+  daemon_global_prune: false
+  exact_owner_revalidation: true
+  remove_anonymous_volumes: true

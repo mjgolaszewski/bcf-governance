@@ -62,7 +62,7 @@ security-vulnerability-scan:
 	@cd . && python3 .github/scripts/run_self_governance_gate.py security-vulnerability-scan
 
 semantic-ownership:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py semantic-ownership
+	@cd . && python3 .github/scripts/run_self_governance_gate.py semantic-ownership
 
 test:
 	@cd . && python3 .github/scripts/run_self_governance_gate.py test
@@ -72,7 +72,9 @@ typecheck:
 
 release-check:
 	@mkdir -p $(BCF_EVIDENCE_DIR)
-	@for gate in architecture-context-membership architecture-cqrs-side architecture-duplication architecture-import-boundaries architecture-layer-membership architecture-module-size architecture-router-thinness architecture-test contract-test governance-exposure-scan governance-validate lint runtime-smoke security-dependency-audit security-review security-sbom security-secret-scan security-vulnerability-scan semantic-ownership test typecheck; do \
-		$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output $(BCF_EVIDENCE_DIR)/$$gate || exit $$?; \
-	done
-	$(MAKE) governance-truthfulness
+	@session="$$($(PYTHON) scripts/preflight_governance.py --repo-root . --mode release --python $(PYTHON) --artifact-root $(BCF_EVIDENCE_DIR) --expected-producer local --format text | tail -n 1)"; \
+	session_dir="$${session%/evidence-session.json}"; \
+	for gate in architecture-context-membership architecture-cqrs-side architecture-duplication architecture-import-boundaries architecture-layer-membership architecture-module-size architecture-router-thinness architecture-test contract-test governance-exposure-scan governance-validate lint runtime-smoke security-dependency-audit security-review security-sbom security-secret-scan security-vulnerability-scan semantic-ownership test typecheck; do \
+		$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output "$$session_dir/$$gate" --python $(PYTHON) --session-manifest "$$session" || exit $$?; \
+	done; \
+	$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)

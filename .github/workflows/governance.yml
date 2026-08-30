@@ -15,14 +15,26 @@ env:
 jobs:
   preflight:
     runs-on: ubuntu-latest
+    outputs:
+      session_manifest: ${{ steps.preflight.outputs.session_manifest }}
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: python3 -m pip install -r requirements-governance.txt
-      - name: Run canonical cheap preflight
-        run: python3 -m bcf_governance.cli preflight --mode "${{ github.event_name == 'pull_request' && 'pr' || 'release' }}" --python "$(command -v python3)"
+      - id: preflight
+        name: Run canonical cheap preflight and allocate one evidence session
+        shell: bash
+        run: |
+          set -euo pipefail
+          manifest="$(python3 scripts/preflight_governance.py --repo-root . --mode "${{ github.event_name == 'pull_request' && 'pr' || 'release' }}" --python "$(command -v python3)" --artifact-root .artifacts/bcf --expected-producer evidence --format text | tail -n 1)"
+          printf 'session_manifest=%s\n' "$manifest" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "bcf-session-${{ github.run_id }}-${{ github.run_attempt }}"
+          path: .artifacts/bcf/sessions
+          if-no-files-found: error
 
   evidence:
     needs: [preflight]
@@ -38,18 +50,33 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: python3 -m pip install -r requirements-governance.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: "bcf-session-${{ github.run_id }}-${{ github.run_attempt }}"
+          path: .artifacts/bcf/sessions
+      - name: Restore immutable evidence session
+        shell: bash
+        run: |
+          set -euo pipefail
+          session="${{ needs.preflight.outputs.session_manifest }}"
+          session_dir="${session%/evidence-session.json}"
+          chmod 700 .artifacts/bcf/sessions "$session_dir"
+          chmod 400 "$session"
       - name: Capture mechanically derived evidence shard
-        run: python3 .github/scripts/capture_governance_shard.py --shard-index "${{ matrix.shard }}" --shard-count 4 --output-root .artifacts/bcf
+        shell: bash
+        run: |
+          session="${{ needs.preflight.outputs.session_manifest }}"
+          python3 .github/scripts/capture_governance_shard.py --shard-index "${{ matrix.shard }}" --shard-count 4 --output-root "${session%/evidence-session.json}" --session-manifest "$session"
       - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-shard-${{ matrix.shard }}"
-          path: .artifacts/bcf
+          path: .artifacts/bcf/sessions
           if-no-files-found: error
 
   governance-truthfulness:
     if: always()
-    needs: [evidence]
+    needs: [preflight, evidence]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -60,9 +87,13 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           pattern: "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-*"
-          path: .artifacts/bcf
-          merge-multiple: true
-      - run: python3 scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf --format json --durable-ref "github-actions://${{ github.repository }}/runs/${{ github.run_id }}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
+          path: .artifacts/bcf/fan-in
+      - name: Restore private session modes after artifact transport
+        shell: bash
+        run: |
+          set -euo pipefail
+          find .artifacts/bcf/fan-in -type f -name evidence-session.json -execdir chmod 700 . \; -exec chmod 400 {} +
+      - run: python3 scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf/fan-in --format json --durable-ref "github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
       - if: always()
         uses: actions/upload-artifact@v4
         with:

@@ -4,13 +4,13 @@ document:
   id: bcf-governance-phase-10-workitems
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: active
   path: plans/phase-10-workitems.yml
   phase_id: P10
 workitems:
 - id: P10-P0-01
   priority: P0
-  status: TODO
+  status: IN_PROGRESS
   summary: deliver disposable candidate VM and isolated trusted control-plane substrate acceptance
   acceptance:
   - consecutive jobs use distinct VM and runner identities
@@ -22,10 +22,28 @@ workitems:
   - security-review
 - id: P10-P0-02
   priority: P0
-  status: TODO
+  status: IN_PROGRESS
   summary: deliver BCF self-adoption, exact-main canary, and protected stable check
   acceptance:
   - BCF self-adoption, exact-main canary, and protected stable check_is_complete
   acceptance_evidence:
   - test
   - contract-test
+- id: P10-P0-03
+  priority: P0
+  status: IN_PROGRESS
+  summary: self-adopt Standard-v2 profile, SOIP, typed N/A, runtime, and one-session evidence contracts
+  acceptance:
+  - the public profile promoter produces BCF's canonical v2 surfaces without a private migration path
+  - all required receipts bind one immutable exact-run and exact-attempt session
+  - existing semantic invocation and all ten semantic causal controls remain authoritative
+  acceptance_evidence: [governance-validate, semantic-ownership, test]
+- id: P10-P0-04
+  priority: P0
+  status: IN_PROGRESS
+  summary: activate authenticated provider authority only after structural workflow identity exists on main
+  acceptance:
+  - numeric repository and workflow IDs, active paths, trusted blobs, definition commits, events, jobs, commit, and tree are authenticated
+  - exact-main success is revocable by a later admitted failure and unadmitted runs have no precedence
+  - no candidate job receives dispatch, cancellation, status, secret, sibling, or trusted-runner authority
+  acceptance_evidence: [contract-test, security-review, governance-truthfulness]

@@ -62,6 +62,7 @@ def main() -> None:
     parser.add_argument("--shard-index", type=int, required=True)
     parser.add_argument("--shard-count", type=int, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument("--session-manifest", type=Path, required=True)
     args = parser.parse_args()
     gates = partition_required_gates(
         REPO_ROOT, shard_index=args.shard_index, shard_count=args.shard_count
@@ -82,6 +83,8 @@ def main() -> None:
                 str(args.output_root / gate),
                 "--python",
                 sys.executable,
+                "--session-manifest",
+                str(args.session_manifest),
             ],
             cwd=REPO_ROOT,
             check=False,
