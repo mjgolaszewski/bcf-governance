@@ -20,9 +20,12 @@ phase:
 delivery_contract:
   tightly_scoped_deliverables:
   - BCF self-adoption, exact-main canary, and protected stable check
+  - disposable candidate VM and isolated trusted control-plane substrate acceptance
   parallelizable_workstreams:
   - id: P10-WS1
     name: dogfood migration and remote activation
+  - id: P10-WS2
+    name: runner substrate provisioning and isolation proof
   hard_dependencies:
   - P09
   docker_first_local_runtime: repo_native_validation_and_governance_commands

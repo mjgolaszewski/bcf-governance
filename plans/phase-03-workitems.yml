@@ -4,13 +4,13 @@ document:
   id: bcf-governance-phase-03-workitems
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: active
   path: plans/phase-03-workitems.yml
   phase_id: P03
 workitems:
 - id: P03-P0-01
   priority: P0
-  status: TODO
+  status: IN_PROGRESS
   summary: deliver preflight, interpreter, session, fan-in, retention, and cleanup
     contracts
   acceptance:

@@ -12,6 +12,13 @@ All notable changes to BCF Governance are recorded here. This file follows
   authority, disposable candidate execution, Standard-v2 self-adoption, and
   certified immutable release artifacts.
 
+### Changed
+
+- Sequenced local 0.7 implementation independently from remote runner
+  activation: each behavior commit now dogfoods its applicable governance, while
+  P10 owns disposable-candidate and isolated-publisher proof before any remote
+  candidate execution or release publication is enabled.
+
 ### Fixed
 
 - Made the explicitly selected Python interpreter authoritative in positive and

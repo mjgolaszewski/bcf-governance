@@ -4,7 +4,7 @@ document:
   id: "bcf-governance-phase-ledger"
   version: 1.0.0
   generated_at_utc: "2026-08-14T00:00:00Z"
-  status: active_phase_blocked
+  status: active_phase_active
   path: plans/phase-ledger.yml
 build_plan_mandate:
   format: yaml
@@ -16,17 +16,15 @@ build_plan_mandate:
     - completeness_standard
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P02
-  build_block: "bcf-0.7-program-and-runner-cutover"
-  plan: plans/phase-02-plan.yml
-  workitems: plans/phase-02-workitems.yml
-  log: phases/phase-02-log.yml
+  id: P03
+  build_block: "preflight-interpreter-sessions-cleanup"
+  plan: plans/phase-03-plan.yml
+  workitems: plans/phase-03-workitems.yml
+  log: phases/phase-03-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: blocked
-  blocked_reason: the repository has no trusted control-plane runner or disposable VM broker and the implementation host has no safe VM clone substrate
-  unblock_condition: provide access to the dedicated trusted VM and a golden-image VM clone API so isolation, one-job identity, destruction, quarantine, and durable logging can be proven
+  lifecycle_status: active
   owner: "codex"
   validation_commands:
     - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
@@ -66,9 +64,11 @@ operator_requirements_choices_disambiguations:
     statement: existing consumers remain on profile contract v1 until an explicit validated v2 promotion
   - type: release
     statement: the tag publisher publishes pre-certified exact bytes and never rebuilds source
+  - {type: owner_authorization, statement: "the sole repository owner authorizes Codex to perform required human reviews and approvals for the 0.7 release train"}
+  - {type: execution_boundary, statement: "hosted Actions are unavailable through 2026-08-31; implementation may proceed locally, but remote candidate execution and release publication remain fail-closed until P10 proves the disposable candidate and isolated trusted substrates"}
 active_delivery_priorities:
   current_tranche:
-    - "bcf-0.7-program-and-runner-cutover"
+    - "preflight-interpreter-sessions-cleanup"
 release_trains:
   release_1:
     target_version: "0.6.1"

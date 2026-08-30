@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-02-workitems
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: blocked
+  status: completed
   path: plans/phase-02-workitems.yml
   phase_id: P02
 workitems:
@@ -31,13 +31,12 @@ workitems:
   - security-review
 - id: P02-P0-03
   priority: P0
-  status: BLOCKED
-  summary: provision and prove the dedicated trusted VM, candidate broker, golden image, and one-job disposable VM lifecycle
+  status: DONE
+  summary: bind remote activation to P10 while hosted execution is unavailable and all remote candidate and publication paths remain fail-closed
   acceptance:
-  - consecutive jobs use distinct VM and runner identities
-  - candidate persistence and trusted-resource access controls fail for the declared cause
-  - every candidate VM is destroyed or quarantined with durable external logs
-  - no hosted runner fallback exists
+  - P10 explicitly owns disposable candidate and isolated trusted substrate proof
+  - no remote candidate or release publisher is enabled before that proof
+  - no hosted runner fallback exists through 2026-08-31
   acceptance_evidence:
-  - runtime-smoke
+  - governance-validate
   - security-review

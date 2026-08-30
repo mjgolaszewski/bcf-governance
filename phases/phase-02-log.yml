@@ -4,13 +4,13 @@ document:
   id: bcf-governance-phase-02-log
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-02-log.yml
 phase:
   id: P02
   build_block: bcf-0.7-program-and-runner-cutover
 summary:
-  outcome: blocked
+  outcome: completed_with_deferred_activation
   highlights:
   - P02 is opened for freeze the BCF 0.7 release train and cut workflows onto the
     trusted and disposable runner substrate
@@ -21,6 +21,8 @@ summary:
   - completed P01-HF01 temporarily admits only owner-authored same-repository PRs to the persistent local pool and keeps release execution and publication disabled
   - completed P01-HF01 also repaired selected-interpreter propagation after the first local-pool PR run exposed a toolcache loader failure inside detached evidence worktrees
   - the P02 branch is based directly on certified main commit a0faa8dc5948e3f9cbac9ef0fbddb9e3357f76a3 after P01-HF01 merged
+  - the owner authorized autonomous reviews and a governed rollover to local P03 implementation while hosted Actions remain unavailable through 2026-08-31
+  - disposable candidate and isolated trusted substrate activation is transferred to P10; remote candidate execution and publication remain fail-closed until its acceptance proof passes
 workitems:
 - id: P02-P0-01
   status: DONE
@@ -31,8 +33,8 @@ workitems:
   summary: deliver classify each workflow job and remove hosted-runner fallback without
     changing governed gate intent
 - id: P02-P0-03
-  status: BLOCKED
-  summary: provision and prove the external trusted and disposable VM substrate
+  status: DONE
+  summary: bind remote activation to P10 while hosted execution is unavailable and all remote candidate and publication paths remain fail-closed
 execution_evidence:
   planned_commands:
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
@@ -82,5 +84,6 @@ known_constraints:
   change
 - the external trusted and disposable VM substrate must be supplied and proven before remote candidate execution
 - the owner-only local runner exception expires after 2026-08-31 and does not satisfy P02 disposable-runner acceptance
+- disposable and trusted substrate acceptance remains an unresolved release risk owned by P10
 next_work:
-- provision and prove disposable candidate execution and an isolated trusted control plane before P03
+- implement P03 locally and dogfood each behavior commit; do not enable remote candidate execution or publication before P10 substrate proof

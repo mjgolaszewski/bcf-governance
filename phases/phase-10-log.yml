@@ -12,11 +12,14 @@ phase:
 summary:
   outcome: planned
   highlights:
-  - P10 is opened for make BCF a complete Standard-v2 consumer and activate stable
-    protected checks
+  - P10 is opened to prove the safe runner substrate, make BCF a complete Standard-v2
+    consumer, and activate stable protected checks
   - phase artifacts were scaffolded from the governance template
 workitems:
 - id: P10-P0-01
+  status: TODO
+  summary: deliver disposable candidate VM and isolated trusted control-plane substrate acceptance
+- id: P10-P0-02
   status: TODO
   summary: deliver BCF self-adoption, exact-main canary, and protected stable check
 execution_evidence:

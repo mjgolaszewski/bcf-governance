@@ -46,6 +46,7 @@ global_delivery_rules:
   - candidate code never executes on persistent or trusted control-plane runners
   - profile-v1 public contracts remain compatible until a repository explicitly promotes to contract v2
   - provider state, evidence sessions, certification, and release receipts form an acyclic verification chain
+  - each BCF behavior commit updates and validates BCF's own applicable governance contracts before successor work begins; local implementation may proceed while hosted Actions are unavailable, but remote candidate execution and publication stay disabled until disposable and trusted substrate acceptance is proven
 global_gates:
   - id: G1
     name: governed_foundation
@@ -57,7 +58,7 @@ global_gates:
       - architecture boundary test lane exists
   - id: G2
     name: safe_execution_substrate
-    applies_before: P03
+    applies_before: P10
     required_completion_criteria:
       - trusted control-plane VM executes no candidate code
       - every code-executing job receives a fresh disposable VM and ephemeral runner identity
@@ -73,14 +74,12 @@ phase_sequence:
       - "evidence-integrity contracts and required artifact semantics"
       - "documentation consolidation and release surfaces"
       - "standard self-governance and behavioral controls"
-    verification_commands:
-      - make governance-validate
-      - make test
+    verification_commands: [make governance-validate, make test]
   - phase_id: P02
     build_block: "bcf-0.7-program-and-runner-cutover"
-    objective: "freeze the 0.7 train and cut existing workflows onto the safe substrate"
+    objective: "freeze the 0.7 train and establish a fail-closed local workflow cutover"
     hard_dependencies: [P01]
-    tightly_scoped_deliverables: ["record the full release program and upstream applicability", "classify every job and remove hosted fallback", "prove trusted and disposable runner isolation"]
+    tightly_scoped_deliverables: ["record the full release program and upstream applicability", "classify every job and remove hosted fallback", "bind disposable and trusted runner activation to P10 while remote execution stays fail-closed"]
     parallelizable_workstreams: ["program governance", "runner substrate and workflow cutover"]
     verification_commands: [".venv/bin/python scripts/validate_governance_yaml.py --repo-root .", ".venv/bin/python -m pytest tests"]
   - {phase_id: P03, build_block: "preflight-interpreter-sessions-cleanup", objective: "add cheap preflight, interpreter authority, evidence sessions, exact fan-in, retention safety, and cleanup hardening", hard_dependencies: [P02], tightly_scoped_deliverables: ["preflight and interpreter authority", "schema-2-compatible sessions and exact-attempt fan-in", "retention and runtime cleanup controls"], parallelizable_workstreams: ["preflight and sessions", "runtime cleanup"], verification_commands: [".venv/bin/python -m pytest tests"]}
@@ -90,6 +89,6 @@ phase_sequence:
   - {phase_id: P07, build_block: "ci-truth-and-revocation", objective: "integrate CI certification with truth and release receipts", hard_dependencies: [P06], tightly_scoped_deliverables: ["collector and normalizer", "truth, revocation, cancellation, and status authority"], parallelizable_workstreams: ["truth integration", "adversarial controls"], verification_commands: [".venv/bin/python -m pytest tests"]}
   - {phase_id: P08, build_block: "github-adopter-runtime-pr-parity", objective: "ship the GitHub topology, transactional adopter, runtime adapter, and local PR parity", hard_dependencies: [P07], tightly_scoped_deliverables: ["GitHub reference pack", "safe adopter", "runtime and local PR adapters"], parallelizable_workstreams: ["GitHub adapter", "runtime and PR parity"], verification_commands: [".venv/bin/python -m pytest tests"]}
   - {phase_id: P09, build_block: "profile-v2-integration", objective: "integrate v2 through public packaging and lifecycle commands", hard_dependencies: [P08], tightly_scoped_deliverables: ["profiles and transactional promotion", "installer, upgrader, doctor, cleanup, templates, wheel, and sdist parity"], parallelizable_workstreams: ["profile behavior", "packaging parity"], verification_commands: [".venv/bin/python -m pytest tests"]}
-  - {phase_id: P10, build_block: "bcf-standard-v2-dogfood", objective: "make BCF itself a complete Standard-v2 consumer", hard_dependencies: [P09], tightly_scoped_deliverables: ["self-adopt generated contracts", "exact-main canary and protected stable check"], parallelizable_workstreams: ["dogfood migration", "remote activation"], verification_commands: [".venv/bin/python -m pytest tests", "bcf truth"]}
+  - {phase_id: P10, build_block: "bcf-standard-v2-dogfood", objective: "make BCF itself a complete Standard-v2 consumer", hard_dependencies: [P09], tightly_scoped_deliverables: ["self-adopt generated contracts", "provision and prove disposable candidate and isolated trusted runner substrates", "exact-main canary and protected stable check"], parallelizable_workstreams: ["dogfood migration", "runner substrate proof", "remote activation"], verification_commands: [".venv/bin/python -m pytest tests", "bcf truth"]}
   - {phase_id: P11, build_block: "exact-main-release-artifacts", objective: "build and certify 0.7.0 release bytes from exact merged main", hard_dependencies: [P10], tightly_scoped_deliverables: ["clean wheel and sdist proof", "artifact hashes bound to final release receipt"], parallelizable_workstreams: ["artifact build", "certification"], verification_commands: ["bcf truth"]}
   - {phase_id: P12, build_block: "editorial-refresh-and-release", objective: "refresh final documentation and publish immutable certified bytes", hard_dependencies: [P11], tightly_scoped_deliverables: ["README-led editorial refresh", "final recertification", "annotated tag, attestation, and exact-byte publication"], parallelizable_workstreams: ["documentation", "release verification"], verification_commands: ["bcf truth"]}

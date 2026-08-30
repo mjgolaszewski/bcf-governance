@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-02-plan
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: completed
   path: plans/phase-02-plan.yml
 phase:
   id: P02
@@ -23,6 +23,8 @@ delivery_contract:
     self-adoption, documentation, and release decisions
   - classify each workflow job and remove hosted-runner fallback without changing
     governed gate intent
+  - bind remote activation to P10 while hosted execution is unavailable and all
+    remote candidate and publication paths remain fail-closed
   parallelizable_workstreams:
   - id: P02-WS1
     name: program governance and upstream applicability
@@ -39,7 +41,9 @@ scope_lock:
 - order: 2
   statement: do not execute candidate code remotely until disposable VM and trusted control-plane isolation are proven
 - order: 3
-  statement: do not begin P03 until the P02 runner cutover is green
+  statement: P03 may proceed through local owner-controlled implementation; P10
+    owns disposable-runner activation proof before remote candidate execution,
+    publication, or release
 verification_plan:
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
 - .venv/bin/python -m pytest tests

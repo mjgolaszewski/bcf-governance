@@ -11,6 +11,18 @@ workitems:
 - id: P10-P0-01
   priority: P0
   status: TODO
+  summary: deliver disposable candidate VM and isolated trusted control-plane substrate acceptance
+  acceptance:
+  - consecutive jobs use distinct VM and runner identities
+  - candidate persistence and trusted-resource access controls fail for the declared cause
+  - every candidate VM is destroyed or quarantined with durable external logs
+  - no hosted or persistent-runner fallback can execute candidate code
+  acceptance_evidence:
+  - runtime-smoke
+  - security-review
+- id: P10-P0-02
+  priority: P0
+  status: TODO
   summary: deliver BCF self-adoption, exact-main canary, and protected stable check
   acceptance:
   - BCF self-adoption, exact-main canary, and protected stable check_is_complete
