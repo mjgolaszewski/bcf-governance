@@ -6,6 +6,18 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Added
+
+- Opened the BCF 0.7.0 release train for generalized SOIP, exact-commit CI
+  authority, disposable candidate execution, Standard-v2 self-adoption, and
+  certified immutable release artifacts.
+
+### Security
+
+- Defined a hard separation between one-job disposable candidate workers and a
+  persistent trusted control plane that never checks out or executes candidate
+  code.
+
 ## [0.6.1] - 2026-08-14
 
 ### Added

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -150,6 +151,63 @@ def test_changelog_pr_enforcement_is_wired_into_repository_ci() -> None:
         "BCF_ENFORCE_PR_CHANGELOG": "true",
         "BCF_PR_BASE_SHA": "${{ github.event.pull_request.base.sha }}",
     }
+
+
+def test_self_governance_runner_classification_is_exact_and_has_no_hosted_fallback() -> None:
+    runner_policy = _policy()["runner_security"]
+    expected_jobs = runner_policy["jobs"]
+    observed_jobs: dict[str, dict[str, str]] = {}
+    for relative_path, classification in expected_jobs.items():
+        workflow_path = REPO_ROOT / relative_path
+        workflow_text = workflow_path.read_text(encoding="utf-8")
+        assert "ubuntu-latest" not in workflow_text
+        workflow = yaml.safe_load(workflow_text)
+        jobs = workflow["jobs"]
+        assert set(jobs) == set(classification)
+        observed_jobs[relative_path] = classification
+        for job_id, trust_class in classification.items():
+            expected_labels = runner_policy[f"{trust_class}_labels"]
+            assert jobs[job_id]["runs-on"] == expected_labels
+    assert observed_jobs == expected_jobs
+    assert runner_policy["hosted_fallback_allowed"] is False
+
+
+def test_fork_pull_requests_are_rejected_before_candidate_runner_assignment() -> None:
+    required_guard = (
+        "github.event.pull_request.head.repo.full_name == github.repository"
+    )
+    runner_policy = _policy()["runner_security"]
+    for relative_path in (
+        ".github/workflows/governance.yml",
+        ".github/workflows/governance-pack.yml",
+    ):
+        workflow = yaml.safe_load(
+            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+        )
+        for job_id, trust_class in runner_policy["jobs"][relative_path].items():
+            if trust_class == "candidate":
+                assert required_guard in workflow["jobs"][job_id]["if"]
+
+
+def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
+    runner_policy = _policy()["runner_security"]
+    pinned_action = re.compile(r"^[^@]+@[0-9a-f]{40}$")
+    for relative_path, classification in runner_policy["jobs"].items():
+        workflow = yaml.safe_load(
+            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+        )
+        for job_id, trust_class in classification.items():
+            if trust_class != "trusted":
+                continue
+            steps = workflow["jobs"][job_id]["steps"]
+            assert all("actions/checkout@" not in step.get("uses", "") for step in steps)
+            for step in steps:
+                if "uses" in step:
+                    assert pinned_action.fullmatch(step["uses"])
+                command = step.get("run", "")
+                assert "python" not in command
+                assert "scripts/" not in command
+                assert ".github/" not in command
 
 
 def test_self_gate_runner_bootstraps_an_uninstalled_source_checkout() -> None:

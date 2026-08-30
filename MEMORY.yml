@@ -40,7 +40,7 @@ memory_retention_policy:
   stable_decisions:
     review_frequency: per_phase_rollover
   environment_facts:
-    revalidate_after_days: 30
+    revalidate_after_days: 7
   reusable_commands:
     validate_on_release_gate: true
   stale_entry_handling:
@@ -52,25 +52,27 @@ environment_facts:
     - all governance, memory, specs, plans, workitem ledgers, and phase logs are YAML-native
     - observability contracts are scaffolded under contracts/observability/v1/
     - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
+    - P02 is active for the single BCF 0.7.0 release train
+    - BCF currently has no registered repository runner and no protected main ruleset
+    - the local implementation host provides Docker but no disposable VM hypervisor or clone manager
   active_artifacts:
     spec: plans/product-spec.yml
     build_plan: plans/build-plan.yml
     active_phase_ledger: plans/phase-ledger.yml
     phase_history: plans/phase-history.yml
-    active_phase_plan: plans/phase-01-plan.yml
-    active_workitem_ledger: plans/phase-01-workitems.yml
-    active_phase_log: phases/phase-01-log.yml
+    active_phase_plan: plans/phase-02-plan.yml
+    active_workitem_ledger: plans/phase-02-workitems.yml
+    active_phase_log: phases/phase-02-log.yml
 known_constraints:
   - schema-2 evidence must be recaptured after every governed tree mutation
   - template runtime and packaged template copies must remain byte-identical to canonical sources
   - release tags are created only at a merge commit whose source and governance CI passed
+  - candidate code may execute only on a fresh disposable VM registered as a one-job ephemeral runner
+  - the persistent trusted VM may collect provider state and publish but may never check out or execute candidate code
+  - no remote 0.7 workflow may execute until the trusted and disposable runner substrate passes isolation acceptance
 reusable_commands:
-  - make governance-validate
-  - make architecture-test
-  - make lint
-  - make typecheck
-  - make test
-  - make release-check
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  - .venv/bin/python -m pytest tests
 references:
   governance:
     - AGENTS.yml
@@ -86,6 +88,6 @@ references:
     - plans/product-spec.yml
     - plans/build-plan.yml
   execution:
-    - plans/phase-01-plan.yml
-    - plans/phase-01-workitems.yml
-    - phases/phase-01-log.yml
+    - plans/phase-02-plan.yml
+    - plans/phase-02-workitems.yml
+    - phases/phase-02-log.yml

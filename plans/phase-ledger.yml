@@ -4,7 +4,7 @@ document:
   id: "bcf-governance-phase-ledger"
   version: 1.0.0
   generated_at_utc: "2026-08-14T00:00:00Z"
-  status: active_phase_completed
+  status: active_phase_blocked
   path: plans/phase-ledger.yml
 build_plan_mandate:
   format: yaml
@@ -16,23 +16,21 @@ build_plan_mandate:
     - completeness_standard
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P01
-  build_block: "self-governance-0.6.1"
-  plan: plans/phase-01-plan.yml
-  workitems: plans/phase-01-workitems.yml
-  log: phases/phase-01-log.yml
+  id: P02
+  build_block: "bcf-0.7-program-and-runner-cutover"
+  plan: plans/phase-02-plan.yml
+  workitems: plans/phase-02-workitems.yml
+  log: phases/phase-02-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: completed
+  lifecycle_status: blocked
+  blocked_reason: the repository has no trusted control-plane runner or disposable VM broker and the implementation host has no safe VM clone substrate
+  unblock_condition: provide access to the dedicated trusted VM and a golden-image VM clone API so isolation, one-job identity, destruction, quarantine, and durable logging can be proven
   owner: "codex"
   validation_commands:
-    - make governance-validate
-    - make architecture-test
-    - make lint
-    - make typecheck
-    - make test
-    - make release-check
+    - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+    - .venv/bin/python -m pytest tests
 hotfix_lane:
   scaffold_script: scripts/scaffold_governance_artifacts.py
   default_mode: full
@@ -52,21 +50,38 @@ hotfix_lane:
 operator_requirements_choices_disambiguations:
   - type: decision
     statement: all governance, memory, specs, plans, workitem ledgers, and phase logs remain YAML-native
+  - type: decision
+    statement: BCF 0.7.0 is one release train and BCF must self-adopt every applicable Standard-v2 capability
+  - type: security_boundary
+    statement: candidate code executes only on a one-job disposable VM and never on the persistent trusted control-plane VM
+  - type: compatibility
+    statement: existing consumers remain on profile contract v1 until an explicit validated v2 promotion
+  - type: release
+    statement: the tag publisher publishes pre-certified exact bytes and never rebuilds source
 active_delivery_priorities:
   current_tranche:
-    - "self-governance-0.6.1"
+    - "bcf-0.7-program-and-runner-cutover"
 release_trains:
   release_1:
     target_version: "0.6.1"
-    status: active
+    status: completed
     focus:
       - required_repository_artifacts
       - consolidated_governance_documentation
       - standard_self_governance
+  release_2:
+    target_version: "0.7.0"
+    status: active
+    focus:
+      - generalized_soip
+      - exact_commit_ci_authority
+      - safe_disposable_execution
+      - standard_v2_self_adoption
+      - immutable_certified_release
 release_readiness:
   computed_by: bcf truth
   requirements_source: governance/evidence-policy.yml
-  validating_command: make release-check
+  validating_command: bcf truth
 definition_of_ready_before_execution:
   - active phase has a plan, workitem ledger, and log
   - validation commands are listed before implementation starts

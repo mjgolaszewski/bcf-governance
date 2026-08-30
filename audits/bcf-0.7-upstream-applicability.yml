@@ -1,0 +1,50 @@
+document:
+  kind: upstream_applicability_review
+  name: BCF 0.7 Identity P261-HF02 Applicability Review
+  id: bcf-0.7-upstream-applicability
+  version: 1.0.0
+  generated_at_utc: '2026-08-30T00:00:00Z'
+  status: active
+  path: audits/bcf-0.7-upstream-applicability.yml
+sources:
+  bcf_baseline_commit: b2da12fa33fdc4fdc08d6778be047523046f47d0
+  identity_initial_commit: 47ab9d993d218e6f91a17fc7f65f316d05bde006
+  identity_certified_commit: 0569e6dd81b311abf33af5626a32441b0d55cc64
+  identity_certification_run: 33282284036
+  identity_incident_log: e036ee515d68798735e9bf44b451544cd2ef5746:phases/phase-261-hotfix02.yml
+licensing:
+  source_owner_authorization: sole_contributor_authorized_generalization_into_bcf
+  destination_license: MIT
+  rule: remove Identity-specific names, paths, policies, topology, fixtures, and product behavior before import
+observations:
+  - {id: release-front-door, classification: upstream_defect, disposition: add one canonical cheap preflight and ordering mutants}
+  - {id: clean-commit-tree-binding, classification: already_fixed_upstream, disposition: preserve exact commit and tree binding and self-seed locally derivable evidence}
+  - {id: stale-receipt-mixing, classification: upstream_defect, disposition: add fresh immutable session roots and manifest binding}
+  - {id: exact-test-populations, classification: missing_optional_capability, disposition: generalize governed node manifests and self-adopt}
+  - {id: bare-interpreter-tools, classification: upstream_defect, disposition: make the selected Python and module invocation authoritative}
+  - {id: duplicate-workflow-state-semantics, classification: missing_optional_capability, disposition: add SOIP ownership and mutation checks}
+  - {id: git-history-phase-custody, classification: already_fixed_upstream, disposition: preserve and add deletion mutants for every removable artifact class}
+  - {id: workflow-numeric-id-and-path, classification: missing_optional_capability, disposition: bind provider and repository ID, workflow ID, active path, trusted bytes, event, run, attempt, candidate commit, and tree}
+  - {id: exact-commit-not-tree-only, classification: already_fixed_upstream, disposition: preserve exact commit certification}
+  - {id: latest-admitted-attempt-revocation, classification: missing_optional_capability, disposition: add trusted total admission ordering and pure state transition}
+  - {id: artifact-namespace-separation, classification: already_fixed_upstream, disposition: preserve and generalize as a contract}
+  - {id: previous-attempt-fan-in, classification: upstream_defect, disposition: bind every input to one exact session, run, and attempt}
+  - {id: docker-cleanup-revalidation, classification: upstream_defect, disposition: revalidate exact ownership immediately before docker rm -fv}
+  - {id: runtime-roots-capacity-bind-mounts, classification: missing_optional_capability, disposition: add provider-neutral contracts and an opt-in Docker adapter}
+  - {id: local-pr-event-parity, classification: missing_optional_capability, disposition: add exact default-branch fetch, ancestry, base SHA, and event context}
+  - {id: hand-authored-node-file-lists, classification: upstream_defect, disposition: derive BCF-owned selections from canonical manifests or Git}
+  - {id: identity-fixed-workflow-and-gate-topology, classification: chrysalis_local_extension, disposition: do not import}
+  - {id: identity-browser-postgresql-shards, classification: chrysalis_local_extension, disposition: do not import}
+  - {id: trusted-sibling-acquisition, classification: missing_optional_capability, disposition: provide an opt-in typed external-input contract only}
+intentionally_not_imported:
+  - Identity workflow names and 49-gate catalog
+  - five-runner partition and serialization graph
+  - browser and PostgreSQL shard design
+  - sibling-client identity and contract fixtures
+  - application toolchains, images, capacity values, APIs, databases, tokens, and deployments
+security_decisions:
+  - candidate code runs only on a fresh disposable VM registered for one ephemeral job
+  - the persistent trusted VM never checks out or executes candidate code
+  - provider callbacks are hints and never authority by themselves
+  - the final release receipt is output-only and cannot help prove its own inputs
+  - no GitHub-hosted runner is a fallback

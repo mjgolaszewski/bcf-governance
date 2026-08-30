@@ -15,3 +15,14 @@ required_dependencies:
   jsonschema: '>=4.21,<5'
 sbom_format: CycloneDX
 forbid_subprocess_shell: true
+runner_security:
+  hosted_fallback_allowed: false
+  fork_pull_request_policy: maintainer_import_to_same_repository_branch
+  candidate_labels: [self-hosted, linux, x64, bcf-candidate-ephemeral]
+  trusted_labels: [self-hosted, linux, x64, bcf-trusted-control-plane]
+  jobs:
+    .github/workflows/governance-mutants-nightly.yml: {high-value-mutants: candidate}
+    .github/workflows/governance-mutants-weekly.yml: {full-mutants: candidate}
+    .github/workflows/governance-pack.yml: {pack-checks: candidate, ast-checks: candidate}
+    .github/workflows/governance.yml: {evidence: candidate, governance-truthfulness: candidate}
+    .github/workflows/release.yml: {release-artifacts: candidate, publish-release: trusted}

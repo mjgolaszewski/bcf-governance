@@ -9,25 +9,29 @@ document:
 product:
   name: "BCF Governance Framework"
   project_name: "BCF Governance"
-  positioning: "evidence-integrity governance for agent-led software delivery"
-  target_users:
-    - "framework maintainers and governed repository operators"
-  non_goals:
-    - "proving application behavior without repository-specific executable evidence"
+  positioning: "deterministic evidence-integrity governance for AI-led and human-led software delivery"
+  target_users: ["framework maintainers and governed repository operators"]
+  non_goals: ["proving application behavior without repository-specific executable evidence", "treating AI output or provider presentation metadata as release authority", "prescribing application-specific runner, database, browser, or service topology"]
 constraints:
-  operating_constraints:
-    - "repo_native_runtime"
-  known_external_dependencies:
-    - "github_actions"
+  operating_constraints: ["repo_native_runtime", "candidate_code_executes_only_on_one_job_disposable_workers"]
+  known_external_dependencies: ["github_actions", "trusted_control_plane_and_disposable_vm_runner_substrate"]
 architecture:
   backend: "python_package_with_private_portable_runtime"
   frontend: "canonical_markdown_operator_and_maintainer_guides"
   data: "closed_yaml_json_contracts_and_content_addressed_evidence"
 execution_phases:
-  - phase_id: P01
-    build_block: "self-governance-0.6.1"
-    objective: "adopt BCF 0.6.1 standard governance in the framework repository"
-    release_train: release_1
+  - {phase_id: P01, build_block: "self-governance-0.6.1", objective: "adopt BCF 0.6.1 standard governance in the framework repository", release_train: release_1}
+  - {phase_id: P02, build_block: "bcf-0.7-program-and-runner-cutover", objective: "freeze the 0.7 train and cut existing workflows onto a trusted and disposable runner substrate", release_train: release_2}
+  - {phase_id: P03, build_block: "preflight-interpreter-sessions-cleanup", objective: "add cheap preflight, interpreter authority, evidence sessions, exact fan-in, and cleanup hardening", release_train: release_2}
+  - {phase_id: P04, build_block: "python-soip", objective: "generalize and self-adopt Python single-owner integrity proof", release_train: release_2}
+  - {phase_id: P05, build_block: "typescript-soip-and-identity-proof", objective: "add optional TypeScript tracing and prove the generalized engine against exact Identity main", release_train: release_2}
+  - {phase_id: P06, build_block: "ci-authority-contracts", objective: "add provider-neutral CI identity, admission, state, and N/A contracts", release_train: release_2}
+  - {phase_id: P07, build_block: "ci-truth-and-revocation", objective: "integrate authenticated certification, acyclic receipts, revocation, cancellation, and status authority", release_train: release_2}
+  - {phase_id: P08, build_block: "github-adopter-runtime-pr-parity", objective: "ship the GitHub reference topology, adopter, runtime adapter, and local PR parity", release_train: release_2}
+  - {phase_id: P09, build_block: "profile-v2-integration", objective: "integrate v2 contracts through profiles, installer, upgrader, doctor, cleanup, templates, wheel, and sdist", release_train: release_2}
+  - {phase_id: P10, build_block: "bcf-standard-v2-dogfood", objective: "make BCF a complete Standard-v2 consumer and activate stable protected checks", release_train: release_2}
+  - {phase_id: P11, build_block: "exact-main-release-artifacts", objective: "build and certify the 0.7.0 wheel and sdist from exact merged main", release_train: release_2}
+  - {phase_id: P12, build_block: "editorial-refresh-and-release", objective: "refresh final documentation, recertify exact bytes, tag, attest, and publish v0.7.0", release_train: release_2}
 acceptance:
-  release_gate: make release-check
+  release_gate: bcf truth
   evidence_location: phases/
