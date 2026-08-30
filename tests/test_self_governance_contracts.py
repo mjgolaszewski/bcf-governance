@@ -198,6 +198,68 @@ def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
     assert "sha256sum ./*.whl CONTROL-METADATA.json" in build_script
 
 
+def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
+    workflow = yaml.safe_load(
+        (REPO_ROOT / ".github/workflows/bcf-trusted-control-bootstrap.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert workflow[True] == {"workflow_dispatch": None}
+    assert workflow["permissions"] == {"actions": "read", "contents": "read"}
+    assert workflow["env"] == {
+        "BCF_BOOTSTRAP_ARTIFACT_ID": "9740097978",
+        "BCF_BOOTSTRAP_ARTIFACT_NAME": (
+            "bcf-trusted-control-6368eb34ce08c1bfc4bc554fae02e5e10468455f-1"
+        ),
+        "BCF_BOOTSTRAP_ARTIFACT_DIGEST": (
+            "sha256:b6015abf6b6b761c1f909d6e66fe72e71c0f67b84066db907800ab3b6c27d115"
+        ),
+        "BCF_BOOTSTRAP_RUN_ID": "33339477463",
+        "BCF_BOOTSTRAP_RUN_ATTEMPT": "1",
+        "BCF_BOOTSTRAP_COMMIT_SHA": "6368eb34ce08c1bfc4bc554fae02e5e10468455f",
+        "BCF_BOOTSTRAP_TREE_SHA": "5d72e163481e7f8e42d20e5aeb1d7d8091dbf5d2",
+        "BCF_BOOTSTRAP_REPOSITORY_ID": "1207503211",
+        "BCF_BOOTSTRAP_WHEEL_SHA256": (
+            "72cbc4bb1c9c31a1c3b362cd93e99ccf5704755c9499849e7174ffa419e4e58c"
+        ),
+    }
+    job = workflow["jobs"]["bootstrap"]
+    assert job["timeout-minutes"] == 10
+    assert job["strategy"] == {
+        "fail-fast": False,
+        "max-parallel": 2,
+        "matrix": {
+            "trusted_runner": ["bcf-trusted-control-1", "bcf-trusted-control-2"]
+        },
+    }
+    assert all("actions/checkout@" not in step.get("uses", "") for step in job["steps"])
+    download = next(
+        step for step in job["steps"]
+        if step.get("name") == "Download only the authenticated controller artifact"
+    )
+    assert download["uses"] == (
+        "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"
+    )
+    assert download["with"] == {
+        "artifact-ids": "${{ env.BCF_BOOTSTRAP_ARTIFACT_ID }}",
+        "github-token": "${{ github.token }}",
+        "repository": "${{ github.repository }}",
+        "run-id": "${{ env.BCF_BOOTSTRAP_RUN_ID }}",
+        "path": "${{ runner.temp }}/bcf-trusted-control-bootstrap",
+        "digest-mismatch": "error",
+    }
+    commands = "\n".join(step.get("run", "") for step in job["steps"])
+    assert "/actions/artifacts/{expected['id']}" in commands
+    assert 'api != "https://api.github.com"' in commands
+    assert 'repository != "mjgolaszewski/bcf-governance"' in commands
+    assert "sha256sum --check SHA256SUMS" in commands
+    assert "pip install --no-index" in commands
+    assert "bcf_governance-0.6.1-py3-none-any.whl" in commands
+    assert "pip install -r" not in commands
+    assert "actions/checkout" not in commands
+    assert "existing trusted control installation has stale provenance" in commands
+
+
 def test_self_governance_runner_classification_is_exact_and_has_no_fallback() -> None:
     runner_policy = _policy()["runner_security"]
     expected_jobs = runner_policy["jobs"]
@@ -209,8 +271,14 @@ def test_self_governance_runner_classification_is_exact_and_has_no_fallback() ->
         assert set(jobs) == set(classification)
         observed_jobs[relative_path] = classification
         for job_id, trust_class in classification.items():
-            if trust_class == "trusted":
-                expected_labels = runner_policy["trusted_labels"]
+            if trust_class in {"trusted", "trusted_bootstrap"}:
+                expected_labels = list(runner_policy["trusted_labels"])
+                strategy = jobs[job_id].get("strategy")
+                if strategy and "trusted_runner" in strategy.get("matrix", {}):
+                    assert strategy["matrix"]["trusted_runner"] == runner_policy[
+                        "trusted_instance_labels"
+                    ]
+                    expected_labels.append("${{ matrix.trusted_runner }}")
             else:
                 expected_labels = runner_policy["candidate_routing"]["candidate_runner"]
             assert jobs[job_id]["runs-on"] == expected_labels
@@ -249,7 +317,7 @@ def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
             (REPO_ROOT / relative_path).read_text(encoding="utf-8")
         )
         for job_id, trust_class in classification.items():
-            if trust_class != "trusted":
+            if trust_class not in {"trusted", "trusted_bootstrap"}:
                 continue
             steps = workflow["jobs"][job_id]["steps"]
             assert all("actions/checkout@" not in step.get("uses", "") for step in steps)
@@ -257,9 +325,15 @@ def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
                 if "uses" in step:
                     assert pinned_action.fullmatch(step["uses"])
                 command = step.get("run", "")
-                assert "python" not in command
                 assert "scripts/" not in command
                 assert ".github/" not in command
+                if trust_class == "trusted":
+                    assert "python" not in command
+                else:
+                    assert "actions/checkout" not in command
+                    assert "pip install --no-index" in "\n".join(
+                        value.get("run", "") for value in steps
+                    )
 
 
 def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
@@ -274,7 +348,7 @@ def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
             (REPO_ROOT / relative_path).read_text(encoding="utf-8")
         )
         for job_id, trust_class in classification.items():
-            if trust_class == "trusted":
+            if trust_class in {"trusted", "trusted_bootstrap"}:
                 activation = runner_policy["trusted_job_activation"][relative_path][job_id]
                 if activation == "disabled":
                     assert workflow["jobs"][job_id]["if"] == "${{ false }}"

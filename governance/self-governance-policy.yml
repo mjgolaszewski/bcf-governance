@@ -28,6 +28,7 @@ runner_security:
     billing_class: standard_public_repository
   candidate_lifecycle: provider_fresh_vm_per_job_destroyed_after_completion
   trusted_labels: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+  trusted_instance_labels: [bcf-trusted-control-1, bcf-trusted-control-2]
   coordination_policy: [no_polling, no_sleeping, no_idle_waiters]
   temporary_local_window:
     status: closed
@@ -36,6 +37,7 @@ runner_security:
     privileged_publication_enabled: false
     restore_condition: not_applicable_closed_window
   jobs:
+    .github/workflows/bcf-trusted-control-bootstrap.yml: {bootstrap: trusted_bootstrap}
     .github/workflows/bcf-trusted-control-probe.yml: {probe: trusted}
     .github/workflows/governance-mutants-nightly.yml: {high-value-mutants: candidate}
     .github/workflows/governance-mutants-weekly.yml: {full-mutants: candidate}
@@ -43,5 +45,6 @@ runner_security:
     .github/workflows/governance.yml: {preflight: candidate, evidence: candidate, governance-truthfulness: candidate}
     .github/workflows/release.yml: {release-artifacts: candidate, publish-release: trusted}
   trusted_job_activation:
+    .github/workflows/bcf-trusted-control-bootstrap.yml: {bootstrap: owner_main_dispatch}
     .github/workflows/bcf-trusted-control-probe.yml: {probe: owner_main_dispatch}
     .github/workflows/release.yml: {publish-release: disabled}

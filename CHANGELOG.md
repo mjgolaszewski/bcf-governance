@@ -8,6 +8,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Added
 
+- Added an owner-dispatched, no-checkout trusted bootstrap that authenticates
+  and installs the exact-main controller wheelhouse offline on both uniquely
+  addressed control runners.
 - Added the trusted GitHub controller commands and an exact-main controller
   wheel artifact for hash-pinned control-plane provisioning.
 - Added an owner-dispatched, no-checkout trusted-control probe so CI-authority

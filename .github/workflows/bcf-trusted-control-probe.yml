@@ -9,13 +9,24 @@ permissions:
 jobs:
   probe:
     if: ${{ github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main' }}
-    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner, "${{ matrix.trusted_runner }}"]
     timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        trusted_runner: [bcf-trusted-control-1, bcf-trusted-control-2]
     steps:
       - name: Verify the preinstalled trusted BCF control
         shell: bash
         run: |
           set -euo pipefail
-          command -v bcf
-          bcf --version
-          bcf ci --help
+          control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/6368eb34ce08c1bfc4bc554fae02e5e10468455f"
+          test -d "$control_root"
+          test ! -L "$control_root"
+          test -f "$control_root/INSTALL-METADATA.json"
+          test -x "$control_root/bin/bcf"
+          grep -F '"artifact_id":"9740097978"' "$control_root/INSTALL-METADATA.json"
+          grep -F '"wheel_sha256":"72cbc4bb1c9c31a1c3b362cd93e99ccf5704755c9499849e7174ffa419e4e58c"' "$control_root/INSTALL-METADATA.json"
+          "$control_root/bin/bcf" --version
+          "$control_root/bin/bcf" ci-github --help
