@@ -161,6 +161,30 @@ def doctor_repo(repo_root: Path) -> dict[str, Any]:
         if str(exc) not in blockers:
             blockers.append(str(exc))
 
+    profile_v2: dict[str, Any] | None = None
+    profile = _load_profile(repo_root)
+    if isinstance(profile, dict) and str(profile.get("profile_contract_version", "1.0")) == "2.0":
+        from .profile_contract_v2 import ProfileV2Error, validate_profile_v2_readiness
+
+        selected = profile.get("profile", {}).get("selected")
+        try:
+            readiness = validate_profile_v2_readiness(
+                repo_root, profile=str(selected)
+            )
+            profile_v2 = readiness.as_dict()
+            for capability, state in (
+                ("CI authority", readiness.ci_authority),
+                ("GitHub topology", readiness.github_topology),
+                ("runtime capacity", readiness.runtime_capacity),
+            ):
+                if state == "absent":
+                    warnings.append(
+                        f"profile v2 {capability} is project-selected and not configured"
+                    )
+        except ProfileV2Error as exc:
+            blockers.append(f"profile v2 readiness failed: {exc}")
+            next_actions.append("repair declared v2 artifacts or revert the promotion through Git")
+
     status = "fail" if blockers else "warn" if warnings else "pass"
     try:
         distribution = importlib.metadata.distribution("bcf-governance")
@@ -177,6 +201,7 @@ def doctor_repo(repo_root: Path) -> dict[str, Any]:
                 f"download/v{__version__}/bcf_governance-{__version__}-py3-none-any.whl"
             ),
         },
+        "profile_v2": profile_v2,
         "blockers": blockers,
         "warnings": warnings,
         "next_actions": list(dict.fromkeys(next_actions)),

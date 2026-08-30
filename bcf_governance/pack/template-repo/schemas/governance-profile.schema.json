@@ -87,7 +87,8 @@
                   "security_vulnerability_scan",
                   "security_review",
                   "runtime_smoke",
-                  "semantic_ownership"
+                  "semantic_ownership",
+                  "ci_certification"
                 ]
               },
               "rationale": { "type": "string", "minLength": 1 }

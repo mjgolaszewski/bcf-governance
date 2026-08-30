@@ -70,6 +70,7 @@ deterministic_actions:
     outputs: [plans/phase-history.yml, governance/archive/phase-artifacts]
   - {id: force_rescaffold, command: "bcf install --target . --force-rescaffold", applies_when: "owner accepts destructive replacement of active BCF-owned files", safety: "asks before deleting known BCF governance paths", outputs: [fresh_active_governance, validation_report]}
   - {id: remove_governance_pack, command: "bcf cleanup --repo-root . --remove-governance-pack --apply --yes", applies_when: "owner decommissions BCF governance", safety: "dry-run first; --yes records explicit noninteractive approval before deleting BCF-owned paths", outputs: [removed_governance_artifacts, manual_ci_references]}
+  - {id: prune_expired_evidence_sessions, command: "bcf ci-cleanup --repo-root . --prune-evidence-sessions --apply --yes", applies_when: "private evidence sessions exceed artifact-manifest retention", safety: "non-authoritative session roots only; selects valid ignored directories older than declared policy and revalidates inode plus manifest identity before removal", outputs: [.artifacts/bcf/sessions]}
 llm_review_required:
   - id: documentation_currency
     reason: prose can be stale while schemas still pass
@@ -84,7 +85,4 @@ validation_required:
   commands: [bcf validate, bcf truth --evidence-dir .artifacts/bcf, make release-check] # non-authoritative local path; retain report sha256 in CI artifact
   status_policy: record pass fail or blocked with exact command and reason in the active phase log
 evidence_required: [cleanup report or cleanup index, moved artifact summary, vendored pack declarations, documentation currency notes, validation command outcomes]
-closeout_rules:
-  - do not claim cleanup complete while manual actions remain unexplained
-  - do not delete historical evidence unless git history is the declared retention source and the validator can verify the recorded refs
-  - do not remove tests to fit the scaffold; tune tests to the accepted repo shape
+closeout_rules: [do not claim cleanup complete while manual actions remain unexplained, do not delete historical evidence unless git history is the declared retention source and the validator can verify the recorded refs, do not remove tests to fit the scaffold; tune tests to the accepted repo shape]

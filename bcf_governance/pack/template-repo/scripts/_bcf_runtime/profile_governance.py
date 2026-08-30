@@ -19,15 +19,22 @@ MANAGED_PROFILE_PATHS = (
     "governance/evidence-policy.yml",
     "governance/gate-contracts.yml",
     "Makefile.fragment",
-    ".github/workflows/governance.yml",
     "governance/MODEL_RISK_AND_PROVENANCE.md",
     "governance/HOTFIX_LANE.md",
 )
 
 
-def _render_in_shadow(repo_root: Path, target: str, config: Path, shadow: Path) -> dict:
-    contract = promote(repo_root, target, config)
-    apply_profile_contract(shadow, contract)
+def _render_in_shadow(
+    repo_root: Path,
+    target: str,
+    config: Path | None,
+    shadow: Path,
+    contract_version: str | None,
+) -> dict:
+    contract = promote(
+        repo_root, target, config, contract_version=contract_version
+    )
+    apply_profile_contract(shadow, contract, write_workflow=False)
     validation = subprocess.run(
         [
             sys.executable,
@@ -50,11 +57,16 @@ def _render_in_shadow(repo_root: Path, target: str, config: Path, shadow: Path) 
     return contract
 
 
-def _check(repo_root: Path, target: str, config: Path) -> dict:
+def _check(
+    repo_root: Path,
+    target: str,
+    config: Path | None,
+    contract_version: str | None,
+) -> dict:
     with tempfile.TemporaryDirectory(prefix="bcf-profile-check-") as temporary:
         shadow = Path(temporary) / "repo"
         shutil.copytree(repo_root, shadow, symlinks=True, ignore=shutil.ignore_patterns(".git"))
-        return _render_in_shadow(repo_root, target, config, shadow)
+        return _render_in_shadow(repo_root, target, config, shadow, contract_version)
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -67,7 +79,12 @@ def main(argv: list[str] | None = None) -> None:
     )
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--to", choices=("standard", "regulated"), required=True)
-    parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument(
+        "--config",
+        type=Path,
+        help="Optional replacement gate config; otherwise promote canonical existing contracts.",
+    )
+    parser.add_argument("--contract-version", choices=("1.0", "2.0"))
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--check", action="store_true")
     mode.add_argument("--apply", action="store_true")
@@ -83,13 +100,20 @@ def main(argv: list[str] | None = None) -> None:
     if git_root.returncode != 0 or Path(git_root.stdout.strip()).resolve() != repo_root:
         raise SystemExit("profile promotion requires the root of an initialized Git repository")
     if args.check:
-        contract = _check(repo_root, args.to, args.config)
+        contract = _check(
+            repo_root, args.to, args.config, args.contract_version
+        )
         status = "profile-promotion-check-pass"
     else:
-        contract = promote(repo_root, args.to, args.config)
+        contract = promote(
+            repo_root,
+            args.to,
+            args.config,
+            contract_version=args.contract_version,
+        )
 
         def mutate(shadow: Path) -> None:
-            apply_profile_contract(shadow, contract)
+            apply_profile_contract(shadow, contract, write_workflow=False)
             validation = subprocess.run(
                 [
                     sys.executable,
@@ -120,6 +144,7 @@ def main(argv: list[str] | None = None) -> None:
         "status": "pass",
         "operation": status,
         "target_profile": args.to,
+        "profile_contract_version": contract["profile_contract_version"],
         "required_gates": sorted(contract["gates"]),
     }
     if args.format == "json":
@@ -127,6 +152,7 @@ def main(argv: list[str] | None = None) -> None:
     else:
         print(status)
         print(f"target_profile: {args.to}")
+        print(f"profile_contract_version: {contract['profile_contract_version']}")
         print("required_gates: " + ", ".join(payload["required_gates"]))
 
 

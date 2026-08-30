@@ -1,0 +1,37 @@
+document: {kind: canonical_representation_registry, id: '{{PROJECT_ID}}-canonical-representations', version: 1.0.0, status: active, path: governance/canonical-representations.yml}
+enforcement:
+  phase: P01
+  default_mode: declared_families_blocking
+  declared_families: [evidence_session_identity]
+  blocking_semantic_ids: [governance.evidence-session.v1]
+  report_path: .artifacts/semantic-ownership/report.json # non-authoritative until captured in evidence
+  unresolved_dynamic_policy: report
+source_authority:
+  discovery_precedes_registry_load: true
+  python_engine: scripts/_bcf_runtime/semantic_ownership_inventory.py
+  typescript_engine: not_applicable_until_declared_by_consumer
+  cross_language_trace: not_applicable_until_declared_by_consumer
+  completeness_authority: independent_exact_tree_source_inventory
+  authoritative_python_roots: [scripts/_bcf_runtime]
+  generated_mirror_roots: []
+representations:
+- semantic_id: governance.evidence-session.v1
+  family: evidence_session_identity
+  schema_version: 1
+  lifecycle: enforced
+  finding_ids: []
+  canonical_type: {language: python, symbol: 'scripts/_bcf_runtime/evidence_sessions.py::EvidenceSession'}
+  authoritative_owner: {symbol: 'scripts/_bcf_runtime/evidence_sessions.py::allocate_session', owner_kind: constructor}
+  authorized_constructors_and_factories: ['scripts/_bcf_runtime/evidence_sessions.py::allocate_session', 'scripts/_bcf_runtime/evidence_sessions.py::load_session']
+  authorized_pure_delegates: []
+  hostile_boundary_decoder: {symbol: 'scripts/_bcf_runtime/evidence_sessions.py::load_session', trust_boundary: downloaded or caller-supplied session manifest bytes}
+  field_invariants: [{field: session_id, invariant: at least 128 bits and identical to the private session directory name}, {field: manifest, invariant: immutable bytes bind exact subject profile producer run attempt and closed inventories}]
+  permitted_defaults_and_single_application_point: []
+  accepted_aliases_and_single_ingress_boundary: []
+  persistence_codec_and_envelope: {applicability: required, codec_symbol: 'scripts/_bcf_runtime/evidence_sessions.py::load_session', semantic_id: governance.evidence-session.v1, schema_version: 1, exact_byte_format: canonical sorted JSON, integrity_algorithm: SHA-256, identity_bindings: [commit_sha, tree_sha, session_id, run_id, run_attempt], migration_dispatch: schema_version}
+  protocol_translations: []
+  intentional_projections: []
+  declared_consumer_layers_and_sinks: {read: ['scripts/_bcf_runtime/truth_sessions.py::verify_evidence_sessions'], authorization: [], persistence: ['scripts/_bcf_runtime/evidence_sessions.py::bind_session'], cache: [], queue: [], network: [], api: [], browser: []}
+  generated_source_authority: {authoritative_roots: [scripts/_bcf_runtime/evidence_sessions.py], generated_mirrors: [], generator: 'bcf install', parity_proof: 'pack manifest SHA-256'}
+  migration_policy: {source_versions: [], destination_version: 1, owner: 'scripts/_bcf_runtime/evidence_sessions.py::load_session', runtime_exclusion: schema-version dispatch only, removal_condition: superseded by a reviewed evidence-session schema}
+  narrow_suppressions: []

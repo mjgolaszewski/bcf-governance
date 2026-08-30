@@ -10,6 +10,7 @@ from typing import Any
 import pytest
 import yaml
 
+from bcf_governance.tooling.evidence_sessions import allocate_session
 from scripts.governance_evidence import attest_bundle, capture_gate
 from scripts.governance_truth import derive_truth
 
@@ -17,6 +18,7 @@ from scripts.governance_truth import derive_truth
 REPO_ROOT = Path(__file__).resolve().parents[1]
 INSTALLER = REPO_ROOT / "scripts/install_governance_pack.py"
 PROFILE_CLI = REPO_ROOT / "scripts/profile_governance.py"
+DOCTOR = REPO_ROOT / "scripts/doctor_governance_pack.py"
 BUILTIN_GATES = {"governance-validate", "governance-exposure-scan"}
 TEST_POLICIES = {
     "automated_tests",
@@ -82,7 +84,7 @@ def gate_config(repo: Path, profile: str, public_key: Path | None) -> Path:
     for gate in gate_catalog().values():
         target = gate["target"]
         policy = gate["command_policy"]
-        if target in BUILTIN_GATES:
+        if target in {*BUILTIN_GATES, "ci-certification"}:
             continue
         is_test = policy in TEST_POLICIES
         evidence: dict[str, Any] = {}
@@ -289,6 +291,7 @@ def test_profile_promotion_is_checkable_monotonic_and_preserves_phase_artifacts(
         repo / "phases/phase-01-log.yml",
     ]
     before = {path: path.read_bytes() for path in phase_paths}
+    workflow_before = (repo / ".github/workflows/governance.yml").read_bytes()
     subprocess.run(
         [
             sys.executable,
@@ -322,6 +325,7 @@ def test_profile_promotion_is_checkable_monotonic_and_preserves_phase_artifacts(
     profile = yaml.safe_load((repo / "governance-profile.yml").read_text(encoding="utf-8"))
     assert profile["profile"]["selected"] == "standard"
     assert {path: path.read_bytes() for path in phase_paths} == before
+    assert (repo / ".github/workflows/governance.yml").read_bytes() == workflow_before
     repeated = subprocess.run(
         [
             sys.executable,
@@ -339,6 +343,89 @@ def test_profile_promotion_is_checkable_monotonic_and_preserves_phase_artifacts(
     )
     assert repeated.returncode != 0
     assert "must advance beyond standard" in repeated.stderr
+
+
+def test_standard_v1_to_v2_promotion_is_explicit_and_preserves_workflow(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "contract-promotion"
+    repo.mkdir()
+    git(repo, "init", "--quiet")
+    git(repo, "config", "user.email", "profile-flow@example.invalid")
+    git(repo, "config", "user.name", "Profile Flow")
+    write_gate_runner(repo)
+    config = gate_config(repo, "standard", None)
+    git(repo, "add", ".")
+    git(repo, "commit", "--quiet", "-m", "application gate contracts")
+    subprocess.run(
+        [
+            sys.executable,
+            str(INSTALLER),
+            "--target",
+            str(repo),
+            "--profile",
+            "standard",
+            "--profile-contract-version",
+            "1.0",
+            "--profile-config",
+            str(config),
+            "--project-id",
+            "contract-promotion",
+            "--project-name",
+            "Contract Promotion",
+            "--product-name",
+            "Contract Promotion",
+            "--require-strict-validation",
+        ],
+        check=True,
+    )
+    git(repo, "add", ".")
+    git(repo, "commit", "--quiet", "-m", "install standard v1")
+    workflow_before = (repo / ".github/workflows/governance.yml").read_bytes()
+    command = [
+        sys.executable,
+        str(PROFILE_CLI),
+        "--repo-root",
+        str(repo),
+        "--to",
+        "standard",
+        "--contract-version",
+        "2.0",
+    ]
+
+    subprocess.run([*command, "--check"], check=True)
+    subprocess.run([*command, "--apply"], check=True)
+
+    profile = yaml.safe_load((repo / "governance-profile.yml").read_text(encoding="utf-8"))
+    assert profile["profile"]["selected"] == "standard"
+    assert profile["profile_contract_version"] == "2.0"
+    assert profile["release_gate_profile"]["gates"]["semantic_ownership"]["status"] == "required"
+    assert (repo / ".github/workflows/governance.yml").read_bytes() == workflow_before
+    contracts = yaml.safe_load(
+        (repo / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    )
+    assert contracts["gates"]["semantic-ownership"]["invocation"]["argv"][1] == (
+        "scripts/semantic_ownership.py"
+    )
+    git(repo, "add", ".")
+    git(repo, "commit", "--quiet", "-m", "promote to standard v2")
+    session = allocate_session(
+        repo,
+        repo / ".artifacts/bcf",
+        contracts["gates"],
+        expected_producers=["local"],
+    )
+    receipt = json.loads(
+        capture_gate(
+            repo,
+            "semantic-ownership",
+            session.root / "semantic-ownership",
+            python_executable=sys.executable,
+            session_manifest=session.manifest_path,
+        ).read_text(encoding="utf-8")
+    )
+    assert receipt["result"] == "passed"
+    assert receipt["behavioral_probes"][0]["oracle_observation"]["satisfied"] is True
 
 
 @pytest.mark.parametrize("profile", ["standard", "regulated"])
@@ -396,6 +483,24 @@ def test_full_profile_install_evidence_truth_flow(
     monkeypatch.setenv(
         "PATH", str(Path(sys.executable).parent) + os.pathsep + os.environ["PATH"]
     )
+    doctor = subprocess.run(
+        [
+            sys.executable,
+            str(DOCTOR),
+            "--repo-root",
+            str(repo),
+            "--format",
+            "json",
+            "--compact",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    doctor_report = json.loads(doctor.stdout)
+    assert doctor_report["status"] == "warn"
+    assert doctor_report["profile_v2"]["status"] == "ready"
+    assert any("CI authority" in value for value in doctor_report["warnings"])
     evidence = repo / ".artifacts/bcf"
     contracts = yaml.safe_load(
         (repo / "governance/gate-contracts.yml").read_text(encoding="utf-8")
@@ -409,8 +514,16 @@ def test_full_profile_install_evidence_truth_flow(
     )
     assert workflow["env"]["BCF_PR_BASE_SHA"] == "${{ github.event.pull_request.base.sha }}"
     assert matrix == list(contracts["gates"])
+    session = allocate_session(
+        repo, evidence, contracts["gates"], expected_producers=["local"]
+    )
     for target in contracts["gates"]:
-        receipt_path = capture_gate(repo, target, evidence / target)
+        receipt_path = capture_gate(
+            repo,
+            target,
+            session.root / target,
+            session_manifest=session.manifest_path,
+        )
         receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
         assert receipt["schema_version"] == "2.0"
         assert receipt["result"] == "passed", (target, receipt)

@@ -99,6 +99,7 @@ RELEASE_GATE_POLICY_MARKERS = {
     "security_review": ("security-review", "security review", "findings"),
     "runtime_smoke": ("smoke", "docker", "compose", "health"),
     "semantic_ownership": ("semantic-ownership", "semantic_ownership"),
+    "ci_certification": ("ci-certification", "ci_certification"),
 }
 DEFAULT_RELEASE_GATE_TARGETS = {
     "governance-validate",

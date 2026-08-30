@@ -48,6 +48,12 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Added exact local pull-request context, fail-fast repository runtime/capacity
   contracts, repository-owned database bind roots, and digest-bound trusted
   external-input handoff.
+- Added backward-compatible profile-contract v2 lifecycle integration, typed
+  expiring capability N/A records, profile readiness diagnostics, and
+  retention-bound evidence-session pruning with immediate identity checks.
+- Added generated Standard-v2 release surfaces that allocate one immutable
+  evidence session, execute each positive gate once, and bind fan-in to the
+  exact Actions run and attempt without polling or waiter jobs.
 
 ### Changed
 
@@ -57,6 +63,11 @@ All notable changes to BCF Governance are recorded here. This file follows
   candidate execution or release publication is enabled.
 - Made BCF consume the same semantic-ownership schema, runtime, registry, CLI,
   gate contract, and evidence control that it packages for adopters.
+- Made fresh Standard and Regulated installations select profile contract v2;
+  Lite and existing repositories remain on v1 until explicit promotion.
+- Separated workflow adoption from profile lifecycle: normal upgrades and
+  promotions preserve installed workflow bytes, while fresh installs generate
+  the selected profile's workflow surface.
 
 ### Fixed
 

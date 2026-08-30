@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-09-plan
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: completed
   path: plans/phase-09-plan.yml
 phase:
   id: P09
@@ -19,18 +19,40 @@ phase:
   - MEMORY.yml
 delivery_contract:
   tightly_scoped_deliverables:
-  - profile v2 promotion and complete public packaging integration
+  - preserve profile-contract v1 consumers while making fresh Standard and Regulated
+    installations use contract v2
+  - provide transactional explicit v2 promotion without rewriting adopted workflows
+  - integrate SOIP, evidence sessions, typed N/A, doctor, and retention cleanup across
+    source, standalone runtime, template, wheel, and sdist surfaces
   parallelizable_workstreams:
   - id: P09-WS1
-    name: profile lifecycle and packaging parity
+    name: profile lifecycle and compatibility
+  - id: P09-WS2
+    name: evidence-session surfaces and cleanup
+  - id: P09-WS3
+    name: packaging and operator parity
   hard_dependencies:
   - P08
   docker_first_local_runtime: repo_native_validation_and_governance_commands
   completeness_standard: full_completeness_for_declared_scope
 scope_lock:
 - order: 1
-  statement: keep the phase narrowly scoped to declared deliverables and update canonical
-    governed artifacts in the same change
+  statement: absence of profile_contract_version continues to mean 1.0 and ordinary
+    upgrades preserve the installed profile and contract version
+- order: 2
+  statement: profile promotion changes governed profile surfaces transactionally but
+    never rewrites an existing repository workflow; workflow adoption stays explicit
+- order: 3
+  statement: Lite stays contract v1 by default while fresh Standard and Regulated
+    installations receive v2 evidence-session and SOIP surfaces
+- order: 4
+  statement: capability N/A records are typed, commit-bound, approved, expiring or
+    deterministically re-reviewed, and cannot bypass Regulated requirements
+- order: 5
+  statement: evidence-session cleanup operates only on the fixed ignored session root,
+    follows declared retention, and revalidates exact identity before deletion
 verification_plan:
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python scripts/check_governance_exposure.py --repo-root .
+- .venv/bin/python -m pytest -q tests/test_profile_contract_v2.py tests/test_profile_flows.py tests/test_install_governance_pack.py tests/test_cleanup_ci_resources.py
 - .venv/bin/python -m pytest tests

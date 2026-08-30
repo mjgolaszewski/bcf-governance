@@ -1,10 +1,20 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+
+from bcf_governance.tooling.evidence_session_cleanup import (
+    SessionCleanupError,
+    apply_session_cleanup,
+    plan_session_cleanup,
+)
+from bcf_governance.tooling.evidence_sessions import allocate_session
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
@@ -120,3 +130,60 @@ def test_ci_cleanup_rejects_unsafe_daemon_resource_ids(unsafe_id: str) -> None:
 
     with pytest.raises(RuntimeError, match="unsafe resource identity"):
         discover_resources("run-12345", unsafe)
+
+
+def _session_repo(tmp_path: Path) -> Path:
+    repo = tmp_path / "repo"
+    (repo / "governance").mkdir(parents=True)
+    (repo / ".gitignore").write_text(".artifacts/\n", encoding="utf-8")
+    (repo / "governance-profile.yml").write_text(
+        "profile:\n  selected: standard\nprofile_contract_version: '2.0'\n",
+        encoding="utf-8",
+    )
+    (repo / "governance/artifact-manifest.yml").write_text(
+        "ephemeral_evidence:\n"
+        "  roots: [artifacts/, .artifacts/]\n"
+        "  durable_reference_required: true\n"
+        "  session_retention_hours: 168\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "init", "--quiet"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.email", "cleanup@example.invalid"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.name", "Cleanup"], cwd=repo, check=True)
+    subprocess.run(["git", "add", "."], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "--quiet", "-m", "fixture"], cwd=repo, check=True)
+    return repo
+
+
+def test_evidence_session_cleanup_obeys_retention_and_revalidates(tmp_path: Path) -> None:
+    repo = _session_repo(tmp_path)
+    session = allocate_session(repo, repo / ".artifacts/bcf", ["test"])
+    payload = dict(session.payload)
+    payload["created_at"] = "2026-08-01T00:00:00Z"
+    os.chmod(session.manifest_path, 0o600)
+    session.manifest_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    os.chmod(session.manifest_path, 0o400)
+    evaluated_at = datetime(2026, 8, 30, tzinfo=timezone.utc)
+
+    plan = plan_session_cleanup(repo, evaluated_at=evaluated_at)
+
+    assert plan.status == "actionable"
+    assert [action.session_id for action in plan.actions] == [session.root.name]
+    report = apply_session_cleanup(repo, evaluated_at=evaluated_at)
+    assert report.status == "changed"
+    assert not session.root.exists()
+    assert (repo / ".artifacts/bcf/sessions").is_dir()
+
+
+def test_evidence_session_cleanup_rejects_symlink_entries(tmp_path: Path) -> None:
+    repo = _session_repo(tmp_path)
+    sessions = repo / ".artifacts/bcf/sessions"
+    sessions.mkdir(parents=True)
+    target = tmp_path / "outside"
+    target.mkdir()
+    (sessions / "unsafe").symlink_to(target, target_is_directory=True)
+
+    with pytest.raises(SessionCleanupError, match="unsafe entry"):
+        plan_session_cleanup(repo)
