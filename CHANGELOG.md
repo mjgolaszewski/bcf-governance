@@ -11,6 +11,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Opened the BCF 0.7.0 release train for generalized SOIP, exact-commit CI
   authority, disposable candidate execution, Standard-v2 self-adoption, and
   certified immutable release artifacts.
+- Added private, immutable evidence-session allocation and optional schema-2
+  receipt binding, with exact commit, tree, profile, producer, run, attempt, and
+  closed gate inventory material.
 
 ### Changed
 

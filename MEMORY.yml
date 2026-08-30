@@ -57,6 +57,7 @@ environment_facts:
     - main is protected by active repository ruleset 21862678 requiring pull requests, current governance-truthfulness, pack-checks, ast-checks, resolved conversations, and no force push or deletion
     - the local implementation host provides Docker but no disposable VM hypervisor or clone manager
     - evidence execution uses the explicitly selected Python and propagates its lexical executable directory and required loader environment into detached positive and negative-control worktrees
+    - evidence sessions allocate collision-resistant mode-0700 roots and immutable manifests; profile-v2 receipts must bind the exact session while profile-v1 receipts remain compatible
     - P01-HF01 merged as main commit a0faa8dc5948e3f9cbac9ef0fbddb9e3357f76a3 and exact-main runs 33321545239 and 33321545295 passed entirely on the local pool
   active_artifacts:
     spec: plans/product-spec.yml
@@ -78,6 +79,7 @@ known_constraints:
   - release execution and publication remain disabled until disposable candidate execution and isolated trusted publication are available
   - hosted Actions credits are unavailable through 2026-08-31; P03 implementation and dogfood validation proceed locally
   - every BCF behavior commit updates and validates BCF's own applicable governance contracts before successor work begins
+  - evidence session manifests never clear the general artifact root and bind exact commit, tree, profile, producer, run, attempt, and closed inventories
 reusable_commands:
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
   - .venv/bin/python -m pytest tests

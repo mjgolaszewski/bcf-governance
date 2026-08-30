@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import importlib.util
 import os
+import stat
 import subprocess
 import sys
 from pathlib import Path
@@ -30,6 +31,7 @@ finally:
     sys.path.pop(0)
 EvidenceError = EVIDENCE_MODULE.EvidenceError
 capture_gate = EVIDENCE_MODULE.capture_gate
+allocate_session = EVIDENCE_MODULE.allocate_session
 
 
 def _git(repo: Path, *args: str) -> None:
@@ -61,6 +63,7 @@ sys.exit(0 if PASS else 1)
     (repo / "governance-profile.yml").write_text(
         yaml.safe_dump(
             {
+                "profile": {"selected": "standard"},
                 "release_gate_profile": {
                     "gates": {
                         "test": {
@@ -193,6 +196,7 @@ def _make_diagnostic_gate_repo(
     (repo / "governance-profile.yml").write_text(
         yaml.safe_dump(
             {
+                "profile": {"selected": "standard"},
                 "release_gate_profile": {
                     "gates": {
                         "gate": {
@@ -420,4 +424,102 @@ def test_missing_selected_python_fails_before_gate_execution(tmp_path: Path) -> 
             "gate",
             tmp_path / "evidence",
             python_executable=tmp_path / "missing-python",
+        )
+
+
+def test_evidence_sessions_are_fresh_private_and_immutable(tmp_path: Path) -> None:
+    repo = _make_diagnostic_gate_repo(
+        tmp_path,
+        "BROKEN = False\nprint('ok')\n",
+    )
+    artifact_root = tmp_path / "evidence"
+
+    first = allocate_session(repo, artifact_root, ["gate"])
+    second = allocate_session(repo, artifact_root, ["gate"])
+
+    assert first.root != second.root
+    assert len(first.payload["session_id"]) >= 32
+    assert stat.S_IMODE(first.root.stat().st_mode) == 0o700
+    assert stat.S_IMODE(first.manifest_path.stat().st_mode) == 0o400
+    assert first.payload["subject"]["commit_sha"] == subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+
+
+def test_evidence_session_rejects_symlinked_artifact_root(tmp_path: Path) -> None:
+    repo = _make_diagnostic_gate_repo(
+        tmp_path,
+        "BROKEN = False\nprint('ok')\n",
+    )
+    real_root = tmp_path / "real-evidence"
+    real_root.mkdir()
+    linked_root = tmp_path / "linked-evidence"
+    linked_root.symlink_to(real_root, target_is_directory=True)
+
+    with pytest.raises(EvidenceError, match="contains a symlink"):
+        allocate_session(repo, linked_root, ["gate"])
+
+
+def test_profile_v2_capture_requires_and_binds_one_session(tmp_path: Path) -> None:
+    repo = _make_diagnostic_gate_repo(
+        tmp_path,
+        """import sys
+BROKEN = False
+if BROKEN:
+    print('expected policy violation', file=sys.stderr)
+    raise SystemExit(1)
+print('ok')
+""",
+    )
+    profile_path = repo / "governance-profile.yml"
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    profile["profile_contract_version"] = "2.0"
+    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
+    _git(repo, "add", "governance-profile.yml")
+    _git(repo, "commit", "-m", "enable profile v2")
+
+    with pytest.raises(EvidenceError, match="requires --session-manifest"):
+        capture_gate(repo, "gate", tmp_path / "unbound")
+
+    session = allocate_session(repo, tmp_path / "evidence", ["gate"])
+    output = session.root / "gates" / "gate"
+    receipt = json.loads(
+        capture_gate(
+            repo,
+            "gate",
+            output,
+            session_manifest=session.manifest_path,
+        ).read_text(encoding="utf-8")
+    )
+
+    observation = receipt["observations"]["evidence_session"]
+    assert receipt["result"] == "passed"
+    assert observation == {
+        "session_id": session.payload["session_id"],
+        "manifest_sha256": session.digest,
+    }
+    manifest_artifact = next(
+        value for value in receipt["artifacts"] if value["path"] == "evidence-session.json"
+    )
+    assert manifest_artifact["sha256"] == session.digest
+    assert (output / "evidence-session.json").read_bytes() == session.manifest_path.read_bytes()
+
+
+def test_session_gate_inventory_is_closed(tmp_path: Path) -> None:
+    repo = _make_diagnostic_gate_repo(
+        tmp_path,
+        "BROKEN = False\nprint('ok')\n",
+    )
+    session = allocate_session(repo, tmp_path / "evidence", ["different-gate"])
+
+    with pytest.raises(EvidenceError, match="not admitted"):
+        capture_gate(
+            repo,
+            "gate",
+            session.root / "gates" / "gate",
+            session_manifest=session.manifest_path,
         )

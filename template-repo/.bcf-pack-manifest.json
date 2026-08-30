@@ -14,7 +14,7 @@
     },
     "AGENTS.yml": {
       "operation": "copy",
-      "sha256": "d1ddcc0e101665c3983c47766046073fc54a93e273dcbcdc71189e1e298af5be"
+      "sha256": "9a495587a107f2096c01a1b2a8cd35dd2b2d077a915250d0519dd883839136d9"
     },
     "CHANGELOG.md": {
       "operation": "preserve",
@@ -190,6 +190,10 @@
       "operation": "copy",
       "sha256": "fd4c3eec3e875dc7f190482b757a61047b7e8af5da4d6d910d9d27332fbb211e"
     },
+    "schemas/evidence-session.schema.json": {
+      "operation": "copy",
+      "sha256": "7eabf6429c69474da6142ea0aa72db9eb0b17e93a176a3c500cfe157a0144c8a"
+    },
     "schemas/findings.schema.json": {
       "operation": "copy",
       "sha256": "1920e7216eb71f47a4127180968626013bc8d8317656cd304035e25b87826dda"
@@ -200,7 +204,7 @@
     },
     "schemas/governance-profile.schema.json": {
       "operation": "copy",
-      "sha256": "15b9157ebc951a819ce579c2838ef2837da7aac8cef2e039b30463eccb4fe27c"
+      "sha256": "248a04ca0a7dbdcadb481491ea883d9198bf9a74ae798ea1080cb335145fecce"
     },
     "schemas/hotfix-log.schema.json": {
       "operation": "copy",
@@ -274,6 +278,10 @@
       "operation": "copy",
       "sha256": "5840c3d5d3b5825acd81e06ce7ee8acc5a36ecd0a2842068704233f12ff53d5d"
     },
+    "scripts/_bcf_runtime/evidence_sessions.py": {
+      "operation": "copy",
+      "sha256": "b7bfd466da0056016c79daea548657d73d0741bb88b5f2e44d2403ec850c21be"
+    },
     "scripts/_bcf_runtime/evidence_test_adapters.py": {
       "operation": "copy",
       "sha256": "6f64bb1d572c347d0ba1bcb1380ee155c4f263d41ac4f4c178df573a86c8eb44"
@@ -296,7 +304,7 @@
     },
     "scripts/_bcf_runtime/governance_evidence.py": {
       "operation": "copy",
-      "sha256": "e59179918b95b2ff57b1a5c3dab995861c1fe363473cf42e8f5c83c9a75b4185"
+      "sha256": "a7983ec08d09aaf4d010d6161afa1cfa4fa7aa192f7a70e2ad34f6aed6aaf072"
     },
     "scripts/_bcf_runtime/governance_install/__init__.py": {
       "operation": "copy",

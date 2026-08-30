@@ -4,6 +4,7 @@
   "additionalProperties": false,
   "required": ["document", "profile", "release_gate_profile", "ci_profile", "drift_guardrails"],
   "properties": {
+    "profile_contract_version": {"type": "string", "enum": ["1.0", "2.0"]},
     "document": {
       "type": "object",
       "additionalProperties": false,
