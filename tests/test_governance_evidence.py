@@ -356,13 +356,17 @@ def test_capture_rejects_tracked_symlink_that_escapes_repository(tmp_path: Path)
 def test_selected_python_overrides_host_path_and_reaches_detached_controls(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    expected_loader = "/bcf/test/loader"
+    loader_marker = "/bcf/test/loader"
+    inherited_loader = os.environ.get("LD_LIBRARY_PATH", "")
+    selected_loader = os.pathsep.join(
+        value for value in (inherited_loader, loader_marker) if value
+    )
     repo = _make_diagnostic_gate_repo(
         tmp_path,
         """import os
 import sys
 BROKEN = False
-if os.environ.get('LD_LIBRARY_PATH') != '/bcf/test/loader':
+if not os.environ.get('LD_LIBRARY_PATH', '').endswith('/bcf/test/loader'):
     raise SystemExit('selected loader environment missing')
 if BROKEN:
     print('expected policy violation', file=sys.stderr)
@@ -380,7 +384,7 @@ print(sys.executable)
     hostile_python.write_text("#!/bin/sh\nexit 91\n", encoding="utf-8")
     hostile_python.chmod(0o755)
     monkeypatch.setenv("PATH", f"{hostile_bin}{os.pathsep}{os.environ['PATH']}")
-    monkeypatch.setenv("LD_LIBRARY_PATH", expected_loader)
+    monkeypatch.setenv("LD_LIBRARY_PATH", selected_loader)
 
     receipt = json.loads(
         capture_gate(

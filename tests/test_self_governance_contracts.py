@@ -174,6 +174,9 @@ def test_self_gate_tests_use_the_selected_python_module_entrypoint() -> None:
     )
     assert '[sys.executable, "-m", "pytest"' in source
     assert '["pytest", "-q"' not in source
+    for workflow in (REPO_ROOT / ".github/workflows").glob("*.yml"):
+        text = workflow.read_text(encoding="utf-8")
+        assert "run: pytest " not in text, workflow
 
 
 def test_self_profile_builder_matches_canonical_negative_controls() -> None:
