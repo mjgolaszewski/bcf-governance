@@ -24,6 +24,10 @@ execution_evidence:
   - .venv/bin/python -m pytest -q tests/test_self_governance_contracts.py
   - .venv/bin/python -m pytest tests -q
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  - gh run view 33318050317 --log-failed
+  - gh run view 33318050352 --log-failed
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python -m compileall -q bcf_governance scripts template-repo/scripts tests .github/scripts
   notes:
   - the live runner label is vm-linux-ci-runner, not vm-ci-runner
   - two matching local runners were online and idle; the Dependabot-only runner is excluded
@@ -32,6 +36,11 @@ execution_evidence:
   - GitHub personal repositories reject explicit user push restrictions, but mjgolaszewski is the sole collaborator and the no-bypass pull-request rule applies to administrators
   - privileged release publication is disabled while trusted and candidate labels share the local pool
   - local validation passed 198 tests and governance-yaml-ok
+  - initial PR runs reached the local pool, proving admission and labels, but every detached evidence gate failed before its probe because setup-python's selected Python could not load libpython after the evidence runtime replaced its loader environment
+  - governance-pack run 33318050317 failed for that single systemic interpreter cause; governance run 33318050352 was cancelled after diagnosis to release local capacity
+  - the evidence runtime now executes with an explicit selected interpreter, preserves its lexical executable directory, carries only the required dynamic-loader variables, hashes interpreter identity in receipt metadata, and applies the same authority to isolated negative controls
+  - canonical receipt argv remains unchanged for schema-2 compatibility and all three runtime copies are mechanically identical
+  - remediation validation passed 201 tests, governance-yaml-ok, compilation, runtime-copy diffs, and the 800-line module budget
   - restore ephemeral candidate workers and isolated trusted publication before the temporary window expires
 closeout_requirements:
   claims:

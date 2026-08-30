@@ -19,6 +19,7 @@ summary:
   - all existing jobs are classified as candidate or trusted and every GitHub-hosted runner label was removed
   - fork pull requests are rejected before candidate runner assignment and the privileged release publisher has no checkout or repository-script execution
   - P02-HF01 temporarily admits only owner-authored same-repository PRs to the persistent local pool and keeps privileged publication disabled
+  - P02-HF01 also repaired selected-interpreter propagation after the first local-pool PR run exposed a toolcache loader failure inside detached evidence worktrees
 workitems:
 - id: P02-P0-01
   status: DONE
@@ -45,6 +46,7 @@ execution_evidence:
   - GitHub reports zero repository runners and no main branch protection or ruleset
   - the implementation host has Docker but no VM clone manager, so the external substrate cannot be safely inferred or provisioned here
   - static governance validation passed and the complete local suite passed 197 tests
+  - replacement validation after the interpreter fix passed 201 tests, governance-yaml-ok, compilation, exact runtime-copy checks, and module line budgets
 closeout_requirements:
   claims:
     workitems_closed:

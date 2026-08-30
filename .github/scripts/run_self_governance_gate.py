@@ -60,7 +60,7 @@ def _run_tests(gate: str) -> None:
     environment = dict(os.environ)
     environment["PYTHONPATH"] = str(REPO_ROOT)
     result = subprocess.run(
-        ["pytest", "-q", *nodes, f"--junitxml={junit}"],
+        [sys.executable, "-m", "pytest", "-q", *nodes, f"--junitxml={junit}"],
         cwd=REPO_ROOT,
         env=environment,
         check=False,

@@ -270,6 +270,10 @@
       "operation": "copy",
       "sha256": "3666d17ccd9953d6a3d2f907942caf4477301f7a5fb7b1930b440825bfc0bf31"
     },
+    "scripts/_bcf_runtime/evidence_execution.py": {
+      "operation": "copy",
+      "sha256": "5840c3d5d3b5825acd81e06ce7ee8acc5a36ecd0a2842068704233f12ff53d5d"
+    },
     "scripts/_bcf_runtime/evidence_test_adapters.py": {
       "operation": "copy",
       "sha256": "6f64bb1d572c347d0ba1bcb1380ee155c4f263d41ac4f4c178df573a86c8eb44"
@@ -292,7 +296,7 @@
     },
     "scripts/_bcf_runtime/governance_evidence.py": {
       "operation": "copy",
-      "sha256": "a8c1bd09c08310bde710a6ce5e31fe83e08883cde1ac98a930f3c3104e0a2020"
+      "sha256": "e59179918b95b2ff57b1a5c3dab995861c1fe363473cf42e8f5c83c9a75b4185"
     },
     "scripts/_bcf_runtime/governance_install/__init__.py": {
       "operation": "copy",

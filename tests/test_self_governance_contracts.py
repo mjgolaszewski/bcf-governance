@@ -245,6 +245,14 @@ def test_self_gate_runner_bootstraps_an_uninstalled_source_checkout() -> None:
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_self_gate_tests_use_the_selected_python_module_entrypoint() -> None:
+    source = (REPO_ROOT / ".github/scripts/run_self_governance_gate.py").read_text(
+        encoding="utf-8"
+    )
+    assert '[sys.executable, "-m", "pytest"' in source
+    assert '["pytest", "-q"' not in source
+
+
 def test_self_profile_builder_matches_canonical_negative_controls() -> None:
     generated = yaml.safe_load(
         subprocess.run(

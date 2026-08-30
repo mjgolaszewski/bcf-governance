@@ -56,6 +56,7 @@ environment_facts:
     - BCF has two owner-controlled local CI runners on the bcf-governance and vm-linux-ci-runner labels plus one excluded Dependabot runner
     - main is protected by active repository ruleset 21862678 requiring pull requests, current governance-truthfulness, pack-checks, ast-checks, resolved conversations, and no force push or deletion
     - the local implementation host provides Docker but no disposable VM hypervisor or clone manager
+    - evidence execution uses the explicitly selected Python and propagates its lexical executable directory and required loader environment into detached positive and negative-control worktrees
   active_artifacts:
     spec: plans/product-spec.yml
     build_plan: plans/build-plan.yml
@@ -67,6 +68,7 @@ environment_facts:
 known_constraints:
   - schema-2 evidence must be recaptured after every governed tree mutation
   - template runtime and packaged template copies must remain byte-identical to canonical sources
+  - receipt invocation remains canonical while selected-interpreter identity is recorded as hashed environment metadata
   - release tags are created only at a merge commit whose source and governance CI passed
   - through 2026-08-31 an owner-only same-repository PR may use the two persistent local VM runners while privileged release publication remains disabled
   - restore fresh disposable one-job candidate runners before admitting any non-owner code or re-enabling release publication

@@ -43,10 +43,10 @@ hotfix_lane:
       status: active
       triggered_by_commits: [1f0f73071e0a8a22439293c34d96fd8547487cbe]
       failing_workflows: [governance, governance-pack, governance-mutants-nightly, governance-mutants-weekly, release]
-      root_cause: safe ephemeral runners are unavailable while hosted credits are exhausted and the live local pool uses a different exact label contract
+      root_cause: safe ephemeral runners are unavailable while hosted credits are exhausted, the live local pool uses a different exact label contract, and detached evidence sessions initially discarded the selected toolcache Python loader environment
       remediated_in_phase: P02
       hotfix_log: phases/phase-02-hotfix01.yml
-      canonical_artifacts: [.github/workflows/, governance/self-governance-policy.yml, plans/phase-ledger.yml, MEMORY.yml]
+      canonical_artifacts: [.github/workflows/, bcf_governance/tooling/evidence_execution.py, bcf_governance/tooling/governance_evidence.py, governance/self-governance-policy.yml, plans/phase-ledger.yml, MEMORY.yml]
   remediation_history: []
 operator_requirements_choices_disambiguations:
   - type: decision

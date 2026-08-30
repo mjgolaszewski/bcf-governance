@@ -2,7 +2,7 @@ schema_version: '1.0'
 thin_wrapper_loc_cap: 20
 tooling_contexts:
   cleanup: [cleanup_ci_resources.py, cleanup_governance_pack.py, governance_cleanup/]
-  evidence: [evidence_attestation.py, evidence_test_adapters.py, governance_evidence.py, governance_truth.py, governance_truth_support.py, truth_receipts.py]
+  evidence: [evidence_attestation.py, evidence_execution.py, evidence_test_adapters.py, governance_evidence.py, governance_truth.py, governance_truth_support.py, truth_receipts.py]
   install: [install_governance_pack.py, governance_install/]
   operations: [migrate_governance_evidence.py, publish_audit.py, scaffold_governance_artifacts.py]
   profiles: [governance_profiles.py, profile_governance.py]

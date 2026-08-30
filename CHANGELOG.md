@@ -12,6 +12,13 @@ All notable changes to BCF Governance are recorded here. This file follows
   authority, disposable candidate execution, Standard-v2 self-adoption, and
   certified immutable release artifacts.
 
+### Fixed
+
+- Made the explicitly selected Python interpreter authoritative in positive and
+  detached negative-control evidence sessions, including the loader environment
+  required by toolcache Python installations, without changing canonical gate
+  argv or schema-2 receipt compatibility.
+
 ### Security
 
 - Defined a hard separation between one-job disposable candidate workers and a
