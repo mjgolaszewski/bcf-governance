@@ -1,0 +1,203 @@
+name: bcf/trusted-control-bootstrap
+
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+env:
+  BCF_BOOTSTRAP_ARTIFACT_ID: "9740097978"
+  BCF_BOOTSTRAP_ARTIFACT_NAME: bcf-trusted-control-6368eb34ce08c1bfc4bc554fae02e5e10468455f-1
+  BCF_BOOTSTRAP_ARTIFACT_DIGEST: sha256:b6015abf6b6b761c1f909d6e66fe72e71c0f67b84066db907800ab3b6c27d115
+  BCF_BOOTSTRAP_RUN_ID: "33339477463"
+  BCF_BOOTSTRAP_RUN_ATTEMPT: "1"
+  BCF_BOOTSTRAP_COMMIT_SHA: 6368eb34ce08c1bfc4bc554fae02e5e10468455f
+  BCF_BOOTSTRAP_TREE_SHA: 5d72e163481e7f8e42d20e5aeb1d7d8091dbf5d2
+  BCF_BOOTSTRAP_REPOSITORY_ID: "1207503211"
+  BCF_BOOTSTRAP_WHEEL_SHA256: 72cbc4bb1c9c31a1c3b362cd93e99ccf5704755c9499849e7174ffa419e4e58c
+
+jobs:
+  bootstrap:
+    if: ${{ github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main' }}
+    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner, "${{ matrix.trusted_runner }}"]
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        trusted_runner: [bcf-trusted-control-1, bcf-trusted-control-2]
+    steps:
+      - name: Select the trusted bootstrap interpreter
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+      - name: Authenticate the immutable exact-main artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          selected_python="$(command -v python)"
+          case "$selected_python" in
+            "$RUNNER_TOOL_CACHE"/*) ;;
+            *) echo "selected Python is outside the trusted tool cache" >&2; exit 1 ;;
+          esac
+          "$selected_python" - <<'PY'
+          import json
+          import os
+          from urllib.request import Request, urlopen
+
+          expected = {
+              "id": int(os.environ["BCF_BOOTSTRAP_ARTIFACT_ID"]),
+              "name": os.environ["BCF_BOOTSTRAP_ARTIFACT_NAME"],
+              "digest": os.environ["BCF_BOOTSTRAP_ARTIFACT_DIGEST"],
+              "expired": False,
+          }
+          api = os.environ["GITHUB_API_URL"].rstrip("/")
+          repository = os.environ["GITHUB_REPOSITORY"]
+          if api != "https://api.github.com" or repository != "mjgolaszewski/bcf-governance":
+              raise SystemExit("bootstrap provider origin or repository is not authoritative")
+          request = Request(
+              f"{api}/repos/{repository}/actions/artifacts/{expected['id']}",
+              headers={
+                  "Accept": "application/vnd.github+json",
+                  "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
+                  "X-GitHub-Api-Version": "2022-11-28",
+              },
+          )
+          with urlopen(request, timeout=30) as response:  # noqa: S310 - GitHub API origin
+              artifact = json.load(response)
+          observed = {key: artifact.get(key) for key in expected}
+          if observed != expected:
+              raise SystemExit(f"artifact identity mismatch: {observed!r}")
+          workflow_run = artifact.get("workflow_run")
+          expected_run = {
+              "id": int(os.environ["BCF_BOOTSTRAP_RUN_ID"]),
+              "repository_id": int(os.environ["BCF_BOOTSTRAP_REPOSITORY_ID"]),
+              "head_repository_id": int(os.environ["BCF_BOOTSTRAP_REPOSITORY_ID"]),
+              "head_branch": "main",
+              "head_sha": os.environ["BCF_BOOTSTRAP_COMMIT_SHA"],
+          }
+          if not isinstance(workflow_run, dict) or {
+              key: workflow_run.get(key) for key in expected_run
+          } != expected_run:
+              raise SystemExit("artifact producer run identity mismatch")
+          PY
+      - name: Download only the authenticated controller artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          artifact-ids: ${{ env.BCF_BOOTSTRAP_ARTIFACT_ID }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.BCF_BOOTSTRAP_RUN_ID }}
+          path: ${{ runner.temp }}/bcf-trusted-control-bootstrap
+          digest-mismatch: error
+      - name: Verify and install the controller offline
+        shell: bash
+        env:
+          BCF_BOOTSTRAP_DIR: ${{ runner.temp }}/bcf-trusted-control-bootstrap
+        run: |
+          set -euo pipefail
+          selected_python="$(command -v python)"
+          install_parent="${RUNNER_TOOL_CACHE%/}/bcf-governance"
+          install_root="$install_parent/$BCF_BOOTSTRAP_COMMIT_SHA"
+          stage="$install_root.stage-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          case "$install_parent" in
+            "$RUNNER_TOOL_CACHE"/*) ;;
+            *) echo "trusted install path escaped the tool cache" >&2; exit 1 ;;
+          esac
+          test -d "$RUNNER_TOOL_CACHE"
+          test ! -L "$RUNNER_TOOL_CACHE"
+          mkdir -p "$install_parent"
+          test ! -L "$install_parent"
+          test -d "$BCF_BOOTSTRAP_DIR"
+          test ! -L "$BCF_BOOTSTRAP_DIR"
+          (cd "$BCF_BOOTSTRAP_DIR" && sha256sum --check SHA256SUMS)
+          "$selected_python" - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path(os.environ["BCF_BOOTSTRAP_DIR"])
+          metadata = json.loads((root / "CONTROL-METADATA.json").read_text())
+          expected = {
+              "schema_version": "1.0",
+              "commit_sha": os.environ["BCF_BOOTSTRAP_COMMIT_SHA"],
+              "tree_sha": os.environ["BCF_BOOTSTRAP_TREE_SHA"],
+              "workflow_run_id": os.environ["BCF_BOOTSTRAP_RUN_ID"],
+              "workflow_run_attempt": os.environ["BCF_BOOTSTRAP_RUN_ATTEMPT"],
+          }
+          if metadata != expected:
+              raise SystemExit("controller metadata is not the pinned exact-main subject")
+          wheels = sorted(root.glob("bcf_governance-*.whl"))
+          if len(wheels) != 1:
+              raise SystemExit("controller wheel inventory must be exact")
+          digest = hashlib.sha256(wheels[0].read_bytes()).hexdigest()
+          if digest != os.environ["BCF_BOOTSTRAP_WHEEL_SHA256"]:
+              raise SystemExit("controller wheel digest mismatch")
+          PY
+          if test -e "$install_root"; then
+            test -d "$install_root"
+            test ! -L "$install_root"
+            test -x "$install_root/bin/bcf"
+            test ! -L "$install_root/bin/bcf"
+            export BCF_INSTALL_ROOT="$install_root"
+            "$selected_python" - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          expected = {
+              "artifact_id": os.environ["BCF_BOOTSTRAP_ARTIFACT_ID"],
+              "artifact_digest": os.environ["BCF_BOOTSTRAP_ARTIFACT_DIGEST"],
+              "artifact_run_id": os.environ["BCF_BOOTSTRAP_RUN_ID"],
+              "commit_sha": os.environ["BCF_BOOTSTRAP_COMMIT_SHA"],
+              "wheel_sha256": os.environ["BCF_BOOTSTRAP_WHEEL_SHA256"],
+          }
+          path = Path(os.environ["BCF_INSTALL_ROOT"], "INSTALL-METADATA.json")
+          if json.loads(path.read_text()) != expected:
+              raise SystemExit("existing trusted control installation has stale provenance")
+          PY
+            "$install_root/bin/bcf" ci-github --help >/dev/null
+            exit 0
+          fi
+          test ! -e "$stage"
+          cleanup_stage() {
+            if [[ -d "$stage" && ! -L "$stage" && "$stage" == "$install_root".stage-* ]]; then
+              rm -rf -- "$stage"
+            fi
+          }
+          trap cleanup_stage EXIT
+          "$selected_python" -m venv "$stage"
+          "$stage/bin/python" -m pip install --no-index \
+            --find-links "$BCF_BOOTSTRAP_DIR" \
+            "$BCF_BOOTSTRAP_DIR/bcf_governance-0.6.1-py3-none-any.whl"
+          "$stage/bin/bcf" ci-github --help >/dev/null
+          export BCF_INSTALL_STAGE="$stage"
+          "$selected_python" - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          Path(os.environ["BCF_INSTALL_STAGE"], "INSTALL-METADATA.json").write_text(
+              json.dumps(
+                  {
+                      "artifact_id": os.environ["BCF_BOOTSTRAP_ARTIFACT_ID"],
+                      "artifact_digest": os.environ["BCF_BOOTSTRAP_ARTIFACT_DIGEST"],
+                      "artifact_run_id": os.environ["BCF_BOOTSTRAP_RUN_ID"],
+                      "commit_sha": os.environ["BCF_BOOTSTRAP_COMMIT_SHA"],
+                      "wheel_sha256": os.environ["BCF_BOOTSTRAP_WHEEL_SHA256"],
+                  },
+                  sort_keys=True,
+                  separators=(",", ":"),
+              )
+              + "\n",
+              encoding="utf-8",
+          )
+          PY
+          mv -- "$stage" "$install_root"
+          trap - EXIT
+          "$install_root/bin/bcf" ci-github --help >/dev/null
