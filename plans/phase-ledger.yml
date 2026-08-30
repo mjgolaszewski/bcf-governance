@@ -43,16 +43,10 @@ hotfix_lane:
         - security_or_expiring_external_breakage
   open_records: []
   remediation_history:
+    - {id: P10-HF02, mode: full, recorded_at_utc: '2026-08-30T00:00:00Z', action: add authenticated trusted GitHub control commands and produce a hash-manifested offline controller wheelhouse from exact main, remediated_in_phase: P10, hotfix_log: phases/phase-10-hotfix02.yml, canonical_artifacts: [bcf_governance/tooling/ci_github_api.py, bcf_governance/tooling/ci_github_controller.py, bcf_governance/tooling/ci_github_commands.py, .github/workflows/governance-pack.yml], local_validation: [376_tests_passed, 104_ci_authority_contract_nodes_passed, high_value_mutants_killed, semantic_high_value_mutants_killed, offline_wheelhouse_smoke_passed, governance-yaml-ok, governance-exposure-scan-ok]}
     - {id: P10-HF01, mode: full, recorded_at_utc: '2026-08-30T00:00:00Z', action: add an owner-main-only no-checkout probe before any trusted callback is enabled, remediated_in_phase: P10, hotfix_log: phases/phase-10-hotfix01.yml, canonical_artifacts: [.github/workflows/bcf-trusted-control-probe.yml, governance/self-governance-policy.yml, tests/test_self_governance_contracts.py, MEMORY.yml], local_validation: [80_focused_tests_passed, governance-yaml-ok, governance-exposure-scan-ok]}
     - {id: P02-HF01, mode: full, recorded_at_utc: '2026-08-30T00:00:00Z', action: run all candidate CI on fresh standard hosted VMs and partition evidence into four derived shards, remediated_in_phase: P05, hotfix_log: phases/phase-02-hotfix01.yml, canonical_artifacts: [.github/workflows/, governance/evidence-policy.yml, governance/self-governance-policy.yml, tests/test_self_governance_contracts.py, MEMORY.yml], local_validation: [governance-yaml-ok, 252_tests_passed, 23_causal_mutants_killed, hosted_runner_isolation, no_runner_occupying_coordination]}
-    - id: P01-HF01
-      mode: full
-      recorded_at_utc: '2026-08-30T00:00:00Z'
-      action: route all workflows to the owner-only local pool and repair selected-interpreter authority while hosted credits are unavailable
-      remediated_in_phase: P01
-      hotfix_log: phases/phase-01-hotfix01.yml
-      canonical_artifacts: [.github/workflows/, bcf_governance/tooling/evidence_execution.py, bcf_governance/tooling/governance_evidence.py, governance/self-governance-policy.yml, MEMORY.yml]
-      local_validation: [governance-yaml-ok, 201_tests_passed, high_value_mutants_killed, semantic_high_value_mutants_killed, full_mutants_killed, semantic_full_mutants_killed]
+    - {id: P01-HF01, mode: full, recorded_at_utc: '2026-08-30T00:00:00Z', action: route all workflows to the owner-only local pool and repair selected-interpreter authority while hosted credits are unavailable, remediated_in_phase: P01, hotfix_log: phases/phase-01-hotfix01.yml, canonical_artifacts: [.github/workflows/, bcf_governance/tooling/evidence_execution.py, bcf_governance/tooling/governance_evidence.py, governance/self-governance-policy.yml, MEMORY.yml], local_validation: [governance-yaml-ok, 201_tests_passed, high_value_mutants_killed, semantic_high_value_mutants_killed, full_mutants_killed, semantic_full_mutants_killed]}
 operator_requirements_choices_disambiguations:
   - type: decision
     statement: all governance, memory, specs, plans, workitem ledgers, and phase logs remain YAML-native

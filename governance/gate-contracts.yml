@@ -208,7 +208,7 @@ gates:
         selectors: ['tests/test_self_governance_contracts.py::test_required_repository_artifact_contract_is_executable', 'tests/test_validate_governance_yaml.py::test_artifact_manifest_requires_standard_repository_artifact_contracts',
           'tests/test_validate_governance_yaml.py::test_pull_request_validation_requires_changelog_update', tests/test_ci_authority.py,
           tests/test_ci_certification.py, tests/test_ci_authority_decisions.py, tests/test_release_receipts.py, tests/test_ci_github_reference.py,
-          tests/test_local_pr.py, tests/test_runtime_capacity.py, tests/test_trusted_inputs.py]
+          tests/test_ci_github_controller.py, tests/test_local_pr.py, tests/test_runtime_capacity.py, tests/test_trusted_inputs.py]
         expected_node_manifest: governance/test-manifests/contract-test.txt
         expected_nodes_mode: exact
         min_collected: 1
