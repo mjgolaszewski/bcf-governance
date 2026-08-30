@@ -16,6 +16,7 @@ summary:
     N/A contracts
   - phase artifacts were scaffolded from the governance template
   - P06 activated after P05 passed 246 tests, clean-commit dogfood, exact 62-representation Identity proof, and the provisional performance ceilings
+  - P02-HF01 replaces the expired temporary local candidate pool with fresh GitHub-hosted run-to-completion workers while trusted publication stays disabled
 workitems:
 - id: P06-P0-01
   status: IN_PROGRESS

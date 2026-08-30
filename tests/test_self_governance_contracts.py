@@ -153,15 +153,13 @@ def test_changelog_pr_enforcement_is_wired_into_repository_ci() -> None:
     }
 
 
-def test_self_governance_runner_classification_is_exact_and_has_no_hosted_fallback() -> None:
+def test_self_governance_runner_classification_is_exact_and_has_no_fallback() -> None:
     runner_policy = _policy()["runner_security"]
     expected_jobs = runner_policy["jobs"]
     observed_jobs: dict[str, dict[str, str]] = {}
     for relative_path, classification in expected_jobs.items():
         workflow_path = REPO_ROOT / relative_path
-        workflow_text = workflow_path.read_text(encoding="utf-8")
-        assert "ubuntu-latest" not in workflow_text
-        workflow = yaml.safe_load(workflow_text)
+        workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
         jobs = workflow["jobs"]
         assert set(jobs) == set(classification)
         observed_jobs[relative_path] = classification
@@ -170,6 +168,13 @@ def test_self_governance_runner_classification_is_exact_and_has_no_hosted_fallba
             assert jobs[job_id]["runs-on"] == expected_labels
     assert observed_jobs == expected_jobs
     assert runner_policy["hosted_fallback_allowed"] is False
+    assert runner_policy["candidate_substrate"] == "github_hosted_ephemeral"
+    assert runner_policy["candidate_labels"] == "ubuntu-latest"
+    assert runner_policy["coordination_policy"] == [
+        "no_polling",
+        "no_sleeping",
+        "no_idle_waiters",
+    ]
 
 
 def test_fork_pull_requests_are_rejected_before_candidate_runner_assignment() -> None:
@@ -177,9 +182,7 @@ def test_fork_pull_requests_are_rejected_before_candidate_runner_assignment() ->
         "github.event.pull_request.head.repo.full_name == github.repository"
     )
     runner_policy = _policy()["runner_security"]
-    owner_guard = (
-        f"github.actor == '{runner_policy['temporary_local_window']['admitted_pr_actor']}'"
-    )
+    owner_guard = f"github.actor == '{runner_policy['candidate_admission']['pull_request_actor']}'"
     for relative_path in (
         ".github/workflows/governance.yml",
         ".github/workflows/governance-pack.yml",
@@ -214,11 +217,11 @@ def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
                 assert ".github/" not in command
 
 
-def test_shared_temporary_pool_cannot_run_privileged_publication() -> None:
+def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
     runner_policy = _policy()["runner_security"]
-    assert runner_policy["candidate_labels"] == runner_policy["trusted_labels"]
+    assert runner_policy["candidate_labels"] != runner_policy["trusted_labels"]
     window = runner_policy["temporary_local_window"]
-    assert window["status"] == "active"
+    assert window["status"] == "closed"
     assert window["privileged_publication_enabled"] is False
     for relative_path, classification in runner_policy["jobs"].items():
         workflow = yaml.safe_load(
@@ -231,6 +234,17 @@ def test_shared_temporary_pool_cannot_run_privileged_publication() -> None:
         (REPO_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
     )
     assert release["jobs"]["release-artifacts"]["if"] == "${{ false }}"
+
+
+def test_workflows_have_no_runner_occupying_coordination() -> None:
+    forbidden = re.compile(r"\b(sleep|poll|wait|while|until)\b", re.IGNORECASE)
+    for relative_path in _policy()["runner_security"]["jobs"]:
+        workflow = yaml.safe_load(
+            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+        )
+        for job in workflow["jobs"].values():
+            for step in job.get("steps", []):
+                assert forbidden.search(step.get("run", "")) is None
 
 
 def test_self_gate_runner_bootstraps_an_uninstalled_source_checkout() -> None:

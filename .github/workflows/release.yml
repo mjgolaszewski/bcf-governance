@@ -9,12 +9,11 @@ permissions: {}
 
 jobs:
   release-artifacts:
-    # Release execution stays disabled until disposable candidate workers are
-    # available; publication is independently disabled below.
+    # P11 enables release execution only after exact-main artifact contracts pass.
     if: ${{ false }}
     permissions:
       contents: read
-    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -67,7 +66,7 @@ jobs:
           retention-days: 30
 
   publish-release:
-    if: ${{ false }} # Disabled while candidate and trusted work share the temporary local pool.
+    if: ${{ false }} # Disabled until the isolated trusted publisher passes P10.
     needs: [release-artifacts]
     permissions:
       actions: read

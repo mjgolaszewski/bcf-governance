@@ -12,7 +12,7 @@ permissions:
 jobs:
   pack-checks:
     if: github.event_name != 'pull_request' || (github.actor == 'mjgolaszewski' && github.event.pull_request.head.repo.full_name == github.repository)
-    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,7 +44,7 @@ jobs:
 
   ast-checks:
     if: github.event_name != 'pull_request' || (github.actor == 'mjgolaszewski' && github.event.pull_request.head.repo.full_name == github.repository)
-    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:

@@ -15,7 +15,7 @@ env:
 jobs:
   preflight:
     if: github.event_name != 'pull_request' || (github.actor == 'mjgolaszewski' && github.event.pull_request.head.repo.full_name == github.repository)
-    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
@@ -28,7 +28,7 @@ jobs:
   evidence:
     if: github.event_name != 'pull_request' || (github.actor == 'mjgolaszewski' && github.event.pull_request.head.repo.full_name == github.repository)
     needs: [preflight]
-    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -72,7 +72,7 @@ jobs:
   governance-truthfulness:
     if: always() && (github.event_name != 'pull_request' || (github.actor == 'mjgolaszewski' && github.event.pull_request.head.repo.full_name == github.repository))
     needs: [evidence]
-    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}

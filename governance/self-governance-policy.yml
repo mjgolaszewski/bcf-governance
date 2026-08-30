@@ -19,15 +19,18 @@ forbid_subprocess_shell: true
 runner_security:
   hosted_fallback_allowed: false
   fork_pull_request_policy: maintainer_import_to_same_repository_branch
-  candidate_labels: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+  candidate_substrate: github_hosted_ephemeral
+  candidate_labels: ubuntu-latest
+  candidate_lifecycle: provider_fresh_vm_per_job_destroyed_after_completion
   trusted_labels: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+  coordination_policy: [no_polling, no_sleeping, no_idle_waiters]
+  candidate_admission: {pull_request_actor: mjgolaszewski, pull_request_source: same_repository}
   temporary_local_window:
-    status: active
-    admitted_pr_actor: mjgolaszewski
-    admitted_pr_source: same_repository
-    expires_after_utc: '2026-08-31T23:59:59Z'
+    status: closed
+    closed_at_utc: '2026-08-30T00:00:00Z'
+    reason: GitHub-hosted ephemeral candidate capacity restored
     privileged_publication_enabled: false
-    restore_condition: safe ephemeral candidate runners and an isolated trusted publisher are available
+    restore_condition: not_applicable_closed_window
   jobs:
     .github/workflows/governance-mutants-nightly.yml: {high-value-mutants: candidate}
     .github/workflows/governance-mutants-weekly.yml: {full-mutants: candidate}

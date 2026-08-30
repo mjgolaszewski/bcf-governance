@@ -26,9 +26,7 @@ active_phase:
   build_plan: plans/build-plan.yml
   lifecycle_status: active
   owner: "codex"
-  validation_commands:
-    - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
-    - .venv/bin/python -m pytest tests
+  validation_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests]
 hotfix_lane:
   scaffold_script: scripts/scaffold_governance_artifacts.py
   default_mode: full
@@ -45,6 +43,7 @@ hotfix_lane:
         - security_or_expiring_external_breakage
   open_records: []
   remediation_history:
+    - {id: P02-HF01, mode: full, recorded_at_utc: '2026-08-30T00:00:00Z', action: replace the temporary shared local candidate pool with disposable GitHub-hosted run-to-completion workers, remediated_in_phase: P06, hotfix_log: phases/phase-02-hotfix01.yml, canonical_artifacts: [.github/workflows/, governance/self-governance-policy.yml, tests/test_self_governance_contracts.py, MEMORY.yml], local_validation: [governance-yaml-ok, 247_tests_passed, no_runner_occupying_coordination]}
     - id: P01-HF01
       mode: full
       recorded_at_utc: '2026-08-30T00:00:00Z'
@@ -65,7 +64,7 @@ operator_requirements_choices_disambiguations:
   - type: release
     statement: the tag publisher publishes pre-certified exact bytes and never rebuilds source
   - {type: owner_authorization, statement: "the sole repository owner authorizes Codex to perform required human reviews and approvals for the 0.7 release train"}
-  - {type: execution_boundary, statement: "hosted Actions are unavailable through 2026-08-31; implementation may proceed locally, but remote candidate execution and release publication remain fail-closed until P10 proves the disposable candidate and isolated trusted substrates"}
+  - {type: execution_boundary, statement: "GitHub-hosted ephemeral capacity is available for run-to-completion candidate jobs with no polling, sleeping, idle waiters, or fallback; release publication remains fail-closed until P10 proves the isolated trusted substrate"}
 active_delivery_priorities:
   current_tranche:
     - "ci-authority-contracts"

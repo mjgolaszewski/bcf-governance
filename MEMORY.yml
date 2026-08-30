@@ -53,7 +53,7 @@ environment_facts:
     - observability contracts are scaffolded under contracts/observability/v1/
     - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
     - P06 is active for provider-neutral CI identity, admission, state, and typed N/A contracts after P05 reproduced exact Identity main with 62 representations and 220 required browser traces
-    - BCF has two owner-controlled local CI runners on the bcf-governance and vm-linux-ci-runner labels plus one excluded Dependabot runner
+    - candidate workflows use fresh GitHub-hosted jobs; owner-controlled local labels remain only for disabled trusted publication pending P10 isolation proof
     - main is protected by active repository ruleset 21862678 requiring pull requests, current governance-truthfulness, pack-checks, ast-checks, resolved conversations, and no force push or deletion
     - the local implementation host provides Docker but no disposable VM hypervisor or clone manager
     - evidence execution uses the explicitly selected Python and propagates its lexical executable directory and required loader environment into detached positive and negative-control worktrees

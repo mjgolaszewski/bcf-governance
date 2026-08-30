@@ -1,0 +1,46 @@
+document:
+  kind: hotfix_execution_log
+  name: P02-HF01 Hotfix Log
+  id: bcf-governance-phase-02-hotfix01
+  version: 1.0.0
+  generated_at_utc: '2026-08-30T00:00:00Z'
+  status: completed
+  path: phases/phase-02-hotfix01.yml
+hotfix:
+  id: P02-HF01
+  mode: full
+  related_phase_id: P02
+  hotfix_number: 1
+  summary: replace the expired shared local candidate pool with disposable GitHub-hosted
+    run-to-completion workers
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  executed_commands:
+  - .venv/bin/python -m pytest tests/test_self_governance_contracts.py tests/test_validate_governance_yaml.py -q
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  - .venv/bin/python -m pytest tests
+  notes:
+  - GitHub-hosted capacity resumed before the prior local-window expiration, so every candidate job now uses one fresh provider-managed ubuntu-latest VM and terminates when its work completes
+  - same-repository and sole-owner PR admission remains in place to prevent unapproved credit consumption
+  - no workflow run command polls, sleeps, waits, or loops for another workflow or runner
+  - the owner-controlled local label set remains only on the disabled trusted publisher; candidate jobs have no fallback to it
+  - release execution remains disabled until P11 and trusted publication remains disabled until P10 isolation proof
+  - local validation passed governance-yaml-ok and the complete 247-test suite
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml
