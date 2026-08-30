@@ -9,7 +9,6 @@ import json
 import os
 import re
 import shutil
-import site
 import subprocess
 import tempfile
 import xml.etree.ElementTree as ET
@@ -20,6 +19,15 @@ from typing import Any
 import yaml  # type: ignore[import-untyped]
 
 from .evidence_attestation import attest_bundle, bundle_digest
+from .evidence_execution import (
+    EvidenceError,
+    _command,
+    _execution_cwd,
+    _execution_env,
+    _run,
+    _runtime_command,
+    _selected_python,
+)
 from .evidence_test_adapters import (
     recompute_test_artifact_observations,
     test_observations as _test_observations,
@@ -39,10 +47,6 @@ TEST_POLICIES.update(
         "architecture_duplication",
     }
 )
-
-
-class EvidenceError(ValueError):
-    """Raised when evidence cannot be captured safely."""
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -164,65 +168,6 @@ def expected_invocations(repo_root: Path) -> dict[str, dict[str, Any]]:
         str(target): dict(value["invocation"])
         for target, value in gates.items()
         if isinstance(value, dict) and isinstance(value.get("invocation"), dict)
-    }
-
-
-def _command(contract: dict[str, Any]) -> list[str]:
-    invocation = contract.get("invocation")
-    argv = invocation.get("argv") if isinstance(invocation, dict) else None
-    if not isinstance(argv, list) or not argv or not all(isinstance(value, str) for value in argv):
-        raise EvidenceError(f"gate {contract.get('target')} has no valid argv")
-    for value in argv:
-        argument = Path(value)
-        if argument.is_absolute() or ".." in argument.parts:
-            raise EvidenceError("gate argv must not reference an out-of-tree path")
-    return list(argv)
-
-
-def _run(command: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-    try:
-        return subprocess.run(command, cwd=cwd, env=env, capture_output=True, text=True, timeout=1800)
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        return subprocess.CompletedProcess(command, 126, "", f"bcf execution infrastructure failure: {exc}")
-
-
-def _execution_cwd(worktree: Path, contract: dict[str, Any]) -> Path:
-    invocation = contract["invocation"]
-    relative = Path(str(invocation.get("cwd", ".")))
-    if relative.is_absolute() or ".." in relative.parts:
-        raise EvidenceError("gate cwd must stay inside the governed tree")
-    cwd = (worktree / relative).resolve()
-    if not cwd.is_relative_to(worktree.resolve()) or not cwd.is_dir():
-        raise EvidenceError("gate cwd does not resolve to a directory inside the governed tree")
-    return cwd
-
-
-def _execution_env(worktree: Path, contract: dict[str, Any]) -> tuple[dict[str, str], dict[str, Any]]:
-    invocation = contract["invocation"]
-    configured = invocation.get("env", {})
-    required = invocation.get("required_env", [])
-    if not isinstance(configured, dict) or not isinstance(required, list):
-        raise EvidenceError("gate environment contract is invalid")
-    missing = sorted(name for name in required if not isinstance(name, str) or name not in os.environ)
-    if missing:
-        raise EvidenceError("required gate environment is missing: " + ", ".join(missing))
-    runtime_home = worktree.parent / ".bcf-home"
-    runtime_home.mkdir(exist_ok=True)
-    env = {
-        "PATH": os.environ.get("PATH", ""),
-        "HOME": str(runtime_home),
-        "LANG": "C.UTF-8",
-        "LC_ALL": "C.UTF-8",
-        "PYTHONDONTWRITEBYTECODE": "1",
-        # Keep installed Python tooling available while HOME remains isolated.
-        # Repository-local and caller-supplied PYTHONPATH values are never inherited.
-        "PYTHONUSERBASE": site.getuserbase(),
-        **{str(key): str(value) for key, value in configured.items()},
-        **{str(name): os.environ[str(name)] for name in required},
-    }
-    return env, {
-        "declared": dict(sorted((str(key), str(value)) for key, value in configured.items())),
-        "required_present": sorted(str(name) for name in required),
     }
 
 
@@ -399,6 +344,7 @@ def _negative_control_results(
     command: list[str],
     output_dir: Path,
     baseline_observations: dict[str, Any],
+    python_executable: Path,
 ) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
     controls = contract.get("negative_controls")
     if not isinstance(controls, list):
@@ -413,7 +359,7 @@ def _negative_control_results(
             _git(repo_root, "worktree", "add", "--quiet", "--detach", str(worktree), "HEAD")
             try:
                 applied, mutation_path = _apply_negative_control(worktree, control)
-                env, _ = _execution_env(worktree, contract)
+                env, _ = _execution_env(worktree, contract, python_executable)
                 observed = (
                     _run(command, cwd=_execution_cwd(worktree, contract), env=env)
                     if applied
@@ -612,13 +558,21 @@ def _capture_preflight(repo_root: Path, output_dir: Path) -> dict[str, Any]:
     }
 
 
-def capture_gate(repo_root: Path, gate_id: str, output_dir: Path) -> Path:
+def capture_gate(
+    repo_root: Path,
+    gate_id: str,
+    output_dir: Path,
+    *,
+    python_executable: str | Path | None = None,
+) -> Path:
     repo_root = repo_root.resolve()
     caller_state = _capture_preflight(repo_root, output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     contract = _gate_contract(repo_root, gate_id)
     target = str(contract["target"])
     command = _command(contract)
+    selected_python = _selected_python(python_executable)
+    runtime_command = _runtime_command(command, selected_python)
     head = _git(repo_root, "rev-parse", "HEAD")
     tree = _git(repo_root, "rev-parse", "HEAD^{tree}")
     started = datetime.now(UTC)
@@ -626,8 +580,12 @@ def capture_gate(repo_root: Path, gate_id: str, output_dir: Path) -> Path:
         worktree = Path(temp_name) / "repo"
         _git(repo_root, "worktree", "add", "--quiet", "--detach", str(worktree), "HEAD")
         try:
-            env, environment_metadata = _execution_env(worktree, contract)
-            result = _run(command, cwd=_execution_cwd(worktree, contract), env=env)
+            env, environment_metadata = _execution_env(
+                worktree, contract, selected_python
+            )
+            result = _run(
+                runtime_command, cwd=_execution_cwd(worktree, contract), env=env
+            )
             artifacts = _write_output_artifacts(output_dir, target, result)
             observations: dict[str, Any] = {
                 "exit_code": result.returncode,
@@ -661,7 +619,12 @@ def capture_gate(repo_root: Path, gate_id: str, output_dir: Path) -> Path:
     probes: list[dict[str, Any]] = []
     if result.returncode == 0 and observations["execution_tree_clean"]:
         probes, probe_artifacts = _negative_control_results(
-            repo_root, contract, command, output_dir, observations
+            repo_root,
+            contract,
+            runtime_command,
+            output_dir,
+            observations,
+            selected_python,
         )
         artifacts.extend(probe_artifacts)
     completed = datetime.now(UTC)
@@ -741,6 +704,7 @@ def main(argv: list[str] | None = None) -> None:
     run_parser = subparsers.add_parser("run")
     run_parser.add_argument("--gate", required=True)
     run_parser.add_argument("--output", type=Path, required=True)
+    run_parser.add_argument("--python", type=Path)
     attest_parser = subparsers.add_parser("attest")
     attest_parser.add_argument("--bundle-dir", type=Path, required=True)
     attest_parser.add_argument("--private-key", type=Path, required=True)
@@ -753,7 +717,12 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     try:
         if args.operation == "run":
-            path = capture_gate(args.repo_root, args.gate, args.output)
+            path = capture_gate(
+                args.repo_root,
+                args.gate,
+                args.output,
+                python_executable=args.python,
+            )
         else:
             path = attest_bundle(
                 args.repo_root.resolve(),

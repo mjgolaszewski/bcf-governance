@@ -351,3 +351,69 @@ def test_capture_rejects_tracked_symlink_that_escapes_repository(tmp_path: Path)
 
     with pytest.raises(EvidenceError, match="tracked symlink escapes"):
         capture_gate(repo, "gate", tmp_path / "evidence")
+
+
+def test_selected_python_overrides_host_path_and_reaches_detached_controls(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    expected_loader = "/bcf/test/loader"
+    repo = _make_diagnostic_gate_repo(
+        tmp_path,
+        """import os
+import sys
+BROKEN = False
+if os.environ.get('LD_LIBRARY_PATH') != '/bcf/test/loader':
+    raise SystemExit('selected loader environment missing')
+if BROKEN:
+    print('expected policy violation', file=sys.stderr)
+    raise SystemExit(1)
+print(sys.executable)
+""",
+    )
+    lexical_bin = tmp_path / "selected-venv" / "bin"
+    lexical_bin.mkdir(parents=True)
+    selected_python = lexical_bin / "python"
+    selected_python.symlink_to(sys.executable)
+    hostile_bin = tmp_path / "host-python"
+    hostile_bin.mkdir()
+    hostile_python = hostile_bin / "python3"
+    hostile_python.write_text("#!/bin/sh\nexit 91\n", encoding="utf-8")
+    hostile_python.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{hostile_bin}{os.pathsep}{os.environ['PATH']}")
+    monkeypatch.setenv("LD_LIBRARY_PATH", expected_loader)
+
+    receipt = json.loads(
+        capture_gate(
+            repo,
+            "gate",
+            tmp_path / "evidence",
+            python_executable=selected_python,
+        ).read_text(encoding="utf-8")
+    )
+
+    interpreter = receipt["observations"]["execution_environment"][
+        "selected_interpreter"
+    ]
+    assert receipt["result"] == "passed"
+    assert receipt["invocation"]["argv"] == ["python3", "gate.py"]
+    assert interpreter["role"] == "project_python"
+    assert interpreter["executable_name"] == "python"
+    assert len(interpreter["binary_sha256"]) == 64
+    assert len(interpreter["lexical_path_sha256"]) == 64
+    assert len(interpreter["runtime_environment_sha256"]) == 64
+    assert receipt["behavioral_probes"][0]["oracle_observation"]["satisfied"] is True
+
+
+def test_missing_selected_python_fails_before_gate_execution(tmp_path: Path) -> None:
+    repo = _make_diagnostic_gate_repo(
+        tmp_path,
+        "BROKEN = False\nprint('must not execute')\n",
+    )
+
+    with pytest.raises(EvidenceError, match="selected Python executable is not executable"):
+        capture_gate(
+            repo,
+            "gate",
+            tmp_path / "evidence",
+            python_executable=tmp_path / "missing-python",
+        )
