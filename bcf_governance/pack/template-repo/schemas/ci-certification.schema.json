@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BCF normalized CI certification report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "repository",
+    "subject",
+    "admission",
+    "raw_snapshots",
+    "evidence_session",
+    "state",
+    "evaluation",
+    "generated_at"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "repository": {"$ref": "#/$defs/repository"},
+    "subject": {"$ref": "#/$defs/candidate"},
+    "admission": {"$ref": "#/$defs/admission"},
+    "raw_snapshots": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/rawSnapshot"}
+    },
+    "evidence_session": {"$ref": "#/$defs/evidenceSession"},
+    "state": {"enum": ["pending", "failed", "obsolete", "successful", "active"]},
+    "evaluation": {"$ref": "#/$defs/evaluation"},
+    "generated_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "providerId": {"type": "string", "pattern": "^[A-Za-z0-9._:-]+$"},
+    "sha": {"type": "string", "pattern": "^[a-f0-9]{40,64}$"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "ordinal": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+    "safePath": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)[A-Za-z0-9._/-]+$"
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "repository_id"],
+      "properties": {
+        "provider": {"$ref": "#/$defs/providerId"},
+        "repository_id": {"$ref": "#/$defs/providerId"}
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkout_sha", "tree_sha", "current_default_main_sha"],
+      "properties": {
+        "checkout_sha": {"$ref": "#/$defs/sha"},
+        "tree_sha": {"$ref": "#/$defs/sha"},
+        "current_default_main_sha": {"$ref": "#/$defs/sha"}
+      }
+    },
+    "workflowIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "repository_id",
+        "workflow_id",
+        "active_path",
+        "trusted_workflow_blob_oid",
+        "trusted_workflow_sha256",
+        "trusted_workflow_definition_commit",
+        "event"
+      ],
+      "properties": {
+        "provider": {"$ref": "#/$defs/providerId"},
+        "repository_id": {"$ref": "#/$defs/providerId"},
+        "workflow_id": {"$ref": "#/$defs/providerId"},
+        "active_path": {"$ref": "#/$defs/safePath"},
+        "trusted_workflow_blob_oid": {"$ref": "#/$defs/sha"},
+        "trusted_workflow_sha256": {"$ref": "#/$defs/sha256"},
+        "trusted_workflow_definition_commit": {"$ref": "#/$defs/sha"},
+        "event": {"$ref": "#/$defs/providerId"}
+      }
+    },
+    "selectedAttempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "run_attempt", "status", "conclusion", "exact_job_inventory"],
+      "properties": {
+        "run_id": {"$ref": "#/$defs/providerId"},
+        "run_attempt": {"type": "integer", "minimum": 1},
+        "status": {"const": "completed"},
+        "conclusion": {
+          "enum": ["success", "failure", "cancelled", "timed_out", "action_required", "neutral", "skipped", "stale"]
+        },
+        "exact_job_inventory": {"type": "boolean"}
+      }
+    },
+    "producerRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer_id", "workflow", "selected_attempt"],
+      "properties": {
+        "producer_id": {"$ref": "#/$defs/providerId"},
+        "workflow": {"$ref": "#/$defs/workflowIdentity"},
+        "selected_attempt": {"$ref": "#/$defs/selectedAttempt"}
+      }
+    },
+    "admission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "admission_ordinal",
+        "control_plane_run_id",
+        "control_plane_run_attempt",
+        "dispatch_sequence",
+        "candidate",
+        "producer_runs"
+      ],
+      "properties": {
+        "admission_ordinal": {"$ref": "#/$defs/ordinal"},
+        "control_plane_run_id": {"$ref": "#/$defs/providerId"},
+        "control_plane_run_attempt": {"type": "integer", "minimum": 1},
+        "dispatch_sequence": {"type": "integer", "minimum": 1},
+        "candidate": {"$ref": "#/$defs/candidate"},
+        "producer_runs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/producerRun"}
+        }
+      }
+    },
+    "rawSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer_id", "artifact_path", "sha256", "authenticated_at"],
+      "properties": {
+        "producer_id": {"$ref": "#/$defs/providerId"},
+        "artifact_path": {"$ref": "#/$defs/safePath"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "authenticated_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "evidenceSession": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["session_id", "manifest_sha256", "run_id", "run_attempt"],
+      "properties": {
+        "session_id": {"type": "string", "pattern": "^[a-f0-9]{32,}$"},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "run_id": {"$ref": "#/$defs/providerId"},
+        "run_attempt": {"type": "integer", "minimum": 1}
+      }
+    },
+    "selectedAttemptRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer_id", "run_attempt"],
+      "properties": {
+        "producer_id": {"$ref": "#/$defs/providerId"},
+        "run_attempt": {"type": "integer", "minimum": 1}
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exact_producer_inventory", "exact_job_inventory", "selected_attempts", "reasons"],
+      "properties": {
+        "exact_producer_inventory": {"type": "boolean"},
+        "exact_job_inventory": {"type": "boolean"},
+        "selected_attempts": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/selectedAttemptRecord"}
+        },
+        "reasons": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}
