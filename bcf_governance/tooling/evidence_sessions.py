@@ -286,6 +286,11 @@ def receipt_workflow_identity(
             "matrix": {"gate": gate_id},
         }
     producer = session.payload["producer"]
+    job = producer["producer_id"]
+    if producer["kind"] == "workflow":
+        job = os.environ.get("GITHUB_JOB", "")
+        if not job:
+            raise EvidenceError("workflow evidence capture requires GITHUB_JOB")
     return {
         "provider": producer["provider"],
         "path": (
@@ -293,7 +298,7 @@ def receipt_workflow_identity(
             if producer["kind"] == "local"
             else os.environ.get("GITHUB_WORKFLOW_REF", "local")
         ),
-        "job": producer["producer_id"],
+        "job": job,
         "run_id": producer["run_id"],
         "run_attempt": producer["run_attempt"],
         "matrix": {"gate": gate_id},

@@ -16,11 +16,11 @@ build_plan_mandate:
     - completeness_standard
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P09
-  build_block: "profile-v2-integration"
-  plan: plans/phase-09-plan.yml
-  workitems: plans/phase-09-workitems.yml
-  log: phases/phase-09-log.yml
+  id: P10
+  build_block: "bcf-standard-v2-dogfood"
+  plan: plans/phase-10-plan.yml
+  workitems: plans/phase-10-workitems.yml
+  log: phases/phase-10-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
@@ -67,7 +67,7 @@ operator_requirements_choices_disambiguations:
   - {type: execution_boundary, statement: "all candidate code uses fresh standard GitHub-hosted jobs because the repository is public; no candidate route polls, sleeps, idles, uses persistent local runners, or falls back, and trusted publication remains fail-closed until P10"}
 active_delivery_priorities:
   current_tranche:
-    - "profile-v2-integration"
+    - "bcf-standard-v2-dogfood"
 release_trains:
   release_1:
     target_version: "0.6.1"

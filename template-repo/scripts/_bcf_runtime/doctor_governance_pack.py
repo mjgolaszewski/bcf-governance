@@ -58,10 +58,33 @@ def _placeholder_scan_paths(repo_root: Path) -> list[Path]:
         return sorted(repo_root.rglob("*"))
 
 
+def _declared_template_vendor_roots(repo_root: Path) -> tuple[Path, ...]:
+    manifest_path = repo_root / "governance/artifact-manifest.yml"
+    if not manifest_path.is_file() or manifest_path.is_symlink():
+        return ()
+    payload = validator._load_yaml(manifest_path)
+    nested = payload.get("nested_governance")
+    vendors = nested.get("declared_vendors", []) if isinstance(nested, dict) else []
+    roots: list[Path] = []
+    for vendor in vendors:
+        if not isinstance(vendor, dict) or vendor.get("refresh_policy") not in {
+            "canonical_template_source",
+            "generated_exact_copy",
+        }:
+            continue
+        relative = Path(str(vendor.get("path", "")))
+        if relative and not relative.is_absolute() and ".." not in relative.parts:
+            roots.append(relative)
+    return tuple(sorted(set(roots)))
+
+
 def _scan_placeholders(repo_root: Path) -> list[str]:
     violations: list[str] = []
+    excluded_vendors = _declared_template_vendor_roots(repo_root)
     for path in _placeholder_scan_paths(repo_root):
         relative = path.relative_to(repo_root)
+        if any(relative.is_relative_to(root) for root in excluded_vendors):
+            continue
         if not path.is_file() or any(part in PLACEHOLDER_SCAN_EXCLUDE_PARTS for part in relative.parts):
             continue
         if path.suffix not in PLACEHOLDER_SCAN_EXTENSIONS and path.name not in {"Makefile", "Makefile.fragment"}:

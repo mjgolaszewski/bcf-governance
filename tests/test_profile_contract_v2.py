@@ -192,6 +192,17 @@ def test_bcf_standard_v2_promotion_fits_declared_context_budgets(tmp_path: Path)
         repo,
         ignore=shutil.ignore_patterns(".git", ".artifacts", ".venv", "__pycache__"),
     )
+    for relative in ("governance-profile.yml", "governance/gate-contracts.yml"):
+        path = repo / relative
+        payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+        payload.pop("profile_contract_version", None)
+        path.write_text(
+            yaml.safe_dump(
+                payload, sort_keys=False, width=120, default_flow_style=None
+            ),
+            encoding="utf-8",
+        )
+    shutil.rmtree(repo / "governance/capability-na", ignore_errors=True)
     _git(repo, "init", "--quiet")
     _git(repo, "config", "user.email", "profile-v2@example.invalid")
     _git(repo, "config", "user.name", "Profile V2")

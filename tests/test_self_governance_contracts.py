@@ -7,6 +7,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 from bcf_governance.cli import COMMANDS
@@ -279,6 +280,41 @@ def test_governance_evidence_shards_derive_every_required_gate_once() -> None:
     assert strategy["matrix"] == {"shard": [0, 1, 2, 3]}
 
 
+def test_governance_shard_forwards_the_preflight_session(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _load_github_script("capture_governance_shard.py")
+    commands: list[list[str]] = []
+    monkeypatch.setattr(module, "partition_required_gates", lambda *_, **__: ["test"])
+    monkeypatch.setattr(
+        module.subprocess,
+        "run",
+        lambda command, **_: commands.append(command)
+        or subprocess.CompletedProcess(command, 0),
+    )
+    manifest = tmp_path / "evidence-session.json"
+    output = tmp_path / "session"
+    monkeypatch.setattr(
+        module.sys,
+        "argv",
+        [
+            "capture_governance_shard.py",
+            "--shard-index",
+            "0",
+            "--shard-count",
+            "4",
+            "--output-root",
+            str(output),
+            "--session-manifest",
+            str(manifest),
+        ],
+    )
+    module.main()
+    assert len(commands) == 1
+    assert commands[0][commands[0].index("--output") + 1] == str(output / "test")
+    assert commands[0][commands[0].index("--session-manifest") + 1] == str(manifest)
+
+
 def test_self_gate_runner_bootstraps_an_uninstalled_source_checkout() -> None:
     result = subprocess.run(
         [
@@ -327,9 +363,35 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
     preflight_command = next(
         step["run"]
         for step in jobs["preflight"]["steps"]
-        if step.get("name") == "Run canonical cheap preflight"
+        if step.get("name") == "Run canonical cheap preflight and allocate one evidence session"
     )
-    assert "bcf_governance.cli preflight" in preflight_command
+    assert "scripts/preflight_governance.py" in preflight_command
+    assert "--expected-producer evidence" in preflight_command
+    assert jobs["preflight"]["outputs"]["session_manifest"] == (
+        "${{ steps.preflight.outputs.session_manifest }}"
+    )
+    session_upload = next(
+        step
+        for step in jobs["preflight"]["steps"]
+        if step.get("with", {}).get("name", "").startswith("bcf-session-")
+    )
+    assert session_upload["with"]["name"] == (
+        "bcf-session-${{ github.run_id }}-${{ github.run_attempt }}"
+    )
+
+    evidence_download = next(
+        step
+        for step in jobs["evidence"]["steps"]
+        if step.get("uses", "").startswith("actions/download-artifact@")
+    )
+    assert evidence_download["with"]["name"] == session_upload["with"]["name"]
+    capture_command = next(
+        step["run"]
+        for step in jobs["evidence"]["steps"]
+        if step.get("name") == "Capture mechanically derived evidence shard"
+    )
+    assert "--session-manifest" in capture_command
+    assert "${session%/evidence-session.json}" in capture_command
 
     upload = next(
         step
@@ -349,6 +411,15 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
     assert download["with"]["pattern"] == (
         "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-*"
     )
+    assert download["with"]["path"] == ".artifacts/bcf/fan-in"
+    assert "merge-multiple" not in download["with"]
+    assert jobs["governance-truthfulness"]["needs"] == ["preflight", "evidence"]
+    truth_command = next(
+        step["run"]
+        for step in jobs["governance-truthfulness"]["steps"]
+        if "governance_truth.py" in step.get("run", "")
+    )
+    assert "/attempts/${{ github.run_attempt }}/" in truth_command
     terminal = next(
         step
         for step in jobs["governance-truthfulness"]["steps"]

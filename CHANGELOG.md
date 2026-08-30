@@ -57,6 +57,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Split P10 structural self-adoption from its post-merge authority activation,
+  because numeric workflow identity and trusted default-main bytes exist only
+  after the structural workflow is merged; P10-HF01 owns that activation.
 - Sequenced local 0.7 implementation independently from remote runner
   activation: each behavior commit now dogfoods its applicable governance, while
   P10 owns disposable-candidate and isolated-publisher proof before any remote
@@ -68,12 +71,23 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Separated workflow adoption from profile lifecycle: normal upgrades and
   promotions preserve installed workflow bytes, while fresh installs generate
   the selected profile's workflow surface.
+- Promoted BCF itself to Standard profile contract v2 through the public
+  promoter while retaining its 21 required gates, ten semantic-owner controls,
+  and existing four-shard hosted execution topology.
+- Bound BCF's four evidence shards and terminal truth to one immutable session
+  and exact Actions run attempt without adding jobs, polling, or waiter capacity.
 
 ### Fixed
 
+- Made the source-tree preflight wrapper resolve BCF's package from any working
+  directory, including fresh hosted-runner checkouts without an installed wheel.
+- Distinguished the session-allocating job from admitted evidence producer jobs,
+  preserving exact run/attempt binding across preflight-to-evidence fanout.
 - Bound profile-v2 receipts to an explicit immutable session producer identity,
   so nested local validation cannot inherit an unrelated outer Actions run or
   job identity from ambient environment variables.
+- Made doctor derive placeholder-scan exclusions from canonical declared
+  template vendors while continuing to scan undeclared application paths.
 - Projected execution-only test selectors out of evidence policy during profile
   promotion while retaining them in canonical gate contracts, so real
   selector-bearing repositories can promote to contract v2 transactionally.

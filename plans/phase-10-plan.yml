@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-10-plan
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: completed
   path: plans/phase-10-plan.yml
 phase:
   id: P10
@@ -19,21 +19,37 @@ phase:
   - MEMORY.yml
 delivery_contract:
   tightly_scoped_deliverables:
-  - BCF self-adoption, exact-main canary, and protected stable check
-  - disposable candidate VM and isolated trusted control-plane substrate acceptance
+  - Standard-v2 structural self-adoption through the public profile surfaces
+  - one exact session across the preserved hosted preflight, evidence, and truth topology
+  - fail-closed custody for the post-merge CI-authority activation
   parallelizable_workstreams:
   - id: P10-WS1
-    name: dogfood migration and remote activation
+    name: dogfood migration and evidence-session integration
   - id: P10-WS2
-    name: runner substrate provisioning and isolation proof
+    name: hosted candidate isolation and activation custody
   hard_dependencies:
   - P09
   docker_first_local_runtime: repo_native_validation_and_governance_commands
   completeness_standard: full_completeness_for_declared_scope
 scope_lock:
 - order: 1
-  statement: keep the phase narrowly scoped to declared deliverables and update canonical
-    governed artifacts in the same change
+  statement: apply Standard-v2 through the public promoter and use the same session,
+    semantic-owner, CI authority, runtime, and adopter contracts shipped to consumers
+- order: 2
+  statement: preserve the existing preflight, four-shard evidence, terminal truth,
+    pack, AST, and scheduled mutation topology while adding one exact evidence session
+- order: 3
+  statement: candidate code runs only on fresh GitHub-hosted standard VMs with read-only
+    checkout and never falls back to persistent self-hosted capacity
+- order: 4
+  statement: trusted roles use only the closed local runner labels, check out no code,
+    execute no candidate-provided script, and remain disabled until their controller is proven
+- order: 5
+  statement: complete this structural layer before opening P10-HF01, which activates
+    exact-main authority only after merged workflow IDs and trusted default-main bytes exist
 verification_plan:
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python scripts/check_governance_exposure.py --repo-root .
+- .venv/bin/python -m bcf_governance.cli doctor --repo-root . --format json
 - .venv/bin/python -m pytest tests
+- bcf truth

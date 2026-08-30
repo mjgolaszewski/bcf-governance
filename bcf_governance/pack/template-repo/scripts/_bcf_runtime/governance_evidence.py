@@ -582,6 +582,7 @@ def capture_gate(
         session_manifest,
         required=contract_version == "2.0",
     )
+    workflow_identity = receipt_workflow_identity(session, target)
     command = _command(contract)
     selected_python = _selected_python(python_executable)
     runtime_command = _runtime_command(command, selected_python)
@@ -675,7 +676,7 @@ def capture_gate(
             "argv": command,
             "cwd": contract["invocation"].get("cwd", "."),
             "environment": observations["execution_environment"],
-            "workflow": receipt_workflow_identity(session, target),
+            "workflow": workflow_identity,
         },
         "subject": {
             "commit_sha": head,

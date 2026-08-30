@@ -1,16 +1,11 @@
-document:
-  kind: gate_contract_registry
-  version: '1.0'
-  path: governance/gate-contracts.yml
+document: {kind: gate_contract_registry, version: '1.0', path: governance/gate-contracts.yml}
 schema_version: '1.0'
+profile_contract_version: '2.0'
 target_profile: standard
 gates:
   architecture-context-membership:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - architecture-context-membership
+      argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-context-membership]
       cwd: .
       env: {}
       required_env: []
@@ -18,7 +13,7 @@ gates:
       kind: test_suite
       test_contract:
         junit_xml: .artifacts/junit/architecture-context-membership.xml
-        selectors: [tests/test_self_governance_contracts.py::test_tooling_modules_map_to_exactly_one_context]
+        selectors: ['tests/test_self_governance_contracts.py::test_tooling_modules_map_to_exactly_one_context']
         expected_node_manifest: governance/test-manifests/architecture-context-membership.txt
         expected_nodes_mode: exact
         min_collected: 1
@@ -27,20 +22,15 @@ gates:
         artifact_binding: non_authoritative_until_captured
     negative_controls:
     - id: architecture-context-membership-behavior-must-fail
-      mutation:
-        path: governance/self-governance-policy.yml
-        search: 'validation: [check_governance_exposure.py, doctor_governance_pack.py, preflight.py, validate_governance_yaml.py, governance_validation/]'
-        replace: 'validation: [check_governance_exposure.py, doctor_governance_pack.py, preflight.py, validate_governance_yaml.py, missing_validation/]'
+      mutation: {path: governance/self-governance-policy.yml, search: 'validation: [check_governance_exposure.py, doctor_governance_pack.py,
+          preflight.py, validate_governance_yaml.py, governance_validation/]', replace: 'validation: [check_governance_exposure.py,
+          doctor_governance_pack.py, preflight.py, validate_governance_yaml.py, missing_validation/]'}
       oracle:
         kind: test_node_failure
-        node_ids:
-        - tests.test_self_governance_contracts::test_tooling_modules_map_to_exactly_one_context
+        node_ids: ['tests.test_self_governance_contracts::test_tooling_modules_map_to_exactly_one_context']
   architecture-cqrs-side:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - architecture-cqrs-side
+      argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-cqrs-side]
       cwd: .
       env: {}
       required_env: []
@@ -48,7 +38,7 @@ gates:
       kind: test_suite
       test_contract:
         junit_xml: .artifacts/junit/architecture-cqrs-side.xml
-        selectors: [tests/test_self_governance_contracts.py::test_cli_command_query_sides_are_complete_and_disjoint]
+        selectors: ['tests/test_self_governance_contracts.py::test_cli_command_query_sides_are_complete_and_disjoint']
         expected_node_manifest: governance/test-manifests/architecture-cqrs-side.txt
         expected_nodes_mode: exact
         min_collected: 1
@@ -57,20 +47,15 @@ gates:
         artifact_binding: non_authoritative_until_captured
     negative_controls:
     - id: architecture-cqrs-side-behavior-must-fail
-      mutation:
-        path: governance/self-governance-policy.yml
-        search: 'read_only: [doctor, exposure-scan, preflight, publish-audit, semantic-ownership, truth, validate]'
-        replace: 'read_only: [doctor, exposure-scan, preflight, publish-audit, semantic-ownership, validate]'
+      mutation: {path: governance/self-governance-policy.yml, search: 'read_only: [doctor, exposure-scan, preflight, publish-audit,
+          semantic-ownership, truth, validate]', replace: 'read_only: [doctor, exposure-scan, preflight, publish-audit, semantic-ownership,
+          validate]'}
       oracle:
         kind: test_node_failure
-        node_ids:
-        - tests.test_self_governance_contracts::test_cli_command_query_sides_are_complete_and_disjoint
+        node_ids: ['tests.test_self_governance_contracts::test_cli_command_query_sides_are_complete_and_disjoint']
   architecture-duplication:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - architecture-duplication
+      argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-duplication]
       cwd: .
       env: {}
       required_env: []
@@ -78,7 +63,7 @@ gates:
       kind: test_suite
       test_contract:
         junit_xml: .artifacts/junit/architecture-duplication.xml
-        selectors: [tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact]
+        selectors: ['tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact']
         expected_node_manifest: governance/test-manifests/architecture-duplication.txt
         expected_nodes_mode: exact
         min_collected: 1
@@ -87,20 +72,14 @@ gates:
         artifact_binding: non_authoritative_until_captured
     negative_controls:
     - id: architecture-duplication-behavior-must-fail
-      mutation:
-        path: template-repo/scripts/_bcf_runtime/governance_validation/required_artifacts.py
-        search: '"""Semantic contracts for standard repository root artifacts."""'
-        replace: '"""Mutated standalone runtime contract."""'
+      mutation: {path: template-repo/scripts/_bcf_runtime/governance_validation/required_artifacts.py, search: '"""Semantic
+          contracts for standard repository root artifacts."""', replace: '"""Mutated standalone runtime contract."""'}
       oracle:
         kind: test_node_failure
-        node_ids:
-        - tests.test_self_governance_contracts::test_template_and_private_runtime_copies_are_exact
+        node_ids: ['tests.test_self_governance_contracts::test_template_and_private_runtime_copies_are_exact']
   architecture-import-boundaries:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - architecture-import-boundaries
+      argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-import-boundaries]
       cwd: .
       env: {}
       required_env: []
@@ -108,7 +87,7 @@ gates:
       kind: test_suite
       test_contract:
         junit_xml: .artifacts/junit/architecture-import-boundaries.xml
-        selectors: [tests/test_self_governance_contracts.py::test_packaged_code_does_not_import_public_wrapper_package]
+        selectors: ['tests/test_self_governance_contracts.py::test_packaged_code_does_not_import_public_wrapper_package']
         expected_node_manifest: governance/test-manifests/architecture-import-boundaries.txt
         expected_nodes_mode: exact
         min_collected: 1
@@ -117,22 +96,15 @@ gates:
         artifact_binding: non_authoritative_until_captured
     negative_controls:
     - id: architecture-import-boundaries-behavior-must-fail
-      mutation:
-        path: bcf_governance/__init__.py
-        search: from ._version import __version__
-        replace: 'import scripts
+      mutation: {path: bcf_governance/__init__.py, search: from ._version import __version__, replace: 'import scripts
 
-          from ._version import __version__'
+          from ._version import __version__'}
       oracle:
         kind: test_node_failure
-        node_ids:
-        - tests.test_self_governance_contracts::test_packaged_code_does_not_import_public_wrapper_package
+        node_ids: ['tests.test_self_governance_contracts::test_packaged_code_does_not_import_public_wrapper_package']
   architecture-layer-membership:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - architecture-layer-membership
+      argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-layer-membership]
       cwd: .
       env: {}
       required_env: []
@@ -140,7 +112,7 @@ gates:
       kind: test_suite
       test_contract:
         junit_xml: .artifacts/junit/architecture-layer-membership.xml
-        selectors: [tests/test_self_governance_contracts.py::test_source_layout_maps_to_declared_package_layers]
+        selectors: ['tests/test_self_governance_contracts.py::test_source_layout_maps_to_declared_package_layers']
         expected_node_manifest: governance/test-manifests/architecture-layer-membership.txt
         expected_nodes_mode: exact
         min_collected: 1
@@ -149,20 +121,13 @@ gates:
         artifact_binding: non_authoritative_until_captured
     negative_controls:
     - id: architecture-layer-membership-behavior-must-fail
-      mutation:
-        path: architecture-boundaries.yml
-        search: 'path_tokens: [pack]'
-        replace: 'path_tokens: [missing_pack]'
+      mutation: {path: architecture-boundaries.yml, search: 'path_tokens: [pack]', replace: 'path_tokens: [missing_pack]'}
       oracle:
         kind: test_node_failure
-        node_ids:
-        - tests.test_self_governance_contracts::test_source_layout_maps_to_declared_package_layers
+        node_ids: ['tests.test_self_governance_contracts::test_source_layout_maps_to_declared_package_layers']
   architecture-module-size:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - architecture-module-size
+      argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-module-size]
       cwd: .
       env: {}
       required_env: []
@@ -170,7 +135,7 @@ gates:
       kind: test_suite
       test_contract:
         junit_xml: .artifacts/junit/architecture-module-size.xml
-        selectors: [tests/test_self_governance_contracts.py::test_production_modules_respect_self_governance_loc_cap]
+        selectors: ['tests/test_self_governance_contracts.py::test_production_modules_respect_self_governance_loc_cap']
         expected_node_manifest: governance/test-manifests/architecture-module-size.txt
         expected_nodes_mode: exact
         min_collected: 1
@@ -179,20 +144,13 @@ gates:
         artifact_binding: non_authoritative_until_captured
     negative_controls:
     - id: architecture-module-size-behavior-must-fail
-      mutation:
-        path: architecture-boundaries.yml
-        search: 'max_loc: 800'
-        replace: 'max_loc: 1'
+      mutation: {path: architecture-boundaries.yml, search: 'max_loc: 800', replace: 'max_loc: 1'}
       oracle:
         kind: test_node_failure
-        node_ids:
-        - tests.test_self_governance_contracts::test_production_modules_respect_self_governance_loc_cap
+        node_ids: ['tests.test_self_governance_contracts::test_production_modules_respect_self_governance_loc_cap']
   architecture-router-thinness:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - architecture-router-thinness
+      argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-router-thinness]
       cwd: .
       env: {}
       required_env: []
@@ -200,7 +158,7 @@ gates:
       kind: test_suite
       test_contract:
         junit_xml: .artifacts/junit/architecture-router-thinness.xml
-        selectors: [tests/test_self_governance_contracts.py::test_cli_and_source_wrappers_remain_thin]
+        selectors: ['tests/test_self_governance_contracts.py::test_cli_and_source_wrappers_remain_thin']
         expected_node_manifest: governance/test-manifests/architecture-router-thinness.txt
         expected_nodes_mode: exact
         min_collected: 1
@@ -209,20 +167,14 @@ gates:
         artifact_binding: non_authoritative_until_captured
     negative_controls:
     - id: architecture-router-thinness-behavior-must-fail
-      mutation:
-        path: governance/self-governance-policy.yml
-        search: 'thin_wrapper_loc_cap: 20'
-        replace: 'thin_wrapper_loc_cap: 1'
+      mutation: {path: governance/self-governance-policy.yml, search: 'thin_wrapper_loc_cap: 20', replace: 'thin_wrapper_loc_cap:
+          1'}
       oracle:
         kind: test_node_failure
-        node_ids:
-        - tests.test_self_governance_contracts::test_cli_and_source_wrappers_remain_thin
+        node_ids: ['tests.test_self_governance_contracts::test_cli_and_source_wrappers_remain_thin']
   architecture-test:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - architecture-test
+      argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-test]
       cwd: .
       env: {}
       required_env: []
@@ -230,7 +182,7 @@ gates:
       kind: test_suite
       test_contract:
         junit_xml: .artifacts/junit/architecture-test.xml
-        selectors: [tests/test_self_governance_contracts.py::test_source_roots_match_packaged_implementation]
+        selectors: ['tests/test_self_governance_contracts.py::test_source_roots_match_packaged_implementation']
         expected_node_manifest: governance/test-manifests/architecture-test.txt
         expected_nodes_mode: exact
         min_collected: 1
@@ -239,20 +191,13 @@ gates:
         artifact_binding: non_authoritative_until_captured
     negative_controls:
     - id: architecture-test-behavior-must-fail
-      mutation:
-        path: architecture-boundaries.yml
-        search: 'source_roots: [bcf_governance]'
-        replace: 'source_roots: [missing_package]'
+      mutation: {path: architecture-boundaries.yml, search: 'source_roots: [bcf_governance]', replace: 'source_roots: [missing_package]'}
       oracle:
         kind: test_node_failure
-        node_ids:
-        - tests.test_self_governance_contracts::test_source_roots_match_packaged_implementation
+        node_ids: ['tests.test_self_governance_contracts::test_source_roots_match_packaged_implementation']
   contract-test:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - contract-test
+      argv: [python3, .github/scripts/run_self_governance_gate.py, contract-test]
       cwd: .
       env: {}
       required_env: []
@@ -260,7 +205,10 @@ gates:
       kind: test_suite
       test_contract:
         junit_xml: .artifacts/junit/contract-test.xml
-        selectors: [tests/test_self_governance_contracts.py::test_required_repository_artifact_contract_is_executable, tests/test_validate_governance_yaml.py::test_artifact_manifest_requires_standard_repository_artifact_contracts, tests/test_validate_governance_yaml.py::test_pull_request_validation_requires_changelog_update, tests/test_ci_authority.py, tests/test_ci_certification.py, tests/test_ci_authority_decisions.py, tests/test_release_receipts.py, tests/test_ci_github_reference.py, tests/test_local_pr.py, tests/test_runtime_capacity.py, tests/test_trusted_inputs.py]
+        selectors: ['tests/test_self_governance_contracts.py::test_required_repository_artifact_contract_is_executable', 'tests/test_validate_governance_yaml.py::test_artifact_manifest_requires_standard_repository_artifact_contracts',
+          'tests/test_validate_governance_yaml.py::test_pull_request_validation_requires_changelog_update', tests/test_ci_authority.py,
+          tests/test_ci_certification.py, tests/test_ci_authority_decisions.py, tests/test_release_receipts.py, tests/test_ci_github_reference.py,
+          tests/test_local_pr.py, tests/test_runtime_capacity.py, tests/test_trusted_inputs.py]
         expected_node_manifest: governance/test-manifests/contract-test.txt
         expected_nodes_mode: exact
         min_collected: 1
@@ -269,260 +217,239 @@ gates:
         artifact_binding: non_authoritative_until_captured
     negative_controls:
     - id: contract-test-behavior-must-fail
-      mutation:
-        path: template-repo/governance/artifact-manifest.yml
-        search: 'pull_request_policy: required_update'
-        replace: 'pull_request_policy: optional'
+      mutation: {path: template-repo/governance/artifact-manifest.yml, search: 'pull_request_policy: required_update', replace: 'pull_request_policy:
+          optional'}
       oracle:
         kind: test_node_failure
-        node_ids:
-        - tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts
-    - {id: ci-workflow-event-authentication-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_state.py, search: 'if not same_identity or actual.event not in allowed_events:', replace: 'if not same_identity:'}, oracle: {kind: test_node_failure, node_ids: [tests.test_ci_certification::test_untrusted_event_cannot_enter_admission_order]}}
-    - {id: ci-raw-snapshot-digest-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_certification.py, search: 'if _sha256(path) != descriptor["sha256"]:', replace: 'if False and _sha256(path) != descriptor["sha256"]:'}, oracle: {kind: test_node_failure, node_ids: [tests.test_ci_certification::test_snapshot_bytes_are_hash_bound]}}
-    - {id: ci-independent-recomputation-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_certification.py, search: 'if _canonical_bytes(expected) != _canonical_bytes(certification):', replace: 'if False and _canonical_bytes(expected) != _canonical_bytes(certification):'}, oracle: {kind: test_node_failure, node_ids: [tests.test_ci_certification::test_failed_report_reason_is_independently_recomputed]}}
-    - {id: ci-cancellation-authentication-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_decisions.py, search: 'if not child.authenticated:', replace: 'if False and not child.authenticated:'}, oracle: {kind: test_node_failure, node_ids: [tests.test_ci_authority_decisions::test_cancellation_targets_only_authenticated_unfinished_owned_children]}}
-    - {id: ci-status-precedence-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_decisions.py, search: 'if proposed_order < current_order:', replace: 'if False and proposed_order < current_order:'}, oracle: {kind: test_node_failure, node_ids: [tests.test_ci_authority_decisions::test_older_completion_cannot_overwrite_newer_authority]}}
-    - {id: release-receipt-acyclic-output-must-fail, mutation: {path: bcf_governance/tooling/release_receipts.py, search: 'if not _outside(output_path, evidence_dir):', replace: 'if False and not _outside(output_path, evidence_dir):'}, oracle: {kind: test_node_failure, node_ids: [tests.test_release_receipts::test_release_receipt_cannot_be_written_into_truth_inputs]}}
-    - {id: release-receipt-certification-must-fail, mutation: {path: bcf_governance/tooling/release_receipts.py, search: ') != "certified":', replace: ') == "certified":'}, oracle: {kind: test_node_failure, node_ids: [tests.test_release_receipts::test_failed_truth_or_uncertified_ci_cannot_emit_release]}}
-    - {id: github-workflow-path-authentication-must-fail, mutation: {path: bcf_governance/tooling/ci_github.py, search: 'if active_path != _active_path(expected_active_path):', replace: 'if False and active_path != _active_path(expected_active_path):'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_reference::test_github_identity_rejects_unauthenticated_provider_state[mutation1-active workflow path]']}}
-    - {id: github-candidate-write-authority-must-fail, mutation: {path: bcf_governance/tooling/ci_github.py, search: 'if candidate_permissions & FORBIDDEN_CANDIDATE_CAPABILITIES:', replace: 'if False and candidate_permissions & FORBIDDEN_CANDIDATE_CAPABILITIES:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_reference::test_reference_topology_security_mutants_fail[<lambda>-write authority]']}}
-    - {id: github-adopter-conflict-must-fail, mutation: {path: bcf_governance/tooling/ci_adopt_github.py, search: 'elif path.read_bytes() != content:', replace: 'elif False and path.read_bytes() != content:'}, oracle: {kind: test_node_failure, node_ids: [tests.test_ci_github_reference::test_adopter_conflict_fails_before_any_other_path_is_written]}}
-    - {id: runtime-global-prune-policy-must-fail, mutation: {path: bcf_governance/tooling/runtime_capacity.py, search: '"daemon_global_prune": False,', replace: '"daemon_global_prune": True,'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_runtime_capacity::test_runtime_contract_rejects_escape_and_broad_cleanup[mutation3-exact, scoped]']}}
-    - {id: local-pr-ancestry-must-fail, mutation: {path: bcf_governance/tooling/local_pr.py, search: 'if ancestry.returncode != 0:', replace: 'if False and ancestry.returncode != 0:'}, oracle: {kind: test_node_failure, node_ids: [tests.test_local_pr::test_local_pr_rejects_head_without_default_branch_ancestry]}}
-    - {id: trusted-input-role-must-fail, mutation: {path: bcf_governance/tooling/trusted_inputs.py, search: 'if executor_role != "trusted-collector":', replace: 'if False and executor_role != "trusted-collector":'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_trusted_inputs::test_trusted_input_boundary_mutants_fail[candidate-True-valid-trusted collector]']}}
+        node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']
+    - id: ci-workflow-event-authentication-must-fail
+      mutation: {path: bcf_governance/tooling/ci_authority_state.py, search: 'if not same_identity or actual.event not in
+          allowed_events:', replace: 'if not same_identity:'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_ci_certification::test_untrusted_event_cannot_enter_admission_order']
+    - id: ci-raw-snapshot-digest-must-fail
+      mutation: {path: bcf_governance/tooling/ci_authority_certification.py, search: 'if _sha256(path) != descriptor["sha256"]:',
+        replace: 'if False and _sha256(path) != descriptor["sha256"]:'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_ci_certification::test_snapshot_bytes_are_hash_bound']
+    - id: ci-independent-recomputation-must-fail
+      mutation: {path: bcf_governance/tooling/ci_authority_certification.py, search: 'if _canonical_bytes(expected) != _canonical_bytes(certification):',
+        replace: 'if False and _canonical_bytes(expected) != _canonical_bytes(certification):'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_ci_certification::test_failed_report_reason_is_independently_recomputed']
+    - id: ci-cancellation-authentication-must-fail
+      mutation: {path: bcf_governance/tooling/ci_authority_decisions.py, search: 'if not child.authenticated:', replace: 'if
+          False and not child.authenticated:'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_ci_authority_decisions::test_cancellation_targets_only_authenticated_unfinished_owned_children']
+    - id: ci-status-precedence-must-fail
+      mutation: {path: bcf_governance/tooling/ci_authority_decisions.py, search: 'if proposed_order < current_order:', replace: 'if
+          False and proposed_order < current_order:'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_ci_authority_decisions::test_older_completion_cannot_overwrite_newer_authority']
+    - id: release-receipt-acyclic-output-must-fail
+      mutation: {path: bcf_governance/tooling/release_receipts.py, search: 'if not _outside(output_path, evidence_dir):',
+        replace: 'if False and not _outside(output_path, evidence_dir):'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_release_receipts::test_release_receipt_cannot_be_written_into_truth_inputs']
+    - id: release-receipt-certification-must-fail
+      mutation: {path: bcf_governance/tooling/release_receipts.py, search: ') != "certified":', replace: ') == "certified":'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_release_receipts::test_failed_truth_or_uncertified_ci_cannot_emit_release']
+    - id: github-workflow-path-authentication-must-fail
+      mutation: {path: bcf_governance/tooling/ci_github.py, search: 'if active_path != _active_path(expected_active_path):',
+        replace: 'if False and active_path != _active_path(expected_active_path):'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_ci_github_reference::test_github_identity_rejects_unauthenticated_provider_state[mutation1-active
+            workflow path]']
+    - id: github-candidate-write-authority-must-fail
+      mutation: {path: bcf_governance/tooling/ci_github.py, search: 'if candidate_permissions & FORBIDDEN_CANDIDATE_CAPABILITIES:',
+        replace: 'if False and candidate_permissions & FORBIDDEN_CANDIDATE_CAPABILITIES:'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_ci_github_reference::test_reference_topology_security_mutants_fail[<lambda>-write authority]']
+    - id: github-adopter-conflict-must-fail
+      mutation: {path: bcf_governance/tooling/ci_adopt_github.py, search: 'elif path.read_bytes() != content:', replace: 'elif
+          False and path.read_bytes() != content:'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_ci_github_reference::test_adopter_conflict_fails_before_any_other_path_is_written']
+    - id: runtime-global-prune-policy-must-fail
+      mutation: {path: bcf_governance/tooling/runtime_capacity.py, search: '"daemon_global_prune": False,', replace: '"daemon_global_prune":
+          True,'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_runtime_capacity::test_runtime_contract_rejects_escape_and_broad_cleanup[mutation3-exact, scoped]']
+    - id: local-pr-ancestry-must-fail
+      mutation: {path: bcf_governance/tooling/local_pr.py, search: 'if ancestry.returncode != 0:', replace: 'if False and
+          ancestry.returncode != 0:'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_local_pr::test_local_pr_rejects_head_without_default_branch_ancestry']
+    - id: trusted-input-role-must-fail
+      mutation: {path: bcf_governance/tooling/trusted_inputs.py, search: 'if executor_role != "trusted-collector":', replace: 'if
+          False and executor_role != "trusted-collector":'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_trusted_inputs::test_trusted_input_boundary_mutants_fail[candidate-True-valid-trusted collector]']
   governance-exposure-scan:
     invocation:
-      argv:
-      - python3
-      - scripts/check_governance_exposure.py
-      - --repo-root
-      - .
+      argv: [python3, scripts/check_governance_exposure.py, --repo-root, .]
       cwd: .
       env: {}
       required_env: []
-    evidence:
-      kind: gate
+    evidence: {kind: gate}
     negative_controls:
     - id: local-workspace-path-is-rejected
-      mutation:
-        path: MEMORY.yml
-        search: '  canonical_repo_root: "."'
-        replace_base64: ICBjYW5vbmljYWxfcmVwb19yb290OiAiL1VzZXJzL2V4YW1wbGUvcHJpdmF0ZSI=
+      mutation: {path: MEMORY.yml, search: '  canonical_repo_root: "."', replace_base64: ICBjYW5vbmljYWxfcmVwb19yb290OiAiL1VzZXJzL2V4YW1wbGUvcHJpdmF0ZSI=}
       oracle:
         kind: diagnostic
-        exit_codes:
-        - 1
+        exit_codes: [1]
         stream: stdout
         regex: local_workspace_path
   governance-validate:
     invocation:
-      argv:
-      - python3
-      - scripts/validate_governance_yaml.py
-      - --repo-root
-      - .
+      argv: [python3, scripts/validate_governance_yaml.py, --repo-root, .]
       cwd: .
       env: {}
       required_env: []
-    evidence:
-      kind: gate
+    evidence: {kind: gate}
     negative_controls:
     - id: authored-verified-state-is-rejected
-      mutation:
-        path: '@active_phase_log'
-        yaml_path: document.status
-        value: verified
+      mutation: {path: '@active_phase_log', yaml_path: document.status, value: verified}
       oracle:
         kind: diagnostic
-        exit_codes:
-        - 1
+        exit_codes: [1]
         stream: stderr
         regex: verified.*(?:not one of|computed)
   lint:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - lint
+      argv: [python3, .github/scripts/run_self_governance_gate.py, lint]
       cwd: .
       env: {}
       required_env: []
-    evidence:
-      kind: gate
+    evidence: {kind: gate}
     negative_controls:
     - id: lint-behavior-must-fail
-      mutation:
-        path: README.md
-        search: '# BCF Governance'
-        replace: '# BCF Governance  '
+      mutation: {path: README.md, search: '# BCF Governance', replace: '# BCF Governance  '}
       oracle:
         kind: diagnostic
-        exit_codes:
-        - 1
+        exit_codes: [1]
         stream: stderr
         regex: 'self-governance gate lint failed:'
   runtime-smoke:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - runtime-smoke
+      argv: [python3, .github/scripts/run_self_governance_gate.py, runtime-smoke]
       cwd: .
-      env:
-        BCF_EXECUTION_PROFILE: production
+      env: {BCF_EXECUTION_PROFILE: production}
       required_env: []
     evidence:
       kind: runtime_health
       output_requirements:
-      - path: .artifacts/runtime-smoke.json
-        media_type: application/json
-        authority: non_authoritative_until_captured
+      - {path: .artifacts/runtime-smoke.json, media_type: application/json, authority: non_authoritative_until_captured}
       environment_assertions:
-      - name: BCF_EXECUTION_PROFILE
-        operator: equals
-        value: production
+      - {name: BCF_EXECUTION_PROFILE, operator: equals, value: production}
     negative_controls:
     - id: runtime-smoke-behavior-must-fail
-      mutation:
-        path: manifest.yml
-        search: 'version: 0.6.1'
-        replace: 'version: 0.0.0'
+      mutation: {path: manifest.yml, search: 'version: 0.6.1', replace: 'version: 0.0.0'}
       oracle:
         kind: diagnostic
-        exit_codes:
-        - 1
+        exit_codes: [1]
         stream: stderr
         regex: 'self-governance gate runtime-smoke failed:'
   security-dependency-audit:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - security-dependency-audit
+      argv: [python3, .github/scripts/run_self_governance_gate.py, security-dependency-audit]
       cwd: .
       env: {}
       required_env: []
-    evidence:
-      kind: gate
+    evidence: {kind: gate}
     negative_controls:
     - id: security-dependency-audit-behavior-must-fail
-      mutation:
-        path: pyproject.toml
-        search: '"jsonschema>=4.21,<5",'
-        replace: '"jsonschema>=4.21,<4",'
+      mutation: {path: pyproject.toml, search: '"jsonschema>=4.21,<5",', replace: '"jsonschema>=4.21,<4",'}
       oracle:
         kind: diagnostic
-        exit_codes:
-        - 1
+        exit_codes: [1]
         stream: stderr
         regex: 'self-governance gate security-dependency-audit failed:'
   security-review:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - security-review
+      argv: [python3, .github/scripts/run_self_governance_gate.py, security-review]
       cwd: .
-      env:
-        BCF_EXECUTION_PROFILE: production
+      env: {BCF_EXECUTION_PROFILE: production}
       required_env: []
     evidence:
       kind: security_review
       output_requirements:
-      - path: governance/findings.yml
-        media_type: application/yaml
-        authority: non_authoritative_until_captured
+      - {path: governance/findings.yml, media_type: application/yaml, authority: non_authoritative_until_captured}
       environment_assertions:
-      - name: BCF_EXECUTION_PROFILE
-        operator: equals
-        value: production
+      - {name: BCF_EXECUTION_PROFILE, operator: equals, value: production}
     negative_controls:
     - id: security-review-behavior-must-fail
-      mutation:
-        path: governance/findings.yml
-        search: 'reviews: []'
-        replace: "reviews:\n  - invalid"
+      mutation: {path: governance/findings.yml, search: 'reviews: []', replace: "reviews:\n  - invalid"}
       oracle:
         kind: diagnostic
-        exit_codes:
-        - 1
+        exit_codes: [1]
         stream: stderr
         regex: 'self-governance gate security-review failed:'
   security-sbom:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - security-sbom
+      argv: [python3, .github/scripts/run_self_governance_gate.py, security-sbom]
       cwd: .
       env: {}
       required_env: []
     evidence:
       kind: gate
       output_requirements:
-      - path: .artifacts/sbom.json
-        media_type: application/json
-        authority: non_authoritative_until_captured
+      - {path: .artifacts/sbom.json, media_type: application/json, authority: non_authoritative_until_captured}
     negative_controls:
     - id: security-sbom-behavior-must-fail
-      mutation:
-        path: governance/self-governance-policy.yml
-        search: 'sbom_format: CycloneDX'
-        replace: 'sbom_format: Unknown'
+      mutation: {path: governance/self-governance-policy.yml, search: 'sbom_format: CycloneDX', replace: 'sbom_format: Unknown'}
       oracle:
         kind: diagnostic
-        exit_codes:
-        - 1
+        exit_codes: [1]
         stream: stderr
         regex: 'self-governance gate security-sbom failed:'
   security-secret-scan:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - security-secret-scan
+      argv: [python3, .github/scripts/run_self_governance_gate.py, security-secret-scan]
       cwd: .
       env: {}
       required_env: []
-    evidence:
-      kind: gate
+    evidence: {kind: gate}
     negative_controls:
     - id: security-secret-scan-behavior-must-fail
-      mutation:
-        path: README.md
-        search: BCF is an executable governance framework
-        replace_base64: QUtJQUlPU0ZPRE5ON0VYQU1QTEUgQkNGIGlzIGFuIGV4ZWN1dGFibGUgZ292ZXJuYW5jZSBmcmFtZXdvcms=
+      mutation: {path: README.md, search: BCF is an executable governance framework, replace_base64: QUtJQUlPU0ZPRE5ON0VYQU1QTEUgQkNGIGlzIGFuIGV4ZWN1dGFibGUgZ292ZXJuYW5jZSBmcmFtZXdvcms=}
       oracle:
         kind: diagnostic
-        exit_codes:
-        - 1
+        exit_codes: [1]
         stream: stderr
         regex: 'self-governance gate security-secret-scan failed:'
   security-vulnerability-scan:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - security-vulnerability-scan
+      argv: [python3, .github/scripts/run_self_governance_gate.py, security-vulnerability-scan]
       cwd: .
       env: {}
       required_env: []
     evidence:
       kind: gate
       output_requirements:
-      - path: .artifacts/vulnerability-scan.json
-        media_type: application/json
-        authority: non_authoritative_until_captured
+      - {path: .artifacts/vulnerability-scan.json, media_type: application/json, authority: non_authoritative_until_captured}
     negative_controls:
     - id: security-vulnerability-scan-behavior-must-fail
-      mutation:
-        path: governance/self-governance-policy.yml
-        search: 'forbid_subprocess_shell: true'
-        replace: 'forbid_subprocess_shell: false'
+      mutation: {path: governance/self-governance-policy.yml, search: 'forbid_subprocess_shell: true', replace: 'forbid_subprocess_shell:
+          false'}
       oracle:
         kind: diagnostic
-        exit_codes:
-        - 1
+        exit_codes: [1]
         stream: stderr
         regex: 'self-governance gate security-vulnerability-scan failed:'
   semantic-ownership:
@@ -537,39 +464,88 @@ gates:
       - {path: .artifacts/semantic-ownership/report.json, media_type: application/json, authority: non_authoritative_until_captured}
     negative_controls:
     - id: semantic-ownership-behavior-must-fail
-      mutation:
-        path: governance/canonical-representations.yml
-        search: 'authorized_constructors_and_factories: [bcf_governance/tooling/evidence_sessions.py::allocate_session, bcf_governance/tooling/evidence_sessions.py::load_session]'
-        replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'
+      mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/evidence_sessions.py::allocate_session,
+          bcf_governance/tooling/evidence_sessions.py::load_session]', replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'}
       oracle:
         kind: diagnostic
         exit_codes: [1]
         stream: stderr
-        regex: 'owner must be an authorized constructor'
+        regex: owner must be an authorized constructor
     - id: ci-authority-owner-behavior-must-fail
-      mutation:
-        path: governance/canonical-representations.yml
-        search: 'authorized_constructors_and_factories: [bcf_governance/tooling/ci_authority_state.py::evaluate_authority]'
-        replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'
+      mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/ci_authority_state.py::evaluate_authority]',
+        replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'}
       oracle:
         kind: diagnostic
         exit_codes: [1]
         stream: stderr
-        regex: 'governance.ci-authority-state.v1 owner must be an authorized constructor'
-    - {id: ci-certification-verification-owner-must-fail, mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/ci_authority_certification.py::verify_ci_certification]', replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'governance.ci-certification-verification.v1 owner must be an authorized constructor'}}
-    - {id: ci-cancellation-decision-owner-must-fail, mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/ci_authority_decisions.py::owned_cancellation_targets]', replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'governance.ci-cancellation-decision.v1 owner must be an authorized constructor'}}
-    - {id: ci-status-decision-owner-must-fail, mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/ci_authority_decisions.py::decide_status_publication]', replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'governance.ci-status-decision.v1 owner must be an authorized constructor'}}
-    - {id: release-receipt-owner-must-fail, mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/release_receipts.py::build_release_receipt]', replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'governance.release-receipt.v1 owner must be an authorized constructor'}}
-    - {id: github-run-identity-owner-must-fail, mutation: {path: governance/canonical-representations.yml, search: "authorized_constructors_and_factories: ['bcf_governance/tooling/ci_github.py::authenticate_github_run']", replace: "authorized_constructors_and_factories: ['bcf_governance/tooling/missing.py::owner']"}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'governance.github-run-identity.v1 owner must be an authorized constructor'}}
-    - {id: local-pr-context-owner-must-fail, mutation: {path: governance/canonical-representations.yml, search: "authorized_constructors_and_factories: ['bcf_governance/tooling/local_pr.py::resolve_local_pr_context']", replace: "authorized_constructors_and_factories: ['bcf_governance/tooling/missing.py::owner']"}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'governance.local-pr-context.v1 owner must be an authorized constructor'}}
-    - {id: runtime-capacity-owner-must-fail, mutation: {path: governance/canonical-representations.yml, search: "authorized_constructors_and_factories: ['bcf_governance/tooling/runtime_capacity.py::check_runtime_capacity']", replace: "authorized_constructors_and_factories: ['bcf_governance/tooling/missing.py::owner']"}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'governance.runtime-capacity-decision.v1 owner must be an authorized constructor'}}
-    - {id: trusted-input-owner-must-fail, mutation: {path: governance/canonical-representations.yml, search: "authorized_constructors_and_factories: ['bcf_governance/tooling/trusted_inputs.py::verify_trusted_input']", replace: "authorized_constructors_and_factories: ['bcf_governance/tooling/missing.py::owner']"}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'governance.trusted-input-verification.v1 owner must be an authorized constructor'}}
+        regex: governance.ci-authority-state.v1 owner must be an authorized constructor
+    - id: ci-certification-verification-owner-must-fail
+      mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/ci_authority_certification.py::verify_ci_certification]',
+        replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'}
+      oracle:
+        kind: diagnostic
+        exit_codes: [1]
+        stream: stderr
+        regex: governance.ci-certification-verification.v1 owner must be an authorized constructor
+    - id: ci-cancellation-decision-owner-must-fail
+      mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/ci_authority_decisions.py::owned_cancellation_targets]',
+        replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'}
+      oracle:
+        kind: diagnostic
+        exit_codes: [1]
+        stream: stderr
+        regex: governance.ci-cancellation-decision.v1 owner must be an authorized constructor
+    - id: ci-status-decision-owner-must-fail
+      mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/ci_authority_decisions.py::decide_status_publication]',
+        replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'}
+      oracle:
+        kind: diagnostic
+        exit_codes: [1]
+        stream: stderr
+        regex: governance.ci-status-decision.v1 owner must be an authorized constructor
+    - id: release-receipt-owner-must-fail
+      mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/release_receipts.py::build_release_receipt]',
+        replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'}
+      oracle:
+        kind: diagnostic
+        exit_codes: [1]
+        stream: stderr
+        regex: governance.release-receipt.v1 owner must be an authorized constructor
+    - id: github-run-identity-owner-must-fail
+      mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [''bcf_governance/tooling/ci_github.py::authenticate_github_run'']',
+        replace: 'authorized_constructors_and_factories: [''bcf_governance/tooling/missing.py::owner'']'}
+      oracle:
+        kind: diagnostic
+        exit_codes: [1]
+        stream: stderr
+        regex: governance.github-run-identity.v1 owner must be an authorized constructor
+    - id: local-pr-context-owner-must-fail
+      mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [''bcf_governance/tooling/local_pr.py::resolve_local_pr_context'']',
+        replace: 'authorized_constructors_and_factories: [''bcf_governance/tooling/missing.py::owner'']'}
+      oracle:
+        kind: diagnostic
+        exit_codes: [1]
+        stream: stderr
+        regex: governance.local-pr-context.v1 owner must be an authorized constructor
+    - id: runtime-capacity-owner-must-fail
+      mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [''bcf_governance/tooling/runtime_capacity.py::check_runtime_capacity'']',
+        replace: 'authorized_constructors_and_factories: [''bcf_governance/tooling/missing.py::owner'']'}
+      oracle:
+        kind: diagnostic
+        exit_codes: [1]
+        stream: stderr
+        regex: governance.runtime-capacity-decision.v1 owner must be an authorized constructor
+    - id: trusted-input-owner-must-fail
+      mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [''bcf_governance/tooling/trusted_inputs.py::verify_trusted_input'']',
+        replace: 'authorized_constructors_and_factories: [''bcf_governance/tooling/missing.py::owner'']'}
+      oracle:
+        kind: diagnostic
+        exit_codes: [1]
+        stream: stderr
+        regex: governance.trusted-input-verification.v1 owner must be an authorized constructor
   test:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - test
+      argv: [python3, .github/scripts/run_self_governance_gate.py, test]
       cwd: .
       env: {}
       required_env: []
@@ -586,137 +562,65 @@ gates:
         artifact_binding: non_authoritative_until_captured
     negative_controls:
     - id: test-behavior-must-fail
-      mutation:
-        path: template-repo/governance/artifact-manifest.yml
-        search: 'readme: {path: README.md, contract: project_readme}'
-        replace: 'readme: {path: README.md, contract: broken_readme}'
+      mutation: {path: template-repo/governance/artifact-manifest.yml, search: 'readme: {path: README.md, contract: project_readme}',
+        replace: 'readme: {path: README.md, contract: broken_readme}'}
       oracle:
         kind: test_node_failure
-        node_ids:
-        - tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts
+        node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']
   typecheck:
     invocation:
-      argv:
-      - python3
-      - .github/scripts/run_self_governance_gate.py
-      - typecheck
+      argv: [python3, .github/scripts/run_self_governance_gate.py, typecheck]
       cwd: .
       env: {}
       required_env: []
-    evidence:
-      kind: gate
+    evidence: {kind: gate}
     negative_controls:
     - id: typecheck-behavior-must-fail
-      mutation:
-        path: bcf_governance/_version.py
-        search: __version__ = "0.6.1"
-        replace: VERSION = "0.6.1"
+      mutation: {path: bcf_governance/_version.py, search: __version__ = "0.6.1", replace: VERSION = "0.6.1"}
       oracle:
         kind: diagnostic
-        exit_codes:
-        - 1
+        exit_codes: [1]
         stream: stderr
         regex: 'self-governance gate typecheck failed:'
 gate_catalog:
-  governance_validate:
-    target: governance-validate
-    status: required
-    command_policy: governance_validation
-    rationale: governed YAML passes schema semantic path and placeholder validation
-  governance_exposure_scan:
-    target: governance-exposure-scan
-    status: required
-    command_policy: governance_exposure_scan
-    rationale: governed artifacts do not expose local paths or private infrastructure markers
-  architecture_test:
-    target: architecture-test
-    status: required
-    command_policy: architecture_tests
-    rationale: architecture boundaries are executable
-  architecture_module_size:
-    target: architecture-module-size
-    status: required
-    command_policy: architecture_module_size
-    rationale: production modules stay below configured LOC cap
-  architecture_layer_membership:
-    target: architecture-layer-membership
-    status: required
-    command_policy: architecture_layer_membership
-    rationale: production modules map to one layer
-  architecture_context_membership:
-    target: architecture-context-membership
-    status: required
-    command_policy: architecture_context_membership
-    rationale: production modules map to one bounded context
-  architecture_import_boundaries:
-    target: architecture-import-boundaries
-    status: required
-    command_policy: architecture_import_boundaries
-    rationale: layer import purity prevents drift
-  architecture_cqrs_side:
-    target: architecture-cqrs-side
-    status: required
-    command_policy: architecture_cqrs_side
-    rationale: command and query sides stay separate
-  architecture_router_thinness:
-    target: architecture-router-thinness
-    status: required
-    command_policy: architecture_router_thinness
-    rationale: routers remain transport adapters
-  architecture_duplication:
-    target: architecture-duplication
-    status: required
-    command_policy: architecture_duplication
-    rationale: duplication and shared helpers stay explicit
-  lint:
-    target: lint
-    status: required
-    command_policy: lint
-    rationale: lint rules are wired before release-check is trusted
-  typecheck:
-    target: typecheck
-    status: required
-    command_policy: typecheck
-    rationale: static analysis is wired before release-check is trusted
-  test:
-    target: test
-    status: required
-    command_policy: automated_tests
-    rationale: touched behavior has automated tests
-  contract_test:
-    target: contract-test
-    status: required
-    command_policy: contract_tests
-    rationale: public contracts and adapters have explicit checks
-  security_secret_scan:
-    target: security-secret-scan
-    status: required
-    command_policy: security_secret_scan
-    rationale: pushed code is scanned for secrets
-  security_dependency_audit:
-    target: security-dependency-audit
-    status: required
-    command_policy: security_dependency_audit
-    rationale: dependencies have a vulnerability audit lane
-  security_sbom:
-    target: security-sbom
-    status: required
-    command_policy: security_sbom
-    rationale: production-bound artifacts produce an SBOM
-  security_vulnerability_scan:
-    target: security-vulnerability-scan
-    status: required
-    command_policy: security_vulnerability_scan
-    rationale: source or image vulnerability scan is wired
-  security_review:
-    target: security-review
-    status: required
-    command_policy: security_review
-    rationale: canonical review findings and remediation proofs bind to the governed tree
-  runtime_smoke:
-    target: runtime-smoke
-    status: required
-    command_policy: runtime_smoke
-    rationale: runtime behavior is proven in a declared environment
-  semantic_ownership: {target: semantic-ownership, status: required, command_policy: semantic_ownership, rationale: declared canonical representations have one mechanically enforced owner}
+  governance_validate: {target: governance-validate, status: required, command_policy: governance_validation, rationale: governed
+      YAML passes schema semantic path and placeholder validation}
+  governance_exposure_scan: {target: governance-exposure-scan, status: required, command_policy: governance_exposure_scan,
+    rationale: governed artifacts do not expose local paths or private infrastructure markers}
+  architecture_test: {target: architecture-test, status: required, command_policy: architecture_tests, rationale: architecture
+      boundaries are executable}
+  architecture_module_size: {target: architecture-module-size, status: required, command_policy: architecture_module_size,
+    rationale: production modules stay below configured LOC cap}
+  architecture_layer_membership: {target: architecture-layer-membership, status: required, command_policy: architecture_layer_membership,
+    rationale: production modules map to one layer}
+  architecture_context_membership: {target: architecture-context-membership, status: required, command_policy: architecture_context_membership,
+    rationale: production modules map to one bounded context}
+  architecture_import_boundaries: {target: architecture-import-boundaries, status: required, command_policy: architecture_import_boundaries,
+    rationale: layer import purity prevents drift}
+  architecture_cqrs_side: {target: architecture-cqrs-side, status: required, command_policy: architecture_cqrs_side, rationale: command
+      and query sides stay separate}
+  architecture_router_thinness: {target: architecture-router-thinness, status: required, command_policy: architecture_router_thinness,
+    rationale: routers remain transport adapters}
+  architecture_duplication: {target: architecture-duplication, status: required, command_policy: architecture_duplication,
+    rationale: duplication and shared helpers stay explicit}
+  lint: {target: lint, status: required, command_policy: lint, rationale: lint rules are wired before release-check is trusted}
+  typecheck: {target: typecheck, status: required, command_policy: typecheck, rationale: static analysis is wired before release-check
+      is trusted}
+  test: {target: test, status: required, command_policy: automated_tests, rationale: touched behavior has automated tests}
+  contract_test: {target: contract-test, status: required, command_policy: contract_tests, rationale: public contracts and
+      adapters have explicit checks}
+  security_secret_scan: {target: security-secret-scan, status: required, command_policy: security_secret_scan, rationale: pushed
+      code is scanned for secrets}
+  security_dependency_audit: {target: security-dependency-audit, status: required, command_policy: security_dependency_audit,
+    rationale: dependencies have a vulnerability audit lane}
+  security_sbom: {target: security-sbom, status: required, command_policy: security_sbom, rationale: production-bound artifacts
+      produce an SBOM}
+  security_vulnerability_scan: {target: security-vulnerability-scan, status: required, command_policy: security_vulnerability_scan,
+    rationale: source or image vulnerability scan is wired}
+  security_review: {target: security-review, status: required, command_policy: security_review, rationale: canonical review
+      findings and remediation proofs bind to the governed tree}
+  runtime_smoke: {target: runtime-smoke, status: required, command_policy: runtime_smoke, rationale: runtime behavior is proven
+      in a declared environment}
+  semantic_ownership: {target: semantic-ownership, status: required, command_policy: semantic_ownership, rationale: declared
+      canonical representations have one mechanically enforced owner}
 provenance: {}

@@ -1,0 +1,15 @@
+schema_version: '1.0'
+record_id: bcf-trusted-external-input-absent
+subject: {kind: capability, id: trusted_external_input_acquisition}
+repository_scope: BCF release and governance workflows
+rationale: BCF implements the optional verifier for consumers but its own release train acquires no sibling or external producer artifact.
+supporting_evidence:
+- governance/ci-authority.yml trusted_external_inputs remains empty when CI authority is activated
+- current workflow inventory has no external producer declaration
+approving_governance_role: repository_owner_delegate
+subject_commit: 756843708bae6b4501dcf707ce7d910b67541c6c
+profile: standard
+profile_contract_version: '2.0'
+reviewed_at: '2026-08-30T00:00:00Z'
+re_review_trigger: {kind: tracked_path_exists, value: governance/trusted-external-inputs.yml}
+release_claim_uses_ci_evidence: false

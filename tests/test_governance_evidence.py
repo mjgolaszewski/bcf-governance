@@ -566,6 +566,83 @@ def test_explicit_local_session_ignores_ambient_github_identity(
     }
 
 
+def test_workflow_session_separates_allocator_from_admitted_evidence_job(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _make_diagnostic_gate_repo(
+        tmp_path,
+        "BROKEN = False\nprint('ok')\n",
+    )
+    profile_path = repo / "governance-profile.yml"
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    profile["profile_contract_version"] = "2.0"
+    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
+    _git(repo, "add", "governance-profile.yml")
+    _git(repo, "commit", "-m", "enable profile v2")
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "owner/repository")
+    monkeypatch.setenv("GITHUB_REPOSITORY_ID", "12345")
+    monkeypatch.setenv("GITHUB_RUN_ID", "98765")
+    monkeypatch.setenv("GITHUB_RUN_ATTEMPT", "2")
+    monkeypatch.setenv("GITHUB_JOB", "preflight")
+    session = allocate_session(
+        repo,
+        tmp_path / "evidence",
+        ["gate"],
+        expected_producers=["evidence"],
+    )
+    monkeypatch.setenv("GITHUB_JOB", "evidence")
+
+    receipt = json.loads(
+        capture_gate(
+            repo,
+            "gate",
+            session.root / "gate",
+            session_manifest=session.manifest_path,
+        ).read_text(encoding="utf-8")
+    )
+
+    assert session.payload["producer"]["producer_id"] == "preflight"
+    assert receipt["invocation"]["workflow"]["job"] == "evidence"
+    assert receipt["invocation"]["workflow"]["run_id"] == "98765"
+    assert receipt["invocation"]["workflow"]["run_attempt"] == "2"
+
+
+def test_workflow_session_rejects_missing_producer_job_before_gate_execution(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _make_diagnostic_gate_repo(
+        tmp_path,
+        "BROKEN = False\nprint('ok')\n",
+    )
+    profile_path = repo / "governance-profile.yml"
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    profile["profile_contract_version"] = "2.0"
+    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
+    _git(repo, "add", "governance-profile.yml")
+    _git(repo, "commit", "-m", "enable profile v2")
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    monkeypatch.setenv("GITHUB_JOB", "preflight")
+    session = allocate_session(
+        repo,
+        tmp_path / "evidence",
+        ["gate"],
+        expected_producers=["evidence"],
+    )
+    monkeypatch.delenv("GITHUB_JOB")
+    output = session.root / "gate"
+
+    with pytest.raises(EvidenceError, match="requires GITHUB_JOB"):
+        capture_gate(
+            repo,
+            "gate",
+            output,
+            session_manifest=session.manifest_path,
+        )
+
+    assert not (output / "positive.stdout").exists()
+
+
 def test_session_gate_inventory_is_closed(tmp_path: Path) -> None:
     repo = _make_diagnostic_gate_repo(
         tmp_path,
