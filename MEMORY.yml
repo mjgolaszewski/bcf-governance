@@ -57,6 +57,7 @@ environment_facts:
     - main is protected by active repository ruleset 21862678 requiring pull requests, current governance-truthfulness, pack-checks, ast-checks, resolved conversations, and no force push or deletion
     - the local implementation host provides Docker but no disposable VM hypervisor or clone manager
     - evidence execution uses the explicitly selected Python and propagates its lexical executable directory and required loader environment into detached positive and negative-control worktrees
+    - P01-HF01 merged as main commit a0faa8dc5948e3f9cbac9ef0fbddb9e3357f76a3 and exact-main runs 33321545239 and 33321545295 passed entirely on the local pool
   active_artifacts:
     spec: plans/product-spec.yml
     build_plan: plans/build-plan.yml

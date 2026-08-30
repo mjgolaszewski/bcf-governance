@@ -20,6 +20,7 @@ summary:
   - fork pull requests are rejected before candidate runner assignment and the privileged release publisher has no checkout or repository-script execution
   - completed P01-HF01 temporarily admits only owner-authored same-repository PRs to the persistent local pool and keeps release execution and publication disabled
   - completed P01-HF01 also repaired selected-interpreter propagation after the first local-pool PR run exposed a toolcache loader failure inside detached evidence worktrees
+  - the P02 branch is based directly on certified main commit a0faa8dc5948e3f9cbac9ef0fbddb9e3357f76a3 after P01-HF01 merged
 workitems:
 - id: P02-P0-01
   status: DONE
@@ -47,6 +48,7 @@ execution_evidence:
   - the implementation host has Docker but no VM clone manager, so the external substrate cannot be safely inferred or provisioned here
   - static governance validation passed and the complete local suite passed 197 tests
   - reconciled validation after the interpreter and runner-policy fixes passed 203 tests, governance-yaml-ok, compilation, exact runtime-copy checks, module line budgets, and both high-value mutation profiles
+  - exact-main governance-pack run 33321545239 and governance run 33321545295 passed on commit a0faa8dc5948e3f9cbac9ef0fbddb9e3357f76a3 without hosted allocation
 closeout_requirements:
   claims:
     workitems_closed:
@@ -81,4 +83,4 @@ known_constraints:
 - the external trusted and disposable VM substrate must be supplied and proven before remote candidate execution
 - the owner-only local runner exception expires after 2026-08-31 and does not satisfy P02 disposable-runner acceptance
 next_work:
-- merge P01-HF01, reconcile this branch to the exact resulting main commit, then provision and prove the external substrate before P03
+- provision and prove disposable candidate execution and an isolated trusted control plane before P03
