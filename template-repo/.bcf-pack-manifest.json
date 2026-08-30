@@ -184,7 +184,7 @@
     },
     "schemas/canonical-representations.schema.json": {
       "operation": "copy",
-      "sha256": "6c9fcb3d2dc70564ab2961189fdffcee61fc68c81753e15c93a9d70478b01f30"
+      "sha256": "48811d590c61af7376b1a601179b4c63e640c1a88fb350c74ac7ca0d1fbe68cc"
     },
     "schemas/evidence-policy.schema.json": {
       "operation": "copy",
@@ -414,9 +414,21 @@
       "operation": "copy",
       "sha256": "fa77fc6e7a159c7b4c1ac23aff9219c1cdac7f5eadc74e9ffbb08c7c10a36099"
     },
+    "scripts/_bcf_runtime/semantic_ownership_benchmark.py": {
+      "operation": "copy",
+      "sha256": "274415c21adebb0114627c4fbb3063b955c2de0061a5021258bef280a5abdc0c"
+    },
+    "scripts/_bcf_runtime/semantic_ownership_cross_language.py": {
+      "operation": "copy",
+      "sha256": "6124c1a6dfaf4ac9c00782db17e4c05b1e18de9725528ce8afd21efa62239459"
+    },
     "scripts/_bcf_runtime/semantic_ownership_inventory.py": {
       "operation": "copy",
-      "sha256": "95d83abf6e008dc87d87b62e52c506b00c1676ebf901f01dd617d87b9a5f394b"
+      "sha256": "1488b987d4a9520358b2a0e3faae5bb6f32235c49eb3a846a3d0147642a59530"
+    },
+    "scripts/_bcf_runtime/semantic_ownership_reference.py": {
+      "operation": "copy",
+      "sha256": "668c0f4081fbf89f75459e94d224ff86d79987d331ae4331a0325916cbfe0c8c"
     },
     "scripts/_bcf_runtime/semantic_ownership_registry.py": {
       "operation": "copy",
@@ -424,7 +436,15 @@
     },
     "scripts/_bcf_runtime/semantic_ownership_scan.py": {
       "operation": "copy",
-      "sha256": "d4faf66866fc53d3baa33283bb45bc767675b4d4eadeded94ee76f2c6dca4587"
+      "sha256": "459175e737cb97ce99474ff8a3609d7994ee80d3375695b73978e839c16e09e7"
+    },
+    "scripts/_bcf_runtime/semantic_ownership_typescript.mjs": {
+      "operation": "copy",
+      "sha256": "9faf7a4b9253f258b7fd078862931306497b5c55bbdb1f42fbebb834bfc95635"
+    },
+    "scripts/_bcf_runtime/semantic_ownership_typescript.py": {
+      "operation": "copy",
+      "sha256": "b7c494bd2eed297349b043f1e4f1e2d42e2a24891033e8cd44579d4749ad1e6d"
     },
     "scripts/_bcf_runtime/test_manifests.py": {
       "operation": "copy",

@@ -121,6 +121,78 @@ def _module_name(repo_root: Path, path: Path) -> str:
     ).replace("/", ".")
 
 
+def _router_prefixes(tree: ast.Module) -> dict[str, list[tuple[int, str]]]:
+    prefixes: dict[str, list[tuple[int, str]]] = {}
+    for member in ast.walk(tree):
+        if not isinstance(member, (ast.Assign, ast.AnnAssign)):
+            continue
+        value = member.value
+        if not isinstance(value, ast.Call) or _call_name(value) != "APIRouter":
+            continue
+        targets = member.targets if isinstance(member, ast.Assign) else [member.target]
+        if len(targets) != 1 or not isinstance(targets[0], ast.Name):
+            continue
+        prefix = next(
+            (
+                keyword.value.value
+                for keyword in value.keywords
+                if keyword.arg == "prefix"
+                and isinstance(keyword.value, ast.Constant)
+                and isinstance(keyword.value.value, str)
+            ),
+            "",
+        )
+        prefixes.setdefault(targets[0].id, []).append((member.lineno, prefix))
+    return prefixes
+
+
+def _endpoint_facts(tree: ast.Module, path: str) -> list[dict[str, Any]]:
+    endpoints: list[dict[str, Any]] = []
+    prefixes = _router_prefixes(tree)
+    for member in ast.walk(tree):
+        if not isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        for decorator in member.decorator_list:
+            if not isinstance(decorator, ast.Call) or not decorator.args:
+                continue
+            method = _call_name(decorator).lower()
+            route = decorator.args[0]
+            if (
+                method not in {"delete", "get", "patch", "post", "put"}
+                or not isinstance(route, ast.Constant)
+                or not isinstance(route.value, str)
+            ):
+                continue
+            response_model = next(
+                (
+                    ast.unparse(keyword.value)
+                    for keyword in decorator.keywords
+                    if keyword.arg == "response_model"
+                ),
+                _annotation(member.returns),
+            )
+            router_name = _root_name(decorator.func)
+            candidates = [
+                value
+                for value in prefixes.get(router_name or "", [])
+                if value[0] < member.lineno
+            ]
+            prefix = max(candidates, default=(0, ""))[1]
+            full_path = route.value
+            if prefix and not full_path.startswith(prefix):
+                full_path = f"{prefix.rstrip('/')}/{full_path.lstrip('/')}"
+            endpoints.append(
+                {
+                    "path": full_path,
+                    "method": method.upper(),
+                    "response_model": response_model,
+                    "symbol": f"{path}::{member.name}",
+                    "line": member.lineno,
+                }
+            )
+    return endpoints
+
+
 def _normalized_return_fingerprint(
     expression: ast.expr, parameters: set[str]
 ) -> str:
@@ -271,6 +343,7 @@ def discover_python_source(
     file_rows: list[dict[str, str]] = []
     functions: list[dict[str, Any]] = []
     types: list[str] = []
+    endpoints: list[dict[str, Any]] = []
     for path in paths:
         relative = _relative(repo_root, path)
         raw = path.read_bytes()
@@ -283,6 +356,7 @@ def discover_python_source(
         file_rows.append({"path": relative, "sha256": hashlib.sha256(raw).hexdigest()})
         local_types = {node.name for node in tree.body if isinstance(node, ast.ClassDef)}
         types.extend(f"{relative}::{name}" for name in sorted(local_types))
+        endpoints.extend(_endpoint_facts(tree, relative))
         imports = _imports(tree, module_index)
         for node in tree.body:
             members = node.body if isinstance(node, ast.ClassDef) else [node]
@@ -311,4 +385,8 @@ def discover_python_source(
             fact for function in functions for fact in function["normalizations"]
         ],
         "unresolved": [fact for function in functions for fact in function["unresolved"]],
+        "endpoints": sorted(
+            endpoints,
+            key=lambda value: (value["path"], value["method"], value["symbol"]),
+        ),
     }

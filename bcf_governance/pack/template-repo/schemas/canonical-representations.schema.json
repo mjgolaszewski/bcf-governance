@@ -36,8 +36,15 @@
       "properties": {
         "discovery_precedes_registry_load": {"const": true},
         "python_engine": {"type": "string", "minLength": 1},
-        "typescript_engine": {"type": "string", "minLength": 1},
-        "cross_language_trace": {"type": "string", "minLength": 1},
+        "typescript_engine": {
+          "oneOf": [
+            {"enum": ["not_applicable_until_declared_by_consumer"]},
+            {"$ref": "#/$defs/typescriptEngine"}
+          ]
+        },
+        "cross_language_trace": {
+          "enum": ["not_applicable_until_declared_by_consumer", "derived_from_declared_endpoint_and_typescript_contracts"]
+        },
         "completeness_authority": {"const": "independent_exact_tree_source_inventory"},
         "authoritative_python_roots": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
         "generated_mirror_roots": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
@@ -50,6 +57,18 @@
     }
   },
   "$defs": {
+    "typescriptEngine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node_executable", "tsconfig", "package_lock", "source_roots", "browser_contract_roots"],
+      "properties": {
+        "node_executable": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+$"},
+        "tsconfig": {"type": "string", "minLength": 1},
+        "package_lock": {"type": "string", "minLength": 1},
+        "source_roots": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "browser_contract_roots": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
     "semanticId": {"type": "string", "pattern": "^[a-z][a-z0-9_.-]+\\.v[1-9][0-9]*$"},
     "symbol": {"type": "string", "minLength": 1, "pattern": "::"},
     "stringArray": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},

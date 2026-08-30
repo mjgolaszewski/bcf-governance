@@ -1,0 +1,40 @@
+document:
+  kind: semantic_reference_validation
+  id: chrysalis-identity-p05-validation
+  version: 1.0.0
+  status: provisional_local_pass
+subject:
+  repository: mjgolaszewski/chrysalis-identity
+  commit_sha: 0569e6dd81b311abf33af5626a32441b0d55cc64
+  tree_sha: 96306a5dbba3327adb948aa183d39dce1129c6e4
+  clean: true
+results:
+  representations: 62
+  blocking_violations: 0
+  unresolved_escapes: 0
+  python_files: 906
+  typescript_files: 168
+  cross_language_traces: 221
+  required_browser_traces: 220
+  uncovered_required_browser_traces: 0
+  compact_generalized_proof_bytes: 1005
+  consumer_report_sha256: 1d142c87d8a577ab32ffa8e307d9c9e5ab0f66d32ce29db7de1a2b29d17a29e0
+  generalized_proof_sha256: c0bb907bc77f10a257e79441d9f4c0c1b3c1a020455bc6bb6e80dcf19134ccd5
+benchmark:
+  substrate: provisional_local
+  architecture: x86_64
+  vcpus: 4
+  python: 3.14.5
+  node: v24.20.0
+  typescript: 6.0.3
+  warmups: 1
+  measured_runs: 10
+  median_seconds: 13.610089
+  p95_seconds: 20.403658
+  median_ceiling_seconds: 30
+  p95_ceiling_seconds: 36
+  benchmark_sha256: 7b6f6130ecbcf2cab5cd5dcf67fcbe90f4f7c74dbd469407e405dbd53303bd57
+limitations:
+- Python 3.14.7 does not exist in the current managed release catalog; the exact current Identity environment provides 3.14.5
+- disposable candidate VM image proof is a P10 prerequisite; this local benchmark must be repeated on that digest-pinned substrate before release
+- the 10 MiB consumer-native diagnostic report is legacy reference input; the authoritative generalized proof is compact and below 1 MiB

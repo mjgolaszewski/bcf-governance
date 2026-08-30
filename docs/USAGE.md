@@ -226,6 +226,14 @@ requires every discovered type in the authoritative Python roots to be
 registered. The report is structural evidence about representation ownership;
 it does not prove arbitrary business correctness.
 
+Repositories with TypeScript can replace the registry's typed
+`not_applicable_until_declared_by_consumer` value with a compiler contract that
+declares the Node command, tsconfig, package lock, source roots, and browser
+contract roots. BCF uses only tracked source and the already-installed
+lock-matching `typescript` package. Missing tools, configuration diagnostics, or
+version drift are infrastructure failures; the analyzer never downloads a
+compiler or falls back to Docker.
+
 CI-owned Docker resources use the exact
 `io.bcf-governance.ci-run=<run-id>` label. BCF never infers ownership from names
 or performs global Docker/build-cache pruning; it revalidates the exact ID and

@@ -52,7 +52,7 @@ environment_facts:
     - all governance, memory, specs, plans, workitem ledgers, and phase logs are YAML-native
     - observability contracts are scaffolded under contracts/observability/v1/
     - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
-    - P05 is active for the optional consumer-owned TypeScript adapter, cross-language traces, and exact Identity reference proof after P04 self-adopted the generalized Python SOIP engine
+    - P05 adds an optional lock-verified TypeScript adapter and cross-language traces; exact Identity main proves 62 representations and 220 required browser traces with zero unresolved or uncovered flow
     - BCF has two owner-controlled local CI runners on the bcf-governance and vm-linux-ci-runner labels plus one excluded Dependabot runner
     - main is protected by active repository ruleset 21862678 requiring pull requests, current governance-truthfulness, pack-checks, ast-checks, resolved conversations, and no force push or deletion
     - the local implementation host provides Docker but no disposable VM hypervisor or clone manager
@@ -77,7 +77,7 @@ known_constraints:
   - the persistent trusted VM may collect provider state and publish but may never check out or execute candidate code
   - P10 owns trusted and disposable runner substrate activation; its isolation acceptance must pass before remote candidate execution or release publication
   - release execution and publication remain disabled until disposable candidate execution and isolated trusted publication are available
-  - hosted Actions credits are unavailable through 2026-08-31; release-train implementation and dogfood validation proceed locally without dispatching workflows
+  - hosted Actions credits are unavailable through 2026-08-31, so release-train dogfood stays local; P05 uses available Python 3.14.5 because 3.14.7 is absent and P10 must repeat the benchmark on its digest-pinned disposable image
   - every BCF behavior commit updates and validates BCF's own applicable governance contracts before successor work begins
   - cleanup revalidates exact Docker IDs/run labels before scoped deletion; retention-removable phase artifacts are consumed only through phase-history plus exact Git commit/hash custody, never live fixture paths
 reusable_commands:

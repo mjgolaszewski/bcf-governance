@@ -27,6 +27,13 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Added a generalized, MIT-licensed Python semantic-ownership engine with
   source-first tracked inventory, one canonical registry, typed causal controls,
   declared-family enforcement, and repository-wide completeness mode.
+- Added an optional, consumer-owned TypeScript Compiler API adapter and
+  Python/TypeScript endpoint tracing that require the declared Node executable,
+  tsconfig, package lock, and already-installed exact compiler version without
+  network or Docker fallback.
+- Added a compact exact-consumer reference proof and reproducible benchmark
+  harness; the current Identity main proves 62 representations and 220 required
+  browser traces with no unresolved or uncovered flow.
 
 ### Changed
 

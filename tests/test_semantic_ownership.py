@@ -47,7 +47,7 @@ def test_source_discovery_precedes_registry_access(
         authoritative_python_roots=("src",),
         generated_mirror_roots=(),
         entries=(),
-        raw={},
+        raw={"source_authority": {"typescript_engine": "not_applicable_until_declared_by_consumer"}},
     )
     monkeypatch.setattr(
         scan, "discover_python_source", lambda _: (events.append("discovery") or source)
@@ -55,10 +55,15 @@ def test_source_discovery_precedes_registry_access(
     monkeypatch.setattr(
         scan, "load_registry", lambda _: (events.append("registry") or registry)
     )
+    monkeypatch.setattr(
+        scan,
+        "tracked_typescript_files",
+        lambda _: (events.append("typescript-discovery") or []),
+    )
 
     report = scan.run_scan(tmp_path)
 
-    assert events == ["discovery", "registry"]
+    assert events == ["discovery", "typescript-discovery", "registry"]
     assert report["subject"]["discovery_preceded_registry_load"] is True
 
 

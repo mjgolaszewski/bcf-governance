@@ -23,6 +23,13 @@ from .semantic_ownership_registry import (
     SemanticOwnershipRegistryError,
     load_registry,
 )
+from .semantic_ownership_cross_language import build_endpoint_traces
+from .semantic_ownership_typescript import (
+    TypeScriptDiscoveryError,
+    contract_from_mapping,
+    discover_typescript_source,
+    tracked_typescript_files,
+)
 
 
 def _path_in_roots(symbol: str, roots: tuple[str, ...]) -> bool:
@@ -31,7 +38,11 @@ def _path_in_roots(symbol: str, roots: tuple[str, ...]) -> bool:
 
 
 def _authoritative(symbol: str, registry: Registry) -> bool:
-    return _path_in_roots(symbol, registry.authoritative_python_roots) and not _path_in_roots(
+    roots = list(registry.authoritative_python_roots)
+    typescript = registry.raw.get("source_authority", {}).get("typescript_engine")
+    if isinstance(typescript, dict) and isinstance(typescript.get("source_roots"), list):
+        roots.extend(str(value) for value in typescript["source_roots"])
+    return _path_in_roots(symbol, tuple(roots)) and not _path_in_roots(
         symbol, registry.generated_mirror_roots
     )
 
@@ -55,7 +66,10 @@ def _annotation_mentions(annotation: object, canonical: str) -> bool:
 
 
 def _function_mentions(function: dict[str, Any], entry: RegistryEntry) -> bool:
-    return _annotation_mentions(function.get("return_annotation"), entry.canonical_symbol) or any(
+    return _annotation_mentions(
+        function.get("return_annotation", function.get("return_type")),
+        entry.canonical_symbol,
+    ) or any(
         _annotation_mentions(annotation, entry.canonical_symbol)
         for annotation in function.get("parameters", {}).values()
     )
@@ -82,11 +96,17 @@ def _declared_symbols(entry: RegistryEntry) -> set[str]:
     return symbols
 
 
-def evaluate_discovery(inventory: dict[str, Any], registry: Registry) -> dict[str, Any]:
+def evaluate_discovery(
+    inventory: dict[str, Any],
+    registry: Registry,
+    typescript_inventory: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Recompute ownership, normalization, and dynamic-flow claims."""
+    inventories = (inventory, typescript_inventory or {})
     functions = {
         str(value["symbol"]): value
-        for value in inventory["functions"]
+        for source in inventories
+        for value in source.get("functions", [])
         if _authoritative(str(value["symbol"]), registry)
     }
     types = {
@@ -94,7 +114,8 @@ def evaluate_discovery(inventory: dict[str, Any], registry: Registry) -> dict[st
     }
     constructors = [
         value
-        for value in inventory["constructors"]
+        for source in inventories
+        for value in source.get("constructors", [])
         if _authoritative(str(value.get("caller", "")), registry)
     ]
     violations: list[dict[str, Any]] = []
@@ -125,21 +146,26 @@ def evaluate_discovery(inventory: dict[str, Any], registry: Registry) -> dict[st
             for symbol, function in functions.items()
             if _function_mentions(function, entry)
         }
-        for fact in inventory["normalizations"]:
-            caller = str(fact.get("caller", ""))
-            if caller not in relevant or caller in declared:
-                continue
-            if fact.get("parameter_origins"):
-                violations.append(
-                    {
-                        "semantic_id": entry.semantic_id,
-                        "kind": "downstream_normalization",
-                        "symbol": caller,
-                        "operation": fact.get("call_name"),
-                        "line": fact.get("line"),
-                        "blocking": entry.blocking,
-                    }
+        for source in inventories:
+            for fact in source.get("normalizations", []):
+                caller = str(fact.get("caller", ""))
+                if caller not in relevant or caller in declared:
+                    continue
+                parameter_derived = bool(
+                    fact.get("parameter_origins")
+                    or fact.get("downstream_of_parameter") is True
                 )
+                if parameter_derived:
+                    violations.append(
+                        {
+                            "semantic_id": entry.semantic_id,
+                            "kind": "downstream_normalization",
+                            "symbol": caller,
+                            "operation": fact.get("call_name"),
+                            "line": fact.get("line"),
+                            "blocking": entry.blocking,
+                        }
+                    )
         duplicate_owners: set[str] = set()
         if owner is not None and owner.get("return_fingerprints"):
             fingerprints = set(owner["return_fingerprints"])
@@ -214,7 +240,8 @@ def evaluate_discovery(inventory: dict[str, Any], registry: Registry) -> dict[st
             )
     unresolved = [
         value
-        for value in inventory["unresolved"]
+        for source in inventories
+        for value in source.get("unresolved", [])
         if _authoritative(str(value.get("symbol", "")), registry)
     ]
     if registry.unresolved_dynamic_policy == "fail_closed":
@@ -261,10 +288,32 @@ def run_scan(repo_root: Path) -> dict[str, Any]:
     """Discover the exact source first, then make declarations available."""
     repo_root = repo_root.resolve()
     inventory = discover_python_source(repo_root)
+    typescript_files = tracked_typescript_files(repo_root)
     registry = load_registry(repo_root)
-    evaluation = evaluate_discovery(inventory, registry)
+    typescript_config = registry.raw["source_authority"]["typescript_engine"]
+    typescript_inventory: dict[str, Any] = {
+        "language": "typescript",
+        "files": [],
+        "functions": [],
+        "constructors": [],
+        "normalizations": [],
+        "unresolved": [],
+    }
+    traces: list[dict[str, Any]] = []
+    if isinstance(typescript_config, dict):
+        contract = contract_from_mapping(typescript_config)
+        typescript_inventory = discover_typescript_source(
+            repo_root, contract, typescript_files
+        )
+        traces = build_endpoint_traces(
+            inventory,
+            typescript_inventory,
+            browser_contract_roots=contract.browser_contract_roots,
+        )
+    evaluation = evaluate_discovery(inventory, registry, typescript_inventory)
+    file_rows = [*inventory["files"], *typescript_inventory["files"]]
     file_material = "\n".join(
-        f"{value['path']}:{value['sha256']}" for value in inventory["files"]
+        f"{value['path']}:{value['sha256']}" for value in file_rows
     ).encode()
     return {
         "document": {
@@ -287,7 +336,17 @@ def run_scan(repo_root: Path) -> dict[str, Any]:
                 "constructor_count": len(inventory["constructors"]),
                 "normalization_count": len(inventory["normalizations"]),
                 "unresolved_count": len(inventory["unresolved"]),
-            }
+            },
+            "typescript": {
+                "files": typescript_inventory["files"],
+                "file_count": len(typescript_inventory["files"]),
+                "compiler_version": typescript_inventory.get("compiler_version"),
+                "constructor_count": len(typescript_inventory["constructors"]),
+                "normalization_count": len(typescript_inventory["normalizations"]),
+                "unresolved_count": len(typescript_inventory["unresolved"]),
+                "toolchain": typescript_inventory.get("toolchain"),
+            },
+            "cross_language_endpoint_traces": traces,
         },
         **evaluation,
     }
@@ -304,7 +363,11 @@ def main(argv: list[str] | None = None) -> None:
     output = args.output if args.output.is_absolute() else repo_root / args.output
     try:
         report = run_scan(repo_root)
-    except (SemanticInventoryError, SemanticOwnershipRegistryError) as exc:
+    except (
+        SemanticInventoryError,
+        SemanticOwnershipRegistryError,
+        TypeScriptDiscoveryError,
+    ) as exc:
         report = {
             "document": {"kind": "exact_tree_semantic_ownership_report", "version": "1.0.0"},
             "verdict": "non_conformant",
