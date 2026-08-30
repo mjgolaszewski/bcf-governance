@@ -1,0 +1,36 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 12 Plan
+  id: bcf-governance-phase-12-plan
+  version: 1.0.0
+  generated_at_utc: '2026-08-30T00:00:00Z'
+  status: planned
+  path: plans/phase-12-plan.yml
+phase:
+  id: P12
+  build_block: editorial-refresh-and-release
+  planner: codex
+  date: '2026-08-30'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - README-led editorial refresh and immutable exact-byte release
+  parallelizable_workstreams:
+  - id: P12-WS1
+    name: documentation and release verification
+  hard_dependencies:
+  - P11
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: keep the phase narrowly scoped to declared deliverables and update canonical
+    governed artifacts in the same change
+verification_plan:
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest tests

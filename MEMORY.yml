@@ -40,7 +40,7 @@ memory_retention_policy:
   stable_decisions:
     review_frequency: per_phase_rollover
   environment_facts:
-    revalidate_after_days: 30
+    revalidate_after_days: 7
   reusable_commands:
     validate_on_release_gate: true
   stale_entry_handling:
@@ -52,30 +52,32 @@ environment_facts:
     - all governance, memory, specs, plans, workitem ledgers, and phase logs are YAML-native
     - observability contracts are scaffolded under contracts/observability/v1/
     - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
-    - two owner-controlled local runners use the bcf-governance and vm-linux-ci-runner labels; the Dependabot-only runner is excluded
-    - main is protected by repository ruleset 21862678 with pull-request-only updates, current required checks, resolved conversations, and no bypass actors
-    - evidence and mutation runtimes use the explicitly selected Python and preserve its required loader environment in detached sessions
+    - P02 is active for the single BCF 0.7.0 release train
+    - BCF has two owner-controlled local CI runners on the bcf-governance and vm-linux-ci-runner labels plus one excluded Dependabot runner
+    - main is protected by active repository ruleset 21862678 requiring pull requests, current governance-truthfulness, pack-checks, ast-checks, resolved conversations, and no force push or deletion
+    - the local implementation host provides Docker but no disposable VM hypervisor or clone manager
+    - evidence execution uses the explicitly selected Python and propagates its lexical executable directory and required loader environment into detached positive and negative-control worktrees
   active_artifacts:
     spec: plans/product-spec.yml
     build_plan: plans/build-plan.yml
     active_phase_ledger: plans/phase-ledger.yml
     phase_history: plans/phase-history.yml
-    active_phase_plan: plans/phase-01-plan.yml
-    active_workitem_ledger: plans/phase-01-workitems.yml
-    active_phase_log: phases/phase-01-log.yml
+    active_phase_plan: plans/phase-02-plan.yml
+    active_workitem_ledger: plans/phase-02-workitems.yml
+    active_phase_log: phases/phase-02-log.yml
 known_constraints:
   - schema-2 evidence must be recaptured after every governed tree mutation
   - template runtime and packaged template copies must remain byte-identical to canonical sources
+  - receipt invocation remains canonical while selected-interpreter identity is recorded as hashed environment metadata
   - release tags are created only at a merge commit whose source and governance CI passed
-  - through 2026-08-31 only owner-authored same-repository pull requests may execute on the persistent local runner pool
-  - release publication remains disabled until isolated trusted publication and safe ephemeral candidate execution are restored
+  - through 2026-08-31 an owner-only same-repository PR may use the two persistent local VM runners while privileged release publication remains disabled
+  - restore fresh disposable one-job candidate runners before admitting any non-owner code or re-enabling release publication
+  - the persistent trusted VM may collect provider state and publish but may never check out or execute candidate code
+  - P02 cannot complete until the trusted and disposable runner substrate passes isolation acceptance
+  - release execution and publication remain disabled until disposable candidate execution and isolated trusted publication are available
 reusable_commands:
-  - make governance-validate
-  - make architecture-test
-  - make lint
-  - make typecheck
-  - make test
-  - make release-check
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  - .venv/bin/python -m pytest tests
 references:
   governance:
     - AGENTS.yml
@@ -91,7 +93,7 @@ references:
     - plans/product-spec.yml
     - plans/build-plan.yml
   execution:
-    - plans/phase-01-plan.yml
-    - plans/phase-01-workitems.yml
-    - phases/phase-01-log.yml
+    - plans/phase-02-plan.yml
+    - plans/phase-02-workitems.yml
+    - phases/phase-02-log.yml
     - phases/phase-01-hotfix01.yml

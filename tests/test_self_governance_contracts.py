@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -152,6 +153,86 @@ def test_changelog_pr_enforcement_is_wired_into_repository_ci() -> None:
     }
 
 
+def test_self_governance_runner_classification_is_exact_and_has_no_hosted_fallback() -> None:
+    runner_policy = _policy()["runner_security"]
+    expected_jobs = runner_policy["jobs"]
+    observed_jobs: dict[str, dict[str, str]] = {}
+    for relative_path, classification in expected_jobs.items():
+        workflow_path = REPO_ROOT / relative_path
+        workflow_text = workflow_path.read_text(encoding="utf-8")
+        assert "ubuntu-latest" not in workflow_text
+        workflow = yaml.safe_load(workflow_text)
+        jobs = workflow["jobs"]
+        assert set(jobs) == set(classification)
+        observed_jobs[relative_path] = classification
+        for job_id, trust_class in classification.items():
+            expected_labels = runner_policy[f"{trust_class}_labels"]
+            assert jobs[job_id]["runs-on"] == expected_labels
+    assert observed_jobs == expected_jobs
+    assert runner_policy["hosted_fallback_allowed"] is False
+
+
+def test_fork_pull_requests_are_rejected_before_candidate_runner_assignment() -> None:
+    required_guard = (
+        "github.event.pull_request.head.repo.full_name == github.repository"
+    )
+    runner_policy = _policy()["runner_security"]
+    owner_guard = (
+        f"github.actor == '{runner_policy['temporary_local_window']['admitted_pr_actor']}'"
+    )
+    for relative_path in (
+        ".github/workflows/governance.yml",
+        ".github/workflows/governance-pack.yml",
+    ):
+        workflow = yaml.safe_load(
+            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+        )
+        for job_id, trust_class in runner_policy["jobs"][relative_path].items():
+            if trust_class == "candidate":
+                assert required_guard in workflow["jobs"][job_id]["if"]
+                assert owner_guard in workflow["jobs"][job_id]["if"]
+
+
+def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
+    runner_policy = _policy()["runner_security"]
+    pinned_action = re.compile(r"^[^@]+@[0-9a-f]{40}$")
+    for relative_path, classification in runner_policy["jobs"].items():
+        workflow = yaml.safe_load(
+            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+        )
+        for job_id, trust_class in classification.items():
+            if trust_class != "trusted":
+                continue
+            steps = workflow["jobs"][job_id]["steps"]
+            assert all("actions/checkout@" not in step.get("uses", "") for step in steps)
+            for step in steps:
+                if "uses" in step:
+                    assert pinned_action.fullmatch(step["uses"])
+                command = step.get("run", "")
+                assert "python" not in command
+                assert "scripts/" not in command
+                assert ".github/" not in command
+
+
+def test_shared_temporary_pool_cannot_run_privileged_publication() -> None:
+    runner_policy = _policy()["runner_security"]
+    assert runner_policy["candidate_labels"] == runner_policy["trusted_labels"]
+    window = runner_policy["temporary_local_window"]
+    assert window["status"] == "active"
+    assert window["privileged_publication_enabled"] is False
+    for relative_path, classification in runner_policy["jobs"].items():
+        workflow = yaml.safe_load(
+            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+        )
+        for job_id, trust_class in classification.items():
+            if trust_class == "trusted":
+                assert workflow["jobs"][job_id]["if"] == "${{ false }}"
+    release = yaml.safe_load(
+        (REPO_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+    )
+    assert release["jobs"]["release-artifacts"]["if"] == "${{ false }}"
+
+
 def test_self_gate_runner_bootstraps_an_uninstalled_source_checkout() -> None:
     result = subprocess.run(
         [
@@ -179,32 +260,6 @@ def test_self_gate_tests_use_the_selected_python_module_entrypoint() -> None:
         assert "run: pytest " not in text, workflow
 
 
-def test_temporary_local_runner_policy_is_exact_and_has_no_hosted_fallback() -> None:
-    policy = _policy()["runner_security"]
-    assert policy["hosted_fallback_allowed"] is False
-    labels = policy["candidate_labels"]
-    for relative_path, expected_jobs in policy["jobs"].items():
-        text = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
-        assert "ubuntu-latest" not in text
-        workflow = yaml.safe_load(text)
-        assert set(workflow["jobs"]) == set(expected_jobs)
-        assert all(job["runs-on"] == labels for job in workflow["jobs"].values())
-
-
-def test_only_owner_same_repository_pull_requests_reach_local_runners() -> None:
-    policy = _policy()["runner_security"]
-    owner_guard = f"github.actor == '{policy['admitted_pr_actor']}'"
-    source_guard = "github.event.pull_request.head.repo.full_name == github.repository"
-    for relative_path in (
-        ".github/workflows/governance.yml",
-        ".github/workflows/governance-pack.yml",
-    ):
-        workflow = yaml.safe_load((REPO_ROOT / relative_path).read_text(encoding="utf-8"))
-        for job in workflow["jobs"].values():
-            assert owner_guard in job["if"]
-            assert source_guard in job["if"]
-
-
 def test_persistent_local_jobs_do_not_persist_checkout_credentials() -> None:
     policy = _policy()["runner_security"]
     for relative_path in policy["jobs"]:
@@ -213,10 +268,6 @@ def test_persistent_local_jobs_do_not_persist_checkout_credentials() -> None:
             for step in job["steps"]:
                 if step.get("uses", "").startswith("actions/checkout@"):
                     assert step.get("with", {}).get("persist-credentials") is False
-    release = yaml.safe_load(
-        (REPO_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
-    )
-    assert release["jobs"]["release"]["if"] == "${{ false }}"
 
 
 def test_self_profile_builder_matches_canonical_negative_controls() -> None:

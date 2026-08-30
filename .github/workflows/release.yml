@@ -5,16 +5,15 @@ on:
     tags:
       - "v*"
 
-permissions:
-  contents: write
-  id-token: write
-  attestations: write
+permissions: {}
 
 jobs:
-  release:
-    # Publication stays disabled while code execution and publication would
-    # share the temporary persistent local pool.
+  release-artifacts:
+    # Release execution stays disabled until disposable candidate workers are
+    # available; publication is independently disabled below.
     if: ${{ false }}
+    permissions:
+      contents: read
     runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
     timeout-minutes: 30
     steps:
@@ -56,6 +55,36 @@ jobs:
         run: |
           python -m twine check dist/*
           (cd dist && sha256sum bcf_governance-* > SHA256SUMS)
+      - name: Upload verified release artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: bcf-release-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            dist/bcf_governance-*.whl
+            dist/bcf_governance-*.tar.gz
+            dist/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 30
+
+  publish-release:
+    if: ${{ false }} # Disabled while candidate and trusted work share the temporary local pool.
+    needs: [release-artifacts]
+    permissions:
+      actions: read
+      attestations: write
+      contents: write
+      id-token: write
+    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+    timeout-minutes: 15
+    steps:
+      - name: Download verified release artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: bcf-release-${{ github.sha }}-${{ github.run_attempt }}
+          path: dist
+      - name: Verify candidate artifact hashes
+        working-directory: dist
+        run: sha256sum --check SHA256SUMS
       - name: Attest release artifacts
         uses: actions/attest-build-provenance@43d14bc2b83dec42d39ecae14e916627a18bb661
         with:

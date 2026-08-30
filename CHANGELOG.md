@@ -6,18 +6,32 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Added
+
+- Opened the BCF 0.7.0 release train for generalized SOIP, exact-commit CI
+  authority, disposable candidate execution, Standard-v2 self-adoption, and
+  certified immutable release artifacts.
+
 ### Fixed
 
-- Made the selected Python interpreter authoritative in detached evidence and
-  mutation sessions, including the loader environment required by toolcache
-  Python installations.
+- Made the explicitly selected Python interpreter authoritative in positive and
+  detached negative-control evidence sessions, including the loader environment
+  required by toolcache Python installations, without changing canonical gate
+  argv or schema-2 receipt compatibility.
 
 ### Security
 
-- Temporarily routed every workflow to the owner-controlled local runner pool,
-  admitted only owner-authored same-repository pull requests before allocation,
-  disabled release publication, and stopped checkout credentials from
-  persisting while hosted runner credits are unavailable.
+- Defined a hard separation between one-job disposable candidate workers and a
+  persistent trusted control plane that never checks out or executes candidate
+  code.
+- Added a time-bounded owner-only local-runner fallback for exhausted hosted
+  credits, with fork PR admission rejected before allocation and privileged
+  release publication disabled while the pool is shared.
+- Protected `main` with pull-request-only updates, current governance checks,
+  resolved conversations, and force-push/deletion prevention.
+- Stopped checkout credentials from persisting on the temporary local workers
+  and disabled both release execution and publication until the disposable
+  candidate and isolated trusted substrates are available.
 
 ## [0.6.1] - 2026-08-14
 

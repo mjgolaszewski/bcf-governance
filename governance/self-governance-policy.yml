@@ -17,17 +17,19 @@ sbom_format: CycloneDX
 forbid_subprocess_shell: true
 runner_security:
   hosted_fallback_allowed: false
+  fork_pull_request_policy: maintainer_import_to_same_repository_branch
   candidate_labels: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
-  admitted_pr_actor: mjgolaszewski
-  admitted_pr_source: same_repository
+  trusted_labels: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
   temporary_local_window:
     status: active
+    admitted_pr_actor: mjgolaszewski
+    admitted_pr_source: same_repository
     expires_after_utc: '2026-08-31T23:59:59Z'
     privileged_publication_enabled: false
     restore_condition: safe ephemeral candidate runners and an isolated trusted publisher are available
   jobs:
-    .github/workflows/governance-mutants-nightly.yml: [high-value-mutants]
-    .github/workflows/governance-mutants-weekly.yml: [full-mutants]
-    .github/workflows/governance-pack.yml: [pack-checks, ast-checks]
-    .github/workflows/governance.yml: [evidence, governance-truthfulness]
-    .github/workflows/release.yml: [release]
+    .github/workflows/governance-mutants-nightly.yml: {high-value-mutants: candidate}
+    .github/workflows/governance-mutants-weekly.yml: {full-mutants: candidate}
+    .github/workflows/governance-pack.yml: {pack-checks: candidate, ast-checks: candidate}
+    .github/workflows/governance.yml: {evidence: candidate, governance-truthfulness: candidate}
+    .github/workflows/release.yml: {release-artifacts: candidate, publish-release: trusted}
