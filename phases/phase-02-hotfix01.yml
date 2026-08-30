@@ -40,7 +40,9 @@ execution_evidence:
   - governance-pack run 33318050317 failed for that single systemic interpreter cause; governance run 33318050352 was cancelled after diagnosis to release local capacity
   - the evidence runtime now executes with an explicit selected interpreter, preserves its lexical executable directory, carries only the required dynamic-loader variables, hashes interpreter identity in receipt metadata, and applies the same authority to isolated negative controls
   - canonical receipt argv remains unchanged for schema-2 compatibility and all three runtime copies are mechanically identical
+  - BCF-owned workflows and the self-governance runner invoke pytest through the selected Python module entrypoint rather than a bare executable
   - remediation validation passed 201 tests, governance-yaml-ok, compilation, runtime-copy diffs, and the 800-line module budget
+  - replacement governance evidence run 33318652557 passed its first detached gates remotely, while pack run 33318652593 exposed a test-fixture defect that replaced rather than extended the runner's required loader path; the fixture was corrected without changing runtime behavior
   - restore ephemeral candidate workers and isolated trusted publication before the temporary window expires
 closeout_requirements:
   claims:

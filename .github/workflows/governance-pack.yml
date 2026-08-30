@@ -31,7 +31,7 @@ jobs:
           BCF_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: python scripts/validate_governance_yaml.py --repo-root .
       - name: Run governance pack tests
-        run: pytest tests
+        run: python -m pytest tests
       - name: Run pull-request implementation mutants
         run: python .github/scripts/run_validator_mutants.py --profile high-value
       - name: Run pull-request semantic mutants
@@ -54,4 +54,4 @@ jobs:
       - name: Install governance dependencies
         run: python -m pip install -r requirements-governance.txt
       - name: Run template architecture gate regression tests
-        run: pytest tests/test_template_architecture_gate.py
+        run: python -m pytest tests/test_template_architecture_gate.py

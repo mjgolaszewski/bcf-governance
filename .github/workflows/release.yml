@@ -33,7 +33,7 @@ jobs:
               raise SystemExit(f"tag {tag!r} does not match package version v{__version__}")
           PY
       - name: Run complete test suite
-        run: pytest -q tests
+        run: python -m pytest -q tests
       - name: Run full implementation and semantic mutants
         run: |
           python .github/scripts/run_validator_mutants.py --profile full
