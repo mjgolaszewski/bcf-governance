@@ -57,6 +57,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Split P10 structural self-adoption from its post-merge authority activation,
+  because numeric workflow identity and trusted default-main bytes exist only
+  after the structural workflow is merged; P10-HF01 owns that activation.
 - Sequenced local 0.7 implementation independently from remote runner
   activation: each behavior commit now dogfoods its applicable governance, while
   P10 owns disposable-candidate and isolated-publisher proof before any remote

@@ -24,7 +24,7 @@ active_phase:
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: active
+  lifecycle_status: completed
   owner: "codex"
   validation_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests]
 hotfix_lane:

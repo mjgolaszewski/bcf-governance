@@ -46,7 +46,7 @@ environment_facts:
     - all governance, memory, specs, plans, workitem ledgers, and phase logs are YAML-native
     - observability contracts are scaffolded under contracts/observability/v1/
     - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
-    - P05 reproduced exact Identity main with 62 representations and 220 required browser traces; P06-P08 completed provider-neutral authority, certification, GitHub adoption, runtime, trusted inputs, and local PR parity; P09 completed packaged profile-v2 lifecycle integration; P10 is self-adopting it
+    - P05 reproduced exact Identity main with 62 representations and 220 required browser traces; P06-P08 completed provider-neutral authority, certification, GitHub adoption, runtime, trusted inputs, and local PR parity; P09 completed packaged profile-v2 lifecycle integration; P10 completed its structural self-adoption
     - every candidate job uses a fresh standard GitHub-hosted VM; the public repository receives free unlimited standard-runner execution and has no self-hosted fallback
     - main is protected by active repository ruleset 21862678 requiring pull requests, current governance-truthfulness, pack-checks, ast-checks, resolved conversations, and no force push or deletion
     - evidence execution uses the explicitly selected Python and propagates its lexical executable directory and required loader environment into detached positive and negative-control worktrees
@@ -66,7 +66,7 @@ known_constraints:
   - release tags are created only at a merge commit whose source and governance CI passed
   - standard hosted runners are free and unlimited while the repository remains public; larger-runner and artifact-storage costs remain separate
   - the persistent trusted VM may collect provider state and publish but may never check out or execute candidate code
-  - P10 owns trusted and disposable runner substrate activation; its isolation acceptance must pass before remote candidate execution or release publication
+  - P10-HF01 owns trusted controller and exact-main authority activation after the P10 structural merge exposes numeric workflow IDs and trusted default-main bytes
   - release execution and publication remain disabled until disposable candidate execution and isolated trusted publication are available
   - hosted jobs run to completion without polling, sleeping, idle waiters, or route fallback
   - every BCF behavior commit updates and validates BCF's own applicable governance contracts before successor work begins
