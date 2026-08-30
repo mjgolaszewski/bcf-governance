@@ -10,7 +10,10 @@ from typing import Any
 import pytest
 import yaml
 
-from bcf_governance.tooling.evidence_sessions import allocate_session
+from bcf_governance.tooling.evidence_sessions import (
+    allocate_session,
+    local_producer_identity,
+)
 from bcf_governance.tooling.governance_profiles import _v2_builtin_contracts
 from scripts.governance_evidence import attest_bundle, capture_gate
 from scripts.governance_truth import derive_truth
@@ -439,6 +442,7 @@ def test_standard_v1_to_v2_promotion_is_explicit_and_preserves_workflow(
         repo / ".artifacts/bcf",
         contracts["gates"],
         expected_producers=["local"],
+        producer_identity=local_producer_identity(repo),
     )
     receipt = json.loads(
         capture_gate(
@@ -540,7 +544,11 @@ def test_full_profile_install_evidence_truth_flow(
     assert workflow["env"]["BCF_PR_BASE_SHA"] == "${{ github.event.pull_request.base.sha }}"
     assert matrix == list(contracts["gates"])
     session = allocate_session(
-        repo, evidence, contracts["gates"], expected_producers=["local"]
+        repo,
+        evidence,
+        contracts["gates"],
+        expected_producers=["local"],
+        producer_identity=local_producer_identity(repo),
     )
     for target in contracts["gates"]:
         receipt_path = capture_gate(
@@ -564,9 +572,9 @@ def test_full_profile_install_evidence_truth_flow(
             actor_kind="human",
         )
     report = derive_truth(repo, evidence)
+    assert report["status"] == "pass", report["issues"]
     assert report["effective_state"] == "closed"
     assert report["release_readiness"]["effective_state"] == "closed"
-    assert report["status"] == "pass", report["issues"]
     if profile == "regulated":
         assert (repo / "governance/MODEL_RISK_AND_PROVENANCE.md").is_file()
         assert (repo / "governance/HOTFIX_LANE.md").is_file()

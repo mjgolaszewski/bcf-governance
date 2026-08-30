@@ -43,7 +43,7 @@ execution_evidence:
   - .venv/bin/python .github/scripts/run_self_governance_gate.py architecture-test
   - .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test
   notes:
-  - the exact mechanically derived source test population is 350 nodes and all pass on the certified P08 base
+  - the exact mechanically derived source test population is 352 nodes and all pass on the certified P08 base
   - focused profile, installer, cleanup, and self-governance coverage is 65 tests and all pass
   - contract-test contains 86 exact nodes and architecture-test passes its bounded-context ownership assertion
   - lint, typecheck, structural governance validation, exposure scanning, runtime-copy parity, and pack-manifest parity pass
@@ -53,6 +53,7 @@ execution_evidence:
   - the same dogfood check now proves compact generated YAML remains within BCF's declared profile, policy, and contract context budgets
   - no-config promotion retains an existing custom semantic-owner gate and its complete causal-control inventory instead of replacing it with the generic default
   - generated artifact mode restoration uses bounded find execution and contains no shell waiter loop
+  - hosted-environment reproduction proves explicit local producer identity remains authoritative for nested Standard and Regulated evidence flows
 closeout_requirements:
   claims:
     workitems_closed:

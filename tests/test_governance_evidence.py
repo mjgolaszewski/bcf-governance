@@ -32,6 +32,7 @@ finally:
 EvidenceError = EVIDENCE_MODULE.EvidenceError
 capture_gate = EVIDENCE_MODULE.capture_gate
 allocate_session = EVIDENCE_MODULE.allocate_session
+local_producer_identity = EVIDENCE_MODULE.local_producer_identity
 
 
 def _git(repo: Path, *args: str) -> None:
@@ -507,6 +508,62 @@ print('ok')
     )
     assert manifest_artifact["sha256"] == session.digest
     assert (output / "evidence-session.json").read_bytes() == session.manifest_path.read_bytes()
+
+
+def test_explicit_local_session_ignores_ambient_github_identity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _make_diagnostic_gate_repo(
+        tmp_path,
+        "BROKEN = False\nprint('ok')\n",
+    )
+    profile_path = repo / "governance-profile.yml"
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    profile["profile_contract_version"] = "2.0"
+    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
+    _git(repo, "add", "governance-profile.yml")
+    _git(repo, "commit", "-m", "enable profile v2")
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "outer/provider-repository")
+    monkeypatch.setenv("GITHUB_REPOSITORY_ID", "12345")
+    monkeypatch.setenv("GITHUB_RUN_ID", "98765")
+    monkeypatch.setenv("GITHUB_RUN_ATTEMPT", "3")
+    monkeypatch.setenv("GITHUB_JOB", "outer-job")
+
+    session = allocate_session(
+        repo,
+        tmp_path / "evidence",
+        ["gate"],
+        expected_producers=["nested-local"],
+        producer_identity=local_producer_identity(repo, "nested-local"),
+    )
+    receipt = json.loads(
+        capture_gate(
+            repo,
+            "gate",
+            session.root / "gate",
+            session_manifest=session.manifest_path,
+        ).read_text(encoding="utf-8")
+    )
+
+    assert session.payload["producer"] == {
+        "kind": "local",
+        "provider": "local",
+        "repository": repo.name,
+        "repository_id": "local",
+        "run_id": "nested-local",
+        "run_attempt": "1",
+        "producer_id": "nested-local",
+    }
+    assert receipt["producer"]["kind"] == "service"
+    assert receipt["invocation"]["workflow"] == {
+        "provider": "local",
+        "path": "local",
+        "job": "nested-local",
+        "run_id": "nested-local",
+        "run_attempt": "1",
+        "matrix": {"gate": "gate"},
+    }
 
 
 def test_session_gate_inventory_is_closed(tmp_path: Path) -> None:

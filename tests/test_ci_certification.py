@@ -187,6 +187,7 @@ def _material(
             "repository_id": "42",
             "run_id": f"control-{highest}",
             "run_attempt": "1",
+            "producer_id": "trusted-control-plane",
         },
         "expected_gate_inventory": ["ci-certification"],
         "expected_producer_inventory": ["pack", "unit"],

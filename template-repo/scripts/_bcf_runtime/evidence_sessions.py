@@ -11,7 +11,7 @@ import subprocess
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
@@ -109,16 +109,56 @@ def _profile(repo_root: Path) -> tuple[str, str]:
     return str(selected), str(contract_version)
 
 
-def _producer_identity(repo_root: Path) -> dict[str, str]:
-    workflow = os.environ.get("GITHUB_ACTIONS") == "true"
+def local_producer_identity(
+    repo_root: Path, producer_id: str = "local"
+) -> dict[str, str]:
+    """Return an explicit local identity insulated from ambient provider state."""
+    if not producer_id:
+        raise EvidenceError("local evidence producer ID cannot be empty")
     return {
+        "kind": "local",
+        "provider": "local",
+        "repository": repo_root.resolve().name,
+        "repository_id": "local",
+        "run_id": producer_id,
+        "run_attempt": "1",
+        "producer_id": producer_id,
+    }
+
+
+def _producer_identity(
+    repo_root: Path, override: Mapping[str, str] | None = None
+) -> dict[str, str]:
+    workflow = os.environ.get("GITHUB_ACTIONS") == "true"
+    identity = dict(override) if override is not None else {
         "kind": "workflow" if workflow else "local",
         "provider": "github-actions" if workflow else "local",
         "repository": os.environ.get("GITHUB_REPOSITORY", repo_root.name),
         "repository_id": os.environ.get("GITHUB_REPOSITORY_ID", "local"),
         "run_id": os.environ.get("GITHUB_RUN_ID", "local"),
         "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT", "1"),
+        "producer_id": os.environ.get("GITHUB_JOB", "local"),
     }
+    required = {
+        "kind",
+        "provider",
+        "repository",
+        "repository_id",
+        "run_id",
+        "run_attempt",
+        "producer_id",
+    }
+    if set(identity) != required or any(
+        not isinstance(identity[key], str) or not identity[key] for key in required
+    ):
+        raise EvidenceError("evidence producer identity must contain exact non-empty fields")
+    if identity["kind"] not in {"local", "workflow"}:
+        raise EvidenceError("evidence producer kind must be local or workflow")
+    if identity["kind"] == "local" and identity["provider"] != "local":
+        raise EvidenceError("local evidence producers must use the local provider")
+    if identity["kind"] == "workflow" and identity["provider"] == "local":
+        raise EvidenceError("workflow evidence producers cannot use the local provider")
+    return identity
 
 
 def _closed_inventory(values: Iterable[str], *, field: str) -> list[str]:
@@ -135,6 +175,7 @@ def _manifest_payload(
     expected_producers: Iterable[str],
     *,
     root_kind: str,
+    producer_identity: Mapping[str, str] | None,
 ) -> dict[str, Any]:
     profile, contract_version = _profile(repo_root)
     return {
@@ -146,7 +187,7 @@ def _manifest_payload(
         },
         "profile": profile,
         "profile_contract_version": contract_version,
-        "producer": _producer_identity(repo_root),
+        "producer": _producer_identity(repo_root, producer_identity),
         "expected_gate_inventory": _closed_inventory(
             expected_gates, field="gate inventory"
         ),
@@ -168,6 +209,7 @@ def allocate_session(
     expected_gates: Iterable[str],
     *,
     expected_producers: Iterable[str] | None = None,
+    producer_identity: Mapping[str, str] | None = None,
 ) -> EvidenceSession:
     """Create one fresh private session and atomically publish its manifest."""
     repo_root = _absolute_lexical(repo_root)
@@ -201,6 +243,7 @@ def allocate_session(
             expected_gates,
             producers,
             root_kind=root_kind,
+            producer_identity=producer_identity,
         )
         encoded = (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8")
         temporary = session_root / f".{SESSION_FILENAME}.{secrets.token_hex(8)}.tmp"
@@ -223,6 +266,38 @@ def allocate_session(
             digest=_sha256_bytes(encoded),
         )
     raise EvidenceError("unable to allocate a collision-free evidence session")
+
+
+def receipt_workflow_identity(
+    session: EvidenceSession | None, gate_id: str
+) -> dict[str, Any]:
+    """Bind receipt workflow metadata to its session, or to the current producer."""
+    if session is None:
+        return {
+            "provider": (
+                "github-actions"
+                if os.environ.get("GITHUB_ACTIONS") == "true"
+                else "local"
+            ),
+            "path": os.environ.get("GITHUB_WORKFLOW_REF", "local"),
+            "job": os.environ.get("GITHUB_JOB", "local"),
+            "run_id": os.environ.get("GITHUB_RUN_ID", "local"),
+            "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT", "1"),
+            "matrix": {"gate": gate_id},
+        }
+    producer = session.payload["producer"]
+    return {
+        "provider": producer["provider"],
+        "path": (
+            "local"
+            if producer["kind"] == "local"
+            else os.environ.get("GITHUB_WORKFLOW_REF", "local")
+        ),
+        "job": producer["producer_id"],
+        "run_id": producer["run_id"],
+        "run_attempt": producer["run_attempt"],
+        "matrix": {"gate": gate_id},
+    }
 
 
 def load_session(manifest_path: Path) -> EvidenceSession:

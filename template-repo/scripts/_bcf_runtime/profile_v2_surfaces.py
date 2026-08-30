@@ -36,7 +36,7 @@ def render_v2_makefile(contract: dict[str, Any]) -> str:
         [
             "release-check:",
             "\t@mkdir -p $(BCF_EVIDENCE_DIR)",
-            "\t@session=\"$$($(PYTHON) scripts/preflight_governance.py --repo-root . --mode release --python $(PYTHON) --artifact-root $(BCF_EVIDENCE_DIR) --expected-producer local --format text | tail -n 1)\"; \\",
+            "\t@session=\"$$($(PYTHON) scripts/preflight_governance.py --repo-root . --mode release --python $(PYTHON) --artifact-root $(BCF_EVIDENCE_DIR) --expected-producer local --local-producer-id local --format text | tail -n 1)\"; \\",
             "\tsession_dir=\"$${session%/evidence-session.json}\"; \\",
             f"\tfor gate in {targets}; do \\",
             "\t\t$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output \"$$session_dir/$$gate\" --python $(PYTHON) --session-manifest \"$$session\" || exit $$?; \\",

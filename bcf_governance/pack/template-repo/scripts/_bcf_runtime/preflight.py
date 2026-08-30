@@ -10,12 +10,16 @@ import os
 import re
 import subprocess
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
 from .evidence_execution import _selected_python
-from .evidence_sessions import EvidenceSession, allocate_session
+from .evidence_sessions import (
+    EvidenceSession,
+    allocate_session,
+    local_producer_identity,
+)
 from .governance_validation.runner import validate_repo_root
 from .test_manifests import check_all
 
@@ -187,6 +191,7 @@ def run_preflight(
     python_executable: str | Path | None = None,
     artifact_root: Path | None = None,
     expected_producers: list[str] | None = None,
+    producer_identity: Mapping[str, str] | None = None,
     trace: Callable[[str], None] | None = None,
 ) -> dict[str, Any]:
     """Validate deterministic state, then optionally seed one fresh session."""
@@ -220,6 +225,7 @@ def run_preflight(
                     expected_producers
                     or [os.environ.get("GITHUB_JOB", "local")]
                 ),
+                producer_identity=producer_identity,
             ),
         )
     return {
@@ -251,6 +257,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--python", type=Path)
     parser.add_argument("--artifact-root", type=Path)
     parser.add_argument("--expected-producer", action="append")
+    parser.add_argument("--local-producer-id")
     parser.add_argument("--format", choices=("text", "json"), default="text")
     args = parser.parse_args(argv)
     try:
@@ -260,6 +267,11 @@ def main(argv: list[str] | None = None) -> None:
             python_executable=args.python,
             artifact_root=args.artifact_root,
             expected_producers=args.expected_producer,
+            producer_identity=(
+                local_producer_identity(args.repo_root, args.local_producer_id)
+                if args.local_producer_id
+                else None
+            ),
         )
     except (OSError, subprocess.SubprocessError, ValueError) as exc:
         raise SystemExit(str(exc)) from exc

@@ -52,7 +52,9 @@ the exact commit, tree, profile, producer, run, attempt, and gate inventory.
 Every positive gate executes once and writes inside that session. Truth rejects
 mixed sessions or attempts. CI artifact names include the exact provider run
 and attempt, and the reference workflow never polls or occupies a runner while
-waiting for another job.
+waiting for another job. Nested local automation running inside a provider
+process must pass `--local-producer-id`; this prevents ambient provider
+variables from changing the immutable session and receipt identity.
 
 `README.md`, `LICENSE`, and `CHANGELOG.md` are standard required root
 artifacts. Preserve their application-specific content. Every pull request must

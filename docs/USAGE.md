@@ -203,7 +203,10 @@ same manifest and execute once. Generated CI transports that manifest and
 names lane and terminal artifacts with the exact provider run and attempt;
 truth rejects mixed sessions, attempts, commits, trees, profiles, producers,
 or inventories. Profile-v1 truth continues accepting schema-2 receipts without
-a session manifest.
+a session manifest. Local automation that runs inside a provider process must
+declare its local identity explicitly with `--local-producer-id`; the immutable
+session then governs receipt producer binding instead of ambient provider
+environment variables.
 
 ## Findings and provenance
 

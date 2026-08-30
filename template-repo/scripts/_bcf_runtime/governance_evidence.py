@@ -28,7 +28,8 @@ from .evidence_execution import (
     _runtime_command,
     _selected_python,
 )
-from .evidence_sessions import allocate_session, bind_session
+from .evidence_sessions import allocate_session, bind_session, local_producer_identity
+from .evidence_sessions import receipt_workflow_identity
 from .evidence_test_adapters import (
     recompute_test_artifact_observations,
     test_observations as _test_observations,
@@ -646,9 +647,15 @@ def capture_gate(
         )
         artifacts.extend(probe_artifacts)
     completed = datetime.now(UTC)
+    session_kind = session.payload["producer"]["kind"] if session else None
+    default_producer_kind = (
+        "workflow"
+        if session_kind == "workflow"
+        or (session is None and os.environ.get("GITHUB_ACTIONS") == "true")
+        else "service"
+    )
     producer_kind = os.environ.get(
-        "BCF_EVIDENCE_PRODUCER_KIND",
-        "workflow" if os.environ.get("GITHUB_ACTIONS") == "true" else "service",
+        "BCF_EVIDENCE_PRODUCER_KIND", default_producer_kind
     )
     if producer_kind not in {"human", "model", "service", "workflow"}:
         raise EvidenceError("BCF_EVIDENCE_PRODUCER_KIND must be human, model, service, or workflow")
@@ -668,14 +675,7 @@ def capture_gate(
             "argv": command,
             "cwd": contract["invocation"].get("cwd", "."),
             "environment": observations["execution_environment"],
-            "workflow": {
-                "provider": "github-actions" if os.environ.get("GITHUB_ACTIONS") == "true" else "local",
-                "path": os.environ.get("GITHUB_WORKFLOW_REF", "local"),
-                "job": os.environ.get("GITHUB_JOB", "local"),
-                "run_id": os.environ.get("GITHUB_RUN_ID", "local"),
-                "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT", "1"),
-                "matrix": {"gate": target},
-            },
+            "workflow": receipt_workflow_identity(session, target),
         },
         "subject": {
             "commit_sha": head,
@@ -728,6 +728,7 @@ def main(argv: list[str] | None = None) -> None:
     session_parser.add_argument("--artifact-root", type=Path, required=True)
     session_parser.add_argument("--expected-gate", action="append", default=[])
     session_parser.add_argument("--expected-producer", action="append", default=[])
+    session_parser.add_argument("--local-producer-id")
     attest_parser = subparsers.add_parser("attest")
     attest_parser.add_argument("--bundle-dir", type=Path, required=True)
     attest_parser.add_argument("--private-key", type=Path, required=True)
@@ -756,6 +757,13 @@ def main(argv: list[str] | None = None) -> None:
                 args.artifact_root,
                 expected_gates,
                 expected_producers=args.expected_producer or None,
+                producer_identity=(
+                    local_producer_identity(
+                        args.repo_root.resolve(), args.local_producer_id
+                    )
+                    if args.local_producer_id
+                    else None
+                ),
             )
             path = session.manifest_path
         else:
