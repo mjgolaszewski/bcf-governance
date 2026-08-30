@@ -272,6 +272,49 @@ def test_persistent_local_jobs_do_not_persist_checkout_credentials() -> None:
                     assert step.get("with", {}).get("persist-credentials") is False
 
 
+def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
+    workflow = yaml.safe_load(
+        (REPO_ROOT / ".github/workflows/governance.yml").read_text(encoding="utf-8")
+    )
+    jobs = workflow["jobs"]
+    assert jobs["evidence"]["needs"] == ["preflight"]
+    preflight_command = next(
+        step["run"]
+        for step in jobs["preflight"]["steps"]
+        if step.get("name") == "Run canonical cheap preflight"
+    )
+    assert "bcf_governance.cli preflight" in preflight_command
+
+    upload = next(
+        step
+        for step in jobs["evidence"]["steps"]
+        if step.get("uses", "").startswith("actions/upload-artifact@")
+    )
+    lane_namespace = upload["with"]["name"]
+    assert lane_namespace == (
+        "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.gate }}"
+    )
+
+    download = next(
+        step
+        for step in jobs["governance-truthfulness"]["steps"]
+        if step.get("uses", "").startswith("actions/download-artifact@")
+    )
+    assert download["with"]["pattern"] == (
+        "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-*"
+    )
+    terminal = next(
+        step
+        for step in jobs["governance-truthfulness"]["steps"]
+        if step.get("uses", "").startswith("actions/upload-artifact@")
+    )
+    truth_namespace = terminal["with"]["name"]
+    assert truth_namespace == (
+        "bcf-governance-truth-${{ github.run_id }}-${{ github.run_attempt }}"
+    )
+    assert not truth_namespace.startswith("bcf-evidence-")
+
+
 def test_self_profile_builder_matches_canonical_negative_controls() -> None:
     generated = yaml.safe_load(
         subprocess.run(

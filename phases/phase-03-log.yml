@@ -20,6 +20,7 @@ summary:
   - added independent profile-v2 truth verification that rejects missing, tampered, stale, mixed-session, mixed-attempt, and inventory-drifted evidence
   - added the canonical cheap preflight and contract-owned exact pytest manifests, removing the self-gate runner's duplicate node-selector map
   - hardened exact-run Docker cleanup against forged ownership, unsafe daemon identities, and anonymous-volume leakage
+  - made governance fan-in run-attempt exact with disjoint lane and terminal namespaces and a canonical preflight dependency
 workitems:
 - id: P03-P0-01
   status: IN_PROGRESS

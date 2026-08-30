@@ -31,5 +31,5 @@ runner_security:
     .github/workflows/governance-mutants-nightly.yml: {high-value-mutants: candidate}
     .github/workflows/governance-mutants-weekly.yml: {full-mutants: candidate}
     .github/workflows/governance-pack.yml: {pack-checks: candidate, ast-checks: candidate}
-    .github/workflows/governance.yml: {evidence: candidate, governance-truthfulness: candidate}
+    .github/workflows/governance.yml: {preflight: candidate, evidence: candidate, governance-truthfulness: candidate}
     .github/workflows/release.yml: {release-artifacts: candidate, publish-release: trusted}

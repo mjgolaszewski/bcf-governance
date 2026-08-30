@@ -20,6 +20,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   manifests, replacing the self-gate runner's secondary test-node map.
 - Hardened Docker cleanup with immediate exact-ID/owner revalidation, safe
   identity parsing, and anonymous-volume removal without global pruning.
+- Bound governance artifact fan-in to the exact Actions run attempt, separated
+  lane and terminal namespaces, and ordered evidence after canonical preflight.
 
 ### Changed
 
