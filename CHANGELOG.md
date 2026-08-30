@@ -79,6 +79,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Bound profile-v2 receipts to an explicit immutable session producer identity,
   so nested local validation cannot inherit an unrelated outer Actions run or
   job identity from ambient environment variables.
+- Made doctor derive placeholder-scan exclusions from canonical declared
+  template vendors while continuing to scan undeclared application paths.
 - Projected execution-only test selectors out of evidence policy during profile
   promotion while retaining them in canonical gate contracts, so real
   selector-bearing repositories can promote to contract v2 transactionally.

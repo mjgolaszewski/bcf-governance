@@ -45,6 +45,27 @@ def test_placeholder_scan_honors_gitignore_and_keeps_unignored_files(tmp_path: P
     ]
 
 
+def test_placeholder_scan_excludes_only_declared_template_vendors(tmp_path: Path) -> None:
+    manifest = tmp_path / "governance/artifact-manifest.yml"
+    manifest.parent.mkdir(parents=True)
+    manifest.write_text(
+        "nested_governance:\n"
+        "  declared_vendors:\n"
+        "  - {path: templates/, refresh_policy: canonical_template_source}\n",
+        encoding="utf-8",
+    )
+    template = tmp_path / "templates/README.md"
+    template.parent.mkdir()
+    template.write_text("# {{ PROJECT_NAME }}\n", encoding="utf-8")
+    application = tmp_path / "plans/product-spec.yml"
+    application.parent.mkdir()
+    application.write_text("value: {{ real_placeholder }}\n", encoding="utf-8")
+
+    assert doctor._scan_placeholders(tmp_path) == [
+        "plans/product-spec.yml:1: {{ real_placeholder }}"
+    ]
+
+
 def test_doctor_reports_running_version_source_and_public_install(tmp_path: Path) -> None:
     report = doctor.doctor_repo(tmp_path)
 

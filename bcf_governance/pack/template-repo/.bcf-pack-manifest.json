@@ -328,7 +328,7 @@
     },
     "scripts/_bcf_runtime/doctor_governance_pack.py": {
       "operation": "copy",
-      "sha256": "c3b5b873cc4d8501a2714ecd831d305a81db81c4257d131d64691896e923cda7"
+      "sha256": "52bf635490a39090db44858f8891ebf01d6242e19f28f728513ab633c818549d"
     },
     "scripts/_bcf_runtime/evidence_attestation.py": {
       "operation": "copy",
