@@ -41,9 +41,9 @@ hotfix_lane:
         - default_branch_red_ci
         - release_blocking_regression
         - security_or_expiring_external_breakage
-  open_records:
-    - {id: P10-HF01, mode: full, status: planned, triggered_by_commits: [9102e5a25a8db3087161616c82b991edd13006a2], failing_workflows: [], root_cause: "the public GitHub adopter renders trusted commands that are not implemented, so exact-main authority cannot activate safely", remediated_in_phase: P10, canonical_artifacts: [bcf_governance/tooling/ci_commands.py, bcf_governance/tooling/ci_github.py, bcf_governance/tooling/ci_adopt_github.py, governance/ci-authority.yml, governance/github-ci-topology.yml, .github/workflows/], hotfix_log: phases/phase-10-hotfix01.yml}
+  open_records: []
   remediation_history:
+    - {id: P10-HF01, mode: full, recorded_at_utc: '2026-08-30T00:00:00Z', action: add an owner-main-only no-checkout probe before any trusted callback is enabled, remediated_in_phase: P10, hotfix_log: phases/phase-10-hotfix01.yml, canonical_artifacts: [.github/workflows/bcf-trusted-control-probe.yml, governance/self-governance-policy.yml, tests/test_self_governance_contracts.py, MEMORY.yml], local_validation: [80_focused_tests_passed, governance-yaml-ok, governance-exposure-scan-ok]}
     - {id: P02-HF01, mode: full, recorded_at_utc: '2026-08-30T00:00:00Z', action: run all candidate CI on fresh standard hosted VMs and partition evidence into four derived shards, remediated_in_phase: P05, hotfix_log: phases/phase-02-hotfix01.yml, canonical_artifacts: [.github/workflows/, governance/evidence-policy.yml, governance/self-governance-policy.yml, tests/test_self_governance_contracts.py, MEMORY.yml], local_validation: [governance-yaml-ok, 252_tests_passed, 23_causal_mutants_killed, hosted_runner_isolation, no_runner_occupying_coordination]}
     - id: P01-HF01
       mode: full

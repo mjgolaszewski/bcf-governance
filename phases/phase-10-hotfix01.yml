@@ -4,15 +4,14 @@ document:
   id: project-phase-10-hotfix01
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-10-hotfix01.yml
 hotfix:
   id: P10-HF01
   mode: full
   related_phase_id: P10
   hotfix_number: 1
-  summary: Activate authenticated exact-main CI authority through the trusted GitHub
-    control plane
+  summary: Establish a fail-closed trusted control-plane readiness probe
 execution_evidence:
   planned_commands:
   - python3 -m pytest tests/test_ci_github_reference.py tests/test_ci_authority.py
@@ -26,6 +25,7 @@ execution_evidence:
   - activation remains fail-closed because the generated trusted commands are not implemented and the installed trusted runner control has not been characterized
   - the first stacked hotfix layer adds an owner-and-main-only no-checkout probe with a five-minute cap and exact trusted runner labels
   - focused governance validation passes 80 tests plus strict validation and exposure scanning
+  - P10-HF02 owns controller deployment and authenticated exact-main activation after this exact workflow is merged and dispatched
 closeout_requirements:
   claims:
     required_suites_green:

@@ -87,4 +87,4 @@ known_constraints:
 - trusted control-plane activation cannot execute candidate package code and remains fail-closed until a preinstalled or workflow-native controller is independently proven
 - the existing main ruleset remains active throughout structural adoption
 next_work:
-- open full P10-HF01 from the certified structural merge and activate authenticated exact-main authority using merged workflow identity
+- complete the P10 hotfix stack by probing the trusted image, deploying the controller, and activating authenticated exact-main authority from merged workflow identity
