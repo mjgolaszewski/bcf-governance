@@ -687,7 +687,7 @@ def apply_profile_contract(
         value["status"] = "required" if value["target"] in active_targets else "deferred"
     profile["ci_profile"]["required_push_jobs"] = sorted(active_targets)
     (repo_root / "governance-profile.yml").write_text(
-        yaml.safe_dump(profile, sort_keys=False, width=120), encoding="utf-8"
+        yaml.safe_dump(profile, sort_keys=False, width=120, default_flow_style=None), encoding="utf-8"
     )
 
     persisted = {
@@ -700,7 +700,7 @@ def apply_profile_contract(
     }
     contract_path = repo_root / "governance/gate-contracts.yml"
     contract_path.parent.mkdir(parents=True, exist_ok=True)
-    contract_path.write_text(yaml.safe_dump(persisted, sort_keys=False, width=120), encoding="utf-8")
+    contract_path.write_text(yaml.safe_dump(persisted, sort_keys=False, width=120, default_flow_style=None), encoding="utf-8")
 
     evidence_policy = _load_yaml(repo_root / "governance/evidence-policy.yml")
     evidence_policy["gate_overrides"] = {}
@@ -720,7 +720,7 @@ def apply_profile_contract(
     if profile_name == "regulated":
         evidence_policy["provenance"].update(contract.get("provenance", {}))
     (repo_root / "governance/evidence-policy.yml").write_text(
-        yaml.safe_dump(evidence_policy, sort_keys=False, width=120), encoding="utf-8"
+        yaml.safe_dump(evidence_policy, sort_keys=False, width=120, default_flow_style=None), encoding="utf-8"
     )
     _write_makefile(repo_root, contract)
     if write_workflow:

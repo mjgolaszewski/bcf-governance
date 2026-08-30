@@ -43,13 +43,14 @@ execution_evidence:
   - .venv/bin/python .github/scripts/run_self_governance_gate.py architecture-test
   - .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test
   notes:
-  - the exact mechanically derived source test population is 349 nodes and all pass on the certified P08 base
-  - focused profile, installer, cleanup, and self-governance coverage is 64 tests and all pass
+  - the exact mechanically derived source test population is 350 nodes and all pass on the certified P08 base
+  - focused profile, installer, cleanup, and self-governance coverage is 65 tests and all pass
   - contract-test contains 86 exact nodes and architecture-test passes its bounded-context ownership assertion
   - lint, typecheck, structural governance validation, exposure scanning, runtime-copy parity, and pack-manifest parity pass
   - fresh Standard and Regulated flows allocate one immutable session and complete truth; profile-v1 Lite and upgrade compatibility remain green
   - generated GitHub evidence surfaces bind exact run and attempt and contain no polling, sleeping, or waiter jobs
   - P10 dogfood found and P09 repaired execution-only selector leakage into evidence policy; the real selector-bearing promotion shape now has regression coverage
+  - the same dogfood check now proves compact generated YAML remains within BCF's declared profile, policy, and contract context budgets
 closeout_requirements:
   claims:
     workitems_closed:

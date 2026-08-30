@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -182,3 +183,34 @@ def test_v2_surfaces_bind_one_session_and_do_not_wait() -> None:
     assert "persist-credentials: false" in workflow_text
     assert "merge-multiple: true" not in workflow_text
     assert not any(value in workflow_text for value in ("sleep ", "poll", "while true"))
+
+
+def test_bcf_standard_v2_promotion_fits_declared_context_budgets(tmp_path: Path) -> None:
+    repo = tmp_path / "bcf-self-adoption"
+    shutil.copytree(
+        REPO_ROOT,
+        repo,
+        ignore=shutil.ignore_patterns(".git", ".artifacts", ".venv", "__pycache__"),
+    )
+    _git(repo, "init", "--quiet")
+    _git(repo, "config", "user.email", "profile-v2@example.invalid")
+    _git(repo, "config", "user.name", "Profile V2")
+    _git(repo, "add", ".")
+    _git(repo, "commit", "--quiet", "-m", "copy exact BCF consumer")
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(REPO_ROOT / "scripts/profile_governance.py"),
+            "--repo-root",
+            str(repo),
+            "--to",
+            "standard",
+            "--contract-version",
+            "2.0",
+            "--check",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
