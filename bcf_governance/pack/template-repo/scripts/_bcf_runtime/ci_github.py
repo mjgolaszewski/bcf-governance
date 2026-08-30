@@ -101,7 +101,8 @@ def authenticate_github_run(
     event = str(run.get("event", ""))
     if event not in allowed_events:
         raise GithubReferenceError("run event is not admitted by authority")
-    if str(run.get("repository", {}).get("id")) != repository_id:
+    run_repository = run.get("repository")
+    if not isinstance(run_repository, dict) or str(run_repository.get("id")) != repository_id:
         raise GithubReferenceError("run repository identity does not match authority")
     attempt = run.get("run_attempt")
     if isinstance(attempt, bool) or not isinstance(attempt, int) or attempt <= 0:

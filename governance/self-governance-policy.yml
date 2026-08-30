@@ -1,7 +1,7 @@
 schema_version: '1.0'
 thin_wrapper_loc_cap: 20
 tooling_contexts:
-  ci_authority: [ci_authority_, ci_adopt_github.py, ci_commands.py, ci_github.py, local_pr.py, trusted_inputs.py]
+  ci_authority: [ci_authority_, ci_adopt_github.py, ci_commands.py, ci_github.py, ci_github_, local_pr.py, trusted_inputs.py]
   cleanup: [cleanup_ci_resources.py, cleanup_governance_pack.py, evidence_session_cleanup.py, governance_cleanup/]
   evidence: [evidence_attestation.py, evidence_execution.py, evidence_sessions.py, evidence_test_adapters.py, governance_evidence.py, governance_truth.py, governance_truth_support.py, release_receipts.py, test_manifests.py, truth_receipts.py, truth_sessions.py]
   install: [install_governance_pack.py, governance_install/]
@@ -12,7 +12,7 @@ tooling_contexts:
   validation: [check_governance_exposure.py, doctor_governance_pack.py, preflight.py, validate_governance_yaml.py, governance_validation/]
 cli_commands:
   read_only: [doctor, exposure-scan, preflight, publish-audit, semantic-ownership, truth, validate]
-  mutating: [ci, ci-cleanup, cleanup, evidence, install, migrate-evidence, profile, scaffold, test-manifest]
+  mutating: [ci, ci-cleanup, ci-github, cleanup, evidence, install, migrate-evidence, profile, scaffold, test-manifest]
 required_dependencies:
   PyYAML: '>=6.0,<7'
   jsonschema: '>=4.21,<5'

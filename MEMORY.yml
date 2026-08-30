@@ -66,7 +66,7 @@ known_constraints:
   - release tags are created only at a merge commit whose source and governance CI passed
   - standard hosted runners are free and unlimited while the repository remains public; larger-runner and artifact-storage costs remain separate
   - the persistent trusted VM may collect provider state and publish but may never check out or execute candidate code
-  - P10 structural self-adoption is exact-main certified at 9102e5a25a8db3087161616c82b991edd13006a2; P10-HF01 adds the fail-closed trusted probe and P10-HF02 owns controller deployment plus exact-main activation
+  - P10-HF01 is exact-main certified at 4ca6c8c3d78d3776d3b886321f51bb648fcbc75d; probe run 33337985186 found no installed trusted BCF, and P10-HF02 now produces authenticated controller commands plus an offline hash-manifested exact-main wheelhouse before later deployment and activation layers
   - release execution and publication remain disabled until disposable candidate execution and isolated trusted publication are available
   - hosted jobs run to completion without polling, sleeping, idle waiters, or route fallback
   - every BCF behavior commit updates and validates BCF's own applicable governance contracts before successor work begins

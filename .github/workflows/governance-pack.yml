@@ -40,6 +40,47 @@ jobs:
         run: python scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders --allow-release-gate-placeholders
       - name: Validate template repo from template script
         run: python template-repo/scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders --allow-release-gate-placeholders
+      - name: Build exact-main trusted controller wheel
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install build
+          mkdir -p .artifacts/trusted-control
+          SOURCE_DATE_EPOCH="$(git show -s --format=%ct HEAD)" python -m build --wheel --outdir .artifacts/trusted-control
+          python -m pip download --only-binary=:all: --dest .artifacts/trusted-control \
+            'PyYAML>=6.0,<7' 'jsonschema>=4.21,<5'
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import subprocess
+
+          def git(*args: str) -> str:
+              return subprocess.run(
+                  ["git", *args], check=True, capture_output=True, text=True
+              ).stdout.strip()
+
+          payload = {
+              "schema_version": "1.0",
+              "commit_sha": git("rev-parse", "HEAD"),
+              "tree_sha": git("rev-parse", "HEAD^{tree}"),
+              "workflow_run_id": "${{ github.run_id }}",
+              "workflow_run_attempt": "${{ github.run_attempt }}",
+          }
+          Path(".artifacts/trusted-control/CONTROL-METADATA.json").write_text(
+              json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          (cd .artifacts/trusted-control && sha256sum ./*.whl CONTROL-METADATA.json > SHA256SUMS)
+      - name: Upload exact-main trusted controller wheel
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: bcf-trusted-control-${{ github.sha }}-${{ github.run_attempt }}
+          path: .artifacts/trusted-control
+          if-no-files-found: error
+          retention-days: 30
 
   ast-checks:
     runs-on: ubuntu-latest

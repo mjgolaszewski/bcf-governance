@@ -71,6 +71,7 @@ def test_github_identity_binds_provider_and_trusted_workflow_bytes() -> None:
         ({"workflow": {"id": 202, "path": ".github/workflows/moved.yml"}}, "active workflow path"),
         ({"run": {"id": 303, "run_attempt": 1, "workflow_id": 999, "repository": {"id": 101}, "event": "repository_dispatch", "head_sha": SHA_A}}, "run workflow identity"),
         ({"run": {"id": 303, "run_attempt": 1, "workflow_id": 202, "repository": {"id": 101}, "event": "workflow_dispatch", "head_sha": SHA_A}}, "event is not admitted"),
+        ({"run": {"id": 303, "run_attempt": 1, "workflow_id": 202, "repository": [], "event": "repository_dispatch", "head_sha": SHA_A}}, "run repository identity"),
     ],
 )
 def test_github_identity_rejects_unauthenticated_provider_state(

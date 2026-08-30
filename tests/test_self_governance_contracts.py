@@ -166,6 +166,38 @@ def test_changelog_pr_enforcement_is_wired_into_repository_ci() -> None:
     }
 
 
+def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
+    workflow = yaml.safe_load(
+        (REPO_ROOT / ".github/workflows/governance-pack.yml").read_text(encoding="utf-8")
+    )
+    steps = workflow["jobs"]["pack-checks"]["steps"]
+    build_index = next(
+        index for index, step in enumerate(steps)
+        if step.get("name") == "Build exact-main trusted controller wheel"
+    )
+    upload = next(
+        step for step in steps
+        if step.get("name") == "Upload exact-main trusted controller wheel"
+    )
+    pack_index = next(
+        index for index, step in enumerate(steps)
+        if step.get("name") == "Run governance pack tests"
+    )
+    assert build_index > pack_index
+    assert steps[build_index]["if"] == (
+        "github.event_name == 'push' && github.ref == 'refs/heads/main'"
+    )
+    assert upload["if"] == steps[build_index]["if"]
+    assert upload["with"]["name"] == (
+        "bcf-trusted-control-${{ github.sha }}-${{ github.run_attempt }}"
+    )
+    assert upload["with"]["retention-days"] == 30
+    build_script = steps[build_index]["run"]
+    assert "pip download --only-binary=:all:" in build_script
+    assert "'PyYAML>=6.0,<7' 'jsonschema>=4.21,<5'" in build_script
+    assert "sha256sum ./*.whl CONTROL-METADATA.json" in build_script
+
+
 def test_self_governance_runner_classification_is_exact_and_has_no_fallback() -> None:
     runner_policy = _policy()["runner_security"]
     expected_jobs = runner_policy["jobs"]

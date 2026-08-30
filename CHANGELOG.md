@@ -8,6 +8,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Added
 
+- Added the trusted GitHub controller commands and an exact-main controller
+  wheel artifact for hash-pinned control-plane provisioning.
 - Added an owner-dispatched, no-checkout trusted-control probe so CI-authority
   activation verifies the installed control plane before enabling callbacks.
 - Opened the BCF 0.7.0 release train for generalized SOIP, exact-commit CI
