@@ -177,6 +177,9 @@ def test_fork_pull_requests_are_rejected_before_candidate_runner_assignment() ->
         "github.event.pull_request.head.repo.full_name == github.repository"
     )
     runner_policy = _policy()["runner_security"]
+    owner_guard = (
+        f"github.actor == '{runner_policy['temporary_local_window']['admitted_pr_actor']}'"
+    )
     for relative_path in (
         ".github/workflows/governance.yml",
         ".github/workflows/governance-pack.yml",
@@ -187,6 +190,7 @@ def test_fork_pull_requests_are_rejected_before_candidate_runner_assignment() ->
         for job_id, trust_class in runner_policy["jobs"][relative_path].items():
             if trust_class == "candidate":
                 assert required_guard in workflow["jobs"][job_id]["if"]
+                assert owner_guard in workflow["jobs"][job_id]["if"]
 
 
 def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
@@ -208,6 +212,21 @@ def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
                 assert "python" not in command
                 assert "scripts/" not in command
                 assert ".github/" not in command
+
+
+def test_shared_temporary_pool_cannot_run_privileged_publication() -> None:
+    runner_policy = _policy()["runner_security"]
+    assert runner_policy["candidate_labels"] == runner_policy["trusted_labels"]
+    window = runner_policy["temporary_local_window"]
+    assert window["status"] == "active"
+    assert window["privileged_publication_enabled"] is False
+    for relative_path, classification in runner_policy["jobs"].items():
+        workflow = yaml.safe_load(
+            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+        )
+        for job_id, trust_class in classification.items():
+            if trust_class == "trusted":
+                assert workflow["jobs"][job_id]["if"] == "${{ false }}"
 
 
 def test_self_gate_runner_bootstraps_an_uninstalled_source_checkout() -> None:

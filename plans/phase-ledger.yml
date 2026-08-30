@@ -35,17 +35,18 @@ hotfix_lane:
   scaffold_script: scripts/scaffold_governance_artifacts.py
   default_mode: full
   modes:
-    lite:
-      allowed_when:
-        - single_commit_fix
-        - no_public_contract_change
-        - no_security_scope_change
-    full:
-      required_when:
-        - default_branch_red_ci
-        - release_blocking_regression
-        - security_or_expiring_external_breakage
-  open_records: []
+    lite: {allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]}
+    full: {required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]}
+  open_records:
+    - id: P02-HF01
+      mode: full
+      status: active
+      triggered_by_commits: [1f0f73071e0a8a22439293c34d96fd8547487cbe]
+      failing_workflows: [governance, governance-pack, governance-mutants-nightly, governance-mutants-weekly, release]
+      root_cause: safe ephemeral runners are unavailable while hosted credits are exhausted and the live local pool uses a different exact label contract
+      remediated_in_phase: P02
+      hotfix_log: phases/phase-02-hotfix01.yml
+      canonical_artifacts: [.github/workflows/, governance/self-governance-policy.yml, plans/phase-ledger.yml, MEMORY.yml]
   remediation_history: []
 operator_requirements_choices_disambiguations:
   - type: decision

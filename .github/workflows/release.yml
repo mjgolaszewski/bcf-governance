@@ -11,7 +11,7 @@ jobs:
   release-artifacts:
     permissions:
       contents: read
-    runs-on: [self-hosted, linux, x64, bcf-candidate-ephemeral]
+    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -63,13 +63,14 @@ jobs:
           retention-days: 30
 
   publish-release:
+    if: ${{ false }} # Disabled while candidate and trusted work share the temporary local pool.
     needs: [release-artifacts]
     permissions:
       actions: read
       attestations: write
       contents: write
       id-token: write
-    runs-on: [self-hosted, linux, x64, bcf-trusted-control-plane]
+    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
     timeout-minutes: 15
     steps:
       - name: Download verified release artifacts

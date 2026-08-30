@@ -18,8 +18,14 @@ forbid_subprocess_shell: true
 runner_security:
   hosted_fallback_allowed: false
   fork_pull_request_policy: maintainer_import_to_same_repository_branch
-  candidate_labels: [self-hosted, linux, x64, bcf-candidate-ephemeral]
-  trusted_labels: [self-hosted, linux, x64, bcf-trusted-control-plane]
+  candidate_labels: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+  trusted_labels: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+  temporary_local_window:
+    status: active
+    admitted_pr_actor: mjgolaszewski
+    expires_after_utc: '2026-08-31T23:59:59Z'
+    privileged_publication_enabled: false
+    restore_condition: safe ephemeral candidate runners and an isolated trusted publisher are available
   jobs:
     .github/workflows/governance-mutants-nightly.yml: {high-value-mutants: candidate}
     .github/workflows/governance-mutants-weekly.yml: {full-mutants: candidate}

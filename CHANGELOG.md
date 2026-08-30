@@ -17,6 +17,11 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Defined a hard separation between one-job disposable candidate workers and a
   persistent trusted control plane that never checks out or executes candidate
   code.
+- Added a time-bounded owner-only local-runner fallback for exhausted hosted
+  credits, with fork PR admission rejected before allocation and privileged
+  release publication disabled while the pool is shared.
+- Protected `main` with pull-request-only updates, current governance checks,
+  resolved conversations, and force-push/deletion prevention.
 
 ## [0.6.1] - 2026-08-14
 

@@ -14,8 +14,8 @@ env:
 
 jobs:
   evidence:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: [self-hosted, linux, x64, bcf-candidate-ephemeral]
+    if: github.event_name != 'pull_request' || (github.actor == 'mjgolaszewski' && github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
     strategy:
       fail-fast: false
       matrix:
@@ -56,9 +56,9 @@ jobs:
           if-no-files-found: error
 
   governance-truthfulness:
-    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    if: always() && (github.event_name != 'pull_request' || (github.actor == 'mjgolaszewski' && github.event.pull_request.head.repo.full_name == github.repository))
     needs: [evidence]
-    runs-on: [self-hosted, linux, x64, bcf-candidate-ephemeral]
+    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}

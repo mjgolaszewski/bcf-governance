@@ -18,6 +18,7 @@ summary:
   - the applicability and deliberate-exclusion matrix is recorded in audits/bcf-0.7-upstream-applicability.yml
   - all existing jobs are classified as candidate or trusted and every GitHub-hosted runner label was removed
   - fork pull requests are rejected before candidate runner assignment and the privileged release publisher has no checkout or repository-script execution
+  - P02-HF01 temporarily admits only owner-authored same-repository PRs to the persistent local pool and keeps privileged publication disabled
 workitems:
 - id: P02-P0-01
   status: DONE
@@ -76,5 +77,6 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 - the external trusted and disposable VM substrate must be supplied and proven before remote candidate execution
+- the owner-only local runner exception expires after 2026-08-31 and does not satisfy P02 disposable-runner acceptance
 next_work:
 - complete the static workflow cutover, then provision and prove the external substrate before P03
