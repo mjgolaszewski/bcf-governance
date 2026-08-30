@@ -52,6 +52,7 @@ execution_evidence:
   - P10 dogfood found and P09 repaired execution-only selector leakage into evidence policy; the real selector-bearing promotion shape now has regression coverage
   - the same dogfood check now proves compact generated YAML remains within BCF's declared profile, policy, and contract context budgets
   - no-config promotion retains an existing custom semantic-owner gate and its complete causal-control inventory instead of replacing it with the generic default
+  - generated artifact mode restoration uses bounded find execution and contains no shell waiter loop
 closeout_requirements:
   claims:
     workitems_closed:

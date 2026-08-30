@@ -182,7 +182,7 @@ def test_v2_surfaces_bind_one_session_and_do_not_wait() -> None:
     assert "github.run_attempt" in workflow_text
     assert "persist-credentials: false" in workflow_text
     assert "merge-multiple: true" not in workflow_text
-    assert not any(value in workflow_text for value in ("sleep ", "poll", "while true"))
+    assert not any(value in workflow_text for value in ("sleep ", "poll", "while "))
 
 
 def test_bcf_standard_v2_promotion_fits_declared_context_budgets(tmp_path: Path) -> None:

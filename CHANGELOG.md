@@ -79,6 +79,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Preserved an adopter's existing canonical semantic-ownership invocation and
   causal controls during no-config v2 promotion, using the generic Standard-v2
   gate only when no custom semantic contract exists.
+- Made generated session-mode restoration a bounded `find -execdir` operation,
+  keeping Standard-v2 workflows free of mechanically ambiguous shell waiter
+  loops.
 - Made the explicitly selected Python interpreter authoritative in positive and
   detached negative-control evidence sessions, including the loader environment
   required by toolcache Python installations, without changing canonical gate

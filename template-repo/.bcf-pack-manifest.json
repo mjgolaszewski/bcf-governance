@@ -476,7 +476,7 @@
     },
     "scripts/_bcf_runtime/profile_v2_surfaces.py": {
       "operation": "copy",
-      "sha256": "8351a6a55658a4c2ad0045abe1c7f262140871362a6273db245a5ba6a5bba8a7"
+      "sha256": "decce976d92884d831747303825b2972bb2cb15ea5a046db392de969189c8452"
     },
     "scripts/_bcf_runtime/publish_audit.py": {
       "operation": "copy",

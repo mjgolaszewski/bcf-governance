@@ -147,10 +147,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          while IFS= read -r manifest; do
-            chmod 700 "$(dirname "$manifest")"
-            chmod 400 "$manifest"
-          done < <(find .artifacts/bcf/fan-in -type f -name evidence-session.json -print)
+          find .artifacts/bcf/fan-in -type f -name evidence-session.json -execdir chmod 700 . \\; -exec chmod 400 {{}} +
       - run: python3 scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf/fan-in --format json --durable-ref "github-actions://${{{{ github.repository }}}}/runs/${{{{ github.run_id }}}}/attempts/${{{{ github.run_attempt }}}}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
       - if: always()
         uses: actions/upload-artifact@v4
