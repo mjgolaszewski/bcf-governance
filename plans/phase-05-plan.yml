@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-05-plan
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: active
   path: plans/phase-05-plan.yml
 phase:
   id: P05
@@ -31,6 +31,12 @@ scope_lock:
 - order: 1
   statement: keep the phase narrowly scoped to declared deliverables and update canonical
     governed artifacts in the same change
+- order: 2
+  statement: consume the repository-declared Node, TypeScript compiler, and tsconfig without downloads or Docker fallback
+- order: 3
+  statement: bind the reference proof to exact Identity commit 0569e6dd81b311abf33af5626a32441b0d55cc64 and record all benchmark environment facts
+- order: 4
+  statement: use local execution only through 2026-08-31 and do not dispatch workflows
 verification_plan:
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
 - .venv/bin/python -m pytest tests

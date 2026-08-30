@@ -16,11 +16,11 @@ build_plan_mandate:
     - completeness_standard
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P04
-  build_block: "python-soip"
-  plan: plans/phase-04-plan.yml
-  workitems: plans/phase-04-workitems.yml
-  log: phases/phase-04-log.yml
+  id: P05
+  build_block: "typescript-soip-and-identity-proof"
+  plan: plans/phase-05-plan.yml
+  workitems: plans/phase-05-workitems.yml
+  log: phases/phase-05-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
@@ -68,7 +68,7 @@ operator_requirements_choices_disambiguations:
   - {type: execution_boundary, statement: "hosted Actions are unavailable through 2026-08-31; implementation may proceed locally, but remote candidate execution and release publication remain fail-closed until P10 proves the disposable candidate and isolated trusted substrates"}
 active_delivery_priorities:
   current_tranche:
-    - "python-soip"
+    - "typescript-soip-and-identity-proof"
 release_trains:
   release_1:
     target_version: "0.6.1"
