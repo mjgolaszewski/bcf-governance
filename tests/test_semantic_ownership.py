@@ -85,11 +85,14 @@ def test_tracked_source_inventory_excludes_untracked_python(tmp_path: Path) -> N
 
 def test_current_bcf_registry_is_conformant_and_report_is_compact(tmp_path: Path) -> None:
     report = scan.run_scan(REPO_ROOT)
+    registry = load_registry(REPO_ROOT)
     encoded = json.dumps(report, sort_keys=True).encode()
 
     assert report["verdict"] == "conformant"
     assert report["blocking_violation_count"] == 0
-    assert len(report["registry_coverage"]) == 3
+    assert {value["semantic_id"] for value in report["registry_coverage"]} == {
+        entry.semantic_id for entry in registry.entries
+    }
     assert len(encoded) < 1024 * 1024
 
 

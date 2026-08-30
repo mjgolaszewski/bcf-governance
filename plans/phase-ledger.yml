@@ -16,11 +16,11 @@ build_plan_mandate:
     - completeness_standard
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P05
-  build_block: "typescript-soip-and-identity-proof"
-  plan: plans/phase-05-plan.yml
-  workitems: plans/phase-05-workitems.yml
-  log: phases/phase-05-log.yml
+  id: P06
+  build_block: "ci-authority-contracts"
+  plan: plans/phase-06-plan.yml
+  workitems: plans/phase-06-workitems.yml
+  log: phases/phase-06-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
@@ -64,10 +64,10 @@ operator_requirements_choices_disambiguations:
   - type: release
     statement: the tag publisher publishes pre-certified exact bytes and never rebuilds source
   - {type: owner_authorization, statement: "the sole repository owner authorizes Codex to perform required human reviews and approvals for the 0.7 release train"}
-  - {type: execution_boundary, statement: "unsafe PR code uses fresh GitHub-hosted jobs while owner-authored same-repository and trusted-ref CI may use the local pool; neither route polls, sleeps, idles, or falls back, and publication remains fail-closed until P10"}
+  - {type: execution_boundary, statement: "all candidate code uses fresh standard GitHub-hosted jobs because the repository is public; no candidate route polls, sleeps, idles, uses persistent local runners, or falls back, and trusted publication remains fail-closed until P10"}
 active_delivery_priorities:
   current_tranche:
-    - "typescript-soip-and-identity-proof"
+    - "ci-authority-contracts"
 release_trains:
   release_1:
     target_version: "0.6.1"
