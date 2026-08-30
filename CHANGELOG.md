@@ -67,6 +67,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Kept non-authoritative local-artifact markers inside governed YAML scalar
   values so mutation reserialization cannot strip them and mask the intended
   causal diagnostic.
+- Prevented dotted semantic identifiers such as `governance.local-pr-context`
+  from being misclassified as private `.local` hostnames while retaining
+  private-host detection at real token boundaries.
 
 ### Security
 

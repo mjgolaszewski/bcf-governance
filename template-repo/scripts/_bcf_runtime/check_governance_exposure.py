@@ -53,7 +53,7 @@ PATTERNS = {
         r"\b(?:10(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2})\b"
     ),
     "private_hostname": re.compile(
-        r"\b(?:[a-zA-Z0-9-]+\.)+(?:internal|corp|lan|local)\b"
+        r"\b(?:[a-zA-Z0-9-]+\.)+(?:internal|corp|lan|local)\b(?![A-Za-z0-9.-])"
     ),
 }
 

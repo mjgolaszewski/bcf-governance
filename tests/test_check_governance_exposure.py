@@ -35,6 +35,23 @@ def test_exposure_scan_passes_clean_governed_artifacts(tmp_path: Path) -> None:
     assert report.findings == []
 
 
+def test_exposure_scan_does_not_treat_dotted_semantic_ids_as_hostnames(
+    tmp_path: Path,
+) -> None:
+    scanner = _load_scanner_module()
+    repo = tmp_path / "repo"
+    (repo / "governance").mkdir(parents=True)
+    (repo / "governance/semantic.yml").write_text(
+        "semantic_id: governance.local-pr-context.v1\n",
+        encoding="utf-8",
+    )
+
+    report = scanner.scan_exposures(repo, paths=["governance"])
+
+    assert report.status == "pass"
+    assert report.findings == []
+
+
 def test_exposure_scan_flags_local_paths_and_private_infra(tmp_path: Path) -> None:
     scanner = _load_scanner_module()
     repo = tmp_path / "repo"

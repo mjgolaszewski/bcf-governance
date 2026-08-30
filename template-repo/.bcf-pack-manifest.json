@@ -284,7 +284,7 @@
     },
     "scripts/_bcf_runtime/check_governance_exposure.py": {
       "operation": "copy",
-      "sha256": "a7451f68c0701fb964dfeafb2d7de5ed10cce519b0d4ab29d198bf4f0935cdfb"
+      "sha256": "1cb6a99dfe62dee3defd3d08b87a9f2e0485d63c0bea5573cd58e7a4ebcc2168"
     },
     "scripts/_bcf_runtime/ci_adopt_github.py": {
       "operation": "copy",
