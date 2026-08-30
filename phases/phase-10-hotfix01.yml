@@ -1,0 +1,45 @@
+document:
+  kind: hotfix_execution_log
+  name: P10-HF01 Hotfix Log
+  id: project-phase-10-hotfix01
+  version: 1.0.0
+  generated_at_utc: '2026-08-30T00:00:00Z'
+  status: completed
+  path: phases/phase-10-hotfix01.yml
+hotfix:
+  id: P10-HF01
+  mode: full
+  related_phase_id: P10
+  hotfix_number: 1
+  summary: Establish a fail-closed trusted control-plane readiness probe
+execution_evidence:
+  planned_commands:
+  - python3 -m pytest tests/test_ci_github_reference.py tests/test_ci_authority.py
+    tests/test_ci_authority_decisions.py
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests/test_self_governance_contracts.py tests/test_validate_governance_yaml.py
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  - .venv/bin/python scripts/check_governance_exposure.py --repo-root .
+  notes:
+  - the structural merge is exact-main certified by governance run 33336907862 and pack run 33336907865
+  - activation remains fail-closed because the generated trusted commands are not implemented and the installed trusted runner control has not been characterized
+  - the first stacked hotfix layer adds an owner-and-main-only no-checkout probe with a five-minute cap and exact trusted runner labels
+  - focused governance validation passes 80 tests plus strict validation and exposure scanning
+  - P10-HF02 owns controller deployment and authenticated exact-main activation after this exact workflow is merged and dispatched
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

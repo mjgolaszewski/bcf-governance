@@ -243,7 +243,15 @@ def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
         )
         for job_id, trust_class in classification.items():
             if trust_class == "trusted":
-                assert workflow["jobs"][job_id]["if"] == "${{ false }}"
+                activation = runner_policy["trusted_job_activation"][relative_path][job_id]
+                if activation == "disabled":
+                    assert workflow["jobs"][job_id]["if"] == "${{ false }}"
+                else:
+                    assert activation == "owner_main_dispatch"
+                    assert workflow["jobs"][job_id]["if"] == (
+                        "${{ github.actor == 'mjgolaszewski' && "
+                        "github.ref == 'refs/heads/main' }}"
+                    )
     release = yaml.safe_load(
         (REPO_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
     )
