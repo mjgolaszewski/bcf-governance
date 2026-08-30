@@ -76,6 +76,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Made the source-tree preflight wrapper resolve BCF's package from any working
+  directory, including fresh hosted-runner checkouts without an installed wheel.
 - Bound profile-v2 receipts to an explicit immutable session producer identity,
   so nested local validation cannot inherit an unrelated outer Actions run or
   job identity from ambient environment variables.

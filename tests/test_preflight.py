@@ -9,6 +9,9 @@ import pytest
 from bcf_governance.tooling import preflight
 
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
 def _git(repo: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=repo, capture_output=True, text=True, check=True)
 
@@ -32,6 +35,21 @@ def test_syntax_preflight_rejects_duplicate_yaml_keys(tmp_path: Path) -> None:
 
     with pytest.raises(preflight.PreflightError, match="duplicate YAML key"):
         preflight._syntax_checks(repo)
+
+
+def test_source_preflight_wrapper_runs_without_an_installed_package(
+    tmp_path: Path,
+) -> None:
+    result = subprocess.run(
+        [sys.executable, str(REPO_ROOT / "scripts/preflight_governance.py"), "--help"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "Run cheap governance preflight" in result.stdout
 
 
 def test_syntax_preflight_rejects_invalid_python(tmp_path: Path) -> None:
