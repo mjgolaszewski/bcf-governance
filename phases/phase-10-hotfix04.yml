@@ -1,0 +1,42 @@
+document:
+  kind: hotfix_execution_log
+  name: P10-HF04 Hotfix Log
+  id: bcf-governance-phase-10-hotfix04
+  version: 1.0.0
+  generated_at_utc: '2026-08-30T00:00:00Z'
+  status: planned
+  path: phases/phase-10-hotfix04.yml
+hotfix:
+  id: P10-HF04
+  mode: full
+  related_phase_id: P10
+  hotfix_number: 4
+  summary: Repair non-relocatable trusted controller virtualenv bootstrap
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests/test_self_governance_contracts.py
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root . --format json
+  - owner-dispatch bcf/trusted-control-bootstrap and bcf/trusted-control-probe from exact main
+  executed_commands: []
+  notes:
+  - bootstrap run 33340656638 authenticated and downloaded the exact artifact on both trusted runners before both offline installs failed with exit 127
+  - the installed console script retained the deleted staging virtualenv in its absolute shebang after the workflow renamed the environment
+  - authority callbacks, statuses, cancellation, and publication remain disabled while this hotfix is open
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

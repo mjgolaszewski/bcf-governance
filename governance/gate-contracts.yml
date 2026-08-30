@@ -227,6 +227,11 @@ gates:
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']
+    - id: trusted-bootstrap-venv-relocation-must-fail
+      mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: '"$selected_python" -m venv "$install_root"', replace: '"$selected_python" -m venv "$install_root.stage"'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']
     - id: ci-workflow-event-authentication-must-fail
       mutation: {path: bcf_governance/tooling/ci_authority_state.py, search: 'if not same_identity or actual.event not in
           allowed_events:', replace: 'if not same_identity:'}
