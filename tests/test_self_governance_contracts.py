@@ -340,6 +340,20 @@ def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
                     assert "pip install --no-index" in "\n".join(
                         value.get("run", "") for value in steps
                     )
+    interpreter = runner_policy["trusted_controller_interpreter"]
+    for relative_path in interpreter["required_workflows"]:
+        workflow = yaml.safe_load(
+            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+        )
+        steps = next(iter(workflow["jobs"].values()))["steps"]
+        setup = [
+            step
+            for step in steps
+            if step.get("uses", "").startswith("actions/setup-python@")
+        ]
+        assert len(setup) == 1
+        assert setup[0]["uses"] == interpreter["action"]
+        assert setup[0]["with"] == {"python-version": interpreter["python_version"]}
 
 
 def test_hosted_candidates_and_trusted_publication_are_separated() -> None:

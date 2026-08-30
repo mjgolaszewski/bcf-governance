@@ -66,7 +66,7 @@ known_constraints:
   - release tags are created only at a merge commit whose source and governance CI passed
   - standard hosted runners are free and unlimited while the repository remains public; larger-runner and artifact-storage costs remain separate
   - the persistent trusted VM may collect provider state and publish but may never check out or execute candidate code
-  - P10-HF02 is exact-main certified at 6368eb34ce08c1bfc4bc554fae02e5e10468455f by governance run 33339477453 and pack run 33339477463; bootstrap run 33340656638 failed closed because HF03 relocated a virtualenv with absolute console-script shebangs, and P10-HF04 locally proves final-path install and exact-provenance recovery before a fresh exact-main bootstrap and probe
+  - P10-HF04 is exact-main certified at 280029471d4ff82d7e8e3cd106856aadaf7581f9 by governance run 33341469538 and pack run 33341469554; bootstrap run 33341681969 passed on both trusted runners, while probe run 33341705849 failed closed because it omitted the selected-interpreter loader environment now owned by P10-HF05
   - release execution and publication remain disabled until disposable candidate execution and isolated trusted publication are available
   - hosted jobs run to completion without polling, sleeping, idle waiters, or route fallback
   - every BCF behavior commit updates and validates BCF's own applicable governance contracts before successor work begins

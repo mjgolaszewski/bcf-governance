@@ -86,6 +86,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Required every trusted-controller invocation workflow to restore the pinned
+  selected-Python loader environment before executing the persisted offline
+  controller.
 - Kept trusted-controller virtual environments at their final commit-addressed
   paths so generated console-script shebangs remain executable, with scoped
   recovery of the two exact-provenance installations left by the failed
