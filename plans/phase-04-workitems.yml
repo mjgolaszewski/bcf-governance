@@ -4,13 +4,13 @@ document:
   id: bcf-governance-phase-04-workitems
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: active
   path: plans/phase-04-workitems.yml
   phase_id: P04
 workitems:
 - id: P04-P0-01
   priority: P0
-  status: TODO
+  status: IN_PROGRESS
   summary: deliver Python source inventory, registry, trace, report, and causal controls
   acceptance:
   - Python source inventory, registry, trace, report, and causal controls_is_complete

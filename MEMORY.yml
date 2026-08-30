@@ -52,7 +52,7 @@ environment_facts:
     - all governance, memory, specs, plans, workitem ledgers, and phase logs are YAML-native
     - observability contracts are scaffolded under contracts/observability/v1/
     - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
-    - P03 is active for the single BCF 0.7.0 release train after P02 completed its static fail-closed runner cutover
+    - P04 is active for generalized Python SOIP after P03 completed preflight, interpreter, session, fan-in, retention, and cleanup hardening
     - BCF has two owner-controlled local CI runners on the bcf-governance and vm-linux-ci-runner labels plus one excluded Dependabot runner
     - main is protected by active repository ruleset 21862678 requiring pull requests, current governance-truthfulness, pack-checks, ast-checks, resolved conversations, and no force push or deletion
     - the local implementation host provides Docker but no disposable VM hypervisor or clone manager
@@ -64,9 +64,9 @@ environment_facts:
     build_plan: plans/build-plan.yml
     active_phase_ledger: plans/phase-ledger.yml
     phase_history: plans/phase-history.yml
-    active_phase_plan: plans/phase-03-plan.yml
-    active_workitem_ledger: plans/phase-03-workitems.yml
-    active_phase_log: phases/phase-03-log.yml
+    active_phase_plan: plans/phase-04-plan.yml
+    active_workitem_ledger: plans/phase-04-workitems.yml
+    active_phase_log: phases/phase-04-log.yml
 known_constraints:
   - schema-2 evidence must be recaptured after every governed tree mutation
   - template runtime and packaged template copies must remain byte-identical to canonical sources
@@ -98,8 +98,8 @@ references:
     - plans/product-spec.yml
     - plans/build-plan.yml
   execution:
-    - plans/phase-03-plan.yml
-    - plans/phase-03-workitems.yml
+    - plans/phase-04-plan.yml
+    - plans/phase-04-workitems.yml
+    - phases/phase-04-log.yml
     - phases/phase-03-log.yml
-    - phases/phase-02-log.yml
     - phases/phase-01-hotfix01.yml
