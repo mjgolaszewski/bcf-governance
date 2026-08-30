@@ -2,8 +2,8 @@ document: {kind: canonical_representation_registry, id: bcf-governance-canonical
 enforcement:
   phase: P04
   default_mode: declared_families_blocking
-  declared_families: [ci_authority_state, docker_resource_ownership, evidence_session_identity, exposure_report]
-  blocking_semantic_ids: [governance.ci-authority-state.v1, governance.docker-resource.v1, governance.evidence-session.v1, governance.exposure-report.v1]
+  declared_families: [ci_authority_state, ci_cancellation_decision, ci_certification_verification, ci_status_decision, docker_resource_ownership, evidence_session_identity, exposure_report, release_receipt]
+  blocking_semantic_ids: [governance.ci-authority-state.v1, governance.ci-cancellation-decision.v1, governance.ci-certification-verification.v1, governance.ci-status-decision.v1, governance.docker-resource.v1, governance.evidence-session.v1, governance.exposure-report.v1, governance.release-receipt.v1]
   report_path: .artifacts/semantic-ownership/report.json # non-authoritative until captured in evidence
   unresolved_dynamic_policy: report
 source_authority:
@@ -94,4 +94,84 @@ representations:
   declared_consumer_layers_and_sinks: {read: [bcf_governance/tooling/check_governance_exposure.py::_emit_json, bcf_governance/tooling/check_governance_exposure.py::_emit_text], authorization: [], persistence: [bcf_governance/tooling/check_governance_exposure.py::_emit_json], cache: [], queue: [], network: [], api: [], browser: []}
   generated_source_authority: {authoritative_roots: [bcf_governance/tooling/check_governance_exposure.py], generated_mirrors: [template-repo/scripts/_bcf_runtime/check_governance_exposure.py, bcf_governance/pack/template-repo/scripts/_bcf_runtime/check_governance_exposure.py], generator: .github/scripts/build_pack_manifest.py::main, parity_proof: tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact}
   migration_policy: {source_versions: [], destination_version: 1, owner: bcf_governance/tooling/check_governance_exposure.py::scan_exposures, runtime_exclusion: local report only, removal_condition: exposure scanning is replaced by a reviewed typed report}
+  narrow_suppressions: []
+- semantic_id: governance.ci-certification-verification.v1
+  family: ci_certification_verification
+  schema_version: 1
+  lifecycle: enforced
+  finding_ids: []
+  canonical_type: {language: python, symbol: bcf_governance/tooling/ci_authority_certification.py::CertificationVerification}
+  authoritative_owner: {symbol: bcf_governance/tooling/ci_authority_certification.py::verify_ci_certification, owner_kind: analyzer}
+  authorized_constructors_and_factories: [bcf_governance/tooling/ci_authority_certification.py::verify_ci_certification]
+  authorized_pure_delegates: []
+  hostile_boundary_decoder: {symbol: bcf_governance/tooling/ci_authority_certification.py::verify_ci_certification, trust_boundary: authenticated raw provider snapshots normalized certification and immutable evidence session bytes}
+  field_invariants: [{field: computed_state, invariant: certified only after independent raw snapshot report session exact-commit and exact-tree recomputation}, {field: admission_ordinal, invariant: selected from the highest authenticated total ordinal}]
+  permitted_defaults_and_single_application_point: []
+  accepted_aliases_and_single_ingress_boundary: []
+  persistence_codec_and_envelope: {applicability: required, codec_symbol: bcf_governance/tooling/ci_authority_certification.py::verify_ci_certification, semantic_id: governance.ci-certification-verification.v1, schema_version: 1, exact_byte_format: canonical JSON inputs and frozen verification value, integrity_algorithm: SHA-256 plus exact structural recomputation, identity_bindings: [repository_id, admission_ordinal, commit_sha, tree_sha, session_id, run_id, run_attempt], migration_dispatch: ci-certification schema_version}
+  protocol_translations: []
+  intentional_projections: []
+  declared_consumer_layers_and_sinks: {read: [bcf_governance/tooling/governance_truth.py::derive_truth], authorization: [bcf_governance/tooling/release_receipts.py::build_release_receipt], persistence: [], cache: [], queue: [], network: [], api: [], browser: []}
+  generated_source_authority: {authoritative_roots: [bcf_governance/tooling/ci_authority_certification.py], generated_mirrors: [template-repo/scripts/_bcf_runtime/ci_authority_certification.py, bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_authority_certification.py], generator: .github/scripts/build_pack_manifest.py::main, parity_proof: tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact}
+  migration_policy: {source_versions: [], destination_version: 1, owner: bcf_governance/tooling/ci_authority_certification.py::verify_ci_certification, runtime_exclusion: verification values are reconstructed for every truth run, removal_condition: superseded by a reviewed certification contract}
+  narrow_suppressions: []
+- semantic_id: governance.ci-cancellation-decision.v1
+  family: ci_cancellation_decision
+  schema_version: 1
+  lifecycle: enforced
+  finding_ids: []
+  canonical_type: {language: python, symbol: bcf_governance/tooling/ci_authority_decisions.py::CancellationDecision}
+  authoritative_owner: {symbol: bcf_governance/tooling/ci_authority_decisions.py::owned_cancellation_targets, owner_kind: analyzer}
+  authorized_constructors_and_factories: [bcf_governance/tooling/ci_authority_decisions.py::owned_cancellation_targets]
+  authorized_pure_delegates: []
+  hostile_boundary_decoder: {symbol: bcf_governance/tooling/ci_authority_decisions.py::owned_cancellation_targets, trust_boundary: authenticated provider child-run observations}
+  field_invariants: [{field: targets, invariant: contains only authenticated unfinished children owned by the exact control-plane run and attempt}]
+  permitted_defaults_and_single_application_point: []
+  accepted_aliases_and_single_ingress_boundary: []
+  persistence_codec_and_envelope: {applicability: not_applicable, codec_symbol: bcf_governance/tooling/ci_authority_decisions.py::owned_cancellation_targets, semantic_id: governance.ci-cancellation-decision.v1, schema_version: 1, exact_byte_format: frozen in-memory value, integrity_algorithm: exact authenticated ownership comparison, identity_bindings: [run_id, control_plane_run_id, control_plane_attempt], migration_dispatch: no persisted versions}
+  protocol_translations: []
+  intentional_projections: []
+  declared_consumer_layers_and_sinks: {read: [], authorization: [bcf_governance/tooling/ci_authority_decisions.py::owned_cancellation_targets], persistence: [], cache: [], queue: [], network: [], api: [], browser: []}
+  generated_source_authority: {authoritative_roots: [bcf_governance/tooling/ci_authority_decisions.py], generated_mirrors: [template-repo/scripts/_bcf_runtime/ci_authority_decisions.py, bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_authority_decisions.py], generator: .github/scripts/build_pack_manifest.py::main, parity_proof: tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact}
+  migration_policy: {source_versions: [], destination_version: 1, owner: bcf_governance/tooling/ci_authority_decisions.py::owned_cancellation_targets, runtime_exclusion: cancellation targets are recomputed immediately before adapter use, removal_condition: superseded by a reviewed cancellation authority contract}
+  narrow_suppressions: []
+- semantic_id: governance.ci-status-decision.v1
+  family: ci_status_decision
+  schema_version: 1
+  lifecycle: enforced
+  finding_ids: []
+  canonical_type: {language: python, symbol: bcf_governance/tooling/ci_authority_decisions.py::StatusDecision}
+  authoritative_owner: {symbol: bcf_governance/tooling/ci_authority_decisions.py::decide_status_publication, owner_kind: analyzer}
+  authorized_constructors_and_factories: [bcf_governance/tooling/ci_authority_decisions.py::decide_status_publication]
+  authorized_pure_delegates: []
+  hostile_boundary_decoder: {symbol: bcf_governance/tooling/ci_authority_decisions.py::decide_status_publication, trust_boundary: authenticated current and proposed provider status observations}
+  field_invariants: [{field: selected, invariant: older authority cannot overwrite newer authority and PR and exact-main contexts remain distinct}, {field: publish, invariant: candidate or moved-main observations cannot publish}]
+  permitted_defaults_and_single_application_point: []
+  accepted_aliases_and_single_ingress_boundary: []
+  persistence_codec_and_envelope: {applicability: not_applicable, codec_symbol: bcf_governance/tooling/ci_authority_decisions.py::decide_status_publication, semantic_id: governance.ci-status-decision.v1, schema_version: 1, exact_byte_format: frozen in-memory value, integrity_algorithm: authenticated total-order comparison, identity_bindings: [context, subject_sha, admission_ordinal, control_plane_attempt], migration_dispatch: no persisted versions}
+  protocol_translations: []
+  intentional_projections: []
+  declared_consumer_layers_and_sinks: {read: [], authorization: [bcf_governance/tooling/ci_authority_decisions.py::decide_status_publication], persistence: [], cache: [], queue: [], network: [], api: [], browser: []}
+  generated_source_authority: {authoritative_roots: [bcf_governance/tooling/ci_authority_decisions.py], generated_mirrors: [template-repo/scripts/_bcf_runtime/ci_authority_decisions.py, bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_authority_decisions.py], generator: .github/scripts/build_pack_manifest.py::main, parity_proof: tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact}
+  migration_policy: {source_versions: [], destination_version: 1, owner: bcf_governance/tooling/ci_authority_decisions.py::decide_status_publication, runtime_exclusion: publication decisions are recomputed immediately before adapter writes, removal_condition: superseded by a reviewed publication authority contract}
+  narrow_suppressions: []
+- semantic_id: governance.release-receipt.v1
+  family: release_receipt
+  schema_version: 1
+  lifecycle: enforced
+  finding_ids: []
+  canonical_type: {language: python, symbol: bcf_governance/tooling/release_receipts.py::ReleaseReceipt}
+  authoritative_owner: {symbol: bcf_governance/tooling/release_receipts.py::build_release_receipt, owner_kind: constructor}
+  authorized_constructors_and_factories: [bcf_governance/tooling/release_receipts.py::build_release_receipt]
+  authorized_pure_delegates: []
+  hostile_boundary_decoder: {symbol: bcf_governance/tooling/release_receipts.py::build_release_receipt, trust_boundary: passing truth certification session and release artifact bytes}
+  field_invariants: [{field: payload, invariant: output is outside truth inputs and binds exact truth certification session bundle subject ordinal and release artifact hashes}]
+  permitted_defaults_and_single_application_point: []
+  accepted_aliases_and_single_ingress_boundary: []
+  persistence_codec_and_envelope: {applicability: required, codec_symbol: bcf_governance/tooling/release_receipts.py::emit_release_receipt, semantic_id: governance.release-receipt.v1, schema_version: 1, exact_byte_format: canonical indented JSON with exclusive creation, integrity_algorithm: SHA-256, identity_bindings: [commit_sha, tree_sha, session_id, admission_ordinal, bundle_sha256, release_artifact_sha256], migration_dispatch: evidence receipt schema_version and kind release}
+  protocol_translations: []
+  intentional_projections: []
+  declared_consumer_layers_and_sinks: {read: [], authorization: [bcf_governance/tooling/release_receipts.py::build_release_receipt], persistence: [bcf_governance/tooling/release_receipts.py::emit_release_receipt], cache: [], queue: [], network: [], api: [], browser: []}
+  generated_source_authority: {authoritative_roots: [bcf_governance/tooling/release_receipts.py], generated_mirrors: [template-repo/scripts/_bcf_runtime/release_receipts.py, bcf_governance/pack/template-repo/scripts/_bcf_runtime/release_receipts.py], generator: .github/scripts/build_pack_manifest.py::main, parity_proof: tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact}
+  migration_policy: {source_versions: [], destination_version: 1, owner: bcf_governance/tooling/release_receipts.py::build_release_receipt, runtime_exclusion: release receipts are immutable outputs and never truth inputs, removal_condition: superseded by a reviewed release receipt schema}
   narrow_suppressions: []

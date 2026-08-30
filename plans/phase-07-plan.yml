@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-07-plan
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: completed
   path: plans/phase-07-plan.yml
 phase:
   id: P07
@@ -32,6 +32,10 @@ scope_lock:
 - order: 1
   statement: keep the phase narrowly scoped to declared deliverables and update canonical
     governed artifacts in the same change
+- order: 2
+  statement: keep provider snapshots and normalized certification as inputs to truth; only independently verified truth may emit the final release receipt
+- order: 3
+  statement: keep candidate code outside cancellation, status, callback, and publication authority
 verification_plan:
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
 - .venv/bin/python -m pytest tests

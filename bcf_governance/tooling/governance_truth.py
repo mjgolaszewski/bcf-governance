@@ -17,6 +17,10 @@ from .governance_evidence import (
     expected_evidence_kinds,
     expected_invocations,
 )
+from .ci_authority_certification import (
+    CICertificationError,
+    verify_ci_certification,
+)
 from .governance_truth_support import (
     compute_hotfix_reports,
     finding_report,
@@ -24,6 +28,11 @@ from .governance_truth_support import (
     workitem_observation,
 )
 from .truth_receipts import ReceiptError, load_receipts
+from .release_receipts import (
+    ReleaseReceiptError,
+    build_release_receipt,
+    emit_release_receipt,
+)
 
 
 class TruthfulnessError(ValueError):
@@ -273,7 +282,13 @@ def _workflow_gate_issues(repo_root: Path, policy: dict[str, Any], gate_ids: set
 
 
 def derive_truth(
-    repo_root: Path, evidence_dir: Path, *, trusted_digest: str | None = None
+    repo_root: Path,
+    evidence_dir: Path,
+    *,
+    trusted_digest: str | None = None,
+    ci_authority_path: Path | None = None,
+    ci_certification_path: Path | None = None,
+    ci_session_manifest_path: Path | None = None,
 ) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     evidence_dir = evidence_dir.resolve()
@@ -514,6 +529,45 @@ def derive_truth(
         + list(attestation["issues"])
         + hotfix_issues
     )
+    ci_paths = (
+        ci_authority_path,
+        ci_certification_path,
+        ci_session_manifest_path,
+    )
+    ci_certification: dict[str, Any] = {
+        "applicability": "not_enabled",
+        "status": "not_applicable",
+    }
+    if any(value is not None for value in ci_paths):
+        if not all(value is not None for value in ci_paths):
+            ci_certification = {
+                "applicability": "enabled",
+                "status": "fail",
+                "computed_state": "incomplete",
+                "reasons": ["ci_certification_inputs_incomplete"],
+            }
+            truth_issues.append("ci_certification_inputs_incomplete")
+        else:
+            try:
+                verification = verify_ci_certification(
+                    repo_root,
+                    authority_path=ci_authority_path,
+                    certification_path=ci_certification_path,
+                    session_manifest_path=ci_session_manifest_path,
+                )
+                ci_certification = {
+                    "applicability": "enabled",
+                    **verification.as_dict(),
+                }
+            except CICertificationError as exc:
+                ci_certification = {
+                    "applicability": "enabled",
+                    "status": "fail",
+                    "computed_state": "invalid",
+                    "reasons": [str(exc)],
+                }
+            if ci_certification.get("status") != "pass":
+                truth_issues.append("ci_certification_not_verified")
     truth_issues.extend(
         f"required_claim_{claim_id}_not_declared"
         for claim_id in missing_claim_declarations
@@ -573,6 +627,7 @@ def derive_truth(
             else "fail",
             "finding_accounting": "pass" if not findings["issues"] else "fail",
             "provenance": "pass" if provenance_ok and not attestation["issues"] else "fail",
+            "ci_certification": ci_certification["status"],
         },
         "subject": current,
         "bundle_sha256": actual_bundle_digest,
@@ -604,6 +659,7 @@ def derive_truth(
         "hotfixes": hotfixes,
         "findings": findings,
         "attestation": attestation,
+        "ci_certification": ci_certification,
         "verifier": (
             attestation["valid_attestations"][0].get("verifier")
             if attestation["valid_attestations"]
@@ -619,6 +675,11 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--evidence-dir", type=Path, required=True)
     parser.add_argument("--trusted-digest")
+    parser.add_argument("--ci-authority", type=Path)
+    parser.add_argument("--ci-certification", type=Path)
+    parser.add_argument("--ci-session-manifest", type=Path)
+    parser.add_argument("--release-receipt-output", type=Path)
+    parser.add_argument("--release-artifact", type=Path, action="append", default=[])
     parser.add_argument("--durable-ref")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--format", choices=("text", "json"), default="text")
@@ -626,7 +687,12 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     try:
         report = derive_truth(
-            args.repo_root, args.evidence_dir, trusted_digest=args.trusted_digest
+            args.repo_root,
+            args.evidence_dir,
+            trusted_digest=args.trusted_digest,
+            ci_authority_path=args.ci_authority,
+            ci_certification_path=args.ci_certification,
+            ci_session_manifest_path=args.ci_session_manifest,
         )
     except TruthfulnessError as exc:
         print(str(exc), file=os.sys.stderr)
@@ -642,6 +708,40 @@ def main(argv: list[str] | None = None) -> None:
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(rendered + "\n", encoding="utf-8")
+    if args.release_receipt_output and report["status"] == "pass":
+        if not all(
+            (
+                args.output,
+                args.ci_certification,
+                args.ci_session_manifest,
+                args.release_artifact,
+            )
+        ):
+            print(
+                "release receipt requires truth output, CI certification, session manifest, and release artifacts",
+                file=os.sys.stderr,
+            )
+            raise SystemExit(1)
+        try:
+            certification = json.loads(
+                args.ci_certification.read_text(encoding="utf-8")
+            )
+            receipt = build_release_receipt(
+                args.repo_root.resolve(),
+                truth_report=report,
+                truth_report_path=args.output,
+                certification=certification,
+                certification_path=args.ci_certification,
+                certification_verification=report["ci_certification"],
+                session_manifest_path=args.ci_session_manifest,
+                evidence_dir=args.evidence_dir,
+                release_artifacts=args.release_artifact,
+                output_path=args.release_receipt_output,
+            )
+            emit_release_receipt(args.release_receipt_output, receipt)
+        except (OSError, json.JSONDecodeError, ReleaseReceiptError) as exc:
+            print(str(exc), file=os.sys.stderr)
+            raise SystemExit(1)
     if args.format == "json":
         print(rendered)
     else:
