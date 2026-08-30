@@ -178,21 +178,12 @@ def test_self_governance_runner_classification_is_exact_and_has_no_fallback() ->
         for job_id, trust_class in classification.items():
             if trust_class == "trusted":
                 expected_labels = runner_policy["trusted_labels"]
-            elif relative_path in {
-                ".github/workflows/governance.yml",
-                ".github/workflows/governance-pack.yml",
-            }:
-                expected_labels = runner_policy["candidate_routing"][
-                    "pull_request_expression"
-                ]
             else:
-                expected_labels = runner_policy["candidate_routing"][
-                    "trusted_ref_runner"
-                ]
+                expected_labels = runner_policy["candidate_routing"]["candidate_runner"]
             assert jobs[job_id]["runs-on"] == expected_labels
     assert observed_jobs == expected_jobs
     assert runner_policy["hosted_fallback_allowed"] is False
-    assert runner_policy["candidate_substrate"] == "contributor_trust_routed"
+    assert runner_policy["candidate_substrate"] == "github_standard_hosted_fresh_vm"
     assert runner_policy["coordination_policy"] == [
         "no_polling",
         "no_sleeping",
@@ -200,31 +191,21 @@ def test_self_governance_runner_classification_is_exact_and_has_no_fallback() ->
     ]
 
 
-def test_pull_requests_route_by_contributor_and_repository_trust() -> None:
+def test_all_candidate_code_uses_fresh_standard_hosted_workers() -> None:
     runner_policy = _policy()["runner_security"]
     routing = runner_policy["candidate_routing"]
-    expression = routing["pull_request_expression"]
-    assert routing["trusted_contributors"] == ["mjgolaszewski"]
-    assert routing["unsafe_pull_request_runner"] == ["ubuntu-latest"]
-    assert routing["trusted_same_repository_runner"] == [
-        "self-hosted",
-        "Linux",
-        "X64",
-        "bcf-governance",
-        "vm-linux-ci-runner",
-    ]
-    assert "github.actor != 'mjgolaszewski'" in expression
-    assert "github.event.pull_request.head.repo.full_name != github.repository" in expression
-    for relative_path in (
-        ".github/workflows/governance.yml",
-        ".github/workflows/governance-pack.yml",
-    ):
+    assert routing == {
+        "candidate_runner": "ubuntu-latest",
+        "repository_visibility": "public",
+        "billing_class": "standard_public_repository",
+    }
+    for relative_path, classifications in runner_policy["jobs"].items():
         workflow = yaml.safe_load(
             (REPO_ROOT / relative_path).read_text(encoding="utf-8")
         )
-        for job_id, trust_class in runner_policy["jobs"][relative_path].items():
+        for job_id, trust_class in classifications.items():
             if trust_class == "candidate":
-                assert workflow["jobs"][job_id]["runs-on"] == expression
+                assert workflow["jobs"][job_id]["runs-on"] == "ubuntu-latest"
 
 
 def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
@@ -251,9 +232,7 @@ def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
 def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
     runner_policy = _policy()["runner_security"]
     routing = runner_policy["candidate_routing"]
-    assert not set(routing["unsafe_pull_request_runner"]) & set(
-        runner_policy["trusted_labels"]
-    )
+    assert routing["candidate_runner"] not in runner_policy["trusted_labels"]
     window = runner_policy["temporary_local_window"]
     assert window["status"] == "closed"
     assert window["privileged_publication_enabled"] is False

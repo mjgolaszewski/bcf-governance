@@ -188,7 +188,7 @@
     },
     "schemas/evidence-policy.schema.json": {
       "operation": "copy",
-      "sha256": "8a8edd67921b5ef35e54e67f7d63ca084bc4a38edbacced82cdc119acd279d86"
+      "sha256": "8dd00a6ca9d439b9e6d84fd95f5ff57e7db40ac44e7fac5f745cf98a05600487"
     },
     "schemas/evidence-receipt.schema.json": {
       "operation": "copy",
@@ -340,7 +340,7 @@
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
-      "sha256": "eb2cbd74d3a086bc00a70f6d4bb9faae3a06b3e921477d47261d27d49a276020"
+      "sha256": "6906bafa53c785bf3c045221331c463ac1b51cf4f66df2dff3c5412c09636cd2"
     },
     "scripts/_bcf_runtime/governance_truth_support.py": {
       "operation": "copy",

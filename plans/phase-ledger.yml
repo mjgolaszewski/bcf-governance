@@ -16,15 +16,15 @@ build_plan_mandate:
     - completeness_standard
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P06
-  build_block: "ci-authority-contracts"
-  plan: plans/phase-06-plan.yml
-  workitems: plans/phase-06-workitems.yml
-  log: phases/phase-06-log.yml
+  id: P05
+  build_block: "typescript-soip-and-identity-proof"
+  plan: plans/phase-05-plan.yml
+  workitems: plans/phase-05-workitems.yml
+  log: phases/phase-05-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: active
+  lifecycle_status: completed
   owner: "codex"
   validation_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests]
 hotfix_lane:
@@ -43,7 +43,7 @@ hotfix_lane:
         - security_or_expiring_external_breakage
   open_records: []
   remediation_history:
-    - {id: P02-HF01, mode: full, recorded_at_utc: '2026-08-30T00:00:00Z', action: route unsafe PRs to disposable hosted workers and trusted contributor CI to the local pool with four derived evidence shards, remediated_in_phase: P06, hotfix_log: phases/phase-02-hotfix01.yml, canonical_artifacts: [.github/workflows/, governance/self-governance-policy.yml, tests/test_self_governance_contracts.py, MEMORY.yml], local_validation: [governance-yaml-ok, 248_tests_passed, exact_trust_routing, no_runner_occupying_coordination]}
+    - {id: P02-HF01, mode: full, recorded_at_utc: '2026-08-30T00:00:00Z', action: run all candidate CI on fresh standard hosted VMs and partition evidence into four derived shards, remediated_in_phase: P05, hotfix_log: phases/phase-02-hotfix01.yml, canonical_artifacts: [.github/workflows/, governance/evidence-policy.yml, governance/self-governance-policy.yml, tests/test_self_governance_contracts.py, MEMORY.yml], local_validation: [governance-yaml-ok, 252_tests_passed, 23_causal_mutants_killed, hosted_runner_isolation, no_runner_occupying_coordination]}
     - id: P01-HF01
       mode: full
       recorded_at_utc: '2026-08-30T00:00:00Z'
@@ -67,7 +67,7 @@ operator_requirements_choices_disambiguations:
   - {type: execution_boundary, statement: "unsafe PR code uses fresh GitHub-hosted jobs while owner-authored same-repository and trusted-ref CI may use the local pool; neither route polls, sleeps, idles, or falls back, and publication remains fail-closed until P10"}
 active_delivery_priorities:
   current_tranche:
-    - "ci-authority-contracts"
+    - "typescript-soip-and-identity-proof"
 release_trains:
   release_1:
     target_version: "0.6.1"

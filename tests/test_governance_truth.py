@@ -960,6 +960,74 @@ jobs:
     assert any("workflow_gate_test_unresolved" == issue for issue in report["issues"])
 
 
+def _configure_contract_shards(repo: Path, *, shards: str, shard_count: int) -> None:
+    script = repo / ".github/scripts/capture.py"
+    script.parent.mkdir(parents=True, exist_ok=True)
+    script.write_text("# governed canonical-contract shard runner\n", encoding="utf-8")
+    policy_path = repo / "governance/evidence-policy.yml"
+    policy = yaml.safe_load(policy_path.read_text(encoding="utf-8"))
+    policy["workflow_contract"]["gate_resolvers"] = [
+        {
+            "id": "fixture-shards",
+            "kind": "canonical_contract_shards",
+            "workflow_path": ".github/workflows/governance.yml",
+            "job_id": "evidence",
+            "matrix_key": "shard",
+            "script_path": ".github/scripts/capture.py",
+            "gate_contract_path": "governance/gate-contracts.yml",
+            "profile_path": "governance-profile.yml",
+        }
+    ]
+    _write_yaml(policy_path, policy)
+    (repo / ".github/workflows/governance.yml").write_text(
+        f"""name: governance
+on:
+  pull_request:
+  push:
+jobs:
+  evidence:
+    strategy:
+      matrix:
+        shard: {shards}
+    steps:
+      - run: python .github/scripts/capture.py --shard-index "${{{{ matrix.shard }}}}" --shard-count {shard_count} --output-root .artifacts/bcf
+""",
+        encoding="utf-8",
+    )
+
+
+def test_canonical_contract_shards_resolve_every_required_gate(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+    _configure_contract_shards(repo, shards="[0, 1, 2, 3]", shard_count=4)
+    _commit(repo, "use canonical contract shards")
+
+    report = derive_truth(repo, _write_complete_bundle(repo))
+
+    assert report["effective_state"] == "closed"
+    assert report["checks"]["workflow_execution"] == "pass"
+
+
+@pytest.mark.parametrize(
+    ("shards", "shard_count", "issue"),
+    [
+        ("[0, 2, 3]", 3, "workflow_gate_resolver_fixture-shards_invalid"),
+        ("[0, 1, 2, 3]", 3, "workflow_gate_resolver_fixture-shards_invocation_invalid"),
+        ('"${{ fromJSON(needs.plan.outputs.shards) }}"', 4, "workflow_gate_resolver_fixture-shards_invalid"),
+    ],
+)
+def test_canonical_contract_shards_fail_closed_on_ambiguous_coverage(
+    tmp_path: Path, shards: str, shard_count: int, issue: str
+) -> None:
+    repo = _make_repo(tmp_path)
+    _configure_contract_shards(repo, shards=shards, shard_count=shard_count)
+    _commit(repo, "break canonical contract shards")
+
+    report = derive_truth(repo, _write_complete_bundle(repo))
+
+    assert report["status"] == "fail"
+    assert issue in report["issues"]
+
+
 def test_local_reusable_workflow_is_resolved(tmp_path: Path) -> None:
     repo = _make_repo(tmp_path)
     (repo / ".github/workflows/governance.yml").write_text(

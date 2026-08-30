@@ -52,8 +52,8 @@ environment_facts:
     - all governance, memory, specs, plans, workitem ledgers, and phase logs are YAML-native
     - observability contracts are scaffolded under contracts/observability/v1/
     - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
-    - P06 is active for provider-neutral CI identity, admission, state, and typed N/A contracts after P05 reproduced exact Identity main with 62 representations and 220 required browser traces
-    - unsafe PR code routes to fresh GitHub-hosted jobs; owner-authored same-repository and trusted-ref CI routes to the repository-scoped local pool, with no fallback between them
+    - P05 is completed after reproducing exact Identity main with 62 representations and 220 required browser traces; P06 remains planned until this governed tree merges
+    - every candidate job uses a fresh standard GitHub-hosted VM; the public repository receives free unlimited standard-runner execution and has no self-hosted fallback
     - main is protected by active repository ruleset 21862678 requiring pull requests, current governance-truthfulness, pack-checks, ast-checks, resolved conversations, and no force push or deletion
     - the local implementation host provides Docker but no disposable VM hypervisor or clone manager
     - evidence execution uses the explicitly selected Python and propagates its lexical executable directory and required loader environment into detached positive and negative-control worktrees
@@ -64,20 +64,19 @@ environment_facts:
     build_plan: plans/build-plan.yml
     active_phase_ledger: plans/phase-ledger.yml
     phase_history: plans/phase-history.yml
-    active_phase_plan: plans/phase-06-plan.yml
-    active_workitem_ledger: plans/phase-06-workitems.yml
-    active_phase_log: phases/phase-06-log.yml
+    active_phase_plan: plans/phase-05-plan.yml
+    active_workitem_ledger: plans/phase-05-workitems.yml
+    active_phase_log: phases/phase-05-log.yml
 known_constraints:
   - schema-2 evidence must be recaptured after every governed tree mutation
   - template runtime and packaged template copies must remain byte-identical to canonical sources
   - receipt invocation remains canonical while selected-interpreter identity is recorded as hashed environment metadata
   - release tags are created only at a merge commit whose source and governance CI passed
-  - through 2026-08-31 an owner-only same-repository PR may use the two persistent local VM runners while privileged release publication remains disabled
-  - restore fresh disposable one-job candidate runners before admitting any non-owner code or re-enabling release publication
+  - standard hosted runners are free and unlimited while the repository remains public; larger-runner and artifact-storage costs remain separate
   - the persistent trusted VM may collect provider state and publish but may never check out or execute candidate code
   - P10 owns trusted and disposable runner substrate activation; its isolation acceptance must pass before remote candidate execution or release publication
   - release execution and publication remain disabled until disposable candidate execution and isolated trusted publication are available
-  - GitHub-hosted credits resumed on 2026-08-30; use them only for unsafe run-to-completion PR work while trusted contributor CI may use local runners, with no polling, sleeping, idle waiters, or route fallback
+  - hosted jobs run to completion without polling, sleeping, idle waiters, or route fallback
   - every BCF behavior commit updates and validates BCF's own applicable governance contracts before successor work begins
   - cleanup revalidates exact Docker IDs/run labels before scoped deletion; retention-removable phase artifacts are consumed only through phase-history plus exact Git commit/hash custody, never live fixture paths
 reusable_commands:
@@ -98,8 +97,8 @@ references:
     - plans/product-spec.yml
     - plans/build-plan.yml
   execution:
-    - plans/phase-06-plan.yml
-    - plans/phase-06-workitems.yml
-    - phases/phase-06-log.yml
+    - plans/phase-05-plan.yml
+    - plans/phase-05-workitems.yml
     - phases/phase-05-log.yml
+    - phases/phase-02-hotfix01.yml
     - phases/phase-01-hotfix01.yml

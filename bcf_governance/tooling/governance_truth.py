@@ -118,6 +118,18 @@ def _current_subject(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _safe_contract_file(repo_root: Path, value: str) -> bool:
+    relative = Path(value)
+    if relative.is_absolute() or ".." in relative.parts:
+        return False
+    candidate = repo_root / relative
+    try:
+        candidate.resolve().relative_to(repo_root.resolve())
+    except ValueError:
+        return False
+    return candidate.is_file() and not candidate.is_symlink()
+
+
 def _workflow_gate_issues(repo_root: Path, policy: dict[str, Any], gate_ids: set[str]) -> list[str]:
     contract = policy.get("workflow_contract")
     if not isinstance(contract, dict):
@@ -132,6 +144,8 @@ def _workflow_gate_issues(repo_root: Path, policy: dict[str, Any], gate_ids: set
     queue = [str(value) for value in paths if isinstance(value, str)]
     roots = set(queue)
     visited: set[str] = set()
+    raw_resolvers = contract.get("gate_resolvers", [])
+    resolvers = raw_resolvers if isinstance(raw_resolvers, list) else []
     while queue:
         relative_path = queue.pop(0)
         if relative_path in visited:
@@ -191,6 +205,55 @@ def _workflow_gate_issues(repo_root: Path, policy: dict[str, Any], gate_ids: set
                     runs,
                 )
             )
+            matching_resolvers = [
+                resolver
+                for resolver in resolvers
+                if isinstance(resolver, dict)
+                and resolver.get("workflow_path") == relative_path
+                and resolver.get("job_id") == str(job_id)
+            ]
+            resolver_valid = False
+            for resolver in matching_resolvers:
+                resolver_id = str(resolver.get("id", job_id))
+                matrix_key = resolver.get("matrix_key")
+                script_path = resolver.get("script_path")
+                gate_contract_path = resolver.get("gate_contract_path")
+                profile_path = resolver.get("profile_path")
+                values = matrix.get(matrix_key) if isinstance(matrix, dict) else None
+                if (
+                    resolver.get("kind") != "canonical_contract_shards"
+                    or not isinstance(matrix_key, str)
+                    or not isinstance(script_path, str)
+                    or not isinstance(gate_contract_path, str)
+                    or not isinstance(profile_path, str)
+                    or not isinstance(values, list)
+                    or any(not isinstance(value, int) for value in values)
+                    or values != list(range(len(values)))
+                    or not values
+                    or not _safe_contract_file(repo_root, script_path)
+                    or not _safe_contract_file(repo_root, gate_contract_path)
+                    or not _safe_contract_file(repo_root, profile_path)
+                ):
+                    issues.append(f"workflow_gate_resolver_{resolver_id}_invalid")
+                    continue
+                index_pattern = re.compile(
+                    rf"--shard-index(?:=|\s+)[\"']?\$\{{\{{\s*matrix\.{re.escape(matrix_key)}\s*\}}\}}[\"']?"
+                )
+                count_pattern = re.compile(
+                    rf"--shard-count(?:=|\s+)[\"']?{len(values)}(?:[\"'\s]|$)"
+                )
+                if (
+                    script_path not in runs
+                    or index_pattern.search(runs) is None
+                    or count_pattern.search(runs) is None
+                ):
+                    issues.append(
+                        f"workflow_gate_resolver_{resolver_id}_invocation_invalid"
+                    )
+                    continue
+                resolver_valid = True
+            if resolver_valid:
+                resolved_gates.update(gate_ids)
             if wrapper_present:
                 resolved_gates.update(job_matrix_gates)
                 for gate_id in gate_ids:

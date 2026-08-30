@@ -11,7 +11,7 @@ hotfix:
   mode: full
   related_phase_id: P02
   hotfix_number: 1
-  summary: route unsafe pull requests to disposable hosted workers and trusted contributor CI to the local pool
+  summary: isolate all candidate CI on fresh standard GitHub-hosted workers
 execution_evidence:
   planned_commands:
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
@@ -20,14 +20,15 @@ execution_evidence:
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
   - .venv/bin/python -m pytest tests
   notes:
-  - GitHub-hosted capacity resumed before the prior local-window expiration; fork or non-trusted pull requests now use one fresh provider-managed ubuntu-latest VM per job
-  - owner-authored same-repository PRs, protected main, schedules, and tags use the repository-scoped bcf-governance local pool
-  - the routing expression is mechanically tested so unsafe code cannot select a persistent local runner and hosted capacity is not a fallback for trusted work
-  - trusted jobs require the complete self-hosted Linux X64 bcf-governance vm-linux-ci-runner label set; the rejected broad-label run proved unrelated repository runners cannot satisfy the route
+  - live repository metadata confirms bcf-governance is public, so standard GitHub-hosted execution is free and unlimited while larger runners and storage remain separate
+  - pull requests, protected main, schedules, tests, mutants, and artifact builds each use a fresh provider-managed ubuntu-latest VM with no self-hosted fallback
+  - the persistent local pool is reserved for the disabled trusted publisher and never executes candidate code
   - no workflow run command polls, sleeps, waits, or loops for another workflow or runner
   - evidence gates are derived from canonical contracts and partitioned exactly once across four run-to-completion shards rather than allocating 21 setup-heavy jobs
   - release execution remains disabled until P11 and trusted publication remains disabled until P10 isolation proof
-  - local validation passed governance-yaml-ok and the complete 248-test suite
+  - the implementation-mutant runtime now copies the canonical package boundary, preventing P04 imports from turning causal mutants into pytest infrastructure exits
+  - truth recognizes statically complete canonical-contract shards without accepting dynamic or incomplete shard coverage
+  - local closeout passed all 252 tests and killed all 23 high-value and semantic causal mutants for their declared causes
 closeout_requirements:
   claims:
     required_suites_green:

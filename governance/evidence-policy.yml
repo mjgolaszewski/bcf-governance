@@ -77,6 +77,8 @@ workflow_contract:
   required_events:
   - pull_request
   - push
+  gate_resolvers:
+  - {id: governance-evidence-shards, kind: canonical_contract_shards, workflow_path: .github/workflows/governance.yml, job_id: evidence, matrix_key: shard, script_path: .github/scripts/capture_governance_shard.py, gate_contract_path: governance/gate-contracts.yml, profile_path: governance-profile.yml}
 gate_overrides:
   architecture-context-membership:
     evidence_kind: test_suite

@@ -4,13 +4,13 @@ document:
   id: bcf-governance-phase-06-workitems
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: active
+  status: planned
   path: plans/phase-06-workitems.yml
   phase_id: P06
 workitems:
 - id: P06-P0-01
   priority: P0
-  status: IN_PROGRESS
+  status: TODO
   summary: deliver CI authority schemas and pure ordered state machine
   acceptance:
   - CI authority schemas and pure ordered state machine_is_complete
