@@ -52,7 +52,25 @@
       "required": ["paths", "required_events"],
       "properties": {
         "paths": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
-        "required_events": {"type": "array", "minItems": 1, "items": {"enum": ["pull_request", "push", "workflow_dispatch", "schedule"]}}
+        "required_events": {"type": "array", "minItems": 1, "items": {"enum": ["pull_request", "push", "workflow_dispatch", "schedule"]}},
+        "gate_resolvers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "kind", "workflow_path", "job_id", "matrix_key", "script_path", "gate_contract_path", "profile_path"],
+            "properties": {
+              "id": {"type": "string", "pattern": "^[A-Za-z0-9._-]+$"},
+              "kind": {"const": "canonical_contract_shards"},
+              "workflow_path": {"type": "string", "minLength": 1},
+              "job_id": {"type": "string", "minLength": 1},
+              "matrix_key": {"type": "string", "pattern": "^[A-Za-z0-9_-]+$"},
+              "script_path": {"type": "string", "minLength": 1},
+              "gate_contract_path": {"type": "string", "minLength": 1},
+              "profile_path": {"type": "string", "minLength": 1}
+            }
+          }
+        }
       }
     },
     "gate_overrides": {

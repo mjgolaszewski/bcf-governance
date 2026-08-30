@@ -16,6 +16,7 @@ from jsonschema import Draft202012Validator
 
 from .evidence_test_adapters import recompute_test_artifact_observations
 from .governance_truth_support import artifact_issues
+from .truth_sessions import apply_session_validation
 
 
 RECEIPT_SUFFIX = ".evidence.json"
@@ -380,6 +381,9 @@ def load_receipts(
     tree_independent_allowlist: set[str],
     expected_kinds: dict[str, str],
     invocations: dict[str, dict[str, Any]],
+    require_session: bool = False,
+    selected_profile: str = "standard",
+    contract_version: str = "1.0",
 ) -> dict[str, list[dict[str, Any]]]:
     by_gate: dict[str, list[dict[str, Any]]] = {}
     schema_path = repo_root / "schemas/evidence-receipt.schema.json"
@@ -406,4 +410,13 @@ def load_receipts(
         )
         gate_id = str(result.get("gate_id") or "")
         by_gate.setdefault(gate_id, []).append(result)
+    if require_session:
+        apply_session_validation(
+            repo_root,
+            (result for values in by_gate.values() for result in values),
+            current=current,
+            selected_profile=selected_profile,
+            contract_version=contract_version,
+            expected_gates=set(expected_kinds),
+        )
     return by_gate

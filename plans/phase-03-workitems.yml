@@ -1,0 +1,20 @@
+document:
+  kind: execution_phase_workitem_ledger
+  name: Phase 03 Workitems
+  id: bcf-governance-phase-03-workitems
+  version: 1.0.0
+  generated_at_utc: '2026-08-30T00:00:00Z'
+  status: completed
+  path: plans/phase-03-workitems.yml
+  phase_id: P03
+workitems:
+- id: P03-P0-01
+  priority: P0
+  status: DONE
+  summary: deliver preflight, interpreter, session, fan-in, retention, and cleanup
+    contracts
+  acceptance:
+  - preflight, interpreter, session, fan-in, retention, and cleanup contracts_is_complete
+  acceptance_evidence:
+  - test
+  - contract-test

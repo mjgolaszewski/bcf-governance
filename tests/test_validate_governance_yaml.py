@@ -14,6 +14,8 @@ from typing import Any
 import pytest
 import yaml
 
+from bcf_governance.tooling import preflight
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 FIXTURES_ROOT = REPO_ROOT / "tests" / "fixtures"
@@ -882,9 +884,12 @@ def test_validate_repo_root_git_history_mode_accepts_commit_backed_history(
     tmp_path: Path,
 ) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    hotfix_path = repo_root / "phases/phase-01-hotfix01.yml"
+    hotfix_path.write_text("legacy hotfix fixture retained by Git\n", encoding="utf-8")
     commit = _init_git_repo(repo_root)
     _advance_catalog_to_p02(repo_root, add_history_entry=True)
     _set_manifest_retention_mode(repo_root, "git_history")
+    hotfix_path.unlink()
     history_path = repo_root / "plans/phase-history.yml"
     history = yaml.safe_load(history_path.read_text(encoding="utf-8"))
     artifacts = []
@@ -892,6 +897,7 @@ def test_validate_repo_root_git_history_mode_accepts_commit_backed_history(
         "plans/phase-01-plan.yml",
         "plans/phase-01-workitems.yml",
         "phases/phase-01-log.yml",
+        "phases/phase-01-hotfix01.yml",
     ):
         artifacts.append(
             {
@@ -908,7 +914,21 @@ def test_validate_repo_root_git_history_mode_accepts_commit_backed_history(
     (repo_root / "governance/archive/phase-artifacts").mkdir(parents=True)
     (repo_root / "governance/archive/phase-artifacts/.gitkeep").touch()
 
+    subprocess.run(["git", "add", "-A"], cwd=repo_root, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "retain phase one in git history"],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
     validate_repo_root(repo_root)
+    report = preflight.run_preflight(
+        repo_root, mode="release", python_executable=sys.executable
+    )
+    assert report["status"] == "pass"
+    assert all(not (repo_root / item["path"]).exists() for item in artifacts)
 
 
 def test_validate_repo_root_rejects_archived_phase_missing_history(

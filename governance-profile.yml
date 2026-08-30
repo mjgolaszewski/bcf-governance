@@ -177,11 +177,16 @@ release_gate_profile:
       status: required
       command_policy: runtime_smoke
       rationale: runtime behavior is proven in a declared environment
+    semantic_ownership: {target: semantic-ownership, status: required, command_policy: semantic_ownership, rationale: declared canonical representations have one mechanically enforced owner}
 ci_profile:
   push_lanes_required: true
   self_hosted_runner_preferred_when_available: true
   runner_labels:
-  - ubuntu-latest
+  - self-hosted
+  - Linux
+  - X64
+  - bcf-governance
+  - vm-linux-ci-runner
   required_push_jobs:
   - architecture-context-membership
   - architecture-cqrs-side

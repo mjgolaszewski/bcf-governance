@@ -15,9 +15,12 @@ from bcf_governance.tooling import (
     governance_truth,
     install_governance_pack,
     migrate_governance_evidence,
+    preflight,
     profile_governance,
     publish_audit,
     scaffold_governance_artifacts,
+    semantic_ownership_scan,
+    test_manifests,
     validate_governance_yaml,
 )
 
@@ -30,9 +33,12 @@ COMMANDS = {
     "truth": governance_truth.main,
     "migrate-evidence": migrate_governance_evidence.main,
     "profile": profile_governance.main,
+    "preflight": preflight.main,
     "publish-audit": publish_audit.main,
     "validate": validate_governance_yaml.main,
     "scaffold": scaffold_governance_artifacts.main,
+    "semantic-ownership": semantic_ownership_scan.main,
+    "test-manifest": test_manifests.main,
     "doctor": doctor_governance_pack.main,
 }
 

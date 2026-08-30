@@ -1,0 +1,19 @@
+document:
+  kind: execution_phase_workitem_ledger
+  name: Phase 09 Workitems
+  id: bcf-governance-phase-09-workitems
+  version: 1.0.0
+  generated_at_utc: '2026-08-30T00:00:00Z'
+  status: planned
+  path: plans/phase-09-workitems.yml
+  phase_id: P09
+workitems:
+- id: P09-P0-01
+  priority: P0
+  status: TODO
+  summary: deliver profile v2 promotion and complete public packaging integration
+  acceptance:
+  - profile v2 promotion and complete public packaging integration_is_complete
+  acceptance_evidence:
+  - test
+  - contract-test

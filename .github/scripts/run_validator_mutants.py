@@ -11,11 +11,6 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-VALIDATOR_PATH = REPO_ROOT / "bcf_governance/tooling/validate_governance_yaml.py"
-VALIDATION_PACKAGE_PATH = REPO_ROOT / "bcf_governance/tooling/governance_validation"
-TRUTH_PATH = REPO_ROOT / "bcf_governance/tooling/governance_truth.py"
-TRUTH_SUPPORT_PATH = REPO_ROOT / "bcf_governance/tooling/governance_truth_support.py"
-TRUTH_RECEIPTS_PATH = REPO_ROOT / "bcf_governance/tooling/truth_receipts.py"
 PYTEST = (sys.executable, "-m", "pytest")
 TRUTH_TARGETS = {
     "scripts/governance_truth.py",
@@ -299,72 +294,36 @@ def _selected_mutants(profile: str) -> tuple[Mutant, ...]:
     return tuple(mutant for mutant in (*MUTANTS, *TRUTH_MUTANTS) if profile in mutant.profiles)
 
 
-def _copy_validator_sources(temp_dir: Path) -> Path:
+def _copy_runtime_package(temp_dir: Path) -> None:
+    package_root = temp_dir / "mutant_runtime"
+    package_root.mkdir()
+    (package_root / "__init__.py").write_text("\n", encoding="utf-8")
+    shutil.copytree(REPO_ROOT / "bcf_governance/tooling", package_root / "tooling")
+
+
+def _runtime_entrypoint(temp_dir: Path, module_name: str) -> Path:
     temp_scripts = temp_dir / "scripts"
-    temp_scripts.mkdir()
-    shutil.copy2(VALIDATOR_PATH, temp_scripts / VALIDATOR_PATH.name)
-    shutil.copytree(
-        VALIDATION_PACKAGE_PATH,
-        temp_scripts / VALIDATION_PACKAGE_PATH.name,
-        ignore=shutil.ignore_patterns("__pycache__"),
-    )
-    entrypoint = temp_scripts / VALIDATOR_PATH.name
+    temp_scripts.mkdir(exist_ok=True)
+    entrypoint = temp_scripts / f"{module_name}.py"
     entrypoint.write_text(
-        entrypoint.read_text(encoding="utf-8").replace("from .governance_validation", "from governance_validation"),
+        "from pathlib import Path\n"
+        "import sys\n"
+        "sys.path.insert(0, str(Path(__file__).resolve().parents[1]))\n"
+        f"from mutant_runtime.tooling.{module_name} import *\n",
         encoding="utf-8",
     )
     return entrypoint
 
 
+def _copy_validator_sources(temp_dir: Path) -> Path:
+    _copy_runtime_package(temp_dir)
+    return _runtime_entrypoint(temp_dir, "validate_governance_yaml")
+
+
 def _copy_truth_sources(temp_dir: Path) -> Path:
-    temp_scripts = temp_dir / "scripts"
-    temp_scripts.mkdir()
-    shutil.copy2(TRUTH_PATH, temp_scripts / TRUTH_PATH.name)
-    shutil.copy2(REPO_ROOT / "bcf_governance/tooling/governance_evidence.py", temp_scripts / "governance_evidence.py")
-    shutil.copy2(TRUTH_SUPPORT_PATH, temp_scripts / TRUTH_SUPPORT_PATH.name)
-    shutil.copy2(TRUTH_RECEIPTS_PATH, temp_scripts / TRUTH_RECEIPTS_PATH.name)
-    for name in (
-        "evidence_attestation.py",
-        "evidence_execution.py",
-        "evidence_test_adapters.py",
-    ):
-        shutil.copy2(REPO_ROOT / "bcf_governance/tooling" / name, temp_scripts / name)
-    (temp_scripts / "__init__.py").write_text("\n", encoding="utf-8")
-    for path in (
-        temp_scripts / TRUTH_PATH.name,
-        temp_scripts / TRUTH_SUPPORT_PATH.name,
-        temp_scripts / TRUTH_RECEIPTS_PATH.name,
-        temp_scripts / "governance_evidence.py",
-    ):
-        path.write_text(
-            path.read_text(encoding="utf-8")
-            .replace("from .governance_evidence", "from governance_evidence")
-            .replace("from .governance_truth_support", "from governance_truth_support"),
-            encoding="utf-8",
-        )
-    evidence = temp_scripts / "governance_evidence.py"
-    evidence.write_text(
-        evidence.read_text(encoding="utf-8")
-        .replace("from .evidence_attestation", "from evidence_attestation")
-        .replace("from .evidence_execution", "from evidence_execution")
-        .replace("from .evidence_test_adapters", "from evidence_test_adapters"),
-        encoding="utf-8",
-    )
-    receipts = temp_scripts / TRUTH_RECEIPTS_PATH.name
-    receipts.write_text(
-        receipts.read_text(encoding="utf-8")
-        .replace("from .evidence_test_adapters", "from evidence_test_adapters")
-        .replace("from .governance_truth_support", "from governance_truth_support"),
-        encoding="utf-8",
-    )
-    truth = temp_scripts / TRUTH_PATH.name
-    truth.write_text(
-        truth.read_text(encoding="utf-8").replace(
-            "from .truth_receipts", "from truth_receipts"
-        ),
-        encoding="utf-8",
-    )
-    return temp_scripts / TRUTH_PATH.name
+    _copy_runtime_package(temp_dir)
+    _runtime_entrypoint(temp_dir, "governance_evidence")
+    return _runtime_entrypoint(temp_dir, "governance_truth")
 
 
 def _target_path(mutant: Mutant, temp_dir: Path) -> Path:
@@ -373,7 +332,12 @@ def _target_path(mutant: Mutant, temp_dir: Path) -> Path:
         raise RuntimeError(
             f"mutant {mutant.mutant_id} has unsafe target path {mutant.target_path!r}"
         )
-    target_path = temp_dir / relative_path
+    packaged_target = temp_dir / "mutant_runtime/tooling" / Path(*relative_path.parts[1:])
+    target_path = (
+        packaged_target
+        if relative_path.parts[0] == "scripts" and packaged_target.exists()
+        else temp_dir / relative_path
+    )
     if not target_path.exists():
         raise RuntimeError(
             f"mutant {mutant.mutant_id} target does not exist: {mutant.target_path}"

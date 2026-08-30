@@ -1,0 +1,40 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 06 Plan
+  id: bcf-governance-phase-06-plan
+  version: 1.0.0
+  generated_at_utc: '2026-08-30T00:00:00Z'
+  status: planned
+  path: plans/phase-06-plan.yml
+phase:
+  id: P06
+  build_block: ci-authority-contracts
+  planner: codex
+  date: '2026-08-30'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - CI authority schemas and pure ordered state machine
+  parallelizable_workstreams:
+  - id: P06-WS1
+    name: CI schemas and state transition tests
+  hard_dependencies:
+  - P05
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: keep the phase narrowly scoped to declared deliverables and update canonical
+    governed artifacts in the same change
+- order: 2
+  statement: keep provider-neutral state transitions pure and authenticate provider observations only in adapters
+- order: 3
+  statement: hosted candidate jobs are disposable run-to-completion workers; no coordination job may poll, sleep, or idle while another job runs
+verification_plan:
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest tests

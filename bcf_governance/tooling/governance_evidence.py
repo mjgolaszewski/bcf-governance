@@ -28,6 +28,7 @@ from .evidence_execution import (
     _runtime_command,
     _selected_python,
 )
+from .evidence_sessions import allocate_session, bind_session
 from .evidence_test_adapters import (
     recompute_test_artifact_observations,
     test_observations as _test_observations,
@@ -564,12 +565,22 @@ def capture_gate(
     output_dir: Path,
     *,
     python_executable: str | Path | None = None,
+    session_manifest: Path | None = None,
 ) -> Path:
     repo_root = repo_root.resolve()
     caller_state = _capture_preflight(repo_root, output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     contract = _gate_contract(repo_root, gate_id)
     target = str(contract["target"])
+    profile_payload = _load_yaml(repo_root / "governance-profile.yml")
+    contract_version = str(profile_payload.get("profile_contract_version", "1.0"))
+    session, session_artifact = bind_session(
+        repo_root,
+        target,
+        output_dir,
+        session_manifest,
+        required=contract_version == "2.0",
+    )
     command = _command(contract)
     selected_python = _selected_python(python_executable)
     runtime_command = _runtime_command(command, selected_python)
@@ -587,11 +598,18 @@ def capture_gate(
                 runtime_command, cwd=_execution_cwd(worktree, contract), env=env
             )
             artifacts = _write_output_artifacts(output_dir, target, result)
+            if session_artifact is not None:
+                artifacts.append(session_artifact)
             observations: dict[str, Any] = {
                 "exit_code": result.returncode,
                 "execution_environment": environment_metadata,
                 "environment_assertions": _environment_observations(contract, env),
             }
+            if session is not None:
+                observations["evidence_session"] = {
+                    "session_id": session.payload["session_id"],
+                    "manifest_sha256": session.digest,
+                }
             output_observations, output_artifacts = _required_output_observations(
                 worktree, contract, output_dir
             )
@@ -705,6 +723,11 @@ def main(argv: list[str] | None = None) -> None:
     run_parser.add_argument("--gate", required=True)
     run_parser.add_argument("--output", type=Path, required=True)
     run_parser.add_argument("--python", type=Path)
+    run_parser.add_argument("--session-manifest", type=Path)
+    session_parser = subparsers.add_parser("session")
+    session_parser.add_argument("--artifact-root", type=Path, required=True)
+    session_parser.add_argument("--expected-gate", action="append", default=[])
+    session_parser.add_argument("--expected-producer", action="append", default=[])
     attest_parser = subparsers.add_parser("attest")
     attest_parser.add_argument("--bundle-dir", type=Path, required=True)
     attest_parser.add_argument("--private-key", type=Path, required=True)
@@ -722,7 +745,19 @@ def main(argv: list[str] | None = None) -> None:
                 args.gate,
                 args.output,
                 python_executable=args.python,
+                session_manifest=args.session_manifest,
             )
+        elif args.operation == "session":
+            expected_gates = args.expected_gate or sorted(
+                expected_evidence_kinds(args.repo_root.resolve())
+            )
+            session = allocate_session(
+                args.repo_root.resolve(),
+                args.artifact_root,
+                expected_gates,
+                expected_producers=args.expected_producer or None,
+            )
+            path = session.manifest_path
         else:
             path = attest_bundle(
                 args.repo_root.resolve(),

@@ -6,18 +6,72 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Added
+
+- Opened the BCF 0.7.0 release train for generalized SOIP, exact-commit CI
+  authority, disposable candidate execution, Standard-v2 self-adoption, and
+  certified immutable release artifacts.
+- Added private, immutable evidence-session allocation and optional schema-2
+  receipt binding, with exact commit, tree, profile, producer, run, attempt, and
+  closed gate inventory material.
+- Added independent profile-v2 truth recomputation for session manifests,
+  inventory, producer, run, attempt, and per-receipt artifact bindings.
+- Added a canonical cheap `bcf preflight` and contract-owned exact pytest
+  manifests, replacing the self-gate runner's secondary test-node map.
+- Hardened Docker cleanup with immediate exact-ID/owner revalidation, safe
+  identity parsing, and anonymous-volume removal without global pruning.
+- Bound governance artifact fan-in to the exact Actions run attempt, separated
+  lane and terminal namespaces, and ordered evidence after canonical preflight.
+- Proved canonical preflight remains valid after every retention-removable phase
+  and hotfix artifact moves into exact Git commit and hash custody.
+- Added a generalized, MIT-licensed Python semantic-ownership engine with
+  source-first tracked inventory, one canonical registry, typed causal controls,
+  declared-family enforcement, and repository-wide completeness mode.
+- Added an optional, consumer-owned TypeScript Compiler API adapter and
+  Python/TypeScript endpoint tracing that require the declared Node executable,
+  tsconfig, package lock, and already-installed exact compiler version without
+  network or Docker fallback.
+- Added a compact exact-consumer reference proof and reproducible benchmark
+  harness; the current Identity main proves 62 representations and 220 required
+  browser traces with no unresolved or uncovered flow.
+
+### Changed
+
+- Sequenced local 0.7 implementation independently from remote runner
+  activation: each behavior commit now dogfoods its applicable governance, while
+  P10 owns disposable-candidate and isolated-publisher proof before any remote
+  candidate execution or release publication is enabled.
+- Made BCF consume the same semantic-ownership schema, runtime, registry, CLI,
+  gate contract, and evidence control that it packages for adopters.
+
 ### Fixed
 
-- Made the selected Python interpreter authoritative in detached evidence and
-  mutation sessions, including the loader environment required by toolcache
-  Python installations.
+- Made the explicitly selected Python interpreter authoritative in positive and
+  detached negative-control evidence sessions, including the loader environment
+  required by toolcache Python installations, without changing canonical gate
+  argv or schema-2 receipt compatibility.
 
 ### Security
 
-- Temporarily routed every workflow to the owner-controlled local runner pool,
-  admitted only owner-authored same-repository pull requests before allocation,
-  disabled release publication, and stopped checkout credentials from
-  persisting while hosted runner credits are unavailable.
+- Defined a hard separation between one-job disposable candidate workers and a
+  persistent trusted control plane that never checks out or executes candidate
+  code.
+- Added a time-bounded owner-only local-runner fallback for exhausted hosted
+  credits, with fork PR admission rejected before allocation and privileged
+  release publication disabled while the pool is shared.
+- Protected `main` with pull-request-only updates, current governance checks,
+  resolved conversations, and force-push/deletion prevention.
+- Stopped checkout credentials from persisting on the temporary local workers
+  and disabled both release execution and publication until the disposable
+  candidate and isolated trusted substrates are available.
+- Moved every candidate CI job to a fresh standard GitHub-hosted VM now that the
+  repository is public; persistent local runners are excluded from candidate
+  execution and trusted publication remains disabled.
+- Reduced governance evidence setup from 21 jobs to four mechanically derived
+  shards while preserving exactly-once gate coverage and independent receipts.
+- Made truth resolve those canonical-contract shards mechanically, and repaired
+  mutation isolation so package-relative validator imports cannot be mistaken
+  for successful causal mutant failures.
 
 ## [0.6.1] - 2026-08-14
 

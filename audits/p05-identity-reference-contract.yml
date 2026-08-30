@@ -1,0 +1,27 @@
+document:
+  kind: semantic_reference_contract
+  id: chrysalis-identity-p05-reference
+  version: 1.0.0
+subject:
+  repository: mjgolaszewski/chrysalis-identity
+  commit_sha: 0569e6dd81b311abf33af5626a32441b0d55cc64
+  tree_sha: 96306a5dbba3327adb948aa183d39dce1129c6e4
+  expected_representations: 62
+typescript_engine:
+  node_executable: node
+  tsconfig: tsconfig.browser.json
+  package_lock: package-lock.json
+  source_roots: [backend/src/chrysalis_identity/static_ts]
+  browser_contract_roots: [backend/src/chrysalis_identity]
+benchmark:
+  runner_architecture: x86_64-linux
+  python: 3.14.5
+  node: 24
+  warmups: 1
+  measured_runs: 10
+  median_ceiling_seconds: 30
+  p95_ceiling_seconds: 36
+  compact_report_ceiling_bytes: 1048576
+scope:
+  packaged_default: false
+  rationale: exact consumer proof only; Identity paths and semantic IDs are not BCF defaults

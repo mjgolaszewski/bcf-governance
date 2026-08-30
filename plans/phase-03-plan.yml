@@ -1,0 +1,40 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 03 Plan
+  id: bcf-governance-phase-03-plan
+  version: 1.0.0
+  generated_at_utc: '2026-08-30T00:00:00Z'
+  status: completed
+  path: plans/phase-03-plan.yml
+phase:
+  id: P03
+  build_block: preflight-interpreter-sessions-cleanup
+  planner: codex
+  date: '2026-08-30'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - preflight, interpreter, session, fan-in, retention, and cleanup contracts
+  parallelizable_workstreams:
+  - id: P03-WS1
+    name: preflight and session contracts
+  hard_dependencies:
+  - P02
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: keep the phase narrowly scoped to declared deliverables and update canonical
+    governed artifacts in the same change
+- order: 2
+  statement: validate each behavior commit with the governance model it introduces before beginning the next slice
+- order: 3
+  statement: use local execution only through 2026-08-31 and do not enable remote candidate execution or release publication
+verification_plan:
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest tests

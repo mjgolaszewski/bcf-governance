@@ -1,0 +1,77 @@
+document: {kind: canonical_representation_registry, id: bcf-governance-canonical-representations, version: 1.0.0, status: active, path: governance/canonical-representations.yml}
+enforcement:
+  phase: P04
+  default_mode: declared_families_blocking
+  declared_families: [docker_resource_ownership, evidence_session_identity, exposure_report]
+  blocking_semantic_ids: [governance.docker-resource.v1, governance.evidence-session.v1, governance.exposure-report.v1]
+  report_path: .artifacts/semantic-ownership/report.json # non-authoritative until captured in evidence
+  unresolved_dynamic_policy: report
+source_authority:
+  discovery_precedes_registry_load: true
+  python_engine: bcf_governance/tooling/semantic_ownership_inventory.py
+  typescript_engine: not_applicable_until_declared_by_consumer
+  cross_language_trace: not_applicable_until_declared_by_consumer
+  completeness_authority: independent_exact_tree_source_inventory
+  authoritative_python_roots: [bcf_governance/tooling]
+  generated_mirror_roots: [bcf_governance/pack/template-repo]
+representations:
+- semantic_id: governance.evidence-session.v1
+  family: evidence_session_identity
+  schema_version: 1
+  lifecycle: enforced
+  finding_ids: []
+  canonical_type: {language: python, symbol: bcf_governance/tooling/evidence_sessions.py::EvidenceSession}
+  authoritative_owner: {symbol: bcf_governance/tooling/evidence_sessions.py::allocate_session, owner_kind: constructor}
+  authorized_constructors_and_factories: [bcf_governance/tooling/evidence_sessions.py::allocate_session, bcf_governance/tooling/evidence_sessions.py::load_session]
+  authorized_pure_delegates: []
+  hostile_boundary_decoder: {symbol: bcf_governance/tooling/evidence_sessions.py::load_session, trust_boundary: downloaded or caller-supplied session manifest bytes}
+  field_invariants: [{field: session_id, invariant: at least 128 bits and identical to the private session directory name}, {field: manifest, invariant: immutable bytes bind exact subject profile producer run attempt and closed inventories}]
+  permitted_defaults_and_single_application_point: []
+  accepted_aliases_and_single_ingress_boundary: []
+  persistence_codec_and_envelope: {applicability: not_applicable, codec_symbol: bcf_governance/tooling/evidence_sessions.py::load_session, semantic_id: governance.evidence-session.v1, schema_version: 1, exact_byte_format: canonical sorted JSON, integrity_algorithm: SHA-256, identity_bindings: [commit_sha, tree_sha, session_id, run_id, run_attempt], migration_dispatch: schema_version}
+  protocol_translations: []
+  intentional_projections: []
+  declared_consumer_layers_and_sinks: {read: [bcf_governance/tooling/truth_sessions.py::verify_evidence_sessions], authorization: [], persistence: [bcf_governance/tooling/evidence_sessions.py::bind_session], cache: [], queue: [], network: [], api: [], browser: []}
+  generated_source_authority: {authoritative_roots: [bcf_governance/tooling/evidence_sessions.py], generated_mirrors: [template-repo/scripts/_bcf_runtime/evidence_sessions.py, bcf_governance/pack/template-repo/scripts/_bcf_runtime/evidence_sessions.py], generator: .github/scripts/build_pack_manifest.py::main, parity_proof: tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact}
+  migration_policy: {source_versions: [], destination_version: 1, owner: bcf_governance/tooling/evidence_sessions.py::load_session, runtime_exclusion: schema version dispatch only, removal_condition: superseded by a reviewed evidence-session schema}
+  narrow_suppressions: []
+- semantic_id: governance.docker-resource.v1
+  family: docker_resource_ownership
+  schema_version: 1
+  lifecycle: enforced
+  finding_ids: []
+  canonical_type: {language: python, symbol: bcf_governance/tooling/cleanup_ci_resources.py::DockerResource}
+  authoritative_owner: {symbol: bcf_governance/tooling/cleanup_ci_resources.py::discover_resources, owner_kind: constructor}
+  authorized_constructors_and_factories: [bcf_governance/tooling/cleanup_ci_resources.py::discover_resources]
+  authorized_pure_delegates: []
+  hostile_boundary_decoder: {symbol: bcf_governance/tooling/cleanup_ci_resources.py::discover_resources, trust_boundary: Docker daemon resource identity and label output}
+  field_invariants: [{field: owner_run_id, invariant: exact validated io.bcf-governance.ci-run label value}, {field: object_id, invariant: safe exact Docker identity without globs paths or whitespace}]
+  permitted_defaults_and_single_application_point: []
+  accepted_aliases_and_single_ingress_boundary: []
+  persistence_codec_and_envelope: {applicability: not_applicable, codec_symbol: bcf_governance/tooling/cleanup_ci_resources.py::discover_resources, semantic_id: governance.docker-resource.v1, schema_version: 1, exact_byte_format: in-memory frozen dataclass, integrity_algorithm: immediate daemon reinspection, identity_bindings: [kind, object_id, owner_run_id], migration_dispatch: no persisted versions}
+  protocol_translations: []
+  intentional_projections: []
+  declared_consumer_layers_and_sinks: {read: [bcf_governance/tooling/cleanup_ci_resources.py::remove_resources], authorization: [bcf_governance/tooling/cleanup_ci_resources.py::_revalidate_ownership], persistence: [], cache: [], queue: [], network: [], api: [], browser: []}
+  generated_source_authority: {authoritative_roots: [bcf_governance/tooling/cleanup_ci_resources.py], generated_mirrors: [template-repo/scripts/_bcf_runtime/cleanup_ci_resources.py, bcf_governance/pack/template-repo/scripts/_bcf_runtime/cleanup_ci_resources.py], generator: .github/scripts/build_pack_manifest.py::main, parity_proof: tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact}
+  migration_policy: {source_versions: [], destination_version: 1, owner: bcf_governance/tooling/cleanup_ci_resources.py::discover_resources, runtime_exclusion: ephemeral resource identity only, removal_condition: Docker cleanup ownership contract is retired}
+  narrow_suppressions: []
+- semantic_id: governance.exposure-report.v1
+  family: exposure_report
+  schema_version: 1
+  lifecycle: enforced
+  finding_ids: []
+  canonical_type: {language: python, symbol: bcf_governance/tooling/check_governance_exposure.py::ExposureReport}
+  authoritative_owner: {symbol: bcf_governance/tooling/check_governance_exposure.py::scan_exposures, owner_kind: analyzer}
+  authorized_constructors_and_factories: [bcf_governance/tooling/check_governance_exposure.py::scan_exposures]
+  authorized_pure_delegates: []
+  hostile_boundary_decoder: {symbol: bcf_governance/tooling/check_governance_exposure.py::scan_exposures, trust_boundary: exact tracked repository text population}
+  field_invariants: [{field: status, invariant: pass only when the exact governed scan contains no exposure finding}, {field: findings, invariant: typed path line pattern and redacted match observations}]
+  permitted_defaults_and_single_application_point: []
+  accepted_aliases_and_single_ingress_boundary: []
+  persistence_codec_and_envelope: {applicability: not_applicable, codec_symbol: bcf_governance/tooling/check_governance_exposure.py::_report_to_dict, semantic_id: governance.exposure-report.v1, schema_version: 1, exact_byte_format: sorted JSON or deterministic text, integrity_algorithm: exact source scan, identity_bindings: [repo_root, scanned_files], migration_dispatch: report schema version}
+  protocol_translations: []
+  intentional_projections: []
+  declared_consumer_layers_and_sinks: {read: [bcf_governance/tooling/check_governance_exposure.py::_emit_json, bcf_governance/tooling/check_governance_exposure.py::_emit_text], authorization: [], persistence: [bcf_governance/tooling/check_governance_exposure.py::_emit_json], cache: [], queue: [], network: [], api: [], browser: []}
+  generated_source_authority: {authoritative_roots: [bcf_governance/tooling/check_governance_exposure.py], generated_mirrors: [template-repo/scripts/_bcf_runtime/check_governance_exposure.py, bcf_governance/pack/template-repo/scripts/_bcf_runtime/check_governance_exposure.py], generator: .github/scripts/build_pack_manifest.py::main, parity_proof: tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact}
+  migration_policy: {source_versions: [], destination_version: 1, owner: bcf_governance/tooling/check_governance_exposure.py::scan_exposures, runtime_exclusion: local report only, removal_condition: exposure scanning is replaced by a reviewed typed report}
+  narrow_suppressions: []

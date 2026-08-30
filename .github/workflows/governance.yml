@@ -13,52 +13,44 @@ env:
   BCF_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
 
 jobs:
-  evidence:
-    if: github.event_name != 'pull_request' || (github.actor == 'mjgolaszewski' && github.event.pull_request.head.repo.full_name == github.repository)
-    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
-    strategy:
-      fail-fast: false
-      matrix:
-        gate:
-          - architecture-context-membership
-          - architecture-cqrs-side
-          - architecture-duplication
-          - architecture-import-boundaries
-          - architecture-layer-membership
-          - architecture-module-size
-          - architecture-router-thinness
-          - architecture-test
-          - contract-test
-          - governance-exposure-scan
-          - governance-validate
-          - lint
-          - runtime-smoke
-          - security-dependency-audit
-          - security-review
-          - security-sbom
-          - security-secret-scan
-          - security-vulnerability-scan
-          - test
-          - typecheck
+  preflight:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - run: python3 -m pip install -r requirements-governance.txt
-      - name: Capture ${{ matrix.gate }} evidence
-        run: python3 scripts/governance_evidence.py --repo-root . run --gate "${{ matrix.gate }}" --output ".artifacts/bcf/${{ matrix.gate }}"
+      - name: Run canonical cheap preflight
+        run: python3 -m bcf_governance.cli preflight --mode "${{ github.event_name == 'pull_request' && 'pr' || 'release' }}" --python "$(command -v python3)"
+
+  evidence:
+    needs: [preflight]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: python3 -m pip install -r requirements-governance.txt
+      - name: Capture mechanically derived evidence shard
+        run: python3 .github/scripts/capture_governance_shard.py --shard-index "${{ matrix.shard }}" --shard-count 4 --output-root .artifacts/bcf
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: bcf-evidence-${{ matrix.gate }}
-          path: .artifacts/bcf/${{ matrix.gate }}
+          name: "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-shard-${{ matrix.shard }}"
+          path: .artifacts/bcf
           if-no-files-found: error
 
   governance-truthfulness:
-    if: always() && (github.event_name != 'pull_request' || (github.actor == 'mjgolaszewski' && github.event.pull_request.head.repo.full_name == github.repository))
+    if: always()
     needs: [evidence]
-    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}
@@ -66,8 +58,14 @@ jobs:
         with: {python-version: "3.12"}
       - run: python3 -m pip install -r requirements-governance.txt
       - uses: actions/download-artifact@v4
-        with: {pattern: bcf-evidence-*, path: .artifacts/bcf, merge-multiple: true}
+        with:
+          pattern: "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-*"
+          path: .artifacts/bcf
+          merge-multiple: true
       - run: python3 scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf --format json --durable-ref "github-actions://${{ github.repository }}/runs/${{ github.run_id }}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
       - if: always()
         uses: actions/upload-artifact@v4
-        with: {name: bcf-governance-truth, path: .artifacts/bcf/truth-report.json, if-no-files-found: error}
+        with:
+          name: "bcf-governance-truth-${{ github.run_id }}-${{ github.run_attempt }}"
+          path: .artifacts/bcf/truth-report.json
+          if-no-files-found: error

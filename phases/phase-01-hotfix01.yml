@@ -15,6 +15,9 @@ hotfix:
 execution_evidence:
   planned_commands:
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  - gh pr merge 15 --merge
+  - gh run view 33321545239
+  - gh run view 33321545295
   - .venv/bin/python -m pytest -q tests
   - .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
   - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
@@ -36,6 +39,8 @@ execution_evidence:
   - detached evidence uses the selected interpreter, propagates its lexical executable directory and loader environment, and preserves canonical schema-2 argv
   - the mutation harness copies the decomposed evidence runtime and invokes pytest through the selected interpreter
   - local validation passed 201 tests, governance-yaml-ok, compilation, and every PR and release mutation profile
+  - pull request 15 merged as exact main commit a0faa8dc5948e3f9cbac9ef0fbddb9e3357f76a3
+  - exact-main governance-pack run 33321545239 passed both jobs and governance run 33321545295 passed all 20 evidence jobs plus terminal truth on the local runner pool
 closeout_requirements:
   claims:
     required_suites_green:

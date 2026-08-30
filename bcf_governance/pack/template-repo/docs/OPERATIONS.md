@@ -130,8 +130,10 @@ bcf ci-cleanup --run-id "$BCF_CI_RUN_ID"
 bcf ci-cleanup --run-id "$BCF_CI_RUN_ID" --apply --yes
 ```
 
-The helper selects only resources with that exact label. It never infers
-ownership from names and never performs global Docker or build-cache pruning.
+The helper selects only resources with that exact label, then re-inspects the
+exact ID and label immediately before each deletion. Container deletion also
+removes attached anonymous volumes. It never infers ownership from names,
+accepts caller globs, or performs global Docker or build-cache pruning.
 Do not hard-code runner labels into the governance pack; runner selection is a
 repository-owned CI decision.
 

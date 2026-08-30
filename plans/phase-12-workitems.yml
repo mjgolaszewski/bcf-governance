@@ -1,0 +1,19 @@
+document:
+  kind: execution_phase_workitem_ledger
+  name: Phase 12 Workitems
+  id: bcf-governance-phase-12-workitems
+  version: 1.0.0
+  generated_at_utc: '2026-08-30T00:00:00Z'
+  status: planned
+  path: plans/phase-12-workitems.yml
+  phase_id: P12
+workitems:
+- id: P12-P0-01
+  priority: P0
+  status: TODO
+  summary: deliver README-led editorial refresh and immutable exact-byte release
+  acceptance:
+  - README-led editorial refresh and immutable exact-byte release_is_complete
+  acceptance_evidence:
+  - test
+  - contract-test

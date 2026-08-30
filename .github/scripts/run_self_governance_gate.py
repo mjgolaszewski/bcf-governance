@@ -18,21 +18,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 POLICY_PATH = REPO_ROOT / "governance/self-governance-policy.yml"
-TEST_NODES = {
-    "architecture-test": ["tests/test_self_governance_contracts.py::test_source_roots_match_packaged_implementation"],
-    "architecture-module-size": ["tests/test_self_governance_contracts.py::test_production_modules_respect_self_governance_loc_cap"],
-    "architecture-layer-membership": ["tests/test_self_governance_contracts.py::test_source_layout_maps_to_declared_package_layers"],
-    "architecture-context-membership": ["tests/test_self_governance_contracts.py::test_tooling_modules_map_to_exactly_one_context"],
-    "architecture-import-boundaries": ["tests/test_self_governance_contracts.py::test_packaged_code_does_not_import_public_wrapper_package"],
-    "architecture-cqrs-side": ["tests/test_self_governance_contracts.py::test_cli_command_query_sides_are_complete_and_disjoint"],
-    "architecture-router-thinness": ["tests/test_self_governance_contracts.py::test_cli_and_source_wrappers_remain_thin"],
-    "architecture-duplication": ["tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact"],
-    "contract-test": [
-        "tests/test_self_governance_contracts.py::test_required_repository_artifact_contract_is_executable",
-        "tests/test_validate_governance_yaml.py::test_artifact_manifest_requires_standard_repository_artifact_contracts",
-        "tests/test_validate_governance_yaml.py::test_pull_request_validation_requires_changelog_update",
-    ],
-}
+GATE_CONTRACTS_PATH = REPO_ROOT / "governance/gate-contracts.yml"
 
 
 def _fail(gate: str, detail: str) -> None:
@@ -56,7 +42,21 @@ def _tracked_files() -> list[Path]:
 def _run_tests(gate: str) -> None:
     junit = REPO_ROOT / f".artifacts/junit/{gate}.xml"
     junit.parent.mkdir(parents=True, exist_ok=True)
-    nodes = ["tests"] if gate == "test" else TEST_NODES[gate]
+    registry = yaml.safe_load(GATE_CONTRACTS_PATH.read_text(encoding="utf-8"))
+    gate_contract = registry.get("gates", {}).get(gate, {})
+    test_contract = gate_contract.get("evidence", {}).get("test_contract", {})
+    selectors = test_contract.get("selectors")
+    if not isinstance(selectors, list) or not selectors:
+        _fail(gate, "governed test selectors are missing")
+    nodes: list[str] = []
+    for selector in selectors:
+        if selector == "@test_roots":
+            agents = yaml.safe_load((REPO_ROOT / "AGENTS.yml").read_text(encoding="utf-8"))
+            nodes.extend(agents["testing_governance"]["test_roots"])
+        elif isinstance(selector, str):
+            nodes.append(selector)
+        else:
+            _fail(gate, "governed test selector is invalid")
     environment = dict(os.environ)
     environment["PYTHONPATH"] = str(REPO_ROOT)
     result = subprocess.run(
@@ -196,12 +196,42 @@ def _runtime_smoke(gate: str) -> None:
     )
 
 
+def _semantic_ownership(gate: str) -> None:
+    report_path = REPO_ROOT / ".artifacts/semantic-ownership/report.json"
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bcf_governance.tooling.semantic_ownership_scan",
+            "--repo-root",
+            ".",
+            "--output",
+            report_path.relative_to(REPO_ROOT).as_posix(),
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode:
+        diagnostic = ""
+        try:
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            violation = report.get("violations", [{}])[0]
+            diagnostic = str(violation.get("diagnostic") or violation.get("kind") or "")
+        except (OSError, UnicodeError, json.JSONDecodeError, IndexError, AttributeError):
+            pass
+        _fail(gate, diagnostic or result.stdout.strip() or result.stderr.strip())
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("gate")
     args = parser.parse_args()
     policy = yaml.safe_load(POLICY_PATH.read_text(encoding="utf-8"))
-    if args.gate in TEST_NODES or args.gate == "test":
+    registry = yaml.safe_load(GATE_CONTRACTS_PATH.read_text(encoding="utf-8"))
+    gate_contract = registry.get("gates", {}).get(args.gate, {})
+    if isinstance(gate_contract.get("evidence", {}).get("test_contract"), dict):
         _run_tests(args.gate)
     elif args.gate == "lint":
         _lint(args.gate)
@@ -219,6 +249,8 @@ def main() -> None:
         _security_review(args.gate)
     elif args.gate == "runtime-smoke":
         _runtime_smoke(args.gate)
+    elif args.gate == "semantic-ownership":
+        _semantic_ownership(args.gate)
     else:
         _fail(args.gate, "unknown gate")
 

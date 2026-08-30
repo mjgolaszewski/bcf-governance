@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import ast
+import importlib.util
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -12,6 +14,17 @@ from bcf_governance.tooling.governance_validation.runner import validate_repo_ro
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _load_github_script(name: str):
+    path = REPO_ROOT / ".github/scripts" / name
+    spec = importlib.util.spec_from_file_location(path.stem, path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 POLICY_PATH = REPO_ROOT / "governance/self-governance-policy.yml"
 
 
@@ -152,6 +165,120 @@ def test_changelog_pr_enforcement_is_wired_into_repository_ci() -> None:
     }
 
 
+def test_self_governance_runner_classification_is_exact_and_has_no_fallback() -> None:
+    runner_policy = _policy()["runner_security"]
+    expected_jobs = runner_policy["jobs"]
+    observed_jobs: dict[str, dict[str, str]] = {}
+    for relative_path, classification in expected_jobs.items():
+        workflow_path = REPO_ROOT / relative_path
+        workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+        jobs = workflow["jobs"]
+        assert set(jobs) == set(classification)
+        observed_jobs[relative_path] = classification
+        for job_id, trust_class in classification.items():
+            if trust_class == "trusted":
+                expected_labels = runner_policy["trusted_labels"]
+            else:
+                expected_labels = runner_policy["candidate_routing"]["candidate_runner"]
+            assert jobs[job_id]["runs-on"] == expected_labels
+    assert observed_jobs == expected_jobs
+    assert runner_policy["hosted_fallback_allowed"] is False
+    assert runner_policy["candidate_substrate"] == "github_standard_hosted_fresh_vm"
+    assert runner_policy["coordination_policy"] == [
+        "no_polling",
+        "no_sleeping",
+        "no_idle_waiters",
+    ]
+
+
+def test_all_candidate_code_uses_fresh_standard_hosted_workers() -> None:
+    runner_policy = _policy()["runner_security"]
+    routing = runner_policy["candidate_routing"]
+    assert routing == {
+        "candidate_runner": "ubuntu-latest",
+        "repository_visibility": "public",
+        "billing_class": "standard_public_repository",
+    }
+    for relative_path, classifications in runner_policy["jobs"].items():
+        workflow = yaml.safe_load(
+            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+        )
+        for job_id, trust_class in classifications.items():
+            if trust_class == "candidate":
+                assert workflow["jobs"][job_id]["runs-on"] == "ubuntu-latest"
+
+
+def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
+    runner_policy = _policy()["runner_security"]
+    pinned_action = re.compile(r"^[^@]+@[0-9a-f]{40}$")
+    for relative_path, classification in runner_policy["jobs"].items():
+        workflow = yaml.safe_load(
+            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+        )
+        for job_id, trust_class in classification.items():
+            if trust_class != "trusted":
+                continue
+            steps = workflow["jobs"][job_id]["steps"]
+            assert all("actions/checkout@" not in step.get("uses", "") for step in steps)
+            for step in steps:
+                if "uses" in step:
+                    assert pinned_action.fullmatch(step["uses"])
+                command = step.get("run", "")
+                assert "python" not in command
+                assert "scripts/" not in command
+                assert ".github/" not in command
+
+
+def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
+    runner_policy = _policy()["runner_security"]
+    routing = runner_policy["candidate_routing"]
+    assert routing["candidate_runner"] not in runner_policy["trusted_labels"]
+    window = runner_policy["temporary_local_window"]
+    assert window["status"] == "closed"
+    assert window["privileged_publication_enabled"] is False
+    for relative_path, classification in runner_policy["jobs"].items():
+        workflow = yaml.safe_load(
+            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+        )
+        for job_id, trust_class in classification.items():
+            if trust_class == "trusted":
+                assert workflow["jobs"][job_id]["if"] == "${{ false }}"
+    release = yaml.safe_load(
+        (REPO_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+    )
+    assert release["jobs"]["release-artifacts"]["if"] == "${{ false }}"
+
+
+def test_workflows_have_no_runner_occupying_coordination() -> None:
+    forbidden = re.compile(r"\b(sleep|poll|wait|while|until)\b", re.IGNORECASE)
+    for relative_path in _policy()["runner_security"]["jobs"]:
+        workflow = yaml.safe_load(
+            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+        )
+        for job in workflow["jobs"].values():
+            for step in job.get("steps", []):
+                assert forbidden.search(step.get("run", "")) is None
+
+
+def test_governance_evidence_shards_derive_every_required_gate_once() -> None:
+    module = _load_github_script("capture_governance_shard.py")
+    expected = module.required_gate_targets(REPO_ROOT)
+    shards = [
+        module.partition_required_gates(REPO_ROOT, shard_index=index, shard_count=4)
+        for index in range(4)
+    ]
+    flattened = [gate for shard in shards for gate in shard]
+    assert sorted(flattened) == expected
+    assert len(flattened) == len(set(flattened))
+    assert max(map(len, shards)) - min(map(len, shards)) <= 1
+    workflow = yaml.safe_load(
+        (REPO_ROOT / ".github/workflows/governance.yml").read_text(encoding="utf-8")
+    )
+    strategy = workflow["jobs"]["evidence"]["strategy"]
+    assert strategy["max-parallel"] == 4
+    assert strategy["matrix"] == {"shard": [0, 1, 2, 3]}
+
+
 def test_self_gate_runner_bootstraps_an_uninstalled_source_checkout() -> None:
     result = subprocess.run(
         [
@@ -174,35 +301,11 @@ def test_self_gate_tests_use_the_selected_python_module_entrypoint() -> None:
     )
     assert '[sys.executable, "-m", "pytest"' in source
     assert '["pytest", "-q"' not in source
+    assert "TEST_NODES" not in source
+    assert "governance/gate-contracts.yml" in source
     for workflow in (REPO_ROOT / ".github/workflows").glob("*.yml"):
         text = workflow.read_text(encoding="utf-8")
         assert "run: pytest " not in text, workflow
-
-
-def test_temporary_local_runner_policy_is_exact_and_has_no_hosted_fallback() -> None:
-    policy = _policy()["runner_security"]
-    assert policy["hosted_fallback_allowed"] is False
-    labels = policy["candidate_labels"]
-    for relative_path, expected_jobs in policy["jobs"].items():
-        text = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
-        assert "ubuntu-latest" not in text
-        workflow = yaml.safe_load(text)
-        assert set(workflow["jobs"]) == set(expected_jobs)
-        assert all(job["runs-on"] == labels for job in workflow["jobs"].values())
-
-
-def test_only_owner_same_repository_pull_requests_reach_local_runners() -> None:
-    policy = _policy()["runner_security"]
-    owner_guard = f"github.actor == '{policy['admitted_pr_actor']}'"
-    source_guard = "github.event.pull_request.head.repo.full_name == github.repository"
-    for relative_path in (
-        ".github/workflows/governance.yml",
-        ".github/workflows/governance-pack.yml",
-    ):
-        workflow = yaml.safe_load((REPO_ROOT / relative_path).read_text(encoding="utf-8"))
-        for job in workflow["jobs"].values():
-            assert owner_guard in job["if"]
-            assert source_guard in job["if"]
 
 
 def test_persistent_local_jobs_do_not_persist_checkout_credentials() -> None:
@@ -213,10 +316,49 @@ def test_persistent_local_jobs_do_not_persist_checkout_credentials() -> None:
             for step in job["steps"]:
                 if step.get("uses", "").startswith("actions/checkout@"):
                     assert step.get("with", {}).get("persist-credentials") is False
-    release = yaml.safe_load(
-        (REPO_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+
+
+def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
+    workflow = yaml.safe_load(
+        (REPO_ROOT / ".github/workflows/governance.yml").read_text(encoding="utf-8")
     )
-    assert release["jobs"]["release"]["if"] == "${{ false }}"
+    jobs = workflow["jobs"]
+    assert jobs["evidence"]["needs"] == ["preflight"]
+    preflight_command = next(
+        step["run"]
+        for step in jobs["preflight"]["steps"]
+        if step.get("name") == "Run canonical cheap preflight"
+    )
+    assert "bcf_governance.cli preflight" in preflight_command
+
+    upload = next(
+        step
+        for step in jobs["evidence"]["steps"]
+        if step.get("uses", "").startswith("actions/upload-artifact@")
+    )
+    lane_namespace = upload["with"]["name"]
+    assert lane_namespace == (
+        "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-shard-${{ matrix.shard }}"
+    )
+
+    download = next(
+        step
+        for step in jobs["governance-truthfulness"]["steps"]
+        if step.get("uses", "").startswith("actions/download-artifact@")
+    )
+    assert download["with"]["pattern"] == (
+        "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-*"
+    )
+    terminal = next(
+        step
+        for step in jobs["governance-truthfulness"]["steps"]
+        if step.get("uses", "").startswith("actions/upload-artifact@")
+    )
+    truth_namespace = terminal["with"]["name"]
+    assert truth_namespace == (
+        "bcf-governance-truth-${{ github.run_id }}-${{ github.run_attempt }}"
+    )
+    assert not truth_namespace.startswith("bcf-evidence-")
 
 
 def test_self_profile_builder_matches_canonical_negative_controls() -> None:
@@ -237,3 +379,7 @@ def test_self_profile_builder_matches_canonical_negative_controls() -> None:
     for gate_id, gate in generated["gates"].items():
         assert gate["invocation"] == canonical["gates"][gate_id]["invocation"]
         assert gate["negative_controls"] == canonical["gates"][gate_id]["negative_controls"]
+        if "test_contract" in gate["evidence"]:
+            assert gate["evidence"]["test_contract"] == canonical["gates"][gate_id][
+                "evidence"
+            ]["test_contract"]

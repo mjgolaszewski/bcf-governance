@@ -1,0 +1,48 @@
+document:
+  kind: hotfix_execution_log
+  name: P02-HF01 Hotfix Log
+  id: bcf-governance-phase-02-hotfix01
+  version: 1.0.0
+  generated_at_utc: '2026-08-30T00:00:00Z'
+  status: completed
+  path: phases/phase-02-hotfix01.yml
+hotfix:
+  id: P02-HF01
+  mode: full
+  related_phase_id: P02
+  hotfix_number: 1
+  summary: isolate all candidate CI on fresh standard GitHub-hosted workers
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  executed_commands:
+  - .venv/bin/python -m pytest tests/test_self_governance_contracts.py tests/test_validate_governance_yaml.py -q
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  - .venv/bin/python -m pytest tests
+  notes:
+  - live repository metadata confirms bcf-governance is public, so standard GitHub-hosted execution is free and unlimited while larger runners and storage remain separate
+  - pull requests, protected main, schedules, tests, mutants, and artifact builds each use a fresh provider-managed ubuntu-latest VM with no self-hosted fallback
+  - the persistent local pool is reserved for the disabled trusted publisher and never executes candidate code
+  - no workflow run command polls, sleeps, waits, or loops for another workflow or runner
+  - evidence gates are derived from canonical contracts and partitioned exactly once across four run-to-completion shards rather than allocating 21 setup-heavy jobs
+  - release execution remains disabled until P11 and trusted publication remains disabled until P10 isolation proof
+  - the implementation-mutant runtime now copies the canonical package boundary, preventing P04 imports from turning causal mutants into pytest infrastructure exits
+  - truth recognizes statically complete canonical-contract shards without accepting dynamic or incomplete shard coverage
+  - local closeout passed all 252 tests and killed all 23 high-value and semantic causal mutants for their declared causes
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

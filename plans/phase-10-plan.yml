@@ -1,0 +1,39 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 10 Plan
+  id: bcf-governance-phase-10-plan
+  version: 1.0.0
+  generated_at_utc: '2026-08-30T00:00:00Z'
+  status: planned
+  path: plans/phase-10-plan.yml
+phase:
+  id: P10
+  build_block: bcf-standard-v2-dogfood
+  planner: codex
+  date: '2026-08-30'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - BCF self-adoption, exact-main canary, and protected stable check
+  - disposable candidate VM and isolated trusted control-plane substrate acceptance
+  parallelizable_workstreams:
+  - id: P10-WS1
+    name: dogfood migration and remote activation
+  - id: P10-WS2
+    name: runner substrate provisioning and isolation proof
+  hard_dependencies:
+  - P09
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: keep the phase narrowly scoped to declared deliverables and update canonical
+    governed artifacts in the same change
+verification_plan:
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest tests
