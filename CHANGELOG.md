@@ -8,6 +8,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Added
 
+- Added an owner-dispatched, no-checkout trusted-control probe so CI-authority
+  activation verifies the installed control plane before enabling callbacks.
 - Opened the BCF 0.7.0 release train for generalized SOIP, exact-commit CI
   authority, disposable candidate execution, Standard-v2 self-adoption, and
   certified immutable release artifacts.

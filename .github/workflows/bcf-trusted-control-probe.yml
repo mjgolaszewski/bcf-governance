@@ -1,0 +1,21 @@
+name: bcf/trusted-control-probe
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    if: ${{ github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main' }}
+    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+    timeout-minutes: 5
+    steps:
+      - name: Verify the preinstalled trusted BCF control
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v bcf
+          bcf --version
+          bcf ci --help

@@ -66,7 +66,7 @@ known_constraints:
   - release tags are created only at a merge commit whose source and governance CI passed
   - standard hosted runners are free and unlimited while the repository remains public; larger-runner and artifact-storage costs remain separate
   - the persistent trusted VM may collect provider state and publish but may never check out or execute candidate code
-  - P10-HF01 owns trusted controller and exact-main authority activation after the P10 structural merge exposes numeric workflow IDs and trusted default-main bytes
+  - P10 structural self-adoption is exact-main certified at 9102e5a25a8db3087161616c82b991edd13006a2; P10-HF01 is open for trusted controller and exact-main authority activation
   - release execution and publication remain disabled until disposable candidate execution and isolated trusted publication are available
   - hosted jobs run to completion without polling, sleeping, idle waiters, or route fallback
   - every BCF behavior commit updates and validates BCF's own applicable governance contracts before successor work begins
