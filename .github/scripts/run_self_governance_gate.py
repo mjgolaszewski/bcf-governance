@@ -196,6 +196,34 @@ def _runtime_smoke(gate: str) -> None:
     )
 
 
+def _semantic_ownership(gate: str) -> None:
+    report_path = REPO_ROOT / ".artifacts/semantic-ownership/report.json"
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bcf_governance.tooling.semantic_ownership_scan",
+            "--repo-root",
+            ".",
+            "--output",
+            report_path.relative_to(REPO_ROOT).as_posix(),
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode:
+        diagnostic = ""
+        try:
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            violation = report.get("violations", [{}])[0]
+            diagnostic = str(violation.get("diagnostic") or violation.get("kind") or "")
+        except (OSError, UnicodeError, json.JSONDecodeError, IndexError, AttributeError):
+            pass
+        _fail(gate, diagnostic or result.stdout.strip() or result.stderr.strip())
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("gate")
@@ -221,6 +249,8 @@ def main() -> None:
         _security_review(args.gate)
     elif args.gate == "runtime-smoke":
         _runtime_smoke(args.gate)
+    elif args.gate == "semantic-ownership":
+        _semantic_ownership(args.gate)
     else:
         _fail(args.gate, "unknown gate")
 

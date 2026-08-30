@@ -51,6 +51,7 @@ jobs:
           - security-sbom
           - security-secret-scan
           - security-vulnerability-scan
+          - semantic-ownership
           - test
           - typecheck
     steps:

@@ -6,9 +6,10 @@ tooling_contexts:
   install: [install_governance_pack.py, governance_install/]
   operations: [migrate_governance_evidence.py, publish_audit.py, scaffold_governance_artifacts.py]
   profiles: [governance_profiles.py, profile_governance.py]
+  semantic_ownership: [semantic_ownership_inventory.py, semantic_ownership_registry.py, semantic_ownership_scan.py]
   validation: [check_governance_exposure.py, doctor_governance_pack.py, preflight.py, validate_governance_yaml.py, governance_validation/]
 cli_commands:
-  read_only: [doctor, exposure-scan, preflight, publish-audit, truth, validate]
+  read_only: [doctor, exposure-scan, preflight, publish-audit, semantic-ownership, truth, validate]
   mutating: [ci-cleanup, cleanup, evidence, install, migrate-evidence, profile, scaffold, test-manifest]
 required_dependencies:
   PyYAML: '>=6.0,<7'

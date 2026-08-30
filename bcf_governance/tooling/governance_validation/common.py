@@ -98,6 +98,7 @@ RELEASE_GATE_POLICY_MARKERS = {
     "security_vulnerability_scan": ("trivy", "grype", "semgrep", "vulnerability"),
     "security_review": ("security-review", "security review", "findings"),
     "runtime_smoke": ("smoke", "docker", "compose", "health"),
+    "semantic_ownership": ("semantic-ownership", "semantic_ownership"),
 }
 DEFAULT_RELEASE_GATE_TARGETS = {
     "governance-validate",

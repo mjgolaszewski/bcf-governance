@@ -209,6 +209,8 @@ CI can be removed; mixed workflows are reported for manual editing.
 ## Supporting commands
 
 - `bcf validate`: schema and cross-file semantics.
+- `bcf semantic-ownership`: source-first Python SOIP evaluation against the
+  repository's canonical representation registry.
 - `bcf truth`: evidence-derived lifecycle and release state.
 - `bcf doctor`: configuration and wiring diagnostics.
 - `bcf exposure-scan`: local-path and private-infrastructure scanning.
@@ -216,6 +218,13 @@ CI can be removed; mixed workflows are reported for manual editing.
 - `bcf migrate-evidence`: preview/apply 0.5 state migration.
 - `bcf ci-cleanup`: dry-run cleanup of exact-label CI resources only.
 - `bcf publish-audit --history`: opt-in redacted scan of reachable Git history.
+
+Standard-v2 repositories use `declared_families_blocking`: every declared
+representation must name one discovered owner and causal construction path.
+Regulated repositories may select `repository_wide_blocking`, which additionally
+requires every discovered type in the authoritative Python roots to be
+registered. The report is structural evidence about representation ownership;
+it does not prove arbitrary business correctness.
 
 CI-owned Docker resources use the exact
 `io.bcf-governance.ci-run=<run-id>` label. BCF never infers ownership from names

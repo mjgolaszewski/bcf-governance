@@ -24,6 +24,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   lane and terminal namespaces, and ordered evidence after canonical preflight.
 - Proved canonical preflight remains valid after every retention-removable phase
   and hotfix artifact moves into exact Git commit and hash custody.
+- Added a generalized, MIT-licensed Python semantic-ownership engine with
+  source-first tracked inventory, one canonical registry, typed causal controls,
+  declared-family enforcement, and repository-wide completeness mode.
 
 ### Changed
 
@@ -31,6 +34,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   activation: each behavior commit now dogfoods its applicable governance, while
   P10 owns disposable-candidate and isolated-publisher proof before any remote
   candidate execution or release publication is enabled.
+- Made BCF consume the same semantic-ownership schema, runtime, registry, CLI,
+  gate contract, and evidence control that it packages for adopters.
 
 ### Fixed
 

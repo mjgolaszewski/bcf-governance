@@ -104,8 +104,8 @@ gate_overrides:
     - id: architecture-cqrs-side-behavior-must-fail
       mutation:
         path: governance/self-governance-policy.yml
-        search: 'read_only: [doctor, exposure-scan, preflight, publish-audit, truth, validate]'
-        replace: 'read_only: [doctor, exposure-scan, preflight, publish-audit, validate]'
+        search: 'read_only: [doctor, exposure-scan, preflight, publish-audit, semantic-ownership, truth, validate]'
+        replace: 'read_only: [doctor, exposure-scan, preflight, publish-audit, semantic-ownership, validate]'
       oracle:
         kind: test_node_failure
         node_ids:
@@ -408,6 +408,23 @@ gate_overrides:
         regex: 'self-governance gate security-vulnerability-scan failed:'
     output_requirements:
     - path: .artifacts/vulnerability-scan.json
+      media_type: application/json
+      authority: non_authoritative_until_captured
+  semantic-ownership:
+    evidence_kind: gate
+    negative_controls:
+    - id: semantic-ownership-behavior-must-fail
+      mutation:
+        path: governance/canonical-representations.yml
+        search: 'authorized_constructors_and_factories: [bcf_governance/tooling/evidence_sessions.py::allocate_session, bcf_governance/tooling/evidence_sessions.py::load_session]'
+        replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'
+      oracle:
+        kind: diagnostic
+        exit_codes: [1]
+        stream: stderr
+        regex: 'owner must be an authorized constructor'
+    output_requirements:
+    - path: .artifacts/semantic-ownership/report.json
       media_type: application/json
       authority: non_authoritative_until_captured
   test:

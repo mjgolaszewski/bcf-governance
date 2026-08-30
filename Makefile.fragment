@@ -2,7 +2,7 @@ SHELL := /bin/bash
 PYTHON ?= python3
 BCF_EVIDENCE_DIR ?= .artifacts/bcf
 
-.PHONY: governance-truthfulness release-check architecture-context-membership architecture-cqrs-side architecture-duplication architecture-import-boundaries architecture-layer-membership architecture-module-size architecture-router-thinness architecture-test contract-test governance-exposure-scan governance-validate lint runtime-smoke security-dependency-audit security-review security-sbom security-secret-scan security-vulnerability-scan test typecheck
+.PHONY: governance-truthfulness release-check architecture-context-membership architecture-cqrs-side architecture-duplication architecture-import-boundaries architecture-layer-membership architecture-module-size architecture-router-thinness architecture-test contract-test governance-exposure-scan governance-validate lint runtime-smoke security-dependency-audit security-review security-sbom security-secret-scan security-vulnerability-scan semantic-ownership test typecheck
 
 governance-truthfulness:
 	$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)
@@ -61,6 +61,9 @@ security-secret-scan:
 security-vulnerability-scan:
 	@cd . && python3 .github/scripts/run_self_governance_gate.py security-vulnerability-scan
 
+semantic-ownership:
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py semantic-ownership
+
 test:
 	@cd . && python3 .github/scripts/run_self_governance_gate.py test
 
@@ -69,7 +72,7 @@ typecheck:
 
 release-check:
 	@mkdir -p $(BCF_EVIDENCE_DIR)
-	@for gate in architecture-context-membership architecture-cqrs-side architecture-duplication architecture-import-boundaries architecture-layer-membership architecture-module-size architecture-router-thinness architecture-test contract-test governance-exposure-scan governance-validate lint runtime-smoke security-dependency-audit security-review security-sbom security-secret-scan security-vulnerability-scan test typecheck; do \
+	@for gate in architecture-context-membership architecture-cqrs-side architecture-duplication architecture-import-boundaries architecture-layer-membership architecture-module-size architecture-router-thinness architecture-test contract-test governance-exposure-scan governance-validate lint runtime-smoke security-dependency-audit security-review security-sbom security-secret-scan security-vulnerability-scan semantic-ownership test typecheck; do \
 		$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output $(BCF_EVIDENCE_DIR)/$$gate || exit $$?; \
 	done
 	$(MAKE) governance-truthfulness

@@ -59,8 +59,8 @@ gates:
     - id: architecture-cqrs-side-behavior-must-fail
       mutation:
         path: governance/self-governance-policy.yml
-        search: 'read_only: [doctor, exposure-scan, preflight, publish-audit, truth, validate]'
-        replace: 'read_only: [doctor, exposure-scan, preflight, publish-audit, validate]'
+        search: 'read_only: [doctor, exposure-scan, preflight, publish-audit, semantic-ownership, truth, validate]'
+        replace: 'read_only: [doctor, exposure-scan, preflight, publish-audit, semantic-ownership, validate]'
       oracle:
         kind: test_node_failure
         node_ids:
@@ -512,6 +512,27 @@ gates:
         - 1
         stream: stderr
         regex: 'self-governance gate security-vulnerability-scan failed:'
+  semantic-ownership:
+    invocation:
+      argv: [python3, .github/scripts/run_self_governance_gate.py, semantic-ownership]
+      cwd: .
+      env: {}
+      required_env: []
+    evidence:
+      kind: gate
+      output_requirements:
+      - {path: .artifacts/semantic-ownership/report.json, media_type: application/json, authority: non_authoritative_until_captured}
+    negative_controls:
+    - id: semantic-ownership-behavior-must-fail
+      mutation:
+        path: governance/canonical-representations.yml
+        search: 'authorized_constructors_and_factories: [bcf_governance/tooling/evidence_sessions.py::allocate_session, bcf_governance/tooling/evidence_sessions.py::load_session]'
+        replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'
+      oracle:
+        kind: diagnostic
+        exit_codes: [1]
+        stream: stderr
+        regex: 'owner must be an authorized constructor'
   test:
     invocation:
       argv:
@@ -666,4 +687,5 @@ gate_catalog:
     status: required
     command_policy: runtime_smoke
     rationale: runtime behavior is proven in a declared environment
+  semantic_ownership: {target: semantic-ownership, status: required, command_policy: semantic_ownership, rationale: declared canonical representations have one mechanically enforced owner}
 provenance: {}

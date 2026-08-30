@@ -5,6 +5,11 @@ from __future__ import annotations
 
 import argparse
 
+from ..semantic_ownership_registry import (
+    SemanticOwnershipRegistryError,
+    load_registry as load_semantic_ownership_registry,
+)
+
 from .common import *  # noqa: F403,F405
 from .artifact_policy import _load_phase_history, _validate_artifact_manifest, _validate_observability_contracts
 from .context_budgets import _context_budget_advisories
@@ -108,6 +113,11 @@ def validate_repo_root(
     )
     _validate_ci_profile(governance_profile)
     _validate_structural_gate_contract(governance_profile, architecture_rules)
+    if (repo_root / "governance/canonical-representations.yml").is_file():
+        try:
+            load_semantic_ownership_registry(repo_root)
+        except SemanticOwnershipRegistryError as exc:
+            raise GovernanceValidationError(str(exc)) from exc
 
     if not allow_placeholders:
         optional_paths = [

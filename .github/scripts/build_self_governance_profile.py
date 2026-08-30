@@ -43,8 +43,8 @@ TEST_CONTROLS = {
     ),
     "architecture-cqrs-side": (
         "governance/self-governance-policy.yml",
-        "read_only: [doctor, exposure-scan, preflight, publish-audit, truth, validate]",
-        "read_only: [doctor, exposure-scan, preflight, publish-audit, validate]",
+        "read_only: [doctor, exposure-scan, preflight, publish-audit, semantic-ownership, truth, validate]",
+        "read_only: [doctor, exposure-scan, preflight, publish-audit, semantic-ownership, validate]",
         "tests.test_self_governance_contracts::test_cli_command_query_sides_are_complete_and_disjoint",
     ),
     "architecture-router-thinness": (
@@ -91,6 +91,11 @@ TEST_SELECTORS = {
 }
 
 DIAGNOSTIC_CONTROLS = {
+    "semantic-ownership": (
+        "governance/canonical-representations.yml",
+        "authorized_constructors_and_factories: [bcf_governance/tooling/evidence_sessions.py::allocate_session, bcf_governance/tooling/evidence_sessions.py::load_session]",
+        "authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]",
+    ),
     "lint": (
         "README.md",
         "# BCF Governance",
@@ -173,6 +178,7 @@ def _diagnostic_gate(target: str, control: tuple[str, str, str]) -> dict[str, An
         mutation = {"path": path, "search": search, "replace_base64": replace}
     evidence: dict[str, Any] = {"kind": "gate"}
     env: dict[str, str] = {}
+    diagnostic_regex = f"self-governance gate {target} failed:"
     if target == "security-sbom":
         evidence["output_requirements"] = [
             {"path": ".artifacts/sbom.json", "media_type": "application/json"}
@@ -203,6 +209,14 @@ def _diagnostic_gate(target: str, control: tuple[str, str, str]) -> dict[str, An
             ],
         }
         env = {"BCF_EXECUTION_PROFILE": "production"}
+    elif target == "semantic-ownership":
+        evidence["output_requirements"] = [
+            {
+                "path": ".artifacts/semantic-ownership/report.json",
+                "media_type": "application/json",
+            }
+        ]
+        diagnostic_regex = "owner must be an authorized constructor"
     return {
         "invocation": {
             "argv": ["python3", ".github/scripts/run_self_governance_gate.py", target],
@@ -219,7 +233,7 @@ def _diagnostic_gate(target: str, control: tuple[str, str, str]) -> dict[str, An
                     "kind": "diagnostic",
                     "exit_codes": [1],
                     "stream": "stderr",
-                    "regex": f"self-governance gate {target} failed:",
+                    "regex": diagnostic_regex,
                 },
             }
         ],

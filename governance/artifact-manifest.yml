@@ -48,6 +48,7 @@ context_budgets:
     architecture-boundaries.yml: {line_hard_cap: 120, kib_hard_cap: 8, intent: boundary map only}
     governance-profile.yml: {line_hard_cap: 220, kib_hard_cap: 28, intent: profile knobs and generated required-gate classification}
     governance/artifact-manifest.yml: {line_hard_cap: 80, kib_hard_cap: 8, intent: artifact index only}
+    governance/canonical-representations.yml: {line_hard_cap: 200, kib_hard_cap: 32, intent: single semantic ownership registry}
     governance/evidence-policy.yml: {line_hard_cap: 500, kib_hard_cap: 64, intent: computed lifecycle and generated evidence policy}
     governance/gate-contracts.yml: {line_hard_cap: 800, kib_hard_cap: 96, intent: canonical executable gate contracts}
     governance/findings.yml: {line_hard_cap: 400, kib_hard_cap: 96, intent: canonical finding accounting}
