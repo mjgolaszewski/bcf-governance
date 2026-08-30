@@ -48,7 +48,15 @@ hotfix_lane:
         - release_blocking_regression
         - security_or_expiring_external_breakage
   open_records: []
-  remediation_history: []
+  remediation_history:
+    - id: P01-HF01
+      mode: full
+      recorded_at_utc: '2026-08-30T00:00:00Z'
+      action: route all workflows to the owner-only local pool and repair selected-interpreter authority while hosted credits are unavailable
+      remediated_in_phase: P01
+      hotfix_log: phases/phase-01-hotfix01.yml
+      canonical_artifacts: [.github/workflows/, bcf_governance/tooling/evidence_execution.py, bcf_governance/tooling/governance_evidence.py, governance/self-governance-policy.yml, MEMORY.yml]
+      local_validation: [governance-yaml-ok, 201_tests_passed, high_value_mutants_killed, semantic_high_value_mutants_killed, full_mutants_killed, semantic_full_mutants_killed]
 operator_requirements_choices_disambiguations:
   - type: decision
     statement: all governance, memory, specs, plans, workitem ledgers, and phase logs remain YAML-native

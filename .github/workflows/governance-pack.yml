@@ -11,11 +11,13 @@ permissions:
 
 jobs:
   pack-checks:
-    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || (github.actor == 'mjgolaszewski' && github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -41,11 +43,13 @@ jobs:
         run: python template-repo/scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders --allow-release-gate-placeholders
 
   ast-checks:
-    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || (github.actor == 'mjgolaszewski' && github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
