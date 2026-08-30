@@ -53,7 +53,7 @@ environment_facts:
     - observability contracts are scaffolded under contracts/observability/v1/
     - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
     - P06 is active for provider-neutral CI identity, admission, state, and typed N/A contracts after P05 reproduced exact Identity main with 62 representations and 220 required browser traces
-    - candidate workflows use fresh GitHub-hosted jobs; owner-controlled local labels remain only for disabled trusted publication pending P10 isolation proof
+    - unsafe PR code routes to fresh GitHub-hosted jobs; owner-authored same-repository and trusted-ref CI routes to the repository-scoped local pool, with no fallback between them
     - main is protected by active repository ruleset 21862678 requiring pull requests, current governance-truthfulness, pack-checks, ast-checks, resolved conversations, and no force push or deletion
     - the local implementation host provides Docker but no disposable VM hypervisor or clone manager
     - evidence execution uses the explicitly selected Python and propagates its lexical executable directory and required loader environment into detached positive and negative-control worktrees
@@ -77,7 +77,7 @@ known_constraints:
   - the persistent trusted VM may collect provider state and publish but may never check out or execute candidate code
   - P10 owns trusted and disposable runner substrate activation; its isolation acceptance must pass before remote candidate execution or release publication
   - release execution and publication remain disabled until disposable candidate execution and isolated trusted publication are available
-  - GitHub-hosted credits resumed on 2026-08-30; use hosted candidate workers only for run-to-completion execution with no polling, sleeping, idle waiters, or trusted publication authority
+  - GitHub-hosted credits resumed on 2026-08-30; use them only for unsafe run-to-completion PR work while trusted contributor CI may use local runners, with no polling, sleeping, idle waiters, or route fallback
   - every BCF behavior commit updates and validates BCF's own applicable governance contracts before successor work begins
   - cleanup revalidates exact Docker IDs/run labels before scoped deletion; retention-removable phase artifacts are consumed only through phase-history plus exact Git commit/hash custody, never live fixture paths
 reusable_commands:

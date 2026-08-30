@@ -64,9 +64,11 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Stopped checkout credentials from persisting on the temporary local workers
   and disabled both release execution and publication until the disposable
   candidate and isolated trusted substrates are available.
-- Replaced the temporary shared local candidate pool with GitHub-hosted fresh
-  per-job workers, retained owner/same-repository PR admission, prohibited
-  polling/sleeping/idle coordination, and kept trusted publication disabled.
+- Replaced the temporary shared-pool exception with explicit trust routing:
+  unsafe PR code uses fresh hosted jobs, trusted contributor CI may use local
+  runners, neither path falls back or idles, and publication remains disabled.
+- Reduced governance evidence setup from 21 jobs to four mechanically derived
+  shards while preserving exactly-once gate coverage and independent receipts.
 
 ## [0.6.1] - 2026-08-14
 

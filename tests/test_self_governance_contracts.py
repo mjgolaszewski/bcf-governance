@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import importlib.util
 import re
 import subprocess
 import sys
@@ -13,6 +14,17 @@ from bcf_governance.tooling.governance_validation.runner import validate_repo_ro
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _load_github_script(name: str):
+    path = REPO_ROOT / ".github/scripts" / name
+    spec = importlib.util.spec_from_file_location(path.stem, path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 POLICY_PATH = REPO_ROOT / "governance/self-governance-policy.yml"
 
 
@@ -164,12 +176,23 @@ def test_self_governance_runner_classification_is_exact_and_has_no_fallback() ->
         assert set(jobs) == set(classification)
         observed_jobs[relative_path] = classification
         for job_id, trust_class in classification.items():
-            expected_labels = runner_policy[f"{trust_class}_labels"]
+            if trust_class == "trusted":
+                expected_labels = runner_policy["trusted_labels"]
+            elif relative_path in {
+                ".github/workflows/governance.yml",
+                ".github/workflows/governance-pack.yml",
+            }:
+                expected_labels = runner_policy["candidate_routing"][
+                    "pull_request_expression"
+                ]
+            else:
+                expected_labels = runner_policy["candidate_routing"][
+                    "trusted_ref_runner"
+                ]
             assert jobs[job_id]["runs-on"] == expected_labels
     assert observed_jobs == expected_jobs
     assert runner_policy["hosted_fallback_allowed"] is False
-    assert runner_policy["candidate_substrate"] == "github_hosted_ephemeral"
-    assert runner_policy["candidate_labels"] == "ubuntu-latest"
+    assert runner_policy["candidate_substrate"] == "contributor_trust_routed"
     assert runner_policy["coordination_policy"] == [
         "no_polling",
         "no_sleeping",
@@ -177,12 +200,15 @@ def test_self_governance_runner_classification_is_exact_and_has_no_fallback() ->
     ]
 
 
-def test_fork_pull_requests_are_rejected_before_candidate_runner_assignment() -> None:
-    required_guard = (
-        "github.event.pull_request.head.repo.full_name == github.repository"
-    )
+def test_pull_requests_route_by_contributor_and_repository_trust() -> None:
     runner_policy = _policy()["runner_security"]
-    owner_guard = f"github.actor == '{runner_policy['candidate_admission']['pull_request_actor']}'"
+    routing = runner_policy["candidate_routing"]
+    expression = routing["pull_request_expression"]
+    assert routing["trusted_contributors"] == ["mjgolaszewski"]
+    assert routing["unsafe_pull_request_runner"] == "ubuntu-latest"
+    assert routing["trusted_same_repository_runner"] == "bcf-governance"
+    assert "github.actor != 'mjgolaszewski'" in expression
+    assert "github.event.pull_request.head.repo.full_name != github.repository" in expression
     for relative_path in (
         ".github/workflows/governance.yml",
         ".github/workflows/governance-pack.yml",
@@ -192,8 +218,7 @@ def test_fork_pull_requests_are_rejected_before_candidate_runner_assignment() ->
         )
         for job_id, trust_class in runner_policy["jobs"][relative_path].items():
             if trust_class == "candidate":
-                assert required_guard in workflow["jobs"][job_id]["if"]
-                assert owner_guard in workflow["jobs"][job_id]["if"]
+                assert workflow["jobs"][job_id]["runs-on"] == expression
 
 
 def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
@@ -219,7 +244,8 @@ def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
 
 def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
     runner_policy = _policy()["runner_security"]
-    assert runner_policy["candidate_labels"] != runner_policy["trusted_labels"]
+    routing = runner_policy["candidate_routing"]
+    assert routing["unsafe_pull_request_runner"] not in runner_policy["trusted_labels"]
     window = runner_policy["temporary_local_window"]
     assert window["status"] == "closed"
     assert window["privileged_publication_enabled"] is False
@@ -245,6 +271,25 @@ def test_workflows_have_no_runner_occupying_coordination() -> None:
         for job in workflow["jobs"].values():
             for step in job.get("steps", []):
                 assert forbidden.search(step.get("run", "")) is None
+
+
+def test_governance_evidence_shards_derive_every_required_gate_once() -> None:
+    module = _load_github_script("capture_governance_shard.py")
+    expected = module.required_gate_targets(REPO_ROOT)
+    shards = [
+        module.partition_required_gates(REPO_ROOT, shard_index=index, shard_count=4)
+        for index in range(4)
+    ]
+    flattened = [gate for shard in shards for gate in shard]
+    assert sorted(flattened) == expected
+    assert len(flattened) == len(set(flattened))
+    assert max(map(len, shards)) - min(map(len, shards)) <= 1
+    workflow = yaml.safe_load(
+        (REPO_ROOT / ".github/workflows/governance.yml").read_text(encoding="utf-8")
+    )
+    strategy = workflow["jobs"]["evidence"]["strategy"]
+    assert strategy["max-parallel"] == 4
+    assert strategy["matrix"] == {"shard": [0, 1, 2, 3]}
 
 
 def test_self_gate_runner_bootstraps_an_uninstalled_source_checkout() -> None:
@@ -306,7 +351,7 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
     )
     lane_namespace = upload["with"]["name"]
     assert lane_namespace == (
-        "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.gate }}"
+        "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-shard-${{ matrix.shard }}"
     )
 
     download = next(

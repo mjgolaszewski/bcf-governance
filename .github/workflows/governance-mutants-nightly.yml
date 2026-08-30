@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   high-value-mutants:
-    runs-on: ubuntu-latest
+    runs-on: bcf-governance
     steps:
       - uses: actions/checkout@v4
         with:

@@ -11,8 +11,7 @@ permissions:
 
 jobs:
   pack-checks:
-    if: github.event_name != 'pull_request' || (github.actor == 'mjgolaszewski' && github.event.pull_request.head.repo.full_name == github.repository)
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && (github.actor != 'mjgolaszewski' || github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-latest' || 'bcf-governance' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -43,8 +42,7 @@ jobs:
         run: python template-repo/scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders --allow-release-gate-placeholders
 
   ast-checks:
-    if: github.event_name != 'pull_request' || (github.actor == 'mjgolaszewski' && github.event.pull_request.head.repo.full_name == github.repository)
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && (github.actor != 'mjgolaszewski' || github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-latest' || 'bcf-governance' }}
     steps:
       - uses: actions/checkout@v4
         with:

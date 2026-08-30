@@ -11,8 +11,7 @@ hotfix:
   mode: full
   related_phase_id: P02
   hotfix_number: 1
-  summary: replace the expired shared local candidate pool with disposable GitHub-hosted
-    run-to-completion workers
+  summary: route unsafe pull requests to disposable hosted workers and trusted contributor CI to the local pool
 execution_evidence:
   planned_commands:
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
@@ -21,12 +20,13 @@ execution_evidence:
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
   - .venv/bin/python -m pytest tests
   notes:
-  - GitHub-hosted capacity resumed before the prior local-window expiration, so every candidate job now uses one fresh provider-managed ubuntu-latest VM and terminates when its work completes
-  - same-repository and sole-owner PR admission remains in place to prevent unapproved credit consumption
+  - GitHub-hosted capacity resumed before the prior local-window expiration; fork or non-trusted pull requests now use one fresh provider-managed ubuntu-latest VM per job
+  - owner-authored same-repository PRs, protected main, schedules, and tags use the repository-scoped bcf-governance local pool
+  - the routing expression is mechanically tested so unsafe code cannot select a persistent local runner and hosted capacity is not a fallback for trusted work
   - no workflow run command polls, sleeps, waits, or loops for another workflow or runner
-  - the owner-controlled local label set remains only on the disabled trusted publisher; candidate jobs have no fallback to it
+  - evidence gates are derived from canonical contracts and partitioned exactly once across four run-to-completion shards rather than allocating 21 setup-heavy jobs
   - release execution remains disabled until P11 and trusted publication remains disabled until P10 isolation proof
-  - local validation passed governance-yaml-ok and the complete 247-test suite
+  - local validation passed governance-yaml-ok and the complete 248-test suite
 closeout_requirements:
   claims:
     required_suites_green:
