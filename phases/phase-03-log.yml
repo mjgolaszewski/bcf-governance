@@ -19,6 +19,7 @@ summary:
   - added schema-2-compatible immutable evidence sessions with private roots, atomic manifests, closed inventories, and opt-in profile-v1 compatibility
   - added independent profile-v2 truth verification that rejects missing, tampered, stale, mixed-session, mixed-attempt, and inventory-drifted evidence
   - added the canonical cheap preflight and contract-owned exact pytest manifests, removing the self-gate runner's duplicate node-selector map
+  - hardened exact-run Docker cleanup against forged ownership, unsafe daemon identities, and anonymous-volume leakage
 workitems:
 - id: P03-P0-01
   status: IN_PROGRESS
@@ -38,6 +39,7 @@ execution_evidence:
   - the evidence-session slice passed governance-yaml-ok and 100 focused evidence, schema, architecture, pack-parity, and CLI tests
   - the independent session-truth slice passed governance-yaml-ok and 73 focused producer, verifier, architecture, and pack-parity tests
   - the preflight and exact-manifest slice reproduced all 10 governed populations, including 223 ordinary nodes, and passed 39 focused tests
+  - the cleanup slice passed 19 focused positive and adversarial tests without contacting the local Docker daemon
 closeout_requirements:
   claims:
     workitems_closed:

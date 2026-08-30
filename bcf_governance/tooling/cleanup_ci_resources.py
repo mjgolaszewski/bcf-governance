@@ -13,12 +13,14 @@ from typing import Callable
 
 LABEL_KEY = "io.bcf-governance.ci-run"
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{5,127}$")
+OBJECT_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:@+-]{0,255}$")
 
 
 @dataclass(frozen=True)
 class DockerResource:
     kind: str
     object_id: str
+    owner_run_id: str
 
 
 Runner = Callable[[list[str]], subprocess.CompletedProcess[str]]
@@ -31,6 +33,11 @@ def _run(command: list[str]) -> subprocess.CompletedProcess[str]:
 def validate_run_id(run_id: str) -> None:
     if not RUN_ID_PATTERN.fullmatch(run_id):
         raise ValueError("run id must be 6-128 characters using letters, digits, dot, underscore, or hyphen")
+
+
+def _validate_object_id(object_id: str) -> None:
+    if not OBJECT_ID_PATTERN.fullmatch(object_id):
+        raise RuntimeError("Docker returned an unsafe resource identity")
 
 
 def discover_resources(run_id: str, runner: Runner = _run) -> list[DockerResource]:
@@ -47,18 +54,54 @@ def discover_resources(run_id: str, runner: Runner = _run) -> list[DockerResourc
         result = runner(command)
         if result.returncode != 0:
             raise RuntimeError(result.stderr.strip() or f"Docker {kind} discovery failed")
-        resources.extend(DockerResource(kind, value) for value in dict.fromkeys(result.stdout.split()) if value)
+        for value in dict.fromkeys(result.stdout.splitlines()):
+            if not value:
+                continue
+            _validate_object_id(value)
+            resources.append(DockerResource(kind, value, run_id))
     return resources
+
+
+def _inspect_command(resource: DockerResource) -> list[str]:
+    templates = {
+        "container": ["docker", "container", "inspect"],
+        "network": ["docker", "network", "inspect"],
+        "volume": ["docker", "volume", "inspect"],
+        "image": ["docker", "image", "inspect"],
+    }
+    identity = ".Name" if resource.kind == "volume" else ".Id"
+    labels = ".Config.Labels" if resource.kind in {"container", "image"} else ".Labels"
+    template = f'{{{{{identity}}}}}\t{{{{index {labels} "{LABEL_KEY}"}}}}'
+    return [*templates[resource.kind], "--format", template, resource.object_id]
+
+
+def _revalidate_ownership(resource: DockerResource, runner: Runner) -> None:
+    validate_run_id(resource.owner_run_id)
+    _validate_object_id(resource.object_id)
+    result = runner(_inspect_command(resource))
+    if result.returncode != 0:
+        raise RuntimeError(
+            result.stderr.strip()
+            or f"failed to revalidate {resource.kind} {resource.object_id}"
+        )
+    fields = result.stdout.rstrip("\n").split("\t")
+    if fields != [resource.object_id, resource.owner_run_id]:
+        raise RuntimeError(
+            f"Docker {resource.kind} ownership changed before cleanup: {resource.object_id}"
+        )
 
 
 def remove_resources(resources: list[DockerResource], runner: Runner = _run) -> None:
     removers = {
-        "container": ["docker", "rm", "-f"],
+        "container": ["docker", "rm", "-fv"],
         "network": ["docker", "network", "rm"],
         "volume": ["docker", "volume", "rm"],
         "image": ["docker", "image", "rm"],
     }
     for resource in resources:
+        if resource.kind not in removers:
+            raise RuntimeError(f"unsupported Docker resource kind: {resource.kind}")
+        _revalidate_ownership(resource, runner)
         result = runner([*removers[resource.kind], resource.object_id])
         if result.returncode != 0:
             raise RuntimeError(result.stderr.strip() or f"failed to remove {resource.kind} {resource.object_id}")

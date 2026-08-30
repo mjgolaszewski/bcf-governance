@@ -219,4 +219,5 @@ CI can be removed; mixed workflows are reported for manual editing.
 
 CI-owned Docker resources use the exact
 `io.bcf-governance.ci-run=<run-id>` label. BCF never infers ownership from names
-or performs global Docker/build-cache pruning.
+or performs global Docker/build-cache pruning; it revalidates the exact ID and
+label immediately before deletion and removes container anonymous volumes.

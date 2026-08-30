@@ -62,7 +62,7 @@
     },
     "docs/OPERATIONS.md": {
       "operation": "copy",
-      "sha256": "0722faf5726998f2aa34c9e7300f3e0fc6c1854a70b06e39349300cfff7d7184"
+      "sha256": "8792b825ba0e1bc0f2f6b51b744d36ad88d8104c643d10f8b206925a7a27966a"
     },
     "governance-profile.yml": {
       "operation": "generate",
@@ -260,7 +260,7 @@
     },
     "scripts/_bcf_runtime/cleanup_ci_resources.py": {
       "operation": "copy",
-      "sha256": "ae20f1eb1aeba65685ea5fdd597a4a02f0ebb26d6926563e4c364a9474cdcee8"
+      "sha256": "25d2a9e296ed55b919ff305e1c3ad93e5c91a6ce7ff7c6d61eb8264aad90d443"
     },
     "scripts/_bcf_runtime/cleanup_governance_pack.py": {
       "operation": "copy",

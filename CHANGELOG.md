@@ -18,6 +18,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   inventory, producer, run, attempt, and per-receipt artifact bindings.
 - Added a canonical cheap `bcf preflight` and contract-owned exact pytest
   manifests, replacing the self-gate runner's secondary test-node map.
+- Hardened Docker cleanup with immediate exact-ID/owner revalidation, safe
+  identity parsing, and anonymous-volume removal without global pruning.
 
 ### Changed
 
