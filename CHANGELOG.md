@@ -86,6 +86,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Kept trusted-controller virtual environments at their final commit-addressed
+  paths so generated console-script shebangs remain executable, with scoped
+  recovery of the two exact-provenance installations left by the failed
+  bootstrap attempt.
 - Made the source-tree preflight wrapper resolve BCF's package from any working
   directory, including fresh hosted-runner checkouts without an installed wheel.
 - Distinguished the session-allocating job from admitted evidence producer jobs,

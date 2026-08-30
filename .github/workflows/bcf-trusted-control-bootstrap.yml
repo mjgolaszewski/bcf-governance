@@ -100,10 +100,12 @@ jobs:
           BCF_BOOTSTRAP_DIR: ${{ runner.temp }}/bcf-trusted-control-bootstrap
         run: |
           set -euo pipefail
+          umask 077
           selected_python="$(command -v python)"
           install_parent="${RUNNER_TOOL_CACHE%/}/bcf-governance"
           install_root="$install_parent/$BCF_BOOTSTRAP_COMMIT_SHA"
-          stage="$install_root.stage-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          install_owner="$install_root/.bcf-install-owner"
+          installation_id="$GITHUB_RUN_ID:$GITHUB_RUN_ATTEMPT"
           case "$install_parent" in
             "$RUNNER_TOOL_CACHE"/*) ;;
             *) echo "trusted install path escaped the tool cache" >&2; exit 1 ;;
@@ -161,28 +163,38 @@ jobs:
           if json.loads(path.read_text()) != expected:
               raise SystemExit("existing trusted control installation has stale provenance")
           PY
-            "$install_root/bin/bcf" ci-github --help >/dev/null
-            exit 0
+            if "$install_root/bin/bcf" ci-github --help >/dev/null 2>&1; then
+              exit 0
+            fi
+            # A matching but unusable installation is safe to replace. This
+            # repairs bootstrap run 33340656638, whose relocated virtualenv
+            # retained an absolute shebang to its deleted staging directory.
+            test "$install_root" = "$install_parent/$BCF_BOOTSTRAP_COMMIT_SHA"
+            rm -rf -- "$install_root"
           fi
-          test ! -e "$stage"
-          cleanup_stage() {
-            if [[ -d "$stage" && ! -L "$stage" && "$stage" == "$install_root".stage-* ]]; then
-              rm -rf -- "$stage"
+          test ! -e "$install_root"
+          mkdir -- "$install_root"
+          printf '%s\n' "$installation_id" > "$install_owner"
+          cleanup_install() {
+            if [[ -d "$install_root" && ! -L "$install_root" \
+              && -f "$install_owner" && ! -L "$install_owner" \
+              && "$(<"$install_owner")" == "$installation_id" \
+              && "$install_root" == "$install_parent/$BCF_BOOTSTRAP_COMMIT_SHA" ]]; then
+              rm -rf -- "$install_root"
             fi
           }
-          trap cleanup_stage EXIT
-          "$selected_python" -m venv "$stage"
-          "$stage/bin/python" -m pip install --no-index \
+          trap cleanup_install EXIT
+          "$selected_python" -m venv "$install_root"
+          "$install_root/bin/python" -m pip install --no-index \
             --find-links "$BCF_BOOTSTRAP_DIR" \
             "$BCF_BOOTSTRAP_DIR/bcf_governance-0.6.1-py3-none-any.whl"
-          "$stage/bin/bcf" ci-github --help >/dev/null
-          export BCF_INSTALL_STAGE="$stage"
+          export BCF_INSTALL_ROOT="$install_root"
           "$selected_python" - <<'PY'
           import json
           import os
           from pathlib import Path
 
-          Path(os.environ["BCF_INSTALL_STAGE"], "INSTALL-METADATA.json").write_text(
+          Path(os.environ["BCF_INSTALL_ROOT"], "INSTALL-METADATA.json").write_text(
               json.dumps(
                   {
                       "artifact_id": os.environ["BCF_BOOTSTRAP_ARTIFACT_ID"],
@@ -198,6 +210,7 @@ jobs:
               encoding="utf-8",
           )
           PY
-          mv -- "$stage" "$install_root"
+          "$install_root/bin/bcf" ci-github --help >/dev/null
+          rm -- "$install_owner"
           trap - EXIT
           "$install_root/bin/bcf" ci-github --help >/dev/null

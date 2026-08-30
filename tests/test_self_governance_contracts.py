@@ -258,6 +258,12 @@ def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
     assert "pip install -r" not in commands
     assert "actions/checkout" not in commands
     assert "existing trusted control installation has stale provenance" in commands
+    assert '"$selected_python" -m venv "$install_root"' in commands
+    assert 'mv -- "$stage" "$install_root"' not in commands
+    assert '"$install_root/bin/bcf" ci-github --help >/dev/null' in commands
+    assert commands.rindex(
+        '"$install_root/bin/bcf" ci-github --help >/dev/null'
+    ) > commands.index('"$selected_python" -m venv "$install_root"')
 
 
 def test_self_governance_runner_classification_is_exact_and_has_no_fallback() -> None:
