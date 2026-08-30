@@ -1253,6 +1253,27 @@ def test_validate_repo_root_rejects_ephemeral_evidence_without_durable_marker(
     assert "ephemeral artifact references" in str(excinfo.value)
 
 
+def test_non_authoritative_marker_survives_yaml_reserialization(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    audit_path = repo_root / "audits/local-evidence.yml"
+    payload = {
+        "evidence": {
+            "command": (
+                "tool --output .artifacts/security/report.json "
+                "# non-authoritative local artifact"
+            )
+        }
+    }
+    audit_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    reserialized = yaml.safe_dump(
+        yaml.safe_load(audit_path.read_text(encoding="utf-8")), sort_keys=False
+    )
+    audit_path.write_text(reserialized, encoding="utf-8")
+
+    validate_repo_root(repo_root)
+
+
 @pytest.mark.parametrize(
     ("fixture_name", "expected_message"),
     [

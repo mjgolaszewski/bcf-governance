@@ -58,6 +58,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   detached negative-control evidence sessions, including the loader environment
   required by toolcache Python installations, without changing canonical gate
   argv or schema-2 receipt compatibility.
+- Kept non-authoritative local-artifact markers inside governed YAML scalar
+  values so mutation reserialization cannot strip them and mask the intended
+  causal diagnostic.
 
 ### Security
 
