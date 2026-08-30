@@ -48,6 +48,12 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Added exact local pull-request context, fail-fast repository runtime/capacity
   contracts, repository-owned database bind roots, and digest-bound trusted
   external-input handoff.
+- Added backward-compatible profile-contract v2 lifecycle integration, typed
+  expiring capability N/A records, profile readiness diagnostics, and
+  retention-bound evidence-session pruning with immediate identity checks.
+- Added generated Standard-v2 release surfaces that allocate one immutable
+  evidence session, execute each positive gate once, and bind fan-in to the
+  exact Actions run and attempt without polling or waiter jobs.
 
 ### Changed
 
@@ -57,9 +63,28 @@ All notable changes to BCF Governance are recorded here. This file follows
   candidate execution or release publication is enabled.
 - Made BCF consume the same semantic-ownership schema, runtime, registry, CLI,
   gate contract, and evidence control that it packages for adopters.
+- Made fresh Standard and Regulated installations select profile contract v2;
+  Lite and existing repositories remain on v1 until explicit promotion.
+- Separated workflow adoption from profile lifecycle: normal upgrades and
+  promotions preserve installed workflow bytes, while fresh installs generate
+  the selected profile's workflow surface.
 
 ### Fixed
 
+- Bound profile-v2 receipts to an explicit immutable session producer identity,
+  so nested local validation cannot inherit an unrelated outer Actions run or
+  job identity from ambient environment variables.
+- Projected execution-only test selectors out of evidence policy during profile
+  promotion while retaining them in canonical gate contracts, so real
+  selector-bearing repositories can promote to contract v2 transactionally.
+- Kept generated profile, evidence-policy, and gate-contract YAML compact enough
+  to satisfy the adopting repository's declared context budgets.
+- Preserved an adopter's existing canonical semantic-ownership invocation and
+  causal controls during no-config v2 promotion, using the generic Standard-v2
+  gate only when no custom semantic contract exists.
+- Made generated session-mode restoration a bounded `find -execdir` operation,
+  keeping Standard-v2 workflows free of mechanically ambiguous shell waiter
+  loops.
 - Made the explicitly selected Python interpreter authoritative in positive and
   detached negative-control evidence sessions, including the loader environment
   required by toolcache Python installations, without changing canonical gate

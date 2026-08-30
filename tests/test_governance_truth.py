@@ -465,6 +465,7 @@ def _enable_v2_session(repo: Path) -> Path:
             "repository_id": "42",
             "run_id": "1",
             "run_attempt": "1",
+            "producer_id": "evidence",
         },
         "expected_gate_inventory": ["reconcile", "security-review", "test"],
         "expected_producer_inventory": ["evidence"],
@@ -661,6 +662,12 @@ def test_profile_v2_session_computes_closed(tmp_path: Path) -> None:
                 {"run_attempt": "2"}
             ),
             "evidence_session_run_attempt_mismatch",
+        ),
+        (
+            lambda receipt: receipt["invocation"]["workflow"].update(
+                {"job": "different-producer"}
+            ),
+            "evidence_session_producer_id_mismatch",
         ),
     ],
 )

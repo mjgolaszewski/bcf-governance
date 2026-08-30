@@ -154,4 +154,14 @@ gate_catalog:
     status: deferred
     command_policy: runtime_smoke
     rationale: runtime behavior is proven in a declared environment
+  semantic_ownership:
+    target: semantic-ownership
+    status: deferred
+    command_policy: semantic_ownership
+    rationale: declared canonical representations have one mechanically enforced owner
+  ci_certification:
+    target: ci-certification
+    status: optional
+    command_policy: ci_certification
+    rationale: authenticated exact-commit CI state is independently recomputed before release
 provenance: {}

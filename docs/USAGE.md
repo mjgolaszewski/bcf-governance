@@ -6,17 +6,24 @@ belong in its installed `docs/OPERATIONS.md` and gate contract.
 
 ## Profiles
 
-- `lite` bootstraps a repository with `governance-validate` and
+- `lite` defaults to profile contract v1 and bootstraps a repository with `governance-validate` and
   `governance-exposure-scan`. It is the only profile allowed before the full
   application gate surface is known.
-- `standard` requires complete executable contracts for architecture, lint,
+- Fresh `standard` installations default to profile contract v2 and require complete executable contracts for architecture, lint,
   type, test, contract, security, SBOM, scan, review, and runtime gates.
-- `regulated` adds trusted verifier keys, independent Critical/High review,
+- Fresh `regulated` installations also use v2 and add trusted verifier keys, independent Critical/High review,
   permitted risk authorities, model-risk policy, and hotfix governance.
 
 Standard and regulated profiles cannot represent a partially wired target.
 Their complete profile configuration is validated before BCF mutates the
 repository.
+
+Contract version is distinct from profile strictness. An absent
+`profile_contract_version` means `1.0`, so installing newer BCF tooling does not
+silently promote an existing consumer. Contract v2 adds declared SOIP,
+immutable evidence sessions, typed N/A records, and optional project-selected
+CI-authority and runtime contracts. A configured v2 capability is validated
+fail-closed; an absent optional capability is reported by `bcf doctor`.
 
 ## Required root artifacts
 
@@ -101,13 +108,25 @@ to complete, not standard-profile exceptions.
 Preview and apply monotonic promotion:
 
 ```bash
-bcf profile promote --repo-root . --to standard --config standard-gates.yml --check
-bcf profile promote --repo-root . --to standard --config standard-gates.yml --apply
+bcf profile promote --repo-root . --to standard --contract-version 2.0 --check
+bcf profile promote --repo-root . --to standard --contract-version 2.0 --apply
 ```
 
-Promotion changes profile-derived policy, Make aliases, and the static CI
-matrix transactionally. It never regenerates phase artifacts and cannot move
-to a weaker profile.
+`--config standard-gates.yml` is optional when the canonical gate contracts
+already describe the desired profile. Promotion changes profile-derived
+policy and local Make aliases transactionally. It preserves installed workflow
+bytes, never regenerates phase artifacts, and cannot move to a weaker profile
+or contract version. Adopt a GitHub topology separately and explicitly with
+`bcf ci adopt github --check|--apply`.
+
+Standard-v2 N/A records live under `governance/capability-na/`. Each record
+names the exact capability, gate, or semantic family; repository scope;
+rationale and supporting evidence; approving role; subject commit; review
+time; and either an expiry or deterministic re-review trigger. The subject
+commit must be an ancestor of the current committed tree. An active trigger or
+expired record blocks readiness. Regulated requirements cannot be bypassed by
+N/A, and CI authority cannot be marked N/A when CI evidence supports a release
+claim.
 
 ## Upgrade and rescaffold
 
@@ -115,12 +134,14 @@ Normal upgrade refreshes pack-owned runtime and schemas, creates newly required
 artifacts only when absent, and runs the idempotent evidence migration:
 
 ```bash
-bcf install --target . --upgrade --profile lite
+bcf install --target . --upgrade
 ```
 
-For standard or regulated, provide the complete profile config. Use
-`--reset-options` only when intentionally regenerating profile-derived option
-surfaces. Migration may normalize legacy authored terminal state and booleans;
+Upgrade preserves the repository's selected profile, contract version, and
+workflow bytes. A conflicting `--profile` or `--profile-contract-version`
+fails with direction to use explicit promotion. Use `--reset-options` only
+when intentionally rebuilding profile-derived non-workflow surfaces; it still
+does not change the contract version. Migration may normalize legacy authored terminal state and booleans;
 the original values and hashes remain in a non-authoritative migration report.
 
 `--force-rescaffold` is destructive and confirmation-gated. Use it only after
@@ -176,6 +197,17 @@ Evidence is exact-tree by default. A different commit, tree, or tracked working
 tree makes it stale. Security-impacting changes always require a new security
 review. Evidence and truth schema 2.0 is required; 0.5 bundles are invalid.
 
+Profile-v2 `release-check` first runs the cheap preflight and allocates one
+private immutable evidence session. All positive gates bind receipts to that
+same manifest and execute once. Generated CI transports that manifest and
+names lane and terminal artifacts with the exact provider run and attempt;
+truth rejects mixed sessions, attempts, commits, trees, profiles, producers,
+or inventories. Profile-v1 truth continues accepting schema-2 receipts without
+a session manifest. Local automation that runs inside a provider process must
+declare its local identity explicitly with `--local-producer-id`; the immutable
+session then governs receipt producer binding instead of ambient provider
+environment variables.
+
 ## Findings and provenance
 
 The canonical finding registry accounts for every discovered issue, including
@@ -205,6 +237,19 @@ apply requires `--yes`.
 
 Use `--remove-governance-pack` only to decommission BCF. Dedicated BCF files and
 CI can be removed; mixed workflows are reported for manual editing.
+
+Evidence-session retention is a separate exact-root operation:
+
+```bash
+bcf ci-cleanup --repo-root . --prune-evidence-sessions
+bcf ci-cleanup --repo-root . --prune-evidence-sessions --apply --yes
+```
+
+The dry run reads `session_retention_hours` from the artifact manifest and
+considers only valid non-authoritative local sessions below the ignored `.artifacts/bcf/sessions`
+root. Apply reloads each immutable manifest and revalidates its inode, device,
+session ID, and digest immediately before deleting that exact session. It never
+clears the general artifact root.
 
 ## Supporting commands
 

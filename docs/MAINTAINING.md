@@ -29,6 +29,19 @@ Pack/runtime parity tests fail on drift. Keep implementation modules below 800
 lines and split by stable security or validation concepts, preserving focused
 characterization tests before a split.
 
+Profile-contract behavior has one packaged owner. Fresh Standard and Regulated
+installs use v2; Lite and version-absent consumers remain v1. Ordinary upgrades
+preserve the selected profile, contract version, and workflow bytes. Promotion
+is explicit, monotonic, transactional, and also preserves workflow bytes;
+GitHub workflow changes belong only to fresh installation or the explicit CI
+adopter. Tests must compare those bytes, not merely decoded job names.
+
+After changing v2 profile surfaces, test all four copies: packaged tooling,
+standalone private runtime, template source, and packaged template. Generated
+v2 workflows must allocate one session before evidence, execute positive gates
+once, use exact run/attempt artifact namespaces, and contain no polling,
+sleeping, or capacity-wait jobs.
+
 ## Change contract
 
 Every pull request:

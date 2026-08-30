@@ -15,6 +15,7 @@
       }
     },
     "schema_version": {"const": "1.0"},
+    "profile_contract_version": {"enum": ["1.0", "2.0"]},
     "target_profile": {"enum": ["lite", "standard", "regulated"]},
     "gates": {
       "type": "object",

@@ -77,6 +77,8 @@ GOVERNANCE_PACK_REMOVE_PATHS = (
     "scripts/governance_evidence.py",
     "scripts/governance_truth.py",
     "scripts/governance_truth_support.py",
+    "scripts/preflight_governance.py",
+    "scripts/semantic_ownership.py",
     "scripts/migrate_governance_evidence.py",
     "scripts/governance_validation",
     "scripts/scaffold_governance_artifacts.py",

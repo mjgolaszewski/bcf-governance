@@ -109,6 +109,44 @@ def _builtin_contracts() -> dict[str, dict[str, Any]]:
     }
 
 
+def _v2_builtin_contracts() -> dict[str, dict[str, Any]]:
+    return {
+        "semantic-ownership": {
+            "invocation": {
+                "argv": ["python3", "scripts/semantic_ownership.py", "--repo-root", "."],
+                "cwd": ".",
+                "env": {},
+                "required_env": [],
+            },
+            "evidence": {
+                "kind": "gate",
+                "output_requirements": [
+                    {
+                        "path": ".artifacts/semantic-ownership/report.json",
+                        "media_type": "application/json",
+                    }
+                ],
+            },
+            "negative_controls": [
+                {
+                    "id": "evidence-session-owner-is-enforced",
+                    "mutation": {
+                        "path": "governance/canonical-representations.yml",
+                        "search": "authorized_constructors_and_factories: ['scripts/_bcf_runtime/evidence_sessions.py::allocate_session', 'scripts/_bcf_runtime/evidence_sessions.py::load_session']",
+                        "replace": "authorized_constructors_and_factories: ['scripts/_bcf_runtime/missing.py::owner']",
+                    },
+                    "oracle": {
+                        "kind": "diagnostic",
+                        "exit_codes": [1],
+                        "stream": "stdout",
+                        "regex": "governance.evidence-session.v1 owner must be an authorized constructor",
+                    },
+                }
+            ],
+        }
+    }
+
+
 def _validate_oracle(raw: object, *, context: str) -> dict[str, Any]:
     if not isinstance(raw, dict):
         raise ProfileContractError(f"{context} must be a mapping")
@@ -287,18 +325,28 @@ def _validate_gate(target: str, raw: object, *, command_policy: str) -> dict[str
     }
 
 
-def required_targets(repo_root: Path, profile: str) -> set[str]:
+def required_targets(
+    repo_root: Path, profile: str, *, contract_version: str = "1.0"
+) -> set[str]:
     payload = _load_yaml(repo_root / "governance-profile.yml")
     gates = payload.get("release_gate_profile", {}).get("gates", {})
     if not isinstance(gates, dict):
         raise ProfileContractError("governance-profile.yml gates are missing")
+    if contract_version not in {"1.0", "2.0"}:
+        raise ProfileContractError("profile contract version must be 1.0 or 2.0")
     if profile == "lite":
         return set(BUILTIN_TARGETS)
-    return {
+    targets = {
         str(gate["target"])
         for gate in gates.values()
         if isinstance(gate, dict) and isinstance(gate.get("target"), str)
     }
+    targets.discard("ci-certification")
+    if contract_version == "1.0":
+        targets.discard("semantic-ownership")
+    else:
+        targets.add("semantic-ownership")
+    return targets
 
 
 def load_contract(
@@ -307,20 +355,37 @@ def load_contract(
     config_path: Path | None,
     *,
     asset_root: Path | None = None,
+    contract_version: str = "1.0",
+    config_payload: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    targets = required_targets(repo_root, profile)
+    targets = required_targets(repo_root, profile, contract_version=contract_version)
     raw_gates: dict[str, Any] = {}
     provenance: dict[str, Any] = {}
-    if config_path is not None:
-        payload = _load_yaml(config_path.resolve())
+    if config_path is not None or config_payload is not None:
+        payload = _load_yaml(config_path.resolve()) if config_path is not None else config_payload
+        if not isinstance(payload, dict):
+            raise ProfileContractError("profile config must be a mapping")
         if payload.get("schema_version") != "1.0" or payload.get("target_profile") != profile:
             raise ProfileContractError(
                 f"profile config must declare schema_version 1.0 and target_profile {profile}"
+            )
+        configured_version = payload.get("profile_contract_version")
+        if configured_version is not None and str(configured_version) != contract_version:
+            raise ProfileContractError(
+                "profile config profile_contract_version does not match requested version"
             )
         candidate = payload.get("gates")
         if not isinstance(candidate, dict):
             raise ProfileContractError("profile config gates must be a mapping")
         raw_gates = candidate
+        if contract_version == "1.0":
+            raw_gates = {
+                key: value
+                for key, value in raw_gates.items()
+                if key not in {"semantic-ownership", "ci-certification"}
+            }
+        elif "ci-certification" in raw_gates:
+            targets.add("ci-certification")
         overridden_builtins = sorted(set(raw_gates).intersection(BUILTIN_TARGETS))
         if overridden_builtins:
             raise ProfileContractError(
@@ -332,7 +397,11 @@ def load_contract(
             raise ProfileContractError("profile config provenance must be a mapping")
     elif profile != "lite":
         raise ProfileContractError(f"--profile-config is required for {profile}")
-    merged = {**_builtin_contracts(), **raw_gates}
+    merged = {
+        **_builtin_contracts(),
+        **(_v2_builtin_contracts() if contract_version == "2.0" else {}),
+        **raw_gates,
+    }
     missing = sorted(targets - set(merged))
     extra = sorted(set(merged) - targets)
     if missing or extra:
@@ -385,6 +454,7 @@ def load_contract(
         raise ProfileContractError("governance profile gate catalog is missing")
     return {
         "schema_version": "1.0",
+        "profile_contract_version": contract_version,
         "target_profile": profile,
         "gates": gates,
         "gate_catalog": gate_catalog,
@@ -479,6 +549,13 @@ def apply_scaffold_requirements(
 
 
 def _write_makefile(repo_root: Path, contract: dict[str, Any]) -> None:
+    if contract.get("profile_contract_version") == "2.0":
+        from .profile_v2_surfaces import render_v2_makefile
+
+        (repo_root / "Makefile.fragment").write_text(
+            render_v2_makefile(contract), encoding="utf-8"
+        )
+        return
     gates = contract["gates"]
     targets = " ".join(gates)
     lines = [
@@ -518,6 +595,13 @@ def _write_workflow(repo_root: Path, contract: dict[str, Any]) -> None:
     gates = list(contract["gates"])
     profile = _load_yaml(repo_root / "governance-profile.yml")
     labels = profile.get("ci_profile", {}).get("runner_labels", ["ubuntu-latest"])
+    if contract.get("profile_contract_version") == "2.0":
+        from .profile_v2_surfaces import render_v2_workflow
+
+        path = repo_root / ".github/workflows/governance.yml"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(render_v2_workflow(contract, labels), encoding="utf-8")
+        return
     label_yaml = yaml.safe_dump(labels, default_flow_style=True).strip()
     matrix = "\n".join(f"          - {target}" for target in gates)
     text = f'''name: governance
@@ -579,7 +663,12 @@ jobs:
     path.write_text(text, encoding="utf-8")
 
 
-def apply_profile_contract(repo_root: Path, contract: dict[str, Any]) -> None:
+def apply_profile_contract(
+    repo_root: Path,
+    contract: dict[str, Any],
+    *,
+    write_workflow: bool = True,
+) -> None:
     profile_name = str(contract["target_profile"])
     metadata = {
         str(value["target"]): (str(key), str(value["command_policy"]))
@@ -588,13 +677,17 @@ def apply_profile_contract(repo_root: Path, contract: dict[str, Any]) -> None:
     }
     active_targets = set(contract["gates"])
     profile = _load_yaml(repo_root / "governance-profile.yml")
+    contract_version = str(contract.get("profile_contract_version", "1.0"))
+    if contract_version not in {"1.0", "2.0"}:
+        raise ProfileContractError("profile contract version must be 1.0 or 2.0")
+    profile["profile_contract_version"] = contract_version
     profile["profile"]["selected"] = profile_name
     profile["release_gate_profile"]["gates"] = contract["gate_catalog"]
     for value in profile["release_gate_profile"]["gates"].values():
         value["status"] = "required" if value["target"] in active_targets else "deferred"
     profile["ci_profile"]["required_push_jobs"] = sorted(active_targets)
     (repo_root / "governance-profile.yml").write_text(
-        yaml.safe_dump(profile, sort_keys=False, width=120), encoding="utf-8"
+        yaml.safe_dump(profile, sort_keys=False, width=120, default_flow_style=None), encoding="utf-8"
     )
 
     persisted = {
@@ -607,13 +700,18 @@ def apply_profile_contract(repo_root: Path, contract: dict[str, Any]) -> None:
     }
     contract_path = repo_root / "governance/gate-contracts.yml"
     contract_path.parent.mkdir(parents=True, exist_ok=True)
-    contract_path.write_text(yaml.safe_dump(persisted, sort_keys=False, width=120), encoding="utf-8")
+    contract_path.write_text(yaml.safe_dump(persisted, sort_keys=False, width=120, default_flow_style=None), encoding="utf-8")
 
     evidence_policy = _load_yaml(repo_root / "governance/evidence-policy.yml")
     evidence_policy["gate_overrides"] = {}
     for target, gate in contract["gates"].items():
         command_policy = metadata[target][1]
         evidence = dict(gate.get("evidence", {}))
+        test_contract = evidence.get("test_contract")
+        if isinstance(test_contract, dict):
+            policy_test_contract = dict(test_contract)
+            policy_test_contract.pop("selectors", None)
+            evidence["test_contract"] = policy_test_contract
         evidence_policy["gate_overrides"][target] = {
             "evidence_kind": evidence.pop("kind", _evidence_kind(command_policy)),
             "negative_controls": gate["negative_controls"],
@@ -622,10 +720,11 @@ def apply_profile_contract(repo_root: Path, contract: dict[str, Any]) -> None:
     if profile_name == "regulated":
         evidence_policy["provenance"].update(contract.get("provenance", {}))
     (repo_root / "governance/evidence-policy.yml").write_text(
-        yaml.safe_dump(evidence_policy, sort_keys=False, width=120), encoding="utf-8"
+        yaml.safe_dump(evidence_policy, sort_keys=False, width=120, default_flow_style=None), encoding="utf-8"
     )
     _write_makefile(repo_root, contract)
-    _write_workflow(repo_root, contract)
+    if write_workflow:
+        _write_workflow(repo_root, contract)
     if profile_name == "regulated":
         regulated_docs = {
             "governance/MODEL_RISK_AND_PROVENANCE.md": (
@@ -646,10 +745,56 @@ def apply_profile_contract(repo_root: Path, contract: dict[str, Any]) -> None:
                 path.write_text(text, encoding="utf-8")
 
 
-def promote(repo_root: Path, target_profile: str, config_path: Path) -> dict[str, Any]:
-    current = _load_yaml(repo_root / "governance-profile.yml").get("profile", {}).get("selected")
+def promote(
+    repo_root: Path,
+    target_profile: str,
+    config_path: Path | None,
+    *,
+    contract_version: str | None = None,
+) -> dict[str, Any]:
+    profile_payload = _load_yaml(repo_root / "governance-profile.yml")
+    current = profile_payload.get("profile", {}).get("selected")
+    current_version = str(profile_payload.get("profile_contract_version", "1.0"))
+    target_version = contract_version or current_version
     if current not in PROFILE_ORDER or target_profile not in PROFILE_ORDER:
         raise ProfileContractError("current and target profiles must be lite, standard, or regulated")
-    if PROFILE_ORDER[target_profile] <= PROFILE_ORDER[str(current)]:
-        raise ProfileContractError(f"profile promotion must advance beyond {current}")
-    return load_contract(repo_root, target_profile, config_path)
+    if current_version not in {"1.0", "2.0"} or target_version not in {"1.0", "2.0"}:
+        raise ProfileContractError("profile contract version must be 1.0 or 2.0")
+    profile_advances = PROFILE_ORDER[target_profile] > PROFILE_ORDER[str(current)]
+    contract_advances = current_version == "1.0" and target_version == "2.0"
+    if PROFILE_ORDER[target_profile] < PROFILE_ORDER[str(current)] or (
+        current_version == "2.0" and target_version == "1.0"
+    ):
+        raise ProfileContractError("profile and contract promotion must be monotonic")
+    if not profile_advances and not contract_advances:
+        raise ProfileContractError(
+            f"profile promotion must advance beyond {current} contract {current_version}"
+        )
+    if target_version == "2.0":
+        from .profile_contract_v2 import validate_profile_v2_readiness
+
+        validate_profile_v2_readiness(repo_root, profile=target_profile)
+    config_payload: dict[str, Any] | None = None
+    if config_path is None:
+        persisted = _load_yaml(repo_root / "governance/gate-contracts.yml")
+        gates = persisted.get("gates")
+        if not isinstance(gates, dict):
+            raise ProfileContractError("canonical gate contracts are missing")
+        config_payload = {
+            "schema_version": "1.0",
+            "profile_contract_version": target_version,
+            "target_profile": target_profile,
+            "gates": {
+                key: value
+                for key, value in gates.items()
+                if key not in BUILTIN_TARGETS
+            },
+            "provenance": persisted.get("provenance", {}),
+        }
+    return load_contract(
+        repo_root,
+        target_profile,
+        config_path,
+        contract_version=target_version,
+        config_payload=config_payload,
+    )

@@ -32,6 +32,13 @@ author applicability. Use `bcf profile promote --check|--apply` with a complete
 profile contract to change profiles. Make targets remain developer aliases;
 their command text is not verification.
 
+An absent `profile_contract_version` means v1. Fresh Standard and Regulated
+installs default to v2; Lite defaults to v1. Promote explicitly with
+`bcf profile promote --repo-root . --to standard --contract-version 2.0
+--check|--apply`. Promotion and normal upgrades preserve workflow bytes. Use
+the separate `bcf ci adopt github --check|--apply` transaction when the
+repository elects to install BCF's GitHub reference topology.
+
 Required CI jobs invoke the evidence wrapper for their gate IDs, upload the
 content-addressed bundles, and feed them to the final truthfulness job. The
 wrapper rejects dirty or untracked influence, then runs the positive gate and
@@ -39,6 +46,15 @@ each configured negative behavioral control in separate pristine detached
 worktrees. A control must satisfy its typed failure oracle; command-not-found,
 timeout, signal, or an arbitrary crash is never proof. Dynamic or unresolved
 mandatory workflow paths fail closed.
+
+In profile v2, preflight allocates one private immutable evidence session for
+the exact commit, tree, profile, producer, run, attempt, and gate inventory.
+Every positive gate executes once and writes inside that session. Truth rejects
+mixed sessions or attempts. CI artifact names include the exact provider run
+and attempt, and the reference workflow never polls or occupies a runner while
+waiting for another job. Nested local automation running inside a provider
+process must pass `--local-producer-id`; this prevents ambient provider
+variables from changing the immutable session and receipt identity.
 
 `README.md`, `LICENSE`, and `CHANGELOG.md` are standard required root
 artifacts. Preserve their application-specific content. Every pull request must
@@ -136,6 +152,17 @@ removes attached anonymous volumes. It never infers ownership from names,
 accepts caller globs, or performs global Docker or build-cache pruning.
 Do not hard-code runner labels into the governance pack; runner selection is a
 repository-owned CI decision.
+
+Prune expired local evidence sessions separately:
+
+```bash
+bcf ci-cleanup --repo-root . --prune-evidence-sessions
+bcf ci-cleanup --repo-root . --prune-evidence-sessions --apply --yes
+```
+
+Retention comes from `governance/artifact-manifest.yml`. Cleanup considers only
+valid non-authoritative local entries under `.artifacts/bcf/sessions` and revalidates exact manifest
+identity and filesystem ownership before deletion.
 
 ## Secrets Policy
 

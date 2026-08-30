@@ -34,8 +34,8 @@ from .governance_profiles import (  # noqa: E402
     apply_scaffold_requirements,
     load_contract,
 )
+from .profile_contract_v2 import resolve_install_contract_version  # noqa: E402
 from . import migrate_governance_evidence  # noqa: E402
-
 
 PROFILE_CHOICES = ("lite", "standard", "regulated")
 ADOPTION_MODE_CHOICES = ("fresh", "existing")
@@ -68,6 +68,7 @@ RESCAFFOLD_REMOVE_PATHS = (
     "scripts/governance_evidence.py",
     "scripts/governance_truth.py",
     "scripts/governance_truth_support.py",
+    "scripts/preflight_governance.py", "scripts/semantic_ownership.py",
     "scripts/_bcf_runtime",
     "scripts/migrate_governance_evidence.py",
     "scripts/profile_governance.py",
@@ -121,6 +122,7 @@ UPGRADE_REFRESH_PATHS = (
     "scripts/governance_evidence.py",
     "scripts/governance_truth.py",
     "scripts/governance_truth_support.py",
+    "scripts/preflight_governance.py", "scripts/semantic_ownership.py",
     "scripts/_bcf_runtime",
     "scripts/migrate_governance_evidence.py",
     "scripts/profile_governance.py",
@@ -129,7 +131,6 @@ UPGRADE_REFRESH_PATHS = (
     "scripts/validate_governance_yaml.py",
 )
 UPGRADE_RESET_OPTION_PATHS = (
-    ".github/workflows/governance.yml",
     "Makefile.fragment",
     "architecture-boundaries.yml",
     "governance-profile.yml",
@@ -585,7 +586,7 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
         )
     )
     migrate_governance_evidence.migration_plan(target_root, apply=True)
-    apply_profile_contract(target_root, args.profile_contract)
+    apply_profile_contract(target_root, args.profile_contract, write_workflow=False)
     if args.reset_options:
         _configure_architecture_boundaries(target_root, args.profile)
 
@@ -719,14 +720,13 @@ def install(args: argparse.Namespace) -> InstallResult:
     )
     if git_root.returncode != 0 or Path(git_root.stdout.strip()).resolve() != target_root:
         raise RuntimeError("installation target must be the root of an initialized Git repository")
+    args.profile, contract_version = resolve_install_contract_version(
+        target_root, args.profile, args.profile_contract_version, args.upgrade, args.reset_options)
     # Profile configuration is validated against the immutable pack catalog so
     # damaged or partial 0.5 profile state cannot weaken an upgrade.
     contract_root = _template_root()
     args.profile_contract = load_contract(
-        contract_root,
-        args.profile,
-        args.profile_config,
-        asset_root=target_root,
+        contract_root, args.profile, args.profile_config, asset_root=target_root, contract_version=contract_version
     )
     if args.force_rescaffold:
         _confirm_force_rescaffold(target_root, args.yes)

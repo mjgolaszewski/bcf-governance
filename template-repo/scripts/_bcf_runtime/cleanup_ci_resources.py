@@ -11,6 +11,12 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Callable
 
+from .evidence_session_cleanup import (
+    SessionCleanupError,
+    apply_session_cleanup,
+    plan_session_cleanup,
+)
+
 LABEL_KEY = "io.bcf-governance.ci-run"
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{5,127}$")
 OBJECT_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:@+-]{0,255}$")
@@ -107,18 +113,20 @@ def remove_resources(resources: list[DockerResource], runner: Runner = _run) -> 
             raise RuntimeError(result.stderr.strip() or f"failed to remove {resource.kind} {resource.object_id}")
 
 
-def _confirm(assume_yes: bool) -> None:
+def _confirm(assume_yes: bool, prompt: str = "Remove resources owned by this CI run?") -> None:
     if assume_yes:
         return
     if not sys.stdin.isatty():
         raise RuntimeError("ci-cleanup --apply requires --yes when stdin is not a TTY")
-    if input("Remove resources owned by this CI run? [y/N]: ").strip().lower() not in {"y", "yes"}:
+    if input(f"{prompt} [y/N]: ").strip().lower() not in {"y", "yes"}:
         raise RuntimeError("CI cleanup aborted by user")
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Clean exact-label-owned Docker CI resources.")
-    parser.add_argument("--run-id", required=True)
+    parser = argparse.ArgumentParser(description="Clean exact-owned CI resources or expired evidence sessions.")
+    target = parser.add_mutually_exclusive_group(required=True)
+    target.add_argument("--run-id")
+    target.add_argument("--prune-evidence-sessions", action="store_true")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--yes", action="store_true")
@@ -130,11 +138,30 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> None:
     args = _parser().parse_args(argv)
     try:
+        if args.prune_evidence_sessions:
+            if args.apply:
+                _confirm(args.yes, "Remove expired BCF evidence sessions?")
+            report = (
+                apply_session_cleanup(args.repo_root.resolve())
+                if args.apply
+                else plan_session_cleanup(args.repo_root.resolve())
+            )
+            payload = report.as_dict()
+            if args.format == "json":
+                print(json.dumps(payload, indent=None if args.compact else 2, separators=(",", ":") if args.compact else None, sort_keys=True))
+            else:
+                print(f"status: {report.status}")
+                print(f"applied: {str(report.applied).lower()}")
+                for action in report.actions:
+                    print(f"- evidence-session: {action.path}")
+            return
+        if not isinstance(args.run_id, str):
+            raise ValueError("--run-id is required for Docker cleanup")
         resources = discover_resources(args.run_id)
         if args.apply:
             _confirm(args.yes)
             remove_resources(resources)
-    except (RuntimeError, ValueError) as exc:
+    except (RuntimeError, ValueError, SessionCleanupError) as exc:
         raise SystemExit(str(exc)) from exc
     payload = {
         "status": "changed" if args.apply and resources else "actionable" if resources else "clean",

@@ -271,6 +271,7 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         "plans/build-plan.yml",
         "plans/phase-01-plan.yml",
         "requirements-governance.txt",
+        ".github/workflows/governance.yml",
     )
     for relative_path in protected_paths:
         path = target / relative_path

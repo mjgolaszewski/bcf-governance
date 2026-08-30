@@ -127,6 +127,8 @@ def _manifest_issues(
             if workflow.get(receipt_key) != producer.get(manifest_key):
                 issues.append(f"evidence_session_{receipt_key}_mismatch")
         job = workflow.get("job")
+        if job != producer.get("producer_id"):
+            issues.append("evidence_session_producer_id_mismatch")
         if not isinstance(producer_inventory, list) or job not in producer_inventory:
             issues.append("evidence_session_producer_not_admitted")
     return sorted(set(issues)), manifest, digest

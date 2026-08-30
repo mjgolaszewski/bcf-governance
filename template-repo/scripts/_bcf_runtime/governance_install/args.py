@@ -16,7 +16,16 @@ def build_parser(
 ) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Install the governance pack into a target repository.")
     parser.add_argument("--target", type=Path, required=True, help="Target repository root.")
-    parser.add_argument("--profile", choices=profile_choices, default="standard")
+    parser.add_argument(
+        "--profile",
+        choices=profile_choices,
+        help="Fresh installs default to standard; upgrades preserve the installed profile.",
+    )
+    parser.add_argument(
+        "--profile-contract-version",
+        choices=("1.0", "2.0"),
+        help="Fresh Standard/Regulated default to 2.0; upgrades preserve the installed version.",
+    )
     parser.add_argument(
         "--adoption-mode",
         choices=adoption_mode_choices,

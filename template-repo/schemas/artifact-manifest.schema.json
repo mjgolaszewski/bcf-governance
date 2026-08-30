@@ -168,7 +168,8 @@
           "type": "array",
           "items": { "type": "string", "minLength": 1 }
         },
-        "durable_reference_required": { "type": "boolean" }
+        "durable_reference_required": { "type": "boolean" },
+        "session_retention_hours": { "type": "integer", "minimum": 1 }
       }
     },
     "append_only_contract": {

@@ -391,6 +391,9 @@ def main(argv: list[str] | None = None) -> None:
         f"{report.get('blocking_violation_count', 0)} blocking violation(s)"
     )
     if report["verdict"] != "conformant":
+        for violation in report.get("violations", []):
+            if isinstance(violation, dict) and violation.get("diagnostic"):
+                print(f"semantic-ownership-diagnostic: {violation['diagnostic']}")
         raise SystemExit(1)
 
 
