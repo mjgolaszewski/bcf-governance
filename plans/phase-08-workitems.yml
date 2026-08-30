@@ -4,13 +4,13 @@ document:
   id: bcf-governance-phase-08-workitems
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: completed
   path: plans/phase-08-workitems.yml
   phase_id: P08
 workitems:
 - id: P08-P0-01
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver GitHub reference pack, transactional adopter, runtime contracts,
     and local PR helper
   acceptance:

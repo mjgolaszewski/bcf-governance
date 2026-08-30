@@ -52,7 +52,7 @@ environment_facts:
     - all governance, memory, specs, plans, workitem ledgers, and phase logs are YAML-native
     - observability contracts are scaffolded under contracts/observability/v1/
     - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
-    - P05 reproduced exact Identity main with 62 representations and 220 required browser traces; P06 added provider-neutral authority contracts and state, and P07 completed authenticated certification, independent truth recomputation, revocation, cancellation/status authority, and acyclic release receipts on the stacked train
+    - P05 reproduced exact Identity main with 62 representations and 220 required browser traces; P06 and P07 completed provider-neutral authority, certification, revocation, cancellation/status authority, and acyclic release receipts; P08 completed the explicit GitHub adopter, runtime and trusted-input contracts, and exact local PR parity
     - every candidate job uses a fresh standard GitHub-hosted VM; the public repository receives free unlimited standard-runner execution and has no self-hosted fallback
     - main is protected by active repository ruleset 21862678 requiring pull requests, current governance-truthfulness, pack-checks, ast-checks, resolved conversations, and no force push or deletion
     - the local implementation host provides Docker but no disposable VM hypervisor or clone manager
@@ -64,9 +64,9 @@ environment_facts:
     build_plan: plans/build-plan.yml
     active_phase_ledger: plans/phase-ledger.yml
     phase_history: plans/phase-history.yml
-    active_phase_plan: plans/phase-07-plan.yml
-    active_workitem_ledger: plans/phase-07-workitems.yml
-    active_phase_log: phases/phase-07-log.yml
+    active_phase_plan: plans/phase-08-plan.yml
+    active_workitem_ledger: plans/phase-08-workitems.yml
+    active_phase_log: phases/phase-08-log.yml
 known_constraints:
   - schema-2 evidence must be recaptured after every governed tree mutation
   - template runtime and packaged template copies must remain byte-identical to canonical sources
@@ -98,8 +98,8 @@ references:
     - plans/product-spec.yml
     - plans/build-plan.yml
   execution:
-    - plans/phase-07-plan.yml
-    - plans/phase-07-workitems.yml
-    - phases/phase-07-log.yml
+    - plans/phase-08-plan.yml
+    - plans/phase-08-workitems.yml
+    - phases/phase-08-log.yml
     - phases/phase-02-hotfix01.yml
     - phases/phase-01-hotfix01.yml

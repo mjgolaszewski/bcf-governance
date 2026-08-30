@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BCF fail-fast runtime capacity contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "runtime_root", "minimum_free_bytes", "maximum_owned_containers", "database", "cleanup"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "runtime_root": {"$ref": "#/$defs/path"},
+    "minimum_free_bytes": {"type": "integer", "minimum": 1},
+    "maximum_owned_containers": {"type": "integer", "minimum": 1},
+    "database": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["storage", "relative_path"],
+      "properties": {
+        "storage": {"const": "repository_bind_mount"},
+        "relative_path": {"$ref": "#/$defs/path"}
+      }
+    },
+    "cleanup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["caller_globs", "daemon_global_prune", "exact_owner_revalidation", "remove_anonymous_volumes"],
+      "properties": {
+        "caller_globs": {"const": false},
+        "daemon_global_prune": {"const": false},
+        "exact_owner_revalidation": {"const": true},
+        "remove_anonymous_volumes": {"const": true}
+      }
+    }
+  },
+  "$defs": {
+    "path": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)[A-Za-z0-9._/-]+$"}
+  }
+}
