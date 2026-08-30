@@ -79,7 +79,7 @@ known_constraints:
   - release execution and publication remain disabled until disposable candidate execution and isolated trusted publication are available
   - hosted Actions credits are unavailable through 2026-08-31; P03 implementation and dogfood validation proceed locally
   - every BCF behavior commit updates and validates BCF's own applicable governance contracts before successor work begins
-  - evidence session manifests never clear the general artifact root; cleanup revalidates exact Docker IDs and run labels immediately before scoped deletion and never accepts globs or global prune
+  - cleanup revalidates exact Docker IDs/run labels before scoped deletion; retention-removable phase artifacts are consumed only through phase-history plus exact Git commit/hash custody, never live fixture paths
 reusable_commands:
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
   - .venv/bin/python -m pytest tests

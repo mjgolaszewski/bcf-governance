@@ -22,6 +22,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   identity parsing, and anonymous-volume removal without global pruning.
 - Bound governance artifact fan-in to the exact Actions run attempt, separated
   lane and terminal namespaces, and ordered evidence after canonical preflight.
+- Proved canonical preflight remains valid after every retention-removable phase
+  and hotfix artifact moves into exact Git commit and hash custody.
 
 ### Changed
 

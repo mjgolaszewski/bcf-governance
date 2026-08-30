@@ -21,6 +21,7 @@ summary:
   - added the canonical cheap preflight and contract-owned exact pytest manifests, removing the self-gate runner's duplicate node-selector map
   - hardened exact-run Docker cleanup against forged ownership, unsafe daemon identities, and anonymous-volume leakage
   - made governance fan-in run-attempt exact with disjoint lane and terminal namespaces and a canonical preflight dependency
+  - preserved the existing Git-history retention owner and added post-deletion preflight coverage for phase plan, workitems, log, and hotfix artifacts
 workitems:
 - id: P03-P0-01
   status: IN_PROGRESS
@@ -41,6 +42,7 @@ execution_evidence:
   - the independent session-truth slice passed governance-yaml-ok and 73 focused producer, verifier, architecture, and pack-parity tests
   - the preflight and exact-manifest slice reproduced all 10 governed populations, including 223 ordinary nodes, and passed 39 focused tests
   - the cleanup slice passed 19 focused positive and adversarial tests without contacting the local Docker daemon
+  - retention and preflight coverage passed 76 focused tests, including exact Git custody after all four removable phase artifacts were deleted
 closeout_requirements:
   claims:
     workitems_closed:
