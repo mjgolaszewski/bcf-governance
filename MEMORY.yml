@@ -52,7 +52,7 @@ environment_facts:
     - all governance, memory, specs, plans, workitem ledgers, and phase logs are YAML-native
     - observability contracts are scaffolded under contracts/observability/v1/
     - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
-    - P05 reproduced exact Identity main with 62 representations and 220 required browser traces; P06 and P07 completed provider-neutral authority, certification, revocation, cancellation/status authority, and acyclic release receipts; P08 is active for the GitHub adapter, runtime contracts, and local PR parity
+    - P05 reproduced exact Identity main with 62 representations and 220 required browser traces; P06 and P07 completed provider-neutral authority, certification, revocation, cancellation/status authority, and acyclic release receipts; P08 completed the explicit GitHub adopter, runtime and trusted-input contracts, and exact local PR parity
     - every candidate job uses a fresh standard GitHub-hosted VM; the public repository receives free unlimited standard-runner execution and has no self-hosted fallback
     - main is protected by active repository ruleset 21862678 requiring pull requests, current governance-truthfulness, pack-checks, ast-checks, resolved conversations, and no force push or deletion
     - the local implementation host provides Docker but no disposable VM hypervisor or clone manager
