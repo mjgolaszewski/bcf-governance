@@ -4,6 +4,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -78,6 +79,9 @@ def _make_repo(
     (repo / ".gitignore").write_text(".artifacts/\n", encoding="utf-8")
     (repo / "schemas/evidence-receipt.schema.json").write_bytes(
         (REPO_ROOT / "template-repo/schemas/evidence-receipt.schema.json").read_bytes()
+    )
+    (repo / "schemas/evidence-session.schema.json").write_bytes(
+        (REPO_ROOT / "template-repo/schemas/evidence-session.schema.json").read_bytes()
     )
     _write_yaml(
         repo / "governance-profile.yml",
@@ -437,6 +441,89 @@ def _write_complete_bundle(repo: Path) -> Path:
     return repo / ".artifacts/bcf"
 
 
+def _enable_v2_session(repo: Path) -> Path:
+    profile_path = repo / "governance-profile.yml"
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    profile["profile_contract_version"] = "2.0"
+    _write_yaml(profile_path, profile)
+    _commit(repo, "enable profile v2")
+    evidence_dir = _write_complete_bundle(repo)
+    session_id = "a" * 32
+    manifest = {
+        "schema_version": "1.0",
+        "session_id": session_id,
+        "subject": {
+            "commit_sha": _git(repo, "rev-parse", "HEAD"),
+            "tree_sha": _git(repo, "rev-parse", "HEAD^{tree}"),
+        },
+        "profile": "standard",
+        "profile_contract_version": "2.0",
+        "producer": {
+            "kind": "workflow",
+            "provider": "test",
+            "repository": "example/repo",
+            "repository_id": "42",
+            "run_id": "1",
+            "run_attempt": "1",
+        },
+        "expected_gate_inventory": ["reconcile", "security-review", "test"],
+        "expected_producer_inventory": ["evidence"],
+        "created_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        "session_root_policy": {
+            "mode": "0700",
+            "root_kind": "ignored_repository",
+            "immutable_manifest": True,
+        },
+    }
+    manifest_path = evidence_dir / "evidence-session.json"
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    digest = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    for receipt_path in evidence_dir.glob("*.evidence.json"):
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        receipt["artifacts"].append(
+            {
+                "path": "evidence-session.json",
+                "media_type": "application/vnd.bcf.evidence-session+json",
+                "sha256": digest,
+            }
+        )
+        receipt["observations"]["evidence_session"] = {
+            "session_id": session_id,
+            "manifest_sha256": digest,
+        }
+        receipt_path.write_text(
+            json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+    return evidence_dir
+
+
+def _rewrite_session_bundle(evidence_dir: Path, transform: Any) -> None:
+    manifest_path = evidence_dir / "evidence-session.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    transform(manifest)
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    digest = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    for receipt_path in evidence_dir.glob("*.evidence.json"):
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        session = receipt["observations"]["evidence_session"]
+        session.update(
+            {"session_id": manifest["session_id"], "manifest_sha256": digest}
+        )
+        artifact = next(
+            value
+            for value in receipt["artifacts"]
+            if value["path"] == "evidence-session.json"
+        )
+        artifact["sha256"] = digest
+        receipt_path.write_text(
+            json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+
+
 def _rewrite_receipt(path: Path, transform: Any) -> None:
     receipt = json.loads(path.read_text(encoding="utf-8"))
     transform(receipt)
@@ -464,6 +551,96 @@ def test_current_evidence_and_reconciliation_compute_closed(tmp_path: Path) -> N
     assert report["effective_state"] == "closed"
     assert report["release_readiness"]["effective_state"] == "closed"
     assert report["status"] == "pass"
+
+
+def test_profile_v2_requires_one_valid_evidence_session(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+    profile_path = repo / "governance-profile.yml"
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    profile["profile_contract_version"] = "2.0"
+    _write_yaml(profile_path, profile)
+    _commit(repo, "enable profile v2 without session")
+
+    report = derive_truth(repo, _write_complete_bundle(repo))
+
+    assert report["status"] == "fail"
+    refs = report["claims"]["required_suites_green"]["evidence_refs"]
+    assert any("evidence_session_manifest_artifact_missing" in ref["issues"] for ref in refs)
+
+
+def test_profile_v2_session_computes_closed(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+
+    report = derive_truth(repo, _enable_v2_session(repo))
+
+    assert report["status"] == "pass"
+    assert report["effective_state"] == "closed"
+
+
+@pytest.mark.parametrize(
+    ("mutant", "expected_issue"),
+    [
+        (
+            lambda receipt: receipt["observations"]["evidence_session"].update(
+                {"manifest_sha256": "0" * 64}
+            ),
+            "evidence_session_observed_digest_mismatch",
+        ),
+        (
+            lambda receipt: receipt["invocation"]["workflow"].update(
+                {"run_attempt": "2"}
+            ),
+            "evidence_session_run_attempt_mismatch",
+        ),
+    ],
+)
+def test_profile_v2_session_mutants_fail_for_declared_cause(
+    tmp_path: Path, mutant: Any, expected_issue: str
+) -> None:
+    repo = _make_repo(tmp_path)
+    evidence_dir = _enable_v2_session(repo)
+    receipt_path = evidence_dir / "test.evidence.json"
+    _rewrite_receipt(receipt_path, mutant)
+
+    report = derive_truth(repo, evidence_dir)
+
+    refs = report["claims"]["required_suites_green"]["evidence_refs"]
+    assert report["status"] == "fail"
+    assert any(expected_issue in ref["issues"] for ref in refs)
+
+
+def test_profile_v2_rejects_session_inventory_drift(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+    evidence_dir = _enable_v2_session(repo)
+    _rewrite_session_bundle(
+        evidence_dir,
+        lambda manifest: manifest["expected_gate_inventory"].remove("reconcile"),
+    )
+
+    report = derive_truth(repo, evidence_dir)
+
+    refs = report["claims"]["required_suites_green"]["evidence_refs"]
+    assert report["status"] == "fail"
+    assert any("evidence_session_gate_inventory_mismatch" in ref["issues"] for ref in refs)
+
+
+def test_profile_v2_rejects_stale_receipts_from_another_session(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+    evidence_dir = _enable_v2_session(repo)
+    stale_dir = evidence_dir / "stale"
+    stale_dir.mkdir()
+    for source in [value for value in evidence_dir.iterdir() if value.is_file()]:
+        shutil.copy2(source, stale_dir / source.name)
+    _rewrite_session_bundle(
+        stale_dir,
+        lambda manifest: manifest.update({"session_id": "b" * 32}),
+    )
+
+    report = derive_truth(repo, evidence_dir)
+
+    refs = report["claims"]["required_suites_green"]["evidence_refs"]
+    assert report["status"] == "fail"
+    assert any("evidence_session_mixed_bundle" in ref["issues"] for ref in refs)
 
 
 def test_missing_direct_claim_declarations_cannot_promote_completed_phase(

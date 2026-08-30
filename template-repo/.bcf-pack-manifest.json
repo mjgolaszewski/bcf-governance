@@ -336,7 +336,7 @@
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
-      "sha256": "392d70678d14b0c4ea006c1714beb94306329e2f16c9b273f47521e53c40b4dc"
+      "sha256": "eb2cbd74d3a086bc00a70f6d4bb9faae3a06b3e921477d47261d27d49a276020"
     },
     "scripts/_bcf_runtime/governance_truth_support.py": {
       "operation": "copy",
@@ -408,7 +408,11 @@
     },
     "scripts/_bcf_runtime/truth_receipts.py": {
       "operation": "copy",
-      "sha256": "490cf1ba78fbc733a51862232d50d0bdffa8cfcd91850543d4962d6ce96a500e"
+      "sha256": "7b21ef8f7dc90d252ac917d6a6456cc89cc135c46dd5fbb183e6413774c7200c"
+    },
+    "scripts/_bcf_runtime/truth_sessions.py": {
+      "operation": "copy",
+      "sha256": "471d0d2a9f617a423602adf0e71344d7690bb1b00a9c9677d8727eaa3cc0911b"
     },
     "scripts/_bcf_runtime/validate_governance_yaml.py": {
       "operation": "copy",

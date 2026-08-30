@@ -220,6 +220,7 @@ def derive_truth(
     profile_block = profile_payload.get("profile")
     profile_block = profile_block if isinstance(profile_block, dict) else {}
     selected_profile = str(profile_block.get("selected", "standard"))
+    contract_version = str(profile_payload.get("profile_contract_version", "1.0"))
     settings = policy.get("settings")
     settings = settings if isinstance(settings, dict) else {}
     require_negative = bool(settings.get("require_negative_control_for_required_gates", True))
@@ -235,6 +236,9 @@ def derive_truth(
             tree_independent_allowlist=tree_independent_allowlist,
             expected_kinds=expected_evidence_kinds(repo_root),
             invocations=expected_invocations(repo_root),
+            require_session=contract_version == "2.0",
+            selected_profile=selected_profile,
+            contract_version=contract_version,
         )
     except ReceiptError as exc:
         raise TruthfulnessError(str(exc)) from exc

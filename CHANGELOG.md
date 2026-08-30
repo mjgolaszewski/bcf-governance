@@ -14,6 +14,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Added private, immutable evidence-session allocation and optional schema-2
   receipt binding, with exact commit, tree, profile, producer, run, attempt, and
   closed gate inventory material.
+- Added independent profile-v2 truth recomputation for session manifests,
+  inventory, producer, run, attempt, and per-receipt artifact bindings.
 
 ### Changed
 
