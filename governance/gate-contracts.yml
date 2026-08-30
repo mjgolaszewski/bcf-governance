@@ -205,7 +205,7 @@ gates:
       kind: test_suite
       test_contract:
         junit_xml: .artifacts/junit/contract-test.xml
-        selectors: ['tests/test_self_governance_contracts.py::test_required_repository_artifact_contract_is_executable', 'tests/test_self_governance_contracts.py::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline', 'tests/test_validate_governance_yaml.py::test_artifact_manifest_requires_standard_repository_artifact_contracts',
+        selectors: ['tests/test_self_governance_contracts.py::test_required_repository_artifact_contract_is_executable', 'tests/test_self_governance_contracts.py::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline', 'tests/test_self_governance_contracts.py::test_trusted_jobs_never_checkout_or_invoke_candidate_scripts', 'tests/test_validate_governance_yaml.py::test_artifact_manifest_requires_standard_repository_artifact_contracts',
           'tests/test_validate_governance_yaml.py::test_pull_request_validation_requires_changelog_update', tests/test_ci_authority.py,
           tests/test_ci_certification.py, tests/test_ci_authority_decisions.py, tests/test_release_receipts.py, tests/test_ci_github_reference.py,
           tests/test_ci_github_controller.py, tests/test_local_pr.py, tests/test_runtime_capacity.py, tests/test_trusted_inputs.py]
@@ -232,6 +232,11 @@ gates:
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']
+    - id: trusted-controller-interpreter-environment-must-fail
+      mutation: {path: .github/workflows/bcf-trusted-control-probe.yml, search: 'actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065', replace: 'actions/setup-python@0000000000000000000000000000000000000000'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_self_governance_contracts::test_trusted_jobs_never_checkout_or_invoke_candidate_scripts']
     - id: ci-workflow-event-authentication-must-fail
       mutation: {path: bcf_governance/tooling/ci_authority_state.py, search: 'if not same_identity or actual.event not in
           allowed_events:', replace: 'if not same_identity:'}
@@ -577,11 +582,6 @@ gates:
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']
-    - id: trusted-controller-interpreter-environment-must-fail
-      mutation: {path: .github/workflows/bcf-trusted-control-probe.yml, search: 'actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065', replace: 'actions/setup-python@0000000000000000000000000000000000000000'}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_self_governance_contracts::test_trusted_jobs_never_checkout_or_invoke_candidate_scripts']
   typecheck:
     invocation:
       argv: [python3, .github/scripts/run_self_governance_gate.py, typecheck]
