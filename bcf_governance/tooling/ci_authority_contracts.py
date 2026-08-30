@@ -14,6 +14,7 @@ SCHEMAS = {
     "authority": "ci-authority.schema.json",
     "certification": "ci-certification.schema.json",
     "capability_na": "capability-na.schema.json",
+    "provider_snapshot": "ci-provider-snapshot.schema.json",
 }
 
 
@@ -170,6 +171,50 @@ def _validate_certification(payload: dict[str, Any]) -> None:
             )
 
 
+def _validate_provider_snapshot(payload: dict[str, Any]) -> None:
+    repository = payload["repository"]
+    producer_id = payload["producer_id"]
+    ordinals: set[str] = set()
+    for admission in payload["admissions"]:
+        ordinal = admission["admission_ordinal"]
+        if ordinal in ordinals:
+            raise CIAuthorityContractError(
+                f"provider snapshot {producer_id} has duplicate admission ordinal {ordinal}"
+            )
+        ordinals.add(ordinal)
+        run = admission["producer_run"]
+        if run["producer_id"] != producer_id:
+            raise CIAuthorityContractError(
+                "provider snapshot producer_run must match producer_id"
+            )
+        workflow = run["workflow"]
+        if (
+            workflow["provider"] != repository["provider"]
+            or workflow["repository_id"] != repository["repository_id"]
+        ):
+            raise CIAuthorityContractError(
+                "provider snapshot workflow identity must match repository"
+            )
+        attempt_ids: set[int] = set()
+        for attempt in run["attempts"]:
+            attempt_id = attempt["run_attempt"]
+            if attempt_id in attempt_ids:
+                raise CIAuthorityContractError(
+                    f"provider snapshot {producer_id} has duplicate run attempt {attempt_id}"
+                )
+            attempt_ids.add(attempt_id)
+            job_keys = [_matrix_key(job) for job in attempt["jobs"]]
+            if len(set(job_keys)) != len(job_keys):
+                raise CIAuthorityContractError(
+                    f"provider snapshot {producer_id} attempt {attempt_id} has duplicate jobs"
+                )
+            completed = attempt["status"] == "completed"
+            if completed != (attempt["conclusion"] is not None):
+                raise CIAuthorityContractError(
+                    "provider snapshot conclusion must be present exactly for completed attempts"
+                )
+
+
 def validate_ci_contract(
     repo_root: Path,
     contract: str,
@@ -187,5 +232,7 @@ def validate_ci_contract(
         _validate_capability_na(payload, evaluated_at=instant.astimezone(timezone.utc))
     elif contract == "authority":
         _validate_authority(payload)
-    else:
+    elif contract == "certification":
         _validate_certification(payload)
+    else:
+        _validate_provider_snapshot(payload)

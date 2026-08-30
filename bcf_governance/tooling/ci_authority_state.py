@@ -85,6 +85,7 @@ class ProducerContract:
     producer_id: str
     workflow: WorkflowIdentity
     expected_jobs: tuple[JobKey, ...]
+    allowed_events: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -136,6 +137,11 @@ def _validate_contracts(contracts: tuple[ProducerContract, ...]) -> None:
             raise AuthorityContractError(
                 f"producer {contract.producer_id} has duplicate expected jobs"
             )
+        allowed_events = contract.allowed_events or (contract.workflow.event,)
+        if not all(allowed_events) or len(set(allowed_events)) != len(allowed_events):
+            raise AuthorityContractError(
+                f"producer {contract.producer_id} must declare unique non-empty events"
+            )
 
 
 def _select_admission(admissions: tuple[Admission, ...]) -> Admission | None:
@@ -150,11 +156,27 @@ def _select_admission(admissions: tuple[Admission, ...]) -> Admission | None:
 def _authenticate_admissions(
     contracts: tuple[ProducerContract, ...], admissions: tuple[Admission, ...]
 ) -> None:
-    expected = {contract.producer_id: contract.workflow for contract in contracts}
+    expected = {contract.producer_id: contract for contract in contracts}
     for admission in admissions:
         for run in admission.producer_runs:
-            workflow = expected.get(run.producer_id)
-            if workflow is not None and run.workflow != workflow:
+            contract = expected.get(run.producer_id)
+            if contract is None:
+                continue
+            actual = run.workflow
+            workflow = contract.workflow
+            same_identity = (
+                actual.provider == workflow.provider
+                and actual.repository_id == workflow.repository_id
+                and actual.workflow_id == workflow.workflow_id
+                and actual.active_path == workflow.active_path
+                and actual.trusted_workflow_blob_oid
+                == workflow.trusted_workflow_blob_oid
+                and actual.trusted_workflow_sha256 == workflow.trusted_workflow_sha256
+                and actual.trusted_workflow_definition_commit
+                == workflow.trusted_workflow_definition_commit
+            )
+            allowed_events = contract.allowed_events or (workflow.event,)
+            if not same_identity or actual.event not in allowed_events:
                 raise AuthorityContractError(
                     f"producer {run.producer_id} workflow identity is not authenticated"
                 )

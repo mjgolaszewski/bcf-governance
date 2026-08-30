@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BCF authenticated provider-state snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "producer_id",
+    "repository",
+    "authentication",
+    "current_default_main",
+    "admissions"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "producer_id": {"$ref": "#/$defs/providerId"},
+    "repository": {"$ref": "#/$defs/repository"},
+    "authentication": {"$ref": "#/$defs/authentication"},
+    "current_default_main": {"$ref": "#/$defs/candidate"},
+    "admissions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/admissionObservation"}
+    }
+  },
+  "$defs": {
+    "providerId": {"type": "string", "pattern": "^[A-Za-z0-9._:-]+$"},
+    "sha": {"type": "string", "pattern": "^[a-f0-9]{40,64}$"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "ordinal": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+    "safePath": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)[A-Za-z0-9._/-]+$"
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "repository_id"],
+      "properties": {
+        "provider": {"$ref": "#/$defs/providerId"},
+        "repository_id": {"$ref": "#/$defs/providerId"}
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkout_sha", "tree_sha"],
+      "properties": {
+        "checkout_sha": {"$ref": "#/$defs/sha"},
+        "tree_sha": {"$ref": "#/$defs/sha"}
+      }
+    },
+    "authentication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["collector_id", "provider_api_verified", "captured_at"],
+      "properties": {
+        "collector_id": {"$ref": "#/$defs/providerId"},
+        "provider_api_verified": {"const": true},
+        "captured_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "workflowIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "repository_id",
+        "workflow_id",
+        "active_path",
+        "trusted_workflow_blob_oid",
+        "trusted_workflow_sha256",
+        "trusted_workflow_definition_commit",
+        "event"
+      ],
+      "properties": {
+        "provider": {"$ref": "#/$defs/providerId"},
+        "repository_id": {"$ref": "#/$defs/providerId"},
+        "workflow_id": {"$ref": "#/$defs/providerId"},
+        "active_path": {"$ref": "#/$defs/safePath"},
+        "trusted_workflow_blob_oid": {"$ref": "#/$defs/sha"},
+        "trusted_workflow_sha256": {"$ref": "#/$defs/sha256"},
+        "trusted_workflow_definition_commit": {"$ref": "#/$defs/sha"},
+        "event": {"$ref": "#/$defs/providerId"}
+      }
+    },
+    "scalar": {"type": ["string", "number", "boolean"]},
+    "jobObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["job_id", "matrix", "status", "conclusion"],
+      "properties": {
+        "job_id": {"type": "string", "minLength": 1},
+        "matrix": {
+          "type": "object",
+          "propertyNames": {"pattern": "^[A-Za-z0-9_.-]+$"},
+          "additionalProperties": {"$ref": "#/$defs/scalar"}
+        },
+        "status": {"enum": ["queued", "in_progress", "completed"]},
+        "conclusion": {
+          "type": ["string", "null"],
+          "enum": [null, "success", "failure", "cancelled", "timed_out", "action_required", "neutral", "skipped", "stale"]
+        }
+      }
+    },
+    "runAttempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_attempt", "status", "conclusion", "jobs"],
+      "properties": {
+        "run_attempt": {"type": "integer", "minimum": 1},
+        "status": {"enum": ["queued", "in_progress", "completed"]},
+        "conclusion": {
+          "type": ["string", "null"],
+          "enum": [null, "success", "failure", "cancelled", "timed_out", "action_required", "neutral", "skipped", "stale"]
+        },
+        "jobs": {"type": "array", "items": {"$ref": "#/$defs/jobObservation"}}
+      }
+    },
+    "producerRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer_id", "run_id", "workflow", "attempts"],
+      "properties": {
+        "producer_id": {"$ref": "#/$defs/providerId"},
+        "run_id": {"$ref": "#/$defs/providerId"},
+        "workflow": {"$ref": "#/$defs/workflowIdentity"},
+        "attempts": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/runAttempt"}}
+      }
+    },
+    "admissionObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "admission_ordinal",
+        "control_plane_run_id",
+        "control_plane_run_attempt",
+        "dispatch_sequence",
+        "candidate",
+        "collection_complete",
+        "producer_run"
+      ],
+      "properties": {
+        "admission_ordinal": {"$ref": "#/$defs/ordinal"},
+        "control_plane_run_id": {"$ref": "#/$defs/providerId"},
+        "control_plane_run_attempt": {"type": "integer", "minimum": 1},
+        "dispatch_sequence": {"type": "integer", "minimum": 1},
+        "candidate": {"$ref": "#/$defs/candidate"},
+        "collection_complete": {"type": "boolean"},
+        "producer_run": {"$ref": "#/$defs/producerRun"}
+      }
+    }
+  }
+}

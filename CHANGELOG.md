@@ -38,6 +38,10 @@ All notable changes to BCF Governance are recorded here. This file follows
   schemas plus a pure total-order state machine that authenticates workflow
   identity before admission precedence and binds exact producer, job, matrix,
   attempt, commit, and tree identity.
+- Added authenticated provider snapshots, independent certification
+  recomputation in truth, exact-attempt cancellation and status precedence,
+  and output-only release receipts that bind already-certified artifact bytes
+  without participating in the truth computation that creates them.
 
 ### Changed
 

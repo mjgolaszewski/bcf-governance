@@ -553,6 +553,76 @@ def test_current_evidence_and_reconciliation_compute_closed(tmp_path: Path) -> N
     assert report["status"] == "pass"
 
 
+def test_truth_integrates_independently_verified_ci_certification(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _make_repo(tmp_path)
+    monkeypatch.setitem(
+        derive_truth.__globals__,
+        "verify_ci_certification",
+        lambda *args, **kwargs: type(
+            "Verification",
+            (),
+            {
+                "as_dict": lambda self: {
+                    "status": "pass",
+                    "computed_state": "certified",
+                    "admission_ordinal": 7,
+                    "selected_attempts": [
+                        {"producer_id": "test", "run_attempt": 1}
+                    ],
+                    "reasons": [],
+                }
+            },
+        )(),
+    )
+
+    report = derive_truth(
+        repo,
+        _write_complete_bundle(repo),
+        ci_authority_path=repo / "ci-authority.json",
+        ci_certification_path=repo / "ci-certification.json",
+        ci_session_manifest_path=repo / "evidence-session.json",
+    )
+
+    assert report["status"] == "pass"
+    assert report["checks"]["ci_certification"] == "pass"
+    assert report["ci_certification"]["computed_state"] == "certified"
+
+
+def test_truth_fails_closed_for_incomplete_or_invalid_ci_inputs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _make_repo(tmp_path)
+    evidence = _write_complete_bundle(repo)
+
+    incomplete = derive_truth(
+        repo,
+        evidence,
+        ci_authority_path=repo / "ci-authority.json",
+    )
+    assert incomplete["status"] == "fail"
+    assert "ci_certification_inputs_incomplete" in incomplete["issues"]
+
+    monkeypatch.setitem(
+        derive_truth.__globals__,
+        "verify_ci_certification",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            TRUTH_MODULE.CICertificationError("snapshot digest mismatch")
+        ),
+    )
+    invalid = derive_truth(
+        repo,
+        evidence,
+        ci_authority_path=repo / "ci-authority.json",
+        ci_certification_path=repo / "ci-certification.json",
+        ci_session_manifest_path=repo / "evidence-session.json",
+    )
+    assert invalid["status"] == "fail"
+    assert invalid["checks"]["ci_certification"] == "fail"
+    assert invalid["ci_certification"]["reasons"] == ["snapshot digest mismatch"]
+
+
 def test_profile_v2_requires_one_valid_evidence_session(tmp_path: Path) -> None:
     repo = _make_repo(tmp_path)
     profile_path = repo / "governance-profile.yml"

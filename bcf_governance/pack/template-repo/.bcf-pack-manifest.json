@@ -14,7 +14,7 @@
     },
     "AGENTS.yml": {
       "operation": "copy",
-      "sha256": "3e7668643b8587e5323fec99c56d90c7ca4201685a67e5b02f65857bd55dc316"
+      "sha256": "93221d0045e2baa5e796b19bc3a227fa9109a7c620a3b68d398baaec16c4b18e"
     },
     "CHANGELOG.md": {
       "operation": "preserve",
@@ -198,13 +198,17 @@
       "operation": "copy",
       "sha256": "f1fdbee287005655379eb712c27bd28be43d11f66964f07f1c8188756dfd97d5"
     },
+    "schemas/ci-provider-snapshot.schema.json": {
+      "operation": "copy",
+      "sha256": "6db71038d206fc52c806d331e9cc90d1eb0b9f93357faf2eb46d3960fce5a753"
+    },
     "schemas/evidence-policy.schema.json": {
       "operation": "copy",
       "sha256": "8dd00a6ca9d439b9e6d84fd95f5ff57e7db40ac44e7fac5f745cf98a05600487"
     },
     "schemas/evidence-receipt.schema.json": {
       "operation": "copy",
-      "sha256": "fd4c3eec3e875dc7f190482b757a61047b7e8af5da4d6d910d9d27332fbb211e"
+      "sha256": "086dbfcaf739c3a118a79b580deea58e09a2a7ce6f1b8886917b904b61ee5f82"
     },
     "schemas/evidence-session.schema.json": {
       "operation": "copy",
@@ -274,13 +278,21 @@
       "operation": "copy",
       "sha256": "a7451f68c0701fb964dfeafb2d7de5ed10cce519b0d4ab29d198bf4f0935cdfb"
     },
+    "scripts/_bcf_runtime/ci_authority_certification.py": {
+      "operation": "copy",
+      "sha256": "7de6c6caf00fe146a221cee0268a17a088cf980452e7b305a9a3be1714451d61"
+    },
     "scripts/_bcf_runtime/ci_authority_contracts.py": {
       "operation": "copy",
-      "sha256": "86c99621ea9e2a28887f630f8416dbb303eed3572d94d1139c472f27fe8ce77d"
+      "sha256": "9eec726a912179cf741cc723bdb36c9a8b54fb58586857d91df3885fa6f9c39d"
+    },
+    "scripts/_bcf_runtime/ci_authority_decisions.py": {
+      "operation": "copy",
+      "sha256": "41efe889edb53ea4954c503298bf3aff150d1f93dca6f87b37b21ffe6c31414a"
     },
     "scripts/_bcf_runtime/ci_authority_state.py": {
       "operation": "copy",
-      "sha256": "6b025d396fe474279925300454a69a4bb207f3ed239f9c0ac1b767297a4ac7b9"
+      "sha256": "c98a3e4b8b0cbb51cc3a9d76cf7f2f678451b03f1ccff838ae10ae469c7b8d91"
     },
     "scripts/_bcf_runtime/cleanup_ci_resources.py": {
       "operation": "copy",
@@ -360,7 +372,7 @@
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
-      "sha256": "6906bafa53c785bf3c045221331c463ac1b51cf4f66df2dff3c5412c09636cd2"
+      "sha256": "0aafa3e8848cba12185def9795fe17ece2bbee296449a641ae3fe63baea570be"
     },
     "scripts/_bcf_runtime/governance_truth_support.py": {
       "operation": "copy",
@@ -429,6 +441,10 @@
     "scripts/_bcf_runtime/publish_audit.py": {
       "operation": "copy",
       "sha256": "63abb8dfd3f2acae183bc0b6b8b315aad401c20e32a3bc9ed8955a7a4359dc5e"
+    },
+    "scripts/_bcf_runtime/release_receipts.py": {
+      "operation": "copy",
+      "sha256": "5281b99e23892c0ea3eae3cb9069f3c9a7943c0af5af1631b1a32d5618501898"
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",

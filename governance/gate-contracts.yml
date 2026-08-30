@@ -260,7 +260,7 @@ gates:
       kind: test_suite
       test_contract:
         junit_xml: .artifacts/junit/contract-test.xml
-        selectors: [tests/test_self_governance_contracts.py::test_required_repository_artifact_contract_is_executable, tests/test_validate_governance_yaml.py::test_artifact_manifest_requires_standard_repository_artifact_contracts, tests/test_validate_governance_yaml.py::test_pull_request_validation_requires_changelog_update]
+        selectors: [tests/test_self_governance_contracts.py::test_required_repository_artifact_contract_is_executable, tests/test_validate_governance_yaml.py::test_artifact_manifest_requires_standard_repository_artifact_contracts, tests/test_validate_governance_yaml.py::test_pull_request_validation_requires_changelog_update, tests/test_ci_authority.py, tests/test_ci_certification.py, tests/test_ci_authority_decisions.py, tests/test_release_receipts.py]
         expected_node_manifest: governance/test-manifests/contract-test.txt
         expected_nodes_mode: exact
         min_collected: 1
@@ -277,6 +277,13 @@ gates:
         kind: test_node_failure
         node_ids:
         - tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts
+    - {id: ci-workflow-event-authentication-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_state.py, search: 'if not same_identity or actual.event not in allowed_events:', replace: 'if not same_identity:'}, oracle: {kind: test_node_failure, node_ids: [tests.test_ci_certification::test_untrusted_event_cannot_enter_admission_order]}}
+    - {id: ci-raw-snapshot-digest-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_certification.py, search: 'if _sha256(path) != descriptor["sha256"]:', replace: 'if False and _sha256(path) != descriptor["sha256"]:'}, oracle: {kind: test_node_failure, node_ids: [tests.test_ci_certification::test_snapshot_bytes_are_hash_bound]}}
+    - {id: ci-independent-recomputation-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_certification.py, search: 'if _canonical_bytes(expected) != _canonical_bytes(certification):', replace: 'if False and _canonical_bytes(expected) != _canonical_bytes(certification):'}, oracle: {kind: test_node_failure, node_ids: [tests.test_ci_certification::test_failed_report_reason_is_independently_recomputed]}}
+    - {id: ci-cancellation-authentication-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_decisions.py, search: 'if not child.authenticated:', replace: 'if False and not child.authenticated:'}, oracle: {kind: test_node_failure, node_ids: [tests.test_ci_authority_decisions::test_cancellation_targets_only_authenticated_unfinished_owned_children]}}
+    - {id: ci-status-precedence-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_decisions.py, search: 'if proposed_order < current_order:', replace: 'if False and proposed_order < current_order:'}, oracle: {kind: test_node_failure, node_ids: [tests.test_ci_authority_decisions::test_older_completion_cannot_overwrite_newer_authority]}}
+    - {id: release-receipt-acyclic-output-must-fail, mutation: {path: bcf_governance/tooling/release_receipts.py, search: 'if not _outside(output_path, evidence_dir):', replace: 'if False and not _outside(output_path, evidence_dir):'}, oracle: {kind: test_node_failure, node_ids: [tests.test_release_receipts::test_release_receipt_cannot_be_written_into_truth_inputs]}}
+    - {id: release-receipt-certification-must-fail, mutation: {path: bcf_governance/tooling/release_receipts.py, search: ') != "certified":', replace: ') == "certified":'}, oracle: {kind: test_node_failure, node_ids: [tests.test_release_receipts::test_failed_truth_or_uncertified_ci_cannot_emit_release]}}
   governance-exposure-scan:
     invocation:
       argv:
@@ -543,6 +550,10 @@ gates:
         exit_codes: [1]
         stream: stderr
         regex: 'governance.ci-authority-state.v1 owner must be an authorized constructor'
+    - {id: ci-certification-verification-owner-must-fail, mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/ci_authority_certification.py::verify_ci_certification]', replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'governance.ci-certification-verification.v1 owner must be an authorized constructor'}}
+    - {id: ci-cancellation-decision-owner-must-fail, mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/ci_authority_decisions.py::owned_cancellation_targets]', replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'governance.ci-cancellation-decision.v1 owner must be an authorized constructor'}}
+    - {id: ci-status-decision-owner-must-fail, mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/ci_authority_decisions.py::decide_status_publication]', replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'governance.ci-status-decision.v1 owner must be an authorized constructor'}}
+    - {id: release-receipt-owner-must-fail, mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/release_receipts.py::build_release_receipt]', replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'governance.release-receipt.v1 owner must be an authorized constructor'}}
   test:
     invocation:
       argv:
