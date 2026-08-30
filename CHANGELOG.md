@@ -64,6 +64,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Replaced opaque numeric evidence-job display names with concise descriptions
+  whose workflow mirror is checked against the canonical shard contract.
 - Split P10 structural self-adoption from its post-merge authority activation,
   because numeric workflow identity and trusted default-main bytes exist only
   after the structural workflow is merged; P10-HF01 owns that activation.

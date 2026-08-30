@@ -37,6 +37,7 @@ jobs:
           if-no-files-found: error
 
   evidence:
+    name: Evidence / ${{ matrix.display_name }}
     needs: [preflight]
     runs-on: ubuntu-latest
     strategy:
@@ -44,6 +45,11 @@ jobs:
       max-parallel: 4
       matrix:
         shard: [0, 1, 2, 3]
+        include:
+          - {shard: 0, display_name: "Boundaries, contracts, runtime, types, and secrets"}
+          - {shard: 1, display_name: "CQRS, module size, exposure, and dependency risk"}
+          - {shard: 2, display_name: "Duplication, routers, governance, and ownership"}
+          - {shard: 3, display_name: "Full tests, lint, import boundaries, and SBOM"}
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0, persist-credentials: false}

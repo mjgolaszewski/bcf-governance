@@ -139,6 +139,14 @@ gate_overrides:
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_self_governance_contracts::test_trusted_jobs_never_checkout_or_invoke_candidate_scripts']
+    - id: descriptive-evidence-job-names-must-fail
+      mutation:
+        path: .github/workflows/governance.yml
+        search: 'name: Evidence / ${{ matrix.display_name }}'
+        replace: 'name: Evidence / ${{ matrix.shard }}'
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_self_governance_contracts::test_governance_evidence_shards_derive_every_required_gate_once']
     - id: ci-workflow-event-authentication-must-fail
       mutation: {path: bcf_governance/tooling/ci_authority_state.py, search: 'if not same_identity or actual.event not in
           allowed_events:', replace: 'if not same_identity:'}

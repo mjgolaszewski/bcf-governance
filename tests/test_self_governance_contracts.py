@@ -411,7 +411,10 @@ def test_governance_evidence_shards_derive_every_required_gate_once() -> None:
     )
     strategy = workflow["jobs"]["evidence"]["strategy"]
     assert strategy["max-parallel"] == 4
-    assert strategy["matrix"] == {"shard": [0, 1, 2, 3]}
+    assert strategy["matrix"] == module.workflow_shard_matrix()
+    assert workflow["jobs"]["evidence"]["name"] == (
+        "Evidence / ${{ matrix.display_name }}"
+    )
 
 
 def test_governance_shard_forwards_the_preflight_session(
