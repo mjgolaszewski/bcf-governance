@@ -394,6 +394,10 @@
       "operation": "copy",
       "sha256": "f684d916b71d37298b29d5eecd02288c7c1bec51012fb746102155dcde06b4ec"
     },
+    "scripts/_bcf_runtime/preflight.py": {
+      "operation": "copy",
+      "sha256": "573ceeb2799571dc0817d7af4963f7e68da623e0c68e287e1da79e6edbb7daef"
+    },
     "scripts/_bcf_runtime/profile_governance.py": {
       "operation": "copy",
       "sha256": "03356e71f25ef8edc7fc8f874c41e7097ff3bf93128b12512c0e31d365eb28b5"
@@ -405,6 +409,10 @@
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
       "sha256": "fa77fc6e7a159c7b4c1ac23aff9219c1cdac7f5eadc74e9ffbb08c7c10a36099"
+    },
+    "scripts/_bcf_runtime/test_manifests.py": {
+      "operation": "copy",
+      "sha256": "3ade532ed98be3cf7adf1378527e5e58a95698caf96c0d5fc84462ed469411ff"
     },
     "scripts/_bcf_runtime/truth_receipts.py": {
       "operation": "copy",

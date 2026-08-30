@@ -1,0 +1,1 @@
+tests.test_self_governance_contracts::test_packaged_code_does_not_import_public_wrapper_package

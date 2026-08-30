@@ -16,6 +16,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   closed gate inventory material.
 - Added independent profile-v2 truth recomputation for session manifests,
   inventory, producer, run, attempt, and per-receipt artifact bindings.
+- Added a canonical cheap `bcf preflight` and contract-owned exact pytest
+  manifests, replacing the self-gate runner's secondary test-node map.
 
 ### Changed
 

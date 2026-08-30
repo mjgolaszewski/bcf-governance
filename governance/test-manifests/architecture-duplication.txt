@@ -1,0 +1,1 @@
+tests.test_self_governance_contracts::test_template_and_private_runtime_copies_are_exact

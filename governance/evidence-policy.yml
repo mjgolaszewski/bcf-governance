@@ -84,14 +84,16 @@ gate_overrides:
     - id: architecture-context-membership-behavior-must-fail
       mutation:
         path: governance/self-governance-policy.yml
-        search: 'validation: [check_governance_exposure.py, doctor_governance_pack.py, validate_governance_yaml.py, governance_validation/]'
-        replace: 'validation: [check_governance_exposure.py, doctor_governance_pack.py, validate_governance_yaml.py, missing_validation/]'
+        search: 'validation: [check_governance_exposure.py, doctor_governance_pack.py, preflight.py, validate_governance_yaml.py, governance_validation/]'
+        replace: 'validation: [check_governance_exposure.py, doctor_governance_pack.py, preflight.py, validate_governance_yaml.py, missing_validation/]'
       oracle:
         kind: test_node_failure
         node_ids:
         - tests.test_self_governance_contracts::test_tooling_modules_map_to_exactly_one_context
     test_contract:
       junit_xml: .artifacts/junit/architecture-context-membership.xml
+      expected_node_manifest: governance/test-manifests/architecture-context-membership.txt
+      expected_nodes_mode: exact
       min_collected: 1
       min_executed: 1
       max_skipped: 0
@@ -102,14 +104,16 @@ gate_overrides:
     - id: architecture-cqrs-side-behavior-must-fail
       mutation:
         path: governance/self-governance-policy.yml
-        search: 'read_only: [doctor, exposure-scan, publish-audit, truth, validate]'
-        replace: 'read_only: [doctor, exposure-scan, publish-audit, validate]'
+        search: 'read_only: [doctor, exposure-scan, preflight, publish-audit, truth, validate]'
+        replace: 'read_only: [doctor, exposure-scan, preflight, publish-audit, validate]'
       oracle:
         kind: test_node_failure
         node_ids:
         - tests.test_self_governance_contracts::test_cli_command_query_sides_are_complete_and_disjoint
     test_contract:
       junit_xml: .artifacts/junit/architecture-cqrs-side.xml
+      expected_node_manifest: governance/test-manifests/architecture-cqrs-side.txt
+      expected_nodes_mode: exact
       min_collected: 1
       min_executed: 1
       max_skipped: 0
@@ -128,6 +132,8 @@ gate_overrides:
         - tests.test_self_governance_contracts::test_template_and_private_runtime_copies_are_exact
     test_contract:
       junit_xml: .artifacts/junit/architecture-duplication.xml
+      expected_node_manifest: governance/test-manifests/architecture-duplication.txt
+      expected_nodes_mode: exact
       min_collected: 1
       min_executed: 1
       max_skipped: 0
@@ -148,6 +154,8 @@ gate_overrides:
         - tests.test_self_governance_contracts::test_packaged_code_does_not_import_public_wrapper_package
     test_contract:
       junit_xml: .artifacts/junit/architecture-import-boundaries.xml
+      expected_node_manifest: governance/test-manifests/architecture-import-boundaries.txt
+      expected_nodes_mode: exact
       min_collected: 1
       min_executed: 1
       max_skipped: 0
@@ -166,6 +174,8 @@ gate_overrides:
         - tests.test_self_governance_contracts::test_source_layout_maps_to_declared_package_layers
     test_contract:
       junit_xml: .artifacts/junit/architecture-layer-membership.xml
+      expected_node_manifest: governance/test-manifests/architecture-layer-membership.txt
+      expected_nodes_mode: exact
       min_collected: 1
       min_executed: 1
       max_skipped: 0
@@ -184,6 +194,8 @@ gate_overrides:
         - tests.test_self_governance_contracts::test_production_modules_respect_self_governance_loc_cap
     test_contract:
       junit_xml: .artifacts/junit/architecture-module-size.xml
+      expected_node_manifest: governance/test-manifests/architecture-module-size.txt
+      expected_nodes_mode: exact
       min_collected: 1
       min_executed: 1
       max_skipped: 0
@@ -202,6 +214,8 @@ gate_overrides:
         - tests.test_self_governance_contracts::test_cli_and_source_wrappers_remain_thin
     test_contract:
       junit_xml: .artifacts/junit/architecture-router-thinness.xml
+      expected_node_manifest: governance/test-manifests/architecture-router-thinness.txt
+      expected_nodes_mode: exact
       min_collected: 1
       min_executed: 1
       max_skipped: 0
@@ -220,6 +234,8 @@ gate_overrides:
         - tests.test_self_governance_contracts::test_source_roots_match_packaged_implementation
     test_contract:
       junit_xml: .artifacts/junit/architecture-test.xml
+      expected_node_manifest: governance/test-manifests/architecture-test.txt
+      expected_nodes_mode: exact
       min_collected: 1
       min_executed: 1
       max_skipped: 0
@@ -238,6 +254,8 @@ gate_overrides:
         - tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts
     test_contract:
       junit_xml: .artifacts/junit/contract-test.xml
+      expected_node_manifest: governance/test-manifests/contract-test.txt
+      expected_nodes_mode: exact
       min_collected: 1
       min_executed: 1
       max_skipped: 0
@@ -406,6 +424,8 @@ gate_overrides:
         - tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts
     test_contract:
       junit_xml: .artifacts/junit/test.xml
+      expected_node_manifest: governance/test-manifests/test.txt
+      expected_nodes_mode: exact
       min_collected: 1
       min_executed: 1
       max_skipped: 0

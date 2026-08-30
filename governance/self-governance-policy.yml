@@ -2,14 +2,14 @@ schema_version: '1.0'
 thin_wrapper_loc_cap: 20
 tooling_contexts:
   cleanup: [cleanup_ci_resources.py, cleanup_governance_pack.py, governance_cleanup/]
-  evidence: [evidence_attestation.py, evidence_execution.py, evidence_sessions.py, evidence_test_adapters.py, governance_evidence.py, governance_truth.py, governance_truth_support.py, truth_receipts.py, truth_sessions.py]
+  evidence: [evidence_attestation.py, evidence_execution.py, evidence_sessions.py, evidence_test_adapters.py, governance_evidence.py, governance_truth.py, governance_truth_support.py, test_manifests.py, truth_receipts.py, truth_sessions.py]
   install: [install_governance_pack.py, governance_install/]
   operations: [migrate_governance_evidence.py, publish_audit.py, scaffold_governance_artifacts.py]
   profiles: [governance_profiles.py, profile_governance.py]
-  validation: [check_governance_exposure.py, doctor_governance_pack.py, validate_governance_yaml.py, governance_validation/]
+  validation: [check_governance_exposure.py, doctor_governance_pack.py, preflight.py, validate_governance_yaml.py, governance_validation/]
 cli_commands:
-  read_only: [doctor, exposure-scan, publish-audit, truth, validate]
-  mutating: [ci-cleanup, cleanup, evidence, install, migrate-evidence, profile, scaffold]
+  read_only: [doctor, exposure-scan, preflight, publish-audit, truth, validate]
+  mutating: [ci-cleanup, cleanup, evidence, install, migrate-evidence, profile, scaffold, test-manifest]
 required_dependencies:
   PyYAML: '>=6.0,<7'
   jsonschema: '>=4.21,<5'

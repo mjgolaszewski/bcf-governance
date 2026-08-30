@@ -31,8 +31,8 @@ TEST_CONTROLS = {
     ),
     "architecture-context-membership": (
         "governance/self-governance-policy.yml",
-        "validation: [check_governance_exposure.py, doctor_governance_pack.py, validate_governance_yaml.py, governance_validation/]",
-        "validation: [check_governance_exposure.py, doctor_governance_pack.py, validate_governance_yaml.py, missing_validation/]",
+        "validation: [check_governance_exposure.py, doctor_governance_pack.py, preflight.py, validate_governance_yaml.py, governance_validation/]",
+        "validation: [check_governance_exposure.py, doctor_governance_pack.py, preflight.py, validate_governance_yaml.py, missing_validation/]",
         "tests.test_self_governance_contracts::test_tooling_modules_map_to_exactly_one_context",
     ),
     "architecture-import-boundaries": (
@@ -43,8 +43,8 @@ TEST_CONTROLS = {
     ),
     "architecture-cqrs-side": (
         "governance/self-governance-policy.yml",
-        "read_only: [doctor, exposure-scan, publish-audit, truth, validate]",
-        "read_only: [doctor, exposure-scan, publish-audit, validate]",
+        "read_only: [doctor, exposure-scan, preflight, publish-audit, truth, validate]",
+        "read_only: [doctor, exposure-scan, preflight, publish-audit, validate]",
         "tests.test_self_governance_contracts::test_cli_command_query_sides_are_complete_and_disjoint",
     ),
     "architecture-router-thinness": (
@@ -71,6 +71,23 @@ TEST_CONTROLS = {
         "pull_request_policy: optional",
         "tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts",
     ),
+}
+
+TEST_SELECTORS = {
+    "architecture-test": ["tests/test_self_governance_contracts.py::test_source_roots_match_packaged_implementation"],
+    "architecture-module-size": ["tests/test_self_governance_contracts.py::test_production_modules_respect_self_governance_loc_cap"],
+    "architecture-layer-membership": ["tests/test_self_governance_contracts.py::test_source_layout_maps_to_declared_package_layers"],
+    "architecture-context-membership": ["tests/test_self_governance_contracts.py::test_tooling_modules_map_to_exactly_one_context"],
+    "architecture-import-boundaries": ["tests/test_self_governance_contracts.py::test_packaged_code_does_not_import_public_wrapper_package"],
+    "architecture-cqrs-side": ["tests/test_self_governance_contracts.py::test_cli_command_query_sides_are_complete_and_disjoint"],
+    "architecture-router-thinness": ["tests/test_self_governance_contracts.py::test_cli_and_source_wrappers_remain_thin"],
+    "architecture-duplication": ["tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact"],
+    "contract-test": [
+        "tests/test_self_governance_contracts.py::test_required_repository_artifact_contract_is_executable",
+        "tests/test_validate_governance_yaml.py::test_artifact_manifest_requires_standard_repository_artifact_contracts",
+        "tests/test_validate_governance_yaml.py::test_pull_request_validation_requires_changelog_update",
+    ],
+    "test": ["@test_roots"],
 }
 
 DIAGNOSTIC_CONTROLS = {
@@ -130,9 +147,13 @@ def _test_gate(target: str, control: tuple[str, str, str, str]) -> dict[str, Any
             "kind": "test_suite",
             "test_contract": {
                 "junit_xml": f".artifacts/junit/{target}.xml",
+                "selectors": TEST_SELECTORS[target],
+                "expected_node_manifest": f"governance/test-manifests/{target}.txt",
+                "expected_nodes_mode": "exact",
                 "min_collected": 1,
                 "min_executed": 1,
                 "max_skipped": 0,
+                "artifact_binding": "non_authoritative_until_captured",
             },
         },
         "negative_controls": [

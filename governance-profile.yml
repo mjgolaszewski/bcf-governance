@@ -181,7 +181,11 @@ ci_profile:
   push_lanes_required: true
   self_hosted_runner_preferred_when_available: true
   runner_labels:
-  - ubuntu-latest
+  - self-hosted
+  - Linux
+  - X64
+  - bcf-governance
+  - vm-linux-ci-runner
   required_push_jobs:
   - architecture-context-membership
   - architecture-cqrs-side
