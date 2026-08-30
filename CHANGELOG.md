@@ -76,6 +76,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   selector-bearing repositories can promote to contract v2 transactionally.
 - Kept generated profile, evidence-policy, and gate-contract YAML compact enough
   to satisfy the adopting repository's declared context budgets.
+- Preserved an adopter's existing canonical semantic-ownership invocation and
+  causal controls during no-config v2 promotion, using the generic Standard-v2
+  gate only when no custom semantic contract exists.
 - Made the explicitly selected Python interpreter authoritative in positive and
   detached negative-control evidence sessions, including the loader environment
   required by toolcache Python installations, without changing canonical gate

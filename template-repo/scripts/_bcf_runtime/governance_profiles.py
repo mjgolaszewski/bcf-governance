@@ -787,7 +787,7 @@ def promote(
             "gates": {
                 key: value
                 for key, value in gates.items()
-                if key not in {*BUILTIN_TARGETS, "semantic-ownership"}
+                if key not in BUILTIN_TARGETS
             },
             "provenance": persisted.get("provenance", {}),
         }

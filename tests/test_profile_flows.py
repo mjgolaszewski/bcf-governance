@@ -11,6 +11,7 @@ import pytest
 import yaml
 
 from bcf_governance.tooling.evidence_sessions import allocate_session
+from bcf_governance.tooling.governance_profiles import _v2_builtin_contracts
 from scripts.governance_evidence import attest_bundle, capture_gate
 from scripts.governance_truth import derive_truth
 
@@ -384,6 +385,9 @@ def test_standard_v1_to_v2_promotion_is_explicit_and_preserves_workflow(
     installed_contracts["gates"]["architecture-test"]["evidence"]["test_contract"][
         "selectors"
     ] = ["tests/test_architecture.py"]
+    custom_semantic = _v2_builtin_contracts()["semantic-ownership"]
+    custom_semantic["negative_controls"][0]["id"] = "consumer-semantic-owner-must-fail"
+    installed_contracts["gates"]["semantic-ownership"] = custom_semantic
     installed_contracts_path.write_text(
         yaml.safe_dump(installed_contracts, sort_keys=False, width=120),
         encoding="utf-8",
@@ -415,6 +419,9 @@ def test_standard_v1_to_v2_promotion_is_explicit_and_preserves_workflow(
     )
     assert contracts["gates"]["semantic-ownership"]["invocation"]["argv"][1] == (
         "scripts/semantic_ownership.py"
+    )
+    assert contracts["gates"]["semantic-ownership"]["negative_controls"][0]["id"] == (
+        "consumer-semantic-owner-must-fail"
     )
     assert contracts["gates"]["architecture-test"]["evidence"]["test_contract"][
         "selectors"
