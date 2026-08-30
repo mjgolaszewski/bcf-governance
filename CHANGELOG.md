@@ -6,6 +6,19 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Made the selected Python interpreter authoritative in detached evidence and
+  mutation sessions, including the loader environment required by toolcache
+  Python installations.
+
+### Security
+
+- Temporarily routed every workflow to the owner-controlled local runner pool,
+  admitted only owner-authored same-repository pull requests before allocation,
+  disabled release publication, and stopped checkout credentials from
+  persisting while hosted runner credits are unavailable.
+
 ## [0.6.1] - 2026-08-14
 
 ### Added

@@ -168,6 +168,57 @@ def test_self_gate_runner_bootstraps_an_uninstalled_source_checkout() -> None:
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_self_gate_tests_use_the_selected_python_module_entrypoint() -> None:
+    source = (REPO_ROOT / ".github/scripts/run_self_governance_gate.py").read_text(
+        encoding="utf-8"
+    )
+    assert '[sys.executable, "-m", "pytest"' in source
+    assert '["pytest", "-q"' not in source
+    for workflow in (REPO_ROOT / ".github/workflows").glob("*.yml"):
+        text = workflow.read_text(encoding="utf-8")
+        assert "run: pytest " not in text, workflow
+
+
+def test_temporary_local_runner_policy_is_exact_and_has_no_hosted_fallback() -> None:
+    policy = _policy()["runner_security"]
+    assert policy["hosted_fallback_allowed"] is False
+    labels = policy["candidate_labels"]
+    for relative_path, expected_jobs in policy["jobs"].items():
+        text = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+        assert "ubuntu-latest" not in text
+        workflow = yaml.safe_load(text)
+        assert set(workflow["jobs"]) == set(expected_jobs)
+        assert all(job["runs-on"] == labels for job in workflow["jobs"].values())
+
+
+def test_only_owner_same_repository_pull_requests_reach_local_runners() -> None:
+    policy = _policy()["runner_security"]
+    owner_guard = f"github.actor == '{policy['admitted_pr_actor']}'"
+    source_guard = "github.event.pull_request.head.repo.full_name == github.repository"
+    for relative_path in (
+        ".github/workflows/governance.yml",
+        ".github/workflows/governance-pack.yml",
+    ):
+        workflow = yaml.safe_load((REPO_ROOT / relative_path).read_text(encoding="utf-8"))
+        for job in workflow["jobs"].values():
+            assert owner_guard in job["if"]
+            assert source_guard in job["if"]
+
+
+def test_persistent_local_jobs_do_not_persist_checkout_credentials() -> None:
+    policy = _policy()["runner_security"]
+    for relative_path in policy["jobs"]:
+        workflow = yaml.safe_load((REPO_ROOT / relative_path).read_text(encoding="utf-8"))
+        for job in workflow["jobs"].values():
+            for step in job["steps"]:
+                if step.get("uses", "").startswith("actions/checkout@"):
+                    assert step.get("with", {}).get("persist-credentials") is False
+    release = yaml.safe_load(
+        (REPO_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+    )
+    assert release["jobs"]["release"]["if"] == "${{ false }}"
+
+
 def test_self_profile_builder_matches_canonical_negative_controls() -> None:
     generated = yaml.safe_load(
         subprocess.run(

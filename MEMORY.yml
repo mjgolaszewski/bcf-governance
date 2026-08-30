@@ -52,6 +52,9 @@ environment_facts:
     - all governance, memory, specs, plans, workitem ledgers, and phase logs are YAML-native
     - observability contracts are scaffolded under contracts/observability/v1/
     - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
+    - two owner-controlled local runners use the bcf-governance and vm-linux-ci-runner labels; the Dependabot-only runner is excluded
+    - main is protected by repository ruleset 21862678 with pull-request-only updates, current required checks, resolved conversations, and no bypass actors
+    - evidence and mutation runtimes use the explicitly selected Python and preserve its required loader environment in detached sessions
   active_artifacts:
     spec: plans/product-spec.yml
     build_plan: plans/build-plan.yml
@@ -64,6 +67,8 @@ known_constraints:
   - schema-2 evidence must be recaptured after every governed tree mutation
   - template runtime and packaged template copies must remain byte-identical to canonical sources
   - release tags are created only at a merge commit whose source and governance CI passed
+  - through 2026-08-31 only owner-authored same-repository pull requests may execute on the persistent local runner pool
+  - release publication remains disabled until isolated trusted publication and safe ephemeral candidate execution are restored
 reusable_commands:
   - make governance-validate
   - make architecture-test
@@ -89,3 +94,4 @@ references:
     - plans/phase-01-plan.yml
     - plans/phase-01-workitems.yml
     - phases/phase-01-log.yml
+    - phases/phase-01-hotfix01.yml

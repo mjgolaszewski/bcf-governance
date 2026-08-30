@@ -1,0 +1,55 @@
+document:
+  kind: hotfix_execution_log
+  name: P01-HF01 Hotfix Log
+  id: bcf-governance-phase-01-hotfix01
+  version: 1.0.0
+  generated_at_utc: '2026-08-30T00:00:00Z'
+  status: completed
+  path: phases/phase-01-hotfix01.yml
+hotfix:
+  id: P01-HF01
+  mode: full
+  related_phase_id: P01
+  hotfix_number: 1
+  summary: use the owner-only local runner pool without hosted fallback and preserve selected Python authority in detached evidence execution
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+  executed_commands:
+  - gh api repos/mjgolaszewski/bcf-governance/actions/runners
+  - gh api --method POST repos/mjgolaszewski/bcf-governance/rulesets
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile full
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  notes:
+  - all workflow jobs use the exact self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner label set and no hosted fallback remains
+  - pull-request jobs reject non-owner and fork sources at job admission before runner assignment
+  - release publication is disabled while code execution and publication would share the persistent pool
+  - checkout credentials are not persisted on the local workers
+  - repository ruleset 21862678 protects main with no bypass actors; mjgolaszewski is the sole repository collaborator
+  - detached evidence uses the selected interpreter, propagates its lexical executable directory and loader environment, and preserves canonical schema-2 argv
+  - the mutation harness copies the decomposed evidence runtime and invokes pytest through the selected interpreter
+  - local validation passed 201 tests, governance-yaml-ok, compilation, and every PR and release mutation profile
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

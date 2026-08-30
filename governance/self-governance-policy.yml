@@ -2,7 +2,7 @@ schema_version: '1.0'
 thin_wrapper_loc_cap: 20
 tooling_contexts:
   cleanup: [cleanup_ci_resources.py, cleanup_governance_pack.py, governance_cleanup/]
-  evidence: [evidence_attestation.py, evidence_test_adapters.py, governance_evidence.py, governance_truth.py, governance_truth_support.py, truth_receipts.py]
+  evidence: [evidence_attestation.py, evidence_execution.py, evidence_test_adapters.py, governance_evidence.py, governance_truth.py, governance_truth_support.py, truth_receipts.py]
   install: [install_governance_pack.py, governance_install/]
   operations: [migrate_governance_evidence.py, publish_audit.py, scaffold_governance_artifacts.py]
   profiles: [governance_profiles.py, profile_governance.py]
@@ -15,3 +15,19 @@ required_dependencies:
   jsonschema: '>=4.21,<5'
 sbom_format: CycloneDX
 forbid_subprocess_shell: true
+runner_security:
+  hosted_fallback_allowed: false
+  candidate_labels: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+  admitted_pr_actor: mjgolaszewski
+  admitted_pr_source: same_repository
+  temporary_local_window:
+    status: active
+    expires_after_utc: '2026-08-31T23:59:59Z'
+    privileged_publication_enabled: false
+    restore_condition: safe ephemeral candidate runners and an isolated trusted publisher are available
+  jobs:
+    .github/workflows/governance-mutants-nightly.yml: [high-value-mutants]
+    .github/workflows/governance-mutants-weekly.yml: [full-mutants]
+    .github/workflows/governance-pack.yml: [pack-checks, ast-checks]
+    .github/workflows/governance.yml: [evidence, governance-truthfulness]
+    .github/workflows/release.yml: [release]
