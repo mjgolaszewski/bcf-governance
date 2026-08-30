@@ -707,6 +707,11 @@ def apply_profile_contract(
     for target, gate in contract["gates"].items():
         command_policy = metadata[target][1]
         evidence = dict(gate.get("evidence", {}))
+        test_contract = evidence.get("test_contract")
+        if isinstance(test_contract, dict):
+            policy_test_contract = dict(test_contract)
+            policy_test_contract.pop("selectors", None)
+            evidence["test_contract"] = policy_test_contract
         evidence_policy["gate_overrides"][target] = {
             "evidence_kind": evidence.pop("kind", _evidence_kind(command_policy)),
             "negative_controls": gate["negative_controls"],

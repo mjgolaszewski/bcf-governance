@@ -379,6 +379,15 @@ def test_standard_v1_to_v2_promotion_is_explicit_and_preserves_workflow(
         ],
         check=True,
     )
+    installed_contracts_path = repo / "governance/gate-contracts.yml"
+    installed_contracts = yaml.safe_load(installed_contracts_path.read_text(encoding="utf-8"))
+    installed_contracts["gates"]["architecture-test"]["evidence"]["test_contract"][
+        "selectors"
+    ] = ["tests/test_architecture.py"]
+    installed_contracts_path.write_text(
+        yaml.safe_dump(installed_contracts, sort_keys=False, width=120),
+        encoding="utf-8",
+    )
     git(repo, "add", ".")
     git(repo, "commit", "--quiet", "-m", "install standard v1")
     workflow_before = (repo / ".github/workflows/governance.yml").read_bytes()
@@ -407,6 +416,15 @@ def test_standard_v1_to_v2_promotion_is_explicit_and_preserves_workflow(
     assert contracts["gates"]["semantic-ownership"]["invocation"]["argv"][1] == (
         "scripts/semantic_ownership.py"
     )
+    assert contracts["gates"]["architecture-test"]["evidence"]["test_contract"][
+        "selectors"
+    ] == ["tests/test_architecture.py"]
+    evidence_policy = yaml.safe_load(
+        (repo / "governance/evidence-policy.yml").read_text(encoding="utf-8")
+    )
+    assert "selectors" not in evidence_policy["gate_overrides"]["architecture-test"][
+        "test_contract"
+    ]
     git(repo, "add", ".")
     git(repo, "commit", "--quiet", "-m", "promote to standard v2")
     session = allocate_session(

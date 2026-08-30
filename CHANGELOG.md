@@ -71,6 +71,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Projected execution-only test selectors out of evidence policy during profile
+  promotion while retaining them in canonical gate contracts, so real
+  selector-bearing repositories can promote to contract v2 transactionally.
 - Made the explicitly selected Python interpreter authoritative in positive and
   detached negative-control evidence sessions, including the loader environment
   required by toolcache Python installations, without changing canonical gate
