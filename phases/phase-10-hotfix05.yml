@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-10-hotfix05
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-10-hotfix05.yml
 hotfix:
   id: P10-HF05
@@ -18,11 +18,20 @@ execution_evidence:
   - .venv/bin/python scripts/governance_evidence.py --repo-root . run --gate test --session-manifest <fresh-local-session>
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root . --format json
   - owner-dispatch bcf/trusted-control-probe from exact main
-  executed_commands: []
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python scripts/governance_evidence.py --repo-root . run --gate test --session-manifest <fresh-local-session>
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root . --format json
+  - .venv/bin/python scripts/check_governance_exposure.py --repo-root . --format json
   notes:
   - bootstrap run 33341681969 installed and executed the exact controller successfully on both trusted runners
   - probe run 33341705849 failed on both runners because its job omitted the setup-python loader environment required by the persisted tool-cache interpreter
   - activation remains disabled; no callback, status, cancellation, or publication authority was enabled
+  - the runner policy is the canonical owner of the exact setup-python action, Python version, and every workflow that invokes the persisted controller
+  - 377 exact tests pass; the committed-tree test-gate receipt passes with both controls, including the cause-verified interpreter-environment mutant; both high-value mutant profiles, structural validation, and exposure scan pass
+  - a fresh exact-main probe remains post-merge acceptance evidence
 closeout_requirements:
   claims:
     required_suites_green:
