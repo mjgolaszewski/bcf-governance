@@ -17,9 +17,9 @@ results:
   cross_language_traces: 221
   required_browser_traces: 220
   uncovered_required_browser_traces: 0
-  compact_generalized_proof_bytes: 1005
+  compact_generalized_proof_bytes: 1125
   consumer_report_sha256: 1d142c87d8a577ab32ffa8e307d9c9e5ab0f66d32ce29db7de1a2b29d17a29e0
-  generalized_proof_sha256: c0bb907bc77f10a257e79441d9f4c0c1b3c1a020455bc6bb6e80dcf19134ccd5
+  generalized_proof_sha256: f72749d6f439a3cc3e8aa9b4d0aa08715ae992b7cb40336f4c6f418a07db2889
 benchmark:
   substrate: provisional_local
   architecture: x86_64

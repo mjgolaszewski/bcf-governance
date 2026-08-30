@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-06-plan
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: active
   path: plans/phase-06-plan.yml
 phase:
   id: P06
@@ -31,6 +31,10 @@ scope_lock:
 - order: 1
   statement: keep the phase narrowly scoped to declared deliverables and update canonical
     governed artifacts in the same change
+- order: 2
+  statement: keep provider-neutral state transitions pure and authenticate provider observations only in adapters
+- order: 3
+  statement: hosted candidate jobs are disposable run-to-completion workers; no coordination job may poll, sleep, or idle while another job runs
 verification_plan:
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
 - .venv/bin/python -m pytest tests

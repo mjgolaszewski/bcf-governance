@@ -4,13 +4,13 @@ document:
   id: bcf-governance-phase-05-workitems
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: active
+  status: completed
   path: plans/phase-05-workitems.yml
   phase_id: P05
 workitems:
 - id: P05-P0-01
   priority: P0
-  status: IN_PROGRESS
+  status: DONE
   summary: deliver TypeScript and cross-language tracing with reproducible Identity
     proof
   acceptance:

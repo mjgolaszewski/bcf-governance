@@ -4,13 +4,13 @@ document:
   id: bcf-governance-phase-05-log
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-05-log.yml
 phase:
   id: P05
   build_block: typescript-soip-and-identity-proof
 summary:
-  outcome: in_progress
+  outcome: completed
   highlights:
   - P05 is opened for add optional TypeScript tracing and prove the exact Identity
     tree
@@ -21,7 +21,7 @@ summary:
   - exact Identity commit 0569e6dd81b311abf33af5626a32441b0d55cc64 reproduced 62 conformant representations, 221 endpoint traces, 220 required browser traces, zero uncovered required traces, and zero unresolved escapes
 workitems:
 - id: P05-P0-01
-  status: IN_PROGRESS
+  status: DONE
   summary: deliver TypeScript and cross-language tracing with reproducible Identity
     proof
 execution_evidence:
@@ -35,6 +35,7 @@ execution_evidence:
   - the exact consumer proof reconstructed 906 Python and 168 TypeScript source hashes and matched every current Identity cross-language trace
   - one warmup and ten measured local samples on Python 3.14.5, Node 24.20.0, and TypeScript 6.0.3 passed with 13.610089-second median, 20.403658-second p95, and a 1005-byte compact proof
   - the planned Python 3.14.7 environment is unavailable in the current managed catalog; P10 must repeat the passing provisional benchmark on its digest-pinned disposable VM before release
+  - behavior commit 211149960406338195b57ab8d484ec0e73d59542 passed 246 tests, clean release preflight, BCF semantic self-scan, and a recaptured exact Identity proof
 closeout_requirements:
   claims:
     workitems_closed:
@@ -67,4 +68,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- implement scoped workitems and record execution evidence in this log
+- implement provider-neutral CI identity, admission, state, and typed N/A contracts in P06
