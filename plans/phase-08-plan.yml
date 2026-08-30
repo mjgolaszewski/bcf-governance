@@ -32,6 +32,12 @@ scope_lock:
 - order: 1
   statement: keep the phase narrowly scoped to declared deliverables and update canonical
     governed artifacts in the same change
+- order: 2
+  statement: preserve all existing workflows byte-for-byte unless the explicit transactional GitHub adopter owns their closed managed paths
+- order: 3
+  statement: ship the reference topology and operator contracts without activating BCF self-adoption before P10
+- order: 4
+  statement: candidate jobs use disposable read-only workers while trusted roles never check out or execute candidate code and never poll sleep or idle
 verification_plan:
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
 - .venv/bin/python -m pytest tests

@@ -42,6 +42,12 @@ All notable changes to BCF Governance are recorded here. This file follows
   recomputation in truth, exact-attempt cancellation and status precedence,
   and output-only release receipts that bind already-certified artifact bytes
   without participating in the truth computation that creates them.
+- Added a provider-authenticated GitHub run adapter and a transactional
+  `bcf ci adopt github` reference topology with disjoint disposable candidate
+  and no-checkout trusted roles, closed callback events, and no idle waiters.
+- Added exact local pull-request context, fail-fast repository runtime/capacity
+  contracts, repository-owned database bind roots, and digest-bound trusted
+  external-input handoff.
 
 ### Changed
 

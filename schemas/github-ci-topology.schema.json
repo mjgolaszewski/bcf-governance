@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BCF GitHub CI reference topology",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "provider", "dispatch_events", "roles", "coordination"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "provider": {"const": "github"},
+    "dispatch_events": {
+      "const": ["bcf-exact-ref-v1", "bcf-certification-finalize-v1", "bcf-status-publish-v1"]
+    },
+    "default_branch": {"type": "string", "minLength": 1},
+    "producer_argv": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "roles": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "required": ["id", "runner_labels", "code_execution", "checkout", "permissions"],
+        "properties": {
+          "id": {"enum": ["exact-main-kickoff", "exact-ref-producer", "trusted-finalizer", "status-publisher"]},
+          "runner_labels": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "code_execution": {"type": "boolean"},
+          "checkout": {"type": "boolean"},
+          "persist_credentials": {"type": "boolean"},
+          "disposable": {"type": "boolean"},
+          "permissions": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z-]+:(?:read|write)$"}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "coordination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["polling", "sleeping", "idle_waiter", "callback_payload_authoritative", "provider_api_reconstruction"],
+      "properties": {
+        "polling": {"const": false},
+        "sleeping": {"const": false},
+        "idle_waiter": {"const": false},
+        "callback_payload_authoritative": {"const": false},
+        "provider_api_reconstruction": {"const": true}
+      }
+    }
+  }
+}

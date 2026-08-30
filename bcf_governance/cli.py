@@ -8,6 +8,7 @@ import sys
 from bcf_governance import __version__
 from bcf_governance.tooling import (
     check_governance_exposure,
+    ci_commands,
     cleanup_ci_resources,
     cleanup_governance_pack,
     doctor_governance_pack,
@@ -25,6 +26,7 @@ from bcf_governance.tooling import (
 )
 
 COMMANDS = {
+    "ci": ci_commands.main,
     "cleanup": cleanup_governance_pack.main,
     "ci-cleanup": cleanup_ci_resources.main,
     "exposure-scan": check_governance_exposure.main,

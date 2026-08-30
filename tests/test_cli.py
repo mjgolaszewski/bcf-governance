@@ -35,6 +35,26 @@ def test_cli_exposes_profile_promote_contract() -> None:
     assert "--apply" in result.stdout
 
 
+def test_cli_exposes_transactional_github_ci_adopter() -> None:
+    result = _run_bcf("ci", "adopt", "github", "--help")
+
+    assert result.returncode == 0
+    assert "--candidate-label" in result.stdout
+    assert "--trusted-label" in result.stdout
+    assert "--check" in result.stdout
+    assert "--apply" in result.stdout
+
+
+def test_cli_exposes_local_pr_and_runtime_contracts() -> None:
+    local = _run_bcf("ci", "local-pr", "--help")
+    runtime = _run_bcf("ci", "runtime-check", "--help")
+
+    assert local.returncode == 0
+    assert "--remote" in local.stdout
+    assert runtime.returncode == 0
+    assert "--owned-containers" in runtime.stdout
+
+
 def test_cli_publish_audit_requires_explicit_history() -> None:
     result = _run_bcf("publish-audit", "--repo-root", ".")
 
