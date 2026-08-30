@@ -374,11 +374,17 @@ def test_self_profile_builder_matches_canonical_negative_controls() -> None:
     canonical = yaml.safe_load(
         (REPO_ROOT / "governance/gate-contracts.yml").read_text(encoding="utf-8")
     )
+    evidence_policy = yaml.safe_load(
+        (REPO_ROOT / "governance/evidence-policy.yml").read_text(encoding="utf-8")
+    )
     builtins = {"governance-validate", "governance-exposure-scan"}
     assert set(generated["gates"]) == set(canonical["gates"]) - builtins
     for gate_id, gate in generated["gates"].items():
         assert gate["invocation"] == canonical["gates"][gate_id]["invocation"]
         assert gate["negative_controls"] == canonical["gates"][gate_id]["negative_controls"]
+        assert evidence_policy["gate_overrides"][gate_id]["negative_controls"] == gate[
+            "negative_controls"
+        ]
         if "test_contract" in gate["evidence"]:
             assert gate["evidence"]["test_contract"] == canonical["gates"][gate_id][
                 "evidence"
