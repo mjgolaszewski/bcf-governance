@@ -667,7 +667,7 @@ def test_profile_v2_session_computes_closed(tmp_path: Path) -> None:
             lambda receipt: receipt["invocation"]["workflow"].update(
                 {"job": "different-producer"}
             ),
-            "evidence_session_producer_id_mismatch",
+            "evidence_session_producer_not_admitted",
         ),
     ],
 )

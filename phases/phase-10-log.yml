@@ -42,6 +42,7 @@ execution_evidence:
   - the first runtime probe rejected a database root outside runtime_root; the canonical contract was corrected before publication
   - self-dogfood made doctor exclude only manifest-declared template vendors from placeholder findings; undeclared product paths remain fail-closed
   - the canonical source preflight wrapper executes from a fresh checkout without requiring an installed BCF package
+  - remote dogfood distinguished the preflight session allocator from the closed inventory of evidence-producing jobs
 closeout_requirements:
   claims:
     workitems_closed:

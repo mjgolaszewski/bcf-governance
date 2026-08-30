@@ -78,6 +78,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 - Made the source-tree preflight wrapper resolve BCF's package from any working
   directory, including fresh hosted-runner checkouts without an installed wheel.
+- Distinguished the session-allocating job from admitted evidence producer jobs,
+  preserving exact run/attempt binding across preflight-to-evidence fanout.
 - Bound profile-v2 receipts to an explicit immutable session producer identity,
   so nested local validation cannot inherit an unrelated outer Actions run or
   job identity from ambient environment variables.
