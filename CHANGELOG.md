@@ -66,7 +66,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   candidate and isolated trusted substrates are available.
 - Replaced the temporary shared-pool exception with explicit trust routing:
   unsafe PR code uses fresh hosted jobs, trusted contributor CI may use local
-  runners, neither path falls back or idles, and publication remains disabled.
+  runners selected by the complete repository pool label set, neither path falls
+  back or idles, and publication remains disabled.
 - Reduced governance evidence setup from 21 jobs to four mechanically derived
   shards while preserving exactly-once gate coverage and independent receipts.
 

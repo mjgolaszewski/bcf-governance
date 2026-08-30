@@ -205,8 +205,14 @@ def test_pull_requests_route_by_contributor_and_repository_trust() -> None:
     routing = runner_policy["candidate_routing"]
     expression = routing["pull_request_expression"]
     assert routing["trusted_contributors"] == ["mjgolaszewski"]
-    assert routing["unsafe_pull_request_runner"] == "ubuntu-latest"
-    assert routing["trusted_same_repository_runner"] == "bcf-governance"
+    assert routing["unsafe_pull_request_runner"] == ["ubuntu-latest"]
+    assert routing["trusted_same_repository_runner"] == [
+        "self-hosted",
+        "Linux",
+        "X64",
+        "bcf-governance",
+        "vm-linux-ci-runner",
+    ]
     assert "github.actor != 'mjgolaszewski'" in expression
     assert "github.event.pull_request.head.repo.full_name != github.repository" in expression
     for relative_path in (
@@ -245,7 +251,9 @@ def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
 def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
     runner_policy = _policy()["runner_security"]
     routing = runner_policy["candidate_routing"]
-    assert routing["unsafe_pull_request_runner"] not in runner_policy["trusted_labels"]
+    assert not set(routing["unsafe_pull_request_runner"]) & set(
+        runner_policy["trusted_labels"]
+    )
     window = runner_policy["temporary_local_window"]
     assert window["status"] == "closed"
     assert window["privileged_publication_enabled"] is False

@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   pack-checks:
-    runs-on: ${{ github.event_name == 'pull_request' && (github.actor != 'mjgolaszewski' || github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-latest' || 'bcf-governance' }}
+    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && (github.actor != 'mjgolaszewski' || github.event.pull_request.head.repo.full_name != github.repository) && '["ubuntu-latest"]' || '["self-hosted","Linux","X64","bcf-governance","vm-linux-ci-runner"]') }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -42,7 +42,7 @@ jobs:
         run: python template-repo/scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders --allow-release-gate-placeholders
 
   ast-checks:
-    runs-on: ${{ github.event_name == 'pull_request' && (github.actor != 'mjgolaszewski' || github.event.pull_request.head.repo.full_name != github.repository) && 'ubuntu-latest' || 'bcf-governance' }}
+    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && (github.actor != 'mjgolaszewski' || github.event.pull_request.head.repo.full_name != github.repository) && '["ubuntu-latest"]' || '["self-hosted","Linux","X64","bcf-governance","vm-linux-ci-runner"]') }}
     steps:
       - uses: actions/checkout@v4
         with:
