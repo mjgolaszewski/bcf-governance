@@ -129,7 +129,12 @@ def decide_status_publication(
     if proposed_order < current_order:
         return StatusDecision(False, "older_authority_cannot_overwrite", current)
     if proposed_order == current_order and proposed.conclusion != current.conclusion:
-        raise CIDecisionError("equal status authority cannot publish conflicting conclusions")
+        if current.conclusion is StatusConclusion.PENDING and proposed.conclusion in {
+            StatusConclusion.SUCCESS,
+            StatusConclusion.FAILURE,
+        }:
+            return StatusDecision(True, "pending_authority_became_terminal", proposed)
+        raise CIDecisionError("equal terminal authority cannot publish conflicting conclusions")
     return StatusDecision(
         proposed_order > current_order,
         "newer_authority" if proposed_order > current_order else "idempotent_replay",

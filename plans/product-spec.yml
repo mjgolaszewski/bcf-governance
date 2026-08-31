@@ -21,7 +21,7 @@ architecture:
   data: "closed_yaml_json_contracts_and_content_addressed_evidence"
 phase_history: {path: plans/phase-history.yml, through_phase: P12}
 execution_phases:
-  - {phase_id: P13, build_block: post-release-authority-remediation-0.7.1, objective: "remediate exact-main and release authority, close release inputs, and prepare immutable v0.7.1 custody", release_train: release_3}
+  - {phase_id: P13, build_block: post-release-authority-remediation-0.7.1, objective: "remediate exact-main and release authority, register and pin distinct provider roles, close release inputs, and prepare immutable v0.7.1 custody", release_train: release_3}
 acceptance:
   release_gate: bcf truth
   evidence_location: phases/

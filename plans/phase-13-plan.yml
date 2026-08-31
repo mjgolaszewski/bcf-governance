@@ -23,6 +23,7 @@ delivery_contract:
   - independent final-byte verification and trusted release receipt construction
   - closed release dependency inputs and immutable publication checks
   - hosted Identity reference proof and reconciled release custody
+  - fail-closed registration and exact pinning of every privileged provider workflow
   parallelizable_workstreams:
   - id: P13-WS1
     name: authority contracts and controller decomposition
@@ -51,6 +52,9 @@ scope_lock:
 - order: 5
   statement: immutable-release settings, v0.7.1 tag creation, and publication require explicit
     owner approval after all acceptance evidence passes
+- order: 6
+  statement: new provider workflow paths land disabled so GitHub can mint numeric identities;
+    final workflow bytes and exact pins follow in one activation PR
 verification_plan:
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root
   .

@@ -13,6 +13,7 @@ import sys
 from .ci_authority_certification import CICertificationError
 from .ci_authority_contracts import CIAuthorityContractError
 from .ci_github_api import GitHubAPIError
+from .ci_github_bootstrap import install_controller
 from .ci_github_callbacks import finalize_callback, publish_callback
 from .ci_github_controller import (
     GitHubControllerError,
@@ -88,6 +89,42 @@ def _exact_main_parser() -> argparse.ArgumentParser:
     publish_parser.add_argument("--collector-run-id", required=True)
     publish_parser.add_argument("--collector-run-attempt", type=int, required=True)
     return parser
+
+
+def _bootstrap(argv: list[str]) -> None:
+    parser = argparse.ArgumentParser(description="BCF trusted controller bootstrap.")
+    parser.add_argument("--repository", required=True)
+    parser.add_argument("--artifact-dir", type=Path, required=True)
+    parser.add_argument("--artifact-id", required=True)
+    parser.add_argument("--artifact-name", required=True)
+    parser.add_argument("--provider-digest", required=True)
+    parser.add_argument("--producer-run-id", required=True)
+    parser.add_argument("--producer-run-attempt", required=True)
+    parser.add_argument("--repository-id", required=True)
+    parser.add_argument("--commit", required=True)
+    parser.add_argument("--tree", required=True)
+    parser.add_argument("--wheel-sha256", required=True)
+    parser.add_argument("--python", type=Path, required=True)
+    parser.add_argument("--tool-cache", type=Path, required=True)
+    args = parser.parse_args(argv)
+    result = install_controller(
+        environment_api(),
+        repository=args.repository,
+        artifact_dir=args.artifact_dir,
+        artifact_id=args.artifact_id,
+        artifact_name=args.artifact_name,
+        provider_digest=args.provider_digest,
+        producer_run_id=args.producer_run_id,
+        producer_run_attempt=args.producer_run_attempt,
+        repository_id=args.repository_id,
+        commit_sha=args.commit,
+        tree_sha=args.tree,
+        wheel_sha256=args.wheel_sha256,
+        selected_python=args.python,
+        tool_cache=args.tool_cache,
+    )
+    _github_output(result)
+    print(json.dumps(result, sort_keys=True))
 
 
 def _exact_main(argv: list[str]) -> None:
@@ -321,6 +358,9 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> None:
     raw = list(sys.argv[1:] if argv is None else argv)
     try:
+        if raw and raw[0] == "bootstrap":
+            _bootstrap(raw[1:])
+            return
         if raw and raw[0] == "exact-main":
             _exact_main(raw[1:])
             return

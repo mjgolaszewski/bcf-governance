@@ -1,0 +1,40 @@
+name: bcf/authority-revocation-canary
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  admit:
+    name: Admit isolated authority canary
+    if: ${{ false }}
+    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+    timeout-minutes: 1
+    steps:
+      - name: Remain fail-closed until pinned activation
+        run: exit 1
+  producer-a:
+    name: Execute canary producer A
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Remain fail-closed until pinned activation
+        run: exit 1
+  producer-b:
+    name: Execute canary producer B
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Remain fail-closed until pinned activation
+        run: exit 1
+  observe:
+    name: Observe canary precedence mechanically
+    if: ${{ false }}
+    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+    timeout-minutes: 1
+    steps:
+      - name: Remain fail-closed until pinned activation
+        run: exit 1

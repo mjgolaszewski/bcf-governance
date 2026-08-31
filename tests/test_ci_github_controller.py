@@ -25,7 +25,10 @@ from bcf_governance.tooling.ci_github_membership import (
     collect_same_run_producers,
     select_latest_admission,
 )
-from bcf_governance.tooling.ci_github_exact_main import finalize_exact_main
+from bcf_governance.tooling.ci_github_exact_main import (
+    finalize_exact_main,
+    publish_exact_main,
+)
 
 
 SHA_A = "a" * 40
@@ -127,6 +130,7 @@ class FakeAPI:
         }
         self.job_names = {"200": "truth", "300": "pack"}
         self.run_job_names: dict[str, tuple[str, ...]] = {}
+        self.run_job_statuses: dict[str, str] = {}
         self.missing_workflows: set[str] = set()
         self.workflow_versions: dict[str, tuple[str, bytes]] = {}
 
@@ -215,8 +219,12 @@ class FakeAPI:
         return tuple(
             {
                 "name": name,
-                "status": "completed",
-                "conclusion": self.runs[str(run_id)].get("conclusion"),
+                "status": self.run_job_statuses.get(str(run_id), "completed"),
+                "conclusion": (
+                    self.runs[str(run_id)].get("conclusion")
+                    if self.run_job_statuses.get(str(run_id), "completed") == "completed"
+                    else None
+                ),
             }
             for name in names
         )
@@ -383,6 +391,78 @@ def test_v11_finalizer_builds_certification_only_from_common_run(
         (value["selected_attempt"]["run_id"], value["same_run_membership"]["admission_run_id"])
         for value in report["admission"]["producer_runs"]
     } == {("100", "100")}
+
+
+def test_v11_pending_observation_is_published_without_borrowing_older_runs(
+    tmp_path: Path,
+) -> None:
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    api.run_job_statuses["100"] = "in_progress"
+    result = finalize_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        output_dir=tmp_path / "bundle",
+    )
+    assert result.status == "pending"
+    assert result.bundle_dir is not None
+    manifest = json.loads(
+        (Path(result.bundle_dir) / "bundle-manifest.json").read_text()
+    )
+    assert manifest["kind"] == "authority_observation"
+    api.runs["400"].update(status="completed", conclusion="success")
+    api.runs["401"] = {
+        **api.runs["400"],
+        "id": 401,
+        "workflow_id": 97,
+        "status": "in_progress",
+        "conclusion": None,
+    }
+
+    published = publish_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        bundle_dir=Path(result.bundle_dir),
+        target_url="https://github.example/runs/400",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        publisher_run_id=401,
+        publisher_run_attempt=1,
+    )
+
+    assert published["computed_state"] == "pending"
+    assert api.published_statuses[-1]["state"] == "pending"
+
+
+def test_v11_failed_finalizer_publishes_failure_without_an_artifact(
+    tmp_path: Path,
+) -> None:
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    api.runs["400"].update(status="completed", conclusion="failure")
+    api.runs["401"] = {
+        **api.runs["400"],
+        "id": 401,
+        "workflow_id": 97,
+        "status": "in_progress",
+        "conclusion": None,
+    }
+
+    published = publish_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        bundle_dir=tmp_path / "missing",
+        target_url="https://github.example/runs/400",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        publisher_run_id=401,
+        publisher_run_attempt=1,
+    )
+
+    assert published["status"] == "published"
+    assert api.published_statuses[-1]["state"] == "failure"
 
 
 @pytest.mark.parametrize("mutation", ["mixed-run", "mixed-attempt", "wrong-ref", "extra-job"])

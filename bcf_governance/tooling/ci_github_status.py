@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import asdict
 import json
 from pathlib import Path
 from typing import Any
@@ -165,6 +166,72 @@ def publish(
         raise GitHubControllerError("certification bundle cannot be a symlink")
     root = bundle_dir.resolve()
     manifest = verify_bundle(root)
+    if manifest.get("kind") == "authority_observation":
+        observation = json.loads(
+            (root / "authority-observation.json").read_text(encoding="utf-8")
+        )
+        if (
+            observation.get("kind") != "authority_observation"
+            or observation.get("subject") != manifest.get("subject")
+            or str(observation.get("admission", {}).get("admission_ordinal"))
+            != str(manifest.get("admission_ordinal"))
+            or observation.get("computed_state") != manifest.get("computed_state")
+        ):
+            raise GitHubControllerError("authority observation bundle is inconsistent")
+        state = observation.get("computed_state")
+        conclusions = {
+            "pending": StatusConclusion.PENDING,
+            "failed": StatusConclusion.FAILURE,
+        }
+        if state not in conclusions:
+            raise GitHubControllerError("authority observation state is unsupported")
+        subject_record = observation["subject"]
+        main = resolve_main(api, repository)
+        subject = str(subject_record["commit_sha"])
+        subject_tree = str(subject_record["tree_sha"])
+        commit = api.commit(repository, subject)
+        tree = commit.get("tree")
+        if not isinstance(tree, dict) or str(tree.get("sha")) != subject_tree:
+            raise GitHubControllerError("authority observation tree is not authenticated")
+        collector_main = MainIdentity(
+            repository_id=main.repository_id,
+            default_branch=main.default_branch,
+            checkout_sha=subject,
+            tree_sha=subject_tree,
+        )
+        collector = authenticate_trusted_run(
+            api,
+            repository=repository,
+            main=collector_main,
+            run_id=collector_run_id,
+            run_attempt=collector_run_attempt,
+            workflow_path=collector_workflow_path,
+            expected_event="workflow_run",
+            require_success=True,
+            expected_workflow_id=collector_workflow_id,
+            expected_workflow_sha256=collector_workflow_sha256,
+        )
+        if observation.get("collector") != {
+            "run_id": collector.run_id,
+            "run_attempt": collector.run_attempt,
+            "workflow": asdict(collector.workflow),
+        }:
+            raise GitHubControllerError("authority observation collector is not exact")
+        admission = observation["admission"]
+        result = publish_observation(
+            api,
+            repository=repository,
+            subject_sha=subject,
+            current_default_main_sha=main.checkout_sha,
+            admission_ordinal=int(admission["admission_ordinal"]),
+            control_plane_attempt=int(admission["run_attempt"]),
+            conclusion=conclusions[state],
+            description=f"BCF exact-main {state}",
+            target_url=target_url,
+        )
+        return {**result, "computed_state": state}
+    if manifest.get("kind") not in {None, "certification"}:
+        raise GitHubControllerError("certification bundle kind is unsupported")
     report = json.loads((root / "ci-certification.json").read_text(encoding="utf-8"))
     verification = verify_ci_certification(
         packaged_repo_root(),

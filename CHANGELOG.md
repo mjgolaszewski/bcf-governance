@@ -13,6 +13,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Opened the 0.7.1 authority-remediation train after post-release review found
   that same-SHA producer runs lacked common-admission membership and release
   selection duplicated success-prefiltered provider authority in workflow shell.
+- Added fail-closed provider registration seams for independent release verification,
+  trusted collection, immutable publication, and authority-revocation canaries; every
+  new job remains disabled until its numeric workflow identity and final bytes are pinned.
 
 ### Fixed
 
@@ -22,6 +25,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Pinned the trusted bootstrap and probe to the exact controller artifact built
   by the merged authority-v1.1 structural commit, and made offline installation
   select the sole authenticated controller wheel instead of a stale versioned name.
+- Allowed one authenticated admission's pending status to transition to its terminal
+  result, and made a failed finalizer publish a higher-authority failure instead of
+  leaving an older green status in place.
 
 ### Changed
 

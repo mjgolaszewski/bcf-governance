@@ -42,6 +42,50 @@ class ExactMainResult:
     bundle_dir: str | None = None
 
 
+def _write_observation_bundle(
+    output_dir: Path,
+    *,
+    main: Any,
+    collector: Any,
+    admission_run_id: str,
+    admission_attempt: int,
+    ordinal: int,
+    computed_state: str,
+) -> Path:
+    """Write one exact authenticated non-certification observation bundle."""
+
+    root = prepare_output(output_dir)
+    observation = {
+        "schema_version": "1.1",
+        "kind": "authority_observation",
+        "subject": {"commit_sha": main.checkout_sha, "tree_sha": main.tree_sha},
+        "admission": {
+            "run_id": admission_run_id,
+            "run_attempt": admission_attempt,
+            "admission_ordinal": str(ordinal),
+        },
+        "collector": {
+            "run_id": collector.run_id,
+            "run_attempt": collector.run_attempt,
+            "workflow": asdict(collector.workflow),
+        },
+        "computed_state": computed_state,
+    }
+    digest = write_exclusive(root / "authority-observation.json", observation)
+    manifest = {
+        "schema_version": "1.1",
+        "kind": "authority_observation",
+        "subject": observation["subject"],
+        "admission_ordinal": str(ordinal),
+        "computed_state": computed_state,
+        "files": {"authority-observation.json": digest},
+    }
+    (root / "bundle-manifest.json").write_bytes(canonical_json(manifest))
+    for path in root.rglob("*.json"):
+        path.chmod(0o400)
+    return root
+
+
 def admit_exact_main(
     api: GitHubAPI,
     *,
@@ -124,8 +168,18 @@ def finalize_exact_main(
     if any(
         value["attempts"][0]["status"] != "completed" for value in producer_runs
     ):
+        root = _write_observation_bundle(
+            output_dir,
+            main=main,
+            collector=collector,
+            admission_run_id=admission_run_id,
+            admission_attempt=admission_attempt,
+            ordinal=ordinal,
+            computed_state="pending",
+        )
         return ExactMainResult(
-            "pending", "pending", admission_run_id, admission_attempt, ordinal
+            "pending", "pending", admission_run_id, admission_attempt, ordinal,
+            str(root),
         )
     admission = authenticate_role_run(
         api,
@@ -234,6 +288,7 @@ def finalize_exact_main(
     )
     manifest = {
         "schema_version": "1.1",
+        "kind": "certification",
         "subject": {"commit_sha": main.checkout_sha, "tree_sha": main.tree_sha},
         "admission_ordinal": str(ordinal),
         "computed_state": verification.computed_state,
@@ -282,6 +337,32 @@ def publish_exact_main(
         require_success=False,
     )
     finalizer = authority_role_workflow(authority, "finalizer")
+    if not (bundle_dir / "bundle-manifest.json").is_file():
+        collector = authenticate_role_run(
+            api,
+            repository=repository,
+            main=main,
+            authority=authority,
+            role="finalizer",
+            run_id=collector_run_id,
+            run_attempt=collector_run_attempt,
+            require_success=False,
+        )
+        admission_run_id, admission_attempt = select_latest_admission(
+            api, repository=repository, main=main, authority=authority
+        )
+        ordinal = admission_ordinal(admission_run_id, admission_attempt, 1)
+        return publish_observation(
+            api,
+            repository=repository,
+            subject_sha=main.checkout_sha,
+            current_default_main_sha=main.checkout_sha,
+            admission_ordinal=ordinal,
+            control_plane_attempt=admission_attempt,
+            conclusion=StatusConclusion.FAILURE,
+            description=f"BCF exact-main finalizer {collector.run_id} failed",
+            target_url=target_url,
+        )
     return publish_bundle(
         api,
         repository=repository,
