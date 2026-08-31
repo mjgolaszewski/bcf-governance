@@ -85,6 +85,7 @@ execution_evidence:
   - reusable-mode workflow custody uses definition commit 356196fe7fdeca1bd0de80c0d58f198e1476f716 followed by an independent exact blob and SHA-256 pin
   - PR 46 run 33444958953 failed at cheap preflight before evidence fanout because the new causal oracle was not selected by the contract gate; the canonical selector and exact manifest now include that owner
   - release provider custody is centralized in a mechanically governed decoder; authorizer/build attempt equality, newest-admission selection, verifier artifacts, collector receipts, and publication assets now fail closed under focused causal controls
+  - provider-artifact ownership exhausted the registry's prior one-byte headroom; the reviewed budget is 36 KiB with the 200-line cap preserved and YAML merge semantics prohibited
 closeout_requirements:
   claims:
     required_suites_green:

@@ -96,7 +96,7 @@
     },
     "governance/artifact-manifest.yml": {
       "operation": "copy",
-      "sha256": "8539763a5726e9eec80eeeac09c64d3edee386a30e4411cd87722358fc825a6c"
+      "sha256": "c21830b0f05a311a0aeb392eddfdae1c9d1392d3a3d98c580c58dffa13613404"
     },
     "governance/canonical-representations.yml": {
       "operation": "copy",

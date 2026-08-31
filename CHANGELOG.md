@@ -52,6 +52,8 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   accepting its expected wheel digest as authority.
 - Moved cross-workflow build and verification artifact resolution into the controller,
   eliminating workflow-authored provider selectors.
+- Raised only the canonical semantic-registry byte budget from 32 to 36 KiB after the
+  existing 32 KiB allocation had one byte of headroom; the 200-line cap is unchanged.
 
 ### Changed
 

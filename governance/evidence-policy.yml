@@ -438,7 +438,7 @@ gate_overrides:
         exit_codes: [1]
         stream: stderr
         regex: governance.github-run-identity.v1 owner must be an authorized constructor
-    - {id: github-provider-artifact-owner-must-fail, mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [''bcf_governance/tooling/ci_github_artifacts.py::authenticate_role_artifact'']', replace: 'authorized_constructors_and_factories: [''bcf_governance/tooling/missing.py::owner'']'}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: governance.github-provider-artifact.v1 owner must be an authorized constructor}}
+    - {id: github-provider-artifact-owner-must-fail, mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [''bcf_governance/tooling/ci_github_artifacts.py::_materialize_artifact'']', replace: 'authorized_constructors_and_factories: [''bcf_governance/tooling/missing.py::owner'']'}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: governance.github-provider-artifact.v1 owner must be an authorized constructor}}
     - id: github-run-identity-consumers-must-fail
       mutation: {path: governance/canonical-representations.yml, search: 'declared_consumer_layers_and_sinks: {read: [''bcf_governance/tooling/ci_github_identity.py::resolve_trusted_run''],
           authorization: [''bcf_governance/tooling/ci_github.py::authenticate_github_run'', ''bcf_governance/tooling/ci_github_callbacks.py::publish_callback'', ''bcf_governance/tooling/ci_github_identity.py::authenticate_trusted_run''],
