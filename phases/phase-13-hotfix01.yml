@@ -76,6 +76,7 @@ execution_evidence:
   - exact-main run 33440869640 proved admission identity, then failed fast because its reusable governance caller selected PR mode without a PR base SHA; the correction selects closure truth and maps that mechanically to release preflight
   - corrected reusable workflow custody uses the two-commit seam at 26deb561d5d2fc471ee9f23a78769211e848e626 so definition bytes remain independently addressable from their authority pins
   - exact-main run 33442817538 proved the typed closure input was present but exposed that reusable workflows retain the caller event name; evaluation now consumes the explicit input directly and rejects event-name coupling
+  - reusable-mode workflow custody uses definition commit 356196fe7fdeca1bd0de80c0d58f198e1476f716 followed by an independent exact blob and SHA-256 pin
 closeout_requirements:
   claims:
     required_suites_green:
