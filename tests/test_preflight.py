@@ -110,6 +110,33 @@ def test_negative_control_preflight_accepts_unique_tracked_target(tmp_path: Path
     assert preflight._negative_control_targets(repo) == 1
 
 
+def test_negative_control_preflight_rejects_stale_oracle_node(tmp_path: Path) -> None:
+    repo = _committed_repo(tmp_path, "owner.py", "AUTHORITY = 'new'\n")
+    manifest = repo / "governance/test-manifests/contract-test.txt"
+    manifest.parent.mkdir(parents=True)
+    manifest.write_text("tests.test_owner::test_current\n", encoding="utf-8")
+    contracts = repo / "governance/gate-contracts.yml"
+    contracts.write_text(
+        "gates:\n"
+        "  contract-test:\n"
+        "    evidence:\n"
+        "      test_contract:\n"
+        "        expected_node_manifest: governance/test-manifests/contract-test.txt\n"
+        "    negative_controls:\n"
+        "    - id: stale-oracle-must-fail\n"
+        "      mutation: {path: owner.py, search: new, replace: mutant}\n"
+        "      oracle:\n"
+        "        kind: test_node_failure\n"
+        "        node_ids: [tests.test_owner::test_removed]\n",
+        encoding="utf-8",
+    )
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "add oracle")
+
+    with pytest.raises(preflight.PreflightError, match="stale-oracle-must-fail"):
+        preflight._negative_control_targets(repo)
+
+
 def test_preflight_allocates_session_only_after_all_deterministic_checks(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

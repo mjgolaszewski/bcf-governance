@@ -38,7 +38,7 @@ execution_evidence:
     phase-history Git and SHA-256 custody
   - publication and repository setting mutations remain behind explicit owner approval
   - never mutate or retroactively recertify v0.7.0 provider objects
-  - a local contract receipt exposed two stale controller mutation paths before push; both now target ci_github_status.py, the release-receipt owner mutant tracks both authorized constructors, and preflight rejects absent or unsafe mutation targets before evidence fanout
+  - local contract receipts exposed two stale controller mutation paths and two stale oracle-node declarations before push; the declarations now target their exact owners and parameterized nodes, the release-receipt owner mutant tracks both authorized constructors, and preflight rejects absent, unsafe, or stale mutation and oracle targets before evidence fanout
 closeout_requirements:
   claims:
     required_suites_green:

@@ -183,10 +183,38 @@ def _negative_control_targets(repo_root: Path) -> int:
         controls = gate.get("negative_controls") if isinstance(gate, dict) else None
         if not isinstance(controls, list):
             continue
+        evidence = gate.get("evidence") if isinstance(gate, dict) else None
+        test_contract = evidence.get("test_contract") if isinstance(evidence, dict) else None
+        manifest_value = (
+            test_contract.get("expected_node_manifest")
+            if isinstance(test_contract, dict)
+            else None
+        )
+        governed_nodes: set[str] | None = None
+        if isinstance(manifest_value, str):
+            manifest_path = repo_root / manifest_value
+            if manifest_path.is_file():
+                governed_nodes = {
+                    line.strip()
+                    for line in manifest_path.read_text(encoding="utf-8").splitlines()
+                    if line.strip()
+                }
         for control in controls:
             if not isinstance(control, dict) or not isinstance(control.get("mutation"), dict):
                 raise PreflightError(f"negative control is invalid: {gate_id}")
             control_id = str(control.get("id", gate_id))
+            oracle = control.get("oracle")
+            if isinstance(oracle, dict) and oracle.get("kind") == "test_node_failure":
+                oracle_nodes = oracle.get("node_ids")
+                if (
+                    governed_nodes is None
+                    or not isinstance(oracle_nodes, list)
+                    or not oracle_nodes
+                    or any(node not in governed_nodes for node in oracle_nodes)
+                ):
+                    raise PreflightError(
+                        f"negative control oracle node is stale: {control_id}"
+                    )
             mutation = control["mutation"]
             relative_value = mutation.get("path")
             if relative_value == "@active_phase_log":

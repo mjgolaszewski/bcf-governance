@@ -76,7 +76,7 @@ execution_evidence:
     0e965b2197e776ad411b67820dbd5586263abde1 and tree
     363d2424ac4ad23f7d314d508de323acf0e4fe62
   - publication remains disabled until explicit owner approval after corrected authority evidence
-  - cheap preflight now validates all 76 negative-control mutation paths and source/YAML targets before session allocation or expensive evidence; exact manifests ratchet to 451 source nodes and 186 contract nodes
+  - cheap preflight now validates all 76 negative-control mutation paths, source/YAML targets, and test-failure oracle nodes before session allocation or expensive evidence; exact manifests ratchet to 452 source nodes and 187 contract nodes
 closeout_requirements:
   claims:
     workitems_closed:

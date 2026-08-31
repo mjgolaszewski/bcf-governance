@@ -270,7 +270,7 @@ gates:
       oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_publisher_authenticates_tag_run_attempt_artifact_and_receipt']}
     - id: release-latest-success-selection-must-fail
       mutation: {path: bcf_governance/tooling/ci_github_membership.py, search: 'selected = max(', replace: 'selected = min('}
-      oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_v11_latest_failed_admission_is_selected_without_success_fallback']}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_latest_failed_admission_is_selected_without_green_fallback']}
     - id: release-no-rebuild-must-fail
       mutation: {path: .github/workflows/release.yml, search: 'run: exit 1', replace: 'run: python -m build'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_publisher_checks_out_nothing_and_rebuilds_nothing']}
@@ -280,7 +280,7 @@ gates:
     - id: release-publication-cleanup-root-must-fail
       mutation: {path: bcf_governance/tooling/release_receipts.py, search: '"candidate_authored_receipt_accepted": False', replace: '"candidate_authored_receipt_accepted": True'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles']}
-    - {id: authority-v11-role-owner-must-fail, mutation: {path: schemas/ci-authority.schema.json, search: '        "release_verifier",', replace: ''}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority::test_authority_v11_rejects_incomplete_or_duplicated_semantic_ownership']}}
+    - {id: authority-v11-role-owner-must-fail, mutation: {path: schemas/ci-authority.schema.json, search: '        "release_verifier",', replace: ''}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority::test_authority_v11_rejects_incomplete_or_duplicated_semantic_ownership[missing-role-pin]']}}
     - {id: same-admission-membership-owner-must-fail, mutation: {path: bcf_governance/tooling/ci_github_membership.py, search: 'if set(references) != expected_paths:', replace: 'if set(references) == expected_paths:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_v11_collects_all_producers_from_one_exact_admission_attempt']}}
     - {id: release-closure-lock-owner-must-fail, mutation: {path: bcf_governance/tooling/release_closure.py, search: 'if resolution.get("lock_sha256") != lock_digest:', replace: 'if resolution.get("lock_sha256") == lock_digest:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_closure::test_repository_release_lock_is_a_complete_exact_hash_closure']}}
     - {id: roadmap-history-owner-must-fail, mutation: {path: plans/product-spec.yml, search: 'through_phase: P12', replace: 'through_phase: P11'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_required_repository_artifact_contract_is_executable']}}
