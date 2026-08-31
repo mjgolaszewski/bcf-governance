@@ -50,7 +50,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/governance.yml
     with:
-      evaluation_mode: pr
+      evaluation_mode: closure
   governance-pack:
     name: Verify exact-main package and templates
     needs:
