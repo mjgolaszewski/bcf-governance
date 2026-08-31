@@ -73,6 +73,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Bound trusted workflow authentication to an immutable definition commit,
+  blob, and digest that must still match the active default-main bytes; advanced
+  the disabled control plane to the latest exact-main controller artifact.
 - Gave every repository job a concise purpose-oriented display name while
   retaining stable machine job IDs; presentation remains outside authority.
 - Upgraded checkout, Python setup, and artifact transport to immutable current

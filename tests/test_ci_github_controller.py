@@ -122,6 +122,7 @@ class FakeAPI:
         }
         self.job_names = {"200": "truth", "300": "pack"}
         self.missing_workflows: set[str] = set()
+        self.workflow_versions: dict[str, tuple[str, bytes]] = {}
 
     @staticmethod
     def _producer_run(run_id: int, workflow_id: int) -> dict[str, object]:
@@ -166,11 +167,12 @@ class FakeAPI:
         }
 
     def content(self, repository: str, path: str, *, ref: str) -> GitHubContent:
-        assert repository == "owner/repo" and ref in {self.main, SHA_A}
+        assert repository == "owner/repo" and ref in {self.main, SHA_A, SHA_B}
         if path == "governance/ci-authority.yml":
             raw = yaml.safe_dump(self.authority, sort_keys=False).encode()
             return GitHubContent(path, SHA_B, raw)
-        return GitHubContent(path, SHA_A, WORKFLOW)
+        blob_oid, content = self.workflow_versions.get(ref, (SHA_A, WORKFLOW))
+        return GitHubContent(path, blob_oid, content)
 
     def workflow_runs(
         self,
@@ -585,13 +587,40 @@ def test_wrong_workflow_bytes_fail_before_bundle_creation(tmp_path: Path) -> Non
     assert not (tmp_path / "bundle").exists()
 
 
+def test_pinned_definition_must_still_match_current_main(tmp_path: Path) -> None:
+    api = FakeAPI()
+    historical = b"name: historical producer\n"
+    workflow = api.authority["producers"][0]["workflow"]
+    workflow["trusted_workflow_definition_commit"] = SHA_B
+    workflow["trusted_workflow_blob_oid"] = SHA_B
+    workflow["trusted_workflow_sha256"] = hashlib.sha256(historical).hexdigest()
+    api.workflow_versions[SHA_B] = (SHA_B, historical)
+
+    with pytest.raises(GitHubControllerError, match="current default-main workflow bytes"):
+        finalize(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            control_run_id=100,
+            control_run_attempt=1,
+            **CONTROL_IDENTITY,
+            collector_run_id=400,
+            collector_run_attempt=1,
+            **COLLECTOR_IDENTITY,
+            output_dir=tmp_path / "bundle",
+        )
+    assert not (tmp_path / "bundle").exists()
+
+
 def test_finalizer_authenticates_its_own_run_before_bundle_creation(
     tmp_path: Path,
 ) -> None:
     api = FakeAPI()
     api.runs["400"]["workflow_id"] = 99
 
-    with pytest.raises(GitHubControllerError, match="not authenticated"):
+    with pytest.raises(
+        GitHubControllerError,
+        match="not authenticated|trusted workflow bytes digest",
+    ):
         finalize(
             api,  # type: ignore[arg-type]
             repository="owner/repo",
@@ -794,7 +823,10 @@ def test_control_plane_identity_mutants_are_unadmitted(mutation: str) -> None:
         api.runs["100"]["workflow_id"] = 98
     else:
         identity["control_workflow_sha256"] = "d" * 64
-    with pytest.raises(GitHubControllerError, match="not authenticated"):
+    with pytest.raises(
+        GitHubControllerError,
+        match="not authenticated|trusted workflow bytes digest",
+    ):
         kickoff(
             api,  # type: ignore[arg-type]
             repository="owner/repo",

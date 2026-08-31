@@ -336,11 +336,11 @@
     },
     "scripts/_bcf_runtime/ci_github_controller.py": {
       "operation": "copy",
-      "sha256": "0dd05f5fcb4baad6668631633a3896925b4e128b5458cbdf8352d118cc0eddf8"
+      "sha256": "136670095261143659bfe819c89cf872f4c0544eef2dfd3c5c916166cff1be44"
     },
     "scripts/_bcf_runtime/ci_github_identity.py": {
       "operation": "copy",
-      "sha256": "69f5dd9ec94bd266d79995897ed324e0fbc6cfddd8a6c1174b2194987edbbb9c"
+      "sha256": "70e169dfab4fa1d9a5423d773181de0591d82c62863b4d970f2d6a2f353e5213"
     },
     "scripts/_bcf_runtime/cleanup_ci_resources.py": {
       "operation": "copy",
