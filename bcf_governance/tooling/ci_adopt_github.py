@@ -51,6 +51,7 @@ PUBLISHER_ACTIVATION_EXPRESSION = (
     "${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' && "
     "github.event.workflow_run.conclusion == 'success' }}"
 )
+TRUSTED_CONTROLLER_TOKEN_ENV = {"GITHUB_TOKEN": "${{ github.token }}"}
 EXACT_MAIN_PATH = ".github/workflows/bcf-exact-main.yml"
 EXACT_REF_PATH = ".github/workflows/bcf-exact-ref.yml"
 FINALIZER_PATH = ".github/workflows/bcf-trusted-finalizer.yml"
@@ -85,7 +86,14 @@ def _trusted_steps(
                 "with": {"python-version": "3.12"},
             }
         )
-    steps.append({"name": name, "shell": "bash", "run": f"set -euo pipefail\n{command}"})
+    steps.append(
+        {
+            "name": name,
+            "shell": "bash",
+            "env": TRUSTED_CONTROLLER_TOKEN_ENV,
+            "run": f"set -euo pipefail\n{command}",
+        }
+    )
     return steps
 
 
@@ -216,6 +224,7 @@ def render_github_control_plane(
             {
                 "name": "Verify callback and publish authoritative exact-main status",
                 "shell": "bash",
+                "env": TRUSTED_CONTROLLER_TOKEN_ENV,
                 "run": "set -euo pipefail\n"
                 + _controller_command(
                     'publish-callback --repository "$GITHUB_REPOSITORY" '

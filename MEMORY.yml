@@ -66,7 +66,7 @@ known_constraints:
   - release tags are created only at a merge commit whose source and governance CI passed
   - standard hosted runners are free and unlimited while the repository remains public; larger-runner and artifact-storage costs remain separate
   - the persistent trusted VM may collect provider state and publish but may never check out or execute candidate code
-  - P10-HF12 is exact-main certified at 71cd567f980f1c43ed2a0ee58abf9759afcbd0e9 by governance run 33356289494 and pack run 33356289569; controller artifact 9744774824 was installed by run 33356306077 and independently probed by run 33356336015 on both trusted runners; P10-HF13 may activate only after PR checks pass and PR/failed-callback admission is rejected before runner allocation
+  - P10-HF12 is exact-main certified at 71cd567f980f1c43ed2a0ee58abf9759afcbd0e9 by governance run 33356289494 and pack run 33356289569; controller artifact 9744774824 was installed by run 33356306077 and independently probed by run 33356336015 on both trusted runners; P10-HF13 merged as 970d4d2184bcb446f33c01cf9803b5a41b9200a0, activation run 33358335298 failed closed on missing explicit GITHUB_TOKEN transport, and P10-HF14 must repair and causally prove that transport before reactivation
   - release execution and publication remain disabled until disposable candidate execution and isolated trusted publication are available
   - hosted jobs run to completion without polling, sleeping, idle waiters, or route fallback
   - every BCF behavior commit updates and validates BCF's own applicable governance contracts before successor work begins

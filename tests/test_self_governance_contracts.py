@@ -16,6 +16,7 @@ from bcf_governance.tooling.ci_adopt_github import (
     ACTIVATION_EXPRESSION,
     FINALIZER_ACTIVATION_EXPRESSION,
     PUBLISHER_ACTIVATION_EXPRESSION,
+    TRUSTED_CONTROLLER_TOKEN_ENV,
     render_github_control_plane,
 )
 from bcf_governance.tooling.ci_github_actions import ACTION_PINS
@@ -441,6 +442,22 @@ def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> N
     assert publisher["jobs"]["publish"]["if"] == PUBLISHER_ACTIVATION_EXPRESSION
     assert "workflow_run.event == 'push'" in FINALIZER_ACTIVATION_EXPRESSION
     assert "workflow_run.conclusion == 'success'" in PUBLISHER_ACTIVATION_EXPRESSION
+
+
+def test_trusted_controller_steps_receive_github_token_explicitly() -> None:
+    for relative_path in (
+        ".github/workflows/bcf-exact-main.yml",
+        ".github/workflows/bcf-trusted-finalizer.yml",
+        ".github/workflows/bcf-status-publisher.yml",
+    ):
+        workflow = yaml.safe_load((REPO_ROOT / relative_path).read_text())
+        job = next(iter(workflow["jobs"].values()))
+        controller_steps = [
+            step for step in job["steps"] if "ci-github" in step.get("run", "")
+        ]
+        assert len(controller_steps) == 1
+        assert controller_steps[0]["env"] == TRUSTED_CONTROLLER_TOKEN_ENV
+        assert "GITHUB_TOKEN" not in workflow.get("env", {})
 
 
 def test_self_control_plane_is_an_exact_disabled_generator_product() -> None:

@@ -292,7 +292,7 @@
     },
     "scripts/_bcf_runtime/ci_adopt_github.py": {
       "operation": "copy",
-      "sha256": "7276be467aaa56dd6eb65ff06c24a754d7eda6f556d9c47f7790ee814ad22dd9"
+      "sha256": "ee3deedf79816abecfffd2c7c5e65d25e65684fb7d73302aba3f51831844231f"
     },
     "scripts/_bcf_runtime/ci_authority_certification.py": {
       "operation": "copy",
