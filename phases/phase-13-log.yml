@@ -76,8 +76,9 @@ execution_evidence:
     0e965b2197e776ad411b67820dbd5586263abde1 and tree
     363d2424ac4ad23f7d314d508de323acf0e4fe62
   - publication remains disabled until explicit owner approval after corrected authority evidence
-  - cheap preflight now validates all 76 negative-control mutation paths, source/YAML targets, and test-failure oracle nodes before session allocation or expensive evidence; exact manifests ratchet to 452 source nodes and 187 contract nodes
+  - cheap preflight now validates all 77 negative-control mutation paths, source/YAML targets, and test-failure oracle nodes before session allocation or expensive evidence; exact manifests ratchet to 453 source nodes and 187 contract nodes
   - PR 40 run 33422144454 proved remote cheap preflight and early shard failure; the authored-status mutant reserialized a local diagnostic command so its ephemeral path separated from the non-authoritative marker, and the custody record now uses a stable session-root variable
+  - PR 40 run 33422527383 verified every exact-tree gate and receipt but exposed that closure truth made an intentionally active multi-PR phase unmergeable; PR evaluation now computes merge eligibility separately while retaining closure truth as the only release-receipt authority
 closeout_requirements:
   claims:
     workitems_closed:

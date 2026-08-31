@@ -713,6 +713,8 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
         if "governance_truth.py" in step.get("run", "")
     )
     assert "/attempts/${{ github.run_attempt }}/" in truth_command
+    assert "--evaluation-mode" in truth_command
+    assert "github.event_name == 'pull_request'" in truth_command
     terminal = next(
         step
         for step in jobs["governance-truthfulness"]["steps"]

@@ -249,6 +249,13 @@ bcf truth --evidence-dir .artifacts/bcf --format json
 # Local outputs are non-authoritative; retain them by SHA-256 as CI artifacts.
 ```
 
+Truth defaults to closure evaluation: an incomplete phase or hotfix fails and
+cannot produce a release receipt. Protected pull-request CI may use
+`--evaluation-mode pr` to compute merge eligibility from exact-tree gates while
+the phase train remains in progress. That mode preserves the lifecycle as
+planned or completed rather than closed, and release-receipt output is
+mechanically prohibited.
+
 Positive and negative runs occur in separate pristine detached worktrees. BCF
 rejects dirty callers, non-ignored untracked influence, unsafe tracked
 symlinks, out-of-tree paths, tracked-file mutation, and undeclared outputs.
