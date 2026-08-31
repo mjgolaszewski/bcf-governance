@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-10-hotfix13
   version: 1.0.0
   generated_at_utc: '2026-08-31T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-10-hotfix13.yml
 hotfix:
   id: P10-HF13
@@ -19,13 +19,28 @@ execution_evidence:
   - .venv/bin/python scripts/governance_evidence.py --repo-root . run --gate contract-test --session-manifest <fresh-local-session>
   - .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
   - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
-  executed_commands: []
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test
+  - .venv/bin/python scripts/governance_evidence.py --repo-root . run --gate contract-test --session-manifest <fresh-local-session>
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py architecture-test
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py semantic-ownership
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py lint
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py typecheck
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py runtime-smoke
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root . --format text
+  - .venv/bin/python scripts/check_governance_exposure.py --repo-root . --format text
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
   notes:
   - full mode is required because this slice changes trusted runner admission and activates authoritative exact-main status publication
   - bootstrap run 33356306077 installed exact controller commit 37475fbff2c5303762e0fdeb97e7cc7834bfe485 on both uniquely labeled trusted runners in 15 seconds each
   - probe run 33356336015 independently verified both installed controllers in 7 seconds each; neither workflow checked out or executed candidate code
   - finalizer jobs admit only push-origin producer completions and publisher jobs admit only successful finalizers, so pull-request and failed callback events are rejected before runner allocation
   - the repository activation variable remains false during implementation and PR validation; it may become true only after protected checks pass and immediately before merge
+  - all 399 exact tests and 134 exact contract nodes pass at source commit f92ca27423b025b6eae1045c7c9c3b00bcf2a686; all 32 contract controls pass in one exact local session
+  - the finalizer and publisher guard controls each applied their declared mutation, observed both declared mechanical checks fail with exit 1, and left no unexpected worktree changes
+  - high-value and semantic-high-value validator mutants, architecture, semantic ownership, lint, typecheck, runtime smoke, structural validation, and exposure scanning pass
 closeout_requirements:
   claims:
     required_suites_green: {required_evidence: [test, contract-test]}
