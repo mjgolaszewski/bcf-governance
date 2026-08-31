@@ -209,7 +209,7 @@ gates:
           'tests/test_validate_governance_yaml.py::test_pull_request_validation_requires_changelog_update', tests/test_ci_authority.py,
           tests/test_ci_certification.py, tests/test_ci_authority_decisions.py, tests/test_release_receipts.py, tests/test_ci_github_reference.py,
           tests/test_ci_github_controller.py, tests/test_local_pr.py, tests/test_runtime_capacity.py, tests/test_trusted_inputs.py,
-          tests/test_preflight.py, tests/test_release_workflow_contracts.py]
+          tests/test_preflight.py, tests/test_release_artifacts.py, tests/test_release_workflow_contracts.py]
         expected_node_manifest: governance/test-manifests/contract-test.txt
         expected_nodes_mode: exact
         min_collected: 1

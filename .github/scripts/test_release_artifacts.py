@@ -23,6 +23,7 @@ REQUIRED_SDIST_PATHS = (
     "examples",
     "governance",
     "governance/archive/phase-artifacts",
+    "governance/test-manifests",
     "phases",
     "plans",
     "schemas",
@@ -206,9 +207,29 @@ def verify_sdist(sdist: Path, temporary: Path) -> None:
     if len(roots) != 1:
         raise RuntimeError("sdist must contain exactly one source root")
     validate_sdist_payload(roots[0])
+    initialize_source_custody(roots[0])
     python, env = venv_environment(temporary / "sdist-venv")
     run(str(python), "-m", "pip", "install", f"{roots[0]}[dev]", env=env)
     run(str(python), "-m", "pytest", "-q", "tests", cwd=roots[0], env=env)
+
+
+def initialize_source_custody(source_root: Path) -> None:
+    """Give extracted source deterministic tracked-file semantics for its tests."""
+
+    run("git", "init", "--quiet", cwd=source_root)
+    run("git", "config", "user.email", "release-artifact@example.invalid", cwd=source_root)
+    run("git", "config", "user.name", "BCF Artifact Test", cwd=source_root)
+    run("git", "add", ".", cwd=source_root)
+    run("git", "commit", "--quiet", "-m", "exact extracted source distribution", cwd=source_root)
+    result = subprocess.run(
+        ["git", "status", "--porcelain", "--untracked-files=all"],
+        cwd=source_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    if result.stdout:
+        raise RuntimeError("initialized sdist custody is not clean")
 
 
 def main() -> None:

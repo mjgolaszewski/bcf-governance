@@ -123,6 +123,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Made source-distribution verification package exact test manifests and create
+  clean tracked-file custody before exercising the complete extracted suite.
 - Made pending producer completion a mechanically authenticated no-op and bound
   terminal publication to the exact triggering collector and callback bundle
   digest before any status write.
