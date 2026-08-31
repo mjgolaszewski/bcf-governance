@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import os
 import shutil
 import subprocess
 import sys
@@ -186,6 +187,8 @@ def test_v2_surfaces_bind_one_session_and_do_not_wait() -> None:
 
 
 def test_bcf_standard_v2_promotion_fits_declared_context_budgets(tmp_path: Path) -> None:
+    if os.environ.get("BCF_RELEASE_SDIST_PORTABLE_TEST") == "1":
+        pytest.skip("exact self-adoption retention proof requires original Git custody")
     repo = tmp_path / "bcf-self-adoption"
     source_git = subprocess.run(
         ["git", "-C", str(REPO_ROOT), "rev-parse", "--git-dir"],

@@ -9,6 +9,7 @@ import sys
 import tarfile
 import tempfile
 import zipfile
+from xml.etree import ElementTree
 from pathlib import Path
 
 import yaml
@@ -51,6 +52,17 @@ REQUIRED_SDIST_FILES = (
     "governance/self-governance-policy.yml",
     "manifest.yml",
 )
+SDIST_PORTABLE_TEST_ENV = "BCF_RELEASE_SDIST_PORTABLE_TEST"
+ALLOWED_SDIST_CUSTODY_SKIPS = {
+    (
+        "tests.test_profile_contract_v2",
+        "test_bcf_standard_v2_promotion_fits_declared_context_budgets",
+    ),
+    (
+        "tests.test_self_governance_contracts",
+        "test_required_repository_artifact_contract_is_executable",
+    ),
+}
 
 
 def run(*argv: str, cwd: Path | None = None, env: dict[str, str] | None = None) -> None:
@@ -81,6 +93,21 @@ def validate_sdist_payload(source_root: Path) -> None:
     missing = [*missing_directories, *missing_files]
     if missing:
         raise RuntimeError("sdist payload missing: " + ", ".join(missing))
+
+
+def validate_sdist_test_skips(junit_path: Path) -> None:
+    """Permit only proofs that intrinsically require the source repository's Git objects."""
+    root = ElementTree.parse(junit_path).getroot()
+    observed = {
+        (str(case.get("classname")), str(case.get("name")))
+        for case in root.iter("testcase")
+        if case.find("skipped") is not None
+    }
+    if observed != ALLOWED_SDIST_CUSTODY_SKIPS:
+        raise RuntimeError(
+            "sdist test skip contract mismatch: "
+            f"expected {sorted(ALLOWED_SDIST_CUSTODY_SKIPS)}, observed {sorted(observed)}"
+        )
 
 
 def complete_lite_phase(repo: Path) -> None:
@@ -215,8 +242,20 @@ def verify_sdist(sdist: Path, temporary: Path) -> None:
     validate_sdist_payload(roots[0])
     initialize_source_custody(roots[0])
     python, env = venv_environment(temporary / "sdist-venv")
+    env[SDIST_PORTABLE_TEST_ENV] = "1"
     run(str(python), "-m", "pip", "install", f"{roots[0]}[dev]", env=env)
-    run(str(python), "-m", "pytest", "-q", "tests", cwd=roots[0], env=env)
+    junit = temporary / "sdist-tests.xml"
+    run(
+        str(python),
+        "-m",
+        "pytest",
+        "-q",
+        "tests",
+        f"--junitxml={junit}",
+        cwd=roots[0],
+        env=env,
+    )
+    validate_sdist_test_skips(junit)
 
 
 def initialize_source_custody(source_root: Path) -> None:

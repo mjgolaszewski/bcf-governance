@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import importlib.util
+import os
 import re
 import subprocess
 import sys
@@ -148,6 +149,8 @@ def test_template_and_private_runtime_copies_are_exact() -> None:
 
 
 def test_required_repository_artifact_contract_is_executable() -> None:
+    if os.environ.get("BCF_RELEASE_SDIST_PORTABLE_TEST") == "1":
+        pytest.skip("exact repository validation requires original Git custody")
     validate_repo_root(REPO_ROOT)
 
 
