@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-12-plan
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: active
   path: plans/phase-12-plan.yml
 phase:
   id: P12
@@ -19,18 +19,35 @@ phase:
   - MEMORY.yml
 delivery_contract:
   tightly_scoped_deliverables:
-  - README-led editorial refresh and immutable exact-byte release
+  - README-led architecture rationale with explicit costs and limitations
+  - CI authority, usage, maintenance, and installed-operations documentation hierarchy
+  - immutable exact-byte publisher with provenance attestation and no rebuild path
+  - mechanical editorial verification and final exact-main recertification
   parallelizable_workstreams:
   - id: P12-WS1
-    name: documentation and release verification
+    name: architecture and operator documentation
+  - id: P12-WS2
+    name: immutable publication and final certification
   hard_dependencies:
   - P11
   docker_first_local_runtime: repo_native_validation_and_governance_commands
   completeness_standard: full_completeness_for_declared_scope
 scope_lock:
 - order: 1
-  statement: keep the phase narrowly scoped to declared deliverables and update canonical
-    governed artifacts in the same change
+  statement: keep README as the concise overview and rationale, with deeper architecture,
+    CI authority, usage, maintenance, and installed operations in single-purpose branches
+- order: 2
+  statement: use neutral specific language, distinguish requirements from recommendations,
+    and state the cost and limitation of each architectural position
+- order: 3
+  statement: AI may propose code, evidence, and review observations but never decides its
+    own lifecycle, certification, admission, status, or release authority
+- order: 4
+  statement: the publisher checks out and executes no repository code, verifies a certified
+    exact-tag artifact bundle, attests and publishes those exact bytes, and never rebuilds
 verification_plan:
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
 - .venv/bin/python -m pytest tests
+- .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+- .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+- .venv/bin/python .github/scripts/test_release_artifacts.py --dist-dir dist

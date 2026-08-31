@@ -77,6 +77,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Opened the final README-led editorial and immutable-publication phase after P11 exact-main
+  artifacts reached mechanically computed closed certification without publication.
 - Bound the least-privilege GitHub token explicitly to each trusted controller
   command step after live activation proved that workflow permissions alone do
   not populate the controller's required `GITHUB_TOKEN` environment.

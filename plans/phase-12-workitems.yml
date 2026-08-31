@@ -4,16 +4,45 @@ document:
   id: bcf-governance-phase-12-workitems
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: active
   path: plans/phase-12-workitems.yml
   phase_id: P12
 workitems:
 - id: P12-P0-01
   priority: P0
-  status: TODO
-  summary: deliver README-led editorial refresh and immutable exact-byte release
+  status: IN_PROGRESS
+  summary: README-led architecture rationale with explicit costs and limitations
   acceptance:
-  - README-led editorial refresh and immutable exact-byte release_is_complete
+  - README explains CQRS-lite, SOIP, mechanical constraints, negative controls, deterministic
+    authority, exact evidence, and cheap preflight without manifesto language
+  - each position explains its AI-led-development value, cost, and limitation
   acceptance_evidence:
   - test
   - contract-test
+- id: P12-P0-02
+  priority: P0
+  status: TODO
+  summary: CI authority, usage, maintenance, and installed-operations documentation hierarchy
+  acceptance:
+  - each procedure has one canonical owner and all branch documents link to it
+  - provider trust boundaries, operator commands, maintainer source ownership, and installed
+    repository operations are separated and cross-checked
+  acceptance_evidence: [test, contract-test]
+- id: P12-P0-03
+  priority: P0
+  status: TODO
+  summary: immutable exact-byte publisher with provenance attestation and no rebuild path
+  acceptance:
+  - tag publication authenticates the exact tag commit and highest admitted release receipt
+  - publisher verifies and publishes the already-certified wheel, sdist, and checksums without
+    checkout, candidate execution, or rebuild
+  acceptance_evidence: [contract-test, security-review]
+- id: P12-P0-04
+  priority: P0
+  status: TODO
+  summary: mechanical editorial verification and final exact-main recertification
+  acceptance:
+  - links, anchors, CLI examples, version claims, topic ownership, diagrams, and generated-copy
+    parity are mechanically checked
+  - final merged documentation bytes are rebuilt and supersede P11 artifacts before tagging
+  acceptance_evidence: [governance-validate, test, contract-test]

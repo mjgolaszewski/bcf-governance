@@ -16,15 +16,15 @@ build_plan_mandate:
     - completeness_standard
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P11
-  build_block: "exact-main-release-artifacts"
-  plan: plans/phase-11-plan.yml
-  workitems: plans/phase-11-workitems.yml
-  log: phases/phase-11-log.yml
+  id: P12
+  build_block: "editorial-refresh-and-release"
+  plan: plans/phase-12-plan.yml
+  workitems: plans/phase-12-workitems.yml
+  log: phases/phase-12-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: completed
+  lifecycle_status: active
   owner: "codex"
   validation_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests]
 hotfix_lane:
@@ -68,7 +68,7 @@ operator_requirements_choices_disambiguations:
   - {type: owner_authorization, statement: "the sole repository owner authorizes Codex to perform required human reviews and approvals for the 0.7 release train"}
   - {type: execution_boundary, statement: "all candidate code uses fresh standard GitHub-hosted jobs because the repository is public; no candidate route polls, sleeps, idles, uses persistent local runners, or falls back, and trusted publication remains fail-closed until P10"}
 active_delivery_priorities:
-  current_tranche: ["exact-main-release-artifacts"]
+  current_tranche: ["editorial-refresh-and-release"]
 release_trains:
   release_1:
     target_version: "0.6.1"
