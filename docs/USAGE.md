@@ -139,6 +139,23 @@ no-op; only a verified terminal envelope reaches status publication. Existing
 `finalize` and `publish` callers remain supported. Human-readable workflow and
 job names are presentation only and never participate in authority decisions.
 
+The self-adoption reference topology is generated as three short workflows:
+exact-main admission, authenticated producer reconstruction, and verified
+status publication. Each has a purpose-oriented job display name, a five-minute
+ceiling, no checkout, and no polling or sleeping. Installation leaves every job
+guarded by the repository variable `BCF_CI_AUTHORITY_ENABLED`; an absent or
+non-`true` value skips the job before runner allocation. Activation is a later
+transaction because numeric workflow IDs and trusted default-main workflow
+bytes cannot be pinned before the structural workflows merge. Existing
+producer workflows remain the code-execution owners and continue on fresh
+hosted VMs; the trusted callbacks execute only the preinstalled exact-main
+controller on the persistent control-plane runners.
+
+All GitHub-owned actions emitted by BCF are resolved through one immutable pin
+registry. Generated workflows therefore use exact commit identities rather
+than moving major tags. Consumer-owned workflows are preserved until explicit
+adoption, and action release updates remain reviewed governance changes.
+
 Standard-v2 N/A records live under `governance/capability-na/`. Each record
 names the exact capability, gate, or semantic family; repository scope;
 rationale and supporting evidence; approving role; subject commit; review

@@ -7,6 +7,8 @@ from typing import Any
 
 import yaml
 
+from .ci_github_actions import action_pin
+
 
 def render_v2_makefile(contract: dict[str, Any]) -> str:
     gates = contract["gates"]
@@ -73,9 +75,9 @@ jobs:
     outputs:
       session_manifest: ${{{{ steps.seed.outputs.session_manifest }}}}
     steps:
-      - uses: actions/checkout@v4
+      - uses: {action_pin("checkout")}
         with: {{fetch-depth: 0, persist-credentials: false}}
-      - uses: actions/setup-python@v5
+      - uses: {action_pin("setup-python")}
         with: {{python-version: "3.12"}}
       - run: python3 -m pip install -r requirements-governance.txt
       - id: seed
@@ -85,7 +87,7 @@ jobs:
           set -euo pipefail
           manifest="$(python3 scripts/preflight_governance.py --repo-root . --mode "$BCF_PREFLIGHT_MODE" --python python3 --artifact-root .artifacts/bcf --expected-producer evidence --format text | tail -n 1)"
           printf 'session_manifest=%s\\n' "$manifest" >> "$GITHUB_OUTPUT"
-      - uses: actions/upload-artifact@v4
+      - uses: {action_pin("upload-artifact")}
         with:
           name: bcf-session-${{{{ github.run_id }}}}-${{{{ github.run_attempt }}}}
           path: .artifacts/bcf/sessions
@@ -100,12 +102,12 @@ jobs:
         gate:
 {matrix}
     steps:
-      - uses: actions/checkout@v4
+      - uses: {action_pin("checkout")}
         with: {{fetch-depth: 0, persist-credentials: false}}
-      - uses: actions/setup-python@v5
+      - uses: {action_pin("setup-python")}
         with: {{python-version: "3.12"}}
       - run: python3 -m pip install -r requirements-governance.txt
-      - uses: actions/download-artifact@v4
+      - uses: {action_pin("download-artifact")}
         with:
           name: bcf-session-${{{{ github.run_id }}}}-${{{{ github.run_attempt }}}}
           path: .artifacts/bcf/sessions
@@ -119,7 +121,7 @@ jobs:
           chmod 400 "$session"
           python3 scripts/governance_evidence.py --repo-root . run --gate "${{{{ matrix.gate }}}}" --output "$session_dir/${{{{ matrix.gate }}}}" --python python3 --session-manifest "$session"
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: {action_pin("upload-artifact")}
         with:
           name: bcf-evidence-${{{{ github.run_id }}}}-${{{{ github.run_attempt }}}}-${{{{ matrix.gate }}}}
           path: .artifacts/bcf/sessions
@@ -130,16 +132,16 @@ jobs:
     needs: [preflight, evidence]
     runs-on: {label_yaml}
     steps:
-      - uses: actions/checkout@v4
+      - uses: {action_pin("checkout")}
         with: {{fetch-depth: 0, persist-credentials: false}}
-      - uses: actions/setup-python@v5
+      - uses: {action_pin("setup-python")}
         with: {{python-version: "3.12"}}
       - run: python3 -m pip install -r requirements-governance.txt
-      - uses: actions/download-artifact@v4
+      - uses: {action_pin("download-artifact")}
         with:
           name: bcf-session-${{{{ github.run_id }}}}-${{{{ github.run_attempt }}}}
           path: .artifacts/bcf/sessions
-      - uses: actions/download-artifact@v4
+      - uses: {action_pin("download-artifact")}
         with:
           pattern: bcf-evidence-${{{{ github.run_id }}}}-${{{{ github.run_attempt }}}}-*
           path: .artifacts/bcf/fan-in
@@ -150,7 +152,7 @@ jobs:
           find .artifacts/bcf/fan-in -type f -name evidence-session.json -execdir chmod 700 . \\; -exec chmod 400 {{}} +
       - run: python3 scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf/fan-in --format json --durable-ref "github-actions://${{{{ github.repository }}}}/runs/${{{{ github.run_id }}}}/attempts/${{{{ github.run_attempt }}}}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: {action_pin("upload-artifact")}
         with:
           name: bcf-governance-truth-${{{{ github.run_id }}}}-${{{{ github.run_attempt }}}}
           path: .artifacts/bcf/truth-report.json

@@ -7,15 +7,15 @@ permissions:
   contents: read
 
 env:
-  BCF_BOOTSTRAP_ARTIFACT_ID: "9742408170"
-  BCF_BOOTSTRAP_ARTIFACT_NAME: bcf-trusted-control-a22dc0f5ca6a451d337a45a956c6b805d57509c7-1
-  BCF_BOOTSTRAP_ARTIFACT_DIGEST: sha256:0ffbe4d7b99b6e10b3cf7219add3c28c9e53da05865abba43797f1d45921f4b9
-  BCF_BOOTSTRAP_RUN_ID: "33347212821"
+  BCF_BOOTSTRAP_ARTIFACT_ID: "9743325088"
+  BCF_BOOTSTRAP_ARTIFACT_NAME: bcf-trusted-control-b8ecc90f2a61336c32709f8f901664f92fc2b182-1
+  BCF_BOOTSTRAP_ARTIFACT_DIGEST: sha256:6d5b8b4aac5c235362d01633f8480a3f02bcab61b7474404e77804ce825167df
+  BCF_BOOTSTRAP_RUN_ID: "33350072418"
   BCF_BOOTSTRAP_RUN_ATTEMPT: "1"
-  BCF_BOOTSTRAP_COMMIT_SHA: a22dc0f5ca6a451d337a45a956c6b805d57509c7
-  BCF_BOOTSTRAP_TREE_SHA: 75eabee55abe367b1a690a013715dd0dcc915307
+  BCF_BOOTSTRAP_COMMIT_SHA: b8ecc90f2a61336c32709f8f901664f92fc2b182
+  BCF_BOOTSTRAP_TREE_SHA: 28802bee2c7a0a51ac74cd958d16692712a048e6
   BCF_BOOTSTRAP_REPOSITORY_ID: "1207503211"
-  BCF_BOOTSTRAP_WHEEL_SHA256: aaf4c24ae11388607dfd5c3ca9d65af5a54b9f068abf91782de830a1b281cf29
+  BCF_BOOTSTRAP_WHEEL_SHA256: 84443c2cfe4ec6746509aa0e11563fc5d28291faaeff15bad034b2bd47818bf5
 
 jobs:
   probe:
@@ -30,7 +30,7 @@ jobs:
         trusted_runner: [bcf-trusted-control-1, bcf-trusted-control-2]
     steps:
       - name: Restore the trusted controller interpreter environment
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: "3.12"
       - name: Verify the preinstalled trusted BCF control

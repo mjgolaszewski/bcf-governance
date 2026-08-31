@@ -14,13 +14,14 @@ env:
 
 jobs:
   preflight:
+    name: Validate governance front door
     runs-on: ubuntu-latest
     outputs:
       session_manifest: ${{ steps.preflight.outputs.session_manifest }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: {fetch-depth: 0, persist-credentials: false}
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with: {python-version: "3.12"}
       - run: python3 -m pip install -r requirements-governance.txt
       - id: preflight
@@ -30,7 +31,7 @@ jobs:
           set -euo pipefail
           manifest="$(python3 scripts/preflight_governance.py --repo-root . --mode "${{ github.event_name == 'pull_request' && 'pr' || 'release' }}" --python "$(command -v python3)" --artifact-root .artifacts/bcf --expected-producer evidence --format text | tail -n 1)"
           printf 'session_manifest=%s\n' "$manifest" >> "$GITHUB_OUTPUT"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: "bcf-session-${{ github.run_id }}-${{ github.run_attempt }}"
           path: .artifacts/bcf/sessions
@@ -51,12 +52,12 @@ jobs:
           - {shard: 2, display_name: "Duplication, routers, governance, and ownership"}
           - {shard: 3, display_name: "Full tests, lint, import boundaries, and SBOM"}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: {fetch-depth: 0, persist-credentials: false}
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with: {python-version: "3.12"}
       - run: python3 -m pip install -r requirements-governance.txt
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: "bcf-session-${{ github.run_id }}-${{ github.run_attempt }}"
           path: .artifacts/bcf/sessions
@@ -74,23 +75,24 @@ jobs:
           session="${{ needs.preflight.outputs.session_manifest }}"
           python3 .github/scripts/capture_governance_shard.py --shard-index "${{ matrix.shard }}" --shard-count 4 --output-root "${session%/evidence-session.json}" --session-manifest "$session"
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-shard-${{ matrix.shard }}"
           path: .artifacts/bcf/sessions
           if-no-files-found: error
 
   governance-truthfulness:
+    name: Verify exact-tree governance evidence
     if: always()
     needs: [preflight, evidence]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: {fetch-depth: 0, persist-credentials: false}
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with: {python-version: "3.12"}
       - run: python3 -m pip install -r requirements-governance.txt
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           pattern: "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-*"
           path: .artifacts/bcf/fan-in
@@ -101,7 +103,7 @@ jobs:
           find .artifacts/bcf/fan-in -type f -name evidence-session.json -execdir chmod 700 . \; -exec chmod 400 {} +
       - run: python3 scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf/fan-in --format json --durable-ref "github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: "bcf-governance-truth-${{ github.run_id }}-${{ github.run_attempt }}"
           path: .artifacts/bcf/truth-report.json

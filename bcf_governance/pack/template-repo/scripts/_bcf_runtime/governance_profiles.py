@@ -9,7 +9,7 @@ from typing import Any
 
 import yaml  # type: ignore[import-untyped]
 
-
+from .ci_github_actions import action_pin
 BUILTIN_TARGETS = {"governance-validate", "governance-exposure-scan"}
 PROFILE_ORDER = {"lite": 0, "standard": 1, "regulated": 2}
 TEST_POLICIES = {
@@ -627,15 +627,15 @@ jobs:
         gate:
 {matrix}
     steps:
-      - uses: actions/checkout@v4
+      - uses: {action_pin("checkout")}
         with: {{fetch-depth: 0}}
-      - uses: actions/setup-python@v5
+      - uses: {action_pin("setup-python")}
         with: {{python-version: "3.12"}}
       - run: python3 -m pip install -r requirements-governance.txt
       - name: Capture ${{{{ matrix.gate }}}} evidence
         run: python3 scripts/governance_evidence.py --repo-root . run --gate "${{{{ matrix.gate }}}}" --output ".artifacts/bcf/${{{{ matrix.gate }}}}"
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: {action_pin("upload-artifact")}
         with:
           name: bcf-evidence-${{{{ matrix.gate }}}}
           path: .artifacts/bcf/${{{{ matrix.gate }}}}
@@ -646,16 +646,16 @@ jobs:
     needs: [evidence]
     runs-on: {label_yaml}
     steps:
-      - uses: actions/checkout@v4
+      - uses: {action_pin("checkout")}
         with: {{fetch-depth: 0}}
-      - uses: actions/setup-python@v5
+      - uses: {action_pin("setup-python")}
         with: {{python-version: "3.12"}}
       - run: python3 -m pip install -r requirements-governance.txt
-      - uses: actions/download-artifact@v4
+      - uses: {action_pin("download-artifact")}
         with: {{pattern: bcf-evidence-*, path: .artifacts/bcf, merge-multiple: true}}
       - run: python3 scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf --format json --durable-ref "github-actions://${{{{ github.repository }}}}/runs/${{{{ github.run_id }}}}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: {action_pin("upload-artifact")}
         with: {{name: bcf-governance-truth, path: .artifacts/bcf/truth-report.json, if-no-files-found: error}}
 '''
     path = repo_root / ".github/workflows/governance.yml"
@@ -720,7 +720,7 @@ def apply_profile_contract(
     if profile_name == "regulated":
         evidence_policy["provenance"].update(contract.get("provenance", {}))
     (repo_root / "governance/evidence-policy.yml").write_text(
-        yaml.safe_dump(evidence_policy, sort_keys=False, width=132, default_flow_style=None), encoding="utf-8"
+        yaml.safe_dump(evidence_policy, sort_keys=False, width=160, default_flow_style=None), encoding="utf-8"
     )
     _write_makefile(repo_root, contract)
     if write_workflow:
