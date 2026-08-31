@@ -4,14 +4,17 @@ name: bcf/exact-main-admission
     branches:
     - main
 permissions:
-  actions: read
   contents: read
 env:
-  BCF_CONTROL_COMMIT: 37475fbff2c5303762e0fdeb97e7cc7834bfe485
+  BCF_CONTROL_COMMIT: 1f96e45604c376918154dc50904fc0249d9b8e93
 jobs:
-  kickoff:
-    name: Authenticate exact-main admission
+  admit:
+    name: Authenticate exact-main admission and publish pending authority
     if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}
+    permissions:
+      actions: read
+      contents: read
+      statuses: write
     runs-on:
     - self-hosted
     - Linux
@@ -24,19 +27,35 @@ jobs:
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
       with:
         python-version: '3.12'
-    - name: Authenticate the exact default-branch commit
+    - name: Authenticate exact main and publish higher-ordinal pending status
       shell: bash
       env:
         GITHUB_TOKEN: ${{ github.token }}
-      run: 'set -euo pipefail
-
+      run: |
+        set -euo pipefail
         control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/$BCF_CONTROL_COMMIT"
-
         test -d "$control_root"
-
         test ! -L "$control_root"
-
         test -x "$control_root/bin/bcf"
-
-        "$control_root/bin/bcf" ci-github kickoff --repository "$GITHUB_REPOSITORY" --sha "$GITHUB_SHA" --control-workflow-path
-        .github/workflows/bcf-exact-main.yml'
+        "$control_root/bin/bcf" ci-github exact-main admit \
+          --repository "$GITHUB_REPOSITORY" \
+          --sha "$GITHUB_SHA" \
+          --target-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+  governance:
+    name: Run exact-main governance evidence
+    needs:
+    - admit
+    if: ${{ needs.admit.result == 'success' }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/governance.yml
+    with:
+      evaluation_mode: pr
+  governance-pack:
+    name: Verify exact-main package and templates
+    needs:
+    - admit
+    if: ${{ needs.admit.result == 'success' }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/governance-pack.yml

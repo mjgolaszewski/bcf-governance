@@ -30,6 +30,12 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Allowed one authenticated admission's pending status to transition to its terminal
   result, and made a failed finalizer publish a higher-authority failure instead of
   leaving an older green status in place.
+- Replaced independent default-branch governance runs with one exact-main admission
+  whose reusable governance and package producers share the authenticated run and
+  attempt; the trusted finalizer and publisher now consume every terminal outcome.
+- Bound the governance workflow contract to direct pull requests and same-run
+  `workflow_call` execution, removing the stale independent-push requirement from
+  terminal truth.
 
 ### Changed
 
@@ -44,6 +50,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Made source-distribution verification distinguish portable package tests from
   the two BCF self-adoption proofs that require the original repository's Git
   objects; JUnit validation rejects any broader or narrower skip set.
+- Replaced the transitional inline bootstrap with thin controller-owned installation
+  after the exact artifact was independently installed and probed on both trusted
+  runners.
 
 ## [0.7.0] - 2026-08-31
 

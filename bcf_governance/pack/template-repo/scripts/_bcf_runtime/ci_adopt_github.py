@@ -39,15 +39,38 @@ def _labels(values: tuple[str, ...]) -> str | list[str]:
 
 
 def _workflow(payload: dict[str, Any]) -> bytes:
-    return yaml.safe_dump(payload, sort_keys=False, width=120).encode("utf-8")
+    class WorkflowDumper(yaml.SafeDumper):
+        pass
+
+    def represent_string(dumper: yaml.SafeDumper, value: str) -> yaml.ScalarNode:
+        style = "|" if "\n" in value else None
+        return dumper.represent_scalar("tag:yaml.org,2002:str", value, style=style)
+
+    WorkflowDumper.add_representer(str, represent_string)
+    return yaml.dump(
+        payload,
+        Dumper=WorkflowDumper,
+        sort_keys=False,
+        width=1000,
+    ).encode("utf-8")
 
 
 ACTIVATION_EXPRESSION = "${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}"
 FINALIZER_ACTIVATION_EXPRESSION = (
     "${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' && "
-    "github.event.workflow_run.event == 'push' }}"
+    "github.event.workflow_run.event == 'push' && "
+    "github.event.workflow_run.head_branch == 'main' }}"
 )
 PUBLISHER_ACTIVATION_EXPRESSION = (
+    "${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' && "
+    "github.event.workflow_run.event == 'workflow_run' && "
+    "github.event.workflow_run.head_branch == 'main' }}"
+)
+LEGACY_FINALIZER_ACTIVATION_EXPRESSION = (
+    "${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' && "
+    "github.event.workflow_run.event == 'push' }}"
+)
+LEGACY_PUBLISHER_ACTIVATION_EXPRESSION = (
     "${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' && "
     "github.event.workflow_run.conclusion == 'success' }}"
 )
@@ -192,7 +215,7 @@ def render_github_control_plane(
         "jobs": {
             "finalize": {
                 "name": "Reconstruct exact-main producer evidence",
-                "if": FINALIZER_ACTIVATION_EXPRESSION,
+                "if": LEGACY_FINALIZER_ACTIVATION_EXPRESSION,
                 "runs-on": _labels(trusted_labels),
                 "timeout-minutes": 5,
                 "steps": finalizer_steps,
@@ -251,13 +274,224 @@ def render_github_control_plane(
         "jobs": {
             "publish": {
                 "name": "Publish verified exact-main status",
-                "if": PUBLISHER_ACTIVATION_EXPRESSION,
+                "if": LEGACY_PUBLISHER_ACTIVATION_EXPRESSION,
                 "runs-on": _labels(trusted_labels),
                 "timeout-minutes": 5,
                 "steps": publisher_steps,
             }
         },
     }
+    return {
+        EXACT_MAIN_PATH: _workflow(exact_main),
+        FINALIZER_PATH: _workflow(finalizer),
+        PUBLISHER_PATH: _workflow(publisher),
+        "governance/github-ci-topology.yml": _workflow(topology),
+    }
+
+
+def render_github_v11_control_plane(
+    *,
+    default_branch: str,
+    trusted_labels: tuple[str, ...],
+    producer_jobs: tuple[
+        tuple[str, str, str, tuple[tuple[str, Any], ...]], ...
+    ],
+    controller_commit: str,
+) -> dict[str, bytes]:
+    """Render the same-run authority-v1.1 control plane used by BCF itself."""
+
+    if not default_branch or any(value in default_branch for value in ("..", " ", "\\")):
+        raise GithubAdoptionError("default branch is unsafe")
+    if not re.fullmatch(r"[a-f0-9]{40}", controller_commit):
+        raise GithubAdoptionError("controller commit must be an exact Git SHA")
+    job_ids = [value[0] for value in producer_jobs]
+    paths = [value[2] for value in producer_jobs]
+    if (
+        not producer_jobs
+        or len(set(job_ids)) != len(job_ids)
+        or len(set(paths)) != len(paths)
+        or any(not re.fullmatch(r"[A-Za-z0-9_-]+", value) for value in job_ids)
+        or any(
+            not value.startswith(".github/workflows/")
+            or not value.endswith((".yml", ".yaml"))
+            or ".." in Path(value).parts
+            for value in paths
+        )
+    ):
+        raise GithubAdoptionError("v1.1 producer jobs must have exact unique identity")
+    env = {"BCF_CONTROL_COMMIT": controller_commit}
+    labels = _labels(trusted_labels)
+    exact_jobs: dict[str, Any] = {
+        "admit": {
+            "name": "Authenticate exact-main admission and publish pending authority",
+            "if": ACTIVATION_EXPRESSION,
+            "permissions": {
+                "actions": "read",
+                "contents": "read",
+                "statuses": "write",
+            },
+            "runs-on": labels,
+            "timeout-minutes": 5,
+            "steps": _trusted_steps(
+                name="Authenticate exact main and publish higher-ordinal pending status",
+                command=_controller_command(
+                    'exact-main admit \\\n'
+                    '  --repository "$GITHUB_REPOSITORY" \\\n'
+                    '  --sha "$GITHUB_SHA" \\\n'
+                    '  --target-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"',
+                    controller_commit,
+                ) + "\n",
+                controller_commit=controller_commit,
+            ),
+        }
+    }
+    for job_id, display_name, workflow_path, input_items in producer_jobs:
+        job: dict[str, Any] = {
+            "name": display_name,
+            "needs": ["admit"],
+            "if": "${{ needs.admit.result == 'success' }}",
+            "permissions": {"contents": "read"},
+            "uses": f"./{workflow_path}",
+        }
+        if input_items:
+            job["with"] = dict(input_items)
+        exact_jobs[job_id] = job
+    exact_main = {
+        "name": "bcf/exact-main-admission",
+        "on": {"push": {"branches": [default_branch]}},
+        "permissions": {"contents": "read"},
+        "env": env,
+        "jobs": exact_jobs,
+    }
+    finalizer_steps = _trusted_steps(
+        name="Reconstruct authenticated provider state and exact-attempt membership",
+        command=_controller_command(
+            'exact-main finalize \\\n'
+            '  --repository "$GITHUB_REPOSITORY" \\\n'
+            '  --output "$RUNNER_TEMP/bcf-exact-main-certification"',
+            controller_commit,
+        ) + "\n",
+        controller_commit=controller_commit,
+    )
+    finalizer_steps.append(
+        {
+            "name": "Upload the immutable exact-main certification bundle",
+            "uses": action_pin("upload-artifact"),
+            "with": {
+                "name": "bcf-exact-main-certification-${{ github.run_id }}-${{ github.run_attempt }}",
+                "path": "${{ runner.temp }}/bcf-exact-main-certification",
+                "if-no-files-found": "error",
+                "retention-days": 30,
+            },
+        }
+    )
+    finalizer = {
+        "name": "bcf/trusted-evidence-finalizer",
+        "on": {
+            "workflow_run": {
+                "workflows": ["bcf/exact-main-admission"],
+                "types": ["completed"],
+            }
+        },
+        "permissions": {"actions": "read", "contents": "read"},
+        "env": env,
+        "jobs": {
+            "finalize": {
+                "name": "Reconstruct the newest same-admission exact-main evidence",
+                "if": FINALIZER_ACTIVATION_EXPRESSION,
+                "runs-on": labels,
+                "timeout-minutes": 5,
+                "steps": finalizer_steps,
+            }
+        },
+    }
+    publisher_steps: list[dict[str, Any]] = [
+        {
+            "name": "Restore the trusted controller interpreter environment",
+            "uses": action_pin("setup-python"),
+            "with": {"python-version": "3.12"},
+        },
+        {
+            "name": "Download only the triggering finalizer bundle when present",
+            "id": "download",
+            "continue-on-error": True,
+            "uses": action_pin("download-artifact"),
+            "with": {
+                "name": "bcf-exact-main-certification-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}",
+                "github-token": "${{ github.token }}",
+                "repository": "${{ github.repository }}",
+                "run-id": "${{ github.event.workflow_run.id }}",
+                "path": "${{ runner.temp }}/bcf-exact-main-certification",
+                "digest-mismatch": "error",
+            },
+        },
+        {
+            "name": "Publish canonical terminal, pending, or failed-finalizer authority",
+            "shell": "bash",
+            "env": TRUSTED_CONTROLLER_TOKEN_ENV,
+            "run": "set -euo pipefail\n"
+            + _controller_command(
+                'exact-main publish \\\n'
+                '  --repository "$GITHUB_REPOSITORY" \\\n'
+                '  --bundle "$RUNNER_TEMP/bcf-exact-main-certification" \\\n'
+                '  --target-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/${{ github.event.workflow_run.id }}" \\\n'
+                '  --collector-run-id "${{ github.event.workflow_run.id }}" \\\n'
+                '  --collector-run-attempt "${{ github.event.workflow_run.run_attempt }}"',
+                controller_commit,
+            )
+            + "\n",
+        },
+    ]
+    publisher = {
+        "name": "bcf/exact-main-status-publisher",
+        "on": {
+            "workflow_run": {
+                "workflows": ["bcf/trusted-evidence-finalizer"],
+                "types": ["completed"],
+            }
+        },
+        "permissions": {"actions": "read", "contents": "read", "statuses": "write"},
+        "env": env,
+        "jobs": {
+            "publish": {
+                "name": "Publish newest authenticated exact-main status or revocation",
+                "if": PUBLISHER_ACTIVATION_EXPRESSION,
+                "runs-on": labels,
+                "timeout-minutes": 5,
+                "steps": publisher_steps,
+            }
+        },
+    }
+    topology = topology_document(
+        candidate_labels=("ubuntu-latest",), trusted_labels=trusted_labels
+    )
+    admission_role = next(
+        role for role in topology["roles"] if role["id"] == "exact-main-kickoff"
+    )
+    admission_role["permissions"] = [
+        "actions:read",
+        "contents:read",
+        "statuses:write",
+    ]
+    topology["dispatch_events"] = []
+    topology.update(
+        {
+            "authority_contract_version": "1.1",
+            "default_branch": default_branch,
+            "producer_workflows": [
+                {
+                    "job_id": value[0],
+                    "display_name": value[1],
+                    "path": value[2],
+                    "inputs": dict(value[3]),
+                }
+                for value in producer_jobs
+            ],
+            "activation_variable": "BCF_CI_AUTHORITY_ENABLED",
+            "controller_commit": controller_commit,
+            "dispatch_exact_ref": False,
+        }
+    )
     return {
         EXACT_MAIN_PATH: _workflow(exact_main),
         FINALIZER_PATH: _workflow(finalizer),

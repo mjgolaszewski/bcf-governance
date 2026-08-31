@@ -2,9 +2,7 @@ name: governance-pack
 
 on:
   pull_request:
-  push:
-    branches:
-      - main
+  workflow_call:
 
 permissions:
   contents: read
@@ -42,7 +40,7 @@ jobs:
       - name: Validate template repo from template script
         run: python template-repo/scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders --allow-release-gate-placeholders
       - name: Build exact-main trusted controller wheel
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'workflow_call' && github.ref == 'refs/heads/main'
         shell: bash
         run: |
           set -euo pipefail
@@ -75,7 +73,7 @@ jobs:
           PY
           (cd .artifacts/trusted-control && sha256sum ./*.whl CONTROL-METADATA.json > SHA256SUMS)
       - name: Upload exact-main trusted controller wheel
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'workflow_call' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: bcf-trusted-control-${{ github.sha }}-${{ github.run_attempt }}

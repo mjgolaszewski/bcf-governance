@@ -18,6 +18,7 @@ from .ci_adopt_github import (
     plan_github_adoption,
     render_github_adoption,
     render_github_control_plane,
+    render_github_v11_control_plane,
 )
 from .ci_github import GithubReferenceError, validate_reference_topology
 from .runtime_capacity import RuntimeCapacityError, load_runtime_contract
@@ -261,7 +262,26 @@ def validate_profile_v2_readiness(
             "candidate_labels": tuple(roles["exact-ref-producer"]["runner_labels"]),
             "trusted_labels": tuple(roles["trusted-finalizer"]["runner_labels"]),
         }
-        if "producer_workflows" in topology:
+        if topology.get("authority_contract_version") == "1.1":
+            producer_jobs = tuple(
+                (
+                    str(value["job_id"]),
+                    str(value["display_name"]),
+                    str(value["path"]),
+                    tuple(
+                        (str(key), item)
+                        for key, item in value.get("inputs", {}).items()
+                    ),
+                )
+                for value in topology["producer_workflows"]
+            )
+            desired = render_github_v11_control_plane(
+                default_branch=common["default_branch"],
+                trusted_labels=common["trusted_labels"],
+                producer_jobs=producer_jobs,
+                controller_commit=str(topology["controller_commit"]),
+            )
+        elif "producer_workflows" in topology:
             desired = render_github_control_plane(
                 **common,
                 producer_workflow_names=tuple(topology["producer_workflows"]),

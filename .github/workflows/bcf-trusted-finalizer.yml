@@ -3,19 +3,17 @@ name: bcf/trusted-evidence-finalizer
   workflow_run:
     workflows:
     - bcf/exact-main-admission
-    - governance
-    - governance-pack
     types:
     - completed
 permissions:
   actions: read
   contents: read
 env:
-  BCF_CONTROL_COMMIT: 37475fbff2c5303762e0fdeb97e7cc7834bfe485
+  BCF_CONTROL_COMMIT: 1f96e45604c376918154dc50904fc0249d9b8e93
 jobs:
   finalize:
-    name: Reconstruct exact-main producer evidence
-    if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' }}
+    name: Reconstruct the newest same-admission exact-main evidence
+    if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' }}
     runs-on:
     - self-hosted
     - Linux
@@ -28,27 +26,23 @@ jobs:
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
       with:
         python-version: '3.12'
-    - name: Reconstruct authenticated provider state
+    - name: Reconstruct authenticated provider state and exact-attempt membership
       shell: bash
       env:
         GITHUB_TOKEN: ${{ github.token }}
-      run: 'set -euo pipefail
-
+      run: |
+        set -euo pipefail
         control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/$BCF_CONTROL_COMMIT"
-
         test -d "$control_root"
-
         test ! -L "$control_root"
-
         test -x "$control_root/bin/bcf"
-
-        "$control_root/bin/bcf" ci-github finalize-callback --repository "$GITHUB_REPOSITORY" --resolve-control-run --control-workflow-path
-        .github/workflows/bcf-exact-main.yml --collector-workflow-path .github/workflows/bcf-trusted-finalizer.yml --output
-        "$RUNNER_TEMP/bcf-trusted-callback"'
-    - name: Upload the immutable trusted callback envelope
+        "$control_root/bin/bcf" ci-github exact-main finalize \
+          --repository "$GITHUB_REPOSITORY" \
+          --output "$RUNNER_TEMP/bcf-exact-main-certification"
+    - name: Upload the immutable exact-main certification bundle
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
-        name: bcf-trusted-callback-${{ github.run_id }}-${{ github.run_attempt }}
-        path: ${{ runner.temp }}/bcf-trusted-callback
+        name: bcf-exact-main-certification-${{ github.run_id }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/bcf-exact-main-certification
         if-no-files-found: error
         retention-days: 30

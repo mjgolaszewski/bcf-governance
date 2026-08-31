@@ -10,11 +10,11 @@ permissions:
   contents: read
   statuses: write
 env:
-  BCF_CONTROL_COMMIT: 37475fbff2c5303762e0fdeb97e7cc7834bfe485
+  BCF_CONTROL_COMMIT: 1f96e45604c376918154dc50904fc0249d9b8e93
 jobs:
   publish:
-    name: Publish verified exact-main status
-    if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.conclusion == 'success' }}
+    name: Publish newest authenticated exact-main status or revocation
+    if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main' }}
     runs-on:
     - self-hosted
     - Linux
@@ -27,29 +27,30 @@ jobs:
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
       with:
         python-version: '3.12'
-    - name: Download only the triggering finalizer callback
+    - name: Download only the triggering finalizer bundle when present
+      id: download
+      continue-on-error: true
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
       with:
-        name: bcf-trusted-callback-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+        name: bcf-exact-main-certification-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
         github-token: ${{ github.token }}
         repository: ${{ github.repository }}
         run-id: ${{ github.event.workflow_run.id }}
-        path: ${{ runner.temp }}/bcf-trusted-callback
-    - name: Verify callback and publish authoritative exact-main status
+        path: ${{ runner.temp }}/bcf-exact-main-certification
+        digest-mismatch: error
+    - name: Publish canonical terminal, pending, or failed-finalizer authority
       shell: bash
       env:
         GITHUB_TOKEN: ${{ github.token }}
-      run: 'set -euo pipefail
-
+      run: |
+        set -euo pipefail
         control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/$BCF_CONTROL_COMMIT"
-
         test -d "$control_root"
-
         test ! -L "$control_root"
-
         test -x "$control_root/bin/bcf"
-
-        "$control_root/bin/bcf" ci-github publish-callback --repository "$GITHUB_REPOSITORY" --callback "$RUNNER_TEMP/bcf-trusted-callback"
-        --target-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/${{ github.event.workflow_run.id }}" --collector-run-id
-        "${{ github.event.workflow_run.id }}" --collector-run-attempt "${{ github.event.workflow_run.run_attempt }}" --collector-workflow-path
-        .github/workflows/bcf-trusted-finalizer.yml'
+        "$control_root/bin/bcf" ci-github exact-main publish \
+          --repository "$GITHUB_REPOSITORY" \
+          --bundle "$RUNNER_TEMP/bcf-exact-main-certification" \
+          --target-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/${{ github.event.workflow_run.id }}" \
+          --collector-run-id "${{ github.event.workflow_run.id }}" \
+          --collector-run-attempt "${{ github.event.workflow_run.run_attempt }}"
