@@ -314,7 +314,7 @@ gates:
       mutation: {path: bcf_governance/tooling/profile_yaml.py, search: 'node.flow_style = True', replace: 'node.flow_style = False'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_profile_contract_v2::test_bcf_standard_v2_promotion_fits_declared_context_budgets']}
     - id: self-ci-authority-definition-pin-must-fail
-      mutation: {path: governance/ci-authority.yml, search: 'trusted_workflow_sha256: de95b96a55740adf00cb574b5016d5e9c46a65ab375d5b9b265f92ea142443ae', replace: 'trusted_workflow_sha256: 0000000000000000000000000000000000000000000000000000000000000000'}
+      mutation: {path: governance/ci-authority.yml, search: 'trusted_workflow_sha256: 1bcc5186f80289d44d0eef1b8983ad4080de64dd262219b57cb0e733a2780b2c', replace: 'trusted_workflow_sha256: 0000000000000000000000000000000000000000000000000000000000000000'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_ci_authority_matches_immutable_workflow_definitions']}
     - id: pinned-workflow-definition-custody-must-fail
       mutation: {path: bcf_governance/tooling/ci_github_identity.py, search: 'if current.blob_oid != pinned.blob_oid or current.content != pinned.content:', replace: 'if False and (current.blob_oid != pinned.blob_oid or current.content != pinned.content):'}
