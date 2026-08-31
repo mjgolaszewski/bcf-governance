@@ -18,6 +18,8 @@ summary:
   - provider audit confirms v0.7.0 is published and attested but immutable false, and records
     exact tag, release, asset, attestation, ruleset, workflow, run, and controller identities
   - P12 is reconciled before compaction and v0.7.0 remains untouched historical custody
+  - corrected P12 artifacts are retained through exact commit 528b1d1a25fd3190daba2363e9459c6b96a83cf0
+    and SHA-256 custody in plans/phase-history.yml, not duplicated in the active tree
 workitems:
 - id: P13-P0-01
   status: TODO
@@ -76,4 +78,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- commit factual P12 reconciliation, compact it into hash-bound history, then implement authority v1.1
+- implement authority v1.1 contracts and decompose provider decisions behind compatibility wrappers
