@@ -104,7 +104,7 @@
     },
     "governance/evidence-policy.yml": {
       "operation": "generate",
-      "sha256": "349c7c022a0f80993216f44965c6838cee5a5fad9062b2716695c3371247ba5b"
+      "sha256": "82e04d1e1f429e7e2dd186140843f5289dc302e6607eeea56883dc0acc9a6c48"
     },
     "governance/existing-repo-adoption.yml": {
       "operation": "copy",
@@ -116,7 +116,7 @@
     },
     "governance/gate-contracts.yml": {
       "operation": "generate",
-      "sha256": "e02d5cafc97e75bf2973711296e6d9c13f1bde630641b0abe47fd06027e3344d"
+      "sha256": "310bbd7168a325ab437f8c0a11c0445cd6c5e954ec8c905fc8642d2520894de1"
     },
     "governance/repo-cleanup-contract.yml": {
       "operation": "copy",
@@ -444,7 +444,7 @@
     },
     "scripts/_bcf_runtime/governance_profiles.py": {
       "operation": "copy",
-      "sha256": "c8a01d8b6d0d38cb6a958cced1c8b4ee8121e4c69c78d568e3ebea3e47c0c8ac"
+      "sha256": "b0aaf292826071f1abec6096480213c542b2edf4d62e74eb9fc3c9f37ac9d9e4"
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
@@ -512,7 +512,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "4ef55e61e51fb8841621fdb7108bb9c827dcfda58dfb887f10917e020646b032"
+      "sha256": "5e6fc4f0031cec0774e57b4ba64799ecac218711fbcdecdbc7bda3d6c338e11f"
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",

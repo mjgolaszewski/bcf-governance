@@ -90,8 +90,8 @@ def _builtin_contracts() -> dict[str, dict[str, Any]]:
                     "id": "local-workspace-path-is-rejected",
                     "mutation": {
                         "path": "MEMORY.yml",
-                        "search": '  canonical_repo_root: "."',
-                        "replace_base64": "ICBjYW5vbmljYWxfcmVwb19yb290OiAiL1VzZXJzL2V4YW1wbGUvcHJpdmF0ZSI=",
+                        "search": "canonical_governance_guide: AGENTS.yml",
+                        "replace_base64": "Y2Fub25pY2FsX2dvdmVybmFuY2VfZ3VpZGU6IC9Vc2Vycy9leGFtcGxlL3ByaXZhdGUvQUdFTlRTLnltbA==",
                     },
                     "oracle": {
                         "kind": "diagnostic",

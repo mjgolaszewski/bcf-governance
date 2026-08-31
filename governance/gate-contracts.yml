@@ -323,13 +323,13 @@ gates:
         kind: test_node_failure
         node_ids: ['tests.test_ci_certification::test_admission_workflow_is_bound_to_canonical_authority']
     - id: ci-finalizer-session-binding-must-fail
-      mutation: {path: bcf_governance/tooling/ci_github_controller.py, search: 'if not isinstance(producer, dict) or producer != {',
+      mutation: {path: bcf_governance/tooling/ci_github_status.py, search: 'if not isinstance(producer, dict) or producer != {',
         replace: 'if not isinstance(producer, dict) or False and producer != {'}
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_ci_github_controller::test_publisher_rejects_finalizer_session_identity_forgery']
     - id: ci-bundle-semantic-binding-must-fail
-      mutation: {path: bcf_governance/tooling/ci_github_controller.py, search: 'or manifest.get("computed_state") != verification.computed_state',
+      mutation: {path: bcf_governance/tooling/ci_github_status.py, search: 'or manifest.get("computed_state") != verification.computed_state',
         replace: 'or False and manifest.get("computed_state") != verification.computed_state'}
       oracle:
         kind: test_node_failure
@@ -433,7 +433,7 @@ gates:
     evidence: {kind: gate}
     negative_controls:
     - id: local-workspace-path-is-rejected
-      mutation: {path: MEMORY.yml, search: '  canonical_repo_root: "."', replace_base64: ICBjYW5vbmljYWxfcmVwb19yb290OiAiL1VzZXJzL2V4YW1wbGUvcHJpdmF0ZSI=}
+      mutation: {path: MEMORY.yml, search: 'canonical_governance_guide: AGENTS.yml', replace_base64: Y2Fub25pY2FsX2dvdmVybmFuY2VfZ3VpZGU6IC9Vc2Vycy9leGFtcGxlL3ByaXZhdGUvQUdFTlRTLnltbA==}
       oracle:
         kind: diagnostic
         exit_codes: [1]
@@ -628,8 +628,8 @@ gates:
         stream: stderr
         regex: governance.ci-status-decision.v1 owner must be an authorized constructor
     - id: release-receipt-owner-must-fail
-      mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/release_receipts.py::build_release_receipt]',
-        replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'}
+      mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/release_receipts.py::build_release_receipt, bcf_governance/tooling/release_receipts.py::build_trusted_release_receipt]',
+        replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner, bcf_governance/tooling/release_receipts.py::build_trusted_release_receipt]'}
       oracle:
         kind: diagnostic
         exit_codes: [1]

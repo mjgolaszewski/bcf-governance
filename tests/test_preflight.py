@@ -67,6 +67,49 @@ def test_dirty_tree_fails_before_other_preflight_work(tmp_path: Path) -> None:
         preflight._git_state(repo)
 
 
+def test_negative_control_preflight_rejects_stale_source_target(tmp_path: Path) -> None:
+    repo = _committed_repo(tmp_path, "owner.py", "AUTHORITY = 'new'\n")
+    contracts = repo / "governance/gate-contracts.yml"
+    contracts.parent.mkdir(parents=True)
+    contracts.write_text(
+        "gates:\n"
+        "  contract-test:\n"
+        "    negative_controls:\n"
+        "    - id: stale-owner-must-fail\n"
+        "      mutation:\n"
+        "        path: owner.py\n"
+        "        search: \"AUTHORITY = 'old'\"\n"
+        "        replace: \"AUTHORITY = 'mutant'\"\n",
+        encoding="utf-8",
+    )
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "add control")
+
+    with pytest.raises(preflight.PreflightError, match="stale-owner-must-fail"):
+        preflight._negative_control_targets(repo)
+
+
+def test_negative_control_preflight_accepts_unique_tracked_target(tmp_path: Path) -> None:
+    repo = _committed_repo(tmp_path, "owner.py", "AUTHORITY = 'new'\n")
+    contracts = repo / "governance/gate-contracts.yml"
+    contracts.parent.mkdir(parents=True)
+    contracts.write_text(
+        "gates:\n"
+        "  contract-test:\n"
+        "    negative_controls:\n"
+        "    - id: current-owner-must-fail\n"
+        "      mutation:\n"
+        "        path: owner.py\n"
+        "        search: \"AUTHORITY = 'new'\"\n"
+        "        replace: \"AUTHORITY = 'mutant'\"\n",
+        encoding="utf-8",
+    )
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "add control")
+
+    assert preflight._negative_control_targets(repo) == 1
+
+
 def test_preflight_allocates_session_only_after_all_deterministic_checks(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -79,6 +122,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     )
     monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {"python": 1})
     monkeypatch.setattr(preflight, "validate_repo_root", lambda _: None)
+    monkeypatch.setattr(preflight, "_negative_control_targets", lambda _: 1)
     monkeypatch.setattr(
         preflight,
         "_semantic_ownership",
@@ -110,6 +154,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         "git-state",
         "syntax",
         "governance",
+        "negative-controls",
         "semantic-ownership",
         "source-locks",
         "test-manifests",
