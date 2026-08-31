@@ -25,6 +25,8 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Pinned the trusted bootstrap and probe to the exact controller artifact built
   by the merged authority-v1.1 structural commit, and made offline installation
   select the sole authenticated controller wheel instead of a stale versioned name.
+- Advanced that bootstrap custody to the fail-closed provider-registration merge,
+  whose controller contains the mechanical bootstrap and terminal-revocation fixes.
 - Allowed one authenticated admission's pending status to transition to its terminal
   result, and made a failed finalizer publish a higher-authority failure instead of
   leaving an older green status in place.

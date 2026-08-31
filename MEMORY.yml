@@ -54,6 +54,7 @@ environment_facts:
     - P13 currently ratchets the exact source suite to 461 nodes, the contract suite to 195 nodes, and cause-verified controls to 81 while preserving all 21 required gates
     - controller bootstrap run 33427231430 and independent probe 33427318946 passed on both uniquely labeled trusted runners; the next controller adds mechanically owned offline installation for successor artifacts
     - release verifier, collector, publisher, and authority-canary workflow paths first land with every job mechanically disabled so GitHub can mint numeric IDs without granting authority; final bytes and pins activate only after that provider seam
+    - P13 provider-registration PR 42 merged as 1f96e45604c376918154dc50904fc0249d9b8e93; pack run 33432625350 produced authenticated controller artifact 9773260106 with wheel SHA-256 ccabc716a69633c3b55ff34b0dcca434be66fd4b6f3c6ad8b75bcefe542f0002 for the activation bridge
     - the 0.7.1 release closure pins Ubuntu 24.04, CPython 3.12.14, pytest 9.0.3, and 41 direct/transitive Linux x86-64 wheels by filename and SHA-256
     - every candidate job uses a fresh standard GitHub-hosted VM; the public repository receives free unlimited standard-runner execution and has no self-hosted fallback
     - main is protected by active repository ruleset 21862678 requiring pull requests, current governance-truthfulness, pack-checks, ast-checks, resolved conversations, and no force push or deletion
