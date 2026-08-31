@@ -52,7 +52,7 @@
       "required": ["paths", "required_events"],
       "properties": {
         "paths": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
-        "required_events": {"type": "array", "minItems": 1, "items": {"enum": ["pull_request", "push", "workflow_dispatch", "schedule"]}},
+        "required_events": {"type": "array", "minItems": 1, "items": {"enum": ["pull_request", "push", "workflow_call", "workflow_dispatch", "schedule"]}},
         "gate_resolvers": {
           "type": "array",
           "items": {

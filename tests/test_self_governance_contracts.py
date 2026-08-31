@@ -495,6 +495,9 @@ def test_exact_main_is_the_only_default_branch_producer() -> None:
             encoding="utf-8"
         )
     )
+    evidence_policy = yaml.safe_load(
+        (REPO_ROOT / "governance/evidence-policy.yml").read_text(encoding="utf-8")
+    )
     assert governance[True] == {
         "pull_request": None,
         "workflow_call": {
@@ -510,6 +513,9 @@ def test_exact_main_is_the_only_default_branch_producer() -> None:
     }
     assert pack[True] == {"pull_request": None, "workflow_call": None}
     assert exact_main["on"] == {"push": {"branches": ["main"]}}
+    workflow_contract = evidence_policy["workflow_contract"]
+    assert workflow_contract["paths"] == [".github/workflows/governance.yml"]
+    assert workflow_contract["required_events"] == ["pull_request", "workflow_call"]
     assert {
         job_id: (job["uses"], job["permissions"])
         for job_id, job in exact_main["jobs"].items()
@@ -534,10 +540,39 @@ def test_self_ci_authority_matches_immutable_workflow_definitions() -> None:
         "provider": "github",
         "repository_id": "1207503211",
     }
-    workflows = [authority["admission_workflow"]] + [
-        producer["workflow"] for producer in authority["producers"]
-    ]
-    for workflow in workflows:
+    assert authority["schema_version"] == "1.1"
+    assert "admission_workflow" not in authority
+    registry = authority["workflow_registry"]
+    assert authority["roles"] == {
+        "admission": "admission",
+        "reusable_producers": ["governance", "governance-pack"],
+        "finalizer": "finalizer",
+        "status_publisher": "status-publisher",
+        "bootstrap": "bootstrap",
+        "probe": "probe",
+        "release_authorizer": "release",
+        "release_build": "release",
+        "release_verifier": "release-verifier",
+        "release_collector": "release-collector",
+        "release_publisher": "release-publisher",
+        "authority_canary": "authority-canary",
+    }
+    expected_events = {
+        "admission": ["push"],
+        "governance": ["pull_request", "workflow_call"],
+        "governance-pack": ["pull_request", "workflow_call"],
+        "finalizer": ["workflow_run"],
+        "status-publisher": ["workflow_run"],
+        "bootstrap": ["workflow_dispatch"],
+        "probe": ["workflow_dispatch"],
+        "release": ["workflow_dispatch"],
+        "release-verifier": ["workflow_run"],
+        "release-collector": ["workflow_run"],
+        "release-publisher": ["workflow_dispatch"],
+        "authority-canary": ["workflow_dispatch"],
+    }
+    assert set(registry) == set(expected_events)
+    for reference, workflow in registry.items():
         commit = workflow["trusted_workflow_definition_commit"]
         path = workflow["active_path"]
         content = (REPO_ROOT / path).read_bytes()
@@ -558,12 +593,18 @@ def test_self_ci_authority_matches_immutable_workflow_definitions() -> None:
             check=False,
             capture_output=True,
         )
-        if historical.returncode == 0:
-            assert historical.stdout == content
-        assert workflow["allowed_events"] == ["push"]
+        assert historical.returncode == 0
+        assert historical.stdout == content
+        assert workflow["allowed_events"] == expected_events[reference]
     assert [producer["producer_id"] for producer in authority["producers"]] == [
         "governance",
         "governance-pack",
+    ]
+    assert [producer["workflow_ref"] for producer in authority["producers"]] == (
+        authority["roles"]["reusable_producers"]
+    )
+    assert authority["admission_jobs"] == [
+        {"job_id": "Authenticate exact-main admission and publish pending authority"}
     ]
     assert all(producer["expected_jobs"] for producer in authority["producers"])
     assert authority["trusted_external_inputs"] == []

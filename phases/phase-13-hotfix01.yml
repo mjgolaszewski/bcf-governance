@@ -40,6 +40,12 @@ execution_evidence:
   - command: .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
     result: pass
     notes: all 13 high-value semantic-validator mutants were killed after the definition seam
+  - command: .venv/bin/python -m pytest -q tests
+    result: pass
+    notes: all 463 exact source tests passed after authority-v1.1 workflow and registry activation
+  - command: .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+    result: pass
+    notes: all 10 high-value evidence and truth mutants were killed after activation
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
@@ -63,6 +69,10 @@ execution_evidence:
   - provider-registration PR 42 merged as 1f96e45604c376918154dc50904fc0249d9b8e93; exact-main pack run 33432625350 produced authenticated controller artifact 9773260106 for the second bootstrap bridge
   - bridge PR 43 run 33433108915 stopped at cheap preflight on a stale bootstrap-control literal before allocating evidence shards; the exact canonical mutation targets were reconciled before rerun
   - controller-pin PR 43 merged as 9ebbae8726be5d2193dbac9ec508e796f1ead96f; bootstrap 33434849910 and probe 33434895036 passed on both uniquely labeled trusted runners before activation bytes replaced the bridge
+  - authority-v1.1 activation pins all privileged roles and exact same-run job membership to final workflow definition commit c973d48a2b7c688a20d50c46661469e9331b0feb; release and canary roles remain disabled
+  - exact local PR preflight rejected the superseded authority-definition digest mutant before evidence allocation; both canonical control declarations now target the pinned v1.1 admission digest
+  - PR 44 run 33438381886 passed every producer but terminal truth rejected a stale independent-push event contract; workflow_call replaces that authority and a causal control prevents regression
+  - exact local preflight required the new workflow-call control owner to enter the contract manifest before any evidence rerun; the manifest is mechanically regenerated rather than hand-edited
 closeout_requirements:
   claims:
     required_suites_green:

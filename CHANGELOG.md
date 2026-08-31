@@ -33,6 +33,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Replaced independent default-branch governance runs with one exact-main admission
   whose reusable governance and package producers share the authenticated run and
   attempt; the trusted finalizer and publisher now consume every terminal outcome.
+- Bound the governance workflow contract to direct pull requests and same-run
+  `workflow_call` execution, removing the stale independent-push requirement from
+  terminal truth.
 
 ### Changed
 

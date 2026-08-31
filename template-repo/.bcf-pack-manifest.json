@@ -208,7 +208,7 @@
     },
     "schemas/evidence-policy.schema.json": {
       "operation": "copy",
-      "sha256": "8dd00a6ca9d439b9e6d84fd95f5ff57e7db40ac44e7fac5f745cf98a05600487"
+      "sha256": "7caaf08c59a769858c13d8f795068d4bfb7fc078ef57b994e7fd3c79630e4fde"
     },
     "schemas/evidence-receipt.schema.json": {
       "operation": "copy",
