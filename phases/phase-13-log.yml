@@ -35,6 +35,13 @@ summary:
     run 33427318946 independently verified both installations in 11 seconds
   - the provider-registration seam adds disabled verifier, collector, publisher, and canary paths;
     no new role can allocate a runner or claim authority before exact provider IDs and bytes are pinned
+  - provider-registration PR 42 merged as 1f96e45604c376918154dc50904fc0249d9b8e93; main pack
+    run 33432625350 produced controller artifact 9773260106 with provider digest
+    sha256:03d80a85fbf7367c0b44f37e11be41861f83c9ce8cb8e71133e7406d1820c76b and wheel
+    SHA-256 ccabc716a69633c3b55ff34b0dcca434be66fd4b6f3c6ad8b75bcefe542f0002
+  - bridge PR 43 run 33433108915 failed at cheap preflight before evidence allocation because the
+    bootstrap artifact control still targeted the superseded numeric ID; both canonical control
+    declarations now mutate the newly pinned ID
   - exact-main status precedence now permits pending to become terminal at the same authenticated ordinal,
     writes pending observation bundles, and publishes failure when an authenticated finalizer emits no bundle
   - active roadmaps now contain only P13; P01 through P12 remain validated through the canonical
@@ -142,5 +149,5 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- merge the fail-closed provider-registration and controller definition seam, pin and install its exact
-  controller artifact, then commit final workflow bytes and exact provider pins in the activation PR
+- merge the exact provider/controller pin, install and probe it independently on both trusted runners,
+  then commit final workflow bytes and exact provider pins in the activation PR

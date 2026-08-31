@@ -60,6 +60,8 @@ execution_evidence:
   - structural PR 40 merged as cdb178d69b2cd64c6c99abd2119f59ea75ec5ceb and exact-main pack run 33425118268 produced controller artifact 9770488354; the bridge pins its exact provider, wheel, commit, and tree identity before trusted installation
   - bridge PR 41 merged as 89f4e8e715caab11a9ceaf0baf8d89060f96cbde; bootstrap 33427231430 and probe 33427318946 passed independently on both trusted runners
   - provider paths that do not yet have numeric GitHub identities land with every job disabled; final bytes and exact pins activate in a following PR, avoiding fabricated pre-merge authority
+  - provider-registration PR 42 merged as 1f96e45604c376918154dc50904fc0249d9b8e93; exact-main pack run 33432625350 produced authenticated controller artifact 9773260106 for the second bootstrap bridge
+  - bridge PR 43 run 33433108915 stopped at cheap preflight on a stale bootstrap-control literal before allocating evidence shards; the exact canonical mutation targets were reconciled before rerun
 closeout_requirements:
   claims:
     required_suites_green:
