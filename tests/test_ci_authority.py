@@ -106,6 +106,7 @@ def _admission(
         admission_ordinal=ordinal,
         control_plane_run_id=f"control-{ordinal}",
         control_plane_attempt=1,
+        control_plane_workflow=_workflow(workflow_id="100", event="push"),
         candidate=CandidateIdentity(checkout_sha=commit, tree_sha=tree),
         collection_complete=collection_complete,
         producer_runs=runs,
@@ -133,6 +134,14 @@ def _authority_payload() -> dict[str, object]:
     return {
         "schema_version": "1.0",
         "repository": {"provider": "github", "repository_id": "42"},
+        "admission_workflow": {
+            "workflow_id": "100",
+            "active_path": ".github/workflows/bcf-exact-main.yml",
+            "trusted_workflow_blob_oid": SHA_A,
+            "trusted_workflow_sha256": DIGEST,
+            "trusted_workflow_definition_commit": SHA_A,
+            "allowed_events": ["push"],
+        },
         "producers": [
             {
                 "producer_id": "unit",
@@ -195,6 +204,12 @@ def _certification_payload() -> dict[str, object]:
             "admission_ordinal": "101001",
             "control_plane_run_id": "101",
             "control_plane_run_attempt": 1,
+            "control_plane_workflow": {
+                **workflow,
+                "workflow_id": "100",
+                "active_path": ".github/workflows/bcf-exact-main.yml",
+                "event": "push",
+            },
             "dispatch_sequence": 1,
             "candidate": candidate,
             "producer_runs": [
@@ -240,6 +255,13 @@ def test_ci_authority_and_certification_contracts_accept_exact_documents() -> No
     validate_ci_contract(REPO_ROOT, "authority", _authority_payload())
     validate_ci_contract(REPO_ROOT, "certification", _certification_payload())
     validate_ci_contract(REPO_ROOT, "capability_na", _capability_na_payload())
+
+
+def test_v1_authority_remains_valid_without_admission_workflow() -> None:
+    payload = _authority_payload()
+    payload.pop("admission_workflow")
+
+    validate_ci_contract(REPO_ROOT, "authority", payload)
 
 
 def test_authority_rejects_duplicate_semantic_owners() -> None:
@@ -462,6 +484,7 @@ def test_workflow_identity_is_authenticated_before_ordinal_precedence() -> None:
         admission_ordinal=2,
         control_plane_run_id="control-2",
         control_plane_attempt=1,
+        control_plane_workflow=_workflow(workflow_id="100", event="push"),
         candidate=CandidateIdentity(SHA_A, TREE),
         collection_complete=False,
         producer_runs=(changed_run,),

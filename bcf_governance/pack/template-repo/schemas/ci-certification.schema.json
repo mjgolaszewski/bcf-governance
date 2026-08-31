@@ -112,6 +112,7 @@
         "admission_ordinal",
         "control_plane_run_id",
         "control_plane_run_attempt",
+        "control_plane_workflow",
         "dispatch_sequence",
         "candidate",
         "producer_runs"
@@ -120,6 +121,7 @@
         "admission_ordinal": {"$ref": "#/$defs/ordinal"},
         "control_plane_run_id": {"$ref": "#/$defs/providerId"},
         "control_plane_run_attempt": {"type": "integer", "minimum": 1},
+        "control_plane_workflow": {"$ref": "#/$defs/workflowIdentity"},
         "dispatch_sequence": {"type": "integer", "minimum": 1},
         "candidate": {"$ref": "#/$defs/candidate"},
         "producer_runs": {

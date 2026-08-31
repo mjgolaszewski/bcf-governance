@@ -100,9 +100,9 @@ class GitHubAPI:
         return value
 
     def workflow(self, repository: str, workflow_id: str | int) -> dict[str, Any]:
-        numeric = _positive_id(workflow_id, field="workflow ID")
+        reference = _workflow_reference(workflow_id)
         value = self._request(
-            "GET", f"/repos/{self._repository(repository)}/actions/workflows/{numeric}"
+            "GET", f"/repos/{self._repository(repository)}/actions/workflows/{reference}"
         )
         if not isinstance(value, dict):
             raise GitHubAPIError("workflow response must be an object")
@@ -154,11 +154,11 @@ class GitHubAPI:
         head_sha: str,
         event: str,
     ) -> tuple[dict[str, Any], ...]:
-        numeric = _positive_id(workflow_id, field="workflow ID")
+        reference = _workflow_reference(workflow_id)
         query = urlencode({"head_sha": _sha(head_sha, field="head SHA"), "event": event, "per_page": 100})
         value = self._request(
             "GET",
-            f"/repos/{self._repository(repository)}/actions/workflows/{numeric}/runs?{query}",
+            f"/repos/{self._repository(repository)}/actions/workflows/{reference}/runs?{query}",
         )
         runs = value.get("workflow_runs") if isinstance(value, dict) else None
         if not isinstance(runs, list) or any(not isinstance(run, dict) for run in runs):
@@ -237,6 +237,15 @@ def _positive_id(value: object, *, field: str) -> str:
     if not text.isdigit() or int(text) < 1:
         raise GitHubAPIError(f"{field} must be a positive numeric provider ID")
     return text
+
+
+def _workflow_reference(value: object) -> str:
+    text = str(value)
+    if text.isdigit():
+        return _positive_id(text, field="workflow ID")
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+\.ya?ml", text):
+        raise GitHubAPIError("workflow reference must be a numeric ID or exact file name")
+    return quote(text, safe="")
 
 
 def _sha(value: object, *, field: str) -> str:

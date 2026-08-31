@@ -1,0 +1,63 @@
+document:
+  kind: hotfix_execution_log
+  name: P10-HF07 Hotfix Log
+  id: bcf-governance-phase-10-hotfix07
+  version: 1.0.0
+  generated_at_utc: '2026-08-31T00:00:00Z'
+  status: completed
+  path: phases/phase-10-hotfix07.yml
+hotfix:
+  id: P10-HF07
+  mode: full
+  related_phase_id: P10
+  hotfix_number: 7
+  summary: Make trusted GitHub run and bundle identity mechanically authoritative
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests/test_ci_authority.py tests/test_ci_certification.py tests/test_ci_github_controller.py tests/test_ci_github_reference.py tests/test_pack_sync.py tests/test_cli.py
+  - .venv/bin/python scripts/governance_evidence.py --repo-root . run --gate contract-test --session-manifest <fresh-local-session>
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root . --format json
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests/test_ci_authority.py tests/test_ci_certification.py tests/test_ci_github_controller.py tests/test_ci_github_reference.py tests/test_pack_sync.py tests/test_cli.py
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py lint
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py typecheck
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py architecture-test
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py security-review
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py security-vulnerability-scan
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py semantic-ownership
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root . --format json
+  - .venv/bin/python scripts/check_governance_exposure.py --repo-root . --format json
+  - .venv/bin/python -m bcf_governance.tooling.semantic_ownership_scan --repo-root . --output .artifacts/semantic-ownership/hf07.json # non-authoritative until captured
+  notes:
+  - full mode is required because this slice changes draft 0.7 CI-authority schemas, CLI arguments, and trusted publication boundaries
+  - workflow numeric identity, active path, exact trusted bytes, event, run, attempt, commit, and tree are reconstructed from authenticated provider API state
+  - the optional authority admission_workflow preserves schema compatibility for existing v1 documents while giving Standard-v2 activation one deterministic semantic owner
+  - the finalizer authenticates its own workflow run before allocating a certification session
+  - the publisher verifies an exact closed bundle inventory, independently authenticates the successful finalizer run, and matches it to the session before status mutation
+  - latest exact-main admitted failure revokes prior success; unadmitted manual runs never enter resolution precedence
+  - the first PR run exposed five downstream-normalization findings in the newly tracked identity module; every failed shard and pack job shared that one cause
+  - the earlier local source-first scan ran before the new module was tracked, while preflight only reported that semantic ownership was configured; neither result was misrepresented as committed-tree conformance
+  - canonical preflight now executes the applicable source-first semantic-ownership scan before session allocation, so the same deterministic defect stops before evidence fanout
+  - 386 exact tests and 122 exact contract nodes pass; lint, typecheck, architecture, structural validation, pack parity, and semantic ownership are green
+  - five new cause-verified controls cover admission-workflow authority, finalizer-session identity, bundle semantic binding, preflight SOIP enforcement, and declared identity consumers
+  - active workflows, candidate execution, repository status publication, and release publication remain disabled in this structural slice
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    findings_resolved:
+      required_evidence:
+      - security-vulnerability-scan
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

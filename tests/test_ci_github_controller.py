@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from pathlib import Path
 
 import pytest
@@ -14,6 +15,7 @@ from bcf_governance.tooling.ci_github_controller import (
     kickoff,
     publish,
 )
+from bcf_governance.tooling.ci_github_identity import resolve_main, resolve_trusted_run
 
 
 SHA_A = "a" * 40
@@ -25,6 +27,11 @@ CONTROL_IDENTITY = {
     "control_workflow_id": 99,
     "control_workflow_path": ".github/workflows/control.yml",
     "control_workflow_sha256": DIGEST,
+}
+COLLECTOR_IDENTITY = {
+    "collector_workflow_id": 98,
+    "collector_workflow_path": ".github/workflows/finalizer.yml",
+    "collector_workflow_sha256": DIGEST,
 }
 
 
@@ -43,6 +50,24 @@ def _producer(producer_id: str, workflow_id: str, path: str, job: str) -> dict[s
     }
 
 
+def _write_json(path: Path, payload: dict[str, object]) -> None:
+    path.chmod(0o600)
+    path.write_text(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _refresh_bundle_inventory(root: Path) -> None:
+    path = root / "bundle-manifest.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    for relative in manifest["files"]:
+        manifest["files"][relative] = hashlib.sha256(
+            (root / relative).read_bytes()
+        ).hexdigest()
+    _write_json(path, manifest)
+
+
 class FakeAPI:
     def __init__(self) -> None:
         self.main = SHA_A
@@ -52,6 +77,14 @@ class FakeAPI:
         self.authority = {
             "schema_version": "1.0",
             "repository": {"provider": "github", "repository_id": "42"},
+            "admission_workflow": {
+                "workflow_id": "99",
+                "active_path": ".github/workflows/control.yml",
+                "trusted_workflow_blob_oid": SHA_A,
+                "trusted_workflow_sha256": DIGEST,
+                "trusted_workflow_definition_commit": SHA_A,
+                "allowed_events": ["push"],
+            },
             "producers": [
                 _producer("governance", "10", ".github/workflows/governance.yml", "truth"),
                 _producer("pack", "11", ".github/workflows/pack.yml", "pack"),
@@ -68,6 +101,16 @@ class FakeAPI:
                 "head_sha": SHA_A,
                 "status": "completed",
                 "conclusion": "success",
+            },
+            "400": {
+                "id": 400,
+                "run_attempt": 1,
+                "workflow_id": 98,
+                "repository": {"id": 42},
+                "event": "workflow_run",
+                "head_sha": SHA_A,
+                "status": "in_progress",
+                "conclusion": None,
             },
             "200": self._producer_run(200, 10),
             "300": self._producer_run(300, 11),
@@ -97,7 +140,7 @@ class FakeAPI:
         return {"object": {"type": "commit", "sha": self.main}}
 
     def commit(self, repository: str, sha: str) -> dict[str, object]:
-        assert repository == "owner/repo" and sha == self.main
+        assert repository == "owner/repo" and sha in {self.main, SHA_A}
         return {"sha": sha, "tree": {"sha": TREE}}
 
     def run(self, repository: str, run_id: str | int) -> dict[str, object]:
@@ -110,6 +153,7 @@ class FakeAPI:
             "10": ".github/workflows/governance.yml",
             "11": ".github/workflows/pack.yml",
             "99": ".github/workflows/control.yml",
+            "98": ".github/workflows/finalizer.yml",
         }
         return {
             "id": int(workflow_id),
@@ -117,7 +161,7 @@ class FakeAPI:
         }
 
     def content(self, repository: str, path: str, *, ref: str) -> GitHubContent:
-        assert repository == "owner/repo" and ref == self.main
+        assert repository == "owner/repo" and ref in {self.main, SHA_A}
         if path == "governance/ci-authority.yml":
             raw = yaml.safe_dump(self.authority, sort_keys=False).encode()
             return GitHubContent(path, SHA_B, raw)
@@ -134,6 +178,12 @@ class FakeAPI:
         assert repository == "owner/repo" and head_sha == self.main and event == "push"
         if str(workflow_id) in self.missing_workflows:
             return ()
+        if str(workflow_id) == "control.yml":
+            return tuple(
+                dict(value)
+                for value in self.runs.values()
+                if value["workflow_id"] == 99
+            )
         return (dict(self.runs["200" if str(workflow_id) == "10" else "300"]),)
 
     def jobs(
@@ -220,6 +270,7 @@ def test_finalizer_reconstructs_terminal_bundle_and_publisher_reverifies(tmp_pat
         **CONTROL_IDENTITY,
         collector_run_id=400,
         collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
         output_dir=tmp_path / "bundle",
     )
     assert result.status == "terminal"
@@ -227,11 +278,16 @@ def test_finalizer_reconstructs_terminal_bundle_and_publisher_reverifies(tmp_pat
     assert result.bundle_dir is not None
     assert (Path(result.bundle_dir) / "bundle-manifest.json").is_file()
 
+    api.runs["400"]["status"] = "completed"
+    api.runs["400"]["conclusion"] = "success"
     published = publish(
         api,  # type: ignore[arg-type]
         repository="owner/repo",
         bundle_dir=Path(result.bundle_dir),
         target_url="https://github.example/runs/400",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
     )
     assert published["status"] == "published"
     assert api.published_statuses == [
@@ -260,6 +316,7 @@ def test_finalizer_returns_pending_without_writing_partial_bundle(tmp_path: Path
         **CONTROL_IDENTITY,
         collector_run_id=400,
         collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
         output_dir=tmp_path / "bundle",
     )
     assert result.status == "pending"
@@ -279,6 +336,7 @@ def test_first_callback_is_cleanly_pending_before_other_producer_starts(
         **CONTROL_IDENTITY,
         collector_run_id=400,
         collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
         output_dir=tmp_path / "bundle",
     )
     assert result.status == "pending"
@@ -298,8 +356,31 @@ def test_wrong_workflow_bytes_fail_before_bundle_creation(tmp_path: Path) -> Non
             **CONTROL_IDENTITY,
             collector_run_id=400,
             collector_run_attempt=1,
+            **COLLECTOR_IDENTITY,
             output_dir=tmp_path / "bundle",
         )
+    assert not (tmp_path / "bundle").exists()
+
+
+def test_finalizer_authenticates_its_own_run_before_bundle_creation(
+    tmp_path: Path,
+) -> None:
+    api = FakeAPI()
+    api.runs["400"]["workflow_id"] = 99
+
+    with pytest.raises(GitHubControllerError, match="not authenticated"):
+        finalize(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            control_run_id=100,
+            control_run_attempt=1,
+            **CONTROL_IDENTITY,
+            collector_run_id=400,
+            collector_run_attempt=1,
+            **COLLECTOR_IDENTITY,
+            output_dir=tmp_path / "bundle",
+        )
+
     assert not (tmp_path / "bundle").exists()
 
 
@@ -313,17 +394,131 @@ def test_publisher_suppresses_bundle_after_default_main_moves(tmp_path: Path) ->
         **CONTROL_IDENTITY,
         collector_run_id=400,
         collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
         output_dir=tmp_path / "bundle",
     )
+    api.runs["400"]["status"] = "completed"
+    api.runs["400"]["conclusion"] = "success"
     api.main = SHA_B
     published = publish(
         api,  # type: ignore[arg-type]
         repository="owner/repo",
         bundle_dir=Path(result.bundle_dir or ""),
         target_url="https://github.example/runs/400",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
     )
     assert published["status"] == "suppressed"
     assert published["reason"] == "default_main_moved"
+    assert api.published_statuses == []
+
+
+def test_publisher_rejects_bundle_from_wrong_finalizer_attempt(tmp_path: Path) -> None:
+    api = FakeAPI()
+    result = finalize(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        control_run_id=100,
+        control_run_attempt=1,
+        **CONTROL_IDENTITY,
+        collector_run_id=400,
+        collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
+        output_dir=tmp_path / "bundle",
+    )
+    api.runs["400"]["status"] = "completed"
+    api.runs["400"]["conclusion"] = "success"
+    api.runs["400"]["run_attempt"] = 2
+
+    with pytest.raises(GitHubControllerError, match="current exact main"):
+        publish(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            bundle_dir=Path(result.bundle_dir or ""),
+            target_url="https://github.example/runs/400",
+            collector_run_id=400,
+            collector_run_attempt=1,
+            **COLLECTOR_IDENTITY,
+        )
+
+    assert api.published_statuses == []
+
+
+def test_publisher_rejects_finalizer_session_identity_forgery(tmp_path: Path) -> None:
+    api = FakeAPI()
+    result = finalize(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        control_run_id=100,
+        control_run_attempt=1,
+        **CONTROL_IDENTITY,
+        collector_run_id=400,
+        collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
+        output_dir=tmp_path / "bundle",
+    )
+    root = Path(result.bundle_dir or "")
+    session_path = root / "evidence-session.json"
+    session = json.loads(session_path.read_text(encoding="utf-8"))
+    session["producer"]["producer_id"] = "candidate-forgery"
+    _write_json(session_path, session)
+    report_path = root / "ci-certification.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    report["evidence_session"]["manifest_sha256"] = hashlib.sha256(
+        session_path.read_bytes()
+    ).hexdigest()
+    _write_json(report_path, report)
+    _refresh_bundle_inventory(root)
+    api.runs["400"]["status"] = "completed"
+    api.runs["400"]["conclusion"] = "success"
+
+    with pytest.raises(GitHubControllerError, match="authenticated finalizer run"):
+        publish(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            bundle_dir=root,
+            target_url="https://github.example/runs/400",
+            collector_run_id=400,
+            collector_run_attempt=1,
+            **COLLECTOR_IDENTITY,
+        )
+
+    assert api.published_statuses == []
+
+
+def test_publisher_rejects_bundle_manifest_semantic_forgery(tmp_path: Path) -> None:
+    api = FakeAPI()
+    result = finalize(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        control_run_id=100,
+        control_run_attempt=1,
+        **CONTROL_IDENTITY,
+        collector_run_id=400,
+        collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
+        output_dir=tmp_path / "bundle",
+    )
+    root = Path(result.bundle_dir or "")
+    manifest_path = root / "bundle-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["computed_state"] = "failed"
+    _write_json(manifest_path, manifest)
+    api.runs["400"]["status"] = "completed"
+    api.runs["400"]["conclusion"] = "success"
+
+    with pytest.raises(GitHubControllerError, match="verified certification"):
+        publish(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            bundle_dir=root,
+            target_url="https://github.example/runs/400",
+            collector_run_id=400,
+            collector_run_attempt=1,
+            **COLLECTOR_IDENTITY,
+        )
+
     assert api.published_statuses == []
 
 
@@ -337,6 +532,7 @@ def test_older_callback_cannot_overwrite_newer_published_authority(tmp_path: Pat
         **CONTROL_IDENTITY,
         collector_run_id=400,
         collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
         output_dir=tmp_path / "bundle",
     )
     api.existing_statuses = [
@@ -349,11 +545,16 @@ def test_older_callback_cannot_overwrite_newer_published_authority(tmp_path: Pat
             ),
         }
     ]
+    api.runs["400"]["status"] = "completed"
+    api.runs["400"]["conclusion"] = "success"
     published = publish(
         api,  # type: ignore[arg-type]
         repository="owner/repo",
         bundle_dir=Path(result.bundle_dir or ""),
         target_url="https://github.example/runs/400",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
     )
     assert published["status"] == "suppressed"
     assert published["reason"] == "older_authority_cannot_overwrite"
@@ -383,6 +584,46 @@ def test_control_plane_identity_mutants_are_unadmitted(mutation: str) -> None:
     assert api.dispatches == []
 
 
+def test_control_run_resolution_ignores_unadmitted_manual_run() -> None:
+    api = FakeAPI()
+    api.runs["101"] = {
+        **api.runs["100"],
+        "id": 101,
+        "event": "workflow_dispatch",
+    }
+
+    identity = resolve_trusted_run(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        main=resolve_main(api, "owner/repo"),  # type: ignore[arg-type]
+        workflow_path=".github/workflows/control.yml",
+        expected_event="push",
+        require_success=True,
+    )
+
+    assert identity.run_id == "100"
+
+
+def test_latest_admitted_control_failure_revokes_prior_success() -> None:
+    api = FakeAPI()
+    api.runs["101"] = {
+        **api.runs["100"],
+        "id": 101,
+        "status": "completed",
+        "conclusion": "failure",
+    }
+
+    with pytest.raises(GitHubControllerError, match="latest trusted run attempt"):
+        resolve_trusted_run(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            main=resolve_main(api, "owner/repo"),  # type: ignore[arg-type]
+            workflow_path=".github/workflows/control.yml",
+            expected_event="push",
+            require_success=True,
+        )
+
+
 def test_duplicate_status_authority_is_rejected(tmp_path: Path) -> None:
     api = FakeAPI()
     result = finalize(
@@ -393,6 +634,7 @@ def test_duplicate_status_authority_is_rejected(tmp_path: Path) -> None:
         **CONTROL_IDENTITY,
         collector_run_id=400,
         collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
         output_dir=tmp_path / "bundle",
     )
     api.existing_statuses = [
@@ -406,12 +648,17 @@ def test_duplicate_status_authority_is_rejected(tmp_path: Path) -> None:
             ),
         }
     ]
+    api.runs["400"]["status"] = "completed"
+    api.runs["400"]["conclusion"] = "success"
     with pytest.raises(GitHubControllerError, match="duplicate admission"):
         publish(
             api,  # type: ignore[arg-type]
             repository="owner/repo",
             bundle_dir=Path(result.bundle_dir or ""),
             target_url="https://github.example/runs/400",
+            collector_run_id=400,
+            collector_run_attempt=1,
+            **COLLECTOR_IDENTITY,
         )
 
 
@@ -421,6 +668,8 @@ def test_api_rejects_unsafe_identity_before_network() -> None:
         api.repository("../repo")
     with pytest.raises(GitHubAPIError, match="unsafe"):
         api.content("owner/repo", "../secret", ref=SHA_A)
+    with pytest.raises(GitHubAPIError, match="workflow reference"):
+        api.workflow("owner/repo", "../control.yml")
 
 
 def test_api_rejects_truncated_workflow_run_inventory() -> None:

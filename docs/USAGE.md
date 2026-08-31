@@ -119,6 +119,17 @@ bytes, never regenerates phase artifacts, and cannot move to a weaker profile
 or contract version. Adopt a GitHub topology separately and explicitly with
 `bcf ci adopt github --check|--apply`.
 
+The 0.7 controller treats command-line workflow values only as compatibility
+pins. It reconstructs numeric repository and workflow IDs, the active path,
+trusted workflow bytes, event, run attempt, commit, and tree through the
+provider API. A v1 CI-authority document may omit `admission_workflow`; an
+activated Standard-v2 topology records it as the canonical admission owner.
+The finalizer authenticates its own workflow run before creating a session,
+and publication requires that exact successful run and attempt to match the
+immutable session and closed bundle inventory. Generated workflows supply the
+required controller arguments; operators should not copy run IDs from check
+names, display titles, or earlier attempts.
+
 Standard-v2 N/A records live under `governance/capability-na/`. Each record
 names the exact capability, gate, or semantic family; repository scope;
 rationale and supporting evidence; approving role; subject commit; review
