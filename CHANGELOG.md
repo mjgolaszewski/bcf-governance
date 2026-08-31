@@ -16,6 +16,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   retroactive derived-state claim. Cleanup now also preserves linked-worktree
   Git control files and avoids unrelated audit-root rewrites. Transactional
   profile checks and applies retain Git custody while validating their shadow.
+- Made source-distribution verification distinguish portable package tests from
+  the two BCF self-adoption proofs that require the original repository's Git
+  objects; JUnit validation rejects any broader or narrower skip set.
 
 ## [0.7.0] - 2026-08-31
 

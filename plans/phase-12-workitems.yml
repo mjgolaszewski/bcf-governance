@@ -61,4 +61,6 @@ workitems:
   - transactional cleanup preserves linked-worktree Git control metadata and does not rewrite
     unrelated test fixtures
   - profile-promotion check and apply shadows preserve compacted Git-history custody
+  - source-distribution tests permit exactly two original-repository custody skips and reject
+    any other skipped population
   acceptance_evidence: [governance-validate, test, contract-test]

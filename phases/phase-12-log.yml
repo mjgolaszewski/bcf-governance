@@ -81,6 +81,10 @@ execution_evidence:
     verification_snapshot; exact bytes remain recoverable at f4b314be03a7d4c3a85110b31c93e828e6484fe7
   - profile-promotion check and apply preserve Git custody, so compacted history remains
     verifiable in the transactional validation shadow
+  - release run 33395036261 correctly rejected the extracted source distribution because its
+    fresh Git repository cannot contain compacted f4b314b objects; the portable-sdist harness
+    now permits exactly the two original-repository custody proofs to skip and mechanically
+    rejects every other skip set
 closeout_requirements:
   claims:
     workitems_closed:

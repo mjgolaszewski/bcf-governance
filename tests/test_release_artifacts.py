@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+from xml.etree import ElementTree
 
 import pytest
 
@@ -50,3 +51,17 @@ def test_sdist_source_custody_tracks_the_complete_extracted_tree(tmp_path: Path)
         capture_output=True,
         text=True,
     ).stdout == ""
+
+    suite = ElementTree.Element("testsuite")
+    for classname, name in sorted(release_artifacts.ALLOWED_SDIST_CUSTODY_SKIPS):
+        case = ElementTree.SubElement(
+            suite, "testcase", {"classname": classname, "name": name}
+        )
+        ElementTree.SubElement(case, "skipped")
+    junit = tmp_path / "sdist-tests.xml"
+    ElementTree.ElementTree(suite).write(junit, encoding="utf-8")
+    release_artifacts.validate_sdist_test_skips(junit)
+    suite.remove(next(iter(suite)))
+    ElementTree.ElementTree(suite).write(junit, encoding="utf-8")
+    with pytest.raises(RuntimeError, match="sdist test skip contract mismatch"):
+        release_artifacts.validate_sdist_test_skips(junit)
