@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import hashlib
 import importlib.util
 import re
 import subprocess
@@ -428,6 +429,48 @@ def test_self_control_plane_is_an_exact_disabled_generator_product() -> None:
     )
     for relative, content in expected.items():
         assert (REPO_ROOT / relative).read_bytes() == content
+
+
+def test_self_ci_authority_matches_immutable_workflow_definitions() -> None:
+    authority = yaml.safe_load(
+        (REPO_ROOT / "governance/ci-authority.yml").read_text(encoding="utf-8")
+    )
+    assert authority["repository"] == {
+        "provider": "github",
+        "repository_id": "1207503211",
+    }
+    workflows = [authority["admission_workflow"]] + [
+        producer["workflow"] for producer in authority["producers"]
+    ]
+    for workflow in workflows:
+        commit = workflow["trusted_workflow_definition_commit"]
+        path = workflow["active_path"]
+        content = subprocess.run(
+            ["git", "show", f"{commit}:{path}"],
+            cwd=REPO_ROOT,
+            check=True,
+            capture_output=True,
+        ).stdout
+        blob = subprocess.run(
+            ["git", "rev-parse", f"{commit}:{path}"],
+            cwd=REPO_ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        assert blob == workflow["trusted_workflow_blob_oid"]
+        assert (
+            hashlib.sha256(content).hexdigest()
+            == workflow["trusted_workflow_sha256"]
+        )
+        assert content == (REPO_ROOT / path).read_bytes()
+        assert workflow["allowed_events"] == ["push"]
+    assert [producer["producer_id"] for producer in authority["producers"]] == [
+        "governance",
+        "governance-pack",
+    ]
+    assert all(producer["expected_jobs"] for producer in authority["producers"])
+    assert authority["trusted_external_inputs"] == []
 
 
 def test_every_github_action_uses_the_canonical_immutable_pin() -> None:

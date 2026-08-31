@@ -1,0 +1,37 @@
+schema_version: '1.0'
+repository: {provider: github, repository_id: '1207503211'}
+admission_workflow:
+  workflow_id: '346274480'
+  active_path: .github/workflows/bcf-exact-main.yml
+  trusted_workflow_blob_oid: 9d52235622fc91fd21e4d26b8460d35b7f0a1d94
+  trusted_workflow_sha256: 4c3ba640bead109aa661f7e126d5047d9c600a57d1511de8768974cf9c5954fd
+  trusted_workflow_definition_commit: 633c15506d4b54c8b5fc8849c175919095599785
+  allowed_events: [push]
+producers:
+- producer_id: governance
+  workflow:
+    workflow_id: '334490532'
+    active_path: .github/workflows/governance.yml
+    trusted_workflow_blob_oid: e217cb985cbcb5e6fde4f59ce50cc14e8326e60e
+    trusted_workflow_sha256: 61a5101a2f353b71ae6a4f4bae61e7da191fb8089711171c0446a16320a3300b
+    trusted_workflow_definition_commit: 37475fbff2c5303762e0fdeb97e7cc7834bfe485
+    allowed_events: [push]
+  expected_jobs:
+  - {job_id: Validate governance front door}
+  - {job_id: 'Evidence / Full tests, lint, import boundaries, and SBOM'}
+  - {job_id: 'Evidence / CQRS, module size, exposure, and dependency risk'}
+  - {job_id: 'Evidence / Duplication, routers, governance, and ownership'}
+  - {job_id: 'Evidence / Boundaries, contracts, runtime, types, and secrets'}
+  - {job_id: Verify exact-tree governance evidence}
+- producer_id: governance-pack
+  workflow:
+    workflow_id: '265590976'
+    active_path: .github/workflows/governance-pack.yml
+    trusted_workflow_blob_oid: c7b0c9fd074a43a6741318dae04d8cc928f58b05
+    trusted_workflow_sha256: a21cd133075f0220f75fb940c74d1707c2505584bb9af4ad9f3561b1b418aee3
+    trusted_workflow_definition_commit: 37475fbff2c5303762e0fdeb97e7cc7834bfe485
+    allowed_events: [push]
+  expected_jobs:
+  - {job_id: 'Test package, templates, and release tooling'}
+  - {job_id: Verify template architecture boundaries}
+trusted_external_inputs: []

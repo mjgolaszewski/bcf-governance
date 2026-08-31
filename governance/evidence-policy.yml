@@ -124,21 +124,13 @@ gate_overrides:
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']
-    - id: trusted-bootstrap-artifact-identity-must-fail
-      mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: 'BCF_BOOTSTRAP_ARTIFACT_ID: "9744774824"', replace: 'BCF_BOOTSTRAP_ARTIFACT_ID: "1"'}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']
+    - {id: trusted-bootstrap-artifact-identity-must-fail, mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: 'BCF_BOOTSTRAP_ARTIFACT_ID: "9744774824"', replace: 'BCF_BOOTSTRAP_ARTIFACT_ID: "1"'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']}}
     - id: trusted-bootstrap-venv-relocation-must-fail
       mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: '"$selected_python" -m venv "$install_root"', replace: '"$selected_python" -m venv "$install_root.stage"'}
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']
-    - id: trusted-controller-interpreter-environment-must-fail
-      mutation: {path: .github/workflows/bcf-trusted-control-probe.yml, search: 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97', replace: 'actions/setup-python@0000000000000000000000000000000000000000'}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_self_governance_contracts::test_trusted_jobs_never_checkout_or_invoke_candidate_scripts']
+    - {id: trusted-controller-interpreter-environment-must-fail, mutation: {path: .github/workflows/bcf-trusted-control-probe.yml, search: 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97', replace: 'actions/setup-python@0000000000000000000000000000000000000000'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_trusted_jobs_never_checkout_or_invoke_candidate_scripts']}}
     - id: descriptive-evidence-job-names-must-fail
       mutation: {path: .github/workflows/governance.yml, search: 'name: Evidence / ${{ matrix.display_name }}', replace: 'name: Evidence / ${{ matrix.shard }}'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_governance_evidence_shards_derive_every_required_gate_once']}
@@ -146,6 +138,7 @@ gate_overrides:
       mutation: {path: .github/workflows/governance.yml, search: 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97', replace: 'actions/setup-python@0000000000000000000000000000000000000000'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_every_github_action_uses_the_canonical_immutable_pin']}
     - {id: ci-authority-activation-gate-must-fail, mutation: {path: .github/workflows/bcf-exact-main.yml, search: "if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}", replace: 'if: ${{ true }}'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_control_plane_is_an_exact_disabled_generator_product']}}
+    - {id: self-ci-authority-definition-pin-must-fail, mutation: {path: governance/ci-authority.yml, search: 'trusted_workflow_sha256: 4c3ba640bead109aa661f7e126d5047d9c600a57d1511de8768974cf9c5954fd', replace: 'trusted_workflow_sha256: 0000000000000000000000000000000000000000000000000000000000000000'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_ci_authority_matches_immutable_workflow_definitions']}}
     - {id: pinned-workflow-definition-custody-must-fail, mutation: {path: bcf_governance/tooling/ci_github_identity.py, search: 'if current.blob_oid != pinned.blob_oid or current.content != pinned.content:', replace: 'if False and (current.blob_oid != pinned.blob_oid or current.content != pinned.content):'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_pinned_definition_must_still_match_current_main']}}
     - id: ci-workflow-event-authentication-must-fail
       mutation: {path: bcf_governance/tooling/ci_authority_state.py, search: 'if not same_identity or actual.event not in
