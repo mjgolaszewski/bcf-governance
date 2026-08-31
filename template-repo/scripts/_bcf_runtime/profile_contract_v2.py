@@ -17,6 +17,7 @@ from .ci_adopt_github import (
     GithubAdoptionError,
     plan_github_adoption,
     render_github_adoption,
+    render_github_control_plane,
 )
 from .ci_github import GithubReferenceError, validate_reference_topology
 from .runtime_capacity import RuntimeCapacityError, load_runtime_contract
@@ -255,12 +256,22 @@ def validate_profile_v2_readiness(
         except GithubReferenceError as exc:
             raise ProfileV2Error(f"governance/github-ci-topology.yml: {exc}") from exc
         roles = {str(role["id"]): role for role in topology["roles"]}
-        desired = render_github_adoption(
-            default_branch=str(topology["default_branch"]),
-            candidate_labels=tuple(roles["exact-ref-producer"]["runner_labels"]),
-            trusted_labels=tuple(roles["trusted-finalizer"]["runner_labels"]),
-            producer_argv=tuple(topology["producer_argv"]),
-        )
+        common = {
+            "default_branch": str(topology["default_branch"]),
+            "candidate_labels": tuple(roles["exact-ref-producer"]["runner_labels"]),
+            "trusted_labels": tuple(roles["trusted-finalizer"]["runner_labels"]),
+        }
+        if "producer_workflows" in topology:
+            desired = render_github_control_plane(
+                **common,
+                producer_workflow_names=tuple(topology["producer_workflows"]),
+                dispatch_exact_ref=bool(topology.get("dispatch_exact_ref", False)),
+                controller_commit=topology.get("controller_commit"),
+            )
+        else:
+            desired = render_github_adoption(
+                **common, producer_argv=tuple(topology["producer_argv"])
+            )
         try:
             adoption = plan_github_adoption(repo_root, desired=desired)
         except GithubAdoptionError as exc:

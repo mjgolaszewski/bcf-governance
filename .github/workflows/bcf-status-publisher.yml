@@ -1,0 +1,53 @@
+name: bcf/exact-main-status-publisher
+'on':
+  workflow_run:
+    workflows:
+    - bcf/trusted-evidence-finalizer
+    types:
+    - completed
+permissions:
+  actions: read
+  contents: read
+  statuses: write
+env:
+  BCF_CONTROL_COMMIT: b8ecc90f2a61336c32709f8f901664f92fc2b182
+jobs:
+  publish:
+    name: Publish verified exact-main status
+    if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}
+    runs-on:
+    - self-hosted
+    - Linux
+    - X64
+    - bcf-governance
+    - vm-linux-ci-runner
+    timeout-minutes: 5
+    steps:
+    - name: Restore the trusted controller interpreter environment
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+      with:
+        python-version: '3.12'
+    - name: Download only the triggering finalizer callback
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        name: bcf-trusted-callback-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+        github-token: ${{ github.token }}
+        repository: ${{ github.repository }}
+        run-id: ${{ github.event.workflow_run.id }}
+        path: ${{ runner.temp }}/bcf-trusted-callback
+    - name: Verify callback and publish authoritative exact-main status
+      shell: bash
+      run: 'set -euo pipefail
+
+        control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/$BCF_CONTROL_COMMIT"
+
+        test -d "$control_root"
+
+        test ! -L "$control_root"
+
+        test -x "$control_root/bin/bcf"
+
+        "$control_root/bin/bcf" ci-github publish-callback --repository "$GITHUB_REPOSITORY" --callback "$RUNNER_TEMP/bcf-trusted-callback"
+        --target-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/${{ github.event.workflow_run.id }}" --collector-run-id
+        "${{ github.event.workflow_run.id }}" --collector-run-attempt "${{ github.event.workflow_run.run_attempt }}" --collector-workflow-path
+        .github/workflows/bcf-trusted-finalizer.yml'

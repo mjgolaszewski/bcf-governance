@@ -1,0 +1,52 @@
+document:
+  kind: hotfix_execution_log
+  name: P10-HF10 Hotfix Log
+  id: bcf-governance-phase-10-hotfix10
+  version: 1.0.0
+  generated_at_utc: '2026-08-31T00:00:00Z'
+  status: completed
+  path: phases/phase-10-hotfix10.yml
+hotfix:
+  id: P10-HF10
+  mode: full
+  related_phase_id: P10
+  hotfix_number: 10
+  summary: Install the disabled event-driven self-adoption topology
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test
+  - .venv/bin/python scripts/governance_evidence.py --repo-root . run --gate contract-test --session-manifest <fresh-local-session>
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test
+  - .venv/bin/python scripts/governance_evidence.py --repo-root . run --gate contract-test --session-manifest <fresh-local-session>
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py architecture-test
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py semantic-ownership
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py lint
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py typecheck
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py runtime-smoke
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root . --format json
+  - .venv/bin/python scripts/check_governance_exposure.py --repo-root . --format json
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+  notes:
+  - full mode is required because this slice installs trusted workflows and changes required-check presentation names, action runtime identities, adopter output, and profile-v2 readiness behavior
+  - the public adopter is the only constructor for the self-adoption workflows and topology; exact bytes are asserted mechanically in the self-governance suite and copied through the packaged runtime
+  - all installed trusted jobs are guarded by the exact BCF_CI_AUTHORITY_ENABLED expression, have five-minute ceilings, and perform no checkout, polling, sleeping, or candidate script execution
+  - an absent activation variable skips each trusted job before runner allocation; the repository variable remains unset in this structural slice
+  - existing governance and pack workflows remain the positive producer owners on fresh hosted VMs, so candidate execution and evidence are not duplicated
+  - human-facing workflow and job names are descriptive presentation only; numeric repository and workflow IDs, exact paths, trusted bytes, events, attempts, commit, and tree remain the mechanical authority
+  - one immutable action registry owns checkout, selected Python, artifact upload/download, and provenance-attestation identities for live and generated workflows
+  - the exact test manifests contain 396 total and 131 contract nodes; action-pin and activation-gate controls extend the contract-test inventory to 28 cause-verified mutants
+  - schema and profile readiness remain backward-compatible with producer-argv adopters while allowing existing named producer workflows to be consumed without regenerating them
+  - status publication, repository configuration authority, exact workflow IDs, and active certification remain deferred to a post-merge hotfix because they cannot be truthfully pinned to unmerged workflow bytes
+closeout_requirements:
+  claims:
+    required_suites_green: {required_evidence: [test, contract-test]}
+    security_review_complete: {required_evidence: [security-review]}
+    health_checks_green: {required_evidence: [runtime-smoke]}
+  reconciliation: {required_evidence: [governance-validate, governance-exposure-scan]}
+  finding_registry: governance/findings.yml

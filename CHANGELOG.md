@@ -8,6 +8,12 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Added
 
+- Added a disabled-by-default, event-driven exact-main admission, trusted
+  finalizer, and status-publisher topology generated from the public adopter;
+  its callbacks allocate no runner until explicitly activated after exact
+  workflow identity is pinned.
+- Added one canonical immutable-pin registry for GitHub-owned actions and
+  causal controls for both action drift and premature CI-authority activation.
 - Added immutable trusted callback envelopes and additive controller commands
   for acyclic event-driven fan-in without polling, waiting, or candidate
   artifact ingestion by the trusted finalizer.
@@ -67,6 +73,11 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Gave every repository job a concise purpose-oriented display name while
+  retaining stable machine job IDs; presentation remains outside authority.
+- Upgraded checkout, Python setup, and artifact transport to immutable current
+  Node 24 action releases across live, generated, template, and packaged
+  workflows.
 - Moved the exact trusted-controller artifact pin into canonical runner policy,
   with owner-only bootstrap and probe workflows checked as exact mirrors and
   named by their human-visible purpose.
@@ -92,7 +103,7 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Bound BCF's four evidence shards and terminal truth to one immutable session
   and exact Actions run attempt without adding jobs, polling, or waiter capacity.
 - Kept profile-generated evidence policy within its existing context budget by
-  using deterministic 132-column YAML rendering as the control inventory grows.
+  using deterministic 160-column YAML rendering as the control inventory grows.
 
 ### Fixed
 

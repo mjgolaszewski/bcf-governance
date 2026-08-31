@@ -11,6 +11,11 @@ import pytest
 import yaml
 
 from bcf_governance.cli import COMMANDS
+from bcf_governance.tooling.ci_adopt_github import (
+    ACTIVATION_EXPRESSION,
+    render_github_control_plane,
+)
+from bcf_governance.tooling.ci_github_actions import ACTION_PINS
 from bcf_governance.tooling.governance_validation.runner import validate_repo_root
 
 
@@ -348,7 +353,7 @@ def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
                     assert pinned_action.fullmatch(step["uses"])
                 command = step.get("run", "")
                 assert "scripts/" not in command
-                assert ".github/" not in command
+                assert ".github/scripts/" not in command
                 if trust_class == "trusted":
                     assert "python" not in command
                 else:
@@ -388,6 +393,8 @@ def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
                 activation = runner_policy["trusted_job_activation"][relative_path][job_id]
                 if activation == "disabled":
                     assert workflow["jobs"][job_id]["if"] == "${{ false }}"
+                elif activation == "repository_variable_disabled":
+                    assert workflow["jobs"][job_id]["if"] == ACTIVATION_EXPRESSION
                 else:
                     assert activation == "owner_main_dispatch"
                     assert workflow["jobs"][job_id]["if"] == (
@@ -409,6 +416,48 @@ def test_workflows_have_no_runner_occupying_coordination() -> None:
         for job in workflow["jobs"].values():
             for step in job.get("steps", []):
                 assert forbidden.search(step.get("run", "")) is None
+
+
+def test_self_control_plane_is_an_exact_disabled_generator_product() -> None:
+    expected = render_github_control_plane(
+        default_branch="main",
+        candidate_labels=("ubuntu-latest",),
+        trusted_labels=("self-hosted", "Linux", "X64", "bcf-governance", "vm-linux-ci-runner"),
+        producer_workflow_names=("governance", "governance-pack"),
+        controller_commit="b8ecc90f2a61336c32709f8f901664f92fc2b182",
+    )
+    for relative, content in expected.items():
+        assert (REPO_ROOT / relative).read_bytes() == content
+
+
+def test_every_github_action_uses_the_canonical_immutable_pin() -> None:
+    observed: set[str] = set()
+    roots = (
+        REPO_ROOT / ".github/workflows",
+        REPO_ROOT / "template-repo/.github/workflows",
+        REPO_ROOT / "bcf_governance/pack/template-repo/.github/workflows",
+    )
+    for root in roots:
+        for workflow_path in sorted(root.glob("*.yml")):
+            workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+            for job in workflow["jobs"].values():
+                for step in job.get("steps", []):
+                    source = step.get("uses")
+                    if not source:
+                        continue
+                    action_id = source.split("@", 1)[0].removeprefix("actions/")
+                    assert source == ACTION_PINS[action_id], workflow_path
+                    observed.add(action_id)
+    assert observed == set(ACTION_PINS)
+
+
+def test_every_repository_job_has_a_descriptive_presentation_name() -> None:
+    for workflow_path in sorted((REPO_ROOT / ".github/workflows").glob("*.yml")):
+        workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+        for job_id, job in workflow["jobs"].items():
+            display_name = job.get("name")
+            assert isinstance(display_name, str) and len(display_name.split()) >= 2
+            assert display_name != job_id
 
 
 def test_governance_evidence_shards_derive_every_required_gate_once() -> None:

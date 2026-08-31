@@ -3,15 +3,18 @@ from __future__ import annotations
 from copy import deepcopy
 import hashlib
 from pathlib import Path
+import re
 
 import pytest
 import yaml
 
 from bcf_governance.tooling.ci_adopt_github import (
+    ACTIVATION_EXPRESSION,
     GithubAdoptionError,
     apply_github_adoption,
     plan_github_adoption,
     render_github_adoption,
+    render_github_control_plane,
 )
 from bcf_governance.tooling.ci_github import (
     DISPATCH_EVENTS,
@@ -20,6 +23,7 @@ from bcf_governance.tooling.ci_github import (
     reference_topology,
     validate_reference_topology,
 )
+from bcf_governance.tooling.ci_github_actions import ACTION_PINS
 
 
 SHA_A = "a" * 40
@@ -146,13 +150,56 @@ def test_transactional_adopter_preserves_unmanaged_workflows(tmp_path: Path) -> 
     checkout = producer["jobs"]["producer"]["steps"][0]
     assert checkout["with"]["persist-credentials"] is False
     assert producer["permissions"] == {"contents": "read"}
+    assert producer["jobs"]["producer"]["name"] == "Execute exact candidate producer"
+    assert producer["jobs"]["producer"]["if"] == ACTIVATION_EXPRESSION
     for relative in (
         ".github/workflows/bcf-exact-main.yml",
         ".github/workflows/bcf-trusted-finalizer.yml",
         ".github/workflows/bcf-status-publisher.yml",
     ):
         trusted = yaml.safe_load((tmp_path / relative).read_text())
-        assert all("uses" not in step for job in trusted["jobs"].values() for step in job["steps"])
+        steps = [step for job in trusted["jobs"].values() for step in job["steps"]]
+        assert all(not step.get("uses", "").startswith("actions/checkout@") for step in steps)
+        assert all(
+            "uses" not in step or step["uses"] in ACTION_PINS.values() for step in steps
+        )
+
+
+def test_control_plane_is_event_driven_disabled_and_descriptively_named() -> None:
+    desired = render_github_control_plane(
+        default_branch="main",
+        candidate_labels=("ubuntu-latest",),
+        trusted_labels=("self-hosted", "trusted"),
+        producer_workflow_names=("application", "governance"),
+        controller_commit=SHA_A,
+    )
+    workflows = {
+        path: yaml.safe_load(content) for path, content in desired.items()
+        if path.startswith(".github/workflows/")
+    }
+    assert workflows[".github/workflows/bcf-exact-main.yml"]["jobs"]["kickoff"]["name"] == (
+        "Authenticate exact-main admission"
+    )
+    assert workflows[".github/workflows/bcf-trusted-finalizer.yml"]["jobs"]["finalize"]["name"] == (
+        "Reconstruct exact-main producer evidence"
+    )
+    assert workflows[".github/workflows/bcf-status-publisher.yml"]["jobs"]["publish"]["name"] == (
+        "Publish verified exact-main status"
+    )
+    for workflow in workflows.values():
+        job = next(iter(workflow["jobs"].values()))
+        assert job["if"] == ACTIVATION_EXPRESSION
+        assert job["timeout-minutes"] == 5
+        command = "\n".join(step.get("run", "") for step in job["steps"])
+        assert not re.search(r"\b(?:sleep|poll|wait|while|until)\b", command)
+    finalizer_trigger = workflows[".github/workflows/bcf-trusted-finalizer.yml"]["on"]
+    assert finalizer_trigger == {
+        "workflow_run": {
+            "workflows": ["bcf/exact-main-admission", "application", "governance"],
+            "types": ["completed"],
+        }
+    }
+    assert "repository_dispatch" not in str(finalizer_trigger)
 
 
 def test_adopter_conflict_fails_before_any_other_path_is_written(tmp_path: Path) -> None:
