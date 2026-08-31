@@ -6,13 +6,40 @@
   "required": ["schema_version", "provider", "dispatch_events", "roles", "coordination"],
   "properties": {
     "schema_version": {"const": "1.0"},
+    "authority_contract_version": {"enum": ["1.0", "1.1"]},
     "provider": {"const": "github"},
     "dispatch_events": {
-      "const": ["bcf-exact-ref-v1", "bcf-certification-finalize-v1", "bcf-status-publish-v1"]
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
     },
     "default_branch": {"type": "string", "minLength": 1},
     "producer_argv": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
-    "producer_workflows": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "producer_workflows": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "oneOf": [
+          {"type": "string", "minLength": 1},
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["job_id", "display_name", "path", "inputs"],
+            "properties": {
+              "job_id": {"type": "string", "pattern": "^[A-Za-z0-9_-]+$"},
+              "display_name": {"type": "string", "minLength": 1},
+              "path": {"type": "string", "pattern": "^\\.github/workflows/[A-Za-z0-9._-]+\\.ya?ml$"},
+              "inputs": {
+                "type": "object",
+                "propertyNames": {"pattern": "^[A-Za-z0-9_-]+$"},
+                "additionalProperties": {"type": ["string", "number", "boolean"]}
+              }
+            }
+          }
+        ]
+      }
+    },
     "activation_variable": {"const": "BCF_CI_AUTHORITY_ENABLED"},
     "dispatch_exact_ref": {"type": "boolean"},
     "controller_commit": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
@@ -47,5 +74,31 @@
         "provider_api_reconstruction": {"const": true}
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"authority_contract_version": {"const": "1.1"}},
+        "required": ["authority_contract_version"]
+      },
+      "then": {
+        "properties": {
+          "dispatch_events": {"const": []},
+          "producer_workflows": {
+            "items": {"type": "object"}
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "dispatch_events": {
+            "const": ["bcf-exact-ref-v1", "bcf-certification-finalize-v1", "bcf-status-publish-v1"]
+          },
+          "producer_workflows": {
+            "items": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    }
+  ]
 }

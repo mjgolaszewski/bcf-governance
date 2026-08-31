@@ -1,9 +1,6 @@
 schema_version: '1.0'
 provider: github
-dispatch_events:
-- bcf-exact-ref-v1
-- bcf-certification-finalize-v1
-- bcf-status-publish-v1
+dispatch_events: []
 roles:
 - id: exact-main-kickoff
   runner_labels:
@@ -17,6 +14,7 @@ roles:
   permissions:
   - actions:read
   - contents:read
+  - statuses:write
 - id: exact-ref-producer
   runner_labels:
   - ubuntu-latest
@@ -57,10 +55,18 @@ coordination:
   idle_waiter: false
   callback_payload_authoritative: false
   provider_api_reconstruction: true
+authority_contract_version: '1.1'
 default_branch: main
 producer_workflows:
-- governance
-- governance-pack
+- job_id: governance
+  display_name: Run exact-main governance evidence
+  path: .github/workflows/governance.yml
+  inputs:
+    evaluation_mode: pr
+- job_id: governance-pack
+  display_name: Verify exact-main package and templates
+  path: .github/workflows/governance-pack.yml
+  inputs: {}
 activation_variable: BCF_CI_AUTHORITY_ENABLED
+controller_commit: 1f96e45604c376918154dc50904fc0249d9b8e93
 dispatch_exact_ref: false
-controller_commit: 37475fbff2c5303762e0fdeb97e7cc7834bfe485

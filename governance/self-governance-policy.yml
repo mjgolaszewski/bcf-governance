@@ -35,7 +35,7 @@ runner_security:
     .github/workflows/bcf-authority-canary.yml: {admit: trusted, producer-a: candidate, producer-b: candidate, observe: trusted}
     .github/workflows/bcf-trusted-control-bootstrap.yml: {bootstrap: trusted_bootstrap}
     .github/workflows/bcf-trusted-control-probe.yml: {probe: trusted}
-    .github/workflows/bcf-exact-main.yml: {kickoff: trusted}
+    .github/workflows/bcf-exact-main.yml: {admit: trusted, governance: reusable_candidate, governance-pack: reusable_candidate}
     .github/workflows/bcf-release-collector.yml: {collect: trusted}
     .github/workflows/bcf-release-publisher.yml: {publish: trusted}
     .github/workflows/bcf-release-verifier.yml: {verify: candidate}
@@ -50,9 +50,9 @@ runner_security:
     .github/workflows/bcf-authority-canary.yml: {admit: disabled, producer-a: disabled, producer-b: disabled, observe: disabled}
     .github/workflows/bcf-trusted-control-bootstrap.yml: {bootstrap: owner_main_dispatch}
     .github/workflows/bcf-trusted-control-probe.yml: {probe: owner_main_dispatch}
-    .github/workflows/bcf-exact-main.yml: {kickoff: repository_variable_disabled}
-    .github/workflows/bcf-trusted-finalizer.yml: {finalize: repository_variable_main_push_only}
-    .github/workflows/bcf-status-publisher.yml: {publish: repository_variable_successful_callback_only}
+    .github/workflows/bcf-exact-main.yml: {admit: repository_variable_enabled}
+    .github/workflows/bcf-trusted-finalizer.yml: {finalize: repository_variable_exact_main_only}
+    .github/workflows/bcf-status-publisher.yml: {publish: repository_variable_all_finalizer_conclusions}
     .github/workflows/bcf-release-collector.yml: {collect: disabled}
     .github/workflows/bcf-release-publisher.yml: {publish: disabled}
     .github/workflows/bcf-release-verifier.yml: {verify: disabled}

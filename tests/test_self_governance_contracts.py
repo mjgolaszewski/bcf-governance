@@ -18,7 +18,7 @@ from bcf_governance.tooling.ci_adopt_github import (
     FINALIZER_ACTIVATION_EXPRESSION,
     PUBLISHER_ACTIVATION_EXPRESSION,
     TRUSTED_CONTROLLER_TOKEN_ENV,
-    render_github_control_plane,
+    render_github_v11_control_plane,
 )
 from bcf_governance.tooling.ci_github_actions import ACTION_PINS
 from bcf_governance.tooling.governance_validation.runner import validate_repo_root
@@ -197,7 +197,7 @@ def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
     )
     assert build_index > pack_index
     assert steps[build_index]["if"] == (
-        "github.event_name == 'push' && github.ref == 'refs/heads/main'"
+        "github.event_name == 'workflow_call' && github.ref == 'refs/heads/main'"
     )
     assert upload["if"] == steps[build_index]["if"]
     assert upload["with"]["name"] == (
@@ -246,7 +246,7 @@ def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
     assert all("actions/checkout@" not in step.get("uses", "") for step in job["steps"])
     download = next(
         step for step in job["steps"]
-        if step.get("name") == "Download only the authenticated controller artifact"
+        if step.get("name") == "Download only the pinned controller artifact"
     )
     assert download["uses"] == (
         "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"
@@ -260,24 +260,16 @@ def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
         "digest-mismatch": "error",
     }
     commands = "\n".join(step.get("run", "") for step in job["steps"])
-    assert "/actions/artifacts/{expected['id']}" in commands
-    assert 'api != "https://api.github.com"' in commands
-    assert 'repository != "mjgolaszewski/bcf-governance"' in commands
-    assert "sha256sum --check SHA256SUMS" in commands
-    assert "pip install --no-index" in commands
-    assert 'controller_wheels=("$BCF_BOOTSTRAP_DIR"/bcf_governance-*.whl)' in commands
-    assert 'test "${#controller_wheels[@]}" -eq 1' in commands
-    assert '"${controller_wheels[0]}"' in commands
+    assert '"$control_root/bin/bcf" ci-github bootstrap' in commands
+    assert '--provider-digest "$BCF_BOOTSTRAP_ARTIFACT_DIGEST"' in commands
+    assert '--wheel-sha256 "$BCF_BOOTSTRAP_WHEEL_SHA256"' in commands
+    assert '--tool-cache "$RUNNER_TOOL_CACHE"' in commands
+    assert "python - <<" not in commands
+    assert "sha256sum" not in commands
+    assert "pip install" not in commands
     assert "bcf_governance-0.6.1-py3-none-any.whl" not in commands
     assert "pip install -r" not in commands
     assert "actions/checkout" not in commands
-    assert "existing trusted control installation has stale provenance" in commands
-    assert '"$selected_python" -m venv "$install_root"' in commands
-    assert 'mv -- "$stage" "$install_root"' not in commands
-    assert '"$install_root/bin/bcf" ci-github --help >/dev/null' in commands
-    assert commands.rindex(
-        '"$install_root/bin/bcf" ci-github --help >/dev/null'
-    ) > commands.index('"$selected_python" -m venv "$install_root"')
 
     probe = yaml.safe_load(
         (REPO_ROOT / ".github/workflows/bcf-trusted-control-probe.yml").read_text(
@@ -285,7 +277,7 @@ def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
         )
     )
     assert probe["env"] == artifact
-    assert job["name"] == "Install exact-main controller / ${{ matrix.trusted_runner }}"
+    assert job["name"] == "Install authenticated controller / ${{ matrix.trusted_runner }}"
     assert probe["jobs"]["probe"]["name"] == (
         "Verify exact-main controller / ${{ matrix.trusted_runner }}"
     )
@@ -316,6 +308,11 @@ def test_self_governance_runner_classification_is_exact_and_has_no_fallback() ->
                         "trusted_instance_labels"
                     ]
                     expected_labels.append("${{ matrix.trusted_runner }}")
+            elif trust_class == "reusable_candidate":
+                assert "runs-on" not in jobs[job_id]
+                assert jobs[job_id]["uses"].startswith("./.github/workflows/")
+                assert jobs[job_id]["permissions"] == {"contents": "read"}
+                continue
             else:
                 expected_labels = runner_policy["candidate_routing"]["candidate_runner"]
             assert jobs[job_id]["runs-on"] == expected_labels
@@ -368,7 +365,7 @@ def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
                     assert "python" not in command
                 else:
                     assert "actions/checkout" not in command
-                    assert "pip install --no-index" in "\n".join(
+                    assert 'ci-github bootstrap' in "\n".join(
                         value.get("run", "") for value in steps
                     )
     interpreter = runner_policy["trusted_controller_interpreter"]
@@ -405,13 +402,13 @@ def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
                     assert workflow["jobs"][job_id]["if"] == "${{ false }}"
                 elif activation.startswith("repository_variable_"):
                     expected = {
-                        "repository_variable_disabled": ACTIVATION_EXPRESSION,
-                        "repository_variable_main_push_only": (
-                            FINALIZER_ACTIVATION_EXPRESSION
-                        ),
-                        "repository_variable_successful_callback_only": (
-                            PUBLISHER_ACTIVATION_EXPRESSION
-                        ),
+                            "repository_variable_enabled": ACTIVATION_EXPRESSION,
+                            "repository_variable_exact_main_only": (
+                                FINALIZER_ACTIVATION_EXPRESSION
+                            ),
+                            "repository_variable_all_finalizer_conclusions": (
+                                PUBLISHER_ACTIVATION_EXPRESSION
+                            ),
                     }
                     assert workflow["jobs"][job_id]["if"] == expected[activation]
                 else:
@@ -450,7 +447,8 @@ def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> N
     assert finalizer["jobs"]["finalize"]["if"] == FINALIZER_ACTIVATION_EXPRESSION
     assert publisher["jobs"]["publish"]["if"] == PUBLISHER_ACTIVATION_EXPRESSION
     assert "workflow_run.event == 'push'" in FINALIZER_ACTIVATION_EXPRESSION
-    assert "workflow_run.conclusion == 'success'" in PUBLISHER_ACTIVATION_EXPRESSION
+    assert "workflow_run.head_branch == 'main'" in FINALIZER_ACTIVATION_EXPRESSION
+    assert "workflow_run.conclusion" not in PUBLISHER_ACTIVATION_EXPRESSION
 
 
 def test_trusted_controller_steps_receive_github_token_explicitly() -> None:
@@ -469,16 +467,63 @@ def test_trusted_controller_steps_receive_github_token_explicitly() -> None:
         assert "GITHUB_TOKEN" not in workflow.get("env", {})
 
 
-def test_self_control_plane_is_an_exact_disabled_generator_product() -> None:
-    expected = render_github_control_plane(
+def test_self_control_plane_is_an_exact_v11_generator_product() -> None:
+    expected = render_github_v11_control_plane(
         default_branch="main",
-        candidate_labels=("ubuntu-latest",),
         trusted_labels=("self-hosted", "Linux", "X64", "bcf-governance", "vm-linux-ci-runner"),
-        producer_workflow_names=("governance", "governance-pack"),
-        controller_commit="37475fbff2c5303762e0fdeb97e7cc7834bfe485",
+        producer_jobs=(
+            ("governance", "Run exact-main governance evidence", ".github/workflows/governance.yml", (("evaluation_mode", "pr"),)),
+            ("governance-pack", "Verify exact-main package and templates", ".github/workflows/governance-pack.yml", ()),
+        ),
+        controller_commit="1f96e45604c376918154dc50904fc0249d9b8e93",
     )
     for relative, content in expected.items():
-        assert (REPO_ROOT / relative).read_bytes() == content
+        assert yaml.safe_load((REPO_ROOT / relative).read_bytes()) == yaml.safe_load(content)
+
+
+def test_exact_main_is_the_only_default_branch_producer() -> None:
+    governance = yaml.safe_load(
+        (REPO_ROOT / ".github/workflows/governance.yml").read_text(encoding="utf-8")
+    )
+    pack = yaml.safe_load(
+        (REPO_ROOT / ".github/workflows/governance-pack.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    exact_main = yaml.safe_load(
+        (REPO_ROOT / ".github/workflows/bcf-exact-main.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert governance[True] == {
+        "pull_request": None,
+        "workflow_call": {
+            "inputs": {
+                "evaluation_mode": {
+                    "description": "Exact truth evaluation mode selected by the trusted caller",
+                    "required": False,
+                    "default": "pr",
+                    "type": "string",
+                }
+            }
+        },
+    }
+    assert pack[True] == {"pull_request": None, "workflow_call": None}
+    assert exact_main["on"] == {"push": {"branches": ["main"]}}
+    assert {
+        job_id: (job["uses"], job["permissions"])
+        for job_id, job in exact_main["jobs"].items()
+        if job_id != "admit"
+    } == {
+        "governance": (
+            "./.github/workflows/governance.yml",
+            {"contents": "read"},
+        ),
+        "governance-pack": (
+            "./.github/workflows/governance-pack.yml",
+            {"contents": "read"},
+        ),
+    }
 
 
 def test_self_ci_authority_matches_immutable_workflow_definitions() -> None:
@@ -645,7 +690,7 @@ def test_persistent_local_jobs_do_not_persist_checkout_credentials() -> None:
     for relative_path in policy["jobs"]:
         workflow = yaml.safe_load((REPO_ROOT / relative_path).read_text(encoding="utf-8"))
         for job in workflow["jobs"].values():
-            for step in job["steps"]:
+            for step in job.get("steps", []):
                 if step.get("uses", "").startswith("actions/checkout@"):
                     assert step.get("with", {}).get("persist-credentials") is False
 
@@ -717,7 +762,16 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
     )
     assert "/attempts/${{ github.run_attempt }}/" in truth_command
     assert "--evaluation-mode" in truth_command
-    assert "github.event_name == 'pull_request'" in truth_command
+    assert "github.event_name == 'workflow_call'" in truth_command
+    assert "inputs.evaluation_mode" in truth_command
+    preflight_command = next(
+        step["run"]
+        for step in jobs["preflight"]["steps"]
+        if step.get("id") == "preflight"
+    )
+    assert "github.event_name == 'workflow_call'" in preflight_command
+    assert "inputs.evaluation_mode" in preflight_command
+    assert "'release'" not in preflight_command
     terminal = next(
         step
         for step in jobs["governance-truthfulness"]["steps"]

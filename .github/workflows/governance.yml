@@ -2,8 +2,13 @@ name: governance
 
 on:
   pull_request:
-  push:
-    branches: [main]
+  workflow_call:
+    inputs:
+      evaluation_mode:
+        description: Exact truth evaluation mode selected by the trusted caller
+        required: false
+        default: pr
+        type: string
 
 permissions:
   contents: read
@@ -29,7 +34,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          manifest="$(python3 scripts/preflight_governance.py --repo-root . --mode "${{ github.event_name == 'pull_request' && 'pr' || 'release' }}" --python "$(command -v python3)" --artifact-root .artifacts/bcf --expected-producer evidence --format text | tail -n 1)"
+          manifest="$(python3 scripts/preflight_governance.py --repo-root . --mode "${{ github.event_name == 'workflow_call' && inputs.evaluation_mode || 'pr' }}" --python "$(command -v python3)" --artifact-root .artifacts/bcf --expected-producer evidence --format text | tail -n 1)"
           printf 'session_manifest=%s\n' "$manifest" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
@@ -101,7 +106,7 @@ jobs:
         run: |
           set -euo pipefail
           find .artifacts/bcf/fan-in -type f -name evidence-session.json -execdir chmod 700 . \; -exec chmod 400 {} +
-      - run: python3 scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf/fan-in --evaluation-mode "${{ github.event_name == 'pull_request' && 'pr' || 'closure' }}" --format json --durable-ref "github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
+      - run: python3 scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf/fan-in --evaluation-mode "${{ github.event_name == 'workflow_call' && inputs.evaluation_mode || 'pr' }}" --format json --durable-ref "github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
       - if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:

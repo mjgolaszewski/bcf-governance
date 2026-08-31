@@ -10,14 +10,15 @@ import yaml
 
 from bcf_governance.tooling.ci_adopt_github import (
     ACTIVATION_EXPRESSION,
-    FINALIZER_ACTIVATION_EXPRESSION,
     GithubAdoptionError,
-    PUBLISHER_ACTIVATION_EXPRESSION,
+    LEGACY_FINALIZER_ACTIVATION_EXPRESSION,
+    LEGACY_PUBLISHER_ACTIVATION_EXPRESSION,
     TRUSTED_CONTROLLER_TOKEN_ENV,
     apply_github_adoption,
     plan_github_adoption,
     render_github_adoption,
     render_github_control_plane,
+    render_github_v11_control_plane,
 )
 from bcf_governance.tooling.ci_github import (
     DISPATCH_EVENTS,
@@ -131,6 +132,24 @@ def test_reference_topology_security_mutants_fail(mutate, message: str) -> None:
         validate_reference_topology(topology)
 
 
+def test_reference_topology_v11_closes_dispatch_and_admission_permissions() -> None:
+    rendered = render_github_v11_control_plane(
+        default_branch="main",
+        trusted_labels=("self-hosted", "trusted"),
+        producer_jobs=(("governance", "Run governance", ".github/workflows/governance.yml", ()),),
+        controller_commit=SHA_A,
+    )
+    topology = yaml.safe_load(rendered["governance/github-ci-topology.yml"])
+    validate_reference_topology(topology)
+    assert topology["dispatch_events"] == []
+    admission = next(
+        role for role in topology["roles"] if role["id"] == "exact-main-kickoff"
+    )
+    admission["permissions"] = ["actions:write", "contents:read"]
+    with pytest.raises(GithubReferenceError, match="status authority"):
+        validate_reference_topology(topology)
+
+
 def test_transactional_adopter_preserves_unmanaged_workflows(tmp_path: Path) -> None:
     existing = tmp_path / ".github/workflows/application.yml"
     existing.parent.mkdir(parents=True)
@@ -192,10 +211,10 @@ def test_control_plane_is_event_driven_disabled_and_descriptively_named() -> Non
     expected_guards = {
         ".github/workflows/bcf-exact-main.yml": ACTIVATION_EXPRESSION,
         ".github/workflows/bcf-trusted-finalizer.yml": (
-            FINALIZER_ACTIVATION_EXPRESSION
+            LEGACY_FINALIZER_ACTIVATION_EXPRESSION
         ),
         ".github/workflows/bcf-status-publisher.yml": (
-            PUBLISHER_ACTIVATION_EXPRESSION
+            LEGACY_PUBLISHER_ACTIVATION_EXPRESSION
         ),
     }
     for path, workflow in workflows.items():

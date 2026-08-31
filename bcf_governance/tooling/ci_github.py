@@ -196,7 +196,11 @@ def validate_reference_topology(payload: dict[str, Any]) -> None:
 
     if payload.get("provider") != "github" or payload.get("schema_version") != "1.0":
         raise GithubReferenceError("unsupported GitHub topology contract")
-    if tuple(payload.get("dispatch_events", ())) != DISPATCH_EVENTS:
+    authority_version = str(payload.get("authority_contract_version", "1.0"))
+    if authority_version not in {"1.0", "1.1"}:
+        raise GithubReferenceError("unsupported GitHub authority topology contract")
+    expected_dispatch = () if authority_version == "1.1" else DISPATCH_EVENTS
+    if tuple(payload.get("dispatch_events", ())) != expected_dispatch:
         raise GithubReferenceError("GitHub dispatch event inventory must be exact and closed")
     roles = payload.get("roles")
     if not isinstance(roles, list):
@@ -211,6 +215,12 @@ def validate_reference_topology(payload: dict[str, Any]) -> None:
         raise GithubReferenceError("candidate role has write authority")
     if not candidate.get("disposable") or candidate.get("persist_credentials") is not False:
         raise GithubReferenceError("candidate role must be disposable without persisted credentials")
+    if authority_version == "1.1" and set(
+        by_id["exact-main-kickoff"].get("permissions", ())
+    ) != {"actions:read", "contents:read", "statuses:write"}:
+        raise GithubReferenceError(
+            "authority-v1.1 admission must have only provider-read and status authority"
+        )
     candidate_labels = set(candidate.get("runner_labels", ()))
     for role_id in expected - {"exact-ref-producer"}:
         role = by_id[role_id]
