@@ -62,7 +62,7 @@ producer_workflows:
   display_name: Run exact-main governance evidence
   path: .github/workflows/governance.yml
   inputs:
-    evaluation_mode: pr
+    evaluation_mode: closure
 - job_id: governance-pack
   display_name: Verify exact-main package and templates
   path: .github/workflows/governance-pack.yml

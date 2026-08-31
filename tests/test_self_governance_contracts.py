@@ -472,7 +472,7 @@ def test_self_control_plane_is_an_exact_v11_generator_product() -> None:
         default_branch="main",
         trusted_labels=("self-hosted", "Linux", "X64", "bcf-governance", "vm-linux-ci-runner"),
         producer_jobs=(
-            ("governance", "Run exact-main governance evidence", ".github/workflows/governance.yml", (("evaluation_mode", "pr"),)),
+            ("governance", "Run exact-main governance evidence", ".github/workflows/governance.yml", (("evaluation_mode", "closure"),)),
             ("governance-pack", "Verify exact-main package and templates", ".github/workflows/governance-pack.yml", ()),
         ),
         controller_commit="1f96e45604c376918154dc50904fc0249d9b8e93",
@@ -811,8 +811,8 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
         if step.get("id") == "preflight"
     )
     assert "github.event_name == 'workflow_call'" in preflight_command
-    assert "inputs.evaluation_mode" in preflight_command
-    assert "'release'" not in preflight_command
+    assert "inputs.evaluation_mode == 'closure'" in preflight_command
+    assert "&& 'release' || 'pr'" in preflight_command
     terminal = next(
         step
         for step in jobs["governance-truthfulness"]["steps"]

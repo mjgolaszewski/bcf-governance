@@ -36,6 +36,8 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Bound the governance workflow contract to direct pull requests and same-run
   `workflow_call` execution, removing the stale independent-push requirement from
   terminal truth.
+- Mapped exact-main reusable execution to release preflight and closure truth,
+  while direct pull requests retain their exact-base PR evaluation contract.
 
 ### Changed
 

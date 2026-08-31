@@ -34,7 +34,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          manifest="$(python3 scripts/preflight_governance.py --repo-root . --mode "${{ github.event_name == 'workflow_call' && inputs.evaluation_mode || 'pr' }}" --python "$(command -v python3)" --artifact-root .artifacts/bcf --expected-producer evidence --format text | tail -n 1)"
+          manifest="$(python3 scripts/preflight_governance.py --repo-root . --mode "${{ github.event_name == 'workflow_call' && inputs.evaluation_mode == 'closure' && 'release' || 'pr' }}" --python "$(command -v python3)" --artifact-root .artifacts/bcf --expected-producer evidence --format text | tail -n 1)"
           printf 'session_manifest=%s\n' "$manifest" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:

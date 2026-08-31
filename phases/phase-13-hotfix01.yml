@@ -73,6 +73,8 @@ execution_evidence:
   - exact local PR preflight rejected the superseded authority-definition digest mutant before evidence allocation; both canonical control declarations now target the pinned v1.1 admission digest
   - PR 44 run 33438381886 passed every producer but terminal truth rejected a stale independent-push event contract; workflow_call replaces that authority and a causal control prevents regression
   - exact local preflight required the new workflow-call control owner to enter the contract manifest before any evidence rerun; the manifest is mechanically regenerated rather than hand-edited
+  - exact-main run 33440869640 proved admission identity, then failed fast because its reusable governance caller selected PR mode without a PR base SHA; the correction selects closure truth and maps that mechanically to release preflight
+  - corrected reusable workflow custody uses the two-commit seam at 26deb561d5d2fc471ee9f23a78769211e848e626 so definition bytes remain independently addressable from their authority pins
 closeout_requirements:
   claims:
     required_suites_green:
