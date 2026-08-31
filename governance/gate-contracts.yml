@@ -566,9 +566,11 @@ gates:
         exit_codes: [1]
         stream: stderr
         regex: governance.github-run-identity.v1 owner must be an authorized constructor
-    - id: github-run-identity-delegates-must-fail
-      mutation: {path: governance/canonical-representations.yml, search: 'authorized_pure_delegates: [''bcf_governance/tooling/ci_github_identity.py::authenticate_trusted_run'',
-          ''bcf_governance/tooling/ci_github_identity.py::resolve_trusted_run'']', replace: 'authorized_pure_delegates: []'}
+    - id: github-run-identity-consumers-must-fail
+      mutation: {path: governance/canonical-representations.yml, search: 'declared_consumer_layers_and_sinks: {read: [''bcf_governance/tooling/ci_github_identity.py::resolve_trusted_run''],
+          authorization: [''bcf_governance/tooling/ci_github.py::authenticate_github_run'', ''bcf_governance/tooling/ci_github_identity.py::authenticate_trusted_run''],
+          persistence: [], cache: [], queue: [], network: [], api: [], browser: []}', replace: 'declared_consumer_layers_and_sinks:
+          {read: [], authorization: [], persistence: [], cache: [], queue: [], network: [], api: [], browser: []}'}
       oracle:
         kind: diagnostic
         exit_codes: [1]

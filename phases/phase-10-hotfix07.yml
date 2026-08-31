@@ -42,7 +42,7 @@ execution_evidence:
   - the earlier local source-first scan ran before the new module was tracked, while preflight only reported that semantic ownership was configured; neither result was misrepresented as committed-tree conformance
   - canonical preflight now executes the applicable source-first semantic-ownership scan before session allocation, so the same deterministic defect stops before evidence fanout
   - 386 exact tests and 122 exact contract nodes pass; lint, typecheck, architecture, structural validation, pack parity, and semantic ownership are green
-  - five new cause-verified controls cover admission-workflow authority, finalizer-session identity, bundle semantic binding, preflight SOIP enforcement, and declared identity delegates
+  - five new cause-verified controls cover admission-workflow authority, finalizer-session identity, bundle semantic binding, preflight SOIP enforcement, and declared identity consumers
   - active workflows, candidate execution, repository status publication, and release publication remain disabled in this structural slice
 closeout_requirements:
   claims:
