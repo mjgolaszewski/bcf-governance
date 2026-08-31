@@ -130,6 +130,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Bound every P12 causal control to a killer node in the contract gate's exact
+  positive manifest and distinguished current-authority failure from release-run
+  failure so a similar condition cannot mask the intended mutant.
 - Kept generated Standard-v2 gate contracts and evidence policy within their
   existing context budgets by rendering negative-control mappings compactly
   without changing decoded semantics or weakening their causal tests.

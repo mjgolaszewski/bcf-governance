@@ -166,7 +166,7 @@ def test_publisher_authenticates_tag_run_attempt_artifact_and_receipt() -> None:
         'event == "workflow_dispatch"',
         '.head_branch == "main"',
         'max_by(.id)',
-        'if .conclusion != "success"',
+        'if .conclusion != "success" then error("latest exact-main release run failed")',
         'size_in_bytes > 104857600',
         'expected_name="bcf-certified-release-$tag_commit-$source_run_attempt"',
         'test "$(sha256sum "$publication_root/certified-release.zip"',

@@ -55,11 +55,14 @@ execution_evidence:
     0b43c7d0970224c14390c77fdfc54c53cb7f5c07 before P12 documentation changes
   - P11 artifacts remain non-published precursors and must be superseded because documentation
     is included in the source distribution
-  - source scope is 415 exact pytest nodes and contract scope is 147 exact nodes; all source
+  - source scope is 415 exact pytest nodes and contract scope is 152 exact nodes; all source
     tests pass under pinned pytest 9.0.3
   - all full implementation and semantic mutation profiles killed their declared mutants
   - compact generated negative-control mappings preserve decoded semantics and keep Standard-v2
     promotion within the existing 500-line evidence-policy and 800-line gate-contract budgets
+  - the first exact contract receipt rejected four controls whose killer nodes were not all in
+    the curated positive manifest and one masked release-order mutant; canonical selectors and
+    distinct decision assertions now prevent both failure modes
   - the editorial checklist is advisory and non-authoritative; deterministic validation,
     receipts, computed lifecycle, and exact-main CI decide release state
 closeout_requirements:
