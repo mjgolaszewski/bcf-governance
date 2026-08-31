@@ -162,6 +162,53 @@ def _authority_payload() -> dict[str, object]:
     }
 
 
+def _authority_v11_payload() -> dict[str, object]:
+    workflow_names = (
+        "admission", "governance", "finalizer", "status", "bootstrap", "probe",
+        "release-authorizer", "release-build", "release-verifier",
+        "release-collector", "release-publisher", "canary",
+    )
+    registry = {
+        name: {
+            "workflow_id": str(100 + index),
+            "active_path": f".github/workflows/{name}.yml",
+            "trusted_workflow_blob_oid": SHA_A,
+            "trusted_workflow_sha256": DIGEST,
+            "trusted_workflow_definition_commit": SHA_A,
+            "allowed_events": ["workflow_call" if name == "governance" else "workflow_dispatch"],
+        }
+        for index, name in enumerate(workflow_names)
+    }
+    return {
+        "schema_version": "1.1",
+        "repository": {"provider": "github", "repository_id": "42"},
+        "workflow_registry": registry,
+        "roles": {
+            "admission": "admission",
+            "reusable_producers": ["governance"],
+            "finalizer": "finalizer",
+            "status_publisher": "status",
+            "bootstrap": "bootstrap",
+            "probe": "probe",
+            "release_authorizer": "release-authorizer",
+            "release_build": "release-build",
+            "release_verifier": "release-verifier",
+            "release_collector": "release-collector",
+            "release_publisher": "release-publisher",
+            "authority_canary": "canary",
+        },
+        "admission_jobs": [{"job_id": "admit-exact-main"}],
+        "producers": [
+            {
+                "producer_id": "unit",
+                "workflow_ref": "governance",
+                "expected_jobs": [{"job_id": "test", "matrix": {"python": "3.14"}}],
+            }
+        ],
+        "trusted_external_inputs": [],
+    }
+
+
 def _capability_na_payload() -> dict[str, object]:
     return {
         "schema_version": "1.0",
@@ -255,6 +302,33 @@ def test_ci_authority_and_certification_contracts_accept_exact_documents() -> No
     validate_ci_contract(REPO_ROOT, "authority", _authority_payload())
     validate_ci_contract(REPO_ROOT, "certification", _certification_payload())
     validate_ci_contract(REPO_ROOT, "capability_na", _capability_na_payload())
+
+
+def test_authority_v11_accepts_one_registry_and_closed_role_references() -> None:
+    validate_ci_contract(REPO_ROOT, "authority", _authority_v11_payload())
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["missing-role-pin", "unknown-role-ref", "duplicate-workflow", "inline-producer"],
+)
+def test_authority_v11_rejects_incomplete_or_duplicated_semantic_ownership(
+    mutation: str,
+) -> None:
+    payload = _authority_v11_payload()
+    if mutation == "missing-role-pin":
+        del payload["roles"]["release_verifier"]  # type: ignore[index]
+    elif mutation == "unknown-role-ref":
+        payload["roles"]["release_verifier"] = "missing"  # type: ignore[index]
+    elif mutation == "duplicate-workflow":
+        payload["workflow_registry"]["probe"] = dict(  # type: ignore[index]
+            payload["workflow_registry"]["bootstrap"]  # type: ignore[index]
+        )
+    else:
+        producer = payload["producers"][0]  # type: ignore[index]
+        producer["workflow"] = payload["workflow_registry"]["governance"]  # type: ignore[index]
+    with pytest.raises(CIAuthorityContractError):
+        validate_ci_contract(REPO_ROOT, "authority", payload)
 
 
 def test_v1_authority_remains_valid_without_admission_workflow() -> None:

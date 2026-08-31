@@ -48,6 +48,10 @@ environment_facts:
     - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
     - v0.7.0 is an annotated unsigned tag at 0e965b2197e776ad411b67820dbd5586263abde1; release 379785364 is published with three attested assets but reports immutable false and is not certified under corrected authority v1.1
     - P13-HF01 is active to bind producers to one admission, close release dependencies, separate build verification from trusted receipt construction, and prepare v0.7.1 without altering v0.7.0 custody
+    - the P13 structural cutover retains authority-v1 readers, requires v1.1 for new exact-main and release commands, and keeps release execution unreachable until provider workflow identities are pinned and activated
+    - P01 through P12 roadmap detail is owned only by plans/phase-history.yml; active product and build roadmaps contain P13 and mechanically validate their history boundary at P12
+    - P13 ratchets the exact source suite to 449 nodes, the contract suite to 184 nodes, and cause-verified controls to 76 while preserving all 21 required gates
+    - the 0.7.1 release closure pins Ubuntu 24.04, CPython 3.12.14, pytest 9.0.3, and 41 direct/transitive Linux x86-64 wheels by filename and SHA-256
     - every candidate job uses a fresh standard GitHub-hosted VM; the public repository receives free unlimited standard-runner execution and has no self-hosted fallback
     - main is protected by active repository ruleset 21862678 requiring pull requests, current governance-truthfulness, pack-checks, ast-checks, resolved conversations, and no force push or deletion
     - evidence execution uses the explicitly selected Python and propagates its lexical executable directory and required loader environment into detached positive and negative-control worktrees

@@ -52,6 +52,6 @@ scope_lock:
   statement: immutable-release settings, v0.7.1 tag creation, and publication require explicit
     owner approval after all acceptance evidence passes
 verification_plan:
-- /docker/bcf-governance/.venv/bin/python scripts/validate_governance_yaml.py --repo-root
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root
   .
-- /docker/bcf-governance/.venv/bin/python -m pytest tests
+- .venv/bin/python -m pytest tests

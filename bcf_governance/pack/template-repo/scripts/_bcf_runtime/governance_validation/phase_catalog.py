@@ -114,13 +114,6 @@ def _validate_declared_phase_catalog(
             + (f" ({'; '.join(details)})" if details else "")
         )
 
-    contiguous, missing_phase_ids = _declared_phase_ids_are_contiguous(set(build_phase_map))
-    if not contiguous:
-        raise GovernanceValidationError(
-            "plans/build-plan.yml phase_sequence must use contiguous phase ids; missing: "
-            + ", ".join(missing_phase_ids)
-        )
-
     history_entries = _validate_phase_history_entries(
         repo_root,
         phase_history,
@@ -128,6 +121,41 @@ def _validate_declared_phase_catalog(
         build_phase_map=build_phase_map,
         manifest=manifest,
     )
+    product_history = product_spec.get("phase_history")
+    build_history = build_plan.get("phase_history")
+    if (product_history is None) != (build_history is None) or (
+        product_history is not None and product_history != build_history
+    ):
+        raise GovernanceValidationError(
+            "product spec and build plan must declare the same phase_history owner"
+        )
+    if product_history is not None:
+        history_owner = _require_mapping(
+            product_history, context="plans/product-spec.yml phase_history"
+        )
+        through = _require_string(
+            history_owner.get("through_phase"),
+            context="plans/product-spec.yml phase_history.through_phase",
+        )
+        if not history_entries or through != max(history_entries, key=_phase_number):
+            raise GovernanceValidationError(
+                "phase_history.through_phase must name the highest retained history entry"
+            )
+        if any(
+            _phase_number(phase_id) <= _phase_number(through)
+            for phase_id in build_phase_map
+        ):
+            raise GovernanceValidationError(
+                "active roadmap phases must follow phase_history.through_phase"
+            )
+    complete_phase_ids = set(build_phase_map) | set(history_entries)
+    contiguous, missing_phase_ids = _declared_phase_ids_are_contiguous(complete_phase_ids)
+    if not contiguous:
+        raise GovernanceValidationError(
+            "plans/build-plan.yml phase_sequence must use contiguous phase ids across "
+            "the active roadmap and phase history; missing: "
+            + ", ".join(missing_phase_ids)
+        )
     retained_phase_ids = _retained_phase_ids(
         build_phase_map=build_phase_map,
         ledger=ledger,
@@ -141,14 +169,14 @@ def _validate_declared_phase_catalog(
 
     existing_phase_ids = _phase_ids_from_existing_artifacts(repo_root)
     existing_hotfix_paths = _phase_hotfix_paths_by_phase(repo_root)
-    undeclared_phase_ids = sorted(existing_phase_ids - set(build_phase_map))
+    undeclared_phase_ids = sorted(existing_phase_ids - complete_phase_ids)
     if undeclared_phase_ids:
         raise GovernanceValidationError(
             "phase plan, workitem, or log artifacts exist without build-plan declarations: "
             + ", ".join(undeclared_phase_ids)
         )
     if strict_retention:
-        undeclared_hotfix_phase_ids = sorted(set(existing_hotfix_paths) - set(build_phase_map))
+        undeclared_hotfix_phase_ids = sorted(set(existing_hotfix_paths) - complete_phase_ids)
         if undeclared_hotfix_phase_ids:
             raise GovernanceValidationError(
                 "phase hotfix artifacts exist without build-plan declarations: "
@@ -224,6 +252,12 @@ def _validate_declared_phase_catalog(
             for phase_id, phase in product_phase_map.items()
             if phase.get("release_train") == release_name
         ]
+        phase_ids.extend(
+            phase_id
+            for phase_id, phase in history_entries.items()
+            if phase_id not in product_phase_map
+            and phase.get("release_train") == release_name
+        )
         if not phase_ids:
             raise GovernanceValidationError(
                 f"completed release train {release_name} must own at least one declared phase"

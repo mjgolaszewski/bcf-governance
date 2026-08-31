@@ -151,8 +151,8 @@ def validate_editorial_contract(repo_root: Path = REPO_ROOT) -> list[str]:
     for phrase in required_positions:
         if phrase not in normalized_readme:
             errors.append(f"README.md: missing architectural position: {phrase}")
-    if f"Current release: `v{__version__}`." not in readme:
-        errors.append("README.md: current release does not match package version")
+    if f"Current package version: `v{__version__}`" not in readme:
+        errors.append("README.md: package version does not match version authority")
     if f"bcf_governance-{__version__}-py3-none-any.whl" not in readme:
         errors.append("README.md: wheel example does not match package version")
     if "--mode pull_request" in readme or "--mode pr" not in readme:

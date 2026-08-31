@@ -19,19 +19,8 @@ architecture:
   backend: "python_package_with_private_portable_runtime"
   frontend: "canonical_markdown_operator_and_maintainer_guides"
   data: "closed_yaml_json_contracts_and_content_addressed_evidence"
+phase_history: {path: plans/phase-history.yml, through_phase: P12}
 execution_phases:
-  - {phase_id: P01, build_block: "self-governance-0.6.1", objective: "adopt BCF 0.6.1 standard governance in the framework repository", release_train: release_1}
-  - {phase_id: P02, build_block: "bcf-0.7-program-and-runner-cutover", objective: "freeze the 0.7 train and establish a fail-closed local workflow cutover", release_train: release_2}
-  - {phase_id: P03, build_block: "preflight-interpreter-sessions-cleanup", objective: "add cheap preflight, interpreter authority, evidence sessions, exact fan-in, and cleanup hardening", release_train: release_2}
-  - {phase_id: P04, build_block: "python-soip", objective: "generalize and self-adopt Python single-owner integrity proof", release_train: release_2}
-  - {phase_id: P05, build_block: "typescript-soip-and-identity-proof", objective: "add optional TypeScript tracing and prove the generalized engine against exact Identity main", release_train: release_2}
-  - {phase_id: P06, build_block: "ci-authority-contracts", objective: "add provider-neutral CI identity, admission, state, and N/A contracts", release_train: release_2}
-  - {phase_id: P07, build_block: "ci-truth-and-revocation", objective: "integrate authenticated certification, acyclic receipts, revocation, cancellation, and status authority", release_train: release_2}
-  - {phase_id: P08, build_block: "github-adopter-runtime-pr-parity", objective: "ship the GitHub reference topology, adopter, runtime adapter, and local PR parity", release_train: release_2}
-  - {phase_id: P09, build_block: "profile-v2-integration", objective: "integrate v2 contracts through profiles, installer, upgrader, doctor, cleanup, templates, wheel, and sdist", release_train: release_2}
-  - {phase_id: P10, build_block: "bcf-standard-v2-dogfood", objective: "make BCF a complete Standard-v2 consumer, prove the safe runner substrate, and activate stable protected checks", release_train: release_2}
-  - {phase_id: P11, build_block: "exact-main-release-artifacts", objective: "build and certify the 0.7.0 wheel and sdist from exact merged main", release_train: release_2}
-  - {phase_id: P12, build_block: "editorial-refresh-and-release", objective: "refresh final documentation, compact completed phase custody honestly, recertify exact bytes, tag, attest, and publish v0.7.0", release_train: release_2}
   - {phase_id: P13, build_block: post-release-authority-remediation-0.7.1, objective: "remediate exact-main and release authority, close release inputs, and prepare immutable v0.7.1 custody", release_train: release_3}
 acceptance:
   release_gate: bcf truth

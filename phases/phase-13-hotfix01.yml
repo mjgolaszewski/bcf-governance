@@ -15,9 +15,9 @@ hotfix:
     v0.7.0
 execution_evidence:
   planned_commands:
-  - /docker/bcf-governance/.venv/bin/python scripts/validate_governance_yaml.py --repo-root
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root
     .
-  - /docker/bcf-governance/.venv/bin/python -m pytest tests
+  - .venv/bin/python -m pytest tests
   executed_commands: []
   notes:
   - full mode is required because this changes public authority and security contracts
@@ -26,6 +26,10 @@ execution_evidence:
   - root causes are missing common-admission membership, success fallback, duplicated workflow
     authority, candidate-authored receipts, open dependency resolution, and mutable publication
   - preserve authority-v1 compatibility while requiring v1.1 for new exact-main and release claims
+  - structural remediation decomposes the controller and disables the old release front door before
+    any workflow activation or provider mutation
+  - active roadmap detail is retained only for P13; completed P01 through P12 resolve through exact
+    phase-history Git and SHA-256 custody
   - publication and repository setting mutations remain behind explicit owner approval
   - never mutate or retroactively recertify v0.7.0 provider objects
 closeout_requirements:

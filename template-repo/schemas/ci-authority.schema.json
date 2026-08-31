@@ -5,9 +5,17 @@
   "additionalProperties": false,
   "required": ["schema_version", "repository", "producers", "trusted_external_inputs"],
   "properties": {
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"enum": ["1.0", "1.1"]},
     "repository": {"$ref": "#/$defs/repository"},
     "admission_workflow": {"$ref": "#/$defs/workflow"},
+    "workflow_registry": {"$ref": "#/$defs/workflowRegistry"},
+    "roles": {"$ref": "#/$defs/roles"},
+    "admission_jobs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/job"}
+    },
     "producers": {
       "type": "array",
       "minItems": 1,
@@ -18,6 +26,12 @@
       "items": {"$ref": "#/$defs/trustedExternalInput"}
     }
   },
+  "allOf": [
+    {
+      "if": {"properties": {"schema_version": {"const": "1.1"}}, "required": ["schema_version"]},
+      "then": {"required": ["workflow_registry", "roles", "admission_jobs"]}
+    }
+  ],
   "$defs": {
     "nonEmpty": {"type": "string", "minLength": 1},
     "providerId": {"type": "string", "pattern": "^[A-Za-z0-9._:-]+$"},
@@ -61,6 +75,36 @@
         }
       }
     },
+    "workflowRegistry": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {"$ref": "#/$defs/providerId"},
+      "additionalProperties": {"$ref": "#/$defs/workflow"}
+    },
+    "roles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "admission", "reusable_producers", "finalizer", "status_publisher",
+        "bootstrap", "probe", "release_authorizer", "release_build",
+        "release_verifier", "release_collector", "release_publisher",
+        "authority_canary"
+      ],
+      "properties": {
+        "admission": {"$ref": "#/$defs/providerId"},
+        "reusable_producers": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/providerId"}},
+        "finalizer": {"$ref": "#/$defs/providerId"},
+        "status_publisher": {"$ref": "#/$defs/providerId"},
+        "bootstrap": {"$ref": "#/$defs/providerId"},
+        "probe": {"$ref": "#/$defs/providerId"},
+        "release_authorizer": {"$ref": "#/$defs/providerId"},
+        "release_build": {"$ref": "#/$defs/providerId"},
+        "release_verifier": {"$ref": "#/$defs/providerId"},
+        "release_collector": {"$ref": "#/$defs/providerId"},
+        "release_publisher": {"$ref": "#/$defs/providerId"},
+        "authority_canary": {"$ref": "#/$defs/providerId"}
+      }
+    },
     "scalar": {"type": ["string", "number", "boolean"]},
     "job": {
       "type": "object",
@@ -78,16 +122,21 @@
     "producer": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["producer_id", "workflow", "expected_jobs"],
+      "required": ["producer_id", "expected_jobs"],
       "properties": {
         "producer_id": {"$ref": "#/$defs/providerId"},
         "workflow": {"$ref": "#/$defs/workflow"},
+        "workflow_ref": {"$ref": "#/$defs/providerId"},
         "expected_jobs": {
           "type": "array",
           "minItems": 1,
           "items": {"$ref": "#/$defs/job"}
         }
-      }
+      },
+      "oneOf": [
+        {"required": ["workflow"], "not": {"required": ["workflow_ref"]}},
+        {"required": ["workflow_ref"], "not": {"required": ["workflow"]}}
+      ]
     },
     "trustedExternalInput": {
       "type": "object",

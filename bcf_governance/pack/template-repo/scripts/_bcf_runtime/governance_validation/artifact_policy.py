@@ -365,20 +365,20 @@ def _validate_phase_history_entries(
     policy_mode = _phase_retention_mode(manifest)
     archive_root = _phase_archive_root(manifest)
     for phase_id, entry in history_entries.items():
-        if phase_id not in build_phase_map:
-            raise GovernanceValidationError(
-                f"plans/phase-history.yml entry {phase_id} is not declared in the build plan"
-            )
         build_block = _require_string(
             entry.get("build_block"),
             context=f"plans/phase-history.yml entries.{phase_id}.build_block",
         )
-        if build_block != build_phase_map[phase_id].get("build_block"):
+        if phase_id in build_phase_map and build_block != build_phase_map[phase_id].get(
+            "build_block"
+        ):
             raise GovernanceValidationError(
                 f"plans/phase-history.yml entry {phase_id} build_block must match build plan"
             )
         release_train = entry.get("release_train")
-        if release_train is not None and release_train != product_phase_map[phase_id].get("release_train"):
+        if phase_id in product_phase_map and release_train is not None and release_train != (
+            product_phase_map[phase_id].get("release_train")
+        ):
             raise GovernanceValidationError(
                 f"plans/phase-history.yml entry {phase_id} release_train must match product spec"
             )

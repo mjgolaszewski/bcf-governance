@@ -8,7 +8,7 @@ topology. [Architecture](ARCHITECTURE.md) explains the broader design;
 
 ```mermaid
 flowchart LR
-  A[Trusted admission] --> P[Disposable producer jobs]
+  A[Trusted admission run] --> P[Same-run reusable producers]
   P --> C[Trusted snapshot collector]
   C --> N[Deterministic normalizer]
   N --> T[Truth recomputation]
@@ -33,9 +33,12 @@ Publication consumes the receipt and certified artifacts downstream.
 |---|---:|---|---|
 | Admission controller | No | Read provider state; closed dispatch authority | Admit an exact subject and dispatch owned producers |
 | Candidate worker | Yes, on a fresh disposable worker | Minimal read-only token | Produce declared artifacts for one job |
-| Snapshot collector/finalizer | No | Read provider state and artifacts | Normalize authenticated state and emit a closed callback |
+| Snapshot collector/finalizer | No | Read provider state and controller artifacts | Normalize one admission's authenticated state |
 | Status publisher | No | Status write only | Publish deterministic status precedence |
-| Release publisher | No | Artifact read, attestation, release write | Verify and publish pre-certified exact bytes |
+| Release builder | Yes, on a fresh hosted worker | Read-only source and closed wheelhouse | Emit untrusted distributions and raw logs |
+| Release verifier | Yes, on a different fresh hosted worker | Read-only build and wheelhouse artifacts | Recompute dependency, archive, install, test, hash, and Twine results |
+| Release collector | No | Read provider state and hash artifacts | Emit the sole authoritative release receipt |
+| Release publisher | No | Artifact read, attestation, release write | Publish the already-certified exact bytes |
 
 Candidate jobs cannot dispatch or cancel runs, write status, emit authoritative
 callbacks, access trusted or sibling secrets, retain checkout credentials, or
@@ -51,21 +54,30 @@ event, run ID, attempt, candidate commit, and candidate tree. Run names, job
 display names, and display titles are presentation only. Descriptive names help
 operators; stable IDs remain the mechanical interface.
 
+Authority contract v1.1 adds one canonical workflow registry. Privileged roles
+refer to entries in that registry; missing numeric IDs, paths, definition
+commits, blob OIDs, or SHA-256 pins fail closed. Version 1.0 remains readable,
+but it cannot support new exact-main or release claims.
+
 The serialized trusted control plane mints an opaque admission ordinal. The
 GitHub adapter maps it to control-plane run ID, run attempt, and closed dispatch
 sequence. The highest admitted ordinal wins; within a producer run, the highest
 attempt wins. A later admitted terminal failure revokes an earlier success.
 Unadmitted manual runs cannot suppress authority, and a moved default-main head
-makes earlier exact-main work obsolete.
+makes earlier exact-main work obsolete. In v1.1, reusable producer membership
+also binds repository, commit, tree, admission run and attempt, dispatch
+sequence, producer, referenced-workflow path and SHA, and the exact job
+inventory. Producers cannot be borrowed from another same-SHA run.
 
 ## GitHub reference topology
 
-The generated topology uses an input-free exact-main kickoff, exact-SHA
-producer fanout, a trusted `workflow_run` finalizer, and a trusted status
-publisher. It has no polling, sleeping, capacity waiter, or hosted VM allocated
-only to wait for another runner. Candidate jobs use fresh standard hosted
-runners by default. Persistent self-hosted runners are reserved for short
-trusted control-plane work and never check out candidate code.
+The v1.1 topology uses one exact-main push admission whose jobs call the
+governance and package workflows at the admitted SHA. The finalizer reads only
+that run and exact attempt; a separate publisher applies the canonical status
+precedence. It has no polling, sleeping, capacity waiter, or hosted VM
+allocated only to wait for another runner. Candidate jobs use fresh standard
+hosted runners. Persistent self-hosted runners are reserved for short trusted
+control-plane work and never check out candidate code.
 
 The topology is disabled until explicitly adopted and activated. Adoption is a
 transaction and preserves unrelated workflow bytes. Numeric workflow IDs and
@@ -80,17 +92,30 @@ an earlier attempt's terminal artifact.
 
 ## Release construction and publication
 
-An owner dispatch on exact main authenticates the latest certified callback,
-then a fresh candidate worker builds and tests the wheel and sdist. Truth binds
-their digests into an output-only release receipt. No tag exists yet.
+Release inputs are closed for Ubuntu 24.04, CPython 3.12.14, Linux x86-64, and
+pytest 9.0.3. The committed lock and wheelhouse manifest name every direct and
+transitive version, wheel filename, SHA-256, interpreter/platform identity,
+and lock digest. Build and verification use only that wheelhouse with
+`--no-index --require-hashes`; build isolation and range resolution are not
+release inputs.
 
-After that run succeeds, the owner creates one annotated tag at the exact
-certified merge commit. The trusted tag publisher checks out no repository
-code. It authenticates the annotated tag, selects the latest completed
-exact-main release run and requires it to be successful, verifies the Actions
-artifact digest, rejects unsafe archive paths and symlinks, verifies the
-receipt and `SHA256SUMS`, attests those exact files, and creates the GitHub
-release. It performs no rebuild.
+An owner dispatch starts a short no-checkout authorization job. A fresh hosted
+builder receives that authorization, checks out exact certified main without
+credentials, and emits untrusted distributions, checksums, logs, JUnit, and a
+manifest. A separate fresh, secretless hosted verifier authenticates the build
+artifact, rejects unsafe archives, installs and tests the exact wheel and
+extracted sdist from the closed wheelhouse, runs Twine, and emits raw results.
+A no-checkout trusted collector then re-authenticates every run, attempt,
+workflow, provider artifact digest, controller identity, dependency closure,
+commit, tree, and asset hash. Only that collector may emit the schema-2 release
+receipt; the receipt is never an input to its own construction.
+
+Publication is separate. Immutable releases must already be enabled. The
+publisher authenticates an annotated unsigned tag at the certified commit,
+creates a draft, attaches and attests only the certified wheel, sdist, and
+checksums, verifies their provider digests, and publishes the draft. It never
+rebuilds. Published tags and releases are not rewritten; a defect advances the
+patch version.
 
 The stricter boundary adds control-plane configuration and artifact custody.
 It reduces the chance that persistent candidate state, a misleading check name,

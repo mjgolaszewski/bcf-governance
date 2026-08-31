@@ -10,7 +10,7 @@ document:
 workitems:
 - id: P13-P0-01
   priority: P0
-  status: TODO
+  status: IN_PROGRESS
   summary: deliver provider-authenticated common admission and revocation authority
   acceptance:
   - authority v1.1 binds every producer to one authenticated admission run and attempt
@@ -21,7 +21,7 @@ workitems:
   - contract-test
 - id: P13-P0-02
   priority: P0
-  status: TODO
+  status: IN_PROGRESS
   summary: deliver independent final-byte verification and trusted release receipt
     construction
   acceptance:
@@ -33,7 +33,7 @@ workitems:
   - contract-test
 - id: P13-P0-03
   priority: P0
-  status: TODO
+  status: IN_PROGRESS
   summary: deliver closed release dependency inputs and immutable publication checks
   acceptance:
   - release Python, platform, direct and transitive wheels, hashes, and wheelhouse are closed

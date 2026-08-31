@@ -5,30 +5,24 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 import hashlib
-import json
 import os
 from pathlib import Path
-import re
 import secrets
 from typing import Any
-from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
-
-import yaml
 
 from .ci_authority_certification import (
     normalize_ci_certification,
     verify_ci_certification,
 )
-from .ci_authority_contracts import validate_ci_contract
 from .ci_authority_state import WorkflowIdentity
-from .ci_authority_decisions import (
-    StatusConclusion,
-    StatusContext,
-    StatusObservation,
-    decide_status_publication,
-)
 from .ci_github import DISPATCH_EVENTS
 from .ci_github_api import GitHubAPI, GitHubAPIError
+from .ci_github_authority import load_authority, packaged_repo_root
+from .ci_github_bundle import (
+    canonical_json as _canonical,
+    prepare_output as _prepare_output,
+    write_exclusive as _write_exclusive,
+)
 from .ci_github_identity import (
     GitHubControllerError,
     MainIdentity,
@@ -40,9 +34,7 @@ from .ci_github_identity import (
     resolve_main,
     select_producer_run,
 )
-
-
-STATUS_CONTEXT = "bcf/exact-main-certification"
+from .ci_github_status import publish as _publish
 
 
 @dataclass(frozen=True)
@@ -139,27 +131,11 @@ def kickoff(
 
 
 def _packaged_repo_root() -> Path:
-    root = Path(__file__).resolve().parents[1] / "pack/template-repo"
-    if not (root / "schemas/ci-authority.schema.json").is_file():
-        raise GitHubControllerError("installed BCF package lacks CI authority schemas")
-    return root
+    return packaged_repo_root()
 
 
 def _load_authority(api: GitHubAPI, repository: str, main: MainIdentity) -> dict[str, Any]:
-    content = api.content(repository, "governance/ci-authority.yml", ref=main.checkout_sha)
-    try:
-        payload = yaml.safe_load(content.content.decode("utf-8"))
-    except (UnicodeDecodeError, yaml.YAMLError) as exc:
-        raise GitHubControllerError("trusted CI authority document is invalid YAML") from exc
-    if not isinstance(payload, dict):
-        raise GitHubControllerError("trusted CI authority document must contain a mapping")
-    validate_ci_contract(_packaged_repo_root(), "authority", payload)
-    if payload["repository"] != {
-        "provider": "github",
-        "repository_id": main.repository_id,
-    }:
-        raise GitHubControllerError("CI authority repository identity is not current repository")
-    return payload
+    return load_authority(api, repository, main)
 
 
 def _job_status(value: object) -> str:
@@ -216,64 +192,6 @@ def _producer_run(
             }
         ],
     }
-
-
-def _canonical(payload: dict[str, Any]) -> bytes:
-    return (json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n").encode()
-
-
-def _write_exclusive(path: Path, payload: dict[str, Any]) -> str:
-    raw = _canonical(payload)
-    with path.open("xb") as stream:
-        stream.write(raw)
-    return hashlib.sha256(raw).hexdigest()
-
-
-def _verify_bundle(root: Path) -> dict[str, Any]:
-    if root.is_symlink() or not root.is_dir():
-        raise GitHubControllerError("certification bundle must be a regular directory")
-    manifest_path = root / "bundle-manifest.json"
-    if manifest_path.is_symlink() or not manifest_path.is_file():
-        raise GitHubControllerError("certification bundle manifest is missing or unsafe")
-    try:
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise GitHubControllerError("certification bundle manifest is invalid") from exc
-    files = manifest.get("files") if isinstance(manifest, dict) else None
-    if not isinstance(files, dict) or not files:
-        raise GitHubControllerError("certification bundle file inventory is missing")
-    actual: set[str] = set()
-    for path in root.rglob("*"):
-        if path.is_symlink():
-            raise GitHubControllerError("certification bundle cannot contain symlinks")
-        if path.is_file():
-            actual.add(path.relative_to(root).as_posix())
-    expected = set(files) | {"bundle-manifest.json"}
-    if actual != expected:
-        raise GitHubControllerError("certification bundle file inventory is not exact")
-    for relative, digest in files.items():
-        if (
-            not isinstance(relative, str)
-            or not isinstance(digest, str)
-            or not re.fullmatch(r"[a-f0-9]{64}", digest)
-        ):
-            raise GitHubControllerError("certification bundle digest inventory is invalid")
-        path = root / relative
-        if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
-            raise GitHubControllerError(
-                f"certification bundle digest mismatch: {relative}"
-            )
-    return manifest
-
-
-def _prepare_output(path: Path) -> Path:
-    parent = path.parent
-    if parent.is_symlink() or not parent.is_dir():
-        raise GitHubControllerError("certification output parent must be a regular directory")
-    path.mkdir(mode=0o700)
-    if path.is_symlink():
-        raise GitHubControllerError("certification output cannot be a symlink")
-    return path.resolve()
 
 
 def finalize(
@@ -433,11 +351,13 @@ def finalize(
     }
     session_path = root / "evidence-session.json"
     session_digest = _write_exclusive(session_path, session)
+    session_producer = session["producer"]
+    assert isinstance(session_producer, dict)
     evidence_session = {
         "session_id": session["session_id"],
         "manifest_sha256": session_digest,
-        "run_id": session["producer"]["run_id"],
-        "run_attempt": int(session["producer"]["run_attempt"]),
+        "run_id": session_producer["run_id"],
+        "run_attempt": int(session_producer["run_attempt"]),
     }
     report = normalize_ci_certification(
         _packaged_repo_root(),
@@ -493,177 +413,19 @@ def publish(
     collector_workflow_id: object | None = None,
     collector_workflow_sha256: str | None = None,
 ) -> dict[str, Any]:
-    """Reverify one authenticated finalizer bundle before status publication."""
+    """Compatibility wrapper for the canonical status authority."""
 
-    if bundle_dir.is_symlink():
-        raise GitHubControllerError("certification bundle cannot be a symlink")
-    root = bundle_dir.resolve()
-    manifest = _verify_bundle(root)
-    report = json.loads((root / "ci-certification.json").read_text(encoding="utf-8"))
-    verification = verify_ci_certification(
-        _packaged_repo_root(),
-        authority_path=root / "ci-authority.json",
-        certification_path=root / "ci-certification.json",
-        session_manifest_path=root / "evidence-session.json",
-    )
-    if (
-        manifest.get("subject")
-        != {
-            "commit_sha": report["subject"]["checkout_sha"],
-            "tree_sha": report["subject"]["tree_sha"],
-        }
-        or str(manifest.get("admission_ordinal"))
-        != str(report["admission"]["admission_ordinal"])
-        or manifest.get("computed_state") != verification.computed_state
-    ):
-        raise GitHubControllerError(
-            "certification bundle manifest does not match verified certification"
-        )
-    main = resolve_main(api, repository)
-    subject = str(report["subject"]["checkout_sha"])
-    subject_tree = str(report["subject"]["tree_sha"])
-    subject_commit = api.commit(repository, subject)
-    observed_tree = subject_commit.get("tree")
-    if not isinstance(observed_tree, dict) or str(observed_tree.get("sha")) != subject_tree:
-        raise GitHubControllerError("certification subject tree is not provider-authenticated")
-    collector_main = MainIdentity(
-        repository_id=main.repository_id,
-        default_branch=main.default_branch,
-        checkout_sha=subject,
-        tree_sha=subject_tree,
-    )
-    collector_identity = authenticate_trusted_run(
+    return _publish(
         api,
         repository=repository,
-        main=collector_main,
-        run_id=collector_run_id,
-        run_attempt=collector_run_attempt,
-        workflow_path=collector_workflow_path,
-        expected_event="workflow_run",
-        require_success=True,
-        expected_workflow_id=collector_workflow_id,
-        expected_workflow_sha256=collector_workflow_sha256,
+        bundle_dir=bundle_dir,
+        target_url=target_url,
+        collector_run_id=collector_run_id,
+        collector_run_attempt=collector_run_attempt,
+        collector_workflow_path=collector_workflow_path,
+        collector_workflow_id=collector_workflow_id,
+        collector_workflow_sha256=collector_workflow_sha256,
     )
-    session = json.loads((root / "evidence-session.json").read_text(encoding="utf-8"))
-    producer = session.get("producer")
-    if not isinstance(producer, dict) or producer != {
-        "kind": "workflow",
-        "provider": "github",
-        "repository": repository,
-        "repository_id": main.repository_id,
-        "run_id": collector_identity.run_id,
-        "run_attempt": str(collector_identity.run_attempt),
-        "producer_id": "bcf-trusted-finalizer",
-    }:
-        raise GitHubControllerError(
-            "certification session is not bound to the authenticated finalizer run"
-        )
-    conclusion = (
-        StatusConclusion.SUCCESS
-        if verification.status == "pass"
-        else StatusConclusion.FAILURE
-    )
-    proposed = StatusObservation(
-        context=StatusContext.EXACT_MAIN,
-        subject_sha=subject,
-        admission_ordinal=int(report["admission"]["admission_ordinal"]),
-        control_plane_attempt=int(report["admission"]["control_plane_run_attempt"]),
-        conclusion=conclusion,
-    )
-    current = _current_status(api, repository, subject)
-    decision = decide_status_publication(
-        proposed=proposed,
-        current=current,
-        trusted_publisher=True,
-        current_default_main_sha=main.checkout_sha,
-    )
-    if decision.publish:
-        authoritative_url = _status_target(
-            target_url,
-            ordinal=proposed.admission_ordinal,
-            attempt=proposed.control_plane_attempt,
-        )
-        api.status(
-            repository,
-            sha=subject,
-            state=conclusion.value,
-            context=STATUS_CONTEXT,
-            description=f"BCF exact-main {verification.computed_state}",
-            target_url=authoritative_url,
-        )
-    return {
-        "status": "published" if decision.publish else "suppressed",
-        "reason": decision.reason,
-        "subject_sha": subject,
-        "computed_state": verification.computed_state,
-        "admission_ordinal": proposed.admission_ordinal,
-    }
-
-
-def _status_target(target_url: str, *, ordinal: int, attempt: int) -> str:
-    parsed = urlsplit(target_url)
-    if parsed.scheme != "https" or not parsed.netloc or parsed.fragment:
-        raise GitHubControllerError("status target URL must be fragment-free HTTPS")
-    query = parse_qs(parsed.query, keep_blank_values=True)
-    if "bcf_ordinal" in query or "bcf_attempt" in query:
-        raise GitHubControllerError("status target URL already contains BCF authority")
-    query["bcf_ordinal"] = [str(ordinal)]
-    query["bcf_attempt"] = [str(attempt)]
-    encoded = urlencode(sorted((key, item) for key, values in query.items() for item in values))
-    return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, encoded, ""))
-
-
-def _status_observation(payload: dict[str, Any], subject: str) -> StatusObservation:
-    if payload.get("context") != STATUS_CONTEXT:
-        raise GitHubControllerError("status observation has wrong context")
-    target = payload.get("target_url")
-    if not isinstance(target, str):
-        raise GitHubControllerError("published BCF status lacks authority target URL")
-    query = parse_qs(urlsplit(target).query)
-    if set(query).intersection({"bcf_ordinal", "bcf_attempt"}) != {
-        "bcf_ordinal", "bcf_attempt",
-    }:
-        raise GitHubControllerError("published BCF status lacks admission authority")
-    if len(query["bcf_ordinal"]) != 1 or len(query["bcf_attempt"]) != 1:
-        raise GitHubControllerError("published BCF status has duplicate admission authority")
-    ordinal = _positive(query["bcf_ordinal"][0], field="published admission ordinal")
-    attempt = _positive(query["bcf_attempt"][0], field="published control attempt")
-    state = str(payload.get("state"))
-    conclusions = {
-        "success": StatusConclusion.SUCCESS,
-        "failure": StatusConclusion.FAILURE,
-        "error": StatusConclusion.FAILURE,
-        "pending": StatusConclusion.PENDING,
-    }
-    if state not in conclusions:
-        raise GitHubControllerError("published BCF status has unsupported state")
-    return StatusObservation(
-        context=StatusContext.EXACT_MAIN,
-        subject_sha=subject,
-        admission_ordinal=ordinal,
-        control_plane_attempt=attempt,
-        conclusion=conclusions[state],
-    )
-
-
-def _current_status(api: GitHubAPI, repository: str, subject: str) -> StatusObservation | None:
-    matching = [
-        value for value in api.commit_statuses(repository, sha=subject)
-        if value.get("context") == STATUS_CONTEXT
-    ]
-    if not matching:
-        return None
-    observations = [_status_observation(value, subject) for value in matching]
-    latest_order = max(
-        (value.admission_ordinal, value.control_plane_attempt) for value in observations
-    )
-    latest = [
-        value for value in observations
-        if (value.admission_ordinal, value.control_plane_attempt) == latest_order
-    ]
-    if len({value.conclusion for value in latest}) != 1:
-        raise GitHubControllerError("equal published authority has conflicting conclusions")
-    return latest[0]
 
 
 def environment_api() -> GitHubAPI:

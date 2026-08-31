@@ -28,6 +28,7 @@ REQUIRED_SDIST_PATHS = (
     "governance/test-manifests",
     "phases",
     "plans",
+    "release",
     "schemas",
     "template-repo",
     "template-repo/schemas",
@@ -51,6 +52,8 @@ REQUIRED_SDIST_FILES = (
     "governance/gate-contracts.yml",
     "governance/self-governance-policy.yml",
     "manifest.yml",
+    "release/requirements-cp312-linux-x86_64.lock",
+    "release/wheelhouse-manifest.yml",
 )
 SDIST_PORTABLE_TEST_ENV = "BCF_RELEASE_SDIST_PORTABLE_TEST"
 ALLOWED_SDIST_CUSTODY_SKIPS = {

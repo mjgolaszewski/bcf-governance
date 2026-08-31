@@ -78,6 +78,15 @@
         }
       }
     },
+    "phase_history": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "through_phase"],
+      "properties": {
+        "path": { "const": "plans/phase-history.yml" },
+        "through_phase": { "type": "string", "pattern": "^P[0-9]+$" }
+      }
+    },
     "phase_sequence": {
       "type": "array",
       "minItems": 1,

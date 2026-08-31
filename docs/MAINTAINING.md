@@ -100,7 +100,10 @@ semantic profiles run nightly and the full profiles run weekly.
 
 ## Distribution tests
 
-Release verification builds first. A clean wheel environment runs CLI, lite
+Release verification resolves dependencies once into the committed
+CPython-3.12/Linux-x86-64 hash lock and exact wheelhouse manifest. Both build
+and verification install with `--no-index --require-hashes`, and build uses
+`--no-isolation`. A clean wheel environment runs CLI, lite
 install, validation, doctor, evidence, and truth smoke tests. A separate clean
 environment installs the extracted sdist and runs its complete bundled suite.
 The sdist must carry tests, fixtures, templates, schemas, examples, and workflow
@@ -127,17 +130,22 @@ For a release:
    editorial verification.
 5. Merge the reviewed pull request after required CI passes and certify that
    exact main commit through the trusted control plane.
-6. Owner-dispatch `bcf/certified-release` on exact main. Its fresh candidate
-   worker builds and tests the distributions once and emits an output-only
-   release receipt.
-7. Verify the certified artifact bundle and create one annotated `vX.Y.Z` tag
-   at that exact commit.
-8. Push the tag. The trusted publisher authenticates the tag and latest exact
-   successful release run, verifies the Actions artifact digest, receipt, and
-   `SHA256SUMS`, attests the already-certified files, and publishes them.
+6. Owner-dispatch the release authorization on exact certified main. A fresh
+   hosted builder emits untrusted bytes; a different fresh hosted verifier
+   installs and tests them from the closed wheelhouse.
+7. Let the no-checkout trusted collector authenticate both runs and emit the
+   sole output-only release receipt. Run provider inspection with publication
+   disabled.
+8. After owner approval, enable immutable releases and create one annotated
+   unsigned `vX.Y.Z` tag at that exact commit.
+9. The no-checkout publisher creates a draft, attaches and attests the
+   pre-certified files, verifies their digests, and publishes without rebuild.
+10. Re-fetch provider state and require an immutable, non-draft, exact release
+    before recording closeout.
 
 The tag event does not rebuild. The publisher checks out no repository code and
-executes no candidate-provided script. If documentation included in the sdist
+executes no candidate-provided script. Release publication remains disabled
+during an authority migration; the old path is not a rollback option. If documentation included in the sdist
 changes after certification, repeat exact-main certification and artifact
 construction; supersede the older bytes instead of reusing their receipt. PyPI
 is not used. All GitHub actions are pinned and release permissions are scoped

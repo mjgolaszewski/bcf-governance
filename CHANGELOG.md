@@ -6,6 +6,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acceptance).
+
 ### Security
 
 - Opened the 0.7.1 authority-remediation train after post-release review found
