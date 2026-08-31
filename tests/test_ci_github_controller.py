@@ -7,7 +7,12 @@ from pathlib import Path
 import pytest
 import yaml
 
+from bcf_governance.tooling import ci_github_callbacks as callbacks
 from bcf_governance.tooling.ci_github_api import GitHubAPI, GitHubAPIError, GitHubContent
+from bcf_governance.tooling.ci_github_callbacks import (
+    finalize_callback,
+    publish_callback,
+)
 from bcf_governance.tooling.ci_github_controller import (
     GitHubControllerError,
     admission_ordinal,
@@ -321,6 +326,224 @@ def test_finalizer_returns_pending_without_writing_partial_bundle(tmp_path: Path
     )
     assert result.status == "pending"
     assert not (tmp_path / "bundle").exists()
+
+
+def test_pending_callback_is_authenticated_without_status_publication(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    api = FakeAPI()
+    api.runs["300"]["status"] = "in_progress"
+    api.runs["300"]["conclusion"] = None
+    result = finalize_callback(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        control_run_id=100,
+        control_run_attempt=1,
+        **CONTROL_IDENTITY,
+        collector_run_id=400,
+        collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
+        output_root=tmp_path / "callback",
+    )
+    root = Path(result["callback_dir"])
+    assert result["status"] == "pending"
+    assert {path.name for path in root.iterdir()} == {"callback-result.json"}
+    api.runs["400"]["status"] = "completed"
+    api.runs["400"]["conclusion"] = "success"
+    publish_calls: list[object] = []
+    monkeypatch.setattr(
+        callbacks,
+        "publish",
+        lambda *args, **kwargs: publish_calls.append((args, kwargs))
+        or {"status": "published"},
+    )
+
+    published = publish_callback(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        callback_dir=root,
+        target_url="https://github.example/runs/400",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
+    )
+
+    assert published["status"] == "suppressed"
+    assert published["reason"] == "producers_pending"
+    assert publish_calls == []
+    assert api.published_statuses == []
+
+
+def test_terminal_callback_binds_bundle_before_publication(tmp_path: Path) -> None:
+    api = FakeAPI()
+    result = finalize_callback(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        control_run_id=100,
+        control_run_attempt=1,
+        **CONTROL_IDENTITY,
+        collector_run_id=400,
+        collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
+        output_root=tmp_path / "callback",
+    )
+    root = Path(result["callback_dir"])
+    callback = json.loads((root / "callback-result.json").read_text())
+    assert callback["status"] == "terminal"
+    assert callback["bundle_manifest_sha256"] == hashlib.sha256(
+        (root / "bundle/bundle-manifest.json").read_bytes()
+    ).hexdigest()
+    api.runs["400"]["status"] = "completed"
+    api.runs["400"]["conclusion"] = "success"
+
+    published = publish_callback(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        callback_dir=root,
+        target_url="https://github.example/runs/400",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
+    )
+
+    assert published["status"] == "published"
+    assert len(api.published_statuses) == 1
+
+
+def test_callback_bundle_digest_tampering_is_rejected(tmp_path: Path) -> None:
+    api = FakeAPI()
+    result = finalize_callback(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        control_run_id=100,
+        control_run_attempt=1,
+        **CONTROL_IDENTITY,
+        collector_run_id=400,
+        collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
+        output_root=tmp_path / "callback",
+    )
+    root = Path(result["callback_dir"])
+    callback_path = root / "callback-result.json"
+    callback = json.loads(callback_path.read_text())
+    callback["bundle_manifest_sha256"] = "d" * 64
+    _write_json(callback_path, callback)
+    api.runs["400"]["status"] = "completed"
+    api.runs["400"]["conclusion"] = "success"
+
+    with pytest.raises(GitHubControllerError, match="bundle digest does not match"):
+        publish_callback(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            callback_dir=root,
+            target_url="https://github.example/runs/400",
+            collector_run_id=400,
+            collector_run_attempt=1,
+            **COLLECTOR_IDENTITY,
+        )
+
+    assert api.published_statuses == []
+
+
+def test_pending_callback_rejects_unexpected_artifact_fan_in(tmp_path: Path) -> None:
+    api = FakeAPI()
+    api.runs["300"]["status"] = "in_progress"
+    api.runs["300"]["conclusion"] = None
+    result = finalize_callback(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        control_run_id=100,
+        control_run_attempt=1,
+        **CONTROL_IDENTITY,
+        collector_run_id=400,
+        collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
+        output_root=tmp_path / "callback",
+    )
+    root = Path(result["callback_dir"])
+    (root / "candidate-content.txt").write_text("untrusted\n", encoding="utf-8")
+    api.runs["400"]["status"] = "completed"
+    api.runs["400"]["conclusion"] = "success"
+
+    with pytest.raises(GitHubControllerError, match="top-level inventory"):
+        publish_callback(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            callback_dir=root,
+            target_url="https://github.example/runs/400",
+            collector_run_id=400,
+            collector_run_attempt=1,
+            **COLLECTOR_IDENTITY,
+        )
+
+    assert api.published_statuses == []
+
+
+def test_callback_rejects_wrong_triggering_collector(tmp_path: Path) -> None:
+    api = FakeAPI()
+    api.runs["300"]["status"] = "in_progress"
+    api.runs["300"]["conclusion"] = None
+    result = finalize_callback(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        control_run_id=100,
+        control_run_attempt=1,
+        **CONTROL_IDENTITY,
+        collector_run_id=400,
+        collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
+        output_root=tmp_path / "callback",
+    )
+    api.runs["400"]["status"] = "completed"
+    api.runs["400"]["conclusion"] = "success"
+    api.runs["401"] = {**api.runs["400"], "id": 401}
+
+    with pytest.raises(GitHubControllerError, match="triggering collector"):
+        publish_callback(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            callback_dir=Path(result["callback_dir"]),
+            target_url="https://github.example/runs/400",
+            collector_run_id=401,
+            collector_run_attempt=1,
+            **COLLECTOR_IDENTITY,
+        )
+
+    assert api.published_statuses == []
+
+
+def test_callback_rejects_symlinked_artifact_root(tmp_path: Path) -> None:
+    api = FakeAPI()
+    api.runs["300"]["status"] = "in_progress"
+    api.runs["300"]["conclusion"] = None
+    result = finalize_callback(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        control_run_id=100,
+        control_run_attempt=1,
+        **CONTROL_IDENTITY,
+        collector_run_id=400,
+        collector_run_attempt=1,
+        **COLLECTOR_IDENTITY,
+        output_root=tmp_path / "callback",
+    )
+    callback_link = tmp_path / "callback-link"
+    callback_link.symlink_to(Path(result["callback_dir"]), target_is_directory=True)
+    api.runs["400"]["status"] = "completed"
+    api.runs["400"]["conclusion"] = "success"
+
+    with pytest.raises(GitHubControllerError, match="cannot be a symlink"):
+        publish_callback(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            callback_dir=callback_link,
+            target_url="https://github.example/runs/400",
+            collector_run_id=400,
+            collector_run_attempt=1,
+            **COLLECTOR_IDENTITY,
+        )
+
+    assert api.published_statuses == []
 
 
 def test_first_callback_is_cleanly_pending_before_other_producer_starts(

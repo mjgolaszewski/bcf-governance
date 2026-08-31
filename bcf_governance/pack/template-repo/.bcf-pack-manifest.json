@@ -322,9 +322,13 @@
       "operation": "copy",
       "sha256": "23cb0f466c1c5f45d4430656eae532acd8331f905ce20346ed84d2da741c426b"
     },
+    "scripts/_bcf_runtime/ci_github_callbacks.py": {
+      "operation": "copy",
+      "sha256": "bf95ea1d91af0b0167b01598333ea95c7d3d4d4299516772863a1cd5eaa98069"
+    },
     "scripts/_bcf_runtime/ci_github_commands.py": {
       "operation": "copy",
-      "sha256": "a4bf46fb524a0a64fafd28a6a9c999f9e644107964750a00be88a892aa3d42e7"
+      "sha256": "a93d86b7e9a15452ec6ea3c8ef487189c40c17b6878b3b45776be8b1c534546e"
     },
     "scripts/_bcf_runtime/ci_github_controller.py": {
       "operation": "copy",
@@ -412,7 +416,7 @@
     },
     "scripts/_bcf_runtime/governance_profiles.py": {
       "operation": "copy",
-      "sha256": "5fee9596e7f29df364eab5870768e6e4d8750249db7d2c1bfe5cb14a857bda72"
+      "sha256": "6d09ac5c75de5a1af18a2ab78859efab08838bc63dd85a68b2f81a3a5bb11617"
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
