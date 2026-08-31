@@ -87,6 +87,7 @@ execution_evidence:
   - release provider custody is centralized in a mechanically governed decoder; authorizer/build attempt equality, newest-admission selection, verifier artifacts, collector receipts, and publication assets now fail closed under focused causal controls
   - provider-artifact ownership exhausted the registry's prior one-byte headroom; the reviewed budget is 36 KiB with the 200-line cap preserved and YAML merge semantics prohibited
   - exact-main run 33447571046 verified all 21 receipts and correctly refused phase closure while P13-HF01 remained planned; it also proved caller-event checks skipped controller construction, so an explicit false-by-default build input now owns that authorization
+  - the exact-main admission and package-producer definition bytes for that correction are retained at 82dc4f740d9fb2b5920cc66037f0885614b351df and pinned by a separate following commit
 closeout_requirements:
   claims:
     required_suites_green:
