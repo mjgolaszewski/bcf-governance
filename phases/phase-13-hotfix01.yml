@@ -25,6 +25,15 @@ execution_evidence:
   - command: .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
     result: pass
     notes: structural authority, phase, gate, policy, generated-copy, and context contracts validate
+  - command: .venv/bin/python -m pytest -q tests/test_self_governance_contracts.py tests/test_preflight.py tests/test_validate_governance_yaml.py
+    result: pass
+    notes: 99 focused bridge tests passed, including exact artifact pins, offline installation, and trusted-runner routing
+  - command: .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+    result: pass
+    notes: all 13 high-value semantic-validator mutants were killed by their declared behavior owners
+  - command: .venv/bin/python -m pytest -q tests
+    result: pass
+    notes: all 453 exact source tests passed for the controller bridge
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
@@ -42,6 +51,7 @@ execution_evidence:
   - PR 40 run 33422144454 failed fast when the authored-status YAML mutant reflowed an ephemeral diagnostic path away from its non-authoritative marker; replacing the literal artifact root with BCF_SESSION_ROOT preserves the intended causal diagnostic under deterministic YAML serialization
   - PR 40 run 33422527383 passed all 21 gates but closure truth correctly refused the active phase; the remediation adds an explicit PR-only merge-eligibility evaluation that cannot emit release receipts or claim phase or hotfix closure
   - 'workflow definition custody follows the governed two-commit seam: c339e7f contains the final PR-evaluation bytes and the following commit pins their exact blob and SHA-256 without changing them'
+  - structural PR 40 merged as cdb178d69b2cd64c6c99abd2119f59ea75ec5ceb and exact-main pack run 33425118268 produced controller artifact 9770488354; the bridge pins its exact provider, wheel, commit, and tree identity before trusted installation
 closeout_requirements:
   claims:
     required_suites_green:

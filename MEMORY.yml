@@ -49,6 +49,7 @@ environment_facts:
     - v0.7.0 is an annotated unsigned tag at 0e965b2197e776ad411b67820dbd5586263abde1; release 379785364 is published with three attested assets but reports immutable false and is not certified under corrected authority v1.1
     - P13-HF01 is active to bind producers to one admission, close release dependencies, separate build verification from trusted receipt construction, and prepare v0.7.1 without altering v0.7.0 custody
     - the P13 structural cutover retains authority-v1 readers, requires v1.1 for new exact-main and release commands, and keeps release execution unreachable until provider workflow identities are pinned and activated
+    - P13 structural PR 40 merged as cdb178d69b2cd64c6c99abd2119f59ea75ec5ceb; its exact-main pack run 33425118268 produced controller artifact 9770488354 with wheel SHA-256 e9c77a14b3616fe44eda754370061f90715c4cf52728b730d79f6129b7259168 for the trusted bridge
     - P01 through P12 roadmap detail is owned only by plans/phase-history.yml; active product and build roadmaps contain P13 and mechanically validate their history boundary at P12
     - P13 ratchets the exact source suite to 453 nodes, the contract suite to 187 nodes, and cause-verified controls to 77 while preserving all 21 required gates
     - the 0.7.1 release closure pins Ubuntu 24.04, CPython 3.12.14, pytest 9.0.3, and 41 direct/transitive Linux x86-64 wheels by filename and SHA-256
