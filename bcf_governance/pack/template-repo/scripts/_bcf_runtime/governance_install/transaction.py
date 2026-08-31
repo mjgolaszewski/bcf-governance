@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import subprocess
 import tempfile
 from pathlib import Path
 from typing import Callable
@@ -38,7 +39,49 @@ def _reject_symlink_chain(root: Path, relative: Path) -> None:
             raise ValueError(f"transaction path traverses a symlink: {relative.as_posix()}")
 
 
-def _copy_shadow(source: Path, destination: Path) -> None:
+def copy_repository_shadow(
+    source: Path,
+    destination: Path,
+    *,
+    preserve_git_history: bool = False,
+) -> None:
+    """Copy the working tree, optionally retaining its exact local Git custody."""
+    if preserve_git_history:
+        git_root = subprocess.run(
+            ["git", "-C", str(source), "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if git_root.returncode or Path(git_root.stdout.strip()).resolve() != source.resolve():
+            raise ValueError("Git-preserving transaction requires a repository root")
+        clone = subprocess.run(
+            [
+                "git",
+                "clone",
+                "--shared",
+                "--quiet",
+                "--no-checkout",
+                str(source),
+                str(destination),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if clone.returncode:
+            raise ValueError(
+                "could not preserve Git custody in transaction shadow: "
+                + (clone.stderr or clone.stdout).strip()
+            )
+        shutil.copytree(
+            source,
+            destination,
+            dirs_exist_ok=True,
+            symlinks=True,
+            ignore=shutil.ignore_patterns(*IGNORED_SHADOW_NAMES),
+        )
+        return
     shutil.copytree(
         source,
         destination,
@@ -83,6 +126,7 @@ def apply_transaction(
     *,
     managed_paths: tuple[str, ...],
     mutate_shadow: Callable[[Path], None],
+    preserve_git_history: bool = False,
 ) -> None:
     """Mutate and validate a shadow, then atomically transfer only managed files."""
     repo_root = repo_root.resolve()
@@ -91,7 +135,11 @@ def apply_transaction(
         _reject_symlink_chain(repo_root, relative)
     with tempfile.TemporaryDirectory(prefix="bcf-transaction-") as temporary:
         shadow = Path(temporary) / "repo"
-        _copy_shadow(repo_root, shadow)
+        copy_repository_shadow(
+            repo_root,
+            shadow,
+            preserve_git_history=preserve_git_history,
+        )
         mutate_shadow(shadow)
         before_files = _managed_files(repo_root, managed)
         after_files = _managed_files(shadow, managed)

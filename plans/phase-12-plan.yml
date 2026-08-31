@@ -20,14 +20,19 @@ phase:
 delivery_contract:
   tightly_scoped_deliverables:
   - README-led architecture rationale with explicit costs and limitations
+  - direct human-centric DevOps and agentic DevSecOps contrast with mechanical
+    authority boundaries
   - CI authority, usage, maintenance, and installed-operations documentation hierarchy
   - immutable exact-byte publisher with provenance attestation and no rebuild path
   - mechanical editorial verification and final exact-main recertification
+  - honest git-history phase compaction without retroactive lifecycle claims
   parallelizable_workstreams:
   - id: P12-WS1
     name: architecture and operator documentation
   - id: P12-WS2
     name: immutable publication and final certification
+  - id: P12-WS3
+    name: completed phase retention and exact Git custody
   hard_dependencies:
   - P11
   docker_first_local_runtime: repo_native_validation_and_governance_commands
@@ -45,6 +50,13 @@ scope_lock:
 - order: 4
   statement: the publisher checks out and executes no repository code, verifies a certified
     exact-tag artifact bundle, attests and publishes those exact bytes, and never rebuilds
+- order: 5
+  statement: contrast human-centric and agentic delivery in direct engineer-facing language
+    while retaining human authority for judgment and deterministic authority for repeatable
+    claims
+- order: 6
+  statement: compact earlier authored completed phases into exact Git and hash custody without
+    manufacturing historical verified or closed state
 verification_plan:
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
 - .venv/bin/python -m pytest tests

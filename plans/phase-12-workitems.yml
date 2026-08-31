@@ -15,6 +15,10 @@ workitems:
   acceptance:
   - README explains CQRS-lite, SOIP, mechanical constraints, negative controls, deterministic
     authority, exact evidence, and cheap preflight without manifesto language
+  - direct human-centric DevOps and agentic DevSecOps contrast with mechanical authority
+    boundaries
+  - README directly contrasts human-centric DevOps with agentic DevSecOps and states that
+    agents cannot certify their own output
   - each position explains its AI-led-development value, cost, and limitation
   acceptance_evidence:
   - test
@@ -45,4 +49,16 @@ workitems:
   - links, anchors, CLI examples, version claims, topic ownership, diagrams, and generated-copy
     parity are mechanically checked
   - final merged documentation bytes are rebuilt and supersede P11 artifacts before tagging
+  acceptance_evidence: [governance-validate, test, contract-test]
+- id: P12-P0-05
+  priority: P0
+  status: DONE
+  summary: honest git-history phase compaction without retroactive lifecycle claims
+  acceptance:
+  - P01 through P11 active triplets and phase-scoped hotfix logs move to compact history rows
+    with exact Git refs, paths, and SHA-256 values
+  - rows without historical closed truth omit derived_state_at_capture and verification_snapshot
+  - transactional cleanup preserves linked-worktree Git control metadata and does not rewrite
+    unrelated test fixtures
+  - profile-promotion check and apply shadows preserve compacted Git-history custody
   acceptance_evidence: [governance-validate, test, contract-test]

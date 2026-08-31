@@ -46,11 +46,12 @@ environment_facts:
     - all governance, memory, specs, plans, workitem ledgers, and phase logs are YAML-native
     - observability contracts are scaffolded under contracts/observability/v1/
     - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
-    - P05 reproduced exact Identity main with 62 representations and 220 required browser traces; P06-P08 completed provider-neutral authority, certification, GitHub adoption, runtime, trusted inputs, and local PR parity; P09 completed packaged profile-v2 lifecycle integration; P10 completed structural self-adoption and activated exact-main authority; P11 exact-main run 33365910370 certified closed precursor distributions; P12 implements final editorial ownership and an authenticated no-rebuild tag publisher pending exact-main certification
+    - P05 reproduced exact Identity main with 62 representations and 220 required browser traces; P06-P08 completed provider-neutral authority, certification, GitHub adoption, runtime, trusted inputs, and local PR parity; P09 completed packaged profile-v2 lifecycle integration; P10 completed structural self-adoption and activated exact-main authority; P11 exact-main run 33365910370 certified closed precursor distributions; P12 merge f4b314be03a7d4c3a85110b31c93e828e6484fe7 and release run 33388459806 passed, but their bytes are superseded before tagging by the owner-directed DevOps comparison
     - every candidate job uses a fresh standard GitHub-hosted VM; the public repository receives free unlimited standard-runner execution and has no self-hosted fallback
     - main is protected by active repository ruleset 21862678 requiring pull requests, current governance-truthfulness, pack-checks, ast-checks, resolved conversations, and no force push or deletion
     - evidence execution uses the explicitly selected Python and propagates its lexical executable directory and required loader environment into detached positive and negative-control worktrees
     - P03's canonical preflight runs before evidence; exact contract-owned pytest manifests and run-attempt-specific, disjoint artifact namespaces prevent stale fan-in while profile-v2 truth independently verifies immutable session bindings
+    - strict git-history phase retention is selected; P01-P11 active triplets and hotfix records are represented by compact completed-only rows with exact f4b314be03a7d4c3a85110b31c93e828e6484fe7 custody and no retroactive derived state
   active_artifacts:
     spec: plans/product-spec.yml
     build_plan: plans/build-plan.yml

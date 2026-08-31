@@ -684,6 +684,111 @@ def test_cleanup_git_history_mode_removes_triplet_after_verifying_head(
     assert all(artifact["git_commit"] == commit for artifact in entry["archived_artifacts"])
 
 
+def test_cleanup_git_history_compacts_completed_without_retroactive_truth(
+    tmp_path: Path,
+) -> None:
+    cleanup = _load_cleanup_module()
+    repo = tmp_path / "repo"
+    _write_yaml(
+        repo / "governance/artifact-manifest.yml",
+        {
+            "phase_retention_policy": {
+                "history_path": "plans/phase-history.yml",
+                "active_window": {
+                    "include_active": True,
+                    "include_next": True,
+                    "keep_recent_closed": 0,
+                },
+                "archive": {
+                    "root": "governance/archive/phase-artifacts/",
+                    "closed_phase_statuses": ["completed"],
+                    "preserve_hotfix_logs": True,
+                },
+            }
+        },
+    )
+    _write_yaml(
+        repo / "plans/build-plan.yml",
+        {
+            "phase_sequence": [
+                {"phase_id": "P01", "build_block": "foundation"},
+                {"phase_id": "P02", "build_block": "delivery"},
+            ]
+        },
+    )
+    _write_yaml(repo / "plans/phase-ledger.yml", {"active_phase": {"id": "P02"}})
+    _write_yaml(
+        repo / "plans/product-spec.yml",
+        {
+            "execution_phases": [
+                {"phase_id": "P01", "build_block": "foundation"},
+                {"phase_id": "P02", "build_block": "delivery"},
+            ]
+        },
+    )
+    _write_yaml(repo / "plans/phase-01-plan.yml", {"phase": {"build_block": "foundation"}})
+    _write_yaml(repo / "plans/phase-01-workitems.yml", {"workitems": []})
+    _write_yaml(
+        repo / "phases/phase-01-log.yml",
+        {
+            "document": {"status": "completed"},
+            "phase": {"build_block": "foundation"},
+            "summary": {"outcome": "implemented", "highlights": ["done"]},
+        },
+    )
+    reference_fixture = repo / "tests/reference_fixture.py"
+    reference_fixture.parent.mkdir(parents=True)
+    reference_fixture.write_text('OLD_AUDIT_ROOT = "docs/audits/"\n', encoding="utf-8")
+    commit = _init_git_repo(repo)
+
+    report = cleanup.apply_cleanup(
+        repo,
+        assume_yes=True,
+        phase_retention_mode="git-history",
+    )
+
+    assert report.applied
+    assert not (repo / "plans/phase-01-plan.yml").exists()
+    history = yaml.safe_load((repo / "plans/phase-history.yml").read_text(encoding="utf-8"))
+    entry = history["entries"][0]
+    assert entry["status"] == "completed"
+    assert entry["retention_source"] == "git_history"
+    assert entry["retention_ref"] == commit
+    assert "derived_state_at_capture" not in entry
+    assert "verification_snapshot" not in entry
+    assert any("without a retroactive derived closeout claim" in value for value in report.warnings)
+    assert reference_fixture.read_text(encoding="utf-8") == 'OLD_AUDIT_ROOT = "docs/audits/"\n'
+
+
+def test_cleanup_transaction_excludes_linked_worktree_git_control_file(
+    tmp_path: Path,
+) -> None:
+    cleanup = _load_cleanup_module()
+    repo = tmp_path / "linked-worktree"
+    repo.mkdir()
+    git_control = repo / ".git"
+    git_control.write_text("gitdir: /trusted/admin/worktrees/demo\n", encoding="utf-8")
+    tracked = repo / "tracked.txt"
+    tracked.write_text("before\n", encoding="utf-8")
+
+    before = cleanup._file_snapshot(repo)
+    before_modes = cleanup._file_modes(repo)
+    assert ".git" not in before
+    assert ".git" not in before_modes
+
+    after = {"tracked.txt": b"after\n"}
+    cleanup._commit_shadow(
+        repo,
+        before,
+        after,
+        before_modes,
+        {"tracked.txt": tracked.stat().st_mode},
+    )
+
+    assert git_control.read_text(encoding="utf-8") == "gitdir: /trusted/admin/worktrees/demo\n"
+    assert tracked.read_text(encoding="utf-8") == "after\n"
+
+
 def test_cleanup_phase_history_stays_within_context_budget_for_multiple_phases(
     tmp_path: Path,
 ) -> None:

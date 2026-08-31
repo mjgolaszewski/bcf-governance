@@ -58,6 +58,28 @@ def test_editorial_tone_and_topic_owner_mutants_are_rejected(tmp_path: Path) -> 
     assert any("disallowed editorial phrase: manifesto" in error for error in errors)
     assert any("disallowed editorial phrase: revolutionary" in error for error in errors)
 
+    readme.write_bytes((REPO_ROOT / "README.md").read_bytes())
+    readme.write_text(
+        readme.read_text(encoding="utf-8")
+        .replace(
+            "## The Philosophy: Shifting from Human DevOps to Agentic DevSecOps",
+            "## Delivery comparison",
+        )
+        .replace(
+            "cannot certify",
+            "may certify",
+            1,
+        ),
+        encoding="utf-8",
+    )
+    errors = module.validate_editorial_contract(copied)
+    assert any("missing heading: The Philosophy:" in error for error in errors)
+    assert any(
+        "missing architectural position: an agent cannot certify its own output"
+        in error
+        for error in errors
+    )
+
 
 def test_broken_local_documentation_link_is_rejected(tmp_path: Path) -> None:
     module = _checker()

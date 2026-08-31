@@ -125,6 +125,8 @@ def _iter_repo_files(repo_root: Path) -> list[Path]:
         dirnames[:] = [name for name in dirnames if name not in SKIP_DIRS]
         root_path = Path(current_root)
         for filename in filenames:
+            if root_path == repo_root and filename == ".git":
+                continue
             files.append(root_path / filename)
     return sorted(files)
 def _is_text_file(path: Path) -> bool:
@@ -411,14 +413,17 @@ def _prune_empty_dirs(repo_root: Path) -> None:
 
 def _reference_replacements(actions: list[CleanupAction]) -> dict[str, str]:
     replacements: dict[str, str] = {}
-    for action in actions:
-        if action.kind == "move_audit_artifact" and action.destination is not None:
-            replacements[action.source] = action.destination
+    moved_audits = [
+        action
+        for action in actions
+        if action.kind == "move_audit_artifact" and action.destination is not None
+    ]
+    for action in moved_audits:
+        replacements[action.source] = action.destination
     for source_root, destination_root in AUDIT_MOVE_ROOTS.items():
-        replacements[f"{source_root}/"] = f"{destination_root.rstrip('/')}/"
+        if any(_path_is_under(action.source, source_root) for action in moved_audits):
+            replacements[f"{source_root}/"] = f"{destination_root.rstrip('/')}/"
     return replacements
-
-
 def _effective_phase_retention_mode(
     *,
     archive_closed_phases: bool,

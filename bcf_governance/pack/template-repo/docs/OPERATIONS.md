@@ -41,7 +41,9 @@ An absent `profile_contract_version` means v1. Fresh Standard and Regulated
 installs default to v2; Lite defaults to v1. Promote explicitly with
 `bcf profile promote --repo-root . --to standard --contract-version 2.0`
 and either `--check` or `--apply`. Promotion and normal upgrades preserve
-workflow bytes. Use the separate `bcf ci adopt github` transaction, including
+workflow bytes. Promotion validation also preserves local Git custody so
+retained phase-history hashes remain mechanically verifiable. Use the separate
+`bcf ci adopt github` transaction, including
 explicit candidate labels, trusted labels, producer argv, and either `--check`
 or `--apply`, when the repository elects to install BCF's GitHub reference
 topology.
@@ -130,18 +132,21 @@ Use `governance/repo-cleanup-contract.yml` for machine-readable cleanup rules an
 To opt into strict historical phase retention, run one of the retention modes:
 
 ```bash
-bcf cleanup --repo-root . --phase-retention-mode --truth-report .artifacts/bcf/truth.json --apply # non-authoritative path; verify sha256 against its CI artifact
+bcf cleanup --repo-root . --phase-retention-mode --apply
 bcf cleanup --repo-root . --phase-retention-mode archive --truth-report .artifacts/bcf/truth.json --apply # non-authoritative path; verify sha256 against its CI artifact
 ```
 
 Append `--yes` to either retention command in noninteractive automation.
 
-The first command uses `git-history` retention and removes stale closed phase
-artifacts after recording hashes and git refs. The archive mode moves stale
-closed phase artifacts into ignored `governance/archive/phase-artifacts/`
-storage. Phase-scoped hotfix logs and matching hotfix lane records leave active
-governance with their related phase. With no phase-retention switch, cleanup
-keeps existing historical triplet and hotfix behavior.
+The first command uses `git-history` retention and removes stale completed phase
+artifacts after recording hashes and Git refs. Add a current `--truth-report`
+only to preserve a mechanically derived closeout snapshot; without one, the
+compact row records authored completion only. Archive mode requires a passing
+closed report and moves stale artifacts into ignored
+`governance/archive/phase-artifacts/` storage. Phase-scoped hotfix logs and
+matching hotfix lane records leave active governance with their related phase.
+With no phase-retention switch, cleanup keeps existing historical triplet and
+hotfix behavior.
 
 ## Runtime Diagnostics
 

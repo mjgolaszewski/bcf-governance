@@ -349,12 +349,17 @@ def _phase_retention_actions(
             continue
         if _phase_status_for_retention(repo_root, phase_id) not in statuses:
             continue
-        if phase_id not in reports:
+        if phase_id not in reports and retention_mode != "git_history":
             warnings.append(
                 f"phase {phase_id} is completed but cannot be retained without a passing "
                 "closed truth report"
             )
             continue
+        if phase_id not in reports:
+            warnings.append(
+                f"phase {phase_id} will be retained in git history as authored completed "
+                "without a retroactive derived closeout claim"
+            )
         for source in _phase_retained_artifact_paths(repo_root, phase_id):
             source_path = repo_root / source
             if not source_path.exists():
@@ -438,6 +443,8 @@ def _verify_truth_bound_sources(
         phase_id = _phase_id_from_retained_artifact_path(action.source)
         if phase_id is None:
             continue
+        if phase_id not in reports:
+            continue
         commit_sha = reports[phase_id]["report"]["subject"]["commit_sha"]
         result = subprocess.run(
             ["git", "-C", str(repo_root), "show", f"{commit_sha}:{action.source}"],
@@ -457,7 +464,7 @@ def _phase_history_entry(
     mode: str,
     retention_ref: str | None,
     existing_entry: dict[str, Any] | None,
-    truth_snapshot: dict[str, Any],
+    truth_snapshot: dict[str, Any] | None,
 ) -> dict[str, Any]:
     plan = _load_yaml(repo_root / f"plans/{_phase_stem(phase_id)}-plan.yml") or {}
     log = _load_yaml(repo_root / f"phases/{_phase_stem(phase_id)}-log.yml") or {}
@@ -524,8 +531,14 @@ def _phase_history_entry(
         "retention_source": mode,
         **({"retention_ref": retention_ref} if retention_ref is not None else {}),
         "status": "completed",
-        "derived_state_at_capture": "closed",
-        "verification_snapshot": truth_snapshot,
+        **(
+            {
+                "derived_state_at_capture": "closed",
+                "verification_snapshot": truth_snapshot,
+            }
+            if truth_snapshot is not None
+            else {}
+        ),
         "outcome": str(outcome or "completed"),
         "summary": highlights if isinstance(highlights, list) and highlights else ["closed phase retained"],
         "validation": validation if isinstance(validation, list) else [],
@@ -556,7 +569,7 @@ def _write_phase_history(
         return None
     reports = truth_reports or {}
     missing_reports = sorted(set(phase_ids) - set(reports))
-    if missing_reports:
+    if missing_reports and retention_mode != "git_history":
         raise RuntimeError(
             "phase history requires passing closed truth reports for: "
             + ", ".join(missing_reports)
@@ -569,7 +582,8 @@ def _write_phase_history(
         stale_reports = sorted(
             phase_id
             for phase_id in phase_ids
-            if reports[phase_id]["report"]["subject"]["commit_sha"] != retention_ref
+            if phase_id in reports
+            and reports[phase_id]["report"]["subject"]["commit_sha"] != retention_ref
         )
         if stale_reports:
             raise RuntimeError(
@@ -620,7 +634,11 @@ def _write_phase_history(
             mode=retention_mode,
             retention_ref=retention_ref,
             existing_entry=existing_entries.get(phase_id),
-            truth_snapshot=reports[phase_id]["verification_snapshot"],
+            truth_snapshot=(
+                reports[phase_id]["verification_snapshot"]
+                if phase_id in reports
+                else None
+            ),
         )
         for phase_id in phase_ids
     )
