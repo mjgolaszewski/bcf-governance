@@ -265,7 +265,10 @@ def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
     assert 'repository != "mjgolaszewski/bcf-governance"' in commands
     assert "sha256sum --check SHA256SUMS" in commands
     assert "pip install --no-index" in commands
-    assert "bcf_governance-0.6.1-py3-none-any.whl" in commands
+    assert 'controller_wheels=("$BCF_BOOTSTRAP_DIR"/bcf_governance-*.whl)' in commands
+    assert 'test "${#controller_wheels[@]}" -eq 1' in commands
+    assert '"${controller_wheels[0]}"' in commands
+    assert "bcf_governance-0.6.1-py3-none-any.whl" not in commands
     assert "pip install -r" not in commands
     assert "actions/checkout" not in commands
     assert "existing trusted control installation has stale provenance" in commands
