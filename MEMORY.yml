@@ -66,7 +66,7 @@ known_constraints:
   - release tags are created only at a merge commit whose source and governance CI passed
   - standard hosted runners are free and unlimited while the repository remains public; larger-runner and artifact-storage costs remain separate
   - the persistent trusted VM may collect provider state and publish but may never check out or execute candidate code
-  - P10-HF10 is exact-main certified at 219337296dfdbbc0040ae97a7657189949524e24 by governance run 33352635401 and pack run 33352635387; artifact 9744155908 is the canonical disabled-topology controller; P10-HF11 binds immutable definition custody while activation remains deferred until its exact-main controller is installed on both trusted runners
+  - P10-HF11 is exact-main certified at 37475fbff2c5303762e0fdeb97e7cc7834bfe485 by governance run 33354682654 and pack run 33354682667; artifact 9744774824 is the canonical custody-aware controller; P10-HF12 pins self CI authority while activation remains deferred until this controller is installed and probed on both trusted runners
   - release execution and publication remain disabled until disposable candidate execution and isolated trusted publication are available
   - hosted jobs run to completion without polling, sleeping, idle waiters, or route fallback
   - every BCF behavior commit updates and validates BCF's own applicable governance contracts before successor work begins

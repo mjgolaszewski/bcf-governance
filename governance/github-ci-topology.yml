@@ -63,4 +63,4 @@ producer_workflows:
 - governance-pack
 activation_variable: BCF_CI_AUTHORITY_ENABLED
 dispatch_exact_ref: false
-controller_commit: 219337296dfdbbc0040ae97a7657189949524e24
+controller_commit: 37475fbff2c5303762e0fdeb97e7cc7834bfe485

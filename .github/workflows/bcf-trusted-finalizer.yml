@@ -11,7 +11,7 @@ permissions:
   actions: read
   contents: read
 env:
-  BCF_CONTROL_COMMIT: 219337296dfdbbc0040ae97a7657189949524e24
+  BCF_CONTROL_COMMIT: 37475fbff2c5303762e0fdeb97e7cc7834bfe485
 jobs:
   finalize:
     name: Reconstruct exact-main producer evidence

@@ -205,7 +205,7 @@ gates:
       kind: test_suite
       test_contract:
         junit_xml: .artifacts/junit/contract-test.xml
-        selectors: ['tests/test_self_governance_contracts.py::test_governance_evidence_shards_derive_every_required_gate_once', 'tests/test_self_governance_contracts.py::test_required_repository_artifact_contract_is_executable', 'tests/test_self_governance_contracts.py::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline', 'tests/test_self_governance_contracts.py::test_trusted_jobs_never_checkout_or_invoke_candidate_scripts', 'tests/test_self_governance_contracts.py::test_every_github_action_uses_the_canonical_immutable_pin', 'tests/test_self_governance_contracts.py::test_self_control_plane_is_an_exact_disabled_generator_product', 'tests/test_validate_governance_yaml.py::test_artifact_manifest_requires_standard_repository_artifact_contracts',
+        selectors: ['tests/test_self_governance_contracts.py::test_governance_evidence_shards_derive_every_required_gate_once', 'tests/test_self_governance_contracts.py::test_required_repository_artifact_contract_is_executable', 'tests/test_self_governance_contracts.py::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline', 'tests/test_self_governance_contracts.py::test_trusted_jobs_never_checkout_or_invoke_candidate_scripts', 'tests/test_self_governance_contracts.py::test_every_github_action_uses_the_canonical_immutable_pin', 'tests/test_self_governance_contracts.py::test_self_control_plane_is_an_exact_disabled_generator_product', 'tests/test_self_governance_contracts.py::test_self_ci_authority_matches_immutable_workflow_definitions', 'tests/test_validate_governance_yaml.py::test_artifact_manifest_requires_standard_repository_artifact_contracts',
           'tests/test_validate_governance_yaml.py::test_pull_request_validation_requires_changelog_update', tests/test_ci_authority.py,
           tests/test_ci_certification.py, tests/test_ci_authority_decisions.py, tests/test_release_receipts.py, tests/test_ci_github_reference.py,
           tests/test_ci_github_controller.py, tests/test_local_pr.py, tests/test_runtime_capacity.py, tests/test_trusted_inputs.py,
@@ -224,7 +224,7 @@ gates:
         kind: test_node_failure
         node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']
     - id: trusted-bootstrap-artifact-identity-must-fail
-      mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: 'BCF_BOOTSTRAP_ARTIFACT_ID: "9744155908"', replace: 'BCF_BOOTSTRAP_ARTIFACT_ID: "1"'}
+      mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: 'BCF_BOOTSTRAP_ARTIFACT_ID: "9744774824"', replace: 'BCF_BOOTSTRAP_ARTIFACT_ID: "1"'}
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']
@@ -252,6 +252,9 @@ gates:
     - id: ci-authority-activation-gate-must-fail
       mutation: {path: .github/workflows/bcf-exact-main.yml, search: "if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}", replace: 'if: ${{ true }}'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_control_plane_is_an_exact_disabled_generator_product']}
+    - id: self-ci-authority-definition-pin-must-fail
+      mutation: {path: governance/ci-authority.yml, search: 'trusted_workflow_sha256: 4c3ba640bead109aa661f7e126d5047d9c600a57d1511de8768974cf9c5954fd', replace: 'trusted_workflow_sha256: 0000000000000000000000000000000000000000000000000000000000000000'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_ci_authority_matches_immutable_workflow_definitions']}
     - id: pinned-workflow-definition-custody-must-fail
       mutation: {path: bcf_governance/tooling/ci_github_identity.py, search: 'if current.blob_oid != pinned.blob_oid or current.content != pinned.content:', replace: 'if False and (current.blob_oid != pinned.blob_oid or current.content != pinned.content):'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_pinned_definition_must_still_match_current_main']}
