@@ -160,7 +160,7 @@ execution_evidence:
   - the governance producer pin now binds the PR-evaluation workflow bytes to commit c339e7fedd4def5de53cc052ac6300f805d682b8, blob cee4baacd556e04738473148cd8bd05f2231e662, and SHA-256 20102af41abcb1bd9c5e82c6c5c536cb59e555c3cc5f7a3a86b42ea444b9ad0a
   - the controller bridge pins artifact 9770488354, its run, attempt, provider digest, wheel digest,
     commit, and tree into the owner-dispatched bootstrap and independent probe; publication remains disabled
-  - the activation seam contains 476 source-test nodes, 211 contract-test nodes, and 89 cause-verified
+  - the activation seam contains 476 source-test nodes, 211 contract-test nodes, and 90 cause-verified
     controls while preserving the 21-gate profile and all protected PR check identities
   - release authority now consumes one provider-artifact semantic owner for exact role, workflow,
     run, attempt, repository, subject, ID, name, and digest custody; the verifier authenticates the

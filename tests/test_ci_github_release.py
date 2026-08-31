@@ -336,6 +336,9 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
         "bcf_governance.tooling.ci_github_release.select_latest_admission",
         lambda *args, **kwargs: ("100", 1),
     )
+    controller_wheel = tmp_path / "bcf_governance-0.7.1-py3-none-any.whl"
+    controller_wheel.write_bytes(b"controller")
+    controller_wheel_sha256 = _sha(controller_wheel)
     result = authorize_release(
         object(),  # type: ignore[arg-type]
         repository="owner/repo",
@@ -355,14 +358,32 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
             "artifact_id": "42",
             "artifact_name": "controller",
             "provider_digest": f"sha256:{'b' * 64}",
-            "wheel_sha256": "c" * 64,
+            "wheel_sha256": controller_wheel_sha256,
             "commit_sha": COMMIT,
             "tree_sha": TREE,
         },
+        controller_wheel_path=controller_wheel,
         output_path=tmp_path / "authorization.json",
     )
     assert result["exact_main"]["certification_artifact"] == certification_artifact.as_dict()
     assert result["controller"]["run_id"] == "100"
+    controller = dict(result["controller"])
+    controller["wheel_sha256"] = "0" * 64
+    with pytest.raises(GitHubControllerError, match="controller wheel bytes"):
+        authorize_release(
+            object(),  # type: ignore[arg-type]
+            repository="owner/repo",
+            bundle_dir=bundle,
+            run_id="60",
+            run_attempt="1",
+            certification_artifact={
+                "run_id": "50", "run_attempt": "1", "artifact_id": "41",
+                "artifact_name": "certification", "provider_digest": f"sha256:{'a' * 64}",
+            },
+            controller=controller,
+            controller_wheel_path=controller_wheel,
+            output_path=tmp_path / "rejected-authorization.json",
+        )
 
 
 def test_provider_verifier_requires_authorizer_and_build_same_attempt(

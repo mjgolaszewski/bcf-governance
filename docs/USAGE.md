@@ -154,6 +154,8 @@ authorizer's release run and attempt; the verifier and collector independently r
 the build artifact; publication accepts only the provider-authenticated collector
 receipt whose asset digests match the bytes being published. Caller-supplied IDs and
 digests are lookup keys, not authority.
+The authorizer also hashes the downloaded controller wheel and requires it to match the
+controller identity used by the release receipt.
 
 The release-byte inventory is closed: one wheel, one source archive, and one
 `SHA256SUMS`. The verifier parses the checksum file and independently recomputes both

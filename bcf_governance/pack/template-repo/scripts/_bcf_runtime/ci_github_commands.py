@@ -176,6 +176,7 @@ def _release_parser() -> argparse.ArgumentParser:
     authorize.add_argument("--controller-run-attempt", required=True)
     authorize.add_argument("--controller-provider-digest", required=True)
     authorize.add_argument("--controller-wheel-sha256", required=True)
+    authorize.add_argument("--controller-wheel", type=Path, required=True)
     authorize.add_argument("--controller-commit", required=True)
     authorize.add_argument("--controller-tree", required=True)
     authorize.add_argument("--certification-artifact-id", required=True)
@@ -282,6 +283,7 @@ def _release(argv: list[str]) -> None:
                     "artifact_name": args.certification_artifact_name,
                     "provider_digest": args.certification_provider_digest,
                 },
+                controller_wheel_path=args.controller_wheel,
                 output_path=args.output,
             )
         elif args.operation == "collect":

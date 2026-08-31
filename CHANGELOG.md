@@ -48,6 +48,8 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   to authenticate the collector receipt and its exact asset inventory.
 - Made independent verification require exactly one wheel, one source archive, and a
   `SHA256SUMS` file whose two declarations match the archive bytes.
+- Required the trusted authorizer to hash the downloaded controller wheel instead of
+  accepting its expected wheel digest as authority.
 
 ### Changed
 

@@ -96,6 +96,7 @@ def authorize_release(
     run_attempt: object,
     certification_artifact: dict[str, str],
     controller: dict[str, str],
+    controller_wheel_path: Path,
     output_path: Path,
 ) -> dict[str, Any]:
     """Authorize a release from the newest exact-main v1.1 certification only."""
@@ -184,6 +185,8 @@ def authorize_release(
         raise GitHubControllerError("controller artifact is not bound to release subject")
     if not re.fullmatch(r"[a-f0-9]{64}", controller["wheel_sha256"]):
         raise GitHubControllerError("controller wheel digest must be SHA-256")
+    if _sha256(controller_wheel_path) != controller["wheel_sha256"]:
+        raise GitHubControllerError("controller wheel bytes do not match release authority")
     authenticated_controller = authenticate_role_artifact(
         api,
         repository=repository,
