@@ -4,13 +4,13 @@ document:
   id: bcf-governance-phase-11-workitems
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: active
+  status: completed
   path: plans/phase-11-workitems.yml
   phase_id: P11
 workitems:
 - id: P11-P0-01
   priority: P0
-  status: IN_PROGRESS
+  status: DONE
   summary: owner-and-main-only trusted authorization from the latest exact-main certification
   acceptance:
   - owner-and-main-only trusted authorization is read-only and checks out no candidate code
@@ -18,7 +18,7 @@ workitems:
   acceptance_evidence: [contract-test, security-review]
 - id: P11-P0-02
   priority: P0
-  status: TODO
+  status: DONE
   summary: clean 0.7.0 wheel and sdist proof on one fresh hosted candidate VM
   acceptance:
   - wheel installs and validates a clean generated repository
@@ -26,7 +26,7 @@ workitems:
   acceptance_evidence: [test, package-build]
 - id: P11-P0-03
   priority: P0
-  status: TODO
+  status: DONE
   summary: exact artifact hashes and CI certification bound to an output-only release receipt
   acceptance:
   - current-attempt governance evidence independently derives closed truth
@@ -34,7 +34,7 @@ workitems:
   acceptance_evidence: [contract-test, governance-validate]
 - id: P11-P1-01
   priority: P1
-  status: TODO
+  status: DONE
   summary: durable certified artifact upload without tag creation or publication
   acceptance:
   - artifact upload is exact-SHA and exact-attempt named

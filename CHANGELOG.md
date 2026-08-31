@@ -123,6 +123,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Required a completed authored phase before terminal CI can compute a closed release result;
+  the P11 PR proved that a planned phase cannot pass by green producer evidence alone.
 - Made source-distribution verification package exact test manifests and create
   clean tracked-file custody before exercising the complete extracted suite.
 - Made pending producer completion a mechanically authenticated no-op and bound
