@@ -1,0 +1,47 @@
+document:
+  kind: hotfix_execution_log
+  name: P13-HF01 Hotfix Log
+  id: bcf-governance-phase-13-hotfix01
+  version: 1.0.0
+  generated_at_utc: '2026-08-31T00:00:00Z'
+  status: planned
+  path: phases/phase-13-hotfix01.yml
+hotfix:
+  id: P13-HF01
+  mode: full
+  related_phase_id: P13
+  hotfix_number: 1
+  summary: remediate public exact-main and release authority defects discovered after
+    v0.7.0
+execution_evidence:
+  planned_commands:
+  - /docker/bcf-governance/.venv/bin/python scripts/validate_governance_yaml.py --repo-root
+    .
+  - /docker/bcf-governance/.venv/bin/python -m pytest tests
+  executed_commands: []
+  notes:
+  - full mode is required because this changes public authority and security contracts
+  - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
+    finalizer, status-publisher, and release workflows named in the active phase ledger
+  - root causes are missing common-admission membership, success fallback, duplicated workflow
+    authority, candidate-authored receipts, open dependency resolution, and mutable publication
+  - preserve authority-v1 compatibility while requiring v1.1 for new exact-main and release claims
+  - publication and repository setting mutations remain behind explicit owner approval
+  - never mutate or retroactively recertify v0.7.0 provider objects
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

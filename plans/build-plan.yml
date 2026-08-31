@@ -19,7 +19,7 @@ planning_contract:
     - completeness_standard
   completeness_standard: full_completeness_for_declared_scope
 planning_inputs:
-  date: "2026-08-30"
+  date: "2026-08-31"
   planner: "codex"
   primary_source_of_truth: plans/product-spec.yml
   governance_references:
@@ -65,24 +65,8 @@ global_gates:
       - every code-executing job receives a fresh disposable VM and ephemeral runner identity
       - no GitHub-hosted fallback is configured
 phase_sequence:
-  - phase_id: P01
-    build_block: "self-governance-0.6.1"
-    objective: "adopt BCF 0.6.1 standard governance in the framework repository"
-    hard_dependencies: []
-    tightly_scoped_deliverables:
-      - "prepare BCF 0.6.1 with required root artifacts, consolidated documentation, and standard self-governance"
-    parallelizable_workstreams:
-      - "evidence-integrity contracts and required artifact semantics"
-      - "documentation consolidation and release surfaces"
-      - "standard self-governance and behavioral controls"
-    verification_commands: [make governance-validate, make test]
-  - phase_id: P02
-    build_block: "bcf-0.7-program-and-runner-cutover"
-    objective: "freeze the 0.7 train and establish a fail-closed local workflow cutover"
-    hard_dependencies: [P01]
-    tightly_scoped_deliverables: ["record the full release program and upstream applicability", "classify every job and remove hosted fallback", "bind disposable and trusted runner activation to P10 while remote execution stays fail-closed"]
-    parallelizable_workstreams: ["program governance", "runner substrate and workflow cutover"]
-    verification_commands: [".venv/bin/python scripts/validate_governance_yaml.py --repo-root .", ".venv/bin/python -m pytest tests"]
+  - {phase_id: P01, build_block: "self-governance-0.6.1", objective: "adopt BCF 0.6.1 standard governance in the framework repository", hard_dependencies: [], tightly_scoped_deliverables: ["prepare BCF 0.6.1 with required root artifacts, consolidated documentation, and standard self-governance"], parallelizable_workstreams: ["evidence-integrity contracts", "documentation", "self-governance"], verification_commands: [make governance-validate, make test]}
+  - {phase_id: P02, build_block: "bcf-0.7-program-and-runner-cutover", objective: "freeze the 0.7 train and establish a fail-closed local workflow cutover", hard_dependencies: [P01], tightly_scoped_deliverables: ["record the release program", "classify jobs and remove hosted fallback", "defer substrate activation to P10"], parallelizable_workstreams: ["program governance", "runner substrate"], verification_commands: [".venv/bin/python scripts/validate_governance_yaml.py --repo-root .", ".venv/bin/python -m pytest tests"]}
   - {phase_id: P03, build_block: "preflight-interpreter-sessions-cleanup", objective: "add cheap preflight, interpreter authority, evidence sessions, exact fan-in, retention safety, and cleanup hardening", hard_dependencies: [P02], tightly_scoped_deliverables: ["preflight and interpreter authority", "schema-2-compatible sessions and exact-attempt fan-in", "retention and runtime cleanup controls"], parallelizable_workstreams: ["preflight and sessions", "runtime cleanup"], verification_commands: [".venv/bin/python -m pytest tests"]}
   - {phase_id: P04, build_block: "python-soip", objective: "generalize and self-adopt Python SOIP", hard_dependencies: [P03], tightly_scoped_deliverables: ["Python inventory, registry, traces, report, and causal controls"], parallelizable_workstreams: ["contracts and engine", "registry and adversarial tests"], verification_commands: [".venv/bin/python -m pytest tests"]}
   - {phase_id: P05, build_block: "typescript-soip-and-identity-proof", objective: "add optional TypeScript tracing and exact Identity proof", hard_dependencies: [P04], tightly_scoped_deliverables: ["consumer-owned TypeScript analyzer", "cross-language traces", "reproducible Identity proof"], parallelizable_workstreams: ["TypeScript adapter", "Identity benchmark"], verification_commands: [".venv/bin/python -m pytest tests"]}
@@ -90,6 +74,7 @@ phase_sequence:
   - {phase_id: P07, build_block: "ci-truth-and-revocation", objective: "integrate CI certification with truth and release receipts", hard_dependencies: [P06], tightly_scoped_deliverables: ["collector and normalizer", "truth, revocation, cancellation, and status authority"], parallelizable_workstreams: ["truth integration", "adversarial controls"], verification_commands: [".venv/bin/python -m pytest tests"]}
   - {phase_id: P08, build_block: "github-adopter-runtime-pr-parity", objective: "ship the GitHub topology, transactional adopter, runtime adapter, and local PR parity", hard_dependencies: [P07], tightly_scoped_deliverables: ["GitHub reference pack", "safe adopter", "runtime and local PR adapters"], parallelizable_workstreams: ["GitHub adapter", "runtime and PR parity"], verification_commands: [".venv/bin/python -m pytest tests"]}
   - {phase_id: P09, build_block: "profile-v2-integration", objective: "integrate v2 through public packaging and lifecycle commands", hard_dependencies: [P08], tightly_scoped_deliverables: ["profiles and transactional promotion", "installer, upgrader, doctor, cleanup, templates, wheel, and sdist parity"], parallelizable_workstreams: ["profile behavior", "packaging parity"], verification_commands: [".venv/bin/python -m pytest tests"]}
-  - {phase_id: P10, build_block: "bcf-standard-v2-dogfood", objective: "make BCF itself a complete Standard-v2 consumer", hard_dependencies: [P09], tightly_scoped_deliverables: ["self-adopt generated contracts", "provision and prove disposable candidate and isolated trusted runner substrates", "exact-main canary and protected stable check"], parallelizable_workstreams: ["dogfood migration", "runner substrate proof", "remote activation"], verification_commands: [".venv/bin/python -m pytest tests", "bcf truth"]}
+  - {phase_id: P10, build_block: "bcf-standard-v2-dogfood", objective: "make BCF itself a complete Standard-v2 consumer", hard_dependencies: [P09], tightly_scoped_deliverables: ["self-adopt generated contracts", "prove disposable candidate and trusted runners", "exact-main canary and protected check"], parallelizable_workstreams: ["dogfood migration", "runner proof", "remote activation"], verification_commands: [".venv/bin/python -m pytest tests", "bcf truth"]}
   - {phase_id: P11, build_block: "exact-main-release-artifacts", objective: "build and certify 0.7.0 release bytes from exact merged main", hard_dependencies: [P10], tightly_scoped_deliverables: ["clean wheel and sdist proof", "artifact hashes bound to final release receipt"], parallelizable_workstreams: ["artifact build", "certification"], verification_commands: ["bcf truth"]}
-  - {phase_id: P12, build_block: "editorial-refresh-and-release", objective: "refresh final documentation, compact completed phase custody, and publish immutable certified bytes", hard_dependencies: [P11], tightly_scoped_deliverables: ["README-led editorial refresh", "honest git-history phase compaction", "final recertification", "annotated tag, attestation, and exact-byte publication"], parallelizable_workstreams: ["documentation", "phase retention", "release verification"], verification_commands: ["bcf truth"]}
+  - {phase_id: P12, build_block: "editorial-refresh-and-release", objective: "refresh final documentation, compact completed phase custody, and publish certified bytes", hard_dependencies: [P11], tightly_scoped_deliverables: ["README-led editorial refresh", "phase compaction", "recertification", "annotated tag and exact-byte publication"], parallelizable_workstreams: ["documentation", "phase retention", "release verification"], verification_commands: ["bcf truth"]}
+  - {phase_id: P13, build_block: post-release-authority-remediation-0.7.1, objective: "remediate post-release exact-main and release authority defects", hard_dependencies: [P12], tightly_scoped_deliverables: ["authority v1.1 and common admission membership", "independent release-byte verification and trusted receipt", "closed release dependencies and provider immutability proof", "exact Identity proof and provider custody"], parallelizable_workstreams: ["authority contracts and controller", "workflow topology", "release closure and verification", "governance and provider evidence"], verification_commands: [".venv/bin/python scripts/validate_governance_yaml.py --repo-root .", ".venv/bin/python -m pytest tests", "bcf truth"]}

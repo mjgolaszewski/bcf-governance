@@ -1,0 +1,81 @@
+document:
+  kind: post_release_authority_audit
+  name: BCF Governance v0.7.0 Post-Release Authority Audit
+  id: bcf-governance-v0.7.0-post-release-authority
+  version: 1.0.0
+  generated_at_utc: '2026-08-31T00:00:00Z'
+  status: confirmed_authority_limitation
+  path: audits/v0.7.0-post-release-authority.yml
+subject:
+  repository: mjgolaszewski/bcf-governance
+  repository_id: 1207503211
+  commit: 0e965b2197e776ad411b67820dbd5586263abde1
+  tree: 363d2424ac4ad23f7d314d508de323acf0e4fe62
+  tag:
+    name: v0.7.0
+    object: dcdb2228a9b977c9f2fb9618c6b4c87320e3b473
+    type: annotated
+    target: 0e965b2197e776ad411b67820dbd5586263abde1
+    verification: {verified: false, reason: unsigned}
+  release:
+    id: 379785364
+    draft: false
+    prerelease: false
+    published_at: '2026-08-31T13:40:30Z'
+    immutable: false
+    assets:
+    - {id: 538039433, name: bcf_governance-0.7.0-py3-none-any.whl, size: 535307, digest: 'sha256:70de17b9db74a33a4d7cd92138a0bf8e7d47a461d384453ef00215a081cf0eb9', attestations: 1}
+    - {id: 538039440, name: bcf_governance-0.7.0.tar.gz, size: 957795, digest: 'sha256:4aff767ddc495411df58cb46436a1ad599181721701cf665e09f43cc5d383528', attestations: 1}
+    - {id: 538039443, name: SHA256SUMS, size: 198, digest: 'sha256:031f4e7316587294d4be527c7ed5e7df33245a9a1c2103959afd70f8e301ecab', attestations: 1}
+  immutable_release_setting: {enabled: false, enforced_by_owner: false}
+provider_snapshot:
+  workflows:
+  - {id: 346274480, path: .github/workflows/bcf-exact-main.yml, role: admission}
+  - {id: 346274482, path: .github/workflows/bcf-status-publisher.yml, role: status_publisher}
+  - {id: 346177113, path: .github/workflows/bcf-trusted-control-bootstrap.yml, role: bootstrap}
+  - {id: 346154319, path: .github/workflows/bcf-trusted-control-probe.yml, role: probe}
+  - {id: 346274484, path: .github/workflows/bcf-trusted-finalizer.yml, role: finalizer}
+  - {id: 265590974, path: .github/workflows/governance-mutants-nightly.yml, role: high_value_mutants}
+  - {id: 265590975, path: .github/workflows/governance-mutants-weekly.yml, role: full_mutants}
+  - {id: 265590976, path: .github/workflows/governance-pack.yml, role: package_producer}
+  - {id: 334490532, path: .github/workflows/governance.yml, role: governance_producer}
+  - {id: 331325235, path: .github/workflows/release.yml, role: release_build_and_publisher}
+  runs:
+  - {id: 33397024737, attempt: 1, role: admission, event: push, conclusion: success}
+  - {id: 33397024863, attempt: 1, role: governance_producer, event: push, conclusion: success}
+  - {id: 33397024772, attempt: 1, role: package_producer, event: push, conclusion: success}
+  - {id: 33397718393, attempt: 1, role: finalizer, event: workflow_run, conclusion: success}
+  - {id: 33397753437, attempt: 1, role: status_publisher, event: workflow_run, conclusion: success}
+  - {id: 33397816292, attempt: 1, role: release_build, event: workflow_dispatch, conclusion: success}
+  - {id: 33398228764, attempt: 1, role: release_publisher, event: push, conclusion: success}
+  - {id: 33397076474, attempt: 1, role: high_value_mutants, event: workflow_dispatch, conclusion: success}
+  - {id: 33397078844, attempt: 1, role: full_mutants, event: workflow_dispatch, conclusion: success}
+  controller_artifact:
+    id: 9759782970
+    run_id: 33397024772
+    run_attempt: 1
+    name: bcf-trusted-control-0e965b2197e776ad411b67820dbd5586263abde1-1
+    provider_digest: 'sha256:e3405f2a1e573d94b8dd4c509fe64212d0904da346d69381a5c356f04fc26910'
+  release_artifact:
+    id: 9760117244
+    run_id: 33397816292
+    run_attempt: 1
+    provider_digest: 'sha256:6265ba83b684de5d2a944d5c92350b907f1add2d370c54de90a687f659202936'
+  ruleset:
+    id: 21862678
+    enforcement: active
+    required_checks:
+    - Verify exact-tree governance evidence
+    - Test package, templates, and release tooling
+    - Verify template architecture boundaries
+confirmed_defects:
+- independently selected same-SHA producer runs do not prove common admission membership
+- release authority prefilters success and can fall back instead of revoking earlier success
+- trusted workflow YAML duplicates provider selection and release decisions in shell and jq
+- the candidate build path can construct an authoritative-looking release receipt
+- release dependencies are range-resolved rather than closed to exact admitted wheels
+- provider immutability was not enabled before v0.7.0 publication
+historical_custody:
+  disposition: published_and_attested_provider_mutable_not_certified_under_authority_v1.1
+  mutation_policy: never move the tag, edit the release, replace assets, rewrite attestations, or claim retroactive v1.1 certification
+  remediation: P13-HF01 prepares v0.7.1 under corrected authority and publication contracts

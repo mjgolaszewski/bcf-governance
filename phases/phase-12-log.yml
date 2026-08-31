@@ -10,10 +10,10 @@ phase:
   id: P12
   build_block: editorial-refresh-and-release
 summary:
-  outcome: owner_directed_readme_contrast_ready_for_recertification
+  outcome: v0.7.0_published_attested_provider_mutable_authority_limitations_recorded
   highlights:
-  - P12 is active for final documentation, exact-byte recertification, tagging, attestation,
-    and v0.7.0 publication
+  - P12 completed final documentation, exact-byte build, annotated tagging, attestation, and
+    v0.7.0 publication at commit 0e965b2197e776ad411b67820dbd5586263abde1
   - phase artifacts were scaffolded from the governance template
   - P11 exact-main release run 33365910370 computed closed truth and certified wheel and source
     distribution bytes while mechanically skipping publication
@@ -30,6 +30,12 @@ summary:
     to exact commit and SHA-256 custody without retroactive derived-state claims
   - self-application exposed and fixed linked-worktree Git control-file deletion, unrelated
     audit-root fixture rewrites, and Git-dropping profile shadows before acceptance
+  - release 379785364 contains the expected three attested assets and remains published, but
+    GitHub reports immutable false because repository immutable releases were not enabled
+  - post-release audit found that the v1 exact-main authority independently selected same-SHA
+    producer runs and the release workflow duplicated fallible provider selection in shell
+  - v0.7.0 remains untouched historical custody and is not retroactively represented as
+    certified under the corrected authority-v1.1 contract
 workitems:
 - id: P12-P0-01
   status: DONE
@@ -39,7 +45,7 @@ workitems:
   summary: CI authority, usage, maintenance, and installed-operations documentation hierarchy
 - id: P12-P0-03
   status: DONE
-  summary: immutable exact-byte publisher with provenance attestation and no rebuild path
+  summary: exact-byte publisher with provenance attestation and no rebuild path
 - id: P12-P0-04
   status: DONE
   summary: mechanical editorial verification and final exact-main recertification
@@ -85,6 +91,10 @@ execution_evidence:
     fresh Git repository cannot contain compacted f4b314b objects; the portable-sdist harness
     now permits exactly the two original-repository custody proofs to skip and mechanically
     rejects every other skip set
+  - final governance, pack, admission, finalizer, status, build, publisher, and scheduled runs
+    are recorded in audits/v0.7.0-post-release-authority.yml with provider object identities
+  - each published asset has one GitHub provenance attestation, while tag verification reports
+    verified false with reason unsigned under the selected annotated-unsigned policy
 closeout_requirements:
   claims:
     workitems_closed:
@@ -116,8 +126,6 @@ closeout_requirements:
 known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
+- v0.7.0 is published and attested but provider-mutable and does not satisfy authority v1.1
 next_work:
-- merge the owner-directed P12 editorial follow-up only after protected PR checks compute the
-  exact branch tree closed
-- certify the new exact merge commit and rebuild superseding release bytes, then create
-  annotated v0.7.0 for trusted publication
+- execute P13-HF01 without changing the v0.7.0 tag, release, assets, or attestations

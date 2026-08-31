@@ -1,0 +1,57 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 13 Plan
+  id: bcf-governance-phase-13-plan
+  version: 1.0.0
+  generated_at_utc: '2026-08-31T00:00:00Z'
+  status: planned
+  path: plans/phase-13-plan.yml
+phase:
+  id: P13
+  build_block: post-release-authority-remediation-0.7.1
+  planner: codex
+  date: '2026-08-31'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - provider-authenticated common admission and revocation authority
+  - independent final-byte verification and trusted release receipt construction
+  - closed release dependency inputs and immutable publication checks
+  - hosted Identity reference proof and reconciled release custody
+  parallelizable_workstreams:
+  - id: P13-WS1
+    name: authority contracts and controller decomposition
+  - id: P13-WS2
+    name: trusted and hosted workflow topology
+  - id: P13-WS3
+    name: release reproducibility and verification
+  - id: P13-WS4
+    name: governance reconciliation and provider evidence
+  hard_dependencies:
+  - P12
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: preserve 21 required gates, 417 source nodes, 152 contract nodes, 72 causal
+    controls, and the three protected PR check names unless a reviewed ratchet is required
+- order: 2
+  statement: authority v1.0 remains readable for consumers, but new exact-main and release
+    claims require v1.1 common-admission and exact-attempt membership
+- order: 3
+  statement: candidate code runs only on fresh hosted workers; trusted local runners perform
+    short no-checkout provider decisions and never execute release bytes
+- order: 4
+  statement: v0.7.0 is untouched historical custody and receives no retroactive v1.1 claim
+- order: 5
+  statement: immutable-release settings, v0.7.1 tag creation, and publication require explicit
+    owner approval after all acceptance evidence passes
+verification_plan:
+- /docker/bcf-governance/.venv/bin/python scripts/validate_governance_yaml.py --repo-root
+  .
+- /docker/bcf-governance/.venv/bin/python -m pytest tests

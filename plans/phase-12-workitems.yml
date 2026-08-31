@@ -35,11 +35,13 @@ workitems:
 - id: P12-P0-03
   priority: P0
   status: DONE
-  summary: immutable exact-byte publisher with provenance attestation and no rebuild path
+  summary: exact-byte publisher with provenance attestation and no rebuild path
   acceptance:
   - tag publication authenticates the exact tag commit and highest admitted release receipt
   - publisher verifies and publishes the already-certified wheel, sdist, and checksums without
     checkout, candidate execution, or rebuild
+  - post-release provider audit records that v0.7.0 is mutable and cannot satisfy the corrected
+    authority-v1.1 certification contract
   acceptance_evidence: [contract-test, security-review]
 - id: P12-P0-04
   priority: P0

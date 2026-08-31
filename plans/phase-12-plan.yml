@@ -23,14 +23,14 @@ delivery_contract:
   - direct human-centric DevOps and agentic DevSecOps contrast with mechanical
     authority boundaries
   - CI authority, usage, maintenance, and installed-operations documentation hierarchy
-  - immutable exact-byte publisher with provenance attestation and no rebuild path
+  - exact-byte publisher with provenance attestation and no rebuild path
   - mechanical editorial verification and final exact-main recertification
   - honest git-history phase compaction without retroactive lifecycle claims
   parallelizable_workstreams:
   - id: P12-WS1
     name: architecture and operator documentation
   - id: P12-WS2
-    name: immutable publication and final certification
+    name: publication and final certification
   - id: P12-WS3
     name: completed phase retention and exact Git custody
   hard_dependencies:
@@ -48,8 +48,9 @@ scope_lock:
   statement: AI may propose code, evidence, and review observations but never decides its
     own lifecycle, certification, admission, status, or release authority
 - order: 4
-  statement: the publisher checks out and executes no repository code, verifies a certified
-    exact-tag artifact bundle, attests and publishes those exact bytes, and never rebuilds
+  statement: the publisher checks out and executes no repository code, verifies the selected
+    exact-tag artifact bundle, attests and publishes those exact bytes, and never rebuilds;
+    post-release audit determines provider immutability and corrected authority certification
 - order: 5
   statement: contrast human-centric and agentic delivery in direct engineer-facing language
     while retaining human authority for judgment and deterministic authority for repeatable

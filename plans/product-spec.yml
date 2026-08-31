@@ -32,6 +32,7 @@ execution_phases:
   - {phase_id: P10, build_block: "bcf-standard-v2-dogfood", objective: "make BCF a complete Standard-v2 consumer, prove the safe runner substrate, and activate stable protected checks", release_train: release_2}
   - {phase_id: P11, build_block: "exact-main-release-artifacts", objective: "build and certify the 0.7.0 wheel and sdist from exact merged main", release_train: release_2}
   - {phase_id: P12, build_block: "editorial-refresh-and-release", objective: "refresh final documentation, compact completed phase custody honestly, recertify exact bytes, tag, attest, and publish v0.7.0", release_train: release_2}
+  - {phase_id: P13, build_block: post-release-authority-remediation-0.7.1, objective: "remediate exact-main and release authority, close release inputs, and prepare immutable v0.7.1 custody", release_train: release_3}
 acceptance:
   release_gate: bcf truth
   evidence_location: phases/

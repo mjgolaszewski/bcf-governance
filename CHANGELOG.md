@@ -6,6 +6,18 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Security
+
+- Opened the 0.7.1 authority-remediation train after post-release review found
+  that same-SHA producer runs lacked common-admission membership and release
+  selection duplicated success-prefiltered provider authority in workflow shell.
+
+### Fixed
+
+- Reconciled v0.7.0 as published and attested but provider-mutable historical
+  custody; its tag, release, assets, and attestations remain unchanged, and no
+  corrected-authority certification is claimed retroactively.
+
 ### Changed
 
 - Clarified the README for traditional DevOps engineers with a direct
@@ -95,9 +107,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   explicit authority boundaries, adoption costs, and limitations, with
   separate canonical architecture, CI-authority, operator, maintainer, and
   installed-runbook owners.
-- Activated immutable tag publication only for the exact annotated `v0.7.0`
-  subject. The trusted publisher authenticates the latest exact-main release
-  run and already-certified bytes, attests them, and performs no rebuild.
+- Published the exact annotated `v0.7.0` subject from the selected release
+  run without rebuilding its attested bytes. GitHub reports the release as
+  mutable; 0.7.1 records and remediates that provider-state limitation.
 - Bound the least-privilege GitHub token explicitly to each trusted controller
   command step after live activation proved that workflow permissions alone do
   not populate the controller's required `GITHUB_TOKEN` environment.
