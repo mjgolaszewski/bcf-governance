@@ -206,23 +206,22 @@ def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
     )
     assert workflow[True] == {"workflow_dispatch": None}
     assert workflow["permissions"] == {"actions": "read", "contents": "read"}
-    assert workflow["env"] == {
-        "BCF_BOOTSTRAP_ARTIFACT_ID": "9740097978",
-        "BCF_BOOTSTRAP_ARTIFACT_NAME": (
-            "bcf-trusted-control-6368eb34ce08c1bfc4bc554fae02e5e10468455f-1"
-        ),
-        "BCF_BOOTSTRAP_ARTIFACT_DIGEST": (
-            "sha256:b6015abf6b6b761c1f909d6e66fe72e71c0f67b84066db907800ab3b6c27d115"
-        ),
-        "BCF_BOOTSTRAP_RUN_ID": "33339477463",
-        "BCF_BOOTSTRAP_RUN_ATTEMPT": "1",
-        "BCF_BOOTSTRAP_COMMIT_SHA": "6368eb34ce08c1bfc4bc554fae02e5e10468455f",
-        "BCF_BOOTSTRAP_TREE_SHA": "5d72e163481e7f8e42d20e5aeb1d7d8091dbf5d2",
-        "BCF_BOOTSTRAP_REPOSITORY_ID": "1207503211",
-        "BCF_BOOTSTRAP_WHEEL_SHA256": (
-            "72cbc4bb1c9c31a1c3b362cd93e99ccf5704755c9499849e7174ffa419e4e58c"
-        ),
-    }
+    runner_policy = _policy()["runner_security"]
+    artifact = runner_policy["trusted_controller_artifact"]
+    assert workflow["env"] == artifact
+    assert artifact["BCF_BOOTSTRAP_ARTIFACT_NAME"] == (
+        f"bcf-trusted-control-{artifact['BCF_BOOTSTRAP_COMMIT_SHA']}-"
+        f"{artifact['BCF_BOOTSTRAP_RUN_ATTEMPT']}"
+    )
+    assert re.fullmatch(r"[1-9][0-9]*", artifact["BCF_BOOTSTRAP_ARTIFACT_ID"])
+    assert re.fullmatch(r"[1-9][0-9]*", artifact["BCF_BOOTSTRAP_RUN_ID"])
+    assert artifact["BCF_BOOTSTRAP_REPOSITORY_ID"] == "1207503211"
+    assert re.fullmatch(
+        r"sha256:[0-9a-f]{64}", artifact["BCF_BOOTSTRAP_ARTIFACT_DIGEST"]
+    )
+    assert re.fullmatch(r"[0-9a-f]{40}", artifact["BCF_BOOTSTRAP_COMMIT_SHA"])
+    assert re.fullmatch(r"[0-9a-f]{40}", artifact["BCF_BOOTSTRAP_TREE_SHA"])
+    assert re.fullmatch(r"[0-9a-f]{64}", artifact["BCF_BOOTSTRAP_WHEEL_SHA256"])
     job = workflow["jobs"]["bootstrap"]
     assert job["timeout-minutes"] == 10
     assert job["strategy"] == {
@@ -264,6 +263,23 @@ def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
     assert commands.rindex(
         '"$install_root/bin/bcf" ci-github --help >/dev/null'
     ) > commands.index('"$selected_python" -m venv "$install_root"')
+
+    probe = yaml.safe_load(
+        (REPO_ROOT / ".github/workflows/bcf-trusted-control-probe.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert probe["env"] == artifact
+    assert job["name"] == "Install exact-main controller / ${{ matrix.trusted_runner }}"
+    assert probe["jobs"]["probe"]["name"] == (
+        "Verify exact-main controller / ${{ matrix.trusted_runner }}"
+    )
+    probe_commands = "\n".join(
+        step.get("run", "") for step in probe["jobs"]["probe"]["steps"]
+    )
+    assert "$BCF_BOOTSTRAP_COMMIT_SHA" in probe_commands
+    assert "$BCF_BOOTSTRAP_ARTIFACT_ID" in probe_commands
+    assert "$BCF_BOOTSTRAP_WHEEL_SHA256" in probe_commands
 
 
 def test_self_governance_runner_classification_is_exact_and_has_no_fallback() -> None:

@@ -1,0 +1,52 @@
+document:
+  kind: hotfix_execution_log
+  name: P10-HF08 Hotfix Log
+  id: bcf-governance-phase-10-hotfix08
+  version: 1.0.0
+  generated_at_utc: '2026-08-31T00:00:00Z'
+  status: completed
+  path: phases/phase-10-hotfix08.yml
+hotfix:
+  id: P10-HF08
+  mode: full
+  related_phase_id: P10
+  hotfix_number: 8
+  summary: Pin and prove the exact-main trusted controller artifact
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests/test_self_governance_contracts.py
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests/test_self_governance_contracts.py::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline tests/test_self_governance_contracts.py::test_trusted_jobs_never_checkout_or_invoke_candidate_scripts tests/test_self_governance_contracts.py::test_self_governance_runner_classification_is_exact_and_has_no_fallback
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+  - cd <downloaded-artifact> && sha256sum --check SHA256SUMS
+  - <disposable-venv>/bin/pip install --no-index --find-links <downloaded-artifact> <downloaded-artifact>/bcf_governance-0.6.1-py3-none-any.whl
+  - <disposable-venv>/bin/bcf ci-github --help
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root . --format text
+  notes:
+  - exact-main merge a22dc0f5ca6a451d337a45a956c6b805d57509c7 is certified by governance run 33347212843 and pack run 33347212821
+  - artifact 9742408170 is bound to that pack run, commit a22dc0f5ca6a451d337a45a956c6b805d57509c7, tree 75eabee55abe367b1a690a013715dd0dcc915307, and provider digest sha256:0ffbe4d7b99b6e10b3cf7219add3c28c9e53da05865abba43797f1d45921f4b9
+  - the artifact's internal SHA256SUMS and exact wheel digest aaf4c24ae11388607dfd5c3ca9d65af5a54b9f068abf91782de830a1b281cf29 pass; an offline disposable-venv install exposes the expected ci-github command
+  - runner policy is the canonical artifact-pin owner; bootstrap and probe workflows are mechanically checked mirrors
+  - all 386 exact test-manifest nodes and 122 exact contract nodes pass; structural validation, exposure scanning, high-value mutants, and semantic-high-value mutants are green
+  - post-merge acceptance requires owner-dispatched bootstrap and probe success on both trusted runners before any automated trusted workflow is activated
+  - no callback, status, release publication, or candidate-execution behavior is enabled in this slice
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

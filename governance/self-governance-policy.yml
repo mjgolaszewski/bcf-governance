@@ -33,6 +33,7 @@ runner_security:
     action: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
     python_version: '3.12'
     required_workflows: [.github/workflows/bcf-trusted-control-probe.yml]
+  trusted_controller_artifact: {BCF_BOOTSTRAP_ARTIFACT_ID: '9742408170', BCF_BOOTSTRAP_ARTIFACT_NAME: bcf-trusted-control-a22dc0f5ca6a451d337a45a956c6b805d57509c7-1, BCF_BOOTSTRAP_ARTIFACT_DIGEST: 'sha256:0ffbe4d7b99b6e10b3cf7219add3c28c9e53da05865abba43797f1d45921f4b9', BCF_BOOTSTRAP_RUN_ID: '33347212821', BCF_BOOTSTRAP_RUN_ATTEMPT: '1', BCF_BOOTSTRAP_COMMIT_SHA: a22dc0f5ca6a451d337a45a956c6b805d57509c7, BCF_BOOTSTRAP_TREE_SHA: 75eabee55abe367b1a690a013715dd0dcc915307, BCF_BOOTSTRAP_REPOSITORY_ID: '1207503211', BCF_BOOTSTRAP_WHEEL_SHA256: aaf4c24ae11388607dfd5c3ca9d65af5a54b9f068abf91782de830a1b281cf29}
   coordination_policy: [no_polling, no_sleeping, no_idle_waiters]
   temporary_local_window:
     status: closed

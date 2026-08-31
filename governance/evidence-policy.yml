@@ -125,7 +125,7 @@ gate_overrides:
         kind: test_node_failure
         node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']
     - id: trusted-bootstrap-artifact-identity-must-fail
-      mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: 'BCF_BOOTSTRAP_ARTIFACT_ID: "9740097978"', replace: 'BCF_BOOTSTRAP_ARTIFACT_ID: "1"'}
+      mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: 'BCF_BOOTSTRAP_ARTIFACT_ID: "9742408170"', replace: 'BCF_BOOTSTRAP_ARTIFACT_ID: "1"'}
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']

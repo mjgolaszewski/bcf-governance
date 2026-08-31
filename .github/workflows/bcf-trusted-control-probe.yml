@@ -6,8 +6,20 @@ on:
 permissions:
   contents: read
 
+env:
+  BCF_BOOTSTRAP_ARTIFACT_ID: "9742408170"
+  BCF_BOOTSTRAP_ARTIFACT_NAME: bcf-trusted-control-a22dc0f5ca6a451d337a45a956c6b805d57509c7-1
+  BCF_BOOTSTRAP_ARTIFACT_DIGEST: sha256:0ffbe4d7b99b6e10b3cf7219add3c28c9e53da05865abba43797f1d45921f4b9
+  BCF_BOOTSTRAP_RUN_ID: "33347212821"
+  BCF_BOOTSTRAP_RUN_ATTEMPT: "1"
+  BCF_BOOTSTRAP_COMMIT_SHA: a22dc0f5ca6a451d337a45a956c6b805d57509c7
+  BCF_BOOTSTRAP_TREE_SHA: 75eabee55abe367b1a690a013715dd0dcc915307
+  BCF_BOOTSTRAP_REPOSITORY_ID: "1207503211"
+  BCF_BOOTSTRAP_WHEEL_SHA256: aaf4c24ae11388607dfd5c3ca9d65af5a54b9f068abf91782de830a1b281cf29
+
 jobs:
   probe:
+    name: Verify exact-main controller / ${{ matrix.trusted_runner }}
     if: ${{ github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main' }}
     runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner, "${{ matrix.trusted_runner }}"]
     timeout-minutes: 5
@@ -25,12 +37,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/6368eb34ce08c1bfc4bc554fae02e5e10468455f"
+          control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/$BCF_BOOTSTRAP_COMMIT_SHA"
           test -d "$control_root"
           test ! -L "$control_root"
           test -f "$control_root/INSTALL-METADATA.json"
           test -x "$control_root/bin/bcf"
-          grep -F '"artifact_id":"9740097978"' "$control_root/INSTALL-METADATA.json"
-          grep -F '"wheel_sha256":"72cbc4bb1c9c31a1c3b362cd93e99ccf5704755c9499849e7174ffa419e4e58c"' "$control_root/INSTALL-METADATA.json"
+          grep -F "\"artifact_id\":\"$BCF_BOOTSTRAP_ARTIFACT_ID\"" "$control_root/INSTALL-METADATA.json"
+          grep -F "\"wheel_sha256\":\"$BCF_BOOTSTRAP_WHEEL_SHA256\"" "$control_root/INSTALL-METADATA.json"
           "$control_root/bin/bcf" --version
           "$control_root/bin/bcf" ci-github --help
