@@ -317,8 +317,8 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
         workflow=_workflow(".github/workflows/release.yml", "workflow_dispatch"),
     )
     monkeypatch.setattr(
-        "bcf_governance.tooling.ci_github_release.authenticate_role_run",
-        lambda *args, **kwargs: authorizer,
+        "bcf_governance.tooling.ci_github_release.authenticate_role_job_inventory",
+        lambda *args, **kwargs: (authorizer, ()),
     )
     certification_artifact = ProviderArtifact(
         "50", 1, "41", "certification", f"sha256:{'a' * 64}", {}
@@ -445,8 +445,8 @@ def test_provider_verifier_binds_authenticated_build_and_verifier(
         workflow=_workflow(".github/workflows/bcf-release-verifier.yml", "workflow_run"),
     )
     monkeypatch.setattr(
-        "bcf_governance.tooling.ci_github_release.authenticate_role_run",
-        lambda *args, **kwargs: verifier,
+        "bcf_governance.tooling.ci_github_release.authenticate_role_job_inventory",
+        lambda *args, **kwargs: (verifier, ()),
     )
     result = verify_release_build_provider(
         object(),  # type: ignore[arg-type]
@@ -499,8 +499,8 @@ def test_release_collection_rejects_an_older_same_sha_admission(
         workflow=_workflow(".github/workflows/bcf-release-collector.yml", "workflow_run"),
     )
     monkeypatch.setattr(
-        "bcf_governance.tooling.ci_github_release.authenticate_role_run",
-        lambda *args, **kwargs: identity,
+        "bcf_governance.tooling.ci_github_release.authenticate_role_job_inventory",
+        lambda *args, **kwargs: (identity, ()),
     )
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release.authority_role_workflow",
@@ -564,8 +564,8 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
         lambda *args, **kwargs: {},
     )
     monkeypatch.setattr(
-        "bcf_governance.tooling.ci_github_release.authenticate_role_run",
-        lambda *args, **kwargs: object(),
+        "bcf_governance.tooling.ci_github_release.authenticate_role_job_inventory",
+        lambda *args, **kwargs: (object(), ()),
     )
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release.authenticate_role_artifact",

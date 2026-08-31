@@ -12,6 +12,9 @@ from .ci_adopt_github import (
     plan_github_adoption,
     render_github_adoption,
 )
+from .ci_authority_pins import CIAuthorityPinError, pin_workflow_authority
+from .ci_github_identity import GitHubControllerError
+from .ci_self_controller import project_self_controller_pin
 from .local_pr import LocalPRError, run_local_pr_validation
 from .runtime_capacity import (
     RuntimeCapacityError,
@@ -48,6 +51,33 @@ def _parser() -> argparse.ArgumentParser:
     runtime.add_argument("--contract", type=Path, required=True)
     runtime.add_argument("--owned-containers", type=int, required=True)
     runtime.add_argument("--format", choices=("text", "json"), default="text")
+    pin = subparsers.add_parser(
+        "pin-authority", help="Derive exact workflow authority pins from Git."
+    )
+    pin.add_argument("--repo-root", type=Path, default=Path.cwd())
+    pin.add_argument(
+        "--authority", type=Path, default=Path("governance/ci-authority.yml")
+    )
+    pin.add_argument("--definition-commit", required=True)
+    pin.add_argument(
+        "--workflow",
+        action="append",
+        help="Registry reference to pin; omit to derive every registered workflow.",
+    )
+    pin_mode = pin.add_mutually_exclusive_group(required=True)
+    pin_mode.add_argument("--check", action="store_true")
+    pin_mode.add_argument("--apply", action="store_true")
+    pin.add_argument("--format", choices=("text", "json"), default="text")
+    sync = subparsers.add_parser(
+        "sync-self-controller",
+        help="Project one mechanically compiled self-controller pin.",
+    )
+    sync.add_argument("--repo-root", type=Path, default=Path.cwd())
+    sync.add_argument("--pin", type=Path, required=True)
+    sync_mode = sync.add_mutually_exclusive_group(required=True)
+    sync_mode.add_argument("--check", action="store_true")
+    sync_mode.add_argument("--apply", action="store_true")
+    sync.add_argument("--format", choices=("text", "json"), default="text")
     return parser
 
 
@@ -90,6 +120,28 @@ def main(argv: list[str] | None = None) -> None:
             )
             _print(report.as_dict(), args.format)
             return
+        if args.operation == "pin-authority":
+            result = pin_workflow_authority(
+                args.repo_root,
+                authority_path=args.authority,
+                definition_commit=args.definition_commit,
+                references=tuple(args.workflow or ()),
+                apply=args.apply,
+            )
+            _print(result.as_dict(), args.format)
+            if args.check and result.status != "clean":
+                raise SystemExit(1)
+            return
+        if args.operation == "sync-self-controller":
+            payload = json.loads(args.pin.read_text(encoding="utf-8"))
+            value = payload.get("trusted_controller_artifact")
+            result = project_self_controller_pin(
+                args.repo_root, pin=value, apply=args.apply
+            )
+            _print(result.as_dict(), args.format)
+            if args.check and result.status != "clean":
+                raise SystemExit(1)
+            return
         command = tuple(args.command)
         if command and command[0] == "--":
             command = command[1:]
@@ -97,5 +149,11 @@ def main(argv: list[str] | None = None) -> None:
             args.repo_root.resolve(), command=command, remote=args.remote
         )
         raise SystemExit(result.returncode)
-    except (GithubAdoptionError, LocalPRError, RuntimeCapacityError) as exc:
+    except (
+        CIAuthorityPinError,
+        GitHubControllerError,
+        GithubAdoptionError,
+        LocalPRError,
+        RuntimeCapacityError,
+    ) as exc:
         raise SystemExit(str(exc)) from exc

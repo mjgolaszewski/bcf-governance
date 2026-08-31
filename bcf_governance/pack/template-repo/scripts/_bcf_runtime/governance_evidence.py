@@ -34,6 +34,7 @@ from .evidence_test_adapters import (
     recompute_test_artifact_observations,
     test_observations as _test_observations,
 )
+from .negative_control_execution import negative_control_command
 
 
 RECEIPT_SUFFIX = ".evidence.json"
@@ -137,7 +138,7 @@ def _gate_contract(repo_root: Path, gate_id: str) -> dict[str, Any]:
         "command_policy": command_policy,
         "evidence_kind": kind,
         "negative_controls": override.get("negative_controls", []),
-        "test_contract": override.get("test_contract", {}),
+        "test_contract": {**executable.get("evidence", {}).get("test_contract", {}), **override.get("test_contract", {})},
         "environment_assertions": override.get("environment_assertions", []),
         "output_requirements": override.get("output_requirements", []),
         "freshness_limit_seconds": override.get("freshness_limit_seconds"),
@@ -363,7 +364,7 @@ def _negative_control_results(
                 applied, mutation_path = _apply_negative_control(worktree, control)
                 env, _ = _execution_env(worktree, contract, python_executable)
                 observed = (
-                    _run(command, cwd=_execution_cwd(worktree, contract), env=env)
+                    _run(negative_control_command(command, contract, control, python_executable, worktree), cwd=_execution_cwd(worktree, contract), env=env)
                     if applied
                     else None
                 )

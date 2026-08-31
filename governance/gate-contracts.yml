@@ -2,6 +2,7 @@ document: {kind: gate_contract_registry, version: '1.0', path: governance/gate-c
 schema_version: '1.0'
 profile_contract_version: '2.0'
 target_profile: standard
+interpreter_contract: {project_dependencies: true, optional_dependency_groups: [dev], gate_requirements: {security-dependency-audit: [pip]}}
 gates:
   architecture-context-membership:
     invocation:
@@ -96,9 +97,7 @@ gates:
         artifact_binding: non_authoritative_until_captured
     negative_controls:
     - id: architecture-import-boundaries-behavior-must-fail
-      mutation: {path: bcf_governance/__init__.py, search: from ._version import __version__, replace: 'import scripts
-
-          from ._version import __version__'}
+      mutation: {path: bcf_governance/__init__.py, search: from ._version import __version__, replace: "import scripts\n\nfrom ._version import __version__"}
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_self_governance_contracts::test_packaged_code_does_not_import_public_wrapper_package']
@@ -206,10 +205,11 @@ gates:
       test_contract:
         junit_xml: .artifacts/junit/contract-test.xml
         selectors: ['tests/test_self_governance_contracts.py::test_governance_evidence_shards_derive_every_required_gate_once', 'tests/test_self_governance_contracts.py::test_governance_fan_in_is_preflight_ordered_and_attempt_exact', 'tests/test_self_governance_contracts.py::test_required_repository_artifact_contract_is_executable', 'tests/test_self_governance_contracts.py::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline', 'tests/test_self_governance_contracts.py::test_trusted_jobs_never_checkout_or_invoke_candidate_scripts', 'tests/test_self_governance_contracts.py::test_every_github_action_uses_the_canonical_immutable_pin', 'tests/test_self_governance_contracts.py::test_self_control_plane_is_an_exact_v11_generator_product', 'tests/test_self_governance_contracts.py::test_exact_main_is_the_only_default_branch_producer', 'tests/test_self_governance_contracts.py::test_self_ci_authority_matches_immutable_workflow_definitions', 'tests/test_self_governance_contracts.py::test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner', 'tests/test_self_governance_contracts.py::test_trusted_controller_steps_receive_github_token_explicitly', 'tests/test_validate_governance_yaml.py::test_artifact_manifest_requires_standard_repository_artifact_contracts',
-          'tests/test_validate_governance_yaml.py::test_pull_request_validation_requires_changelog_update', tests/test_ci_authority.py,
-          tests/test_ci_certification.py, tests/test_ci_authority_decisions.py, tests/test_release_receipts.py, tests/test_ci_github_reference.py,
+          'tests/test_validate_governance_yaml.py::test_pull_request_validation_requires_changelog_update', tests/test_ci_authority.py, tests/test_ci_authority_pins.py,
+          tests/test_ci_certification.py, tests/test_ci_authority_decisions.py, tests/test_ci_self_controller.py, tests/test_release_receipts.py, tests/test_ci_github_reference.py,
+          tests/test_ci_github_canary.py,
           tests/test_ci_github_controller.py, tests/test_ci_github_bootstrap.py, tests/test_ci_github_artifacts.py, tests/test_ci_github_release.py, tests/test_release_closure.py, tests/test_local_pr.py, tests/test_runtime_capacity.py, tests/test_trusted_inputs.py,
-          tests/test_preflight.py, tests/test_release_artifacts.py, tests/test_release_workflow_contracts.py,
+          tests/test_preflight.py, 'tests/test_governance_evidence.py::test_test_node_control_derives_minimal_pytest_command', tests/test_release_artifacts.py, tests/test_release_workflow_contracts.py,
           tests/test_documentation_contracts.py, 'tests/test_profile_contract_v2.py::test_bcf_standard_v2_promotion_fits_declared_context_budgets']
         expected_node_manifest: governance/test-manifests/contract-test.txt
         expected_nodes_mode: exact
@@ -225,10 +225,10 @@ gates:
         kind: test_node_failure
         node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']
     - id: trusted-bootstrap-artifact-identity-must-fail
-      mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: 'BCF_BOOTSTRAP_ARTIFACT_ID: "9773260106"', replace: 'BCF_BOOTSTRAP_ARTIFACT_ID: "1"'}
+      mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'if pin["BCF_BOOTSTRAP_ARTIFACT_NAME"] != expected_name:', replace: 'if False:'}
       oracle:
         kind: test_node_failure
-        node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']
+        node_ids: ['tests.test_ci_self_controller::test_controller_pin_rejects_non_derived_artifact_name']
     - id: trusted-bootstrap-controller-command-must-fail
       mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: 'ci-github bootstrap', replace: 'ci-github probe'}
       oracle:
@@ -299,23 +299,37 @@ gates:
     - {id: authority-v11-role-owner-must-fail, mutation: {path: schemas/ci-authority.schema.json, search: '        "release_verifier",', replace: ''}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority::test_authority_v11_rejects_incomplete_or_duplicated_semantic_ownership[missing-role-pin]']}}
     - {id: same-admission-membership-owner-must-fail, mutation: {path: bcf_governance/tooling/ci_github_membership.py, search: 'if set(references) != expected_paths:', replace: 'if set(references) == expected_paths:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_v11_collects_all_producers_from_one_exact_admission_attempt']}}
     - {id: pending-terminal-precedence-owner-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_decisions.py, search: 'if current.conclusion is StatusConclusion.PENDING and proposed.conclusion in {', replace: 'if False and current.conclusion is StatusConclusion.PENDING and proposed.conclusion in {'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority_decisions::test_equal_pending_authority_can_publish_its_terminal_state[success]']}}
+    - {id: interpreter-requirements-preflight-must-fail, mutation: {path: bcf_governance/tooling/preflight.py, search: "interpreter = step(\n        \"interpreter\", lambda: _interpreter_requirements(repo_root, python)\n    )", replace: 'interpreter = {}'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_interpreter_failure_prevents_session_allocation']}}
+    - {id: exact-oracle-node-selection-must-fail, mutation: {path: bcf_governance/tooling/negative_control_execution.py, search: '*(_pytest_selector(value) for value in nodes),', replace: '"tests/test_governance_evidence.py::test_diagnostic_control_preserves_canonical_command",'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_governance_evidence::test_test_node_control_derives_minimal_pytest_command']}}
+    - {id: published-status-history-selection-must-fail, mutation: {path: bcf_governance/tooling/ci_github_status.py, search: 'if value.conclusion is not StatusConclusion.PENDING', replace: 'if False'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_canary::test_terminal_status_mechanically_dominates_pending_without_list_order[False]']}}
     - {id: pending-observation-bundle-owner-must-fail, mutation: {path: bcf_governance/tooling/ci_github_exact_main.py, search: 'computed_state="pending",', replace: 'computed_state="failed",'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_v11_pending_observation_is_published_without_borrowing_older_runs']}}
     - {id: failed-finalizer-revocation-owner-must-fail, mutation: {path: bcf_governance/tooling/ci_github_exact_main.py, search: 'if not (bundle_dir / "bundle-manifest.json").is_file():', replace: 'if False and not (bundle_dir / "bundle-manifest.json").is_file():'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_v11_failed_finalizer_publishes_failure_without_an_artifact']}}
     - {id: bootstrap-provider-digest-owner-must-fail, mutation: {path: bcf_governance/tooling/ci_github_bootstrap.py, search: 'and value.get("digest") == provider_digest', replace: 'and True'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_bootstrap::test_bootstrap_rejects_inexact_custody_before_install[provider-digest]']}}
     - {id: release-closure-lock-owner-must-fail, mutation: {path: bcf_governance/tooling/release_closure.py, search: 'if resolution.get("lock_sha256") != lock_digest:', replace: 'if resolution.get("lock_sha256") == lock_digest:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_closure::test_repository_release_lock_is_a_complete_exact_hash_closure']}}
     - {id: roadmap-history-owner-must-fail, mutation: {path: plans/product-spec.yml, search: 'through_phase: P12', replace: 'through_phase: P11'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_required_repository_artifact_contract_is_executable']}}
-    - id: editorial-tone-owner-must-fail
-      mutation: {path: README.md, search: '## Why these defaults', replace: '## A revolutionary manifesto'}
-      oracle: {kind: test_node_failure, node_ids: ['tests.test_documentation_contracts::test_editorial_contract_is_current_and_complete']}
-    - id: editorial-local-link-must-fail
-      mutation: {path: README.md, search: '(docs/ARCHITECTURE.md)', replace: '(docs/ABSENT.md)'}
-      oracle: {kind: test_node_failure, node_ids: ['tests.test_documentation_contracts::test_editorial_contract_is_current_and_complete']}
+    - {id: editorial-tone-owner-must-fail, mutation: {path: README.md, search: '## Why these defaults', replace: '## A revolutionary manifesto'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_documentation_contracts::test_editorial_contract_is_current_and_complete']}}
+    - {id: editorial-local-link-must-fail, mutation: {path: README.md, search: '(docs/ARCHITECTURE.md)', replace: '(docs/ABSENT.md)'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_documentation_contracts::test_editorial_contract_is_current_and_complete']}}
     - id: generated-control-compaction-must-fail
       mutation: {path: bcf_governance/tooling/profile_yaml.py, search: 'node.flow_style = True', replace: 'node.flow_style = False'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_profile_contract_v2::test_bcf_standard_v2_promotion_fits_declared_context_budgets']}
     - id: self-ci-authority-definition-pin-must-fail
-      mutation: {path: governance/ci-authority.yml, search: 'trusted_workflow_sha256: 1bcc5186f80289d44d0eef1b8983ad4080de64dd262219b57cb0e733a2780b2c', replace: 'trusted_workflow_sha256: 0000000000000000000000000000000000000000000000000000000000000000'}
+      mutation: {path: .github/workflows/bcf-exact-main.yml, search: 'name: bcf/exact-main-admission', replace: 'name: bcf/exact-main-admission-mutant'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_ci_authority_matches_immutable_workflow_definitions']}
+    - id: workflow-authority-compiler-digest-must-fail
+      mutation: {path: bcf_governance/tooling/ci_authority_pins.py, search: 'entry["trusted_workflow_sha256"] = hashlib.sha256(committed).hexdigest()', replace: 'entry["trusted_workflow_sha256"] = "0" * 64'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority_pins::test_workflow_authority_pins_are_derived_from_exact_committed_bytes']}
+    - id: workflow-authority-compiler-inventory-must-fail
+      mutation: {path: bcf_governance/tooling/ci_authority_pins.py, search: '{"job_id": f"{caller_name} / {value[''job_id'']}"}', replace: '{"job_id": str(value["job_id"])}'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority_pins::test_self_workflow_authority_is_mechanically_compiled']}
+    - id: authority-canary-failure-cause-must-fail
+      mutation: {path: bcf_governance/tooling/ci_github_canary.py, search: 'if any(str(value.get("conclusion")) != "success" for value in required):', replace: 'if False and any(str(value.get("conclusion")) != "success" for value in required):'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_canary::test_canary_computes_only_exact_admission_and_producer_results']}
+    - id: self-controller-provider-producer-must-fail
+      mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'package_attempt["conclusion"] != "success"', replace: 'False'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_self_controller::test_controller_pin_rejects_failed_package_producer']}
+    - id: self-controller-projection-must-fail
+      mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: '_replace_env(path.read_bytes(), exact)', replace: '_replace_env(path.read_bytes(), {})'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_self_controller::test_self_controller_projection_has_one_canonical_pin_owner']}
     - id: pinned-workflow-definition-custody-must-fail
       mutation: {path: bcf_governance/tooling/ci_github_identity.py, search: 'if current.blob_oid != pinned.blob_oid or current.content != pinned.content:', replace: 'if False and (current.blob_oid != pinned.blob_oid or current.content != pinned.content):'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_pinned_definition_must_still_match_current_main']}

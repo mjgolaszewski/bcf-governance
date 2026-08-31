@@ -38,6 +38,17 @@ is explicit, monotonic, transactional, and also preserves workflow bytes;
 GitHub workflow changes belong only to fresh installation or the explicit CI
 adopter. Tests must compare those bytes, not merely decoded job names.
 
+For BCF's own authority workflows, make the final workflow-byte commit first. Run
+`bcf ci pin-authority --definition-commit "$(git rev-parse HEAD)" --apply` in the
+following commit. The compiler updates the full registry and all exact job inventories;
+never copy blob hashes, workflow digests, definition commits, or display names into the
+authority document. Preflight verifies the projection from Git on every governed tree.
+
+Likewise, never copy a controller artifact ID, run ID, provider digest, tree, or wheel
+hash into bootstrap YAML. Use the trusted `ci-github controller-pin resolve|compile`
+sequence, then `bcf ci sync-self-controller --pin PIN.json --apply`. The canonical pin
+record is the single source for every trusted workflow projection.
+
 After changing v2 profile surfaces, test all four copies: packaged tooling,
 standalone private runtime, template source, and packaged template. Generated
 v2 workflows must allocate one session before evidence, execute positive gates

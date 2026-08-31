@@ -32,6 +32,17 @@ def _validate_gate_contract_registry(
     gates = _require_mapping(
         contracts.get("gates"), context="governance/gate-contracts.yml gates"
     )
+    interpreter = contracts.get("interpreter_contract")
+    if isinstance(interpreter, dict):
+        requirements = _require_mapping(
+            interpreter.get("gate_requirements"),
+            context="governance/gate-contracts.yml interpreter_contract.gate_requirements",
+        )
+        unknown = sorted(set(requirements) - set(gates))
+        if unknown:
+            raise GovernanceValidationError(
+                "interpreter requirements name unknown gates: " + ", ".join(unknown)
+            )
     for target, raw in gates.items():
         gate = _require_mapping(raw, context=f"gate contract {target}")
         invocation = _require_mapping(

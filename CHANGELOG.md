@@ -19,6 +19,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Added one mechanically governed provider-artifact decoder that binds every privileged
   release artifact to its exact role, run, attempt, repository, commit, name, ID, and
   provider SHA-256 before authorization, collection, or publication can proceed.
+- Replaced operator-copied workflow hashes, definition commits, job display names, and
+  controller-artifact projections with Git/provider-derived compilers checked by cheap
+  preflight and cause-verified mutants.
 
 ### Fixed
 
@@ -55,8 +58,18 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   accepting its expected wheel digest as authority.
 - Moved cross-workflow build and verification artifact resolution into the controller,
   eliminating workflow-authored provider selectors.
-- Raised only the canonical semantic-registry byte budget from 32 to 36 KiB after the
-  existing 32 KiB allocation had one byte of headroom; the 200-line cap is unchanged.
+- Made status reconstruction select the highest admission and attempt mechanically,
+  then let its single terminal conclusion dominate pending observations independent
+  of provider list order; conflicting terminal conclusions fail closed.
+- Raised only the canonical semantic-registry byte budget from 32 to 40 KiB as provider
+  artifact and workflow-authority compiler ownership were added; the 200-line cap is
+  unchanged and both additions remain blocking semantic families.
+- Made the cheap preflight derive the selected interpreter's required distributions
+  from project dependencies, declared optional groups, and gate-specific tool
+  requirements; a missing `pip` or test dependency now fails before evidence capture.
+- Made cause-verified test controls execute only their declared pytest oracle nodes in
+  isolated worktrees after one full positive baseline; diagnostic controls retain the
+  canonical gate command, eliminating repeated full-suite mutant executions.
 
 ### Changed
 

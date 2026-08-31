@@ -15,6 +15,7 @@ from .ci_authority_contracts import CIAuthorityContractError
 from .ci_github_api import GitHubAPIError
 from .ci_github_bootstrap import install_controller
 from .ci_github_callbacks import finalize_callback, publish_callback
+from .ci_github_canary import admit_authority_canary, observe_authority_canary
 from .ci_github_controller import (
     GitHubControllerError,
     environment_api,
@@ -37,6 +38,11 @@ from .ci_github_release import (
     record_release_build,
     verify_release_build_provider,
 )
+from .ci_self_controller import (
+    compile_self_controller_pin,
+    resolve_self_controller_artifact,
+)
+from .ci_github_bundle import write_exclusive
 
 
 def _required_environment(name: str) -> str:
@@ -160,6 +166,58 @@ def _exact_main(argv: list[str]) -> None:
             publisher_run_id=_required_environment("GITHUB_RUN_ID"),
             publisher_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
         )
+    _github_output(result)
+    print(json.dumps(result, sort_keys=True))
+
+
+def _canary(argv: list[str]) -> None:
+    parser = argparse.ArgumentParser(description="BCF isolated authority canary.")
+    operations = parser.add_subparsers(dest="operation", required=True)
+    for operation in (operations.add_parser("admit"), operations.add_parser("observe")):
+        operation.add_argument("--repository", required=True)
+        operation.add_argument("--sha", required=True)
+        operation.add_argument("--target-url", required=True)
+    args = parser.parse_args(argv)
+    operation = (
+        admit_authority_canary if args.operation == "admit" else observe_authority_canary
+    )
+    result = operation(
+        environment_api(),
+        repository=args.repository,
+        expected_sha=args.sha,
+        run_id=_required_environment("GITHUB_RUN_ID"),
+        run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
+        target_url=args.target_url,
+    )
+    _github_output(result)
+    print(json.dumps(result, sort_keys=True))
+
+
+def _controller_pin(argv: list[str]) -> None:
+    parser = argparse.ArgumentParser(description="BCF self-controller pin compiler.")
+    operations = parser.add_subparsers(dest="operation", required=True)
+    resolve = operations.add_parser("resolve")
+    resolve.add_argument("--repository", required=True)
+    compile_pin = operations.add_parser("compile")
+    compile_pin.add_argument("--repository", required=True)
+    compile_pin.add_argument("--artifact-dir", type=Path, required=True)
+    compile_pin.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args(argv)
+    api = environment_api()
+    if args.operation == "resolve":
+        subject, artifact = resolve_self_controller_artifact(
+            api, repository=args.repository
+        )
+        result = {**subject, **artifact.as_dict()}
+    else:
+        pin = compile_self_controller_pin(
+            api, repository=args.repository, artifact_dir=args.artifact_dir
+        )
+        write_exclusive(
+            args.output,
+            {"schema_version": "1.0", "trusted_controller_artifact": pin},
+        )
+        result = {**pin, "output": str(args.output)}
     _github_output(result)
     print(json.dumps(result, sort_keys=True))
 
@@ -388,6 +446,12 @@ def main(argv: list[str] | None = None) -> None:
             return
         if raw and raw[0] == "exact-main":
             _exact_main(raw[1:])
+            return
+        if raw and raw[0] == "canary":
+            _canary(raw[1:])
+            return
+        if raw and raw[0] == "controller-pin":
+            _controller_pin(raw[1:])
             return
         if raw and raw[0] == "release":
             _release(raw[1:])

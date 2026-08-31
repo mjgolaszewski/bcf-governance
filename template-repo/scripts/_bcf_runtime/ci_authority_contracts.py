@@ -94,6 +94,22 @@ def authority_role_workflow(
     return authority_workflow(authority, str(roles[role]))
 
 
+def authority_role_jobs(
+    authority: dict[str, Any], role: str
+) -> tuple[dict[str, Any], ...]:
+    """Resolve the single canonical exact job inventory for a privileged role."""
+
+    workflow = authority_role_workflow(authority, role)
+    jobs = workflow.get("expected_jobs")
+    if not isinstance(jobs, list) or not jobs or any(
+        not isinstance(value, dict) for value in jobs
+    ):
+        raise CIAuthorityContractError(
+            f"authority privileged role lacks exact job inventory: {role}"
+        )
+    return tuple(jobs)
+
+
 def _validate_authority(payload: dict[str, Any]) -> None:
     version = str(payload["schema_version"])
     if version == "1.1":
@@ -127,6 +143,74 @@ def _validate_authority(payload: dict[str, Any]) -> None:
         if producer_refs != [str(value) for value in roles["reusable_producers"]]:
             raise CIAuthorityContractError(
                 "authority producers must exactly follow reusable_producers role order"
+            )
+        admission_roles = registry[str(roles["admission"])].get("job_roles")
+        if not isinstance(admission_roles, dict):
+            raise CIAuthorityContractError(
+                "authority admission requires explicit source-job role policy"
+            )
+        if list(admission_roles.values()).count("admission") != 1:
+            raise CIAuthorityContractError(
+                "authority admission requires exactly one source admission job"
+            )
+        source_producers = {
+            str(job_id)
+            for job_id, role in admission_roles.items()
+            if role == "producer"
+        }
+        if source_producers != {
+            str(value["producer_id"]) for value in payload["producers"]
+        }:
+            raise CIAuthorityContractError(
+                "authority admission source producer jobs must match producer IDs"
+            )
+        separately_owned = {
+            str(roles["admission"]),
+            *(str(value) for value in roles["reusable_producers"]),
+        }
+        singular_privileged = {
+            str(reference)
+            for role, reference in roles.items()
+            if role not in {"admission", "reusable_producers"}
+        }
+        for reference, workflow in registry.items():
+            has_jobs = "expected_jobs" in workflow
+            if reference in separately_owned and has_jobs:
+                raise CIAuthorityContractError(
+                    "authority admission and reusable job inventories have separate canonical owners"
+                )
+            if reference in singular_privileged and not has_jobs:
+                raise CIAuthorityContractError(
+                    f"authority privileged workflow lacks exact job inventory: {reference}"
+                )
+            if has_jobs:
+                jobs = [_matrix_key(job) for job in workflow["expected_jobs"]]
+                if len(set(jobs)) != len(jobs):
+                    raise CIAuthorityContractError(
+                        f"authority workflow {reference} has duplicate expected jobs"
+                    )
+                if any(job.get("matrix") for job in workflow["expected_jobs"]):
+                    raise CIAuthorityContractError(
+                        "privileged workflow job inventory must use exact provider job names"
+                    )
+        canary_workflow = registry[str(roles["authority_canary"])]
+        canary = canary_workflow["expected_jobs"]
+        job_roles = canary_workflow.get("job_roles")
+        if not isinstance(job_roles, dict) or set(job_roles.values()) != {
+            "admission", "producer", "observer"
+        }:
+            raise CIAuthorityContractError(
+                "authority canary requires explicit source-job role policy"
+            )
+        canary_roles = [job.get("role") for job in canary]
+        if (
+            canary_roles.count("admission") != 1
+            or canary_roles.count("observer") != 1
+            or canary_roles.count("producer") < 2
+            or any(role is None for role in canary_roles)
+        ):
+            raise CIAuthorityContractError(
+                "authority canary requires one admission, at least two producers, and one observer"
             )
     else:
         if "workflow_registry" in payload or "roles" in payload:

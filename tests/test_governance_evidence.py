@@ -33,10 +33,56 @@ EvidenceError = EVIDENCE_MODULE.EvidenceError
 capture_gate = EVIDENCE_MODULE.capture_gate
 allocate_session = EVIDENCE_MODULE.allocate_session
 local_producer_identity = EVIDENCE_MODULE.local_producer_identity
+negative_control_command = EVIDENCE_MODULE.negative_control_command
 
 
 def _git(repo: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
+
+
+def test_test_node_control_derives_minimal_pytest_command(tmp_path: Path) -> None:
+    command = negative_control_command(
+        [sys.executable, ".github/scripts/run_self_governance_gate.py", "contract-test"],
+        {
+            "test_contract": {
+                "selectors": ["tests/test_preflight.py"],
+                "expected_node_manifest": "governance/test-manifests/contract-test.txt",
+                "junit_xml": ".artifacts/junit/contract-test.xml",
+            }
+        },
+        {
+            "oracle": {
+                "kind": "test_node_failure",
+                "node_ids": [
+                    "tests.test_preflight::test_interpreter_failure_prevents_session_allocation",
+                    "tests.test_ci_github_artifacts::test_identity[digest-artifact identity]",
+                ],
+            }
+        },
+        Path(sys.executable),
+        tmp_path,
+    )
+
+    assert command == [
+        sys.executable,
+        "-m",
+        "pytest",
+        "-q",
+        "tests/test_preflight.py::test_interpreter_failure_prevents_session_allocation",
+        "tests/test_ci_github_artifacts.py::test_identity[digest-artifact identity]",
+        "--junitxml=.artifacts/junit/contract-test.xml",
+    ]
+
+
+def test_diagnostic_control_preserves_canonical_command(tmp_path: Path) -> None:
+    canonical = [sys.executable, "scripts/validate_governance_yaml.py"]
+    assert negative_control_command(
+        canonical,
+        {"test_contract": {}},
+        {"oracle": {"kind": "diagnostic"}},
+        Path(sys.executable),
+        tmp_path,
+    ) is canonical
 
 
 def test_evidence_run_captures_process_artifacts_test_counts_and_negative_control(

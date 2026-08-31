@@ -7,7 +7,11 @@ from typing import Any
 
 import yaml
 
-from .ci_authority_contracts import authority_role_workflow, validate_ci_contract
+from .ci_authority_contracts import (
+    authority_role_jobs,
+    authority_role_workflow,
+    validate_ci_contract,
+)
 from .ci_github_api import GitHubAPI
 from .ci_github_identity import (
     GitHubControllerError,
@@ -94,3 +98,39 @@ def authenticate_role_run(
             "trusted_workflow_definition_commit"
         ],
     )
+
+
+def authenticate_role_job_inventory(
+    api: GitHubAPI,
+    *,
+    repository: str,
+    main: MainIdentity,
+    authority: dict[str, Any],
+    role: str,
+    run_id: object,
+    run_attempt: object,
+    require_success: bool,
+    require_terminal: bool,
+):
+    """Authenticate one role and its exact provider job inventory together."""
+
+    identity = authenticate_role_run(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        role=role,
+        run_id=run_id,
+        run_attempt=run_attempt,
+        require_success=require_success,
+    )
+    jobs = api.jobs(repository, identity.run_id, attempt=identity.run_attempt)
+    names = [str(value.get("name", "")) for value in jobs]
+    expected = [str(value["job_id"]) for value in authority_role_jobs(authority, role)]
+    if not all(names) or len(set(names)) != len(names) or set(names) != set(expected):
+        raise GitHubControllerError("privileged workflow exact job inventory does not match authority")
+    if require_terminal and any(str(value.get("status")) != "completed" for value in jobs):
+        raise GitHubControllerError("privileged workflow job inventory is not terminal")
+    if require_success and any(str(value.get("conclusion")) != "success" for value in jobs):
+        raise GitHubControllerError("privileged workflow job inventory is not successful")
+    return identity, jobs

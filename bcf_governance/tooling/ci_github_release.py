@@ -19,7 +19,7 @@ from .ci_github_artifacts import (
     resolve_role_artifact,
 )
 from .ci_github_authority import (
-    authenticate_role_run,
+    authenticate_role_job_inventory,
     load_authority,
     packaged_repo_root,
 )
@@ -130,7 +130,7 @@ def authorize_release(
     ):
         raise GitHubControllerError("release authorization subject is not current exact main")
     authority = load_authority(api, repository, main, required_version="1.1")
-    identity = authenticate_role_run(
+    identity, _ = authenticate_role_job_inventory(
         api,
         repository=repository,
         main=main,
@@ -139,6 +139,7 @@ def authorize_release(
         run_id=run_id,
         run_attempt=run_attempt,
         require_success=False,
+        require_terminal=False,
     )
     required_certification = {
         "run_id", "run_attempt", "artifact_id", "artifact_name", "provider_digest"
@@ -381,7 +382,13 @@ def verify_release_build_provider(
         artifact_name=build.get("artifact_name"),
         require_success=True,
     )
-    verifier = authenticate_role_run(
+    authenticate_role_job_inventory(
+        api, repository=repository, main=main, authority=authority,
+        role="release_build", run_id=builder.get("run_id"),
+        run_attempt=builder.get("run_attempt"), require_success=True,
+        require_terminal=True,
+    )
+    verifier, _ = authenticate_role_job_inventory(
         api,
         repository=repository,
         main=main,
@@ -390,6 +397,7 @@ def verify_release_build_provider(
         run_id=verifier_run_id,
         run_attempt=verifier_run_attempt,
         require_success=False,
+        require_terminal=False,
     )
     return verify_release_build(
         authorization_path=authorization_path,
@@ -433,10 +441,11 @@ def collect_release(
     build = _load_json(build_manifest_path, label="release build manifest")
     main = resolve_main(api, repository)
     authority = load_authority(api, repository, main, required_version="1.1")
-    collector = authenticate_role_run(
+    collector, _ = authenticate_role_job_inventory(
         api, repository=repository, main=main, authority=authority,
         role="release_collector", run_id=collector_run_id,
         run_attempt=collector_run_attempt, require_success=False,
+        require_terminal=False,
     )
     release_workflow = authority_role_workflow(authority, "release_authorizer")
     admitted_release_runs = api.workflow_runs(
@@ -459,10 +468,11 @@ def collect_release(
         identity = payload.get(key)
         if not isinstance(identity, dict):
             raise GitHubControllerError(f"{role} identity is missing")
-        authenticate_role_run(
+        authenticate_role_job_inventory(
             api, repository=repository, main=main, authority=authority, role=role,
             run_id=identity.get("run_id"), run_attempt=identity.get("run_attempt"),
             require_success=True,
+            require_terminal=True,
         )
     authorizer = authorization["authorizer"]
     builder = build["builder"]
@@ -640,7 +650,7 @@ def publish_certified_release(
     if receipt.get("kind") != "release" or receipt.get("result") != "passed":
         raise GitHubControllerError("publication requires a passing release receipt")
     authority = load_authority(api, repository, main, required_version="1.1")
-    authenticate_role_run(
+    authenticate_role_job_inventory(
         api,
         repository=repository,
         main=main,
@@ -649,6 +659,7 @@ def publish_certified_release(
         run_id=publisher_run_id,
         run_attempt=publisher_run_attempt,
         require_success=False,
+        require_terminal=False,
     )
     workflow = receipt.get("invocation", {}).get("workflow")
     if not isinstance(workflow, dict):

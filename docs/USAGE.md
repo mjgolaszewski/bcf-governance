@@ -146,6 +146,49 @@ authorize|build|verify|collect|inspect|publish`. Workflow YAML supplies
 environment and paths; it does not select provider state with `jq`, `max_by`,
 or ad hoc API queries.
 
+Workflow custody is compiled, not transcribed. After committing final workflow
+bytes, derive the complete registry in one operation:
+
+```bash
+bcf ci pin-authority \
+  --repo-root . \
+  --definition-commit "$(git rev-parse HEAD)" \
+  --apply
+```
+
+The command reads every registered workflow from that exact Git commit, derives
+blob OIDs and SHA-256 digests, expands literal matrices, and compiles admission,
+producer, and privileged provider job names. Partial registry pinning is rejected.
+`bcf preflight` recomputes the same model before evidence allocation, so edited
+workflow bytes or copied job labels cannot defer a deterministic failure to remote
+CI.
+
+The same front door derives required interpreter distributions from the project's
+declared dependencies, configured optional groups, and explicit gate-tool additions
+in `governance/gate-contracts.yml`. Missing `pytest`, `pip`, or application
+dependencies are infrastructure failures before evidence capture; they cannot become
+successful controls or consume a remote evidence lane.
+
+For test-suite controls, evidence capture runs the full positive selection once, then
+runs only each control's declared pytest oracle nodes in its detached mutant worktree.
+The positive baseline must contain those nodes, and the isolated JUnit must show those
+same nodes failing. Diagnostic controls continue to execute the canonical gate command.
+
+BCF self-controller rotation has a separate mechanical path. Trusted control runs
+`bcf ci-github controller-pin resolve` to select the newest exact-main package
+producer and exact artifact without caller-supplied run IDs. After the provider
+artifact is downloaded, `controller-pin compile` verifies its checksum inventory,
+metadata, and wheel bytes and emits a pin record. A maintainer projects that record
+with `bcf ci sync-self-controller --pin PIN.json --apply`; the canonical policy,
+bootstrap, probe, finalizer, admission, and status workflows are updated from that
+one record. AI and humans review policy and decide whether to rotate; they do not
+author custody values.
+
+The isolated authority canary uses `bcf ci-github canary admit|observe`. Its observer
+authenticates one exact run attempt and complete job inventory, then publishes through
+the separate `bcf/authority-canary` context. It never borrows a producer from another
+same-SHA run.
+
 Privileged release artifacts have one decoder. It authenticates the owning role and
 workflow attempt first, then requires an exact numeric artifact ID, safe name, provider
 SHA-256, repository identity, default branch, and current-main commit. Authorization

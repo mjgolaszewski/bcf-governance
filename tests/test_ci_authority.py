@@ -179,6 +179,25 @@ def _authority_v11_payload() -> dict[str, object]:
         }
         for index, name in enumerate(workflow_names)
     }
+    registry["admission"]["job_roles"] = {
+        "admission": "admission",
+        "unit": "producer",
+    }
+    for name in workflow_names:
+        if name not in {"admission", "governance"}:
+            registry[name]["expected_jobs"] = [{"job_id": f"{name}-job"}]
+    registry["canary"]["expected_jobs"] = [
+        {"job_id": "canary-admit", "role": "admission"},
+        {"job_id": "canary-a", "role": "producer"},
+        {"job_id": "canary-b", "role": "producer"},
+        {"job_id": "canary-observe", "role": "observer"},
+    ]
+    registry["canary"]["job_roles"] = {
+        "admit": "admission",
+        "producer-a": "producer",
+        "producer-b": "producer",
+        "observe": "observer",
+    }
     return {
         "schema_version": "1.1",
         "repository": {"provider": "github", "repository_id": "42"},
@@ -310,7 +329,7 @@ def test_authority_v11_accepts_one_registry_and_closed_role_references() -> None
 
 @pytest.mark.parametrize(
     "mutation",
-    ["missing-role-pin", "unknown-role-ref", "duplicate-workflow", "inline-producer"],
+    ["missing-role-pin", "unknown-role-ref", "duplicate-workflow", "inline-producer", "missing-role-jobs", "missing-canary-source-roles", "duplicate-role-jobs"],
 )
 def test_authority_v11_rejects_incomplete_or_duplicated_semantic_ownership(
     mutation: str,
@@ -324,9 +343,16 @@ def test_authority_v11_rejects_incomplete_or_duplicated_semantic_ownership(
         payload["workflow_registry"]["probe"] = dict(  # type: ignore[index]
             payload["workflow_registry"]["bootstrap"]  # type: ignore[index]
         )
-    else:
+    elif mutation == "inline-producer":
         producer = payload["producers"][0]  # type: ignore[index]
         producer["workflow"] = payload["workflow_registry"]["governance"]  # type: ignore[index]
+    elif mutation == "missing-role-jobs":
+        del payload["workflow_registry"]["release-verifier"]["expected_jobs"]  # type: ignore[index]
+    elif mutation == "missing-canary-source-roles":
+        del payload["workflow_registry"]["canary"]["job_roles"]  # type: ignore[index]
+    else:
+        jobs = payload["workflow_registry"]["canary"]["expected_jobs"]  # type: ignore[index]
+        jobs.append(deepcopy(jobs[0]))
     with pytest.raises(CIAuthorityContractError):
         validate_ci_contract(REPO_ROOT, "authority", payload)
 
