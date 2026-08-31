@@ -253,6 +253,9 @@ gates:
     - id: workflow-call-main-producer-contract-must-fail
       mutation: {path: governance/evidence-policy.yml, search: 'required_events: [pull_request, workflow_call]', replace: 'required_events: [pull_request, push]'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_exact_main_is_the_only_default_branch_producer']}
+    - id: exact-main-controller-build-input-must-fail
+      mutation: {path: .github/workflows/bcf-exact-main.yml, search: 'build_controller: true', replace: 'build_controller: false'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_exact_main_is_the_only_default_branch_producer']}
     - id: reusable-mode-input-authority-must-fail
       mutation: {path: .github/workflows/governance.yml, search: "inputs.evaluation_mode == 'closure' && 'release' || 'pr'", replace: "'pr'"}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_governance_fan_in_is_preflight_ordered_and_attempt_exact']}

@@ -66,7 +66,8 @@ producer_workflows:
 - job_id: governance-pack
   display_name: Verify exact-main package and templates
   path: .github/workflows/governance-pack.yml
-  inputs: {}
+  inputs:
+    build_controller: true
 activation_variable: BCF_CI_AUTHORITY_ENABLED
 controller_commit: 1f96e45604c376918154dc50904fc0249d9b8e93
 dispatch_exact_ref: false

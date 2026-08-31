@@ -43,6 +43,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   while direct pull requests retain their exact-base PR evaluation contract.
 - Made reusable evaluation mode depend on its explicit typed input rather than
   the caller event name, which remains `push` inside an exact-main call.
+- Made exact-main controller construction depend on a separate typed reusable-workflow
+  input; direct pull requests cannot build it, and caller event presentation cannot
+  silently skip it.
 - Required release authorization and build to share one workflow attempt, required
   collection to select the newest same-SHA release admission, and required publication
   to authenticate the collector receipt and its exact asset inventory.

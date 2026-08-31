@@ -120,6 +120,7 @@ gate_overrides:
     - {id: descriptive-evidence-job-names-must-fail, mutation: {path: .github/workflows/governance.yml, search: 'name: Evidence / ${{ matrix.display_name }}', replace: 'name: Evidence / ${{ matrix.shard }}'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_governance_evidence_shards_derive_every_required_gate_once']}}
     - {id: github-action-canonical-pin-must-fail, mutation: {path: .github/workflows/governance.yml, search: 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97', replace: 'actions/setup-python@0000000000000000000000000000000000000000'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_every_github_action_uses_the_canonical_immutable_pin']}}
     - {id: workflow-call-main-producer-contract-must-fail, mutation: {path: governance/evidence-policy.yml, search: 'required_events: [pull_request, workflow_call]', replace: 'required_events: [pull_request, push]'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_exact_main_is_the_only_default_branch_producer']}}
+    - {id: exact-main-controller-build-input-must-fail, mutation: {path: .github/workflows/bcf-exact-main.yml, search: 'build_controller: true', replace: 'build_controller: false'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_exact_main_is_the_only_default_branch_producer']}}
     - {id: reusable-mode-input-authority-must-fail, mutation: {path: .github/workflows/governance.yml, search: "inputs.evaluation_mode == 'closure' && 'release' || 'pr'", replace: "'pr'"}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_governance_fan_in_is_preflight_ordered_and_attempt_exact']}}
     - {id: ci-authority-activation-gate-must-fail, mutation: {path: .github/workflows/bcf-exact-main.yml, search: "if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}", replace: 'if: ${{ true }}'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_control_plane_is_an_exact_v11_generator_product']}}
     - {id: trusted-finalizer-main-push-guard-must-fail, mutation: {path: .github/workflows/bcf-trusted-finalizer.yml, search: "if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' }}", replace: "if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}"}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_control_plane_is_an_exact_v11_generator_product', 'tests.test_self_governance_contracts::test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner']}}
@@ -490,11 +491,5 @@ gate_overrides:
   typecheck:
     evidence_kind: gate
     negative_controls:
-    - id: typecheck-behavior-must-fail
-      mutation: {path: bcf_governance/_version.py, search: __version__ = "0.7.1", replace: VERSION = "0.7.1"}
-      oracle:
-        kind: diagnostic
-        exit_codes: [1]
-        stream: stderr
-        regex: 'self-governance gate typecheck failed:'
+    - {id: typecheck-behavior-must-fail, mutation: {path: bcf_governance/_version.py, search: __version__ = "0.7.1", replace: VERSION = "0.7.1"}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'self-governance gate typecheck failed:'}}
 provenance: {standard_same_actor_policy: warn, regulated_independent_severities: [critical, high], regulated_requires_attestation: true, trusted_verifier_keys: {}, permitted_risk_authorities: []}
