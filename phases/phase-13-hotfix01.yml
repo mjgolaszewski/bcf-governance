@@ -34,6 +34,12 @@ execution_evidence:
   - command: .venv/bin/python -m pytest -q tests
     result: pass
     notes: all 453 exact source tests passed for the controller bridge
+  - command: .venv/bin/python -m pytest -q tests
+    result: pass
+    notes: all 461 exact source tests passed for the fail-closed provider-registration and controller definition seam
+  - command: .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+    result: pass
+    notes: all 13 high-value semantic-validator mutants were killed after the definition seam
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
@@ -52,6 +58,8 @@ execution_evidence:
   - PR 40 run 33422527383 passed all 21 gates but closure truth correctly refused the active phase; the remediation adds an explicit PR-only merge-eligibility evaluation that cannot emit release receipts or claim phase or hotfix closure
   - 'workflow definition custody follows the governed two-commit seam: c339e7f contains the final PR-evaluation bytes and the following commit pins their exact blob and SHA-256 without changing them'
   - structural PR 40 merged as cdb178d69b2cd64c6c99abd2119f59ea75ec5ceb and exact-main pack run 33425118268 produced controller artifact 9770488354; the bridge pins its exact provider, wheel, commit, and tree identity before trusted installation
+  - bridge PR 41 merged as 89f4e8e715caab11a9ceaf0baf8d89060f96cbde; bootstrap 33427231430 and probe 33427318946 passed independently on both trusted runners
+  - provider paths that do not yet have numeric GitHub identities land with every job disabled; final bytes and exact pins activate in a following PR, avoiding fabricated pre-merge authority
 closeout_requirements:
   claims:
     required_suites_green:

@@ -13,19 +13,14 @@ tooling_contexts:
 cli_commands:
   read_only: [doctor, exposure-scan, preflight, publish-audit, semantic-ownership, truth, validate]
   mutating: [ci, ci-cleanup, ci-github, cleanup, evidence, install, migrate-evidence, profile, scaffold, test-manifest]
-required_dependencies:
-  PyYAML: '>=6.0,<7'
-  jsonschema: '>=4.21,<5'
+required_dependencies: {PyYAML: '>=6.0,<7', jsonschema: '>=4.21,<5'}
 sbom_format: CycloneDX
 forbid_subprocess_shell: true
 runner_security:
   hosted_fallback_allowed: false
   fork_pull_request_policy: provider_isolated_standard_hosted_runner
   candidate_substrate: github_standard_hosted_fresh_vm
-  candidate_routing:
-    candidate_runner: ubuntu-latest
-    repository_visibility: public
-    billing_class: standard_public_repository
+  candidate_routing: {candidate_runner: ubuntu-latest, repository_visibility: public, billing_class: standard_public_repository}
   candidate_lifecycle: provider_fresh_vm_per_job_destroyed_after_completion
   trusted_labels: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
   trusted_instance_labels: [bcf-trusted-control-1, bcf-trusted-control-2]
@@ -37,9 +32,13 @@ runner_security:
   coordination_policy: [no_polling, no_sleeping, no_idle_waiters]
   temporary_local_window: {status: closed, closed_at_utc: '2026-08-30T00:00:00Z', reason: GitHub-hosted ephemeral candidate capacity restored, privileged_publication_enabled: false, restore_condition: authority_v1_1_exact_tag_and_certified_bytes_only}
   jobs:
+    .github/workflows/bcf-authority-canary.yml: {admit: trusted, producer-a: candidate, producer-b: candidate, observe: trusted}
     .github/workflows/bcf-trusted-control-bootstrap.yml: {bootstrap: trusted_bootstrap}
     .github/workflows/bcf-trusted-control-probe.yml: {probe: trusted}
     .github/workflows/bcf-exact-main.yml: {kickoff: trusted}
+    .github/workflows/bcf-release-collector.yml: {collect: trusted}
+    .github/workflows/bcf-release-publisher.yml: {publish: trusted}
+    .github/workflows/bcf-release-verifier.yml: {verify: candidate}
     .github/workflows/bcf-trusted-finalizer.yml: {finalize: trusted}
     .github/workflows/bcf-status-publisher.yml: {publish: trusted}
     .github/workflows/governance-mutants-nightly.yml: {high-value-mutants: candidate}
@@ -48,9 +47,13 @@ runner_security:
     .github/workflows/governance.yml: {preflight: candidate, evidence: candidate, governance-truthfulness: candidate}
     .github/workflows/release.yml: {authority-cutover-pending: trusted}
   trusted_job_activation:
+    .github/workflows/bcf-authority-canary.yml: {admit: disabled, producer-a: disabled, producer-b: disabled, observe: disabled}
     .github/workflows/bcf-trusted-control-bootstrap.yml: {bootstrap: owner_main_dispatch}
     .github/workflows/bcf-trusted-control-probe.yml: {probe: owner_main_dispatch}
     .github/workflows/bcf-exact-main.yml: {kickoff: repository_variable_disabled}
     .github/workflows/bcf-trusted-finalizer.yml: {finalize: repository_variable_main_push_only}
     .github/workflows/bcf-status-publisher.yml: {publish: repository_variable_successful_callback_only}
+    .github/workflows/bcf-release-collector.yml: {collect: disabled}
+    .github/workflows/bcf-release-publisher.yml: {publish: disabled}
+    .github/workflows/bcf-release-verifier.yml: {verify: disabled}
     .github/workflows/release.yml: {authority-cutover-pending: disabled}

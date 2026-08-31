@@ -1,0 +1,16 @@
+name: bcf/immutable-release-publisher
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  publish:
+    name: Publish pre-certified immutable release bytes
+    if: ${{ false }}
+    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+    timeout-minutes: 1
+    steps:
+      - name: Remain fail-closed pending explicit owner approval
+        run: exit 1

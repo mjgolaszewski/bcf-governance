@@ -129,8 +129,26 @@ def test_pr_and_exact_main_statuses_have_independent_identity() -> None:
     assert decision.reason == "independent_status_identity"
 
 
-def test_equal_authority_cannot_publish_conflicting_status() -> None:
-    with pytest.raises(CIDecisionError, match="conflicting"):
+@pytest.mark.parametrize(
+    "terminal", [StatusConclusion.SUCCESS, StatusConclusion.FAILURE]
+)
+def test_equal_pending_authority_can_publish_its_terminal_state(
+    terminal: StatusConclusion,
+) -> None:
+    decision = decide_status_publication(
+        proposed=_status(conclusion=terminal),
+        current=_status(conclusion=StatusConclusion.PENDING),
+        trusted_publisher=True,
+        current_default_main_sha=SHA_A,
+    )
+
+    assert decision.publish is True
+    assert decision.reason == "pending_authority_became_terminal"
+    assert decision.selected.conclusion is terminal
+
+
+def test_equal_terminal_authority_cannot_publish_conflicting_status() -> None:
+    with pytest.raises(CIDecisionError, match="terminal authority"):
         decide_status_publication(
             proposed=_status(conclusion=StatusConclusion.FAILURE),
             current=_status(conclusion=StatusConclusion.SUCCESS),

@@ -11,11 +11,13 @@ workitems:
 - id: P13-P0-01
   priority: P0
   status: IN_PROGRESS
-  summary: deliver provider-authenticated common admission and revocation authority
+  summary: deliver provider-authenticated common admission and revocation authority plus
+    fail-closed registration and exact pinning of every privileged provider workflow
   acceptance:
   - authority v1.1 binds every producer to one authenticated admission run and attempt
   - newer admitted pending, failed, cancelled, or stale state revokes older success
   - privileged workflow roles use one pinned registry and trusted YAML contains no provider selectors
+  - fail-closed registration and exact pinning covers every privileged provider workflow
   acceptance_evidence:
   - test
   - contract-test
