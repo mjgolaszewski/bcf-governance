@@ -64,6 +64,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Moved the exact trusted-controller artifact pin into canonical runner policy,
+  with owner-only bootstrap and probe workflows checked as exact mirrors and
+  named by their human-visible purpose.
 - Replaced opaque numeric evidence-job display names with concise descriptions
   whose workflow mirror is checked against the canonical shard contract.
 - Split P10 structural self-adoption from its post-merge authority activation,
