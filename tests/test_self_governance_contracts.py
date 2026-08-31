@@ -803,16 +803,16 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
     )
     assert "/attempts/${{ github.run_attempt }}/" in truth_command
     assert "--evaluation-mode" in truth_command
-    assert "github.event_name == 'workflow_call'" in truth_command
-    assert "inputs.evaluation_mode" in truth_command
+    assert "inputs.evaluation_mode || 'pr'" in truth_command
+    assert "github.event_name" not in truth_command
     preflight_command = next(
         step["run"]
         for step in jobs["preflight"]["steps"]
         if step.get("id") == "preflight"
     )
-    assert "github.event_name == 'workflow_call'" in preflight_command
     assert "inputs.evaluation_mode == 'closure'" in preflight_command
     assert "&& 'release' || 'pr'" in preflight_command
+    assert "github.event_name" not in preflight_command
     terminal = next(
         step
         for step in jobs["governance-truthfulness"]["steps"]

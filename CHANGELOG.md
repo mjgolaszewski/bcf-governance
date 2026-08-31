@@ -38,6 +38,8 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   terminal truth.
 - Mapped exact-main reusable execution to release preflight and closure truth,
   while direct pull requests retain their exact-base PR evaluation contract.
+- Made reusable evaluation mode depend on its explicit typed input rather than
+  the caller event name, which remains `push` inside an exact-main call.
 
 ### Changed
 
