@@ -193,8 +193,6 @@ def _release_parser() -> argparse.ArgumentParser:
     verify.add_argument("--lock", type=Path, required=True)
     verify.add_argument("--wheelhouse", type=Path, required=True)
     verify.add_argument("--release-artifact", type=Path, action="append", required=True)
-    verify.add_argument("--build-artifact-id", required=True)
-    verify.add_argument("--build-provider-digest", required=True)
     verify.add_argument("--output", type=Path, required=True)
     build = operations.add_parser("build")
     build.add_argument("--authorization", type=Path, required=True)
@@ -211,9 +209,7 @@ def _release_parser() -> argparse.ArgumentParser:
     collect.add_argument("--verification", type=Path, required=True)
     collect.add_argument("--release-artifact", type=Path, action="append", required=True)
     collect.add_argument("--output", type=Path, required=True)
-    collect.add_argument("--verification-artifact-id", required=True)
     collect.add_argument("--verification-artifact-name", required=True)
-    collect.add_argument("--verification-provider-digest", required=True)
     for operation in (operations.add_parser("inspect"), operations.add_parser("publish")):
         operation.add_argument("--repository", required=True)
         operation.add_argument("--tag", required=True)
@@ -242,8 +238,6 @@ def _release(argv: list[str]) -> None:
             release_artifacts=args.release_artifact,
             verifier_run_id=_required_environment("GITHUB_RUN_ID"),
             verifier_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
-            build_artifact_id=args.build_artifact_id,
-            build_provider_digest=args.build_provider_digest,
             output_path=args.output,
         )
     elif args.operation == "build":
@@ -297,9 +291,7 @@ def _release(argv: list[str]) -> None:
                 release_artifacts=args.release_artifact,
                 collector_run_id=_required_environment("GITHUB_RUN_ID"),
                 collector_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
-                verification_artifact_id=args.verification_artifact_id,
                 verification_artifact_name=args.verification_artifact_name,
-                verification_provider_digest=args.verification_provider_digest,
                 output_path=args.output,
             )
         else:

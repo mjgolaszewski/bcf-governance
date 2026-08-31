@@ -50,6 +50,8 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   `SHA256SUMS` file whose two declarations match the archive bytes.
 - Required the trusted authorizer to hash the downloaded controller wheel instead of
   accepting its expected wheel digest as authority.
+- Moved cross-workflow build and verification artifact resolution into the controller,
+  eliminating workflow-authored provider selectors.
 
 ### Changed
 

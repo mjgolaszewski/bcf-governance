@@ -9,7 +9,10 @@ from bcf_governance.tooling.ci_authority_state import (
     WorkflowIdentity,
 )
 from bcf_governance.tooling.ci_github import GithubRunIdentity
-from bcf_governance.tooling.ci_github_artifacts import authenticate_role_artifact
+from bcf_governance.tooling.ci_github_artifacts import (
+    authenticate_role_artifact,
+    resolve_role_artifact,
+)
 from bcf_governance.tooling.ci_github_identity import (
     GitHubControllerError,
     MainIdentity,
@@ -82,6 +85,18 @@ def test_role_artifact_binds_workflow_attempt_provider_digest_and_subject(
     assert result.artifact_id == "404"
     assert result.provider_digest == DIGEST
     assert result.workflow["active_path"] == ".github/workflows/release.yml"
+    resolved = resolve_role_artifact(
+        _ArtifactAPI(),  # type: ignore[arg-type]
+        repository="owner/repo",
+        main=MAIN,
+        authority={},
+        role="release_build",
+        run_id="303",
+        run_attempt="2",
+        artifact_name="bcf-release-build-a-2",
+        require_success=True,
+    )
+    assert resolved == result
 
 
 @pytest.mark.parametrize(

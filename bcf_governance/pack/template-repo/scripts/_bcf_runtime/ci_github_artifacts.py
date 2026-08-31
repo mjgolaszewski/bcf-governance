@@ -86,9 +86,16 @@ def authenticate_role_artifact(
         and artifact.get("expired") is False
         and artifact.get("digest") == expected_digest
     ]
+    return _materialize_artifact(identity, main=main, matching=matching)
+
+
+def _materialize_artifact(
+    identity: Any, *, main: MainIdentity, matching: list[dict[str, Any]]
+) -> ProviderArtifact:
     if len(matching) != 1:
         raise GitHubControllerError("provider artifact identity is not exact")
-    workflow_run = matching[0].get("workflow_run")
+    artifact = matching[0]
+    workflow_run = artifact.get("workflow_run")
     if not isinstance(workflow_run, dict) or workflow_run != {
         "id": int(identity.run_id),
         "repository_id": int(main.repository_id),
@@ -100,8 +107,41 @@ def authenticate_role_artifact(
     return ProviderArtifact(
         run_id=identity.run_id,
         run_attempt=identity.run_attempt,
-        artifact_id=expected_id,
-        artifact_name=expected_name,
-        provider_digest=expected_digest,
+        artifact_id=_positive_id(artifact.get("id"), label="provider artifact ID"),
+        artifact_name=_artifact_name(artifact.get("name")),
+        provider_digest=provider_digest(artifact.get("digest")),
         workflow=asdict(identity.workflow),
     )
+
+
+def resolve_role_artifact(
+    api: GitHubAPI,
+    *,
+    repository: str,
+    main: MainIdentity,
+    authority: dict[str, Any],
+    role: str,
+    run_id: object,
+    run_attempt: object,
+    artifact_name: object,
+    require_success: bool,
+) -> ProviderArtifact:
+    """Resolve one exact-name artifact only after authenticating its owning role."""
+
+    identity = authenticate_role_run(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        role=role,
+        run_id=run_id,
+        run_attempt=run_attempt,
+        require_success=require_success,
+    )
+    expected_name = _artifact_name(artifact_name)
+    matching = [
+        artifact
+        for artifact in api.artifacts(repository, identity.run_id)
+        if artifact.get("name") == expected_name and artifact.get("expired") is False
+    ]
+    return _materialize_artifact(identity, main=main, matching=matching)

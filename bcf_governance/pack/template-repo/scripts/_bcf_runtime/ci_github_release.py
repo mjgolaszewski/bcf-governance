@@ -13,7 +13,11 @@ from typing import Any, Iterable
 from .ci_authority_certification import verify_ci_certification
 from .ci_authority_contracts import authority_role_workflow
 from .ci_github_api import GitHubAPI
-from .ci_github_artifacts import authenticate_role_artifact, provider_digest
+from .ci_github_artifacts import (
+    authenticate_role_artifact,
+    provider_digest,
+    resolve_role_artifact,
+)
 from .ci_github_authority import (
     authenticate_role_run,
     load_authority,
@@ -347,8 +351,6 @@ def verify_release_build_provider(
     release_artifacts: Iterable[Path],
     verifier_run_id: object,
     verifier_run_attempt: object,
-    build_artifact_id: object,
-    build_provider_digest: object,
     output_path: Path,
 ) -> dict[str, Any]:
     """Authenticate the triggering build and verifier before testing downloaded bytes."""
@@ -368,7 +370,7 @@ def verify_release_build_provider(
         != int(builder.get("run_attempt", 0))
     ):
         raise GitHubControllerError("release authorizer and build must share one attempt")
-    authenticated_build = authenticate_role_artifact(
+    authenticated_build = resolve_role_artifact(
         api,
         repository=repository,
         main=main,
@@ -376,9 +378,7 @@ def verify_release_build_provider(
         role="release_build",
         run_id=builder.get("run_id"),
         run_attempt=builder.get("run_attempt"),
-        artifact_id=build_artifact_id,
         artifact_name=build.get("artifact_name"),
-        artifact_digest=build_provider_digest,
         require_success=True,
     )
     verifier = authenticate_role_run(
@@ -418,9 +418,7 @@ def collect_release(
     release_artifacts: Iterable[Path],
     collector_run_id: object,
     collector_run_attempt: object,
-    verification_artifact_id: object,
     verification_artifact_name: object,
-    verification_provider_digest: object,
     output_path: Path,
 ) -> dict[str, Any]:
     """Authenticate all release roles and emit the sole authoritative receipt."""
@@ -495,7 +493,7 @@ def collect_release(
     verifier_identity = verification.get("verifier")
     if not isinstance(verifier_identity, dict):
         raise GitHubControllerError("release verifier identity is missing")
-    verification_artifact = authenticate_role_artifact(
+    verification_artifact = resolve_role_artifact(
         api,
         repository=repository,
         main=main,
@@ -503,9 +501,7 @@ def collect_release(
         role="release_verifier",
         run_id=verifier_identity.get("run_id"),
         run_attempt=verifier_identity.get("run_attempt"),
-        artifact_id=verification_artifact_id,
         artifact_name=verification_artifact_name,
-        artifact_digest=verification_provider_digest,
         require_success=True,
     )
     exact_main = authorization.get("exact_main")

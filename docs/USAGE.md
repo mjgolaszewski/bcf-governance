@@ -156,6 +156,9 @@ receipt whose asset digests match the bytes being published. Caller-supplied IDs
 digests are lookup keys, not authority.
 The authorizer also hashes the downloaded controller wheel and requires it to match the
 controller identity used by the release receipt.
+For cross-workflow handoffs, YAML supplies the authenticated run, attempt, and exact
+artifact name; the controller requires one matching provider artifact and records its
+numeric ID and provider digest.
 
 The release-byte inventory is closed: one wheel, one source archive, and one
 `SHA256SUMS`. The verifier parses the checksum file and independently recomputes both

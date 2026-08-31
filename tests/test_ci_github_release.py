@@ -410,8 +410,6 @@ def test_provider_verifier_requires_authorizer_and_build_same_attempt(
             release_artifacts=values["artifacts"],  # type: ignore[arg-type]
             verifier_run_id="30",
             verifier_run_attempt="1",
-            build_artifact_id="40",
-            build_provider_digest=f"sha256:{'e' * 64}",
             output_path=tmp_path / "verification.json",
         )
 
@@ -438,7 +436,7 @@ def test_provider_verifier_binds_authenticated_build_and_verifier(
         "20", 1, "40", build["artifact_name"], f"sha256:{'e' * 64}", {}
     )
     monkeypatch.setattr(
-        "bcf_governance.tooling.ci_github_release.authenticate_role_artifact",
+        "bcf_governance.tooling.ci_github_release.resolve_role_artifact",
         lambda *args, **kwargs: provider,
     )
     verifier = SimpleNamespace(
@@ -461,8 +459,6 @@ def test_provider_verifier_binds_authenticated_build_and_verifier(
         release_artifacts=values["artifacts"],  # type: ignore[arg-type]
         verifier_run_id="30",
         verifier_run_attempt="2",
-        build_artifact_id="40",
-        build_provider_digest=f"sha256:{'e' * 64}",
         output_path=tmp_path / "provider-verification.json",
     )
     assert result["build"]["artifact_id"] == "40"
@@ -527,9 +523,7 @@ def test_release_collection_rejects_an_older_same_sha_admission(
             release_artifacts=values["artifacts"],  # type: ignore[arg-type]
             collector_run_id="50",
             collector_run_attempt="1",
-            verification_artifact_id="60",
             verification_artifact_name="verification",
-            verification_provider_digest=f"sha256:{'f' * 64}",
             output_path=tmp_path / "receipt.json",
         )
 
