@@ -51,6 +51,6 @@ runner_security:
     .github/workflows/bcf-trusted-control-bootstrap.yml: {bootstrap: owner_main_dispatch}
     .github/workflows/bcf-trusted-control-probe.yml: {probe: owner_main_dispatch}
     .github/workflows/bcf-exact-main.yml: {kickoff: repository_variable_disabled}
-    .github/workflows/bcf-trusted-finalizer.yml: {finalize: repository_variable_disabled}
-    .github/workflows/bcf-status-publisher.yml: {publish: repository_variable_disabled}
+    .github/workflows/bcf-trusted-finalizer.yml: {finalize: repository_variable_main_push_only}
+    .github/workflows/bcf-status-publisher.yml: {publish: repository_variable_successful_callback_only}
     .github/workflows/release.yml: {publish-release: disabled}
