@@ -417,7 +417,10 @@ def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
     release = yaml.safe_load(
         (REPO_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
     )
-    assert release["jobs"]["release-artifacts"]["if"] == "${{ false }}"
+    assert release["jobs"]["release-artifacts"]["needs"] == [
+        "authorize-release-subject"
+    ]
+    assert release["jobs"]["publish-release"]["if"] == "${{ false }}"
 
 
 def test_workflows_have_no_runner_occupying_coordination() -> None:

@@ -1,44 +1,142 @@
-name: release
+name: bcf/certified-release
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
 
 permissions: {}
 
 jobs:
-  release-artifacts:
-    name: Build and verify immutable release artifacts
-    # P11 enables release execution only after exact-main artifact contracts pass.
-    if: ${{ false }}
+  authorize-release-subject:
+    name: Authenticate the exact-main release subject
+    if: ${{ github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main' }}
     permissions:
+      actions: read
+      contents: read
+      statuses: read
+    runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
+    timeout-minutes: 5
+    outputs:
+      authorization_digest: ${{ steps.authorize.outputs.authorization_digest }}
+      governance_run_attempt: ${{ steps.authorize.outputs.governance_run_attempt }}
+      governance_run_id: ${{ steps.authorize.outputs.governance_run_id }}
+    steps:
+      - name: Restore the trusted controller interpreter environment
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+      - id: authorize
+        name: Authenticate the latest certified current-main callback
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          control_commit="37475fbff2c5303762e0fdeb97e7cc7834bfe485"
+          control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/$control_commit"
+          authorization_root="$RUNNER_TEMP/bcf-release-authorization"
+          runs_json="$RUNNER_TEMP/bcf-release-finalizer-runs.json"
+
+          test -d "$control_root"
+          test ! -L "$control_root"
+          test -x "$control_root/bin/bcf"
+          install -d -m 700 "$authorization_root"
+
+          gh api --method GET \
+            "/repos/$GITHUB_REPOSITORY/actions/workflows/bcf-trusted-finalizer.yml/runs" \
+            -f head_sha="$GITHUB_SHA" -f event=workflow_run -f status=success \
+            -f per_page=100 > "$runs_json"
+          identity="$(jq -er --arg sha "$GITHUB_SHA" '
+            [.workflow_runs[] | select(
+              .head_sha == $sha and .event == "workflow_run" and
+              .status == "completed" and .conclusion == "success"
+            )] | if length == 0 then error("no exact-main finalizer")
+            else max_by(.id) | [.id, .run_attempt] | @tsv end
+          ' "$runs_json")"
+          IFS=$'\t' read -r collector_run_id collector_run_attempt <<< "$identity"
+          test "$collector_run_id" -gt 0
+          test "$collector_run_attempt" -gt 0
+
+          gh run download "$collector_run_id" \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "bcf-trusted-callback-$collector_run_id-$collector_run_attempt" \
+            --dir "$authorization_root"
+          result="$("$control_root/bin/bcf" ci-github publish-callback \
+            --repository "$GITHUB_REPOSITORY" \
+            --callback "$authorization_root" \
+            --target-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$collector_run_id" \
+            --collector-run-id "$collector_run_id" \
+            --collector-run-attempt "$collector_run_attempt" \
+            --collector-workflow-path .github/workflows/bcf-trusted-finalizer.yml)"
+          jq -e --arg sha "$GITHUB_SHA" '
+            .status == "suppressed" and .reason == "idempotent_replay" and
+            .subject_sha == $sha and .computed_state == "certified"
+          ' <<< "$result" > /dev/null
+
+          governance_identity="$(jq -er '
+            [.admission.producer_runs[] | select(.producer_id == "governance")] |
+            if length != 1 then error("governance producer identity is not exact")
+            else .[0].selected_attempt | [.run_id, .run_attempt] | @tsv end
+          ' "$authorization_root/bundle/ci-certification.json")"
+          IFS=$'\t' read -r governance_run_id governance_run_attempt \
+            <<< "$governance_identity"
+          authorization_digest="$(jq -er '.bundle_manifest_sha256' \
+            "$authorization_root/callback-result.json")"
+          test "$governance_run_id" -gt 0
+          test "$governance_run_attempt" -gt 0
+          test "${#authorization_digest}" -eq 64
+
+          printf 'authorization_digest=%s\n' "$authorization_digest" >> "$GITHUB_OUTPUT"
+          printf 'governance_run_attempt=%s\n' "$governance_run_attempt" >> "$GITHUB_OUTPUT"
+          printf 'governance_run_id=%s\n' "$governance_run_id" >> "$GITHUB_OUTPUT"
+      - name: Upload the authenticated release authorization
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: bcf-release-authorization-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/bcf-release-authorization
+          if-no-files-found: error
+          retention-days: 90
+
+  release-artifacts:
+    name: Build, test, and certify exact-main distributions
+    needs: [authorize-release-subject]
+    permissions:
+      actions: read
       contents: read
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
+      - name: Download exact-main release authorization
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: bcf-release-authorization-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/bcf-release-authorization
+      - name: Verify authorization bytes before candidate checkout
+        shell: bash
+        env:
+          EXPECTED_AUTHORIZATION_DIGEST: ${{ needs.authorize-release-subject.outputs.authorization_digest }}
+        run: |
+          set -euo pipefail
+          manifest="$RUNNER_TEMP/bcf-release-authorization/bundle/bundle-manifest.json"
+          test "$(sha256sum "$manifest" | cut -d ' ' -f 1)" = "$EXPECTED_AUTHORIZATION_DIGEST"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
           persist-credentials: false
+          ref: ${{ github.sha }}
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: "3.12"
-      - name: Install build and test dependencies
+      - name: Install build and verification dependencies
         run: python -m pip install -e ".[dev]" build twine
-      - name: Verify tag matches package version
+      - name: Verify the exact 0.7.0 package subject
+        shell: bash
         run: |
-          python - <<'PY'
-          import os
-          from bcf_governance._version import __version__
-
-          tag = os.environ["GITHUB_REF_NAME"]
-          if tag != f"v{__version__}":
-              raise SystemExit(f"tag {tag!r} does not match package version v{__version__}")
-          PY
-      - name: Run complete test suite
-        run: python -m pytest -q tests
-      - name: Run full implementation and semantic mutants
+          set -euo pipefail
+          test "$(python -c 'from bcf_governance import __version__; print(__version__)')" = "0.7.0"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Run complete implementation and semantic mutants
         run: |
           python .github/scripts/run_validator_mutants.py --profile full
           python .github/scripts/run_validator_mutants.py --profile semantic-full
@@ -46,29 +144,61 @@ jobs:
         run: |
           python scripts/validate_governance_yaml.py --repo-root template-repo --allow-placeholders --allow-release-gate-placeholders
           python bcf_governance/pack/template-repo/scripts/validate_governance_yaml.py --repo-root bcf_governance/pack/template-repo --allow-placeholders --allow-release-gate-placeholders
-      - name: Build distributions
-        run: |
-          python -m build
-      - name: Test clean wheel and complete sdist
+      - name: Build reproducible wheel and source distribution
+        shell: bash
+        run: SOURCE_DATE_EPOCH="$(git show -s --format=%ct HEAD)" python -m build
+      - name: Test clean wheel and complete source distribution
         run: python .github/scripts/test_release_artifacts.py --dist-dir dist
-      - name: Check verified distributions
+      - name: Verify distributions and write exact hashes
+        shell: bash
         run: |
+          set -euo pipefail
           python -m twine check dist/*
-          (cd dist && sha256sum bcf_governance-* > SHA256SUMS)
-      - name: Upload verified release artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+          (cd dist && sha256sum bcf_governance-*.whl bcf_governance-*.tar.gz > SHA256SUMS)
+      - name: Download exact governance evidence attempt
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          name: bcf-release-${{ github.sha }}-${{ github.run_attempt }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ needs.authorize-release-subject.outputs.governance_run_id }}
+          pattern: bcf-evidence-${{ needs.authorize-release-subject.outputs.governance_run_id }}-${{ needs.authorize-release-subject.outputs.governance_run_attempt }}-*
+          path: .artifacts/bcf/release-evidence
+      - name: Recompute truth and emit the output-only release receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          find .artifacts/bcf/release-evidence -type f -name evidence-session.json \
+            -execdir chmod 700 . \; -exec chmod 400 {} +
+          mkdir -p .artifacts/release-certification
+          python scripts/governance_truth.py \
+            --repo-root . \
+            --evidence-dir .artifacts/bcf/release-evidence \
+            --ci-authority "$RUNNER_TEMP/bcf-release-authorization/bundle/ci-authority.json" \
+            --ci-certification "$RUNNER_TEMP/bcf-release-authorization/bundle/ci-certification.json" \
+            --ci-session-manifest "$RUNNER_TEMP/bcf-release-authorization/bundle/evidence-session.json" \
+            --release-artifact dist/bcf_governance-0.7.0-py3-none-any.whl \
+            --release-artifact dist/bcf_governance-0.7.0.tar.gz \
+            --release-artifact dist/SHA256SUMS \
+            --release-receipt-output .artifacts/release-certification/release.evidence.json \
+            --durable-ref "github-actions://$GITHUB_REPOSITORY/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/bcf-certified-release" \
+            --output .artifacts/release-certification/truth-report.json \
+            --format json
+      - name: Upload certified release bytes and custody evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: bcf-certified-release-${{ github.sha }}-${{ github.run_attempt }}
           path: |
             dist/bcf_governance-*.whl
             dist/bcf_governance-*.tar.gz
             dist/SHA256SUMS
+            ${{ runner.temp }}/bcf-release-authorization
+            .artifacts/release-certification
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 90
 
   publish-release:
-    name: Publish pre-certified release artifacts
-    if: ${{ false }} # Disabled until the isolated trusted publisher passes P10.
+    name: Publish pre-certified distributions without rebuilding
+    if: ${{ false }}
     needs: [release-artifacts]
     permissions:
       actions: read
@@ -78,29 +208,5 @@ jobs:
     runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
     timeout-minutes: 15
     steps:
-      - name: Download verified release artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: bcf-release-${{ github.sha }}-${{ github.run_attempt }}
-          path: dist
-      - name: Verify candidate artifact hashes
-        working-directory: dist
-        run: sha256sum --check SHA256SUMS
-      - name: Attest release artifacts
-        uses: actions/attest-build-provenance@43d14bc2b83dec42d39ecae14e916627a18bb661
-        with:
-          subject-path: |
-            dist/bcf_governance-*.whl
-            dist/bcf_governance-*.tar.gz
-            dist/SHA256SUMS
-      - name: Create GitHub release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: >-
-          gh release create "$GITHUB_REF_NAME"
-          dist/bcf_governance-*.whl
-          dist/bcf_governance-*.tar.gz
-          dist/SHA256SUMS
-          --verify-tag
-          --title "$GITHUB_REF_NAME"
-          --generate-notes
+      - name: Publication remains disabled until P12
+        run: exit 1

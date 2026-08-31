@@ -284,7 +284,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "64832cd7745df033bbb4999fdd71e39a3702fa4aaf569368f41afc8400ea03c3"
+      "sha256": "6af26124fb36b623666e0278d3fb6cc5ea11be8e5c4d3cc0b9ed31dc7e5d57ff"
     },
     "scripts/_bcf_runtime/check_governance_exposure.py": {
       "operation": "copy",
@@ -320,7 +320,7 @@
     },
     "scripts/_bcf_runtime/ci_github_actions.py": {
       "operation": "copy",
-      "sha256": "455ca340dc733f3a7b5a9308767df08e95f14c6fa3bc8fe0b23e056ee8b73117"
+      "sha256": "56d7189585af6ca037d3a26e319e2a7658f0aa80f27a15fa3769e13ef9d8bbce"
     },
     "scripts/_bcf_runtime/ci_github_api.py": {
       "operation": "copy",

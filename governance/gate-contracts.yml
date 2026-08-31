@@ -209,7 +209,7 @@ gates:
           'tests/test_validate_governance_yaml.py::test_pull_request_validation_requires_changelog_update', tests/test_ci_authority.py,
           tests/test_ci_certification.py, tests/test_ci_authority_decisions.py, tests/test_release_receipts.py, tests/test_ci_github_reference.py,
           tests/test_ci_github_controller.py, tests/test_local_pr.py, tests/test_runtime_capacity.py, tests/test_trusted_inputs.py,
-          tests/test_preflight.py]
+          tests/test_preflight.py, tests/test_release_workflow_contracts.py]
         expected_node_manifest: governance/test-manifests/contract-test.txt
         expected_nodes_mode: exact
         min_collected: 1
@@ -261,6 +261,12 @@ gates:
     - id: trusted-controller-token-transport-must-fail
       mutation: {path: .github/workflows/bcf-exact-main.yml, search: 'GITHUB_TOKEN: ${{ github.token }}', replace: 'GITHUB_TOKEN: ""'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_ci_authority_matches_immutable_workflow_definitions', 'tests.test_self_governance_contracts::test_self_control_plane_is_an_exact_disabled_generator_product', 'tests.test_self_governance_contracts::test_trusted_controller_steps_receive_github_token_explicitly']}
+    - id: release-candidate-authorization-must-fail
+      mutation: {path: .github/workflows/release.yml, search: 'needs: [authorize-release-subject]', replace: 'needs: []'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_release_requires_owner_dispatch_of_exact_main_before_candidate']}
+    - id: release-publication-disable-must-fail
+      mutation: {path: .github/workflows/release.yml, search: 'if: ${{ false }}', replace: 'if: ${{ true }}'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_p11_publication_is_named_and_mechanically_disabled']}
     - id: self-ci-authority-definition-pin-must-fail
       mutation: {path: governance/ci-authority.yml, search: 'trusted_workflow_sha256: cb137dd34ad755e52a987a221fcaa091c0a2e05c1aa49bbf720db0590fe99b99', replace: 'trusted_workflow_sha256: 0000000000000000000000000000000000000000000000000000000000000000'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_ci_authority_matches_immutable_workflow_definitions']}
@@ -451,7 +457,7 @@ gates:
       - {name: BCF_EXECUTION_PROFILE, operator: equals, value: production}
     negative_controls:
     - id: runtime-smoke-behavior-must-fail
-      mutation: {path: manifest.yml, search: 'version: 0.6.1', replace: 'version: 0.0.0'}
+      mutation: {path: manifest.yml, search: 'version: 0.7.0', replace: 'version: 0.0.0'}
       oracle:
         kind: diagnostic
         exit_codes: [1]
@@ -678,7 +684,7 @@ gates:
     evidence: {kind: gate}
     negative_controls:
     - id: typecheck-behavior-must-fail
-      mutation: {path: bcf_governance/_version.py, search: __version__ = "0.6.1", replace: VERSION = "0.6.1"}
+      mutation: {path: bcf_governance/_version.py, search: __version__ = "0.7.0", replace: VERSION = "0.7.0"}
       oracle:
         kind: diagnostic
         exit_codes: [1]
