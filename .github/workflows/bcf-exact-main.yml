@@ -26,6 +26,8 @@ jobs:
         python-version: '3.12'
     - name: Authenticate the exact default-branch commit
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       run: 'set -euo pipefail
 
         control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/$BCF_CONTROL_COMMIT"

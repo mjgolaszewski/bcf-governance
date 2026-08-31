@@ -73,6 +73,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Bound the least-privilege GitHub token explicitly to each trusted controller
+  command step after live activation proved that workflow permissions alone do
+  not populate the controller's required `GITHUB_TOKEN` environment.
 - Prevented pull-request producer completions and failed finalizers from
   allocating trusted callback runners, enabling bounded exact-main authority
   activation without persistent-VM PR fanout.

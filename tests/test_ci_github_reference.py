@@ -13,6 +13,7 @@ from bcf_governance.tooling.ci_adopt_github import (
     FINALIZER_ACTIVATION_EXPRESSION,
     GithubAdoptionError,
     PUBLISHER_ACTIVATION_EXPRESSION,
+    TRUSTED_CONTROLLER_TOKEN_ENV,
     apply_github_adoption,
     plan_github_adoption,
     render_github_adoption,
@@ -203,6 +204,12 @@ def test_control_plane_is_event_driven_disabled_and_descriptively_named() -> Non
         assert job["timeout-minutes"] == 5
         command = "\n".join(step.get("run", "") for step in job["steps"])
         assert not re.search(r"\b(?:sleep|poll|wait|while|until)\b", command)
+        controller_steps = [
+            step for step in job["steps"] if "ci-github" in step.get("run", "")
+        ]
+        assert len(controller_steps) == 1
+        assert controller_steps[0]["env"] == TRUSTED_CONTROLLER_TOKEN_ENV
+        assert "GITHUB_TOKEN" not in workflow.get("env", {})
     finalizer_trigger = workflows[".github/workflows/bcf-trusted-finalizer.yml"]["on"]
     assert finalizer_trigger == {
         "workflow_run": {

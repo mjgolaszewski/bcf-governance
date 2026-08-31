@@ -1,0 +1,57 @@
+document:
+  kind: hotfix_execution_log
+  name: P10-HF14 Hotfix Log
+  id: bcf-governance-phase-10-hotfix14
+  version: 1.0.0
+  generated_at_utc: '2026-08-31T00:00:00Z'
+  status: completed
+  path: phases/phase-10-hotfix14.yml
+hotfix:
+  id: P10-HF14
+  mode: full
+  related_phase_id: P10
+  hotfix_number: 14
+  summary: Bind the trusted GitHub token explicitly to every controller command
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python scripts/governance_evidence.py --repo-root . run --gate contract-test --session-manifest <fresh-local-session>
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python scripts/governance_evidence.py --repo-root . run --gate contract-test --session-manifest <fresh-local-session>
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py architecture-test
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py semantic-ownership
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py lint
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py typecheck
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py runtime-smoke
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root . --format text
+  - .venv/bin/python scripts/check_governance_exposure.py --repo-root . --format text
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+  notes:
+  - activation run 33358335298 failed in three seconds because the trusted provider client correctly rejected its missing GITHUB_TOKEN environment
+  - authority was mechanically disabled before diagnosis so no later trusted callback may allocate a runner
+  - the canonical generator now maps the job-scoped GitHub token only onto controller command steps; candidate jobs and workflow-global environments receive no token mapping
+  - immutable workflow custody requires a token-transport source commit followed by a successor that pins the exact source commit, blob OID, and content digest; authority stays disabled throughout this sequence
+  - all 400 exact tests and 135 exact contract nodes pass at source successor 9614df624af44429ba040792dae7251400beaaa4; all 33 contract controls pass in one exact local session
+  - the token-transport control applied its declared empty-token mutation, observed all three declared mechanical consumers fail with exit 1, and left no unexpected worktree changes
+  - high-value and semantic-high-value validator mutants, architecture, semantic ownership, lint, typecheck, runtime smoke, structural validation, and exposure scanning pass
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml
