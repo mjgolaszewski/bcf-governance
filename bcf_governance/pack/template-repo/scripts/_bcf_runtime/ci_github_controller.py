@@ -296,6 +296,25 @@ def finalize(
 
     main = resolve_main(api, repository)
     authority = _load_authority(api, repository, main)
+    admission = authority.get("admission_workflow")
+    control_blob_oid: object | None = None
+    control_definition_commit: object | None = None
+    if isinstance(admission, dict):
+        authority_id = admission["workflow_id"]
+        authority_digest = str(admission["trusted_workflow_sha256"])
+        if control_workflow_id is not None and str(control_workflow_id) != str(
+            authority_id
+        ):
+            raise GitHubControllerError("control workflow ID conflicts with canonical authority")
+        if (
+            control_workflow_sha256 is not None
+            and control_workflow_sha256 != authority_digest
+        ):
+            raise GitHubControllerError("control workflow digest conflicts with canonical authority")
+        control_workflow_id = authority_id
+        control_workflow_sha256 = authority_digest
+        control_blob_oid = admission["trusted_workflow_blob_oid"]
+        control_definition_commit = admission["trusted_workflow_definition_commit"]
     control_id = str(_positive(control_run_id, field="control-plane run ID"))
     control_attempt = _positive(control_run_attempt, field="control-plane run attempt")
     control_identity = authenticate_trusted_run(
@@ -309,6 +328,8 @@ def finalize(
         require_success=True,
         expected_workflow_id=control_workflow_id,
         expected_workflow_sha256=control_workflow_sha256,
+        expected_workflow_blob_oid=control_blob_oid,
+        expected_workflow_definition_commit=control_definition_commit,
     )
     collector_identity = authenticate_trusted_run(
         api,

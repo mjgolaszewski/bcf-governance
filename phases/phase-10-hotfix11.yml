@@ -1,0 +1,49 @@
+document:
+  kind: hotfix_execution_log
+  name: P10-HF11 Hotfix Log
+  id: bcf-governance-phase-10-hotfix11
+  version: 1.0.0
+  generated_at_utc: '2026-08-31T00:00:00Z'
+  status: completed
+  path: phases/phase-10-hotfix11.yml
+hotfix:
+  id: P10-HF11
+  mode: full
+  related_phase_id: P10
+  hotfix_number: 11
+  summary: Bind trusted workflow authority to immutable definitions and advance the disabled controller pin
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test
+  - .venv/bin/python scripts/governance_evidence.py --repo-root . run --gate contract-test --session-manifest <fresh-local-session>
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test
+  - .venv/bin/python scripts/governance_evidence.py --repo-root . run --gate contract-test --session-manifest <fresh-local-session>
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py architecture-test
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py semantic-ownership
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py lint
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py typecheck
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py runtime-smoke
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root . --format text
+  - .venv/bin/python scripts/check_governance_exposure.py --repo-root . --format text
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+  notes:
+  - full mode is required because this slice hardens trusted workflow identity and advances the disabled control-plane runtime pin
+  - immutable historical definition bytes must remain identical to the active default-main workflow bytes before a trusted run or producer is admitted
+  - human-facing workflow and job names remain descriptive presentation; numeric provider identity, path, immutable workflow bytes, event, run attempt, commit, and tree remain mechanical authority
+  - authority activation remains false; the controller carrying this custody invariant must be produced from exact merged main and installed on both trusted runners before activation
+  - all 397 exact tests and 132 exact contract nodes pass at source commit fa96d279cd54536f436fbbcd6806b3020eba037c; all 29 contract controls pass in one exact local session
+  - the definition-custody control applied its declared mutation, observed only its exact killer node fail with exit 1, and left no unexpected worktree changes
+  - high-value and semantic-high-value validator mutants, architecture, semantic ownership, lint, typecheck, runtime smoke, structural validation, and exposure scanning pass
+closeout_requirements:
+  claims:
+    required_suites_green: {required_evidence: [test, contract-test]}
+    security_review_complete: {required_evidence: [security-review]}
+    health_checks_green: {required_evidence: [runtime-smoke]}
+  reconciliation: {required_evidence: [governance-validate, governance-exposure-scan]}
+  finding_registry: governance/findings.yml

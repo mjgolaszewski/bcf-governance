@@ -7,7 +7,7 @@ permissions:
   actions: read
   contents: read
 env:
-  BCF_CONTROL_COMMIT: b8ecc90f2a61336c32709f8f901664f92fc2b182
+  BCF_CONTROL_COMMIT: 219337296dfdbbc0040ae97a7657189949524e24
 jobs:
   kickoff:
     name: Authenticate exact-main admission

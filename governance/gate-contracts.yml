@@ -224,7 +224,7 @@ gates:
         kind: test_node_failure
         node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']
     - id: trusted-bootstrap-artifact-identity-must-fail
-      mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: 'BCF_BOOTSTRAP_ARTIFACT_ID: "9743325088"', replace: 'BCF_BOOTSTRAP_ARTIFACT_ID: "1"'}
+      mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: 'BCF_BOOTSTRAP_ARTIFACT_ID: "9744155908"', replace: 'BCF_BOOTSTRAP_ARTIFACT_ID: "1"'}
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']
@@ -252,6 +252,9 @@ gates:
     - id: ci-authority-activation-gate-must-fail
       mutation: {path: .github/workflows/bcf-exact-main.yml, search: "if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}", replace: 'if: ${{ true }}'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_control_plane_is_an_exact_disabled_generator_product']}
+    - id: pinned-workflow-definition-custody-must-fail
+      mutation: {path: bcf_governance/tooling/ci_github_identity.py, search: 'if current.blob_oid != pinned.blob_oid or current.content != pinned.content:', replace: 'if False and (current.blob_oid != pinned.blob_oid or current.content != pinned.content):'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_pinned_definition_must_still_match_current_main']}
     - id: ci-workflow-event-authentication-must-fail
       mutation: {path: bcf_governance/tooling/ci_authority_state.py, search: 'if not same_identity or actual.event not in
           allowed_events:', replace: 'if not same_identity:'}

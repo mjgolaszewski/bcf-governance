@@ -9,7 +9,7 @@ import re
 from typing import Any
 
 from .ci_github import GithubReferenceError, GithubRunIdentity, authenticate_github_run
-from .ci_github_api import GitHubAPI
+from .ci_github_api import GitHubAPI, GitHubContent
 
 
 SHA_PATTERN = re.compile(r"^[a-f0-9]{40}$")
@@ -85,6 +85,48 @@ def resolve_main(api: GitHubAPI, repository: str) -> MainIdentity:
     )
 
 
+def _trusted_workflow_source(
+    api: GitHubAPI,
+    *,
+    repository: str,
+    main: MainIdentity,
+    active_path: str,
+    expected_blob_oid: object | None,
+    expected_sha256: str | None,
+    definition_commit: object | None,
+) -> tuple[GitHubContent, str]:
+    """Bind current workflow bytes to their declared immutable definition."""
+
+    current = api.content(repository, active_path, ref=main.checkout_sha)
+    definition = (
+        main.checkout_sha
+        if definition_commit is None
+        else exact_sha(definition_commit, field="workflow definition commit")
+    )
+    pinned = current if definition == main.checkout_sha else api.content(
+        repository, active_path, ref=definition
+    )
+    if expected_blob_oid is not None and pinned.blob_oid != exact_sha(
+        expected_blob_oid, field="trusted workflow blob OID"
+    ):
+        raise GitHubControllerError(
+            "trusted workflow bytes blob does not match its definition"
+        )
+    digest = hashlib.sha256(pinned.content).hexdigest()
+    if expected_sha256 is not None:
+        if not re.fullmatch(r"[a-f0-9]{64}", expected_sha256):
+            raise GitHubControllerError("trusted workflow digest pin must be SHA-256")
+        if digest != expected_sha256:
+            raise GitHubControllerError(
+                "trusted workflow bytes digest does not match its definition"
+            )
+    if current.blob_oid != pinned.blob_oid or current.content != pinned.content:
+        raise GitHubControllerError(
+            "current default-main workflow bytes differ from the pinned definition"
+        )
+    return pinned, definition
+
+
 def authenticate_trusted_run(
     api: GitHubAPI,
     *,
@@ -97,6 +139,8 @@ def authenticate_trusted_run(
     require_success: bool,
     expected_workflow_id: object | None = None,
     expected_workflow_sha256: str | None = None,
+    expected_workflow_blob_oid: object | None = None,
+    expected_workflow_definition_commit: object | None = None,
 ) -> GithubRunIdentity:
     """Authenticate provider identity without self-embedding workflow digests."""
 
@@ -115,7 +159,15 @@ def authenticate_trusted_run(
             "the optional pin"
         )
     workflow = api.workflow(repository, observed_workflow_id)
-    trusted = api.content(repository, active_path, ref=main.checkout_sha)
+    trusted, definition_commit = _trusted_workflow_source(
+        api,
+        repository=repository,
+        main=main,
+        active_path=active_path,
+        expected_blob_oid=expected_workflow_blob_oid,
+        expected_sha256=expected_workflow_sha256,
+        definition_commit=expected_workflow_definition_commit,
+    )
     try:
         identity = authenticate_github_run(
             expected_repository_id=main.repository_id,
@@ -127,7 +179,7 @@ def authenticate_trusted_run(
             run=run,
             trusted_workflow_bytes=trusted.content,
             trusted_workflow_blob_oid=trusted.blob_oid,
-            trusted_workflow_definition_commit=main.checkout_sha,
+            trusted_workflow_definition_commit=definition_commit,
             candidate_tree_sha=main.tree_sha,
         )
     except GithubReferenceError as exc:
@@ -167,6 +219,8 @@ def resolve_trusted_run(
     require_success: bool,
     expected_workflow_id: object | None = None,
     expected_workflow_sha256: str | None = None,
+    expected_workflow_blob_oid: object | None = None,
+    expected_workflow_definition_commit: object | None = None,
 ) -> GithubRunIdentity:
     """Select the latest exact-SHA attempt, then authenticate it without fallback."""
 
@@ -204,6 +258,8 @@ def resolve_trusted_run(
         require_success=require_success,
         expected_workflow_id=expected_workflow_id,
         expected_workflow_sha256=expected_workflow_sha256,
+        expected_workflow_blob_oid=expected_workflow_blob_oid,
+        expected_workflow_definition_commit=expected_workflow_definition_commit,
     )
 
 
@@ -217,7 +273,15 @@ def authenticate_producer_workflow(
 ) -> dict[str, str]:
     expected = producer["workflow"]
     workflow = api.workflow(repository, expected["workflow_id"])
-    trusted = api.content(repository, expected["active_path"], ref=main.checkout_sha)
+    trusted, definition_commit = _trusted_workflow_source(
+        api,
+        repository=repository,
+        main=main,
+        active_path=str(expected["active_path"]),
+        expected_blob_oid=expected["trusted_workflow_blob_oid"],
+        expected_sha256=str(expected["trusted_workflow_sha256"]),
+        definition_commit=expected["trusted_workflow_definition_commit"],
+    )
     try:
         identity = authenticate_github_run(
             expected_repository_id=main.repository_id,
@@ -229,9 +293,7 @@ def authenticate_producer_workflow(
             run=run,
             trusted_workflow_bytes=trusted.content,
             trusted_workflow_blob_oid=trusted.blob_oid,
-            trusted_workflow_definition_commit=str(
-                expected["trusted_workflow_definition_commit"]
-            ),
+            trusted_workflow_definition_commit=definition_commit,
             candidate_tree_sha=main.tree_sha,
         )
     except GithubReferenceError as exc:
