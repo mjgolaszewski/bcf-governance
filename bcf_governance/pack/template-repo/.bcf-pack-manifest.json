@@ -292,7 +292,7 @@
     },
     "scripts/_bcf_runtime/ci_adopt_github.py": {
       "operation": "copy",
-      "sha256": "ce362feadd97075a864b5034512a1447a3ebd7b9f527725eb89d21815d668430"
+      "sha256": "7276be467aaa56dd6eb65ff06c24a754d7eda6f556d9c47f7790ee814ad22dd9"
     },
     "scripts/_bcf_runtime/ci_authority_certification.py": {
       "operation": "copy",
@@ -420,7 +420,7 @@
     },
     "scripts/_bcf_runtime/governance_profiles.py": {
       "operation": "copy",
-      "sha256": "cb04c5f8fc21e949f8c27e892d87b6c6a096f7c00f5249eef12230a3d2437d95"
+      "sha256": "2e70c5a8e25a4468022085ab7b88d617b7f005f2153753dc61cd076ecb3468d7"
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",

@@ -73,6 +73,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Prevented pull-request producer completions and failed finalizers from
+  allocating trusted callback runners, enabling bounded exact-main authority
+  activation without persistent-VM PR fanout.
 - Staged the exact-main controller containing immutable workflow-definition
   custody and its provider-authenticated self CI authority without enabling
   automated callbacks.

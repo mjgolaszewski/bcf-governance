@@ -720,7 +720,7 @@ def apply_profile_contract(
     if profile_name == "regulated":
         evidence_policy["provenance"].update(contract.get("provenance", {}))
     (repo_root / "governance/evidence-policy.yml").write_text(
-        yaml.safe_dump(evidence_policy, sort_keys=False, width=200, default_flow_style=None), encoding="utf-8"
+        yaml.safe_dump(evidence_policy, sort_keys=False, width=240, default_flow_style=None), encoding="utf-8"
     )
     _write_makefile(repo_root, contract)
     if write_workflow:

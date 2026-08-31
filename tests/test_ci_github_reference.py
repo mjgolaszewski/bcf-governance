@@ -10,7 +10,9 @@ import yaml
 
 from bcf_governance.tooling.ci_adopt_github import (
     ACTIVATION_EXPRESSION,
+    FINALIZER_ACTIVATION_EXPRESSION,
     GithubAdoptionError,
+    PUBLISHER_ACTIVATION_EXPRESSION,
     apply_github_adoption,
     plan_github_adoption,
     render_github_adoption,
@@ -186,9 +188,18 @@ def test_control_plane_is_event_driven_disabled_and_descriptively_named() -> Non
     assert workflows[".github/workflows/bcf-status-publisher.yml"]["jobs"]["publish"]["name"] == (
         "Publish verified exact-main status"
     )
-    for workflow in workflows.values():
+    expected_guards = {
+        ".github/workflows/bcf-exact-main.yml": ACTIVATION_EXPRESSION,
+        ".github/workflows/bcf-trusted-finalizer.yml": (
+            FINALIZER_ACTIVATION_EXPRESSION
+        ),
+        ".github/workflows/bcf-status-publisher.yml": (
+            PUBLISHER_ACTIVATION_EXPRESSION
+        ),
+    }
+    for path, workflow in workflows.items():
         job = next(iter(workflow["jobs"].values()))
-        assert job["if"] == ACTIVATION_EXPRESSION
+        assert job["if"] == expected_guards[path]
         assert job["timeout-minutes"] == 5
         command = "\n".join(step.get("run", "") for step in job["steps"])
         assert not re.search(r"\b(?:sleep|poll|wait|while|until)\b", command)

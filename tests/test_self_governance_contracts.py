@@ -14,6 +14,8 @@ import yaml
 from bcf_governance.cli import COMMANDS
 from bcf_governance.tooling.ci_adopt_github import (
     ACTIVATION_EXPRESSION,
+    FINALIZER_ACTIVATION_EXPRESSION,
+    PUBLISHER_ACTIVATION_EXPRESSION,
     render_github_control_plane,
 )
 from bcf_governance.tooling.ci_github_actions import ACTION_PINS
@@ -394,8 +396,17 @@ def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
                 activation = runner_policy["trusted_job_activation"][relative_path][job_id]
                 if activation == "disabled":
                     assert workflow["jobs"][job_id]["if"] == "${{ false }}"
-                elif activation == "repository_variable_disabled":
-                    assert workflow["jobs"][job_id]["if"] == ACTIVATION_EXPRESSION
+                elif activation.startswith("repository_variable_"):
+                    expected = {
+                        "repository_variable_disabled": ACTIVATION_EXPRESSION,
+                        "repository_variable_main_push_only": (
+                            FINALIZER_ACTIVATION_EXPRESSION
+                        ),
+                        "repository_variable_successful_callback_only": (
+                            PUBLISHER_ACTIVATION_EXPRESSION
+                        ),
+                    }
+                    assert workflow["jobs"][job_id]["if"] == expected[activation]
                 else:
                     assert activation == "owner_main_dispatch"
                     assert workflow["jobs"][job_id]["if"] == (
@@ -417,6 +428,19 @@ def test_workflows_have_no_runner_occupying_coordination() -> None:
         for job in workflow["jobs"].values():
             for step in job.get("steps", []):
                 assert forbidden.search(step.get("run", "")) is None
+
+
+def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> None:
+    finalizer = yaml.safe_load(
+        (REPO_ROOT / ".github/workflows/bcf-trusted-finalizer.yml").read_text()
+    )
+    publisher = yaml.safe_load(
+        (REPO_ROOT / ".github/workflows/bcf-status-publisher.yml").read_text()
+    )
+    assert finalizer["jobs"]["finalize"]["if"] == FINALIZER_ACTIVATION_EXPRESSION
+    assert publisher["jobs"]["publish"]["if"] == PUBLISHER_ACTIVATION_EXPRESSION
+    assert "workflow_run.event == 'push'" in FINALIZER_ACTIVATION_EXPRESSION
+    assert "workflow_run.conclusion == 'success'" in PUBLISHER_ACTIVATION_EXPRESSION
 
 
 def test_self_control_plane_is_an_exact_disabled_generator_product() -> None:

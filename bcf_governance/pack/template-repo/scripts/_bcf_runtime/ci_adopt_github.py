@@ -43,6 +43,14 @@ def _workflow(payload: dict[str, Any]) -> bytes:
 
 
 ACTIVATION_EXPRESSION = "${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}"
+FINALIZER_ACTIVATION_EXPRESSION = (
+    "${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' && "
+    "github.event.workflow_run.event == 'push' }}"
+)
+PUBLISHER_ACTIVATION_EXPRESSION = (
+    "${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' && "
+    "github.event.workflow_run.conclusion == 'success' }}"
+)
 EXACT_MAIN_PATH = ".github/workflows/bcf-exact-main.yml"
 EXACT_REF_PATH = ".github/workflows/bcf-exact-ref.yml"
 FINALIZER_PATH = ".github/workflows/bcf-trusted-finalizer.yml"
@@ -176,7 +184,7 @@ def render_github_control_plane(
         "jobs": {
             "finalize": {
                 "name": "Reconstruct exact-main producer evidence",
-                "if": ACTIVATION_EXPRESSION,
+                "if": FINALIZER_ACTIVATION_EXPRESSION,
                 "runs-on": _labels(trusted_labels),
                 "timeout-minutes": 5,
                 "steps": finalizer_steps,
@@ -234,7 +242,7 @@ def render_github_control_plane(
         "jobs": {
             "publish": {
                 "name": "Publish verified exact-main status",
-                "if": ACTIVATION_EXPRESSION,
+                "if": PUBLISHER_ACTIVATION_EXPRESSION,
                 "runs-on": _labels(trusted_labels),
                 "timeout-minutes": 5,
                 "steps": publisher_steps,

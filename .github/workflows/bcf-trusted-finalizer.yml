@@ -15,7 +15,7 @@ env:
 jobs:
   finalize:
     name: Reconstruct exact-main producer evidence
-    if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}
+    if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' }}
     runs-on:
     - self-hosted
     - Linux
