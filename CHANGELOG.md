@@ -88,6 +88,13 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Reconstructed trusted workflow identity from authenticated GitHub API state,
+  selected the latest admitted exact-main attempt without successful fallback,
+  and kept manual runs outside admission precedence.
+- Required the trusted finalizer to authenticate its own run before bundle
+  creation and the publisher to reauthenticate that exact successful run,
+  session identity, complete file inventory, hashes, and bundle semantics before
+  writing repository status.
 - Required every trusted-controller invocation workflow to restore the pinned
   selected-Python loader environment before executing the persisted offline
   controller.
@@ -128,6 +135,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Security
 
+- Added an optional v1-compatible `admission_workflow` authority field and made
+  Standard-v2 certification bind the control-plane workflow identity to that
+  deterministic owner; existing v1 authority documents remain valid.
 - Defined a hard separation between one-job disposable candidate workers and a
   persistent trusted control plane that never checks out or executes candidate
   code.

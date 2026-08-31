@@ -46,6 +46,7 @@ global_delivery_rules:
   - candidate code never executes on persistent or trusted control-plane runners
   - profile-v1 public contracts remain compatible until a repository explicitly promotes to contract v2
   - provider state, evidence sessions, certification, and release receipts form an acyclic verification chain
+  - trusted CI workflow, run, attempt, commit, tree, session, and bundle identity are reconstructed and compared mechanically before any status or release mutation
   - each BCF behavior commit updates and validates BCF's own applicable governance contracts before successor work begins; local implementation may proceed while hosted Actions are unavailable, but remote candidate execution and publication stay disabled until disposable and trusted substrate acceptance is proven
 global_gates:
   - id: G1

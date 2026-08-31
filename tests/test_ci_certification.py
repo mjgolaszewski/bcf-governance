@@ -24,10 +24,31 @@ SESSION_ID = "f" * 32
 CAPTURED_AT = "2026-08-30T00:00:00Z"
 
 
+def _control_workflow() -> dict[str, object]:
+    return {
+        "provider": "github",
+        "repository_id": "42",
+        "workflow_id": "100",
+        "active_path": ".github/workflows/bcf-exact-main.yml",
+        "trusted_workflow_blob_oid": SHA_A,
+        "trusted_workflow_sha256": WORKFLOW_DIGEST,
+        "trusted_workflow_definition_commit": SHA_A,
+        "event": "push",
+    }
+
+
 def _authority() -> dict[str, object]:
     return {
         "schema_version": "1.0",
         "repository": {"provider": "github", "repository_id": "42"},
+        "admission_workflow": {
+            "workflow_id": "100",
+            "active_path": ".github/workflows/bcf-exact-main.yml",
+            "trusted_workflow_blob_oid": SHA_A,
+            "trusted_workflow_sha256": WORKFLOW_DIGEST,
+            "trusted_workflow_definition_commit": SHA_A,
+            "allowed_events": ["push"],
+        },
         "producers": [
             {
                 "producer_id": producer_id,
@@ -63,6 +84,7 @@ def _admission(
         "admission_ordinal": str(ordinal),
         "control_plane_run_id": f"control-{ordinal}",
         "control_plane_run_attempt": 1,
+        "control_plane_workflow": _control_workflow(),
         "dispatch_sequence": ordinal,
         "candidate": {"checkout_sha": checkout_sha, "tree_sha": tree_sha},
         "collection_complete": True,
@@ -363,6 +385,17 @@ def test_snapshots_must_agree_on_admission_authority(tmp_path: Path) -> None:
     snapshots["pack"]["admissions"][0]["dispatch_sequence"] = 99  # type: ignore[index]
 
     with pytest.raises(CICertificationError, match="disagree on admission"):
+        _material(tmp_path, snapshots=snapshots)
+
+
+def test_admission_workflow_is_bound_to_canonical_authority(tmp_path: Path) -> None:
+    snapshots = {
+        producer_id: _snapshot(producer_id) for producer_id in ("unit", "pack")
+    }
+    for snapshot in snapshots.values():
+        snapshot["admissions"][0]["control_plane_workflow"]["workflow_id"] = "999"  # type: ignore[index]
+
+    with pytest.raises(CICertificationError, match="control-plane workflow"):
         _material(tmp_path, snapshots=snapshots)
 
 

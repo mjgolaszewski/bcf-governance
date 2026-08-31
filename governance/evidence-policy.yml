@@ -165,6 +165,23 @@ gate_overrides:
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_ci_certification::test_failed_report_reason_is_independently_recomputed']
+    - id: ci-admission-workflow-authority-must-fail
+      mutation: {path: bcf_governance/tooling/ci_authority_certification.py, search: 'if not exact:', replace: 'if False and not exact:'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_ci_certification::test_admission_workflow_is_bound_to_canonical_authority']
+    - id: ci-finalizer-session-binding-must-fail
+      mutation: {path: bcf_governance/tooling/ci_github_controller.py, search: 'if not isinstance(producer, dict) or producer != {',
+        replace: 'if not isinstance(producer, dict) or False and producer != {'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_ci_github_controller::test_publisher_rejects_finalizer_session_identity_forgery']
+    - id: ci-bundle-semantic-binding-must-fail
+      mutation: {path: bcf_governance/tooling/ci_github_controller.py, search: 'or manifest.get("computed_state") != verification.computed_state',
+        replace: 'or False and manifest.get("computed_state") != verification.computed_state'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_ci_github_controller::test_publisher_rejects_bundle_manifest_semantic_forgery']
     - id: ci-cancellation-authentication-must-fail
       mutation: {path: bcf_governance/tooling/ci_authority_decisions.py, search: 'if not child.authenticated:', replace: 'if
           False and not child.authenticated:'}

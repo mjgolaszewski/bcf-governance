@@ -101,6 +101,7 @@ class Admission:
     admission_ordinal: int
     control_plane_run_id: str
     control_plane_attempt: int
+    control_plane_workflow: WorkflowIdentity
     candidate: CandidateIdentity
     collection_complete: bool
     producer_runs: tuple[ProducerRun, ...]

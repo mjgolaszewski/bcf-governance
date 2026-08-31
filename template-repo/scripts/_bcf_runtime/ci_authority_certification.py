@@ -162,6 +162,34 @@ def _producer_contracts(authority: dict[str, Any]) -> tuple[ProducerContract, ..
     return tuple(contracts)
 
 
+def _authenticate_admission_workflow(
+    authority: dict[str, Any], workflow: dict[str, Any]
+) -> None:
+    """Bind admission identity to its optional compatibility-safe authority owner."""
+
+    expected = authority.get("admission_workflow")
+    if expected is None:
+        return
+    repository = authority["repository"]
+    exact = (
+        workflow.get("provider") == repository["provider"]
+        and workflow.get("repository_id") == repository["repository_id"]
+        and workflow.get("workflow_id") == expected["workflow_id"]
+        and workflow.get("active_path") == expected["active_path"]
+        and workflow.get("trusted_workflow_blob_oid")
+        == expected["trusted_workflow_blob_oid"]
+        and workflow.get("trusted_workflow_sha256")
+        == expected["trusted_workflow_sha256"]
+        and workflow.get("trusted_workflow_definition_commit")
+        == expected["trusted_workflow_definition_commit"]
+        and workflow.get("event") in expected["allowed_events"]
+    )
+    if not exact:
+        raise CICertificationError(
+            "admission control-plane workflow does not match CI authority"
+        )
+
+
 def _run(payload: dict[str, Any]) -> ProducerRun:
     attempts: list[RunAttempt] = []
     for raw_attempt in payload["attempts"]:
@@ -201,6 +229,7 @@ def _shared_admission(payload: dict[str, Any]) -> dict[str, Any]:
         "admission_ordinal": str(payload["admission_ordinal"]),
         "control_plane_run_id": str(payload["control_plane_run_id"]),
         "control_plane_run_attempt": int(payload["control_plane_run_attempt"]),
+        "control_plane_workflow": dict(payload["control_plane_workflow"]),
         "dispatch_sequence": int(payload["dispatch_sequence"]),
         "candidate": dict(payload["candidate"]),
         "collection_complete": bool(payload["collection_complete"]),
@@ -271,6 +300,9 @@ def _merged_authority_input(
                 f"raw snapshots disagree on admission {ordinal} authority material"
             )
         shared = shared_values[0]
+        _authenticate_admission_workflow(
+            authority, shared["control_plane_workflow"]
+        )
         shared_by_ordinal[ordinal] = shared
         candidate = shared["candidate"]
         admissions.append(
@@ -278,6 +310,7 @@ def _merged_authority_input(
                 admission_ordinal=ordinal,
                 control_plane_run_id=str(shared["control_plane_run_id"]),
                 control_plane_attempt=int(shared["control_plane_run_attempt"]),
+                control_plane_workflow=_workflow(shared["control_plane_workflow"]),
                 candidate=CandidateIdentity(
                     checkout_sha=str(candidate["checkout_sha"]),
                     tree_sha=str(candidate["tree_sha"]),
@@ -385,6 +418,9 @@ def normalize_ci_certification(
             "admission_ordinal": str(selected.admission_ordinal),
             "control_plane_run_id": selected.control_plane_run_id,
             "control_plane_run_attempt": selected.control_plane_attempt,
+            "control_plane_workflow": _workflow_payload(
+                selected.control_plane_workflow
+            ),
             "dispatch_sequence": int(shared_value["dispatch_sequence"]),
             "candidate": candidate,
             "producer_runs": report_runs,

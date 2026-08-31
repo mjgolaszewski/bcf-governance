@@ -20,34 +20,29 @@ from .ci_authority_certification import (
     verify_ci_certification,
 )
 from .ci_authority_contracts import validate_ci_contract
+from .ci_authority_state import WorkflowIdentity
 from .ci_authority_decisions import (
     StatusConclusion,
     StatusContext,
     StatusObservation,
     decide_status_publication,
 )
-from .ci_github import DISPATCH_EVENTS, authenticate_github_run
+from .ci_github import DISPATCH_EVENTS
 from .ci_github_api import GitHubAPI, GitHubAPIError
+from .ci_github_identity import (
+    GitHubControllerError,
+    MainIdentity,
+    ProducerNotStarted,
+    authenticate_producer_workflow,
+    authenticate_trusted_run,
+    exact_sha as _sha,
+    positive_int as _positive,
+    resolve_main,
+    select_producer_run,
+)
 
 
-SHA_PATTERN = re.compile(r"^[a-f0-9]{40}$")
 STATUS_CONTEXT = "bcf/exact-main-certification"
-
-
-class GitHubControllerError(ValueError):
-    """Raised when trusted controller inputs or provider state fail closed."""
-
-
-class _ProducerNotStarted(Exception):
-    """Internal non-error signal for callback fan-in that is not complete yet."""
-
-
-@dataclass(frozen=True)
-class MainIdentity:
-    repository_id: str
-    default_branch: str
-    checkout_sha: str
-    tree_sha: str
 
 
 @dataclass(frozen=True)
@@ -61,6 +56,7 @@ class KickoffResult:
     dispatch_sequence: int
     admission_ordinal: int
     dispatched: bool
+    control_plane_workflow: WorkflowIdentity
 
 
 @dataclass(frozen=True)
@@ -70,25 +66,6 @@ class FinalizeResult:
     admission_ordinal: int
     bundle_dir: str | None
     producer_runs: tuple[tuple[str, str, int], ...]
-
-
-def _sha(value: object, *, field: str) -> str:
-    text = str(value)
-    if not SHA_PATTERN.fullmatch(text):
-        raise GitHubControllerError(f"{field} must be an exact 40-character Git SHA")
-    return text
-
-
-def _positive(value: object, *, field: str) -> int:
-    if isinstance(value, bool):
-        raise GitHubControllerError(f"{field} must be a positive integer")
-    try:
-        number = int(str(value))
-    except ValueError as exc:
-        raise GitHubControllerError(f"{field} must be a positive integer") from exc
-    if number < 1:
-        raise GitHubControllerError(f"{field} must be a positive integer")
-    return number
 
 
 def admission_ordinal(run_id: object, run_attempt: object, dispatch_sequence: object) -> int:
@@ -102,29 +79,6 @@ def admission_ordinal(run_id: object, run_attempt: object, dispatch_sequence: ob
     return run * 1_000_000 + attempt * 1_000 + sequence
 
 
-def resolve_main(api: GitHubAPI, repository: str) -> MainIdentity:
-    repo = api.repository(repository)
-    repository_id = str(_positive(repo.get("id"), field="repository ID"))
-    branch = repo.get("default_branch")
-    if not isinstance(branch, str) or not re.fullmatch(r"[A-Za-z0-9._/-]+", branch):
-        raise GitHubControllerError("default branch is missing or unsafe")
-    reference = api.reference(repository, f"heads/{branch}")
-    target = reference.get("object")
-    if not isinstance(target, dict) or target.get("type") != "commit":
-        raise GitHubControllerError("default branch must resolve directly to a commit")
-    commit_sha = _sha(target.get("sha"), field="default-main SHA")
-    commit = api.commit(repository, commit_sha)
-    tree = commit.get("tree")
-    if not isinstance(tree, dict):
-        raise GitHubControllerError("default-main commit tree is missing")
-    return MainIdentity(
-        repository_id=repository_id,
-        default_branch=branch,
-        checkout_sha=commit_sha,
-        tree_sha=_sha(tree.get("sha"), field="default-main tree SHA"),
-    )
-
-
 def kickoff(
     api: GitHubAPI,
     *,
@@ -132,11 +86,11 @@ def kickoff(
     expected_sha: str,
     control_run_id: object,
     control_run_attempt: object,
-    control_workflow_id: object,
     control_workflow_path: str,
-    control_workflow_sha256: str,
     dispatch_sequence: object = 1,
-    dispatch_exact_ref: bool,
+    dispatch_exact_ref: bool = False,
+    control_workflow_id: object | None = None,
+    control_workflow_sha256: str | None = None,
 ) -> KickoffResult:
     """Authenticate one input-free exact-main run and optionally dispatch its worker."""
 
@@ -147,16 +101,17 @@ def kickoff(
     run_id = str(_positive(control_run_id, field="control-plane run ID"))
     attempt = _positive(control_run_attempt, field="control-plane run attempt")
     sequence = _positive(dispatch_sequence, field="dispatch sequence")
-    _authenticate_control_run(
+    control_identity = authenticate_trusted_run(
         api,
         repository=repository,
         main=main,
         run_id=run_id,
         run_attempt=attempt,
-        workflow_id=control_workflow_id,
         workflow_path=control_workflow_path,
-        workflow_sha256=control_workflow_sha256,
+        expected_event="push",
         require_success=False,
+        expected_workflow_id=control_workflow_id,
+        expected_workflow_sha256=control_workflow_sha256,
     )
     ordinal = admission_ordinal(run_id, attempt, sequence)
     payload = {
@@ -179,56 +134,8 @@ def kickoff(
         dispatch_sequence=sequence,
         admission_ordinal=ordinal,
         dispatched=dispatch_exact_ref,
+        control_plane_workflow=control_identity.workflow,
     )
-
-
-def _authenticate_control_run(
-    api: GitHubAPI,
-    *,
-    repository: str,
-    main: MainIdentity,
-    run_id: object,
-    run_attempt: object,
-    workflow_id: object,
-    workflow_path: str,
-    workflow_sha256: str,
-    require_success: bool,
-) -> dict[str, Any]:
-    numeric_run = str(_positive(run_id, field="control-plane run ID"))
-    attempt = _positive(run_attempt, field="control-plane run attempt")
-    numeric_workflow = str(_positive(workflow_id, field="control-plane workflow ID"))
-    if not workflow_path.startswith(".github/workflows/") or ".." in workflow_path.split("/"):
-        raise GitHubControllerError("control-plane workflow path is unsafe")
-    if not re.fullmatch(r"[a-f0-9]{64}", workflow_sha256):
-        raise GitHubControllerError("control-plane workflow digest must be SHA-256")
-    run = api.run(repository, numeric_run)
-    workflow = api.workflow(repository, numeric_workflow)
-    content = api.content(repository, workflow_path, ref=main.checkout_sha)
-    run_repository = run.get("repository")
-    observed_repository_id = (
-        str(run_repository.get("id")) if isinstance(run_repository, dict) else ""
-    )
-    observed_attempt = _positive(
-        run.get("run_attempt"), field="observed control-plane run attempt"
-    )
-    authenticated = (
-        str(run.get("id")) == numeric_run
-        and str(run.get("workflow_id")) == numeric_workflow
-        and observed_repository_id == main.repository_id
-        and str(run.get("head_sha")) == main.checkout_sha
-        and str(run.get("event")) == "push"
-        and observed_attempt == attempt
-        and str(workflow.get("id")) == numeric_workflow
-        and str(workflow.get("path")) == workflow_path
-        and hashlib.sha256(content.content).hexdigest() == workflow_sha256
-    )
-    if require_success:
-        authenticated = authenticated and (
-            run.get("status") == "completed" and run.get("conclusion") == "success"
-        )
-    if not authenticated:
-        raise GitHubControllerError("control-plane run identity is not authenticated")
-    return run
 
 
 def _packaged_repo_root() -> Path:
@@ -275,86 +182,23 @@ def _conclusion(value: object) -> str | None:
     return conclusion
 
 
-def _workflow_identity(
-    api: GitHubAPI,
-    repository: str,
-    main: MainIdentity,
-    producer: dict[str, Any],
-    run: dict[str, Any],
-) -> dict[str, str]:
-    expected = producer["workflow"]
-    workflow = api.workflow(repository, expected["workflow_id"])
-    trusted = api.content(repository, expected["active_path"], ref=main.checkout_sha)
-    identity = authenticate_github_run(
-        expected_repository_id=main.repository_id,
-        expected_workflow_id=str(expected["workflow_id"]),
-        expected_active_path=str(expected["active_path"]),
-        allowed_events=tuple(str(value) for value in expected["allowed_events"]),
-        repository={"id": int(main.repository_id)},
-        workflow=workflow,
-        run=run,
-        trusted_workflow_bytes=trusted.content,
-        trusted_workflow_blob_oid=trusted.blob_oid,
-        trusted_workflow_definition_commit=str(expected["trusted_workflow_definition_commit"]),
-        candidate_tree_sha=main.tree_sha,
-    )
-    observed = asdict(identity.workflow)
-    pinned = {
-        "workflow_id": str(expected["workflow_id"]),
-        "active_path": str(expected["active_path"]),
-        "trusted_workflow_blob_oid": str(expected["trusted_workflow_blob_oid"]),
-        "trusted_workflow_sha256": str(expected["trusted_workflow_sha256"]),
-        "trusted_workflow_definition_commit": str(expected["trusted_workflow_definition_commit"]),
-    }
-    if any(str(observed[key]) != value for key, value in pinned.items()):
-        raise GitHubControllerError(
-            f"producer {producer['producer_id']} trusted workflow bytes do not match authority"
-        )
-    return {key: str(value) for key, value in observed.items()}
-
-
-def _selected_run(
-    api: GitHubAPI,
-    repository: str,
-    main: MainIdentity,
-    producer: dict[str, Any],
-) -> dict[str, Any]:
-    expected = producer["workflow"]
-    candidates: list[dict[str, Any]] = []
-    for event in expected["allowed_events"]:
-        candidates.extend(
-            api.workflow_runs(
-                repository,
-                expected["workflow_id"],
-                head_sha=main.checkout_sha,
-                event=str(event),
-            )
-        )
-    exact = [
-        run
-        for run in candidates
-        if str(run.get("head_sha")) == main.checkout_sha
-        and str(run.get("workflow_id")) == str(expected["workflow_id"])
-        and str(run.get("repository", {}).get("id")) == main.repository_id
-    ]
-    if not exact:
-        raise _ProducerNotStarted
-    return max(exact, key=lambda value: (int(value["id"]), int(value["run_attempt"])))
-
-
 def _producer_run(
     api: GitHubAPI,
     repository: str,
     main: MainIdentity,
     producer: dict[str, Any],
 ) -> dict[str, Any]:
-    run = _selected_run(api, repository, main, producer)
+    run = select_producer_run(
+        api, repository=repository, main=main, producer=producer
+    )
     attempt = _positive(run.get("run_attempt"), field="producer run attempt")
     jobs = api.jobs(repository, run["id"], attempt=attempt)
     return {
         "producer_id": str(producer["producer_id"]),
         "run_id": str(_positive(run.get("id"), field="producer run ID")),
-        "workflow": _workflow_identity(api, repository, main, producer, run),
+        "workflow": authenticate_producer_workflow(
+            api, repository=repository, main=main, producer=producer, run=run
+        ),
         "attempts": [
             {
                 "run_attempt": attempt,
@@ -385,6 +229,43 @@ def _write_exclusive(path: Path, payload: dict[str, Any]) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
+def _verify_bundle(root: Path) -> dict[str, Any]:
+    if root.is_symlink() or not root.is_dir():
+        raise GitHubControllerError("certification bundle must be a regular directory")
+    manifest_path = root / "bundle-manifest.json"
+    if manifest_path.is_symlink() or not manifest_path.is_file():
+        raise GitHubControllerError("certification bundle manifest is missing or unsafe")
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise GitHubControllerError("certification bundle manifest is invalid") from exc
+    files = manifest.get("files") if isinstance(manifest, dict) else None
+    if not isinstance(files, dict) or not files:
+        raise GitHubControllerError("certification bundle file inventory is missing")
+    actual: set[str] = set()
+    for path in root.rglob("*"):
+        if path.is_symlink():
+            raise GitHubControllerError("certification bundle cannot contain symlinks")
+        if path.is_file():
+            actual.add(path.relative_to(root).as_posix())
+    expected = set(files) | {"bundle-manifest.json"}
+    if actual != expected:
+        raise GitHubControllerError("certification bundle file inventory is not exact")
+    for relative, digest in files.items():
+        if (
+            not isinstance(relative, str)
+            or not isinstance(digest, str)
+            or not re.fullmatch(r"[a-f0-9]{64}", digest)
+        ):
+            raise GitHubControllerError("certification bundle digest inventory is invalid")
+        path = root / relative
+        if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+            raise GitHubControllerError(
+                f"certification bundle digest mismatch: {relative}"
+            )
+    return manifest
+
+
 def _prepare_output(path: Path) -> Path:
     parent = path.parent
     if parent.is_symlink() or not parent.is_dir():
@@ -401,11 +282,14 @@ def finalize(
     repository: str,
     control_run_id: object,
     control_run_attempt: object,
-    control_workflow_id: object,
+    control_workflow_id: object | None,
     control_workflow_path: str,
-    control_workflow_sha256: str,
+    control_workflow_sha256: str | None,
     collector_run_id: object,
     collector_run_attempt: object,
+    collector_workflow_path: str,
+    collector_workflow_id: object | None,
+    collector_workflow_sha256: str | None,
     output_dir: Path,
 ) -> FinalizeResult:
     """Reconstruct all producers and write a terminal normalized bundle once."""
@@ -414,16 +298,29 @@ def finalize(
     authority = _load_authority(api, repository, main)
     control_id = str(_positive(control_run_id, field="control-plane run ID"))
     control_attempt = _positive(control_run_attempt, field="control-plane run attempt")
-    _authenticate_control_run(
+    control_identity = authenticate_trusted_run(
         api,
         repository=repository,
         main=main,
         run_id=control_id,
         run_attempt=control_attempt,
-        workflow_id=control_workflow_id,
         workflow_path=control_workflow_path,
-        workflow_sha256=control_workflow_sha256,
+        expected_event="push",
         require_success=True,
+        expected_workflow_id=control_workflow_id,
+        expected_workflow_sha256=control_workflow_sha256,
+    )
+    collector_identity = authenticate_trusted_run(
+        api,
+        repository=repository,
+        main=main,
+        run_id=collector_run_id,
+        run_attempt=collector_run_attempt,
+        workflow_path=collector_workflow_path,
+        expected_event="workflow_run",
+        require_success=False,
+        expected_workflow_id=collector_workflow_id,
+        expected_workflow_sha256=collector_workflow_sha256,
     )
     ordinal = admission_ordinal(control_id, control_attempt, 1)
     collected_runs: list[dict[str, Any]] = []
@@ -431,7 +328,7 @@ def finalize(
     for producer in authority["producers"]:
         try:
             collected_runs.append(_producer_run(api, repository, main, producer))
-        except _ProducerNotStarted:
+        except ProducerNotStarted:
             missing_producer = True
     run_values = tuple(collected_runs)
     terminal = all(
@@ -448,6 +345,7 @@ def finalize(
         "admission_ordinal": str(ordinal),
         "control_plane_run_id": control_id,
         "control_plane_run_attempt": control_attempt,
+        "control_plane_workflow": asdict(control_identity.workflow),
         "dispatch_sequence": 1,
         "candidate": {"checkout_sha": main.checkout_sha, "tree_sha": main.tree_sha},
         "collection_complete": True,
@@ -499,8 +397,8 @@ def finalize(
             "provider": "github",
             "repository": repository,
             "repository_id": main.repository_id,
-            "run_id": str(_positive(collector_run_id, field="collector run ID")),
-            "run_attempt": str(_positive(collector_run_attempt, field="collector run attempt")),
+            "run_id": collector_identity.run_id,
+            "run_attempt": str(collector_identity.run_attempt),
             "producer_id": "bcf-trusted-finalizer",
         },
         "expected_gate_inventory": ["ci-certification"],
@@ -568,10 +466,18 @@ def publish(
     repository: str,
     bundle_dir: Path,
     target_url: str,
+    collector_run_id: object,
+    collector_run_attempt: object,
+    collector_workflow_path: str,
+    collector_workflow_id: object | None = None,
+    collector_workflow_sha256: str | None = None,
 ) -> dict[str, Any]:
-    """Reverify a trusted bundle and publish only its current exact-main result."""
+    """Reverify one authenticated finalizer bundle before status publication."""
 
+    if bundle_dir.is_symlink():
+        raise GitHubControllerError("certification bundle cannot be a symlink")
     root = bundle_dir.resolve()
+    manifest = _verify_bundle(root)
     report = json.loads((root / "ci-certification.json").read_text(encoding="utf-8"))
     verification = verify_ci_certification(
         _packaged_repo_root(),
@@ -579,8 +485,58 @@ def publish(
         certification_path=root / "ci-certification.json",
         session_manifest_path=root / "evidence-session.json",
     )
+    if (
+        manifest.get("subject")
+        != {
+            "commit_sha": report["subject"]["checkout_sha"],
+            "tree_sha": report["subject"]["tree_sha"],
+        }
+        or str(manifest.get("admission_ordinal"))
+        != str(report["admission"]["admission_ordinal"])
+        or manifest.get("computed_state") != verification.computed_state
+    ):
+        raise GitHubControllerError(
+            "certification bundle manifest does not match verified certification"
+        )
     main = resolve_main(api, repository)
     subject = str(report["subject"]["checkout_sha"])
+    subject_tree = str(report["subject"]["tree_sha"])
+    subject_commit = api.commit(repository, subject)
+    observed_tree = subject_commit.get("tree")
+    if not isinstance(observed_tree, dict) or str(observed_tree.get("sha")) != subject_tree:
+        raise GitHubControllerError("certification subject tree is not provider-authenticated")
+    collector_main = MainIdentity(
+        repository_id=main.repository_id,
+        default_branch=main.default_branch,
+        checkout_sha=subject,
+        tree_sha=subject_tree,
+    )
+    collector_identity = authenticate_trusted_run(
+        api,
+        repository=repository,
+        main=collector_main,
+        run_id=collector_run_id,
+        run_attempt=collector_run_attempt,
+        workflow_path=collector_workflow_path,
+        expected_event="workflow_run",
+        require_success=True,
+        expected_workflow_id=collector_workflow_id,
+        expected_workflow_sha256=collector_workflow_sha256,
+    )
+    session = json.loads((root / "evidence-session.json").read_text(encoding="utf-8"))
+    producer = session.get("producer")
+    if not isinstance(producer, dict) or producer != {
+        "kind": "workflow",
+        "provider": "github",
+        "repository": repository,
+        "repository_id": main.repository_id,
+        "run_id": collector_identity.run_id,
+        "run_attempt": str(collector_identity.run_attempt),
+        "producer_id": "bcf-trusted-finalizer",
+    }:
+        raise GitHubControllerError(
+            "certification session is not bound to the authenticated finalizer run"
+        )
     conclusion = (
         StatusConclusion.SUCCESS
         if verification.status == "pass"
