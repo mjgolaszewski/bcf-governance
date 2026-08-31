@@ -21,6 +21,7 @@ from .evidence_sessions import (
     local_producer_identity,
 )
 from .governance_validation.runner import validate_repo_root
+from .semantic_ownership_scan import run_scan as run_semantic_ownership_scan
 from .test_manifests import check_all
 
 
@@ -168,6 +169,26 @@ def _required_gates(repo_root: Path) -> list[str]:
     return targets
 
 
+def _semantic_ownership(repo_root: Path) -> dict[str, Any]:
+    registry = repo_root / "governance/canonical-representations.yml"
+    if not registry.is_file():
+        return {"status": "not_applicable", "blocking_violation_count": 0}
+    report = run_semantic_ownership_scan(repo_root)
+    if report.get("verdict") != "conformant":
+        violations = report.get("violations")
+        first = violations[0] if isinstance(violations, list) and violations else {}
+        detail = (
+            f"{first.get('kind', 'unknown')}:{first.get('symbol', 'unknown')}"
+            if isinstance(first, dict)
+            else "unknown"
+        )
+        raise PreflightError(f"semantic ownership preflight failed: {detail}")
+    return {
+        "status": "conformant",
+        "blocking_violation_count": int(report.get("blocking_violation_count", 0)),
+    }
+
+
 def _pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
     if mode != "pr":
         return {"applicable": False}
@@ -208,6 +229,9 @@ def run_preflight(
     subject = step("git-state", lambda: _git_state(repo_root))
     syntax = step("syntax", lambda: _syntax_checks(repo_root))
     step("governance", lambda: validate_repo_root(repo_root))
+    semantic_ownership = step(
+        "semantic-ownership", lambda: _semantic_ownership(repo_root)
+    )
     source_locks = step("source-locks", lambda: _vendored_source_locks(repo_root))
     test_manifests = step(
         "test-manifests", lambda: check_all(repo_root, python_executable=python)
@@ -237,11 +261,7 @@ def run_preflight(
         "test_manifests": test_manifests,
         "pr_context": pr_context,
         "selected_interpreter": {"name": python.name},
-        "semantic_ownership": (
-            "configured"
-            if (repo_root / "governance/canonical-representations.yml").is_file()
-            else "not_applicable"
-        ),
+        "semantic_ownership": semantic_ownership,
         "session_manifest": (
             session.manifest_path.relative_to(repo_root).as_posix()
             if session and session.manifest_path.is_relative_to(repo_root)

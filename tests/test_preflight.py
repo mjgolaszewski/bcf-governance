@@ -79,6 +79,11 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     )
     monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {"python": 1})
     monkeypatch.setattr(preflight, "validate_repo_root", lambda _: None)
+    monkeypatch.setattr(
+        preflight,
+        "_semantic_ownership",
+        lambda _: {"status": "conformant", "blocking_violation_count": 0},
+    )
     monkeypatch.setattr(preflight, "_vendored_source_locks", lambda _: 0)
     monkeypatch.setattr(preflight, "check_all", lambda *_, **__: {"test": 1})
     monkeypatch.setattr(preflight, "_pr_context", lambda *_: {"applicable": False})
@@ -105,6 +110,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         "git-state",
         "syntax",
         "governance",
+        "semantic-ownership",
         "source-locks",
         "test-manifests",
         "pr-context",
@@ -140,3 +146,36 @@ def test_deterministic_failure_prevents_session_allocation(
         )
 
     assert calls == ["git-state", "syntax"]
+
+
+def test_semantic_ownership_failure_prevents_session_allocation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[str] = []
+    repo = tmp_path / "repo"
+    (repo / "governance").mkdir(parents=True)
+    (repo / "governance/canonical-representations.yml").write_text(
+        "representations: []\n", encoding="utf-8"
+    )
+    monkeypatch.setattr(
+        preflight,
+        "run_semantic_ownership_scan",
+        lambda _: {
+            "verdict": "non_conformant",
+            "blocking_violation_count": 1,
+            "violations": [
+                {
+                    "kind": "downstream_normalization",
+                    "symbol": "src/duplicate.py::normalize",
+                }
+            ],
+        },
+    )
+    monkeypatch.setattr(
+        preflight, "allocate_session", lambda *_, **__: calls.append("allocated")
+    )
+
+    with pytest.raises(preflight.PreflightError, match="downstream_normalization"):
+        preflight._semantic_ownership(repo)
+
+    assert calls == []

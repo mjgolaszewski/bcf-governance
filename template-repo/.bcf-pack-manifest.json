@@ -480,7 +480,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "763965c86de11a49cf65fdd2e83bf39c813f41a9b7b1aa04f5acd55de32feb94"
+      "sha256": "4ef55e61e51fb8841621fdb7108bb9c827dcfda58dfb887f10917e020646b032"
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",

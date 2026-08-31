@@ -88,6 +88,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Made cheap preflight execute applicable source-first semantic-ownership
+  enforcement before evidence-session allocation, preventing a deterministic
+  ownership defect from launching expensive evidence fanout.
 - Reconstructed trusted workflow identity from authenticated GitHub API state,
   selected the latest admitted exact-main attempt without successful fallback,
   and kept manual runs outside admission precedence.

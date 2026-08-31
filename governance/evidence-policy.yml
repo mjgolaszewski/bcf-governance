@@ -182,6 +182,12 @@ gate_overrides:
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_ci_github_controller::test_publisher_rejects_bundle_manifest_semantic_forgery']
+    - id: preflight-semantic-ownership-must-fail
+      mutation: {path: bcf_governance/tooling/preflight.py, search: 'if report.get("verdict") != "conformant":',
+        replace: 'if False and report.get("verdict") != "conformant":'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_preflight::test_semantic_ownership_failure_prevents_session_allocation']
     - id: ci-cancellation-authentication-must-fail
       mutation: {path: bcf_governance/tooling/ci_authority_decisions.py, search: 'if not child.authenticated:', replace: 'if
           False and not child.authenticated:'}
@@ -406,6 +412,14 @@ gate_overrides:
         exit_codes: [1]
         stream: stderr
         regex: governance.github-run-identity.v1 owner must be an authorized constructor
+    - id: github-run-identity-delegates-must-fail
+      mutation: {path: governance/canonical-representations.yml, search: 'authorized_pure_delegates: [''bcf_governance/tooling/ci_github_identity.py::authenticate_trusted_run'',
+          ''bcf_governance/tooling/ci_github_identity.py::resolve_trusted_run'']', replace: 'authorized_pure_delegates: []'}
+      oracle:
+        kind: diagnostic
+        exit_codes: [1]
+        stream: stderr
+        regex: downstream_normalization
     - id: local-pr-context-owner-must-fail
       mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [''bcf_governance/tooling/local_pr.py::resolve_local_pr_context'']',
         replace: 'authorized_constructors_and_factories: [''bcf_governance/tooling/missing.py::owner'']'}
