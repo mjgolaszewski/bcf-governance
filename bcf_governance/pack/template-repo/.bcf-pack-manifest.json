@@ -456,7 +456,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/phase_catalog.py": {
       "operation": "copy",
-      "sha256": "f6348ce894bb233d4cdc400c5c65b2f6662a9b3879c002aff3d12e214db6c4b0"
+      "sha256": "3919ef2e1b22ed93daf22d5ee5eeb693e744c82bce633d771a3246662d122943"
     },
     "scripts/_bcf_runtime/governance_validation/release_gates.py": {
       "operation": "copy",
@@ -472,7 +472,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/runner.py": {
       "operation": "copy",
-      "sha256": "6f636d17cf6a88aa4559260ba965d98dbb01502a74614e64598aa046d6e3014b"
+      "sha256": "cf7aa0ea95b774cbd1a9d61f08752fe134cda92f7a356342a84dfe854d42fc45"
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",

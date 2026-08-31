@@ -23,7 +23,7 @@ workitems:
   acceptance:
   - wheel installs and validates a clean generated repository
   - extracted source distribution passes its complete canonical test scope
-  acceptance_evidence: [test, package-build]
+  acceptance_evidence: [test, contract-test]
 - id: P11-P0-03
   priority: P0
   status: DONE

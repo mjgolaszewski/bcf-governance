@@ -15,7 +15,12 @@ from .artifact_policy import _load_phase_history, _validate_artifact_manifest, _
 from .context_budgets import _context_budget_advisories
 from .evidence_contracts import _load_evidence_contracts, _validate_gate_contract_registry
 from .phase_artifacts import _validate_agents
-from .phase_catalog import _validate_active_phase, _validate_declared_phase_catalog, _validate_hotfix_lane
+from .phase_catalog import (
+    _validate_active_closeout_evidence_ownership,
+    _validate_active_phase,
+    _validate_declared_phase_catalog,
+    _validate_hotfix_lane,
+)
 from .release_gates import _validate_ci_profile, _validate_release_gate_targets, _validate_structural_gate_contract
 from .repo_cleanup import _load_repo_cleanup_contract
 
@@ -111,6 +116,7 @@ def validate_repo_root(
     active_phase_paths = _validate_active_phase(
         repo_root, schema_cache, ledger, memory, declared_phase_paths
     )
+    _validate_active_closeout_evidence_ownership(repo_root, ledger, governance_profile)
     _validate_ci_profile(governance_profile)
     _validate_structural_gate_contract(governance_profile, architecture_rules)
     if (repo_root / "governance/canonical-representations.yml").is_file():

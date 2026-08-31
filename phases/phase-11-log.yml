@@ -18,7 +18,7 @@ summary:
   - operator-visible workflow and job names describe their decisions while stable machine IDs
     remain the only executable identities
   - the wheel generated and closed a clean governed repository; the extracted source
-    distribution passed the complete 406-node source suite from clean Git custody
+    distribution passed the complete source suite from clean Git custody
 workitems:
 - id: P11-P0-01
   status: DONE
@@ -48,12 +48,15 @@ execution_evidence:
   notes:
   - P11 begins from exact-main-certified merge ef8e8ee1d9eda4da77eafdb99a8846ccf2e84cd2
   - job display names describe their operator-visible decisions while machine IDs remain stable
-  - the source suite passed all 406 nodes under pinned pytest 9.0.3
+  - the source suite passed all 407 nodes under pinned pytest 9.0.3
   - contract-test passed its exact 143-node manifest and all 35 cause-verified controls
   - PR run 33362933675 passed every positive producer; its terminal check correctly rejected
     the then-authored planned lifecycle state before this closeout commit
   - P11 publication remains mechanically disabled; exact merged-main dispatch is the required
     operational confirmation before P12 may supersede these candidate artifact bytes
+  - PR run 33363811600 exposed a developer-only package-build acceptance reference only at
+    terminal truth; cheap validation now rejects any completed closeout reference that cannot
+    emit a required receipt before evidence fanout
 closeout_requirements:
   claims:
     workitems_closed:

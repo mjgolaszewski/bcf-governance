@@ -643,3 +643,101 @@ def _validate_active_phase(
             )
 
     return [plan_path, workitems_path, log_path]
+
+
+def _validate_active_closeout_evidence_ownership(
+    repo_root: Path,
+    ledger: dict[str, Any],
+    governance_profile: dict[str, Any],
+) -> None:
+    """Reject closeout evidence that truth cannot receive from a required gate."""
+    active_phase = _require_mapping(
+        ledger.get("active_phase"), context="plans/phase-ledger.yml active_phase"
+    )
+    configured = _require_mapping(
+        governance_profile.get("release_gate_profile", {}).get("gates"),
+        context="governance-profile.yml release_gate_profile.gates",
+    )
+    status_by_target = {
+        _require_string(
+            _require_mapping(raw, context=f"release gate {gate_id}").get("target"),
+            context=f"release gate {gate_id}.target",
+        ): _require_string(
+            _require_mapping(raw, context=f"release gate {gate_id}").get("status"),
+            context=f"release gate {gate_id}.status",
+        )
+        for gate_id, raw in configured.items()
+    }
+    references: list[tuple[str, str]] = []
+    workitems_path = _require_path(
+        repo_root,
+        _require_string(active_phase.get("workitems"), context="active_phase.workitems"),
+        context="active_phase.workitems",
+    )
+    workitems = _load_yaml(workitems_path)
+    for index, raw in enumerate(
+        _require_sequence(workitems.get("workitems"), context=f"{workitems_path} workitems"),
+        start=1,
+    ):
+        item = _require_mapping(raw, context=f"{workitems_path} workitems[{index}]")
+        item_id = _require_string(
+            item.get("id"), context=f"{workitems_path} workitems[{index}].id"
+        )
+        references.extend(
+            (f"workitem {item_id}", target)
+            for target in _require_string_sequence(
+                item.get("acceptance_evidence"),
+                context=f"{workitems_path} workitems[{index}].acceptance_evidence",
+                min_items=1,
+            )
+        )
+    log_path = _require_path(
+        repo_root,
+        _require_string(active_phase.get("log"), context="active_phase.log"),
+        context="active_phase.log",
+    )
+    closeout = _require_mapping(
+        _load_yaml(log_path).get("closeout_requirements"),
+        context=f"{log_path} closeout_requirements",
+    )
+    claims = _require_mapping(
+        closeout.get("claims"), context=f"{log_path} closeout_requirements.claims"
+    )
+    for claim_id, raw in claims.items():
+        claim = _require_mapping(raw, context=f"{log_path} claim {claim_id}")
+        references.extend(
+            (f"claim {claim_id}", target)
+            for target in _require_string_sequence(
+                claim.get("required_evidence"),
+                context=f"{log_path} claim {claim_id}.required_evidence",
+                min_items=0,
+            )
+        )
+    reconciliation = _require_mapping(
+        closeout.get("reconciliation"), context=f"{log_path} reconciliation"
+    )
+    references.extend(
+        ("reconciliation", target)
+        for target in _require_string_sequence(
+            reconciliation.get("required_evidence"),
+            context=f"{log_path} reconciliation.required_evidence",
+            min_items=0,
+        )
+    )
+    unknown = sorted(f"{owner}: {target}" for owner, target in references if target not in status_by_target)
+    if unknown:
+        raise GovernanceValidationError(
+            "active closeout evidence must reference configured release-gate targets: "
+            + ", ".join(unknown)
+        )
+    if active_phase.get("lifecycle_status") == "completed":
+        inactive = sorted(
+            f"{owner}: {target} ({status_by_target[target]})"
+            for owner, target in references
+            if status_by_target[target] != "required"
+        )
+        if inactive:
+            raise GovernanceValidationError(
+                "completed active closeout evidence must reference required gates that emit truth receipts: "
+                + ", ".join(inactive)
+            )

@@ -123,6 +123,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Made cheap governance validation reject completed workitems or closeout claims that cite
+  non-required gates which cannot emit receipts, before evidence fanout begins.
 - Required a completed authored phase before terminal CI can compute a closed release result;
   the P11 PR proved that a planned phase cannot pass by green producer evidence alone.
 - Made source-distribution verification package exact test manifests and create
