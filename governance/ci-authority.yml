@@ -4,16 +4,16 @@ workflow_registry:
   admission:
     workflow_id: '346274480'
     active_path: .github/workflows/bcf-exact-main.yml
-    trusted_workflow_blob_oid: a934b47d59e8add8f512a9e2de694f74a8997642
-    trusted_workflow_sha256: efaf2850f6779b652b0042a78501f30b72b0ac17960f60bc6abded9edf8905d7
-    trusted_workflow_definition_commit: c973d48a2b7c688a20d50c46661469e9331b0feb
+    trusted_workflow_blob_oid: e1805980af2bdbd50c88764e42d86dd06b387e8b
+    trusted_workflow_sha256: de95b96a55740adf00cb574b5016d5e9c46a65ab375d5b9b265f92ea142443ae
+    trusted_workflow_definition_commit: 26deb561d5d2fc471ee9f23a78769211e848e626
     allowed_events: [push]
   governance:
     workflow_id: '334490532'
     active_path: .github/workflows/governance.yml
-    trusted_workflow_blob_oid: 7e857ba0d90452ed9946759c29aaed161144957a
-    trusted_workflow_sha256: d9c494a7c39ec58fc3a1ef28be8f05f136839f22b7fa4de2204e7c06e1597f93
-    trusted_workflow_definition_commit: c973d48a2b7c688a20d50c46661469e9331b0feb
+    trusted_workflow_blob_oid: f98f8ed7c251834922d5283bdd3542ba8e0f330f
+    trusted_workflow_sha256: 6a0b88960196845318c518b0f266c74ef261658ab7a9ace7bd3195ba63998568
+    trusted_workflow_definition_commit: 26deb561d5d2fc471ee9f23a78769211e848e626
     allowed_events: [pull_request, workflow_call]
   governance-pack:
     workflow_id: '265590976'
