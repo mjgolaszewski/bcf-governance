@@ -1,5 +1,8 @@
 # Regulated Hotfix Lane
 
+This document branches from `docs/OPERATIONS.md` for the narrower regulated
+hotfix procedure.
+
 Hotfixes remain authored as `planned` or `completed`; `verified` and `closed` are computed.
 Every hotfix must bind its required gates, finding registry, reconciliation evidence, and
 detached regulated attestation to the same commit and tree as the release candidate.

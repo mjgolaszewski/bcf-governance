@@ -387,7 +387,7 @@ def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
     assert routing["candidate_runner"] not in runner_policy["trusted_labels"]
     window = runner_policy["temporary_local_window"]
     assert window["status"] == "closed"
-    assert window["privileged_publication_enabled"] is False
+    assert window["privileged_publication_enabled"] is True
     for relative_path, classification in runner_policy["jobs"].items():
         workflow = yaml.safe_load(
             (REPO_ROOT / relative_path).read_text(encoding="utf-8")
@@ -409,18 +409,28 @@ def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
                     }
                     assert workflow["jobs"][job_id]["if"] == expected[activation]
                 else:
-                    assert activation == "owner_main_dispatch"
-                    assert workflow["jobs"][job_id]["if"] == (
-                        "${{ github.actor == 'mjgolaszewski' && "
-                        "github.ref == 'refs/heads/main' }}"
-                    )
+                    expected = {
+                        "owner_main_dispatch": (
+                            "${{ github.actor == 'mjgolaszewski' && "
+                            "github.ref == 'refs/heads/main' }}"
+                        ),
+                        "owner_v0_7_0_tag": (
+                            "${{ github.event_name == 'push' && "
+                            "github.ref == 'refs/tags/v0.7.0' && "
+                            "github.actor == 'mjgolaszewski' }}"
+                        ),
+                    }
+                    assert workflow["jobs"][job_id]["if"] == expected[activation]
     release = yaml.safe_load(
         (REPO_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
     )
     assert release["jobs"]["release-artifacts"]["needs"] == [
         "authorize-release-subject"
     ]
-    assert release["jobs"]["publish-release"]["if"] == "${{ false }}"
+    assert release["jobs"]["publish-release"]["if"] == (
+        "${{ github.event_name == 'push' && github.ref == 'refs/tags/v0.7.0' "
+        "&& github.actor == 'mjgolaszewski' }}"
+    )
 
 
 def test_workflows_have_no_runner_occupying_coordination() -> None:

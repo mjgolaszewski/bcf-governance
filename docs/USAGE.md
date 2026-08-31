@@ -1,8 +1,10 @@
 # Using BCF Governance
 
 This is the canonical operator guide for installing and running BCF. The root
-README is an overview; the governed repository's own operational commands
-belong in its installed `docs/OPERATIONS.md` and gate contract.
+[README](../README.md) is an overview, [Architecture](ARCHITECTURE.md) explains
+the design positions, and [CI authority](CI_AUTHORITY.md) owns provider-backed
+certification. A governed repository's own commands belong in its installed
+`docs/OPERATIONS.md` and gate contract.
 
 ## Profiles
 
@@ -117,7 +119,8 @@ already describe the desired profile. Promotion changes profile-derived
 policy and local Make aliases transactionally. It preserves installed workflow
 bytes, never regenerates phase artifacts, and cannot move to a weaker profile
 or contract version. Adopt a GitHub topology separately and explicitly with
-`bcf ci adopt github --check|--apply`.
+`bcf ci adopt github`, supplying the reviewed candidate labels, trusted labels,
+producer argv, and either `--check` or `--apply`.
 
 The 0.7 controller treats command-line workflow values only as compatibility
 pins. It reconstructs numeric repository and workflow IDs, the active path,
@@ -203,6 +206,16 @@ Required test lanes default to at least one collected and executed test and no
 skips. Security-critical finding proofs bind to executable node IDs and
 negative controls that make those nodes fail. A file path alone is not
 regression evidence.
+
+Before opening a pull request, reproduce its exact base and event context:
+
+```bash
+bcf ci local-pr --repo-root . --remote origin
+```
+
+The helper resolves and fetches the remote default branch, validates ancestry,
+and runs preflight with the real base SHA. This makes PR-only changelog and
+base-diff behavior fail locally instead of first appearing in remote CI.
 
 ## Lifecycle and evidence
 
@@ -293,6 +306,8 @@ clears the general artifact root.
 - `bcf validate`: schema and cross-file semantics.
 - `bcf semantic-ownership`: source-first Python SOIP evaluation against the
   repository's canonical representation registry.
+- `bcf ci local-pr`: exact local pull-request context and preflight.
+- `bcf ci adopt github`: transactional GitHub reference-topology adoption.
 - `bcf truth`: evidence-derived lifecycle and release state.
 - `bcf doctor`: configuration and wiring diagnostics.
 - `bcf exposure-scan`: local-path and private-infrastructure scanning.

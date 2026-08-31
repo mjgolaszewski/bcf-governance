@@ -2,6 +2,9 @@ name: bcf/certified-release
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - v0.7.0
 
 permissions: {}
 
@@ -198,15 +201,281 @@ jobs:
 
   publish-release:
     name: Publish pre-certified distributions without rebuilding
-    if: ${{ false }}
-    needs: [release-artifacts]
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/tags/v0.7.0' && github.actor == 'mjgolaszewski' }}
     permissions:
       actions: read
       attestations: write
       contents: write
       id-token: write
+      statuses: read
     runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
     timeout-minutes: 15
     steps:
-      - name: Publication remains disabled until P12
-        run: exit 1
+      - name: Restore the trusted controller interpreter environment
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+      - name: Authenticate the annotated tag and latest exact-main release run
+        id: authenticate
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          readonly tag_name="v0.7.0"
+          readonly workflow_path=".github/workflows/release.yml"
+          readonly publication_root="$RUNNER_TEMP/bcf-release-publication-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          readonly runs_json="$RUNNER_TEMP/bcf-release-runs.json"
+          readonly artifacts_json="$RUNNER_TEMP/bcf-release-artifacts.json"
+          readonly ref_json="$RUNNER_TEMP/bcf-release-tag-ref.json"
+          readonly tag_json="$RUNNER_TEMP/bcf-release-tag-object.json"
+          readonly commit_json="$RUNNER_TEMP/bcf-release-commit.json"
+          readonly control_commit="37475fbff2c5303762e0fdeb97e7cc7834bfe485"
+          readonly control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/$control_commit"
+          readonly authority_root="$publication_root/current-authority"
+          readonly finalizer_runs_json="$RUNNER_TEMP/bcf-release-finalizer-runs.json"
+
+          test "$GITHUB_REF_NAME" = "$tag_name"
+          test ! -e "$publication_root"
+          install -d -m 700 "$publication_root"
+          test -d "$control_root"
+          test ! -L "$control_root"
+          test -x "$control_root/bin/bcf"
+          gh api "/repos/$GITHUB_REPOSITORY/git/ref/tags/$tag_name" > "$ref_json"
+          tag_object_sha="$(jq -er '
+            if .object.type != "tag" then error("release tag must be annotated")
+            else .object.sha end
+          ' "$ref_json")"
+          gh api "/repos/$GITHUB_REPOSITORY/git/tags/$tag_object_sha" > "$tag_json"
+          tag_commit="$(jq -er --arg tag "$tag_name" '
+            if .tag != $tag or .object.type != "commit"
+            then error("annotated tag identity is invalid")
+            else .object.sha end
+          ' "$tag_json")"
+          test "$tag_commit" = "$GITHUB_SHA"
+          gh api "/repos/$GITHUB_REPOSITORY/git/commits/$tag_commit" > "$commit_json"
+          tag_tree="$(jq -er '.tree.sha' "$commit_json")"
+          test "${#tag_tree}" -eq 40
+
+          gh api --method GET \
+            "/repos/$GITHUB_REPOSITORY/actions/workflows/bcf-trusted-finalizer.yml/runs" \
+            -f head_sha="$tag_commit" -f event=workflow_run -f per_page=100 \
+            > "$finalizer_runs_json"
+          finalizer_identity="$(jq -er --arg sha "$tag_commit" '
+            [.workflow_runs[] | select(
+              .head_sha == $sha and .event == "workflow_run" and .status == "completed"
+            )] | if length == 0 then error("no current exact-main finalizer")
+            else max_by(.id) |
+              if .conclusion != "success" then error("latest exact-main finalizer failed")
+              else [.id, .run_attempt] | @tsv end end
+          ' "$finalizer_runs_json")"
+          IFS=$'\t' read -r finalizer_run_id finalizer_run_attempt \
+            <<< "$finalizer_identity"
+          gh run download "$finalizer_run_id" \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "bcf-trusted-callback-$finalizer_run_id-$finalizer_run_attempt" \
+            --dir "$authority_root"
+          authority_result="$("$control_root/bin/bcf" ci-github publish-callback \
+            --repository "$GITHUB_REPOSITORY" \
+            --callback "$authority_root" \
+            --target-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$finalizer_run_id" \
+            --collector-run-id "$finalizer_run_id" \
+            --collector-run-attempt "$finalizer_run_attempt" \
+            --collector-workflow-path .github/workflows/bcf-trusted-finalizer.yml)"
+          jq -e --arg sha "$tag_commit" '
+            .status == "suppressed" and .reason == "idempotent_replay" and
+            .subject_sha == $sha and .computed_state == "certified"
+          ' <<< "$authority_result" > /dev/null
+          current_certification="$authority_root/bundle/ci-certification.json"
+          current_certification_digest="$(sha256sum "$current_certification" | cut -d ' ' -f 1)"
+
+          workflow_id="$(gh api "/repos/$GITHUB_REPOSITORY/actions/workflows/release.yml" --jq .id)"
+          test "$workflow_id" -gt 0
+          gh api --method GET \
+            "/repos/$GITHUB_REPOSITORY/actions/workflows/$workflow_id/runs" \
+            -f head_sha="$tag_commit" -f event=workflow_dispatch -f per_page=100 \
+            > "$runs_json"
+          source_identity="$(jq -er \
+            --arg sha "$tag_commit" --arg path "$workflow_path" \
+            --argjson workflow_id "$workflow_id" '
+            [.workflow_runs[] | select(
+              .head_sha == $sha and .event == "workflow_dispatch" and
+              .path == $path and .workflow_id == $workflow_id and
+              .head_branch == "main" and .status == "completed"
+            )] | if length == 0 then error("no exact-main release run")
+            else max_by(.id) |
+              if .conclusion != "success" then error("latest exact-main release run failed")
+              else [.id, .run_attempt] | @tsv end end
+          ' "$runs_json")"
+          IFS=$'\t' read -r source_run_id source_run_attempt <<< "$source_identity"
+          test "$source_run_id" -gt 0
+          test "$source_run_attempt" -gt 0
+
+          gh api --method GET \
+            "/repos/$GITHUB_REPOSITORY/actions/runs/$source_run_id/artifacts" \
+            -f per_page=100 > "$artifacts_json"
+          expected_name="bcf-certified-release-$tag_commit-$source_run_attempt"
+          artifact_identity="$(jq -er --arg name "$expected_name" '
+            [.artifacts[] | select(.name == $name and (.expired | not))] |
+            if length != 1 then error("certified release artifact is not exact")
+            else .[0] |
+              if .size_in_bytes <= 0 or .size_in_bytes > 104857600
+              then error("certified release artifact size is unsafe")
+              else [.id, .digest] | @tsv end end
+          ' "$artifacts_json")"
+          IFS=$'\t' read -r artifact_id artifact_digest <<< "$artifact_identity"
+          test "$artifact_id" -gt 0
+          test "${artifact_digest#sha256:}" != "$artifact_digest"
+
+          gh api "/repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" \
+            > "$publication_root/certified-release.zip"
+          test "$(sha256sum "$publication_root/certified-release.zip" | cut -d ' ' -f 1)" \
+            = "${artifact_digest#sha256:}"
+          unzip -Z1 "$publication_root/certified-release.zip" \
+            | awk 'BEGIN { bad=0 } /^\// || /(^|\/)\.\.($|\/)/ { bad=1 } END { exit bad }'
+          unzip -q "$publication_root/certified-release.zip" -d "$publication_root/bundle"
+          test -z "$(find "$publication_root/bundle" -type l -print -quit)"
+
+          mapfile -t wheels < <(find "$publication_root/bundle" -type f \
+            -name 'bcf_governance-0.7.0-py3-none-any.whl' -print)
+          mapfile -t sdists < <(find "$publication_root/bundle" -type f \
+            -name 'bcf_governance-0.7.0.tar.gz' -print)
+          mapfile -t sums < <(find "$publication_root/bundle" -type f \
+            -name 'SHA256SUMS' -print)
+          mapfile -t receipts < <(find "$publication_root/bundle" -type f \
+            -name 'release.evidence.json' -print)
+          mapfile -t truth_reports < <(find "$publication_root/bundle" -type f \
+            -name 'truth-report.json' -print)
+          mapfile -t certifications < <(find "$publication_root/bundle" -type f \
+            -name 'ci-certification.json' -print)
+          mapfile -t sessions < <(find "$publication_root/bundle" -type f \
+            -name 'evidence-session.json' -print)
+          test "${#wheels[@]}" -eq 1
+          test "${#sdists[@]}" -eq 1
+          test "${#sums[@]}" -eq 1
+          test "${#receipts[@]}" -eq 1
+          test "${#truth_reports[@]}" -eq 1
+          test "${#certifications[@]}" -eq 1
+          test "${#sessions[@]}" -eq 1
+          wheel="${wheels[0]}"
+          sdist="${sdists[0]}"
+          checksum_file="${sums[0]}"
+          receipt="${receipts[0]}"
+          truth_report="${truth_reports[0]}"
+          certification="${certifications[0]}"
+          session="${sessions[0]}"
+
+          wheel_digest="$(sha256sum "$wheel" | cut -d ' ' -f 1)"
+          sdist_digest="$(sha256sum "$sdist" | cut -d ' ' -f 1)"
+          sums_digest="$(sha256sum "$checksum_file" | cut -d ' ' -f 1)"
+          truth_digest="$(sha256sum "$truth_report" | cut -d ' ' -f 1)"
+          certification_digest="$(sha256sum "$certification" | cut -d ' ' -f 1)"
+          session_digest="$(sha256sum "$session" | cut -d ' ' -f 1)"
+          test "$certification_digest" = "$current_certification_digest"
+          jq -e --arg sha "$tag_commit" --arg tree "$tag_tree" \
+            --arg wheel "$wheel_digest" --arg sdist "$sdist_digest" \
+            --arg sums "$sums_digest" --arg truth "$truth_digest" \
+            --arg certification "$certification_digest" --arg session "$session_digest" '
+            .schema_version == "2.0" and .kind == "release" and
+            .gate_id == "ci-certification" and .result == "passed" and
+            .subject.commit_sha == $sha and .subject.tree_sha == $tree and
+            .subject.tree_sha == .subject.execution_tree_sha and
+            .subject.tracked_clean == true and .subject.untracked_clean == true and
+            .observations.ci_computed_state == "certified" and
+            .observations.acyclic_construction.output_outside_evidence_dir == true and
+            .observations.acyclic_construction.release_receipt_was_truth_input == false and
+            ([.observations.release_artifacts[] | {(.path): .sha256}] | add) == {
+              "bcf_governance-0.7.0-py3-none-any.whl": $wheel,
+              "bcf_governance-0.7.0.tar.gz": $sdist,
+              "SHA256SUMS": $sums
+            } and
+            ([.artifacts[] | select(.path == "truth-report.json") | .sha256] == [$truth]) and
+            ([.artifacts[] | select(.path == "ci-certification.json") | .sha256] == [$certification]) and
+            ([.artifacts[] | select(.path == "evidence-session.json") | .sha256] == [$session])
+          ' "$receipt" > /dev/null
+          admission_ordinal="$(jq -er '.observations.admission_ordinal' "$receipt")"
+          jq -e --arg sha "$tag_commit" --arg tree "$tag_tree" \
+            --arg ordinal "$admission_ordinal" --arg session "$session_digest" '
+            .schema_version == "1.0" and .state == "active" and
+            .subject.checkout_sha == $sha and .subject.current_default_main_sha == $sha and
+            .subject.tree_sha == $tree and
+            .admission.candidate.checkout_sha == $sha and
+            .admission.candidate.current_default_main_sha == $sha and
+            .admission.candidate.tree_sha == $tree and
+            .admission.admission_ordinal == $ordinal and
+            .evaluation.exact_job_inventory == true and
+            .evaluation.exact_producer_inventory == true and
+            .evaluation.reasons == [] and
+            .evidence_session.manifest_sha256 == $session
+          ' "$certification" > /dev/null
+          jq -e --arg sha "$tag_commit" --arg tree "$tag_tree" '
+            .schema_version == "1.0" and .profile == "standard" and
+            .profile_contract_version == "2.0" and
+            .subject.commit_sha == $sha and .subject.tree_sha == $tree and
+            .expected_gate_inventory == ["ci-certification"] and
+            .session_root_policy.immutable_manifest == true
+          ' "$session" > /dev/null
+          jq -e --arg sha "$tag_commit" --arg tree "$tag_tree" \
+            --arg certification "$certification_digest" --arg session "$session_digest" '
+            .subject.commit_sha == $sha and .subject.tree_sha == $tree and
+            .subject.tracked_clean == true and .subject.untracked_clean == true and
+            .release_readiness.effective_state == "closed" and
+            .release_readiness.missing_or_invalid == [] and
+            .ci_certification.status == "pass" and
+            .ci_certification.computed_state == "certified" and
+            .ci_certification.certification_sha256 == $certification and
+            .ci_certification.session_manifest_sha256 == $session
+          ' "$truth_report" > /dev/null
+
+          checksum_root="$publication_root/checksums"
+          install -d -m 700 "$checksum_root"
+          install -m 600 "$wheel" "$checksum_root/bcf_governance-0.7.0-py3-none-any.whl"
+          install -m 600 "$sdist" "$checksum_root/bcf_governance-0.7.0.tar.gz"
+          install -m 600 "$checksum_file" "$checksum_root/SHA256SUMS"
+          expected_sums="$checksum_root/EXPECTED_SHA256SUMS"
+          printf '%s  %s\n%s  %s\n' \
+            "$wheel_digest" "bcf_governance-0.7.0-py3-none-any.whl" \
+            "$sdist_digest" "bcf_governance-0.7.0.tar.gz" > "$expected_sums"
+          cmp --silent "$expected_sums" "$checksum_root/SHA256SUMS"
+          rm "$expected_sums"
+          (cd "$checksum_root" && sha256sum --check SHA256SUMS)
+
+          printf 'publication_root=%s\n' "$checksum_root" >> "$GITHUB_OUTPUT"
+          printf 'source_run_id=%s\n' "$source_run_id" >> "$GITHUB_OUTPUT"
+          printf 'source_run_attempt=%s\n' "$source_run_attempt" >> "$GITHUB_OUTPUT"
+      - name: Attest the authenticated release bytes
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a
+        with:
+          subject-path: |
+            ${{ steps.authenticate.outputs.publication_root }}/bcf_governance-0.7.0-py3-none-any.whl
+            ${{ steps.authenticate.outputs.publication_root }}/bcf_governance-0.7.0.tar.gz
+            ${{ steps.authenticate.outputs.publication_root }}/SHA256SUMS
+      - name: Publish the authenticated bytes to the immutable GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PUBLICATION_ROOT: ${{ steps.authenticate.outputs.publication_root }}
+        run: |
+          set -euo pipefail
+          readonly tag_name="v0.7.0"
+          test "$GITHUB_REF_NAME" = "$tag_name"
+          gh release create "$tag_name" \
+            "$PUBLICATION_ROOT/bcf_governance-0.7.0-py3-none-any.whl" \
+            "$PUBLICATION_ROOT/bcf_governance-0.7.0.tar.gz" \
+            "$PUBLICATION_ROOT/SHA256SUMS" \
+            --verify-tag --title "$tag_name" --generate-notes
+      - name: Remove the run-scoped publication workspace
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          readonly publication_root="$RUNNER_TEMP/bcf-release-publication-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          case "$publication_root" in
+            "$RUNNER_TEMP"/bcf-release-publication-"$GITHUB_RUN_ID"-"$GITHUB_RUN_ATTEMPT") ;;
+            *) exit 1 ;;
+          esac
+          if test -e "$publication_root"; then
+            test ! -L "$publication_root"
+            rm -rf -- "$publication_root"
+          fi

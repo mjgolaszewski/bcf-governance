@@ -1,5 +1,8 @@
 # Model Risk and Provenance
 
+This document branches from `docs/OPERATIONS.md` for regulated model-risk and
+provenance requirements.
+
 `{{PROJECT_NAME}}` uses the regulated BCF profile only when `governance/gate-contracts.yml`
 contains trusted verifier keys and permitted risk authorities. Evidence producers, reviewers,
 remediators, and verifiers are recorded as typed actors. Critical and High finding closure

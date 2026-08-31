@@ -2,9 +2,14 @@
 
 ## Purpose
 
-Use this playbook when converting an established repository into a BCF-governed repo without rewriting the application during the first governance commit.
+Use this playbook when converting an established repository into a BCF-governed
+repo without rewriting the application during the first governance commit. The
+installed `docs/OPERATIONS.md` owns routine commands; this document covers only
+the adoption branch.
 
-The adoption goal is structural truth first: install governed artifacts, inventory the existing architecture and CI surface, classify gaps, and wire executable gates before claiming release readiness.
+The first goal is structural validity: install governed artifacts, inventory
+the existing architecture and CI surface, classify gaps, and wire executable
+gates before making release claims.
 
 Repo evidence: `scripts/install_governance_pack.py` keeps these playbooks only for `--adoption-mode existing`; fresh installs omit them.
 

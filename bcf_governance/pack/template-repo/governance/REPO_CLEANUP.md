@@ -4,6 +4,8 @@ Use this when a BCF-governed repo has drifted: old phase sprawl, audit files in
 the wrong roots, nested governance, stale docs, or abandoned YAML.
 
 Machine contract: `governance/repo-cleanup-contract.yml`.
+Routine commands remain in `docs/OPERATIONS.md`; this document covers only the
+cleanup branch.
 
 Interactive apply requests confirmation. Non-TTY apply must include `--yes` or
 it fails before mutation. Proposed changes are validated in a temporary shadow
@@ -37,11 +39,13 @@ window and rejects stale historical triplets or phase-scoped hotfix logs that
 remain active. Phase-history entries must be compact and evidence-backed; do
 not replace removed artifacts with empty history rows.
 
-## LLM Or Human Review
+## Human or model-assisted review
 
 Use judgment for documentation currency, product specs, architecture/security
-docs, runbooks, semantic phase history compaction, abandoned YAML, and nested governance.
-Each change must preserve intent while removing stale or duplicate surfaces.
+docs, runbooks, semantic phase history compaction, abandoned YAML, and nested
+governance. A model may propose those edits, but deterministic validation and
+the declared approval role remain authoritative. Each change must preserve
+intent while removing stale or duplicate surfaces.
 
 ## Closeout
 
