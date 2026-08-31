@@ -130,6 +130,15 @@ immutable session and closed bundle inventory. Generated workflows supply the
 required controller arguments; operators should not copy run IDs from check
 names, display titles, or earlier attempts.
 
+BCF 0.7 adds the additive `finalize-callback` and `publish-callback` controller
+operations for event-driven fan-in. The finalizer always emits one immutable
+callback envelope: a pending envelope contains no candidate artifact, while a
+terminal envelope binds the closed bundle-manifest digest. The publisher
+authenticates the exact triggering finalizer run and treats pending as a clean
+no-op; only a verified terminal envelope reaches status publication. Existing
+`finalize` and `publish` callers remain supported. Human-readable workflow and
+job names are presentation only and never participate in authority decisions.
+
 Standard-v2 N/A records live under `governance/capability-na/`. Each record
 names the exact capability, gate, or semantic family; repository scope;
 rationale and supporting evidence; approving role; subject commit; review

@@ -182,6 +182,28 @@ gate_overrides:
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_ci_github_controller::test_publisher_rejects_bundle_manifest_semantic_forgery']
+    - id: ci-callback-bundle-digest-must-fail
+      mutation: {path: bcf_governance/tooling/ci_github_callbacks.py, search: 'if hashlib.sha256(manifest.read_bytes()).hexdigest() != digest:',
+        replace: 'if False and hashlib.sha256(manifest.read_bytes()).hexdigest() != digest:'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_ci_github_controller::test_callback_bundle_digest_tampering_is_rejected']
+    - id: ci-pending-callback-publication-must-fail
+      mutation: {path: bcf_governance/tooling/ci_github_callbacks.py, search: 'if payload["status"] == "pending":',
+        replace: 'if False and payload["status"] == "pending":'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_ci_github_controller::test_pending_callback_is_authenticated_without_status_publication']
+    - id: ci-callback-collector-binding-must-fail
+      mutation: {path: bcf_governance/tooling/ci_github_callbacks.py, search: 'if collector != expected_collector:',
+        replace: 'if False and collector != expected_collector:'}
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_ci_github_controller::test_callback_rejects_wrong_triggering_collector']
+    - id: ci-callback-root-symlink-must-fail
+      mutation: {path: bcf_governance/tooling/ci_github_callbacks.py, search: 'if callback_dir.is_symlink():',
+        replace: 'if False and callback_dir.is_symlink():'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_callback_rejects_symlinked_artifact_root']}
     - id: preflight-semantic-ownership-must-fail
       mutation: {path: bcf_governance/tooling/preflight.py, search: 'if report.get("verdict") != "conformant":',
         replace: 'if False and report.get("verdict") != "conformant":'}
@@ -414,7 +436,7 @@ gate_overrides:
         regex: governance.github-run-identity.v1 owner must be an authorized constructor
     - id: github-run-identity-consumers-must-fail
       mutation: {path: governance/canonical-representations.yml, search: 'declared_consumer_layers_and_sinks: {read: [''bcf_governance/tooling/ci_github_identity.py::resolve_trusted_run''],
-          authorization: [''bcf_governance/tooling/ci_github.py::authenticate_github_run'', ''bcf_governance/tooling/ci_github_identity.py::authenticate_trusted_run''],
+          authorization: [''bcf_governance/tooling/ci_github.py::authenticate_github_run'', ''bcf_governance/tooling/ci_github_callbacks.py::publish_callback'', ''bcf_governance/tooling/ci_github_identity.py::authenticate_trusted_run''],
           persistence: [], cache: [], queue: [], network: [], api: [], browser: []}', replace: 'declared_consumer_layers_and_sinks:
           {read: [], authorization: [], persistence: [], cache: [], queue: [], network: [], api: [], browser: []}'}
       oracle:

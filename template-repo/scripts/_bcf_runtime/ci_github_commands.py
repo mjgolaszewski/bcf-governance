@@ -10,6 +10,7 @@ from pathlib import Path
 from .ci_authority_certification import CICertificationError
 from .ci_authority_contracts import CIAuthorityContractError
 from .ci_github_api import GitHubAPIError
+from .ci_github_callbacks import finalize_callback, publish_callback
 from .ci_github_controller import (
     GitHubControllerError,
     environment_api,
@@ -50,6 +51,18 @@ def _parser() -> argparse.ArgumentParser:
     finalize_parser.add_argument("--collector-workflow-path", required=True)
     finalize_parser.add_argument("--collector-workflow-sha256")
     finalize_parser.add_argument("--output", type=Path, required=True)
+    callback_parser = operations.add_parser("finalize-callback")
+    callback_parser.add_argument("--repository", required=True)
+    callback_parser.add_argument("--control-run-id")
+    callback_parser.add_argument("--control-run-attempt", type=int)
+    callback_parser.add_argument("--resolve-control-run", action="store_true")
+    callback_parser.add_argument("--control-workflow-id")
+    callback_parser.add_argument("--control-workflow-path", required=True)
+    callback_parser.add_argument("--control-workflow-sha256")
+    callback_parser.add_argument("--collector-workflow-id")
+    callback_parser.add_argument("--collector-workflow-path", required=True)
+    callback_parser.add_argument("--collector-workflow-sha256")
+    callback_parser.add_argument("--output", type=Path, required=True)
     publish_parser = operations.add_parser("publish")
     publish_parser.add_argument("--repository", required=True)
     publish_parser.add_argument("--bundle", type=Path, required=True)
@@ -59,6 +72,17 @@ def _parser() -> argparse.ArgumentParser:
     publish_parser.add_argument("--collector-workflow-id")
     publish_parser.add_argument("--collector-workflow-path", required=True)
     publish_parser.add_argument("--collector-workflow-sha256")
+    publish_callback_parser = operations.add_parser("publish-callback")
+    publish_callback_parser.add_argument("--repository", required=True)
+    publish_callback_parser.add_argument("--callback", type=Path, required=True)
+    publish_callback_parser.add_argument("--target-url", required=True)
+    publish_callback_parser.add_argument("--collector-run-id", required=True)
+    publish_callback_parser.add_argument(
+        "--collector-run-attempt", type=int, required=True
+    )
+    publish_callback_parser.add_argument("--collector-workflow-id")
+    publish_callback_parser.add_argument("--collector-workflow-path", required=True)
+    publish_callback_parser.add_argument("--collector-workflow-sha256")
     return parser
 
 
@@ -80,7 +104,7 @@ def main(argv: list[str] | None = None) -> None:
                     dispatch_exact_ref=args.dispatch_exact_ref,
                 )
             )
-        elif args.operation == "finalize":
+        elif args.operation in {"finalize", "finalize-callback"}:
             explicit_control = args.control_run_id is not None or (
                 args.control_run_attempt is not None
             )
@@ -115,8 +139,10 @@ def main(argv: list[str] | None = None) -> None:
                 control_run_attempt = args.control_run_attempt
                 control_workflow_id = args.control_workflow_id
                 control_workflow_sha256 = args.control_workflow_sha256
-            result = result_dict(
-                finalize(
+            collector_run_id = _required_environment("GITHUB_RUN_ID")
+            collector_run_attempt = _required_environment("GITHUB_RUN_ATTEMPT")
+            if args.operation == "finalize-callback":
+                result = finalize_callback(
                     api,
                     repository=args.repository,
                     control_run_id=control_run_id,
@@ -124,13 +150,42 @@ def main(argv: list[str] | None = None) -> None:
                     control_workflow_id=control_workflow_id,
                     control_workflow_path=args.control_workflow_path,
                     control_workflow_sha256=control_workflow_sha256,
-                    collector_run_id=_required_environment("GITHUB_RUN_ID"),
-                    collector_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
+                    collector_run_id=collector_run_id,
+                    collector_run_attempt=collector_run_attempt,
                     collector_workflow_id=args.collector_workflow_id,
                     collector_workflow_path=args.collector_workflow_path,
                     collector_workflow_sha256=args.collector_workflow_sha256,
-                    output_dir=args.output,
+                    output_root=args.output,
                 )
+            else:
+                result = result_dict(
+                    finalize(
+                        api,
+                        repository=args.repository,
+                        control_run_id=control_run_id,
+                        control_run_attempt=control_run_attempt,
+                        control_workflow_id=control_workflow_id,
+                        control_workflow_path=args.control_workflow_path,
+                        control_workflow_sha256=control_workflow_sha256,
+                        collector_run_id=collector_run_id,
+                        collector_run_attempt=collector_run_attempt,
+                        collector_workflow_id=args.collector_workflow_id,
+                        collector_workflow_path=args.collector_workflow_path,
+                        collector_workflow_sha256=args.collector_workflow_sha256,
+                        output_dir=args.output,
+                    )
+                )
+        elif args.operation == "publish-callback":
+            result = publish_callback(
+                api,
+                repository=args.repository,
+                callback_dir=args.callback,
+                target_url=args.target_url,
+                collector_run_id=args.collector_run_id,
+                collector_run_attempt=args.collector_run_attempt,
+                collector_workflow_id=args.collector_workflow_id,
+                collector_workflow_path=args.collector_workflow_path,
+                collector_workflow_sha256=args.collector_workflow_sha256,
             )
         else:
             result = publish(

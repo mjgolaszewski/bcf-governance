@@ -8,6 +8,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Added
 
+- Added immutable trusted callback envelopes and additive controller commands
+  for acyclic event-driven fan-in without polling, waiting, or candidate
+  artifact ingestion by the trusted finalizer.
 - Added an owner-dispatched, no-checkout trusted bootstrap that authenticates
   and installs the exact-main controller wheelhouse offline on both uniquely
   addressed control runners.
@@ -88,9 +91,14 @@ All notable changes to BCF Governance are recorded here. This file follows
   and existing four-shard hosted execution topology.
 - Bound BCF's four evidence shards and terminal truth to one immutable session
   and exact Actions run attempt without adding jobs, polling, or waiter capacity.
+- Kept profile-generated evidence policy within its existing context budget by
+  using deterministic 132-column YAML rendering as the control inventory grows.
 
 ### Fixed
 
+- Made pending producer completion a mechanically authenticated no-op and bound
+  terminal publication to the exact triggering collector and callback bundle
+  digest before any status write.
 - Made cheap preflight execute applicable source-first semantic-ownership
   enforcement before evidence-session allocation, preventing a deterministic
   ownership defect from launching expensive evidence fanout.
