@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0,<9"]
+dev = ["pytest==9.0.3"]
 
 [project.scripts]
 bcf = "bcf_governance.cli:main"

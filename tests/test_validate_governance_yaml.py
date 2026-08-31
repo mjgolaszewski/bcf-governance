@@ -1274,6 +1274,41 @@ def test_non_authoritative_marker_survives_yaml_reserialization(tmp_path: Path) 
     validate_repo_root(repo_root)
 
 
+def test_completed_closeout_rejects_evidence_without_required_receipt_owner(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    workitems_path = repo_root / "plans/phase-01-workitems.yml"
+    workitems = yaml.safe_load(workitems_path.read_text(encoding="utf-8"))
+    workitems["document"]["status"] = "completed"
+    workitems["workitems"][0]["status"] = "DONE"
+    _write_yaml(workitems_path, workitems)
+
+    log_path = repo_root / "phases/phase-01-log.yml"
+    phase_log = yaml.safe_load(log_path.read_text(encoding="utf-8"))
+    phase_log["document"]["status"] = "completed"
+    phase_log["workitems"][0]["status"] = "DONE"
+    _write_yaml(log_path, phase_log)
+
+    plan_path = repo_root / "plans/phase-01-plan.yml"
+    plan = yaml.safe_load(plan_path.read_text(encoding="utf-8"))
+    plan["document"]["status"] = "completed"
+    _write_yaml(plan_path, plan)
+
+    ledger_path = repo_root / "plans/phase-ledger.yml"
+    ledger = yaml.safe_load(ledger_path.read_text(encoding="utf-8"))
+    ledger["active_phase"]["lifecycle_status"] = "completed"
+    _write_yaml(ledger_path, ledger)
+
+    with pytest.raises(
+        GovernanceValidationError,
+        match="completed active closeout evidence must reference required gates",
+    ) as excinfo:
+        validate_repo_root(repo_root)
+    assert "workitem P01-P0-01: contract-test (deferred)" in str(excinfo.value)
+    assert "workitem P01-P0-01: test (deferred)" in str(excinfo.value)
+
+
 @pytest.mark.parametrize(
     ("fixture_name", "expected_message"),
     [

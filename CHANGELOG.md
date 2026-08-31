@@ -6,8 +6,12 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-08-31
+
 ### Added
 
+- Opened exact-main release artifact construction with mechanically separated
+  trusted authorization, disposable candidate build, and disabled publication.
 - Added a disabled-by-default, event-driven exact-main admission, trusted
   finalizer, and status-publisher topology generated from the public adopter;
   its callbacks allocate no runner until explicitly activated after exact
@@ -119,6 +123,12 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Made cheap governance validation reject completed workitems or closeout claims that cite
+  non-required gates which cannot emit receipts, before evidence fanout begins.
+- Required a completed authored phase before terminal CI can compute a closed release result;
+  the P11 PR proved that a planned phase cannot pass by green producer evidence alone.
+- Made source-distribution verification package exact test manifests and create
+  clean tracked-file custody before exercising the complete extracted suite.
 - Made pending producer completion a mechanically authenticated no-op and bound
   terminal publication to the exact triggering collector and callback bundle
   digest before any status write.
@@ -245,7 +255,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/mjgolaszewski/bcf-governance/releases/tag/v0.5.0

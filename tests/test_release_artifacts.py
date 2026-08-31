@@ -31,3 +31,22 @@ def test_missing_sdist_payload_mutant_is_rejected(tmp_path: Path) -> None:
 
     with pytest.raises(RuntimeError, match="sdist payload missing: audits"):
         release_artifacts.validate_sdist_payload(tmp_path)
+
+
+def test_sdist_source_custody_tracks_the_complete_extracted_tree(tmp_path: Path) -> None:
+    (tmp_path / "nested").mkdir()
+    (tmp_path / "source.txt").write_text("source\n", encoding="utf-8")
+    (tmp_path / "nested/evidence.txt").write_text("evidence\n", encoding="utf-8")
+
+    release_artifacts.initialize_source_custody(tmp_path)
+
+    assert release_artifacts.subprocess.run(
+        ["git", "ls-files"], cwd=tmp_path, check=True, capture_output=True, text=True
+    ).stdout.splitlines() == ["nested/evidence.txt", "source.txt"]
+    assert release_artifacts.subprocess.run(
+        ["git", "status", "--porcelain", "--untracked-files=all"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout == ""

@@ -284,7 +284,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "64832cd7745df033bbb4999fdd71e39a3702fa4aaf569368f41afc8400ea03c3"
+      "sha256": "6af26124fb36b623666e0278d3fb6cc5ea11be8e5c4d3cc0b9ed31dc7e5d57ff"
     },
     "scripts/_bcf_runtime/check_governance_exposure.py": {
       "operation": "copy",
@@ -320,7 +320,7 @@
     },
     "scripts/_bcf_runtime/ci_github_actions.py": {
       "operation": "copy",
-      "sha256": "455ca340dc733f3a7b5a9308767df08e95f14c6fa3bc8fe0b23e056ee8b73117"
+      "sha256": "56d7189585af6ca037d3a26e319e2a7658f0aa80f27a15fa3769e13ef9d8bbce"
     },
     "scripts/_bcf_runtime/ci_github_api.py": {
       "operation": "copy",
@@ -456,7 +456,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/phase_catalog.py": {
       "operation": "copy",
-      "sha256": "f6348ce894bb233d4cdc400c5c65b2f6662a9b3879c002aff3d12e214db6c4b0"
+      "sha256": "3919ef2e1b22ed93daf22d5ee5eeb693e744c82bce633d771a3246662d122943"
     },
     "scripts/_bcf_runtime/governance_validation/release_gates.py": {
       "operation": "copy",
@@ -472,7 +472,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/runner.py": {
       "operation": "copy",
-      "sha256": "6f636d17cf6a88aa4559260ba965d98dbb01502a74614e64598aa046d6e3014b"
+      "sha256": "cf7aa0ea95b774cbd1a9d61f08752fe134cda92f7a356342a84dfe854d42fc45"
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",

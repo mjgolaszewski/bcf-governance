@@ -9,6 +9,7 @@ recursive-include .github/workflows *.yml *.yaml
 recursive-include audits *.md *.yml *.yaml *.json
 recursive-include contracts *.md *.yml *.yaml *.json
 recursive-include governance *.md *.yml *.yaml *.json
+recursive-include governance *.txt
 include governance/archive/phase-artifacts/.gitkeep
 recursive-include phases *.md *.yml *.yaml *.json
 recursive-include plans *.md *.yml *.yaml *.json

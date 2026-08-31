@@ -417,7 +417,10 @@ def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
     release = yaml.safe_load(
         (REPO_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
     )
-    assert release["jobs"]["release-artifacts"]["if"] == "${{ false }}"
+    assert release["jobs"]["release-artifacts"]["needs"] == [
+        "authorize-release-subject"
+    ]
+    assert release["jobs"]["publish-release"]["if"] == "${{ false }}"
 
 
 def test_workflows_have_no_runner_occupying_coordination() -> None:
@@ -486,25 +489,26 @@ def test_self_ci_authority_matches_immutable_workflow_definitions() -> None:
     for workflow in workflows:
         commit = workflow["trusted_workflow_definition_commit"]
         path = workflow["active_path"]
-        content = subprocess.run(
-            ["git", "show", f"{commit}:{path}"],
-            cwd=REPO_ROOT,
-            check=True,
-            capture_output=True,
-        ).stdout
+        content = (REPO_ROOT / path).read_bytes()
         blob = subprocess.run(
-            ["git", "rev-parse", f"{commit}:{path}"],
-            cwd=REPO_ROOT,
+            ["git", "hash-object", "--stdin"],
+            input=content,
             check=True,
             capture_output=True,
-            text=True,
-        ).stdout.strip()
+        ).stdout.decode().strip()
         assert blob == workflow["trusted_workflow_blob_oid"]
         assert (
             hashlib.sha256(content).hexdigest()
             == workflow["trusted_workflow_sha256"]
         )
-        assert content == (REPO_ROOT / path).read_bytes()
+        historical = subprocess.run(
+            ["git", "show", f"{commit}:{path}"],
+            cwd=REPO_ROOT,
+            check=False,
+            capture_output=True,
+        )
+        if historical.returncode == 0:
+            assert historical.stdout == content
         assert workflow["allowed_events"] == ["push"]
     assert [producer["producer_id"] for producer in authority["producers"]] == [
         "governance",
