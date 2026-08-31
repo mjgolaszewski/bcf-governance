@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-12-plan
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: active
+  status: completed
   path: plans/phase-12-plan.yml
 phase:
   id: P12

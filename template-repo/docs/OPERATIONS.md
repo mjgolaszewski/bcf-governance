@@ -4,6 +4,11 @@
 
 This runbook describes how to validate and run `{{PROJECT_NAME}}`.
 
+BCF uses deterministic programs—not an implementing agent's judgment—to
+compute verification, closure, and release readiness. The project retains its
+own architecture and CI topology; profile and gate contracts declare which BCF
+capabilities apply.
+
 ## Release Validation
 
 Run the configured release gate from the repo root:
@@ -28,16 +33,18 @@ regulated contracts must cover:
 
 `Makefile.fragment`, the static CI matrix, evidence overrides, and closeout
 requirements are generated from `governance/gate-contracts.yml`. Do not hand
-author applicability. Use `bcf profile promote --check|--apply` with a complete
-profile contract to change profiles. Make targets remain developer aliases;
+author applicability. Use `bcf profile promote` with either `--check` or
+`--apply` and a complete profile contract to change profiles. Make targets remain developer aliases;
 their command text is not verification.
 
 An absent `profile_contract_version` means v1. Fresh Standard and Regulated
 installs default to v2; Lite defaults to v1. Promote explicitly with
-`bcf profile promote --repo-root . --to standard --contract-version 2.0
---check|--apply`. Promotion and normal upgrades preserve workflow bytes. Use
-the separate `bcf ci adopt github --check|--apply` transaction when the
-repository elects to install BCF's GitHub reference topology.
+`bcf profile promote --repo-root . --to standard --contract-version 2.0`
+and either `--check` or `--apply`. Promotion and normal upgrades preserve
+workflow bytes. Use the separate `bcf ci adopt github` transaction, including
+explicit candidate labels, trusted labels, producer argv, and either `--check`
+or `--apply`, when the repository elects to install BCF's GitHub reference
+topology.
 
 Required CI jobs invoke the evidence wrapper for their gate IDs, upload the
 content-addressed bundles, and feed them to the final truthfulness job. The
@@ -60,6 +67,15 @@ variables from changing the immutable session and receipt identity.
 artifacts. Preserve their application-specific content. Every pull request must
 update `CHANGELOG.md`; governance CI verifies the exact base-to-HEAD diff and
 requires a full Git checkout.
+
+Before opening a pull request, reproduce its exact remote context:
+
+```bash
+bcf ci local-pr --repo-root . --remote origin
+```
+
+The helper fetches the remote default branch, checks ancestry, and supplies the
+actual base SHA and pull-request event context to preflight.
 
 If the repo layout differs from the starter backend shape, update `architecture-boundaries.yml` before relying on `make architecture-test`.
 
@@ -132,6 +148,14 @@ keeps existing historical triplet and hotfix behavior.
 Document service health, release metadata, metrics, traces, logs, and operator-safe diagnostic endpoints here.
 
 ## CI Resource Ownership
+
+When CI-backed evidence supports a release claim, workflow display names are
+operator presentation only. Authority binds numeric repository and workflow
+identity, active path and trusted bytes, event, run and attempt, and the exact
+candidate commit and tree. Candidate code belongs on fresh disposable workers;
+persistent trusted jobs do not check out or execute it. Use `bcf ci adopt
+github` only as an explicit transaction after reviewing the generated topology
+and supplying the required routing and producer arguments.
 
 Give every CI run a unique identifier and label every Docker resource it owns
 with `io.bcf-governance.ci-run=<run-id>`. Use a run-scoped Compose project such

@@ -264,9 +264,30 @@ gates:
     - id: release-candidate-authorization-must-fail
       mutation: {path: .github/workflows/release.yml, search: 'needs: [authorize-release-subject]', replace: 'needs: []'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_release_requires_owner_dispatch_of_exact_main_before_candidate']}
-    - id: release-publication-disable-must-fail
-      mutation: {path: .github/workflows/release.yml, search: 'if: ${{ false }}', replace: 'if: ${{ true }}'}
-      oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_p11_publication_is_named_and_mechanically_disabled']}
+    - id: release-publication-event-guard-must-fail
+      mutation: {path: .github/workflows/release.yml, search: "if: ${{ github.event_name == 'push' && github.ref == 'refs/tags/v0.7.0' && github.actor == 'mjgolaszewski' }}", replace: 'if: ${{ true }}'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_p12_publication_is_named_and_mechanically_event_guarded', 'tests.test_self_governance_contracts::test_hosted_candidates_and_trusted_publication_are_separated']}
+    - id: release-latest-success-selection-must-fail
+      mutation: {path: .github/workflows/release.yml, search: 'if .conclusion != "success" then error("latest exact-main release run failed")', replace: 'if .conclusion == "success" then error("latest exact-main release run failed")'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_publisher_authenticates_tag_run_attempt_artifact_and_receipt']}
+    - id: release-no-rebuild-must-fail
+      mutation: {path: .github/workflows/release.yml, search: 'gh release create "$tag_name"', replace: 'python -m build && gh release create "$tag_name"'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_publisher_checks_out_nothing_and_rebuilds_nothing']}
+    - id: release-current-authority-must-fail
+      mutation: {path: .github/workflows/release.yml, search: 'if .conclusion != "success" then error("latest exact-main finalizer failed")', replace: 'if .conclusion == "success" then error("latest exact-main finalizer failed")'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_publisher_authenticates_tag_run_attempt_artifact_and_receipt']}
+    - id: release-publication-cleanup-root-must-fail
+      mutation: {path: .github/workflows/release.yml, search: 'rm -rf -- "$publication_root"', replace: 'rm -rf -- "$RUNNER_TEMP"'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_publisher_removes_only_its_exact_run_scoped_workspace']}
+    - id: editorial-tone-owner-must-fail
+      mutation: {path: README.md, search: '## Why these defaults', replace: '## A revolutionary manifesto'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_documentation_contracts::test_editorial_contract_is_current_and_complete']}
+    - id: editorial-local-link-must-fail
+      mutation: {path: README.md, search: '(docs/ARCHITECTURE.md)', replace: '(docs/ABSENT.md)'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_documentation_contracts::test_editorial_contract_is_current_and_complete']}
+    - id: generated-control-compaction-must-fail
+      mutation: {path: bcf_governance/tooling/profile_yaml.py, search: 'node.flow_style = True', replace: 'node.flow_style = False'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_profile_contract_v2::test_bcf_standard_v2_promotion_fits_declared_context_budgets']}
     - id: self-ci-authority-definition-pin-must-fail
       mutation: {path: governance/ci-authority.yml, search: 'trusted_workflow_sha256: cb137dd34ad755e52a987a221fcaa091c0a2e05c1aa49bbf720db0590fe99b99', replace: 'trusted_workflow_sha256: 0000000000000000000000000000000000000000000000000000000000000000'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_ci_authority_matches_immutable_workflow_definitions']}

@@ -77,8 +77,13 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
-- Opened the final README-led editorial and immutable-publication phase after P11 exact-main
-  artifacts reached mechanically computed closed certification without publication.
+- Refreshed README-led documentation around BCF's measured architecture,
+  explicit authority boundaries, adoption costs, and limitations, with
+  separate canonical architecture, CI-authority, operator, maintainer, and
+  installed-runbook owners.
+- Activated immutable tag publication only for the exact annotated `v0.7.0`
+  subject. The trusted publisher authenticates the latest exact-main release
+  run and already-certified bytes, attests them, and performs no rebuild.
 - Bound the least-privilege GitHub token explicitly to each trusted controller
   command step after live activation proved that workflow permissions alone do
   not populate the controller's required `GITHUB_TOKEN` environment.
@@ -125,6 +130,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Kept generated Standard-v2 gate contracts and evidence policy within their
+  existing context budgets by rendering negative-control mappings compactly
+  without changing decoded semantics or weakening their causal tests.
 - Made cheap governance validation reject completed workitems or closeout claims that cite
   non-required gates which cannot emit receipts, before evidence fanout begins.
 - Required a completed authored phase before terminal CI can compute a closed release result;
@@ -191,8 +199,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   persistent trusted control plane that never checks out or executes candidate
   code.
 - Added a time-bounded owner-only local-runner fallback for exhausted hosted
-  credits, with fork PR admission rejected before allocation and privileged
-  release publication disabled while the pool is shared.
+  credits, with fork PR admission rejected before allocation; that window is
+  now closed and privileged publication is limited to exact certified tag
+  bytes on the isolated trusted runners.
 - Protected `main` with pull-request-only updates, current governance checks,
   resolved conversations, and force-push/deletion prevention.
 - Stopped checkout credentials from persisting on the temporary local workers
@@ -200,7 +209,7 @@ All notable changes to BCF Governance are recorded here. This file follows
   candidate and isolated trusted substrates are available.
 - Moved every candidate CI job to a fresh standard GitHub-hosted VM now that the
   repository is public; persistent local runners are excluded from candidate
-  execution and trusted publication remains disabled.
+  execution and reserved for short trusted control and publication work.
 - Reduced governance evidence setup from 21 jobs to four mechanically derived
   shards while preserving exactly-once gate coverage and independent receipts.
 - Made truth resolve those canonical-contract shards mechanically, and repaired

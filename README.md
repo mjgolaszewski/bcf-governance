@@ -5,63 +5,93 @@
 </p>
 
 BCF is an executable governance framework for agent-led software delivery. It
-keeps product scope, active work, release gates, findings, and evidence in a
-small machine-readable model, then separates two questions that governance
-systems often blur:
+is also usable by human-led teams that want explicit release rules, exact
+evidence, and reproducible repository state. BCF keeps product scope, active
+work, release gates, findings, and evidence in a small machine-readable model,
+then separates two questions:
 
 - `bcf validate`: is the governed repository structurally legal and internally
   consistent?
-- `bcf truth`: are its lifecycle and release claims supported by independently
-  measurable evidence from the current Git tree?
+- `bcf truth`: are lifecycle and release claims supported by current evidence
+  for the exact Git subject?
 
-Current release: `v0.6.1`.
+Current release: `v0.7.0`.
 
-## Lifecycle contract
+## Why these defaults
+
+AI-assisted development makes fast, broad changes practical, but a model's
+output is probabilistic and its working context is bounded. BCF therefore
+treats AI as a proposer and reviewer, not as the authority that certifies its
+own work. Deterministic programs compute lifecycle and release state from
+versioned policy and evidence; explicitly named human or service roles make the
+few decisions that cannot be reduced to code.
+
+BCF is intentionally opinionated about several engineering defaults:
+
+- **CQRS-lite** separates state-changing commands from inspections. This makes
+  it easier to distinguish a proposed change from a computed observation. It
+  adds command and query boundaries, but does not require event sourcing.
+- **Single-owner invariant principle (SOIP)** gives each governed
+  representation, normalization, default, and state transition one canonical
+  semantic owner. This limits inconsistent copies across code, tests, and
+  workflows. Registry maintenance is an adoption cost, and structural
+  ownership does not prove arbitrary business correctness.
+- **Mechanical constraints** replace review discretion when a rule can be
+  evaluated repeatably. They improve reproducibility and reduce dependence on
+  any one agent's context. The rules and fixtures still need maintenance.
+- **Causal negative controls** deliberately introduce a declared defect and
+  require the responsible gate to fail for the declared reason. They provide
+  stronger evidence than a green positive run alone, at the cost of additional
+  compute.
+- **Exact-commit evidence** binds receipts to commit, tree, workflow identity,
+  run, and attempt. Similar files and green presentation labels cannot
+  substitute for the certified subject. Stronger custody increases setup and
+  storage work.
+- **Bounded modules and context** reduce incomplete-context errors for agents
+  and reviewers. Boundaries can require refactoring when a concept grows.
+- **Cheap preflight before expensive work** catches deterministic defects
+  before runner fanout. Preflight must remain fast and cannot replace deeper
+  integration or runtime tests.
+
+These are defaults rather than claims that every repository needs the same
+architecture. Profiles and typed not-applicable records make scope explicit;
+security boundaries and release claims still fail closed where the selected
+profile requires them. See [Architecture](docs/ARCHITECTURE.md) for the design
+and its limits.
+
+## Lifecycle and evidence
 
 Phase authors may report `planned` or `completed`. They cannot author
 `verified`, `closed`, release readiness, suite health, security-review
 completion, or finding closure.
 
 `verified` is computed when every required claim has valid schema-2 evidence
-from the governed commit and tree. `closed` is computed when the phase is
-verified, reconciliation is current, `findings_resolved` has current evidence,
-and no profile-blocking finding remains. A relevant source, test, workflow,
-audit, or governance mutation makes affected evidence stale and returns the
-effective phase state to `completed`.
+from the governed commit and tree. `closed` additionally requires current
+reconciliation, `findings_resolved` evidence, and no profile-blocking finding.
+A relevant source, test, workflow, audit, or governance change makes affected
+evidence stale.
 
-Evidence capture runs exact argv from `governance/gate-contracts.yml` in
-pristine detached worktrees. Every mandatory gate has a negative behavioral
-control with a typed failure oracle; arbitrary crashes, missing commands,
-timeouts, and all-skipped test lanes do not prove behavior.
+Evidence capture executes exact argv from `governance/gate-contracts.yml` in
+pristine detached worktrees. Every mandatory gate has a typed negative control;
+arbitrary crashes, missing commands, timeouts, and all-skipped test lanes do not
+prove the claimed behavior. Profile-v2 evidence shares one immutable session
+manifest and rejects mixed commits, trees, runs, attempts, or producers.
 
-## Standard repository artifacts
-
-Every BCF-governed repository has three root artifacts declared in
-`governance/artifact-manifest.yml`:
-
-- `README.md`, beginning with a project heading;
-- `LICENSE`, containing substantive license or copyright terms;
-- `CHANGELOG.md`, following Keep a Changelog headings with one
-  `## [Unreleased]` section.
-
-Every pull request must update `CHANGELOG.md`. Generated governance CI checks
-the pull-request base-to-HEAD diff and fails closed if the base commit is not
-available.
-
-Fresh installation scaffolds missing artifacts. Existing valid artifacts are
-preserved byte-for-byte; BCF never replaces an application README, license, or
-changelog.
+CI-backed release claims use provider-authenticated workflow identity and an
+ordered admission model. Candidate code runs on disposable workers; trusted
+control and publication jobs do not check out or execute candidate code. The
+GitHub reference implementation uses callbacks instead of runners that poll or
+wait. See [CI authority](docs/CI_AUTHORITY.md).
 
 ## Install
 
 Install the public wheel:
 
 ```bash
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v0.6.1/bcf_governance-0.6.1-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v0.7.0/bcf_governance-0.7.0-py3-none-any.whl
 ```
 
-Git is required. `lite` is the bootstrap profile and has only the two built-in
-governance gates:
+Git is required. `lite` is the bootstrap profile:
 
 ```bash
 bcf install \
@@ -72,8 +102,8 @@ bcf install \
   --require-strict-validation
 ```
 
-Fresh `standard` and `regulated` installs require a complete profile contract
-before any target mutation:
+Fresh Standard and Regulated installs use profile contract v2 and require a
+complete configuration before mutation:
 
 ```bash
 bcf install \
@@ -85,22 +115,26 @@ bcf install \
   --require-strict-validation
 ```
 
-The profile contract declares exact argv, repo-relative cwd, non-secret
-environment, required environment names, outputs, measurements, and contained
-negative controls for every non-built-in gate. Shell commands, no-ops,
-incomplete gate sets, and dynamic mandatory paths fail before installation.
-
-Promote a lite repository transactionally without regenerating phase state:
+Promotion and GitHub CI adoption are separate, explicit transactions:
 
 ```bash
-bcf profile promote --repo-root . --to standard --config standard-gates.yml --check
-bcf profile promote --repo-root . --to standard --config standard-gates.yml --apply
+bcf profile promote --repo-root . --to standard --contract-version 2.0 --check
+bcf profile promote --repo-root . --to standard --contract-version 2.0 --apply
+bcf ci adopt github \
+  --repo-root . \
+  --candidate-label ubuntu-latest \
+  --trusted-label self-hosted \
+  --trusted-label bcf-trusted-control \
+  --producer-arg python3 \
+  --producer-arg scripts/release_check.py \
+  --check
+# Repeat with --apply after reviewing the check output.
 ```
 
-Use `--adoption-mode existing` when installing into an established repository.
-Use `bcf install --upgrade` for normal pack updates. The only destructive
-replacement command is explicitly confirmed `--force-rescaffold`; the removed
-`--force` option is not accepted.
+Use `--adoption-mode existing` for an established repository. Normal
+`bcf install --upgrade` preserves its selected profile, contract version, and
+workflow bytes. The destructive replacement path is the explicitly confirmed
+`--force-rescaffold`; BCF has no generic `--force` bypass.
 
 ## Operate
 
@@ -108,46 +142,41 @@ replacement command is explicitly confirmed `--force-rescaffold`; the removed
 bcf validate
 bcf exposure-scan
 bcf doctor --repo-root .
+bcf preflight --repo-root . --mode pr
+bcf ci local-pr --repo-root .
 bcf evidence run --gate test --output .artifacts/bcf/test
 bcf truth --evidence-dir .artifacts/bcf
 ```
 
-Evidence bundles and truth reports stay outside the tracked governed tree and
-are retained in CI or release storage by SHA-256. BCF 0.5 receipts are rejected
-as `unsupported_schema_version` and must be recaptured.
-
-Other commands scaffold phase/hotfix artifacts, migrate 0.5 state, plan and
-apply governance cleanup, remove exactly labelled CI resources, and run an
-opt-in redacted full-history publication audit. See [Using BCF](docs/USAGE.md)
-for profiles, adoption, evidence, cleanup, and command details.
+`README.md`, `LICENSE`, and `CHANGELOG.md` are governed root artifacts. Every
+pull request updates the changelog against its exact base SHA. Evidence bundles
+stay outside the tracked tree and are retained by digest in CI or release
+storage.
 
 ## Package development
 
 ```bash
 python3 -m pip install -e ".[dev]"
-pytest tests
+python3 -m pytest tests
 python3 .github/scripts/run_validator_mutants.py --profile high-value
 ```
 
 The packaged implementation lives under `bcf_governance`. Root scripts are
 thin source-checkout wrappers; installed standalone tooling uses the private
-`scripts/_bcf_runtime` namespace. Canonical and copied runtime surfaces are
-kept byte-identical by contract tests.
-
-See [Maintaining and releasing BCF](docs/MAINTAINING.md) for synchronization,
-artifact tests, mutation rules, versioning, and the release process.
+`scripts/_bcf_runtime` namespace. Contract tests keep canonical and generated
+copies byte-identical.
 
 ## Documentation map
 
-- [Using BCF](docs/USAGE.md): installation, profiles, lifecycle, evidence,
-  adoption, cleanup, and operational safety.
-- [Maintaining BCF](docs/MAINTAINING.md): source ownership, tests, generated
-  copies, documentation policy, and releases.
-- `template-repo/docs/OPERATIONS.md`: the concise runbook installed into a
-  governed repository.
-- `template-repo/AGENTS.yml`: canonical installed agent policy.
-- `template-repo/governance/evidence-policy.yml`: computed-claim and
-  invalidation policy.
+| Document | Canonical responsibility |
+|---|---|
+| [Architecture](docs/ARCHITECTURE.md) | Design positions, boundaries, costs, and limitations |
+| [CI authority](docs/CI_AUTHORITY.md) | State flow, trust boundary, admission, and GitHub reference topology |
+| [Using BCF](docs/USAGE.md) | Operator commands, profiles, adoption, evidence, cleanup, and safety |
+| [Maintaining BCF](docs/MAINTAINING.md) | Source ownership, tests, generation, editorial checks, and releases |
+| [Installed operations](template-repo/docs/OPERATIONS.md) | Runbook copied into governed repositories |
 
-BCF is licensed under the [MIT License](LICENSE). Release history is in the
-[changelog](CHANGELOG.md).
+The adoption, cleanup, hotfix, model-risk, and walkthrough material in the
+template repository branches from those owners and is scoped to its named
+procedure. BCF is licensed under the [MIT License](LICENSE); release history is
+in the [changelog](CHANGELOG.md).

@@ -2,7 +2,9 @@
 
 This guide is for the BCF framework repository. Product-repository operations
 are documented in [Using BCF](USAGE.md) and the installed
-`template-repo/docs/OPERATIONS.md`.
+`template-repo/docs/OPERATIONS.md`. Architectural rationale belongs in
+[Architecture](ARCHITECTURE.md); trust flow and provider certification belong
+in [CI authority](CI_AUTHORITY.md).
 
 ## Source ownership
 
@@ -51,12 +53,25 @@ Every pull request:
 - removes superseded instructions instead of documenting another parallel
   workflow;
 - preserves root README as an overview, `docs/USAGE.md` as canonical operator
-  guidance, and this file as canonical maintainer guidance;
+  guidance, `docs/ARCHITECTURE.md` as design rationale,
+  `docs/CI_AUTHORITY.md` as the trust model, and this file as canonical
+  maintainer guidance;
 - runs focused tests while editing and the full source suite before handoff.
 
 The governance validator enforces the changelog diff in pull-request CI using
 the event's exact base SHA. Generated workflows use full history so an
 unavailable base fails rather than bypassing the rule.
+
+Run the editorial contract after changing prose or examples:
+
+```bash
+python3 .github/scripts/check_editorial_contract.py
+```
+
+It checks the documentation ownership map, local links and anchors, current
+version and CLI examples, required architecture/trust sections, and measured
+tone constraints. It is a mechanical consistency check, not a substitute for
+reviewing clarity or technical accuracy.
 
 ## Verification
 
@@ -108,16 +123,25 @@ For a release:
 2. Update the release heading and comparison links in `CHANGELOG.md`.
 3. Update `manifest.yml`; regenerate template runtime/version surfaces and pack
    manifests.
-4. Run source, profile-flow, mutation, template, exposure, wheel, and sdist
-   verification.
-5. Merge the reviewed pull request after required CI passes.
-6. Create immutable tag `vX.Y.Z` at the merge commit and push it.
+4. Run source, profile-flow, mutation, template, exposure, wheel, sdist, and
+   editorial verification.
+5. Merge the reviewed pull request after required CI passes and certify that
+   exact main commit through the trusted control plane.
+6. Owner-dispatch `bcf/certified-release` on exact main. Its fresh candidate
+   worker builds and tests the distributions once and emits an output-only
+   release receipt.
+7. Verify the certified artifact bundle and create one annotated `vX.Y.Z` tag
+   at that exact commit.
+8. Push the tag. The trusted publisher authenticates the tag and latest exact
+   successful release run, verifies the Actions artifact digest, receipt, and
+   `SHA256SUMS`, attests the already-certified files, and publishes them.
 
-The tag workflow verifies that tag and package versions agree, repeats artifact
-testing, runs `twine check`, generates `SHA256SUMS`, creates GitHub build
-provenance attestations, and publishes the wheel, sdist, and checksums to the
-GitHub Release. PyPI is not used. Release actions have minimal pinned
-permissions.
+The tag event does not rebuild. The publisher checks out no repository code and
+executes no candidate-provided script. If documentation included in the sdist
+changes after certification, repeat exact-main certification and artifact
+construction; supersede the older bytes instead of reusing their receipt. PyPI
+is not used. All GitHub actions are pinned and release permissions are scoped
+to the trusted publication job.
 
 The BCF repository is itself standard-governed. Its generated governance
 workflow and gate contracts must pass on the merge commit; a release tag never

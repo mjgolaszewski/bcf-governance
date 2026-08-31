@@ -10,6 +10,9 @@ from typing import Any
 import yaml  # type: ignore[import-untyped]
 
 from .ci_github_actions import action_pin
+from .profile_yaml import render_profile_surface
+
+
 BUILTIN_TARGETS = {"governance-validate", "governance-exposure-scan"}
 PROFILE_ORDER = {"lite": 0, "standard": 1, "regulated": 2}
 TEST_POLICIES = {
@@ -24,14 +27,7 @@ TEST_POLICIES = {
     "architecture_router_thinness",
     "architecture_duplication",
 }
-DIRECT_CLAIMS = (
-    "workitems_closed",
-    "required_suites_green",
-    "architecture_gates_green",
-    "health_checks_green",
-    "security_review_complete",
-    "findings_resolved",
-)
+DIRECT_CLAIMS = ("workitems_closed", "required_suites_green", "architecture_gates_green", "health_checks_green", "security_review_complete", "findings_resolved")
 
 
 class ProfileContractError(ValueError):
@@ -700,7 +696,9 @@ def apply_profile_contract(
     }
     contract_path = repo_root / "governance/gate-contracts.yml"
     contract_path.parent.mkdir(parents=True, exist_ok=True)
-    contract_path.write_text(yaml.safe_dump(persisted, sort_keys=False, width=120, default_flow_style=None), encoding="utf-8")
+    contract_path.write_text(
+        render_profile_surface(persisted, width=160), encoding="utf-8"
+    )
 
     evidence_policy = _load_yaml(repo_root / "governance/evidence-policy.yml")
     evidence_policy["gate_overrides"] = {}
@@ -720,7 +718,7 @@ def apply_profile_contract(
     if profile_name == "regulated":
         evidence_policy["provenance"].update(contract.get("provenance", {}))
     (repo_root / "governance/evidence-policy.yml").write_text(
-        yaml.safe_dump(evidence_policy, sort_keys=False, width=240, default_flow_style=None), encoding="utf-8"
+        render_profile_surface(evidence_policy, width=160), encoding="utf-8"
     )
     _write_makefile(repo_root, contract)
     if write_workflow:
