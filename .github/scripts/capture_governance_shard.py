@@ -12,6 +12,12 @@ import yaml
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+SHARD_DISPLAY_NAMES = (
+    "Boundaries, contracts, runtime, types, and secrets",
+    "CQRS, module size, exposure, and dependency risk",
+    "Duplication, routers, governance, and ownership",
+    "Full tests, lint, import boundaries, and SBOM",
+)
 
 
 def _mapping(path: Path) -> dict[str, Any]:
@@ -55,6 +61,17 @@ def partition_required_gates(
         for index, gate in enumerate(required_gate_targets(repo_root))
         if index % shard_count == shard_index
     ]
+
+
+def workflow_shard_matrix() -> dict[str, list[Any]]:
+    """Return the canonical workflow mirror for the fixed self-governance shards."""
+    return {
+        "shard": list(range(len(SHARD_DISPLAY_NAMES))),
+        "include": [
+            {"shard": index, "display_name": display_name}
+            for index, display_name in enumerate(SHARD_DISPLAY_NAMES)
+        ],
+    }
 
 
 def main() -> None:

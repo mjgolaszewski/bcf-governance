@@ -205,7 +205,7 @@ gates:
       kind: test_suite
       test_contract:
         junit_xml: .artifacts/junit/contract-test.xml
-        selectors: ['tests/test_self_governance_contracts.py::test_required_repository_artifact_contract_is_executable', 'tests/test_self_governance_contracts.py::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline', 'tests/test_self_governance_contracts.py::test_trusted_jobs_never_checkout_or_invoke_candidate_scripts', 'tests/test_validate_governance_yaml.py::test_artifact_manifest_requires_standard_repository_artifact_contracts',
+        selectors: ['tests/test_self_governance_contracts.py::test_governance_evidence_shards_derive_every_required_gate_once', 'tests/test_self_governance_contracts.py::test_required_repository_artifact_contract_is_executable', 'tests/test_self_governance_contracts.py::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline', 'tests/test_self_governance_contracts.py::test_trusted_jobs_never_checkout_or_invoke_candidate_scripts', 'tests/test_validate_governance_yaml.py::test_artifact_manifest_requires_standard_repository_artifact_contracts',
           'tests/test_validate_governance_yaml.py::test_pull_request_validation_requires_changelog_update', tests/test_ci_authority.py,
           tests/test_ci_certification.py, tests/test_ci_authority_decisions.py, tests/test_release_receipts.py, tests/test_ci_github_reference.py,
           tests/test_ci_github_controller.py, tests/test_local_pr.py, tests/test_runtime_capacity.py, tests/test_trusted_inputs.py]
@@ -237,6 +237,14 @@ gates:
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_self_governance_contracts::test_trusted_jobs_never_checkout_or_invoke_candidate_scripts']
+    - id: descriptive-evidence-job-names-must-fail
+      mutation:
+        path: .github/workflows/governance.yml
+        search: 'name: Evidence / ${{ matrix.display_name }}'
+        replace: 'name: Evidence / ${{ matrix.shard }}'
+      oracle:
+        kind: test_node_failure
+        node_ids: ['tests.test_self_governance_contracts::test_governance_evidence_shards_derive_every_required_gate_once']
     - id: ci-workflow-event-authentication-must-fail
       mutation: {path: bcf_governance/tooling/ci_authority_state.py, search: 'if not same_identity or actual.event not in
           allowed_events:', replace: 'if not same_identity:'}
