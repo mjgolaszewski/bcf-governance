@@ -8,6 +8,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Added
 
+- Opened exact-main release artifact construction with mechanically separated
+  trusted authorization, disposable candidate build, and disabled publication.
 - Added a disabled-by-default, event-driven exact-main admission, trusted
   finalizer, and status-publisher topology generated from the public adopter;
   its callbacks allocate no runner until explicitly activated after exact

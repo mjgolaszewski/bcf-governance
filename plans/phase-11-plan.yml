@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-11-plan
   version: 1.0.0
   generated_at_utc: '2026-08-30T00:00:00Z'
-  status: planned
+  status: active
   path: plans/phase-11-plan.yml
 phase:
   id: P11
@@ -19,7 +19,10 @@ phase:
   - MEMORY.yml
 delivery_contract:
   tightly_scoped_deliverables:
-  - clean wheel and sdist proof with hashes bound to the release receipt
+  - owner-and-main-only trusted authorization from the latest exact-main certification
+  - clean 0.7.0 wheel and sdist proof on one fresh hosted candidate VM
+  - exact artifact hashes and CI certification bound to an output-only release receipt
+  - durable certified artifact upload without tag creation or publication
   parallelizable_workstreams:
   - id: P11-WS1
     name: artifact build and certification
@@ -29,8 +32,16 @@ delivery_contract:
   completeness_standard: full_completeness_for_declared_scope
 scope_lock:
 - order: 1
-  statement: keep the phase narrowly scoped to declared deliverables and update canonical
-    governed artifacts in the same change
+  statement: keep the phase narrowly scoped to release authorization, artifact construction,
+    artifact verification, and receipt binding
+- order: 2
+  statement: keep tag creation, artifact publication, attestation, and the README-led editorial
+    refresh disabled until P12
+- order: 3
+  statement: trusted release authorization checks out and executes no repository code; candidate
+    build execution remains disposable, read-only, and non-publishing
 verification_plan:
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
 - .venv/bin/python -m pytest tests
+- .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+- .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
