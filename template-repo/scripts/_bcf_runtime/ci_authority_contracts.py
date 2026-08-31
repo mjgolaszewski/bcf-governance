@@ -17,7 +17,6 @@ SCHEMAS = {
     "provider_snapshot": "ci-provider-snapshot.schema.json",
 }
 
-
 class CIAuthorityContractError(ValueError):
     """Raised when a CI authority document is structurally or semantically invalid."""
 
@@ -51,14 +50,96 @@ def _matrix_key(job: dict[str, Any]) -> tuple[str, tuple[tuple[str, str], ...]]:
     return str(job["job_id"]), tuple(sorted((str(key), str(value)) for key, value in matrix.items()))
 
 
+def authority_workflow(
+    payload: dict[str, Any], reference: str
+) -> dict[str, Any]:
+    """Resolve one v1.1 workflow reference from the canonical registry."""
+
+    registry = payload.get("workflow_registry")
+    if not isinstance(registry, dict) or reference not in registry:
+        raise CIAuthorityContractError(
+            f"authority workflow reference is not registered: {reference}"
+        )
+    workflow = registry[reference]
+    if not isinstance(workflow, dict):
+        raise CIAuthorityContractError(
+            f"authority workflow registry entry is invalid: {reference}"
+        )
+    return workflow
+
+
+def producer_workflow(
+    authority: dict[str, Any], producer: dict[str, Any]
+) -> dict[str, Any]:
+    """Resolve a producer workflow while preserving authority-v1 compatibility."""
+
+    if authority.get("schema_version") == "1.1":
+        return authority_workflow(authority, str(producer["workflow_ref"]))
+    workflow = producer.get("workflow")
+    if not isinstance(workflow, dict):
+        raise CIAuthorityContractError("authority-v1 producer workflow is missing")
+    return workflow
+
+
+def authority_role_workflow(
+    authority: dict[str, Any], role: str
+) -> dict[str, Any]:
+    """Resolve one singular v1.1 role through the canonical workflow registry."""
+
+    if authority.get("schema_version") != "1.1":
+        raise CIAuthorityContractError("authority role resolution requires version 1.1")
+    roles = authority.get("roles")
+    if not isinstance(roles, dict) or role not in roles or role == "reusable_producers":
+        raise CIAuthorityContractError(f"authority role is missing or not singular: {role}")
+    return authority_workflow(authority, str(roles[role]))
+
+
 def _validate_authority(payload: dict[str, Any]) -> None:
+    version = str(payload["schema_version"])
+    if version == "1.1":
+        if "admission_workflow" in payload:
+            raise CIAuthorityContractError(
+                "authority-v1.1 admission identity must use the canonical role registry"
+            )
+        registry = payload["workflow_registry"]
+        identity_keys = [
+            (value["workflow_id"], value["active_path"])
+            for value in registry.values()
+        ]
+        if len(set(identity_keys)) != len(identity_keys):
+            raise CIAuthorityContractError(
+                "authority.workflow_registry must have unique workflow identity and path"
+            )
+        roles = payload["roles"]
+        references = [
+            str(reference)
+            for role, reference in roles.items()
+            if role != "reusable_producers"
+        ]
+        references.extend(str(value) for value in roles["reusable_producers"])
+        missing = sorted(set(references) - set(registry))
+        if missing:
+            raise CIAuthorityContractError(
+                "authority.roles contain unregistered workflow references: "
+                + ", ".join(missing)
+            )
+        producer_refs = [str(value["workflow_ref"]) for value in payload["producers"]]
+        if producer_refs != [str(value) for value in roles["reusable_producers"]]:
+            raise CIAuthorityContractError(
+                "authority producers must exactly follow reusable_producers role order"
+            )
+    else:
+        if "workflow_registry" in payload or "roles" in payload:
+            raise CIAuthorityContractError(
+                "authority-v1.0 cannot claim the v1.1 workflow registry"
+            )
     producers = payload["producers"]
     producer_ids = [producer["producer_id"] for producer in producers]
     if len(set(producer_ids)) != len(producer_ids):
         raise CIAuthorityContractError("authority.producers must have unique producer_id values")
     workflow_keys: set[tuple[str, str]] = set()
     for producer in producers:
-        workflow = producer["workflow"]
+        workflow = producer_workflow(payload, producer)
         workflow_key = (workflow["workflow_id"], workflow["active_path"])
         if workflow_key in workflow_keys:
             raise CIAuthorityContractError(
@@ -151,6 +232,27 @@ def _validate_certification(payload: dict[str, Any]) -> None:
         raise CIAuthorityContractError(
             "certification selected attempts must match admitted producer runs"
         )
+    if payload.get("authority_contract_version") == "1.1":
+        subject = payload["subject"]
+        for run in admission["producer_runs"]:
+            membership = run["same_run_membership"]
+            selected = run["selected_attempt"]
+            expected_membership = {
+                "repository_id": payload["repository"]["repository_id"],
+                "commit_sha": subject["checkout_sha"],
+                "tree_sha": subject["tree_sha"],
+                "admission_run_id": admission["control_plane_run_id"],
+                "admission_run_attempt": admission["control_plane_run_attempt"],
+                "dispatch_sequence": admission["dispatch_sequence"],
+                "admission_ordinal": admission["admission_ordinal"],
+                "producer_id": run["producer_id"],
+                "producer_run_id": selected["run_id"],
+                "producer_run_attempt": selected["run_attempt"],
+            }
+            if any(membership.get(key) != value for key, value in expected_membership.items()):
+                raise CIAuthorityContractError(
+                    "certification v1.1 producer is not a member of its admission"
+                )
     if payload["state"] in {"successful", "active"}:
         subject = payload["subject"]
         evaluation = payload["evaluation"]
@@ -187,6 +289,30 @@ def _validate_provider_snapshot(payload: dict[str, Any]) -> None:
             raise CIAuthorityContractError(
                 "provider snapshot producer_run must match producer_id"
             )
+        if payload.get("authority_contract_version") == "1.1":
+            membership = run["same_run_membership"]
+            expected_membership = {
+                "repository_id": repository["repository_id"],
+                "commit_sha": admission["candidate"]["checkout_sha"],
+                "tree_sha": admission["candidate"]["tree_sha"],
+                "admission_run_id": admission["control_plane_run_id"],
+                "admission_run_attempt": admission["control_plane_run_attempt"],
+                "dispatch_sequence": admission["dispatch_sequence"],
+                "admission_ordinal": admission["admission_ordinal"],
+                "producer_id": producer_id,
+                "producer_run_id": run["run_id"],
+            }
+            if any(membership.get(key) != value for key, value in expected_membership.items()):
+                raise CIAuthorityContractError(
+                    "provider snapshot v1.1 producer is not a member of its admission"
+                )
+            membership_attempt_ids = [
+                int(value["run_attempt"]) for value in run["attempts"]
+            ]
+            if membership["producer_run_attempt"] != max(membership_attempt_ids):
+                raise CIAuthorityContractError(
+                    "provider snapshot membership must bind the latest exact run attempt"
+                )
         workflow = run["workflow"]
         if (
             workflow["provider"] != repository["provider"]

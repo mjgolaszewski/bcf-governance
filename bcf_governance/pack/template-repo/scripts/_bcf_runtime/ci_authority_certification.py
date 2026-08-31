@@ -13,6 +13,8 @@ from jsonschema import Draft202012Validator
 
 from .ci_authority_contracts import (
     CIAuthorityContractError,
+    authority_role_workflow,
+    producer_workflow,
     validate_ci_contract,
 )
 from .ci_authority_state import (
@@ -136,7 +138,7 @@ def _producer_contracts(authority: dict[str, Any]) -> tuple[ProducerContract, ..
     repository = authority["repository"]
     contracts: list[ProducerContract] = []
     for raw in authority["producers"]:
-        workflow = raw["workflow"]
+        workflow = producer_workflow(authority, raw)
         allowed_events = tuple(str(value) for value in workflow["allowed_events"])
         contracts.append(
             ProducerContract(
@@ -167,7 +169,11 @@ def _authenticate_admission_workflow(
 ) -> None:
     """Bind admission identity to its optional compatibility-safe authority owner."""
 
-    expected = authority.get("admission_workflow")
+    expected = (
+        authority_role_workflow(authority, "admission")
+        if authority.get("schema_version") == "1.1"
+        else authority.get("admission_workflow")
+    )
     if expected is None:
         return
     repository = authority["repository"]
@@ -392,8 +398,7 @@ def normalize_ci_certification(
         actual_jobs = {value.key for value in attempt.jobs}
         inventory_exact = len(actual_jobs) == len(attempt.jobs) and actual_jobs == expected_jobs
         exact_jobs = exact_jobs and inventory_exact
-        report_runs.append(
-            {
+        report_run = {
                 "producer_id": run.producer_id,
                 "workflow": _workflow_payload(run.workflow),
                 "selected_attempt": {
@@ -404,7 +409,19 @@ def normalize_ci_certification(
                     "exact_job_inventory": inventory_exact,
                 },
             }
-        )
+        if authority.get("schema_version") == "1.1":
+            snapshot = next(
+                value for value in snapshot_values
+                if str(value["producer_id"]) == run.producer_id
+            )
+            raw_admission = next(
+                value for value in snapshot["admissions"]
+                if int(value["admission_ordinal"]) == selected.admission_ordinal
+            )
+            report_run["same_run_membership"] = dict(
+                raw_admission["producer_run"]["same_run_membership"]
+            )
+        report_runs.append(report_run)
     candidate = {
         "checkout_sha": selected.candidate.checkout_sha,
         "tree_sha": selected.candidate.tree_sha,
@@ -412,6 +429,7 @@ def normalize_ci_certification(
     }
     report = {
         "schema_version": "1.0",
+        "authority_contract_version": str(authority["schema_version"]),
         "repository": dict(authority["repository"]),
         "subject": candidate,
         "admission": {

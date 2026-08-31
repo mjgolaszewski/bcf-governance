@@ -285,11 +285,14 @@ def derive_truth(
     repo_root: Path,
     evidence_dir: Path,
     *,
+    evaluation_mode: str = "closure",
     trusted_digest: str | None = None,
     ci_authority_path: Path | None = None,
     ci_certification_path: Path | None = None,
     ci_session_manifest_path: Path | None = None,
 ) -> dict[str, Any]:
+    if evaluation_mode not in {"closure", "pr"}:
+        raise TruthfulnessError("truth evaluation mode must be closure or pr")
     repo_root = repo_root.resolve()
     evidence_dir = evidence_dir.resolve()
     current = _current_subject(repo_root)
@@ -529,6 +532,12 @@ def derive_truth(
         + list(attestation["issues"])
         + hotfix_issues
     )
+    if evaluation_mode == "pr":
+        truth_issues = [
+            issue
+            for issue in truth_issues
+            if not re.fullmatch(r"hotfix_.+_effective_state_planned", issue)
+        ]
     ci_paths = (
         ci_authority_path,
         ci_certification_path,
@@ -593,7 +602,7 @@ def derive_truth(
         truth_issues.append("regulated_attestation_required")
     if authored_state == "completed" and effective_state != "closed":
         truth_issues.append(f"completed_phase_effective_state_{effective_state}")
-    elif authored_state != "completed":
+    elif authored_state != "completed" and evaluation_mode == "closure":
         truth_issues.append("phase_not_completed")
     release_state = (
         "closed"
@@ -605,6 +614,14 @@ def derive_truth(
     )
     return {
         "schema_version": "2.0",
+        "evaluation_mode": evaluation_mode,
+        "merge_eligibility": (
+            "eligible"
+            if evaluation_mode == "pr" and not truth_issues
+            else "not_evaluated"
+            if evaluation_mode == "closure"
+            else "ineligible"
+        ),
         "phase_id": phase_id,
         "status": "pass" if not truth_issues else "fail",
         "failure_class": None if not truth_issues else "truthfulness",
@@ -674,6 +691,9 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Derive governance truth from evidence.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--evidence-dir", type=Path, required=True)
+    parser.add_argument(
+        "--evaluation-mode", choices=("closure", "pr"), default="closure"
+    )
     parser.add_argument("--trusted-digest")
     parser.add_argument("--ci-authority", type=Path)
     parser.add_argument("--ci-certification", type=Path)
@@ -689,6 +709,7 @@ def main(argv: list[str] | None = None) -> None:
         report = derive_truth(
             args.repo_root,
             args.evidence_dir,
+            evaluation_mode=args.evaluation_mode,
             trusted_digest=args.trusted_digest,
             ci_authority_path=args.ci_authority,
             ci_certification_path=args.ci_certification,
@@ -708,6 +729,9 @@ def main(argv: list[str] | None = None) -> None:
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(rendered + "\n", encoding="utf-8")
+    if args.release_receipt_output and args.evaluation_mode != "closure":
+        print("release receipts require closure truth evaluation", file=os.sys.stderr)
+        raise SystemExit(1)
     if args.release_receipt_output and report["status"] == "pass":
         if not all(
             (

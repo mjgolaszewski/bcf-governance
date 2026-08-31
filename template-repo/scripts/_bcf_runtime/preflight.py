@@ -169,6 +169,99 @@ def _required_gates(repo_root: Path) -> list[str]:
     return targets
 
 
+def _negative_control_targets(repo_root: Path) -> int:
+    """Fail cheaply when a declared control no longer targets canonical source."""
+    registry_path = repo_root / "governance/gate-contracts.yml"
+    registry = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
+    gates = registry.get("gates") if isinstance(registry, dict) else None
+    if not isinstance(gates, dict):
+        raise PreflightError("gate contract registry has no gate mappings")
+    ledger: dict[str, Any] | None = None
+    checked = 0
+    root = repo_root.resolve()
+    for gate_id, gate in gates.items():
+        controls = gate.get("negative_controls") if isinstance(gate, dict) else None
+        if not isinstance(controls, list):
+            continue
+        evidence = gate.get("evidence") if isinstance(gate, dict) else None
+        test_contract = evidence.get("test_contract") if isinstance(evidence, dict) else None
+        manifest_value = (
+            test_contract.get("expected_node_manifest")
+            if isinstance(test_contract, dict)
+            else None
+        )
+        governed_nodes: set[str] | None = None
+        if isinstance(manifest_value, str):
+            manifest_path = repo_root / manifest_value
+            if manifest_path.is_file():
+                governed_nodes = {
+                    line.strip()
+                    for line in manifest_path.read_text(encoding="utf-8").splitlines()
+                    if line.strip()
+                }
+        for control in controls:
+            if not isinstance(control, dict) or not isinstance(control.get("mutation"), dict):
+                raise PreflightError(f"negative control is invalid: {gate_id}")
+            control_id = str(control.get("id", gate_id))
+            oracle = control.get("oracle")
+            if isinstance(oracle, dict) and oracle.get("kind") == "test_node_failure":
+                oracle_nodes = oracle.get("node_ids")
+                if (
+                    governed_nodes is None
+                    or not isinstance(oracle_nodes, list)
+                    or not oracle_nodes
+                    or any(node not in governed_nodes for node in oracle_nodes)
+                ):
+                    raise PreflightError(
+                        f"negative control oracle node is stale: {control_id}"
+                    )
+            mutation = control["mutation"]
+            relative_value = mutation.get("path")
+            if relative_value == "@active_phase_log":
+                if ledger is None:
+                    ledger_value = yaml.safe_load(
+                        (repo_root / "plans/phase-ledger.yml").read_text(encoding="utf-8")
+                    )
+                    ledger = ledger_value if isinstance(ledger_value, dict) else {}
+                active = ledger.get("active_phase")
+                relative_value = active.get("log") if isinstance(active, dict) else None
+            if not isinstance(relative_value, str):
+                raise PreflightError(f"negative control target is missing: {control_id}")
+            relative = Path(relative_value)
+            if relative.is_absolute() or ".." in relative.parts:
+                raise PreflightError(f"negative control target is unsafe: {control_id}")
+            target = repo_root / relative
+            if target.is_symlink() or not target.is_file() or not target.resolve().is_relative_to(root):
+                raise PreflightError(f"negative control target is absent: {control_id}")
+            if _git(repo_root, "ls-files", "--error-unmatch", relative.as_posix()) != relative.as_posix():
+                raise PreflightError(f"negative control target is untracked: {control_id}")
+            search = mutation.get("search")
+            if isinstance(search, str):
+                occurrences = target.read_text(encoding="utf-8").count(search)
+                if occurrences == 0:
+                    raise PreflightError(
+                        f"negative control target is stale: {control_id}"
+                    )
+            else:
+                yaml_path = mutation.get("yaml_path")
+                if not isinstance(yaml_path, str) or "value" not in mutation:
+                    raise PreflightError(f"negative control mutation is unsupported: {control_id}")
+                current: Any = yaml.safe_load(target.read_text(encoding="utf-8"))
+                try:
+                    for token in yaml_path.split("."):
+                        current = current[int(token)] if isinstance(current, list) else current[token]
+                except (KeyError, IndexError, TypeError, ValueError) as exc:
+                    raise PreflightError(
+                        f"negative control YAML target is stale: {control_id}"
+                    ) from exc
+                if current == mutation["value"]:
+                    raise PreflightError(
+                        f"negative control YAML target is already mutated: {control_id}"
+                    )
+            checked += 1
+    return checked
+
+
 def _semantic_ownership(repo_root: Path) -> dict[str, Any]:
     registry = repo_root / "governance/canonical-representations.yml"
     if not registry.is_file():
@@ -229,6 +322,9 @@ def run_preflight(
     subject = step("git-state", lambda: _git_state(repo_root))
     syntax = step("syntax", lambda: _syntax_checks(repo_root))
     step("governance", lambda: validate_repo_root(repo_root))
+    negative_controls = step(
+        "negative-controls", lambda: _negative_control_targets(repo_root)
+    )
     semantic_ownership = step(
         "semantic-ownership", lambda: _semantic_ownership(repo_root)
     )
@@ -258,6 +354,7 @@ def run_preflight(
         "subject": subject,
         "syntax": syntax,
         "source_locks": source_locks,
+        "negative_controls": negative_controls,
         "test_manifests": test_manifests,
         "pr_context": pr_context,
         "selected_interpreter": {"name": python.name},

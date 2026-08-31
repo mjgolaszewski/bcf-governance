@@ -1,18 +1,18 @@
-document: {kind: active_execution_phase_ledger, name: BCF Governance Active Phase Ledger, id: bcf-governance-phase-ledger, version: 1.0.0, generated_at_utc: '2026-08-14T00:00:00Z', status: active_phase_active, path: plans/phase-ledger.yml}
+document: {kind: active_execution_phase_ledger, name: BCF Governance Active Phase Ledger, id: bcf-governance-phase-ledger, version: 1.0.0, generated_at_utc: '2026-08-31T00:00:00Z', status: active_phase_active, path: plans/phase-ledger.yml}
 build_plan_mandate:
   format: yaml
   required_fields: [tightly_scoped_deliverables, parallelizable_workstreams, hard_dependencies, docker_first_local_runtime, completeness_standard]
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P12
-  build_block: editorial-refresh-and-release
-  plan: plans/phase-12-plan.yml
-  workitems: plans/phase-12-workitems.yml
-  log: phases/phase-12-log.yml
+  id: P13
+  build_block: post-release-authority-remediation-0.7.1
+  plan: plans/phase-13-plan.yml
+  workitems: plans/phase-13-workitems.yml
+  log: phases/phase-13-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: completed
+  lifecycle_status: active
   owner: codex
   validation_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests]
 hotfix_lane:
@@ -23,7 +23,16 @@ hotfix_lane:
       allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
-  open_records: []
+  open_records:
+  - id: P13-HF01
+    mode: full
+    status: active
+    triggered_by_commits: [0e965b2197e776ad411b67820dbd5586263abde1]
+    failing_workflows: [.github/workflows/bcf-exact-main.yml, .github/workflows/bcf-trusted-finalizer.yml, .github/workflows/bcf-status-publisher.yml, .github/workflows/release.yml]
+    root_cause: same-SHA producer selection lacked common-admission membership and release authority duplicated success-prefiltered provider selection outside the controller
+    remediated_in_phase: P13
+    hotfix_log: phases/phase-13-hotfix01.yml
+    canonical_artifacts: [audits/v0.7.0-post-release-authority.yml, governance/ci-github-authority.yml, bcf_governance/tooling/ci_github_controller.py]
   remediation_history: []
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
@@ -33,8 +42,10 @@ operator_requirements_choices_disambiguations:
 - {type: release, statement: the tag publisher publishes pre-certified exact bytes and never rebuilds source}
 - {type: owner_authorization, statement: the sole repository owner authorizes Codex to perform required human reviews and approvals for the 0.7 release train}
 - {type: execution_boundary, statement: 'all candidate code uses fresh standard GitHub-hosted jobs because the repository is public; no candidate route polls, sleeps, idles, uses persistent local runners, or falls back, and trusted publication remains fail-closed until P10'}
+- {type: historical_custody, statement: v0.7.0 remains untouched as published and attested but provider-mutable historical custody and is not certified under corrected authority v1.1}
+- {type: release, statement: v0.7.1 uses an annotated unsigned tag and publication and immutable-release settings require explicit owner approval}
 active_delivery_priorities:
-  current_tranche: [editorial-refresh-and-release]
+  current_tranche: [post-release-authority-remediation-0.7.1]
 release_trains:
   release_1:
     target_version: 0.6.1
@@ -42,7 +53,11 @@ release_trains:
     focus: [required_repository_artifacts, consolidated_governance_documentation, standard_self_governance]
   release_2:
     target_version: 0.7.0
+    status: completed
+    focus: [generalized_soip, exact_commit_ci_authority_v1, safe_disposable_execution, standard_v2_self_adoption, published_attested_provider_mutable_release]
+  release_3:
+    target_version: 0.7.1
     status: active
-    focus: [generalized_soip, exact_commit_ci_authority, safe_disposable_execution, standard_v2_self_adoption, immutable_certified_release]
+    focus: [authority_v1.1, common_admission_membership, closed_release_dependencies, independent_release_byte_verification, immutable_future_release]
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]

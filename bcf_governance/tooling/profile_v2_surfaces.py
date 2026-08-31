@@ -150,7 +150,7 @@ jobs:
         run: |
           set -euo pipefail
           find .artifacts/bcf/fan-in -type f -name evidence-session.json -execdir chmod 700 . \\; -exec chmod 400 {{}} +
-      - run: python3 scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf/fan-in --format json --durable-ref "github-actions://${{{{ github.repository }}}}/runs/${{{{ github.run_id }}}}/attempts/${{{{ github.run_attempt }}}}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
+      - run: python3 scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf/fan-in --evaluation-mode "${{{{ github.event_name == 'pull_request' && 'pr' || 'closure' }}}}" --format json --durable-ref "github-actions://${{{{ github.repository }}}}/runs/${{{{ github.run_id }}}}/attempts/${{{{ github.run_attempt }}}}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
       - if: always()
         uses: {action_pin("upload-artifact")}
         with:

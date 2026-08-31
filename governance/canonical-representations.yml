@@ -162,18 +162,18 @@ representations:
   finding_ids: []
   canonical_type: {language: python, symbol: bcf_governance/tooling/release_receipts.py::ReleaseReceipt}
   authoritative_owner: {symbol: bcf_governance/tooling/release_receipts.py::build_release_receipt, owner_kind: constructor}
-  authorized_constructors_and_factories: [bcf_governance/tooling/release_receipts.py::build_release_receipt]
-  authorized_pure_delegates: []
-  hostile_boundary_decoder: {symbol: bcf_governance/tooling/release_receipts.py::build_release_receipt, trust_boundary: passing truth certification session and release artifact bytes}
-  field_invariants: [{field: payload, invariant: output is outside truth inputs and binds exact truth certification session bundle subject ordinal and release artifact hashes}]
+  authorized_constructors_and_factories: [bcf_governance/tooling/release_receipts.py::build_release_receipt, bcf_governance/tooling/release_receipts.py::build_trusted_release_receipt]
+  authorized_pure_delegates: [bcf_governance/tooling/release_receipts.py::build_trusted_release_receipt]
+  hostile_boundary_decoder: {symbol: bcf_governance/tooling/release_receipts.py::build_release_receipt, trust_boundary: verified v1 or v1.1 release inputs}
+  field_invariants: [{field: payload, invariant: output-only receipt binds exact subject authority roles dependencies and asset hashes}]
   permitted_defaults_and_single_application_point: []
   accepted_aliases_and_single_ingress_boundary: []
-  persistence_codec_and_envelope: {applicability: required, codec_symbol: bcf_governance/tooling/release_receipts.py::emit_release_receipt, semantic_id: governance.release-receipt.v1, schema_version: 1, exact_byte_format: canonical indented JSON with exclusive creation, integrity_algorithm: SHA-256, identity_bindings: [commit_sha, tree_sha, session_id, admission_ordinal, bundle_sha256, release_artifact_sha256], migration_dispatch: evidence receipt schema_version and kind release}
+  persistence_codec_and_envelope: {applicability: required, codec_symbol: bcf_governance/tooling/release_receipts.py::emit_release_receipt, semantic_id: governance.release-receipt.v1, schema_version: 1, exact_byte_format: exclusive canonical JSON, integrity_algorithm: SHA-256, identity_bindings: [commit_sha, tree_sha, session_id, admission_ordinal, bundle_sha256, release_artifact_sha256], migration_dispatch: receipt schema and release kind}
   protocol_translations: []
   intentional_projections: []
   declared_consumer_layers_and_sinks: {read: [], authorization: [bcf_governance/tooling/release_receipts.py::build_release_receipt], persistence: [bcf_governance/tooling/release_receipts.py::emit_release_receipt], cache: [], queue: [], network: [], api: [], browser: []}
   generated_source_authority: {authoritative_roots: [bcf_governance/tooling/release_receipts.py], generated_mirrors: [template-repo/scripts/_bcf_runtime/release_receipts.py, bcf_governance/pack/template-repo/scripts/_bcf_runtime/release_receipts.py], generator: .github/scripts/build_pack_manifest.py::main, parity_proof: tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact}
-  migration_policy: {source_versions: [], destination_version: 1, owner: bcf_governance/tooling/release_receipts.py::build_release_receipt, runtime_exclusion: release receipts are immutable outputs and never truth inputs, removal_condition: superseded by a reviewed release receipt schema}
+  migration_policy: {source_versions: [], destination_version: 1, owner: bcf_governance/tooling/release_receipts.py::build_release_receipt, runtime_exclusion: immutable output never used by its creating truth run, removal_condition: reviewed successor schema}
   narrow_suppressions: []
 - semantic_id: governance.github-run-identity.v1
   family: github_run_identity

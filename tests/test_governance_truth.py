@@ -543,6 +543,74 @@ def test_completed_without_evidence_remains_completed_and_truth_fails(tmp_path: 
     assert report["failure_class"] == "truthfulness"
 
 
+def test_pr_evaluation_allows_progress_without_claiming_phase_closure(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path)
+    phase_path = repo / "phases/phase-01-log.yml"
+    phase = yaml.safe_load(phase_path.read_text(encoding="utf-8"))
+    phase["document"]["status"] = "planned"
+    _write_yaml(phase_path, phase)
+    ledger_path = repo / "plans/phase-ledger.yml"
+    ledger = yaml.safe_load(ledger_path.read_text(encoding="utf-8"))
+    ledger["active_phase"]["lifecycle_status"] = "active"
+    _write_yaml(ledger_path, ledger)
+    workitems_path = repo / "plans/phase-01-workitems.yml"
+    workitems = yaml.safe_load(workitems_path.read_text(encoding="utf-8"))
+    workitems["workitems"][0]["status"] = "TODO"
+    _write_yaml(workitems_path, workitems)
+    _write_yaml(
+        repo / "phases/phase-01-hotfix01.yml",
+        {
+            "document": {"status": "planned"},
+            "hotfix": {"id": "HF-001", "related_phase_id": "P01"},
+            "closeout_requirements": {
+                "claims": {
+                    "required_suites_green": {"required_evidence": ["test"]},
+                    "security_review_complete": {
+                        "required_evidence": ["security-review"]
+                    },
+                },
+                "reconciliation": {"required_evidence": ["reconcile"]},
+            },
+        },
+    )
+    _commit(repo, "continue phase train")
+    evidence_dir = _write_complete_bundle(repo)
+
+    pr_report = derive_truth(repo, evidence_dir, evaluation_mode="pr")
+    closure_report = derive_truth(repo, evidence_dir)
+
+    assert pr_report["status"] == "pass"
+    assert pr_report["merge_eligibility"] == "eligible"
+    assert pr_report["effective_state"] == "planned"
+    assert pr_report["release_readiness"]["effective_state"] == "completed"
+    assert closure_report["status"] == "fail"
+    assert "phase_not_completed" in closure_report["issues"]
+    assert any(issue.startswith("hotfix_HF-001_") for issue in closure_report["issues"])
+    release_attempt = subprocess.run(
+        [
+            sys.executable,
+            str(REPO_ROOT / "scripts/governance_truth.py"),
+            "--repo-root",
+            str(repo),
+            "--evidence-dir",
+            str(evidence_dir),
+            "--evaluation-mode",
+            "pr",
+            "--release-receipt-output",
+            str(repo / "release-receipt.json"),
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert release_attempt.returncode == 1
+    assert "release receipts require closure truth evaluation" in release_attempt.stderr
+    assert not (repo / "release-receipt.json").exists()
+
+
 def test_current_evidence_and_reconciliation_compute_closed(tmp_path: Path) -> None:
     repo = _make_repo(tmp_path)
 

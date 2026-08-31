@@ -16,6 +16,7 @@
   ],
   "properties": {
     "schema_version": {"const": "1.0"},
+    "authority_contract_version": {"enum": ["1.0", "1.1"]},
     "repository": {"$ref": "#/$defs/repository"},
     "subject": {"$ref": "#/$defs/candidate"},
     "admission": {"$ref": "#/$defs/admission"},
@@ -29,6 +30,20 @@
     "evaluation": {"$ref": "#/$defs/evaluation"},
     "generated_at": {"type": "string", "format": "date-time"}
   },
+  "allOf": [
+    {
+      "if": {"properties": {"authority_contract_version": {"const": "1.1"}}, "required": ["authority_contract_version"]},
+      "then": {
+        "properties": {
+          "admission": {
+            "properties": {
+              "producer_runs": {"items": {"required": ["same_run_membership"]}}
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "providerId": {"type": "string", "pattern": "^[A-Za-z0-9._:-]+$"},
     "sha": {"type": "string", "pattern": "^[a-f0-9]{40,64}$"},
@@ -102,7 +117,28 @@
       "properties": {
         "producer_id": {"$ref": "#/$defs/providerId"},
         "workflow": {"$ref": "#/$defs/workflowIdentity"},
-        "selected_attempt": {"$ref": "#/$defs/selectedAttempt"}
+        "selected_attempt": {"$ref": "#/$defs/selectedAttempt"},
+        "same_run_membership": {"$ref": "#/$defs/sameRunMembership"}
+      }
+    },
+    "sameRunMembership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository_id", "commit_sha", "tree_sha", "admission_run_id", "admission_run_attempt", "dispatch_sequence", "admission_ordinal", "producer_id", "producer_run_id", "producer_run_attempt", "referenced_workflow_path", "referenced_workflow_sha", "exact_job_inventory"],
+      "properties": {
+        "repository_id": {"$ref": "#/$defs/providerId"},
+        "commit_sha": {"$ref": "#/$defs/sha"},
+        "tree_sha": {"$ref": "#/$defs/sha"},
+        "admission_run_id": {"$ref": "#/$defs/providerId"},
+        "admission_run_attempt": {"type": "integer", "minimum": 1},
+        "dispatch_sequence": {"type": "integer", "minimum": 1},
+        "admission_ordinal": {"$ref": "#/$defs/ordinal"},
+        "producer_id": {"$ref": "#/$defs/providerId"},
+        "producer_run_id": {"$ref": "#/$defs/providerId"},
+        "producer_run_attempt": {"type": "integer", "minimum": 1},
+        "referenced_workflow_path": {"$ref": "#/$defs/safePath"},
+        "referenced_workflow_sha": {"$ref": "#/$defs/sha"},
+        "exact_job_inventory": {"const": true}
       }
     },
     "admission": {

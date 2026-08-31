@@ -202,3 +202,163 @@ def emit_release_receipt(output_path: Path, receipt: ReleaseReceipt) -> None:
         stream.write(encoded)
         stream.flush()
         os.fsync(stream.fileno())
+
+
+def _load_json(path: Path, *, label: str) -> dict[str, Any]:
+    _regular(path, label=label)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ReleaseReceiptError(f"{label} is invalid JSON") from exc
+    if not isinstance(payload, dict):
+        raise ReleaseReceiptError(f"{label} must contain an object")
+    return payload
+
+
+def build_trusted_release_receipt(
+    repo_root: Path,
+    *,
+    certification: dict[str, Any],
+    certification_path: Path,
+    certification_verification: dict[str, Any],
+    session_manifest_path: Path,
+    authorization_path: Path,
+    build_manifest_path: Path,
+    verification_path: Path,
+    release_artifacts: Iterable[Path],
+    collector_identity: dict[str, str],
+    output_path: Path,
+) -> ReleaseReceipt:
+    """Build the sole v1.1 release receipt from verified, acyclic role outputs."""
+
+    if certification_verification.get("status") != "pass" or (
+        certification_verification.get("computed_state") != "certified"
+    ):
+        raise ReleaseReceiptError("trusted release receipt requires certified exact-main CI")
+    if certification.get("authority_contract_version") != "1.1":
+        raise ReleaseReceiptError("trusted release receipt requires authority version 1.1")
+    authorization = _load_json(authorization_path, label="release authorization")
+    build = _load_json(build_manifest_path, label="release build manifest")
+    verification = _load_json(verification_path, label="release verification")
+    subject = {
+        "commit_sha": certification["subject"]["checkout_sha"],
+        "tree_sha": certification["subject"]["tree_sha"],
+    }
+    if authorization.get("subject") != subject or build.get("subject") != subject or (
+        verification.get("subject") != subject
+    ):
+        raise ReleaseReceiptError("release role subjects do not match exact-main certification")
+    admission = certification["admission"]
+    exact_main = authorization.get("exact_main")
+    if not isinstance(exact_main, dict) or exact_main != {
+        "admission_ordinal": str(admission["admission_ordinal"]),
+        "run_id": str(admission["control_plane_run_id"]),
+        "run_attempt": int(admission["control_plane_run_attempt"]),
+        "certification_sha256": _sha256(certification_path),
+        "session_sha256": _sha256(session_manifest_path),
+    }:
+        raise ReleaseReceiptError("release authorization is not bound to exact-main authority")
+    if build.get("authorization_sha256") != _sha256(authorization_path):
+        raise ReleaseReceiptError("release build is not bound to its authorization")
+    verified_build = verification.get("build")
+    if not isinstance(verified_build, dict) or (
+        verified_build.get("manifest_sha256") != _sha256(build_manifest_path)
+        or verified_build.get("run_id") != build.get("run_id")
+        or verified_build.get("run_attempt") != build.get("run_attempt")
+    ):
+        raise ReleaseReceiptError("release verification is not bound to the exact build")
+    if verification.get("status") != "passed":
+        raise ReleaseReceiptError("release verifier did not pass")
+    release_paths = tuple(release_artifacts)
+    if not release_paths or len({path.name for path in release_paths}) != len(release_paths):
+        raise ReleaseReceiptError("trusted release asset inventory is empty or duplicated")
+    verified_assets = verification.get("assets")
+    actual_assets = {path.name: _sha256(_regular(path, label=path.name)) for path in release_paths}
+    if verified_assets != actual_assets:
+        raise ReleaseReceiptError("trusted release assets differ from verifier output")
+    controller = authorization.get("controller")
+    dependency = verification.get("dependency_closure")
+    if not isinstance(controller, dict) or not isinstance(dependency, dict):
+        raise ReleaseReceiptError("controller or dependency closure identity is missing")
+    materials = [
+        _artifact(certification_path, name="ci-certification.json", media_type="application/json"),
+        _artifact(session_manifest_path, name="evidence-session.json", media_type="application/json"),
+        _artifact(authorization_path, name="release-authorization.json", media_type="application/json"),
+        _artifact(build_manifest_path, name="release-build-manifest.json", media_type="application/json"),
+        _artifact(verification_path, name="release-verification.json", media_type="application/json"),
+    ]
+    materials.extend(
+        _artifact(path, name=path.name, media_type="application/octet-stream")
+        for path in release_paths
+    )
+    timestamp = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+    receipt = {
+        "schema_version": "2.0",
+        "kind": "release",
+        "evidence_id": f"release-{subject['commit_sha'][:12]}",
+        "gate_id": "ci-certification",
+        "producer": {"kind": "workflow", "id": "bcf-trusted-release-collector"},
+        "invocation": {
+            "argv": ["bcf", "ci-github", "release", "collect"],
+            "cwd": ".",
+            "environment": {},
+            "workflow": {
+                "provider": "github",
+                "path": collector_identity["workflow_path"],
+                "job": "trusted-release-collector",
+                "run_id": collector_identity["run_id"],
+                "run_attempt": collector_identity["run_attempt"],
+                "matrix": {},
+            },
+        },
+        "subject": {
+            **subject,
+            "execution_tree_sha": subject["tree_sha"],
+            "binding": "exact_tree",
+            "tracked_clean": True,
+            "untracked_clean": True,
+            "status_porcelain_sha256": EMPTY_SHA256,
+        },
+        "artifacts": materials,
+        "observations": {
+            "authority_contract_version": "1.1",
+            "ci_computed_state": "certified",
+            "admission_ordinal": str(admission["admission_ordinal"]),
+            "exact_main_run": {
+                "run_id": str(admission["control_plane_run_id"]),
+                "run_attempt": int(admission["control_plane_run_attempt"]),
+            },
+            "release_run": {
+                "run_id": str(build["run_id"]),
+                "run_attempt": int(build["run_attempt"]),
+            },
+            "build_artifact": {
+                "id": str(verified_build["artifact_id"]),
+                "provider_digest": str(verified_build["provider_digest"]),
+            },
+            "verifier_run": verification["verifier"],
+            "controller": controller,
+            "dependency_closure": dependency,
+            "release_artifacts": materials[5:],
+            "acyclic_construction": {
+                "release_receipt_was_truth_input": False,
+                "candidate_authored_receipt_accepted": False,
+                "collector_executed_release_code": False,
+            },
+        },
+        "behavioral_probes": [],
+        "result": "passed",
+        "started_at": str(build["started_at"]),
+        "timestamp": timestamp,
+    }
+    _validate_receipt(repo_root, receipt)
+    if output_path in {
+        certification_path,
+        session_manifest_path,
+        authorization_path,
+        build_manifest_path,
+        verification_path,
+        *release_paths,
+    }:
+        raise ReleaseReceiptError("trusted release receipt cannot overwrite an input")
+    return ReleaseReceipt(receipt)

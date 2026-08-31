@@ -124,18 +124,29 @@ Adopt a GitHub topology separately and explicitly with
 `bcf ci adopt github`, supplying the reviewed candidate labels, trusted labels,
 producer argv, and either `--check` or `--apply`.
 
-The 0.7 controller treats command-line workflow values only as compatibility
+The 0.7.1 controller treats command-line workflow values only as compatibility
 pins. It reconstructs numeric repository and workflow IDs, the active path,
 trusted workflow bytes, event, run attempt, commit, and tree through the
 provider API. A v1 CI-authority document may omit `admission_workflow`; an
 activated Standard-v2 topology records it as the canonical admission owner.
+Authority v1.1 replaces inline privileged workflow copies with one closed
+workflow registry and role references. Its reusable producers are members of
+one admission run and exact attempt; a same-SHA success from another run is not
+eligible evidence. Existing v1.0 consumers remain readable, but new exact-main
+and release commands require v1.1.
 The finalizer authenticates its own workflow run before creating a session,
 and publication requires that exact successful run and attempt to match the
 immutable session and closed bundle inventory. Generated workflows supply the
 required controller arguments; operators should not copy run IDs from check
 names, display titles, or earlier attempts.
 
-BCF 0.7 adds the additive `finalize-callback` and `publish-callback` controller
+The controller-owned interfaces are `bcf ci-github exact-main
+admit|finalize|publish` and `bcf ci-github release
+authorize|build|verify|collect|inspect|publish`. Workflow YAML supplies
+environment and paths; it does not select provider state with `jq`, `max_by`,
+or ad hoc API queries.
+
+BCF 0.7 retains the additive `finalize-callback` and `publish-callback` controller
 operations for event-driven fan-in. The finalizer always emits one immutable
 callback envelope: a pending envelope contains no candidate artifact, while a
 terminal envelope binds the closed bundle-manifest digest. The publisher
@@ -237,6 +248,13 @@ bcf evidence run --gate test --output .artifacts/bcf/test
 bcf truth --evidence-dir .artifacts/bcf --format json
 # Local outputs are non-authoritative; retain them by SHA-256 as CI artifacts.
 ```
+
+Truth defaults to closure evaluation: an incomplete phase or hotfix fails and
+cannot produce a release receipt. Protected pull-request CI may use
+`--evaluation-mode pr` to compute merge eligibility from exact-tree gates while
+the phase train remains in progress. That mode preserves the lifecycle as
+planned or completed rather than closed, and release-receipt output is
+mechanically prohibited.
 
 Positive and negative runs occur in separate pristine detached worktrees. BCF
 rejects dirty callers, non-ignored untracked influence, unsafe tracked

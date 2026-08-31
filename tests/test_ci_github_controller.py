@@ -21,6 +21,11 @@ from bcf_governance.tooling.ci_github_controller import (
     publish,
 )
 from bcf_governance.tooling.ci_github_identity import resolve_main, resolve_trusted_run
+from bcf_governance.tooling.ci_github_membership import (
+    collect_same_run_producers,
+    select_latest_admission,
+)
+from bcf_governance.tooling.ci_github_exact_main import finalize_exact_main
 
 
 SHA_A = "a" * 40
@@ -121,6 +126,7 @@ class FakeAPI:
             "300": self._producer_run(300, 11),
         }
         self.job_names = {"200": "truth", "300": "pack"}
+        self.run_job_names: dict[str, tuple[str, ...]] = {}
         self.missing_workflows: set[str] = set()
         self.workflow_versions: dict[str, tuple[str, bytes]] = {}
 
@@ -160,6 +166,7 @@ class FakeAPI:
             "11": ".github/workflows/pack.yml",
             "99": ".github/workflows/control.yml",
             "98": ".github/workflows/finalizer.yml",
+            "97": ".github/workflows/status.yml",
         }
         return {
             "id": int(workflow_id),
@@ -185,7 +192,7 @@ class FakeAPI:
         assert repository == "owner/repo" and head_sha == self.main and event == "push"
         if str(workflow_id) in self.missing_workflows:
             return ()
-        if str(workflow_id) == "control.yml":
+        if str(workflow_id) in {"control.yml", "99"}:
             return tuple(
                 dict(value)
                 for value in self.runs.values()
@@ -200,13 +207,18 @@ class FakeAPI:
         *,
         attempt: int,
     ) -> tuple[dict[str, object], ...]:
-        assert repository == "owner/repo" and attempt == 1
-        return (
+        assert repository == "owner/repo"
+        assert attempt == int(self.runs[str(run_id)]["run_attempt"])
+        names = self.run_job_names.get(str(run_id))
+        if names is None:
+            names = (self.job_names[str(run_id)],)
+        return tuple(
             {
-                "name": self.job_names[str(run_id)],
+                "name": name,
                 "status": "completed",
-                "conclusion": "success",
-            },
+                "conclusion": self.runs[str(run_id)].get("conclusion"),
+            }
+            for name in names
         )
 
     def dispatch(self, repository: str, *, event_type: str, client_payload: dict[str, object]) -> None:
@@ -227,6 +239,190 @@ def test_admission_ordinal_preserves_total_github_order() -> None:
     assert admission_ordinal(100, 2, 3) < admission_ordinal(100, 2, 4)
     with pytest.raises(GitHubControllerError, match="below 1000"):
         admission_ordinal(100, 1, 1000)
+
+
+def _v11_authority() -> dict[str, object]:
+    admission = {
+        "workflow_id": "99",
+        "active_path": ".github/workflows/control.yml",
+        "trusted_workflow_blob_oid": SHA_A,
+        "trusted_workflow_sha256": DIGEST,
+        "trusted_workflow_definition_commit": SHA_A,
+        "allowed_events": ["push"],
+    }
+    governance = {
+        **admission,
+        "workflow_id": "10",
+        "active_path": ".github/workflows/governance.yml",
+        "allowed_events": ["workflow_call"],
+    }
+    pack = {
+        **admission,
+        "workflow_id": "11",
+        "active_path": ".github/workflows/pack.yml",
+        "allowed_events": ["workflow_call"],
+    }
+    registry: dict[str, object] = {
+        "admission": admission,
+        "governance": governance,
+        "pack": pack,
+    }
+    registry["finalizer"] = {
+        **admission,
+        "workflow_id": "98",
+        "active_path": ".github/workflows/finalizer.yml",
+        "allowed_events": ["workflow_run"],
+    }
+    registry["status"] = {
+        **admission,
+        "workflow_id": "97",
+        "active_path": ".github/workflows/status.yml",
+        "allowed_events": ["workflow_run"],
+    }
+    role_names = (
+        "bootstrap", "probe", "release-authorizer", "release-build",
+        "release-verifier", "release-collector", "release-publisher", "canary",
+    )
+    for index, name in enumerate(role_names, start=500):
+        registry[name] = {
+            **admission,
+            "workflow_id": str(index),
+            "active_path": f".github/workflows/{name}.yml",
+            "allowed_events": ["workflow_dispatch"],
+        }
+    return {
+        "schema_version": "1.1",
+        "repository": {"provider": "github", "repository_id": "42"},
+        "workflow_registry": registry,
+        "roles": {
+            "admission": "admission",
+            "reusable_producers": ["governance", "pack"],
+            "finalizer": "finalizer",
+            "status_publisher": "status",
+            "bootstrap": "bootstrap",
+            "probe": "probe",
+            "release_authorizer": "release-authorizer",
+            "release_build": "release-build",
+            "release_verifier": "release-verifier",
+            "release_collector": "release-collector",
+            "release_publisher": "release-publisher",
+            "authority_canary": "canary",
+        },
+        "admission_jobs": [{"job_id": "Admit exact main"}],
+        "producers": [
+            {
+                "producer_id": "governance",
+                "workflow_ref": "governance",
+                "expected_jobs": [{"job_id": "Governance truth"}],
+            },
+            {
+                "producer_id": "pack",
+                "workflow_ref": "pack",
+                "expected_jobs": [{"job_id": "Package proof"}],
+            },
+        ],
+        "trusted_external_inputs": [],
+    }
+
+
+def _prepare_v11_run(api: FakeAPI) -> dict[str, object]:
+    authority = _v11_authority()
+    api.authority = authority
+    api.runs["100"]["referenced_workflows"] = [
+        {"path": ".github/workflows/governance.yml", "sha": SHA_A},
+        {"path": ".github/workflows/pack.yml", "sha": SHA_A},
+    ]
+    api.run_job_names["100"] = (
+        "Admit exact main", "Governance truth", "Package proof",
+    )
+    return authority
+
+
+def test_v11_collects_all_producers_from_one_exact_admission_attempt() -> None:
+    api = FakeAPI()
+    authority = _prepare_v11_run(api)
+    main = resolve_main(api, "owner/repo")  # type: ignore[arg-type]
+    run_id, attempt = select_latest_admission(
+        api, repository="owner/repo", main=main, authority=authority  # type: ignore[arg-type]
+    )
+    observed = collect_same_run_producers(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        main=main,
+        authority=authority,
+        admission_run_id=run_id,
+        admission_run_attempt=attempt,
+    )
+    assert {(value["run_id"], value["attempts"][0]["run_attempt"]) for value in observed} == {
+        ("100", 1)
+    }
+    assert {value["same_run_membership"]["producer_id"] for value in observed} == {
+        "governance", "pack"
+    }
+
+
+def test_v11_finalizer_builds_certification_only_from_common_run(
+    tmp_path: Path,
+) -> None:
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    result = finalize_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        output_dir=tmp_path / "bundle",
+    )
+    assert result.status == "terminal"
+    assert result.computed_state == "certified"
+    report = json.loads(
+        (Path(result.bundle_dir) / "ci-certification.json").read_text(encoding="utf-8")
+    )
+    assert report["authority_contract_version"] == "1.1"
+    assert {
+        (value["selected_attempt"]["run_id"], value["same_run_membership"]["admission_run_id"])
+        for value in report["admission"]["producer_runs"]
+    } == {("100", "100")}
+
+
+@pytest.mark.parametrize("mutation", ["mixed-run", "mixed-attempt", "wrong-ref", "extra-job"])
+def test_v11_common_admission_mutants_fail_closed(mutation: str) -> None:
+    api = FakeAPI()
+    authority = _prepare_v11_run(api)
+    run_id: object = 100
+    attempt: object = 1
+    if mutation == "mixed-run":
+        run_id = 200
+    elif mutation == "mixed-attempt":
+        attempt = 2
+    elif mutation == "wrong-ref":
+        api.runs["100"]["referenced_workflows"][0]["sha"] = SHA_B  # type: ignore[index]
+    else:
+        api.run_job_names["100"] += ("Unadmitted job",)
+    main = resolve_main(api, "owner/repo")  # type: ignore[arg-type]
+    with pytest.raises(GitHubControllerError):
+        collect_same_run_producers(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            main=main,
+            authority=authority,
+            admission_run_id=run_id,
+            admission_run_attempt=attempt,
+        )
+
+
+def test_latest_failed_admission_is_selected_without_green_fallback() -> None:
+    api = FakeAPI()
+    authority = _prepare_v11_run(api)
+    api.runs["101"] = {
+        **api.runs["100"],
+        "id": 101,
+        "conclusion": "failure",
+    }
+    main = resolve_main(api, "owner/repo")  # type: ignore[arg-type]
+    assert select_latest_admission(
+        api, repository="owner/repo", main=main, authority=authority  # type: ignore[arg-type]
+    ) == ("101", 1)
 
 
 def test_kickoff_authenticates_current_main_before_dispatch() -> None:

@@ -14,6 +14,7 @@ recursive-include governance *.txt
 include governance/archive/phase-artifacts/.gitkeep
 recursive-include phases *.md *.yml *.yaml *.json
 recursive-include plans *.md *.yml *.yaml *.json
+recursive-include release *.lock *.yml *.yaml *.json
 recursive-include schemas *.json
 include AGENTS.md AGENTS.yml CHANGELOG.md CLAUDE.md LICENSE MEMORY.yml Makefile.fragment README.md
 include architecture-boundaries.yml governance-profile.yml manifest.yml requirements-governance.txt

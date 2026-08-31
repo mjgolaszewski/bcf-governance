@@ -3,7 +3,7 @@ thin_wrapper_loc_cap: 20
 tooling_contexts:
   ci_authority: [ci_authority_, ci_adopt_github.py, ci_commands.py, ci_github.py, ci_github_, local_pr.py, trusted_inputs.py]
   cleanup: [cleanup_ci_resources.py, cleanup_governance_pack.py, evidence_session_cleanup.py, governance_cleanup/]
-  evidence: [evidence_attestation.py, evidence_execution.py, evidence_sessions.py, evidence_test_adapters.py, governance_evidence.py, governance_truth.py, governance_truth_support.py, release_receipts.py, test_manifests.py, truth_receipts.py, truth_sessions.py]
+  evidence: [evidence_attestation.py, evidence_execution.py, evidence_sessions.py, evidence_test_adapters.py, governance_evidence.py, governance_truth.py, governance_truth_support.py, release_, test_manifests.py, truth_receipts.py, truth_sessions.py]
   install: [install_governance_pack.py, governance_install/]
   operations: [migrate_governance_evidence.py, publish_audit.py, scaffold_governance_artifacts.py]
   profiles: [governance_profiles.py, profile_]
@@ -32,10 +32,10 @@ runner_security:
   trusted_controller_interpreter:
     action: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
     python_version: '3.12'
-    required_workflows: [.github/workflows/bcf-trusted-control-bootstrap.yml, .github/workflows/bcf-trusted-control-probe.yml, .github/workflows/bcf-exact-main.yml, .github/workflows/bcf-trusted-finalizer.yml, .github/workflows/bcf-status-publisher.yml, .github/workflows/release.yml]
+    required_workflows: [.github/workflows/bcf-trusted-control-bootstrap.yml, .github/workflows/bcf-trusted-control-probe.yml, .github/workflows/bcf-exact-main.yml, .github/workflows/bcf-trusted-finalizer.yml, .github/workflows/bcf-status-publisher.yml]
   trusted_controller_artifact: {BCF_BOOTSTRAP_ARTIFACT_ID: '9744774824', BCF_BOOTSTRAP_ARTIFACT_NAME: bcf-trusted-control-37475fbff2c5303762e0fdeb97e7cc7834bfe485-1, BCF_BOOTSTRAP_ARTIFACT_DIGEST: 'sha256:51068446ec613557cb6d10cd91031d8e7c5e937841c22231e3438cc6593837dd', BCF_BOOTSTRAP_RUN_ID: '33354682667', BCF_BOOTSTRAP_RUN_ATTEMPT: '1', BCF_BOOTSTRAP_COMMIT_SHA: 37475fbff2c5303762e0fdeb97e7cc7834bfe485, BCF_BOOTSTRAP_TREE_SHA: f6ebc50d9cea5e2bf8aae7969c49f9e44c8a9ca2, BCF_BOOTSTRAP_REPOSITORY_ID: '1207503211', BCF_BOOTSTRAP_WHEEL_SHA256: 159a73449c417615996ff194d5e6c4f48f9f93723d4b4fcbff6dcd4ede5ab61d}
   coordination_policy: [no_polling, no_sleeping, no_idle_waiters]
-  temporary_local_window: {status: closed, closed_at_utc: '2026-08-30T00:00:00Z', reason: GitHub-hosted ephemeral candidate capacity restored, privileged_publication_enabled: true, restore_condition: exact_tag_and_certified_bytes_only}
+  temporary_local_window: {status: closed, closed_at_utc: '2026-08-30T00:00:00Z', reason: GitHub-hosted ephemeral candidate capacity restored, privileged_publication_enabled: false, restore_condition: authority_v1_1_exact_tag_and_certified_bytes_only}
   jobs:
     .github/workflows/bcf-trusted-control-bootstrap.yml: {bootstrap: trusted_bootstrap}
     .github/workflows/bcf-trusted-control-probe.yml: {probe: trusted}
@@ -46,11 +46,11 @@ runner_security:
     .github/workflows/governance-mutants-weekly.yml: {full-mutants: candidate}
     .github/workflows/governance-pack.yml: {pack-checks: candidate, ast-checks: candidate}
     .github/workflows/governance.yml: {preflight: candidate, evidence: candidate, governance-truthfulness: candidate}
-    .github/workflows/release.yml: {authorize-release-subject: trusted, release-artifacts: candidate, publish-release: trusted}
+    .github/workflows/release.yml: {authority-cutover-pending: trusted}
   trusted_job_activation:
     .github/workflows/bcf-trusted-control-bootstrap.yml: {bootstrap: owner_main_dispatch}
     .github/workflows/bcf-trusted-control-probe.yml: {probe: owner_main_dispatch}
     .github/workflows/bcf-exact-main.yml: {kickoff: repository_variable_disabled}
     .github/workflows/bcf-trusted-finalizer.yml: {finalize: repository_variable_main_push_only}
     .github/workflows/bcf-status-publisher.yml: {publish: repository_variable_successful_callback_only}
-    .github/workflows/release.yml: {authorize-release-subject: owner_main_dispatch, publish-release: owner_v0_7_0_tag}
+    .github/workflows/release.yml: {authority-cutover-pending: disabled}

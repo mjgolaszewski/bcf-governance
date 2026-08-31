@@ -133,12 +133,16 @@ gate_overrides:
     - {id: trusted-finalizer-main-push-guard-must-fail, mutation: {path: .github/workflows/bcf-trusted-finalizer.yml, search: "if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' }}", replace: "if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}"}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_control_plane_is_an_exact_disabled_generator_product', 'tests.test_self_governance_contracts::test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner']}}
     - {id: trusted-publisher-success-guard-must-fail, mutation: {path: .github/workflows/bcf-status-publisher.yml, search: "if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.conclusion == 'success' }}", replace: "if: ${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}"}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_control_plane_is_an_exact_disabled_generator_product', 'tests.test_self_governance_contracts::test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner']}}
     - {id: trusted-controller-token-transport-must-fail, mutation: {path: .github/workflows/bcf-exact-main.yml, search: 'GITHUB_TOKEN: ${{ github.token }}', replace: 'GITHUB_TOKEN: ""'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_ci_authority_matches_immutable_workflow_definitions', 'tests.test_self_governance_contracts::test_self_control_plane_is_an_exact_disabled_generator_product', 'tests.test_self_governance_contracts::test_trusted_controller_steps_receive_github_token_explicitly']}}
-    - {id: release-candidate-authorization-must-fail, mutation: {path: .github/workflows/release.yml, search: 'needs: [authorize-release-subject]', replace: 'needs: []'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_release_requires_owner_dispatch_of_exact_main_before_candidate']}}
-    - {id: release-publication-event-guard-must-fail, mutation: {path: .github/workflows/release.yml, search: "if: ${{ github.event_name == 'push' && github.ref == 'refs/tags/v0.7.0' && github.actor == 'mjgolaszewski' }}", replace: 'if: ${{ true }}'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_p12_publication_is_named_and_mechanically_event_guarded']}}
-    - {id: release-latest-success-selection-must-fail, mutation: {path: .github/workflows/release.yml, search: 'if .conclusion != "success" then error("latest exact-main release run failed")', replace: 'if .conclusion == "success" then error("latest exact-main release run failed")'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_publisher_authenticates_tag_run_attempt_artifact_and_receipt']}}
-    - {id: release-no-rebuild-must-fail, mutation: {path: .github/workflows/release.yml, search: 'gh release create "$tag_name"', replace: 'python -m build && gh release create "$tag_name"'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_publisher_checks_out_nothing_and_rebuilds_nothing']}}
-    - {id: release-current-authority-must-fail, mutation: {path: .github/workflows/release.yml, search: 'if .conclusion != "success" then error("latest exact-main finalizer failed")', replace: 'if .conclusion == "success" then error("latest exact-main finalizer failed")'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_publisher_authenticates_tag_run_attempt_artifact_and_receipt']}}
-    - {id: release-publication-cleanup-root-must-fail, mutation: {path: .github/workflows/release.yml, search: 'rm -rf -- "$publication_root"', replace: 'rm -rf -- "$RUNNER_TEMP"'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_publisher_removes_only_its_exact_run_scoped_workspace']}}
+    - {id: release-cutover-disabled-must-fail, mutation: {path: .github/workflows/release.yml, search: 'if: ${{ false }}', replace: 'if: ${{ true }}'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_p12_publication_is_named_and_mechanically_event_guarded']}}
+    - {id: release-cutover-event-trigger-must-fail, mutation: {path: .github/workflows/release.yml, search: '  workflow_dispatch:', replace: '  repository_dispatch:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_publisher_authenticates_tag_run_attempt_artifact_and_receipt']}}
+    - {id: release-latest-success-selection-must-fail, mutation: {path: bcf_governance/tooling/ci_github_membership.py, search: 'selected = max(', replace: 'selected = min('}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_latest_failed_admission_is_selected_without_green_fallback']}}
+    - {id: release-no-rebuild-must-fail, mutation: {path: .github/workflows/release.yml, search: 'run: exit 1', replace: 'run: python -m build'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_publisher_checks_out_nothing_and_rebuilds_nothing']}}
+    - {id: release-current-authority-must-fail, mutation: {path: bcf_governance/tooling/release_receipts.py, search: 'if certification.get("authority_contract_version") != "1.1":', replace: 'if certification.get("authority_contract_version") != "1.0":'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles']}}
+    - {id: release-publication-cleanup-root-must-fail, mutation: {path: bcf_governance/tooling/release_receipts.py, search: '"candidate_authored_receipt_accepted": False', replace: '"candidate_authored_receipt_accepted": True'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles']}}
+    - {id: authority-v11-role-owner-must-fail, mutation: {path: schemas/ci-authority.schema.json, search: '        "release_verifier",', replace: ''}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority::test_authority_v11_rejects_incomplete_or_duplicated_semantic_ownership[missing-role-pin]']}}
+    - {id: same-admission-membership-owner-must-fail, mutation: {path: bcf_governance/tooling/ci_github_membership.py, search: 'if set(references) != expected_paths:', replace: 'if set(references) == expected_paths:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_v11_collects_all_producers_from_one_exact_admission_attempt']}}
+    - {id: release-closure-lock-owner-must-fail, mutation: {path: bcf_governance/tooling/release_closure.py, search: 'if resolution.get("lock_sha256") != lock_digest:', replace: 'if resolution.get("lock_sha256") == lock_digest:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_closure::test_repository_release_lock_is_a_complete_exact_hash_closure']}}
+    - {id: roadmap-history-owner-must-fail, mutation: {path: plans/product-spec.yml, search: 'through_phase: P12', replace: 'through_phase: P11'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_required_repository_artifact_contract_is_executable']}}
     - {id: editorial-tone-owner-must-fail, mutation: {path: README.md, search: '## Why these defaults', replace: '## A revolutionary manifesto'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_documentation_contracts::test_editorial_contract_is_current_and_complete']}}
     - {id: editorial-local-link-must-fail, mutation: {path: README.md, search: '(docs/ARCHITECTURE.md)', replace: '(docs/ABSENT.md)'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_documentation_contracts::test_editorial_contract_is_current_and_complete']}}
     - {id: generated-control-compaction-must-fail, mutation: {path: bcf_governance/tooling/profile_yaml.py, search: 'node.flow_style = True', replace: 'node.flow_style = False'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_profile_contract_v2::test_bcf_standard_v2_promotion_fits_declared_context_budgets']}}
@@ -168,13 +172,13 @@ gate_overrides:
         kind: test_node_failure
         node_ids: ['tests.test_ci_certification::test_admission_workflow_is_bound_to_canonical_authority']
     - id: ci-finalizer-session-binding-must-fail
-      mutation: {path: bcf_governance/tooling/ci_github_controller.py, search: 'if not isinstance(producer, dict) or producer != {',
+      mutation: {path: bcf_governance/tooling/ci_github_status.py, search: 'if not isinstance(producer, dict) or producer != {',
         replace: 'if not isinstance(producer, dict) or False and producer != {'}
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_ci_github_controller::test_publisher_rejects_finalizer_session_identity_forgery']
     - id: ci-bundle-semantic-binding-must-fail
-      mutation: {path: bcf_governance/tooling/ci_github_controller.py, search: 'or manifest.get("computed_state") != verification.computed_state',
+      mutation: {path: bcf_governance/tooling/ci_github_status.py, search: 'or manifest.get("computed_state") != verification.computed_state',
         replace: 'or False and manifest.get("computed_state") != verification.computed_state'}
       oracle:
         kind: test_node_failure
@@ -273,7 +277,7 @@ gate_overrides:
     evidence_kind: gate
     negative_controls:
     - id: local-workspace-path-is-rejected
-      mutation: {path: MEMORY.yml, search: '  canonical_repo_root: "."', replace_base64: ICBjYW5vbmljYWxfcmVwb19yb290OiAiL1VzZXJzL2V4YW1wbGUvcHJpdmF0ZSI=}
+      mutation: {path: MEMORY.yml, search: 'canonical_governance_guide: AGENTS.yml', replace_base64: Y2Fub25pY2FsX2dvdmVybmFuY2VfZ3VpZGU6IC9Vc2Vycy9leGFtcGxlL3ByaXZhdGUvQUdFTlRTLnltbA==}
       oracle:
         kind: diagnostic
         exit_codes: [1]
@@ -303,7 +307,7 @@ gate_overrides:
     evidence_kind: runtime_health
     negative_controls:
     - id: runtime-smoke-behavior-must-fail
-      mutation: {path: manifest.yml, search: 'version: 0.7.0', replace: 'version: 0.0.0'}
+      mutation: {path: manifest.yml, search: 'version: 0.7.1', replace: 'version: 0.0.0'}
       oracle:
         kind: diagnostic
         exit_codes: [1]
@@ -416,8 +420,8 @@ gate_overrides:
         stream: stderr
         regex: governance.ci-status-decision.v1 owner must be an authorized constructor
     - id: release-receipt-owner-must-fail
-      mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/release_receipts.py::build_release_receipt]',
-        replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner]'}
+      mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [bcf_governance/tooling/release_receipts.py::build_release_receipt, bcf_governance/tooling/release_receipts.py::build_trusted_release_receipt]',
+        replace: 'authorized_constructors_and_factories: [bcf_governance/tooling/missing.py::owner, bcf_governance/tooling/release_receipts.py::build_trusted_release_receipt]'}
       oracle:
         kind: diagnostic
         exit_codes: [1]
@@ -476,21 +480,17 @@ gate_overrides:
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']
+    - {id: pr-truth-progress-separation-must-fail, mutation: {path: bcf_governance/tooling/governance_truth.py, search: 'if evaluation_mode == "pr":', replace: 'if False and evaluation_mode == "pr":'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_governance_truth::test_pr_evaluation_allows_progress_without_claiming_phase_closure']}}
     test_contract: {junit_xml: .artifacts/junit/test.xml, expected_node_manifest: governance/test-manifests/test.txt, expected_nodes_mode: exact,
       min_collected: 1, min_executed: 1, max_skipped: 0, artifact_binding: non_authoritative_until_captured}
   typecheck:
     evidence_kind: gate
     negative_controls:
     - id: typecheck-behavior-must-fail
-      mutation: {path: bcf_governance/_version.py, search: __version__ = "0.7.0", replace: VERSION = "0.7.0"}
+      mutation: {path: bcf_governance/_version.py, search: __version__ = "0.7.1", replace: VERSION = "0.7.1"}
       oracle:
         kind: diagnostic
         exit_codes: [1]
         stream: stderr
         regex: 'self-governance gate typecheck failed:'
-provenance:
-  standard_same_actor_policy: warn
-  regulated_independent_severities: [critical, high]
-  regulated_requires_attestation: true
-  trusted_verifier_keys: {}
-  permitted_risk_authorities: []
+provenance: {standard_same_actor_policy: warn, regulated_independent_severities: [critical, high], regulated_requires_attestation: true, trusted_verifier_keys: {}, permitted_risk_authorities: []}

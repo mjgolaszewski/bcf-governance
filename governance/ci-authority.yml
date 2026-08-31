@@ -12,9 +12,9 @@ producers:
   workflow:
     workflow_id: '334490532'
     active_path: .github/workflows/governance.yml
-    trusted_workflow_blob_oid: e217cb985cbcb5e6fde4f59ce50cc14e8326e60e
-    trusted_workflow_sha256: 61a5101a2f353b71ae6a4f4bae61e7da191fb8089711171c0446a16320a3300b
-    trusted_workflow_definition_commit: 37475fbff2c5303762e0fdeb97e7cc7834bfe485
+    trusted_workflow_blob_oid: cee4baacd556e04738473148cd8bd05f2231e662
+    trusted_workflow_sha256: 20102af41abcb1bd9c5e82c6c5c536cb59e555c3cc5f7a3a86b42ea444b9ad0a
+    trusted_workflow_definition_commit: c339e7fedd4def5de53cc052ac6300f805d682b8
     allowed_events: [push]
   expected_jobs:
   - {job_id: Validate governance front door}
