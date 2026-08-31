@@ -1,0 +1,34 @@
+document:
+  kind: hotfix_execution_log
+  name: P10-HF12 Hotfix Log
+  id: bcf-governance-phase-10-hotfix12
+  version: 1.0.0
+  generated_at_utc: '2026-08-31T00:00:00Z'
+  status: planned
+  path: phases/phase-10-hotfix12.yml
+hotfix:
+  id: P10-HF12
+  mode: full
+  related_phase_id: P10
+  hotfix_number: 12
+  summary: Pin canonical CI authority and stage the custody-aware trusted controller
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test
+  - .venv/bin/python scripts/governance_evidence.py --repo-root . run --gate contract-test --session-manifest <fresh-local-session>
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+  executed_commands: []
+  notes:
+  - full mode is required because this slice installs canonical self CI authority and stages the custody-aware controller for both trusted runners
+  - the first source commit advances controller provenance; a successor commit may then pin that immutable workflow definition without self-reference
+  - exact provider IDs, paths, definition commits, blob OIDs, content digests, events, and expected job inventories are authority; workflow and job presentation strings are not
+  - automated authority remains mechanically disabled throughout this structural PR
+closeout_requirements:
+  claims:
+    required_suites_green: {required_evidence: [test, contract-test]}
+    security_review_complete: {required_evidence: [security-review]}
+    health_checks_green: {required_evidence: [runtime-smoke]}
+  reconciliation: {required_evidence: [governance-validate, governance-exposure-scan]}
+  finding_registry: governance/findings.yml

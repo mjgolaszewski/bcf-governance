@@ -424,7 +424,7 @@ def test_self_control_plane_is_an_exact_disabled_generator_product() -> None:
         candidate_labels=("ubuntu-latest",),
         trusted_labels=("self-hosted", "Linux", "X64", "bcf-governance", "vm-linux-ci-runner"),
         producer_workflow_names=("governance", "governance-pack"),
-        controller_commit="219337296dfdbbc0040ae97a7657189949524e24",
+        controller_commit="37475fbff2c5303762e0fdeb97e7cc7834bfe485",
     )
     for relative, content in expected.items():
         assert (REPO_ROOT / relative).read_bytes() == content

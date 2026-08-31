@@ -73,6 +73,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Staged the exact-main controller containing immutable workflow-definition
+  custody and its provider-authenticated self CI authority without enabling
+  automated callbacks.
 - Bound trusted workflow authentication to an immutable definition commit,
   blob, and digest that must still match the active default-main bytes; advanced
   the disabled control plane to the latest exact-main controller artifact.
