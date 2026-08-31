@@ -136,6 +136,10 @@ For a release:
 7. Let the no-checkout trusted collector authenticate both runs and emit the
    sole output-only release receipt. Run provider inspection with publication
    disabled.
+   The controller must reconstruct each authorization, build, verification, and
+   receipt artifact from provider metadata; copied run IDs or digests never satisfy
+   this step by themselves. It also parses `SHA256SUMS` and recomputes the exact wheel
+   and source-archive digests before the trusted collector can issue a receipt.
 8. After owner approval, enable immutable releases and create one annotated
    unsigned `vX.Y.Z` tag at that exact commit.
 9. The no-checkout publisher creates a draft, attaches and attests the

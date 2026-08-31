@@ -16,6 +16,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Added fail-closed provider registration seams for independent release verification,
   trusted collection, immutable publication, and authority-revocation canaries; every
   new job remains disabled until its numeric workflow identity and final bytes are pinned.
+- Added one mechanically governed provider-artifact decoder that binds every privileged
+  release artifact to its exact role, run, attempt, repository, commit, name, ID, and
+  provider SHA-256 before authorization, collection, or publication can proceed.
 
 ### Fixed
 
@@ -40,6 +43,11 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   while direct pull requests retain their exact-base PR evaluation contract.
 - Made reusable evaluation mode depend on its explicit typed input rather than
   the caller event name, which remains `push` inside an exact-main call.
+- Required release authorization and build to share one workflow attempt, required
+  collection to select the newest same-SHA release admission, and required publication
+  to authenticate the collector receipt and its exact asset inventory.
+- Made independent verification require exactly one wheel, one source archive, and a
+  `SHA256SUMS` file whose two declarations match the archive bytes.
 
 ### Changed
 

@@ -146,6 +146,19 @@ authorize|build|verify|collect|inspect|publish`. Workflow YAML supplies
 environment and paths; it does not select provider state with `jq`, `max_by`,
 or ad hoc API queries.
 
+Privileged release artifacts have one decoder. It authenticates the owning role and
+workflow attempt first, then requires an exact numeric artifact ID, safe name, provider
+SHA-256, repository identity, default branch, and current-main commit. Authorization
+accepts only the newest exact-main certification artifact. The builder shares the
+authorizer's release run and attempt; the verifier and collector independently recheck
+the build artifact; publication accepts only the provider-authenticated collector
+receipt whose asset digests match the bytes being published. Caller-supplied IDs and
+digests are lookup keys, not authority.
+
+The release-byte inventory is closed: one wheel, one source archive, and one
+`SHA256SUMS`. The verifier parses the checksum file and independently recomputes both
+archive digests; hashing the checksum file alone is insufficient.
+
 BCF 0.7 retains the additive `finalize-callback` and `publish-callback` controller
 operations for event-driven fan-in. The finalizer always emits one immutable
 callback envelope: a pending envelope contains no candidate artifact, while a

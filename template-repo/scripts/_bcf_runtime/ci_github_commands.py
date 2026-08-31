@@ -33,9 +33,9 @@ from .ci_github_release import (
     authorize_release,
     collect_release,
     inspect_release,
-    publish_release,
+    publish_certified_release,
     record_release_build,
-    verify_release_build,
+    verify_release_build_provider,
 )
 
 
@@ -178,8 +178,14 @@ def _release_parser() -> argparse.ArgumentParser:
     authorize.add_argument("--controller-wheel-sha256", required=True)
     authorize.add_argument("--controller-commit", required=True)
     authorize.add_argument("--controller-tree", required=True)
+    authorize.add_argument("--certification-artifact-id", required=True)
+    authorize.add_argument("--certification-artifact-name", required=True)
+    authorize.add_argument("--certification-run-id", required=True)
+    authorize.add_argument("--certification-run-attempt", required=True)
+    authorize.add_argument("--certification-provider-digest", required=True)
     authorize.add_argument("--output", type=Path, required=True)
     verify = operations.add_parser("verify")
+    verify.add_argument("--repository", required=True)
     verify.add_argument("--authorization", type=Path, required=True)
     verify.add_argument("--build-manifest", type=Path, required=True)
     verify.add_argument("--wheelhouse-manifest", type=Path, required=True)
@@ -204,6 +210,9 @@ def _release_parser() -> argparse.ArgumentParser:
     collect.add_argument("--verification", type=Path, required=True)
     collect.add_argument("--release-artifact", type=Path, action="append", required=True)
     collect.add_argument("--output", type=Path, required=True)
+    collect.add_argument("--verification-artifact-id", required=True)
+    collect.add_argument("--verification-artifact-name", required=True)
+    collect.add_argument("--verification-provider-digest", required=True)
     for operation in (operations.add_parser("inspect"), operations.add_parser("publish")):
         operation.add_argument("--repository", required=True)
         operation.add_argument("--tag", required=True)
@@ -211,13 +220,19 @@ def _release_parser() -> argparse.ArgumentParser:
         operation.add_argument("--release-artifact", type=Path, action="append", required=True)
     publish = operations.choices["publish"]
     publish.add_argument("--release-notes", type=Path, required=True)
+    publish.add_argument("--receipt", type=Path, required=True)
+    publish.add_argument("--receipt-artifact-id", required=True)
+    publish.add_argument("--receipt-artifact-name", required=True)
+    publish.add_argument("--receipt-provider-digest", required=True)
     return parser
 
 
 def _release(argv: list[str]) -> None:
     args = _release_parser().parse_args(argv)
     if args.operation == "verify":
-        result = verify_release_build(
+        result = verify_release_build_provider(
+            environment_api(),
+            repository=args.repository,
             authorization_path=args.authorization,
             build_manifest_path=args.build_manifest,
             manifest_path=args.wheelhouse_manifest,
@@ -260,6 +275,13 @@ def _release(argv: list[str]) -> None:
                     "commit_sha": args.controller_commit,
                     "tree_sha": args.controller_tree,
                 },
+                certification_artifact={
+                    "run_id": args.certification_run_id,
+                    "run_attempt": args.certification_run_attempt,
+                    "artifact_id": args.certification_artifact_id,
+                    "artifact_name": args.certification_artifact_name,
+                    "provider_digest": args.certification_provider_digest,
+                },
                 output_path=args.output,
             )
         elif args.operation == "collect":
@@ -273,6 +295,9 @@ def _release(argv: list[str]) -> None:
                 release_artifacts=args.release_artifact,
                 collector_run_id=_required_environment("GITHUB_RUN_ID"),
                 collector_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
+                verification_artifact_id=args.verification_artifact_id,
+                verification_artifact_name=args.verification_artifact_name,
+                verification_provider_digest=args.verification_provider_digest,
                 output_path=args.output,
             )
         else:
@@ -288,11 +313,17 @@ def _release(argv: list[str]) -> None:
                     expected_commit=args.commit, expected_assets=assets,
                 )
             else:
-                result = publish_release(
+                result = publish_certified_release(
                     api, repository=args.repository, tag=args.tag,
                     expected_commit=args.commit,
                     release_artifacts=args.release_artifact,
                     body=args.release_notes.read_text(encoding="utf-8"),
+                    receipt_path=args.receipt,
+                    receipt_artifact_id=args.receipt_artifact_id,
+                    receipt_artifact_name=args.receipt_artifact_name,
+                    receipt_provider_digest=args.receipt_provider_digest,
+                    publisher_run_id=_required_environment("GITHUB_RUN_ID"),
+                    publisher_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
                 )
     _github_output(result)
     print(json.dumps(result, sort_keys=True))

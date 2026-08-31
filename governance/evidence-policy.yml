@@ -15,15 +15,12 @@ claim_dependencies:
   findings_resolved: [source, test, audit, governance, security_impact]
   phase_closed: [workitems_closed, required_suites_green, architecture_gates_green, health_checks_green, security_review_complete, findings_resolved]
   release_ready: [phase_closed]
-security_impact_categories: [authentication, authorization, cryptography, session_and_token_lifecycle, federation, tenant_containment,
-  secrets_and_custody, security_middleware, authority_migrations, security_ci]
+security_impact_categories: [authentication, authorization, cryptography, session_and_token_lifecycle, federation, tenant_containment, secrets_and_custody, security_middleware, authority_migrations, security_ci]
 workflow_contract:
   paths: [.github/workflows/governance.yml]
   required_events: [pull_request, workflow_call]
   gate_resolvers:
-  - {id: governance-evidence-shards, kind: canonical_contract_shards, workflow_path: .github/workflows/governance.yml, job_id: evidence,
-    matrix_key: shard, script_path: .github/scripts/capture_governance_shard.py, gate_contract_path: governance/gate-contracts.yml,
-    profile_path: governance-profile.yml}
+  - {id: governance-evidence-shards, kind: canonical_contract_shards, workflow_path: .github/workflows/governance.yml, job_id: evidence, matrix_key: shard, script_path: .github/scripts/capture_governance_shard.py, gate_contract_path: governance/gate-contracts.yml, profile_path: governance-profile.yml}
 gate_overrides:
   architecture-context-membership:
     evidence_kind: test_suite
@@ -116,12 +113,7 @@ gate_overrides:
   contract-test:
     evidence_kind: test_suite
     negative_controls:
-    - id: contract-test-behavior-must-fail
-      mutation: {path: template-repo/governance/artifact-manifest.yml, search: 'pull_request_policy: required_update', replace: 'pull_request_policy:
-          optional'}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']
+    - {id: contract-test-behavior-must-fail, mutation: {path: template-repo/governance/artifact-manifest.yml, search: 'pull_request_policy: required_update', replace: 'pull_request_policy: optional'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']}}
     - {id: trusted-bootstrap-artifact-identity-must-fail, mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: 'BCF_BOOTSTRAP_ARTIFACT_ID: "9773260106"', replace: 'BCF_BOOTSTRAP_ARTIFACT_ID: "1"'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']}}
     - {id: trusted-bootstrap-controller-command-must-fail, mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: 'ci-github bootstrap', replace: 'ci-github probe'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']}}
     - {id: trusted-controller-interpreter-environment-must-fail, mutation: {path: .github/workflows/bcf-trusted-control-probe.yml, search: 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97', replace: 'actions/setup-python@0000000000000000000000000000000000000000'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_trusted_jobs_never_checkout_or_invoke_candidate_scripts']}}
@@ -139,6 +131,11 @@ gate_overrides:
     - {id: release-no-rebuild-must-fail, mutation: {path: .github/workflows/release.yml, search: 'run: exit 1', replace: 'run: python -m build'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_publisher_checks_out_nothing_and_rebuilds_nothing']}}
     - {id: release-current-authority-must-fail, mutation: {path: bcf_governance/tooling/release_receipts.py, search: 'if certification.get("authority_contract_version") != "1.1":', replace: 'if certification.get("authority_contract_version") != "1.0":'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles']}}
     - {id: release-publication-cleanup-root-must-fail, mutation: {path: bcf_governance/tooling/release_receipts.py, search: '"candidate_authored_receipt_accepted": False', replace: '"candidate_authored_receipt_accepted": True'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles']}}
+    - {id: release-provider-artifact-digest-must-fail, mutation: {path: bcf_governance/tooling/ci_github_artifacts.py, search: 'and artifact.get("digest") == expected_digest', replace: 'and True'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_artifacts::test_role_artifact_rejects_provider_identity_mutants[digest-artifact identity]']}}
+    - {id: release-newest-admission-must-fail, mutation: {path: bcf_governance/tooling/ci_github_release.py, search: 'newest_release = max(', replace: 'newest_release = min('}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_release_collection_rejects_an_older_same_sha_admission']}}
+    - {id: release-receipt-asset-binding-must-fail, mutation: {path: bcf_governance/tooling/ci_github_release.py, search: 'if len(receipt_inventory) != len(receipt_assets) or receipt_inventory != expected_assets:', replace: 'if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_publisher_requires_collector_receipt_to_bind_exact_assets']}}
+    - {id: release-checksum-inventory-must-fail, mutation: {path: bcf_governance/tooling/ci_github_release.py, search: '    _verify_checksum_inventory(paths)', replace: '    pass'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_release_verifier_rejects_candidate_manifest_and_dependency_mutants']}}
+    - {id: release-certification-artifact-binding-must-fail, mutation: {path: bcf_governance/tooling/release_receipts.py, search: '        "certification_artifact": certification_provider_artifact,', replace: ''}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles']}}
     - {id: authority-v11-role-owner-must-fail, mutation: {path: schemas/ci-authority.schema.json, search: '        "release_verifier",', replace: ''}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority::test_authority_v11_rejects_incomplete_or_duplicated_semantic_ownership[missing-role-pin]']}}
     - {id: same-admission-membership-owner-must-fail, mutation: {path: bcf_governance/tooling/ci_github_membership.py, search: 'if set(references) != expected_paths:', replace: 'if set(references) == expected_paths:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_v11_collects_all_producers_from_one_exact_admission_attempt']}}
     - {id: pending-terminal-precedence-owner-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_decisions.py, search: 'if current.conclusion is StatusConclusion.PENDING and proposed.conclusion in {', replace: 'if False and current.conclusion is StatusConclusion.PENDING and proposed.conclusion in {'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority_decisions::test_equal_pending_authority_can_publish_its_terminal_state[success]']}}
@@ -439,6 +436,7 @@ gate_overrides:
         exit_codes: [1]
         stream: stderr
         regex: governance.github-run-identity.v1 owner must be an authorized constructor
+    - {id: github-provider-artifact-owner-must-fail, mutation: {path: governance/canonical-representations.yml, search: 'authorized_constructors_and_factories: [''bcf_governance/tooling/ci_github_artifacts.py::authenticate_role_artifact'']', replace: 'authorized_constructors_and_factories: [''bcf_governance/tooling/missing.py::owner'']'}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: governance.github-provider-artifact.v1 owner must be an authorized constructor}}
     - id: github-run-identity-consumers-must-fail
       mutation: {path: governance/canonical-representations.yml, search: 'declared_consumer_layers_and_sinks: {read: [''bcf_governance/tooling/ci_github_identity.py::resolve_trusted_run''],
           authorization: [''bcf_governance/tooling/ci_github.py::authenticate_github_run'', ''bcf_governance/tooling/ci_github_callbacks.py::publish_callback'', ''bcf_governance/tooling/ci_github_identity.py::authenticate_trusted_run''],

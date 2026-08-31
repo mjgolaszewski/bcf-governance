@@ -6,12 +6,23 @@ import json
 from pathlib import Path
 import tarfile
 import zipfile
+from types import SimpleNamespace
 
 import pytest
 import yaml
 
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError
-from bcf_governance.tooling.ci_github_release import inspect_release, verify_release_build
+from bcf_governance.tooling.ci_github_artifacts import ProviderArtifact
+from bcf_governance.tooling.ci_github_identity import MainIdentity
+from bcf_governance.tooling.ci_github_release import (
+    authorize_release,
+    collect_release,
+    inspect_release,
+    publish_certified_release,
+    verify_release_build,
+    verify_release_build_provider,
+)
+from bcf_governance.tooling.ci_authority_state import WorkflowIdentity
 from bcf_governance.tooling.release_closure import verify_release_lock
 from bcf_governance.tooling.release_receipts import (
     ReleaseReceiptError,
@@ -22,6 +33,32 @@ from bcf_governance.tooling.release_receipts import (
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMMIT = "a" * 40
 TREE = "b" * 40
+
+
+def _workflow(path: str, event: str) -> WorkflowIdentity:
+    return WorkflowIdentity(
+        provider="github",
+        repository_id="101",
+        workflow_id="202",
+        active_path=path,
+        trusted_workflow_blob_oid="c" * 40,
+        trusted_workflow_sha256="d" * 64,
+        trusted_workflow_definition_commit="e" * 40,
+        event=event,
+    )
+
+
+def _provider_artifact(
+    run_id: str, attempt: int, artifact_id: str, digest_char: str = "f"
+) -> dict[str, object]:
+    return ProviderArtifact(
+        run_id,
+        attempt,
+        artifact_id,
+        f"artifact-{artifact_id}",
+        f"sha256:{digest_char * 64}",
+        {},
+    ).as_dict()
 
 
 def _sha(path: Path) -> str:
@@ -149,13 +186,21 @@ def test_release_verifier_rejects_candidate_manifest_and_dependency_mutants(
 ) -> None:
     values = _release_inputs(tmp_path)
     values["artifacts"][0].write_bytes(b"changed")  # type: ignore[index,union-attr]
-    with pytest.raises(ValueError, match="archive|asset bytes"):
+    with pytest.raises(ValueError, match="archive|asset bytes|checksum"):
         _verify(values, tmp_path / "changed.json")
 
     values = _release_inputs(tmp_path / "second")
     (values["wheelhouse"] / "extra.whl").write_bytes(b"extra")  # type: ignore[operator]
     with pytest.raises(ValueError, match="inventory is not exact"):
         _verify(values, tmp_path / "second" / "changed.json")
+
+    values = _release_inputs(tmp_path / "third")
+    (tmp_path / "third" / "SHA256SUMS").write_text(
+        f"{'0' * 64}  bcf_governance-0.7.1-py3-none-any.whl\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="checksum inventory"):
+        _verify(values, tmp_path / "third" / "changed.json")
 
 
 def test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles(
@@ -180,6 +225,7 @@ def test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles(
         "run_attempt": 1,
         "certification_sha256": _sha(certification_path),
         "session_sha256": _sha(session),
+        "certification_artifact": _provider_artifact("50", 1, "41"),
     }
     _json(values["authorization"], authorization)  # type: ignore[arg-type]
     build = json.loads(values["build"].read_text(encoding="utf-8"))  # type: ignore[union-attr]
@@ -204,6 +250,9 @@ def test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles(
             "run_attempt": "1",
         },
         output_path=tmp_path / "release.evidence.json",
+        certification_provider_artifact=_provider_artifact("50", 1, "41"),
+        build_provider_artifact=_provider_artifact("20", 1, "40", "e"),
+        verification_provider_artifact=_provider_artifact("30", 2, "42"),
     )
     assert receipt.payload["observations"]["acyclic_construction"]["candidate_authored_receipt_accepted"] is False
 
@@ -222,6 +271,350 @@ def test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles(
             release_artifacts=values["artifacts"],  # type: ignore[arg-type]
             collector_identity={"workflow_path": "x", "run_id": "1", "run_attempt": "1"},
             output_path=tmp_path / "lookalike.json",
+            certification_provider_artifact=_provider_artifact("50", 1, "41"),
+            build_provider_artifact=_provider_artifact("20", 1, "40", "e"),
+            verification_provider_artifact=_provider_artifact("30", 2, "42"),
+        )
+
+
+def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    certification = {
+        "authority_contract_version": "1.1",
+        "subject": {"checkout_sha": COMMIT, "tree_sha": TREE},
+        "admission": {
+            "admission_ordinal": "100001001",
+            "control_plane_run_id": "100",
+            "control_plane_run_attempt": 1,
+        },
+    }
+    _json(bundle / "ci-certification.json", certification)
+    _json(
+        bundle / "evidence-session.json",
+        {"producer": {"run_id": "50", "run_attempt": "1"}},
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.verify_bundle",
+        lambda root: {"subject": {"commit_sha": COMMIT, "tree_sha": TREE}},
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.verify_ci_certification",
+        lambda *args, **kwargs: SimpleNamespace(status="pass", computed_state="certified"),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.resolve_main",
+        lambda api, repository: MainIdentity("101", "main", COMMIT, TREE),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.load_authority",
+        lambda *args, **kwargs: {},
+    )
+    authorizer = SimpleNamespace(
+        run_id="60", run_attempt=1,
+        workflow=_workflow(".github/workflows/release.yml", "workflow_dispatch"),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.authenticate_role_run",
+        lambda *args, **kwargs: authorizer,
+    )
+    certification_artifact = ProviderArtifact(
+        "50", 1, "41", "certification", f"sha256:{'a' * 64}", {}
+    )
+    controller_artifact = ProviderArtifact(
+        "100", 1, "42", "controller", f"sha256:{'b' * 64}", {}
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.authenticate_role_artifact",
+        lambda *args, **kwargs: (
+            certification_artifact if kwargs["role"] == "finalizer" else controller_artifact
+        ),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.select_latest_admission",
+        lambda *args, **kwargs: ("100", 1),
+    )
+    result = authorize_release(
+        object(),  # type: ignore[arg-type]
+        repository="owner/repo",
+        bundle_dir=bundle,
+        run_id="60",
+        run_attempt="1",
+        certification_artifact={
+            "run_id": "50",
+            "run_attempt": "1",
+            "artifact_id": "41",
+            "artifact_name": "certification",
+            "provider_digest": f"sha256:{'a' * 64}",
+        },
+        controller={
+            "run_id": "100",
+            "run_attempt": "1",
+            "artifact_id": "42",
+            "artifact_name": "controller",
+            "provider_digest": f"sha256:{'b' * 64}",
+            "wheel_sha256": "c" * 64,
+            "commit_sha": COMMIT,
+            "tree_sha": TREE,
+        },
+        output_path=tmp_path / "authorization.json",
+    )
+    assert result["exact_main"]["certification_artifact"] == certification_artifact.as_dict()
+    assert result["controller"]["run_id"] == "100"
+
+
+def test_provider_verifier_requires_authorizer_and_build_same_attempt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    values = _release_inputs(tmp_path)
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.resolve_main",
+        lambda api, repository: MainIdentity("101", "main", COMMIT, TREE),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.load_authority",
+        lambda *args, **kwargs: {},
+    )
+    with pytest.raises(GitHubControllerError, match="share one attempt"):
+        verify_release_build_provider(
+            object(),  # type: ignore[arg-type]
+            repository="owner/repo",
+            authorization_path=values["authorization"],  # type: ignore[arg-type]
+            build_manifest_path=values["build"],  # type: ignore[arg-type]
+            manifest_path=values["manifest"],  # type: ignore[arg-type]
+            lock_path=values["lock"],  # type: ignore[arg-type]
+            wheelhouse=values["wheelhouse"],  # type: ignore[arg-type]
+            release_artifacts=values["artifacts"],  # type: ignore[arg-type]
+            verifier_run_id="30",
+            verifier_run_attempt="1",
+            build_artifact_id="40",
+            build_provider_digest=f"sha256:{'e' * 64}",
+            output_path=tmp_path / "verification.json",
+        )
+
+
+def test_provider_verifier_binds_authenticated_build_and_verifier(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    values = _release_inputs(tmp_path)
+    authorization = json.loads(values["authorization"].read_text())  # type: ignore[union-attr]
+    authorization["authorizer"] = {"run_id": "20", "run_attempt": 1}
+    _json(values["authorization"], authorization)  # type: ignore[arg-type]
+    build = json.loads(values["build"].read_text())  # type: ignore[union-attr]
+    build["authorization_sha256"] = _sha(values["authorization"])  # type: ignore[arg-type]
+    _json(values["build"], build)  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.resolve_main",
+        lambda api, repository: MainIdentity("101", "main", COMMIT, TREE),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.load_authority",
+        lambda *args, **kwargs: {},
+    )
+    provider = ProviderArtifact(
+        "20", 1, "40", build["artifact_name"], f"sha256:{'e' * 64}", {}
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.authenticate_role_artifact",
+        lambda *args, **kwargs: provider,
+    )
+    verifier = SimpleNamespace(
+        run_id="30",
+        run_attempt=2,
+        workflow=_workflow(".github/workflows/bcf-release-verifier.yml", "workflow_run"),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.authenticate_role_run",
+        lambda *args, **kwargs: verifier,
+    )
+    result = verify_release_build_provider(
+        object(),  # type: ignore[arg-type]
+        repository="owner/repo",
+        authorization_path=values["authorization"],  # type: ignore[arg-type]
+        build_manifest_path=values["build"],  # type: ignore[arg-type]
+        manifest_path=values["manifest"],  # type: ignore[arg-type]
+        lock_path=values["lock"],  # type: ignore[arg-type]
+        wheelhouse=values["wheelhouse"],  # type: ignore[arg-type]
+        release_artifacts=values["artifacts"],  # type: ignore[arg-type]
+        verifier_run_id="30",
+        verifier_run_attempt="2",
+        build_artifact_id="40",
+        build_provider_digest=f"sha256:{'e' * 64}",
+        output_path=tmp_path / "provider-verification.json",
+    )
+    assert result["build"]["artifact_id"] == "40"
+    assert result["verifier"]["workflow"]["active_path"].endswith("verifier.yml")
+
+
+def test_release_collection_rejects_an_older_same_sha_admission(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    values = _release_inputs(tmp_path)
+    authorization = json.loads(values["authorization"].read_text())  # type: ignore[union-attr]
+    authorization["authorizer"] = {"run_id": "20", "run_attempt": 1}
+    _json(values["authorization"], authorization)  # type: ignore[arg-type]
+    verification_path = _json(
+        tmp_path / "release-verification.json",
+        {
+            "verifier": {"run_id": "30", "run_attempt": 1},
+            "build": {"artifact_id": "40", "provider_digest": f"sha256:{'e' * 64}"},
+        },
+    )
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    _json(bundle / "ci-certification.json", {})
+    _json(bundle / "evidence-session.json", {})
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.verify_bundle", lambda root: {}
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.resolve_main",
+        lambda api, repository: MainIdentity("101", "main", COMMIT, TREE),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.load_authority",
+        lambda *args, **kwargs: {},
+    )
+    identity = SimpleNamespace(
+        run_id="50", run_attempt=1,
+        workflow=_workflow(".github/workflows/bcf-release-collector.yml", "workflow_run"),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.authenticate_role_run",
+        lambda *args, **kwargs: identity,
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.authority_role_workflow",
+        lambda authority, role: {"workflow_id": "202"},
+    )
+    api = SimpleNamespace(
+        workflow_runs=lambda *args, **kwargs: (
+            {"id": 20, "run_attempt": 1},
+            {"id": 21, "run_attempt": 1},
+        )
+    )
+    with pytest.raises(GitHubControllerError, match="newest same-run admission"):
+        collect_release(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            bundle_dir=bundle,
+            authorization_path=values["authorization"],  # type: ignore[arg-type]
+            build_manifest_path=values["build"],  # type: ignore[arg-type]
+            verification_path=verification_path,
+            release_artifacts=values["artifacts"],  # type: ignore[arg-type]
+            collector_run_id="50",
+            collector_run_attempt="1",
+            verification_artifact_id="60",
+            verification_artifact_name="verification",
+            verification_provider_digest=f"sha256:{'f' * 64}",
+            output_path=tmp_path / "receipt.json",
+        )
+
+
+def test_publisher_requires_collector_receipt_to_bind_exact_assets(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    values = _release_inputs(tmp_path)
+    assets = values["assets"]
+    receipt_path = _json(
+        tmp_path / "release.evidence.json",
+        {
+            "kind": "release",
+            "result": "passed",
+            "subject": {
+                "commit_sha": COMMIT,
+                "tree_sha": TREE,
+                "execution_tree_sha": TREE,
+                "binding": "exact_tree",
+                "tracked_clean": True,
+                "untracked_clean": True,
+                "status_porcelain_sha256": hashlib.sha256(b"").hexdigest(),
+            },
+            "invocation": {"workflow": {"run_id": "50", "run_attempt": "1"}},
+            "observations": {
+                "release_artifacts": [
+                    {"path": name, "sha256": digest} for name, digest in assets.items()
+                ]
+            },
+        },
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.resolve_main",
+        lambda api, repository: MainIdentity("101", "main", COMMIT, TREE),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.load_authority",
+        lambda *args, **kwargs: {},
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.authenticate_role_run",
+        lambda *args, **kwargs: object(),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.authenticate_role_artifact",
+        lambda *args, **kwargs: object(),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.publish_release",
+        lambda *args, **kwargs: {"status": "published"},
+    )
+    result = publish_certified_release(
+        object(),  # type: ignore[arg-type]
+        repository="owner/repo",
+        tag="v0.7.1",
+        expected_commit=COMMIT,
+        release_artifacts=values["artifacts"],  # type: ignore[arg-type]
+        body="notes",
+        receipt_path=receipt_path,
+        receipt_artifact_id="70",
+        receipt_artifact_name="receipt",
+        receipt_provider_digest=f"sha256:{'f' * 64}",
+        publisher_run_id="80",
+        publisher_run_attempt="1",
+    )
+    assert result == {"status": "published"}
+    receipt = json.loads(receipt_path.read_text())
+    receipt["observations"]["release_artifacts"][0]["sha256"] = "0" * 64
+    _json(receipt_path, receipt)
+    with pytest.raises(GitHubControllerError, match="bind exact publication assets"):
+        publish_certified_release(
+            object(),  # type: ignore[arg-type]
+            repository="owner/repo",
+            tag="v0.7.1",
+            expected_commit=COMMIT,
+            release_artifacts=values["artifacts"],  # type: ignore[arg-type]
+            body="notes",
+            receipt_path=receipt_path,
+            receipt_artifact_id="70",
+            receipt_artifact_name="receipt",
+            receipt_provider_digest=f"sha256:{'f' * 64}",
+            publisher_run_id="80",
+            publisher_run_attempt="1",
+        )
+
+    receipt["observations"]["release_artifacts"][0]["sha256"] = values["assets"][  # type: ignore[index]
+        receipt["observations"]["release_artifacts"][0]["path"]  # type: ignore[index]
+    ]
+    receipt["observations"]["release_artifacts"].append(  # type: ignore[index]
+        dict(receipt["observations"]["release_artifacts"][0])  # type: ignore[index]
+    )
+    _json(receipt_path, receipt)
+    with pytest.raises(GitHubControllerError, match="bind exact publication assets"):
+        publish_certified_release(
+            object(),  # type: ignore[arg-type]
+            repository="owner/repo",
+            tag="v0.7.1",
+            expected_commit=COMMIT,
+            release_artifacts=values["artifacts"],  # type: ignore[arg-type]
+            body="notes",
+            receipt_path=receipt_path,
+            receipt_artifact_id="70",
+            receipt_artifact_name="receipt",
+            receipt_provider_digest=f"sha256:{'f' * 64}",
+            publisher_run_id="80",
+            publisher_run_attempt="1",
         )
 
 
