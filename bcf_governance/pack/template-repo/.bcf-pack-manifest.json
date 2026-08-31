@@ -62,7 +62,7 @@
     },
     "docs/OPERATIONS.md": {
       "operation": "copy",
-      "sha256": "0c15a24e307b4399333f58a93d7f0e4e555224f9d6f4b9e171d90a40c980df10"
+      "sha256": "b2a1b202e9c948077ce33d16eb6eeb6d758577b293edc671d1549d14877d03c0"
     },
     "governance-profile.yml": {
       "operation": "generate",
@@ -88,7 +88,7 @@
     },
     "governance/REPO_CLEANUP.md": {
       "operation": "copy",
-      "sha256": "33481b1382a50fec69be0fe781019a3c53ba3e240262376d4977b5255c5be20d"
+      "sha256": "0f9da85a250ddd58f489129cfb01c20792ef262d99c15c0fe6c4437a559a16c0"
     },
     "governance/archive/phase-artifacts/.gitkeep": {
       "operation": "copy",
@@ -120,7 +120,7 @@
     },
     "governance/repo-cleanup-contract.yml": {
       "operation": "copy",
-      "sha256": "c9a4a49414d4a0d8ff306a09e651465b0541c5572ed5caacef88bc1be808511e"
+      "sha256": "314595242ee76836a1e9c89bd6610c9013705965921248156a04f036fe2cb633"
     },
     "phases/phase-01-log.yml": {
       "operation": "copy",
@@ -348,7 +348,7 @@
     },
     "scripts/_bcf_runtime/cleanup_governance_pack.py": {
       "operation": "copy",
-      "sha256": "3df4ac833afcaa48fce7af0dfe3df2bf95a99a8ffab05c181abe8bf764b4df11"
+      "sha256": "2ba716f7b178e97682f56591fb32465fc5f33b9588717fb56c5b28e64f6a429b"
     },
     "scripts/_bcf_runtime/doctor_governance_pack.py": {
       "operation": "copy",
@@ -384,7 +384,7 @@
     },
     "scripts/_bcf_runtime/governance_cleanup/phase_retention.py": {
       "operation": "copy",
-      "sha256": "bdbce8f1592c4c7c3fffc309a640539f4bcd4f1938b468c7f51e2954d48662a5"
+      "sha256": "ce9d242f6bfb2dd995398e367dd0cec83cb313aa110c7d922dfbafdb929b47f9"
     },
     "scripts/_bcf_runtime/governance_cleanup/truth_reports.py": {
       "operation": "copy",
@@ -412,7 +412,7 @@
     },
     "scripts/_bcf_runtime/governance_install/transaction.py": {
       "operation": "copy",
-      "sha256": "ea3ce135ec4ba488e8884a2aa3806ff71624983b47ff898993469e121af7dc37"
+      "sha256": "93b50136d94dc149c99d3ff6e389b256437a8e113758e19ba1f1b342978df45b"
     },
     "scripts/_bcf_runtime/governance_install/upgrade.py": {
       "operation": "copy",
@@ -496,7 +496,7 @@
     },
     "scripts/_bcf_runtime/profile_governance.py": {
       "operation": "copy",
-      "sha256": "a60cdbbe37fd545581468525873b35d8455922d80aa161146bb1837bf291e659"
+      "sha256": "cf49a20fb2e81e6f5990d887598c972d1045923745a99c10e5edcde31dec9ab8"
     },
     "scripts/_bcf_runtime/profile_v2_surfaces.py": {
       "operation": "copy",

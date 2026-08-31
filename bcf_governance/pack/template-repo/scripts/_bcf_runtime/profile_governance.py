@@ -4,13 +4,12 @@ from __future__ import annotations
 
 import argparse
 import json
-import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
-from .governance_install.transaction import apply_transaction
+from .governance_install.transaction import apply_transaction, copy_repository_shadow
 from .governance_profiles import apply_profile_contract, promote
 
 
@@ -65,7 +64,7 @@ def _check(
 ) -> dict:
     with tempfile.TemporaryDirectory(prefix="bcf-profile-check-") as temporary:
         shadow = Path(temporary) / "repo"
-        shutil.copytree(repo_root, shadow, symlinks=True, ignore=shutil.ignore_patterns(".git"))
+        copy_repository_shadow(repo_root, shadow, preserve_git_history=True)
         return _render_in_shadow(repo_root, target, config, shadow, contract_version)
 
 
@@ -138,6 +137,7 @@ def main(argv: list[str] | None = None) -> None:
             repo_root,
             managed_paths=MANAGED_PROFILE_PATHS,
             mutate_shadow=mutate,
+            preserve_git_history=True,
         )
         status = "profile-promotion-applied"
     payload = {

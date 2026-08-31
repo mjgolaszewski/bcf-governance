@@ -15,8 +15,8 @@ worktree and transferred atomically with rollback.
 
 1. Run `bcf cleanup --repo-root .` and read safe actions separately from manual actions.
 2. Apply only approved deterministic moves with `bcf cleanup --repo-root . --apply`.
-3. Retrieve a passing truth report that computed each completed phase closed on its governed tree and records its retained CI/release artifact as `durable_ref`.
-4. Remove stale closed triplets with `bcf cleanup --repo-root . --phase-retention-mode --truth-report .artifacts/bcf/truth.json --apply` when git history should retain the old artifact bytes; the local path is non-authoritative and its sha256 must match a retained CI artifact.
+3. Retrieve a passing truth report for any completed phase that has a mechanically computed closed state and a retained CI/release artifact as `durable_ref`.
+4. Remove stale completed triplets with `bcf cleanup --repo-root . --phase-retention-mode --apply` when Git history should retain the old artifact bytes. Add `--truth-report .artifacts/bcf/truth.json` only when that current closed report exists and its sha256 can be checked against retained CI; without it, history records authored completion and no derived closeout claim.
 5. Move stale closed triplets with `bcf cleanup --repo-root . --phase-retention-mode archive --truth-report .artifacts/bcf/truth.json --apply` when local ignored archive storage is preferred; the local path is non-authoritative and its sha256 must match a retained CI artifact.
 6. Use `bcf install --target . --force-rescaffold` only after accepting the destructive warning.
 7. Use `bcf cleanup --repo-root . --remove-governance-pack` only when intentionally decommissioning BCF governance.
@@ -27,17 +27,18 @@ worktree and transferred atomically with rollback.
 ## Deterministic Work
 
 BCF can move audit/review evidence into `audits/`, create `audits/README.md`,
-rewrite exact path references, remove completed phase artifacts only after a
-supplied passing truth report computed them closed, record an evidence-backed
-historical snapshot in `plans/phase-history.yml`, archive artifacts into ignored
+rewrite exact path references, record completed phase artifacts with exact Git
+custody, add a derived closeout snapshot only when supported by a supplied
+passing truth report, maintain compact `plans/phase-history.yml`, archive artifacts into ignored
 `governance/archive/phase-artifacts/` storage, prune related hotfix lane records, remove known BCF-owned files
 and dedicated governance CI gates, and reinstall known BCF-owned files.
 
 With no phase-retention switch, cleanup preserves current historical triplet
 behavior. Once a mode is selected, validation enforces the active retention
 window and rejects stale historical triplets or phase-scoped hotfix logs that
-remain active. Phase-history entries must be compact and evidence-backed; do
-not replace removed artifacts with empty history rows.
+remain active. Phase-history entries must be compact and hash-backed. An entry
+without an exact truth report remains authored `completed`; do not add a
+derived state or replace removed artifacts with empty history rows.
 
 ## Human or model-assisted review
 

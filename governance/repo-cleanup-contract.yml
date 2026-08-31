@@ -28,8 +28,8 @@ drift_patterns:
     deterministic: false
     llm_review: required
   - id: closed_phase_triplet_retention
-    detect: completed phase triplets or phase-scoped hotfix logs are outside the retained active window and a supplied current truth report computed the phase closed
-    action: update plans/phase-history.yml with an evidence-backed historical snapshot, summaries, hashes, and retention source, then remove artifacts through git-history mode or move them to ignored archive storage
+    detect: completed phase triplets or phase-scoped hotfix logs are outside the retained active window
+    action: update plans/phase-history.yml with summaries, exact hashes, retention source, and any available current closed-truth snapshot; git-history retention without a snapshot records authored completion only and never invents a derived state
     deterministic: true
     llm_review: none
   - id: abandoned_governance_yaml
@@ -59,9 +59,9 @@ deterministic_actions:
     safety: asks before moving files and rewriting exact references
     outputs: [audits_root, rewritten_references, remaining_manual_actions]
   - id: retain_closed_phase_triplets_in_git_history
-    command: bcf cleanup --repo-root . --phase-retention-mode --truth-report .artifacts/bcf/truth.json --apply --yes # non-authoritative path; verify sha256 against CI artifact
-    applies_when: completed phase artifacts fall outside phase_retention_policy.active_window and a supplied passing truth report computed them closed
-    safety: verifies truth-report commit and tree bindings, verifies the commit contains the artifact bytes, records the truth and evidence digests plus compact history refs and sha256 values, and prunes related hotfix lane records
+    command: bcf cleanup --repo-root . --phase-retention-mode --truth-report .artifacts/bcf/truth.json --apply --yes # optional non-authoritative report path; verify sha256 against CI artifact when supplied
+    applies_when: completed phase artifacts fall outside phase_retention_policy.active_window
+    safety: verifies HEAD contains the exact artifact bytes, records compact git refs and sha256 values, adds derived closeout provenance only when a passing current truth report is supplied, and prunes related hotfix lane records
     outputs: [plans/phase-history.yml]
   - id: archive_closed_phase_triplets
     command: bcf cleanup --repo-root . --phase-retention-mode archive --truth-report .artifacts/bcf/truth.json --apply --yes # non-authoritative path; verify sha256 against CI artifact
@@ -84,7 +84,4 @@ validation_required:
   commands: [bcf validate, bcf truth --evidence-dir .artifacts/bcf, make release-check] # non-authoritative local path; retain report sha256 in CI artifact
   status_policy: record pass fail or blocked with exact command and reason in the active phase log
 evidence_required: [cleanup report or cleanup index, moved artifact summary, vendored pack declarations, documentation currency notes, validation command outcomes]
-closeout_rules:
-  - do not claim cleanup complete while manual actions remain unexplained
-  - do not delete historical evidence unless git history is the declared retention source and the validator can verify the recorded refs
-  - do not remove tests to fit the scaffold; tune tests to the accepted repo shape
+closeout_rules: [do not claim cleanup complete while manual actions remain unexplained, do not delete historical evidence unless git history is the declared retention source and the validator can verify the recorded refs, do not remove tests to fit the scaffold; tune tests to the accepted repo shape, git-history compaction without an exact closed truth report records authored completed status only and omits derived_state_at_capture and verification_snapshot]

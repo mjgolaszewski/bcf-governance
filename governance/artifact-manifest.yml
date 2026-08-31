@@ -20,6 +20,7 @@ required_artifacts:
   changelog: {path: CHANGELOG.md, contract: keep_a_changelog, pull_request_policy: required_update}
 phase_retention_policy:
   # Set mode with `bcf cleanup --phase-retention-mode`: git_history or archive.
+  mode: git_history
   history_path: plans/phase-history.yml
   active_window: {include_active: true, include_next: true, keep_recent_closed: 0}
   archive: {root: governance/archive/phase-artifacts/, closed_phase_statuses: [completed], preserve_hotfix_logs: true}

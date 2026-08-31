@@ -17,7 +17,11 @@ from bcf_governance.cli import COMMANDS  # noqa: E402
 
 
 CANONICAL_DOCUMENTS = {
-    "README.md": ("Why these defaults", "Documentation map"),
+    "README.md": (
+        "Why these defaults",
+        "The Philosophy: Shifting from Human DevOps to Agentic DevSecOps",
+        "Documentation map",
+    ),
     "docs/ARCHITECTURE.md": (
         "Authority model",
         "CQRS-lite",
@@ -127,6 +131,7 @@ def validate_editorial_contract(repo_root: Path = REPO_ROOT) -> list[str]:
                 errors.append(f"{relative}: unknown bcf command: {command}")
 
     readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    normalized_readme = " ".join(readme.split())
     required_positions = (
         "AI-assisted development",
         "CQRS-lite",
@@ -136,11 +141,15 @@ def validate_editorial_contract(repo_root: Path = REPO_ROOT) -> list[str]:
         "Exact-commit evidence",
         "Bounded modules and context",
         "Cheap preflight before expensive work",
+        "Human-centric DevOps default",
+        "Agentic DevSecOps default",
+        "an agent cannot certify its own output",
+        "mechanical invariants decide the claims",
         "cost",
         "limitations",
     )
     for phrase in required_positions:
-        if phrase not in readme:
+        if phrase not in normalized_readme:
             errors.append(f"README.md: missing architectural position: {phrase}")
     if f"Current release: `v{__version__}`." not in readme:
         errors.append("README.md: current release does not match package version")

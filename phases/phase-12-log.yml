@@ -10,7 +10,7 @@ phase:
   id: P12
   build_block: editorial-refresh-and-release
 summary:
-  outcome: implementation_ready_for_exact_main_certification_and_publication
+  outcome: owner_directed_readme_contrast_ready_for_recertification
   highlights:
   - P12 is active for final documentation, exact-byte recertification, tagging, attestation,
     and v0.7.0 publication
@@ -24,6 +24,12 @@ summary:
     checkout or rebuild
   - descriptive workflow and job names remain presentation while stable IDs and authenticated
     provider identities remain mechanical authority
+  - owner-directed follow-up adds a concise human-centric DevOps versus agentic DevSecOps
+    comparison and mechanically preserves the rule that agents cannot certify their own work
+  - strict git-history retention is now selected; P01-P11 and their hotfix records are compacted
+    to exact commit and SHA-256 custody without retroactive derived-state claims
+  - self-application exposed and fixed linked-worktree Git control-file deletion, unrelated
+    audit-root fixture rewrites, and Git-dropping profile shadows before acceptance
 workitems:
 - id: P12-P0-01
   status: DONE
@@ -37,6 +43,9 @@ workitems:
 - id: P12-P0-04
   status: DONE
   summary: mechanical editorial verification and final exact-main recertification
+- id: P12-P0-05
+  status: DONE
+  summary: honest git-history phase compaction without retroactive lifecycle claims
 execution_evidence:
   planned_commands:
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
@@ -55,7 +64,7 @@ execution_evidence:
     0b43c7d0970224c14390c77fdfc54c53cb7f5c07 before P12 documentation changes
   - P11 artifacts remain non-published precursors and must be superseded because documentation
     is included in the source distribution
-  - source scope is 415 exact pytest nodes and contract scope is 152 exact nodes; all source
+  - source scope is 417 exact pytest nodes and contract scope is 152 exact nodes; all source
     tests pass under pinned pytest 9.0.3
   - all full implementation and semantic mutation profiles killed their declared mutants
   - compact generated negative-control mappings preserve decoded semantics and keep Standard-v2
@@ -65,6 +74,13 @@ execution_evidence:
     distinct decision assertions now prevent both failure modes
   - the editorial checklist is advisory and non-authoritative; deterministic validation,
     receipts, computed lifecycle, and exact-main CI decide release state
+  - P12 merge f4b314be03a7d4c3a85110b31c93e828e6484fe7 and release run 33388459806
+    passed, but those release bytes are superseded before tagging because the README ships in
+    the source distribution
+  - completed-only phase-history entries deliberately omit derived_state_at_capture and
+    verification_snapshot; exact bytes remain recoverable at f4b314be03a7d4c3a85110b31c93e828e6484fe7
+  - profile-promotion check and apply preserve Git custody, so compacted history remains
+    verifiable in the transactional validation shadow
 closeout_requirements:
   claims:
     workitems_closed:
@@ -97,6 +113,7 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- merge P12 only after protected PR checks compute the exact branch tree closed
-- certify the exact merge commit, rebuild superseding release bytes, repeat scheduled mutants
-  and the Identity reference proof, then create annotated v0.7.0 for trusted publication
+- merge the owner-directed P12 editorial follow-up only after protected PR checks compute the
+  exact branch tree closed
+- certify the new exact merge commit and rebuild superseding release bytes, then create
+  annotated v0.7.0 for trusted publication

@@ -59,6 +59,38 @@ security boundaries and release claims still fail closed where the selected
 profile requires them. See [Architecture](docs/ARCHITECTURE.md) for the design
 and its limits.
 
+## The Philosophy: Shifting from Human DevOps to Agentic DevSecOps
+
+Traditional DevOps usually assumes that people are the scarce execution
+engine. Reviews, runbooks, and CI summaries are shaped around changes that a
+person can produce and keep in working memory. Coding agents change that
+constraint: they can propose broad changes faster than a reviewer can
+reconstruct every decision. Running the old control model at agent speed makes
+reviewer memory and interpretation the safety boundary.
+
+BCF moves that boundary into versioned contracts and deterministic programs:
+
+| Human-centric DevOps default | Agentic DevSecOps default |
+|---|---|
+| Reviewer memory connects requirements, code, tests, and release state. | One canonical owner and machine-readable contracts connect each governed claim. |
+| A green job shows that a command exited successfully. | Positive evidence plus a causal negative control shows what the gate detects. |
+| A branch, tree, or familiar workflow name can stand in for the release subject. | Evidence binds the exact commit, tree, workflow bytes, run, and attempt. |
+| CI runs expensive work, then people diagnose deterministic defects one at a time. | Cheap preflight rejects deterministic defects before fanout or costly gates. |
+| Long-lived workers are trusted because the team operates them. | Candidate code is disposable; trusted control code is isolated and narrowly authorized. |
+| A person interprets checks and decides whether the repository is verified. | Code computes verifiable lifecycle and release claims from policy and current evidence. |
+
+This does not remove people from delivery. Humans still choose product intent,
+risk appetite, architecture, exceptions, and whether to merge. Agents may
+propose, implement, review, and remediate, but an agent cannot certify its own
+output. The practical shift is simple: people govern the rules and the
+decisions that require judgment; mechanical invariants decide the claims that
+can be proved repeatably.
+
+That stricter boundary costs setup time, control execution, and evidence
+storage. It is useful when agent throughput would otherwise outrun reliable
+human reconstruction; it is unnecessary ceremony for claims a repository does
+not make. BCF profiles and typed N/A records keep that scope explicit.
+
 ## Lifecycle and evidence
 
 Phase authors may report `planned` or `completed`. They cannot author

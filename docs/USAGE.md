@@ -118,7 +118,9 @@ bcf profile promote --repo-root . --to standard --contract-version 2.0 --apply
 already describe the desired profile. Promotion changes profile-derived
 policy and local Make aliases transactionally. It preserves installed workflow
 bytes, never regenerates phase artifacts, and cannot move to a weaker profile
-or contract version. Adopt a GitHub topology separately and explicitly with
+or contract version. Its validation shadow preserves local Git custody, so
+compacted phase-history hashes remain verifiable during `--check` and `--apply`.
+Adopt a GitHub topology separately and explicitly with
 `bcf ci adopt github`, supplying the reviewed candidate labels, trusted labels,
 producer argv, and either `--check` or `--apply`.
 
@@ -279,11 +281,19 @@ bcf cleanup --repo-root .
 bcf cleanup --repo-root . --apply
 ```
 
-It can move audit evidence into `audits/`, rewrite exact references, and retain
-closed phase history only with a valid truth report bound to the governed tree
-and a durable CI/release reference. Product intent, architecture/security docs,
-runbooks, and semantic compaction remain owner-reviewed work. Non-interactive
-apply requires `--yes`.
+It can move audit evidence into `audits/`, rewrite exact references, and compact
+completed phase artifacts into exact Git-history custody. A current closed truth
+report adds its mechanically derived verification snapshot; without one, the
+history row records authored completion only. Archive retention remains
+fail-closed and requires the report plus its durable CI/release reference.
+Product intent, architecture/security docs, runbooks, and semantic compaction
+remain owner-reviewed work. Non-interactive apply requires `--yes`.
+
+```bash
+bcf cleanup --repo-root . --phase-retention-mode --apply
+bcf cleanup --repo-root . --phase-retention-mode archive \
+  --truth-report .artifacts/bcf/truth.json --apply # non-authoritative path; verify sha256 against retained CI
+```
 
 Use `--remove-governance-pack` only to decommission BCF. Dedicated BCF files and
 CI can be removed; mixed workflows are reported for manual editing.

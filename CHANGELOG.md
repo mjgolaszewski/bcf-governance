@@ -6,6 +6,17 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Changed
+
+- Clarified the README for traditional DevOps engineers with a direct
+  human-centric versus agentic DevSecOps comparison, including the boundary
+  between human judgment and mechanically computed claims.
+- Enabled honest Git-history compaction for completed phases that lack a
+  historical closed receipt; such rows retain exact hashes while omitting any
+  retroactive derived-state claim. Cleanup now also preserves linked-worktree
+  Git control files and avoids unrelated audit-root rewrites. Transactional
+  profile checks and applies retain Git custody while validating their shadow.
+
 ## [0.7.0] - 2026-08-31
 
 ### Added

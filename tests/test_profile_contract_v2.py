@@ -187,9 +187,26 @@ def test_v2_surfaces_bind_one_session_and_do_not_wait() -> None:
 
 def test_bcf_standard_v2_promotion_fits_declared_context_budgets(tmp_path: Path) -> None:
     repo = tmp_path / "bcf-self-adoption"
+    source_git = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "rev-parse", "--git-dir"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if source_git.returncode:
+        pytest.skip("exact self-adoption retention proof requires source Git custody")
+    subprocess.run(
+        ["git", "clone", "--shared", "--quiet", str(REPO_ROOT), str(repo)],
+        check=True,
+    )
+    for child in repo.iterdir():
+        if child.name == ".git":
+            continue
+        shutil.rmtree(child) if child.is_dir() else child.unlink()
     shutil.copytree(
         REPO_ROOT,
         repo,
+        dirs_exist_ok=True,
         ignore=shutil.ignore_patterns(".git", ".artifacts", ".venv", "__pycache__"),
     )
     for relative in ("governance-profile.yml", "governance/gate-contracts.yml"):
@@ -203,25 +220,31 @@ def test_bcf_standard_v2_promotion_fits_declared_context_budgets(tmp_path: Path)
             encoding="utf-8",
         )
     shutil.rmtree(repo / "governance/capability-na", ignore_errors=True)
-    _git(repo, "init", "--quiet")
     _git(repo, "config", "user.email", "profile-v2@example.invalid")
     _git(repo, "config", "user.name", "Profile V2")
     _git(repo, "add", ".")
     _git(repo, "commit", "--quiet", "-m", "copy exact BCF consumer")
+    command = [
+        sys.executable,
+        str(REPO_ROOT / "scripts/profile_governance.py"),
+        "--repo-root",
+        str(repo),
+        "--to",
+        "standard",
+        "--contract-version",
+        "2.0",
+    ]
     result = subprocess.run(
-        [
-            sys.executable,
-            str(REPO_ROOT / "scripts/profile_governance.py"),
-            "--repo-root",
-            str(repo),
-            "--to",
-            "standard",
-            "--contract-version",
-            "2.0",
-            "--check",
-        ],
+        [*command, "--check"],
         capture_output=True,
         text=True,
         check=False,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+    applied = subprocess.run(
+        [*command, "--apply"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert applied.returncode == 0, applied.stdout + applied.stderr
