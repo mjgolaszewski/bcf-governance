@@ -185,12 +185,35 @@ def _compile_inventories(
     if not isinstance(admission_entry, dict):
         raise CIAuthorityPinError("CI authority admission workflow is not registered")
     source_roles = admission_entry.get("job_roles")
-    if not isinstance(source_roles, dict):
-        raise CIAuthorityPinError("admission workflow requires source-job role policy")
-    caller_jobs = _compiled_workflow_jobs(
-        committed_workflows[admission_reference],
-        roles={str(key): str(value) for key, value in source_roles.items()},
-    )
+    producer_ids = {
+        str(value.get("producer_id", ""))
+        for value in producers
+        if isinstance(value, dict)
+    }
+    if source_roles is None:
+        raw_jobs = _compiled_workflow_jobs(
+            committed_workflows[admission_reference], roles=None
+        )
+        source_keys = {source for source, _ in raw_jobs}
+        other = source_keys - producer_ids
+        if not producer_ids.issubset(source_keys) or len(other) != 1:
+            raise CIAuthorityPinError(
+                "admission jobs cannot be inferred from exact producer source keys"
+            )
+        caller_jobs = [
+            (
+                source,
+                {**value, "role": "producer" if source in producer_ids else "admission"},
+            )
+            for source, value in raw_jobs
+        ]
+    elif isinstance(source_roles, dict):
+        caller_jobs = _compiled_workflow_jobs(
+            committed_workflows[admission_reference],
+            roles={str(key): str(value) for key, value in source_roles.items()},
+        )
+    else:
+        raise CIAuthorityPinError("admission workflow source-job policy is invalid")
     admission_jobs = [
         dict(value) for _, value in caller_jobs if value.get("role") == "admission"
     ]
@@ -203,11 +226,6 @@ def _compile_inventories(
         source: value
         for source, value in caller_jobs
         if value.get("role") == "producer"
-    }
-    producer_ids = {
-        str(value.get("producer_id", ""))
-        for value in producers
-        if isinstance(value, dict)
     }
     if set(caller_producers) != producer_ids:
         raise CIAuthorityPinError(

@@ -146,3 +146,17 @@ def test_self_workflow_authority_is_mechanically_compiled() -> None:
     assert verify_workflow_authority(
         REPO_ROOT, authority_path=Path("governance/ci-authority.yml")
     ) == 12
+
+
+def test_bridge_admission_roles_are_inferred_from_exact_producer_source_keys() -> None:
+    payload = yaml.safe_load(
+        (REPO_ROOT / "governance/ci-authority.yml").read_text(encoding="utf-8")
+    )
+
+    assert "job_roles" not in payload["workflow_registry"]["admission"]
+    assert payload["admission_jobs"] == [
+        {"job_id": "Authenticate exact-main admission and publish pending authority"}
+    ]
+    assert [value["producer_id"] for value in payload["producers"]] == [
+        "governance", "governance-pack"
+    ]

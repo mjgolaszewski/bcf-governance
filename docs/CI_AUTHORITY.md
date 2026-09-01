@@ -80,6 +80,14 @@ causal controls prove that each mismatch fails. A maintainer or AI may propose p
 review a change, and decide whether to merge or publish; neither may substitute a
 copied value or judgment for the computation.
 
+Authority v1.1 has a narrow self-hosting compatibility state. Its base registry,
+admission jobs, and producer inventories remain readable by a pre-enrichment v1.1
+controller while a successor controller is built. Privileged workflow job inventories
+are absent in that state, so canary and release operations that require them fail
+closed. After the successor is installed, the authority compiler projects the enriched
+job inventories and preflight makes them exact; an identical tree or operator assertion
+cannot skip that transition.
+
 ## GitHub reference topology
 
 The v1.1 topology uses one exact-main push admission whose jobs call the
