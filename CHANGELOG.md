@@ -6,8 +6,18 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `0.7.1`. Publication remains pending the certified merge,
-immutable-release setting, annotated tag, and exact-byte publication sequence.
+### Fixed
+
+- Made the trusted publisher require `BCF_RELEASE_ADMIN_TOKEN` before resolution or
+  attestation and use it only for final publication. GitHub's workflow token cannot read
+  repository immutable-release settings; the short-lived credential contract requires
+  repository Administration read, Attestations read, and Contents write and requires
+  removal after publication.
+
+## [0.7.1] - 2026-09-01
+
+Published as an immutable GitHub release from exact certified merge
+`5e8e41aeda9b6efa8e5e063f4c301ee78aef101b`.
 
 ### Security
 
@@ -36,7 +46,9 @@ immutable-release setting, annotated tag, and exact-byte publication sequence.
 - Activated the release publisher as an owner-and-main-only trusted workflow. It resolves
   the newest authenticated collector receipt, attests and publishes only its closed
   assets, performs no checkout or build, and receives no operator-entered release
-  coordinates.
+  coordinates. The workflow token's unavailable repository-administration scope failed
+  before provider mutation; the exact controller completed the authorized publication
+  with the owner credential and the same authenticated invocation, receipt, and assets.
 
 ### Fixed
 
@@ -78,6 +90,9 @@ immutable-release setting, annotated tag, and exact-byte publication sequence.
 - Reorganized maintainer guidance around mechanical authority, exact evidence, runner
   trust boundaries, release custody, and explicit human judgment. AI and human operators
   may propose changes but cannot supply or self-certify mechanically derivable claims.
+- Published release `380654208` with annotated unsigned tag object `dc55bc9b8e1d28359e937421f47c54b38462bca8`,
+  three digest-bound assets, provider attestations, and `immutable=true`; `v0.7.0` remains
+  unchanged and provider-mutable historical custody.
 
 ## [0.7.0] - 2026-08-31
 

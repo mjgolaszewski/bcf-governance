@@ -72,7 +72,8 @@ def _expected_runner(
 
 
 def _validate_actions_and_commands(
-    *, workflow_path: str, job: dict[str, Any], trusted: bool
+    *, workflow_path: str, job: dict[str, Any], trusted: bool,
+    release_admin_env: dict[str, str],
 ) -> set[str]:
     observed: set[str] = set()
     for step in job.get("steps", []):
@@ -92,14 +93,25 @@ def _validate_actions_and_commands(
         if trusted and ("scripts/" in command or ".github/scripts/" in command):
             raise SelfWorkflowContractError("trusted job may not invoke candidate scripts")
         if trusted and "ci-github" in command and "ci-github --help" not in command:
-            if step.get("env") != TRUSTED_CONTROLLER_TOKEN_ENV:
-                raise SelfWorkflowContractError(
-                    "trusted controller step must receive only the explicit GitHub token"
+            expected_env = (
+                release_admin_env
+                if workflow_path == ".github/workflows/bcf-release-publisher.yml"
+                and "ci-github release publish" in command
+                else TRUSTED_CONTROLLER_TOKEN_ENV
+            )
+            if step.get("env") != expected_env:
+                diagnostic = (
+                    "release publisher lacks repository administration authority"
+                    if expected_env == release_admin_env
+                    else "trusted controller step must receive only the explicit GitHub token"
                 )
+                raise SelfWorkflowContractError(diagnostic)
     return observed
 
 
-def _validate_publisher(workflow: dict[str, Any], installed_commit: str) -> None:
+def _validate_publisher(
+    workflow: dict[str, Any], installed_commit: str, *, secret_name: str
+) -> None:
     if workflow.get(True) != {"workflow_dispatch": None}:
         raise SelfWorkflowContractError("release publisher must be owner-dispatched")
     if workflow.get("permissions") != {} or workflow.get("env") != {
@@ -118,16 +130,26 @@ def _validate_publisher(workflow: dict[str, Any], installed_commit: str) -> None
     names = [step.get("name") for step in steps]
     if names != [
         "Restore the trusted controller interpreter environment",
+        "Require the short-lived release administration credential",
         "Resolve the newest exact-main release receipt mechanically",
         "Download only the resolver-selected receipt and certified assets",
         "Attest the exact closed release asset inventory",
         "Publish only the authenticated pre-certified bytes",
     ]:
         raise SelfWorkflowContractError("release publisher step inventory is not exact")
-    resolve = steps[1]
-    download = steps[2]
-    attest = steps[3]
-    publish = str(steps[4].get("run", ""))
+    credential = steps[1]
+    resolve = steps[2]
+    download = steps[3]
+    attest = steps[4]
+    publish_step = steps[5]
+    publish = str(publish_step.get("run", ""))
+    secret_expression = f"${{{{ secrets.{secret_name} }}}}"
+    if credential.get("env") != {"BCF_RELEASE_ADMIN_TOKEN": secret_expression} or (
+        credential.get("run") != 'test -n "$BCF_RELEASE_ADMIN_TOKEN"'
+    ):
+        raise SelfWorkflowContractError("release administration credential is not exact")
+    if publish_step.get("env") != {"GITHUB_TOKEN": secret_expression}:
+        raise SelfWorkflowContractError("release publisher lacks repository administration authority")
     if "ci-github release resolve-publication" not in str(resolve.get("run", "")):
         raise SelfWorkflowContractError("release publisher lacks mechanical input resolution")
     if download.get("with") != {
@@ -194,6 +216,21 @@ def validate_self_workflow_contracts(repo_root: Path) -> int:
         runner.get("trusted_controller_installation", {}).get("installed_commit_sha", "")
     )
     required_python = runner.get("trusted_controller_interpreter", {})
+    release_credential = runner.get("trusted_release_credential", {})
+    if release_credential != {
+        "secret_name": "BCF_RELEASE_ADMIN_TOKEN",
+        "lifecycle": "provision_before_dispatch_remove_after_publication",
+        "required_permissions": [
+            "administration_read",
+            "attestations_read",
+            "contents_write",
+        ],
+        "required_workflow": ".github/workflows/bcf-release-publisher.yml",
+    }:
+        raise SelfWorkflowContractError("trusted release credential contract is not exact")
+    release_admin_env = {
+        "GITHUB_TOKEN": "${{ secrets.BCF_RELEASE_ADMIN_TOKEN }}"
+    }
     required_workflows = set(required_python.get("required_workflows", []))
     observed_actions: set[str] = set()
     executable_jobs = 0
@@ -222,7 +259,8 @@ def validate_self_workflow_contracts(repo_root: Path) -> int:
             trusted = trust_class in TRUSTED_CLASSES
             observed_actions.update(
                 _validate_actions_and_commands(
-                    workflow_path=str(relative), job=job, trusted=trusted
+                    workflow_path=str(relative), job=job, trusted=trusted,
+                    release_admin_env=release_admin_env,
                 )
             )
             activation = activations.get(relative, {}).get(job_id)
@@ -245,5 +283,7 @@ def validate_self_workflow_contracts(repo_root: Path) -> int:
         root / ".github/workflows/bcf-release-publisher.yml",
         label="release publisher workflow",
     )
-    _validate_publisher(publisher, installed)
+    _validate_publisher(
+        publisher, installed, secret_name=release_credential["secret_name"]
+    )
     return executable_jobs

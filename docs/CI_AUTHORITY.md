@@ -146,8 +146,11 @@ Publication is separate. Immutable releases must already be enabled. The
 publisher authenticates an annotated unsigned tag at the certified commit,
 creates a draft, attaches and attests only the certified wheel, sdist, and
 checksums, verifies their provider digests, and publishes the draft. It never
-rebuilds. Published tags and releases are not rewritten; a defect advances the
-patch version.
+rebuilds. Repository immutable-release inspection requires Administration read,
+so the trusted publisher uses a short-lived explicitly declared credential for
+that operation and publication; the ordinary workflow token remains the artifact
+resolution credential. Published tags and releases are not rewritten; a defect
+advances the patch version.
 
 The stricter boundary adds control-plane configuration and artifact custody.
 It reduces the chance that persistent candidate state, a misleading check name,
