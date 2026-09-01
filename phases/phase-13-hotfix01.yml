@@ -193,6 +193,7 @@ execution_evidence:
   - PR 54 passed protected runs 33464164662 and 33464164687 and merged as c76c2c734b76f5c38b38a63e3e97482008837983; exact-main 33464367629 passed admission and every producer, then correctly refused only active P13-HF01 closure before finalizer 33464577782 and publisher 33464595105 recorded the terminal non-certified result
   - bootstrap 33464640838 and probe 33464672319 independently proved controller 63c7c180 on both trusted runners; the provider compiler bound both exact matrices and emitted the only confirmation accepted by the projection command
   - the first local confirmation attempt exposed that the command could write an authority document before rejecting a missing GitHub output channel; all trusted commands now preflight that channel before provider access, controller documents publish only after output succeeds, and a causal mutant forbids regression
+  - promoted exact-main, finalizer, status-publisher, and bootstrap workflow bytes are fixed at df6314803ad71f4cdbf7e591b75814c6e60f43ec; the following custody commit mechanically pins all privileged workflow blobs and digests without changing those bytes
 closeout_requirements:
   claims:
     required_suites_green:

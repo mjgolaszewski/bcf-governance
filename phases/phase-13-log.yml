@@ -72,6 +72,8 @@ summary:
   - controller rotation is provider-confirmed on both trusted runners through bootstrap 33464640838
     and probe 33464672319; trusted command output channels now fail before provider access or
     authority-document publication
+  - promoted trusted workflow bytes are committed at df6314803ad71f4cdbf7e591b75814c6e60f43ec;
+    their exact Git blobs and SHA-256 values are compiled in the following custody commit
 workitems:
 - id: P13-P0-01
   status: IN_PROGRESS
