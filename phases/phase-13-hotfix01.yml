@@ -223,6 +223,9 @@ execution_evidence:
   - command: selected-environment release preflight; exact source gate; exact contract evidence; canonical local PR preflight
     result: pass
     notes: exact implementation commit 0bc21f2 passed all 532 source nodes, 267 contract nodes, and 95 isolated causal controls; the live-inventory mutant was killed at its exact oracle without infrastructure failure or unrelated worktree change
+  - command: exact-main 33491797937; controller-pin resolve|compile; sync-self-controller --apply
+    result: pass
+    notes: provider APIs and downloaded checksums selected exact controller artifact 9794142932 and projected its pending bootstrap/probe target; no provider, Git, artifact, or wheel identity was transcribed
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
