@@ -21,13 +21,14 @@ from .release_closure import verify_archive, verify_wheelhouse
 EXPECTED_PYTHON = "3.12.14"
 EXPECTED_PLATFORM = "linux_x86_64"
 _SAFE_HOST_ENVIRONMENT = ("LANG", "LC_ALL", "TMPDIR")
-_PORTABLE_TEST_ENVIRONMENT = "BCF_RELEASE_SDIST_PORTABLE_TEST"
+SDIST_PORTABLE_TEST_ENV = "BCF_RELEASE_SDIST_PORTABLE_TEST"
+SDIST_CUSTODY_COMMIT_MESSAGE = "exact sdist"
 
 
 def is_release_sdist_test_context(repo_root: Path) -> bool:
     """Recognize only the synthetic Git custody created for an extracted sdist."""
 
-    marker = os.environ.get(_PORTABLE_TEST_ENVIRONMENT)
+    marker = os.environ.get(SDIST_PORTABLE_TEST_ENV)
     if marker is None:
         return False
     if marker != "1":
@@ -38,7 +39,7 @@ def is_release_sdist_test_context(repo_root: Path) -> bool:
         raise GitHubControllerError("release sdist test context lacks package metadata")
     checks = (
         (["git", "rev-list", "--count", "HEAD"], b"1"),
-        (["git", "log", "-1", "--format=%s"], b"exact sdist"),
+        (["git", "log", "-1", "--format=%s"], SDIST_CUSTODY_COMMIT_MESSAGE.encode()),
         (["git", "show", "HEAD:PKG-INFO"], package_metadata.read_bytes().rstrip(b"\n")),
     )
     for argv, expected in checks:
@@ -174,7 +175,10 @@ def _git_custody(source: Path, output_dir: Path) -> list[dict[str, Any]]:
         ("sdist-git-email", ["git", "config", "user.email", "release@example.invalid"]),
         ("sdist-git-name", ["git", "config", "user.name", "BCF Release Verifier"]),
         ("sdist-git-add", ["git", "add", "."]),
-        ("sdist-git-commit", ["git", "commit", "--quiet", "-m", "exact sdist"]),
+        (
+            "sdist-git-commit",
+            ["git", "commit", "--quiet", "-m", SDIST_CUSTODY_COMMIT_MESSAGE],
+        ),
     ):
         commands.append(
             _run(label, argv, cwd=source, env=env, output_dir=output_dir)
@@ -273,7 +277,7 @@ def run_release_runtime_verification(
                 cwd=root, env=sdist_env, output_dir=output_dir,
             )
         )
-        sdist_env["BCF_RELEASE_SDIST_PORTABLE_TEST"] = "1"
+        sdist_env[SDIST_PORTABLE_TEST_ENV] = "1"
         junit = output_dir / "sdist-tests.xml"
         commands.append(
             _run(

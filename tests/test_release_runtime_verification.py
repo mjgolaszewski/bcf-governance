@@ -10,6 +10,8 @@ import pytest
 from bcf_governance.tooling import ci_github_commands
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError
 from bcf_governance.tooling.release_runtime_verification import (
+    SDIST_CUSTODY_COMMIT_MESSAGE,
+    SDIST_PORTABLE_TEST_ENV,
     is_release_sdist_test_context,
     runtime_environment,
     runtime_evidence_paths,
@@ -107,7 +109,7 @@ def test_candidate_runtime_environment_excludes_provider_authority(
 def test_portable_sdist_mode_requires_mechanically_created_archive_custody(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("BCF_RELEASE_SDIST_PORTABLE_TEST", "1")
+    monkeypatch.setenv(SDIST_PORTABLE_TEST_ENV, "1")
     with pytest.raises(GitHubControllerError, match="package metadata"):
         is_release_sdist_test_context(tmp_path)
 
@@ -126,7 +128,7 @@ def test_portable_sdist_mode_requires_mechanically_created_archive_custody(
     )
     subprocess.run(["git", "add", "PKG-INFO"], cwd=tmp_path, check=True)
     subprocess.run(
-        ["git", "commit", "--quiet", "-m", "exact sdist"],
+        ["git", "commit", "--quiet", "-m", SDIST_CUSTODY_COMMIT_MESSAGE],
         cwd=tmp_path,
         check=True,
     )
