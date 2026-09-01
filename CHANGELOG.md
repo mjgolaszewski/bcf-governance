@@ -104,6 +104,8 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Required both scheduled mutant profiles to run the canonical selected-interpreter and
   repository preflight before any mutant. Environment, manifest, syntax, source-lock,
   and ownership defects now fail before mutation work begins.
+- Required scheduled mutant checkouts to fetch complete Git custody before preflight,
+  so compacted phase records are mechanically verifiable before mutation work begins.
 - Made `bcf ci local-pr` default to the canonical selected-interpreter preflight
   documented for contributors, removing a hidden argv sequencing requirement while
   retaining an explicit-command override.

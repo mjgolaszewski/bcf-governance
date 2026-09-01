@@ -169,6 +169,15 @@ execution_evidence:
   - command: GitHub governance-pack pull-request run 33468893710
     result: expected_fail_remediated
     notes: clean hosted package execution rejected the self-profile builder because its new optional sync path imported packaged rendering before seeding repository source; the self-only script now seeds its exact repo root and is regression-tested with PYTHONPATH absent
+  - command: GitHub exact-main 33469319886; finalizer 33469529141; publisher 33469550169
+    result: pass
+    notes: exact merge 18db5cd passed selected-interpreter preflight, all 21 gates, every same-run producer, and membership; closure refused only active P13-HF01 before the trusted finalizer and publisher recorded terminal failure
+  - command: .venv/bin/python .github/scripts/run_self_governance_gate.py test; .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value; .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+    result: pass
+    notes: exact commit 3dc0552 passed all 513 source nodes and all 13 validator plus 10 evidence/truth high-value mutants after scheduled history custody was added
+  - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
+    result: pass
+    notes: exact-tree local evidence on 3dc0552 passed all 248 contract nodes and all 81 isolated controls; the full-history mutant failed its exact scheduled-workflow owner with no unrelated worktree change
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
@@ -236,6 +245,7 @@ execution_evidence:
   - profile-v2 evidence semantics now resolve only from gate contracts; evidence policy retains cross-gate policy and validation rejects any per-gate override, eliminating the generated-copy synchronization failure exposed while adding scheduled preflight
   - nightly and weekly mutant workflows now invoke the canonical selected-interpreter preflight before mutation execution, so virtualenv or dependency defects cannot first appear in mutant results
   - the documented local-PR command now selects the canonical selected-interpreter preflight when no explicit argv is supplied; an exact custom argv remains available after `--`, and a causal control rejects any hidden fallback-path change
+  - nightly run 33469562066 skipped every mutant when canonical preflight rejected a shallow checkout that could not verify compacted phase custody; both scheduled workflows now fetch complete history, and a causal control rejects regression before mutation execution
 closeout_requirements:
   claims:
     required_suites_green:

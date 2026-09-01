@@ -79,6 +79,8 @@ summary:
     canary is prepared for owner-dispatched success, revocation, and rerun precedence proofs
   - final authority-canary bytes are committed at 544f670980e3f14f25880875241807a37125d675;
     their workflow blob, digest, job inventory, and source roles are compiled in the next commit
+  - scheduled mutant preflight receives complete Git history so retention-backed phase
+    custody is verified before any mutation process starts
 workitems:
 - id: P13-P0-01
   status: IN_PROGRESS
