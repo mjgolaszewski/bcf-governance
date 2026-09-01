@@ -28,6 +28,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Added a trusted release-input resolver that derives exact-main, finalizer, controller,
   run, attempt, artifact, commit, tree, and provider-digest custody from authenticated
   provider state instead of accepting operator-authored release authority.
+- Rotated the pending trusted-controller target from the resolver-selected exact-main
+  package artifact; provider IDs, digests, wheel hash, commit, and tree are compiler
+  output rather than operator-entered release inputs.
 
 ### Fixed
 
