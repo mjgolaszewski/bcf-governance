@@ -151,6 +151,7 @@ execution_evidence:
   - the first optimized local capture rejected a legitimate spaced pytest parameter as unsafe; direct-argv node suffixes now accept printable ASCII while module paths remain repository-safe, and a spaced provider-identity parameter is a regression fixture
   - exact-main run 33455263686 failed at trusted admission before producer allocation because the installed 1f96e456 controller rejected the new job_roles workflow property; the bridge retains only authority-v1.1 base workflow fields, mechanically infers admission roles from producer source keys, and keeps privileged role commands fail-closed until the successor controller is installed
   - compatibility PR 48 merged as cc3c1fecb24b5c3c6bd23eca901412d03e778a7d; exact-main run 33456616842 passed admission and every producer, correctly rejected active-phase closure, and emitted successor controller artifact 9781702346 whose provider and wheel digests were mechanically verified before projection
+  - full successor-pin dogfooding found the former controller commit duplicated in topology and a self-adoption test; the canonical pin now projects topology, generator parity consumes that projection, and a causal mutant rejects any reintroduced split ownership
 closeout_requirements:
   claims:
     required_suites_green:

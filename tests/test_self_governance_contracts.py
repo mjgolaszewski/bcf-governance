@@ -474,6 +474,9 @@ def test_trusted_controller_steps_receive_github_token_explicitly() -> None:
 
 
 def test_self_control_plane_is_an_exact_v11_generator_product() -> None:
+    topology = yaml.safe_load(
+        (REPO_ROOT / "governance/github-ci-topology.yml").read_text(encoding="utf-8")
+    )
     expected = render_github_v11_control_plane(
         default_branch="main",
         trusted_labels=("self-hosted", "Linux", "X64", "bcf-governance", "vm-linux-ci-runner"),
@@ -481,7 +484,7 @@ def test_self_control_plane_is_an_exact_v11_generator_product() -> None:
             ("governance", "Run exact-main governance evidence", ".github/workflows/governance.yml", (("evaluation_mode", "closure"),)),
             ("governance-pack", "Verify exact-main package and templates", ".github/workflows/governance-pack.yml", (("build_controller", True),)),
         ),
-        controller_commit="1f96e45604c376918154dc50904fc0249d9b8e93",
+        controller_commit=topology["controller_commit"],
     )
     for relative, content in expected.items():
         assert yaml.safe_load((REPO_ROOT / relative).read_bytes()) == yaml.safe_load(content)

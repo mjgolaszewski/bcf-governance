@@ -76,6 +76,8 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Mechanically selected the successor controller from the newest exact-main package
   producer, verified its provider archive and closed wheel inventory, and projected its
   single canonical pin into the trusted control workflows without operator-authored custody.
+- Made that same controller pin mechanically own the GitHub topology controller commit,
+  removing the former duplicated commit literal from self-adoption and profile readiness.
 
 ### Changed
 
