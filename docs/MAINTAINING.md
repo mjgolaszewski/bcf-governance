@@ -167,8 +167,9 @@ For a release:
 5. Merge the reviewed pull request after required CI passes and certify that
    exact main commit through the trusted control plane.
 6. Owner-dispatch the release authorization on exact certified main. A fresh
-   hosted builder emits untrusted bytes; a different fresh hosted verifier
-   installs and tests them from the closed wheelhouse.
+   hosted builder emits untrusted bytes; a different fresh hosted runtime job
+   installs and tests them from the closed wheelhouse, and another fresh hosted
+   job authenticates provider custody without executing candidate code.
 7. Let the no-checkout trusted collector authenticate both runs and emit the
    sole output-only release receipt. Run provider inspection with publication
    disabled.

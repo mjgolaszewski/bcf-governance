@@ -304,6 +304,9 @@ def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
 
 def test_self_governance_runner_classification_is_exact_and_has_no_fallback() -> None:
     runner_policy = _policy()["runner_security"]
+    release_subject = yaml.safe_load(
+        (REPO_ROOT / "release/wheelhouse-manifest.yml").read_text(encoding="utf-8")
+    )["subject"]
     expected_jobs = runner_policy["jobs"]
     observed_jobs: dict[str, dict[str, str]] = {}
     for relative_path, classification in expected_jobs.items():
@@ -326,6 +329,8 @@ def test_self_governance_runner_classification_is_exact_and_has_no_fallback() ->
                 assert jobs[job_id]["uses"].startswith("./.github/workflows/")
                 assert jobs[job_id]["permissions"] == {"contents": "read"}
                 continue
+            elif trust_class in {"release_candidate", "provider_control_hosted"}:
+                expected_labels = release_subject["operating_system"]
             else:
                 expected_labels = runner_policy["candidate_routing"]["candidate_runner"]
             assert jobs[job_id]["runs-on"] == expected_labels
@@ -347,6 +352,11 @@ def test_all_candidate_code_uses_fresh_standard_hosted_workers() -> None:
         "repository_visibility": "public",
         "billing_class": "standard_public_repository",
     }
+    release_subject = yaml.safe_load(
+        (REPO_ROOT / "release/wheelhouse-manifest.yml").read_text(encoding="utf-8")
+    )["subject"]
+    assert release_subject["operating_system"] == "ubuntu-24.04"
+    assert release_subject["python"] == "3.12.14"
     for relative_path, classifications in runner_policy["jobs"].items():
         workflow = yaml.safe_load(
             (REPO_ROOT / relative_path).read_text(encoding="utf-8")
@@ -354,6 +364,10 @@ def test_all_candidate_code_uses_fresh_standard_hosted_workers() -> None:
         for job_id, trust_class in classifications.items():
             if trust_class == "candidate":
                 assert workflow["jobs"][job_id]["runs-on"] == "ubuntu-latest"
+            elif trust_class in {"release_candidate", "provider_control_hosted"}:
+                assert workflow["jobs"][job_id]["runs-on"] == release_subject[
+                    "operating_system"
+                ]
 
 
 def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
@@ -435,13 +449,13 @@ def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
                             "github.ref == 'refs/heads/main' && "
                             "needs.admit.result == 'success' }}"
                         ),
+                        "exact_release_verifier_success": (
+                            "${{ github.event.workflow_run.event == 'workflow_run' && "
+                            "github.event.workflow_run.head_branch == 'main' && "
+                            "github.event.workflow_run.conclusion == 'success' }}"
+                        ),
                     }
                     assert workflow["jobs"][job_id]["if"] == expected[activation]
-    release = yaml.safe_load(
-        (REPO_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
-    )
-    assert set(release["jobs"]) == {"authority-cutover-pending"}
-    assert release["jobs"]["authority-cutover-pending"]["if"] == "${{ false }}"
 
 
 def test_authority_canary_is_owner_dispatched_and_attempt_deterministic() -> None:

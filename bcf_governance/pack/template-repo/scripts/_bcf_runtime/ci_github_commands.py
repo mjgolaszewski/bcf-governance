@@ -50,7 +50,11 @@ from .ci_self_controller import (
     resolve_self_controller_artifact,
 )
 from .ci_github_bundle import write_exclusive
-from .release_runtime_verification import run_release_runtime_verification
+from .release_asset_inventory import release_asset_paths
+from .release_runtime_verification import (
+    run_release_runtime_verification,
+    runtime_evidence_paths,
+)
 
 
 def _required_environment(name: str) -> str:
@@ -290,7 +294,7 @@ def _release_parser() -> argparse.ArgumentParser:
     verify.add_argument("--wheelhouse-manifest", type=Path, required=True)
     verify.add_argument("--lock", type=Path, required=True)
     verify.add_argument("--wheelhouse", type=Path, required=True)
-    verify.add_argument("--release-artifact", type=Path, action="append", required=True)
+    _release_artifact_arguments(verify)
     verify.add_argument("--python", type=Path, required=True)
     verify.add_argument("--runtime-output", type=Path, required=True)
     verify.add_argument("--output", type=Path, required=True)
@@ -298,7 +302,7 @@ def _release_parser() -> argparse.ArgumentParser:
     runtime.add_argument("--wheelhouse-manifest", type=Path, required=True)
     runtime.add_argument("--lock", type=Path, required=True)
     runtime.add_argument("--wheelhouse", type=Path, required=True)
-    runtime.add_argument("--release-artifact", type=Path, action="append", required=True)
+    _release_artifact_arguments(runtime)
     runtime.add_argument("--python", type=Path, required=True)
     runtime.add_argument("--output", type=Path, required=True)
     evidence = operations.add_parser("verify-evidence")
@@ -308,15 +312,15 @@ def _release_parser() -> argparse.ArgumentParser:
     evidence.add_argument("--wheelhouse-manifest", type=Path, required=True)
     evidence.add_argument("--lock", type=Path, required=True)
     evidence.add_argument("--wheelhouse", type=Path, required=True)
-    evidence.add_argument("--release-artifact", type=Path, action="append", required=True)
+    _release_artifact_arguments(evidence)
     evidence.add_argument("--runtime-report", type=Path, required=True)
-    evidence.add_argument("--runtime-evidence", type=Path, action="append", required=True)
+    _runtime_evidence_arguments(evidence)
     evidence.add_argument("--output", type=Path, required=True)
     build = operations.add_parser("build")
     build.add_argument("--authorization", type=Path, required=True)
     build.add_argument("--wheelhouse-manifest", type=Path, required=True)
     build.add_argument("--lock", type=Path, required=True)
-    build.add_argument("--release-artifact", type=Path, action="append", required=True)
+    _release_artifact_arguments(build)
     build.add_argument("--artifact-name", required=True)
     build.add_argument("--output", type=Path, required=True)
     collect = operations.add_parser("collect")
@@ -326,8 +330,8 @@ def _release_parser() -> argparse.ArgumentParser:
     collect.add_argument("--build-manifest", type=Path, required=True)
     collect.add_argument("--verification", type=Path, required=True)
     collect.add_argument("--runtime-report", type=Path, required=True)
-    collect.add_argument("--runtime-evidence", type=Path, action="append", required=True)
-    collect.add_argument("--release-artifact", type=Path, action="append", required=True)
+    _runtime_evidence_arguments(collect)
+    _release_artifact_arguments(collect)
     collect.add_argument("--output", type=Path, required=True)
     collect.add_argument("--verification-artifact-name", required=True)
     for operation in (operations.add_parser("inspect"), operations.add_parser("publish")):
@@ -342,6 +346,36 @@ def _release_parser() -> argparse.ArgumentParser:
     publish.add_argument("--receipt-artifact-name", required=True)
     publish.add_argument("--receipt-provider-digest", required=True)
     return parser
+
+
+def _release_artifact_arguments(parser: argparse.ArgumentParser) -> None:
+    inputs = parser.add_mutually_exclusive_group(required=True)
+    inputs.add_argument("--release-artifact", type=Path, action="append")
+    inputs.add_argument("--release-artifact-dir", type=Path)
+
+
+def _runtime_evidence_arguments(parser: argparse.ArgumentParser) -> None:
+    inputs = parser.add_mutually_exclusive_group(required=True)
+    inputs.add_argument("--runtime-evidence", type=Path, action="append")
+    inputs.add_argument("--runtime-evidence-dir", type=Path)
+
+
+def _release_artifacts(args: argparse.Namespace) -> tuple[Path, ...]:
+    directory = getattr(args, "release_artifact_dir", None)
+    return (
+        release_asset_paths(directory)
+        if directory is not None
+        else tuple(args.release_artifact)
+    )
+
+
+def _runtime_evidence(args: argparse.Namespace) -> tuple[Path, ...]:
+    directory = getattr(args, "runtime_evidence_dir", None)
+    return (
+        runtime_evidence_paths(args.runtime_report, directory)
+        if directory is not None
+        else tuple(args.runtime_evidence)
+    )
 
 
 def _authorization_inputs(args: argparse.Namespace) -> dict[str, Any]:
@@ -389,9 +423,10 @@ def _release(argv: list[str]) -> None:
         print(json.dumps(result, sort_keys=True))
         return
     elif args.operation in {"verify", "runtime"}:
-        wheels = [path for path in args.release_artifact if path.suffix == ".whl"]
+        release_artifacts = _release_artifacts(args)
+        wheels = [path for path in release_artifacts if path.suffix == ".whl"]
         sdists = [
-            path for path in args.release_artifact if path.name.endswith(".tar.gz")
+            path for path in release_artifacts if path.name.endswith(".tar.gz")
         ]
         if len(wheels) != 1 or len(sdists) != 1:
             raise GitHubControllerError("release verification requires one wheel and one sdist")
@@ -417,7 +452,7 @@ def _release(argv: list[str]) -> None:
             manifest_path=args.wheelhouse_manifest,
             lock_path=args.lock,
             wheelhouse=args.wheelhouse,
-            release_artifacts=args.release_artifact,
+            release_artifacts=release_artifacts,
             verifier_run_id=_required_environment("GITHUB_RUN_ID"),
             verifier_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
             output_path=args.output,
@@ -435,19 +470,19 @@ def _release(argv: list[str]) -> None:
             manifest_path=args.wheelhouse_manifest,
             lock_path=args.lock,
             wheelhouse=args.wheelhouse,
-            release_artifacts=args.release_artifact,
+            release_artifacts=_release_artifacts(args),
             verifier_run_id=_required_environment("GITHUB_RUN_ID"),
             verifier_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
             output_path=args.output,
             runtime_report_path=args.runtime_report,
-            runtime_evidence=args.runtime_evidence,
+            runtime_evidence=_runtime_evidence(args),
         )
     elif args.operation == "build":
         result = record_release_build(
             authorization_path=args.authorization,
             manifest_path=args.wheelhouse_manifest,
             lock_path=args.lock,
-            release_artifacts=args.release_artifact,
+            release_artifacts=_release_artifacts(args),
             run_id=_required_environment("GITHUB_RUN_ID"),
             run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
             artifact_name=args.artifact_name,
@@ -476,12 +511,12 @@ def _release(argv: list[str]) -> None:
                 authorization_path=args.authorization,
                 build_manifest_path=args.build_manifest,
                 verification_path=args.verification,
-                release_artifacts=args.release_artifact,
+                release_artifacts=_release_artifacts(args),
                 collector_run_id=_required_environment("GITHUB_RUN_ID"),
                 collector_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
                 verification_artifact_name=args.verification_artifact_name,
                 runtime_report_path=args.runtime_report,
-                runtime_evidence=args.runtime_evidence,
+                runtime_evidence=_runtime_evidence(args),
                 output_path=args.output,
             )
         else:

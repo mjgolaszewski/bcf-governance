@@ -5,12 +5,160 @@ on:
 
 permissions: {}
 
+env:
+  BCF_CONTROL_COMMIT: 7c30cdca31fa41eb99c5794f9fbbf61b812589f2
+
 jobs:
-  authority-cutover-pending:
-    name: Release disabled until authority v1.1 activation
-    if: ${{ false }}
+  authorize:
+    name: Authorize newest certified exact main without candidate checkout
+    if: ${{ github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main' }}
     runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
-    timeout-minutes: 1
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      subject_commit: ${{ steps.resolve.outputs.subject_commit }}
+      subject_tree: ${{ steps.resolve.outputs.subject_tree }}
     steps:
-      - name: Fail closed during the structural-to-activation interval
-        run: exit 1
+      - name: Restore the trusted controller interpreter environment
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+      - name: Resolve provider-authenticated release inputs
+        id: resolve
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/$BCF_CONTROL_COMMIT"
+          test -d "$control_root"
+          test ! -L "$control_root"
+          test -x "$control_root/bin/bcf"
+          mkdir -p "$RUNNER_TEMP/bcf-release/certification" "$RUNNER_TEMP/bcf-release/controller"
+          "$control_root/bin/bcf" ci-github release resolve \
+            --repository "$GITHUB_REPOSITORY" \
+            --output "$RUNNER_TEMP/bcf-release/release-inputs.json"
+      - name: Download only the resolved certification artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          artifact-ids: ${{ steps.resolve.outputs.certification_artifact_id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.resolve.outputs.certification_run_id }}
+          path: ${{ runner.temp }}/bcf-release/certification
+          digest-mismatch: error
+      - name: Download only the resolved exact-main controller artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          artifact-ids: ${{ steps.resolve.outputs.controller_artifact_id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.resolve.outputs.controller_run_id }}
+          path: ${{ runner.temp }}/bcf-release/controller
+          digest-mismatch: error
+      - name: Authorize exact provider and Git custody
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/$BCF_CONTROL_COMMIT"
+          "$control_root/bin/bcf" ci-github release authorize \
+            --repository "$GITHUB_REPOSITORY" \
+            --bundle "$RUNNER_TEMP/bcf-release/certification" \
+            --inputs "$RUNNER_TEMP/bcf-release/release-inputs.json" \
+            --controller-wheel "$RUNNER_TEMP/bcf-release/controller/bcf_governance-0.7.1-py3-none-any.whl" \
+            --output "$RUNNER_TEMP/bcf-release/release-authorization.json"
+      - name: Upload immutable release authorization inputs
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: bcf-release-authorization-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/bcf-release
+          if-no-files-found: error
+          retention-days: 30
+
+  build:
+    name: Build exact certified release bytes on a fresh hosted runner
+    needs: [authorize]
+    if: ${{ needs.authorize.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Check out only the authorized exact commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.authorize.outputs.subject_commit }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Select the closed release interpreter
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12.14"
+      - name: Download this attempt's authorization only
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: bcf-release-authorization-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .artifacts/release-build/release-input
+      - name: Materialize and install the hash-closed build wheelhouse
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts/release-build/wheelhouse .artifacts/release-build/evidence
+          python -m pip download --only-binary=:all: --require-hashes \
+            --dest .artifacts/release-build/wheelhouse \
+            -r release/requirements-cp312-linux-x86_64.lock
+          python -m pip install --no-index --require-hashes \
+            --find-links .artifacts/release-build/wheelhouse \
+            -r release/requirements-cp312-linux-x86_64.lock
+      - name: Test the exact source before artifact construction
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pytest -q tests \
+            --junitxml=.artifacts/release-build/evidence/source-tests.xml \
+            >.artifacts/release-build/evidence/source-tests.stdout \
+            2>.artifacts/release-build/evidence/source-tests.stderr
+      - name: Build exact wheel and source archive without isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts/release-build/assets
+          SOURCE_DATE_EPOCH="$(git show -s --format=%ct HEAD)" \
+            python -m build --no-isolation --wheel --sdist \
+            --outdir .artifacts/release-build/assets \
+            >.artifacts/release-build/evidence/build.stdout \
+            2>.artifacts/release-build/evidence/build.stderr
+          test -f .artifacts/release-build/assets/bcf_governance-0.7.1-py3-none-any.whl
+          test -f .artifacts/release-build/assets/bcf_governance-0.7.1.tar.gz
+          (cd .artifacts/release-build/assets && \
+            sha256sum bcf_governance-0.7.1-py3-none-any.whl bcf_governance-0.7.1.tar.gz > SHA256SUMS)
+      - name: Record the untrusted build manifest mechanically
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m bcf_governance.cli ci-github release build \
+            --authorization .artifacts/release-build/release-input/release-authorization.json \
+            --wheelhouse-manifest release/wheelhouse-manifest.yml \
+            --lock release/requirements-cp312-linux-x86_64.lock \
+            --release-artifact-dir .artifacts/release-build/assets \
+            --artifact-name "bcf-release-build-${{ needs.authorize.outputs.subject_commit }}-$GITHUB_RUN_ATTEMPT" \
+            --output .artifacts/release-build/release-build-manifest.json
+      - name: Preserve exact release source bindings in the build bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts/release-build/release
+          cp release/wheelhouse-manifest.yml .artifacts/release-build/release/
+          cp release/requirements-cp312-linux-x86_64.lock .artifacts/release-build/release/
+      - name: Upload the exact untrusted build bundle
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: bcf-release-build-${{ needs.authorize.outputs.subject_commit }}-${{ github.run_attempt }}
+          path: .artifacts/release-build
+          if-no-files-found: error
+          retention-days: 30

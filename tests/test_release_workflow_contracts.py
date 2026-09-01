@@ -6,7 +6,7 @@ import yaml
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-WORKFLOW_PATH = REPO_ROOT / ".github/workflows/release.yml"
+WORKFLOW_ROOT = REPO_ROOT / ".github/workflows"
 TRUSTED_LABELS = [
     "self-hosted",
     "Linux",
@@ -16,67 +16,110 @@ TRUSTED_LABELS = [
 ]
 
 
-def _workflow() -> dict[str, object]:
-    return yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+def _workflow(name: str) -> dict[str, object]:
+    return yaml.safe_load((WORKFLOW_ROOT / name).read_text(encoding="utf-8"))
 
 
-def _job() -> dict[str, object]:
-    return _workflow()["jobs"]["authority-cutover-pending"]  # type: ignore[index,return-value]
+def _serialized(name: str) -> str:
+    return (WORKFLOW_ROOT / name).read_text(encoding="utf-8")
 
 
-def test_release_requires_owner_dispatch_of_exact_main_before_candidate() -> None:
-    workflow = _workflow()
+def test_release_authorizer_is_owner_dispatched_no_checkout_control_plane() -> None:
+    workflow = _workflow("release.yml")
     assert workflow[True] == {"workflow_dispatch": None}
     assert workflow["permissions"] == {}
-    assert set(workflow["jobs"]) == {"authority-cutover-pending"}  # type: ignore[arg-type]
-    assert _job()["runs-on"] == TRUSTED_LABELS
+    assert list(workflow["jobs"]) == ["authorize", "build"]  # type: ignore[arg-type]
+    authorize = workflow["jobs"]["authorize"]  # type: ignore[index]
+    assert authorize["runs-on"] == TRUSTED_LABELS
+    assert authorize["if"] == (
+        "${{ github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main' }}"
+    )
+    steps = "\n".join(str(step) for step in authorize["steps"])
+    assert "actions/checkout@" not in steps
+    assert "ci-github release resolve" in steps
+    assert "ci-github release authorize" in steps
 
 
-def test_release_authorization_reconstructs_current_provider_state_once() -> None:
-    assert _job()["if"] == "${{ false }}"
-    assert _job()["timeout-minutes"] == 1
+def test_release_builder_uses_exact_subject_closed_runtime_and_no_credentials() -> None:
+    build = _workflow("release.yml")["jobs"]["build"]  # type: ignore[index]
+    assert build["needs"] == ["authorize"]
+    assert build["runs-on"] == "ubuntu-24.04"
+    assert build["permissions"] == {"actions": "read", "contents": "read"}
+    checkout = next(
+        step for step in build["steps"] if str(step.get("uses", "")).startswith("actions/checkout@")
+    )
+    assert checkout["with"] == {
+        "ref": "${{ needs.authorize.outputs.subject_commit }}",
+        "fetch-depth": 0,
+        "persist-credentials": False,
+    }
+    serialized = _serialized("release.yml")
+    assert 'python-version: "3.12.14"' in serialized
+    assert "--require-hashes" in serialized
+    assert "--no-isolation" in serialized
+    assert "--release-artifact-dir" in serialized
+    assert "python -m pytest" in serialized
 
 
-def test_candidate_verifies_authorization_before_exact_checkout_and_execution() -> None:
-    serialized = WORKFLOW_PATH.read_text(encoding="utf-8")
+def test_verifier_separates_token_free_runtime_from_provider_authentication() -> None:
+    workflow = _workflow("bcf-release-verifier.yml")
+    assert list(workflow["jobs"]) == ["runtime", "authenticate"]  # type: ignore[arg-type]
+    runtime = workflow["jobs"]["runtime"]  # type: ignore[index]
+    authenticate = workflow["jobs"]["authenticate"]  # type: ignore[index]
+    assert runtime["runs-on"] == authenticate["runs-on"] == "ubuntu-24.04"
+    assert authenticate["needs"] == ["runtime"]
+    runtime_command = next(
+        step for step in runtime["steps"] if "ci-github release runtime" in str(step.get("run", ""))
+    )
+    assert runtime_command["env"] == {
+        "GITHUB_TOKEN": "",
+        "ACTIONS_ID_TOKEN_REQUEST_TOKEN": "",
+        "ACTIONS_RUNTIME_TOKEN": "",
+    }
+    authenticate_text = "\n".join(str(step) for step in authenticate["steps"])
+    assert "ci-github release verify-evidence" in authenticate_text
+    assert "ci-github release runtime" not in authenticate_text
+    assert "actions/checkout@" not in _serialized("bcf-release-verifier.yml")
+
+
+def test_release_file_selection_and_attempt_fan_in_are_controller_owned() -> None:
+    release = _serialized("release.yml")
+    verifier = _serialized("bcf-release-verifier.yml")
+    collector = _serialized("bcf-release-collector.yml")
+    assert "--release-artifact-dir" in release
+    assert "--release-artifact-dir" in verifier
+    assert "--runtime-evidence-dir" in verifier
+    assert "--release-artifact-dir" in collector
+    assert "--runtime-evidence-dir" in collector
+    assert "bcf-release-runtime-${{ github.run_id }}-${{ github.run_attempt }}" in verifier
+    assert "bcf-release-verification-${{ github.run_id }}-${{ github.run_attempt }}" in verifier
+    assert "bcf-release-verification-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}" in collector
+    for forbidden in ("jq ", "gh api", "max_by", "sleep ", "while "):
+        assert forbidden not in release + verifier + collector
+
+
+def test_collector_is_no_checkout_trusted_recomputation_and_sole_receipt_owner() -> None:
+    workflow = _workflow("bcf-release-collector.yml")
+    assert list(workflow["jobs"]) == ["collect"]  # type: ignore[arg-type]
+    collect = workflow["jobs"]["collect"]  # type: ignore[index]
+    assert collect["runs-on"] == TRUSTED_LABELS
+    assert collect["if"] == (
+        "${{ github.event.workflow_run.event == 'workflow_run' && "
+        "github.event.workflow_run.head_branch == 'main' && "
+        "github.event.workflow_run.conclusion == 'success' }}"
+    )
+    serialized = _serialized("bcf-release-collector.yml")
     assert "actions/checkout@" not in serialized
-    assert "ubuntu-latest" not in serialized
+    assert "ci-github release collect" in serialized
+    assert "pip install" not in serialized
+    assert "python -m build" not in serialized
 
 
-def test_release_truth_binds_certification_evidence_and_exact_artifact_bytes() -> None:
-    assert "release-artifacts" not in _workflow()["jobs"]  # type: ignore[operator]
-    assert "publish-release" not in _workflow()["jobs"]  # type: ignore[operator]
-
-
-def test_p12_publication_is_named_and_mechanically_event_guarded() -> None:
-    job = _job()
-    assert job["name"] == "Release disabled until authority v1.1 activation"
-    assert job["if"] == "${{ false }}"
-
-
-def test_publisher_checks_out_nothing_and_rebuilds_nothing() -> None:
-    serialized = WORKFLOW_PATH.read_text(encoding="utf-8")
-    for forbidden in ("python -m build", "pip install", "twine", "git checkout"):
+def test_publisher_remains_fail_closed_pending_explicit_owner_approval() -> None:
+    workflow = _workflow("bcf-release-publisher.yml")
+    assert list(workflow["jobs"]) == ["publish"]  # type: ignore[arg-type]
+    publish = workflow["jobs"]["publish"]  # type: ignore[index]
+    assert publish["if"] == "${{ false }}"
+    serialized = _serialized("bcf-release-publisher.yml")
+    for forbidden in ("actions/checkout@", "python -m build", "pip install", "gh release"):
         assert forbidden not in serialized
-
-
-def test_publisher_authenticates_tag_run_attempt_artifact_and_receipt() -> None:
-    workflow = _workflow()
-    assert workflow[True] == {"workflow_dispatch": None}
-    assert "tags" not in WORKFLOW_PATH.read_text(encoding="utf-8")
-
-
-def test_publisher_attests_and_publishes_only_fixed_authenticated_paths() -> None:
-    serialized = WORKFLOW_PATH.read_text(encoding="utf-8")
-    assert "attest-build-provenance" not in serialized
-    assert "gh release" not in serialized
-
-
-def test_publisher_removes_only_its_exact_run_scoped_workspace() -> None:
-    steps = _job()["steps"]
-    assert steps == [
-        {
-            "name": "Fail closed during the structural-to-activation interval",
-            "run": "exit 1",
-        }
-    ]

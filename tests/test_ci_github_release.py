@@ -30,6 +30,7 @@ from bcf_governance.tooling.ci_github_release_inputs import (
 )
 from bcf_governance.tooling.ci_authority_state import WorkflowIdentity
 from bcf_governance.tooling.release_closure import verify_release_lock
+from bcf_governance.tooling.release_asset_inventory import release_asset_paths
 from bcf_governance.tooling.release_receipts import (
     ReleaseReceiptError,
     build_trusted_release_receipt,
@@ -220,6 +221,20 @@ def test_release_verifier_recomputes_closed_bytes_and_archives(tmp_path: Path) -
     assert result["status"] == "passed"
     assert result["assets"] == values["assets"]
     assert result["dependency_closure"]["status"] == "verified"  # type: ignore[index]
+
+
+def test_release_asset_directory_rejects_extra_or_unsafe_members(tmp_path: Path) -> None:
+    values = _release_inputs(tmp_path / "inputs")
+    root = tmp_path / "assets"
+    root.mkdir()
+    for source in values["artifacts"]:  # type: ignore[union-attr]
+        (root / source.name).write_bytes(source.read_bytes())
+
+    assert release_asset_paths(root) == tuple(sorted(root.iterdir()))
+
+    (root / "operator-added.txt").write_text("extra\n", encoding="utf-8")
+    with pytest.raises(GitHubControllerError, match="one wheel"):
+        release_asset_paths(root)
 
 
 def test_release_verifier_rejects_candidate_manifest_and_dependency_mutants(

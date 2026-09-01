@@ -50,6 +50,12 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Promoted the token-isolated release controller only after provider-authenticated
   bootstrap and independent probe runs proved its exact installation on both trusted
   runners; the provider compiler remains the sole owner of promotion inputs.
+- Activated publication-disabled release authorization, fresh hosted build, isolated
+  token-free runtime verification, separate provider authentication, and trusted
+  no-checkout collection while leaving the publisher fail-closed.
+- Replaced workflow-maintained release and runtime-evidence file lists with exact
+  controller-owned directory inventories that reject extra, missing, unsafe, or
+  undeclared members.
 
 ### Fixed
 
