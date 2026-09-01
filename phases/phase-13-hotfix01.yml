@@ -247,6 +247,9 @@ execution_evidence:
   - command: canonical release preflight; exact source gate; exact contract evidence; canonical local PR preflight
     result: pass
     notes: non-authoritative exact-commit 286d854 evidence passed environment preflight, 532 source nodes, 267 contract nodes, and all 95 isolated cause-verified controls before provider CI; all selection and PR-base inputs were mechanically derived
+  - command: canonical release preflight; .venv/bin/python -m pytest -q tests; exact contract evidence; canonical local PR preflight
+    result: pass
+    notes: committed remediation head 6ddf0de passed selected-interpreter and generated-pack custody before all 533 source nodes; its exact contract receipt passed 268 nodes and all 97 isolated causal controls, including release artifact-shape and preflight pack-custody mutants, and local PR context was fetched and derived mechanically
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
