@@ -11,6 +11,7 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
+from bcf_governance.tooling import ci_github_authority
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError
 from bcf_governance.tooling.ci_github_artifacts import ProviderArtifact
 from bcf_governance.tooling.ci_github_api import GitHubContent
@@ -40,6 +41,54 @@ from bcf_governance.tooling.release_receipts import (
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMMIT = "a" * 40
 TREE = "b" * 40
+
+
+def test_nonterminal_privileged_inventory_accepts_only_pinned_partial_jobs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    authority = {
+        "schema_version": "1.1",
+        "roles": {"release_authorizer": "release"},
+        "workflow_registry": {
+            "release": {
+                "expected_jobs": [
+                    {"job_id": "Authorize"},
+                    {"job_id": "Build"},
+                ],
+            },
+        },
+    }
+    identity = SimpleNamespace(run_id="10", run_attempt=1)
+    monkeypatch.setattr(
+        ci_github_authority, "authenticate_role_run", lambda *_, **__: identity
+    )
+    jobs = [{"name": "Authorize", "status": "in_progress", "conclusion": None}]
+    api = SimpleNamespace(jobs=lambda *_, **__: jobs)
+    kwargs = {
+        "repository": "owner/repo",
+        "main": MainIdentity("101", "main", COMMIT, TREE),
+        "authority": authority,
+        "role": "release_authorizer",
+        "run_id": "10",
+        "run_attempt": 1,
+        "require_success": False,
+    }
+
+    _, observed = ci_github_authority.authenticate_role_job_inventory(
+        api, require_terminal=False, **kwargs
+    )
+    assert observed == jobs
+
+    jobs[0]["name"] = "Unpinned"
+    with pytest.raises(GitHubControllerError, match="exact job inventory"):
+        ci_github_authority.authenticate_role_job_inventory(
+            api, require_terminal=False, **kwargs
+        )
+    jobs[0]["name"] = "Authorize"
+    with pytest.raises(GitHubControllerError, match="exact job inventory"):
+        ci_github_authority.authenticate_role_job_inventory(
+            api, require_terminal=True, **kwargs
+        )
 
 
 def _workflow(path: str, event: str) -> WorkflowIdentity:

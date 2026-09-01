@@ -223,6 +223,7 @@ gates:
     - {id: package-preflight-pr-context-must-fail, mutation: {path: .github/workflows/governance-pack.yml, search: 'BCF_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}', replace: 'BCF_PR_BASE_SHA: absent'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_exact_main_controller_wheel_is_built_once_after_pack_checks']}}
     - {id: identity-reference-artifact-membership-must-fail, mutation: {path: .github/scripts/import_identity_reference_proof.py, search: 'if str(artifact_run.get("id")) != run_id:', replace: 'if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_identity_reference_audit::test_identity_reference_importer_rejects_provider_artifact_mismatch']}}
     - {id: identity-reference-archive-digest-must-fail, mutation: {path: .github/scripts/import_identity_reference_proof.py, search: 'if provider_digest != f"sha256:{actual_digest}":', replace: 'if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_identity_reference_audit::test_identity_reference_importer_authenticates_archive_bytes']}}
+    - {id: nonterminal-privileged-inventory-must-not-require-future-jobs, mutation: {path: bcf_governance/tooling/ci_github_authority.py, search: 'or (require_terminal and names_set != expected_set)', replace: 'or names_set != expected_set'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_nonterminal_privileged_inventory_accepts_only_pinned_partial_jobs']}}
     - id: trusted-bootstrap-artifact-identity-must-fail
       mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'if pin["BCF_BOOTSTRAP_ARTIFACT_NAME"] != expected_name:', replace: 'if False:'}
       oracle:
@@ -795,6 +796,5 @@ gate_catalog:
   security_review: {target: security-review, status: required, command_policy: security_review, rationale: canonical review
       findings and remediation proofs bind to the governed tree}
   runtime_smoke: {target: runtime-smoke, status: required, command_policy: runtime_smoke, rationale: runtime behavior is proven in a declared environment}
-  semantic_ownership: {target: semantic-ownership, status: required, command_policy: semantic_ownership, rationale: declared
-      canonical representations have one mechanically enforced owner}
+  semantic_ownership: {target: semantic-ownership, status: required, command_policy: semantic_ownership, rationale: declared canonical representations have one mechanically enforced owner}
 provenance: {}

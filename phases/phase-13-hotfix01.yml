@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-13-hotfix01
   version: 1.0.0
   generated_at_utc: '2026-08-31T00:00:00Z'
-  status: completed
+  status: planned
   path: phases/phase-13-hotfix01.yml
 hotfix:
   id: P13-HF01
@@ -217,6 +217,9 @@ execution_evidence:
   - command: selected-environment release preflight; exact source gate; exact contract evidence; canonical local PR preflight
     result: pass
     notes: exact reconciliation commit 61857d9 passed preflight, all 531 source nodes, all 266 contract nodes, and all 94 isolated causal controls; both Identity artifact membership and provider ZIP digest mutants failed only their declared nodes
+  - command: GitHub publication-disabled release 33490451195
+    result: expected_fail_remediating
+    notes: trusted authorization failed closed before hosted build allocation because exact inventory equality was applied before the workflow was terminal; partial live inventory will accept only a nonempty duplicate-free subset of pinned jobs, while terminal custody still requires the complete set
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,

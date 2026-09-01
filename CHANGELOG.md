@@ -65,6 +65,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 
 ### Fixed
 
+- Made authenticated nonterminal workflow inspection accept only a nonempty subset of
+  the pinned job inventory while terminal certification still requires the complete
+  exact set, preventing release authorization from depending on future job materialization.
 - Replaced hand-transcribed Identity reference custody with a tracked importer that
   authenticates the exact provider run, attempt, workflow, subject, artifact membership,
   and provider digest before projecting benchmark and SOIP results into governed audits.
