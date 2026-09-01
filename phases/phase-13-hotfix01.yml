@@ -160,6 +160,9 @@ execution_evidence:
   - command: .venv/bin/python .github/scripts/run_self_governance_gate.py test; .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value; .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
     result: pass
     notes: all 513 exact source nodes passed in 127.28 seconds after the local-PR default was made mechanical; all 13 validator and all 10 evidence/truth high-value mutants were killed at their declared nodes
+  - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
+    result: expected_fail_remediated
+    notes: all 248 positive nodes passed and 79 of 80 controls proved their causes; the new single-owner control mutated live policy but named a fixture-only oracle, so it was retargeted to the direct repository invariant before recapture
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
