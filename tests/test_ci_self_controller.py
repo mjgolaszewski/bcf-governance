@@ -22,6 +22,44 @@ COMMIT = "a" * 40
 TREE = "b" * 40
 
 
+class ConfirmationAPI:
+    def __init__(self, policy: dict[str, object]) -> None:
+        self.policy = policy
+
+    def content(self, _: str, path: str, *, ref: str) -> SimpleNamespace:
+        assert ref == COMMIT
+        if path == "governance/self-governance-policy.yml":
+            raw = yaml.safe_dump(self.policy).encode()
+        else:
+            role = "bootstrap" if "bootstrap" in path else "probe"
+            raw = yaml.safe_dump({
+                "jobs": {
+                    role: {
+                        "name": f"{role.title()} controller / ${{{{ matrix.trusted_runner }}}}",
+                        "strategy": {"matrix": {"trusted_runner": ["one", "two"]}},
+                    }
+                }
+            }).encode()
+        return SimpleNamespace(content=raw)
+
+    def workflow_runs(self, *_: object, **__: object) -> tuple[dict[str, object], ...]:
+        return ({
+            "id": 200 if len(getattr(self, "seen", ())) == 0 else 201,
+            "run_attempt": 1,
+            "head_sha": COMMIT,
+            "event": "workflow_dispatch",
+            "repository": {"id": 101},
+        },)
+
+    def jobs(self, _: str, run_id: object, *, attempt: int) -> tuple[dict[str, str], ...]:
+        assert attempt == 1
+        role = "Bootstrap" if str(run_id) == "200" else "Probe"
+        return tuple(
+            {"name": f"{role} controller / {label}", "status": "completed", "conclusion": "success"}
+            for label in ("one", "two")
+        )
+
+
 def _artifact_dir(root: Path) -> tuple[Path, str]:
     root.mkdir(parents=True)
     wheel = root / "bcf_governance-0.7.1-py3-none-any.whl"
@@ -157,22 +195,90 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
             "BCF_BOOTSTRAP_WHEEL_SHA256": "e" * 64,
         }
     )
+    with pytest.raises(GitHubControllerError, match="rotation is already pending"):
+        controller.project_self_controller_pin(tmp_path, pin=pin, apply=True)
+
+    current = dict(policy["runner_security"]["trusted_controller_artifact"])
+    proof = dict(policy["runner_security"]["trusted_controller_installation"])
+    proof["installed_commit_sha"] = str(current["BCF_BOOTSTRAP_COMMIT_SHA"])
     changed = controller.project_self_controller_pin(
-        tmp_path, pin=pin, apply=True
+        tmp_path, pin=current, confirmation=proof, apply=True
     )
 
     assert changed.status == "changed"
     projected = yaml.safe_load(
         (tmp_path / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
     )["runner_security"]["trusted_controller_artifact"]
-    assert {key: str(value) for key, value in projected.items()} == pin
-    for relative in controller.BOOTSTRAP_WORKFLOWS:
-        workflow = yaml.safe_load((tmp_path / relative).read_text(encoding="utf-8"))
-        assert {key: str(value) for key, value in workflow["env"].items()} == pin
+    assert {key: str(value) for key, value in projected.items()} == current
+    bootstrap = yaml.safe_load(
+        (tmp_path / controller.BOOTSTRAP_WORKFLOW).read_text(encoding="utf-8")
+    )
+    assert bootstrap["env"]["BCF_INSTALLED_CONTROLLER_COMMIT_SHA"] == current[
+        "BCF_BOOTSTRAP_COMMIT_SHA"
+    ]
+    probe = yaml.safe_load(
+        (tmp_path / controller.PROBE_WORKFLOW).read_text(encoding="utf-8")
+    )
+    assert {key: str(value) for key, value in probe["env"].items()} == current
     topology = yaml.safe_load(
         (tmp_path / controller.TOPOLOGY_PATH).read_text(encoding="utf-8")
     )
-    assert topology["controller_commit"] == COMMIT
+    assert topology["controller_commit"] == current["BCF_BOOTSTRAP_COMMIT_SHA"]
     assert controller.project_self_controller_pin(
-        tmp_path, pin=pin, apply=False
+        tmp_path, pin=current, apply=False
     ).status == "clean"
+
+
+def test_controller_installation_confirmation_is_provider_compiled(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    policy = {
+        "runner_security": {
+            "trusted_controller_artifact": {
+                "BCF_BOOTSTRAP_ARTIFACT_ID": "300",
+                "BCF_BOOTSTRAP_ARTIFACT_NAME": f"bcf-trusted-control-{COMMIT}-2",
+                "BCF_BOOTSTRAP_ARTIFACT_DIGEST": f"sha256:{'c' * 64}",
+                "BCF_BOOTSTRAP_RUN_ID": "100",
+                "BCF_BOOTSTRAP_RUN_ATTEMPT": "2",
+                "BCF_BOOTSTRAP_COMMIT_SHA": COMMIT,
+                "BCF_BOOTSTRAP_TREE_SHA": TREE,
+                "BCF_BOOTSTRAP_REPOSITORY_ID": "101",
+                "BCF_BOOTSTRAP_WHEEL_SHA256": "e" * 64,
+            },
+            "trusted_instance_labels": ["one", "two"],
+        }
+    }
+    api = ConfirmationAPI(policy)
+    main = SimpleNamespace(
+        repository_id="101", checkout_sha=COMMIT, tree_sha=TREE
+    )
+    authority = {
+        "schema_version": "1.1",
+        "roles": {"bootstrap": "bootstrap", "probe": "probe"},
+        "workflow_registry": {
+            "bootstrap": {
+                "workflow_id": "10",
+                "active_path": controller.BOOTSTRAP_WORKFLOW,
+            },
+            "probe": {
+                "workflow_id": "11",
+                "active_path": controller.PROBE_WORKFLOW,
+            },
+        },
+    }
+    monkeypatch.setattr(controller, "resolve_main", lambda *_: main)
+    monkeypatch.setattr(controller, "load_authority", lambda *_, **__: authority)
+    calls = iter(("200", "201"))
+    monkeypatch.setattr(
+        controller,
+        "authenticate_role_run",
+        lambda *_, **__: SimpleNamespace(run_id=next(calls), run_attempt=1),
+    )
+
+    proof = controller.compile_self_controller_confirmation(
+        api, repository="owner/repo"  # type: ignore[arg-type]
+    )
+
+    assert proof["installed_commit_sha"] == COMMIT
+    assert proof["bootstrap_run_id"] == "200"
+    assert proof["probe_run_id"] == "201"

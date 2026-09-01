@@ -226,7 +226,13 @@ def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
     assert workflow["permissions"] == {"actions": "read", "contents": "read"}
     runner_policy = _policy()["runner_security"]
     artifact = runner_policy["trusted_controller_artifact"]
-    assert workflow["env"] == artifact
+    installation = runner_policy["trusted_controller_installation"]
+    assert workflow["env"] == {
+        **artifact,
+        "BCF_INSTALLED_CONTROLLER_COMMIT_SHA": installation[
+            "installed_commit_sha"
+        ],
+    }
     assert artifact["BCF_BOOTSTRAP_ARTIFACT_NAME"] == (
         f"bcf-trusted-control-{artifact['BCF_BOOTSTRAP_COMMIT_SHA']}-"
         f"{artifact['BCF_BOOTSTRAP_RUN_ATTEMPT']}"
@@ -267,6 +273,11 @@ def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
     }
     commands = "\n".join(step.get("run", "") for step in job["steps"])
     assert '"$control_root/bin/bcf" ci-github bootstrap' in commands
+    assert "$BCF_INSTALLED_CONTROLLER_COMMIT_SHA" in commands
+    assert (
+        installation["installed_commit_sha"]
+        != artifact["BCF_BOOTSTRAP_COMMIT_SHA"]
+    )
     assert '--provider-digest "$BCF_BOOTSTRAP_ARTIFACT_DIGEST"' in commands
     assert '--wheel-sha256 "$BCF_BOOTSTRAP_WHEEL_SHA256"' in commands
     assert '--tool-cache "$RUNNER_TOOL_CACHE"' in commands

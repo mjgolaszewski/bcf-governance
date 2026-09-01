@@ -78,6 +78,10 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   single canonical pin into the trusted control workflows without operator-authored custody.
 - Made that same controller pin mechanically own the GitHub topology controller commit,
   removing the former duplicated commit literal from self-adoption and profile readiness.
+- Separated the controller proven installed on trusted runners from the next authenticated
+  artifact target. Rotation now keeps active control jobs on proven bytes, uses those bytes
+  to install the target, and accepts a promotion only from exact-main bootstrap and probe
+  runs compiled from authenticated provider state.
 
 ### Changed
 

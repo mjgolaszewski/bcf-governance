@@ -39,6 +39,7 @@ from .ci_github_release import (
     verify_release_build_provider,
 )
 from .ci_self_controller import (
+    compile_self_controller_confirmation,
     compile_self_controller_pin,
     resolve_self_controller_artifact,
 )
@@ -202,6 +203,9 @@ def _controller_pin(argv: list[str]) -> None:
     compile_pin.add_argument("--repository", required=True)
     compile_pin.add_argument("--artifact-dir", type=Path, required=True)
     compile_pin.add_argument("--output", type=Path, required=True)
+    confirm = operations.add_parser("confirm")
+    confirm.add_argument("--repository", required=True)
+    confirm.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
     api = environment_api()
     if args.operation == "resolve":
@@ -209,7 +213,7 @@ def _controller_pin(argv: list[str]) -> None:
             api, repository=args.repository
         )
         result = {**subject, **artifact.as_dict()}
-    else:
+    elif args.operation == "compile":
         pin = compile_self_controller_pin(
             api, repository=args.repository, artifact_dir=args.artifact_dir
         )
@@ -218,6 +222,18 @@ def _controller_pin(argv: list[str]) -> None:
             {"schema_version": "1.0", "trusted_controller_artifact": pin},
         )
         result = {**pin, "output": str(args.output)}
+    else:
+        confirmation = compile_self_controller_confirmation(
+            api, repository=args.repository
+        )
+        write_exclusive(
+            args.output,
+            {
+                "schema_version": "1.0",
+                "trusted_controller_installation": confirmation,
+            },
+        )
+        result = {**confirmation, "output": str(args.output)}
     _github_output(result)
     print(json.dumps(result, sort_keys=True))
 

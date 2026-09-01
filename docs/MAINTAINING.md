@@ -47,7 +47,11 @@ authority document. Preflight verifies the projection from Git on every governed
 Likewise, never copy a controller artifact ID, run ID, provider digest, tree, or wheel
 hash into bootstrap YAML. Use the trusted `ci-github controller-pin resolve|compile`
 sequence, then `bcf ci sync-self-controller --pin PIN.json --apply`. The canonical pin
-record is the single source for every trusted workflow projection.
+record is the single source for the target. Active workflows remain on the separately
+recorded installed controller until exact-main bootstrap and probe runs succeed on all
+trusted runners. Compile that provider proof with `bcf ci-github controller-pin confirm`
+and pass it to `bcf ci sync-self-controller --confirmation`; never edit the installed
+commit or proof run identities. A pending rotation blocks selection of another target.
 
 After changing v2 profile surfaces, test all four copies: packaged tooling,
 standalone private runtime, template source, and packaged template. Generated

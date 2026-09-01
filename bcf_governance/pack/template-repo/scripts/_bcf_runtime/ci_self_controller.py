@@ -13,9 +13,10 @@ from typing import Any
 
 import yaml
 
+from .ci_authority_contracts import authority_role_workflow
 from .ci_github_api import GitHubAPI
 from .ci_github_artifacts import ProviderArtifact, resolve_role_artifact
-from .ci_github_authority import load_authority
+from .ci_github_authority import authenticate_role_run, load_authority
 from .ci_github_bootstrap import controller_metadata, verify_controller_inventory
 from .ci_github_identity import GitHubControllerError, resolve_main
 from .ci_github_membership import collect_same_run_producers, select_latest_admission
@@ -32,11 +33,20 @@ PIN_KEYS = (
     "BCF_BOOTSTRAP_REPOSITORY_ID",
     "BCF_BOOTSTRAP_WHEEL_SHA256",
 )
-BOOTSTRAP_WORKFLOWS = (
-    ".github/workflows/bcf-trusted-control-bootstrap.yml",
-    ".github/workflows/bcf-trusted-control-probe.yml",
-)
+BOOTSTRAP_WORKFLOW = ".github/workflows/bcf-trusted-control-bootstrap.yml"
+PROBE_WORKFLOW = ".github/workflows/bcf-trusted-control-probe.yml"
+BOOTSTRAP_WORKFLOWS = (BOOTSTRAP_WORKFLOW, PROBE_WORKFLOW)
 TOPOLOGY_PATH = "governance/github-ci-topology.yml"
+INSTALLATION_KEYS = (
+    "schema_version",
+    "installed_commit_sha",
+    "subject_commit_sha",
+    "subject_tree_sha",
+    "bootstrap_run_id",
+    "bootstrap_run_attempt",
+    "probe_run_id",
+    "probe_run_attempt",
+)
 
 
 @dataclass(frozen=True)
@@ -80,6 +90,26 @@ def _pin(value: Any) -> dict[str, str]:
     if pin["BCF_BOOTSTRAP_ARTIFACT_NAME"] != expected_name:
         raise GitHubControllerError("self-controller artifact name is not derived")
     return pin
+
+
+def _installation(value: Any) -> dict[str, str]:
+    if not isinstance(value, dict) or set(value) != set(INSTALLATION_KEYS):
+        raise GitHubControllerError("installed-controller proof inventory is not exact")
+    proof = {key: str(value[key]) for key in INSTALLATION_KEYS}
+    if proof["schema_version"] != "1.0":
+        raise GitHubControllerError("installed-controller proof version is unsupported")
+    for key in ("installed_commit_sha", "subject_commit_sha", "subject_tree_sha"):
+        if not re.fullmatch(r"[a-f0-9]{40}", proof[key]):
+            raise GitHubControllerError("installed-controller Git identity is not exact")
+    for key in (
+        "bootstrap_run_id", "bootstrap_run_attempt", "probe_run_id",
+        "probe_run_attempt",
+    ):
+        if not proof[key].isdigit() or int(proof[key]) < 1:
+            raise GitHubControllerError("installed-controller run identity is not positive")
+    if int(proof["probe_run_id"]) <= int(proof["bootstrap_run_id"]):
+        raise GitHubControllerError("controller probe must follow its bootstrap run")
+    return proof
 
 
 def resolve_self_controller_artifact(
@@ -159,6 +189,120 @@ def compile_self_controller_pin(
     )
 
 
+def _successful_role_run(
+    api: GitHubAPI,
+    *,
+    repository: str,
+    main: Any,
+    authority: dict[str, Any],
+    role: str,
+    job_id: str,
+    instance_labels: tuple[str, ...],
+) -> tuple[str, str]:
+    workflow = authority_role_workflow(authority, role)
+    runs = api.workflow_runs(
+        repository,
+        workflow["workflow_id"],
+        head_sha=main.checkout_sha,
+        event="workflow_dispatch",
+    )
+    exact = [
+        run for run in runs
+        if str(run.get("head_sha")) == main.checkout_sha
+        and str(run.get("repository", {}).get("id")) == main.repository_id
+        and str(run.get("event")) == "workflow_dispatch"
+    ]
+    if not exact:
+        raise GitHubControllerError(f"no exact-main {role} proof run exists")
+    selected = max(
+        exact,
+        key=lambda value: (int(str(value.get("id", 0))), int(str(value.get("run_attempt", 0)))),
+    )
+    identity = authenticate_role_run(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        role=role,
+        run_id=selected.get("id"),
+        run_attempt=selected.get("run_attempt"),
+        require_success=True,
+    )
+    trusted = api.content(
+        repository, str(workflow["active_path"]), ref=main.checkout_sha
+    )
+    try:
+        definition = yaml.safe_load(trusted.content.decode("utf-8"))
+        job = definition["jobs"][job_id]
+        template = str(job["name"])
+        declared = tuple(str(value) for value in job["strategy"]["matrix"]["trusted_runner"])
+    except (KeyError, TypeError, UnicodeDecodeError, yaml.YAMLError) as exc:
+        raise GitHubControllerError(f"{role} proof workflow topology is invalid") from exc
+    marker = "${{ matrix.trusted_runner }}"
+    if declared != instance_labels or template.count(marker) != 1:
+        raise GitHubControllerError(f"{role} proof runner topology is not canonical")
+    expected = {template.replace(marker, label) for label in instance_labels}
+    jobs = api.jobs(repository, identity.run_id, attempt=identity.run_attempt)
+    observed = {str(job.get("name")): job for job in jobs}
+    if set(observed) != expected or any(
+        job.get("status") != "completed" or job.get("conclusion") != "success"
+        for job in observed.values()
+    ):
+        raise GitHubControllerError(f"{role} proof job inventory is not exactly green")
+    return identity.run_id, str(identity.run_attempt)
+
+
+def compile_self_controller_confirmation(
+    api: GitHubAPI, *, repository: str
+) -> dict[str, str]:
+    """Compile installed-controller state only from authenticated provider proofs."""
+
+    main = resolve_main(api, repository)
+    authority = load_authority(api, repository, main, required_version="1.1")
+    content = api.content(
+        repository, "governance/self-governance-policy.yml", ref=main.checkout_sha
+    )
+    try:
+        policy = yaml.safe_load(content.content.decode("utf-8"))
+        runner = policy["runner_security"]
+        pin = _pin(runner["trusted_controller_artifact"])
+        labels = tuple(str(value) for value in runner["trusted_instance_labels"])
+    except (KeyError, TypeError, UnicodeDecodeError, yaml.YAMLError) as exc:
+        raise GitHubControllerError("provider self-controller policy is invalid") from exc
+    if len(labels) < 2 or len(labels) != len(set(labels)):
+        raise GitHubControllerError("trusted controller proof requires distinct runners")
+    bootstrap_run, bootstrap_attempt = _successful_role_run(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        role="bootstrap",
+        job_id="bootstrap",
+        instance_labels=labels,
+    )
+    probe_run, probe_attempt = _successful_role_run(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        role="probe",
+        job_id="probe",
+        instance_labels=labels,
+    )
+    return _installation(
+        {
+            "schema_version": "1.0",
+            "installed_commit_sha": pin["BCF_BOOTSTRAP_COMMIT_SHA"],
+            "subject_commit_sha": main.checkout_sha,
+            "subject_tree_sha": main.tree_sha,
+            "bootstrap_run_id": bootstrap_run,
+            "bootstrap_run_attempt": bootstrap_attempt,
+            "probe_run_id": probe_run,
+            "probe_run_attempt": probe_attempt,
+        }
+    )
+
+
 def _replace_env(raw: bytes, desired: dict[str, str]) -> bytes:
     text = raw.decode("utf-8")
     parsed = yaml.safe_load(text)
@@ -203,9 +347,13 @@ def _write_atomic(path: Path, raw: bytes) -> None:
 
 
 def project_self_controller_pin(
-    repo_root: Path, *, pin: dict[str, str], apply: bool
+    repo_root: Path,
+    *,
+    pin: dict[str, str],
+    confirmation: dict[str, str] | None = None,
+    apply: bool,
 ) -> SelfControllerProjection:
-    """Project one compiled pin into canonical policy and thin trusted workflows."""
+    """Project target and proven-installed controller state transactionally."""
 
     root = repo_root.resolve()
     exact = _pin(pin)
@@ -215,24 +363,60 @@ def project_self_controller_pin(
     runner_security = policy.get("runner_security") if isinstance(policy, dict) else None
     if not isinstance(runner_security, dict):
         raise GitHubControllerError("self-governance runner policy is invalid")
-    _pin(runner_security.get("trusted_controller_artifact"))
+    current_pin = _pin(runner_security.get("trusted_controller_artifact"))
+    current_installation = _installation(
+        runner_security.get("trusted_controller_installation")
+    )
+    if (
+        exact != current_pin
+        and current_installation["installed_commit_sha"]
+        != current_pin["BCF_BOOTSTRAP_COMMIT_SHA"]
+    ):
+        raise GitHubControllerError(
+            "a controller rotation is already pending independent confirmation"
+        )
+    installation = (
+        current_installation if confirmation is None else _installation(confirmation)
+    )
+    if confirmation is not None and installation["installed_commit_sha"] != exact[
+        "BCF_BOOTSTRAP_COMMIT_SHA"
+    ]:
+        raise GitHubControllerError("confirmation does not prove the target controller")
     new_flow = yaml.safe_dump(
         exact, sort_keys=False, default_flow_style=True, width=1000
     ).strip()
     pattern = re.compile(rb"(?m)^  trusted_controller_artifact: \{[^\r\n]*\}$")
     if len(pattern.findall(policy_raw)) != 1:
         raise GitHubControllerError("canonical self-controller pin is not unique")
+    installation_flow = yaml.safe_dump(
+        installation, sort_keys=False, default_flow_style=True, width=1000
+    ).strip()
+    installation_pattern = re.compile(
+        rb"(?m)^  trusted_controller_installation: \{[^\r\n]*\}$"
+    )
+    if len(installation_pattern.findall(policy_raw)) != 1:
+        raise GitHubControllerError("canonical installed-controller proof is not unique")
+    projected_policy = pattern.sub(
+        f"  trusted_controller_artifact: {new_flow}".encode(), policy_raw
+    )
+    projected_policy = installation_pattern.sub(
+        f"  trusted_controller_installation: {installation_flow}".encode(),
+        projected_policy,
+    )
+    active_commit = installation["installed_commit_sha"]
     desired: dict[Path, bytes] = {
-        policy_path: pattern.sub(
-            f"  trusted_controller_artifact: {new_flow}".encode(), policy_raw
-        ),
+        policy_path: projected_policy,
         root / TOPOLOGY_PATH: _replace_topology_controller(
-            (root / TOPOLOGY_PATH).read_bytes(), exact["BCF_BOOTSTRAP_COMMIT_SHA"]
+            (root / TOPOLOGY_PATH).read_bytes(), active_commit
         ),
     }
-    for relative in BOOTSTRAP_WORKFLOWS:
-        path = root / relative
-        desired[path] = _replace_env(path.read_bytes(), exact)
+    bootstrap = root / BOOTSTRAP_WORKFLOW
+    desired[bootstrap] = _replace_env(
+        bootstrap.read_bytes(),
+        {**exact, "BCF_INSTALLED_CONTROLLER_COMMIT_SHA": active_commit},
+    )
+    probe = root / PROBE_WORKFLOW
+    desired[probe] = _replace_env(probe.read_bytes(), exact)
     required = runner_security.get("trusted_controller_interpreter", {}).get(
         "required_workflows"
     )
@@ -243,7 +427,7 @@ def project_self_controller_pin(
             continue
         path = root / str(relative)
         desired[path] = _replace_env(
-            path.read_bytes(), {"BCF_CONTROL_COMMIT": exact["BCF_BOOTSTRAP_COMMIT_SHA"]}
+            path.read_bytes(), {"BCF_CONTROL_COMMIT": active_commit}
         )
     changed = tuple(
         path.relative_to(root).as_posix()

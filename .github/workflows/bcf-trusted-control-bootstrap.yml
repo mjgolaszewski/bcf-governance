@@ -17,6 +17,7 @@ env:
   BCF_BOOTSTRAP_TREE_SHA: 19f9d7e565dd6293f8f74d548ff4e49ce99f6d15
   BCF_BOOTSTRAP_REPOSITORY_ID: "1207503211"
   BCF_BOOTSTRAP_WHEEL_SHA256: 4ed0771bac428a6398c719f2ac81bcb6e715a01967c211be728b0224c5ac4055
+  BCF_INSTALLED_CONTROLLER_COMMIT_SHA: 1f96e45604c376918154dc50904fc0249d9b8e93
 
 jobs:
   bootstrap:
@@ -49,7 +50,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/$BCF_BOOTSTRAP_COMMIT_SHA"
+          control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/$BCF_INSTALLED_CONTROLLER_COMMIT_SHA"
           test -d "$control_root"
           test ! -L "$control_root"
           test -x "$control_root/bin/bcf"

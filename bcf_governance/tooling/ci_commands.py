@@ -74,6 +74,11 @@ def _parser() -> argparse.ArgumentParser:
     )
     sync.add_argument("--repo-root", type=Path, default=Path.cwd())
     sync.add_argument("--pin", type=Path, required=True)
+    sync.add_argument(
+        "--confirmation",
+        type=Path,
+        help="Provider-compiled installation proof; omit while rotation is pending.",
+    )
     sync_mode = sync.add_mutually_exclusive_group(required=True)
     sync_mode.add_argument("--check", action="store_true")
     sync_mode.add_argument("--apply", action="store_true")
@@ -135,8 +140,19 @@ def main(argv: list[str] | None = None) -> None:
         if args.operation == "sync-self-controller":
             payload = json.loads(args.pin.read_text(encoding="utf-8"))
             value = payload.get("trusted_controller_artifact")
+            confirmation = None
+            if args.confirmation is not None:
+                confirmation_payload = json.loads(
+                    args.confirmation.read_text(encoding="utf-8")
+                )
+                confirmation = confirmation_payload.get(
+                    "trusted_controller_installation"
+                )
             result = project_self_controller_pin(
-                args.repo_root, pin=value, apply=args.apply
+                args.repo_root,
+                pin=value,
+                confirmation=confirmation,
+                apply=args.apply,
             )
             _print(result.as_dict(), args.format)
             if args.check and result.status != "clean":

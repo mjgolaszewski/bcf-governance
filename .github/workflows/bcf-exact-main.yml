@@ -6,7 +6,7 @@ name: bcf/exact-main-admission
 permissions:
   contents: read
 env:
-  BCF_CONTROL_COMMIT: cc3c1fecb24b5c3c6bd23eca901412d03e778a7d
+  BCF_CONTROL_COMMIT: 1f96e45604c376918154dc50904fc0249d9b8e93
 jobs:
   admit:
     name: Authenticate exact-main admission and publish pending authority
