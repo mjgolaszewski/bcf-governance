@@ -481,6 +481,35 @@ def test_authority_canary_is_owner_dispatched_and_attempt_deterministic() -> Non
     ]["installed_commit_sha"]
 
 
+@pytest.mark.parametrize(
+    "relative_path",
+    (
+        ".github/workflows/governance-mutants-nightly.yml",
+        ".github/workflows/governance-mutants-weekly.yml",
+    ),
+)
+def test_scheduled_mutants_preflight_selected_interpreter_before_execution(
+    relative_path: str,
+) -> None:
+    workflow = yaml.safe_load((REPO_ROOT / relative_path).read_text(encoding="utf-8"))
+    steps = next(iter(workflow["jobs"].values()))["steps"]
+    commands = [step.get("run", "") for step in steps]
+    preflight = (
+        'python scripts/preflight_governance.py --repo-root . --mode release '
+        '--python "$(command -v python)" --format text'
+    )
+    assert commands.count(preflight) == 1
+    preflight_index = commands.index(preflight)
+    mutant_indexes = [
+        index
+        for index, command in enumerate(commands)
+        if "run_validator_mutants.py" in command
+    ]
+    assert mutant_indexes
+    assert all(preflight_index < index for index in mutant_indexes)
+    assert "--artifact-root" not in commands[preflight_index]
+
+
 def test_workflows_have_no_runner_occupying_coordination() -> None:
     forbidden = re.compile(r"\b(sleep|poll|wait|while|until)\b", re.IGNORECASE)
     for relative_path in _policy()["runner_security"]["jobs"]:
@@ -899,7 +928,7 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
     assert not truth_namespace.startswith("bcf-evidence-")
 
 
-def test_self_profile_builder_matches_canonical_negative_controls() -> None:
+def test_self_profile_builder_keeps_evidence_semantics_single_owned() -> None:
     generated = yaml.safe_load(
         subprocess.run(
             [sys.executable, ".github/scripts/build_self_governance_profile.py"],
@@ -907,6 +936,7 @@ def test_self_profile_builder_matches_canonical_negative_controls() -> None:
             capture_output=True,
             text=True,
             check=True,
+            env={key: value for key, value in os.environ.items() if key != "PYTHONPATH"},
         ).stdout
     )
     canonical = yaml.safe_load(
@@ -917,12 +947,10 @@ def test_self_profile_builder_matches_canonical_negative_controls() -> None:
     )
     builtins = {"governance-validate", "governance-exposure-scan"}
     assert set(generated["gates"]) == set(canonical["gates"]) - builtins
+    assert evidence_policy["gate_overrides"] == {}
     for gate_id, gate in generated["gates"].items():
         assert gate["invocation"] == canonical["gates"][gate_id]["invocation"]
         assert gate["negative_controls"] == canonical["gates"][gate_id]["negative_controls"]
-        assert evidence_policy["gate_overrides"][gate_id]["negative_controls"] == gate[
-            "negative_controls"
-        ]
         if "test_contract" in gate["evidence"]:
             assert gate["evidence"]["test_contract"] == canonical["gates"][gate_id][
                 "evidence"

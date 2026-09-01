@@ -145,6 +145,30 @@ execution_evidence:
   - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
     result: pass
     notes: exact-tree local evidence on d074e0c5 passed all 243 mechanically collected contract nodes and all 77 isolated causal controls with zero skips, infrastructure exits, or unexpected worktree changes
+  - command: GitHub exact-main 33466901839; finalizer 33467127635; publisher 33467149480
+    result: pass
+    notes: exact merge b9332dda passed trusted admission, canonical preflight, every same-run producer, and exact membership; closure refused only planned P13-HF01, then the no-checkout finalizer and publisher emitted the terminal revocation
+  - command: GitHub authority canary 33467183980; failure run 33467226517 attempts 1 and 2
+    result: pass
+    notes: the same b9332dda subject first published success, then exact producer B failed with declared exit 86 while the trusted observer completed; attempt 2 deterministically repeated that failure and published higher ordinal 33467226517002001 without producer mixing
+  - command: .venv/bin/python -m pytest -q tests/test_profile_flows.py tests/test_governance_evidence.py tests/test_validate_governance_yaml.py tests/test_pack_sync.py tests/test_self_governance_contracts.py
+    result: pass
+    notes: focused ownership, profile compatibility, generated-copy, validator, evidence, runner-boundary, and scheduled-preflight coverage passed; exact governed inventories are 512 source nodes, 247 contract nodes, and 111 causal controls
+  - command: .venv/bin/python .github/scripts/run_self_governance_gate.py test; .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value; .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+    result: pass
+    notes: all 512 exact source nodes passed in 126.82 seconds, all 13 high-value validator mutants were killed, and all 10 high-value evidence and truth mutants were killed at their declared owner nodes
+  - command: .venv/bin/python .github/scripts/run_self_governance_gate.py test; .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value; .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+    result: pass
+    notes: all 513 exact source nodes passed in 127.28 seconds after the local-PR default was made mechanical; all 13 validator and all 10 evidence/truth high-value mutants were killed at their declared nodes
+  - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
+    result: expected_fail_remediated
+    notes: all 248 positive nodes passed and 79 of 80 controls proved their causes; the new single-owner control mutated live policy but named a fixture-only oracle, so it was retargeted to the direct repository invariant before recapture
+  - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
+    result: pass
+    notes: exact-tree local evidence on 89219233 passed all 248 contract nodes and all 80 isolated contract controls with zero skips and every declared cause satisfied
+  - command: GitHub governance-pack pull-request run 33468893710
+    result: expected_fail_remediated
+    notes: clean hosted package execution rejected the self-profile builder because its new optional sync path imported packaged rendering before seeding repository source; the self-only script now seeds its exact repo root and is regression-tested with PYTHONPATH absent
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
@@ -209,6 +233,9 @@ execution_evidence:
   - PR 55 passed protected runs 33465546007 and 33465546034 and merged as de8b3ce25f52916e6795a2b9240be969de932788; promoted-controller exact-main 33465739678 passed admission and every producer before correctly refusing active P13-HF01 closure, then finalizer 33465936849 and publisher 33465963703 completed the terminal control path
   - the authority canary uses a typed scenario that is retained across rerun attempts; owner-only trusted jobs admit and observe without checkout, fresh hosted producers execute no repository code and have no permissions, and the observer is allocated only after both producers terminate
   - final canary bytes are committed at 544f670980e3f14f25880875241807a37125d675; the following custody commit pins its exact blob, SHA-256, descriptive job inventory, and source roles without changing the workflow
+  - profile-v2 evidence semantics now resolve only from gate contracts; evidence policy retains cross-gate policy and validation rejects any per-gate override, eliminating the generated-copy synchronization failure exposed while adding scheduled preflight
+  - nightly and weekly mutant workflows now invoke the canonical selected-interpreter preflight before mutation execution, so virtualenv or dependency defects cannot first appear in mutant results
+  - the documented local-PR command now selects the canonical selected-interpreter preflight when no explicit argv is supplied; an exact custom argv remains available after `--`, and a causal control rejects any hidden fallback-path change
 closeout_requirements:
   claims:
     required_suites_green:

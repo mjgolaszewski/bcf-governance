@@ -698,6 +698,25 @@ def test_validate_repo_root_rejects_placeholder_release_gates(tmp_path: Path) ->
     assert "uses a no-op" in str(excinfo.value)
 
 
+def test_profile_v2_rejects_duplicated_evidence_semantic_ownership(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    profile_path = repo_root / "governance-profile.yml"
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    profile["profile_contract_version"] = "2.0"
+    _write_yaml(profile_path, profile)
+    policy_path = repo_root / "governance/evidence-policy.yml"
+    policy = yaml.safe_load(policy_path.read_text(encoding="utf-8"))
+    policy["gate_overrides"] = {
+        "governance-validate": {"evidence_kind": "gate"}
+    }
+    _write_yaml(policy_path, policy)
+
+    with pytest.raises(GovernanceValidationError, match="owned only by governance/gate-contracts.yml"):
+        validate_repo_root(repo_root)
+
+
 def test_validate_repo_root_does_not_certify_release_loop_from_command_text(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
     makefile_path = repo_root / "Makefile.fragment"

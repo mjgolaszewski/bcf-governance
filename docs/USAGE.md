@@ -304,8 +304,11 @@ bcf ci local-pr --repo-root . --remote origin
 ```
 
 The helper resolves and fetches the remote default branch, validates ancestry,
-and runs preflight with the real base SHA. This makes PR-only changelog and
-base-diff behavior fail locally instead of first appearing in remote CI.
+and mechanically runs the canonical preflight with its own selected interpreter
+and the real base SHA. No extra command is required. Advanced callers may append
+an exact argv after `--`; that explicit command receives the same authenticated
+PR environment. This makes PR-only changelog and base-diff behavior fail locally
+instead of first appearing in remote CI.
 
 ## Lifecycle and evidence
 

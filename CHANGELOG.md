@@ -22,6 +22,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Replaced operator-copied workflow hashes, definition commits, job display names, and
   controller-artifact projections with Git/provider-derived compilers checked by cheap
   preflight and cause-verified mutants.
+- Made profile-v2 gate contracts the sole executable owner of evidence assertions and
+  negative controls; validation rejects duplicated evidence-policy overrides instead of
+  asking an operator to keep parallel declarations synchronized.
 
 ### Fixed
 
@@ -98,6 +101,12 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   provider-digested artifact after the installed controller admitted the persisted role
   map; active authority remains on the separately proven installation until bootstrap
   and probe confirmation.
+- Required both scheduled mutant profiles to run the canonical selected-interpreter and
+  repository preflight before any mutant. Environment, manifest, syntax, source-lock,
+  and ownership defects now fail before mutation work begins.
+- Made `bcf ci local-pr` default to the canonical selected-interpreter preflight
+  documented for contributors, removing a hidden argv sequencing requirement while
+  retaining an explicit-command override.
 - Promoted that target only after provider-compiled bootstrap run `33464640838` and
   independent probe run `33464672319` proved the exact controller on both trusted runners.
 - Made every trusted GitHub controller command validate its output channel before provider

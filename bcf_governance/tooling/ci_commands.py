@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import sys
 
 from .ci_adopt_github import (
     GithubAdoptionError,
@@ -21,6 +22,25 @@ from .runtime_capacity import (
     check_runtime_capacity,
     load_runtime_contract,
 )
+
+
+def _local_pr_command(command: tuple[str, ...]) -> tuple[str, ...]:
+    if command and command[0] == "--":
+        command = command[1:]
+    if command:
+        return command
+    return (
+        sys.executable,
+        "scripts/preflight_governance.py",
+        "--repo-root",
+        ".",
+        "--mode",
+        "pr",
+        "--python",
+        sys.executable,
+        "--format",
+        "text",
+    )
 
 
 def _adopt_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -158,12 +178,14 @@ def main(argv: list[str] | None = None) -> None:
             if args.check and result.status != "clean":
                 raise SystemExit(1)
             return
-        command = tuple(args.command)
-        if command and command[0] == "--":
-            command = command[1:]
+        command = _local_pr_command(tuple(args.command))
         result = run_local_pr_validation(
             args.repo_root.resolve(), command=command, remote=args.remote
         )
+        if result.stdout:
+            print(result.stdout, end="")
+        if result.stderr:
+            print(result.stderr, end="", file=sys.stderr)
         raise SystemExit(result.returncode)
     except (
         CIAuthorityPinError,

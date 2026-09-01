@@ -52,7 +52,7 @@ def validate_repo_root(
     )
     architecture_rules, architecture_boundaries_path = _load_architecture_boundaries(repo_root, schema_cache)
     (
-        _,
+        evidence_policy,
         evidence_policy_path,
         _,
         findings_path,
@@ -75,7 +75,9 @@ def validate_repo_root(
         raise GovernanceValidationError(
             "governance/gate-contracts.yml gates must exactly match profile-required targets"
         )
-    _validate_gate_contract_registry(repo_root, governance_profile, gate_contracts)
+    _validate_gate_contract_registry(
+        repo_root, governance_profile, gate_contracts, evidence_policy
+    )
 
     _validate_schema(repo_root, schema_cache, agents, schema_name="agents.schema.json", context="AGENTS.yml")
     _validate_schema(repo_root, schema_cache, memory, schema_name="memory.schema.json", context="MEMORY.yml")

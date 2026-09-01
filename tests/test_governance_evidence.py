@@ -275,7 +275,9 @@ def _make_diagnostic_gate_repo(
                             "cwd": ".",
                             "env": {},
                             "required_env": [],
-                        }
+                        },
+                        "evidence": {"kind": "gate"},
+                        "negative_controls": [control],
                     }
                 }
             },
@@ -289,6 +291,19 @@ def _make_diagnostic_gate_repo(
     _git(repo, "add", ".")
     _git(repo, "commit", "-m", "gate")
     return repo
+
+
+def _enable_profile_v2(repo: Path) -> None:
+    profile_path = repo / "governance-profile.yml"
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    profile["profile_contract_version"] = "2.0"
+    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
+    policy_path = repo / "governance/evidence-policy.yml"
+    policy = yaml.safe_load(policy_path.read_text(encoding="utf-8"))
+    policy["gate_overrides"] = {}
+    policy_path.write_text(yaml.safe_dump(policy, sort_keys=False), encoding="utf-8")
+    _git(repo, "add", "governance-profile.yml", "governance/evidence-policy.yml")
+    _git(repo, "commit", "-m", "enable profile v2")
 
 
 def test_capture_rejects_nonignored_untracked_helper_before_execution(tmp_path: Path) -> None:
@@ -522,12 +537,7 @@ if BROKEN:
 print('ok')
 """,
     )
-    profile_path = repo / "governance-profile.yml"
-    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
-    profile["profile_contract_version"] = "2.0"
-    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
-    _git(repo, "add", "governance-profile.yml")
-    _git(repo, "commit", "-m", "enable profile v2")
+    _enable_profile_v2(repo)
 
     with pytest.raises(EvidenceError, match="requires --session-manifest"):
         capture_gate(repo, "gate", tmp_path / "unbound")
@@ -563,12 +573,7 @@ def test_explicit_local_session_ignores_ambient_github_identity(
         tmp_path,
         "BROKEN = False\nprint('ok')\n",
     )
-    profile_path = repo / "governance-profile.yml"
-    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
-    profile["profile_contract_version"] = "2.0"
-    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
-    _git(repo, "add", "governance-profile.yml")
-    _git(repo, "commit", "-m", "enable profile v2")
+    _enable_profile_v2(repo)
     monkeypatch.setenv("GITHUB_ACTIONS", "true")
     monkeypatch.setenv("GITHUB_REPOSITORY", "outer/provider-repository")
     monkeypatch.setenv("GITHUB_REPOSITORY_ID", "12345")
@@ -619,12 +624,7 @@ def test_workflow_session_separates_allocator_from_admitted_evidence_job(
         tmp_path,
         "BROKEN = False\nprint('ok')\n",
     )
-    profile_path = repo / "governance-profile.yml"
-    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
-    profile["profile_contract_version"] = "2.0"
-    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
-    _git(repo, "add", "governance-profile.yml")
-    _git(repo, "commit", "-m", "enable profile v2")
+    _enable_profile_v2(repo)
     monkeypatch.setenv("GITHUB_ACTIONS", "true")
     monkeypatch.setenv("GITHUB_REPOSITORY", "owner/repository")
     monkeypatch.setenv("GITHUB_REPOSITORY_ID", "12345")
@@ -661,12 +661,7 @@ def test_workflow_session_rejects_missing_producer_job_before_gate_execution(
         tmp_path,
         "BROKEN = False\nprint('ok')\n",
     )
-    profile_path = repo / "governance-profile.yml"
-    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
-    profile["profile_contract_version"] = "2.0"
-    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
-    _git(repo, "add", "governance-profile.yml")
-    _git(repo, "commit", "-m", "enable profile v2")
+    _enable_profile_v2(repo)
     monkeypatch.setenv("GITHUB_ACTIONS", "true")
     monkeypatch.setenv("GITHUB_JOB", "preflight")
     session = allocate_session(

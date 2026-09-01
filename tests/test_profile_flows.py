@@ -432,9 +432,7 @@ def test_standard_v1_to_v2_promotion_is_explicit_and_preserves_workflow(
     evidence_policy = yaml.safe_load(
         (repo / "governance/evidence-policy.yml").read_text(encoding="utf-8")
     )
-    assert "selectors" not in evidence_policy["gate_overrides"]["architecture-test"][
-        "test_contract"
-    ]
+    assert evidence_policy["gate_overrides"] == {}
     git(repo, "add", ".")
     git(repo, "commit", "--quiet", "-m", "promote to standard v2")
     session = allocate_session(

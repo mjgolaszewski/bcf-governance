@@ -38,6 +38,12 @@ is explicit, monotonic, transactional, and also preserves workflow bytes;
 GitHub workflow changes belong only to fresh installation or the explicit CI
 adopter. Tests must compare those bytes, not merely decoded job names.
 
+For profile v2, `governance/gate-contracts.yml` is the only owner of gate argv,
+evidence assertions, and negative controls. `governance/evidence-policy.yml`
+owns claims, workflow requirements, provenance, and cross-gate policy; its
+`gate_overrides` mapping must remain empty. The validator rejects a duplicated
+per-gate declaration, so maintainers do not synchronize two semantic copies.
+
 For BCF's own authority workflows, make the final workflow-byte commit first. Run
 `bcf ci pin-authority --definition-commit "$(git rev-parse HEAD)" --apply` in the
 following commit. The compiler updates the full registry and all exact job inventories;
@@ -111,7 +117,11 @@ python3 .github/scripts/run_validator_mutants.py --profile full
 ```
 
 Pull requests run source tests and semantic mutants; larger implementation and
-semantic profiles run nightly and the full profiles run weekly.
+semantic profiles run nightly and the full profiles run weekly. Both scheduled
+workflows run `scripts/preflight_governance.py` with the selected interpreter
+after dependency installation and before their first mutant. Do not bypass or
+move that step: interpreter, virtualenv, manifest, syntax, source-lock, and
+ownership defects belong at the cheap front door, not in mutant evidence.
 
 ## Distribution tests
 
