@@ -142,6 +142,9 @@ execution_evidence:
   - command: .venv/bin/python scripts/validate_governance_yaml.py --repo-root .; .venv/bin/python -m pytest -q tests/test_ci_github_canary.py tests/test_ci_self_controller.py tests/test_self_governance_contracts.py
     result: pass
     notes: governance validation and 46 focused canary, controller, runner-boundary, and workflow-authority tests passed after exact canary pinning
+  - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
+    result: pass
+    notes: exact-tree local evidence on d074e0c5 passed all 243 mechanically collected contract nodes and all 77 isolated causal controls with zero skips, infrastructure exits, or unexpected worktree changes
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
