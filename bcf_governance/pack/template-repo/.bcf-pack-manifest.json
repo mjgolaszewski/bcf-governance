@@ -336,7 +336,7 @@
     },
     "scripts/_bcf_runtime/ci_github_authority.py": {
       "operation": "copy",
-      "sha256": "11ef89c09e391bb8a4463c84cfab07974e2a5b1f952c4f4455dbb8fd14871b16"
+      "sha256": "d8373a3a312c08c5d978a5ba839f8a81358a10ea2251607de530b027b443ccc1"
     },
     "scripts/_bcf_runtime/ci_github_bootstrap.py": {
       "operation": "copy",

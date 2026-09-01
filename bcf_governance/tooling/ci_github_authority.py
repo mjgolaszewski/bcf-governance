@@ -127,7 +127,15 @@ def authenticate_role_job_inventory(
     jobs = api.jobs(repository, identity.run_id, attempt=identity.run_attempt)
     names = [str(value.get("name", "")) for value in jobs]
     expected = [str(value["job_id"]) for value in authority_role_jobs(authority, role)]
-    if not all(names) or len(set(names)) != len(names) or set(names) != set(expected):
+    names_set = set(names)
+    expected_set = set(expected)
+    if (
+        not names
+        or not all(names)
+        or len(names_set) != len(names)
+        or names_set - expected_set
+        or (require_terminal and names_set != expected_set)
+    ):
         raise GitHubControllerError("privileged workflow exact job inventory does not match authority")
     if require_terminal and any(str(value.get("status")) != "completed" for value in jobs):
         raise GitHubControllerError("privileged workflow job inventory is not terminal")

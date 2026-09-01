@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-13-workitems
   version: 1.0.0
   generated_at_utc: '2026-08-31T00:00:00Z'
-  status: completed
+  status: planned
   path: plans/phase-13-workitems.yml
   phase_id: P13
 workitems:
@@ -23,7 +23,7 @@ workitems:
   - contract-test
 - id: P13-P0-02
   priority: P0
-  status: DONE
+  status: IN_PROGRESS
   summary: deliver independent final-byte verification and trusted release receipt
     construction
   acceptance:
@@ -46,7 +46,7 @@ workitems:
   - contract-test
 - id: P13-P0-04
   priority: P0
-  status: DONE
+  status: IN_PROGRESS
   summary: deliver hosted Identity reference proof and reconciled release custody
   acceptance:
   - canary proves common admission, revocation, and attempt precedence without polling or waiting
