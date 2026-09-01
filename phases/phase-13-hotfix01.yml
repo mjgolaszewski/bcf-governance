@@ -270,6 +270,7 @@ execution_evidence:
   - bootstrap 33475183416 and probe 33475219209 passed on both uniquely labeled trusted runners; provider-compiled confirmation now promotes controller d3c687b91fa5f6fdd07a0b04ee8bfa0170902ff9 while preserving its exact artifact custody
   - the hosted verifier now separates token-free `release runtime` package execution from non-executing `release verify-evidence` provider authentication; the runtime subprocess environment is allowlisted and a causal control rejects credential inheritance
   - exact-main 33476814352 passed all executable producers for token-isolation merge 7c30cdca31fa41eb99c5794f9fbbf61b812589f2 and refused only active P13 closure; finalizer 33477079829 and publisher 33477108514 passed, while provider/checksum compilation selected controller artifact 9788519181 and wheel digest 85ee4b622aa8505a682a4981763177804b5cf2fc988aa70e0690a6f5710806c5 without authored custody
+  - bootstrap 33477530784 and probe 33477561989 independently proved controller 7c30cdca31fa41eb99c5794f9fbbf61b812589f2 on both uniquely labeled trusted runners; the provider-compiled confirmation now promotes that controller without operator-authored run, artifact, digest, commit, or tree values
 closeout_requirements:
   claims:
     required_suites_green:
