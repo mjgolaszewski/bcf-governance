@@ -118,6 +118,12 @@ execution_evidence:
   - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
     result: pass
     notes: non-authoritative local evidence; all 236 positive contract nodes and all 70 isolated contract-gate controls passed with zero infrastructure exits or unexpected worktree changes
+  - command: .venv/bin/python .github/scripts/run_self_governance_gate.py test; .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value; .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+    result: pass
+    notes: all 503 source nodes passed and all 13 validator plus 10 evidence/truth mutants were killed after installed-controller and successor-target authority were separated
+  - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
+    result: pass
+    notes: non-authoritative exact-tree local evidence; all 237 contract nodes and all 71 isolated causal controls passed after the projection mutant was corrected to change target-probe behavior
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
