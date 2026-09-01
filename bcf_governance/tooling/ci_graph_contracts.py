@@ -36,6 +36,7 @@ class CompiledCIGraph:
     input_sha256: tuple[tuple[str, str], ...]
     trusted_controller: str
     trusted_controller_check: str
+    trusted_controller_current: bool
 
 
 def _schema(repo_root: Path, relative: Path) -> dict[str, Any]:
@@ -236,6 +237,7 @@ def _apply_canonical_defaults(graph: dict[str, Any]) -> None:
         for job in workflow["jobs"]:
             job.setdefault("environment", {})
             job.setdefault("outputs", {})
+            job.setdefault("controller_requirement", None)
             executor = job["executor"]
             if executor["kind"] == "reusable_workflow":
                 executor.setdefault("inputs", {})
@@ -526,6 +528,20 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                     raise CIGraphError(
                         f"candidate CI graph job {job['id']} may not invoke the trusted controller"
                     )
+                release_controller_commands = [
+                    command_id
+                    for command_id in controller_commands
+                    if graph["commands"][command_id]["argv"][:3]
+                    == ["{controller}", "ci-github", "release"]
+                ]
+                if release_controller_commands and job["controller_requirement"] != "current":
+                    raise CIGraphError(
+                        f"release controller job {job['id']} must require the current controller"
+                    )
+                if job["controller_requirement"] == "current" and not controller_commands:
+                    raise CIGraphError(
+                        f"CI graph job {job['id']} requires the current controller without invoking it"
+                    )
                 ephemeral_commands = [
                     graph["step_components"][component_id]["command"]
                     for component_id in executor["components"]
@@ -680,11 +696,11 @@ def _validate_required_gate_ownership(repo_root: Path, graph: dict[str, Any]) ->
 
 def _trusted_controller(
     repo_root: Path, graph: dict[str, Any]
-) -> tuple[str, str, tuple[tuple[str, str], ...]]:
+) -> tuple[str, str, bool, tuple[tuple[str, str], ...]]:
     contract = graph["trusted_controller"]
     if contract["kind"] == "executable":
         executable = str(contract["executable"])
-        return executable, f"command -v -- {executable} >/dev/null", ()
+        return executable, f"command -v -- {executable} >/dev/null", True, ()
     relative = str(contract["policy_path"])
     path = repo_root / relative
     try:
@@ -708,7 +724,7 @@ def _trusted_controller(
     control_root = f'"$RUNNER_TOOL_CACHE"/bcf-governance/{installed}'
     executable = f"{control_root}/bin/bcf"
     check = f"test -d {control_root}\ntest ! -L {control_root}\ntest -x {executable}"
-    return executable, check, ((relative, digest),)
+    return executable, check, target == installed, ((relative, digest),)
 
 
 def validate_ci_graph(
@@ -734,7 +750,7 @@ def validate_ci_graph(
     _validate_workflows(composed)
     _validate_hosted_commands(composed)
     _validate_required_gate_ownership(repo_root, composed)
-    controller, controller_check, controller_inputs = _trusted_controller(
+    controller, controller_check, controller_current, controller_inputs = _trusted_controller(
         repo_root, composed
     )
     inputs = tuple(sorted(set(value_inputs + controller_inputs)))
@@ -748,4 +764,5 @@ def validate_ci_graph(
         input_sha256=inputs,
         trusted_controller=controller,
         trusted_controller_check=controller_check,
+        trusted_controller_current=controller_current,
     )

@@ -101,8 +101,8 @@ def test_registered_graph_mutant_refreshes_locks_and_generated_bytes(tmp_path: P
     source = extension.read_text(encoding="utf-8")
     extension.write_text(
         source.replace(
-            "condition: release-owner-main, timeout_minutes: 5",
-            "condition: success, timeout_minutes: 5",
+                "condition: release-owner-main, controller_requirement: current, timeout_minutes: 5",
+                "condition: success, controller_requirement: current, timeout_minutes: 5",
             1,
         ),
         encoding="utf-8",

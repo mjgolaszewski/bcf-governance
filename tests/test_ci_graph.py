@@ -225,6 +225,69 @@ def _write_required_gates(repo: Path, *targets: str) -> None:
     )
 
 
+def _add_self_controller_release_job(
+    repo: Path, graph: dict[str, object], *, target: str, installed: str,
+) -> None:
+    policy_path = repo / "governance/self-governance-policy.yml"
+    policy_path.parent.mkdir(parents=True, exist_ok=True)
+    policy_path.write_text(
+        yaml.safe_dump(
+            {
+                "runner_security": {
+                    "trusted_controller_artifact": {
+                        "BCF_BOOTSTRAP_COMMIT_SHA": target,
+                    },
+                    "trusted_controller_installation": {
+                        "installed_commit_sha": installed,
+                    },
+                }
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    graph["trusted_controller"] = {
+        "kind": "self_governance_policy",
+        "policy_path": "governance/self-governance-policy.yml",
+    }
+    graph["commands"]["release-authorize"] = {
+        "argv": [
+            "{controller}", "ci-github", "release", "authorize",
+            "--repository", "${{ github.repository }}",
+        ],
+        "cwd": ".",
+        "environment": {},
+    }
+    graph["step_components"]["release-authorize"] = {
+        "kind": "command",
+        "name": "Authorize release",
+        "command": "release-authorize",
+        "environment": {},
+        "produces": [],
+        "consumes": [],
+    }
+    job = _job(
+        "authorize",
+        "release-authorizer",
+        resource="trusted-control",
+        trust="trusted",
+        executor={"kind": "component_sequence", "components": ["release-authorize"]},
+        components=[],
+    )
+    job["controller_requirement"] = "current"
+    graph["workflows"].append(
+        {
+            "id": "release",
+            "path": ".github/workflows/release.yml",
+            "display_name": "Release authority",
+            "role": "release",
+            "events": [{"type": "workflow_dispatch"}],
+            "permissions": {},
+            "jobs": [job],
+        }
+    )
+
+
 def _extension() -> dict[str, object]:
     job = _job(
         "security-review",
@@ -451,6 +514,44 @@ def test_graph_schema_rejects_raw_shell_fragment(tmp_path: Path) -> None:
     _write_graph(tmp_path, graph)
     with pytest.raises(CIGraphError, match="schema"):
         validate_ci_graph(tmp_path)
+
+
+def test_release_controller_jobs_fail_closed_until_target_is_installed(
+    tmp_path: Path,
+) -> None:
+    graph = _graph()
+    current = "1" * 40
+    pending = "2" * 40
+    _add_self_controller_release_job(
+        tmp_path, graph, target=pending, installed=current,
+    )
+    _write_graph(tmp_path, graph)
+
+    compiled = validate_ci_graph(tmp_path)
+    assert compiled.trusted_controller_current is False
+    release = yaml.safe_load(render_ci_graph(tmp_path)[".github/workflows/release.yml"])
+    assert release["jobs"]["authorize"]["if"] == "${{ false }}"
+
+    graph["workflows"][-1]["jobs"][0].pop("controller_requirement")
+    _write_graph(tmp_path, graph)
+    with pytest.raises(CIGraphError, match="must require the current controller"):
+        validate_ci_graph(tmp_path)
+
+
+def test_release_controller_jobs_activate_only_after_mechanical_confirmation(
+    tmp_path: Path,
+) -> None:
+    graph = _graph()
+    current = "3" * 40
+    _add_self_controller_release_job(
+        tmp_path, graph, target=current, installed=current,
+    )
+    _write_graph(tmp_path, graph)
+
+    compiled = validate_ci_graph(tmp_path)
+    assert compiled.trusted_controller_current is True
+    release = yaml.safe_load(render_ci_graph(tmp_path)[".github/workflows/release.yml"])
+    assert "if" not in release["jobs"]["authorize"]
 
 
 def test_pull_request_gate_ownership_exactly_matches_profile(tmp_path: Path) -> None:

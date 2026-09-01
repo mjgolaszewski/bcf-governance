@@ -55,6 +55,12 @@ Release target: `0.8.0`.
 
 ### Fixed
 
+- Made BCF release roles fail closed while a newly selected trusted controller is
+  awaiting independent installation confirmation. The graph now distinguishes
+  target from proven-installed controller custody, disables release authorization,
+  collection, and publication during that interval, and leaves only the bounded
+  bootstrap/probe rotation path active; a release cannot discover controller-CLI
+  incompatibility after candidate build allocation.
 - Made private evidence transport self-repairing and mechanically ordered. The
   graph now marks the single mode-restoration effect, requires it immediately
   after an exact session download and before gate execution, binds its root to

@@ -302,6 +302,11 @@ def _job(
     if job["needs"]:
         result["needs"] = job["needs"]
     condition = _condition(compiled, job["condition"])
+    if (
+        job["controller_requirement"] == "current"
+        and not compiled.trusted_controller_current
+    ):
+        condition = "${{ false }}"
     if condition is not None:
         result["if"] = condition
     if job["permissions"]:
