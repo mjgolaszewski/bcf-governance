@@ -85,6 +85,13 @@ summary:
     without repeating their mutation work
   - release authorization input custody is resolved from current authenticated provider
     state and immutable resolver output rather than operator-supplied identity fields
+  - exact-main run 33471920316 passed every preflight, package, template, evidence,
+    test, lint, type, SBOM, and controller-build job for merge 67601972, then correctly
+    refused only active P13-HF01 closure; finalizer 33472160501 and publisher 33472182468
+    completed the authenticated terminal path
+  - the controller resolver and inventory compiler selected the exact-main controller
+    artifact and projected the pending bootstrap/probe target without any authored run,
+    artifact, commit, tree, provider-digest, or wheel-digest value
 workitems:
 - id: P13-P0-01
   status: IN_PROGRESS
