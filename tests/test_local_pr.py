@@ -50,6 +50,7 @@ def test_local_pr_context_fetches_default_branch_and_supplies_exact_event(tmp_pa
     script = (
         "import json,os,pathlib; "
         "event=json.loads(pathlib.Path(os.environ['GITHUB_EVENT_PATH']).read_text()); "
+        "assert os.environ['BCF_ENFORCE_PR_CHANGELOG']=='true'; "
         "assert os.environ['GITHUB_EVENT_NAME']=='pull_request'; "
         "assert event['pull_request']['base']['sha']==os.environ['BCF_PR_BASE_SHA']; "
         "assert event['pull_request']['head']['sha']==os.environ['GITHUB_SHA']"

@@ -453,6 +453,7 @@ gates:
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_local_pr::test_local_pr_rejects_head_without_default_branch_ancestry']
+    - {id: local-pr-changelog-enforcement-must-fail, mutation: {path: bcf_governance/tooling/local_pr.py, search: '"BCF_ENFORCE_PR_CHANGELOG": "true"', replace: '"BCF_ENFORCE_PR_CHANGELOG": "false"'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_local_pr::test_local_pr_context_fetches_default_branch_and_supplies_exact_event']}}
     - id: trusted-input-role-must-fail
       mutation: {path: bcf_governance/tooling/trusted_inputs.py, search: 'if executor_role != "trusted-collector":', replace: 'if
           False and executor_role != "trusted-collector":'}

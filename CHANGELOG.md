@@ -82,6 +82,8 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   artifact target. Rotation now keeps active control jobs on proven bytes, uses those bytes
   to install the target, and accepts a promotion only from exact-main bootstrap and probe
   runs compiled from authenticated provider state.
+- Made canonical local-PR validation enable the same changelog contract as remote pull
+  requests, using the fetched exact base SHA before any evidence can be allocated.
 
 ### Changed
 

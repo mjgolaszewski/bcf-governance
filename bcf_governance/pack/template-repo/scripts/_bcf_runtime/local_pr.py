@@ -125,6 +125,7 @@ def run_local_pr_validation(
         environment = os.environ.copy()
         environment.update(
             {
+                "BCF_ENFORCE_PR_CHANGELOG": "true",
                 "BCF_PR_BASE_SHA": context.base_sha,
                 "GITHUB_BASE_REF": context.default_branch,
                 "GITHUB_EVENT_NAME": "pull_request",
