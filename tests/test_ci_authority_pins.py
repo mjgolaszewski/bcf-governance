@@ -9,6 +9,7 @@ import yaml
 
 from bcf_governance.tooling.ci_authority_pins import (
     CIAuthorityPinError,
+    _compile_inventories,
     pin_workflow_authority,
     verify_workflow_authority,
 )
@@ -154,8 +155,22 @@ def test_self_workflow_authority_is_mechanically_compiled() -> None:
         for role, reference in payload["roles"].items()
         if role not in {"admission", "reusable_producers"}
     }
+    expected = {
+        reference: payload["workflow_registry"][reference].pop("expected_jobs")
+        for reference in privileged
+    }
+    payload.pop("admission_jobs")
+    for producer in payload["producers"]:
+        producer.pop("expected_jobs")
+    workflow_bytes = {
+        reference: (REPO_ROOT / entry["active_path"]).read_bytes()
+        for reference, entry in payload["workflow_registry"].items()
+    }
+
+    _compile_inventories(payload, workflow_bytes)
+
     assert all(
-        payload["workflow_registry"][reference]["expected_jobs"]
+        payload["workflow_registry"][reference]["expected_jobs"] == expected[reference]
         for reference in privileged
     )
     assert payload["workflow_registry"]["authority-canary"]["job_roles"] == {

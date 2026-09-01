@@ -181,6 +181,7 @@ execution_evidence:
   - promotion PR 51 first failed hosted preflight in 9 seconds because it lacked the required changelog update; the canonical local PR helper had supplied base and event identity but omitted the enforcement flag, so that parity defect is now mechanically owned and mutation-tested before the PR is rerun
   - promotion PR 51 passed protected runs 33460963130 and 33460963175 and merged as a9eb330c9d261973f790f4f8d127f5588bbb6208; the installed successor can now consume mechanically derived exact privileged job inventories, so the compatibility omission is retired without copying provider display names
   - selected-environment readiness now verifies lexical executable identity, virtualenv prefix/configuration/isolation, Python compatibility, and every declared distribution version in cheap preflight; BCF governance installation is aligned to pytest 9.0.3 so these defects cannot first surface in evidence or mutation lanes
+  - exact local contract capture rejected the initial privileged-inventory control because it skipped recompilation of an already-enriched document; the owner test now strips every derived privileged/admission/producer inventory first and requires exact reconstruction from workflow bytes, making the mutant causal
 closeout_requirements:
   claims:
     required_suites_green:
