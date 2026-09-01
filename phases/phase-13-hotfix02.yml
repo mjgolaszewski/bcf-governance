@@ -29,6 +29,9 @@ execution_evidence:
   - the local artifact harness then proved cheap preflight omitted build-system
     requirements and failed at setuptools.build_meta; preflight now derives those
     requirements from pyproject.toml before allocating any session or evidence work
+  - the next sdist run exposed an environment-dependent symlinked-venv fixture; that
+    test now isolates the symlink invariant, while a separate cause-verified test keeps
+    ambient VIRTUAL_ENV mismatch rejection authoritative
 closeout_requirements:
   claims:
     required_suites_green:

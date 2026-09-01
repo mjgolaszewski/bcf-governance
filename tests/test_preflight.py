@@ -332,7 +332,10 @@ def test_wrong_interpreter_distribution_version_fails_before_evidence(
         preflight._interpreter_requirements(repo, Path(sys.executable))
 
 
-def test_symlinked_virtualenv_interpreter_identity_is_validated(tmp_path: Path) -> None:
+def test_symlinked_virtualenv_interpreter_identity_is_validated(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv("VIRTUAL_ENV", raising=False)
     environment = tmp_path / ".venv"
     subprocess.run(
         [sys.executable, "-m", "venv", "--without-pip", str(environment)],
@@ -345,6 +348,21 @@ def test_symlinked_virtualenv_interpreter_identity_is_validated(tmp_path: Path) 
     assert (environment / "bin/python").is_symlink()
     assert identity["environment_kind"] == "virtualenv"
     assert identity["environment_root"] == str(environment)
+
+
+def test_selected_virtualenv_rejects_ambient_identity_mismatch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    environment = tmp_path / ".venv"
+    subprocess.run(
+        [sys.executable, "-m", "venv", "--without-pip", str(environment)],
+        check=True,
+        capture_output=True,
+    )
+    monkeypatch.setenv("VIRTUAL_ENV", str(tmp_path / "different-environment"))
+
+    with pytest.raises(preflight.PreflightError, match="does not identify"):
+        preflight._interpreter_identity(environment / "bin/python")
 
 
 def test_broken_project_virtualenv_fails_before_evidence(tmp_path: Path) -> None:
