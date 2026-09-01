@@ -178,6 +178,13 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(REPO_ROOT / relative, destination)
     pin = dict(policy["runner_security"]["trusted_controller_artifact"])
+    baseline_proof = dict(
+        policy["runner_security"]["trusted_controller_installation"]
+    )
+    baseline_proof["installed_commit_sha"] = pin["BCF_BOOTSTRAP_COMMIT_SHA"]
+    controller.project_self_controller_pin(
+        tmp_path, pin=pin, confirmation=baseline_proof, apply=True
+    )
     assert controller.project_self_controller_pin(
         tmp_path, pin=pin, apply=False
     ).status == "clean"
