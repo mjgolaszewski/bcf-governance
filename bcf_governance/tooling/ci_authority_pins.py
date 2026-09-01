@@ -258,9 +258,9 @@ def _compile_inventories(
 
 
 def verify_workflow_authority(
-    repo_root: Path, *, authority_path: Path
+    repo_root: Path, *, authority_path: Path, require_history: bool = True
 ) -> int:
-    """Verify all local custody facts against exact committed workflow bytes."""
+    """Verify authority against exact history or mechanically packaged bytes."""
 
     root = repo_root.resolve()
     authority = authority_path if authority_path.is_absolute() else root / authority_path
@@ -283,14 +283,23 @@ def verify_workflow_authority(
         definition_commit = str(entry.get("trusted_workflow_definition_commit", ""))
         if not re.fullmatch(r"[a-f0-9]{40,64}", definition_commit):
             raise CIAuthorityPinError("workflow definition commit is not exact")
-        _git(root, "merge-base", "--is-ancestor", definition_commit, "HEAD")
-        committed = _git(root, "show", f"{definition_commit}:{path}")
         current = root / path
-        if current.is_symlink() or not current.is_file() or current.read_bytes() != committed:
+        if current.is_symlink() or not current.is_file():
             raise CIAuthorityPinError(
                 f"current workflow bytes differ from authority: {reference}"
             )
-        blob = _git(root, "rev-parse", f"{definition_commit}:{path}").decode().strip()
+        current_bytes = current.read_bytes()
+        if require_history:
+            _git(root, "merge-base", "--is-ancestor", definition_commit, "HEAD")
+            committed = _git(root, "show", f"{definition_commit}:{path}")
+            blob = _git(root, "rev-parse", f"{definition_commit}:{path}").decode().strip()
+        else:
+            committed = current_bytes
+            blob = _git(root, "hash-object", "--stdin", input_bytes=committed).decode().strip()
+        if current_bytes != committed:
+            raise CIAuthorityPinError(
+                f"current workflow bytes differ from authority: {reference}"
+            )
         if entry.get("trusted_workflow_blob_oid") != blob:
             raise CIAuthorityPinError(f"workflow blob pin mismatched: {reference}")
         if entry.get("trusted_workflow_sha256") != hashlib.sha256(committed).hexdigest():

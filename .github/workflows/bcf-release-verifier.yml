@@ -76,6 +76,7 @@ jobs:
             --python "$(command -v python)" \
             --output "$RUNNER_TEMP/bcf-release-runtime"
       - name: Upload raw runtime evidence from this attempt
+        if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: bcf-release-runtime-${{ github.run_id }}-${{ github.run_attempt }}

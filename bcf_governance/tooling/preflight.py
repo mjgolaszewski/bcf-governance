@@ -9,7 +9,6 @@ import json
 import os
 import re
 import subprocess
-import tomllib
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
@@ -26,6 +25,11 @@ from .evidence_sessions import (
 )
 from .governance_validation.runner import validate_repo_root
 from .install_governance_pack import _pack_manifest_entries
+from .interpreter_environment import (
+    InterpreterEnvironmentError,
+    derive_interpreter_environment,
+    verify_interpreter_environment_projection,
+)
 from .semantic_ownership_scan import run_scan as run_semantic_ownership_scan
 from .test_manifests import check_all
 
@@ -129,15 +133,6 @@ def _syntax_checks(repo_root: Path) -> dict[str, int]:
     return counts
 
 
-def _dependency_name(value: object) -> str:
-    if not isinstance(value, str):
-        raise PreflightError("project dependency declaration is not a string")
-    match = re.match(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)", value)
-    if match is None:
-        raise PreflightError("project dependency declaration has no distribution name")
-    return match.group(1)
-
-
 def _interpreter_identity(python: Path) -> dict[str, str]:
     """Prove the selected executable and any lexical virtual environment agree."""
 
@@ -205,51 +200,14 @@ def _interpreter_identity(python: Path) -> dict[str, str]:
 def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, Any]:
     """Verify selected environment identity and versions before evidence."""
 
-    registry_path = repo_root / "governance/gate-contracts.yml"
-    if not registry_path.is_file():
-        return {}
-    registry = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
-    contract = registry.get("interpreter_contract") if isinstance(registry, dict) else None
-    if contract is None:
-        return {}
-    if not isinstance(contract, dict) or contract.get("project_dependencies") is not True:
-        raise PreflightError("interpreter contract is invalid")
     try:
-        project = tomllib.loads((repo_root / "pyproject.toml").read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, tomllib.TOMLDecodeError) as exc:
-        raise PreflightError("interpreter project dependency source is invalid") from exc
-    metadata = project.get("project")
-    if not isinstance(metadata, dict):
-        raise PreflightError("interpreter project metadata is missing")
-    declared = metadata.get("dependencies")
-    if not isinstance(declared, list):
-        raise PreflightError("project dependency inventory is missing")
-    requirements = [str(value) for value in declared]
-    optional = metadata.get("optional-dependencies", {})
-    groups = contract.get("optional_dependency_groups")
-    if not isinstance(optional, dict) or not isinstance(groups, list):
-        raise PreflightError("interpreter optional dependency contract is invalid")
-    for group in groups:
-        values = optional.get(group)
-        if not isinstance(group, str) or not isinstance(values, list):
-            raise PreflightError("interpreter optional dependency group is missing")
-        requirements.extend(str(value) for value in values)
-    gates = registry.get("gates")
-    additions = contract.get("gate_requirements")
-    if not isinstance(gates, dict) or not isinstance(additions, dict):
-        raise PreflightError("interpreter gate requirement contract is invalid")
-    if set(additions) - set(gates):
-        raise PreflightError("interpreter requirements name unknown gates")
-    for values in additions.values():
-        if not isinstance(values, list):
-            raise PreflightError("interpreter gate requirements must be lists")
-        requirements.extend(str(value) for value in values)
-    required = {_dependency_name(value) for value in requirements}
-    if len(required) != len(requirements):
-        raise PreflightError("interpreter dependency declarations must have unique names")
-    requires_python = metadata.get("requires-python")
-    if not isinstance(requires_python, str) or not requires_python:
-        raise PreflightError("project requires-python contract is missing")
+        plan = derive_interpreter_environment(repo_root)
+        if plan is not None:
+            verify_interpreter_environment_projection(plan)
+    except InterpreterEnvironmentError as exc:
+        raise PreflightError(str(exc)) from exc
+    if plan is None:
+        return {}
     identity = _interpreter_identity(python)
     probe = (
         "import importlib.metadata as m,json,platform,sys\n"
@@ -272,7 +230,14 @@ def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, Any]:
     )
     try:
         result = subprocess.run(
-            [str(python), "-I", "-c", probe, json.dumps(sorted(requirements)), requires_python],
+            [
+                str(python),
+                "-I",
+                "-c",
+                probe,
+                json.dumps(list(plan.requirements)),
+                plan.requires_python,
+            ],
             capture_output=True,
             text=True,
             timeout=30,
@@ -289,7 +254,9 @@ def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, Any]:
         versions = json.loads(result.stdout)
     except json.JSONDecodeError as exc:
         raise PreflightError("selected interpreter dependency probe was invalid") from exc
-    if not isinstance(versions, dict) or set(versions) != required:
+    if not isinstance(versions, dict) or {
+        re.sub(r"[-_.]+", "-", value).lower() for value in versions
+    } != set(plan.distribution_names):
         raise PreflightError("selected interpreter dependency inventory is incomplete")
     return {
         "identity": identity,

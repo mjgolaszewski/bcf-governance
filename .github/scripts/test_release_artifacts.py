@@ -16,6 +16,11 @@ from pathlib import Path
 
 import yaml
 
+from bcf_governance.tooling.release_runtime_verification import (
+    SDIST_CUSTODY_COMMIT_MESSAGE,
+    SDIST_PORTABLE_TEST_ENV,
+)
+
 
 REQUIRED_SDIST_PATHS = (
     ".github/scripts",
@@ -57,7 +62,6 @@ REQUIRED_SDIST_FILES = (
     "release/requirements-cp312-linux-x86_64.lock",
     "release/wheelhouse-manifest.yml",
 )
-SDIST_PORTABLE_TEST_ENV = "BCF_RELEASE_SDIST_PORTABLE_TEST"
 ALLOWED_SDIST_CUSTODY_SKIPS = {
     (
         "tests.test_profile_contract_v2",
@@ -325,7 +329,14 @@ def initialize_source_custody(source_root: Path) -> None:
     run("git", "config", "user.email", "release-artifact@example.invalid", cwd=source_root)
     run("git", "config", "user.name", "BCF Artifact Test", cwd=source_root)
     run("git", "add", ".", cwd=source_root)
-    run("git", "commit", "--quiet", "-m", "exact extracted source distribution", cwd=source_root)
+    run(
+        "git",
+        "commit",
+        "--quiet",
+        "-m",
+        SDIST_CUSTODY_COMMIT_MESSAGE,
+        cwd=source_root,
+    )
     result = subprocess.run(
         ["git", "status", "--porcelain", "--untracked-files=all"],
         cwd=source_root,

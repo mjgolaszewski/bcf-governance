@@ -72,6 +72,10 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 
 ### Fixed
 
+- Made extracted-source workflow custody verify the exact packaged workflow bytes and
+  compiled inventories without claiming unavailable Git history; the normal repository
+  path still requires exact definition-commit ancestry. Failed verifier attempts now
+  retain raw runtime evidence for deterministic diagnosis.
 - Replaced independently maintained resolver and authorizer artifact field sets with one
   projection derived from the `ProviderArtifact` dataclass, and fail closed on any extra,
   missing, or differently shaped download coordinates before release build allocation.
@@ -84,9 +88,14 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   state and exact downloaded bytes; bootstrap/probe inputs remain compiler output.
 - Promoted the corrected controller only after both uniquely labeled trusted runners
   passed provider-authenticated bootstrap and independent probe inventories.
-- Kept interpreter, virtual-environment, and dependency integrity at the canonical cheap
-  preflight boundary; evidence, mutant, package-test, and release-runtime work cannot be
-  the first mechanism to discover a broken selected environment.
+- Kept interpreter, virtual-environment, runtime, development, gate-specific, and
+  build-system dependency integrity at the canonical cheap preflight boundary. The
+  bootstrap requirements file is now an exact generated projection of those owners,
+  and failed prerequisites emit a causal terminal observation instead of a missing
+  fan-in error. Generated local release checks also pass truth only the fresh session
+  they just allocated, so retained sessions cannot contaminate a current run; evidence,
+  mutant, package-test, and release-runtime work cannot be the first mechanism to
+  discover a broken selected environment.
 - Replaced hand-transcribed Identity reference custody with a tracked importer that
   authenticates the exact provider run, attempt, workflow, subject, artifact membership,
   and provider digest before projecting benchmark and SOIP results into governed audits.

@@ -27,6 +27,19 @@ rsync -a --delete --exclude='__pycache__' --exclude='*.pyc' \
 python3 .github/scripts/build_pack_manifest.py
 ```
 
+BCF's root `requirements-governance.txt` is also generated state. After changing
+project, optional, build-system, or gate-specific requirements, compile and verify
+the selected-environment projection:
+
+```bash
+bcf environment apply --repo-root .
+bcf environment check --repo-root .
+```
+
+Fresh CI installs this projection so its bootstrap does not depend on build-isolation
+side effects. Canonical preflight derives the same plan independently and rejects any
+byte drift before probing the selected interpreter or allocating an evidence session.
+
 Pack/runtime parity tests fail on drift. Keep implementation modules below 800
 lines and split by stable security or validation concepts, preserving focused
 characterization tests before a split.
@@ -121,10 +134,23 @@ semantic profiles run nightly and the full profiles run weekly. Both scheduled
 workflows run `scripts/preflight_governance.py` with the selected interpreter
 after dependency installation and before their first mutant. Do not bypass or
 move that step: interpreter, virtualenv, manifest, syntax, source-lock, and
-ownership defects belong at the cheap front door, not in mutant evidence. Each
+ownership defects belong at the cheap front door, not in mutant evidence. The
+selected-environment inventory is derived from project, optional, gate-specific,
+and enabled build-system requirements, including the configured build backend. Each
 profile writes an exact-commit/tree JSON result, and the workflow always uploads
 the run/attempt-scoped result directory. A failed mutant therefore retains its
 causal record without a second execution.
+
+If preflight or evidence cannot complete, the terminal job skips dependency install,
+fan-in, and truth execution. A dependency-free reporter converts the exact upstream job
+conclusions into a run/attempt-bound failed observation, uploads it under the stable
+truth artifact name, and leaves the protected check red. Missing artifact directories
+are therefore not treated as the cause of an upstream rejection.
+
+Local `release-check` has the same fresh-session rule. It allocates one session, writes
+every receipt beneath that directory, and passes that directory—not the retained parent
+artifact root—to truth. The root `Makefile.fragment` is an exact
+`render_v2_makefile` product, and its parity test rejects a hand-edited session path.
 
 ## Distribution tests
 
@@ -135,8 +161,12 @@ and verification install with `--no-index --require-hashes`, and build uses
 install, validation, doctor, evidence, and truth smoke tests. A separate clean
 environment installs the extracted sdist and runs its complete bundled suite.
 The sdist must carry tests, fixtures, templates, schemas, examples, and workflow
-data needed by those tests. `twine check`, checksums, and provenance happen only
-after both artifact tests pass.
+data needed by those tests. Because an archive cannot contain the source repository's
+Git graph, the verifier creates one synthetic custody commit and the canonical workflow
+authority checker verifies current workflow blob, digest, and compiled-inventory pins
+without claiming definition-commit ancestry. Normal source-tree validation still
+requires that ancestry. `twine check`, checksums, and provenance happen only after both
+artifact tests pass.
 
 The trusted authorizer obtains the lock and manifest bytes directly from the exact
 main commit and binds their blob OIDs and SHA-256 values. The hosted verifier's

@@ -168,7 +168,19 @@ producer, and privileged provider job names plus the admission workflow's source
 map. Partial registry pinning is rejected.
 `bcf preflight` recomputes the same model before evidence allocation, so edited
 workflow bytes or copied job labels cannot defer a deterministic failure to remote
-CI.
+CI. When an interpreter contract declares `requirements_projection`, the project,
+optional, build-system, and gate-specific dependency union has one compiled bootstrap
+view. Regenerate it after changing an owner and check it without mutation:
+
+```bash
+bcf environment apply --repo-root .
+bcf environment check --repo-root .
+```
+
+Preflight requires exact projection bytes and then verifies the selected executable,
+Python constraint, virtual-environment identity, and installed distribution versions.
+Evidence, mutants, package tests, and release verification are downstream of this
+boundary.
 
 The same front door derives required interpreter distributions and version constraints
 from the project's declared dependencies, configured optional groups, and explicit

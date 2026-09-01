@@ -92,6 +92,13 @@ syntax, and artifact namespace separation. Expensive integration and runtime
 gates still run after preflight; a green preflight is not release evidence by
 itself.
 
+Selected-environment declarations follow the same ownership rule. Project,
+build-system, optional, and gate-specific requirements compile into one bootstrap
+projection; preflight compares its exact bytes with the canonical plan before checking
+the interpreter. This adds a generated file and regeneration step, but removes an
+operator-maintained dependency list and prevents build-isolation side effects from
+deciding whether later jobs happen to work.
+
 Implementation modules have declared size and context budgets. These bounds
 make complete review more likely for both people and agents, but occasionally
 require a concept to be split across a stable private boundary.

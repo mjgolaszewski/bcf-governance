@@ -3,12 +3,16 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 
 import pytest
 
 from bcf_governance.tooling import ci_github_commands
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError
 from bcf_governance.tooling.release_runtime_verification import (
+    SDIST_CUSTODY_COMMIT_MESSAGE,
+    SDIST_PORTABLE_TEST_ENV,
+    is_release_sdist_test_context,
     runtime_environment,
     runtime_evidence_paths,
     verify_runtime_evidence,
@@ -100,6 +104,36 @@ def test_candidate_runtime_environment_excludes_provider_authority(
     assert "GITHUB_TOKEN" not in environment
     assert "ACTIONS_RUNTIME_TOKEN" not in environment
     assert "AWS_SECRET_ACCESS_KEY" not in environment
+
+
+def test_portable_sdist_mode_requires_mechanically_created_archive_custody(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv(SDIST_PORTABLE_TEST_ENV, "1")
+    with pytest.raises(GitHubControllerError, match="package metadata"):
+        is_release_sdist_test_context(tmp_path)
+
+    metadata = tmp_path / "PKG-INFO"
+    metadata.write_text("Name: bcf-governance\nVersion: 0.7.1\n", encoding="utf-8")
+    subprocess.run(["git", "init", "--quiet"], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "release@example.invalid"],
+        cwd=tmp_path,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "BCF Release Verifier"],
+        cwd=tmp_path,
+        check=True,
+    )
+    subprocess.run(["git", "add", "PKG-INFO"], cwd=tmp_path, check=True)
+    subprocess.run(
+        ["git", "commit", "--quiet", "-m", SDIST_CUSTODY_COMMIT_MESSAGE],
+        cwd=tmp_path,
+        check=True,
+    )
+
+    assert is_release_sdist_test_context(tmp_path) is True
 
 
 def test_runtime_cli_never_constructs_provider_api(
