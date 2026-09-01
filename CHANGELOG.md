@@ -59,6 +59,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Rotated the pending trusted-controller target to the provider-resolved exact-main
   artifact containing the activated release workflows; the installed controller
   remains authoritative until bootstrap and probe independently prove both runners.
+- Promoted the release-activation controller only after provider-authenticated
+  bootstrap and independent probe runs proved the exact installation on both
+  uniquely labeled trusted runners.
 
 ### Fixed
 
