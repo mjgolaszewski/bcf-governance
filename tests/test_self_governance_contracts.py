@@ -430,6 +430,11 @@ def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
                             "${{ github.actor == 'mjgolaszewski' && "
                             "github.ref == 'refs/heads/main' }}"
                         ),
+                        "owner_main_dispatch_after_dependencies": (
+                            "${{ always() && github.actor == 'mjgolaszewski' && "
+                            "github.ref == 'refs/heads/main' && "
+                            "needs.admit.result == 'success' }}"
+                        ),
                     }
                     assert workflow["jobs"][job_id]["if"] == expected[activation]
     release = yaml.safe_load(
@@ -437,6 +442,43 @@ def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
     )
     assert set(release["jobs"]) == {"authority-cutover-pending"}
     assert release["jobs"]["authority-cutover-pending"]["if"] == "${{ false }}"
+
+
+def test_authority_canary_is_owner_dispatched_and_attempt_deterministic() -> None:
+    workflow = yaml.safe_load(
+        (REPO_ROOT / ".github/workflows/bcf-authority-canary.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    scenario = workflow[True]["workflow_dispatch"]["inputs"]["scenario"]
+    assert scenario == {
+        "description": "Deterministic producer outcome for this exact run and every rerun attempt",
+        "required": True,
+        "default": "success",
+        "type": "choice",
+        "options": ["success", "producer-b-failure"],
+    }
+    jobs = workflow["jobs"]
+    assert list(jobs) == ["admit", "producer-a", "producer-b", "observe"]
+    assert jobs["producer-a"]["needs"] == ["admit"]
+    assert jobs["producer-b"]["needs"] == ["admit"]
+    assert jobs["observe"]["needs"] == ["admit", "producer-a", "producer-b"]
+    assert jobs["observe"]["if"] == (
+        "${{ always() && github.actor == 'mjgolaszewski' && "
+        "github.ref == 'refs/heads/main' && needs.admit.result == 'success' }}"
+    )
+    for job_id in ("producer-a", "producer-b"):
+        job = jobs[job_id]
+        assert job["runs-on"] == _policy()["runner_security"]["candidate_routing"][
+            "candidate_runner"
+        ]
+        assert job["permissions"] == {}
+        assert job["env"] == {"BCF_CANARY_SCENARIO": "${{ inputs.scenario }}"}
+        assert all("uses" not in step for step in job["steps"])
+    assert "producer-b-failure) exit 86" in jobs["producer-b"]["steps"][0]["run"]
+    assert workflow["env"]["BCF_CONTROL_COMMIT"] == _policy()["runner_security"][
+        "trusted_controller_installation"
+    ]["installed_commit_sha"]
 
 
 def test_workflows_have_no_runner_occupying_coordination() -> None:
@@ -466,6 +508,7 @@ def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> N
 
 def test_trusted_controller_steps_receive_github_token_explicitly() -> None:
     for relative_path in (
+        ".github/workflows/bcf-authority-canary.yml",
         ".github/workflows/bcf-exact-main.yml",
         ".github/workflows/bcf-trusted-finalizer.yml",
         ".github/workflows/bcf-status-publisher.yml",

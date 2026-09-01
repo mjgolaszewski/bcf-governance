@@ -198,7 +198,12 @@ rotate; they do not author custody values or declare installation success.
 The isolated authority canary uses `bcf ci-github canary admit|observe`. Its observer
 authenticates one exact run attempt and complete job inventory, then publishes through
 the separate `bcf/authority-canary` context. It never borrows a producer from another
-same-SHA run.
+same-SHA run. The owner dispatches the workflow on `main` with the closed `scenario`
+choice: `success` makes both hosted producers pass, while `producer-b-failure` gives
+producer B a deterministic nonzero exit. Rerunning the latter retains the scenario and
+therefore proves that attempt 2 fails with higher authority than attempt 1. The observer
+uses `always()` and starts only after both hosted producers terminate; it does not occupy
+a trusted runner while candidate work is running.
 
 Privileged release artifacts have one decoder. It authenticates the owning role and
 workflow attempt first, then requires an exact numeric artifact ID, safe name, provider

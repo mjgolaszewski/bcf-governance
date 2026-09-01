@@ -103,6 +103,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Made every trusted GitHub controller command validate its output channel before provider
   access or mutation, and made controller confirmation publish its authority document only
   after the output channel accepts the computed result.
+- Activated an owner-dispatched authority-revocation canary with typed deterministic
+  scenarios, fresh secretless hosted producers, and an always-run trusted observer that
+  publishes only to the isolated canary status context.
 
 ### Changed
 
