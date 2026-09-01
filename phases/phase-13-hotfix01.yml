@@ -205,6 +205,9 @@ execution_evidence:
   - command: GitHub PR 71 package run 33484856677
     result: expected_fail_remediated
     notes: package preflight stopped before compilation and tests because the direct PR workflow omitted BCF_PR_BASE_SHA; the workflow now supplies exact provider event context and a causal control rejects its removal, while the obsolete independent evidence run was cancelled
+  - command: exact-main 33485639671; controller-pin resolve|compile; sync-self-controller --apply
+    result: pass
+    notes: every executable exact-main producer passed on merge 7f116dbc and truth refused only active P13-HF01; provider and checksum compilers selected artifact 9791739132 and projected the pending controller target without operator-authored custody values, while finalizer 33485957082 and publisher 33485990077 completed
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,

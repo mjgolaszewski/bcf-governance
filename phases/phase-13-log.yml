@@ -123,6 +123,9 @@ summary:
   - PR 71 package preflight rejected missing exact-base context before compilation or
     tests; that provider-derived input is now explicit and mutation-tested, and the
     already-obsolete evidence workflow was cancelled instead of consuming its full fanout
+  - package-remediation exact-main 33485639671 passed every executable producer and
+    built the controller only after exact wheel-payload inspection; mechanical provider
+    resolution and checksum compilation projected that artifact as the pending target
 workitems:
 - id: P13-P0-01
   status: IN_PROGRESS
