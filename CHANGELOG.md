@@ -39,6 +39,8 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Rotated the pending trusted-controller target to the mechanically resolved exact-main
   artifact containing that release-runtime verifier; the installed controller remains
   authoritative until bootstrap and probe independently confirm both trusted runners.
+- Promoted the release-runtime controller only after provider-compiled bootstrap and
+  probe evidence independently proved the exact installation on both trusted runners.
 
 ### Fixed
 
