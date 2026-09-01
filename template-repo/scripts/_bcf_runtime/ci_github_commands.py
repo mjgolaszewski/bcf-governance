@@ -50,6 +50,7 @@ from .ci_self_controller import (
     resolve_self_controller_artifact,
 )
 from .ci_github_bundle import write_exclusive
+from .release_runtime_verification import run_release_runtime_verification
 
 
 def _required_environment(name: str) -> str:
@@ -290,6 +291,8 @@ def _release_parser() -> argparse.ArgumentParser:
     verify.add_argument("--lock", type=Path, required=True)
     verify.add_argument("--wheelhouse", type=Path, required=True)
     verify.add_argument("--release-artifact", type=Path, action="append", required=True)
+    verify.add_argument("--python", type=Path, required=True)
+    verify.add_argument("--runtime-output", type=Path, required=True)
     verify.add_argument("--output", type=Path, required=True)
     build = operations.add_parser("build")
     build.add_argument("--authorization", type=Path, required=True)
@@ -304,6 +307,8 @@ def _release_parser() -> argparse.ArgumentParser:
     collect.add_argument("--authorization", type=Path, required=True)
     collect.add_argument("--build-manifest", type=Path, required=True)
     collect.add_argument("--verification", type=Path, required=True)
+    collect.add_argument("--runtime-report", type=Path, required=True)
+    collect.add_argument("--runtime-evidence", type=Path, action="append", required=True)
     collect.add_argument("--release-artifact", type=Path, action="append", required=True)
     collect.add_argument("--output", type=Path, required=True)
     collect.add_argument("--verification-artifact-name", required=True)
@@ -366,6 +371,21 @@ def _release(argv: list[str]) -> None:
         print(json.dumps(result, sort_keys=True))
         return
     elif args.operation == "verify":
+        wheels = [path for path in args.release_artifact if path.suffix == ".whl"]
+        sdists = [
+            path for path in args.release_artifact if path.name.endswith(".tar.gz")
+        ]
+        if len(wheels) != 1 or len(sdists) != 1:
+            raise GitHubControllerError("release verification requires one wheel and one sdist")
+        runtime = run_release_runtime_verification(
+            selected_python=args.python,
+            manifest_path=args.wheelhouse_manifest,
+            lock_path=args.lock,
+            wheelhouse=args.wheelhouse,
+            wheel=wheels[0],
+            sdist=sdists[0],
+            output_dir=args.runtime_output,
+        )
         result = verify_release_build_provider(
             environment_api(),
             repository=args.repository,
@@ -378,6 +398,10 @@ def _release(argv: list[str]) -> None:
             verifier_run_id=_required_environment("GITHUB_RUN_ID"),
             verifier_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
             output_path=args.output,
+            runtime_report_path=args.runtime_output / "runtime-verification.json",
+            runtime_evidence=[
+                args.runtime_output / name for name in runtime["evidence"]
+            ],
         )
     elif args.operation == "build":
         result = record_release_build(
@@ -417,6 +441,8 @@ def _release(argv: list[str]) -> None:
                 collector_run_id=_required_environment("GITHUB_RUN_ID"),
                 collector_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
                 verification_artifact_name=args.verification_artifact_name,
+                runtime_report_path=args.runtime_report,
+                runtime_evidence=args.runtime_evidence,
                 output_path=args.output,
             )
         else:

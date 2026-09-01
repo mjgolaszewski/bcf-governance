@@ -209,7 +209,7 @@ gates:
           tests/test_ci_certification.py, tests/test_ci_authority_decisions.py, tests/test_ci_self_controller.py, tests/test_release_receipts.py, tests/test_ci_github_reference.py,
           tests/test_ci_github_canary.py,
           tests/test_ci_github_controller.py, tests/test_ci_github_bootstrap.py, tests/test_ci_github_artifacts.py, tests/test_ci_github_release.py, tests/test_release_closure.py, tests/test_local_pr.py, tests/test_runtime_capacity.py, tests/test_trusted_inputs.py,
-          tests/test_preflight.py, 'tests/test_governance_evidence.py::test_test_node_control_derives_minimal_pytest_command', tests/test_release_artifacts.py, tests/test_release_workflow_contracts.py,
+          tests/test_preflight.py, 'tests/test_governance_evidence.py::test_test_node_control_derives_minimal_pytest_command', tests/test_release_artifacts.py, tests/test_release_runtime_verification.py, tests/test_release_workflow_contracts.py,
           tests/test_documentation_contracts.py, 'tests/test_profile_contract_v2.py::test_bcf_standard_v2_promotion_fits_declared_context_budgets']
         expected_node_manifest: governance/test-manifests/contract-test.txt
         expected_nodes_mode: exact
@@ -263,15 +263,9 @@ gates:
     - id: trusted-controller-token-transport-must-fail
       mutation: {path: .github/workflows/bcf-exact-main.yml, search: 'GITHUB_TOKEN: ${{ github.token }}', replace: 'GITHUB_TOKEN: ""'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_ci_authority_matches_immutable_workflow_definitions', 'tests.test_self_governance_contracts::test_self_control_plane_is_an_exact_v11_generator_product', 'tests.test_self_governance_contracts::test_trusted_controller_steps_receive_github_token_explicitly']}
-    - id: release-cutover-disabled-must-fail
-      mutation: {path: .github/workflows/release.yml, search: 'if: ${{ false }}', replace: 'if: ${{ true }}'}
-      oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_p12_publication_is_named_and_mechanically_event_guarded']}
-    - id: release-cutover-event-trigger-must-fail
-      mutation: {path: .github/workflows/release.yml, search: '  workflow_dispatch:', replace: '  repository_dispatch:'}
-      oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_publisher_authenticates_tag_run_attempt_artifact_and_receipt']}
-    - id: release-latest-success-selection-must-fail
-      mutation: {path: bcf_governance/tooling/ci_github_membership.py, search: 'selected = max(', replace: 'selected = min('}
-      oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_latest_failed_admission_is_selected_without_green_fallback']}
+    - {id: release-cutover-disabled-must-fail, mutation: {path: .github/workflows/release.yml, search: 'if: ${{ false }}', replace: 'if: ${{ true }}'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_p12_publication_is_named_and_mechanically_event_guarded']}}
+    - {id: release-cutover-event-trigger-must-fail, mutation: {path: .github/workflows/release.yml, search: '  workflow_dispatch:', replace: '  repository_dispatch:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_publisher_authenticates_tag_run_attempt_artifact_and_receipt']}}
+    - {id: release-latest-success-selection-must-fail, mutation: {path: bcf_governance/tooling/ci_github_membership.py, search: 'selected = max(', replace: 'selected = min('}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_latest_failed_admission_is_selected_without_green_fallback']}}
     - id: release-no-rebuild-must-fail
       mutation: {path: .github/workflows/release.yml, search: 'run: exit 1', replace: 'run: python -m build'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_publisher_checks_out_nothing_and_rebuilds_nothing']}
@@ -284,7 +278,9 @@ gates:
     - {id: release-provider-artifact-digest-must-fail, mutation: {path: bcf_governance/tooling/ci_github_artifacts.py, search: 'and artifact.get("digest") == expected_digest', replace: 'and True'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_artifacts::test_role_artifact_rejects_provider_identity_mutants[digest-artifact identity]']}}
     - {id: release-newest-admission-must-fail, mutation: {path: bcf_governance/tooling/ci_github_release.py, search: 'newest_release = max(', replace: 'newest_release = min('}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_release_collection_rejects_an_older_same_sha_admission']}}
     - {id: release-receipt-asset-binding-must-fail, mutation: {path: bcf_governance/tooling/ci_github_release.py, search: 'if len(receipt_inventory) != len(receipt_assets) or receipt_inventory != expected_assets:', replace: 'if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_publisher_requires_collector_receipt_to_bind_exact_assets']}}
-    - {id: release-checksum-inventory-must-fail, mutation: {path: bcf_governance/tooling/ci_github_release.py, search: '    _verify_checksum_inventory(paths)', replace: '    pass'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_release_verifier_rejects_candidate_manifest_and_dependency_mutants']}}
+    - {id: release-checksum-inventory-must-fail, mutation: {path: bcf_governance/tooling/release_asset_inventory.py, search: '    if declared != expected:', replace: '    if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_release_verifier_rejects_candidate_manifest_and_dependency_mutants']}}
+    - {id: release-source-blob-binding-must-fail, mutation: {path: bcf_governance/tooling/release_source_bindings.py, search: '        if value.get("path") != relative or value.get("sha256") != _sha256(paths[key]):', replace: '        if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_release_verifier_rejects_manifest_bytes_not_bound_to_exact_main']}}
+    - {id: release-runtime-evidence-binding-must-fail, mutation: {path: bcf_governance/tooling/release_runtime_verification.py, search: '    if report.get("release_artifacts") != expected_artifacts:', replace: '    if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_runtime_verification::test_runtime_evidence_rejects_every_unbound_authority_surface[wheel]']}}
     - {id: release-certification-artifact-binding-must-fail, mutation: {path: bcf_governance/tooling/release_receipts.py, search: '        "certification_artifact": certification_provider_artifact,', replace: ''}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles']}}
     - {id: release-controller-wheel-binding-must-fail, mutation: {path: bcf_governance/tooling/ci_github_release.py, search: '    wheel, _ = verify_controller_inventory(controller_wheel_path.parent.resolve())', replace: '    wheel = controller_wheel_path'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_release_authorizer_binds_newest_certification_and_controller_artifacts']}}
     - {id: release-provider-artifact-resolution-must-fail, mutation: {path: bcf_governance/tooling/ci_github_artifacts.py, search: 'if len(matching) != 1:', replace: 'if not matching:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_artifacts::test_role_artifact_rejects_provider_identity_mutants[duplicate-artifact identity]']}}

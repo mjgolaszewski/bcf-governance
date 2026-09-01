@@ -33,6 +33,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   output rather than operator-entered release inputs.
 - Promoted that controller only after provider-compiled bootstrap and independent
   probe evidence proved its installation on both uniquely labeled trusted runners.
+- Bound the release dependency lock and wheelhouse manifest to authenticated exact-main
+  Git blob bytes, and made the verifier controller own offline wheel/sdist/Twine
+  execution plus raw stdout, stderr, JUnit, interpreter, and artifact evidence.
 
 ### Fixed
 

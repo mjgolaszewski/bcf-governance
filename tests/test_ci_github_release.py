@@ -13,6 +13,7 @@ import yaml
 
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError
 from bcf_governance.tooling.ci_github_artifacts import ProviderArtifact
+from bcf_governance.tooling.ci_github_api import GitHubContent
 from bcf_governance.tooling.ci_github_identity import MainIdentity
 from bcf_governance.tooling.ci_github_release import (
     authorize_release,
@@ -132,9 +133,40 @@ def _release_inputs(tmp_path: Path) -> dict[str, object]:
                 "commit_sha": COMMIT,
                 "tree_sha": TREE,
             },
+            "release_inputs": {
+                "dependency_lock": {
+                    "path": "release/requirements-cp312-linux-x86_64.lock",
+                    "blob_oid": "1" * 40,
+                    "sha256": _sha(lock),
+                },
+                "wheelhouse_manifest": {
+                    "path": "release/wheelhouse-manifest.yml",
+                    "blob_oid": "2" * 40,
+                    "sha256": _sha(manifest),
+                },
+            },
         },
     )
     assets = {path.name: _sha(path) for path in (wheel, sdist, sums)}
+    runtime_stdout = tmp_path / "runtime.stdout"
+    runtime_stdout.write_text("offline verification passed\n", encoding="utf-8")
+    runtime_junit = tmp_path / "sdist-tests.xml"
+    runtime_junit.write_text('<testsuite tests="1" failures="0"/>\n', encoding="utf-8")
+    runtime_evidence = (runtime_stdout, runtime_junit)
+    runtime_report = _json(
+        tmp_path / "runtime-verification.json",
+        {
+            "schema_version": "1.0",
+            "status": "passed",
+            "environment": {
+                "python_executable": "/opt/python/bin/python",
+                "python_version": "3.12.14",
+                "platform": "linux_x86_64",
+            },
+            "release_artifacts": {wheel.name: _sha(wheel), sdist.name: _sha(sdist)},
+            "evidence": {path.name: _sha(path) for path in runtime_evidence},
+        },
+    )
     build = _json(
         tmp_path / "release-build-manifest.json",
         {
@@ -158,6 +190,8 @@ def _release_inputs(tmp_path: Path) -> dict[str, object]:
         "wheelhouse": wheelhouse,
         "artifacts": (wheel, sdist, sums),
         "assets": assets,
+        "runtime_report": runtime_report,
+        "runtime_evidence": runtime_evidence,
     }
 
 
@@ -174,6 +208,8 @@ def _verify(values: dict[str, object], output: Path) -> dict[str, object]:
         build_artifact_id="40",
         build_provider_digest=f"sha256:{'e' * 64}",
         output_path=output,
+        runtime_report_path=values["runtime_report"],  # type: ignore[arg-type]
+        runtime_evidence=values["runtime_evidence"],  # type: ignore[arg-type]
     )
 
 
@@ -206,6 +242,20 @@ def test_release_verifier_rejects_candidate_manifest_and_dependency_mutants(
     )
     with pytest.raises(ValueError, match="checksum inventory"):
         _verify(values, tmp_path / "third" / "changed.json")
+
+
+def test_release_verifier_rejects_manifest_bytes_not_bound_to_exact_main(
+    tmp_path: Path,
+) -> None:
+    values = _release_inputs(tmp_path)
+    manifest = values["manifest"]
+    manifest.write_text(  # type: ignore[union-attr]
+        manifest.read_text(encoding="utf-8") + "\n",  # type: ignore[union-attr]
+        encoding="utf-8",
+    )
+
+    with pytest.raises(GitHubControllerError, match="authorized exact main"):
+        _verify(values, tmp_path / "changed-source.json")
 
 
 def test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles(
@@ -361,8 +411,17 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
         encoding="utf-8",
     )
     controller_wheel_sha256 = _sha(controller_wheel)
+    source_bytes = {
+        "release/requirements-cp312-linux-x86_64.lock": b"lock bytes",
+        "release/wheelhouse-manifest.yml": b"manifest bytes",
+    }
+    api = SimpleNamespace(
+        content=lambda repository, path, ref: GitHubContent(
+            path, "9" * 40, source_bytes[path]
+        )
+    )
     result = authorize_release(
-        object(),  # type: ignore[arg-type]
+        api,  # type: ignore[arg-type]
         repository="owner/repo",
         bundle_dir=bundle,
         run_id="60",
@@ -389,12 +448,24 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
     assert result["exact_main"]["certification_artifact"] == certification_artifact.as_dict()
     assert result["controller"]["run_id"] == "100"
     assert result["controller"]["wheel_sha256"] == controller_wheel_sha256
+    assert result["release_inputs"] == {
+        "dependency_lock": {
+            "path": "release/requirements-cp312-linux-x86_64.lock",
+            "blob_oid": "9" * 40,
+            "sha256": hashlib.sha256(source_bytes["release/requirements-cp312-linux-x86_64.lock"]).hexdigest(),
+        },
+        "wheelhouse_manifest": {
+            "path": "release/wheelhouse-manifest.yml",
+            "blob_oid": "9" * 40,
+            "sha256": hashlib.sha256(source_bytes["release/wheelhouse-manifest.yml"]).hexdigest(),
+        },
+    }
     controller = dict(result["controller"])
     controller.pop("wheel_sha256")
     controller_wheel.write_bytes(b"corrupted-controller")
     with pytest.raises(GitHubControllerError, match="controller artifact digest"):
         authorize_release(
-            object(),  # type: ignore[arg-type]
+            api,  # type: ignore[arg-type]
             repository="owner/repo",
             bundle_dir=bundle,
             run_id="60",
@@ -567,6 +638,8 @@ def test_provider_verifier_requires_authorizer_and_build_same_attempt(
             verifier_run_id="30",
             verifier_run_attempt="1",
             output_path=tmp_path / "verification.json",
+            runtime_report_path=values["runtime_report"],  # type: ignore[arg-type]
+            runtime_evidence=values["runtime_evidence"],  # type: ignore[arg-type]
         )
 
 
@@ -616,6 +689,8 @@ def test_provider_verifier_binds_authenticated_build_and_verifier(
         verifier_run_id="30",
         verifier_run_attempt="2",
         output_path=tmp_path / "provider-verification.json",
+        runtime_report_path=values["runtime_report"],  # type: ignore[arg-type]
+        runtime_evidence=values["runtime_evidence"],  # type: ignore[arg-type]
     )
     assert result["build"]["artifact_id"] == "40"
     assert result["verifier"]["workflow"]["active_path"].endswith("verifier.yml")
@@ -680,6 +755,8 @@ def test_release_collection_rejects_an_older_same_sha_admission(
             collector_run_id="50",
             collector_run_attempt="1",
             verification_artifact_name="verification",
+            runtime_report_path=values["runtime_report"],  # type: ignore[arg-type]
+            runtime_evidence=values["runtime_evidence"],  # type: ignore[arg-type]
             output_path=tmp_path / "receipt.json",
         )
 
