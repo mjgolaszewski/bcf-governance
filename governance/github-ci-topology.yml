@@ -69,5 +69,5 @@ producer_workflows:
   inputs:
     build_controller: true
 activation_variable: BCF_CI_AUTHORITY_ENABLED
-controller_commit: cc3c1fecb24b5c3c6bd23eca901412d03e778a7d
+controller_commit: 63c7c18062fc51744853b9b3d8ff5e9d170716d7
 dispatch_exact_ref: false

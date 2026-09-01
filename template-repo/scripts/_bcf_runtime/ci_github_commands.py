@@ -53,13 +53,19 @@ def _required_environment(name: str) -> str:
     return value
 
 
-def _github_output(payload: dict[str, object]) -> None:
-    """Write validated scalar controller results directly to GitHub's output file."""
+def _github_output_path() -> Path:
+    """Validate the trusted GitHub output channel before authority work begins."""
 
     path_value = _required_environment("GITHUB_OUTPUT")
     path = Path(path_value)
     if path.is_symlink() or not path.is_file():
         raise GitHubControllerError("GITHUB_OUTPUT must be an existing regular file")
+    return path
+
+
+def _github_output(payload: dict[str, object], *, path: Path) -> None:
+    """Write validated scalar controller results to a preflighted output channel."""
+
     lines: list[str] = []
     for key, value in sorted(payload.items()):
         if not key.replace("_", "").isalnum() or not key[0].isalpha():
@@ -114,6 +120,7 @@ def _bootstrap(argv: list[str]) -> None:
     parser.add_argument("--python", type=Path, required=True)
     parser.add_argument("--tool-cache", type=Path, required=True)
     args = parser.parse_args(argv)
+    github_output = _github_output_path()
     result = install_controller(
         environment_api(),
         repository=args.repository,
@@ -130,12 +137,13 @@ def _bootstrap(argv: list[str]) -> None:
         selected_python=args.python,
         tool_cache=args.tool_cache,
     )
-    _github_output(result)
+    _github_output(result, path=github_output)
     print(json.dumps(result, sort_keys=True))
 
 
 def _exact_main(argv: list[str]) -> None:
     args = _exact_main_parser().parse_args(argv)
+    github_output = _github_output_path()
     api = environment_api()
     if args.operation == "admit":
         result = admit_exact_main(
@@ -167,7 +175,7 @@ def _exact_main(argv: list[str]) -> None:
             publisher_run_id=_required_environment("GITHUB_RUN_ID"),
             publisher_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
         )
-    _github_output(result)
+    _github_output(result, path=github_output)
     print(json.dumps(result, sort_keys=True))
 
 
@@ -179,6 +187,7 @@ def _canary(argv: list[str]) -> None:
         operation.add_argument("--sha", required=True)
         operation.add_argument("--target-url", required=True)
     args = parser.parse_args(argv)
+    github_output = _github_output_path()
     operation = (
         admit_authority_canary if args.operation == "admit" else observe_authority_canary
     )
@@ -190,7 +199,7 @@ def _canary(argv: list[str]) -> None:
         run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
         target_url=args.target_url,
     )
-    _github_output(result)
+    _github_output(result, path=github_output)
     print(json.dumps(result, sort_keys=True))
 
 
@@ -207,6 +216,7 @@ def _controller_pin(argv: list[str]) -> None:
     confirm.add_argument("--repository", required=True)
     confirm.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
+    controller_output = _github_output_path()
     api = environment_api()
     if args.operation == "resolve":
         subject, artifact = resolve_self_controller_artifact(
@@ -217,15 +227,18 @@ def _controller_pin(argv: list[str]) -> None:
         pin = compile_self_controller_pin(
             api, repository=args.repository, artifact_dir=args.artifact_dir
         )
+        result = {**pin, "output": str(args.output)}
+        _github_output(result, path=controller_output)
         write_exclusive(
             args.output,
             {"schema_version": "1.0", "trusted_controller_artifact": pin},
         )
-        result = {**pin, "output": str(args.output)}
     else:
         confirmation = compile_self_controller_confirmation(
             api, repository=args.repository
         )
+        result = {**confirmation, "output": str(args.output)}
+        _github_output(result, path=controller_output)
         write_exclusive(
             args.output,
             {
@@ -233,8 +246,8 @@ def _controller_pin(argv: list[str]) -> None:
                 "trusted_controller_installation": confirmation,
             },
         )
-        result = {**confirmation, "output": str(args.output)}
-    _github_output(result)
+    if args.operation == "resolve":
+        _github_output(result, path=controller_output)
     print(json.dumps(result, sort_keys=True))
 
 
@@ -300,6 +313,7 @@ def _release_parser() -> argparse.ArgumentParser:
 
 def _release(argv: list[str]) -> None:
     args = _release_parser().parse_args(argv)
+    github_output = _github_output_path()
     if args.operation == "verify":
         result = verify_release_build_provider(
             environment_api(),
@@ -393,7 +407,7 @@ def _release(argv: list[str]) -> None:
                     publisher_run_id=_required_environment("GITHUB_RUN_ID"),
                     publisher_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
                 )
-    _github_output(result)
+    _github_output(result, path=github_output)
     print(json.dumps(result, sort_keys=True))
 
 

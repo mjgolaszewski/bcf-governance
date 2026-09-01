@@ -98,6 +98,11 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   provider-digested artifact after the installed controller admitted the persisted role
   map; active authority remains on the separately proven installation until bootstrap
   and probe confirmation.
+- Promoted that target only after provider-compiled bootstrap run `33464640838` and
+  independent probe run `33464672319` proved the exact controller on both trusted runners.
+- Made every trusted GitHub controller command validate its output channel before provider
+  access or mutation, and made controller confirmation publish its authority document only
+  after the output channel accepts the computed result.
 
 ### Changed
 

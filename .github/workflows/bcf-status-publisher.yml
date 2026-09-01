@@ -10,7 +10,7 @@ permissions:
   contents: read
   statuses: write
 env:
-  BCF_CONTROL_COMMIT: cc3c1fecb24b5c3c6bd23eca901412d03e778a7d
+  BCF_CONTROL_COMMIT: 63c7c18062fc51744853b9b3d8ff5e9d170716d7
 jobs:
   publish:
     name: Publish newest authenticated exact-main status or revocation
