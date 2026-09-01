@@ -65,6 +65,12 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 
 ### Fixed
 
+- Replaced hand-transcribed Identity reference custody with a tracked importer that
+  authenticates the exact provider run, attempt, workflow, subject, artifact membership,
+  and provider digest before projecting benchmark and SOIP results into governed audits.
+- Completed the hosted Identity reference proof with the runtime-complete packaged
+  controller: all 62 representations and 221 cross-language traces passed with zero
+  violations, escapes, or uncovered required browser traces.
 - Made package metadata admit every mechanically discovered non-Python runtime asset,
   and made cheap package preflight plus built-wheel inspection reject missing tools or
   analyzer payloads before controller publication, evidence capture, or mutation work.

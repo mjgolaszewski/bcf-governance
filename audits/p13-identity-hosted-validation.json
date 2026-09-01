@@ -1,0 +1,180 @@
+{
+  "document": {
+    "kind": "bcf_hosted_identity_reference_audit",
+    "status": "hosted_pass",
+    "version": "1.0.0"
+  },
+  "provider_custody": {
+    "artifact_id": "9792372773",
+    "artifact_members": {
+      "benchmark.json": "ed0a2211fd6206b9df6a062a195880ade615781b8280eafc65c9ce08fb706fba",
+      "consumer-report.json": "1d142c87d8a577ab32ffa8e307d9c9e5ab0f66d32ce29db7de1a2b29d17a29e0",
+      "environment-preflight.json": "ba8ee0fd4f1b43da3b3f1746232472461e828a425ba1cd096d61bec8d1a27ad5",
+      "generalized-reference.json": "e5271507995f7965c6a4937ceb187590b0db5035bda278436bed2bcc54ecbe74",
+      "hosted-validation.json": "d9a5a623a0d5ce60bb2edb753b04612c3d50e6467ec292b47010d41d3857434e"
+    },
+    "artifact_name": "bcf-p13-identity-reference-33487315694-1",
+    "artifact_provider_digest": "sha256:63cd82f8a95b6ab7ea970420ff47e9858de18a241b576cb1fb29d51e99eaa174",
+    "artifact_size_bytes": 547005,
+    "event": "workflow_dispatch",
+    "head_branch": "audit/p13-bcf-identity-hosted-proof",
+    "head_sha": "450829bee2a676a217a28d7fa07f9983c6c58a01",
+    "repository": "mjgolaszewski/chrysalis-identity",
+    "repository_id": "1212711504",
+    "run_attempt": "1",
+    "run_id": "33487315694",
+    "workflow_id": "279219117",
+    "workflow_path": ".github/workflows/governance.yml"
+  },
+  "validation": {
+    "benchmark": {
+      "artifact_sha256": "ed0a2211fd6206b9df6a062a195880ade615781b8280eafc65c9ce08fb706fba",
+      "compact_proof_bytes": 1004,
+      "compact_proof_ceiling_bytes": 1048576,
+      "document": {
+        "kind": "semantic_reference_benchmark",
+        "version": "1.0.0"
+      },
+      "environment": {
+        "architecture": "x86_64",
+        "image_digest": "github-hosted:ubuntu24:20260823.283.1",
+        "node_version": "v24.20.0",
+        "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+        "python_executable": "python",
+        "python_version": "3.14.5",
+        "substrate": "disposable_vm",
+        "typescript_version": "6.0.3",
+        "vcpus": 2
+      },
+      "measured_run_count": 10,
+      "median_ceiling_seconds": 30.0,
+      "median_seconds": 8.842728,
+      "p95_ceiling_seconds": 36.0,
+      "p95_seconds": 10.239601,
+      "timings_seconds": [
+        8.946983,
+        8.992705,
+        10.239601,
+        9.021052,
+        8.787588,
+        8.801209,
+        8.764569,
+        8.839447,
+        8.84601,
+        8.828645
+      ],
+      "verdict": "pass",
+      "warmup_count": 1
+    },
+    "controller": {
+      "artifact_id": "9791739132",
+      "artifact_name": "bcf-trusted-control-7f116dbc7593688aee178cfdb47ff7bd24f85196-1",
+      "commit_sha": "7f116dbc7593688aee178cfdb47ff7bd24f85196",
+      "provider_digest": "sha256:b16b0ebc8d9c4406bafd6571cec6046749793d1d7cdabc1cca9426f4147a24c4",
+      "repository": "mjgolaszewski/bcf-governance",
+      "repository_id": "1207503211",
+      "tree_sha": "457cf154bb46423092111fbf45043600dcb69428",
+      "wheel_name": "bcf_governance-0.7.1-py3-none-any.whl",
+      "wheel_sha256": "6a3d022e5ca513b35f7430ced851042bc60e049f1cae86d4bf999588915b1631",
+      "workflow_run_attempt": "1",
+      "workflow_run_id": "33485639671"
+    },
+    "document": {
+      "kind": "bcf_hosted_identity_reference_validation",
+      "version": "1.0.0"
+    },
+    "inputs": {
+      "consumer_report_sha256": "1d142c87d8a577ab32ffa8e307d9c9e5ab0f66d32ce29db7de1a2b29d17a29e0",
+      "contract_sha256": "b86ea3bedd4ab86772f6847fe1d9c2ceb620977564925bec9bfe2f08fc0f497a",
+      "package_lock_sha256": "a475a67b6b0a833acf87fc025d4dac4b80c82ad45a04f66dbadb6e61a3e74c43"
+    },
+    "provider": {
+      "actions": [
+        {
+          "commit_sha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "repository": "actions/checkout"
+        },
+        {
+          "commit_sha": "df4cb1c069e1874edd31b4311f1884172cec0e10",
+          "repository": "actions/checkout"
+        },
+        {
+          "commit_sha": "3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+          "repository": "actions/download-artifact"
+        },
+        {
+          "commit_sha": "48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e",
+          "repository": "actions/setup-node"
+        },
+        {
+          "commit_sha": "a309ff8b426b58ec0e2a45f0f869d46889d02405",
+          "repository": "actions/setup-python"
+        },
+        {
+          "commit_sha": "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+          "repository": "actions/upload-artifact"
+        }
+      ],
+      "job": "bcf-p13-identity-reference-proof",
+      "name": "github",
+      "repository": "mjgolaszewski/chrysalis-identity",
+      "repository_id": "1212711504",
+      "run_attempt": "1",
+      "run_id": "33487315694",
+      "workflow_blob_oid": "be0fd6a4d8b1bf39a031a5dbb33cf2b7e144e1db",
+      "workflow_definition_commit": "450829bee2a676a217a28d7fa07f9983c6c58a01",
+      "workflow_ref": "mjgolaszewski/chrysalis-identity/.github/workflows/governance.yml@refs/heads/audit/p13-bcf-identity-hosted-proof",
+      "workflow_sha256": "b54b6bb9daef95381d6edcce160489c767f75a860f87020558ce06cb19799e4f"
+    },
+    "reference": {
+      "artifact_sha256": "e5271507995f7965c6a4937ceb187590b0db5035bda278436bed2bcc54ecbe74",
+      "consumer_report": {
+        "representation_count": 62,
+        "sha256": "1d142c87d8a577ab32ffa8e307d9c9e5ab0f66d32ce29db7de1a2b29d17a29e0",
+        "unresolved_escape_count": 0,
+        "verdict": "conformant"
+      },
+      "document": {
+        "kind": "bcf_semantic_reference_proof",
+        "version": "1.0.0"
+      },
+      "elapsed_seconds": 8.807568,
+      "environment": {
+        "node_executable_sha256": "89af8424dd53e560b1933f87ba650d8bf57c83ca5a04600eefb31f416aabbae7",
+        "node_version": "v24.20.0",
+        "package_lock": "package-lock.json",
+        "tsconfig": "tsconfig.browser.json",
+        "typescript_version": "6.0.3"
+      },
+      "generalized_inventory": {
+        "cross_language_trace_count": 221,
+        "python_file_count": 906,
+        "required_browser_trace_count": 220,
+        "source_digest": "57849f56660c274ae4c55c5a30cfef33de5884e632ead686cb7b5512f6a8e6a3",
+        "typescript_file_count": 168,
+        "typescript_version": "6.0.3",
+        "uncovered_required_trace_count": 0
+      },
+      "subject": {
+        "clean": true,
+        "commit_sha": "0569e6dd81b311abf33af5626a32441b0d55cc64",
+        "tree_sha": "96306a5dbba3327adb948aa183d39dce1129c6e4"
+      },
+      "verdict": "conformant"
+    },
+    "runner": {
+      "architecture": "X64",
+      "image_os": "ubuntu24",
+      "image_version": "20260823.283.1",
+      "label": "ubuntu-24.04",
+      "name": "GitHub Actions 1000002953"
+    },
+    "status": "hosted_pass",
+    "subject": {
+      "clean": true,
+      "commit_sha": "0569e6dd81b311abf33af5626a32441b0d55cc64",
+      "repository": "mjgolaszewski/chrysalis-identity",
+      "tree_sha": "96306a5dbba3327adb948aa183d39dce1129c6e4"
+    }
+  }
+}
