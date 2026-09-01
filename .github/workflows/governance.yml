@@ -95,18 +95,32 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: {fetch-depth: 0, persist-credentials: false}
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        if: needs.preflight.result == 'success' && needs.evidence.result == 'success'
         with: {python-version: "3.12"}
-      - run: python3 -m pip install -r requirements-governance.txt
+      - if: needs.preflight.result == 'success' && needs.evidence.result == 'success'
+        run: python3 -m pip install -r requirements-governance.txt
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        if: needs.preflight.result == 'success' && needs.evidence.result == 'success'
         with:
           pattern: "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-*"
           path: .artifacts/bcf/fan-in
       - name: Restore private session modes after artifact transport
+        if: needs.preflight.result == 'success' && needs.evidence.result == 'success'
         shell: bash
         run: |
           set -euo pipefail
           find .artifacts/bcf/fan-in -type f -name evidence-session.json -execdir chmod 700 . \; -exec chmod 400 {} +
-      - run: python3 scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf/fan-in --evaluation-mode "${{ inputs.evaluation_mode || 'pr' }}" --format json --durable-ref "github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
+      - if: needs.preflight.result == 'success' && needs.evidence.result == 'success'
+        run: python3 scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf/fan-in --evaluation-mode "${{ inputs.evaluation_mode || 'pr' }}" --format json --durable-ref "github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
+      - name: Preserve a causal terminal result
+        if: always()
+        run: >-
+          python3 .github/scripts/governance_terminal_observation.py --repo-root .
+          --output .artifacts/bcf/truth-report.json
+          --preflight-result "${{ needs.preflight.result }}"
+          --evidence-result "${{ needs.evidence.result }}"
+          --repository "${{ github.repository }}" --commit-sha "${{ github.sha }}"
+          --run-id "${{ github.run_id }}" --run-attempt "${{ github.run_attempt }}"
       - if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:

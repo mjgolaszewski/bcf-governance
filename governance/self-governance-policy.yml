@@ -9,10 +9,10 @@ tooling_contexts:
   profiles: [governance_profiles.py, profile_]
   runtime: [runtime_capacity.py]
   semantic_ownership: [semantic_ownership_]
-  validation: [check_governance_exposure.py, doctor_governance_pack.py, preflight.py, validate_governance_yaml.py, governance_validation/]
+  validation: [check_governance_exposure.py, doctor_governance_pack.py, interpreter_environment.py, preflight.py, validate_governance_yaml.py, governance_validation/]
 cli_commands:
   read_only: [doctor, exposure-scan, preflight, publish-audit, semantic-ownership, truth, validate]
-  mutating: [ci, ci-cleanup, ci-github, cleanup, evidence, install, migrate-evidence, profile, scaffold, test-manifest]
+  mutating: [ci, ci-cleanup, ci-github, cleanup, environment, evidence, install, migrate-evidence, profile, scaffold, test-manifest]
 required_dependencies: {PyYAML: '>=6.0,<7', jsonschema: '>=4.21,<5'}
 sbom_format: CycloneDX
 forbid_subprocess_shell: true

@@ -27,6 +27,19 @@ rsync -a --delete --exclude='__pycache__' --exclude='*.pyc' \
 python3 .github/scripts/build_pack_manifest.py
 ```
 
+BCF's root `requirements-governance.txt` is also generated state. After changing
+project, optional, build-system, or gate-specific requirements, compile and verify
+the selected-environment projection:
+
+```bash
+bcf environment apply --repo-root .
+bcf environment check --repo-root .
+```
+
+Fresh CI installs this projection so its bootstrap does not depend on build-isolation
+side effects. Canonical preflight derives the same plan independently and rejects any
+byte drift before probing the selected interpreter or allocating an evidence session.
+
 Pack/runtime parity tests fail on drift. Keep implementation modules below 800
 lines and split by stable security or validation concepts, preserving focused
 characterization tests before a split.
@@ -127,6 +140,12 @@ and enabled build-system requirements, including the configured build backend. E
 profile writes an exact-commit/tree JSON result, and the workflow always uploads
 the run/attempt-scoped result directory. A failed mutant therefore retains its
 causal record without a second execution.
+
+If preflight or evidence cannot complete, the terminal job skips dependency install,
+fan-in, and truth execution. A dependency-free reporter converts the exact upstream job
+conclusions into a run/attempt-bound failed observation, uploads it under the stable
+truth artifact name, and leaves the protected check red. Missing artifact directories
+are therefore not treated as the cause of an upstream rejection.
 
 ## Distribution tests
 

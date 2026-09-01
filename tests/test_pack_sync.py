@@ -43,11 +43,6 @@ def test_public_wrappers_are_thin_and_private_runtime_stays_in_sync() -> None:
     assert (REPO_ROOT / "bcf_governance/_version.py").read_bytes() == (
         REPO_ROOT / "template-repo/scripts/_bcf_runtime/_version.py"
     ).read_bytes()
-    assert _read_text("requirements-governance.txt") == _read_text(
-        "template-repo/requirements-governance.txt"
-    )
-
-
 def test_root_wrapper_bootstraps_an_uninstalled_source_checkout(tmp_path: Path) -> None:
     wrapper = REPO_ROOT / "scripts/install_governance_pack.py"
     site_packages = Path(yaml.__file__).resolve().parent.parent

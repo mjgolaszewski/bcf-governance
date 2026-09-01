@@ -33,6 +33,9 @@ execution_evidence:
   - command: bcf ci local-pr --repo-root .
     result: pass
     notes: default branch, ancestry, PR base SHA, event context, changelog rule, and selected-interpreter preflight were mechanically derived for 7a9b629
+  - command: pull-request runs 33505006870 and 33505006839
+    result: expected_fail_remediated
+    notes: both jobs rejected the selected environment in 11 to 12 seconds before evidence or package work because the independently maintained bootstrap list omitted governed build requirements; the truth job then exposed a separate missing-fan-in reporting defect
   notes:
   - publication-disabled release run 33500913722 built exact 652df02 bytes, then
     verifier 33501188756 failed only sdist-tests after 529 passes because two tests
@@ -47,6 +50,12 @@ execution_evidence:
   - the next sdist run exposed an environment-dependent symlinked-venv fixture; that
     test now isolates the symlink invariant, while a separate cause-verified test keeps
     ambient VIRTUAL_ENV mismatch rejection authoritative
+  - the interpreter plan now single-owns the sorted project, optional, build-system,
+    and gate dependency union; requirements-governance.txt is its generated bootstrap
+    projection, and both setup and preflight consume or independently verify that owner
+  - failed preflight or evidence prerequisites now skip truth fan-in and emit an exact
+    run-attempt terminal observation, preserving the real cause without missing-artifact
+    noise or allocating evidence work
 closeout_requirements:
   claims:
     required_suites_green:

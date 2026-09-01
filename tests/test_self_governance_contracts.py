@@ -945,6 +945,27 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
     assert download["with"]["path"] == ".artifacts/bcf/fan-in"
     assert "merge-multiple" not in download["with"]
     assert jobs["governance-truthfulness"]["needs"] == ["preflight", "evidence"]
+    prerequisite_guard = (
+        "needs.preflight.result == 'success' && needs.evidence.result == 'success'"
+    )
+    guarded = [
+        step
+        for step in jobs["governance-truthfulness"]["steps"]
+        if step.get("uses", "").startswith(("actions/setup-python@", "actions/download-artifact@"))
+        or "pip install" in step.get("run", "")
+        or "find .artifacts/bcf/fan-in" in step.get("run", "")
+        or "governance_truth.py" in step.get("run", "")
+    ]
+    assert guarded and all(step["if"] == prerequisite_guard for step in guarded)
+    terminal_observation = next(
+        step
+        for step in jobs["governance-truthfulness"]["steps"]
+        if step.get("name") == "Preserve a causal terminal result"
+    )
+    assert terminal_observation["if"] == "always()"
+    assert "governance_terminal_observation.py" in terminal_observation["run"]
+    assert '--preflight-result "${{ needs.preflight.result }}"' in terminal_observation["run"]
+    assert '--evidence-result "${{ needs.evidence.result }}"' in terminal_observation["run"]
     truth_command = next(
         step["run"]
         for step in jobs["governance-truthfulness"]["steps"]

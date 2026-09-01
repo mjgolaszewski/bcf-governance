@@ -2,7 +2,7 @@ document: {kind: gate_contract_registry, version: '1.0', path: governance/gate-c
 schema_version: '1.0'
 profile_contract_version: '2.0'
 target_profile: standard
-interpreter_contract: {project_dependencies: true, build_system_requirements: true, optional_dependency_groups: [dev], gate_requirements: {security-dependency-audit: [pip, packaging]}}
+interpreter_contract: {project_dependencies: true, build_system_requirements: true, requirements_projection: requirements-governance.txt, optional_dependency_groups: [dev], gate_requirements: {security-dependency-audit: [pip, packaging]}}
 gates:
   architecture-context-membership:
     invocation:
@@ -24,8 +24,8 @@ gates:
     negative_controls:
     - id: architecture-context-membership-behavior-must-fail
       mutation: {path: governance/self-governance-policy.yml, search: 'validation: [check_governance_exposure.py, doctor_governance_pack.py,
-          preflight.py, validate_governance_yaml.py, governance_validation/]', replace: 'validation: [check_governance_exposure.py,
-          doctor_governance_pack.py, preflight.py, validate_governance_yaml.py, missing_validation/]'}
+          interpreter_environment.py, preflight.py, validate_governance_yaml.py, governance_validation/]', replace: 'validation: [check_governance_exposure.py,
+          doctor_governance_pack.py, interpreter_environment.py, preflight.py, validate_governance_yaml.py, missing_validation/]'}
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_self_governance_contracts::test_tooling_modules_map_to_exactly_one_context']
@@ -209,7 +209,7 @@ gates:
           tests/test_ci_certification.py, tests/test_ci_authority_decisions.py, tests/test_ci_self_controller.py, tests/test_release_receipts.py, tests/test_ci_github_reference.py,
           tests/test_ci_github_canary.py,
           tests/test_ci_github_controller.py, tests/test_ci_github_bootstrap.py, tests/test_ci_github_artifacts.py, tests/test_ci_github_release.py, tests/test_release_closure.py, tests/test_local_pr.py, tests/test_runtime_capacity.py, tests/test_trusted_inputs.py,
-          tests/test_preflight.py, 'tests/test_governance_evidence.py::test_test_node_control_derives_minimal_pytest_command', tests/test_identity_reference_audit.py, tests/test_release_artifacts.py, 'tests/test_self_governance_contracts.py::test_exact_main_controller_wheel_is_built_once_after_pack_checks', tests/test_release_runtime_verification.py, tests/test_release_workflow_contracts.py,
+          tests/test_preflight.py, tests/test_interpreter_environment.py, tests/test_governance_terminal_observation.py, 'tests/test_governance_evidence.py::test_test_node_control_derives_minimal_pytest_command', tests/test_identity_reference_audit.py, tests/test_release_artifacts.py, 'tests/test_self_governance_contracts.py::test_exact_main_controller_wheel_is_built_once_after_pack_checks', tests/test_release_runtime_verification.py, tests/test_release_workflow_contracts.py,
           tests/test_documentation_contracts.py, 'tests/test_profile_contract_v2.py::test_bcf_standard_v2_promotion_fits_declared_context_budgets']
         expected_node_manifest: governance/test-manifests/contract-test.txt
         expected_nodes_mode: exact
@@ -225,11 +225,7 @@ gates:
     - {id: identity-reference-archive-digest-must-fail, mutation: {path: .github/scripts/import_identity_reference_proof.py, search: 'if provider_digest != f"sha256:{actual_digest}":', replace: 'if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_identity_reference_audit::test_identity_reference_importer_authenticates_archive_bytes']}}
     - {id: nonterminal-privileged-inventory-must-not-require-future-jobs, mutation: {path: bcf_governance/tooling/ci_github_authority.py, search: 'or (require_terminal and names_set != expected_set)', replace: 'or names_set != expected_set'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_nonterminal_privileged_inventory_accepts_only_pinned_partial_jobs']}}
     - {id: trusted-bootstrap-artifact-identity-must-fail, mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'if pin["BCF_BOOTSTRAP_ARTIFACT_NAME"] != expected_name:', replace: 'if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_self_controller::test_controller_pin_rejects_non_derived_artifact_name']}}
-    - id: trusted-bootstrap-controller-command-must-fail
-      mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: 'ci-github bootstrap', replace: 'ci-github probe'}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']
+    - {id: trusted-bootstrap-controller-command-must-fail, mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: 'ci-github bootstrap', replace: 'ci-github probe'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']}}
     - {id: trusted-bootstrap-installed-target-separation-must-fail, mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: '$BCF_INSTALLED_CONTROLLER_COMMIT_SHA', replace: '$BCF_BOOTSTRAP_COMMIT_SHA'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']}}
     - id: trusted-controller-interpreter-environment-must-fail
       mutation: {path: .github/workflows/bcf-trusted-control-probe.yml, search: 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97', replace: 'actions/setup-python@0000000000000000000000000000000000000000'}
@@ -293,9 +289,12 @@ gates:
     - {id: same-admission-membership-owner-must-fail, mutation: {path: bcf_governance/tooling/ci_github_membership.py, search: 'if set(references) != expected_paths:', replace: 'if set(references) == expected_paths:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_controller::test_v11_collects_all_producers_from_one_exact_admission_attempt']}}
     - {id: pending-terminal-precedence-owner-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_decisions.py, search: 'if current.conclusion is StatusConclusion.PENDING and proposed.conclusion in {', replace: 'if False and current.conclusion is StatusConclusion.PENDING and proposed.conclusion in {'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority_decisions::test_equal_pending_authority_can_publish_its_terminal_state[success]']}}
     - {id: interpreter-requirements-preflight-must-fail, mutation: {path: bcf_governance/tooling/preflight.py, search: "interpreter = step(\n        \"interpreter\", lambda: _interpreter_requirements(repo_root, python)\n    )", replace: 'interpreter = {}'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_interpreter_failure_prevents_session_allocation']}}
+    - {id: interpreter-requirement-projection-must-fail, mutation: {path: bcf_governance/tooling/interpreter_environment.py, search: '    if path.read_text(encoding="utf-8") != plan.rendered_requirements():', replace: '    if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_interpreter_environment::test_stale_bootstrap_requirements_fail_before_environment_probe']}}
+    - {id: governance-terminal-cause-reporting-must-fail, mutation: {path: .github/workflows/governance.yml, search: "      - if: needs.preflight.result == 'success' && needs.evidence.result == 'success'\n        run: python3 scripts/governance_truth.py", replace: "      - if: always()\n        run: python3 scripts/governance_truth.py"}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_governance_fan_in_is_preflight_ordered_and_attempt_exact']}}
+    - {id: governance-terminal-cause-filter-must-fail, mutation: {path: .github/scripts/governance_terminal_observation.py, search: '        if value != "success"', replace: '        if False'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_governance_terminal_observation::test_failed_preflight_emits_exact_causal_terminal_observation']}}
     - {id: pack-manifest-preflight-must-fail, mutation: {path: bcf_governance/tooling/preflight.py, search: 'pack_manifest = step("pack-manifest", lambda: _pack_manifest(repo_root))', replace: 'pack_manifest = {}'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_stale_pack_manifest_fails_before_evidence']}}
     - {id: interpreter-version-contract-must-fail, mutation: {path: bcf_governance/tooling/preflight.py, search: "if req.specifier and not req.specifier.contains(installed,prereleases=True):\\n", replace: "if False:\\n"}, oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_wrong_interpreter_distribution_version_fails_before_evidence']}}
-    - {id: build-system-requirements-preflight-must-fail, mutation: {path: bcf_governance/tooling/preflight.py, search: '        requirements.extend(str(value) for value in build_requirements)', replace: '        pass'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_missing_build_backend_requirement_fails_before_evidence']}}
+    - {id: build-system-requirements-preflight-must-fail, mutation: {path: bcf_governance/tooling/interpreter_environment.py, search: '        requirements.extend(build_requirements)', replace: '        pass'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_missing_build_backend_requirement_fails_before_evidence']}}
     - {id: virtualenv-integrity-must-fail, mutation: {path: bcf_governance/tooling/preflight.py, search: 'if claims_venv and not venv_config.is_file():', replace: 'if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_broken_project_virtualenv_fails_before_evidence']}}
     - {id: virtualenv-declared-identity-must-fail, mutation: {path: bcf_governance/tooling/preflight.py, search: '        if declared and Path(os.path.abspath(declared)) != environment_root:', replace: '        if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_selected_virtualenv_rejects_ambient_identity_mismatch']}}
     - {id: scheduled-mutant-preflight-order-must-fail, mutation: {path: .github/workflows/governance-mutants-nightly.yml, search: 'python scripts/preflight_governance.py --repo-root . --mode release --python "$(command -v python)" --format text', replace: 'python -m pytest --version'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_scheduled_mutants_preflight_selected_interpreter_before_execution[.github/workflows/governance-mutants-nightly.yml]']}}

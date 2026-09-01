@@ -38,6 +38,29 @@ def _validate_gate_contract_registry(
     )
     interpreter = contracts.get("interpreter_contract")
     if isinstance(interpreter, dict):
+        projection = interpreter.get("requirements_projection")
+        if projection is not None:
+            _validate_portable_relative_path(
+                _require_string(
+                    projection,
+                    context=(
+                        "governance/gate-contracts.yml "
+                        "interpreter_contract.requirements_projection"
+                    ),
+                ),
+                context=(
+                    "governance/gate-contracts.yml "
+                    "interpreter_contract.requirements_projection"
+                ),
+            )
+            _require_path(
+                repo_root,
+                projection,
+                context=(
+                    "governance/gate-contracts.yml "
+                    "interpreter_contract.requirements_projection"
+                ),
+            )
         requirements = _require_mapping(
             interpreter.get("gate_requirements"),
             context="governance/gate-contracts.yml interpreter_contract.gate_requirements",
