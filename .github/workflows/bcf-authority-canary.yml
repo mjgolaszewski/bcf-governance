@@ -13,7 +13,7 @@ on:
 permissions: {}
 
 env:
-  BCF_CONTROL_COMMIT: f3c4eacbc9900a8b77d36384e0c19112073c12ac
+  BCF_CONTROL_COMMIT: 46180ab000744c9123860e1f094fc2a9d85e7199
 
 jobs:
   admit:
