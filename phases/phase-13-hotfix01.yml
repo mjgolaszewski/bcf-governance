@@ -214,6 +214,9 @@ execution_evidence:
   - command: GitHub Identity hosted proof 33487315694; import_identity_reference_proof.py
     result: pass
     notes: provider-authenticated artifact 9792372773 proved the runtime-complete controller on exact Identity commit 0569e6dd with 62 representations, 221 traces, zero violations or escapes, and ten scans below the declared median and p95 ceilings; the tracked importer owns every custody and result projection
+  - command: selected-environment release preflight; exact source gate; exact contract evidence; canonical local PR preflight
+    result: pass
+    notes: exact reconciliation commit 61857d9 passed preflight, all 531 source nodes, all 266 contract nodes, and all 94 isolated causal controls; both Identity artifact membership and provider ZIP digest mutants failed only their declared nodes
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
