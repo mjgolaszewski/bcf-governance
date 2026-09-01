@@ -19,6 +19,23 @@ from .release_closure import verify_archive, verify_wheelhouse
 
 EXPECTED_PYTHON = "3.12.14"
 EXPECTED_PLATFORM = "linux_x86_64"
+_SAFE_HOST_ENVIRONMENT = ("LANG", "LC_ALL", "TMPDIR")
+
+
+def runtime_environment(*, home: Path) -> dict[str, str]:
+    """Return the closed environment inherited by candidate package processes."""
+
+    environment = {
+        "HOME": str(home.resolve()),
+        "PATH": os.environ.get("PATH", "/usr/local/bin:/usr/bin:/bin"),
+        "PIP_DISABLE_PIP_VERSION_CHECK": "1",
+        "PIP_NO_INDEX": "1",
+        "PYTHONNOUSERSITE": "1",
+    }
+    environment.update(
+        {name: os.environ[name] for name in _SAFE_HOST_ENVIRONMENT if os.environ.get(name)}
+    )
+    return environment
 
 
 def _sha256(path: Path) -> str:
@@ -81,18 +98,19 @@ def _environment(
     label: str,
 ) -> tuple[Path, dict[str, str], list[dict[str, Any]]]:
     commands: list[dict[str, Any]] = []
+    host_environment = runtime_environment(home=root.parent)
     commands.append(
         _run(
             f"{label}-venv",
             [str(selected_python), "-m", "venv", str(root)],
             cwd=root.parent,
-            env=dict(os.environ),
+            env=host_environment,
             output_dir=output_dir,
         )
     )
     bindir = root / "bin"
     python = _executable(bindir / "python", f"{label} Python")
-    env = dict(os.environ)
+    env = dict(host_environment)
     env["PATH"] = str(bindir) + os.pathsep + env.get("PATH", "")
     env["VIRTUAL_ENV"] = str(root)
     commands.append(
@@ -123,7 +141,7 @@ def _extract_sdist(sdist: Path, destination: Path) -> Path:
 
 
 def _git_custody(source: Path, output_dir: Path) -> list[dict[str, Any]]:
-    env = dict(os.environ)
+    env = runtime_environment(home=output_dir)
     commands: list[dict[str, Any]] = []
     for label, argv in (
         ("sdist-git-init", ["git", "init", "--quiet"]),

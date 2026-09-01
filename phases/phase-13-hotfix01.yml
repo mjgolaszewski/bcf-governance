@@ -268,6 +268,7 @@ execution_evidence:
   - exact-main run 33474453863 passed every executable producer for release-runtime merge d3c687b91fa5f6fdd07a0b04ee8bfa0170902ff9 and refused only active P13-HF01 closure; finalizer 33474681199 and publisher 33474704477 completed the authenticated terminal path
   - the controller resolver and checksum compiler selected artifact 9787707826, provider digest sha256:7d0ef690763190228d484392108c8f3bf54c413e016315aa0db2261374f3a065, and wheel digest e690f2cf9086071071cf044a60743ba0e19d8878a306c7bd7ea653de50e61aea as the pending release-runtime controller target without operator-entered identity values
   - bootstrap 33475183416 and probe 33475219209 passed on both uniquely labeled trusted runners; provider-compiled confirmation now promotes controller d3c687b91fa5f6fdd07a0b04ee8bfa0170902ff9 while preserving its exact artifact custody
+  - the hosted verifier now separates token-free `release runtime` package execution from non-executing `release verify-evidence` provider authentication; the runtime subprocess environment is allowlisted and a causal control rejects credential inheritance
 closeout_requirements:
   claims:
     required_suites_green:

@@ -125,9 +125,12 @@ manifest. A separate fresh, secretless hosted verifier authenticates the build
 artifact, rejects unsafe archives, installs and tests the exact wheel and
 extracted sdist from the closed wheelhouse, runs Twine, and emits raw results.
 A provider-authenticated read of exact-main binds the lock and wheelhouse-manifest
-blob OIDs and hashes before candidate work starts. The verifier's controller command
-is the sole owner of the offline install/test/Twine result and hashes every raw output;
-workflow shell and candidate JSON cannot assert that the verification passed.
+blob OIDs and hashes before candidate work starts. The verifier uses separate controller
+operations: a token-free runtime operation owns offline install/test/Twine execution
+and hashes every raw output, then a non-executing token-bearing operation authenticates
+provider state and those results. Candidate processes inherit a closed environment with
+no provider token, credential, or runner-authority variable. Workflow shell and candidate
+JSON cannot assert that verification passed.
 A no-checkout trusted collector then re-authenticates every run, attempt,
 workflow, provider artifact digest, controller identity, dependency closure,
 commit, tree, and asset hash. Only that collector may emit the schema-2 release

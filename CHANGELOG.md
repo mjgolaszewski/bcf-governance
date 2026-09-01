@@ -41,6 +41,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   authoritative until bootstrap and probe independently confirm both trusted runners.
 - Promoted the release-runtime controller only after provider-compiled bootstrap and
   probe evidence independently proved the exact installation on both trusted runners.
+- Split hosted release verification into token-free candidate runtime execution and a
+  non-executing provider-authentication step, with a closed subprocess environment that
+  cannot inherit GitHub, Actions, cloud, or runner credentials.
 
 ### Fixed
 

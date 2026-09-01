@@ -139,10 +139,12 @@ data needed by those tests. `twine check`, checksums, and provenance happen only
 after both artifact tests pass.
 
 The trusted authorizer obtains the lock and manifest bytes directly from the exact
-main commit and binds their blob OIDs and SHA-256 values. The hosted verifier's one
-controller command creates the clean environments and retains raw stdout, stderr,
-JUnit, interpreter identity, and artifact hashes. The no-checkout collector hashes
-those files again but never imports or executes the candidate package.
+main commit and binds their blob OIDs and SHA-256 values. The hosted verifier's
+token-free `release runtime` controller operation creates the clean environments and
+retains raw stdout, stderr, JUnit, interpreter identity, and artifact hashes. A separate
+`release verify-evidence` operation receives provider-read authority but never executes
+candidate code. The no-checkout collector hashes those files again but never imports or
+executes the candidate package.
 
 Run the local artifact harness with:
 
