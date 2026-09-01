@@ -27,7 +27,7 @@ from .ci_github_identity import (
 )
 
 
-STATUS_CONTEXT = "bcf/exact-main-certification"
+STATUS_CONTEXT = StatusContext.EXACT_MAIN.value
 
 
 def _status_target(target_url: str, *, ordinal: int, attempt: int) -> str:
@@ -45,8 +45,10 @@ def _status_target(target_url: str, *, ordinal: int, attempt: int) -> str:
     return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, encoded, ""))
 
 
-def _status_observation(payload: dict[str, Any], subject: str) -> StatusObservation:
-    if payload.get("context") != STATUS_CONTEXT:
+def _status_observation(
+    payload: dict[str, Any], subject: str, status_context: StatusContext
+) -> StatusObservation:
+    if payload.get("context") != status_context.value:
         raise GitHubControllerError("status observation has wrong context")
     target = payload.get("target_url")
     if not isinstance(target, str):
@@ -70,7 +72,7 @@ def _status_observation(payload: dict[str, Any], subject: str) -> StatusObservat
     if state not in conclusions:
         raise GitHubControllerError("published BCF status has unsupported state")
     return StatusObservation(
-        context=StatusContext.EXACT_MAIN,
+        context=status_context,
         subject_sha=subject,
         admission_ordinal=ordinal,
         control_plane_attempt=attempt,
@@ -79,25 +81,37 @@ def _status_observation(payload: dict[str, Any], subject: str) -> StatusObservat
 
 
 def _current_status(
-    api: GitHubAPI, repository: str, subject: str
+    api: GitHubAPI,
+    repository: str,
+    subject: str,
+    status_context: StatusContext,
 ) -> StatusObservation | None:
     matching = [
         value for value in api.commit_statuses(repository, sha=subject)
-        if value.get("context") == STATUS_CONTEXT
+        if value.get("context") == status_context.value
     ]
     if not matching:
         return None
-    observations = [_status_observation(value, subject) for value in matching]
+    observations = [
+        _status_observation(value, subject, status_context) for value in matching
+    ]
     latest_order = max(
         (value.admission_ordinal, value.control_plane_attempt) for value in observations
     )
     latest = [
-        value for value in observations
+        value
+        for value in observations
         if (value.admission_ordinal, value.control_plane_attempt) == latest_order
     ]
-    if len({value.conclusion for value in latest}) != 1:
-        raise GitHubControllerError("equal published authority has conflicting conclusions")
-    return latest[0]
+    terminal = {
+        value.conclusion
+        for value in latest
+        if value.conclusion is not StatusConclusion.PENDING
+    }
+    if len(terminal) > 1:
+        raise GitHubControllerError("equal published authority has conflicting terminal conclusions")
+    selected = next(iter(terminal), StatusConclusion.PENDING)
+    return next(value for value in latest if value.conclusion is selected)
 
 
 def publish_observation(
@@ -111,11 +125,12 @@ def publish_observation(
     conclusion: StatusConclusion,
     description: str,
     target_url: str,
+    status_context: StatusContext = StatusContext.EXACT_MAIN,
 ) -> dict[str, Any]:
     """Apply the canonical total-order status decision and publish when authoritative."""
 
     proposed = StatusObservation(
-        context=StatusContext.EXACT_MAIN,
+        context=status_context,
         subject_sha=subject_sha,
         admission_ordinal=admission_ordinal,
         control_plane_attempt=control_plane_attempt,
@@ -123,7 +138,7 @@ def publish_observation(
     )
     decision = decide_status_publication(
         proposed=proposed,
-        current=_current_status(api, repository, subject_sha),
+        current=_current_status(api, repository, subject_sha, status_context),
         trusted_publisher=True,
         current_default_main_sha=current_default_main_sha,
     )
@@ -132,7 +147,7 @@ def publish_observation(
             repository,
             sha=subject_sha,
             state=conclusion.value,
-            context=STATUS_CONTEXT,
+            context=status_context.value,
             description=description,
             target_url=_status_target(
                 target_url,

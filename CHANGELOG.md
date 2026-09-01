@@ -16,6 +16,12 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Added fail-closed provider registration seams for independent release verification,
   trusted collection, immutable publication, and authority-revocation canaries; every
   new job remains disabled until its numeric workflow identity and final bytes are pinned.
+- Added one mechanically governed provider-artifact decoder that binds every privileged
+  release artifact to its exact role, run, attempt, repository, commit, name, ID, and
+  provider SHA-256 before authorization, collection, or publication can proceed.
+- Replaced operator-copied workflow hashes, definition commits, job display names, and
+  controller-artifact projections with Git/provider-derived compilers checked by cheap
+  preflight and cause-verified mutants.
 
 ### Fixed
 
@@ -40,6 +46,30 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   while direct pull requests retain their exact-base PR evaluation contract.
 - Made reusable evaluation mode depend on its explicit typed input rather than
   the caller event name, which remains `push` inside an exact-main call.
+- Made exact-main controller construction depend on a separate typed reusable-workflow
+  input; direct pull requests cannot build it, and caller event presentation cannot
+  silently skip it.
+- Required release authorization and build to share one workflow attempt, required
+  collection to select the newest same-SHA release admission, and required publication
+  to authenticate the collector receipt and its exact asset inventory.
+- Made independent verification require exactly one wheel, one source archive, and a
+  `SHA256SUMS` file whose two declarations match the archive bytes.
+- Required the trusted authorizer to hash the downloaded controller wheel instead of
+  accepting its expected wheel digest as authority.
+- Moved cross-workflow build and verification artifact resolution into the controller,
+  eliminating workflow-authored provider selectors.
+- Made status reconstruction select the highest admission and attempt mechanically,
+  then let its single terminal conclusion dominate pending observations independent
+  of provider list order; conflicting terminal conclusions fail closed.
+- Raised only the canonical semantic-registry byte budget from 32 to 40 KiB as provider
+  artifact and workflow-authority compiler ownership were added; the 200-line cap is
+  unchanged and both additions remain blocking semantic families.
+- Made the cheap preflight derive the selected interpreter's required distributions
+  from project dependencies, declared optional groups, and gate-specific tool
+  requirements; a missing `pip` or test dependency now fails before evidence capture.
+- Made cause-verified test controls execute only their declared pytest oracle nodes in
+  isolated worktrees after one full positive baseline; diagnostic controls retain the
+  canonical gate command, eliminating repeated full-suite mutant executions.
 
 ### Changed
 

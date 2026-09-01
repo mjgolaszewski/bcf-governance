@@ -9,12 +9,16 @@ import json
 import os
 import re
 import subprocess
+import tomllib
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
 from .evidence_execution import _selected_python
+from .ci_authority_pins import CIAuthorityPinError, verify_workflow_authority
+from .ci_github_identity import GitHubControllerError
+from .ci_self_controller import verify_self_controller_projection
 from .evidence_sessions import (
     EvidenceSession,
     allocate_session,
@@ -124,6 +128,87 @@ def _syntax_checks(repo_root: Path) -> dict[str, int]:
     return counts
 
 
+def _dependency_name(value: object) -> str:
+    if not isinstance(value, str):
+        raise PreflightError("project dependency declaration is not a string")
+    match = re.match(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)", value)
+    if match is None:
+        raise PreflightError("project dependency declaration has no distribution name")
+    return match.group(1)
+
+
+def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, str]:
+    """Verify the selected interpreter before evidence or test collection."""
+
+    registry_path = repo_root / "governance/gate-contracts.yml"
+    if not registry_path.is_file():
+        return {}
+    registry = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
+    contract = registry.get("interpreter_contract") if isinstance(registry, dict) else None
+    if contract is None:
+        return {}
+    if not isinstance(contract, dict) or contract.get("project_dependencies") is not True:
+        raise PreflightError("interpreter contract is invalid")
+    try:
+        project = tomllib.loads((repo_root / "pyproject.toml").read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, tomllib.TOMLDecodeError) as exc:
+        raise PreflightError("interpreter project dependency source is invalid") from exc
+    metadata = project.get("project")
+    if not isinstance(metadata, dict):
+        raise PreflightError("interpreter project metadata is missing")
+    declared = metadata.get("dependencies")
+    if not isinstance(declared, list):
+        raise PreflightError("project dependency inventory is missing")
+    required = {_dependency_name(value) for value in declared}
+    optional = metadata.get("optional-dependencies", {})
+    groups = contract.get("optional_dependency_groups")
+    if not isinstance(optional, dict) or not isinstance(groups, list):
+        raise PreflightError("interpreter optional dependency contract is invalid")
+    for group in groups:
+        values = optional.get(group)
+        if not isinstance(group, str) or not isinstance(values, list):
+            raise PreflightError("interpreter optional dependency group is missing")
+        required.update(_dependency_name(value) for value in values)
+    gates = registry.get("gates")
+    additions = contract.get("gate_requirements")
+    if not isinstance(gates, dict) or not isinstance(additions, dict):
+        raise PreflightError("interpreter gate requirement contract is invalid")
+    if set(additions) - set(gates):
+        raise PreflightError("interpreter requirements name unknown gates")
+    for values in additions.values():
+        if not isinstance(values, list):
+            raise PreflightError("interpreter gate requirements must be lists")
+        required.update(_dependency_name(value) for value in values)
+    probe = (
+        "import importlib.metadata as m,json,sys\n"
+        "names=json.loads(sys.argv[1])\n"
+        "versions={name:m.version(name) for name in names}\n"
+        "print(json.dumps(versions,sort_keys=True))\n"
+    )
+    try:
+        result = subprocess.run(
+            [str(python), "-I", "-c", probe, json.dumps(sorted(required))],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise PreflightError("selected interpreter dependency probe failed") from exc
+    if result.returncode:
+        diagnostic = result.stderr.strip().splitlines()[-1] if result.stderr.strip() else "unknown"
+        raise PreflightError(
+            "selected interpreter is missing a required distribution: " + diagnostic
+        )
+    try:
+        versions = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise PreflightError("selected interpreter dependency probe was invalid") from exc
+    if not isinstance(versions, dict) or set(versions) != required:
+        raise PreflightError("selected interpreter dependency inventory is incomplete")
+    return {str(key): str(value) for key, value in sorted(versions.items())}
+
+
 def _vendored_source_locks(repo_root: Path) -> int:
     manifest = yaml.safe_load(
         (repo_root / "governance/artifact-manifest.yml").read_text(encoding="utf-8")
@@ -147,6 +232,31 @@ def _vendored_source_locks(repo_root: Path) -> int:
         if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
             raise PreflightError(f"vendored artifact source lock mismatched: {relative}")
     return len(artifacts)
+
+
+def _workflow_authority(repo_root: Path) -> int:
+    if not (repo_root / "governance/ci-authority.yml").is_file():
+        return 0
+    try:
+        return verify_workflow_authority(
+            repo_root, authority_path=Path("governance/ci-authority.yml")
+        )
+    except CIAuthorityPinError as exc:
+        raise PreflightError(f"workflow authority preflight failed: {exc}") from exc
+
+
+def _self_controller(repo_root: Path) -> int:
+    policy = repo_root / "governance/self-governance-policy.yml"
+    if not policy.is_file():
+        return 0
+    payload = yaml.safe_load(policy.read_text(encoding="utf-8"))
+    runner = payload.get("runner_security") if isinstance(payload, dict) else None
+    if not isinstance(runner, dict) or "trusted_controller_artifact" not in runner:
+        return 0
+    try:
+        return verify_self_controller_projection(repo_root)
+    except GitHubControllerError as exc:
+        raise PreflightError(f"self-controller preflight failed: {exc}") from exc
 
 
 def _required_gates(repo_root: Path) -> list[str]:
@@ -321,7 +431,14 @@ def run_preflight(
 
     subject = step("git-state", lambda: _git_state(repo_root))
     syntax = step("syntax", lambda: _syntax_checks(repo_root))
+    interpreter = step(
+        "interpreter", lambda: _interpreter_requirements(repo_root, python)
+    )
     step("governance", lambda: validate_repo_root(repo_root))
+    workflow_authority = step(
+        "workflow-authority", lambda: _workflow_authority(repo_root)
+    )
+    self_controller = step("self-controller", lambda: _self_controller(repo_root))
     negative_controls = step(
         "negative-controls", lambda: _negative_control_targets(repo_root)
     )
@@ -353,7 +470,10 @@ def run_preflight(
         "mode": mode,
         "subject": subject,
         "syntax": syntax,
+        "interpreter": interpreter,
         "source_locks": source_locks,
+        "workflow_authority": workflow_authority,
+        "self_controller": self_controller,
         "negative_controls": negative_controls,
         "test_manifests": test_manifests,
         "pr_context": pr_context,

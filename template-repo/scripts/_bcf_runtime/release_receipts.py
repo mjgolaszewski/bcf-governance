@@ -228,6 +228,9 @@ def build_trusted_release_receipt(
     release_artifacts: Iterable[Path],
     collector_identity: dict[str, str],
     output_path: Path,
+    certification_provider_artifact: dict[str, Any],
+    build_provider_artifact: dict[str, Any],
+    verification_provider_artifact: dict[str, Any],
 ) -> ReleaseReceipt:
     """Build the sole v1.1 release receipt from verified, acyclic role outputs."""
 
@@ -250,12 +253,15 @@ def build_trusted_release_receipt(
         raise ReleaseReceiptError("release role subjects do not match exact-main certification")
     admission = certification["admission"]
     exact_main = authorization.get("exact_main")
+    if not isinstance(certification_provider_artifact, dict):
+        raise ReleaseReceiptError("certification provider artifact identity is missing")
     if not isinstance(exact_main, dict) or exact_main != {
         "admission_ordinal": str(admission["admission_ordinal"]),
         "run_id": str(admission["control_plane_run_id"]),
         "run_attempt": int(admission["control_plane_run_attempt"]),
         "certification_sha256": _sha256(certification_path),
         "session_sha256": _sha256(session_manifest_path),
+        "certification_artifact": certification_provider_artifact,
     }:
         raise ReleaseReceiptError("release authorization is not bound to exact-main authority")
     if build.get("authorization_sha256") != _sha256(authorization_path):
@@ -269,6 +275,25 @@ def build_trusted_release_receipt(
         raise ReleaseReceiptError("release verification is not bound to the exact build")
     if verification.get("status") != "passed":
         raise ReleaseReceiptError("release verifier did not pass")
+    if (
+        str(build_provider_artifact.get("run_id")) != str(build.get("run_id"))
+        or int(build_provider_artifact.get("run_attempt", 0))
+        != int(build.get("run_attempt", 0))
+        or str(build_provider_artifact.get("artifact_id"))
+        != str(verified_build.get("artifact_id"))
+        or build_provider_artifact.get("provider_digest")
+        != verified_build.get("provider_digest")
+    ):
+        raise ReleaseReceiptError("build provider artifact does not match verified build")
+    verifier = verification.get("verifier")
+    if (
+        not isinstance(verifier, dict)
+        or str(verification_provider_artifact.get("run_id"))
+        != str(verifier.get("run_id"))
+        or int(verification_provider_artifact.get("run_attempt", 0))
+        != int(verifier.get("run_attempt", 0))
+    ):
+        raise ReleaseReceiptError("verification provider artifact does not match verifier")
     release_paths = tuple(release_artifacts)
     if not release_paths or len({path.name for path in release_paths}) != len(release_paths):
         raise ReleaseReceiptError("trusted release asset inventory is empty or duplicated")
@@ -337,6 +362,11 @@ def build_trusted_release_receipt(
                 "provider_digest": str(verified_build["provider_digest"]),
             },
             "verifier_run": verification["verifier"],
+            "provider_artifacts": {
+                "certification": certification_provider_artifact,
+                "build": build_provider_artifact,
+                "verification": verification_provider_artifact,
+            },
             "controller": controller,
             "dependency_closure": dependency,
             "release_artifacts": materials[5:],

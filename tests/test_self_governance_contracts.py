@@ -196,8 +196,14 @@ def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
         if step.get("name") == "Run governance pack tests"
     )
     assert build_index > pack_index
+    assert workflow[True]["workflow_call"]["inputs"]["build_controller"] == {
+        "description": "Build the trusted controller artifact for an exact-main admission",
+        "required": False,
+        "default": False,
+        "type": "boolean",
+    }
     assert steps[build_index]["if"] == (
-        "github.event_name == 'workflow_call' && github.ref == 'refs/heads/main'"
+        "inputs.build_controller == true && github.ref == 'refs/heads/main'"
     )
     assert upload["if"] == steps[build_index]["if"]
     assert upload["with"]["name"] == (
@@ -473,7 +479,7 @@ def test_self_control_plane_is_an_exact_v11_generator_product() -> None:
         trusted_labels=("self-hosted", "Linux", "X64", "bcf-governance", "vm-linux-ci-runner"),
         producer_jobs=(
             ("governance", "Run exact-main governance evidence", ".github/workflows/governance.yml", (("evaluation_mode", "closure"),)),
-            ("governance-pack", "Verify exact-main package and templates", ".github/workflows/governance-pack.yml", ()),
+            ("governance-pack", "Verify exact-main package and templates", ".github/workflows/governance-pack.yml", (("build_controller", True),)),
         ),
         controller_commit="1f96e45604c376918154dc50904fc0249d9b8e93",
     )
@@ -511,7 +517,19 @@ def test_exact_main_is_the_only_default_branch_producer() -> None:
             }
         },
     }
-    assert pack[True] == {"pull_request": None, "workflow_call": None}
+    assert pack[True] == {
+        "pull_request": None,
+        "workflow_call": {
+            "inputs": {
+                "build_controller": {
+                    "description": "Build the trusted controller artifact for an exact-main admission",
+                    "required": False,
+                    "default": False,
+                    "type": "boolean",
+                }
+            }
+        },
+    }
     assert exact_main["on"] == {"push": {"branches": ["main"]}}
     workflow_contract = evidence_policy["workflow_contract"]
     assert workflow_contract["paths"] == [".github/workflows/governance.yml"]
@@ -529,6 +547,9 @@ def test_exact_main_is_the_only_default_branch_producer() -> None:
             "./.github/workflows/governance-pack.yml",
             {"contents": "read"},
         ),
+    }
+    assert exact_main["jobs"]["governance-pack"]["with"] == {
+        "build_controller": True
     }
 
 

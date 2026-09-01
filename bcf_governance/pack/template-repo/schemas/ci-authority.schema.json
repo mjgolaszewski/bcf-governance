@@ -67,6 +67,17 @@
         "trusted_workflow_blob_oid": {"$ref": "#/$defs/sha"},
         "trusted_workflow_sha256": {"$ref": "#/$defs/sha256"},
         "trusted_workflow_definition_commit": {"$ref": "#/$defs/sha"},
+        "expected_jobs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/job"}
+        },
+        "job_roles": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {"$ref": "#/$defs/providerId"},
+          "additionalProperties": {"enum": ["admission", "producer", "observer"]}
+        },
         "allowed_events": {
           "type": "array",
           "minItems": 1,
@@ -112,6 +123,7 @@
       "required": ["job_id"],
       "properties": {
         "job_id": {"$ref": "#/$defs/nonEmpty"},
+        "role": {"enum": ["admission", "producer", "observer"]},
         "matrix": {
           "type": "object",
           "propertyNames": {"pattern": "^[A-Za-z0-9_.-]+$"},

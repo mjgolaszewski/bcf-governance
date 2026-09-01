@@ -148,7 +148,10 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         preflight, "_git_state", lambda _: {"commit_sha": "a" * 40, "tree_sha": "b" * 40}
     )
     monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {"python": 1})
+    monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {"pytest": "9.0.3"})
     monkeypatch.setattr(preflight, "validate_repo_root", lambda _: None)
+    monkeypatch.setattr(preflight, "_workflow_authority", lambda _: 12)
+    monkeypatch.setattr(preflight, "_self_controller", lambda _: 6)
     monkeypatch.setattr(preflight, "_negative_control_targets", lambda _: 1)
     monkeypatch.setattr(
         preflight,
@@ -180,7 +183,10 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     assert calls == [
         "git-state",
         "syntax",
+        "interpreter",
         "governance",
+        "workflow-authority",
+        "self-controller",
         "negative-controls",
         "semantic-ownership",
         "source-locks",
@@ -190,6 +196,90 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         "allocated",
     ]
     assert report["session_manifest"] == (tmp_path / "session.json").as_posix()
+    assert report["workflow_authority"] == 12
+    assert report["self_controller"] == 6
+
+
+def test_workflow_authority_failure_prevents_session_allocation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[str] = []
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    monkeypatch.setattr(preflight, "_git_state", lambda _: {})
+    monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
+    monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {})
+    monkeypatch.setattr(preflight, "validate_repo_root", lambda _: None)
+    monkeypatch.setattr(
+        preflight,
+        "_workflow_authority",
+        lambda _: (_ for _ in ()).throw(
+            preflight.PreflightError("workflow authority drift")
+        ),
+    )
+    monkeypatch.setattr(preflight, "_self_controller", lambda _: 6)
+    monkeypatch.setattr(
+        preflight, "allocate_session", lambda *_, **__: calls.append("allocated")
+    )
+
+    with pytest.raises(preflight.PreflightError, match="authority drift"):
+        preflight.run_preflight(
+            repo,
+            mode="release",
+            python_executable=sys.executable,
+            artifact_root=tmp_path / "evidence",
+            trace=calls.append,
+        )
+
+    assert calls == ["git-state", "syntax", "interpreter", "governance", "workflow-authority"]
+
+
+def test_missing_interpreter_distribution_fails_before_evidence(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "governance").mkdir(parents=True)
+    (repo / "governance/gate-contracts.yml").write_text(
+        "interpreter_contract: {project_dependencies: true, optional_dependency_groups: [], gate_requirements: {test: [bcf-definitely-absent-tool]}}\n"
+        "gates: {test: {}}\n",
+        encoding="utf-8",
+    )
+    (repo / "pyproject.toml").write_text(
+        "[project]\nname='fixture'\nversion='1.0.0'\ndependencies=[]\n[project.optional-dependencies]\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(preflight.PreflightError, match="required distribution"):
+        preflight._interpreter_requirements(repo, Path(sys.executable))
+
+
+def test_interpreter_failure_prevents_session_allocation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[str] = []
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    monkeypatch.setattr(preflight, "_git_state", lambda _: {})
+    monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
+    monkeypatch.setattr(
+        preflight,
+        "_interpreter_requirements",
+        lambda *_: (_ for _ in ()).throw(
+            preflight.PreflightError("selected interpreter is missing pip")
+        ),
+    )
+    monkeypatch.setattr(
+        preflight, "allocate_session", lambda *_, **__: calls.append("allocated")
+    )
+
+    with pytest.raises(preflight.PreflightError, match="missing pip"):
+        preflight.run_preflight(
+            repo,
+            mode="release",
+            python_executable=sys.executable,
+            artifact_root=tmp_path / "evidence",
+            trace=calls.append,
+        )
+
+    assert calls == ["git-state", "syntax", "interpreter"]
 
 
 def test_deterministic_failure_prevents_session_allocation(

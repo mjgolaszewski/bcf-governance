@@ -51,8 +51,11 @@ candidate strings into shell commands.
 Authority binds provider and numeric repository ID, numeric workflow ID,
 active path, trusted default-main workflow blob and SHA-256, definition commit,
 event, run ID, attempt, candidate commit, and candidate tree. Run names, job
-display names, and display titles are presentation only. Descriptive names help
-operators; stable IDs remain the mechanical interface.
+display names, and display titles are not authority when supplied by an operator
+or callback. Committed workflow source job keys, literal matrices, and display-name
+templates mechanically compile the exact provider job inventory; the authenticated
+provider result must match that compiled inventory. Descriptive names help operators,
+while Git and provider identities remain the authority.
 
 Authority contract v1.1 adds one canonical workflow registry. Privileged roles
 refer to entries in that registry; missing numeric IDs, paths, definition
@@ -68,6 +71,14 @@ makes earlier exact-main work obsolete. In v1.1, reusable producer membership
 also binds repository, commit, tree, admission run and attempt, dispatch
 sequence, producer, referenced-workflow path and SHA, and the exact job
 inventory. Producers cannot be borrowed from another same-SHA run.
+
+No probabilistic operator constructs these bindings. Git derives workflow blobs,
+definition commits, and content digests. The provider API derives repository,
+workflow, run, attempt, job, and artifact identities. Downloaded bytes derive package
+digests. Deterministic code combines those observations under the declared policy and
+causal controls prove that each mismatch fails. A maintainer or AI may propose policy,
+review a change, and decide whether to merge or publish; neither may substitute a
+copied value or judgment for the computation.
 
 ## GitHub reference topology
 

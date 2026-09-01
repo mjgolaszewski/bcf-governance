@@ -28,7 +28,7 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _verify_inventory(root: Path) -> tuple[Path, dict[str, str]]:
+def verify_controller_inventory(root: Path) -> tuple[Path, dict[str, str]]:
     if root.is_symlink() or not root.is_dir():
         raise GitHubControllerError("controller artifact root must be a regular directory")
     sums = _regular(root / "SHA256SUMS", "controller checksum inventory")
@@ -56,7 +56,7 @@ def _verify_inventory(root: Path) -> tuple[Path, dict[str, str]]:
     return wheels[0], declared
 
 
-def _metadata(path: Path) -> dict[str, str]:
+def controller_metadata(path: Path) -> dict[str, str]:
     try:
         value = json.loads(_regular(path, "controller metadata").read_text())
     except (OSError, json.JSONDecodeError) as exc:
@@ -132,10 +132,10 @@ def install_controller(
     ]
     if len(exact_artifacts) != 1:
         raise GitHubControllerError("controller provider artifact identity is not exact")
-    wheel, _ = _verify_inventory(artifact_dir.resolve())
+    wheel, _ = verify_controller_inventory(artifact_dir.resolve())
     if _sha256(wheel) != wheel_sha256:
         raise GitHubControllerError("controller wheel digest does not match custody")
-    if _metadata(artifact_dir / "CONTROL-METADATA.json") != {
+    if controller_metadata(artifact_dir / "CONTROL-METADATA.json") != {
         "schema_version": "1.0",
         "commit_sha": commit_sha,
         "tree_sha": tree_sha,
@@ -157,7 +157,7 @@ def install_controller(
     executable = install_root / "bin/bcf"
     if install_root.exists():
         if install_root.is_symlink() or not install_root.is_dir() or (
-            _metadata(install_metadata) != expected_install
+            controller_metadata(install_metadata) != expected_install
         ):
             raise GitHubControllerError("existing controller installation has stale custody")
         subprocess.run([str(executable), "ci-github", "--help"], check=True)

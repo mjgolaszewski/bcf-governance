@@ -46,6 +46,45 @@ execution_evidence:
   - command: .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
     result: pass
     notes: all 10 high-value evidence and truth mutants were killed after activation
+  - command: .venv/bin/python -m pytest -q tests
+    result: pass
+    notes: all 476 exact source-test nodes passed for provider-authenticated release custody
+  - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
+    result: pass
+    notes: non-authoritative local evidence; all 210 contract nodes and 56 isolated cause-verified controls passed
+  - command: .venv/bin/python -m pytest -q tests
+    result: pass
+    notes: all 492 exact source-test nodes passed after mechanical workflow authority, canary, status-history, release job-inventory, and self-controller compilation
+  - command: .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test
+    result: pass
+    notes: all 227 mechanically selected contract-test nodes passed
+  - command: .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value
+    result: pass
+    notes: all 13 high-value validator mutants were killed by their declared nodes
+  - command: .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+    result: pass
+    notes: all 10 high-value evidence and truth mutants were killed by their declared nodes
+  - command: .venv/bin/python -m pytest -q tests
+    result: pass
+    notes: all 495 exact source-test nodes passed after list-order-independent terminal status selection was added
+  - command: .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test
+    result: pass
+    notes: all 230 mechanically selected contract-test nodes passed after the status-history adversarial cases were added
+  - command: .venv/bin/python -m pytest -q tests
+    result: pass
+    notes: all 497 exact source-test nodes passed after selected-interpreter dependency preflight was added
+  - command: .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test
+    result: pass
+    notes: all 232 mechanically selected contract-test nodes passed after missing-distribution and pre-allocation regressions were added
+  - command: .venv/bin/python -m pytest -q tests
+    result: pass
+    notes: all 499 exact source-test nodes passed after exact-oracle mutant execution was introduced
+  - command: .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test
+    result: pass
+    notes: all 233 mechanically selected contract-test nodes passed with the oracle-command owner included
+  - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
+    result: pass
+    notes: non-authoritative local evidence; all 233 positive contract nodes and all 68 isolated contract-gate controls passed with zero infrastructure exits or unexpected worktree changes
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
@@ -78,6 +117,17 @@ execution_evidence:
   - exact-main run 33442817538 proved the typed closure input was present but exposed that reusable workflows retain the caller event name; evaluation now consumes the explicit input directly and rejects event-name coupling
   - reusable-mode workflow custody uses definition commit 356196fe7fdeca1bd0de80c0d58f198e1476f716 followed by an independent exact blob and SHA-256 pin
   - PR 46 run 33444958953 failed at cheap preflight before evidence fanout because the new causal oracle was not selected by the contract gate; the canonical selector and exact manifest now include that owner
+  - release provider custody is centralized in a mechanically governed decoder; authorizer/build attempt equality, newest-admission selection, verifier artifacts, collector receipts, and publication assets now fail closed under focused causal controls
+  - provider-artifact and workflow-authority compiler ownership required reviewed registry ratchets from 32 to 40 KiB; the 200-line cap remains preserved and YAML merge semantics remain prohibited
+  - exact-main run 33447571046 verified all 21 receipts and correctly refused phase closure while P13-HF01 remained planned; it also proved caller-event checks skipped controller construction, so an explicit false-by-default build input now owns that authorization
+  - the exact-main admission and package-producer definition bytes for that correction are retained at 82dc4f740d9fb2b5920cc66037f0885614b351df and pinned by a separate following commit
+  - "workflow custody is now compiled from exact Git bytes: one command derives the complete registry's definition commits, blob OIDs, SHA-256 digests, matrix-expanded privileged jobs, admission job, and reusable producer inventories; preflight recomputes that projection before evidence allocation"
+  - self-controller rotation now selects the newest authenticated exact-main package producer through provider APIs, verifies downloaded metadata and wheel bytes, emits one canonical pin, and mechanically projects it into policy and trusted workflows; operators no longer transcribe run, artifact, tree, or digest values
+  - authority-canary status uses a separate context and one exact current-attempt job inventory; a focused regression exposed and fixed legitimate pending-to-terminal status history being misclassified as conflicting authority
+  - status history is now resolved without list-order trust; one terminal conclusion mechanically dominates pending observations at the highest admission and attempt, while conflicting terminal conclusions fail closed
+  - a local dependency-audit attempt exposed that the ignored development venv lacked pip; interpreter requirements now derive from project and gate contracts and fail in cheap preflight before evidence capture or remote allocation
+  - contract controls previously repeated the full 232-node selection for every named mutant; the evidence owner now executes each declared pytest oracle node in isolation after one full positive baseline, preserving causal proof while removing redundant suite work
+  - the first optimized local capture rejected a legitimate spaced pytest parameter as unsafe; direct-argv node suffixes now accept printable ASCII while module paths remain repository-safe, and a spaced provider-identity parameter is a regression fixture
 closeout_requirements:
   claims:
     required_suites_green:

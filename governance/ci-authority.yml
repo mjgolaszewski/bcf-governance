@@ -1,93 +1,147 @@
 schema_version: '1.1'
-repository: {provider: github, repository_id: '1207503211'}
+repository:
+  provider: github
+  repository_id: '1207503211'
 workflow_registry:
   admission:
     workflow_id: '346274480'
     active_path: .github/workflows/bcf-exact-main.yml
-    trusted_workflow_blob_oid: e1805980af2bdbd50c88764e42d86dd06b387e8b
-    trusted_workflow_sha256: de95b96a55740adf00cb574b5016d5e9c46a65ab375d5b9b265f92ea142443ae
-    trusted_workflow_definition_commit: 26deb561d5d2fc471ee9f23a78769211e848e626
-    allowed_events: [push]
+    trusted_workflow_blob_oid: ebcb8e5262ea8f527b92e17a3d07302c1a1c48fc
+    trusted_workflow_sha256: 1bcc5186f80289d44d0eef1b8983ad4080de64dd262219b57cb0e733a2780b2c
+    trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
+    allowed_events:
+    - push
+    job_roles:
+      admit: admission
+      governance: producer
+      governance-pack: producer
   governance:
     workflow_id: '334490532'
     active_path: .github/workflows/governance.yml
     trusted_workflow_blob_oid: 37970afc0628833f61c50812342b03ad60305cb9
     trusted_workflow_sha256: 3a75ff4e8b9ef465b6ff5ed5af3ca2ca1516942742da805cbc101565b165d57e
-    trusted_workflow_definition_commit: 356196fe7fdeca1bd0de80c0d58f198e1476f716
-    allowed_events: [pull_request, workflow_call]
+    trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
+    allowed_events:
+    - pull_request
+    - workflow_call
   governance-pack:
     workflow_id: '265590976'
     active_path: .github/workflows/governance-pack.yml
-    trusted_workflow_blob_oid: 2573129611ff47741870f155891eaba700534e80
-    trusted_workflow_sha256: 594cb9cf10ccb69de24a41ce7584927643c7ad9b809978cbd5b9c02b9774ad86
-    trusted_workflow_definition_commit: c973d48a2b7c688a20d50c46661469e9331b0feb
-    allowed_events: [pull_request, workflow_call]
+    trusted_workflow_blob_oid: c9da932381139a52a0a452e1dc1be9860aa5cc12
+    trusted_workflow_sha256: dd8bc8975007b0bd203604e072d338ffbb9a517f2f6c05d9559524eb1bd6cb64
+    trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
+    allowed_events:
+    - pull_request
+    - workflow_call
   finalizer:
     workflow_id: '346274484'
     active_path: .github/workflows/bcf-trusted-finalizer.yml
     trusted_workflow_blob_oid: 8d32f71d052c6a143969e1055b255c2f8c7222ea
     trusted_workflow_sha256: 8a7c70aefb91cbb18d351dbc56ac0fcaf1e037c4c944422c50de101f4f908242
-    trusted_workflow_definition_commit: c973d48a2b7c688a20d50c46661469e9331b0feb
-    allowed_events: [workflow_run]
+    trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
+    allowed_events:
+    - workflow_run
+    expected_jobs:
+    - job_id: Reconstruct the newest same-admission exact-main evidence
   status-publisher:
     workflow_id: '346274482'
     active_path: .github/workflows/bcf-status-publisher.yml
     trusted_workflow_blob_oid: 8c19ed7080e5785baf65b9c52c2f4e128e245fe6
     trusted_workflow_sha256: 03530138e276cda8feb0dd423763933e929fee70e425b73e82503b01dd331b23
-    trusted_workflow_definition_commit: c973d48a2b7c688a20d50c46661469e9331b0feb
-    allowed_events: [workflow_run]
+    trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
+    allowed_events:
+    - workflow_run
+    expected_jobs:
+    - job_id: Publish newest authenticated exact-main status or revocation
   bootstrap:
     workflow_id: '346177113'
     active_path: .github/workflows/bcf-trusted-control-bootstrap.yml
     trusted_workflow_blob_oid: 5db1f582283cd154be688c4256bfc525bd13734f
     trusted_workflow_sha256: 90afd8ea4a824145c0cc835a9f99fd12654ac6c6e2da5012456ddca92fe65e51
-    trusted_workflow_definition_commit: c973d48a2b7c688a20d50c46661469e9331b0feb
-    allowed_events: [workflow_dispatch]
+    trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
+    allowed_events:
+    - workflow_dispatch
+    expected_jobs:
+    - job_id: Install authenticated controller / bcf-trusted-control-1
+    - job_id: Install authenticated controller / bcf-trusted-control-2
   probe:
     workflow_id: '346154319'
     active_path: .github/workflows/bcf-trusted-control-probe.yml
     trusted_workflow_blob_oid: 2c3c93be94ac5d2f2b7dde299faa917682c26fef
     trusted_workflow_sha256: cabca72c1731974f4678e17f104183d7d4da682c3a9a6e10f3cdf554d2dd0c84
-    trusted_workflow_definition_commit: c973d48a2b7c688a20d50c46661469e9331b0feb
-    allowed_events: [workflow_dispatch]
+    trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
+    allowed_events:
+    - workflow_dispatch
+    expected_jobs:
+    - job_id: Verify exact-main controller / bcf-trusted-control-1
+    - job_id: Verify exact-main controller / bcf-trusted-control-2
   release:
     workflow_id: '331325235'
     active_path: .github/workflows/release.yml
     trusted_workflow_blob_oid: 0949f86948d0e943eb3945125012b2644f585fdb
     trusted_workflow_sha256: 8bf6269ffec1f59ef05e7a6b92492db452cc560a22c075b96af21066c0831cea
-    trusted_workflow_definition_commit: c973d48a2b7c688a20d50c46661469e9331b0feb
-    allowed_events: [workflow_dispatch]
+    trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
+    allowed_events:
+    - workflow_dispatch
+    expected_jobs:
+    - job_id: Release disabled until authority v1.1 activation
   release-verifier:
     workflow_id: '346919672'
     active_path: .github/workflows/bcf-release-verifier.yml
     trusted_workflow_blob_oid: e4db1940940e1f2c22f70b714d43e72a4e47d28b
     trusted_workflow_sha256: c00f597b30d15c05cbe1690d546863b8f1b67c2aac09ee00154f5fd25dde8c46
-    trusted_workflow_definition_commit: c973d48a2b7c688a20d50c46661469e9331b0feb
-    allowed_events: [workflow_run]
+    trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
+    allowed_events:
+    - workflow_run
+    expected_jobs:
+    - job_id: Verify release bytes on a fresh worker
   release-collector:
     workflow_id: '346919669'
     active_path: .github/workflows/bcf-release-collector.yml
     trusted_workflow_blob_oid: 7d6334e724943535bd9c6d54c5f4c4d054bd4f78
     trusted_workflow_sha256: f2d3728c46c45af5e34e8da26c8e72eb3e62a4e94de76c3481d7acdf15f50642
-    trusted_workflow_definition_commit: c973d48a2b7c688a20d50c46661469e9331b0feb
-    allowed_events: [workflow_run]
+    trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
+    allowed_events:
+    - workflow_run
+    expected_jobs:
+    - job_id: Collect authenticated release evidence
   release-publisher:
     workflow_id: '346919671'
     active_path: .github/workflows/bcf-release-publisher.yml
     trusted_workflow_blob_oid: d0e1550c4b3b6b6047078d789c5ac6c116f26abd
     trusted_workflow_sha256: 58e90c5c61c742d735be7fcb39f353a9184cc3444c379a4c5c535fb529850f9c
-    trusted_workflow_definition_commit: c973d48a2b7c688a20d50c46661469e9331b0feb
-    allowed_events: [workflow_dispatch]
+    trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
+    allowed_events:
+    - workflow_dispatch
+    expected_jobs:
+    - job_id: Publish pre-certified immutable release bytes
   authority-canary:
     workflow_id: '346919667'
     active_path: .github/workflows/bcf-authority-canary.yml
     trusted_workflow_blob_oid: ae845d39722e83f8d6cd18fc229d53911f937a67
     trusted_workflow_sha256: a6eea97eada7476f4d9fbaf2ce432937fe93cb237431be14a813b11bff9bb1cf
-    trusted_workflow_definition_commit: c973d48a2b7c688a20d50c46661469e9331b0feb
-    allowed_events: [workflow_dispatch]
+    trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
+    allowed_events:
+    - workflow_dispatch
+    job_roles:
+      admit: admission
+      producer-a: producer
+      producer-b: producer
+      observe: observer
+    expected_jobs:
+    - job_id: Admit isolated authority canary
+      role: admission
+    - job_id: Execute canary producer A
+      role: producer
+    - job_id: Execute canary producer B
+      role: producer
+    - job_id: Observe canary precedence mechanically
+      role: observer
 roles:
   admission: admission
-  reusable_producers: [governance, governance-pack]
+  reusable_producers:
+  - governance
+  - governance-pack
   finalizer: finalizer
   status_publisher: status-publisher
   bootstrap: bootstrap
@@ -99,20 +153,20 @@ roles:
   release_publisher: release-publisher
   authority_canary: authority-canary
 admission_jobs:
-- {job_id: Authenticate exact-main admission and publish pending authority}
+- job_id: Authenticate exact-main admission and publish pending authority
 producers:
 - producer_id: governance
   workflow_ref: governance
   expected_jobs:
-  - {job_id: Run exact-main governance evidence / Validate governance front door}
-  - {job_id: 'Run exact-main governance evidence / Evidence / Boundaries, contracts, runtime, types, and secrets'}
-  - {job_id: 'Run exact-main governance evidence / Evidence / CQRS, module size, exposure, and dependency risk'}
-  - {job_id: 'Run exact-main governance evidence / Evidence / Duplication, routers, governance, and ownership'}
-  - {job_id: 'Run exact-main governance evidence / Evidence / Full tests, lint, import boundaries, and SBOM'}
-  - {job_id: Run exact-main governance evidence / Verify exact-tree governance evidence}
+  - job_id: Run exact-main governance evidence / Validate governance front door
+  - job_id: Run exact-main governance evidence / Evidence / Boundaries, contracts, runtime, types, and secrets
+  - job_id: Run exact-main governance evidence / Evidence / CQRS, module size, exposure, and dependency risk
+  - job_id: Run exact-main governance evidence / Evidence / Duplication, routers, governance, and ownership
+  - job_id: Run exact-main governance evidence / Evidence / Full tests, lint, import boundaries, and SBOM
+  - job_id: Run exact-main governance evidence / Verify exact-tree governance evidence
 - producer_id: governance-pack
   workflow_ref: governance-pack
   expected_jobs:
-  - {job_id: 'Verify exact-main package and templates / Test package, templates, and release tooling'}
-  - {job_id: Verify exact-main package and templates / Verify template architecture boundaries}
+  - job_id: Verify exact-main package and templates / Test package, templates, and release tooling
+  - job_id: Verify exact-main package and templates / Verify template architecture boundaries
 trusted_external_inputs: []

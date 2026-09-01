@@ -1,0 +1,174 @@
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+import shutil
+from types import SimpleNamespace
+
+import pytest
+import yaml
+
+from bcf_governance.tooling import ci_self_controller as controller
+from bcf_governance.tooling.ci_github_artifacts import ProviderArtifact
+from bcf_governance.tooling.ci_github_identity import (
+    GitHubControllerError,
+    MainIdentity,
+)
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+COMMIT = "a" * 40
+TREE = "b" * 40
+
+
+def _artifact_dir(root: Path) -> tuple[Path, str]:
+    root.mkdir(parents=True)
+    wheel = root / "bcf_governance-0.7.1-py3-none-any.whl"
+    wheel.write_bytes(b"controller-wheel")
+    metadata = root / "CONTROL-METADATA.json"
+    metadata.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "commit_sha": COMMIT,
+                "tree_sha": TREE,
+                "workflow_run_id": "100",
+                "workflow_run_attempt": "2",
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    sums = root / "SHA256SUMS"
+    sums.write_text(
+        "\n".join(
+            f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}"
+            for path in (wheel, metadata)
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return root, hashlib.sha256(wheel.read_bytes()).hexdigest()
+
+
+def _provider(monkeypatch: pytest.MonkeyPatch, *, conclusion: str = "success") -> None:
+    main = MainIdentity("101", "main", COMMIT, TREE)
+    artifact = ProviderArtifact(
+        "100", 2, "300", f"bcf-trusted-control-{COMMIT}-2",
+        f"sha256:{'c' * 64}", {},
+    )
+    monkeypatch.setattr(controller, "resolve_main", lambda *args: main)
+    monkeypatch.setattr(controller, "load_authority", lambda *args, **kwargs: {})
+    monkeypatch.setattr(
+        controller, "select_latest_admission", lambda *args, **kwargs: ("100", 2)
+    )
+    monkeypatch.setattr(
+        controller,
+        "collect_same_run_producers",
+        lambda *args, **kwargs: (
+            {
+                "producer_id": "governance-pack",
+                "attempts": [
+                    {"status": "completed", "conclusion": conclusion, "jobs": []}
+                ],
+            },
+        ),
+    )
+    monkeypatch.setattr(
+        controller, "resolve_role_artifact", lambda *args, **kwargs: artifact
+    )
+
+
+def test_controller_pin_is_compiled_from_latest_provider_and_downloaded_bytes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _provider(monkeypatch)
+    artifact_dir, wheel_digest = _artifact_dir(tmp_path / "artifact")
+
+    pin = controller.compile_self_controller_pin(
+        SimpleNamespace(),  # type: ignore[arg-type]
+        repository="owner/repo",
+        artifact_dir=artifact_dir,
+    )
+
+    assert pin == {
+        "BCF_BOOTSTRAP_ARTIFACT_ID": "300",
+        "BCF_BOOTSTRAP_ARTIFACT_NAME": f"bcf-trusted-control-{COMMIT}-2",
+        "BCF_BOOTSTRAP_ARTIFACT_DIGEST": f"sha256:{'c' * 64}",
+        "BCF_BOOTSTRAP_RUN_ID": "100",
+        "BCF_BOOTSTRAP_RUN_ATTEMPT": "2",
+        "BCF_BOOTSTRAP_COMMIT_SHA": COMMIT,
+        "BCF_BOOTSTRAP_TREE_SHA": TREE,
+        "BCF_BOOTSTRAP_REPOSITORY_ID": "101",
+        "BCF_BOOTSTRAP_WHEEL_SHA256": wheel_digest,
+    }
+
+
+def test_controller_pin_rejects_failed_package_producer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _provider(monkeypatch, conclusion="failure")
+    with pytest.raises(GitHubControllerError, match="package producer"):
+        controller.resolve_self_controller_artifact(
+            SimpleNamespace(), repository="owner/repo"  # type: ignore[arg-type]
+        )
+
+
+def test_controller_pin_rejects_non_derived_artifact_name() -> None:
+    policy = yaml.safe_load(
+        (REPO_ROOT / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
+    )
+    pin = dict(policy["runner_security"]["trusted_controller_artifact"])
+    pin["BCF_BOOTSTRAP_ARTIFACT_NAME"] = "operator-copied-name"
+    with pytest.raises(GitHubControllerError, match="name is not derived"):
+        controller.project_self_controller_pin(REPO_ROOT, pin=pin, apply=False)
+
+
+def test_self_controller_projection_has_one_canonical_pin_owner(
+    tmp_path: Path,
+) -> None:
+    policy = yaml.safe_load(
+        (REPO_ROOT / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
+    )
+    required = policy["runner_security"]["trusted_controller_interpreter"][
+        "required_workflows"
+    ]
+    paths = ["governance/self-governance-policy.yml", *required]
+    for relative in paths:
+        destination = tmp_path / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(REPO_ROOT / relative, destination)
+    pin = dict(policy["runner_security"]["trusted_controller_artifact"])
+    assert controller.project_self_controller_pin(
+        tmp_path, pin=pin, apply=False
+    ).status == "clean"
+
+    pin.update(
+        {
+            "BCF_BOOTSTRAP_ARTIFACT_ID": "400",
+            "BCF_BOOTSTRAP_ARTIFACT_NAME": f"bcf-trusted-control-{COMMIT}-2",
+            "BCF_BOOTSTRAP_ARTIFACT_DIGEST": f"sha256:{'d' * 64}",
+            "BCF_BOOTSTRAP_RUN_ID": "500",
+            "BCF_BOOTSTRAP_RUN_ATTEMPT": "2",
+            "BCF_BOOTSTRAP_COMMIT_SHA": COMMIT,
+            "BCF_BOOTSTRAP_TREE_SHA": TREE,
+            "BCF_BOOTSTRAP_REPOSITORY_ID": "101",
+            "BCF_BOOTSTRAP_WHEEL_SHA256": "e" * 64,
+        }
+    )
+    changed = controller.project_self_controller_pin(
+        tmp_path, pin=pin, apply=True
+    )
+
+    assert changed.status == "changed"
+    projected = yaml.safe_load(
+        (tmp_path / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
+    )["runner_security"]["trusted_controller_artifact"]
+    assert {key: str(value) for key, value in projected.items()} == pin
+    for relative in controller.BOOTSTRAP_WORKFLOWS:
+        workflow = yaml.safe_load((tmp_path / relative).read_text(encoding="utf-8"))
+        assert {key: str(value) for key, value in workflow["env"].items()} == pin
+    assert controller.project_self_controller_pin(
+        tmp_path, pin=pin, apply=False
+    ).status == "clean"

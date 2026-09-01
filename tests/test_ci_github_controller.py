@@ -257,6 +257,11 @@ def _v11_authority() -> dict[str, object]:
         "trusted_workflow_sha256": DIGEST,
         "trusted_workflow_definition_commit": SHA_A,
         "allowed_events": ["push"],
+        "job_roles": {
+            "admit": "admission",
+            "governance": "producer",
+            "pack": "producer",
+        },
     }
     governance = {
         **admission,
@@ -264,12 +269,14 @@ def _v11_authority() -> dict[str, object]:
         "active_path": ".github/workflows/governance.yml",
         "allowed_events": ["workflow_call"],
     }
+    governance.pop("job_roles")
     pack = {
         **admission,
         "workflow_id": "11",
         "active_path": ".github/workflows/pack.yml",
         "allowed_events": ["workflow_call"],
     }
+    pack.pop("job_roles")
     registry: dict[str, object] = {
         "admission": admission,
         "governance": governance,
@@ -280,13 +287,17 @@ def _v11_authority() -> dict[str, object]:
         "workflow_id": "98",
         "active_path": ".github/workflows/finalizer.yml",
         "allowed_events": ["workflow_run"],
+        "expected_jobs": [{"job_id": "Finalize"}],
     }
+    registry["finalizer"].pop("job_roles")
     registry["status"] = {
         **admission,
         "workflow_id": "97",
         "active_path": ".github/workflows/status.yml",
         "allowed_events": ["workflow_run"],
+        "expected_jobs": [{"job_id": "Publish"}],
     }
+    registry["status"].pop("job_roles")
     role_names = (
         "bootstrap", "probe", "release-authorizer", "release-build",
         "release-verifier", "release-collector", "release-publisher", "canary",
@@ -297,7 +308,21 @@ def _v11_authority() -> dict[str, object]:
             "workflow_id": str(index),
             "active_path": f".github/workflows/{name}.yml",
             "allowed_events": ["workflow_dispatch"],
+            "expected_jobs": [{"job_id": f"{name}-job"}],
         }
+        registry[name].pop("job_roles")
+    registry["canary"]["job_roles"] = {
+        "admit": "admission",
+        "producer-a": "producer",
+        "producer-b": "producer",
+        "observe": "observer",
+    }
+    registry["canary"]["expected_jobs"] = [
+        {"job_id": "canary-admit", "role": "admission"},
+        {"job_id": "canary-a", "role": "producer"},
+        {"job_id": "canary-b", "role": "producer"},
+        {"job_id": "canary-observe", "role": "observer"},
+    ]
     return {
         "schema_version": "1.1",
         "repository": {"provider": "github", "repository_id": "42"},
