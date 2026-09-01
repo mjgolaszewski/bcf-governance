@@ -144,6 +144,9 @@ summary:
   - exact-main 33491797937 passed every executable producer for the live-inventory fix and
     refused only active P13 closure; provider resolution and exact artifact checksum compilation
     selected controller artifact 9794142932 without authored run, commit, tree, or digest values
+  - corrected bootstrap, probe, and verifier bytes are fixed at definition commit
+    f6f5c2a66bf37a047025642ba44c8949b9526754; the authority compiler pins their Git blobs,
+    SHA-256 values, and mechanically derived job inventories in the following custody commit
 workitems:
 - id: P13-P0-01
   status: DONE

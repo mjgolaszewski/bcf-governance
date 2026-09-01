@@ -226,6 +226,9 @@ execution_evidence:
   - command: exact-main 33491797937; controller-pin resolve|compile; sync-self-controller --apply
     result: pass
     notes: provider APIs and downloaded checksums selected exact controller artifact 9794142932 and projected its pending bootstrap/probe target; no provider, Git, artifact, or wheel identity was transcribed
+  - command: bcf ci pin-authority --definition-commit f6f5c2a66bf37a047025642ba44c8949b9526754 --apply
+    result: pass
+    notes: the compiler derived every privileged workflow blob, SHA-256, definition commit, and exact job inventory from committed Git bytes
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
