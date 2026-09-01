@@ -17,7 +17,22 @@ execution_evidence:
   planned_commands:
   - .venv/bin/python scripts/preflight_governance.py --repo-root . --mode release
     --python .venv/bin/python --format text
-  executed_commands: []
+  executed_commands:
+  - command: publication-disabled release 33500913722; verifier 33501188756
+    result: expected_fail_remediated
+    notes: authenticated exact-main authorization and build passed; the secretless verifier failed only two source-distribution tests that duplicated unavailable definition-commit history, and no collector authority was emitted
+  - command: canonical release preflight before and after hash-closed environment repair
+    result: pass
+    notes: the first committed run failed in 1.7 seconds on missing setuptools and created no evidence session; after installation from the verified 41-wheel closure, preflight reported exact setuptools 84.0.0 and wheel 0.48.0 before all later work
+  - command: governed source and contract-test manifests; exact contract evidence
+    result: pass
+    notes: exact head 7a9b629 passed all 537 source nodes; its contract population contains 272 exact nodes, and the preceding exact receipt passed 102 of 102 cause-verified controls before the final virtualenv fixture ratchet
+  - command: governed wheel and source-distribution artifact harness
+    result: pass
+    notes: exact 7a9b629 wheel install, installed-pack governance truth, standalone truth, and extracted-sdist suite passed; the sdist reported 535 passes and exactly its two declared Git-custody skips
+  - command: bcf ci local-pr --repo-root .
+    result: pass
+    notes: default branch, ancestry, PR base SHA, event context, changelog rule, and selected-interpreter preflight were mechanically derived for 7a9b629
   notes:
   - publication-disabled release run 33500913722 built exact 652df02 bytes, then
     verifier 33501188756 failed only sdist-tests after 529 passes because two tests
