@@ -339,19 +339,35 @@ def test_authority_v11_bridge_remains_readable_but_cannot_claim_privileged_jobs(
         authority_role_jobs(payload, "release_verifier")
 
 
-def test_self_authority_bridge_uses_only_pre_enrichment_workflow_fields() -> None:
+def test_self_authority_inventory_is_enriched_only_for_privileged_roles() -> None:
     import yaml
 
     payload = yaml.safe_load(
         (REPO_ROOT / "governance/ci-authority.yml").read_text(encoding="utf-8")
     )
-    allowed = {
+    identity = {
         "workflow_id", "active_path", "trusted_workflow_blob_oid",
         "trusted_workflow_sha256", "trusted_workflow_definition_commit",
         "allowed_events",
     }
+    separately_owned = {
+        payload["roles"]["admission"],
+        *payload["roles"]["reusable_producers"],
+    }
+    privileged = {
+        reference
+        for role, reference in payload["roles"].items()
+        if role not in {"admission", "reusable_producers"}
+    }
 
-    assert all(set(workflow) == allowed for workflow in payload["workflow_registry"].values())
+    assert all(
+        set(payload["workflow_registry"][reference]) == identity
+        for reference in separately_owned
+    )
+    assert all(
+        set(payload["workflow_registry"][reference]) >= identity | {"expected_jobs"}
+        for reference in privileged
+    )
 
 
 @pytest.mark.parametrize(

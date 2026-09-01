@@ -120,25 +120,26 @@ def _validate_enriched_job_authority(
     if not enriched:
         return
     admission_roles = registry[str(roles["admission"])].get("job_roles")
-    if not isinstance(admission_roles, dict):
-        raise CIAuthorityContractError(
-            "enriched authority requires explicit admission source-job roles"
-        )
-    if list(admission_roles.values()).count("admission") != 1:
-        raise CIAuthorityContractError(
-            "authority admission requires exactly one source admission job"
-        )
-    source_producers = {
-        str(job_id)
-        for job_id, role in admission_roles.items()
-        if role == "producer"
-    }
-    if source_producers != {
-        str(value["producer_id"]) for value in payload["producers"]
-    }:
-        raise CIAuthorityContractError(
-            "authority admission source producer jobs must match producer IDs"
-        )
+    if admission_roles is not None:
+        if not isinstance(admission_roles, dict):
+            raise CIAuthorityContractError(
+                "authority admission source-job roles must be a mapping"
+            )
+        if list(admission_roles.values()).count("admission") != 1:
+            raise CIAuthorityContractError(
+                "authority admission requires exactly one source admission job"
+            )
+        source_producers = {
+            str(job_id)
+            for job_id, role in admission_roles.items()
+            if role == "producer"
+        }
+        if source_producers != {
+            str(value["producer_id"]) for value in payload["producers"]
+        }:
+            raise CIAuthorityContractError(
+                "authority admission source producer jobs must match producer IDs"
+            )
     separately_owned = {
         str(roles["admission"]),
         *(str(value) for value in roles["reusable_producers"]),

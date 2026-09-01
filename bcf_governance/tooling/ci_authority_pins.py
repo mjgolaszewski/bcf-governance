@@ -161,8 +161,17 @@ def _compile_inventories(
     payload: dict[str, Any], committed_workflows: dict[str, bytes]
 ) -> None:
     registry = payload["workflow_registry"]
+    authority_roles = payload.get("roles")
+    privileged_references = {
+        str(reference)
+        for role, reference in (
+            authority_roles.items() if isinstance(authority_roles, dict) else ()
+        )
+        if role not in {"admission", "reusable_producers"}
+        and isinstance(reference, str)
+    }
     for reference, entry in registry.items():
-        if "expected_jobs" not in entry:
+        if reference not in privileged_references and "expected_jobs" not in entry:
             continue
         roles = entry.get("job_roles")
         if roles is not None and not isinstance(roles, dict):

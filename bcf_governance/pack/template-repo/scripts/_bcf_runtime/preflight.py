@@ -137,8 +137,72 @@ def _dependency_name(value: object) -> str:
     return match.group(1)
 
 
-def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, str]:
-    """Verify the selected interpreter before evidence or test collection."""
+def _interpreter_identity(python: Path) -> dict[str, str]:
+    """Prove the selected executable and any lexical virtual environment agree."""
+
+    probe = (
+        "import json,platform,sys\n"
+        "print(json.dumps({'executable':sys.executable,'prefix':sys.prefix,"
+        "'base_prefix':sys.base_prefix,'python_version':platform.python_version()},"
+        "sort_keys=True))\n"
+    )
+    try:
+        result = subprocess.run(
+            [str(python), "-I", "-c", probe],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise PreflightError("selected interpreter identity probe failed") from exc
+    if result.returncode:
+        raise PreflightError(
+            "selected interpreter is not runnable: "
+            + (result.stderr.strip().splitlines()[-1] if result.stderr.strip() else "unknown")
+        )
+    try:
+        identity = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise PreflightError("selected interpreter identity probe was invalid") from exc
+    if not isinstance(identity, dict) or not all(
+        isinstance(identity.get(key), str)
+        for key in ("executable", "prefix", "base_prefix", "python_version")
+    ):
+        raise PreflightError("selected interpreter identity is incomplete")
+    lexical = Path(os.path.abspath(python))
+    if Path(identity["executable"]) != lexical:
+        raise PreflightError("selected interpreter changed executable identity")
+    environment_root = lexical.parent.parent
+    venv_config = environment_root / "pyvenv.cfg"
+    claims_venv = ".venv" in lexical.parts or os.environ.get("VIRTUAL_ENV") is not None
+    if claims_venv and not venv_config.is_file():
+        raise PreflightError("selected virtual environment has no pyvenv.cfg")
+    if venv_config.is_file():
+        config: dict[str, str] = {}
+        for line in venv_config.read_text(encoding="utf-8").splitlines():
+            key, separator, value = line.partition("=")
+            if separator:
+                config[key.strip().lower()] = value.strip()
+        if Path(identity["prefix"]) != environment_root:
+            raise PreflightError("selected virtual environment prefix is inconsistent")
+        if identity["base_prefix"] == identity["prefix"]:
+            raise PreflightError("selected virtual environment is not isolated from base Python")
+        if config.get("include-system-site-packages", "false").lower() != "false":
+            raise PreflightError("selected virtual environment exposes system site packages")
+        declared = os.environ.get("VIRTUAL_ENV")
+        if declared and Path(os.path.abspath(declared)) != environment_root:
+            raise PreflightError("VIRTUAL_ENV does not identify the selected interpreter")
+        identity["environment_kind"] = "virtualenv"
+        identity["environment_root"] = str(environment_root)
+    else:
+        identity["environment_kind"] = "standalone"
+        identity["environment_root"] = identity["prefix"]
+    return {str(key): str(value) for key, value in sorted(identity.items())}
+
+
+def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, Any]:
+    """Verify selected environment identity and versions before evidence."""
 
     registry_path = repo_root / "governance/gate-contracts.yml"
     if not registry_path.is_file():
@@ -159,7 +223,7 @@ def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, str]:
     declared = metadata.get("dependencies")
     if not isinstance(declared, list):
         raise PreflightError("project dependency inventory is missing")
-    required = {_dependency_name(value) for value in declared}
+    requirements = [str(value) for value in declared]
     optional = metadata.get("optional-dependencies", {})
     groups = contract.get("optional_dependency_groups")
     if not isinstance(optional, dict) or not isinstance(groups, list):
@@ -168,7 +232,7 @@ def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, str]:
         values = optional.get(group)
         if not isinstance(group, str) or not isinstance(values, list):
             raise PreflightError("interpreter optional dependency group is missing")
-        required.update(_dependency_name(value) for value in values)
+        requirements.extend(str(value) for value in values)
     gates = registry.get("gates")
     additions = contract.get("gate_requirements")
     if not isinstance(gates, dict) or not isinstance(additions, dict):
@@ -178,16 +242,36 @@ def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, str]:
     for values in additions.values():
         if not isinstance(values, list):
             raise PreflightError("interpreter gate requirements must be lists")
-        required.update(_dependency_name(value) for value in values)
+        requirements.extend(str(value) for value in values)
+    required = {_dependency_name(value) for value in requirements}
+    if len(required) != len(requirements):
+        raise PreflightError("interpreter dependency declarations must have unique names")
+    requires_python = metadata.get("requires-python")
+    if not isinstance(requires_python, str) or not requires_python:
+        raise PreflightError("project requires-python contract is missing")
+    identity = _interpreter_identity(python)
     probe = (
-        "import importlib.metadata as m,json,sys\n"
-        "names=json.loads(sys.argv[1])\n"
-        "versions={name:m.version(name) for name in names}\n"
+        "import importlib.metadata as m,json,platform,sys\n"
+        "from packaging.requirements import Requirement\n"
+        "from packaging.specifiers import SpecifierSet\n"
+        "requirements=json.loads(sys.argv[1])\n"
+        "versions={}\n"
+        "for raw in requirements:\n"
+        " req=Requirement(raw)\n"
+        " if req.marker is not None and not req.marker.evaluate(): continue\n"
+        " installed=m.version(req.name)\n"
+        " if req.specifier and not req.specifier.contains(installed,prereleases=True):\n"
+        "  raise SystemExit(f'{req.name} {installed} violates {req.specifier}')\n"
+        " versions[req.name]=installed\n"
+        "python_spec=SpecifierSet(sys.argv[2])\n"
+        "python_version=platform.python_version()\n"
+        "if not python_spec.contains(python_version,prereleases=True):\n"
+        " raise SystemExit(f'Python {python_version} violates {python_spec}')\n"
         "print(json.dumps(versions,sort_keys=True))\n"
     )
     try:
         result = subprocess.run(
-            [str(python), "-I", "-c", probe, json.dumps(sorted(required))],
+            [str(python), "-I", "-c", probe, json.dumps(sorted(requirements)), requires_python],
             capture_output=True,
             text=True,
             timeout=30,
@@ -198,7 +282,7 @@ def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, str]:
     if result.returncode:
         diagnostic = result.stderr.strip().splitlines()[-1] if result.stderr.strip() else "unknown"
         raise PreflightError(
-            "selected interpreter is missing a required distribution: " + diagnostic
+            "selected interpreter dependency contract failed: " + diagnostic
         )
     try:
         versions = json.loads(result.stdout)
@@ -206,7 +290,10 @@ def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, str]:
         raise PreflightError("selected interpreter dependency probe was invalid") from exc
     if not isinstance(versions, dict) or set(versions) != required:
         raise PreflightError("selected interpreter dependency inventory is incomplete")
-    return {str(key): str(value) for key, value in sorted(versions.items())}
+    return {
+        "identity": identity,
+        "versions": {str(key): str(value) for key, value in sorted(versions.items())},
+    }
 
 
 def _vendored_source_locks(repo_root: Path) -> int:

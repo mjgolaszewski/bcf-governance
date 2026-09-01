@@ -84,6 +84,13 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   runs compiled from authenticated provider state.
 - Made canonical local-PR validation enable the same changelog contract as remote pull
   requests, using the fetched exact base SHA before any evidence can be allocated.
+- Made authority-v1.1 pinning derive every privileged workflow's exact matrix-expanded
+  job inventory from committed workflow bytes. The compatibility bridge can now be
+  retired without restoring hand-maintained display names or job lists.
+- Made cheap preflight validate the selected executable, virtual-environment prefix and
+  isolation, Python constraint, and every declared dependency version. BCF's generated
+  governance requirements now install its governed pytest 9.0.3 instead of a conflicting
+  pre-9 range, so environment drift fails before evidence or mutant execution.
 
 ### Changed
 
