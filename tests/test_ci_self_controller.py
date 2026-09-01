@@ -195,37 +195,47 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
             "BCF_BOOTSTRAP_WHEEL_SHA256": "e" * 64,
         }
     )
-    with pytest.raises(GitHubControllerError, match="rotation is already pending"):
-        controller.project_self_controller_pin(tmp_path, pin=pin, apply=True)
-
     current = dict(policy["runner_security"]["trusted_controller_artifact"])
+    started = controller.project_self_controller_pin(tmp_path, pin=pin, apply=True)
+    assert started.status == "changed"
+    pending_topology = yaml.safe_load(
+        (tmp_path / controller.TOPOLOGY_PATH).read_text(encoding="utf-8")
+    )
+    assert pending_topology["controller_commit"] == current[
+        "BCF_BOOTSTRAP_COMMIT_SHA"
+    ]
+    second_target = dict(pin)
+    second_target["BCF_BOOTSTRAP_ARTIFACT_ID"] = "401"
+    with pytest.raises(GitHubControllerError, match="rotation is already pending"):
+        controller.project_self_controller_pin(
+            tmp_path, pin=second_target, apply=True
+        )
+
     proof = dict(policy["runner_security"]["trusted_controller_installation"])
-    proof["installed_commit_sha"] = str(current["BCF_BOOTSTRAP_COMMIT_SHA"])
+    proof["installed_commit_sha"] = COMMIT
     changed = controller.project_self_controller_pin(
-        tmp_path, pin=current, confirmation=proof, apply=True
+        tmp_path, pin=pin, confirmation=proof, apply=True
     )
 
     assert changed.status == "changed"
     projected = yaml.safe_load(
         (tmp_path / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
     )["runner_security"]["trusted_controller_artifact"]
-    assert {key: str(value) for key, value in projected.items()} == current
+    assert {key: str(value) for key, value in projected.items()} == pin
     bootstrap = yaml.safe_load(
         (tmp_path / controller.BOOTSTRAP_WORKFLOW).read_text(encoding="utf-8")
     )
-    assert bootstrap["env"]["BCF_INSTALLED_CONTROLLER_COMMIT_SHA"] == current[
-        "BCF_BOOTSTRAP_COMMIT_SHA"
-    ]
+    assert bootstrap["env"]["BCF_INSTALLED_CONTROLLER_COMMIT_SHA"] == COMMIT
     probe = yaml.safe_load(
         (tmp_path / controller.PROBE_WORKFLOW).read_text(encoding="utf-8")
     )
-    assert {key: str(value) for key, value in probe["env"].items()} == current
+    assert {key: str(value) for key, value in probe["env"].items()} == pin
     topology = yaml.safe_load(
         (tmp_path / controller.TOPOLOGY_PATH).read_text(encoding="utf-8")
     )
-    assert topology["controller_commit"] == current["BCF_BOOTSTRAP_COMMIT_SHA"]
+    assert topology["controller_commit"] == COMMIT
     assert controller.project_self_controller_pin(
-        tmp_path, pin=current, apply=False
+        tmp_path, pin=pin, apply=False
     ).status == "clean"
 
 
