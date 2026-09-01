@@ -25,6 +25,18 @@ jobs:
       - name: Validate selected interpreter and governance before mutants
         run: python scripts/preflight_governance.py --repo-root . --mode release --python "$(command -v python)" --format text
       - name: Run high-value validator mutants
-        run: python .github/scripts/run_validator_mutants.py --profile high-value
+        run: >-
+          python .github/scripts/run_validator_mutants.py --profile high-value
+          --output .artifacts/scheduled-mutants/high-value.json
       - name: Run high-value governance semantic mutants
-        run: python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+        run: >-
+          python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+          --output .artifacts/scheduled-mutants/semantic-high-value.json
+      - name: Retain exact nightly mutant results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: bcf-scheduled-mutants-nightly-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .artifacts/scheduled-mutants
+          if-no-files-found: error
+          retention-days: 90

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -385,6 +387,27 @@ def _run_tests(mutant: Mutant, mutated_path: Path) -> subprocess.CompletedProces
     )
 
 
+def _git(*arguments: str) -> str:
+    return subprocess.run(
+        ["git", *arguments],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+
+def _write_report(path: Path | None, report: dict[str, object]) -> None:
+    if path is None:
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    temporary.write_text(
+        json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    os.replace(temporary, path)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run deterministic validator mutation checks.")
     parser.add_argument(
@@ -397,6 +420,11 @@ def main() -> None:
         "--mutant",
         choices=tuple(mutant.mutant_id for mutant in (*MUTANTS, *TRUTH_MUTANTS)),
         help="Run one mutant from the selected profile (useful for deterministic sharding).",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        help="Write the exact-subject mutation result as JSON.",
     )
     args = parser.parse_args()
 
@@ -414,13 +442,36 @@ def main() -> None:
         capture_output=True,
         text=True,
     )
+    report: dict[str, object] = {
+        "schema_version": "1.0",
+        "kind": "scheduled_mutant_result",
+        "subject": {
+            "commit_sha": _git("rev-parse", "HEAD"),
+            "tree_sha": _git("rev-parse", "HEAD^{tree}"),
+            "status_porcelain": _git("status", "--porcelain=v1", "--untracked-files=all"),
+        },
+        "environment": {
+            "python_version": platform.python_version(),
+            "python_executable": str(Path(sys.executable).resolve()),
+        },
+        "profile": args.profile,
+        "baseline": {
+            "node_ids": baseline_nodes,
+            "exit_code": baseline.returncode,
+            "status": "passed" if baseline.returncode == 0 else "infrastructure_failure",
+        },
+        "mutants": [],
+    }
     if baseline.returncode != 0:
+        report["result"] = "infrastructure_failure"
+        _write_report(args.output, report)
         print("mutation baseline failed; no mutant results are valid", file=sys.stderr)
         print(baseline.stdout, file=sys.stderr)
         print(baseline.stderr, file=sys.stderr)
         raise SystemExit(2)
 
     infrastructure_failures: list[str] = []
+    observations: list[dict[str, object]] = []
     for mutant in selected:
         with tempfile.TemporaryDirectory() as temp_dir_name:
             mutated_path = _mutate_source(mutant, Path(temp_dir_name))
@@ -428,13 +479,38 @@ def main() -> None:
         print(f"[{mutant.mutant_id}] {mutant.description}")
         if result.returncode == 0:
             survivors.append(mutant.mutant_id)
+            status = "survived"
             print("  survived")
-            continue
-        if result.returncode != 1:
+        elif result.returncode != 1:
             infrastructure_failures.append(mutant.mutant_id)
+            status = "infrastructure_failure"
             print(f"  invalid result (pytest exit {result.returncode})")
-            continue
-        print("  killed by declared test node")
+        else:
+            status = "killed"
+            print("  killed by declared test node")
+        observations.append(
+            {
+                "mutant_id": mutant.mutant_id,
+                "target_path": mutant.target_path,
+                "killer_node_ids": list(KILLER_NODES[mutant.mutant_id]),
+                "exit_code": result.returncode,
+                "status": status,
+            }
+        )
+
+    report["mutants"] = observations
+    report["summary"] = {
+        "expected": len(selected),
+        "killed": sum(value["status"] == "killed" for value in observations),
+        "survived": len(survivors),
+        "infrastructure_failures": len(infrastructure_failures),
+    }
+    report["result"] = (
+        "failed" if survivors else
+        "infrastructure_failure" if infrastructure_failures else
+        "passed"
+    )
+    _write_report(args.output, report)
 
     if survivors:
         print("surviving mutants:", ", ".join(sorted(survivors)), file=sys.stderr)

@@ -81,6 +81,8 @@ summary:
     their workflow blob, digest, job inventory, and source roles are compiled in the next commit
   - scheduled mutant preflight receives complete Git history so retention-backed phase
     custody is verified before any mutation process starts
+  - scheduled profiles emit and always retain exact-subject mutant result artifacts
+    without repeating their mutation work
   - release authorization input custody is resolved from current authenticated provider
     state and immutable resolver output rather than operator-supplied identity fields
 workitems:

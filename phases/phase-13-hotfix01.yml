@@ -248,6 +248,7 @@ execution_evidence:
   - nightly run 33469562066 skipped every mutant when canonical preflight rejected a shallow checkout that could not verify compacted phase custody; both scheduled workflows now fetch complete history, and a causal control rejects regression before mutation execution
   - the release controller now resolves current main, highest admission, newest finalizer, controller, and certification artifacts as one provider-authenticated input document; the self workflow will consume that document and cannot promote caller-copied IDs or digests into release authority
   - canonical preflight rejected the superseded caller-digest control immediately after the resolver refactor; authorization now validates the downloaded controller checksum inventory and exact control metadata, and the retargeted mutant proves corrupted wheel bytes cannot acquire authority
+  - successful nightly run 33470712095 and weekly run 33470878520 proved full-history preflight and both profile pairs, but exposed that scheduled runs retained no artifact; the harness now emits exact-subject results and always-run uploads preserve failure evidence without duplicate execution
 closeout_requirements:
   claims:
     required_suites_green:

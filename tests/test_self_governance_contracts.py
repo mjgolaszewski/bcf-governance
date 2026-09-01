@@ -516,6 +516,25 @@ def test_scheduled_mutants_preflight_selected_interpreter_before_execution(
     assert mutant_indexes
     assert all(preflight_index < index for index in mutant_indexes)
     assert "--artifact-root" not in commands[preflight_index]
+    assert all("--output .artifacts/scheduled-mutants/" in commands[index] for index in mutant_indexes)
+    upload_index, upload = next(
+        (index, step)
+        for index, step in enumerate(steps)
+        if step.get("name", "").startswith("Retain exact ")
+    )
+    schedule = "nightly" if "nightly" in relative_path else "weekly"
+    assert upload_index > max(mutant_indexes)
+    assert upload["if"] == "${{ always() }}"
+    assert upload["uses"].startswith("actions/upload-artifact@")
+    assert upload["with"] == {
+        "name": (
+            f"bcf-scheduled-mutants-{schedule}-"
+            "${{ github.run_id }}-${{ github.run_attempt }}"
+        ),
+        "path": ".artifacts/scheduled-mutants",
+        "if-no-files-found": "error",
+        "retention-days": 90,
+    }
 
 
 def test_workflows_have_no_runner_occupying_coordination() -> None:
