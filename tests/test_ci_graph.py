@@ -444,6 +444,60 @@ def test_job_condition_cannot_reference_an_unavailable_dependency(tmp_path: Path
         validate_ci_graph(tmp_path)
 
 
+def test_selected_python_must_be_provisioned_before_governed_command(
+    tmp_path: Path,
+) -> None:
+    graph = _graph()
+    graph["step_components"].update(
+        {
+            "invoke-preflight": {
+                "kind": "command",
+                "name": "Invoke preflight",
+                "command": "preflight",
+                "environment": {},
+                "produces": ["session"],
+                "consumes": [],
+            },
+            "setup-selected-python": {
+                "kind": "action",
+                "name": "Set up Python",
+                "action": "setup-python",
+                "with": {"python-version": "3.12"},
+                "environment": {},
+                "produces": [],
+                "consumes": [],
+            },
+        }
+    )
+    job = graph["workflows"][0]["jobs"][0]
+    job["components"] = []
+    job["executor"] = {
+        "kind": "component_sequence",
+        "components": ["invoke-preflight", "setup-selected-python"],
+    }
+    _write_graph(tmp_path, graph)
+
+    with pytest.raises(CIGraphError, match="provision selected Python before"):
+        validate_ci_graph(tmp_path)
+
+
+def test_renderer_binds_selected_python_to_setup_action_output() -> None:
+    rendered = render_ci_graph(REPO_ROOT)
+    seen = 0
+    for content in rendered.values():
+        workflow = yaml.safe_load(content)
+        for job in workflow["jobs"].values():
+            for step in job.get("steps", []):
+                environment = step.get("env", {})
+                if "BCF_PYTHON" not in environment:
+                    continue
+                seen += 1
+                assert environment["BCF_PYTHON"] == (
+                    "${{ env.pythonLocation }}/bin/python"
+                )
+    assert seen > 0
+
+
 def test_graph_rejects_unregistered_or_changed_extension(tmp_path: Path) -> None:
     _write_graph(tmp_path)
     extension_path = tmp_path / "governance/ci-extensions/security.yml"

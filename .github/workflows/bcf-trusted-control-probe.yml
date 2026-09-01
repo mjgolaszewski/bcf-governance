@@ -25,7 +25,7 @@ jobs:
     - name: Verify the mechanically pinned trusted BCF control
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" .github/scripts/probe_trusted_controller.py --policy governance/self-governance-policy.yml --tool-cache "${{ runner.tool_cache }}"

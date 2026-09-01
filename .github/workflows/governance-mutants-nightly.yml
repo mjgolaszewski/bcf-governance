@@ -24,28 +24,28 @@ jobs:
     - name: Install the declared governance environment
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" -m pip install -r requirements-governance.txt
     - name: Validate selected interpreter and governance before mutants
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" scripts/preflight_governance.py --repo-root . --mode release --python "$BCF_PYTHON" --format text
     - name: Run high-value validator mutants
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" .github/scripts/run_validator_mutants.py --profile high-value --output .artifacts/scheduled-mutants/nightly-validator.json
     - name: Run high-value governance semantic mutants
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" .github/scripts/run_validator_mutants.py --profile semantic-high-value --output .artifacts/scheduled-mutants/nightly-semantic.json

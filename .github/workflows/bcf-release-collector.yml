@@ -25,7 +25,7 @@ jobs:
     - name: Recompute provider, Git, dependency, runtime, and asset custody
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python, GITHUB_TOKEN: '${{ github.token }}'}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python', GITHUB_TOKEN: '${{ github.token }}'}
       run: |-
         set -euo pipefail
         "$RUNNER_TOOL_CACHE"/bcf-governance/49272182790342a52ef7ddbcfd6a540ca7df6baf/bin/bcf ci-github release collect --repository "${{ github.repository }}" --bundle "${{ runner.temp }}/bcf-release-collection/build/release-input/certification" --authorization "${{ runner.temp }}/bcf-release-collection/build/release-input/release-authorization.json" --build-manifest "${{ runner.temp }}/bcf-release-collection/build/release-build-manifest.json" --verification "${{ runner.temp }}/bcf-release-collection/verification/release-verification.json" --runtime-report "${{ runner.temp }}/bcf-release-collection/runtime/runtime-verification.json" --runtime-evidence-dir "${{ runner.temp }}/bcf-release-collection/runtime" --release-artifact-dir "${{ runner.temp }}/bcf-release-collection/build/assets" --verification-artifact-name "bcf-release-verification-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}" --output "${{ runner.temp }}/bcf-release-collection/release-receipt.json" --bundle-output "${{ runner.temp }}/bcf-certified-release"

@@ -25,7 +25,7 @@ jobs:
     - name: Resolve the newest exact-main release receipt mechanically
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python, GITHUB_TOKEN: '${{ github.token }}'}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python', GITHUB_TOKEN: '${{ github.token }}'}
       run: |-
         set -euo pipefail
         "$RUNNER_TOOL_CACHE"/bcf-governance/49272182790342a52ef7ddbcfd6a540ca7df6baf/bin/bcf ci-github release resolve-publication --repository "${{ github.repository }}" --output "${{ runner.temp }}/bcf-publication/publication-inputs.json"
@@ -39,7 +39,7 @@ jobs:
     - name: Publish only the authenticated pre-certified bytes
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python, BCF_RELEASE_ADMIN_TOKEN: '${{ secrets.BCF_RELEASE_ADMIN_TOKEN }}', GITHUB_TOKEN: '${{ secrets.BCF_RELEASE_ADMIN_TOKEN }}'}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python', BCF_RELEASE_ADMIN_TOKEN: '${{ secrets.BCF_RELEASE_ADMIN_TOKEN }}', GITHUB_TOKEN: '${{ secrets.BCF_RELEASE_ADMIN_TOKEN }}'}
       run: |-
         set -euo pipefail
         test -n "$BCF_RELEASE_ADMIN_TOKEN"

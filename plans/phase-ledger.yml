@@ -28,8 +28,8 @@ hotfix_lane:
     mode: full
     status: active
     triggered_by_commits: [9261bbb6428f85b884ad03d6d6ba10131f7e92ef]
-    failing_workflows: [bcf/release-authority-cutover run 33568922815]
-    root_cause: generated release roles required controller CLI capabilities newer than the mechanically retained trusted controller
+    failing_workflows: [bcf/release-authority-cutover run 33568922815, bcf/trusted-control-bootstrap run 33571626297]
+    root_cause: generated trusted jobs crossed controller generations and represented the selected Python as a relative PATH token instead of mechanically binding setup-python's absolute executable
     remediated_in_phase: P14
     hotfix_log: phases/phase-14-hotfix01.yml
     canonical_artifacts: [governance/self-governance-policy.yml, governance/ci-extensions/bcf-release.yml, bcf_governance/tooling/ci_graph_contracts.py, bcf_governance/tooling/ci_graph_render.py]

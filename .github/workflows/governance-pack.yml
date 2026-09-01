@@ -27,21 +27,21 @@ jobs:
     - name: Install the declared governance environment
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" -m pip install -r requirements-governance.txt
     - name: Verify canonical and packaged template bytes
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" .github/scripts/build_pack_manifest.py --check
     - name: Build the exact-main trusted controller bundle
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" .github/scripts/build_trusted_controller.py --output .artifacts/trusted-control --run-id "${{ github.run_id }}" --run-attempt "${{ github.run_attempt }}"
@@ -65,7 +65,7 @@ jobs:
     - name: Verify governed Python syntax
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" -m compileall -q bcf_governance scripts template-repo/scripts tests .github/scripts

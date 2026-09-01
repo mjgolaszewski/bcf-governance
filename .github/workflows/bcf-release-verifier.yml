@@ -52,7 +52,7 @@ jobs:
     - name: Execute package verification without provider credentials
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python, GITHUB_TOKEN: '', ACTIONS_ID_TOKEN_REQUEST_TOKEN: '', ACTIONS_RUNTIME_TOKEN: ''}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python', GITHUB_TOKEN: '', ACTIONS_ID_TOKEN_REQUEST_TOKEN: '', ACTIONS_RUNTIME_TOKEN: ''}
       run: |-
         set -euo pipefail
         "$RUNNER_TEMP"/bcf-controller/bin/bcf ci-github release runtime --wheelhouse-manifest "${{ runner.temp }}/bcf-release-build/release/wheelhouse-manifest.yml" --lock "${{ runner.temp }}/bcf-release-build/release/requirements-cp312-linux-x86_64.lock" --wheelhouse "${{ runner.temp }}/bcf-release-build/wheelhouse" --release-artifact-dir "${{ runner.temp }}/bcf-release-build/assets" --python "$BCF_PYTHON" --output "${{ runner.temp }}/bcf-release-runtime"
@@ -112,7 +112,7 @@ jobs:
     - name: Authenticate provider state and recompute evidence hashes only
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python, GITHUB_TOKEN: '${{ github.token }}'}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python', GITHUB_TOKEN: '${{ github.token }}'}
       run: |-
         set -euo pipefail
         "$RUNNER_TEMP"/bcf-controller/bin/bcf ci-github release verify-evidence --repository "${{ github.repository }}" --authorization "${{ runner.temp }}/bcf-release-build/release-input/release-authorization.json" --build-manifest "${{ runner.temp }}/bcf-release-build/release-build-manifest.json" --wheelhouse-manifest "${{ runner.temp }}/bcf-release-build/release/wheelhouse-manifest.yml" --lock "${{ runner.temp }}/bcf-release-build/release/requirements-cp312-linux-x86_64.lock" --wheelhouse "${{ runner.temp }}/bcf-release-build/wheelhouse" --release-artifact-dir "${{ runner.temp }}/bcf-release-build/assets" --runtime-report "${{ runner.temp }}/bcf-release-runtime/runtime-verification.json" --runtime-evidence-dir "${{ runner.temp }}/bcf-release-runtime" --output "${{ runner.temp }}/bcf-release-verification/release-verification.json" --bundle-output "${{ runner.temp }}/bcf-release-verifier-bundle"

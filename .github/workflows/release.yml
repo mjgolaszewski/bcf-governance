@@ -26,7 +26,7 @@ jobs:
     - name: Resolve provider-authenticated release inputs
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python, GITHUB_TOKEN: '${{ github.token }}'}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python', GITHUB_TOKEN: '${{ github.token }}'}
       run: |-
         set -euo pipefail
         "$RUNNER_TOOL_CACHE"/bcf-governance/49272182790342a52ef7ddbcfd6a540ca7df6baf/bin/bcf ci-github release resolve --repository "${{ github.repository }}" --output "${{ runner.temp }}/bcf-release/release-inputs.json"
@@ -40,7 +40,7 @@ jobs:
     - name: Authorize exact provider and Git custody
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python, GITHUB_TOKEN: '${{ github.token }}'}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python', GITHUB_TOKEN: '${{ github.token }}'}
       run: |-
         set -euo pipefail
         "$RUNNER_TOOL_CACHE"/bcf-governance/49272182790342a52ef7ddbcfd6a540ca7df6baf/bin/bcf ci-github release authorize --repository "${{ github.repository }}" --bundle "${{ runner.temp }}/bcf-release/certification" --inputs "${{ runner.temp }}/bcf-release/release-inputs.json" --controller-wheel-dir "${{ runner.temp }}/bcf-release/controller" --output "${{ runner.temp }}/bcf-release/release-authorization.json"
@@ -67,7 +67,7 @@ jobs:
     - name: Test and build the exact authorized release bundle
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" .github/scripts/build_release_bundle.py --output .artifacts/release-build --authorization .artifacts/release-build/release-input/release-authorization.json --artifact-name "bcf-release-build-${{ needs.authorize.outputs.subject_commit }}-${{ github.run_attempt }}"

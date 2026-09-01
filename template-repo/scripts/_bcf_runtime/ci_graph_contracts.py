@@ -384,6 +384,35 @@ def _validate_condition_scope(
         )
 
 
+def _validate_selected_python(
+    graph: dict[str, Any], job: dict[str, Any], executor: dict[str, Any]
+) -> None:
+    """Require setup-python to mechanically own every selected-Python binding."""
+
+    if executor["kind"] in {"component_sequence", "gate_shard", "terminal_truth"}:
+        python_ready = False
+        for component_id in executor["components"]:
+            component = graph["step_components"][component_id]
+            if component["kind"] == "action" and component["action"] == "setup-python":
+                python_ready = True
+                continue
+            if (
+                component["kind"] == "command"
+                and "{python}" in graph["commands"][component["command"]]["argv"]
+                and not python_ready
+            ):
+                raise CIGraphError(
+                    f"CI graph job {job['id']} must provision selected Python before governed commands"
+                )
+        return
+    if executor["kind"] in {"command", "truth"}:
+        command = graph["commands"][executor["command"]]
+        if "{python}" in command["argv"] and "python" not in job["components"]:
+            raise CIGraphError(
+                f"CI graph job {job['id']} must provision selected Python before governed commands"
+            )
+
+
 def _job_graph(workflow: dict[str, Any]) -> tuple[dict[str, dict[str, Any]], dict[str, set[str]]]:
     jobs = workflow["jobs"]
     by_id: dict[str, dict[str, Any]] = {}
@@ -497,6 +526,7 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                     )
                 _validate_condition_scope(graph, job, executor["components"])
                 _validate_private_transport(graph, job, executor)
+                _validate_selected_python(graph, job, executor)
                 component_produces = {
                     artifact
                     for component_id in executor["components"]
@@ -585,6 +615,7 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
             else:
                 _validate_condition_scope(graph, job, [])
                 _validate_private_transport(graph, job, executor)
+                _validate_selected_python(graph, job, executor)
         for job in workflow["jobs"]:
             for artifact in job["consumes"]:
                 if artifact not in graph["artifacts"]:
