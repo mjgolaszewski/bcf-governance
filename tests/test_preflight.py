@@ -202,7 +202,9 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     assert report["self_controller"] == 6
 
 
-def test_stale_pack_manifest_fails_before_evidence(tmp_path: Path) -> None:
+def test_stale_pack_manifest_fails_before_evidence(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     template = tmp_path / "bcf_governance/pack/template-repo"
     template.mkdir(parents=True)
     (template / "owned.txt").write_text("current\n", encoding="utf-8")
@@ -212,9 +214,31 @@ def test_stale_pack_manifest_fails_before_evidence(tmp_path: Path) -> None:
         + '"}}}\n',
         encoding="utf-8",
     )
+    monkeypatch.setattr(preflight, "_git_state", lambda _: {})
+    monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
+    monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {})
+    monkeypatch.setattr(preflight, "validate_repo_root", lambda _: None)
+    monkeypatch.setattr(preflight, "_workflow_authority", lambda _: 0)
+    monkeypatch.setattr(preflight, "_self_controller", lambda _: 0)
+    monkeypatch.setattr(preflight, "_negative_control_targets", lambda _: 0)
+    monkeypatch.setattr(preflight, "_semantic_ownership", lambda _: {})
+    monkeypatch.setattr(preflight, "_vendored_source_locks", lambda _: 0)
+    monkeypatch.setattr(preflight, "check_all", lambda *_, **__: {})
+    monkeypatch.setattr(preflight, "_pr_context", lambda *_: {})
+    monkeypatch.setattr(preflight, "_required_gates", lambda _: ["test"])
+    monkeypatch.setattr(
+        preflight,
+        "allocate_session",
+        lambda *_, **__: pytest.fail("session allocated after stale pack manifest"),
+    )
 
     with pytest.raises(preflight.PreflightError, match="pack manifest mismatch"):
-        preflight._pack_manifest(tmp_path)
+        preflight.run_preflight(
+            tmp_path,
+            mode="release",
+            python_executable=sys.executable,
+            artifact_root=tmp_path / ".artifacts",
+        )
 
 
 def test_workflow_authority_failure_prevents_session_allocation(
