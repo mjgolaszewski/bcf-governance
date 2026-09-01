@@ -92,6 +92,9 @@ summary:
   - the controller resolver and inventory compiler selected the exact-main controller
     artifact and projected the pending bootstrap/probe target without any authored run,
     artifact, commit, tree, provider-digest, or wheel-digest value
+  - bootstrap 33472622431 installed the target independently on both trusted runners;
+    probe 33472657328 verified both installations, and the provider compiler emitted
+    the sole confirmation accepted by the promotion transaction
 workitems:
 - id: P13-P0-01
   status: IN_PROGRESS
