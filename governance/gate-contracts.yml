@@ -220,6 +220,7 @@ gates:
     negative_controls:
     - {id: contract-test-behavior-must-fail, mutation: {path: template-repo/governance/artifact-manifest.yml, search: 'pull_request_policy: required_update', replace: 'pull_request_policy: optional'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']}}
     - {id: package-runtime-asset-selection-must-fail, mutation: {path: pyproject.toml, search: ', "tooling/*.mjs"', replace: ''}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_artifacts::test_pyproject_packages_every_discovered_runtime_asset']}}
+    - {id: package-preflight-pr-context-must-fail, mutation: {path: .github/workflows/governance-pack.yml, search: 'BCF_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}', replace: 'BCF_PR_BASE_SHA: absent'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_exact_main_controller_wheel_is_built_once_after_pack_checks']}}
     - id: trusted-bootstrap-artifact-identity-must-fail
       mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'if pin["BCF_BOOTSTRAP_ARTIFACT_NAME"] != expected_name:', replace: 'if False:'}
       oracle:

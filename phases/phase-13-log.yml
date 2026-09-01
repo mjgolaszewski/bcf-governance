@@ -120,6 +120,9 @@ summary:
     consumer SOIP scan, then exposed that the installed BCF wheel omitted a runtime
     TypeScript analyzer; source-discovered package selection, package-workflow preflight,
     and exact built-wheel inspection now own the failure before controller publication
+  - PR 71 package preflight rejected missing exact-base context before compilation or
+    tests; that provider-derived input is now explicit and mutation-tested, and the
+    already-obsolete evidence workflow was cancelled instead of consuming its full fanout
 workitems:
 - id: P13-P0-01
   status: IN_PROGRESS

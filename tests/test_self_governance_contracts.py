@@ -202,6 +202,10 @@ def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
     assert preflight_index < pack_index < build_index
     assert "scripts/preflight_governance.py" in steps[preflight_index]["run"]
     assert "--python \"$(command -v python)\"" in steps[preflight_index]["run"]
+    assert steps[preflight_index]["env"] == {
+        "BCF_ENFORCE_PR_CHANGELOG": "${{ github.event_name == 'pull_request' }}",
+        "BCF_PR_BASE_SHA": "${{ github.event.pull_request.base.sha }}",
+    }
     assert workflow[True]["workflow_call"]["inputs"]["build_controller"] == {
         "description": "Build the trusted controller artifact for an exact-main admission",
         "required": False,
