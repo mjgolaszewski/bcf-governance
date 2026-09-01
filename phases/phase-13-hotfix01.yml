@@ -106,6 +106,18 @@ execution_evidence:
   - command: bcf ci-github controller-pin resolve|compile; bcf ci sync-self-controller --check
     result: pass
     notes: provider APIs selected exact-main run 33456616842 and artifact 9781702346; archive digest, metadata, wheel inventory, commit, tree, run, attempt, and repository identity compiled into one projection with no hand-authored custody values
+  - command: .venv/bin/python .github/scripts/run_self_governance_gate.py test
+    result: pass
+    notes: all 502 mechanically selected source-test nodes passed after controller topology ownership replaced duplicated commit literals
+  - command: .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test
+    result: pass
+    notes: all 236 mechanically selected contract-test nodes passed for the successor-controller pin
+  - command: .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value; .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+    result: pass
+    notes: all 13 validator and 10 evidence/truth mutants were killed by their declared behavior owners
+  - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
+    result: pass
+    notes: non-authoritative local evidence; all 236 positive contract nodes and all 70 isolated contract-gate controls passed with zero infrastructure exits or unexpected worktree changes
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
