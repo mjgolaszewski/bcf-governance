@@ -410,6 +410,26 @@ def test_truth_events_are_scoped_to_the_declared_workflow_roots(tmp_path: Path) 
     assert issues == ["workflow_event_push_missing"]
 
 
+def test_truth_resolves_bcf_gate_shards_from_the_canonical_graph() -> None:
+    profile = yaml.safe_load((REPO_ROOT / "governance-profile.yml").read_text())
+    policy = yaml.safe_load(
+        (REPO_ROOT / "governance/evidence-policy.yml").read_text()
+    )
+    workflow = policy["workflow_contract"]
+    gates = {
+        gate["target"]
+        for gate in profile["release_gate_profile"]["gates"].values()
+        if gate["status"] == "required"
+    }
+
+    assert graph_workflow_gate_issues(
+        REPO_ROOT,
+        paths=workflow["paths"],
+        required_events=workflow["required_events"],
+        gate_ids=gates,
+    ) == []
+
+
 def test_renderer_is_deterministic_and_parity_owned(tmp_path: Path) -> None:
     _write_graph(tmp_path)
     first = render_ci_graph(tmp_path)

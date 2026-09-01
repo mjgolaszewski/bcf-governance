@@ -41,7 +41,7 @@ def graph_workflow_gate_issues(
         discovered_events.update(event["type"] for event in workflow["events"])
         for job in workflow["jobs"]:
             executor = job["executor"]
-            if executor["kind"] == "gate_group":
+            if executor["kind"] in {"gate_group", "gate_shard"}:
                 resolved_gates.update(executor["gates"])
             elif executor["kind"] == "reusable_workflow":
                 queue.append(executor["path"])
