@@ -72,6 +72,10 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 
 ### Fixed
 
+- Made extracted-source workflow custody verify the exact packaged workflow bytes and
+  compiled inventories without claiming unavailable Git history; the normal repository
+  path still requires exact definition-commit ancestry. Failed verifier attempts now
+  retain raw runtime evidence for deterministic diagnosis.
 - Replaced independently maintained resolver and authorizer artifact field sets with one
   projection derived from the `ProviderArtifact` dataclass, and fail closed on any extra,
   missing, or differently shaped download coordinates before release build allocation.

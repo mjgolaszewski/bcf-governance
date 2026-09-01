@@ -13,6 +13,9 @@ from bcf_governance.tooling.ci_authority_pins import (
     pin_workflow_authority,
     verify_workflow_authority,
 )
+from bcf_governance.tooling.release_runtime_verification import (
+    is_release_sdist_test_context,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -145,7 +148,9 @@ def test_workflow_authority_compiles_matrix_names_and_semantic_roles(
 
 def test_self_workflow_authority_is_mechanically_compiled() -> None:
     assert verify_workflow_authority(
-        REPO_ROOT, authority_path=Path("governance/ci-authority.yml")
+        REPO_ROOT,
+        authority_path=Path("governance/ci-authority.yml"),
+        require_history=not is_release_sdist_test_context(REPO_ROOT),
     ) == 12
     payload = yaml.safe_load(
         (REPO_ROOT / "governance/ci-authority.yml").read_text(encoding="utf-8")
@@ -186,6 +191,37 @@ def test_self_workflow_authority_is_mechanically_compiled() -> None:
         "producer-b": "producer",
         "observe": "observer",
     }
+
+
+def test_packaged_workflow_authority_uses_exact_bytes_without_claiming_history(
+    tmp_path: Path,
+) -> None:
+    root, commit, _ = _repository(tmp_path)
+    pin_workflow_authority(
+        root,
+        authority_path=Path("governance/ci-authority.yml"),
+        definition_commit=commit,
+        references=("admission",),
+        apply=True,
+    )
+    authority_path = root / "governance/ci-authority.yml"
+    payload = yaml.safe_load(authority_path.read_text(encoding="utf-8"))
+    payload["workflow_registry"]["admission"][
+        "trusted_workflow_definition_commit"
+    ] = "a" * 40
+    authority_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    assert verify_workflow_authority(
+        root,
+        authority_path=Path("governance/ci-authority.yml"),
+        require_history=False,
+    ) == 1
+    with pytest.raises(CIAuthorityPinError, match="exact Git history"):
+        verify_workflow_authority(
+            root,
+            authority_path=Path("governance/ci-authority.yml"),
+            require_history=True,
+        )
 
 
 def test_admission_roles_are_derived_from_exact_producer_source_keys() -> None:

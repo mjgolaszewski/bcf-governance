@@ -21,6 +21,31 @@ from .release_closure import verify_archive, verify_wheelhouse
 EXPECTED_PYTHON = "3.12.14"
 EXPECTED_PLATFORM = "linux_x86_64"
 _SAFE_HOST_ENVIRONMENT = ("LANG", "LC_ALL", "TMPDIR")
+_PORTABLE_TEST_ENVIRONMENT = "BCF_RELEASE_SDIST_PORTABLE_TEST"
+
+
+def is_release_sdist_test_context(repo_root: Path) -> bool:
+    """Recognize only the synthetic Git custody created for an extracted sdist."""
+
+    marker = os.environ.get(_PORTABLE_TEST_ENVIRONMENT)
+    if marker is None:
+        return False
+    if marker != "1":
+        raise GitHubControllerError("release sdist test-context marker is invalid")
+    root = repo_root.resolve()
+    package_metadata = root / "PKG-INFO"
+    if package_metadata.is_symlink() or not package_metadata.is_file():
+        raise GitHubControllerError("release sdist test context lacks package metadata")
+    checks = (
+        (["git", "rev-list", "--count", "HEAD"], b"1"),
+        (["git", "log", "-1", "--format=%s"], b"exact sdist"),
+        (["git", "show", "HEAD:PKG-INFO"], package_metadata.read_bytes().rstrip(b"\n")),
+    )
+    for argv, expected in checks:
+        result = subprocess.run(argv, cwd=root, capture_output=True, check=False)
+        if result.returncode or result.stdout.rstrip(b"\n") != expected:
+            raise GitHubControllerError("release sdist test context lacks exact custody")
+    return True
 
 
 def runtime_environment(*, home: Path) -> dict[str, str]:

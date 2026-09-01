@@ -47,7 +47,7 @@ environment_facts:
     - observability contracts are scaffolded under contracts/observability/v1/
     - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
     - v0.7.0 is an annotated unsigned tag at 0e965b2197e776ad411b67820dbd5586263abde1; release 379785364 is published with three attested assets but reports immutable false and is not certified under corrected authority v1.1
-    - P13-HF01 is completed in repository state after the resolver/authorizer artifact-shape remediation; its final merged tree still requires fresh exact-main, scheduled-mutant, and publication-disabled release-chain evidence before the separate immutable-release and v0.7.1 publication owner actions are presented
+    - P13-HF01 exact-main and both scheduled mutant profiles passed on 652df02; P13-HF02 is active because publication-disabled verifier 33501188756 exposed two duplicated exact-history assumptions inside the extracted sdist, so one canonical verifier now distinguishes full Git custody from mechanically recognized packaged-byte custody and failed runtime attempts preserve raw evidence
     - the P13 structural cutover retains authority-v1 readers, requires v1.1 for new exact-main and release commands, and keeps release execution unreachable until provider workflow identities are pinned and activated
     - P01 through P12 roadmap detail is owned only by plans/phase-history.yml; active product and build roadmaps contain P13 and mechanically validate their history boundary at P12
     - P13 preserves 21 gates while exact manifests and cause controls ratchet mechanically; workflow identity, admission roles, privileged jobs, controller custody, and release lock/manifest blobs are compiled from Git/provider bytes, verifier success binds controller-owned offline wheel/sdist/Twine execution and raw evidence, profile-v2 evidence semantics have one gate-contract owner, local PR and scheduled mutant entrypoints select canonical preflight, scheduled runs retain exact-subject artifacts, interpreter/venv identity is checked before evidence or mutants, and named mutants run only exact oracle nodes after one full positive baseline
@@ -102,4 +102,4 @@ reusable_commands:
 references:
   governance: [AGENTS.yml, governance-profile.yml, architecture-boundaries.yml, schemas/, contracts/observability/v1/, plans/phase-ledger.yml, plans/phase-history.yml, docs/USAGE.md, docs/MAINTAINING.md, docs/ARCHITECTURE.md, docs/CI_AUTHORITY.md]
   product: [plans/product-spec.yml, plans/build-plan.yml]
-  execution: [plans/phase-13-plan.yml, plans/phase-13-workitems.yml, phases/phase-13-log.yml, phases/phase-13-hotfix01.yml]
+  execution: [plans/phase-13-plan.yml, plans/phase-13-workitems.yml, phases/phase-13-log.yml, phases/phase-13-hotfix01.yml, phases/phase-13-hotfix02.yml]

@@ -135,8 +135,12 @@ and verification install with `--no-index --require-hashes`, and build uses
 install, validation, doctor, evidence, and truth smoke tests. A separate clean
 environment installs the extracted sdist and runs its complete bundled suite.
 The sdist must carry tests, fixtures, templates, schemas, examples, and workflow
-data needed by those tests. `twine check`, checksums, and provenance happen only
-after both artifact tests pass.
+data needed by those tests. Because an archive cannot contain the source repository's
+Git graph, the verifier creates one synthetic custody commit and the canonical workflow
+authority checker verifies current workflow blob, digest, and compiled-inventory pins
+without claiming definition-commit ancestry. Normal source-tree validation still
+requires that ancestry. `twine check`, checksums, and provenance happen only after both
+artifact tests pass.
 
 The trusted authorizer obtains the lock and manifest bytes directly from the exact
 main commit and binds their blob OIDs and SHA-256 values. The hosted verifier's

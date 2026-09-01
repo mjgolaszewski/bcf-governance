@@ -1,0 +1,45 @@
+document:
+  kind: hotfix_execution_log
+  name: P13-HF02 Hotfix Log
+  id: project-phase-13-hotfix02
+  version: 1.0.0
+  generated_at_utc: '2026-09-01T00:00:00Z'
+  status: active
+  path: phases/phase-13-hotfix02.yml
+hotfix:
+  id: P13-HF02
+  mode: full
+  related_phase_id: P13
+  hotfix_number: 2
+  summary: Make source-distribution workflow custody portable and preserve verifier
+    failure evidence
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python scripts/preflight_governance.py --repo-root . --mode release
+    --python .venv/bin/python --format text
+  executed_commands: []
+  notes:
+  - publication-disabled release run 33500913722 built exact 652df02 bytes, then
+    verifier 33501188756 failed only sdist-tests after 529 passes because two tests
+    independently required definition commits unavailable from an extracted archive
+  - P13-HF02 keeps normal source validation fail-closed on exact Git ancestry, gives
+    extracted sdists a mechanically recognized one-commit package context, delegates
+    workflow byte and inventory checks to the canonical verifier, and uploads failed
+    runtime evidence with three cause-verified controls
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

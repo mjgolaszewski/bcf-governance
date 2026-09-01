@@ -23,7 +23,16 @@ hotfix_lane:
       allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
-  open_records: []
+  open_records:
+  - id: P13-HF02
+    mode: full
+    status: active
+    triggered_by_commits: [652df02b77161860a1f5fb066eb37d7bd2dab509]
+    failing_workflows: [.github/workflows/bcf-release-verifier.yml]
+    root_cause: extracted-sdist verification reused exact-history self-tests even though the archive has only synthetic one-commit custody, and failed attempts did not upload their raw runtime evidence
+    remediated_in_phase: P13
+    hotfix_log: phases/phase-13-hotfix02.yml
+    canonical_artifacts: [bcf_governance/tooling/ci_authority_pins.py, bcf_governance/tooling/release_runtime_verification.py, .github/workflows/bcf-release-verifier.yml]
   remediation_history:
   - id: P13-HF01
     mode: full

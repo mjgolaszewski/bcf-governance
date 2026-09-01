@@ -15,6 +15,9 @@ from bcf_governance.tooling.profile_contract_v2 import (
     resolve_install_contract_version,
     validate_profile_v2_readiness,
 )
+from bcf_governance.tooling.release_runtime_verification import (
+    is_release_sdist_test_context,
+)
 from bcf_governance.tooling.ci_adopt_github import render_github_adoption
 from bcf_governance.tooling.profile_v2_surfaces import (
     render_v2_makefile,
@@ -187,7 +190,7 @@ def test_v2_surfaces_bind_one_session_and_do_not_wait() -> None:
 
 
 def test_bcf_standard_v2_promotion_fits_declared_context_budgets(tmp_path: Path) -> None:
-    if os.environ.get("BCF_RELEASE_SDIST_PORTABLE_TEST") == "1":
+    if is_release_sdist_test_context(REPO_ROOT):
         pytest.skip("exact self-adoption retention proof requires original Git custody")
     repo = tmp_path / "bcf-self-adoption"
     source_git = subprocess.run(

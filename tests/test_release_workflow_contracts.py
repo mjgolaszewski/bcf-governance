@@ -71,11 +71,17 @@ def test_verifier_separates_token_free_runtime_from_provider_authentication() ->
     runtime_command = next(
         step for step in runtime["steps"] if "ci-github release runtime" in str(step.get("run", ""))
     )
+    runtime_upload = next(
+        step
+        for step in runtime["steps"]
+        if str(step.get("name", "")).startswith("Upload raw runtime evidence")
+    )
     assert runtime_command["env"] == {
         "GITHUB_TOKEN": "",
         "ACTIONS_ID_TOKEN_REQUEST_TOKEN": "",
         "ACTIONS_RUNTIME_TOKEN": "",
     }
+    assert runtime_upload["if"] == "${{ always() }}"
     authenticate_text = "\n".join(str(step) for step in authenticate["steps"])
     assert "ci-github release verify-evidence" in authenticate_text
     assert "ci-github release runtime" not in authenticate_text

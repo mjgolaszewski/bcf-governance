@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import ast
-import hashlib
 import importlib.util
 import os
 import re
@@ -21,7 +20,11 @@ from bcf_governance.tooling.ci_adopt_github import (
     render_github_v11_control_plane,
 )
 from bcf_governance.tooling.ci_github_actions import ACTION_PINS
+from bcf_governance.tooling.ci_authority_pins import verify_workflow_authority
 from bcf_governance.tooling.governance_validation.runner import validate_repo_root
+from bcf_governance.tooling.release_runtime_verification import (
+    is_release_sdist_test_context,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -149,7 +152,7 @@ def test_template_and_private_runtime_copies_are_exact() -> None:
 
 
 def test_required_repository_artifact_contract_is_executable() -> None:
-    if os.environ.get("BCF_RELEASE_SDIST_PORTABLE_TEST") == "1":
+    if is_release_sdist_test_context(REPO_ROOT):
         pytest.skip("exact repository validation requires original Git custody")
     validate_repo_root(REPO_ROOT)
 
@@ -735,29 +738,12 @@ def test_self_ci_authority_matches_immutable_workflow_definitions() -> None:
         "authority-canary": ["workflow_dispatch"],
     }
     assert set(registry) == set(expected_events)
+    assert verify_workflow_authority(
+        REPO_ROOT,
+        authority_path=Path("governance/ci-authority.yml"),
+        require_history=not is_release_sdist_test_context(REPO_ROOT),
+    ) == len(expected_events)
     for reference, workflow in registry.items():
-        commit = workflow["trusted_workflow_definition_commit"]
-        path = workflow["active_path"]
-        content = (REPO_ROOT / path).read_bytes()
-        blob = subprocess.run(
-            ["git", "hash-object", "--stdin"],
-            input=content,
-            check=True,
-            capture_output=True,
-        ).stdout.decode().strip()
-        assert blob == workflow["trusted_workflow_blob_oid"]
-        assert (
-            hashlib.sha256(content).hexdigest()
-            == workflow["trusted_workflow_sha256"]
-        )
-        historical = subprocess.run(
-            ["git", "show", f"{commit}:{path}"],
-            cwd=REPO_ROOT,
-            check=False,
-            capture_output=True,
-        )
-        assert historical.returncode == 0
-        assert historical.stdout == content
         assert workflow["allowed_events"] == expected_events[reference]
     assert [producer["producer_id"] for producer in authority["producers"]] == [
         "governance",
