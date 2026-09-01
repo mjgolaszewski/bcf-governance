@@ -936,6 +936,7 @@ def test_self_profile_builder_keeps_evidence_semantics_single_owned() -> None:
             capture_output=True,
             text=True,
             check=True,
+            env={key: value for key, value in os.environ.items() if key != "PYTHONPATH"},
         ).stdout
     )
     canonical = yaml.safe_load(

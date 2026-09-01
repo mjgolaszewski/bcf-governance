@@ -10,8 +10,6 @@ from typing import Any
 
 import yaml
 
-from bcf_governance.tooling.profile_yaml import render_profile_surface
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BUILTIN_GATES = frozenset({"governance-validate", "governance-exposure-scan"})
@@ -37,6 +35,9 @@ def build(repo_root: Path = REPO_ROOT) -> dict[str, Any]:
 
 
 def sync_evidence_policy(repo_root: Path = REPO_ROOT) -> Path:
+    sys.path.insert(0, str(repo_root))
+    from bcf_governance.tooling.profile_yaml import render_profile_surface
+
     profile = yaml.safe_load(
         (repo_root / "governance-profile.yml").read_text(encoding="utf-8")
     )

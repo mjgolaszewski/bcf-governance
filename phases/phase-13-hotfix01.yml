@@ -166,6 +166,9 @@ execution_evidence:
   - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
     result: pass
     notes: exact-tree local evidence on 89219233 passed all 248 contract nodes and all 80 isolated contract controls with zero skips and every declared cause satisfied
+  - command: GitHub governance-pack pull-request run 33468893710
+    result: expected_fail_remediated
+    notes: clean hosted package execution rejected the self-profile builder because its new optional sync path imported packaged rendering before seeding repository source; the self-only script now seeds its exact repo root and is regression-tested with PYTHONPATH absent
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
