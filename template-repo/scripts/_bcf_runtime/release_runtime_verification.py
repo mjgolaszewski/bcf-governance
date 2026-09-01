@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import subprocess
 import tarfile
 import tempfile
@@ -311,3 +312,40 @@ def verify_runtime_evidence(
     if len(actual) != len(paths) or report.get("evidence") != dict(sorted(actual.items())):
         raise GitHubControllerError("release runtime evidence inventory is not exact")
     return report
+
+
+def runtime_evidence_paths(report_path: Path, evidence_dir: Path) -> tuple[Path, ...]:
+    """Select exactly the report-owned raw evidence from one safe directory."""
+
+    root = evidence_dir.resolve()
+    if evidence_dir.is_symlink() or not root.is_dir():
+        raise GitHubControllerError("release runtime evidence directory is unsafe")
+    try:
+        report = json.loads(_regular(report_path, "runtime report").read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise GitHubControllerError("release runtime report is invalid") from exc
+    declared = report.get("evidence") if isinstance(report, dict) else None
+    if not isinstance(declared, dict) or not declared:
+        raise GitHubControllerError("release runtime evidence inventory is missing")
+    names = tuple(sorted(str(name) for name in declared))
+    if any(
+        not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,254}", name)
+        or Path(name).name != name
+        for name in names
+    ):
+        raise GitHubControllerError("release runtime evidence name is unsafe")
+    paths = tuple(root / name for name in names)
+    if any(path.is_symlink() or not path.is_file() for path in paths):
+        raise GitHubControllerError("release runtime evidence member is missing or unsafe")
+    actual = {
+        path.name
+        for path in root.iterdir()
+        if path.name != report_path.name
+    }
+    if actual != set(names) or any(
+        path.is_symlink() or not path.is_file()
+        for path in root.iterdir()
+        if path.name != report_path.name
+    ):
+        raise GitHubControllerError("release runtime evidence directory is not exact")
+    return paths

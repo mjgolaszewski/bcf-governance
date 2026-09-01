@@ -429,6 +429,14 @@ def project_self_controller_pin(
         desired[path] = _replace_env(
             path.read_bytes(), {"BCF_CONTROL_COMMIT": active_commit}
         )
+    artifact_required = runner_security.get(
+        "trusted_controller_artifact_workflows"
+    )
+    if not isinstance(artifact_required, list):
+        raise GitHubControllerError("trusted controller artifact workflow inventory is invalid")
+    for relative in artifact_required:
+        path = root / str(relative)
+        desired[path] = _replace_env(desired.get(path, path.read_bytes()), exact)
     changed = tuple(
         path.relative_to(root).as_posix()
         for path, raw in desired.items()

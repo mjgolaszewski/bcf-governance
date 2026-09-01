@@ -173,7 +173,15 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     required = policy["runner_security"]["trusted_controller_interpreter"][
         "required_workflows"
     ]
-    paths = ["governance/self-governance-policy.yml", controller.TOPOLOGY_PATH, *required]
+    artifact_required = policy["runner_security"][
+        "trusted_controller_artifact_workflows"
+    ]
+    paths = list(dict.fromkeys([
+        "governance/self-governance-policy.yml",
+        controller.TOPOLOGY_PATH,
+        *required,
+        *artifact_required,
+    ]))
     for relative in paths:
         destination = tmp_path / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
@@ -189,6 +197,14 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     assert controller.project_self_controller_pin(
         tmp_path, pin=pin, apply=False
     ).status == "clean"
+    artifact_workflows = policy["runner_security"][
+        "trusted_controller_artifact_workflows"
+    ]
+    for relative in artifact_workflows:
+        workflow = yaml.safe_load((tmp_path / relative).read_text(encoding="utf-8"))
+        assert {
+            key: str(workflow["env"][key]) for key in controller.PIN_KEYS
+        } == {key: str(pin[key]) for key in controller.PIN_KEYS}
 
     pin.update(
         {
@@ -218,6 +234,11 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     assert {
         key: str(value) for key, value in pending_probe["env"].items()
     } == pin
+    for relative in artifact_workflows:
+        workflow = yaml.safe_load((tmp_path / relative).read_text(encoding="utf-8"))
+        assert {
+            key: str(workflow["env"][key]) for key in controller.PIN_KEYS
+        } == pin
     second_target = dict(pin)
     second_target["BCF_BOOTSTRAP_ARTIFACT_ID"] = "401"
     with pytest.raises(GitHubControllerError, match="rotation is already pending"):

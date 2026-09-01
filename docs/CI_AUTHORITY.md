@@ -121,20 +121,26 @@ release inputs.
 An owner dispatch starts a short no-checkout authorization job. A fresh hosted
 builder receives that authorization, checks out exact certified main without
 credentials, and emits untrusted distributions, checksums, logs, JUnit, and a
-manifest. A separate fresh, secretless hosted verifier authenticates the build
-artifact, rejects unsafe archives, installs and tests the exact wheel and
-extracted sdist from the closed wheelhouse, runs Twine, and emits raw results.
+manifest. A separate fresh hosted runtime job installs and tests the exact wheel and
+extracted sdist from the closed wheelhouse, runs Twine, and emits raw results. A second
+fresh hosted job authenticates provider custody and recomputes hashes without executing
+candidate code. The short-lived read token used by pinned artifact-download steps is
+never passed to candidate processes; no long-lived repository or sibling secret is used.
 A provider-authenticated read of exact-main binds the lock and wheelhouse-manifest
 blob OIDs and hashes before candidate work starts. The verifier uses separate controller
-operations: a token-free runtime operation owns offline install/test/Twine execution
-and hashes every raw output, then a non-executing token-bearing operation authenticates
-provider state and those results. Candidate processes inherit a closed environment with
+operations on distinct fresh machines: a token-free runtime operation owns offline
+install/test/Twine execution and hashes every raw output, then a non-executing
+token-bearing operation authenticates provider state and those results. Candidate
+processes inherit a closed environment with
 no provider token, credential, or runner-authority variable. Workflow shell and candidate
 JSON cannot assert that verification passed.
 A no-checkout trusted collector then re-authenticates every run, attempt,
 workflow, provider artifact digest, controller identity, dependency closure,
 commit, tree, and asset hash. Only that collector may emit the schema-2 release
 receipt; the receipt is never an input to its own construction.
+Release assets and runtime evidence are selected from controller-owned directory
+contracts, so adding, omitting, renaming, or escaping a file fails without a hand-kept
+shell argument list.
 
 Publication is separate. Immutable releases must already be enabled. The
 publisher authenticates an annotated unsigned tag at the certified commit,

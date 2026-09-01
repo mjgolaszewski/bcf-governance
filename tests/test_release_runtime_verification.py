@@ -10,6 +10,7 @@ from bcf_governance.tooling import ci_github_commands
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError
 from bcf_governance.tooling.release_runtime_verification import (
     runtime_environment,
+    runtime_evidence_paths,
     verify_runtime_evidence,
 )
 
@@ -59,6 +60,28 @@ def test_runtime_evidence_binds_exact_release_bytes_and_raw_results(
 
     assert result["status"] == "passed"
     assert result["environment"]["python_version"] == "3.12.14"
+
+
+def test_runtime_evidence_directory_is_selected_from_the_report(tmp_path: Path) -> None:
+    report, evidence, _, _ = _fixture(tmp_path)
+    root = tmp_path / "runtime"
+    root.mkdir()
+    exact_report = root / report.name
+    exact_report.write_bytes(report.read_bytes())
+    exact_evidence = []
+    for source in evidence:
+        destination = root / source.name
+        destination.write_bytes(source.read_bytes())
+        exact_evidence.append(destination)
+
+    assert runtime_evidence_paths(exact_report, root) == tuple(
+        sorted(exact_evidence, key=lambda path: path.name)
+    )
+
+    extra = root / "operator-added.log"
+    extra.write_text("not declared\n", encoding="utf-8")
+    with pytest.raises(GitHubControllerError, match="directory is not exact"):
+        runtime_evidence_paths(exact_report, root)
 
 
 def test_candidate_runtime_environment_excludes_provider_authority(

@@ -235,9 +235,11 @@ offline environments without a provider token, installs the hash-closed dependen
 with `--no-index` and `--require-hashes`, tests the wheel and extracted sdist, runs strict
 Twine validation, and binds every raw stdout, stderr, and JUnit file. A separate
 `release verify-evidence` command authenticates provider state without executing package
-code. The compatibility `release verify` command remains available, but BCF's governed
-topology requires the split operations. The trusted collector recomputes the bindings;
-a candidate-authored pass label is not authority.
+code. `--release-artifact-dir` and `--runtime-evidence-dir` make the controller derive
+both exact inventories; workflow shell does not maintain parallel file lists. The
+compatibility `release verify` command remains available, but BCF's governed topology
+requires the split operations. The trusted collector recomputes the bindings; a
+candidate-authored pass label is not authority.
 
 BCF 0.7 retains the additive `finalize-callback` and `publish-callback` controller
 operations for event-driven fan-in. The finalizer always emits one immutable

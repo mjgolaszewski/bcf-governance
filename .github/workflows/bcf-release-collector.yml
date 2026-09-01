@@ -5,14 +5,62 @@ on:
     workflows: [bcf/release-byte-verifier]
     types: [completed]
 
-permissions: {}
+permissions:
+  actions: read
+  contents: read
+
+env:
+  BCF_CONTROL_COMMIT: 7c30cdca31fa41eb99c5794f9fbbf61b812589f2
 
 jobs:
   collect:
-    name: Collect authenticated release evidence
-    if: ${{ false }}
+    name: Recompute authenticated release evidence and emit the sole receipt
+    if: ${{ github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success' }}
     runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
-    timeout-minutes: 1
+    timeout-minutes: 10
     steps:
-      - name: Remain fail-closed until pinned activation
-        run: exit 1
+      - name: Restore the trusted controller interpreter environment
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+      - name: Download only the triggering verifier artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: bcf-release-verification-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+          path: ${{ runner.temp }}/bcf-release-collection
+          digest-mismatch: error
+      - name: Recompute provider, Git, dependency, runtime, and asset custody
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/$BCF_CONTROL_COMMIT"
+          test -d "$control_root"
+          test ! -L "$control_root"
+          test -x "$control_root/bin/bcf"
+          mkdir -p "$RUNNER_TEMP/bcf-certified-release"
+          "$control_root/bin/bcf" ci-github release collect \
+            --repository "$GITHUB_REPOSITORY" \
+            --bundle "$RUNNER_TEMP/bcf-release-collection/build/release-input/certification" \
+            --authorization "$RUNNER_TEMP/bcf-release-collection/build/release-input/release-authorization.json" \
+            --build-manifest "$RUNNER_TEMP/bcf-release-collection/build/release-build-manifest.json" \
+            --verification "$RUNNER_TEMP/bcf-release-collection/verification/release-verification.json" \
+            --runtime-report "$RUNNER_TEMP/bcf-release-collection/runtime/runtime-verification.json" \
+            --runtime-evidence-dir "$RUNNER_TEMP/bcf-release-collection/runtime" \
+            --release-artifact-dir "$RUNNER_TEMP/bcf-release-collection/build/assets" \
+            --verification-artifact-name "bcf-release-verification-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}" \
+            --output "$RUNNER_TEMP/bcf-certified-release/release-receipt.json"
+          cp -a "$RUNNER_TEMP/bcf-release-collection/build/assets" "$RUNNER_TEMP/bcf-certified-release/assets"
+          cp -a "$RUNNER_TEMP/bcf-release-collection/build/release-build-manifest.json" "$RUNNER_TEMP/bcf-certified-release/"
+          cp -a "$RUNNER_TEMP/bcf-release-collection/verification/release-verification.json" "$RUNNER_TEMP/bcf-certified-release/"
+      - name: Upload the sole authoritative release receipt and exact assets
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: bcf-release-receipt-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/bcf-certified-release
+          if-no-files-found: error
+          retention-days: 90

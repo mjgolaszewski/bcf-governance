@@ -29,6 +29,18 @@ def exact_assets(paths: Iterable[Path]) -> dict[str, str]:
     return dict(sorted(assets.items()))
 
 
+def release_asset_paths(root: Path) -> tuple[Path, ...]:
+    """Select the exact closed release inventory from one safe directory."""
+
+    if root.is_symlink() or not root.is_dir():
+        raise GitHubControllerError("release asset directory must be a regular directory")
+    paths = tuple(sorted(root.iterdir(), key=lambda path: path.name))
+    if any(path.is_symlink() or not path.is_file() for path in paths):
+        raise GitHubControllerError("release asset directory contains an unsafe member")
+    verify_checksum_inventory(paths)
+    return paths
+
+
 def verify_checksum_inventory(paths: tuple[Path, ...]) -> None:
     archives = tuple(
         path for path in paths if path.suffix == ".whl" or path.name.endswith(".tar.gz")

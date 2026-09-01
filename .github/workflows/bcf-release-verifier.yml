@@ -7,12 +7,159 @@ on:
 
 permissions: {}
 
+env:
+  BCF_BOOTSTRAP_ARTIFACT_ID: "9788519181"
+  BCF_BOOTSTRAP_ARTIFACT_NAME: bcf-trusted-control-7c30cdca31fa41eb99c5794f9fbbf61b812589f2-1
+  BCF_BOOTSTRAP_ARTIFACT_DIGEST: sha256:120dee1f4a433d75eeefb13478c6ab598f06eb8fe1a83b1681bf201e193b184f
+  BCF_BOOTSTRAP_RUN_ID: "33476814352"
+  BCF_BOOTSTRAP_RUN_ATTEMPT: "1"
+  BCF_BOOTSTRAP_COMMIT_SHA: 7c30cdca31fa41eb99c5794f9fbbf61b812589f2
+  BCF_BOOTSTRAP_TREE_SHA: cc176961ba75a27598cfa2b9bff9945b7ba4ca76
+  BCF_BOOTSTRAP_REPOSITORY_ID: "1207503211"
+  BCF_BOOTSTRAP_WHEEL_SHA256: 85ee4b622aa8505a682a4981763177804b5cf2fc988aa70e0690a6f5710806c5
+
 jobs:
-  verify:
-    name: Verify release bytes on a fresh worker
-    if: ${{ false }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 1
+  runtime:
+    name: Execute token-free offline wheel and sdist verification
+    if: ${{ github.event.workflow_run.event == 'workflow_dispatch' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
     steps:
-      - name: Remain fail-closed until pinned activation
-        run: exit 1
+      - name: Select the closed release interpreter
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12.14"
+      - name: Download the mechanically pinned controller artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          artifact-ids: ${{ env.BCF_BOOTSTRAP_ARTIFACT_ID }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.BCF_BOOTSTRAP_RUN_ID }}
+          path: ${{ runner.temp }}/bcf-release-controller
+          digest-mismatch: error
+      - name: Install only the checksum-admitted controller
+        shell: bash
+        run: |
+          set -euo pipefail
+          controller="$RUNNER_TEMP/bcf-release-controller/bcf_governance-0.7.1-py3-none-any.whl"
+          (cd "$RUNNER_TEMP/bcf-release-controller" && sha256sum -c SHA256SUMS)
+          test "$(sha256sum "$controller" | cut -d ' ' -f 1)" = "$BCF_BOOTSTRAP_WHEEL_SHA256"
+          python -m venv "$RUNNER_TEMP/bcf-release-control"
+          "$RUNNER_TEMP/bcf-release-control/bin/python" -m pip install --no-index \
+            --find-links "$RUNNER_TEMP/bcf-release-controller" "$controller"
+      - name: Download only the triggering build artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: bcf-release-build-${{ github.event.workflow_run.head_sha }}-${{ github.event.workflow_run.run_attempt }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+          path: ${{ runner.temp }}/bcf-release-build
+          digest-mismatch: error
+      - name: Execute package verification without provider credentials
+        shell: bash
+        env:
+          GITHUB_TOKEN: ""
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
+          ACTIONS_RUNTIME_TOKEN: ""
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/bcf-release-control/bin/bcf" ci-github release runtime \
+            --wheelhouse-manifest "$RUNNER_TEMP/bcf-release-build/release/wheelhouse-manifest.yml" \
+            --lock "$RUNNER_TEMP/bcf-release-build/release/requirements-cp312-linux-x86_64.lock" \
+            --wheelhouse "$RUNNER_TEMP/bcf-release-build/wheelhouse" \
+            --release-artifact-dir "$RUNNER_TEMP/bcf-release-build/assets" \
+            --python "$(command -v python)" \
+            --output "$RUNNER_TEMP/bcf-release-runtime"
+      - name: Upload raw runtime evidence from this attempt
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: bcf-release-runtime-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/bcf-release-runtime
+          if-no-files-found: error
+          retention-days: 30
+
+  authenticate:
+    name: Authenticate provider custody without executing candidate code
+    needs: [runtime]
+    if: ${{ needs.runtime.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Restore the trusted controller interpreter environment
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12.14"
+      - name: Download the mechanically pinned controller artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          artifact-ids: ${{ env.BCF_BOOTSTRAP_ARTIFACT_ID }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.BCF_BOOTSTRAP_RUN_ID }}
+          path: ${{ runner.temp }}/bcf-release-controller
+          digest-mismatch: error
+      - name: Install only the checksum-admitted controller
+        shell: bash
+        run: |
+          set -euo pipefail
+          controller="$RUNNER_TEMP/bcf-release-controller/bcf_governance-0.7.1-py3-none-any.whl"
+          (cd "$RUNNER_TEMP/bcf-release-controller" && sha256sum -c SHA256SUMS)
+          test "$(sha256sum "$controller" | cut -d ' ' -f 1)" = "$BCF_BOOTSTRAP_WHEEL_SHA256"
+          python -m venv "$RUNNER_TEMP/bcf-release-control"
+          "$RUNNER_TEMP/bcf-release-control/bin/python" -m pip install --no-index \
+            --find-links "$RUNNER_TEMP/bcf-release-controller" "$controller"
+      - name: Download only the triggering build artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: bcf-release-build-${{ github.event.workflow_run.head_sha }}-${{ github.event.workflow_run.run_attempt }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+          path: ${{ runner.temp }}/bcf-release-build
+          digest-mismatch: error
+      - name: Download only this verifier attempt's runtime evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: bcf-release-runtime-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/bcf-release-runtime
+      - name: Authenticate provider state and recompute evidence hashes only
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/bcf-release-verification"
+          "$RUNNER_TEMP/bcf-release-control/bin/bcf" ci-github release verify-evidence \
+            --repository "$GITHUB_REPOSITORY" \
+            --authorization "$RUNNER_TEMP/bcf-release-build/release-input/release-authorization.json" \
+            --build-manifest "$RUNNER_TEMP/bcf-release-build/release-build-manifest.json" \
+            --wheelhouse-manifest "$RUNNER_TEMP/bcf-release-build/release/wheelhouse-manifest.yml" \
+            --lock "$RUNNER_TEMP/bcf-release-build/release/requirements-cp312-linux-x86_64.lock" \
+            --wheelhouse "$RUNNER_TEMP/bcf-release-build/wheelhouse" \
+            --release-artifact-dir "$RUNNER_TEMP/bcf-release-build/assets" \
+            --runtime-report "$RUNNER_TEMP/bcf-release-runtime/runtime-verification.json" \
+            --runtime-evidence-dir "$RUNNER_TEMP/bcf-release-runtime" \
+            --output "$RUNNER_TEMP/bcf-release-verification/release-verification.json"
+      - name: Stage the authenticated verifier bundle without execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/bcf-release-verifier-bundle"
+          cp -a "$RUNNER_TEMP/bcf-release-build" "$RUNNER_TEMP/bcf-release-verifier-bundle/build"
+          cp -a "$RUNNER_TEMP/bcf-release-runtime" "$RUNNER_TEMP/bcf-release-verifier-bundle/runtime"
+          cp -a "$RUNNER_TEMP/bcf-release-verification" "$RUNNER_TEMP/bcf-release-verifier-bundle/verification"
+      - name: Upload the authenticated verifier bundle
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: bcf-release-verification-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/bcf-release-verifier-bundle
+          if-no-files-found: error
+          retention-days: 30
