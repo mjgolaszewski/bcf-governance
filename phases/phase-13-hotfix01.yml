@@ -124,6 +124,9 @@ execution_evidence:
   - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
     result: pass
     notes: non-authoritative exact-tree local evidence; all 237 contract nodes and all 71 isolated causal controls passed after the projection mutant was corrected to change target-probe behavior
+  - command: bcf ci-github controller-pin confirm --repository mjgolaszewski/bcf-governance --output CONFIRMATION.json; bcf ci sync-self-controller --pin PIN.json --confirmation CONFIRMATION.json --apply
+    result: pass
+    notes: authenticated exact-main bootstrap 33460260005 and later probe 33460300564 each passed their exact two-runner inventory; the compiler bound commit 9e23a345, tree a630ac7a, and installed target cc3c1fec without operator-authored custody values
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
@@ -171,6 +174,7 @@ execution_evidence:
   - compatibility PR 48 merged as cc3c1fecb24b5c3c6bd23eca901412d03e778a7d; exact-main run 33456616842 passed admission and every producer, correctly rejected active-phase closure, and emitted successor controller artifact 9781702346 whose provider and wheel digests were mechanically verified before projection
   - full successor-pin dogfooding found the former controller commit duplicated in topology and a self-adoption test; the canonical pin now projects topology, generator parity consumes that projection, and a causal mutant rejects any reintroduced split ownership
   - bootstrap run 33458272050 authenticated and downloaded successor artifact 9781702346 on both trusted runners, then failed before installation because one authored commit value represented both the installed controller and its successor target; the transaction now keeps exact-main, finalizer, publisher, and topology on the last independently proven installation, invokes that controller to install the target, and permits promotion only from mechanically compiled exact-main bootstrap and probe proofs
+  - transactional rotation PR 50 passed protected runs 33459780284 and 33459780447 and merged as 9e23a345c1f9ec53b8db43a5243f8c33689e988e; exact-main run 33459999228 admitted through the prior installed controller, passed every producer, and refused only active-phase closure before bootstrap and probe independently established the successor installation
 closeout_requirements:
   claims:
     required_suites_green:
