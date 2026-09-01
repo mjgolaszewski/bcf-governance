@@ -49,11 +49,21 @@ execution_evidence:
   - command: provider-authenticated bootstrap 33513097208 and independent probe 33513145558
     result: pass
     notes: both uniquely labeled trusted runners installed and independently verified controller de2eeee6c16d074c4c5fffd39ee5d583b36d1a3e; the controller compiled the sole promotion confirmation
+  - command: promotion PR 86; exact-main 33514102987; finalizer 33514433224; publisher 33514473576
+    result: pass
+    notes: controller de2eeee6 became active through mechanically compiled workflow projections; the exact merge passed all 21 receipts, package verification, both PR mutant profiles, exact-tree truth, and the authenticated terminal path
+  - command: scheduled mutants 33514518560 and 33514521143; authority canaries 33514557778 and 33514632374 attempts 1 and 2
+    result: pass
+    notes: high-value and full scheduled profiles passed; the first canary succeeded, the newer same-SHA run and its rerun failed only deterministic producer B while every trusted observer succeeded and enforced revocation plus attempt precedence
+  - command: publication-disabled release 33514881671; verifier 33515210677; collector 33515519688
+    result: pass
+    notes: exact source and closed dependencies produced candidate bytes, a separate token-free runtime verified wheel and sdist, and the no-checkout collector emitted the sole schema-2 release receipt with computed certified state; publication remained unreachable
   notes:
   - the controller build defect was not a package build or hosted environment failure; a file-path Python invocation lacked source-root authority and local editable installation hid it
   - cheap preflight now derives executable Python entrypoints from tracked source and rejects module-time BCF imports that precede the directory-specific repository-root bootstrap
   - the release verifier and a second latent semantic-ownership wrapper now establish source authority explicitly; the exact-main workflow invokes the verifier with isolated Python mode
   - active trusted authority is promoted only from the authenticated provider pin plus the provider-compiled two-runner installation confirmation; no probabilistic operator supplies custody values
+  - the existing hosted Identity proof remains exact for the generalized engine because Git comparison proves every packaged semantic-ownership engine and reference-contract byte unchanged since its controller; the repaired source wrapper is not part of that proof path
 closeout_requirements:
   claims:
     required_suites_green:

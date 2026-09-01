@@ -6,7 +6,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acceptance).
+Release target: `0.7.1` (authority-v1.1 acceptance is complete; publication remains
+disabled pending the explicit immutable-release and tag/publication owner actions).
 
 ### Security
 
@@ -82,6 +83,10 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Promoted the repaired source-entrypoint controller only after provider-authenticated
   bootstrap and independent probe runs proved its exact installation on both uniquely
   labeled trusted runners; no run, artifact, commit, tree, or digest value was transcribed.
+- Completed the pre-publication authority rehearsal through exact-main certification,
+  both scheduled mutant profiles, same-SHA success revocation and attempt precedence,
+  closed release construction, token-free byte verification, and the sole trusted
+  release receipt; final evidence must be recaptured after this reconciliation merges.
 - Made extracted-source workflow custody verify the exact packaged workflow bytes and
   compiled inventories without claiming unavailable Git history; the normal repository
   path still requires exact definition-commit ancestry. Failed verifier attempts now
