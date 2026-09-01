@@ -156,6 +156,7 @@ gate_overrides:
     - {id: self-ci-authority-definition-pin-must-fail, mutation: {path: .github/workflows/bcf-exact-main.yml, search: 'name: bcf/exact-main-admission', replace: 'name: bcf/exact-main-admission-mutant'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_ci_authority_matches_immutable_workflow_definitions']}}
     - {id: workflow-authority-compiler-digest-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_pins.py, search: 'entry["trusted_workflow_sha256"] = hashlib.sha256(committed).hexdigest()', replace: 'entry["trusted_workflow_sha256"] = "0" * 64'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority_pins::test_workflow_authority_pins_are_derived_from_exact_committed_bytes']}}
     - {id: workflow-authority-compiler-inventory-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_pins.py, search: '{"job_id": f"{caller_name} / {value[''job_id'']}"}', replace: '{"job_id": str(value["job_id"])}'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority_pins::test_self_workflow_authority_is_mechanically_compiled']}}
+    - {id: privileged-workflow-inventory-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_pins.py, search: 'if reference not in privileged_references and "expected_jobs" not in entry:', replace: 'if "expected_jobs" not in entry:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority_pins::test_self_workflow_authority_is_mechanically_compiled']}}
     - {id: authority-canary-failure-cause-must-fail, mutation: {path: bcf_governance/tooling/ci_github_canary.py, search: 'if any(str(value.get("conclusion")) != "success" for value in required):', replace: 'if False and any(str(value.get("conclusion")) != "success" for value in required):'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_canary::test_canary_computes_only_exact_admission_and_producer_results']}}
     - {id: self-controller-provider-producer-must-fail, mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'package_attempt["conclusion"] != "success"', replace: 'False'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_self_controller::test_controller_pin_rejects_failed_package_producer']}}
     - {id: self-controller-projection-must-fail, mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'desired[probe] = _replace_env(probe.read_bytes(), exact)', replace: 'desired[probe] = _replace_env(probe.read_bytes(), {**exact, "BCF_BOOTSTRAP_COMMIT_SHA": active_commit})'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_self_controller::test_self_controller_projection_has_one_canonical_pin_owner']}}
@@ -267,12 +268,7 @@ gate_overrides:
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_runtime_capacity::test_runtime_contract_rejects_escape_and_broad_cleanup[mutation3-exact, scoped]']
-    - id: local-pr-ancestry-must-fail
-      mutation: {path: bcf_governance/tooling/local_pr.py, search: 'if ancestry.returncode != 0:', replace: 'if False and
-          ancestry.returncode != 0:'}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_local_pr::test_local_pr_rejects_head_without_default_branch_ancestry']
+    - {id: local-pr-ancestry-must-fail, mutation: {path: bcf_governance/tooling/local_pr.py, search: 'if ancestry.returncode != 0:', replace: 'if False and ancestry.returncode != 0:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_local_pr::test_local_pr_rejects_head_without_default_branch_ancestry']}}
     - {id: local-pr-changelog-enforcement-must-fail, mutation: {path: bcf_governance/tooling/local_pr.py, search: '"BCF_ENFORCE_PR_CHANGELOG": "true"', replace: '"BCF_ENFORCE_PR_CHANGELOG": "false"'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_local_pr::test_local_pr_context_fetches_default_branch_and_supplies_exact_event']}}
     - id: trusted-input-role-must-fail
       mutation: {path: bcf_governance/tooling/trusted_inputs.py, search: 'if executor_role != "trusted-collector":', replace: 'if

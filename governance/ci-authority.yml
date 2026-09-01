@@ -101,6 +101,7 @@ workflow_registry:
     trusted_workflow_definition_commit: ab639bd6972a5de30a802feab25005110f5382ec
     allowed_events:
     - workflow_dispatch
+    job_roles: {admit: admission, producer-a: producer, producer-b: producer, observe: observer}
 roles:
   admission: admission
   reusable_producers:

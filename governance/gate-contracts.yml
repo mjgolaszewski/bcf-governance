@@ -321,6 +321,7 @@ gates:
     - id: workflow-authority-compiler-inventory-must-fail
       mutation: {path: bcf_governance/tooling/ci_authority_pins.py, search: '{"job_id": f"{caller_name} / {value[''job_id'']}"}', replace: '{"job_id": str(value["job_id"])}'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority_pins::test_self_workflow_authority_is_mechanically_compiled']}
+    - {id: privileged-workflow-inventory-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_pins.py, search: 'if reference not in privileged_references and "expected_jobs" not in entry:', replace: 'if "expected_jobs" not in entry:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority_pins::test_self_workflow_authority_is_mechanically_compiled']}}
     - id: authority-canary-failure-cause-must-fail
       mutation: {path: bcf_governance/tooling/ci_github_canary.py, search: 'if any(str(value.get("conclusion")) != "success" for value in required):', replace: 'if False and any(str(value.get("conclusion")) != "success" for value in required):'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_canary::test_canary_computes_only_exact_admission_and_producer_results']}
@@ -447,12 +448,7 @@ gates:
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_runtime_capacity::test_runtime_contract_rejects_escape_and_broad_cleanup[mutation3-exact, scoped]']
-    - id: local-pr-ancestry-must-fail
-      mutation: {path: bcf_governance/tooling/local_pr.py, search: 'if ancestry.returncode != 0:', replace: 'if False and
-          ancestry.returncode != 0:'}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_local_pr::test_local_pr_rejects_head_without_default_branch_ancestry']
+    - {id: local-pr-ancestry-must-fail, mutation: {path: bcf_governance/tooling/local_pr.py, search: 'if ancestry.returncode != 0:', replace: 'if False and ancestry.returncode != 0:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_local_pr::test_local_pr_rejects_head_without_default_branch_ancestry']}}
     - {id: local-pr-changelog-enforcement-must-fail, mutation: {path: bcf_governance/tooling/local_pr.py, search: '"BCF_ENFORCE_PR_CHANGELOG": "true"', replace: '"BCF_ENFORCE_PR_CHANGELOG": "false"'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_local_pr::test_local_pr_context_fetches_default_branch_and_supplies_exact_event']}}
     - id: trusted-input-role-must-fail
       mutation: {path: bcf_governance/tooling/trusted_inputs.py, search: 'if executor_role != "trusted-collector":', replace: 'if

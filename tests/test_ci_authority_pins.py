@@ -146,6 +146,24 @@ def test_self_workflow_authority_is_mechanically_compiled() -> None:
     assert verify_workflow_authority(
         REPO_ROOT, authority_path=Path("governance/ci-authority.yml")
     ) == 12
+    payload = yaml.safe_load(
+        (REPO_ROOT / "governance/ci-authority.yml").read_text(encoding="utf-8")
+    )
+    privileged = {
+        reference
+        for role, reference in payload["roles"].items()
+        if role not in {"admission", "reusable_producers"}
+    }
+    assert all(
+        payload["workflow_registry"][reference]["expected_jobs"]
+        for reference in privileged
+    )
+    assert payload["workflow_registry"]["authority-canary"]["job_roles"] == {
+        "admit": "admission",
+        "producer-a": "producer",
+        "producer-b": "producer",
+        "observe": "observer",
+    }
 
 
 def test_bridge_admission_roles_are_inferred_from_exact_producer_source_keys() -> None:

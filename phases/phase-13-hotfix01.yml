@@ -176,6 +176,7 @@ execution_evidence:
   - bootstrap run 33458272050 authenticated and downloaded successor artifact 9781702346 on both trusted runners, then failed before installation because one authored commit value represented both the installed controller and its successor target; the transaction now keeps exact-main, finalizer, publisher, and topology on the last independently proven installation, invokes that controller to install the target, and permits promotion only from mechanically compiled exact-main bootstrap and probe proofs
   - transactional rotation PR 50 passed protected runs 33459780284 and 33459780447 and merged as 9e23a345c1f9ec53b8db43a5243f8c33689e988e; exact-main run 33459999228 admitted through the prior installed controller, passed every producer, and refused only active-phase closure before bootstrap and probe independently established the successor installation
   - promotion PR 51 first failed hosted preflight in 9 seconds because it lacked the required changelog update; the canonical local PR helper had supplied base and event identity but omitted the enforcement flag, so that parity defect is now mechanically owned and mutation-tested before the PR is rerun
+  - promotion PR 51 passed protected runs 33460963130 and 33460963175 and merged as a9eb330c9d261973f790f4f8d127f5588bbb6208; the installed successor can now consume mechanically derived exact privileged job inventories, so the compatibility omission is retired without copying provider display names
 closeout_requirements:
   claims:
     required_suites_green:
