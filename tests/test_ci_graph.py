@@ -20,6 +20,7 @@ from bcf_governance.tooling.ci_graph_render import (
     check_ci_graph,
     render_ci_graph,
 )
+from bcf_governance.tooling.truth_workflow_graph import graph_workflow_gate_issues
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -393,6 +394,20 @@ def test_pull_request_gate_ownership_exactly_matches_profile(tmp_path: Path) -> 
     _write_required_gates(tmp_path, "test", "lint", "security-review")
     with pytest.raises(CIGraphError, match=r"missing=\['security-review'\]"):
         validate_ci_graph(tmp_path)
+
+
+def test_truth_events_are_scoped_to_the_declared_workflow_roots(tmp_path: Path) -> None:
+    _write_graph(tmp_path)
+    apply_ci_graph(tmp_path)
+
+    issues = graph_workflow_gate_issues(
+        tmp_path,
+        paths=[".github/workflows/governance.yml"],
+        required_events=["push"],
+        gate_ids={"test", "lint"},
+    )
+
+    assert issues == ["workflow_event_push_missing"]
 
 
 def test_renderer_is_deterministic_and_parity_owned(tmp_path: Path) -> None:

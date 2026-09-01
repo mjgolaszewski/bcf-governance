@@ -27,11 +27,7 @@ def graph_workflow_gate_issues(
     queue = [str(value) for value in paths if isinstance(value, str)]
     visited: set[str] = set()
     resolved_gates: set[str] = set()
-    discovered_events = {
-        event["type"]
-        for workflow in compiled.workflows
-        for event in workflow["events"]
-    }
+    discovered_events: set[str] = set()
     issues: list[str] = []
     while queue:
         relative_path = queue.pop(0)
@@ -42,6 +38,7 @@ def graph_workflow_gate_issues(
         if workflow is None:
             issues.append(f"workflow_path_{relative_path}_missing_from_ci_graph")
             continue
+        discovered_events.update(event["type"] for event in workflow["events"])
         for job in workflow["jobs"]:
             executor = job["executor"]
             if executor["kind"] == "gate_group":
