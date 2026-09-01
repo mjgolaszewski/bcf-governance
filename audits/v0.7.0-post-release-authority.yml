@@ -6,6 +6,10 @@ document:
   generated_at_utc: '2026-08-31T00:00:00Z'
   status: confirmed_authority_limitation
   path: audits/v0.7.0-post-release-authority.yml
+authority:
+  audit_role: non_authoritative_historical_snapshot
+  current_provider_state_owner: authenticated_github_api
+  release_decision_owner: none_authority_v1_1_not_claimed
 subject:
   repository: mjgolaszewski/bcf-governance
   repository_id: 1207503211
@@ -24,9 +28,9 @@ subject:
     published_at: '2026-08-31T13:40:30Z'
     immutable: false
     assets:
-    - {id: 538039433, name: bcf_governance-0.7.0-py3-none-any.whl, size: 535307, digest: 'sha256:70de17b9db74a33a4d7cd92138a0bf8e7d47a461d384453ef00215a081cf0eb9', attestations: 1}
-    - {id: 538039440, name: bcf_governance-0.7.0.tar.gz, size: 957795, digest: 'sha256:4aff767ddc495411df58cb46436a1ad599181721701cf665e09f43cc5d383528', attestations: 1}
-    - {id: 538039443, name: SHA256SUMS, size: 198, digest: 'sha256:031f4e7316587294d4be527c7ed5e7df33245a9a1c2103959afd70f8e301ecab', attestations: 1}
+    - {id: 538039433, name: bcf_governance-0.7.0-py3-none-any.whl, size: 535307, digest: 'sha256:70de17b9db74a33a4d7cd92138a0bf8e7d47a461d384453ef00215a081cf0eb9'}
+    - {id: 538039440, name: bcf_governance-0.7.0.tar.gz, size: 957795, digest: 'sha256:4aff767ddc495411df58cb46436a1ad599181721701cf665e09f43cc5d383528'}
+    - {id: 538039443, name: SHA256SUMS, size: 198, digest: 'sha256:031f4e7316587294d4be527c7ed5e7df33245a9a1c2103959afd70f8e301ecab'}
   immutable_release_setting: {enabled: false, enforced_by_owner: false}
 provider_snapshot:
   workflows:
