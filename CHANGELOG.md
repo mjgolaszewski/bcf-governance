@@ -73,6 +73,8 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Rotated the pending trusted-controller target from the provider-selected exact-main
   artifact whose wheel passed the new source-derived runtime-asset inspection; no run,
   artifact, commit, tree, provider digest, or wheel digest was operator-authored.
+- Promoted the runtime-complete controller only after provider-compiled bootstrap and
+  independent probe inventories proved the exact installation on both trusted runners.
 - Reconciled v0.7.0 as published and attested but provider-mutable historical
   custody; its tag, release, assets, and attestations remain unchanged, and no
   corrected-authority certification is claimed retroactively.

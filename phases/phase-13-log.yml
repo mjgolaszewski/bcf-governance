@@ -126,6 +126,9 @@ summary:
   - package-remediation exact-main 33485639671 passed every executable producer and
     built the controller only after exact wheel-payload inspection; mechanical provider
     resolution and checksum compilation projected that artifact as the pending target
+  - bootstrap 33486602355 and probe 33486651494 proved controller 7f116dbc on both
+    trusted runners; provider-compiled confirmation is the only input used to promote
+    the installed controller across topology, policy, and trusted workflows
 workitems:
 - id: P13-P0-01
   status: IN_PROGRESS
