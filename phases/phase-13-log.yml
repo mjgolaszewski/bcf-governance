@@ -107,6 +107,9 @@ summary:
   - bootstrap 33475183416 installed controller d3c687b9 on both trusted runners and
     probe 33475219209 independently verified both installations; provider-compiled
     confirmation is the sole input that promotes this controller to active authority
+  - release runtime execution and provider authentication are now separate controller
+    operations; candidate wheel/sdist code runs with a closed environment and no token,
+    while the token-bearing operation only authenticates and hashes existing evidence
 workitems:
 - id: P13-P0-01
   status: IN_PROGRESS

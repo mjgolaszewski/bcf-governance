@@ -230,11 +230,14 @@ The release-byte inventory is closed: one wheel, one source archive, and one
 archive digests; hashing the checksum file alone is insufficient.
 Authorization also reads the dependency lock and wheelhouse manifest through the
 authenticated exact-main Git API and records each blob OID and SHA-256. The builder and
-verifier reject local copies whose bytes differ. `release verify` owns the disposable
-offline environments, installs the hash-closed dependency set with `--no-index` and
-`--require-hashes`, tests the wheel and extracted sdist, runs strict Twine validation,
-and binds every raw stdout, stderr, and JUnit file. The trusted collector recomputes
-those bindings; a candidate-authored pass label is not authority.
+verifier reject local copies whose bytes differ. `release runtime` owns the disposable
+offline environments without a provider token, installs the hash-closed dependency set
+with `--no-index` and `--require-hashes`, tests the wheel and extracted sdist, runs strict
+Twine validation, and binds every raw stdout, stderr, and JUnit file. A separate
+`release verify-evidence` command authenticates provider state without executing package
+code. The compatibility `release verify` command remains available, but BCF's governed
+topology requires the split operations. The trusted collector recomputes the bindings;
+a candidate-authored pass label is not authority.
 
 BCF 0.7 retains the additive `finalize-callback` and `publish-callback` controller
 operations for event-driven fan-in. The finalizer always emits one immutable

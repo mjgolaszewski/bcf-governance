@@ -6,8 +6,12 @@ from pathlib import Path
 
 import pytest
 
+from bcf_governance.tooling import ci_github_commands
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError
-from bcf_governance.tooling.release_runtime_verification import verify_runtime_evidence
+from bcf_governance.tooling.release_runtime_verification import (
+    runtime_environment,
+    verify_runtime_evidence,
+)
 
 
 def _sha(path: Path) -> str:
@@ -55,6 +59,101 @@ def test_runtime_evidence_binds_exact_release_bytes_and_raw_results(
 
     assert result["status"] == "passed"
     assert result["environment"]["python_version"] == "3.12.14"
+
+
+def test_candidate_runtime_environment_excludes_provider_authority(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("GITHUB_TOKEN", "never-inherit")
+    monkeypatch.setenv("ACTIONS_RUNTIME_TOKEN", "never-inherit")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "never-inherit")
+    monkeypatch.setenv("LANG", "C.UTF-8")
+
+    environment = runtime_environment(home=tmp_path)
+
+    assert environment["HOME"] == str(tmp_path)
+    assert environment["LANG"] == "C.UTF-8"
+    assert environment["PIP_NO_INDEX"] == "1"
+    assert "GITHUB_TOKEN" not in environment
+    assert "ACTIONS_RUNTIME_TOKEN" not in environment
+    assert "AWS_SECRET_ACCESS_KEY" not in environment
+
+
+def test_runtime_cli_never_constructs_provider_api(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    github_output = tmp_path / "github-output"
+    github_output.touch()
+    monkeypatch.setenv("GITHUB_OUTPUT", str(github_output))
+    monkeypatch.setattr(
+        ci_github_commands,
+        "environment_api",
+        lambda: pytest.fail("token-free runtime constructed a provider API"),
+    )
+    monkeypatch.setattr(
+        ci_github_commands,
+        "run_release_runtime_verification",
+        lambda **_: {"schema_version": "1.0", "status": "passed", "evidence": {}},
+    )
+
+    ci_github_commands._release(
+        [
+            "runtime",
+            "--wheelhouse-manifest", str(tmp_path / "manifest.yml"),
+            "--lock", str(tmp_path / "release.lock"),
+            "--wheelhouse", str(tmp_path / "wheelhouse"),
+            "--release-artifact", str(tmp_path / "bcf_governance-0.7.1-py3-none-any.whl"),
+            "--release-artifact", str(tmp_path / "bcf_governance-0.7.1.tar.gz"),
+            "--python", str(tmp_path / "python"),
+            "--output", str(tmp_path / "runtime"),
+        ]
+    )
+
+    assert "status=passed" in github_output.read_text(encoding="utf-8")
+
+
+def test_provider_evidence_cli_never_executes_candidate_runtime(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    github_output = tmp_path / "github-output"
+    github_output.touch()
+    monkeypatch.setenv("GITHUB_OUTPUT", str(github_output))
+    monkeypatch.setenv("GITHUB_RUN_ID", "31")
+    monkeypatch.setenv("GITHUB_RUN_ATTEMPT", "2")
+    monkeypatch.setattr(
+        ci_github_commands,
+        "run_release_runtime_verification",
+        lambda **_: pytest.fail("provider authentication executed candidate runtime"),
+    )
+    monkeypatch.setattr(
+        ci_github_commands,
+        "environment_api",
+        lambda: object(),
+    )
+    monkeypatch.setattr(
+        ci_github_commands,
+        "verify_release_build_provider",
+        lambda *_, **__: {"schema_version": "1.0", "status": "passed"},
+    )
+
+    ci_github_commands._release(
+        [
+            "verify-evidence",
+            "--repository", "owner/repo",
+            "--authorization", str(tmp_path / "authorization.json"),
+            "--build-manifest", str(tmp_path / "build.json"),
+            "--wheelhouse-manifest", str(tmp_path / "manifest.yml"),
+            "--lock", str(tmp_path / "release.lock"),
+            "--wheelhouse", str(tmp_path / "wheelhouse"),
+            "--release-artifact", str(tmp_path / "bcf_governance-0.7.1-py3-none-any.whl"),
+            "--release-artifact", str(tmp_path / "bcf_governance-0.7.1.tar.gz"),
+            "--runtime-report", str(tmp_path / "runtime.json"),
+            "--runtime-evidence", str(tmp_path / "runtime.stdout"),
+            "--output", str(tmp_path / "verification.json"),
+        ]
+    )
+
+    assert "status=passed" in github_output.read_text(encoding="utf-8")
 
 
 @pytest.mark.parametrize("mutation", ["wheel", "evidence", "environment", "inventory"])

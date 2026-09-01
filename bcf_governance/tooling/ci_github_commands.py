@@ -294,6 +294,24 @@ def _release_parser() -> argparse.ArgumentParser:
     verify.add_argument("--python", type=Path, required=True)
     verify.add_argument("--runtime-output", type=Path, required=True)
     verify.add_argument("--output", type=Path, required=True)
+    runtime = operations.add_parser("runtime")
+    runtime.add_argument("--wheelhouse-manifest", type=Path, required=True)
+    runtime.add_argument("--lock", type=Path, required=True)
+    runtime.add_argument("--wheelhouse", type=Path, required=True)
+    runtime.add_argument("--release-artifact", type=Path, action="append", required=True)
+    runtime.add_argument("--python", type=Path, required=True)
+    runtime.add_argument("--output", type=Path, required=True)
+    evidence = operations.add_parser("verify-evidence")
+    evidence.add_argument("--repository", required=True)
+    evidence.add_argument("--authorization", type=Path, required=True)
+    evidence.add_argument("--build-manifest", type=Path, required=True)
+    evidence.add_argument("--wheelhouse-manifest", type=Path, required=True)
+    evidence.add_argument("--lock", type=Path, required=True)
+    evidence.add_argument("--wheelhouse", type=Path, required=True)
+    evidence.add_argument("--release-artifact", type=Path, action="append", required=True)
+    evidence.add_argument("--runtime-report", type=Path, required=True)
+    evidence.add_argument("--runtime-evidence", type=Path, action="append", required=True)
+    evidence.add_argument("--output", type=Path, required=True)
     build = operations.add_parser("build")
     build.add_argument("--authorization", type=Path, required=True)
     build.add_argument("--wheelhouse-manifest", type=Path, required=True)
@@ -370,7 +388,7 @@ def _release(argv: list[str]) -> None:
         _github_output(release_input_outputs(result), path=github_output)
         print(json.dumps(result, sort_keys=True))
         return
-    elif args.operation == "verify":
+    elif args.operation in {"verify", "runtime"}:
         wheels = [path for path in args.release_artifact if path.suffix == ".whl"]
         sdists = [
             path for path in args.release_artifact if path.name.endswith(".tar.gz")
@@ -384,8 +402,13 @@ def _release(argv: list[str]) -> None:
             wheelhouse=args.wheelhouse,
             wheel=wheels[0],
             sdist=sdists[0],
-            output_dir=args.runtime_output,
+            output_dir=(args.runtime_output if args.operation == "verify" else args.output),
         )
+        if args.operation == "runtime":
+            result = runtime
+            _github_output(result, path=github_output)
+            print(json.dumps(result, sort_keys=True))
+            return
         result = verify_release_build_provider(
             environment_api(),
             repository=args.repository,
@@ -402,6 +425,22 @@ def _release(argv: list[str]) -> None:
             runtime_evidence=[
                 args.runtime_output / name for name in runtime["evidence"]
             ],
+        )
+    elif args.operation == "verify-evidence":
+        result = verify_release_build_provider(
+            environment_api(),
+            repository=args.repository,
+            authorization_path=args.authorization,
+            build_manifest_path=args.build_manifest,
+            manifest_path=args.wheelhouse_manifest,
+            lock_path=args.lock,
+            wheelhouse=args.wheelhouse,
+            release_artifacts=args.release_artifact,
+            verifier_run_id=_required_environment("GITHUB_RUN_ID"),
+            verifier_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
+            output_path=args.output,
+            runtime_report_path=args.runtime_report,
+            runtime_evidence=args.runtime_evidence,
         )
     elif args.operation == "build":
         result = record_release_build(
