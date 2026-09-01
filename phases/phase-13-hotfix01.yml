@@ -103,6 +103,9 @@ execution_evidence:
   - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
     result: pass
     notes: non-authoritative local evidence; all 236 positive contract nodes and all 69 isolated contract-gate controls passed with zero infrastructure exits or unexpected worktree changes
+  - command: bcf ci-github controller-pin resolve|compile; bcf ci sync-self-controller --check
+    result: pass
+    notes: provider APIs selected exact-main run 33456616842 and artifact 9781702346; archive digest, metadata, wheel inventory, commit, tree, run, attempt, and repository identity compiled into one projection with no hand-authored custody values
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
@@ -147,6 +150,7 @@ execution_evidence:
   - contract controls previously repeated the full 232-node selection for every named mutant; the evidence owner now executes each declared pytest oracle node in isolation after one full positive baseline, preserving causal proof while removing redundant suite work
   - the first optimized local capture rejected a legitimate spaced pytest parameter as unsafe; direct-argv node suffixes now accept printable ASCII while module paths remain repository-safe, and a spaced provider-identity parameter is a regression fixture
   - exact-main run 33455263686 failed at trusted admission before producer allocation because the installed 1f96e456 controller rejected the new job_roles workflow property; the bridge retains only authority-v1.1 base workflow fields, mechanically infers admission roles from producer source keys, and keeps privileged role commands fail-closed until the successor controller is installed
+  - compatibility PR 48 merged as cc3c1fecb24b5c3c6bd23eca901412d03e778a7d; exact-main run 33456616842 passed admission and every producer, correctly rejected active-phase closure, and emitted successor controller artifact 9781702346 whose provider and wheel digests were mechanically verified before projection
 closeout_requirements:
   claims:
     required_suites_green:

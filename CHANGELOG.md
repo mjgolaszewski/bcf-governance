@@ -73,6 +73,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Preserved the authority-v1.1 base workflow shape during self-controller rotation so
   the installed pre-enrichment controller can admit the exact-main build; privileged
   job inventories remain absent and therefore fail closed until its successor is installed.
+- Mechanically selected the successor controller from the newest exact-main package
+  producer, verified its provider archive and closed wheel inventory, and projected its
+  single canonical pin into the trusted control workflows without operator-authored custody.
 
 ### Changed
 
