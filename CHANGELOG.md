@@ -31,6 +31,8 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Rotated the pending trusted-controller target from the resolver-selected exact-main
   package artifact; provider IDs, digests, wheel hash, commit, and tree are compiler
   output rather than operator-entered release inputs.
+- Promoted that controller only after provider-compiled bootstrap and independent
+  probe evidence proved its installation on both uniquely labeled trusted runners.
 
 ### Fixed
 

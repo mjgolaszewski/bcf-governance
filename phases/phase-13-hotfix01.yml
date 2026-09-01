@@ -263,6 +263,7 @@ execution_evidence:
   - successful nightly run 33470712095 and weekly run 33470878520 proved full-history preflight and both profile pairs, but exposed that scheduled runs retained no artifact; the harness now emits exact-subject results and always-run uploads preserve failure evidence without duplicate execution
   - exact-main run 33471920316 passed every deterministic and code-executing producer for merge 67601972fa98e1b58641fbb56de78a081a823076 and refused only active P13-HF01 closure; trusted finalizer 33472160501 and publisher 33472182468 then completed successfully
   - controller rotation for the release-input resolver was derived entirely through provider resolution and checksum-inventory compilation; policy, bootstrap, and probe now carry the pending target while the installed 63c7c180 controller remains authoritative until independent runner confirmation
+  - bootstrap run 33472622431 and probe run 33472657328 passed on both uniquely labeled trusted runners; provider-compiled confirmation now promotes controller 67601972 while preserving exact bootstrap artifact custody
 closeout_requirements:
   claims:
     required_suites_green:
