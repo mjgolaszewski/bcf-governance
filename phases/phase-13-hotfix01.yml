@@ -229,6 +229,12 @@ execution_evidence:
   - command: bcf ci pin-authority --definition-commit f6f5c2a66bf37a047025642ba44c8949b9526754 --apply
     result: pass
     notes: the compiler derived every privileged workflow blob, SHA-256, definition commit, and exact job inventory from committed Git bytes
+  - command: bootstrap 33492766642; probe 33492854861; controller-pin confirm; sync-self-controller --confirmation
+    result: pass
+    notes: both trusted runner inventories independently proved controller f3c4eacb; provider-compiled confirmation is the only accepted promotion input
+  - command: bcf ci pin-authority --definition-commit a9e55f2b221fc61b30ba34899f76c863be8e91f3 --apply
+    result: pass
+    notes: the compiler pinned the final promoted workflow bytes from Git and derived every privileged workflow blob, digest, definition commit, and job inventory without operator-authored custody values
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,

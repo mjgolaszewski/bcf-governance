@@ -70,5 +70,5 @@ producer_workflows:
     build_controller: true
     evaluation_mode: release
 activation_variable: BCF_CI_AUTHORITY_ENABLED
-controller_commit: 7f116dbc7593688aee178cfdb47ff7bd24f85196
+controller_commit: f3c4eacbc9900a8b77d36384e0c19112073c12ac
 dispatch_exact_ref: false
