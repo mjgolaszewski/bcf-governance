@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-14-plan
   version: 1.0.0
   generated_at_utc: '2026-09-01T00:00:00Z'
-  status: planned
+  status: completed
   path: plans/phase-14-plan.yml
 phase:
   id: P14

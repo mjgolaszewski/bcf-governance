@@ -38,7 +38,9 @@ Release target: `0.8.0`.
 - Agents and maintainers edit graph contracts rather than generated GitHub YAML.
   Graph compilation now checks exact profile-required PR gate ownership, graph
   cycles, fan-in, resource and trust mappings, semantic owners, action pins,
-  extension applicability, and hosted-wait prohibitions before workflow rendering.
+  extension applicability, hosted-wait prohibitions, and every job or component
+  condition's `needs.*` references against its declared dependency edges before
+  workflow rendering.
 - Negative-control execution now mechanically refreshes registered graph input
   locks and generated projections inside each isolated mutant worktree, ensuring
   the oracle observes the intended semantic defect instead of incidental digest
