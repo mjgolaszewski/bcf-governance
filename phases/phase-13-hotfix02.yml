@@ -4,7 +4,7 @@ document:
   id: project-phase-13-hotfix02
   version: 1.0.0
   generated_at_utc: '2026-09-01T00:00:00Z'
-  status: active
+  status: planned
   path: phases/phase-13-hotfix02.yml
 hotfix:
   id: P13-HF02
