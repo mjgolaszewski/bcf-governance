@@ -47,7 +47,7 @@ environment_facts:
     - observability contracts are scaffolded under contracts/observability/v1/
     - structural anti-drift gates are scaffolded for module size, layer ownership, bounded-context ownership, CQRS side rules, router thinness, and duplication
     - v0.7.0 is an annotated unsigned tag at 0e965b2197e776ad411b67820dbd5586263abde1; release 379785364 is published with three attested assets but reports immutable false and is not certified under corrected authority v1.1
-    - P13-HF01 exact-main and both scheduled mutant profiles passed on 652df02; P13-HF02 is active because verifier 33501188756 exposed duplicated exact-history assumptions and PR runs 33505006870/33505006839 proved the bootstrap dependency list duplicated canonical owners, so packaged custody, the selected environment, and failed terminal observations are now mechanically derived before expensive work
+    - P13-HF02 merged as ea637ce704f08a913dbd73ff7dac8429fa8c3b0a after repairing extracted-sdist custody, selected-environment bootstrap, causal terminal reporting, and fresh-session local truth; its exact-main run 33508892804 passed all 21 governance receipts but opened P13-HF03 when controller construction exposed a source-entrypoint import-authority defect after the wheel built
     - the P13 structural cutover retains authority-v1 readers, requires v1.1 for new exact-main and release commands, and keeps release execution unreachable until provider workflow identities are pinned and activated
     - P01 through P12 roadmap detail is owned only by plans/phase-history.yml; active product and build roadmaps contain P13 and mechanically validate their history boundary at P12
     - P13 preserves 21 gates while exact manifests and cause controls ratchet mechanically; workflow identity, admission roles, privileged jobs, controller custody, and release lock/manifest blobs are compiled from Git/provider bytes, verifier success binds controller-owned offline wheel/sdist/Twine execution and raw evidence, profile-v2 evidence semantics have one gate-contract owner, local PR and scheduled mutant entrypoints select canonical preflight, scheduled runs retain exact-subject artifacts, interpreter/venv identity is checked before evidence or mutants, and named mutants run only exact oracle nodes after one full positive baseline
@@ -84,7 +84,7 @@ known_constraints:
   - repository immutable-release settings, v0.7.1 tag creation, and publication require explicit owner approval after corrected exact-main and release authority evidence passes
   - hosted jobs run to completion without polling, sleeping, idle waiters, or route fallback
   - every BCF behavior commit updates and validates BCF's own applicable governance contracts before successor work begins
-  - cheap preflight validates every declared negative-control mutation path, source or YAML target, and test-failure oracle node against its exact manifest before allocating an evidence session; moved owners and renamed or parameterized tests cannot consume detached-worktree capacity merely to report stale control declarations
+  - cheap preflight validates every declared negative-control target and derives tracked Python entrypoints before allocating evidence; moved controls and module-time BCF imports without the correct source-root bootstrap fail before detached, package, mutant, or release work, and editable installs are never authority
   - profile_contract_version absence means 1.0; normal upgrades preserve the installed profile and contract version, and v2 promotion is explicit and monotonic
   - profile promotion never rewrites installed workflows; GitHub workflow adoption remains a separate explicit transaction
   - fresh Lite installations default to v1 while fresh Standard and Regulated installations default to v2
@@ -102,4 +102,4 @@ reusable_commands:
 references:
   governance: [AGENTS.yml, governance-profile.yml, architecture-boundaries.yml, schemas/, contracts/observability/v1/, plans/phase-ledger.yml, plans/phase-history.yml, docs/USAGE.md, docs/MAINTAINING.md, docs/ARCHITECTURE.md, docs/CI_AUTHORITY.md]
   product: [plans/product-spec.yml, plans/build-plan.yml]
-  execution: [plans/phase-13-plan.yml, plans/phase-13-workitems.yml, phases/phase-13-log.yml, phases/phase-13-hotfix01.yml, phases/phase-13-hotfix02.yml]
+  execution: [plans/phase-13-plan.yml, plans/phase-13-workitems.yml, phases/phase-13-log.yml, phases/phase-13-hotfix01.yml, phases/phase-13-hotfix02.yml, phases/phase-13-hotfix03.yml]

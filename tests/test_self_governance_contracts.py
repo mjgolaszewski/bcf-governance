@@ -228,6 +228,7 @@ def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
     assert "pip install build" not in build_script
     assert "pip download --only-binary=:all:" in build_script
     assert "'PyYAML>=6.0,<7' 'jsonschema>=4.21,<5'" in build_script
+    assert "python -I .github/scripts/test_release_artifacts.py" in build_script
     assert "--controller-wheel-dir .artifacts/trusted-control" in build_script
     assert "sha256sum ./*.whl CONTROL-METADATA.json" in build_script
 

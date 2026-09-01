@@ -59,6 +59,69 @@ def test_syntax_preflight_rejects_invalid_python(tmp_path: Path) -> None:
         preflight._syntax_checks(repo)
 
 
+def test_source_entrypoint_preflight_rejects_unbootstrapped_package_import(
+    tmp_path: Path,
+) -> None:
+    repo = _committed_repo(
+        tmp_path,
+        ".github/scripts/release.py",
+        "from bcf_governance.tooling import release_closure\n"
+        "if __name__ == '__main__':\n"
+        "    pass\n",
+    )
+
+    with pytest.raises(preflight.PreflightError, match="before establishing"):
+        preflight._source_entrypoint_authority(repo)
+
+
+def test_source_entrypoint_preflight_derives_valid_roots_without_a_file_list(
+    tmp_path: Path,
+) -> None:
+    repo = _committed_repo(
+        tmp_path,
+        "scripts/operator.py",
+        "import sys\nfrom pathlib import Path\n"
+        "sys.path.insert(0, str(Path(__file__).resolve().parents[1]))\n"
+        "from bcf_governance.tooling import preflight\n"
+        "if __name__ == '__main__':\n"
+        "    pass\n",
+    )
+    github = repo / ".github/scripts/worker.py"
+    github.parent.mkdir(parents=True)
+    github.write_text(
+        "import sys\nfrom pathlib import Path\n"
+        "REPO_ROOT = Path(__file__).resolve().parents[2]\n"
+        "if str(REPO_ROOT) not in sys.path:\n"
+        "    sys.path.insert(0, str(REPO_ROOT))\n"
+        "from bcf_governance.tooling import release_closure\n"
+        "if __name__ == '__main__':\n"
+        "    pass\n",
+        encoding="utf-8",
+    )
+    private_runtime = repo / "scripts/_bcf_runtime/owned.py"
+    private_runtime.parent.mkdir(parents=True)
+    private_runtime.write_text(
+        "from bcf_governance import __version__\n"
+        "if __name__ == '__main__':\n"
+        "    pass\n",
+        encoding="utf-8",
+    )
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "add github entrypoint")
+
+    assert preflight._source_entrypoint_authority(repo) == {
+        "discovered": 2,
+        "package_imports_checked": 2,
+    }
+
+
+def test_repository_source_entrypoints_establish_import_authority() -> None:
+    report = preflight._source_entrypoint_authority(REPO_ROOT)
+
+    assert report["discovered"] > 0
+    assert report["package_imports_checked"] > 0
+
+
 def test_dirty_tree_fails_before_other_preflight_work(tmp_path: Path) -> None:
     repo = _committed_repo(tmp_path, "tracked.txt", "clean\n")
     (repo / "tracked.txt").write_text("dirty\n", encoding="utf-8")
@@ -149,6 +212,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     )
     monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {"python": 1})
     monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {"pytest": "9.0.3"})
+    monkeypatch.setattr(preflight, "_source_entrypoint_authority", lambda _: {"package_imports_checked": 1})
     monkeypatch.setattr(preflight, "validate_repo_root", lambda _: None)
     monkeypatch.setattr(preflight, "_workflow_authority", lambda _: 12)
     monkeypatch.setattr(preflight, "_self_controller", lambda _: 6)
@@ -185,6 +249,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         "git-state",
         "syntax",
         "interpreter",
+        "source-entrypoints",
         "governance",
         "workflow-authority",
         "self-controller",
@@ -217,6 +282,7 @@ def test_stale_pack_manifest_fails_before_evidence(
     monkeypatch.setattr(preflight, "_git_state", lambda _: {})
     monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
     monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {})
+    monkeypatch.setattr(preflight, "_source_entrypoint_authority", lambda _: {})
     monkeypatch.setattr(preflight, "validate_repo_root", lambda _: None)
     monkeypatch.setattr(preflight, "_workflow_authority", lambda _: 0)
     monkeypatch.setattr(preflight, "_self_controller", lambda _: 0)
@@ -250,6 +316,7 @@ def test_workflow_authority_failure_prevents_session_allocation(
     monkeypatch.setattr(preflight, "_git_state", lambda _: {})
     monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
     monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {})
+    monkeypatch.setattr(preflight, "_source_entrypoint_authority", lambda _: {})
     monkeypatch.setattr(preflight, "validate_repo_root", lambda _: None)
     monkeypatch.setattr(
         preflight,
@@ -272,7 +339,14 @@ def test_workflow_authority_failure_prevents_session_allocation(
             trace=calls.append,
         )
 
-    assert calls == ["git-state", "syntax", "interpreter", "governance", "workflow-authority"]
+    assert calls == [
+        "git-state",
+        "syntax",
+        "interpreter",
+        "source-entrypoints",
+        "governance",
+        "workflow-authority",
+    ]
 
 
 def test_missing_interpreter_distribution_fails_before_evidence(tmp_path: Path) -> None:
