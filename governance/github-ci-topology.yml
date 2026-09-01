@@ -68,6 +68,7 @@ producer_workflows:
   path: .github/workflows/governance-pack.yml
   inputs:
     build_controller: true
+    evaluation_mode: release
 activation_variable: BCF_CI_AUTHORITY_ENABLED
 controller_commit: 59f1c45662f07ca80f34d9b9acbd4478114e5756
 dispatch_exact_ref: false

@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 from xml.etree import ElementTree
+import zipfile
 
 import pytest
 
@@ -18,6 +19,44 @@ spec.loader.exec_module(release_artifacts)
 
 def test_current_source_contains_complete_sdist_test_payload() -> None:
     release_artifacts.validate_sdist_payload(REPO_ROOT)
+
+
+def test_pyproject_packages_every_discovered_runtime_asset() -> None:
+    admitted = release_artifacts.validate_package_data_contract(REPO_ROOT)
+    assert "bcf_governance/tooling/semantic_ownership_typescript.mjs" in admitted
+
+
+def test_missing_runtime_asset_is_rejected_before_wheel_execution(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    asset = source / "bcf_governance/tooling/analyzer.mjs"
+    asset.parent.mkdir(parents=True)
+    asset.write_text("export {};\n", encoding="utf-8")
+    (source / "pyproject.toml").write_text(
+        '[tool.setuptools.package-data]\nbcf_governance = ["tooling/*.mjs"]\n',
+        encoding="utf-8",
+    )
+    wheel = tmp_path / "bcf_governance-0.0.0-py3-none-any.whl"
+    with zipfile.ZipFile(wheel, "w") as archive:
+        archive.writestr("bcf_governance/__init__.py", "")
+
+    with pytest.raises(RuntimeError, match="wheel missing runtime assets"):
+        release_artifacts.validate_wheel_runtime_assets(wheel, source)
+
+    with zipfile.ZipFile(wheel, "a") as archive:
+        archive.write(asset, "bcf_governance/tooling/analyzer.mjs")
+    release_artifacts.validate_wheel_runtime_assets(wheel, source)
+
+
+def test_package_metadata_cannot_omit_discovered_runtime_assets(tmp_path: Path) -> None:
+    asset = tmp_path / "bcf_governance/tooling/analyzer.mjs"
+    asset.parent.mkdir(parents=True)
+    asset.touch()
+    (tmp_path / "pyproject.toml").write_text(
+        '[tool.setuptools.package-data]\nbcf_governance = []\n', encoding="utf-8"
+    )
+
+    with pytest.raises(RuntimeError, match="package data excludes runtime assets"):
+        release_artifacts.validate_package_data_contract(tmp_path)
 
 
 def test_missing_sdist_payload_mutant_is_rejected(tmp_path: Path) -> None:

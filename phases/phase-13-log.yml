@@ -116,6 +116,10 @@ summary:
   - exact-main 33476814352 passed every executable producer for token-isolation merge
     7c30cdca, then refused only active P13 closure; finalizer 33477079829 and publisher
     33477108514 completed, and the controller compiler selected artifact 9788519181
+  - Identity hosted proof 33483336456 passed its selected-environment front door and
+    consumer SOIP scan, then exposed that the installed BCF wheel omitted a runtime
+    TypeScript analyzer; source-discovered package selection, package-workflow preflight,
+    and exact built-wheel inspection now own the failure before controller publication
 workitems:
 - id: P13-P0-01
   status: IN_PROGRESS

@@ -65,6 +65,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 
 ### Fixed
 
+- Made package metadata admit every mechanically discovered non-Python runtime asset,
+  and made cheap package preflight plus built-wheel inspection reject missing tools or
+  analyzer payloads before controller publication, evidence capture, or mutation work.
 - Reconciled v0.7.0 as published and attested but provider-mutable historical
   custody; its tag, release, assets, and attestations remain unchanged, and no
   corrected-authority certification is claimed retroactively.

@@ -218,10 +218,8 @@ gates:
         max_skipped: 0
         artifact_binding: non_authoritative_until_captured
     negative_controls:
-    - id: contract-test-behavior-must-fail
-      mutation: {path: template-repo/governance/artifact-manifest.yml, search: 'pull_request_policy: required_update', replace: 'pull_request_policy:
-          optional'}
-      oracle: {kind: test_node_failure, node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']}
+    - {id: contract-test-behavior-must-fail, mutation: {path: template-repo/governance/artifact-manifest.yml, search: 'pull_request_policy: required_update', replace: 'pull_request_policy: optional'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']}}
+    - {id: package-runtime-asset-selection-must-fail, mutation: {path: pyproject.toml, search: ', "tooling/*.mjs"', replace: ''}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_artifacts::test_pyproject_packages_every_discovered_runtime_asset']}}
     - id: trusted-bootstrap-artifact-identity-must-fail
       mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'if pin["BCF_BOOTSTRAP_ARTIFACT_NAME"] != expected_name:', replace: 'if False:'}
       oracle:

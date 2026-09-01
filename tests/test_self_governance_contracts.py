@@ -195,7 +195,13 @@ def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
         index for index, step in enumerate(steps)
         if step.get("name") == "Run governance pack tests"
     )
-    assert build_index > pack_index
+    preflight_index = next(
+        index for index, step in enumerate(steps)
+        if step.get("name") == "Validate selected environment before package work"
+    )
+    assert preflight_index < pack_index < build_index
+    assert "scripts/preflight_governance.py" in steps[preflight_index]["run"]
+    assert "--python \"$(command -v python)\"" in steps[preflight_index]["run"]
     assert workflow[True]["workflow_call"]["inputs"]["build_controller"] == {
         "description": "Build the trusted controller artifact for an exact-main admission",
         "required": False,
@@ -211,8 +217,10 @@ def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
     )
     assert upload["with"]["retention-days"] == 30
     build_script = steps[build_index]["run"]
+    assert "pip install build" not in build_script
     assert "pip download --only-binary=:all:" in build_script
     assert "'PyYAML>=6.0,<7' 'jsonschema>=4.21,<5'" in build_script
+    assert "--controller-wheel-dir .artifacts/trusted-control" in build_script
     assert "sha256sum ./*.whl CONTROL-METADATA.json" in build_script
 
 
@@ -602,7 +610,7 @@ def test_self_control_plane_is_an_exact_v11_generator_product() -> None:
         trusted_labels=("self-hosted", "Linux", "X64", "bcf-governance", "vm-linux-ci-runner"),
         producer_jobs=(
             ("governance", "Run exact-main governance evidence", ".github/workflows/governance.yml", (("evaluation_mode", "closure"),)),
-            ("governance-pack", "Verify exact-main package and templates", ".github/workflows/governance-pack.yml", (("build_controller", True),)),
+            ("governance-pack", "Verify exact-main package and templates", ".github/workflows/governance-pack.yml", (("build_controller", True), ("evaluation_mode", "release"))),
         ),
         controller_commit=topology["controller_commit"],
     )
@@ -649,7 +657,13 @@ def test_exact_main_is_the_only_default_branch_producer() -> None:
                     "required": False,
                     "default": False,
                     "type": "boolean",
-                }
+                },
+                "evaluation_mode": {
+                    "description": "Preflight mode selected by the authenticated caller",
+                    "required": False,
+                    "default": "pr",
+                    "type": "string",
+                },
             }
         },
     }
@@ -672,7 +686,8 @@ def test_exact_main_is_the_only_default_branch_producer() -> None:
         ),
     }
     assert exact_main["jobs"]["governance-pack"]["with"] == {
-        "build_controller": True
+        "build_controller": True,
+        "evaluation_mode": "release",
     }
 
 

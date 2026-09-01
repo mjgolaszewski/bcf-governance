@@ -196,6 +196,9 @@ execution_evidence:
   - command: bcf ci-github controller-pin confirm; bcf ci sync-self-controller --pin PIN.json --confirmation CONFIRMATION.json --apply
     result: pass
     notes: bootstrap 33481575825 and probe 33481622963 independently proved the release-activation controller on both trusted runners; the provider compiler produced the only accepted promotion record and the projector updated every trusted consumer together
+  - command: GitHub Identity hosted proof 33483336456; mechanically discovered package-runtime asset contract
+    result: expected_fail_remediated
+    notes: selected-environment preflight and the consumer SOIP scan passed, then the installed controller wheel proved its TypeScript analyzer was absent; package metadata, package-workflow preflight, controller-wheel inspection, source tests, and a cause-verified package-data mutant now own that defect before publication or evidence work
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
