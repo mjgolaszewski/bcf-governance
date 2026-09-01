@@ -361,12 +361,29 @@ def test_governance_artifact_transport_restores_private_modes_before_capture(
 ) -> None:
     graph = validate_ci_graph(REPO_ROOT).graph
     components = _job("governance", "evidence")["executor"]["components"]
-    assert components.index("restore-evidence-modes") == (
+    assert components.index("restore-governance-session-modes") == (
         components.index("download-governance-session") + 1
     )
-    assert graph["step_components"]["restore-evidence-modes"]["effects"] == [
-        "restore-private-artifact-modes"
+    restore = graph["step_components"]["restore-governance-session-modes"]
+    assert restore["condition"] is None
+    assert restore["restores_private_artifacts"] == [
+        "governance-session"
     ]
+    assert graph["commands"][restore["command"]]["argv"][-1] == (
+        ".artifacts/bcf/sessions"
+    )
+    rendered = yaml.safe_load(render_ci_graph(REPO_ROOT)[".github/workflows/governance.yml"])
+    steps = rendered["jobs"]["evidence"]["steps"]
+    rendered_restore = next(
+        step for step in steps if step["name"] == "Restore downloaded evidence-session modes"
+    )
+    assert "if" not in rendered_restore
+    assert ".artifacts/bcf/sessions" in rendered_restore["run"]
+    assert steps.index(rendered_restore) + 1 == next(
+        index
+        for index, step in enumerate(steps)
+        if step["name"] == "Capture the mechanically derived evidence shard"
+    )
     root = tmp_path / "downloaded"
     session = root / "session-id"
     session.mkdir(parents=True)

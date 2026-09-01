@@ -55,9 +55,10 @@ Release target: `0.8.0`.
 
 - Made private evidence transport self-repairing and mechanically ordered. The
   graph now marks the single mode-restoration effect, requires it immediately
-  after an exact session download and before gate execution, and rejects missing
-  or delayed restoration. This prevents artifact-service permission normalization
-  from invalidating otherwise exact evidence sessions.
+  after an exact session download and before gate execution, binds its root to
+  the actual download destination, and requires its condition to match the
+  transport step. Missing, skipped, delayed, or misdirected restoration fails
+  compilation before artifact-service permission normalization can invalidate a run.
 - Made fresh-install evidence workflow paths and required events a mechanical
   projection of the installed graph. Standard and Regulated route `main` only
   through exact-main authority, while Lite retains its direct `push` entry.

@@ -230,7 +230,7 @@ def _apply_canonical_defaults(graph: dict[str, Any]) -> None:
             component.setdefault("id", None)
             component.setdefault("condition", None)
         if component["kind"] == "command":
-            component.setdefault("effects", [])
+            component.setdefault("restores_private_artifacts", [])
     for workflow in graph["workflows"]:
         workflow.setdefault("environment", {})
         for job in workflow["jobs"]:
@@ -256,6 +256,12 @@ def _validate_step_components(graph: dict[str, Any]) -> None:
         if component["kind"] == "command" and component["command"] not in commands:
             raise CIGraphError(
                 f"CI graph step component {component_id} references unknown command"
+            )
+        restored = set(component.get("restores_private_artifacts", []))
+        missing_restored = sorted(restored - artifacts)
+        if missing_restored:
+            raise CIGraphError(
+                f"CI graph step component {component_id} restores undeclared artifacts {missing_restored}"
             )
         for direction in ("produces", "consumes"):
             missing = sorted(set(component[direction]) - artifacts)
@@ -309,8 +315,7 @@ def _validate_private_transport(
     restores = [
         index
         for index, component_id in enumerate(components)
-        if "restore-private-artifact-modes"
-        in graph["step_components"][component_id].get("effects", [])
+        if graph["step_components"][component_id].get("restores_private_artifacts")
     ]
     downloads_are_contiguous = bool(protected_downloads) and protected_downloads == list(
         range(min(protected_downloads), max(protected_downloads) + 1)
@@ -323,6 +328,57 @@ def _validate_private_transport(
     ):
         raise CIGraphError(
             f"CI graph job {job['id']} must restore private artifact modes immediately after exact transport"
+        )
+    restore = graph["step_components"][components[restores[0]]]
+    if set(restore["restores_private_artifacts"]) != protected:
+        raise CIGraphError(
+            f"CI graph job {job['id']} private mode restoration must bind every transported artifact"
+        )
+    download_conditions = {
+        graph["step_components"][components[index]]["condition"]
+        for index in protected_downloads
+    }
+    if len(download_conditions) != 1 or restore["condition"] not in download_conditions:
+        raise CIGraphError(
+            f"CI graph job {job['id']} private mode restoration condition must match its transport"
+        )
+    download_roots = {
+        str(graph["step_components"][components[index]]["with"].get("path", ""))
+        for index in protected_downloads
+    }
+    argv = graph["commands"][restore["command"]]["argv"]
+    declared_roots = {
+        argv[index + 1]
+        for index, value in enumerate(argv[:-1])
+        if value == "--root"
+    }
+    if download_roots != declared_roots:
+        raise CIGraphError(
+            f"CI graph job {job['id']} private mode restoration root must match artifact custody"
+        )
+
+
+def _condition_needs(graph: dict[str, Any], condition: str | None) -> set[str]:
+    if condition is None or condition in {"success", "always", "failure", "cancelled"}:
+        return set()
+    return set(re.findall(r"\bneeds\.([A-Za-z0-9._-]+)\.", graph["conditions"][condition]))
+
+
+def _validate_condition_scope(
+    graph: dict[str, Any], job: dict[str, Any], component_ids: list[str]
+) -> None:
+    available = set(job["needs"])
+    references = _condition_needs(graph, job["condition"])
+    for component_id in component_ids:
+        references.update(
+            _condition_needs(
+                graph, graph["step_components"][component_id].get("condition")
+            )
+        )
+    missing = sorted(references - available)
+    if missing:
+        raise CIGraphError(
+            f"CI graph job {job['id']} condition references unavailable needs {missing}"
         )
 
 
@@ -437,6 +493,7 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                     raise CIGraphError(
                         f"CI graph job {job['id']} references unknown step components {missing_components}"
                     )
+                _validate_condition_scope(graph, job, executor["components"])
                 _validate_private_transport(graph, job, executor)
                 component_produces = {
                     artifact
@@ -510,6 +567,7 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                             f"gate shard job {job['id']} matrix does not exactly cover its shards"
                         )
             else:
+                _validate_condition_scope(graph, job, [])
                 _validate_private_transport(graph, job, executor)
         for job in workflow["jobs"]:
             for artifact in job["consumes"]:

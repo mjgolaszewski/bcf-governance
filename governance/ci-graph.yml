@@ -166,6 +166,14 @@ commands:
     - .artifacts/bcf/sessions
     cwd: .
     environment: {}
+  restore-governance-session-modes:
+    argv:
+    - '{python}'
+    - .github/scripts/restore_evidence_modes.py
+    - --root
+    - .artifacts/bcf/sessions
+    cwd: .
+    environment: {}
   restore-evidence-modes:
     argv:
     - '{python}'
@@ -364,7 +372,15 @@ step_components:
     name: Restore private evidence-session modes
     condition: evidence-prerequisites-green
     command: restore-evidence-modes
-    effects: [restore-private-artifact-modes]
+    restores_private_artifacts: [governance-receipts]
+    environment: {}
+    produces: []
+    consumes: []
+  restore-governance-session-modes:
+    kind: command
+    name: Restore downloaded evidence-session modes
+    command: restore-governance-session-modes
+    restores_private_artifacts: [governance-session]
     environment: {}
     produces: []
     consumes: []
@@ -566,7 +582,7 @@ workflows:
       - setup-python
       - install-governance
       - download-governance-session
-      - restore-evidence-modes
+      - restore-governance-session-modes
       - capture-governance-shard
       - upload-governance-receipts
     produces:

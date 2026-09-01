@@ -319,7 +319,7 @@ def test_graph_rejects_semantic_defect_classes(tmp_path: Path, mutate, message: 
 def _make_explicit_private_transport(graph: dict[str, object]) -> None:
     graph["commands"].update(
         {
-            "restore": {"argv": ["python", "restore.py"], "cwd": ".", "environment": {}},
+            "restore": {"argv": ["python", "restore.py", "--root", ".artifacts/bcf/sessions"], "cwd": ".", "environment": {}},
             "capture": {"argv": ["python", "capture.py"], "cwd": ".", "environment": {}},
         }
     )
@@ -331,7 +331,7 @@ def _make_explicit_private_transport(graph: dict[str, object]) -> None:
             },
             "restore-session": {
                 "kind": "command", "name": "Restore session", "command": "restore",
-                "effects": ["restore-private-artifact-modes"], "environment": {},
+                "restores_private_artifacts": ["session"], "environment": {},
                 "produces": [], "consumes": [],
             },
             "capture": {
@@ -349,7 +349,7 @@ def _make_explicit_private_transport(graph: dict[str, object]) -> None:
     evidence["strategy"] = {"fail_fast": True, "matrix": {"shard": [0, 1]}}
 
 
-@pytest.mark.parametrize("mutation", ["missing", "late"])
+@pytest.mark.parametrize("mutation", ["missing", "late", "wrong-condition", "wrong-root"])
 def test_explicit_private_artifact_transport_requires_immediate_mode_restore(
     tmp_path: Path, mutation: str,
 ) -> None:
@@ -357,12 +357,27 @@ def test_explicit_private_artifact_transport_requires_immediate_mode_restore(
     _make_explicit_private_transport(graph)
     components = graph["workflows"][0]["jobs"][1]["executor"]["components"]
     if mutation == "missing":
-        graph["step_components"]["restore-session"]["effects"] = []
-    else:
+        graph["step_components"]["restore-session"]["restores_private_artifacts"] = []
+    elif mutation == "late":
         components[:] = ["download-session", "capture", "restore-session"]
+    elif mutation == "wrong-condition":
+        graph["conditions"]["never-here"] = "needs.missing.result == 'success'"
+        graph["step_components"]["restore-session"]["condition"] = "never-here"
+    else:
+        graph["commands"]["restore"]["argv"][-1] = ".artifacts/bcf/fan-in"
     _write_graph(tmp_path, graph)
 
-    with pytest.raises(CIGraphError, match="restore private artifact modes immediately"):
+    with pytest.raises(CIGraphError, match="private artifact modes|private mode restoration|condition references unavailable"):
+        validate_ci_graph(tmp_path)
+
+
+def test_job_condition_cannot_reference_an_unavailable_dependency(tmp_path: Path) -> None:
+    graph = _graph()
+    graph["conditions"]["impossible"] = "needs.missing.result == 'success'"
+    graph["workflows"][0]["jobs"][0]["condition"] = "impossible"
+    _write_graph(tmp_path, graph)
+
+    with pytest.raises(CIGraphError, match="condition references unavailable needs"):
         validate_ci_graph(tmp_path)
 
 
