@@ -127,6 +127,9 @@ execution_evidence:
   - command: bcf ci-github controller-pin confirm --repository mjgolaszewski/bcf-governance --output CONFIRMATION.json; bcf ci sync-self-controller --pin PIN.json --confirmation CONFIRMATION.json --apply
     result: pass
     notes: authenticated exact-main bootstrap 33460260005 and later probe 33460300564 each passed their exact two-runner inventory; the compiler bound commit 9e23a345, tree a630ac7a, and installed target cc3c1fec without operator-authored custody values
+  - command: .venv/bin/python -m pytest -q tests/test_preflight.py tests/test_ci_authority.py tests/test_profile_contract_v2.py
+    result: pass
+    notes: 63 focused tests prove mechanically enriched authority, profile promotion, exact interpreter dependency versions, and symlinked or defective virtual-environment handling before evidence allocation
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
@@ -177,6 +180,7 @@ execution_evidence:
   - transactional rotation PR 50 passed protected runs 33459780284 and 33459780447 and merged as 9e23a345c1f9ec53b8db43a5243f8c33689e988e; exact-main run 33459999228 admitted through the prior installed controller, passed every producer, and refused only active-phase closure before bootstrap and probe independently established the successor installation
   - promotion PR 51 first failed hosted preflight in 9 seconds because it lacked the required changelog update; the canonical local PR helper had supplied base and event identity but omitted the enforcement flag, so that parity defect is now mechanically owned and mutation-tested before the PR is rerun
   - promotion PR 51 passed protected runs 33460963130 and 33460963175 and merged as a9eb330c9d261973f790f4f8d127f5588bbb6208; the installed successor can now consume mechanically derived exact privileged job inventories, so the compatibility omission is retired without copying provider display names
+  - selected-environment readiness now verifies lexical executable identity, virtualenv prefix/configuration/isolation, Python compatibility, and every declared distribution version in cheap preflight; BCF governance installation is aligned to pytest 9.0.3 so these defects cannot first surface in evidence or mutation lanes
 closeout_requirements:
   claims:
     required_suites_green:

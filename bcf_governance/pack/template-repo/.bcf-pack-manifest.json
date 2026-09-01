@@ -168,7 +168,7 @@
     },
     "requirements-governance.txt": {
       "operation": "copy",
-      "sha256": "1b5b1327e4f6323fb5b5cc8b50e8004448196dd2d8f5b89a67c8847c9d01ddb5"
+      "sha256": "f0d79682df9176062d55a059b0c80046665b39e23291957c2ceb5d2ca119b84a"
     },
     "schemas/agents.schema.json": {
       "operation": "copy",
@@ -300,7 +300,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_contracts.py": {
       "operation": "copy",
-      "sha256": "829861d9b901d3802d530b9fc82f6fd11929e2612d4b60d7db031289f65fac8f"
+      "sha256": "41ddc5c9ee21a68649e730f78fad3400d8b928e66b3580a958412273aa915fe2"
     },
     "scripts/_bcf_runtime/ci_authority_decisions.py": {
       "operation": "copy",
@@ -536,7 +536,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "83a62c1b1af6b210867a9a92821645864849f2d044ace649bb82864cf2839281"
+      "sha256": "a8f55c72b6aa16476f5cb52e82bc4bbe3920f0167d3a8b6debb68c236f6c83b2"
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",

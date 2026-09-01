@@ -163,11 +163,14 @@ producer, and privileged provider job names. Partial registry pinning is rejecte
 workflow bytes or copied job labels cannot defer a deterministic failure to remote
 CI.
 
-The same front door derives required interpreter distributions from the project's
-declared dependencies, configured optional groups, and explicit gate-tool additions
-in `governance/gate-contracts.yml`. Missing `pytest`, `pip`, or application
-dependencies are infrastructure failures before evidence capture; they cannot become
-successful controls or consume a remote evidence lane.
+The same front door derives required interpreter distributions and version constraints
+from the project's declared dependencies, configured optional groups, and explicit
+gate-tool additions in `governance/gate-contracts.yml`. It also proves that the selected
+executable retains its lexical identity and that a selected virtual environment has a
+consistent prefix, `pyvenv.cfg`, and no system-site-package exposure. Missing or wrong
+versions of `pytest`, `pip`, or application dependencies are infrastructure failures
+before evidence capture; they cannot become successful controls or consume a remote
+evidence lane.
 
 For test-suite controls, evidence capture runs the full positive selection once, then
 runs only each control's declared pytest oracle nodes in its detached mutant worktree.

@@ -243,12 +243,56 @@ def test_missing_interpreter_distribution_fails_before_evidence(tmp_path: Path) 
         encoding="utf-8",
     )
     (repo / "pyproject.toml").write_text(
-        "[project]\nname='fixture'\nversion='1.0.0'\ndependencies=[]\n[project.optional-dependencies]\n",
+        "[project]\nname='fixture'\nversion='1.0.0'\nrequires-python='>=3.11'\ndependencies=[]\n[project.optional-dependencies]\n",
         encoding="utf-8",
     )
 
-    with pytest.raises(preflight.PreflightError, match="required distribution"):
+    with pytest.raises(preflight.PreflightError, match="dependency contract failed"):
         preflight._interpreter_requirements(repo, Path(sys.executable))
+
+
+def test_wrong_interpreter_distribution_version_fails_before_evidence(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    (repo / "governance").mkdir(parents=True)
+    (repo / "governance/gate-contracts.yml").write_text(
+        "interpreter_contract: {project_dependencies: true, optional_dependency_groups: [], gate_requirements: {}}\n"
+        "gates: {}\n",
+        encoding="utf-8",
+    )
+    (repo / "pyproject.toml").write_text(
+        "[project]\nname='fixture'\nversion='1.0.0'\nrequires-python='>=3.11'\n"
+        "dependencies=['pytest<1']\n[project.optional-dependencies]\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(preflight.PreflightError, match=r"pytest .* violates <1"):
+        preflight._interpreter_requirements(repo, Path(sys.executable))
+
+
+def test_symlinked_virtualenv_interpreter_identity_is_validated(tmp_path: Path) -> None:
+    environment = tmp_path / ".venv"
+    subprocess.run(
+        [sys.executable, "-m", "venv", "--without-pip", str(environment)],
+        check=True,
+        capture_output=True,
+    )
+
+    identity = preflight._interpreter_identity(environment / "bin/python")
+
+    assert (environment / "bin/python").is_symlink()
+    assert identity["environment_kind"] == "virtualenv"
+    assert identity["environment_root"] == str(environment)
+
+
+def test_broken_project_virtualenv_fails_before_evidence(tmp_path: Path) -> None:
+    python = tmp_path / ".venv/bin/python"
+    python.parent.mkdir(parents=True)
+    python.symlink_to(sys.executable)
+
+    with pytest.raises(preflight.PreflightError, match="has no pyvenv.cfg"):
+        preflight._interpreter_identity(python)
 
 
 def test_interpreter_failure_prevents_session_allocation(
