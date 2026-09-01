@@ -22,6 +22,11 @@ from bcf_governance.tooling.ci_github_release import (
     verify_release_build,
     verify_release_build_provider,
 )
+from bcf_governance.tooling.ci_github_release_inputs import (
+    load_release_authorization_inputs,
+    release_input_outputs,
+    resolve_release_authorization_inputs,
+)
 from bcf_governance.tooling.ci_authority_state import WorkflowIdentity
 from bcf_governance.tooling.release_closure import verify_release_lock
 from bcf_governance.tooling.release_receipts import (
@@ -336,8 +341,25 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
         "bcf_governance.tooling.ci_github_release.select_latest_admission",
         lambda *args, **kwargs: ("100", 1),
     )
-    controller_wheel = tmp_path / "bcf_governance-0.7.1-py3-none-any.whl"
+    controller_root = tmp_path / "controller"
+    controller_root.mkdir()
+    controller_wheel = controller_root / "bcf_governance-0.7.1-py3-none-any.whl"
     controller_wheel.write_bytes(b"controller")
+    controller_metadata = _json(
+        controller_root / "CONTROL-METADATA.json",
+        {
+            "schema_version": "1.0",
+            "commit_sha": COMMIT,
+            "tree_sha": TREE,
+            "workflow_run_id": "100",
+            "workflow_run_attempt": "1",
+        },
+    )
+    (controller_root / "SHA256SUMS").write_text(
+        f"{_sha(controller_metadata)}  {controller_metadata.name}\n"
+        f"{_sha(controller_wheel)}  {controller_wheel.name}\n",
+        encoding="utf-8",
+    )
     controller_wheel_sha256 = _sha(controller_wheel)
     result = authorize_release(
         object(),  # type: ignore[arg-type]
@@ -358,7 +380,6 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
             "artifact_id": "42",
             "artifact_name": "controller",
             "provider_digest": f"sha256:{'b' * 64}",
-            "wheel_sha256": controller_wheel_sha256,
             "commit_sha": COMMIT,
             "tree_sha": TREE,
         },
@@ -367,9 +388,11 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
     )
     assert result["exact_main"]["certification_artifact"] == certification_artifact.as_dict()
     assert result["controller"]["run_id"] == "100"
+    assert result["controller"]["wheel_sha256"] == controller_wheel_sha256
     controller = dict(result["controller"])
-    controller["wheel_sha256"] = "0" * 64
-    with pytest.raises(GitHubControllerError, match="controller wheel bytes"):
+    controller.pop("wheel_sha256")
+    controller_wheel.write_bytes(b"corrupted-controller")
+    with pytest.raises(GitHubControllerError, match="controller artifact digest"):
         authorize_release(
             object(),  # type: ignore[arg-type]
             repository="owner/repo",
@@ -383,6 +406,139 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
             controller=controller,
             controller_wheel_path=controller_wheel,
             output_path=tmp_path / "rejected-authorization.json",
+        )
+
+
+def test_release_authorization_inputs_are_provider_resolved_without_caller_ids(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    main = MainIdentity("101", "main", COMMIT, TREE)
+    controller = ProviderArtifact(
+        "100", 2, "41", "controller", f"sha256:{'a' * 64}", {}
+    )
+    certification = ProviderArtifact(
+        "50", 3, "42", "bcf-exact-main-certification-50-3",
+        f"sha256:{'b' * 64}", {},
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.resolve_main",
+        lambda *args, **kwargs: main,
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.load_authority",
+        lambda *args, **kwargs: {},
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.select_latest_admission",
+        lambda *args, **kwargs: ("100", 2),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.resolve_self_controller_artifact",
+        lambda *args, **kwargs: (
+            {"repository_id": "101", "commit_sha": COMMIT, "tree_sha": TREE},
+            controller,
+        ),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.authority_role_workflow",
+        lambda *args, **kwargs: {"workflow_id": "202"},
+    )
+    selected: dict[str, object] = {}
+
+    def authenticate(*args: object, **kwargs: object):
+        selected.update(kwargs)
+        return SimpleNamespace(run_id="50", run_attempt=3), ()
+
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.authenticate_role_job_inventory",
+        authenticate,
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.resolve_role_artifact",
+        lambda *args, **kwargs: certification,
+    )
+    runs = (
+        {
+            "id": 49, "run_attempt": 1, "head_sha": COMMIT,
+            "head_branch": "main", "event": "workflow_run",
+            "repository": {"id": 101}, "head_repository": {"id": 101},
+        },
+        {
+            "id": 50, "run_attempt": 3, "head_sha": COMMIT,
+            "head_branch": "main", "event": "workflow_run",
+            "repository": {"id": 101}, "head_repository": {"id": 101},
+        },
+    )
+    api = SimpleNamespace(workflow_runs=lambda *args, **kwargs: runs)
+    path = tmp_path / "release-inputs.json"
+    result = resolve_release_authorization_inputs(
+        api, repository="owner/repo", output_path=path  # type: ignore[arg-type]
+    )
+
+    assert selected["run_id"] == 50
+    assert selected["run_attempt"] == 3
+    assert load_release_authorization_inputs(path) == result
+    assert release_input_outputs(result) == {
+        "subject_commit": COMMIT,
+        "subject_tree": TREE,
+        "certification_artifact_id": "42",
+        "certification_run_id": "50",
+        "controller_artifact_id": "41",
+        "controller_run_id": "100",
+    }
+
+
+def test_release_input_resolution_never_falls_back_from_newest_finalizer(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    main = MainIdentity("101", "main", COMMIT, TREE)
+    controller = ProviderArtifact(
+        "100", 2, "41", "controller", f"sha256:{'a' * 64}", {}
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.resolve_main",
+        lambda *args, **kwargs: main,
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.load_authority",
+        lambda *args, **kwargs: {},
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.select_latest_admission",
+        lambda *args, **kwargs: ("100", 2),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.resolve_self_controller_artifact",
+        lambda *args, **kwargs: (
+            {"repository_id": "101", "commit_sha": COMMIT, "tree_sha": TREE},
+            controller,
+        ),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.authority_role_workflow",
+        lambda *args, **kwargs: {"workflow_id": "202"},
+    )
+
+    def reject_newest(*args: object, **kwargs: object):
+        assert kwargs["run_id"] == 51
+        raise GitHubControllerError("newest finalizer is failed")
+
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.authenticate_role_job_inventory",
+        reject_newest,
+    )
+    runs = tuple(
+        {
+            "id": run_id, "run_attempt": 1, "head_sha": COMMIT,
+            "head_branch": "main", "event": "workflow_run",
+            "repository": {"id": 101}, "head_repository": {"id": 101},
+        }
+        for run_id in (50, 51)
+    )
+    api = SimpleNamespace(workflow_runs=lambda *args, **kwargs: runs)
+    with pytest.raises(GitHubControllerError, match="newest finalizer is failed"):
+        resolve_release_authorization_inputs(
+            api, repository="owner/repo", output_path=tmp_path / "inputs.json"  # type: ignore[arg-type]
         )
 
 

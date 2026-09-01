@@ -121,7 +121,10 @@ semantic profiles run nightly and the full profiles run weekly. Both scheduled
 workflows run `scripts/preflight_governance.py` with the selected interpreter
 after dependency installation and before their first mutant. Do not bypass or
 move that step: interpreter, virtualenv, manifest, syntax, source-lock, and
-ownership defects belong at the cheap front door, not in mutant evidence.
+ownership defects belong at the cheap front door, not in mutant evidence. Each
+profile writes an exact-commit/tree JSON result, and the workflow always uploads
+the run/attempt-scoped result directory. A failed mutant therefore retains its
+causal record without a second execution.
 
 ## Distribution tests
 

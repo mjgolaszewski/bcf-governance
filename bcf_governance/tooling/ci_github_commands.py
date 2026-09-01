@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import sys
+from typing import Any
 
 from .ci_authority_certification import CICertificationError
 from .ci_authority_contracts import CIAuthorityContractError
@@ -37,6 +38,11 @@ from .ci_github_release import (
     publish_certified_release,
     record_release_build,
     verify_release_build_provider,
+)
+from .ci_github_release_inputs import (
+    load_release_authorization_inputs,
+    release_input_outputs,
+    resolve_release_authorization_inputs,
 )
 from .ci_self_controller import (
     compile_self_controller_confirmation,
@@ -254,23 +260,27 @@ def _controller_pin(argv: list[str]) -> None:
 def _release_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="BCF authority-v1.1 release control.")
     operations = parser.add_subparsers(dest="operation", required=True)
+    resolve = operations.add_parser("resolve")
+    resolve.add_argument("--repository", required=True)
+    resolve.add_argument("--output", type=Path, required=True)
     authorize = operations.add_parser("authorize")
     authorize.add_argument("--repository", required=True)
     authorize.add_argument("--bundle", type=Path, required=True)
-    authorize.add_argument("--controller-artifact-id", required=True)
-    authorize.add_argument("--controller-artifact-name", required=True)
-    authorize.add_argument("--controller-run-id", required=True)
-    authorize.add_argument("--controller-run-attempt", required=True)
-    authorize.add_argument("--controller-provider-digest", required=True)
-    authorize.add_argument("--controller-wheel-sha256", required=True)
+    authorize.add_argument("--inputs", type=Path)
+    authorize.add_argument("--controller-artifact-id")
+    authorize.add_argument("--controller-artifact-name")
+    authorize.add_argument("--controller-run-id")
+    authorize.add_argument("--controller-run-attempt")
+    authorize.add_argument("--controller-provider-digest")
+    authorize.add_argument("--controller-wheel-sha256")
     authorize.add_argument("--controller-wheel", type=Path, required=True)
-    authorize.add_argument("--controller-commit", required=True)
-    authorize.add_argument("--controller-tree", required=True)
-    authorize.add_argument("--certification-artifact-id", required=True)
-    authorize.add_argument("--certification-artifact-name", required=True)
-    authorize.add_argument("--certification-run-id", required=True)
-    authorize.add_argument("--certification-run-attempt", required=True)
-    authorize.add_argument("--certification-provider-digest", required=True)
+    authorize.add_argument("--controller-commit")
+    authorize.add_argument("--controller-tree")
+    authorize.add_argument("--certification-artifact-id")
+    authorize.add_argument("--certification-artifact-name")
+    authorize.add_argument("--certification-run-id")
+    authorize.add_argument("--certification-run-attempt")
+    authorize.add_argument("--certification-provider-digest")
     authorize.add_argument("--output", type=Path, required=True)
     verify = operations.add_parser("verify")
     verify.add_argument("--repository", required=True)
@@ -311,10 +321,51 @@ def _release_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _authorization_inputs(args: argparse.Namespace) -> dict[str, Any]:
+    legacy = {
+        "controller": {
+            "run_id": args.controller_run_id,
+            "run_attempt": args.controller_run_attempt,
+            "artifact_id": args.controller_artifact_id,
+            "artifact_name": args.controller_artifact_name,
+            "provider_digest": args.controller_provider_digest,
+            "wheel_sha256": args.controller_wheel_sha256,
+            "commit_sha": args.controller_commit,
+            "tree_sha": args.controller_tree,
+        },
+        "certification_artifact": {
+            "run_id": args.certification_run_id,
+            "run_attempt": args.certification_run_attempt,
+            "artifact_id": args.certification_artifact_id,
+            "artifact_name": args.certification_artifact_name,
+            "provider_digest": args.certification_provider_digest,
+        },
+    }
+    supplied = [value for section in legacy.values() for value in section.values()]
+    if args.inputs is not None:
+        if any(value is not None for value in supplied):
+            raise GitHubControllerError(
+                "resolved release inputs cannot be combined with caller provider fields"
+            )
+        return load_release_authorization_inputs(args.inputs)
+    if any(value is None for value in supplied):
+        raise GitHubControllerError(
+            "release authorization requires resolved inputs or the complete legacy fields"
+        )
+    return legacy
+
+
 def _release(argv: list[str]) -> None:
     args = _release_parser().parse_args(argv)
     github_output = _github_output_path()
-    if args.operation == "verify":
+    if args.operation == "resolve":
+        result = resolve_release_authorization_inputs(
+            environment_api(), repository=args.repository, output_path=args.output
+        )
+        _github_output(release_input_outputs(result), path=github_output)
+        print(json.dumps(result, sort_keys=True))
+        return
+    elif args.operation == "verify":
         result = verify_release_build_provider(
             environment_api(),
             repository=args.repository,
@@ -342,29 +393,15 @@ def _release(argv: list[str]) -> None:
     else:
         api = environment_api()
         if args.operation == "authorize":
+            inputs = _authorization_inputs(args)
             result = authorize_release(
                 api,
                 repository=args.repository,
                 bundle_dir=args.bundle,
                 run_id=_required_environment("GITHUB_RUN_ID"),
                 run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
-                controller={
-                    "run_id": args.controller_run_id,
-                    "run_attempt": args.controller_run_attempt,
-                    "artifact_id": args.controller_artifact_id,
-                    "artifact_name": args.controller_artifact_name,
-                    "provider_digest": args.controller_provider_digest,
-                    "wheel_sha256": args.controller_wheel_sha256,
-                    "commit_sha": args.controller_commit,
-                    "tree_sha": args.controller_tree,
-                },
-                certification_artifact={
-                    "run_id": args.certification_run_id,
-                    "run_attempt": args.certification_run_attempt,
-                    "artifact_id": args.certification_artifact_id,
-                    "artifact_name": args.certification_artifact_name,
-                    "provider_digest": args.certification_provider_digest,
-                },
+                controller=inputs["controller"],
+                certification_artifact=inputs["certification_artifact"],
                 controller_wheel_path=args.controller_wheel,
                 output_path=args.output,
             )

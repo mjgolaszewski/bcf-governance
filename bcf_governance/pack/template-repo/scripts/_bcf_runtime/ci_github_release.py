@@ -13,6 +13,7 @@ from typing import Any, Iterable
 from .ci_authority_certification import verify_ci_certification
 from .ci_authority_contracts import authority_role_workflow
 from .ci_github_api import GitHubAPI
+from .ci_github_bootstrap import controller_metadata, verify_controller_inventory
 from .ci_github_artifacts import (
     authenticate_role_artifact,
     provider_digest,
@@ -179,18 +180,32 @@ def authorize_release(
         raise GitHubControllerError("release authorization requires the newest admission")
     required_controller = {
         "run_id", "run_attempt", "artifact_id", "artifact_name", "provider_digest",
-        "wheel_sha256", "commit_sha", "tree_sha",
+        "commit_sha", "tree_sha",
     }
-    if set(controller) != required_controller:
+    if set(controller) not in (required_controller, required_controller | {"wheel_sha256"}):
         raise GitHubControllerError("controller artifact identity is not exact")
     provider_digest(controller["provider_digest"])
     if controller["commit_sha"] != subject["commit_sha"] or (
         controller["tree_sha"] != subject["tree_sha"]
     ):
         raise GitHubControllerError("controller artifact is not bound to release subject")
-    if not re.fullmatch(r"[a-f0-9]{64}", controller["wheel_sha256"]):
-        raise GitHubControllerError("controller wheel digest must be SHA-256")
-    if _sha256(controller_wheel_path) != controller["wheel_sha256"]:
+    wheel, _ = verify_controller_inventory(controller_wheel_path.parent.resolve())
+    if wheel.resolve() != controller_wheel_path.resolve():
+        raise GitHubControllerError("controller wheel is not the authenticated inventory member")
+    if controller_metadata(controller_wheel_path.parent / "CONTROL-METADATA.json") != {
+        "schema_version": "1.0",
+        "commit_sha": controller["commit_sha"],
+        "tree_sha": controller["tree_sha"],
+        "workflow_run_id": controller["run_id"],
+        "workflow_run_attempt": str(controller["run_attempt"]),
+    }:
+        raise GitHubControllerError("controller metadata is not the release subject")
+    wheel_sha256 = _sha256(wheel)
+    caller_wheel_sha256 = controller.get("wheel_sha256")
+    if caller_wheel_sha256 is not None and (
+        not re.fullmatch(r"[a-f0-9]{64}", str(caller_wheel_sha256))
+        or str(caller_wheel_sha256) != wheel_sha256
+    ):
         raise GitHubControllerError("controller wheel bytes do not match release authority")
     authenticated_controller = authenticate_role_artifact(
         api,
@@ -226,7 +241,7 @@ def authorize_release(
             "run_attempt": identity.run_attempt,
             "workflow": asdict(identity.workflow),
         },
-        "controller": dict(sorted(controller.items())),
+        "controller": dict(sorted({**controller, "wheel_sha256": wheel_sha256}.items())),
         "authorized_at": _now(),
     }
     write_exclusive(output_path, payload)

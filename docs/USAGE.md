@@ -142,9 +142,15 @@ names, display titles, or earlier attempts.
 
 The controller-owned interfaces are `bcf ci-github exact-main
 admit|finalize|publish` and `bcf ci-github release
-authorize|build|verify|collect|inspect|publish`. Workflow YAML supplies
-environment and paths; it does not select provider state with `jq`, `max_by`,
-or ad hoc API queries.
+resolve|authorize|build|verify|collect|inspect|publish`. Before release
+authorization, `resolve` selects current exact main, its highest admitted
+attempt, the newest finalizer attempt, and both provider artifacts through
+authenticated APIs. It emits one immutable input document and only the scalar
+coordinates needed to download those exact artifacts. `authorize --inputs`
+re-authenticates the document and downloaded bytes. Compatibility callers may
+still supply the complete legacy field set, but BCF's own v1.1 workflow does
+not. Workflow YAML supplies environment and paths; it does not select provider
+state with `jq`, `max_by`, ad hoc API queries, or operator-copied IDs.
 
 Workflow custody is compiled, not transcribed. After committing final workflow
 bytes, derive the complete registry in one operation:

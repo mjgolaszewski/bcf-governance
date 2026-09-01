@@ -25,6 +25,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Made profile-v2 gate contracts the sole executable owner of evidence assertions and
   negative controls; validation rejects duplicated evidence-policy overrides instead of
   asking an operator to keep parallel declarations synchronized.
+- Added a trusted release-input resolver that derives exact-main, finalizer, controller,
+  run, attempt, artifact, commit, tree, and provider-digest custody from authenticated
+  provider state instead of accepting operator-authored release authority.
 
 ### Fixed
 
@@ -106,6 +109,8 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   and ownership defects now fail before mutation work begins.
 - Required scheduled mutant checkouts to fetch complete Git custody before preflight,
   so compacted phase records are mechanically verifiable before mutation work begins.
+- Added exact-subject scheduled mutant result documents and always-run, run/attempt-
+  scoped artifact upload so scheduled failures retain evidence without rerunning mutants.
 - Made `bcf ci local-pr` default to the canonical selected-interpreter preflight
   documented for contributors, removing a hidden argv sequencing requirement while
   retaining an explicit-command override.
