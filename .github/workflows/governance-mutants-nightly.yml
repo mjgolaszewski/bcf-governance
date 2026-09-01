@@ -21,6 +21,8 @@ jobs:
           python-version: "3.12"
       - name: Install governance dependencies
         run: python -m pip install -r requirements-governance.txt
+      - name: Validate selected interpreter and governance before mutants
+        run: python scripts/preflight_governance.py --repo-root . --mode release --python "$(command -v python)" --format text
       - name: Run high-value validator mutants
         run: python .github/scripts/run_validator_mutants.py --profile high-value
       - name: Run high-value governance semantic mutants

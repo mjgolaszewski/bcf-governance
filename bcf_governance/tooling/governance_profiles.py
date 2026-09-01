@@ -702,19 +702,19 @@ def apply_profile_contract(
 
     evidence_policy = _load_yaml(repo_root / "governance/evidence-policy.yml")
     evidence_policy["gate_overrides"] = {}
-    for target, gate in contract["gates"].items():
-        command_policy = metadata[target][1]
-        evidence = dict(gate.get("evidence", {}))
-        test_contract = evidence.get("test_contract")
-        if isinstance(test_contract, dict):
-            policy_test_contract = dict(test_contract)
-            policy_test_contract.pop("selectors", None)
-            evidence["test_contract"] = policy_test_contract
-        evidence_policy["gate_overrides"][target] = {
-            "evidence_kind": evidence.pop("kind", _evidence_kind(command_policy)),
-            "negative_controls": gate["negative_controls"],
-            **evidence,
-        }
+    if contract_version == "1.0":
+        for target, gate in contract["gates"].items():
+            command_policy = metadata[target][1]
+            evidence = dict(gate.get("evidence", {}))
+            test_contract = evidence.get("test_contract")
+            if isinstance(test_contract, dict):
+                policy_test_contract = dict(test_contract)
+                policy_test_contract.pop("selectors", None)
+                evidence["test_contract"] = policy_test_contract
+            evidence_policy["gate_overrides"][target] = {
+                "evidence_kind": evidence.pop("kind", _evidence_kind(command_policy)),
+                "negative_controls": gate["negative_controls"], **evidence,
+            }
     if profile_name == "regulated":
         evidence_policy["provenance"].update(contract.get("provenance", {}))
     (repo_root / "governance/evidence-policy.yml").write_text(

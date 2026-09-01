@@ -20,8 +20,12 @@ TEST_COMMAND_POLICIES = {
 
 
 def _validate_gate_contract_registry(
-    repo_root: Path, profile: dict[str, Any], contracts: dict[str, Any]
+    repo_root: Path, profile: dict[str, Any], contracts: dict[str, Any], policy: dict[str, Any]
 ) -> None:
+    if str(profile.get("profile_contract_version", "1.0")) == "2.0" and policy.get("gate_overrides"):
+        raise GovernanceValidationError(
+            "profile-v2 evidence semantics must be owned only by governance/gate-contracts.yml"
+        )
     configured = profile.get("release_gate_profile", {}).get("gates", {})
     configured = configured if isinstance(configured, dict) else {}
     policies = {

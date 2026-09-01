@@ -28,6 +28,12 @@ from .evidence_execution import (
     _runtime_command,
     _selected_python,
 )
+from .evidence_gate_contracts import (
+    _gate_contract,
+    _load_yaml,
+    expected_evidence_kinds,
+    expected_invocations,
+)
 from .evidence_sessions import allocate_session, bind_session, local_producer_identity
 from .evidence_sessions import receipt_workflow_identity
 from .evidence_test_adapters import (
@@ -38,27 +44,6 @@ from .negative_control_execution import negative_control_command
 
 
 RECEIPT_SUFFIX = ".evidence.json"
-TEST_POLICIES = {"automated_tests", "contract_tests", "architecture_tests"}
-TEST_POLICIES.update(
-    {
-        "architecture_module_size",
-        "architecture_layer_membership",
-        "architecture_context_membership",
-        "architecture_import_boundaries",
-        "architecture_cqrs_side",
-        "architecture_router_thinness",
-        "architecture_duplication",
-    }
-)
-
-
-def _load_yaml(path: Path) -> dict[str, Any]:
-    if not path.exists():
-        raise EvidenceError(f"missing required path {path}")
-    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict):
-        raise EvidenceError(f"{path} must deserialize to a mapping")
-    return payload
 
 
 def _git(repo_root: Path, *args: str, check: bool = True) -> str:
@@ -79,99 +64,6 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def _profile_gate(repo_root: Path, gate_id: str) -> tuple[str, dict[str, Any]]:
-    profile = _load_yaml(repo_root / "governance-profile.yml")
-    release_profile = profile.get("release_gate_profile")
-    gates = release_profile.get("gates") if isinstance(release_profile, dict) else None
-    if not isinstance(gates, dict):
-        raise EvidenceError("governance-profile.yml must define release_gate_profile.gates")
-    for configured_id, value in gates.items():
-        if not isinstance(value, dict):
-            continue
-        target = value.get("target")
-        if gate_id in {configured_id, target}:
-            if not isinstance(target, str) or not target:
-                raise EvidenceError(f"gate {configured_id} has no target")
-            return str(configured_id), value
-    raise EvidenceError(f"unknown governance gate {gate_id!r}")
-
-
-def _evidence_policy(repo_root: Path) -> dict[str, Any]:
-    return _load_yaml(repo_root / "governance/evidence-policy.yml")
-
-
-def _gate_contract(repo_root: Path, gate_id: str) -> dict[str, Any]:
-    configured_id, gate = _profile_gate(repo_root, gate_id)
-    policy = _evidence_policy(repo_root)
-    overrides = policy.get("gate_overrides")
-    override: dict[str, Any] = {}
-    if isinstance(overrides, dict):
-        candidate = overrides.get(gate.get("target"), overrides.get(configured_id, {}))
-        if isinstance(candidate, dict):
-            override = candidate
-    registry = _load_yaml(repo_root / "governance/gate-contracts.yml")
-    registry_gates = registry.get("gates")
-    if gate.get("status") != "required":
-        raise EvidenceError(f"gate {gate_id!r} is not applicable to the selected profile")
-    if not isinstance(registry_gates, dict) or str(gate["target"]) not in registry_gates:
-        raise EvidenceError(f"gate {gate_id!r} has no canonical argv contract")
-    executable = registry_gates[str(gate["target"])]
-    if not isinstance(executable, dict) or not isinstance(executable.get("invocation"), dict):
-        raise EvidenceError(f"gate {gate_id!r} invocation contract is invalid")
-    command_policy = str(gate.get("command_policy", ""))
-    default_kind = (
-        "test_suite"
-        if command_policy in TEST_POLICIES
-        else "security_review"
-        if command_policy == "security_review"
-        else "runtime_health"
-        if command_policy == "runtime_smoke"
-        else "gate"
-    )
-    kind = str(override.get("evidence_kind") or default_kind)
-    return {
-        "id": configured_id,
-        "target": str(gate["target"]),
-        "status": str(gate.get("status", "required")),
-        "command_policy": command_policy,
-        "evidence_kind": kind,
-        "negative_controls": override.get("negative_controls", []),
-        "test_contract": {**executable.get("evidence", {}).get("test_contract", {}), **override.get("test_contract", {})},
-        "environment_assertions": override.get("environment_assertions", []),
-        "output_requirements": override.get("output_requirements", []),
-        "freshness_limit_seconds": override.get("freshness_limit_seconds"),
-        "invocation": executable["invocation"],
-    }
-
-
-def expected_evidence_kinds(repo_root: Path) -> dict[str, str]:
-    """Return the policy-derived evidence kind for each configured gate target."""
-    profile = _load_yaml(repo_root / "governance-profile.yml")
-    release_profile = profile.get("release_gate_profile")
-    gates = release_profile.get("gates") if isinstance(release_profile, dict) else {}
-    if not isinstance(gates, dict):
-        return {}
-    return {
-        str(gate["target"]): str(_gate_contract(repo_root, str(gate["target"]))["evidence_kind"])
-        for gate in gates.values()
-        if isinstance(gate, dict)
-        and gate.get("status") == "required"
-        and isinstance(gate.get("target"), str)
-    }
-
-
-def expected_invocations(repo_root: Path) -> dict[str, dict[str, Any]]:
-    registry = _load_yaml(repo_root / "governance/gate-contracts.yml")
-    gates = registry.get("gates")
-    if not isinstance(gates, dict):
-        return {}
-    return {
-        str(target): dict(value["invocation"])
-        for target, value in gates.items()
-        if isinstance(value, dict) and isinstance(value.get("invocation"), dict)
-    }
 
 
 def _write_output_artifacts(
