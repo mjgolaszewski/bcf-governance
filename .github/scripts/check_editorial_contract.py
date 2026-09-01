@@ -29,6 +29,7 @@ CANONICAL_DOCUMENTS = {
         "Mechanical and negative testing",
         "Exact evidence and computed lifecycle",
         "Fail-fast and bounded execution",
+        "CI graph as a compiled contract",
         "Profiles and scope",
     ),
     "docs/CI_AUTHORITY.md": (
@@ -38,7 +39,12 @@ CANONICAL_DOCUMENTS = {
         "GitHub reference topology",
         "Release construction and publication",
     ),
-    "docs/USAGE.md": ("Profiles", "Gate contracts and CI", "Supporting commands"),
+    "docs/USAGE.md": (
+        "Profiles",
+        "CI graph ownership",
+        "Gate contracts and CI",
+        "Supporting commands",
+    ),
     "docs/MAINTAINING.md": ("Source ownership", "Verification", "Version and release"),
     "template-repo/docs/OPERATIONS.md": (
         "Release Validation",
@@ -151,22 +157,19 @@ def validate_editorial_contract(repo_root: Path = REPO_ROOT) -> list[str]:
     for phrase in required_positions:
         if phrase not in normalized_readme:
             errors.append(f"README.md: missing architectural position: {phrase}")
-    if f"Current package version: `v{__version__}`" not in readme:
+    if f"Development package version: `v{__version__}`" not in readme:
         errors.append("README.md: package version does not match version authority")
     if f"bcf_governance-{__version__}-py3-none-any.whl" not in readme:
         errors.append("README.md: wheel example does not match package version")
     if "--mode pull_request" in readme or "--mode pr" not in readme:
         errors.append("README.md: preflight example does not use the implemented PR mode")
-    for required_adoption_argument in (
-        "--candidate-label",
-        "--trusted-label",
-        "--producer-arg",
-        "--check",
+    for required_graph_command in (
+        "bcf ci graph validate --repo-root .",
+        "bcf ci graph render --repo-root . --check",
+        "bcf ci adopt github --repo-root . --check",
     ):
-        if required_adoption_argument not in readme:
-            errors.append(
-                "README.md: CI adoption example omits " + required_adoption_argument
-            )
+        if required_graph_command not in readme:
+            errors.append("README.md: graph adoption example omits " + required_graph_command)
 
     ci_guide = (repo_root / "docs/CI_AUTHORITY.md").read_text(encoding="utf-8")
     if "```mermaid" not in ci_guide:

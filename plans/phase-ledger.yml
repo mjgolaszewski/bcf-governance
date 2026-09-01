@@ -1,18 +1,18 @@
-document: {kind: active_execution_phase_ledger, name: BCF Governance Active Phase Ledger, id: bcf-governance-phase-ledger, version: 1.0.0, generated_at_utc: '2026-08-31T00:00:00Z', status: active_phase_completed, path: plans/phase-ledger.yml}
+document: {kind: active_execution_phase_ledger, name: BCF Governance Active Phase Ledger, id: bcf-governance-phase-ledger, version: 1.0.0, generated_at_utc: '2026-09-01T00:00:00Z', status: active, path: plans/phase-ledger.yml}
 build_plan_mandate:
   format: yaml
   required_fields: [tightly_scoped_deliverables, parallelizable_workstreams, hard_dependencies, docker_first_local_runtime, completeness_standard]
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P13
-  build_block: post-release-authority-remediation-0.7.1
-  plan: plans/phase-13-plan.yml
-  workitems: plans/phase-13-workitems.yml
-  log: phases/phase-13-log.yml
+  id: P14
+  build_block: consumer-ci-graph-0.8.0
+  plan: plans/phase-14-plan.yml
+  workitems: plans/phase-14-workitems.yml
+  log: phases/phase-14-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: completed
+  lifecycle_status: active
   owner: codex
   validation_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests]
 hotfix_lane:
@@ -24,42 +24,7 @@ hotfix_lane:
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
   open_records: []
-  remediation_history:
-  - id: P13-HF01
-    mode: full
-    recorded_at_utc: '2026-09-01T00:00:00Z'
-    action: remediated authority-v1.1 exact-main and release custody defects and prepared publication-disabled 0.7.1 closure
-    remediated_in_phase: P13
-    hotfix_log: phases/phase-13-hotfix01.yml
-    canonical_artifacts: [audits/v0.7.0-post-release-authority.yml, governance/ci-github-authority.yml, bcf_governance/tooling/ci_github_controller.py]
-    local_validation: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, .venv/bin/python .github/scripts/run_self_governance_gate.py test, .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test]
-  - id: P13-HF02
-    mode: full
-    recorded_at_utc: '2026-09-01T00:00:00Z'
-    action: remediated extracted-sdist custody, selected-environment bootstrap, causal terminal reporting, and fresh-session local truth defects
-    remediated_in_phase: P13
-    hotfix_log: phases/phase-13-hotfix02.yml
-    canonical_artifacts: [bcf_governance/tooling/release_runtime_verification.py, bcf_governance/tooling/interpreter_environment.py, requirements-governance.txt, .github/workflows/bcf-release-verifier.yml, .github/workflows/governance.yml]
-    local_validation: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, make -f Makefile.fragment release-check PYTHON=.venv/bin/python]
-  - id: P13-HF03
-    mode: full
-    recorded_at_utc: '2026-09-01T00:00:00Z'
-    action: made source-entrypoint import authority a mechanically derived cheap-preflight invariant and repaired exact-main controller construction
-    remediated_in_phase: P13
-    hotfix_log: phases/phase-13-hotfix03.yml
-    canonical_artifacts: [bcf_governance/tooling/preflight.py, .github/scripts/test_release_artifacts.py, .github/workflows/governance-pack.yml, governance/gate-contracts.yml]
-    local_validation: [.venv/bin/python -m pytest -q tests, exact contract-test evidence session f5b7e2b5a7175da6994d6256cca4e21b]
-  - id: P13-HF04
-    mode: full
-    recorded_at_utc: '2026-09-01T00:00:00Z'
-    action: replaced owner-selected publication coordinates with newest exact-main collector and closed asset inventory resolution before publisher activation
-    remediated_in_phase: P13
-    hotfix_log: phases/phase-13-hotfix04.yml
-    canonical_artifacts: [bcf_governance/tooling/ci_github_release_inputs.py, bcf_governance/tooling/ci_github_commands.py, governance/gate-contracts.yml, docs/USAGE.md]
-    local_validation: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, .venv/bin/python -m pytest -q tests/test_ci_github_release.py tests/test_pack_sync.py]
-  - {id: P13-HF05, mode: full, recorded_at_utc: '2026-09-01T00:00:00Z', action: mechanically projected the exact-main publication resolver controller as the pending bootstrap and probe target without promoting it, remediated_in_phase: P13, hotfix_log: phases/phase-13-hotfix05.yml, canonical_artifacts: [governance/self-governance-policy.yml, .github/workflows/bcf-trusted-control-bootstrap.yml, .github/workflows/bcf-trusted-control-probe.yml, .github/workflows/bcf-release-verifier.yml], local_validation: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, .venv/bin/python scripts/validate_governance_yaml.py --repo-root .]}
-  - {id: P13-HF06, mode: full, recorded_at_utc: '2026-09-01T00:00:00Z', action: consolidated final activation under one mechanical workflow owner promoted the independently proven controller pruned superseded YAML-decoding tests and activated exact-byte publication, remediated_in_phase: P13, hotfix_log: phases/phase-13-hotfix06.yml, canonical_artifacts: [bcf_governance/tooling/self_workflow_contracts.py, bcf_governance/tooling/preflight.py, governance/self-governance-policy.yml, governance/gate-contracts.yml, .github/workflows/bcf-release-publisher.yml, audits/p13-remediation-execution-audit.yml, CHANGELOG.md], local_validation: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, .venv/bin/python -m pytest -q tests, .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value]}
-  - {id: P13-HF07, mode: full, recorded_at_utc: '2026-09-01T00:00:00Z', action: recorded immutable v0.7.1 provider custody and required explicit short-lived repository-administration authority for future trusted publication, remediated_in_phase: P13, hotfix_log: phases/phase-13-hotfix07.yml, canonical_artifacts: [audits/v0.7.1-release-custody.yml, .github/workflows/bcf-release-publisher.yml, governance/self-governance-policy.yml, bcf_governance/tooling/self_workflow_contracts.py, docs/MAINTAINING.md, CHANGELOG.md], local_validation: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, .venv/bin/python -m pytest -q tests, make -f Makefile.fragment release-check PYTHON=.venv/bin/python]}
+  remediation_history: []
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
 - {type: decision, statement: BCF 0.7.0 is one release train and BCF must self-adopt every applicable Standard-v2 capability}
@@ -70,8 +35,11 @@ operator_requirements_choices_disambiguations:
 - {type: execution_boundary, statement: 'all candidate code uses fresh standard GitHub-hosted jobs because the repository is public; no candidate route polls, sleeps, idles, uses persistent local runners, or falls back, and trusted publication remains fail-closed until P10'}
 - {type: historical_custody, statement: v0.7.0 remains untouched as published and attested but provider-mutable historical custody and is not certified under corrected authority v1.1}
 - {type: release, statement: v0.7.1 uses an annotated unsigned tag and publication and immutable-release settings require explicit owner approval}
+- {type: ci_graph_authority, statement: agents and humans modify governance/ci-graph.yml or registered bounded extensions while deterministic code alone renders and validates workflow bytes}
+- {type: identity_preservation, statement: every current Identity workflow job trigger edge stable check runner mapping authority role cleanup contract and scheduled lane is preservation-locked; mutation requires offline no-loss and performance proofs and remote validation is limited to one canary plus activation PR and exact-main}
+- {type: hosted_frugality, statement: hosted candidate jobs execute their own bounded work and terminate; polling sleeping lease waiting and hosted waiters for local capacity are prohibited}
 active_delivery_priorities:
-  current_tranche: [post-release-authority-remediation-0.7.1]
+  current_tranche: [consumer-ci-graph-0.8.0]
 release_trains:
   release_1:
     target_version: 0.6.1
@@ -85,5 +53,6 @@ release_trains:
     target_version: 0.7.1
     status: completed
     focus: [authority_v1.1, common_admission_membership, closed_release_dependencies, independent_release_byte_verification, immutable_future_release]
+  release_4: {target_version: 0.8.0, status: active, focus: [canonical_consumer_ci_graph, bounded_project_extensions, deterministic_workflow_rendering, standard_v2_reference_graph, identity_no_loss_proof]}
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]

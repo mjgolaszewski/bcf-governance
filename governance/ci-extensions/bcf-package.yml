@@ -1,0 +1,151 @@
+document:
+  kind: ci_graph_extension
+  name: BCF package and template CI extension
+  id: bcf-package-ci-extension
+  version: 1.0.0
+  status: active
+  path: governance/ci-extensions/bcf-package.yml
+schema_version: '1.0'
+extension:
+  id: bcf-package
+  owner: bcf-governance
+  rationale: preserve package, template, controller-build, and protected-check behavior as governed graph nodes
+  attachment_point: exact-main-producer
+  applicability: [pull_request, push, workflow_call]
+  required_controls:
+    positive: [bcf-package-parity-positive]
+    negative: [bcf-package-parity-negative]
+    topology: [bcf-package-producer-topology]
+    cleanup: [bcf-package-output-cleanup]
+artifacts:
+  trusted-controller-bundle:
+    path: .artifacts/trusted-control
+    kind: control
+    scope: run-attempt
+    retention_days: 30
+conditions:
+  build-exact-main-controller: inputs.build_controller == true && github.ref == 'refs/heads/main'
+commands:
+  check-generated-pack:
+    argv: ['{python}', .github/scripts/build_pack_manifest.py, --check]
+    cwd: .
+    environment: {}
+  compile-governed-python:
+    argv: ['{python}', -m, compileall, -q, bcf_governance, scripts, template-repo/scripts, tests, .github/scripts]
+    cwd: .
+    environment: {}
+  build-trusted-controller:
+    argv: ['{python}', .github/scripts/build_trusted_controller.py, --output, .artifacts/trusted-control, --run-id, '${{ github.run_id }}', --run-attempt, '${{ github.run_attempt }}']
+    cwd: .
+    environment: {}
+step_components:
+  check-generated-pack:
+    kind: command
+    name: Verify canonical and packaged template bytes
+    command: check-generated-pack
+    environment: {}
+    produces: []
+    consumes: []
+  compile-governed-python:
+    kind: command
+    name: Verify governed Python syntax
+    command: compile-governed-python
+    environment: {}
+    produces: []
+    consumes: []
+  build-trusted-controller:
+    kind: command
+    name: Build the exact-main trusted controller bundle
+    condition: build-exact-main-controller
+    command: build-trusted-controller
+    environment: {}
+    produces: [trusted-controller-bundle]
+    consumes: []
+  upload-trusted-controller:
+    kind: action
+    name: Upload the exact-main trusted controller bundle
+    condition: build-exact-main-controller
+    action: upload-artifact
+    with:
+      name: bcf-trusted-control-${{ github.sha }}-${{ github.run_attempt }}
+      path: .artifacts/trusted-control
+      if-no-files-found: error
+      retention-days: 30
+    environment: {}
+    produces: [trusted-controller-bundle]
+    consumes: []
+workflows:
+- id: governance-pack
+  path: .github/workflows/governance-pack.yml
+  display_name: governance-pack
+  role: pull-request
+  events:
+  - {type: pull_request}
+  - type: workflow_call
+    inputs:
+      build_controller:
+        description: Build the trusted controller artifact for an exact-main admission
+        required: false
+        default: false
+        type: boolean
+      evaluation_mode:
+        description: Preflight mode selected by the authenticated caller
+        required: false
+        default: pr
+        type: string
+  permissions: {contents: read}
+  jobs:
+  - id: pack-checks
+    display_name: Test package, templates, and release tooling
+    semantic_role: bcf-package-template-parity
+    resource_class: hosted-python-latest
+    trust: candidate
+    needs: []
+    condition: success
+    timeout_minutes: 30
+    permissions: {contents: read}
+    checkout: false
+    components: []
+    executor:
+      kind: component_sequence
+      components: [checkout-candidate, setup-python, install-governance, check-generated-pack, build-trusted-controller, upload-trusted-controller]
+    produces: [trusted-controller-bundle]
+    consumes: []
+    required: true
+  - id: ast-checks
+    display_name: Verify template architecture boundaries
+    semantic_role: bcf-template-architecture-parity
+    resource_class: hosted-python-latest
+    trust: candidate
+    needs: []
+    condition: success
+    timeout_minutes: 10
+    permissions: {contents: read}
+    checkout: false
+    components: []
+    executor:
+      kind: component_sequence
+      components: [checkout-candidate, setup-python, compile-governed-python]
+    produces: []
+    consumes: []
+    required: true
+jobs:
+- workflow: exact-main
+  id: governance-pack
+  display_name: Verify exact-main package and templates
+  semantic_role: exact-main-package-producer
+  resource_class: hosted-python-latest
+  trust: candidate
+  needs: [admit]
+  condition: exact-main-admitted
+  timeout_minutes: 30
+  permissions: {contents: read}
+  checkout: false
+  components: []
+  executor:
+    kind: reusable_workflow
+    path: .github/workflows/governance-pack.yml
+    inputs: {build_controller: true, evaluation_mode: release}
+  produces: []
+  consumes: []
+  required: true

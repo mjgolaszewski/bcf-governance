@@ -103,6 +103,29 @@ Implementation modules have declared size and context budgets. These bounds
 make complete review more likely for both people and agents, but occasionally
 require a concept to be split across a stable private boundary.
 
+## CI graph as a compiled contract
+
+BCF separates CI intent from provider syntax. `governance/ci-graph.yml` owns
+the common graph and registers every project extension by path and digest. The
+compiler resolves defaults and declared value sources once, composes extensions
+at typed attachment points, validates graph and trust invariants, and only then
+renders GitHub workflow bytes.
+
+This is the same authority boundary used elsewhere in BCF: an agent may propose
+a graph edit, but it does not become correct because the generated YAML looks
+plausible. Deterministic checks own cycles, reachability, gate uniqueness,
+resource mapping, trust compatibility, evidence fan-in, artifact namespaces,
+single main-push authority, and hosted-wait prohibition. A generated-file hash
+header supplies provenance, while exact workflow authority separately pins the
+committed provider bytes used for certification.
+
+Extensions preserve application-specific topology. They may add jobs,
+workflows, dependencies, artifacts, and bounded executors; they may not insert
+raw YAML, duplicate semantic owners, or weaken preflight, truth, permissions,
+runner trust, or cleanup. This adds a compiler and extension schema to CI
+maintenance. In return, graph customization stays explicit without asking an
+agent or maintainer to synchronize derived workflow files manually.
+
 ## Profiles and scope
 
 Lite provides inexpensive bootstrap checks. Standard v2 blocks declared SOIP

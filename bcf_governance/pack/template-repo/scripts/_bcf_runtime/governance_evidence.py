@@ -41,6 +41,10 @@ from .evidence_test_adapters import (
     test_observations as _test_observations,
 )
 from .negative_control_execution import negative_control_command
+from .ci_graph_contracts import CIGraphError, GRAPH_PATH
+from .ci_graph_locks import apply_ci_graph_locks
+from .ci_graph_render import apply_ci_graph
+from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 
 
 RECEIPT_SUFFIX = ".evidence.json"
@@ -155,6 +159,44 @@ def _apply_negative_control(worktree: Path, control: dict[str, Any]) -> tuple[bo
     return True, tracked_relative
 
 
+def _project_graph_mutation(worktree: Path, mutation_path: str | None) -> set[str]:
+    """Refresh graph-owned derivations so an oracle observes the semantic mutant."""
+
+    if mutation_path is None:
+        return set()
+    graph_path = worktree / GRAPH_PATH
+    if not graph_path.is_file() or graph_path.is_symlink():
+        return {mutation_path}
+    try:
+        graph = load_yaml_path(graph_path)
+    except GraphYAMLError:
+        return {mutation_path}
+    registered_inputs = {
+        str(item.get("path"))
+        for item in graph.get("extensions", [])
+        if isinstance(item, dict)
+    } | {
+        str(item.get("path"))
+        for item in graph.get("value_sources", {}).values()
+        if isinstance(item, dict)
+    }
+    if mutation_path != GRAPH_PATH.as_posix() and mutation_path not in registered_inputs:
+        return {mutation_path}
+    try:
+        if mutation_path in registered_inputs:
+            apply_ci_graph_locks(worktree)
+        apply_ci_graph(worktree)
+    except CIGraphError:
+        # Invalid graph mutants are expected to fail at the canonical validator.
+        pass
+    changed = {
+        value
+        for value in _git(worktree, "diff", "--name-only", "HEAD").splitlines()
+        if value
+    }
+    return changed | {mutation_path}
+
+
 def _unexpected_worktree_changes(worktree: Path, allowed_tracked: set[str]) -> list[str]:
     modified = {
         value
@@ -254,6 +296,9 @@ def _negative_control_results(
             _git(repo_root, "worktree", "add", "--quiet", "--detach", str(worktree), "HEAD")
             try:
                 applied, mutation_path = _apply_negative_control(worktree, control)
+                allowed_mutations = (
+                    _project_graph_mutation(worktree, mutation_path) if applied else set()
+                )
                 env, _ = _execution_env(worktree, contract, python_executable)
                 observed = (
                     _run(negative_control_command(command, contract, control, python_executable, worktree), cwd=_execution_cwd(worktree, contract), env=env)
@@ -290,7 +335,7 @@ def _negative_control_results(
                     }
                 unexpected_changes = _unexpected_worktree_changes(
                     worktree,
-                    {mutation_path} if mutation_path is not None else set(),
+                    allowed_mutations,
                 )
                 if unexpected_changes:
                     oracle_observation = {

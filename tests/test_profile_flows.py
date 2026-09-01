@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -10,6 +12,8 @@ from typing import Any
 import pytest
 import yaml
 
+from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
+from bcf_governance.tooling.ci_graph_render import apply_ci_graph, check_ci_graph
 from bcf_governance.tooling.evidence_sessions import (
     allocate_session,
     local_producer_identity,
@@ -24,6 +28,16 @@ INSTALLER = REPO_ROOT / "scripts/install_governance_pack.py"
 PROFILE_CLI = REPO_ROOT / "scripts/profile_governance.py"
 DOCTOR = REPO_ROOT / "scripts/doctor_governance_pack.py"
 BUILTIN_GATES = {"governance-validate", "governance-exposure-scan"}
+EXPLICIT_HOSTED_RUNNERS = [
+    "--candidate-runner-label",
+    "ubuntu-24.04",
+    "--trusted-runner-label",
+    "ubuntu-24.04",
+    "--candidate-runner-kind",
+    "hosted",
+    "--trusted-runner-kind",
+    "hosted",
+]
 TEST_POLICIES = {
     "automated_tests",
     "contract_tests",
@@ -237,6 +251,7 @@ def test_lite_profile_install_evidence_truth_flow(
             "Lite Flow",
             "--product-name",
             "Lite Flow",
+            *EXPLICIT_HOSTED_RUNNERS,
             "--require-strict-validation",
         ],
         check=True,
@@ -281,6 +296,7 @@ def test_profile_promotion_is_checkable_monotonic_and_preserves_phase_artifacts(
             "Promotion Flow",
             "--product-name",
             "Promotion Flow",
+            *EXPLICIT_HOSTED_RUNNERS,
             "--require-strict-validation",
         ],
         check=True,
@@ -500,6 +516,7 @@ def test_full_profile_install_evidence_truth_flow(
             "Profile Flow",
             "--product-name",
             "Profile Flow",
+            *EXPLICIT_HOSTED_RUNNERS,
             "--require-strict-validation",
         ],
         check=True,
@@ -535,12 +552,22 @@ def test_full_profile_install_evidence_truth_flow(
     workflow = yaml.safe_load(
         (repo / ".github/workflows/governance.yml").read_text(encoding="utf-8")
     )
-    matrix = workflow["jobs"]["evidence"]["strategy"]["matrix"]["gate"]
+    compiled = validate_ci_graph(repo)
+    governance_workflow = next(
+        item for item in compiled.workflows if item["path"] == ".github/workflows/governance.yml"
+    )
+    governed_gates = [
+        gate
+        for job in governance_workflow["jobs"]
+        if job["executor"]["kind"] == "gate_group"
+        for gate in job["executor"]["gates"]
+    ]
     assert workflow["env"]["BCF_ENFORCE_PR_CHANGELOG"] == (
         "${{ github.event_name == 'pull_request' }}"
     )
     assert workflow["env"]["BCF_PR_BASE_SHA"] == "${{ github.event.pull_request.base.sha }}"
-    assert matrix == list(contracts["gates"])
+    assert len(governed_gates) == len(set(governed_gates))
+    assert set(governed_gates) == set(contracts["gates"])
     session = allocate_session(
         repo,
         evidence,
@@ -576,3 +603,75 @@ def test_full_profile_install_evidence_truth_flow(
     if profile == "regulated":
         assert (repo / "governance/MODEL_RISK_AND_PROVENANCE.md").is_file()
         assert (repo / "governance/HOTFIX_LANE.md").is_file()
+
+
+def test_clean_standard_v2_fixture_installs_extends_regenerates_and_rolls_back(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "clean-standard-graph"
+    repo.mkdir()
+    git(repo, "init", "--quiet")
+    git(repo, "config", "user.email", "graph-fixture@example.invalid")
+    git(repo, "config", "user.name", "Graph Fixture")
+    write_gate_runner(repo)
+    config = gate_config(repo, "standard", None)
+    git(repo, "add", ".")
+    git(repo, "commit", "--quiet", "-m", "fixture gate contracts")
+    subprocess.run(
+        [
+            sys.executable,
+            str(INSTALLER),
+            "--target",
+            str(repo),
+            "--profile",
+            "standard",
+            "--profile-config",
+            str(config),
+            "--project-id",
+            "clean-graph-fixture",
+            "--project-name",
+            "Clean Graph Fixture",
+            "--product-name",
+            "Clean Graph Fixture",
+            *EXPLICIT_HOSTED_RUNNERS,
+            "--require-strict-validation",
+        ],
+        check=True,
+    )
+    unrelated = repo / ".github/workflows/application.yml"
+    unrelated.write_text("name: application\non: workflow_dispatch\njobs: {}\n", encoding="utf-8")
+    unrelated_bytes = unrelated.read_bytes()
+    fixture_root = REPO_ROOT / "tests/fixtures/consumer_ci_graph"
+    extension_path = repo / "governance/ci-extensions/fixture.yml"
+    extension_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(fixture_root / "fixture-extension.yml", extension_path)
+    script_path = repo / ".github/scripts/fixture_extension.py"
+    script_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(fixture_root / "fixture_extension.py", script_path)
+    graph_path = repo / "governance/ci-graph.yml"
+    graph = yaml.safe_load(graph_path.read_text(encoding="utf-8"))
+    graph["extensions"] = [
+        {
+            "id": "fixture-consumer",
+            "path": "governance/ci-extensions/fixture.yml",
+            "sha256": hashlib.sha256(extension_path.read_bytes()).hexdigest(),
+        }
+    ]
+    graph_path.write_text(yaml.safe_dump(graph, sort_keys=False), encoding="utf-8")
+
+    apply_ci_graph(repo)
+    compiled = validate_ci_graph(repo)
+    governance = next(item for item in compiled.workflows if item["id"] == "governance")
+    assert [job["id"] for job in governance["jobs"]].count("fixture-extension") == 1
+    assert check_ci_graph(repo).status == "clean"
+    assert unrelated.read_bytes() == unrelated_bytes
+    output = repo / ".artifacts/bcf/fixture-extension.json"
+    subprocess.run([sys.executable, str(script_path), "--output", str(output)], check=True)
+    assert json.loads(output.read_text(encoding="utf-8"))["status"] == "pass"
+
+    extension_path.unlink()
+    graph["extensions"] = []
+    graph_path.write_text(yaml.safe_dump(graph, sort_keys=False), encoding="utf-8")
+    apply_ci_graph(repo)
+    assert check_ci_graph(repo).status == "clean"
+    assert unrelated.read_bytes() == unrelated_bytes

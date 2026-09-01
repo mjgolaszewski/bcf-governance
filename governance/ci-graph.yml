@@ -1,0 +1,817 @@
+document:
+  kind: ci_graph
+  name: BCF Governance CI Graph
+  id: bcf-governance-ci-graph
+  version: 1.0.0
+  status: active
+  path: governance/ci-graph.yml
+schema_version: '1.0'
+provider: github
+profile_contract_version: '2.0'
+default_branch: main
+trusted_controller:
+  kind: self_governance_policy
+  policy_path: governance/self-governance-policy.yml
+value_sources:
+  self-policy:
+    kind: yaml
+    path: governance/self-governance-policy.yml
+    sha256: f685ca46c4cccdee3548f5a78e22e40eb9186153357263df635e4bf69efdcacf
+extension_points:
+- preflight
+- evidence-lane
+- before-truth
+- after-truth
+- exact-main-producer
+- trusted-control
+- scheduled-lane
+- release-role
+extensions:
+- id: bcf-release
+  path: governance/ci-extensions/bcf-release.yml
+  sha256: e6ef0b58c2805b1b61437f611d8ebdad45a7b4feda7d5a1c366a7a4117c27905
+- id: bcf-trusted-control
+  path: governance/ci-extensions/bcf-trusted-control.yml
+  sha256: a46a91baf8e5cb608a08b5cb317b642efa6369f13eb35ad48d76e57974f239a6
+- id: bcf-package
+  path: governance/ci-extensions/bcf-package.yml
+  sha256: 955602d160cd8982c67c52fbdb71d7bc0edb53c740a3fb2801d367599b6a13bf
+resource_classes:
+  hosted-python:
+    runner: ubuntu-24.04
+    trust: candidate
+    hosted: true
+    python_version: '3.12'
+    capabilities:
+    - git
+    - python
+  hosted-python-latest:
+    runner: ubuntu-latest
+    trust: candidate
+    hosted: true
+    python_version: '3.12'
+    capabilities:
+    - git
+    - python
+  hosted-release:
+    runner: ubuntu-24.04
+    trust: candidate
+    hosted: true
+    python_version: '3.12'
+    capabilities:
+    - git
+    - python
+    - release-runtime
+  trusted-control:
+    runner:
+    - self-hosted
+    - Linux
+    - X64
+    - bcf-governance
+    - vm-linux-ci-runner
+    trust: trusted
+    hosted: false
+    python_version: '3.12'
+    capabilities:
+    - provider-api
+  trusted-control-instance:
+    runner:
+    - self-hosted
+    - Linux
+    - X64
+    - bcf-governance
+    - vm-linux-ci-runner
+    - ${{ matrix.trusted_runner }}
+    trust: trusted
+    hosted: false
+    python_version: '3.12'
+    capabilities:
+    - provider-api
+artifacts:
+  governance-session:
+    path: .artifacts/bcf/sessions
+    kind: session
+    scope: run-attempt
+    retention_days: 30
+  governance-receipts:
+    path: .artifacts/bcf/sessions
+    kind: lane-input
+    scope: run-attempt
+    retention_days: 30
+  governance-truth-report:
+    path: .artifacts/bcf/truth-report.json
+    kind: terminal
+    scope: run-attempt
+    retention_days: 30
+  exact-main-certification:
+    path: .artifacts/bcf/exact-main-certification
+    kind: control
+    scope: run-attempt
+    retention_days: 30
+  nightly-mutant-results:
+    path: .artifacts/scheduled-mutants
+    kind: control
+    scope: run-attempt
+    retention_days: 90
+  weekly-mutant-results:
+    path: .artifacts/scheduled-mutants
+    kind: control
+    scope: run-attempt
+    retention_days: 90
+conditions:
+  evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success'
+  exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true'
+  exact-main-admitted: needs.admit.result == 'success'
+  exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main'
+  exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main'
+  always-step: always()
+commands:
+  install-governance-dependencies:
+    argv:
+    - '{python}'
+    - -m
+    - pip
+    - install
+    - -r
+    - requirements-governance.txt
+    cwd: .
+    environment: {}
+  governance-preflight:
+    argv:
+    - '{python}'
+    - scripts/preflight_governance.py
+    - --repo-root
+    - .
+    - --mode
+    - ${{ inputs.evaluation_mode == 'closure' && 'release' || 'pr' }}
+    - --python
+    - '{python}'
+    - --artifact-root
+    - .artifacts/bcf
+    - --expected-producer
+    - evidence
+    - --format
+    - text
+    cwd: .
+    environment: {}
+  capture-governance-shard:
+    argv:
+    - '{python}'
+    - .github/scripts/capture_governance_shard.py
+    - --shard-index
+    - ${{ matrix.shard }}
+    - --shard-count
+    - '4'
+    - --session-root
+    - .artifacts/bcf/sessions
+    cwd: .
+    environment: {}
+  restore-evidence-modes:
+    argv:
+    - '{python}'
+    - .github/scripts/restore_evidence_modes.py
+    - --root
+    - .artifacts/bcf/fan-in
+    cwd: .
+    environment: {}
+  governance-truth:
+    argv:
+    - '{python}'
+    - scripts/governance_truth.py
+    - --repo-root
+    - .
+    - --evidence-dir
+    - .artifacts/bcf/fan-in
+    - --evaluation-mode
+    - ${{ inputs.evaluation_mode || 'pr' }}
+    - --format
+    - json
+    - --durable-ref
+    - github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth
+    - --output
+    - .artifacts/bcf/truth-report.json
+    cwd: .
+    environment: {}
+  governance-terminal-observation:
+    argv:
+    - '{python}'
+    - .github/scripts/governance_terminal_observation.py
+    - --repo-root
+    - .
+    - --output
+    - .artifacts/bcf/truth-report.json
+    - --preflight-result
+    - ${{ needs.preflight.result }}
+    - --evidence-result
+    - ${{ needs.evidence.result }}
+    - --repository
+    - ${{ github.repository }}
+    - --commit-sha
+    - ${{ github.sha }}
+    - --run-id
+    - ${{ github.run_id }}
+    - --run-attempt
+    - ${{ github.run_attempt }}
+    cwd: .
+    environment: {}
+  scheduled-preflight:
+    argv:
+    - '{python}'
+    - scripts/preflight_governance.py
+    - --repo-root
+    - .
+    - --mode
+    - release
+    - --python
+    - '{python}'
+    - --format
+    - text
+    cwd: .
+    environment: {}
+  nightly-validator-mutants:
+    argv:
+    - '{python}'
+    - .github/scripts/run_validator_mutants.py
+    - --profile
+    - high-value
+    - --output
+    - .artifacts/scheduled-mutants/nightly-validator.json
+    cwd: .
+    environment: {}
+  nightly-semantic-mutants:
+    argv:
+    - '{python}'
+    - .github/scripts/run_validator_mutants.py
+    - --profile
+    - semantic-high-value
+    - --output
+    - .artifacts/scheduled-mutants/nightly-semantic.json
+    cwd: .
+    environment: {}
+  weekly-validator-mutants:
+    argv:
+    - '{python}'
+    - .github/scripts/run_validator_mutants.py
+    - --profile
+    - full
+    - --output
+    - .artifacts/scheduled-mutants/weekly-validator.json
+    cwd: .
+    environment: {}
+  weekly-semantic-mutants:
+    argv:
+    - '{python}'
+    - .github/scripts/run_validator_mutants.py
+    - --profile
+    - semantic-full
+    - --output
+    - .artifacts/scheduled-mutants/weekly-semantic.json
+    cwd: .
+    environment: {}
+step_components:
+  checkout-candidate:
+    kind: action
+    name: Check out the exact candidate commit
+    action: checkout
+    with:
+      fetch-depth: 0
+      persist-credentials: false
+    environment: {}
+    produces: []
+    consumes: []
+  setup-python:
+    kind: action
+    name: Provision the declared Python runtime
+    action: setup-python
+    with:
+      python-version: '3.12'
+    environment: {}
+    produces: []
+    consumes: []
+  install-governance:
+    kind: command
+    name: Install the declared governance environment
+    command: install-governance-dependencies
+    environment: {}
+    produces: []
+    consumes: []
+  run-governance-preflight:
+    kind: command
+    name: Run canonical cheap preflight and allocate one evidence session
+    command: governance-preflight
+    environment: {}
+    produces: []
+    consumes: []
+  upload-governance-session:
+    kind: action
+    name: Upload the exact evidence session
+    action: upload-artifact
+    with:
+      name: bcf-session-${{ github.run_id }}-${{ github.run_attempt }}
+      path: .artifacts/bcf/sessions
+      if-no-files-found: error
+      retention-days: 30
+    environment: {}
+    produces:
+    - governance-session
+    consumes: []
+  download-governance-session:
+    kind: action
+    name: Download this attempt's evidence session
+    action: download-artifact
+    with:
+      name: bcf-session-${{ github.run_id }}-${{ github.run_attempt }}
+      path: .artifacts/bcf/sessions
+    environment: {}
+    produces: []
+    consumes:
+    - governance-session
+  capture-governance-shard:
+    kind: command
+    name: Capture the mechanically derived evidence shard
+    command: capture-governance-shard
+    environment: {}
+    produces: []
+    consumes: []
+  upload-governance-receipts:
+    kind: action
+    name: Upload this attempt's exact evidence shard
+    condition: always-step
+    action: upload-artifact
+    with:
+      name: bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-shard-${{ matrix.shard }}
+      path: .artifacts/bcf/sessions
+      if-no-files-found: error
+      retention-days: 30
+    environment: {}
+    produces:
+    - governance-receipts
+    consumes: []
+  download-governance-receipts:
+    kind: action
+    name: Download only this attempt's evidence shards
+    condition: evidence-prerequisites-green
+    action: download-artifact
+    with:
+      pattern: bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-*
+      path: .artifacts/bcf/fan-in
+    environment: {}
+    produces: []
+    consumes:
+    - governance-receipts
+  restore-evidence-modes:
+    kind: command
+    name: Restore private evidence-session modes
+    condition: evidence-prerequisites-green
+    command: restore-evidence-modes
+    environment: {}
+    produces: []
+    consumes: []
+  run-governance-truth:
+    kind: command
+    name: Verify exact-tree governance evidence
+    condition: evidence-prerequisites-green
+    command: governance-truth
+    environment: {}
+    produces:
+    - governance-truth-report
+    consumes: []
+  preserve-terminal-observation:
+    kind: command
+    name: Preserve a causal terminal result
+    condition: always-step
+    command: governance-terminal-observation
+    environment: {}
+    produces:
+    - governance-truth-report
+    consumes: []
+  upload-governance-truth:
+    kind: action
+    name: Upload this attempt's terminal truth report
+    condition: always-step
+    action: upload-artifact
+    with:
+      name: bcf-governance-truth-${{ github.run_id }}-${{ github.run_attempt }}
+      path: .artifacts/bcf/truth-report.json
+      if-no-files-found: error
+      retention-days: 30
+    environment: {}
+    produces:
+    - governance-truth-report
+    consumes: []
+  scheduled-preflight:
+    kind: command
+    name: Validate selected interpreter and governance before mutants
+    command: scheduled-preflight
+    environment: {}
+    produces: []
+    consumes: []
+  nightly-validator-mutants:
+    kind: command
+    name: Run high-value validator mutants
+    command: nightly-validator-mutants
+    environment: {}
+    produces: []
+    consumes: []
+  nightly-semantic-mutants:
+    kind: command
+    name: Run high-value governance semantic mutants
+    command: nightly-semantic-mutants
+    environment: {}
+    produces: []
+    consumes: []
+  upload-nightly-mutants:
+    kind: action
+    name: Retain exact nightly mutant results
+    condition: always-step
+    action: upload-artifact
+    with:
+      name: bcf-scheduled-mutants-nightly-${{ github.run_id }}-${{ github.run_attempt }}
+      path: .artifacts/scheduled-mutants
+      if-no-files-found: error
+      retention-days: 90
+    environment: {}
+    produces:
+    - nightly-mutant-results
+    consumes: []
+  weekly-validator-mutants:
+    kind: command
+    name: Run full validator mutant profile
+    command: weekly-validator-mutants
+    environment: {}
+    produces: []
+    consumes: []
+  weekly-semantic-mutants:
+    kind: command
+    name: Run full governance semantic mutant profile
+    command: weekly-semantic-mutants
+    environment: {}
+    produces: []
+    consumes: []
+  upload-weekly-mutants:
+    kind: action
+    name: Retain exact weekly mutant results
+    condition: always-step
+    action: upload-artifact
+    with:
+      name: bcf-scheduled-mutants-weekly-${{ github.run_id }}-${{ github.run_attempt }}
+      path: .artifacts/scheduled-mutants
+      if-no-files-found: error
+      retention-days: 90
+    environment: {}
+    produces:
+    - weekly-mutant-results
+    consumes: []
+workflows:
+- id: governance
+  path: .github/workflows/governance.yml
+  display_name: governance
+  role: pull-request
+  events:
+  - type: pull_request
+  - type: workflow_call
+    inputs:
+      evaluation_mode:
+        description: Exact truth evaluation mode selected by the trusted caller
+        required: false
+        default: pr
+        type: string
+  permissions:
+    contents: read
+  jobs:
+  - id: preflight
+    display_name: Validate governance front door
+    semantic_role: cheap-preflight
+    resource_class: hosted-python-latest
+    trust: candidate
+    needs: []
+    condition: success
+    timeout_minutes: 10
+    permissions:
+      contents: read
+    checkout: false
+    components: []
+    executor:
+      kind: component_sequence
+      components:
+      - checkout-candidate
+      - setup-python
+      - install-governance
+      - run-governance-preflight
+      - upload-governance-session
+    produces:
+    - governance-session
+    consumes: []
+    required: true
+  - id: evidence
+    display_name: Evidence / ${{ matrix.display_name }}
+    semantic_role: required-evidence-shards
+    resource_class: hosted-python-latest
+    trust: candidate
+    needs:
+    - preflight
+    condition: success
+    timeout_minutes: 60
+    permissions:
+      contents: read
+    checkout: false
+    components: []
+    strategy:
+      fail_fast: false
+      max_parallel: 4
+      matrix:
+        shard:
+        - 0
+        - 1
+        - 2
+        - 3
+        include:
+        - shard: 0
+          display_name: Boundaries, contracts, runtime, types, and secrets
+        - shard: 1
+          display_name: CQRS, module size, exposure, and dependency risk
+        - shard: 2
+          display_name: Duplication, routers, governance, and ownership
+        - shard: 3
+          display_name: Full tests, lint, import boundaries, and SBOM
+    executor:
+      kind: gate_shard
+      shard_key: shard
+      shard_count: 4
+      gates:
+      - governance-validate
+      - governance-exposure-scan
+      - architecture-test
+      - architecture-module-size
+      - architecture-layer-membership
+      - architecture-context-membership
+      - architecture-import-boundaries
+      - architecture-cqrs-side
+      - architecture-router-thinness
+      - architecture-duplication
+      - lint
+      - typecheck
+      - test
+      - contract-test
+      - security-secret-scan
+      - security-dependency-audit
+      - security-sbom
+      - security-vulnerability-scan
+      - security-review
+      - runtime-smoke
+      - semantic-ownership
+      components:
+      - checkout-candidate
+      - setup-python
+      - install-governance
+      - download-governance-session
+      - capture-governance-shard
+      - upload-governance-receipts
+    produces:
+    - governance-receipts
+    consumes:
+    - governance-session
+    required: true
+  - id: governance-truthfulness
+    display_name: Verify exact-tree governance evidence
+    semantic_role: terminal-governance-truth
+    resource_class: hosted-python-latest
+    trust: candidate
+    needs:
+    - preflight
+    - evidence
+    condition: always
+    timeout_minutes: 15
+    permissions:
+      contents: read
+    checkout: false
+    components: []
+    executor:
+      kind: terminal_truth
+      command: governance-truth
+      components:
+      - checkout-candidate
+      - setup-python
+      - install-governance
+      - download-governance-receipts
+      - restore-evidence-modes
+      - run-governance-truth
+      - preserve-terminal-observation
+      - upload-governance-truth
+    produces:
+    - governance-truth-report
+    consumes:
+    - governance-receipts
+    required: true
+- id: exact-main
+  path: .github/workflows/bcf-exact-main.yml
+  display_name: bcf/exact-main-admission
+  role: exact-main
+  events:
+  - type: push
+    branches:
+    - main
+  permissions:
+    contents: read
+  jobs:
+  - id: admit
+    display_name: Authenticate exact-main admission and publish pending authority
+    semantic_role: exact-main-admission
+    resource_class: trusted-control
+    trust: trusted
+    needs: []
+    condition: exact-main-authority-enabled
+    timeout_minutes: 5
+    permissions:
+      actions: read
+      contents: read
+      statuses: write
+    checkout: false
+    components:
+    - python
+    executor:
+      kind: authority
+      operation: admit
+    produces: []
+    consumes: []
+    required: true
+  - id: governance
+    display_name: Run exact-main governance evidence
+    semantic_role: exact-main-governance-producer
+    resource_class: hosted-python-latest
+    trust: candidate
+    needs:
+    - admit
+    condition: exact-main-admitted
+    timeout_minutes: 60
+    permissions:
+      contents: read
+    checkout: false
+    components: []
+    executor:
+      kind: reusable_workflow
+      path: .github/workflows/governance.yml
+      inputs:
+        evaluation_mode: closure
+    produces: []
+    consumes: []
+    required: true
+- id: exact-main-finalizer
+  path: .github/workflows/bcf-trusted-finalizer.yml
+  display_name: bcf/trusted-evidence-finalizer
+  role: trusted-control
+  events:
+  - type: workflow_run
+    workflows:
+    - bcf/exact-main-admission
+    types:
+    - completed
+  permissions:
+    actions: read
+    contents: read
+  jobs:
+  - id: finalize
+    display_name: Reconstruct the newest same-admission exact-main evidence
+    semantic_role: exact-main-trusted-finalizer
+    resource_class: trusted-control
+    trust: trusted
+    needs: []
+    condition: exact-main-finalizer-admitted
+    timeout_minutes: 5
+    permissions:
+      actions: read
+      contents: read
+    checkout: false
+    components:
+    - python
+    executor:
+      kind: authority
+      operation: finalize
+    produces:
+    - exact-main-certification
+    consumes: []
+    required: true
+- id: exact-main-publisher
+  path: .github/workflows/bcf-status-publisher.yml
+  display_name: bcf/exact-main-status-publisher
+  role: trusted-control
+  events:
+  - type: workflow_run
+    workflows:
+    - bcf/trusted-evidence-finalizer
+    types:
+    - completed
+  permissions:
+    actions: read
+    contents: read
+    statuses: write
+  jobs:
+  - id: publish
+    display_name: Publish newest authenticated exact-main status or revocation
+    semantic_role: exact-main-status-publisher
+    resource_class: trusted-control
+    trust: trusted
+    needs: []
+    condition: exact-main-publisher-admitted
+    timeout_minutes: 5
+    permissions:
+      actions: read
+      contents: read
+      statuses: write
+    checkout: false
+    components:
+    - python
+    executor:
+      kind: authority
+      operation: publish
+    produces: []
+    consumes:
+    - exact-main-certification
+    required: true
+- id: scheduled-nightly-mutants
+  path: .github/workflows/governance-mutants-nightly.yml
+  display_name: governance-mutants-nightly
+  role: scheduled
+  events:
+  - type: workflow_dispatch
+  - type: schedule
+    cron:
+    - 23 3 * * *
+  permissions:
+    contents: read
+  jobs:
+  - id: high-value-mutants
+    display_name: Exercise nightly high-value governance mutants
+    semantic_role: nightly-high-value-mutants
+    resource_class: hosted-python-latest
+    trust: candidate
+    needs: []
+    condition: success
+    timeout_minutes: 60
+    permissions:
+      contents: read
+    checkout: false
+    components: []
+    executor:
+      kind: component_sequence
+      components:
+      - checkout-candidate
+      - setup-python
+      - install-governance
+      - scheduled-preflight
+      - nightly-validator-mutants
+      - nightly-semantic-mutants
+      - upload-nightly-mutants
+    produces:
+    - nightly-mutant-results
+    consumes: []
+    required: true
+- id: scheduled-weekly-mutants
+  path: .github/workflows/governance-mutants-weekly.yml
+  display_name: governance-mutants-weekly
+  role: scheduled
+  events:
+  - type: workflow_dispatch
+  - type: schedule
+    cron:
+    - 41 4 * * 0
+  permissions:
+    contents: read
+  jobs:
+  - id: full-mutants
+    display_name: Exercise complete weekly governance mutants
+    semantic_role: weekly-full-mutants
+    resource_class: hosted-python-latest
+    trust: candidate
+    needs: []
+    condition: success
+    timeout_minutes: 120
+    permissions:
+      contents: read
+    checkout: false
+    components: []
+    executor:
+      kind: component_sequence
+      components:
+      - checkout-candidate
+      - setup-python
+      - install-governance
+      - scheduled-preflight
+      - weekly-validator-mutants
+      - weekly-semantic-mutants
+      - upload-weekly-mutants
+    produces:
+    - weekly-mutant-results
+    consumes: []
+    required: true
+policy:
+  exact_gate_once: true
+  complete_evidence_fan_in: true
+  single_push_authority: true
+  generated_workflows_only: true
+  forbid_hosted_waiters: true
+  forbidden_hosted_tokens:
+  - sleep
+  - poll
+  - wait-for-runner
+  - lease-runner

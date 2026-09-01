@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import importlib.util
 import os
+import shutil
 import stat
 import subprocess
 import sys
@@ -34,6 +35,7 @@ capture_gate = EVIDENCE_MODULE.capture_gate
 allocate_session = EVIDENCE_MODULE.allocate_session
 local_producer_identity = EVIDENCE_MODULE.local_producer_identity
 negative_control_command = EVIDENCE_MODULE.negative_control_command
+project_graph_mutation = EVIDENCE_MODULE._project_graph_mutation
 
 
 def _git(repo: Path, *args: str) -> None:
@@ -83,6 +85,37 @@ def test_diagnostic_control_preserves_canonical_command(tmp_path: Path) -> None:
         Path(sys.executable),
         tmp_path,
     ) is canonical
+
+
+def test_registered_graph_mutant_refreshes_locks_and_generated_bytes(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    for relative in ("governance", "schemas", ".github/workflows"):
+        shutil.copytree(REPO_ROOT / relative, repo / relative)
+    _git(repo, "init")
+    _git(repo, "config", "user.email", "evidence@example.test")
+    _git(repo, "config", "user.name", "Evidence Test")
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "graph baseline")
+    extension = repo / "governance/ci-extensions/bcf-release.yml"
+    source = extension.read_text(encoding="utf-8")
+    extension.write_text(
+        source.replace(
+            "condition: release-owner-main, timeout_minutes: 5",
+            "condition: success, timeout_minutes: 5",
+            1,
+        ),
+        encoding="utf-8",
+    )
+
+    allowed = project_graph_mutation(
+        repo, "governance/ci-extensions/bcf-release.yml"
+    )
+
+    assert "governance/ci-extensions/bcf-release.yml" in allowed
+    assert "governance/ci-graph.yml" in allowed
+    assert ".github/workflows/release.yml" in allowed
+    assert EVIDENCE_MODULE._unexpected_worktree_changes(repo, allowed) == []
 
 
 def test_evidence_run_captures_process_artifacts_test_counts_and_negative_control(

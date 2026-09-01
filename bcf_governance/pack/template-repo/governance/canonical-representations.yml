@@ -2,8 +2,8 @@ document: {kind: canonical_representation_registry, id: '{{PROJECT_ID}}-canonica
 enforcement:
   phase: P01
   default_mode: declared_families_blocking
-  declared_families: [evidence_session_identity]
-  blocking_semantic_ids: [governance.evidence-session.v1]
+  declared_families: [ci_graph_compilation, evidence_session_identity]
+  blocking_semantic_ids: [governance.ci-graph-compilation.v1, governance.evidence-session.v1]
   report_path: .artifacts/semantic-ownership/report.json # non-authoritative until captured in evidence
   unresolved_dynamic_policy: report
 source_authority:
@@ -15,6 +15,26 @@ source_authority:
   authoritative_python_roots: [scripts/_bcf_runtime]
   generated_mirror_roots: []
 representations:
+- semantic_id: governance.ci-graph-compilation.v1
+  family: ci_graph_compilation
+  schema_version: 1
+  lifecycle: enforced
+  finding_ids: []
+  canonical_type: {language: python, symbol: scripts/_bcf_runtime/ci_graph_contracts.py::CompiledCIGraph}
+  authoritative_owner: {symbol: scripts/_bcf_runtime/ci_graph_contracts.py::validate_ci_graph, owner_kind: compiler}
+  authorized_constructors_and_factories: [scripts/_bcf_runtime/ci_graph_contracts.py::validate_ci_graph]
+  authorized_pure_delegates: [scripts/_bcf_runtime/ci_graph_render.py::render_ci_graph]
+  hostile_boundary_decoder: {symbol: scripts/_bcf_runtime/ci_graph_contracts.py::validate_ci_graph, trust_boundary: project graph registered extensions and controller selection}
+  field_invariants: [{field: workflows, invariant: one push authority complete exact fan-in and unique semantic owners}, {field: inputs, invariant: registered extension and controller source bytes are content bound}]
+  permitted_defaults_and_single_application_point: []
+  accepted_aliases_and_single_ingress_boundary: []
+  persistence_codec_and_envelope: {applicability: required, codec_symbol: scripts/_bcf_runtime/ci_graph_render.py::render_ci_graph, semantic_id: governance.ci-graph-compilation.v1, schema_version: 1, exact_byte_format: deterministic YAML with provenance header, integrity_algorithm: SHA-256 and schema validation, identity_bindings: [graph_sha256, extension_sha256, input_sha256, workflow_path, job_id, semantic_role], migration_dispatch: graph schema_version}
+  protocol_translations: []
+  intentional_projections: []
+  declared_consumer_layers_and_sinks: {read: [scripts/_bcf_runtime/ci_graph_commands.py::run_graph_command], authorization: [scripts/_bcf_runtime/governance_validation/runner.py::validate_repo_root], persistence: [scripts/_bcf_runtime/ci_graph_render.py::apply_ci_graph], cache: [], queue: [], network: [], api: [], browser: []}
+  generated_source_authority: {authoritative_roots: [scripts/_bcf_runtime/ci_graph_contracts.py, scripts/_bcf_runtime/ci_graph_render.py], generated_mirrors: [], generator: .github/scripts/build_pack_manifest.py::main, parity_proof: graph render check}
+  migration_policy: {source_versions: [], destination_version: 1, owner: scripts/_bcf_runtime/ci_graph_contracts.py::validate_ci_graph, runtime_exclusion: generated workflow bytes have no independent authority, removal_condition: reviewed graph schema successor}
+  narrow_suppressions: []
 - semantic_id: governance.evidence-session.v1
   family: evidence_session_identity
   schema_version: 1

@@ -1,0 +1,250 @@
+document:
+  kind: ci_graph_extension
+  name: BCF trusted controller and authority canary extension
+  id: bcf-trusted-control-ci-extension
+  version: 1.0.0
+  status: active
+  path: governance/ci-extensions/bcf-trusted-control.yml
+schema_version: '1.0'
+extension:
+  id: bcf-trusted-control
+  owner: bcf-governance
+  rationale: preserve bootstrap, probe, and isolated revocation canary roles without copying custody values
+  attachment_point: trusted-control
+  applicability: [workflow_dispatch]
+  required_controls:
+    positive: [bcf-trusted-control-positive]
+    negative: [bcf-trusted-control-custody-negative]
+    topology: [bcf-trusted-control-topology]
+    cleanup: [bcf-trusted-control-workspace-cleanup]
+artifacts: {}
+conditions:
+  owner-main-dispatch: github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main'
+  owner-main-after-admission: needs.admit.result == 'success'
+  owner-main-observer: always() && github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main' && needs.admit.result == 'success'
+commands:
+  bootstrap-controller:
+    argv: ['{controller}', ci-github, bootstrap, --repository, '${{ github.repository }}', --artifact-dir, '${{ runner.temp }}/bcf-trusted-control-bootstrap', --artifact-id, '{env:BCF_BOOTSTRAP_ARTIFACT_ID}', --artifact-name, '{env:BCF_BOOTSTRAP_ARTIFACT_NAME}', --provider-digest, '{env:BCF_BOOTSTRAP_ARTIFACT_DIGEST}', --producer-run-id, '{env:BCF_BOOTSTRAP_RUN_ID}', --producer-run-attempt, '{env:BCF_BOOTSTRAP_RUN_ATTEMPT}', --repository-id, '{env:BCF_BOOTSTRAP_REPOSITORY_ID}', --commit, '{env:BCF_BOOTSTRAP_COMMIT_SHA}', --tree, '{env:BCF_BOOTSTRAP_TREE_SHA}', --wheel-sha256, '{env:BCF_BOOTSTRAP_WHEEL_SHA256}', --python, '{python}', --tool-cache, '${{ runner.tool_cache }}']
+    cwd: .
+    environment: {}
+    required_environment: [BCF_BOOTSTRAP_ARTIFACT_ID, BCF_BOOTSTRAP_ARTIFACT_NAME, BCF_BOOTSTRAP_ARTIFACT_DIGEST, BCF_BOOTSTRAP_RUN_ID, BCF_BOOTSTRAP_RUN_ATTEMPT, BCF_BOOTSTRAP_REPOSITORY_ID, BCF_BOOTSTRAP_COMMIT_SHA, BCF_BOOTSTRAP_TREE_SHA, BCF_BOOTSTRAP_WHEEL_SHA256]
+  probe-controller:
+    argv: ['{python}', .github/scripts/probe_trusted_controller.py, --policy, governance/self-governance-policy.yml, --tool-cache, '${{ runner.tool_cache }}']
+    cwd: .
+    environment: {}
+  canary-admit:
+    argv: ['{controller}', ci-github, canary, admit, --repository, '${{ github.repository }}', --sha, '${{ github.sha }}', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}']
+    cwd: .
+    environment: {}
+  canary-producer-a:
+    argv: ['{python}', .github/scripts/authority_canary_producer.py, --producer, a, --scenario, '${{ inputs.scenario }}']
+    cwd: .
+    environment: {}
+  canary-producer-b:
+    argv: ['{python}', .github/scripts/authority_canary_producer.py, --producer, b, --scenario, '${{ inputs.scenario }}']
+    cwd: .
+    environment: {}
+  canary-observe:
+    argv: ['{controller}', ci-github, canary, observe, --repository, '${{ github.repository }}', --sha, '${{ github.sha }}', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}']
+    cwd: .
+    environment: {}
+step_components:
+  download-bootstrap-controller:
+    kind: action
+    name: Download only the mechanically pinned controller artifact
+    action: download-artifact
+    with:
+      artifact-ids: '${{ env.BCF_BOOTSTRAP_ARTIFACT_ID }}'
+      github-token: '${{ github.token }}'
+      repository: '${{ github.repository }}'
+      run-id: '${{ env.BCF_BOOTSTRAP_RUN_ID }}'
+      path: '${{ runner.temp }}/bcf-trusted-control-bootstrap'
+      digest-mismatch: error
+    environment: {}
+    produces: []
+    consumes: []
+  bootstrap-controller:
+    kind: command
+    name: Authenticate provider custody and install offline through the controller
+    command: bootstrap-controller
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+    produces: []
+    consumes: []
+  probe-controller:
+    kind: command
+    name: Verify the mechanically pinned trusted BCF control
+    command: probe-controller
+    environment: {}
+    produces: []
+    consumes: []
+  canary-admit:
+    kind: command
+    name: Authenticate admission and publish isolated pending authority
+    command: canary-admit
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+    produces: []
+    consumes: []
+  canary-producer-a:
+    kind: command
+    name: Execute deterministic producer A
+    command: canary-producer-a
+    environment: {}
+    produces: []
+    consumes: []
+  canary-producer-b:
+    kind: command
+    name: Execute deterministic producer B
+    command: canary-producer-b
+    environment: {}
+    produces: []
+    consumes: []
+  canary-observe:
+    kind: command
+    name: Reconstruct exact-attempt jobs and publish isolated terminal authority
+    command: canary-observe
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+    produces: []
+    consumes: []
+workflows:
+- id: trusted-controller-bootstrap
+  path: .github/workflows/bcf-trusted-control-bootstrap.yml
+  display_name: bcf/trusted-control-bootstrap
+  role: trusted-control
+  events: [{type: workflow_dispatch}]
+  permissions: {actions: read, contents: read}
+  environment:
+    BCF_BOOTSTRAP_ARTIFACT_ID: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_ARTIFACT_ID}'
+    BCF_BOOTSTRAP_ARTIFACT_NAME: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_ARTIFACT_NAME}'
+    BCF_BOOTSTRAP_ARTIFACT_DIGEST: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_ARTIFACT_DIGEST}'
+    BCF_BOOTSTRAP_RUN_ID: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_RUN_ID}'
+    BCF_BOOTSTRAP_RUN_ATTEMPT: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_RUN_ATTEMPT}'
+    BCF_BOOTSTRAP_COMMIT_SHA: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_COMMIT_SHA}'
+    BCF_BOOTSTRAP_TREE_SHA: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_TREE_SHA}'
+    BCF_BOOTSTRAP_REPOSITORY_ID: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_REPOSITORY_ID}'
+    BCF_BOOTSTRAP_WHEEL_SHA256: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_WHEEL_SHA256}'
+  jobs:
+  - id: bootstrap
+    display_name: Install authenticated controller / ${{ matrix.trusted_runner }}
+    semantic_role: trusted-controller-bootstrap
+    resource_class: trusted-control-instance
+    trust: trusted
+    needs: []
+    condition: owner-main-dispatch
+    timeout_minutes: 10
+    permissions: {actions: read, contents: read}
+    checkout: false
+    components: []
+    strategy:
+      fail_fast: false
+      max_parallel: 2
+      matrix: {trusted_runner: [bcf-trusted-control-1, bcf-trusted-control-2]}
+    executor:
+      kind: component_sequence
+      components: [setup-python, download-bootstrap-controller, bootstrap-controller]
+    produces: []
+    consumes: []
+    required: true
+- id: trusted-controller-probe
+  path: .github/workflows/bcf-trusted-control-probe.yml
+  display_name: bcf/trusted-control-probe
+  role: trusted-control
+  events: [{type: workflow_dispatch}]
+  permissions: {contents: read}
+  jobs:
+  - id: probe
+    display_name: Verify exact-main controller / ${{ matrix.trusted_runner }}
+    semantic_role: trusted-controller-probe
+    resource_class: trusted-control-instance
+    trust: trusted
+    needs: []
+    condition: owner-main-dispatch
+    timeout_minutes: 5
+    permissions: {contents: read}
+    checkout: false
+    components: []
+    strategy:
+      fail_fast: false
+      max_parallel: 2
+      matrix: {trusted_runner: [bcf-trusted-control-1, bcf-trusted-control-2]}
+    executor:
+      kind: component_sequence
+      components: [setup-python, probe-controller]
+    produces: []
+    consumes: []
+    required: true
+- id: authority-canary
+  path: .github/workflows/bcf-authority-canary.yml
+  display_name: bcf/authority-revocation-canary
+  role: trusted-control
+  events:
+  - type: workflow_dispatch
+    inputs:
+      scenario:
+        description: Deterministic producer outcome for this exact run and every rerun attempt
+        required: true
+        default: success
+        type: choice
+        options: [success, producer-b-failure]
+  permissions: {}
+  jobs:
+  - id: admit
+    display_name: Admit isolated authority canary
+    semantic_role: authority-canary-admission
+    resource_class: trusted-control
+    trust: trusted
+    needs: []
+    condition: owner-main-dispatch
+    timeout_minutes: 2
+    permissions: {actions: read, contents: read, statuses: write}
+    checkout: false
+    components: []
+    executor: {kind: component_sequence, components: [setup-python, canary-admit]}
+    produces: []
+    consumes: []
+    required: true
+  - id: producer-a
+    display_name: Execute canary producer A
+    semantic_role: authority-canary-producer-a
+    resource_class: hosted-python-latest
+    trust: candidate
+    needs: [admit]
+    condition: owner-main-after-admission
+    timeout_minutes: 2
+    permissions: {}
+    checkout: false
+    components: []
+    executor: {kind: component_sequence, components: [checkout-candidate, setup-python, canary-producer-a]}
+    produces: []
+    consumes: []
+    required: true
+  - id: producer-b
+    display_name: Execute canary producer B
+    semantic_role: authority-canary-producer-b
+    resource_class: hosted-python-latest
+    trust: candidate
+    needs: [admit]
+    condition: owner-main-after-admission
+    timeout_minutes: 2
+    permissions: {}
+    checkout: false
+    components: []
+    executor: {kind: component_sequence, components: [checkout-candidate, setup-python, canary-producer-b]}
+    produces: []
+    consumes: []
+    required: true
+  - id: observe
+    display_name: Observe canary precedence mechanically
+    semantic_role: authority-canary-observer
+    resource_class: trusted-control
+    trust: trusted
+    needs: [admit, producer-a, producer-b]
+    condition: owner-main-observer
+    timeout_minutes: 2
+    permissions: {actions: read, contents: read, statuses: write}
+    checkout: false
+    components: []
+    executor: {kind: component_sequence, components: [setup-python, canary-observe]}
+    produces: []
+    consumes: []
+    required: true
+jobs: []

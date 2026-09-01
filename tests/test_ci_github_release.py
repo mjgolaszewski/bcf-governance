@@ -11,6 +11,7 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
+from bcf_governance import __version__
 from bcf_governance.tooling import ci_github_authority
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError
 from bcf_governance.tooling.ci_github_artifacts import (
@@ -745,7 +746,7 @@ def test_release_publication_inputs_select_newest_exact_collector_mechanically(
     assert release_publication_outputs(result) == {
         "subject_commit": COMMIT,
         "subject_tree": TREE,
-        "tag": "v0.7.1",
+        "tag": f"v{__version__}",
         "receipt_artifact_id": "71",
         "receipt_artifact_name": "bcf-release-receipt-81-2",
         "receipt_provider_digest": f"sha256:{'c' * 64}",

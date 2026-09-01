@@ -70,6 +70,7 @@ def _validate_gate_contract_registry(
             raise GovernanceValidationError(
                 "interpreter requirements name unknown gates: " + ", ".join(unknown)
             )
+    mutation_issues: list[str] = []
     for target, raw in gates.items():
         gate = _require_mapping(raw, context=f"gate contract {target}")
         invocation = _require_mapping(
@@ -131,6 +132,18 @@ def _validate_gate_contract_registry(
                     mutation_path,
                     context=f"gate contract {target}.negative_controls[{index}].mutation.path",
                 )
+                mutation_file = repo_root / mutation_path
+                search = mutation.get("search")
+                if not mutation_file.is_file() or mutation_file.is_symlink():
+                    mutation_issues.append(f"{control.get('id')}:missing-path")
+                elif not isinstance(search, str) or not search:
+                    mutation_issues.append(f"{control.get('id')}:missing-search")
+                else:
+                    occurrences = mutation_file.read_text(encoding="utf-8").count(search)
+                    if occurrences != 1:
+                        mutation_issues.append(
+                            f"{control.get('id')}:search-count={occurrences}"
+                        )
             oracle = _require_mapping(
                 control.get("oracle"),
                 context=f"gate contract {target}.negative_controls[{index}].oracle",
@@ -139,6 +152,11 @@ def _validate_gate_contract_registry(
                 raise GovernanceValidationError(
                     f"test gate contract {target} requires named test_node_failure controls"
                 )
+    if mutation_issues:
+        raise GovernanceValidationError(
+            "negative-control mutations must resolve exactly once: "
+            + ", ".join(mutation_issues)
+        )
 
 
 def _load_evidence_contracts(

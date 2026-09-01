@@ -19,7 +19,7 @@ planning_contract:
     - completeness_standard
   completeness_standard: full_completeness_for_declared_scope
 planning_inputs:
-  date: "2026-08-31"
+  date: "2026-09-01"
   planner: "codex"
   primary_source_of_truth: plans/product-spec.yml
   governance_references:
@@ -64,6 +64,6 @@ global_gates:
       - trusted control-plane VM executes no candidate code
       - every code-executing job receives a fresh disposable VM and ephemeral runner identity
       - no GitHub-hosted fallback is configured
-phase_history: {path: plans/phase-history.yml, through_phase: P12}
+phase_history: {path: plans/phase-history.yml, through_phase: P13}
 phase_sequence:
-  - {phase_id: P13, build_block: post-release-authority-remediation-0.7.1, objective: "remediate post-release exact-main and release authority defects", hard_dependencies: [P12], tightly_scoped_deliverables: ["authority v1.1 and common admission membership", "fail-closed provider role registration and trusted bootstrap", "independent release-byte verification and trusted receipt", "closed release dependencies and provider immutability proof", "exact Identity proof and provider custody"], parallelizable_workstreams: ["authority contracts and controller", "workflow topology", "release closure and verification", "governance and provider evidence"], verification_commands: [".venv/bin/python scripts/validate_governance_yaml.py --repo-root .", ".venv/bin/python -m pytest tests", "bcf truth"]}
+  - {phase_id: P14, build_block: consumer-ci-graph-0.8.0, objective: "make one governed graph plus bounded extensions the mechanical owner of consumer CI workflows", hard_dependencies: [P13], tightly_scoped_deliverables: ["graph and extension schemas", "deterministic compiler importer renderer and parity", "Standard and Lite generated graphs", "BCF dogfood and clean fixture", "Identity preservation and performance qualification"], parallelizable_workstreams: ["graph contracts compiler and CLI", "installer templates fixture and BCF dogfood", "Identity inventory parity and performance model", "governance documentation and release evidence"], verification_commands: [".venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text", ".venv/bin/python -m pytest -q tests", ".venv/bin/python scripts/validate_governance_yaml.py --repo-root ."]}

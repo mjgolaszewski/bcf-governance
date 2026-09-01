@@ -117,7 +117,7 @@
         "lifecycle": {"enum": ["planned", "enforced"]},
         "finding_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
         "canonical_type": {"type": "object", "additionalProperties": false, "required": ["language", "symbol"], "properties": {"language": {"enum": ["python", "typescript", "cross_language", "governance"]}, "symbol": {"$ref": "#/$defs/symbol"}}},
-        "authoritative_owner": {"type": "object", "additionalProperties": false, "required": ["symbol", "owner_kind"], "properties": {"symbol": {"$ref": "#/$defs/symbol"}, "owner_kind": {"enum": ["hostile_decoder", "constructor", "codec", "projection", "inventory_decoder", "analyzer"]}}},
+        "authoritative_owner": {"type": "object", "additionalProperties": false, "required": ["symbol", "owner_kind"], "properties": {"symbol": {"$ref": "#/$defs/symbol"}, "owner_kind": {"enum": ["hostile_decoder", "constructor", "codec", "projection", "inventory_decoder", "analyzer", "compiler"]}}},
         "authorized_constructors_and_factories": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/symbol"}},
         "authorized_pure_delegates": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/symbol"}},
         "hostile_boundary_decoder": {"type": "object", "additionalProperties": false, "required": ["symbol", "trust_boundary"], "properties": {"symbol": {"$ref": "#/$defs/symbol"}, "trust_boundary": {"type": "string", "minLength": 1}}},

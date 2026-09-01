@@ -1,0 +1,69 @@
+document: {kind: test_tombstone_registry, id: bcf-governance-test-tombstones, version: 1.0.0, status: active, path: governance/test-tombstones.yml}
+schema_version: '1.0'
+entries:
+- removed_node: tests.test_self_workflow_contracts::test_self_workflow_contract_mutants_fail_at_the_canonical_owner[owner-guard]
+  removed_in_phase: P14
+  source_commit: c1e1ee27d0f031097ff4c71a7d66409c813deb5b
+  reason: generated YAML mutation duplicated canonical graph ownership
+  replacement_owner: bcf_governance/tooling/ci_graph_contracts.py::validate_ci_graph
+  replacement_tests: [tests.test_ci_graph::test_graph_rejects_semantic_defect_classes, tests.test_release_workflow_contracts::test_release_authorizer_is_owner_dispatched_no_checkout_control_plane]
+- removed_node: tests.test_self_workflow_contracts::test_self_workflow_contract_mutants_fail_at_the_canonical_owner[resolver]
+  removed_in_phase: P14
+  source_commit: c1e1ee27d0f031097ff4c71a7d66409c813deb5b
+  reason: generated YAML mutation duplicated canonical graph command ownership
+  replacement_owner: governance/ci-extensions/bcf-release.yml::commands.resolve-release-publication
+  replacement_tests: [tests.test_release_workflow_contracts::test_release_file_selection_and_attempt_fan_in_are_controller_owned]
+- removed_node: tests.test_self_workflow_contracts::test_self_workflow_contract_mutants_fail_at_the_canonical_owner[provider-coordinate]
+  removed_in_phase: P14
+  source_commit: c1e1ee27d0f031097ff4c71a7d66409c813deb5b
+  reason: generated YAML mutation duplicated canonical artifact fan-in ownership
+  replacement_owner: governance/ci-extensions/bcf-release.yml::download-release-receipt
+  replacement_tests: [tests.test_release_workflow_contracts::test_release_file_selection_and_attempt_fan_in_are_controller_owned]
+- removed_node: tests.test_self_workflow_contracts::test_self_workflow_contract_mutants_fail_at_the_canonical_owner[attestation-inventory]
+  removed_in_phase: P14
+  source_commit: c1e1ee27d0f031097ff4c71a7d66409c813deb5b
+  reason: generated YAML mutation duplicated canonical release artifact ownership
+  replacement_owner: governance/ci-extensions/bcf-release.yml::attest-release-assets
+  replacement_tests: [tests.test_release_workflow_contracts::test_release_file_selection_and_attempt_fan_in_are_controller_owned]
+- removed_node: tests.test_self_workflow_contracts::test_self_workflow_contract_mutants_fail_at_the_canonical_owner[idle-runner]
+  removed_in_phase: P14
+  source_commit: c1e1ee27d0f031097ff4c71a7d66409c813deb5b
+  reason: hosted coordination is enforced by the graph compiler for every hosted command
+  replacement_owner: bcf_governance/tooling/ci_graph_contracts.py::_validate_hosted_commands
+  replacement_tests: [tests.test_ci_graph::test_graph_rejects_semantic_defect_classes]
+- removed_node: tests.test_self_workflow_contracts::test_self_workflow_contract_mutants_fail_at_the_canonical_owner[candidate-route]
+  removed_in_phase: P14
+  source_commit: c1e1ee27d0f031097ff4c71a7d66409c813deb5b
+  reason: generated runner bytes are now a projection of explicit resource classes
+  replacement_owner: bcf_governance/tooling/ci_graph_contracts.py::_validate_workflows
+  replacement_tests: [tests.test_ci_graph::test_graph_rejects_semantic_defect_classes]
+- removed_node: tests.test_self_workflow_contracts::test_self_workflow_contract_mutants_fail_at_the_canonical_owner[trusted-checkout]
+  removed_in_phase: P14
+  source_commit: c1e1ee27d0f031097ff4c71a7d66409c813deb5b
+  reason: trusted checkout prohibition is enforced before workflow rendering
+  replacement_owner: bcf_governance/tooling/ci_graph_contracts.py::_validate_workflows
+  replacement_tests: [tests.test_ci_graph::test_graph_rejects_semantic_defect_classes]
+- removed_node: tests.test_self_workflow_contracts::test_self_workflow_contract_mutants_fail_at_the_canonical_owner[job-name]
+  removed_in_phase: P14
+  source_commit: c1e1ee27d0f031097ff4c71a7d66409c813deb5b
+  reason: job display names are graph-owned and rendered mechanically
+  replacement_owner: governance/ci-graph.yml::workflows.jobs.display_name
+  replacement_tests: [tests.test_self_governance_contracts::test_governance_evidence_shards_derive_every_required_gate_once]
+- removed_node: tests.test_self_workflow_contracts::test_self_workflow_contract_mutants_fail_at_the_canonical_owner[hosted-fallback]
+  removed_in_phase: P14
+  source_commit: c1e1ee27d0f031097ff4c71a7d66409c813deb5b
+  reason: self policy and graph resource mappings are checked together
+  replacement_owner: bcf_governance/tooling/self_workflow_contracts.py::validate_self_workflow_contracts
+  replacement_tests: [tests.test_self_workflow_contracts::test_self_policy_cannot_weaken_compiled_graph_boundaries]
+- removed_node: tests.test_self_workflow_contracts::test_self_workflow_contract_mutants_fail_at_the_canonical_owner[publication-policy]
+  removed_in_phase: P14
+  source_commit: c1e1ee27d0f031097ff4c71a7d66409c813deb5b
+  reason: publication activation remains a self-policy invariant without raw workflow decoding
+  replacement_owner: bcf_governance/tooling/self_workflow_contracts.py::_self_policy
+  replacement_tests: [tests.test_self_workflow_contracts::test_self_workflow_contracts_are_one_preflight_owned_mechanical_control]
+- removed_node: tests.test_self_workflow_contracts::test_self_workflow_contract_mutants_fail_at_the_canonical_owner[publication-credential]
+  removed_in_phase: P14
+  source_commit: c1e1ee27d0f031097ff4c71a7d66409c813deb5b
+  reason: release secret requirements are owned by the canonical graph command
+  replacement_owner: governance/ci-extensions/bcf-release.yml::commands.publish-release.required_environment
+  replacement_tests: [tests.test_self_workflow_contracts::test_self_workflow_contracts_are_one_preflight_owned_mechanical_control]

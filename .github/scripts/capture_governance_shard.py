@@ -78,9 +78,26 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--shard-index", type=int, required=True)
     parser.add_argument("--shard-count", type=int, required=True)
-    parser.add_argument("--output-root", type=Path, required=True)
-    parser.add_argument("--session-manifest", type=Path, required=True)
+    parser.add_argument("--output-root", type=Path)
+    parser.add_argument("--session-manifest", type=Path)
+    parser.add_argument("--session-root", type=Path)
     args = parser.parse_args()
+    explicit = args.output_root is not None or args.session_manifest is not None
+    if explicit == (args.session_root is not None):
+        raise SystemExit(
+            "provide both --output-root/--session-manifest or only --session-root"
+        )
+    if explicit:
+        if args.output_root is None or args.session_manifest is None:
+            raise SystemExit("explicit evidence session requires both paths")
+        output_root = args.output_root
+        session_manifest = args.session_manifest
+    else:
+        manifests = sorted(args.session_root.glob("*/evidence-session.json"))
+        if len(manifests) != 1 or any(path.is_symlink() for path in manifests):
+            raise SystemExit("session root must contain exactly one nonsymlink manifest")
+        session_manifest = manifests[0]
+        output_root = session_manifest.parent
     gates = partition_required_gates(
         REPO_ROOT, shard_index=args.shard_index, shard_count=args.shard_count
     )
@@ -97,11 +114,11 @@ def main() -> None:
                 "--gate",
                 gate,
                 "--output",
-                str(args.output_root / gate),
+                str(output_root / gate),
                 "--python",
                 sys.executable,
                 "--session-manifest",
-                str(args.session_manifest),
+                str(session_manifest),
             ],
             cwd=REPO_ROOT,
             check=False,

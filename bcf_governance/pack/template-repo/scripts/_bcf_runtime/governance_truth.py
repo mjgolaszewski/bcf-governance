@@ -28,6 +28,7 @@ from .governance_truth_support import (
     workitem_observation,
 )
 from .truth_receipts import ReceiptError, load_receipts
+from .truth_workflow_graph import graph_workflow_gate_issues
 from .release_receipts import (
     ReleaseReceiptError,
     build_release_receipt,
@@ -147,6 +148,14 @@ def _workflow_gate_issues(repo_root: Path, policy: dict[str, Any], gate_ids: set
     required_events = contract.get("required_events", [])
     if not isinstance(paths, list) or not paths:
         return ["workflow_paths_missing"]
+    graph_path = repo_root / "governance/ci-graph.yml"
+    if graph_path.is_file():
+        return graph_workflow_gate_issues(
+            repo_root,
+            paths=paths,
+            required_events=required_events,
+            gate_ids=gate_ids,
+        )
     resolved_gates: set[str] = set()
     discovered_events: set[str] = set()
     issues: list[str] = []
