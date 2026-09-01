@@ -313,18 +313,10 @@ gates:
     - id: generated-control-compaction-must-fail
       mutation: {path: bcf_governance/tooling/profile_yaml.py, search: 'node.flow_style = True', replace: 'node.flow_style = False'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_profile_contract_v2::test_bcf_standard_v2_promotion_fits_declared_context_budgets']}
-    - id: self-ci-authority-definition-pin-must-fail
-      mutation: {path: .github/workflows/bcf-exact-main.yml, search: 'name: bcf/exact-main-admission', replace: 'name: bcf/exact-main-admission-mutant'}
-      oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_ci_authority_matches_immutable_workflow_definitions']}
-    - id: packaged-workflow-byte-custody-must-fail
-      mutation: {path: bcf_governance/tooling/ci_authority_pins.py, search: '            committed = current_bytes', replace: '            committed = b""'}
-      oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority_pins::test_packaged_workflow_authority_uses_exact_bytes_without_claiming_history']}
-    - id: portable-sdist-context-custody-must-fail
-      mutation: {path: bcf_governance/tooling/release_runtime_verification.py, search: '    if package_metadata.is_symlink() or not package_metadata.is_file():', replace: '    if False:'}
-      oracle: {kind: test_node_failure, node_ids: ['tests.test_release_runtime_verification::test_portable_sdist_mode_requires_mechanically_created_archive_custody']}
-    - id: failed-runtime-evidence-upload-must-fail
-      mutation: {path: .github/workflows/bcf-release-verifier.yml, search: '        if: ${{ always() }}', replace: '        if: ${{ success() }}'}
-      oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_verifier_separates_token_free_runtime_from_provider_authentication']}
+    - {id: self-ci-authority-definition-pin-must-fail, mutation: {path: .github/workflows/bcf-exact-main.yml, search: 'name: bcf/exact-main-admission', replace: 'name: bcf/exact-main-admission-mutant'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_ci_authority_matches_immutable_workflow_definitions']}}
+    - {id: packaged-workflow-byte-custody-must-fail, mutation: {path: bcf_governance/tooling/ci_authority_pins.py, search: '            committed = current_bytes', replace: '            committed = b""'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority_pins::test_packaged_workflow_authority_uses_exact_bytes_without_claiming_history']}}
+    - {id: portable-sdist-context-custody-must-fail, mutation: {path: bcf_governance/tooling/release_runtime_verification.py, search: '    if package_metadata.is_symlink() or not package_metadata.is_file():', replace: '    if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_runtime_verification::test_portable_sdist_mode_requires_mechanically_created_archive_custody']}}
+    - {id: failed-runtime-evidence-upload-must-fail, mutation: {path: .github/workflows/bcf-release-verifier.yml, search: '        if: ${{ always() }}', replace: '        if: ${{ success() }}'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_verifier_separates_token_free_runtime_from_provider_authentication']}}
     - id: workflow-authority-compiler-digest-must-fail
       mutation: {path: bcf_governance/tooling/ci_authority_pins.py, search: 'entry["trusted_workflow_sha256"] = hashlib.sha256(committed).hexdigest()', replace: 'entry["trusted_workflow_sha256"] = "0" * 64'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_authority_pins::test_workflow_authority_pins_are_derived_from_exact_committed_bytes']}
