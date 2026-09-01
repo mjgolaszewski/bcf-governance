@@ -27,8 +27,14 @@ from .ci_github_authority import (
 from .ci_github_bundle import verify_bundle, write_exclusive
 from .ci_github_identity import GitHubControllerError, positive_int, resolve_main
 from .ci_github_membership import select_latest_admission
+from .release_asset_inventory import exact_assets, verify_checksum_inventory
 from .release_closure import verify_archive, verify_release_lock, verify_wheelhouse
 from .release_receipts import build_trusted_release_receipt, emit_release_receipt
+from .release_runtime_verification import verify_runtime_evidence
+from .release_source_bindings import (
+    release_source_bindings,
+    verify_release_source_bindings,
+)
 
 
 def _now() -> str:
@@ -55,41 +61,6 @@ def _load_json(path: Path, *, label: str) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise GitHubControllerError(f"{label} must contain an object")
     return payload
-
-
-def _exact_assets(paths: Iterable[Path]) -> dict[str, str]:
-    assets: dict[str, str] = {}
-    for path in paths:
-        if path.name in assets:
-            raise GitHubControllerError("release asset inventory contains duplicates")
-        assets[path.name] = _sha256(path)
-    if not assets:
-        raise GitHubControllerError("release asset inventory is empty")
-    return dict(sorted(assets.items()))
-
-
-def _verify_checksum_inventory(paths: tuple[Path, ...]) -> None:
-    archives = tuple(
-        path for path in paths if path.suffix == ".whl" or path.name.endswith(".tar.gz")
-    )
-    checksums = tuple(path for path in paths if path.name == "SHA256SUMS")
-    if len(paths) != 3 or len(archives) != 2 or len(checksums) != 1 or not any(
-        path.suffix == ".whl" for path in archives
-    ) or not any(path.name.endswith(".tar.gz") for path in archives):
-        raise GitHubControllerError(
-            "release assets must be one wheel, one source archive, and SHA256SUMS"
-        )
-    declared: dict[str, str] = {}
-    for line in checksums[0].read_text(encoding="utf-8").splitlines():
-        match = re.fullmatch(
-            r"([a-f0-9]{64})  ([A-Za-z0-9][A-Za-z0-9._-]{0,254})", line
-        )
-        if match is None or match.group(2) in declared:
-            raise GitHubControllerError("release checksum inventory is invalid")
-        declared[match.group(2)] = match.group(1)
-    expected = {path.name: _sha256(path) for path in archives}
-    if declared != expected:
-        raise GitHubControllerError("release checksum inventory is not exact")
 
 
 def authorize_release(
@@ -242,6 +213,9 @@ def authorize_release(
             "workflow": asdict(identity.workflow),
         },
         "controller": dict(sorted({**controller, "wheel_sha256": wheel_sha256}.items())),
+        "release_inputs": release_source_bindings(
+            api, repository, subject["commit_sha"]
+        ),
         "authorized_at": _now(),
     }
     write_exclusive(output_path, payload)
@@ -262,6 +236,7 @@ def record_release_build(
     """Record untrusted build outputs without making a release claim."""
 
     authorization = _load_json(authorization_path, label="release authorization")
+    verify_release_source_bindings(authorization, manifest_path, lock_path)
     closure = verify_release_lock(manifest_path, lock_path)
     attempt = positive_int(run_attempt, field="release build run attempt")
     expected_name = (
@@ -283,7 +258,7 @@ def record_release_build(
         },
         "dependency_closure": closure.as_dict(),
         "started_at": _now(),
-        "assets": _exact_assets(release_artifacts),
+        "assets": exact_assets(release_artifacts),
     }
     write_exclusive(output_path, payload)
     return payload
@@ -302,6 +277,8 @@ def verify_release_build(
     build_artifact_id: object,
     build_provider_digest: object,
     output_path: Path,
+    runtime_report_path: Path,
+    runtime_evidence: Iterable[Path],
     verifier_workflow: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Recompute closed dependency, archive, and byte results on a fresh verifier."""
@@ -312,15 +289,21 @@ def verify_release_build(
         build.get("authorization_sha256") != _sha256(authorization_path)
     ):
         raise GitHubControllerError("release build is not bound to its authorization")
+    verify_release_source_bindings(authorization, manifest_path, lock_path)
     closure = verify_wheelhouse(manifest_path, lock_path, wheelhouse)
     if build.get("dependency_closure") != closure.as_dict():
         raise GitHubControllerError("release build dependency closure is not exact")
     paths = tuple(release_artifacts)
-    assets = _exact_assets(paths)
-    _verify_checksum_inventory(paths)
+    assets = exact_assets(paths)
+    verify_checksum_inventory(paths)
     archives = [path for path in paths if path.suffix == ".whl" or path.name.endswith(".tar.gz")]
     for archive in archives:
         verify_archive(archive)
+    wheel = next(path for path in archives if path.suffix == ".whl")
+    sdist = next(path for path in archives if path.name.endswith(".tar.gz"))
+    runtime = verify_runtime_evidence(
+        runtime_report_path, runtime_evidence, wheel=wheel, sdist=sdist
+    )
     declared = build.get("assets")
     if declared != assets:
         raise GitHubControllerError("release build manifest asset bytes are not exact")
@@ -349,6 +332,11 @@ def verify_release_build(
         },
         "dependency_closure": closure.as_dict(),
         "assets": assets,
+        "runtime_verification": {
+            "report_sha256": _sha256(runtime_report_path),
+            "evidence": runtime["evidence"],
+            "environment": runtime["environment"],
+        },
         "verified_at": _now(),
     }
     write_exclusive(output_path, payload)
@@ -368,6 +356,8 @@ def verify_release_build_provider(
     verifier_run_id: object,
     verifier_run_attempt: object,
     output_path: Path,
+    runtime_report_path: Path,
+    runtime_evidence: Iterable[Path],
 ) -> dict[str, Any]:
     """Authenticate the triggering build and verifier before testing downloaded bytes."""
 
@@ -426,6 +416,8 @@ def verify_release_build_provider(
         build_artifact_id=authenticated_build.artifact_id,
         build_provider_digest=authenticated_build.provider_digest,
         output_path=output_path,
+        runtime_report_path=runtime_report_path,
+        runtime_evidence=runtime_evidence,
         verifier_workflow=asdict(verifier.workflow),
     )
 
@@ -442,6 +434,8 @@ def collect_release(
     collector_run_id: object,
     collector_run_attempt: object,
     verification_artifact_name: object,
+    runtime_report_path: Path,
+    runtime_evidence: Iterable[Path],
     output_path: Path,
 ) -> dict[str, Any]:
     """Authenticate all release roles and emit the sole authoritative receipt."""
@@ -529,6 +523,21 @@ def collect_release(
         artifact_name=verification_artifact_name,
         require_success=True,
     )
+    release_paths = tuple(release_artifacts)
+    wheels = [path for path in release_paths if path.suffix == ".whl"]
+    sdists = [path for path in release_paths if path.name.endswith(".tar.gz")]
+    if len(wheels) != 1 or len(sdists) != 1:
+        raise GitHubControllerError("release collection requires one wheel and one sdist")
+    runtime = verify_runtime_evidence(
+        runtime_report_path, runtime_evidence, wheel=wheels[0], sdist=sdists[0]
+    )
+    expected_runtime = {
+        "report_sha256": _sha256(runtime_report_path),
+        "evidence": runtime["evidence"],
+        "environment": runtime["environment"],
+    }
+    if verification.get("runtime_verification") != expected_runtime:
+        raise GitHubControllerError("release verification does not bind runtime evidence")
     exact_main = authorization.get("exact_main")
     certification_identity = (
         exact_main.get("certification_artifact") if isinstance(exact_main, dict) else None
@@ -566,7 +575,7 @@ def collect_release(
         certification_verification=ci_verification.as_dict(),
         session_manifest_path=session_path, authorization_path=authorization_path,
         build_manifest_path=build_manifest_path, verification_path=verification_path,
-        release_artifacts=release_artifacts,
+        release_artifacts=release_paths,
         collector_identity={
             "workflow_path": collector.workflow.active_path,
             "run_id": collector.run_id,
@@ -693,7 +702,7 @@ def publish_certified_release(
         require_success=True,
     )
     paths = tuple(release_artifacts)
-    expected_assets = _exact_assets(paths)
+    expected_assets = exact_assets(paths)
     receipt_assets = receipt.get("observations", {}).get("release_artifacts")
     if not isinstance(receipt_assets, list) or any(
         not isinstance(value, dict) for value in receipt_assets
@@ -744,7 +753,7 @@ def publish_release(
     ):
         raise GitHubControllerError("release publication requires the annotated unsigned tag policy")
     paths = tuple(release_artifacts)
-    expected_assets = _exact_assets(paths)
+    expected_assets = exact_assets(paths)
     draft = api.create_draft_release(repository, tag=tag, name=tag, body=body)
     release_id = draft.get("id")
     upload_url = str(draft.get("upload_url", ""))

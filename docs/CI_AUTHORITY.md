@@ -124,6 +124,10 @@ credentials, and emits untrusted distributions, checksums, logs, JUnit, and a
 manifest. A separate fresh, secretless hosted verifier authenticates the build
 artifact, rejects unsafe archives, installs and tests the exact wheel and
 extracted sdist from the closed wheelhouse, runs Twine, and emits raw results.
+A provider-authenticated read of exact-main binds the lock and wheelhouse-manifest
+blob OIDs and hashes before candidate work starts. The verifier's controller command
+is the sole owner of the offline install/test/Twine result and hashes every raw output;
+workflow shell and candidate JSON cannot assert that the verification passed.
 A no-checkout trusted collector then re-authenticates every run, attempt,
 workflow, provider artifact digest, controller identity, dependency closure,
 commit, tree, and asset hash. Only that collector may emit the schema-2 release

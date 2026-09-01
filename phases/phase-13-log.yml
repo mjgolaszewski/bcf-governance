@@ -95,6 +95,9 @@ summary:
   - bootstrap 33472622431 installed the target independently on both trusted runners;
     probe 33472657328 verified both installations, and the provider compiler emitted
     the sole confirmation accepted by the promotion transaction
+  - release authorization now binds the exact-main dependency lock and wheelhouse
+    manifest Git blobs; one controller-owned verifier operation creates clean offline
+    environments and binds raw output and JUnit evidence for collector recomputation
 workitems:
 - id: P13-P0-01
   status: IN_PROGRESS
