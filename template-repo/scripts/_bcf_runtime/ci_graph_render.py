@@ -247,8 +247,6 @@ def _executor_steps(compiled: CompiledCIGraph, job: dict[str, Any]) -> list[dict
                     "test \"${#manifests[@]}\" -eq 1\n"
                     "session=\"${manifests[0]}\"\n"
                     "session_dir=\"${session%/evidence-session.json}\"\n"
-                    "chmod 700 .artifacts/bcf/sessions \"$session_dir\"\n"
-                    "chmod 400 \"$session\"\n"
                     "for gate in $BCF_GATES; do\n"
                     "  \"$BCF_PYTHON\" scripts/governance_evidence.py --repo-root . run "
                     "--gate \"$gate\" --output \"$session_dir/$gate\" "

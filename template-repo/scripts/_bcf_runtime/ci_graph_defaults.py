@@ -209,6 +209,7 @@ def build_reference_ci_graph(
                     "python",
                     "governance-dependencies",
                     "download-evidence",
+                    "restore-private-modes",
                 ],
             )
         )
@@ -321,6 +322,7 @@ def build_reference_ci_graph(
                             "python",
                             "governance-dependencies",
                             "download-evidence",
+                            "restore-private-modes",
                         ],
                     ),
                     _job(

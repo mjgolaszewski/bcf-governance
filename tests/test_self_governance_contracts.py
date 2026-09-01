@@ -4,6 +4,7 @@ import ast
 import importlib.util
 import os
 from pathlib import Path
+import stat
 import subprocess
 import sys
 
@@ -353,6 +354,33 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
     assert graph["step_components"]["run-governance-truth"]["condition"] == (
         "evidence-prerequisites-green"
     )
+
+
+def test_governance_artifact_transport_restores_private_modes_before_capture(
+    tmp_path: Path,
+) -> None:
+    graph = validate_ci_graph(REPO_ROOT).graph
+    components = _job("governance", "evidence")["executor"]["components"]
+    assert components.index("restore-evidence-modes") == (
+        components.index("download-governance-session") + 1
+    )
+    assert graph["step_components"]["restore-evidence-modes"]["effects"] == [
+        "restore-private-artifact-modes"
+    ]
+    root = tmp_path / "downloaded"
+    session = root / "session-id"
+    session.mkdir(parents=True)
+    manifest = session / "evidence-session.json"
+    manifest.write_text("{}\n", encoding="utf-8")
+    root.chmod(0o755)
+    session.chmod(0o755)
+    manifest.chmod(0o644)
+
+    restored = _load_github_script("restore_evidence_modes.py").restore(root)
+
+    assert restored == 1
+    assert stat.S_IMODE(session.stat().st_mode) == 0o700
+    assert stat.S_IMODE(manifest.stat().st_mode) == 0o400
 
 
 def test_self_release_check_is_an_exact_generator_product() -> None:

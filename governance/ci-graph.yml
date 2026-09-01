@@ -364,6 +364,7 @@ step_components:
     name: Restore private evidence-session modes
     condition: evidence-prerequisites-green
     command: restore-evidence-modes
+    effects: [restore-private-artifact-modes]
     environment: {}
     produces: []
     consumes: []
@@ -565,6 +566,7 @@ workflows:
       - setup-python
       - install-governance
       - download-governance-session
+      - restore-evidence-modes
       - capture-governance-shard
       - upload-governance-receipts
     produces:

@@ -229,6 +229,8 @@ def _apply_canonical_defaults(graph: dict[str, Any]) -> None:
         if component["kind"] not in {"controller_install", "directory_setup"}:
             component.setdefault("id", None)
             component.setdefault("condition", None)
+        if component["kind"] == "command":
+            component.setdefault("effects", [])
     for workflow in graph["workflows"]:
         workflow.setdefault("environment", {})
         for job in workflow["jobs"]:
@@ -261,6 +263,67 @@ def _validate_step_components(graph: dict[str, Any]) -> None:
                 raise CIGraphError(
                     f"CI graph step component {component_id} {direction} undeclared artifacts {missing}"
                 )
+
+
+def _private_artifacts(graph: dict[str, Any]) -> set[str]:
+    """Derive artifacts carrying a private evidence-session custody boundary."""
+
+    session_paths = {
+        artifact["path"]
+        for artifact in graph["artifacts"].values()
+        if artifact["kind"] == "session"
+    }
+    return {
+        artifact_id
+        for artifact_id, artifact in graph["artifacts"].items()
+        if artifact["kind"] == "session" or artifact["path"] in session_paths
+    }
+
+
+def _validate_private_transport(
+    graph: dict[str, Any], job: dict[str, Any], executor: dict[str, Any]
+) -> None:
+    protected = set(job["consumes"]) & _private_artifacts(graph)
+    if not protected:
+        return
+    if executor["kind"] not in {"component_sequence", "gate_shard", "terminal_truth"}:
+        if "restore-private-modes" not in job["components"]:
+            raise CIGraphError(
+                f"CI graph job {job['id']} must restore private artifact modes before execution"
+            )
+        return
+    components = executor["components"]
+    protected_downloads = [
+        index
+        for index, component_id in enumerate(components)
+        if graph["step_components"][component_id]["kind"] == "action"
+        and graph["step_components"][component_id]["action"] == "download-artifact"
+        and set(graph["step_components"][component_id]["consumes"]) & protected
+    ]
+    downloaded = {
+        artifact
+        for index in protected_downloads
+        for artifact in graph["step_components"][components[index]]["consumes"]
+        if artifact in protected
+    }
+    restores = [
+        index
+        for index, component_id in enumerate(components)
+        if "restore-private-artifact-modes"
+        in graph["step_components"][component_id].get("effects", [])
+    ]
+    downloads_are_contiguous = bool(protected_downloads) and protected_downloads == list(
+        range(min(protected_downloads), max(protected_downloads) + 1)
+    )
+    if (
+        downloaded != protected
+        or not downloads_are_contiguous
+        or len(restores) != 1
+        or restores[0] != max(protected_downloads, default=-2) + 1
+    ):
+        raise CIGraphError(
+            f"CI graph job {job['id']} must restore private artifact modes immediately after exact transport"
+        )
 
 
 def _job_graph(workflow: dict[str, Any]) -> tuple[dict[str, dict[str, Any]], dict[str, set[str]]]:
@@ -374,6 +437,7 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                     raise CIGraphError(
                         f"CI graph job {job['id']} references unknown step components {missing_components}"
                     )
+                _validate_private_transport(graph, job, executor)
                 component_produces = {
                     artifact
                     for component_id in executor["components"]
@@ -445,6 +509,8 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                         raise CIGraphError(
                             f"gate shard job {job['id']} matrix does not exactly cover its shards"
                         )
+            else:
+                _validate_private_transport(graph, job, executor)
         for job in workflow["jobs"]:
             for artifact in job["consumes"]:
                 if artifact not in graph["artifacts"]:

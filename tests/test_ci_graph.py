@@ -36,6 +36,7 @@ def _job(
     executor: dict[str, object] | None = None,
     produces: list[str] | None = None,
     consumes: list[str] | None = None,
+    components: list[str] | None = None,
 ) -> dict[str, object]:
     return {
         "id": job_id,
@@ -48,7 +49,7 @@ def _job(
         "timeout_minutes": 20,
         "permissions": {"contents": "read"},
         "checkout": trust == "candidate",
-        "components": ["checkout", "python"] if trust == "candidate" else [],
+        "components": components if components is not None else (["checkout", "python"] if trust == "candidate" else []),
         "executor": executor or {"kind": "command", "command": "preflight"},
         "produces": produces or [],
         "consumes": consumes or [],
@@ -137,6 +138,7 @@ def _graph() -> dict[str, object]:
                         executor={"kind": "gate_group", "gates": ["test", "lint"]},
                         produces=["receipts"],
                         consumes=["session"],
+                        components=["checkout", "python", "restore-private-modes"],
                     ),
                     _job(
                         "truth",
@@ -144,6 +146,7 @@ def _graph() -> dict[str, object]:
                         needs=["evidence"],
                         executor={"kind": "truth", "command": "truth"},
                         consumes=["receipts"],
+                        components=["checkout", "python", "restore-private-modes"],
                     ),
                 ],
             },
@@ -310,6 +313,56 @@ def test_graph_rejects_semantic_defect_classes(tmp_path: Path, mutate, message: 
     _write_graph(tmp_path, graph)
 
     with pytest.raises(CIGraphError, match=message):
+        validate_ci_graph(tmp_path)
+
+
+def _make_explicit_private_transport(graph: dict[str, object]) -> None:
+    graph["commands"].update(
+        {
+            "restore": {"argv": ["python", "restore.py"], "cwd": ".", "environment": {}},
+            "capture": {"argv": ["python", "capture.py"], "cwd": ".", "environment": {}},
+        }
+    )
+    graph["step_components"].update(
+        {
+            "download-session": {
+                "kind": "action", "name": "Download session", "action": "download-artifact",
+                "with": {}, "environment": {}, "produces": [], "consumes": ["session"],
+            },
+            "restore-session": {
+                "kind": "command", "name": "Restore session", "command": "restore",
+                "effects": ["restore-private-artifact-modes"], "environment": {},
+                "produces": [], "consumes": [],
+            },
+            "capture": {
+                "kind": "command", "name": "Capture", "command": "capture",
+                "environment": {}, "produces": ["receipts"], "consumes": [],
+            },
+        }
+    )
+    evidence = graph["workflows"][0]["jobs"][1]
+    evidence["components"] = []
+    evidence["executor"] = {
+        "kind": "gate_shard", "gates": ["test", "lint"], "shard_key": "shard",
+        "shard_count": 2, "components": ["download-session", "restore-session", "capture"],
+    }
+    evidence["strategy"] = {"fail_fast": True, "matrix": {"shard": [0, 1]}}
+
+
+@pytest.mark.parametrize("mutation", ["missing", "late"])
+def test_explicit_private_artifact_transport_requires_immediate_mode_restore(
+    tmp_path: Path, mutation: str,
+) -> None:
+    graph = copy.deepcopy(_graph())
+    _make_explicit_private_transport(graph)
+    components = graph["workflows"][0]["jobs"][1]["executor"]["components"]
+    if mutation == "missing":
+        graph["step_components"]["restore-session"]["effects"] = []
+    else:
+        components[:] = ["download-session", "capture", "restore-session"]
+    _write_graph(tmp_path, graph)
+
+    with pytest.raises(CIGraphError, match="restore private artifact modes immediately"):
         validate_ci_graph(tmp_path)
 
 

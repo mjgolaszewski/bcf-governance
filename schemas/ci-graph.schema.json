@@ -187,6 +187,7 @@
             "id": {"oneOf": [{"$ref": "#/$defs/identifier"}, {"type": "null"}]},
             "condition": {"oneOf": [{"$ref": "#/$defs/identifier"}, {"type": "null"}]},
             "command": {"$ref": "#/$defs/identifier"},
+            "effects": {"type": "array", "uniqueItems": true, "items": {"enum": ["restore-private-artifact-modes"]}},
             "environment": {"type": "object", "propertyNames": {"pattern": "^[A-Z_][A-Z0-9_]*$"}, "additionalProperties": {"type": "string"}},
             "produces": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}},
             "consumes": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}}
