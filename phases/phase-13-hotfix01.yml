@@ -241,6 +241,9 @@ execution_evidence:
   - command: GitHub exact-main 33494839465; finalizer 33495135603; publisher 33495174121; publication-disabled release 33495223894
     result: expected_fail_remediating
     notes: exact closeout main certified, then release authorization rejected the resolver's full ProviderArtifact representation before allocating a hosted builder; artifact download coordinates are now projected and decoded from the ProviderArtifact dataclass rather than independently maintained field sets
+  - command: exact source and contract evidence diagnostic; canonical pack-manifest preflight
+    result: expected_fail_remediated
+    notes: all 17 source failures shared one stale generated-pack hash cause; that mechanical defect is now checked by preflight before evidence or package work and protected by an isolated causal control
   - command: canonical release preflight; exact source gate; exact contract evidence; canonical local PR preflight
     result: pass
     notes: non-authoritative exact-commit 286d854 evidence passed environment preflight, 532 source nodes, 267 contract nodes, and all 95 isolated cause-verified controls before provider CI; all selection and PR-base inputs were mechanically derived

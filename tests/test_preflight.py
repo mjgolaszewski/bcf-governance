@@ -159,6 +159,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         lambda _: {"status": "conformant", "blocking_violation_count": 0},
     )
     monkeypatch.setattr(preflight, "_vendored_source_locks", lambda _: 0)
+    monkeypatch.setattr(preflight, "_pack_manifest", lambda _: {"applicable": False})
     monkeypatch.setattr(preflight, "check_all", lambda *_, **__: {"test": 1})
     monkeypatch.setattr(preflight, "_pr_context", lambda *_: {"applicable": False})
     monkeypatch.setattr(preflight, "_required_gates", lambda _: ["test"])
@@ -190,6 +191,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         "negative-controls",
         "semantic-ownership",
         "source-locks",
+        "pack-manifest",
         "test-manifests",
         "pr-context",
         "session",
@@ -198,6 +200,21 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     assert report["session_manifest"] == (tmp_path / "session.json").as_posix()
     assert report["workflow_authority"] == 12
     assert report["self_controller"] == 6
+
+
+def test_stale_pack_manifest_fails_before_evidence(tmp_path: Path) -> None:
+    template = tmp_path / "bcf_governance/pack/template-repo"
+    template.mkdir(parents=True)
+    (template / "owned.txt").write_text("current\n", encoding="utf-8")
+    (template / ".bcf-pack-manifest.json").write_text(
+        '{"files":{"owned.txt":{"operation":"copy","sha256":"'
+        + "0" * 64
+        + '"}}}\n',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(preflight.PreflightError, match="pack manifest mismatch"):
+        preflight._pack_manifest(tmp_path)
 
 
 def test_workflow_authority_failure_prevents_session_allocation(

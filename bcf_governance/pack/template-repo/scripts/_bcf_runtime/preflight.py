@@ -25,6 +25,7 @@ from .evidence_sessions import (
     local_producer_identity,
 )
 from .governance_validation.runner import validate_repo_root
+from .install_governance_pack import _pack_manifest_entries
 from .semantic_ownership_scan import run_scan as run_semantic_ownership_scan
 from .test_manifests import check_all
 
@@ -495,6 +496,19 @@ def _pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
     return {"applicable": True, "base_sha": base}
 
 
+def _pack_manifest(repo_root: Path) -> dict[str, Any]:
+    """Verify BCF's generated pack bytes before package or evidence work."""
+
+    template_root = repo_root / "bcf_governance/pack/template-repo"
+    if not template_root.is_dir():
+        return {"applicable": False}
+    try:
+        entries = _pack_manifest_entries(template_root)
+    except ValueError as exc:
+        raise PreflightError(str(exc)) from exc
+    return {"applicable": True, "file_count": len(entries)}
+
+
 def run_preflight(
     repo_root: Path,
     *,
@@ -533,6 +547,7 @@ def run_preflight(
         "semantic-ownership", lambda: _semantic_ownership(repo_root)
     )
     source_locks = step("source-locks", lambda: _vendored_source_locks(repo_root))
+    pack_manifest = step("pack-manifest", lambda: _pack_manifest(repo_root))
     test_manifests = step(
         "test-manifests", lambda: check_all(repo_root, python_executable=python)
     )
@@ -559,6 +574,7 @@ def run_preflight(
         "syntax": syntax,
         "interpreter": interpreter,
         "source_locks": source_locks,
+        "pack_manifest": pack_manifest,
         "workflow_authority": workflow_authority,
         "self_controller": self_controller,
         "negative_controls": negative_controls,

@@ -68,6 +68,8 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Replaced independently maintained resolver and authorizer artifact field sets with one
   projection derived from the `ProviderArtifact` dataclass, and fail closed on any extra,
   missing, or differently shaped download coordinates before release build allocation.
+- Made cheap preflight verify the generated pack's exact hash manifest before session,
+  package, test, or mutant work, with a causal control for bypassing that boundary.
 - Made authenticated nonterminal workflow inspection accept only a nonempty subset of
   the pinned job inventory while terminal certification still requires the complete
   exact set, preventing release authorization from depending on future job materialization.
