@@ -31,7 +31,9 @@ from bcf_governance.tooling.ci_github_release import (
 from bcf_governance.tooling.ci_github_release_inputs import (
     load_release_authorization_inputs,
     release_input_outputs,
+    release_publication_outputs,
     resolve_release_authorization_inputs,
+    resolve_release_publication_inputs,
 )
 from bcf_governance.tooling.ci_authority_state import WorkflowIdentity
 from bcf_governance.tooling.release_closure import verify_release_lock
@@ -681,6 +683,114 @@ def test_release_input_resolution_never_falls_back_from_newest_finalizer(
     api = SimpleNamespace(workflow_runs=lambda *args, **kwargs: runs)
     with pytest.raises(GitHubControllerError, match="newest finalizer is failed"):
         resolve_release_authorization_inputs(
+            api, repository="owner/repo", output_path=tmp_path / "inputs.json"  # type: ignore[arg-type]
+        )
+
+
+def test_release_publication_inputs_select_newest_exact_collector_mechanically(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    main = MainIdentity("101", "main", COMMIT, TREE)
+    receipt = ProviderArtifact(
+        "81", 2, "71", "bcf-release-receipt-81-2",
+        f"sha256:{'c' * 64}", {},
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.resolve_main",
+        lambda *args, **kwargs: main,
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.load_authority",
+        lambda *args, **kwargs: {},
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.authority_role_workflow",
+        lambda *args, **kwargs: {"workflow_id": "203"},
+    )
+    selected: dict[str, object] = {}
+
+    def authenticate(*args: object, **kwargs: object):
+        selected.update(kwargs)
+        return SimpleNamespace(run_id="81", run_attempt=2), ()
+
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.authenticate_role_job_inventory",
+        authenticate,
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.resolve_role_artifact",
+        lambda *args, **kwargs: receipt,
+    )
+    runs = tuple(
+        {
+            "id": run_id, "run_attempt": attempt, "head_sha": COMMIT,
+            "head_branch": "main", "event": "workflow_run",
+            "repository": {"id": 101}, "head_repository": {"id": 101},
+        }
+        for run_id, attempt in ((80, 1), (81, 2))
+    )
+    api = SimpleNamespace(workflow_runs=lambda *args, **kwargs: runs)
+    path = tmp_path / "publication-inputs.json"
+    result = resolve_release_publication_inputs(
+        api, repository="owner/repo", output_path=path  # type: ignore[arg-type]
+    )
+
+    assert selected["role"] == "release_collector"
+    assert selected["run_id"] == 81
+    assert selected["run_attempt"] == 2
+    assert selected["require_success"] is True
+    assert selected["require_terminal"] is True
+    assert json.loads(path.read_text(encoding="utf-8")) == result
+    assert result["receipt_artifact"] == provider_artifact_reference(receipt)
+    assert release_publication_outputs(result) == {
+        "subject_commit": COMMIT,
+        "subject_tree": TREE,
+        "tag": "v0.7.1",
+        "receipt_artifact_id": "71",
+        "receipt_artifact_name": "bcf-release-receipt-81-2",
+        "receipt_provider_digest": f"sha256:{'c' * 64}",
+        "receipt_run_id": "81",
+        "receipt_run_attempt": 2,
+    }
+
+
+def test_release_publication_resolution_never_falls_back_from_newest_collector(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    main = MainIdentity("101", "main", COMMIT, TREE)
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.resolve_main",
+        lambda *args, **kwargs: main,
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.load_authority",
+        lambda *args, **kwargs: {},
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.authority_role_workflow",
+        lambda *args, **kwargs: {"workflow_id": "203"},
+    )
+
+    def reject_newest(*args: object, **kwargs: object):
+        assert kwargs["run_id"] == 81
+        assert kwargs["run_attempt"] == 2
+        raise GitHubControllerError("newest collector is failed")
+
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.authenticate_role_job_inventory",
+        reject_newest,
+    )
+    runs = tuple(
+        {
+            "id": run_id, "run_attempt": attempt, "head_sha": COMMIT,
+            "head_branch": "main", "event": "workflow_run",
+            "repository": {"id": 101}, "head_repository": {"id": 101},
+        }
+        for run_id, attempt in ((80, 1), (81, 2))
+    )
+    api = SimpleNamespace(workflow_runs=lambda *args, **kwargs: runs)
+    with pytest.raises(GitHubControllerError, match="newest collector is failed"):
+        resolve_release_publication_inputs(
             api, repository="owner/repo", output_path=tmp_path / "inputs.json"  # type: ignore[arg-type]
         )
 

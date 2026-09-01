@@ -8,7 +8,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 from typing import Any
+
+try:
+    from bcf_governance import __version__
+except ModuleNotFoundError:  # standalone generated runtime
+    from ._version import __version__
 
 from .ci_authority_contracts import authority_role_workflow
 from .ci_github_api import GitHubAPI
@@ -33,7 +39,6 @@ RELEASE_INPUT_KEYS = {
     "certification_artifact",
     "controller",
 }
-
 
 def _exact_finalizer_run(
     api: GitHubAPI,
@@ -75,6 +80,54 @@ def _exact_finalizer_run(
         role="finalizer",
         run_id=selected.get("id"),
         run_attempt=selected.get("run_attempt"),
+        require_success=True,
+        require_terminal=True,
+    )
+    return identity.run_id, identity.run_attempt
+
+
+def _exact_collector_run(
+    api: GitHubAPI,
+    *,
+    repository: str,
+    main: MainIdentity,
+    authority: dict[str, Any],
+) -> tuple[str, int]:
+    """Select the newest exact-subject collector without successful-run fallback."""
+
+    workflow = authority_role_workflow(authority, "release_collector")
+    runs = api.workflow_runs(
+        repository,
+        workflow["workflow_id"],
+        head_sha=main.checkout_sha,
+        event="workflow_run",
+    )
+    exact = [
+        run
+        for run in runs
+        if str(run.get("head_sha")) == main.checkout_sha
+        and str(run.get("head_branch")) == main.default_branch
+        and str(run.get("repository", {}).get("id")) == main.repository_id
+        and str(run.get("head_repository", {}).get("id")) == main.repository_id
+        and str(run.get("event")) == "workflow_run"
+    ]
+    if not exact:
+        raise GitHubControllerError("no exact-main release collector run exists")
+    newest = max(
+        exact,
+        key=lambda value: (
+            int(str(value.get("id", 0))),
+            int(str(value.get("run_attempt", 0))),
+        ),
+    )
+    identity, _ = authenticate_role_job_inventory(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        role="release_collector",
+        run_id=newest.get("id"),
+        run_attempt=newest.get("run_attempt"),
         require_success=True,
         require_terminal=True,
     )
@@ -188,4 +241,62 @@ def release_input_outputs(value: dict[str, Any]) -> dict[str, object]:
         "certification_run_id": certification["run_id"],
         "controller_artifact_id": controller["artifact_id"],
         "controller_run_id": controller["run_id"],
+    }
+
+
+def resolve_release_publication_inputs(
+    api: GitHubAPI,
+    *,
+    repository: str,
+    output_path: Path,
+) -> dict[str, Any]:
+    """Resolve the newest exact-main release receipt without operator coordinates."""
+
+    if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", __version__):
+        raise GitHubControllerError("authoritative package version is not semantic")
+    main = resolve_main(api, repository)
+    authority = load_authority(api, repository, main, required_version="1.1")
+    collector_run_id, collector_attempt = _exact_collector_run(
+        api, repository=repository, main=main, authority=authority
+    )
+    receipt = resolve_role_artifact(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        role="release_collector",
+        run_id=collector_run_id,
+        run_attempt=collector_attempt,
+        artifact_name=(
+            f"bcf-release-receipt-{collector_run_id}-{collector_attempt}"
+        ),
+        require_success=True,
+    )
+    payload = {
+        "schema_version": "1.0",
+        "authority_contract_version": "1.1",
+        "subject": {
+            "commit_sha": main.checkout_sha,
+            "tree_sha": main.tree_sha,
+        },
+        "tag": f"v{__version__}",
+        "receipt_artifact": provider_artifact_reference(receipt),
+    }
+    write_exclusive(output_path, payload)
+    return payload
+
+
+def release_publication_outputs(value: dict[str, Any]) -> dict[str, object]:
+    """Project closed scalar coordinates for trusted workflow wiring."""
+
+    receipt = value["receipt_artifact"]
+    return {
+        "subject_commit": value["subject"]["commit_sha"],
+        "subject_tree": value["subject"]["tree_sha"],
+        "tag": value["tag"],
+        "receipt_artifact_id": receipt["artifact_id"],
+        "receipt_artifact_name": receipt["artifact_name"],
+        "receipt_provider_digest": receipt["provider_digest"],
+        "receipt_run_id": receipt["run_id"],
+        "receipt_run_attempt": receipt["run_attempt"],
     }

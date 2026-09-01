@@ -29,6 +29,9 @@ disabled pending the explicit immutable-release and tag/publication owner action
 - Added a trusted release-input resolver that derives exact-main, finalizer, controller,
   run, attempt, artifact, commit, tree, and provider-digest custody from authenticated
   provider state instead of accepting operator-authored release authority.
+- Added a publication-input resolver that derives the newest authenticated collector
+  attempt, exact receipt artifact, current subject, release tag, and closed asset directory
+  without operator-authored provider coordinates or shell-maintained file lists.
 - Rotated the pending trusted-controller target from the resolver-selected exact-main
   package artifact; provider IDs, digests, wheel hash, commit, and tree are compiler
   output rather than operator-entered release inputs.

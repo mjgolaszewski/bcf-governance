@@ -173,6 +173,9 @@ summary:
     exact-main 33514102987, finalizer 33514433224, publisher 33514473576, both scheduled
     mutant profiles, authority success/revocation/attempt canaries, and the complete
     publication-disabled release build, verifier, and collector passed as a pre-reconciliation rehearsal
+  - final owner-action preflight found the publisher intentionally disabled without a
+    mechanical collector selector; P13-HF04 adds newest exact-main receipt and closed
+    asset resolution before any publication workflow is activated
 workitems:
 - id: P13-P0-01
   status: DONE

@@ -42,7 +42,9 @@ from .ci_github_release import (
 from .ci_github_release_inputs import (
     load_release_authorization_inputs,
     release_input_outputs,
+    release_publication_outputs,
     resolve_release_authorization_inputs,
+    resolve_release_publication_inputs,
 )
 from .ci_self_controller import (
     compile_self_controller_confirmation,
@@ -268,6 +270,9 @@ def _release_parser() -> argparse.ArgumentParser:
     resolve = operations.add_parser("resolve")
     resolve.add_argument("--repository", required=True)
     resolve.add_argument("--output", type=Path, required=True)
+    publication = operations.add_parser("resolve-publication")
+    publication.add_argument("--repository", required=True)
+    publication.add_argument("--output", type=Path, required=True)
     authorize = operations.add_parser("authorize")
     authorize.add_argument("--repository", required=True)
     authorize.add_argument("--bundle", type=Path, required=True)
@@ -338,7 +343,7 @@ def _release_parser() -> argparse.ArgumentParser:
         operation.add_argument("--repository", required=True)
         operation.add_argument("--tag", required=True)
         operation.add_argument("--commit", required=True)
-        operation.add_argument("--release-artifact", type=Path, action="append", required=True)
+        _release_artifact_arguments(operation)
     publish = operations.choices["publish"]
     publish.add_argument("--release-notes", type=Path, required=True)
     publish.add_argument("--receipt", type=Path, required=True)
@@ -420,6 +425,13 @@ def _release(argv: list[str]) -> None:
             environment_api(), repository=args.repository, output_path=args.output
         )
         _github_output(release_input_outputs(result), path=github_output)
+        print(json.dumps(result, sort_keys=True))
+        return
+    if args.operation == "resolve-publication":
+        result = resolve_release_publication_inputs(
+            environment_api(), repository=args.repository, output_path=args.output
+        )
+        _github_output(release_publication_outputs(result), path=github_output)
         print(json.dumps(result, sort_keys=True))
         return
     elif args.operation in {"verify", "runtime"}:
@@ -520,11 +532,12 @@ def _release(argv: list[str]) -> None:
                 output_path=args.output,
             )
         else:
+            release_artifacts = _release_artifacts(args)
             assets = {
                 path.name: hashlib.sha256(path.read_bytes()).hexdigest()
-                for path in args.release_artifact
+                for path in release_artifacts
             }
-            if len(assets) != len(args.release_artifact):
+            if len(assets) != len(release_artifacts):
                 raise GitHubControllerError("release asset inventory contains duplicates")
             if args.operation == "inspect":
                 result = inspect_release(
@@ -535,7 +548,7 @@ def _release(argv: list[str]) -> None:
                 result = publish_certified_release(
                     api, repository=args.repository, tag=args.tag,
                     expected_commit=args.commit,
-                    release_artifacts=args.release_artifact,
+                    release_artifacts=release_artifacts,
                     body=args.release_notes.read_text(encoding="utf-8"),
                     receipt_path=args.receipt,
                     receipt_artifact_id=args.receipt_artifact_id,
