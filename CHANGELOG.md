@@ -76,6 +76,8 @@ disabled pending the explicit immutable-release and tag/publication owner action
 
 ### Fixed
 
+- Moved governance exposure scanning into cheap preflight so local workspace paths and
+  private infrastructure markers fail before evidence fanout instead of inside a shard.
 - Made cheap preflight derive and validate every tracked Python source entrypoint's
   repository-root import authority. Exact-main controller verification now runs in
   isolated interpreter mode, so editable installs and ambient import paths cannot

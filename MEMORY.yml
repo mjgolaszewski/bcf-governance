@@ -84,7 +84,7 @@ known_constraints:
   - repository immutable-release settings, v0.7.1 tag creation, and publication require explicit owner approval after corrected exact-main and release authority evidence passes
   - hosted jobs run to completion without polling, sleeping, idle waiters, or route fallback
   - every BCF behavior commit updates and validates BCF's own applicable governance contracts before successor work begins
-  - cheap preflight validates every declared negative-control target and derives tracked Python entrypoints before allocating evidence; moved controls and module-time BCF imports without the correct source-root bootstrap fail before detached, package, mutant, or release work, and editable installs are never authority
+  - cheap preflight validates exposure, every declared negative-control target, and tracked Python entrypoints before allocating evidence; local paths, moved controls, and module-time BCF imports without the correct source-root bootstrap fail before detached, package, mutant, or release work, and editable installs are never authority
   - profile_contract_version absence means 1.0; normal upgrades preserve the installed profile and contract version, and v2 promotion is explicit and monotonic
   - profile promotion never rewrites installed workflows; GitHub workflow adoption remains a separate explicit transaction
   - fresh Lite installations default to v1 while fresh Standard and Regulated installations default to v2

@@ -18,6 +18,7 @@ from .evidence_execution import _selected_python
 from .ci_authority_pins import CIAuthorityPinError, verify_workflow_authority
 from .ci_github_identity import GitHubControllerError
 from .ci_self_controller import verify_self_controller_projection
+from .check_governance_exposure import scan_exposures
 from .evidence_sessions import (
     EvidenceSession,
     allocate_session,
@@ -131,6 +132,19 @@ def _syntax_checks(repo_root: Path) -> dict[str, int]:
         except (SyntaxError, UnicodeDecodeError, json.JSONDecodeError, yaml.YAMLError) as exc:
             raise PreflightError(f"syntax validation failed for {relative}: {exc}") from exc
     return counts
+
+
+def _exposure_scan(repo_root: Path) -> dict[str, int]:
+    """Reject local paths and private infrastructure markers at the front door."""
+
+    report = scan_exposures(repo_root)
+    if report.status != "pass":
+        finding = report.findings[0]
+        raise PreflightError(
+            "governance exposure preflight failed: "
+            f"{finding.path}:{finding.line}:{finding.pattern}"
+        )
+    return {"scanned_files": report.scanned_files, "findings": 0}
 
 
 def _module_time_bcf_imports(tree: ast.Module) -> list[ast.Import | ast.ImportFrom]:
@@ -584,6 +598,7 @@ def run_preflight(
 
     subject = step("git-state", lambda: _git_state(repo_root))
     syntax = step("syntax", lambda: _syntax_checks(repo_root))
+    exposure = step("exposure", lambda: _exposure_scan(repo_root))
     interpreter = step(
         "interpreter", lambda: _interpreter_requirements(repo_root, python)
     )
@@ -627,6 +642,7 @@ def run_preflight(
         "mode": mode,
         "subject": subject,
         "syntax": syntax,
+        "exposure": exposure,
         "interpreter": interpreter,
         "source_entrypoints": source_entrypoints,
         "source_locks": source_locks,

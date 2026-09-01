@@ -176,6 +176,8 @@ summary:
   - final owner-action preflight found the publisher intentionally disabled without a
     mechanical collector selector; P13-HF04 adds newest exact-main receipt and closed
     asset resolution before any publication workflow is activated
+  - PR 88 then exposed a local worktree path only after evidence fanout; P13-HF04 moves
+    the canonical exposure scan into cheap preflight and adds a causal bypass control
 workitems:
 - id: P13-P0-01
   status: DONE

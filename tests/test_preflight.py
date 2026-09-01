@@ -59,6 +59,17 @@ def test_syntax_preflight_rejects_invalid_python(tmp_path: Path) -> None:
         preflight._syntax_checks(repo)
 
 
+def test_exposure_preflight_rejects_local_workspace_paths(tmp_path: Path) -> None:
+    repo = _committed_repo(
+        tmp_path,
+        "plans/phase.yml",
+        "command: /docker/private-worktree/.venv/bin/python\n",
+    )
+
+    with pytest.raises(preflight.PreflightError, match="local_workspace_path"):
+        preflight._exposure_scan(repo)
+
+
 def test_source_entrypoint_preflight_rejects_unbootstrapped_package_import(
     tmp_path: Path,
 ) -> None:
@@ -211,6 +222,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         preflight, "_git_state", lambda _: {"commit_sha": "a" * 40, "tree_sha": "b" * 40}
     )
     monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {"python": 1})
+    monkeypatch.setattr(preflight, "_exposure_scan", lambda _: {"findings": 0})
     monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {"pytest": "9.0.3"})
     monkeypatch.setattr(preflight, "_source_entrypoint_authority", lambda _: {"package_imports_checked": 1})
     monkeypatch.setattr(preflight, "validate_repo_root", lambda _: None)
@@ -248,6 +260,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     assert calls == [
         "git-state",
         "syntax",
+        "exposure",
         "interpreter",
         "source-entrypoints",
         "governance",
@@ -281,6 +294,7 @@ def test_stale_pack_manifest_fails_before_evidence(
     )
     monkeypatch.setattr(preflight, "_git_state", lambda _: {})
     monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
+    monkeypatch.setattr(preflight, "_exposure_scan", lambda _: {})
     monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {})
     monkeypatch.setattr(preflight, "_source_entrypoint_authority", lambda _: {})
     monkeypatch.setattr(preflight, "validate_repo_root", lambda _: None)
@@ -315,6 +329,7 @@ def test_workflow_authority_failure_prevents_session_allocation(
     repo.mkdir()
     monkeypatch.setattr(preflight, "_git_state", lambda _: {})
     monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
+    monkeypatch.setattr(preflight, "_exposure_scan", lambda _: {})
     monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {})
     monkeypatch.setattr(preflight, "_source_entrypoint_authority", lambda _: {})
     monkeypatch.setattr(preflight, "validate_repo_root", lambda _: None)
@@ -342,6 +357,7 @@ def test_workflow_authority_failure_prevents_session_allocation(
     assert calls == [
         "git-state",
         "syntax",
+        "exposure",
         "interpreter",
         "source-entrypoints",
         "governance",
@@ -456,6 +472,7 @@ def test_interpreter_failure_prevents_session_allocation(
     repo.mkdir()
     monkeypatch.setattr(preflight, "_git_state", lambda _: {})
     monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
+    monkeypatch.setattr(preflight, "_exposure_scan", lambda _: {})
     monkeypatch.setattr(
         preflight,
         "_interpreter_requirements",
@@ -476,7 +493,7 @@ def test_interpreter_failure_prevents_session_allocation(
             trace=calls.append,
         )
 
-    assert calls == ["git-state", "syntax", "interpreter"]
+    assert calls == ["git-state", "syntax", "exposure", "interpreter"]
 
 
 def test_deterministic_failure_prevents_session_allocation(
