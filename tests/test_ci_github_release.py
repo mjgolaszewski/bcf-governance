@@ -341,8 +341,25 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
         "bcf_governance.tooling.ci_github_release.select_latest_admission",
         lambda *args, **kwargs: ("100", 1),
     )
-    controller_wheel = tmp_path / "bcf_governance-0.7.1-py3-none-any.whl"
+    controller_root = tmp_path / "controller"
+    controller_root.mkdir()
+    controller_wheel = controller_root / "bcf_governance-0.7.1-py3-none-any.whl"
     controller_wheel.write_bytes(b"controller")
+    controller_metadata = _json(
+        controller_root / "CONTROL-METADATA.json",
+        {
+            "schema_version": "1.0",
+            "commit_sha": COMMIT,
+            "tree_sha": TREE,
+            "workflow_run_id": "100",
+            "workflow_run_attempt": "1",
+        },
+    )
+    (controller_root / "SHA256SUMS").write_text(
+        f"{_sha(controller_metadata)}  {controller_metadata.name}\n"
+        f"{_sha(controller_wheel)}  {controller_wheel.name}\n",
+        encoding="utf-8",
+    )
     controller_wheel_sha256 = _sha(controller_wheel)
     result = authorize_release(
         object(),  # type: ignore[arg-type]
@@ -373,8 +390,9 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
     assert result["controller"]["run_id"] == "100"
     assert result["controller"]["wheel_sha256"] == controller_wheel_sha256
     controller = dict(result["controller"])
-    controller["wheel_sha256"] = "0" * 64
-    with pytest.raises(GitHubControllerError, match="controller wheel bytes"):
+    controller.pop("wheel_sha256")
+    controller_wheel.write_bytes(b"corrupted-controller")
+    with pytest.raises(GitHubControllerError, match="controller artifact digest"):
         authorize_release(
             object(),  # type: ignore[arg-type]
             repository="owner/repo",

@@ -13,6 +13,7 @@ from typing import Any, Iterable
 from .ci_authority_certification import verify_ci_certification
 from .ci_authority_contracts import authority_role_workflow
 from .ci_github_api import GitHubAPI
+from .ci_github_bootstrap import controller_metadata, verify_controller_inventory
 from .ci_github_artifacts import (
     authenticate_role_artifact,
     provider_digest,
@@ -188,7 +189,18 @@ def authorize_release(
         controller["tree_sha"] != subject["tree_sha"]
     ):
         raise GitHubControllerError("controller artifact is not bound to release subject")
-    wheel_sha256 = _sha256(controller_wheel_path)
+    wheel, _ = verify_controller_inventory(controller_wheel_path.parent.resolve())
+    if wheel.resolve() != controller_wheel_path.resolve():
+        raise GitHubControllerError("controller wheel is not the authenticated inventory member")
+    if controller_metadata(controller_wheel_path.parent / "CONTROL-METADATA.json") != {
+        "schema_version": "1.0",
+        "commit_sha": controller["commit_sha"],
+        "tree_sha": controller["tree_sha"],
+        "workflow_run_id": controller["run_id"],
+        "workflow_run_attempt": str(controller["run_attempt"]),
+    }:
+        raise GitHubControllerError("controller metadata is not the release subject")
+    wheel_sha256 = _sha256(wheel)
     caller_wheel_sha256 = controller.get("wheel_sha256")
     if caller_wheel_sha256 is not None and (
         not re.fullmatch(r"[a-f0-9]{64}", str(caller_wheel_sha256))

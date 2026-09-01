@@ -247,6 +247,7 @@ execution_evidence:
   - the documented local-PR command now selects the canonical selected-interpreter preflight when no explicit argv is supplied; an exact custom argv remains available after `--`, and a causal control rejects any hidden fallback-path change
   - nightly run 33469562066 skipped every mutant when canonical preflight rejected a shallow checkout that could not verify compacted phase custody; both scheduled workflows now fetch complete history, and a causal control rejects regression before mutation execution
   - the release controller now resolves current main, highest admission, newest finalizer, controller, and certification artifacts as one provider-authenticated input document; the self workflow will consume that document and cannot promote caller-copied IDs or digests into release authority
+  - canonical preflight rejected the superseded caller-digest control immediately after the resolver refactor; authorization now validates the downloaded controller checksum inventory and exact control metadata, and the retargeted mutant proves corrupted wheel bytes cannot acquire authority
 closeout_requirements:
   claims:
     required_suites_green:
