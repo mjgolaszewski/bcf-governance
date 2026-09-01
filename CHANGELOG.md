@@ -79,6 +79,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Selected the repaired exact-main controller solely through authenticated provider
   state and compiled artifact bytes; the active trusted controller remains unchanged
   until both local control runners independently install and probe the target.
+- Promoted the repaired source-entrypoint controller only after provider-authenticated
+  bootstrap and independent probe runs proved its exact installation on both uniquely
+  labeled trusted runners; no run, artifact, commit, tree, or digest value was transcribed.
 - Made extracted-source workflow custody verify the exact packaged workflow bytes and
   compiled inventories without claiming unavailable Git history; the normal repository
   path still requires exact definition-commit ancestry. Failed verifier attempts now

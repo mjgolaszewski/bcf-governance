@@ -163,6 +163,12 @@ summary:
   - trusted finalizer 33499626801 and publisher 33499654668 completed the authenticated terminal
     path; certification artifact 9797152911 remains non-success authority until this closeout tree
     receives fresh exact-main evidence
+  - P13-HF03 repaired source-entrypoint authority at the cheap front door; PR 84 merged as
+    de2eeee6c16d074c4c5fffd39ee5d583b36d1a3e and exact-main 33511582433 passed all 21
+    receipts, exact-tree truth, package verification, and controller construction
+  - controller rotation PR 85 merged as e6eebf7ff17bd9c72cc2b6fd97cf27aa88a0fb0d;
+    exact-main 33512606123, finalizer 33513000582, and publisher 33513038304 passed before
+    bootstrap 33513097208 and probe 33513145558 proved controller de2eeee6 on both trusted runners
 workitems:
 - id: P13-P0-01
   status: DONE
