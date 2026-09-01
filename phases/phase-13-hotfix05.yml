@@ -27,12 +27,21 @@ execution_evidence:
   - command: bcf ci sync-self-controller --pin compiled-pin.json --apply
     result: pass
     notes: the canonical projector updated exactly the policy, bootstrap, probe, and verifier target surfaces while retaining the prior installed controller
+  - command: trusted bootstrap run 33524862289 attempt 1
+    result: pass
+    notes: provider-authenticated inventories proved the target controller independently on both uniquely labeled trusted runners
+  - command: trusted probe run 33524915966 attempt 1
+    result: pass
+    notes: the independent no-checkout probe confirmed the exact target installation on both trusted runners
+  - command: bcf ci sync-self-controller --pin compiled-pin.json --confirmation compiled-confirmation.json --apply
+    result: pass
+    notes: promotion accepted only the provider-compiled two-runner confirmation and moved every governed active-controller surface together
   notes:
   - target controller commit is 49272182790342a52ef7ddbcfd6a540ca7df6baf,
     tree cd714d075fb0b2271efe5416fb83191ccd18259c, and wheel SHA-256
     9e17a9fd84df251bcbfe7509376d1e3fc531443fcb87458bd1c114559dea58ff
-  - bootstrap still invokes installed controller de2eeee6 until provider proofs show the
-    new controller exists independently on both uniquely labeled trusted runners
+  - bootstrap and probe proof mechanically promoted controller 49272182790342a52ef7ddbcfd6a540ca7df6baf;
+    no run, attempt, artifact, commit, tree, or digest was operator-authored
 closeout_requirements:
   claims:
     required_suites_green:

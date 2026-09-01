@@ -324,7 +324,7 @@
     },
     "scripts/_bcf_runtime/ci_github_actions.py": {
       "operation": "copy",
-      "sha256": "56d7189585af6ca037d3a26e319e2a7658f0aa80f27a15fa3769e13ef9d8bbce"
+      "sha256": "b6870f8c28445cbc4a88574ad7bc098dbb97a68b5347c619fef9c1496a282d15"
     },
     "scripts/_bcf_runtime/ci_github_api.py": {
       "operation": "copy",
@@ -548,7 +548,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "b25aaed4891b1a2100c8e7e2f0d1aad5a97608b368e423f0c95c67ae8cfa7551"
+      "sha256": "6d03538b7291253857db2f3d853502a3c2c00ffa371032897aa0aea6c57ac06c"
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",
@@ -597,6 +597,10 @@
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
       "sha256": "fa77fc6e7a159c7b4c1ac23aff9219c1cdac7f5eadc74e9ffbb08c7c10a36099"
+    },
+    "scripts/_bcf_runtime/self_workflow_contracts.py": {
+      "operation": "copy",
+      "sha256": "e694b0c2b9b0a69e553b10f9c972a65f26690c79ec59ec9bc4251850b3d824d9"
     },
     "scripts/_bcf_runtime/semantic_ownership_benchmark.py": {
       "operation": "copy",

@@ -32,6 +32,10 @@ from .interpreter_environment import (
     verify_interpreter_environment_projection,
 )
 from .semantic_ownership_scan import run_scan as run_semantic_ownership_scan
+from .self_workflow_contracts import (
+    SelfWorkflowContractError,
+    validate_self_workflow_contracts,
+)
 from .test_manifests import check_all
 
 
@@ -413,6 +417,15 @@ def _self_controller(repo_root: Path) -> int:
         raise PreflightError(f"self-controller preflight failed: {exc}") from exc
 
 
+def _self_workflows(repo_root: Path) -> int:
+    if not (repo_root / "governance/self-governance-policy.yml").is_file():
+        return 0
+    try:
+        return validate_self_workflow_contracts(repo_root)
+    except SelfWorkflowContractError as exc:
+        raise PreflightError(f"self-workflow preflight failed: {exc}") from exc
+
+
 def _required_gates(repo_root: Path) -> list[str]:
     profile = yaml.safe_load(
         (repo_root / "governance-profile.yml").read_text(encoding="utf-8")
@@ -606,6 +619,7 @@ def run_preflight(
         "source-entrypoints", lambda: _source_entrypoint_authority(repo_root)
     )
     step("governance", lambda: validate_repo_root(repo_root))
+    self_workflows = step("self-workflows", lambda: _self_workflows(repo_root))
     workflow_authority = step(
         "workflow-authority", lambda: _workflow_authority(repo_root)
     )
@@ -647,6 +661,7 @@ def run_preflight(
         "source_entrypoints": source_entrypoints,
         "source_locks": source_locks,
         "pack_manifest": pack_manifest,
+        "self_workflows": self_workflows,
         "workflow_authority": workflow_authority,
         "self_controller": self_controller,
         "negative_controls": negative_controls,
