@@ -72,6 +72,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   state and exact downloaded bytes; bootstrap/probe inputs remain compiler output.
 - Promoted the corrected controller only after both uniquely labeled trusted runners
   passed provider-authenticated bootstrap and independent probe inventories.
+- Kept interpreter, virtual-environment, and dependency integrity at the canonical cheap
+  preflight boundary; evidence, mutant, package-test, and release-runtime work cannot be
+  the first mechanism to discover a broken selected environment.
 - Replaced hand-transcribed Identity reference custody with a tracked importer that
   authenticates the exact provider run, attempt, workflow, subject, artifact membership,
   and provider digest before projecting benchmark and SOIP results into governed audits.
