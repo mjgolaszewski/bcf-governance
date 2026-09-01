@@ -1,0 +1,63 @@
+document:
+  kind: remediation_execution_audit
+  name: BCF Governance P13 Remediation Execution Audit
+  id: bcf-governance-p13-remediation-execution-audit
+  version: 1.0.0
+  generated_at_utc: '2026-09-01T00:00:00Z'
+  status: corrective_action_applied
+  path: audits/p13-remediation-execution-audit.yml
+scope:
+  repository: mjgolaszewski/bcf-governance
+  opened_at_utc: '2026-08-31T17:54:54Z'
+  first_pull_request: 40
+  last_pull_request_in_sample: 89
+  terminal_sample_commit: fb011a3e49dbb7d5f2bf87ea5cf96abb048555bb
+observed_cost:
+  merged_pull_requests: 50
+  workflow_runs: 404
+  non_green_workflow_runs: 75
+  github_hosted:
+    workflow_runs: 213
+    jobs: 914
+    raw_runtime_seconds: 68260
+    average_job_runtime_seconds: 74.68
+  self_hosted:
+    workflow_runs: 245
+    jobs: 276
+    raw_runtime_seconds: 3227
+finding:
+  statement: The train discovered related defects serially after expensive fanout and
+    spread authority across workflow YAML, operator projections, and late integration tests.
+  impact: Excessive pull requests and hosted execution delayed release closure and made
+    BCF's own adoption weaker evidence for the framework than its intended design permits.
+  responsibility: implementation_process_and_mechanical_coverage
+defect_classes:
+- environment and virtual-environment integrity was not completely validated at the cheap front door
+- workflow and provider values had multiple semantic decoders or hand-projected copies
+- source entrypoint, package contents, and generated-pack parity failed after expensive work
+- live provider inventories and current-attempt release fan-in were validated too late
+- release runtime and publication custody were tested incrementally instead of as one closed rehearsal
+corrective_design:
+- one cheap preflight owns all locally decidable workflow, environment, source, package,
+  manifest, syntax, exposure, and generated-copy invariants before evidence allocation
+- controller commands own authenticated provider selection and emit typed cross-job values;
+  workflow YAML contains wiring, not a second decision implementation
+- selected Python, virtual-environment identity, dependency versions, package assets,
+  release wheelhouse, and file inventories are derived once and fail closed on drift
+- one consolidated activation pull request is followed by one exact-main certification,
+  the required scheduled evidence, one closed release rehearsal, and exact-byte publication
+- release notes describe final behavior; this audit owns aggregate incident history
+test_disposition:
+  rule: remove tests only when a production mechanical owner now enforces the same invariant
+    earlier and causal mutation coverage remains
+  removed_class: secondary direct decoding of self-workflow YAML inventory, trust routes,
+    activation, interpreter, action pins, controller token, idle coordination, and display names
+  retained_class: public CLI and schema contracts, cross-root generated parity, integration
+    behavior, provider-state transitions, security boundaries, and cause-verified mutants
+acceptance:
+- one production self-workflow contract is invoked by canonical cheap preflight
+- publisher authority is derived entirely from authenticated resolver outputs
+- no trusted workflow checks out candidate code, executes candidate scripts, polls, sleeps,
+  waits for leases, or falls back to a hosted runner
+- exact workflow bytes and authority pins are compiled only after executable logic is frozen
+- changelog, active governance records, manifests, generated runtimes, and tests match final logic

@@ -6,243 +6,78 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `0.7.1` (authority-v1.1 acceptance is complete; publication remains
-disabled pending the explicit immutable-release and tag/publication owner actions).
+Release target: `0.7.1`. Publication remains pending the certified merge,
+immutable-release setting, annotated tag, and exact-byte publication sequence.
 
 ### Security
 
-- Opened the 0.7.1 authority-remediation train after post-release review found
-  that same-SHA producer runs lacked common-admission membership and release
-  selection duplicated success-prefiltered provider authority in workflow shell.
-- Added fail-closed provider registration seams for independent release verification,
-  trusted collection, immutable publication, and authority-revocation canaries; every
-  new job remains disabled until its numeric workflow identity and final bytes are pinned.
-- Added one mechanically governed provider-artifact decoder that binds every privileged
-  release artifact to its exact role, run, attempt, repository, commit, name, ID, and
-  provider SHA-256 before authorization, collection, or publication can proceed.
-- Replaced operator-copied workflow hashes, definition commits, job display names, and
-  controller-artifact projections with Git/provider-derived compilers checked by cheap
-  preflight and cause-verified mutants.
-- Made profile-v2 gate contracts the sole executable owner of evidence assertions and
-  negative controls; validation rejects duplicated evidence-policy overrides instead of
-  asking an operator to keep parallel declarations synchronized.
-- Added a trusted release-input resolver that derives exact-main, finalizer, controller,
-  run, attempt, artifact, commit, tree, and provider-digest custody from authenticated
-  provider state instead of accepting operator-authored release authority.
-- Added a publication-input resolver that derives the newest authenticated collector
-  attempt, exact receipt artifact, current subject, release tag, and closed asset directory
-  without operator-authored provider coordinates or shell-maintained file lists.
-- Mechanically selected the exact-main controller containing that resolver and projected
-  its provider-authenticated artifact custody into bootstrap, probe, and verifier inputs;
-  the prior installed controller remains active until two-runner proof is compiled.
-- Rotated the pending trusted-controller target from the resolver-selected exact-main
-  package artifact; provider IDs, digests, wheel hash, commit, and tree are compiler
-  output rather than operator-entered release inputs.
-- Promoted that controller only after provider-compiled bootstrap and independent
-  probe evidence proved its installation on both uniquely labeled trusted runners.
-- Bound the release dependency lock and wheelhouse manifest to authenticated exact-main
-  Git blob bytes, and made the verifier controller own offline wheel/sdist/Twine
-  execution plus raw stdout, stderr, JUnit, interpreter, and artifact evidence.
-- Rotated the pending trusted-controller target to the mechanically resolved exact-main
-  artifact containing that release-runtime verifier; the installed controller remains
-  authoritative until bootstrap and probe independently confirm both trusted runners.
-- Promoted the release-runtime controller only after provider-compiled bootstrap and
-  probe evidence independently proved the exact installation on both trusted runners.
-- Split hosted release verification into token-free candidate runtime execution and a
-  non-executing provider-authentication step, with a closed subprocess environment that
-  cannot inherit GitHub, Actions, cloud, or runner credentials.
-- Rotated the pending trusted-controller target to the mechanically resolved artifact
-  containing that token-isolated release verifier; active authority remains unchanged
-  until both trusted runners independently install and probe the target.
-- Promoted the token-isolated release controller only after provider-authenticated
-  bootstrap and independent probe runs proved its exact installation on both trusted
-  runners; the provider compiler remains the sole owner of promotion inputs.
-- Activated publication-disabled release authorization, fresh hosted build, isolated
-  token-free runtime verification, separate provider authentication, and trusted
-  no-checkout collection while leaving the publisher fail-closed.
-- Eliminated the resolver/authorizer artifact-shape split exposed by the first
-  publication-disabled run, and mechanically selected its exact-main successor
-  controller for independent installation on both trusted runners.
-- Promoted that successor only after bootstrap and probe independently proved
-  the exact installation on both uniquely labeled trusted runners.
-- Completed the remediated phase state only after the promoted controller passed
-  every exact-main producer and all 21 required gate receipts.
-- Replaced workflow-maintained release and runtime-evidence file lists with exact
-  controller-owned directory inventories that reject extra, missing, unsafe, or
-  undeclared members.
-- Rotated the pending trusted-controller target to the provider-resolved exact-main
-  artifact containing the activated release workflows; the installed controller
-  remains authoritative until bootstrap and probe independently prove both runners.
-- Promoted the release-activation controller only after provider-authenticated
-  bootstrap and independent probe runs proved the exact installation on both
-  uniquely labeled trusted runners.
+- Added CI authority contract v1.1. Exact-main and release claims now bind one
+  authenticated admission, its exact run attempt, workflow identity and bytes,
+  candidate commit and tree, and the complete same-run producer inventory. A newer
+  admitted failure, cancellation, or attempt revokes an older success.
+- Removed operator-authored provider authority from exact-main, controller rotation,
+  release authorization, verification, collection, and publication. Controller
+  commands derive and validate run IDs, attempts, artifact IDs, provider digests,
+  workflow pins, commit/tree identities, and closed file inventories before emitting
+  typed job outputs. Workflow YAML wires those outputs and does not independently
+  select provider state.
+- Split release construction into a trusted no-checkout authorization step, a fresh
+  hosted build, a separate fresh token-free runtime verifier, a non-executing provider
+  authenticator, a trusted no-checkout collector, and a trusted exact-byte publisher.
+  Candidate jobs cannot create an authoritative release receipt or publish a release.
+- Closed release dependencies to a hash-admitted CPython 3.12/Linux x86-64 wheelhouse.
+  Build and verification use the admitted files offline and reject missing, additional,
+  changed, unsafe, or unhashed inputs.
+- Added a mechanically checked self-workflow contract for BCF's own CI. It validates
+  job inventories, trust classes, runner routes, activation guards, pinned actions,
+  selected interpreters, descriptive names, controller identity, publisher inputs, and
+  the absence of checkout, candidate scripts, hosted fallback, polling, or idle waits on
+  trusted jobs.
+- Activated the release publisher as an owner-and-main-only trusted workflow. It resolves
+  the newest authenticated collector receipt, attests and publishes only its closed
+  assets, performs no checkout or build, and receives no operator-entered release
+  coordinates.
 
 ### Fixed
 
-- Moved governance exposure scanning into cheap preflight so local workspace paths and
-  private infrastructure markers fail before evidence fanout instead of inside a shard.
-- Made cheap preflight derive and validate every tracked Python source entrypoint's
-  repository-root import authority. Exact-main controller verification now runs in
-  isolated interpreter mode, so editable installs and ambient import paths cannot
-  mask a broken source command or defer it to package, evidence, mutant, or release work.
-- Selected the repaired exact-main controller solely through authenticated provider
-  state and compiled artifact bytes; the active trusted controller remains unchanged
-  until both local control runners independently install and probe the target.
-- Promoted the repaired source-entrypoint controller only after provider-authenticated
-  bootstrap and independent probe runs proved its exact installation on both uniquely
-  labeled trusted runners; no run, artifact, commit, tree, or digest value was transcribed.
-- Completed the pre-publication authority rehearsal through exact-main certification,
-  both scheduled mutant profiles, same-SHA success revocation and attempt precedence,
-  closed release construction, token-free byte verification, and the sole trusted
-  release receipt; final evidence must be recaptured after this reconciliation merges.
-- Made extracted-source workflow custody verify the exact packaged workflow bytes and
-  compiled inventories without claiming unavailable Git history; the normal repository
-  path still requires exact definition-commit ancestry. Failed verifier attempts now
-  retain raw runtime evidence for deterministic diagnosis.
-- Replaced independently maintained resolver and authorizer artifact field sets with one
-  projection derived from the `ProviderArtifact` dataclass, and fail closed on any extra,
-  missing, or differently shaped download coordinates before release build allocation.
-- Made cheap preflight verify the generated pack's exact hash manifest before session,
-  package, test, or mutant work, with a causal control for bypassing that boundary.
-- Made authenticated nonterminal workflow inspection accept only a nonempty subset of
-  the pinned job inventory while terminal certification still requires the complete
-  exact set, preventing release authorization from depending on future job materialization.
-- Selected the corrected trusted-controller artifact through authenticated provider
-  state and exact downloaded bytes; bootstrap/probe inputs remain compiler output.
-- Promoted the corrected controller only after both uniquely labeled trusted runners
-  passed provider-authenticated bootstrap and independent probe inventories.
-- Kept interpreter, virtual-environment, runtime, development, gate-specific, and
-  build-system dependency integrity at the canonical cheap preflight boundary. The
-  bootstrap requirements file is now an exact generated projection of those owners,
-  and failed prerequisites emit a causal terminal observation instead of a missing
-  fan-in error. Generated local release checks also pass truth only the fresh session
-  they just allocated, so retained sessions cannot contaminate a current run; evidence,
-  mutant, package-test, and release-runtime work cannot be the first mechanism to
-  discover a broken selected environment.
-- Replaced hand-transcribed Identity reference custody with a tracked importer that
-  authenticates the exact provider run, attempt, workflow, subject, artifact membership,
-  and provider digest before projecting benchmark and SOIP results into governed audits.
-- Completed the hosted Identity reference proof with the runtime-complete packaged
-  controller: all 62 representations and 221 cross-language traces passed with zero
-  violations, escapes, or uncovered required browser traces.
-- Made package metadata admit every mechanically discovered non-Python runtime asset,
-  and made cheap package preflight plus built-wheel inspection reject missing tools or
-  analyzer payloads before controller publication, evidence capture, or mutation work.
-- Supplied package preflight with provider-derived pull-request base and enforcement
-  context so local and remote front doors make the same decision without operator input.
-- Rotated the pending trusted-controller target from the provider-selected exact-main
-  artifact whose wheel passed the new source-derived runtime-asset inspection; no run,
-  artifact, commit, tree, provider digest, or wheel digest was operator-authored.
-- Promoted the runtime-complete controller only after provider-compiled bootstrap and
-  independent probe inventories proved the exact installation on both trusted runners.
-- Reconciled v0.7.0 as published and attested but provider-mutable historical
-  custody; its tag, release, assets, and attestations remain unchanged, and no
-  corrected-authority certification is claimed retroactively.
-- Pinned the trusted bootstrap and probe to the exact controller artifact built
-  by the merged authority-v1.1 structural commit, and made offline installation
-  select the sole authenticated controller wheel instead of a stale versioned name.
-- Advanced that bootstrap custody to the fail-closed provider-registration merge,
-  whose controller contains the mechanical bootstrap and terminal-revocation fixes.
-- Allowed one authenticated admission's pending status to transition to its terminal
-  result, and made a failed finalizer publish a higher-authority failure instead of
-  leaving an older green status in place.
-- Replaced independent default-branch governance runs with one exact-main admission
-  whose reusable governance and package producers share the authenticated run and
-  attempt; the trusted finalizer and publisher now consume every terminal outcome.
-- Bound the governance workflow contract to direct pull requests and same-run
-  `workflow_call` execution, removing the stale independent-push requirement from
-  terminal truth.
-- Mapped exact-main reusable execution to release preflight and closure truth,
-  while direct pull requests retain their exact-base PR evaluation contract.
-- Made reusable evaluation mode depend on its explicit typed input rather than
-  the caller event name, which remains `push` inside an exact-main call.
-- Made exact-main controller construction depend on a separate typed reusable-workflow
-  input; direct pull requests cannot build it, and caller event presentation cannot
-  silently skip it.
-- Required release authorization and build to share one workflow attempt, required
-  collection to select the newest same-SHA release admission, and required publication
-  to authenticate the collector receipt and its exact asset inventory.
-- Made independent verification require exactly one wheel, one source archive, and a
-  `SHA256SUMS` file whose two declarations match the archive bytes.
-- Required the trusted authorizer to hash the downloaded controller wheel instead of
-  accepting its expected wheel digest as authority.
-- Moved cross-workflow build and verification artifact resolution into the controller,
-  eliminating workflow-authored provider selectors.
-- Made status reconstruction select the highest admission and attempt mechanically,
-  then let its single terminal conclusion dominate pending observations independent
-  of provider list order; conflicting terminal conclusions fail closed.
-- Raised only the canonical semantic-registry byte budget from 32 to 40 KiB as provider
-  artifact and workflow-authority compiler ownership were added; the 200-line cap is
-  unchanged and both additions remain blocking semantic families.
-- Made the cheap preflight derive the selected interpreter's required distributions
-  from project dependencies, declared optional groups, and gate-specific tool
-  requirements; a missing `pip` or test dependency now fails before evidence capture.
-- Made cause-verified test controls execute only their declared pytest oracle nodes in
-  isolated worktrees after one full positive baseline; diagnostic controls retain the
-  canonical gate command, eliminating repeated full-suite mutant executions.
-- Preserved the authority-v1.1 base workflow shape during self-controller rotation so
-  the installed pre-enrichment controller can admit the exact-main build; privileged
-  job inventories remain absent and therefore fail closed until its successor is installed.
-- Mechanically selected the successor controller from the newest exact-main package
-  producer, verified its provider archive and closed wheel inventory, and projected its
-  single canonical pin into the trusted control workflows without operator-authored custody.
-- Made that same controller pin mechanically own the GitHub topology controller commit,
-  removing the former duplicated commit literal from self-adoption and profile readiness.
-- Separated the controller proven installed on trusted runners from the next authenticated
-  artifact target. Rotation now keeps active control jobs on proven bytes, uses those bytes
-  to install the target, and accepts a promotion only from exact-main bootstrap and probe
-  runs compiled from authenticated provider state.
-- Made canonical local-PR validation enable the same changelog contract as remote pull
-  requests, using the fetched exact base SHA before any evidence can be allocated.
-- Made authority-v1.1 pinning derive every privileged workflow's exact matrix-expanded
-  job inventory from committed workflow bytes. The compatibility bridge can now be
-  retired without restoring hand-maintained display names or job lists.
-- Made cheap preflight validate the selected executable, virtual-environment prefix and
-  isolation, Python constraint, and every declared dependency version. BCF's generated
-  governance requirements now install its governed pytest 9.0.3 instead of a conflicting
-  pre-9 range, so environment drift fails before evidence or mutant execution.
-- Made workflow-byte compilation persist the uniquely derived admission and reusable-
-  producer source-role map. Installed controllers no longer depend on a newer controller
-  merely to interpret an enriched authority document, and no operator copies job keys.
-- Compiled the next trusted-controller target from exact-main run `33463382955` and its
-  provider-digested artifact after the installed controller admitted the persisted role
-  map; active authority remains on the separately proven installation until bootstrap
-  and probe confirmation.
-- Required both scheduled mutant profiles to run the canonical selected-interpreter and
-  repository preflight before any mutant. Environment, manifest, syntax, source-lock,
-  and ownership defects now fail before mutation work begins.
-- Required scheduled mutant checkouts to fetch complete Git custody before preflight,
-  so compacted phase records are mechanically verifiable before mutation work begins.
-- Added exact-subject scheduled mutant result documents and always-run, run/attempt-
-  scoped artifact upload so scheduled failures retain evidence without rerunning mutants.
-- Made `bcf ci local-pr` default to the canonical selected-interpreter preflight
-  documented for contributors, removing a hidden argv sequencing requirement while
-  retaining an explicit-command override.
-- Promoted that target only after provider-compiled bootstrap run `33464640838` and
-  independent probe run `33464672319` proved the exact controller on both trusted runners.
-- Made every trusted GitHub controller command validate its output channel before provider
-  access or mutation, and made controller confirmation publish its authority document only
-  after the output channel accepts the computed result.
-- Activated an owner-dispatched authority-revocation canary with typed deterministic
-  scenarios, fresh secretless hosted producers, and an always-run trusted observer that
-  publishes only to the isolated canary status context.
+- Made cheap preflight the release front door for selected-interpreter and virtual-
+  environment integrity, declared dependency versions, Python source entrypoints,
+  package runtime assets, generated-pack parity, exposure scanning, exact test
+  manifests, workflow authority, action pins, artifact namespaces, source locks, and
+  syntax. These defects now fail before evidence, package, mutation, or release work.
+- Made detached evidence and negative-control sessions preserve the selected interpreter
+  and its executable directory while rejecting ambient editable installs and undeclared
+  dependencies as authority.
+- Made release artifact selection and file inventories controller-owned and exact,
+  including current-attempt fan-in, controller wheels, wheelhouse inputs, runtime
+  evidence, release assets, checksums, and collector receipts.
+- Made scheduled mutation, local pull-request, and exact-main entrypoints run the same
+  canonical preflight with mechanically derived base, subject, and event context.
+- Added causal controls for workflow activation, publisher resolution, provider
+  coordinates, attestation inventory, runner isolation, current-attempt selection,
+  dependency closure, and release-byte verification. A control passes only for its
+  declared failure cause after a green positive baseline.
+- Reconciled `v0.7.0` as published and attested but provider-mutable historical custody.
+  Its tag, release, assets, and attestations remain unchanged, and no authority-v1.1
+  certification is claimed retroactively.
 
 ### Changed
 
-- Clarified the README for traditional DevOps engineers with a direct
-  human-centric versus agentic DevSecOps comparison, including the boundary
-  between human judgment and mechanically computed claims.
-- Enabled honest Git-history compaction for completed phases that lack a
-  historical closed receipt; such rows retain exact hashes while omitting any
-  retroactive derived-state claim. Cleanup now also preserves linked-worktree
-  Git control files and avoids unrelated audit-root rewrites. Transactional
-  profile checks and applies retain Git custody while validating their shadow.
-- Made source-distribution verification distinguish portable package tests from
-  the two BCF self-adoption proofs that require the original repository's Git
-  objects; JUnit validation rejects any broader or narrower skip set.
-- Replaced the transitional inline bootstrap with thin controller-owned installation
-  after the exact artifact was independently installed and probed on both trusted
-  runners.
+- Preserved the 21-gate Standard-v2 public profile while requiring authority v1.1 only
+  for new exact-main and release claims. Existing authority-v1.0 consumers and receipt
+  schema 2.0 remain compatible.
+- Consolidated self-workflow invariants under one production preflight owner and removed
+  older tests that independently decoded the same YAML fields. Focused causal mutations
+  remain for each security boundary; distinct public-contract and integration tests remain.
+- Kept candidate code on fresh GitHub-hosted runners and short trusted no-checkout
+  control work on uniquely labeled local runners. No job polls, sleeps, leases an idle
+  runner, or silently falls back between trust classes.
+- Retained current P13 records while the release train is active. Completed earlier
+  phase triplets remain compacted to hash-bound Git history under the declared retention
+  policy.
+- Reorganized maintainer guidance around mechanical authority, exact evidence, runner
+  trust boundaries, release custody, and explicit human judgment. AI and human operators
+  may propose changes but cannot supply or self-certify mechanically derivable claims.
 
 ## [0.7.0] - 2026-08-31
 

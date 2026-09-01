@@ -119,13 +119,3 @@ def test_collector_is_no_checkout_trusted_recomputation_and_sole_receipt_owner()
     assert "ci-github release collect" in serialized
     assert "pip install" not in serialized
     assert "python -m build" not in serialized
-
-
-def test_publisher_remains_fail_closed_pending_explicit_owner_approval() -> None:
-    workflow = _workflow("bcf-release-publisher.yml")
-    assert list(workflow["jobs"]) == ["publish"]  # type: ignore[arg-type]
-    publish = workflow["jobs"]["publish"]  # type: ignore[index]
-    assert publish["if"] == "${{ false }}"
-    serialized = _serialized("bcf-release-publisher.yml")
-    for forbidden in ("actions/checkout@", "python -m build", "pip install", "gh release"):
-        assert forbidden not in serialized

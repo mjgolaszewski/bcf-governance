@@ -13,10 +13,8 @@ import yaml
 
 from bcf_governance.cli import COMMANDS
 from bcf_governance.tooling.ci_adopt_github import (
-    ACTIVATION_EXPRESSION,
     FINALIZER_ACTIVATION_EXPRESSION,
     PUBLISHER_ACTIVATION_EXPRESSION,
-    TRUSTED_CONTROLLER_TOKEN_ENV,
     render_github_v11_control_plane,
 )
 from bcf_governance.tooling.ci_github_actions import ACTION_PINS
@@ -319,162 +317,6 @@ def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
     assert "$BCF_BOOTSTRAP_WHEEL_SHA256" in probe_commands
 
 
-def test_self_governance_runner_classification_is_exact_and_has_no_fallback() -> None:
-    runner_policy = _policy()["runner_security"]
-    release_subject = yaml.safe_load(
-        (REPO_ROOT / "release/wheelhouse-manifest.yml").read_text(encoding="utf-8")
-    )["subject"]
-    expected_jobs = runner_policy["jobs"]
-    observed_jobs: dict[str, dict[str, str]] = {}
-    for relative_path, classification in expected_jobs.items():
-        workflow_path = REPO_ROOT / relative_path
-        workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
-        jobs = workflow["jobs"]
-        assert set(jobs) == set(classification)
-        observed_jobs[relative_path] = classification
-        for job_id, trust_class in classification.items():
-            if trust_class in {"trusted", "trusted_bootstrap"}:
-                expected_labels = list(runner_policy["trusted_labels"])
-                strategy = jobs[job_id].get("strategy")
-                if strategy and "trusted_runner" in strategy.get("matrix", {}):
-                    assert strategy["matrix"]["trusted_runner"] == runner_policy[
-                        "trusted_instance_labels"
-                    ]
-                    expected_labels.append("${{ matrix.trusted_runner }}")
-            elif trust_class == "reusable_candidate":
-                assert "runs-on" not in jobs[job_id]
-                assert jobs[job_id]["uses"].startswith("./.github/workflows/")
-                assert jobs[job_id]["permissions"] == {"contents": "read"}
-                continue
-            elif trust_class in {"release_candidate", "provider_control_hosted"}:
-                expected_labels = release_subject["operating_system"]
-            else:
-                expected_labels = runner_policy["candidate_routing"]["candidate_runner"]
-            assert jobs[job_id]["runs-on"] == expected_labels
-    assert observed_jobs == expected_jobs
-    assert runner_policy["hosted_fallback_allowed"] is False
-    assert runner_policy["candidate_substrate"] == "github_standard_hosted_fresh_vm"
-    assert runner_policy["coordination_policy"] == [
-        "no_polling",
-        "no_sleeping",
-        "no_idle_waiters",
-    ]
-
-
-def test_all_candidate_code_uses_fresh_standard_hosted_workers() -> None:
-    runner_policy = _policy()["runner_security"]
-    routing = runner_policy["candidate_routing"]
-    assert routing == {
-        "candidate_runner": "ubuntu-latest",
-        "repository_visibility": "public",
-        "billing_class": "standard_public_repository",
-    }
-    release_subject = yaml.safe_load(
-        (REPO_ROOT / "release/wheelhouse-manifest.yml").read_text(encoding="utf-8")
-    )["subject"]
-    assert release_subject["operating_system"] == "ubuntu-24.04"
-    assert release_subject["python"] == "3.12.14"
-    for relative_path, classifications in runner_policy["jobs"].items():
-        workflow = yaml.safe_load(
-            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
-        )
-        for job_id, trust_class in classifications.items():
-            if trust_class == "candidate":
-                assert workflow["jobs"][job_id]["runs-on"] == "ubuntu-latest"
-            elif trust_class in {"release_candidate", "provider_control_hosted"}:
-                assert workflow["jobs"][job_id]["runs-on"] == release_subject[
-                    "operating_system"
-                ]
-
-
-def test_trusted_jobs_never_checkout_or_invoke_candidate_scripts() -> None:
-    runner_policy = _policy()["runner_security"]
-    pinned_action = re.compile(r"^[^@]+@[0-9a-f]{40}$")
-    for relative_path, classification in runner_policy["jobs"].items():
-        workflow = yaml.safe_load(
-            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
-        )
-        for job_id, trust_class in classification.items():
-            if trust_class not in {"trusted", "trusted_bootstrap"}:
-                continue
-            steps = workflow["jobs"][job_id]["steps"]
-            assert all("actions/checkout@" not in step.get("uses", "") for step in steps)
-            for step in steps:
-                if "uses" in step:
-                    assert pinned_action.fullmatch(step["uses"])
-                command = step.get("run", "")
-                assert "scripts/" not in command
-                assert ".github/scripts/" not in command
-                if trust_class == "trusted":
-                    assert "python" not in command
-                else:
-                    assert "actions/checkout" not in command
-                    assert 'ci-github bootstrap' in "\n".join(
-                        value.get("run", "") for value in steps
-                    )
-    interpreter = runner_policy["trusted_controller_interpreter"]
-    for relative_path in interpreter["required_workflows"]:
-        workflow = yaml.safe_load(
-            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
-        )
-        steps = next(iter(workflow["jobs"].values()))["steps"]
-        setup = [
-            step
-            for step in steps
-            if step.get("uses", "").startswith("actions/setup-python@")
-        ]
-        assert len(setup) == 1
-        assert setup[0]["uses"] == interpreter["action"]
-        assert setup[0]["with"] == {"python-version": interpreter["python_version"]}
-
-
-def test_hosted_candidates_and_trusted_publication_are_separated() -> None:
-    runner_policy = _policy()["runner_security"]
-    routing = runner_policy["candidate_routing"]
-    assert routing["candidate_runner"] not in runner_policy["trusted_labels"]
-    window = runner_policy["temporary_local_window"]
-    assert window["status"] == "closed"
-    assert window["privileged_publication_enabled"] is False
-    for relative_path, classification in runner_policy["jobs"].items():
-        workflow = yaml.safe_load(
-            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
-        )
-        for job_id, trust_class in classification.items():
-            if trust_class in {"trusted", "trusted_bootstrap"}:
-                activation = runner_policy["trusted_job_activation"][relative_path][job_id]
-                if activation == "disabled":
-                    assert workflow["jobs"][job_id]["if"] == "${{ false }}"
-                elif activation.startswith("repository_variable_"):
-                    expected = {
-                            "repository_variable_enabled": ACTIVATION_EXPRESSION,
-                            "repository_variable_exact_main_only": (
-                                FINALIZER_ACTIVATION_EXPRESSION
-                            ),
-                            "repository_variable_all_finalizer_conclusions": (
-                                PUBLISHER_ACTIVATION_EXPRESSION
-                            ),
-                    }
-                    assert workflow["jobs"][job_id]["if"] == expected[activation]
-                else:
-                    expected = {
-                        "owner_main_dispatch": (
-                            "${{ github.actor == 'mjgolaszewski' && "
-                            "github.ref == 'refs/heads/main' }}"
-                        ),
-                        "owner_main_dispatch_after_dependencies": (
-                            "${{ always() && github.actor == 'mjgolaszewski' && "
-                            "github.ref == 'refs/heads/main' && "
-                            "needs.admit.result == 'success' }}"
-                        ),
-                        "exact_release_verifier_success": (
-                            "${{ github.event.workflow_run.event == 'workflow_run' && "
-                            "github.event.workflow_run.head_branch == 'main' && "
-                            "github.event.workflow_run.conclusion == 'success' }}"
-                        ),
-                    }
-                    assert workflow["jobs"][job_id]["if"] == expected[activation]
-
-
 def test_authority_canary_is_owner_dispatched_and_attempt_deterministic() -> None:
     workflow = yaml.safe_load(
         (REPO_ROOT / ".github/workflows/bcf-authority-canary.yml").read_text(
@@ -568,17 +410,6 @@ def test_scheduled_mutants_preflight_selected_interpreter_before_execution(
     }
 
 
-def test_workflows_have_no_runner_occupying_coordination() -> None:
-    forbidden = re.compile(r"\b(sleep|poll|wait|while|until)\b", re.IGNORECASE)
-    for relative_path in _policy()["runner_security"]["jobs"]:
-        workflow = yaml.safe_load(
-            (REPO_ROOT / relative_path).read_text(encoding="utf-8")
-        )
-        for job in workflow["jobs"].values():
-            for step in job.get("steps", []):
-                assert forbidden.search(step.get("run", "")) is None
-
-
 def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> None:
     finalizer = yaml.safe_load(
         (REPO_ROOT / ".github/workflows/bcf-trusted-finalizer.yml").read_text()
@@ -591,23 +422,6 @@ def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> N
     assert "workflow_run.event == 'push'" in FINALIZER_ACTIVATION_EXPRESSION
     assert "workflow_run.head_branch == 'main'" in FINALIZER_ACTIVATION_EXPRESSION
     assert "workflow_run.conclusion" not in PUBLISHER_ACTIVATION_EXPRESSION
-
-
-def test_trusted_controller_steps_receive_github_token_explicitly() -> None:
-    for relative_path in (
-        ".github/workflows/bcf-authority-canary.yml",
-        ".github/workflows/bcf-exact-main.yml",
-        ".github/workflows/bcf-trusted-finalizer.yml",
-        ".github/workflows/bcf-status-publisher.yml",
-    ):
-        workflow = yaml.safe_load((REPO_ROOT / relative_path).read_text())
-        job = next(iter(workflow["jobs"].values()))
-        controller_steps = [
-            step for step in job["steps"] if "ci-github" in step.get("run", "")
-        ]
-        assert len(controller_steps) == 1
-        assert controller_steps[0]["env"] == TRUSTED_CONTROLLER_TOKEN_ENV
-        assert "GITHUB_TOKEN" not in workflow.get("env", {})
 
 
 def test_self_control_plane_is_an_exact_v11_generator_product() -> None:
@@ -780,15 +594,6 @@ def test_every_github_action_uses_the_canonical_immutable_pin() -> None:
                     assert source == ACTION_PINS[action_id], workflow_path
                     observed.add(action_id)
     assert observed == set(ACTION_PINS)
-
-
-def test_every_repository_job_has_a_descriptive_presentation_name() -> None:
-    for workflow_path in sorted((REPO_ROOT / ".github/workflows").glob("*.yml")):
-        workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
-        for job_id, job in workflow["jobs"].items():
-            display_name = job.get("name")
-            assert isinstance(display_name, str) and len(display_name.split()) >= 2
-            assert display_name != job_id
 
 
 def test_governance_evidence_shards_derive_every_required_gate_once() -> None:

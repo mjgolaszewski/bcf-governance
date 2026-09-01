@@ -180,6 +180,12 @@ summary:
     the canonical exposure scan into cheap preflight and adds a causal bypass control
   - P13-HF05 mechanically compiles exact-main controller artifact 9806282487 into the
     pending bootstrap, probe, and verifier projections without promoting unproven bytes
+  - bootstrap 33524862289 and probe 33524915966 independently proved controller
+    49272182790342a52ef7ddbcfd6a540ca7df6baf on both trusted runners; the canonical
+    projector then promoted the provider-compiled custody without transcribed values
+  - P13-HF06 consolidates final activation under one production self-workflow preflight
+    owner, removes superseded secondary YAML-decoding tests, activates the no-checkout
+    exact-byte publisher, and records the delivery incident in one governed audit
 workitems:
 - id: P13-P0-01
   status: DONE
