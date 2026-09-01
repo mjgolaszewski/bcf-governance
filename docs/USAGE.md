@@ -142,7 +142,7 @@ names, display titles, or earlier attempts.
 
 The controller-owned interfaces are `bcf ci-github exact-main
 admit|finalize|publish` and `bcf ci-github release
-resolve|authorize|build|verify|collect|inspect|publish`. Before release
+resolve|resolve-publication|authorize|build|verify|collect|inspect|publish`. Before release
 authorization, `resolve` selects current exact main, its highest admitted
 attempt, the newest finalizer attempt, and both provider artifacts through
 authenticated APIs. It emits one immutable input document and only the scalar
@@ -151,6 +151,11 @@ re-authenticates the document and downloaded bytes. Compatibility callers may
 still supply the complete legacy field set, but BCF's own v1.1 workflow does
 not. Workflow YAML supplies environment and paths; it does not select provider
 state with `jq`, `max_by`, ad hoc API queries, or operator-copied IDs.
+After collection, `resolve-publication` selects the newest authenticated
+exact-main collector attempt, its exact provider artifact, the current commit
+and tree, and the tag derived from BCF's version owner. The publisher accepts
+that projection and a controller-owned release-asset directory; operators do
+not supply run, attempt, artifact, digest, subject, tag, or asset-list custody.
 
 Workflow custody is compiled, not transcribed. After committing final workflow
 bytes, derive the complete registry in one operation:
