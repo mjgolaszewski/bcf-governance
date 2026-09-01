@@ -178,6 +178,18 @@ execution_evidence:
   - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
     result: pass
     notes: exact-tree local evidence on 3dc0552 passed all 248 contract nodes and all 81 isolated controls; the full-history mutant failed its exact scheduled-workflow owner with no unrelated worktree change
+  - command: GitHub pull-request runs 33470142626 and 33470142652; exact-main 33470361240; finalizer 33470591830; publisher 33470612990
+    result: pass
+    notes: PR 58 merged as 2472a696 after all protected checks passed; exact main passed every producer and refused only active P13-HF01 before trusted terminal revocation completed
+  - command: GitHub scheduled mutants 33470712095 and 33470878520
+    result: expected_gap_remediated
+    notes: nightly and weekly passed full-history preflight and both declared profile pairs, then provider inspection found zero retained artifacts; exact-subject result generation and always-run upload are now enforced before the schedules are repeated
+  - command: .venv/bin/python .github/scripts/run_self_governance_gate.py test; .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value --output "$BCF_REPORT"; .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value --output "$BCF_SEMANTIC_REPORT"
+    result: pass
+    notes: exact commit 85ea7a9 passed all 516 source nodes and emitted clean exact-commit/tree reports for all 13 validator and 10 evidence/truth high-value mutants
+  - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
+    result: pass
+    notes: exact-tree local evidence on 85ea7a9 passed all 250 contract nodes and all 83 controls, including newest-finalizer, controller-inventory, and failed-schedule artifact retention causes
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
