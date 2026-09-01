@@ -70,6 +70,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Made cause-verified test controls execute only their declared pytest oracle nodes in
   isolated worktrees after one full positive baseline; diagnostic controls retain the
   canonical gate command, eliminating repeated full-suite mutant executions.
+- Preserved the authority-v1.1 base workflow shape during self-controller rotation so
+  the installed pre-enrichment controller can admit the exact-main build; privileged
+  job inventories remain absent and therefore fail closed until its successor is installed.
 
 ### Changed
 

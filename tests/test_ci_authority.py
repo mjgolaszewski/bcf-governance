@@ -9,6 +9,7 @@ import pytest
 
 from bcf_governance.tooling.ci_authority_contracts import (
     CIAuthorityContractError,
+    authority_role_jobs,
     validate_ci_contract,
 )
 from bcf_governance.tooling.ci_authority_state import (
@@ -325,6 +326,32 @@ def test_ci_authority_and_certification_contracts_accept_exact_documents() -> No
 
 def test_authority_v11_accepts_one_registry_and_closed_role_references() -> None:
     validate_ci_contract(REPO_ROOT, "authority", _authority_v11_payload())
+
+
+def test_authority_v11_bridge_remains_readable_but_cannot_claim_privileged_jobs() -> None:
+    payload = _authority_v11_payload()
+    for workflow in payload["workflow_registry"].values():  # type: ignore[union-attr]
+        workflow.pop("job_roles", None)
+        workflow.pop("expected_jobs", None)
+
+    validate_ci_contract(REPO_ROOT, "authority", payload)
+    with pytest.raises(CIAuthorityContractError, match="lacks exact job inventory"):
+        authority_role_jobs(payload, "release_verifier")
+
+
+def test_self_authority_bridge_uses_only_pre_enrichment_workflow_fields() -> None:
+    import yaml
+
+    payload = yaml.safe_load(
+        (REPO_ROOT / "governance/ci-authority.yml").read_text(encoding="utf-8")
+    )
+    allowed = {
+        "workflow_id", "active_path", "trusted_workflow_blob_oid",
+        "trusted_workflow_sha256", "trusted_workflow_definition_commit",
+        "allowed_events",
+    }
+
+    assert all(set(workflow) == allowed for workflow in payload["workflow_registry"].values())
 
 
 @pytest.mark.parametrize(

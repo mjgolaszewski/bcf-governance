@@ -11,10 +11,6 @@ workflow_registry:
     trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
     allowed_events:
     - push
-    job_roles:
-      admit: admission
-      governance: producer
-      governance-pack: producer
   governance:
     workflow_id: '334490532'
     active_path: .github/workflows/governance.yml
@@ -41,8 +37,6 @@ workflow_registry:
     trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
     allowed_events:
     - workflow_run
-    expected_jobs:
-    - job_id: Reconstruct the newest same-admission exact-main evidence
   status-publisher:
     workflow_id: '346274482'
     active_path: .github/workflows/bcf-status-publisher.yml
@@ -51,8 +45,6 @@ workflow_registry:
     trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
     allowed_events:
     - workflow_run
-    expected_jobs:
-    - job_id: Publish newest authenticated exact-main status or revocation
   bootstrap:
     workflow_id: '346177113'
     active_path: .github/workflows/bcf-trusted-control-bootstrap.yml
@@ -61,9 +53,6 @@ workflow_registry:
     trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
     allowed_events:
     - workflow_dispatch
-    expected_jobs:
-    - job_id: Install authenticated controller / bcf-trusted-control-1
-    - job_id: Install authenticated controller / bcf-trusted-control-2
   probe:
     workflow_id: '346154319'
     active_path: .github/workflows/bcf-trusted-control-probe.yml
@@ -72,9 +61,6 @@ workflow_registry:
     trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
     allowed_events:
     - workflow_dispatch
-    expected_jobs:
-    - job_id: Verify exact-main controller / bcf-trusted-control-1
-    - job_id: Verify exact-main controller / bcf-trusted-control-2
   release:
     workflow_id: '331325235'
     active_path: .github/workflows/release.yml
@@ -83,8 +69,6 @@ workflow_registry:
     trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
     allowed_events:
     - workflow_dispatch
-    expected_jobs:
-    - job_id: Release disabled until authority v1.1 activation
   release-verifier:
     workflow_id: '346919672'
     active_path: .github/workflows/bcf-release-verifier.yml
@@ -93,8 +77,6 @@ workflow_registry:
     trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
     allowed_events:
     - workflow_run
-    expected_jobs:
-    - job_id: Verify release bytes on a fresh worker
   release-collector:
     workflow_id: '346919669'
     active_path: .github/workflows/bcf-release-collector.yml
@@ -103,8 +85,6 @@ workflow_registry:
     trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
     allowed_events:
     - workflow_run
-    expected_jobs:
-    - job_id: Collect authenticated release evidence
   release-publisher:
     workflow_id: '346919671'
     active_path: .github/workflows/bcf-release-publisher.yml
@@ -113,8 +93,6 @@ workflow_registry:
     trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
     allowed_events:
     - workflow_dispatch
-    expected_jobs:
-    - job_id: Publish pre-certified immutable release bytes
   authority-canary:
     workflow_id: '346919667'
     active_path: .github/workflows/bcf-authority-canary.yml
@@ -123,20 +101,6 @@ workflow_registry:
     trusted_workflow_definition_commit: d4982551c298a7c55c620c5e6aa0ee5333453930
     allowed_events:
     - workflow_dispatch
-    job_roles:
-      admit: admission
-      producer-a: producer
-      producer-b: producer
-      observe: observer
-    expected_jobs:
-    - job_id: Admit isolated authority canary
-      role: admission
-    - job_id: Execute canary producer A
-      role: producer
-    - job_id: Execute canary producer B
-      role: producer
-    - job_id: Observe canary precedence mechanically
-      role: observer
 roles:
   admission: admission
   reusable_producers:
