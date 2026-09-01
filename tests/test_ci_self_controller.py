@@ -134,7 +134,7 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     required = policy["runner_security"]["trusted_controller_interpreter"][
         "required_workflows"
     ]
-    paths = ["governance/self-governance-policy.yml", *required]
+    paths = ["governance/self-governance-policy.yml", controller.TOPOLOGY_PATH, *required]
     for relative in paths:
         destination = tmp_path / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
@@ -169,6 +169,10 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     for relative in controller.BOOTSTRAP_WORKFLOWS:
         workflow = yaml.safe_load((tmp_path / relative).read_text(encoding="utf-8"))
         assert {key: str(value) for key, value in workflow["env"].items()} == pin
+    topology = yaml.safe_load(
+        (tmp_path / controller.TOPOLOGY_PATH).read_text(encoding="utf-8")
+    )
+    assert topology["controller_commit"] == COMMIT
     assert controller.project_self_controller_pin(
         tmp_path, pin=pin, apply=False
     ).status == "clean"

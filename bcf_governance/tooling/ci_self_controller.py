@@ -36,6 +36,7 @@ BOOTSTRAP_WORKFLOWS = (
     ".github/workflows/bcf-trusted-control-bootstrap.yml",
     ".github/workflows/bcf-trusted-control-probe.yml",
 )
+TOPOLOGY_PATH = "governance/github-ci-topology.yml"
 
 
 @dataclass(frozen=True)
@@ -175,6 +176,18 @@ def _replace_env(raw: bytes, desired: dict[str, str]) -> bytes:
     return text.encode("utf-8")
 
 
+def _replace_topology_controller(raw: bytes, commit_sha: str) -> bytes:
+    text = raw.decode("utf-8")
+    parsed = yaml.safe_load(text)
+    current = parsed.get("controller_commit") if isinstance(parsed, dict) else None
+    if not isinstance(current, str) or not re.fullmatch(r"[a-f0-9]{40}", current):
+        raise GitHubControllerError("GitHub topology controller commit is invalid")
+    line = re.compile(r"(?m)^controller_commit: [a-f0-9]{40}$")
+    if len(line.findall(text)) != 1:
+        raise GitHubControllerError("GitHub topology controller commit is not unique")
+    return line.sub(f"controller_commit: {commit_sha}", text).encode("utf-8")
+
+
 def _write_atomic(path: Path, raw: bytes) -> None:
     descriptor, temporary = tempfile.mkstemp(prefix=f".{path.name}-", dir=path.parent)
     try:
@@ -212,7 +225,10 @@ def project_self_controller_pin(
     desired: dict[Path, bytes] = {
         policy_path: pattern.sub(
             f"  trusted_controller_artifact: {new_flow}".encode(), policy_raw
-        )
+        ),
+        root / TOPOLOGY_PATH: _replace_topology_controller(
+            (root / TOPOLOGY_PATH).read_bytes(), exact["BCF_BOOTSTRAP_COMMIT_SHA"]
+        ),
     }
     for relative in BOOTSTRAP_WORKFLOWS:
         path = root / relative
