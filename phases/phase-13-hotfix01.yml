@@ -186,6 +186,7 @@ execution_evidence:
   - the workflow compiler now writes that uniquely inferable role map from exact source job keys and reusable producer IDs; a causal owner test starts without the map and requires reconstruction, eliminating both operator entry and successor-controller bootstrap dependence
   - PR 53 passed protected runs 33463149989 and 33463150009 and merged as 63c7c18062fc51744853b9b3d8ff5e9d170716d7; exact-main 33463382955 then passed admission through installed cc3, all producer jobs, and exact job membership before closure truth correctly rejected active P13-HF01
   - trusted finalizer 33463608679 and status publisher 33463630694 completed successfully for that terminal failure; provider APIs and downloaded bytes compiled artifact 9784024107, provider digest sha256:15a594d1113bf461bd64d15aedaca4bfec659884922c937028bb34db51c8028a, and wheel digest 35aaabbeacb7dddfed50209a9b8b2f9ac4b4c0742ecc6275aa56f0b491a7b1b2 as the pending controller target
+  - a focused rotation test initially inherited the repository's legitimate pending target and tried to start another, which production rejected; the fixture now mechanically confirms its copied baseline before exercising installed-to-pending-to-confirmed transitions, making it independent of current repository rotation state
 closeout_requirements:
   claims:
     required_suites_green:
