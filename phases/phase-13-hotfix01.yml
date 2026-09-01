@@ -236,6 +236,7 @@ execution_evidence:
   - profile-v2 evidence semantics now resolve only from gate contracts; evidence policy retains cross-gate policy and validation rejects any per-gate override, eliminating the generated-copy synchronization failure exposed while adding scheduled preflight
   - nightly and weekly mutant workflows now invoke the canonical selected-interpreter preflight before mutation execution, so virtualenv or dependency defects cannot first appear in mutant results
   - the documented local-PR command now selects the canonical selected-interpreter preflight when no explicit argv is supplied; an exact custom argv remains available after `--`, and a causal control rejects any hidden fallback-path change
+  - nightly run 33469562066 skipped every mutant when canonical preflight rejected a shallow checkout that could not verify compacted phase custody; both scheduled workflows now fetch complete history, and a causal control rejects regression before mutation execution
 closeout_requirements:
   claims:
     required_suites_green:

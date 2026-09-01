@@ -493,6 +493,14 @@ def test_scheduled_mutants_preflight_selected_interpreter_before_execution(
 ) -> None:
     workflow = yaml.safe_load((REPO_ROOT / relative_path).read_text(encoding="utf-8"))
     steps = next(iter(workflow["jobs"].values()))["steps"]
+    checkout = next(
+        step for step in steps
+        if step.get("uses", "").startswith("actions/checkout@")
+    )
+    assert checkout["with"] == {
+        "fetch-depth": 0,
+        "persist-credentials": False,
+    }
     commands = [step.get("run", "") for step in steps]
     preflight = (
         'python scripts/preflight_governance.py --repo-root . --mode release '
