@@ -11,6 +11,10 @@ workflow_registry:
     trusted_workflow_definition_commit: b57fd22e72c4e5c3ca1ffed79890bb6517e39f14
     allowed_events:
     - push
+    job_roles:
+      admit: admission
+      governance: producer
+      governance-pack: producer
   governance:
     workflow_id: '334490532'
     active_path: .github/workflows/governance.yml

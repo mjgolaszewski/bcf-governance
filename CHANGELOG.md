@@ -91,6 +91,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   isolation, Python constraint, and every declared dependency version. BCF's generated
   governance requirements now install its governed pytest 9.0.3 instead of a conflicting
   pre-9 range, so environment drift fails before evidence or mutant execution.
+- Made workflow-byte compilation persist the uniquely derived admission and reusable-
+  producer source-role map. Installed controllers no longer depend on a newer controller
+  merely to interpret an enriched authority document, and no operator copies job keys.
 
 ### Changed
 

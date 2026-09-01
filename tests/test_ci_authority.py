@@ -350,20 +350,16 @@ def test_self_authority_inventory_is_enriched_only_for_privileged_roles() -> Non
         "trusted_workflow_sha256", "trusted_workflow_definition_commit",
         "allowed_events",
     }
-    separately_owned = {
-        payload["roles"]["admission"],
-        *payload["roles"]["reusable_producers"],
-    }
+    admission = payload["roles"]["admission"]
+    reusable = set(payload["roles"]["reusable_producers"])
     privileged = {
         reference
         for role, reference in payload["roles"].items()
         if role not in {"admission", "reusable_producers"}
     }
 
-    assert all(
-        set(payload["workflow_registry"][reference]) == identity
-        for reference in separately_owned
-    )
+    assert set(payload["workflow_registry"][admission]) == identity | {"job_roles"}
+    assert all(set(payload["workflow_registry"][reference]) == identity for reference in reusable)
     assert all(
         set(payload["workflow_registry"][reference]) >= identity | {"expected_jobs"}
         for reference in privileged
