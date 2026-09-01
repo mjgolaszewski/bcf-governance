@@ -27,7 +27,7 @@ jobs:
     - name: Authenticate admission and publish isolated pending authority
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python, GITHUB_TOKEN: '${{ github.token }}'}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python', GITHUB_TOKEN: '${{ github.token }}'}
       run: |-
         set -euo pipefail
         "$RUNNER_TOOL_CACHE"/bcf-governance/49272182790342a52ef7ddbcfd6a540ca7df6baf/bin/bcf ci-github canary admit --repository "${{ github.repository }}" --sha "${{ github.sha }}" --target-url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
@@ -47,7 +47,7 @@ jobs:
     - name: Execute deterministic producer A
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" .github/scripts/authority_canary_producer.py --producer a --scenario "${{ inputs.scenario }}"
@@ -67,7 +67,7 @@ jobs:
     - name: Execute deterministic producer B
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" .github/scripts/authority_canary_producer.py --producer b --scenario "${{ inputs.scenario }}"
@@ -85,7 +85,7 @@ jobs:
     - name: Reconstruct exact-attempt jobs and publish isolated terminal authority
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python, GITHUB_TOKEN: '${{ github.token }}'}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python', GITHUB_TOKEN: '${{ github.token }}'}
       run: |-
         set -euo pipefail
         "$RUNNER_TOOL_CACHE"/bcf-governance/49272182790342a52ef7ddbcfd6a540ca7df6baf/bin/bcf ci-github canary observe --repository "${{ github.repository }}" --sha "${{ github.sha }}" --target-url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"

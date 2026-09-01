@@ -55,6 +55,10 @@ Release target: `0.8.0`.
 
 ### Fixed
 
+- Made setup-python the mechanical interpreter authority for every governed CI
+  command. Rendered jobs now pass its absolute executable rather than a relative
+  PATH token, and graph compilation rejects commands that consume the selected
+  interpreter before the setup action runs.
 - Made BCF release roles fail closed while a newly selected trusted controller is
   awaiting independent installation confirmation. The graph now distinguishes
   target from proven-installed controller custody, disables release authorization,

@@ -26,14 +26,14 @@ jobs:
     - name: Install the declared governance environment
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" -m pip install -r requirements-governance.txt
     - name: Run canonical cheap preflight and allocate one evidence session
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" scripts/preflight_governance.py --repo-root . --mode "${{ inputs.evaluation_mode == 'closure' && 'release' || 'pr' }}" --python "$BCF_PYTHON" --artifact-root .artifacts/bcf --expected-producer evidence --format text
@@ -66,7 +66,7 @@ jobs:
     - name: Install the declared governance environment
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" -m pip install -r requirements-governance.txt
@@ -76,14 +76,14 @@ jobs:
     - name: Restore downloaded evidence-session modes
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" .github/scripts/restore_evidence_modes.py --root .artifacts/bcf/sessions
     - name: Capture the mechanically derived evidence shard
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" .github/scripts/capture_governance_shard.py --shard-index "${{ matrix.shard }}" --shard-count 4 --session-root .artifacts/bcf/sessions
@@ -108,7 +108,7 @@ jobs:
     - name: Install the declared governance environment
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" -m pip install -r requirements-governance.txt
@@ -119,7 +119,7 @@ jobs:
     - name: Restore private evidence-session modes
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" .github/scripts/restore_evidence_modes.py --root .artifacts/bcf/fan-in
@@ -127,7 +127,7 @@ jobs:
     - name: Verify exact-tree governance evidence
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf/fan-in --evaluation-mode "${{ inputs.evaluation_mode || 'pr' }}" --format json --durable-ref "github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
@@ -135,7 +135,7 @@ jobs:
     - name: Preserve a causal terminal result
       shell: bash
       working-directory: .
-      env: {BCF_PYTHON: python}
+      env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python'}
       run: |-
         set -euo pipefail
         "$BCF_PYTHON" .github/scripts/governance_terminal_observation.py --repo-root . --output .artifacts/bcf/truth-report.json --preflight-result "${{ needs.preflight.result }}" --evidence-result "${{ needs.evidence.result }}" --repository "${{ github.repository }}" --commit-sha "${{ github.sha }}" --run-id "${{ github.run_id }}" --run-attempt "${{ github.run_attempt }}"
