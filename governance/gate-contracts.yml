@@ -221,9 +221,7 @@ gates:
     - id: contract-test-behavior-must-fail
       mutation: {path: template-repo/governance/artifact-manifest.yml, search: 'pull_request_policy: required_update', replace: 'pull_request_policy:
           optional'}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']}
     - id: trusted-bootstrap-artifact-identity-must-fail
       mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'if pin["BCF_BOOTSTRAP_ARTIFACT_NAME"] != expected_name:', replace: 'if False:'}
       oracle:
@@ -234,6 +232,7 @@ gates:
       oracle:
         kind: test_node_failure
         node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']
+    - {id: trusted-bootstrap-installed-target-separation-must-fail, mutation: {path: .github/workflows/bcf-trusted-control-bootstrap.yml, search: '$BCF_INSTALLED_CONTROLLER_COMMIT_SHA', replace: '$BCF_BOOTSTRAP_COMMIT_SHA'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline']}}
     - id: trusted-controller-interpreter-environment-must-fail
       mutation: {path: .github/workflows/bcf-trusted-control-probe.yml, search: 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97', replace: 'actions/setup-python@0000000000000000000000000000000000000000'}
       oracle:
@@ -329,7 +328,7 @@ gates:
       mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'package_attempt["conclusion"] != "success"', replace: 'False'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_self_controller::test_controller_pin_rejects_failed_package_producer']}
     - id: self-controller-projection-must-fail
-      mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: '_replace_env(path.read_bytes(), exact)', replace: '_replace_env(path.read_bytes(), {})'}
+      mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'desired[probe] = _replace_env(probe.read_bytes(), exact)', replace: 'desired[probe] = _replace_env(probe.read_bytes(), {**exact, "BCF_BOOTSTRAP_COMMIT_SHA": active_commit})'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_self_controller::test_self_controller_projection_has_one_canonical_pin_owner']}
     - {id: self-controller-topology-projection-must-fail, mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'root / TOPOLOGY_PATH: _replace_topology_controller(', replace: 'root / TOPOLOGY_PATH: (lambda raw, _: raw)('}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_self_controller::test_self_controller_projection_has_one_canonical_pin_owner']}}
     - id: pinned-workflow-definition-custody-must-fail

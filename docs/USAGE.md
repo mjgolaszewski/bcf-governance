@@ -179,10 +179,17 @@ BCF self-controller rotation has a separate mechanical path. Trusted control run
 producer and exact artifact without caller-supplied run IDs. After the provider
 artifact is downloaded, `controller-pin compile` verifies its checksum inventory,
 metadata, and wheel bytes and emits a pin record. A maintainer projects that record
-with `bcf ci sync-self-controller --pin PIN.json --apply`; the canonical policy,
-bootstrap, probe, finalizer, admission, and status workflows are updated from that
-one record. AI and humans review policy and decide whether to rotate; they do not
-author custody values.
+with `bcf ci sync-self-controller --pin PIN.json --apply`. The target pin and the
+last provider-proven installation are distinct: active control jobs stay on the
+installed commit while that commit installs the new target. After exact-main
+bootstrap and probe runs pass on every declared trusted runner,
+`bcf ci-github controller-pin confirm --repository OWNER/REPO --output PROOF.json`
+compiles their identities from provider state. Passing that proof through
+`bcf ci sync-self-controller --pin PIN.json --confirmation PROOF.json --apply`
+promotes the target and projects policy, topology, bootstrap, probe, finalizer,
+admission, and status workflows together. A second target is rejected while one
+rotation remains unconfirmed. AI and humans review policy and decide whether to
+rotate; they do not author custody values or declare installation success.
 
 The isolated authority canary uses `bcf ci-github canary admit|observe`. Its observer
 authenticates one exact run attempt and complete job inventory, then publishes through
