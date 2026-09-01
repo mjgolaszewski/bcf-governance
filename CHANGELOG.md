@@ -47,6 +47,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Rotated the pending trusted-controller target to the mechanically resolved artifact
   containing that token-isolated release verifier; active authority remains unchanged
   until both trusted runners independently install and probe the target.
+- Promoted the token-isolated release controller only after provider-authenticated
+  bootstrap and independent probe runs proved its exact installation on both trusted
+  runners; the provider compiler remains the sole owner of promotion inputs.
 
 ### Fixed
 
