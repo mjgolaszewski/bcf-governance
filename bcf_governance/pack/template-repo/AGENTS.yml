@@ -18,12 +18,12 @@ authorities:
   execution_evidence_location: [phases/*.yml, audits/]
 governance:
   file_format_policy:
-    canonical_machine_readable_artifacts: [AGENTS.yml, MEMORY.yml, architecture-boundaries.yml, governance-profile.yml, governance/artifact-manifest.yml, governance/canonical-representations.yml, governance/repo-cleanup-contract.yml, schemas/*.json, contracts/observability/v1/*.contract.yml, plans/*.yml, phases/*.yml]
+    canonical_machine_readable_artifacts: [AGENTS.yml, MEMORY.yml, architecture-boundaries.yml, governance-profile.yml, governance/artifact-manifest.yml, governance/canonical-representations.yml, governance/ci-graph.yml, governance/ci-extensions/*.yml, governance/repo-cleanup-contract.yml, schemas/*.json, contracts/observability/v1/*.contract.yml, plans/*.yml, phases/*.yml]
     note: YAML data is canonical; prose docs explain but do not override governed state
     template_pack_alignment: [new phase and hotfix artifacts must stay scaffold-compatible, mirrored template files must update together]
   structural_schema_contract:
     root: schemas/
-    required_schemas: [schemas/agents.schema.json, schemas/architecture-boundaries.schema.json, schemas/canonical-representations.schema.json, schemas/ci-authority.schema.json, schemas/ci-certification.schema.json, schemas/ci-provider-snapshot.schema.json, schemas/github-ci-topology.schema.json, schemas/runtime-capacity.schema.json, schemas/capability-na.schema.json, schemas/governance-profile.schema.json, schemas/artifact-manifest.schema.json, schemas/evidence-policy.schema.json, schemas/evidence-receipt.schema.json, schemas/evidence-session.schema.json, schemas/findings.schema.json, schemas/repo-cleanup-contract.schema.json, schemas/memory.schema.json, schemas/product-spec.schema.json, schemas/build-plan.schema.json, schemas/phase-ledger.schema.json, schemas/phase-history.schema.json, schemas/phase-plan.schema.json, schemas/phase-workitems.schema.json, schemas/phase-log.schema.json, schemas/hotfix-log.schema.json, schemas/observability-contract.schema.json]
+    required_schemas: [schemas/agents.schema.json, schemas/architecture-boundaries.schema.json, schemas/canonical-representations.schema.json, schemas/ci-graph.schema.json, schemas/ci-graph-extension.schema.json, schemas/ci-workflow-inventory.schema.json, schemas/ci-authority.schema.json, schemas/ci-certification.schema.json, schemas/ci-provider-snapshot.schema.json, schemas/github-ci-topology.schema.json, schemas/runtime-capacity.schema.json, schemas/capability-na.schema.json, schemas/governance-profile.schema.json, schemas/artifact-manifest.schema.json, schemas/evidence-policy.schema.json, schemas/evidence-receipt.schema.json, schemas/evidence-session.schema.json, schemas/findings.schema.json, schemas/repo-cleanup-contract.schema.json, schemas/memory.schema.json, schemas/product-spec.schema.json, schemas/build-plan.schema.json, schemas/phase-ledger.schema.json, schemas/phase-history.schema.json, schemas/phase-plan.schema.json, schemas/phase-workitems.schema.json, schemas/phase-log.schema.json, schemas/hotfix-log.schema.json, schemas/observability-contract.schema.json]
   build_plan_contract:
     format: yaml
     required_properties: [tightly_scoped_deliverables, parallelizable_workstreams, hard_dependencies, docker_first_local_runtime, ast_architecture_tests, strict_boundaries, observability_reference_model, completeness_standard]
@@ -38,7 +38,7 @@ governance:
     final_closeout_required_fields: [closeout_requirements, known_constraints]
   semantic_validation_contract:
     validator: scripts/validate_governance_yaml.py
-    required_checks: [schemas, YAML_parse, document_paths, placeholders, phase_catalog_alignment, phase_history_retention, active_phase_alignment, memory_alignment, release_gate_wiring, hotfix_alignment, observability_contracts, mandatory_structural_gates, artifact_manifest_alignment, evidence_policy, semantic_ownership_registry, finding_registry, repo_cleanup_contract, audit_root_enforcement, nested_governance_boundaries, vendored_artifact_provenance, context_budgets, declared_test_roots]
+    required_checks: [schemas, YAML_parse, document_paths, placeholders, phase_catalog_alignment, phase_history_retention, active_phase_alignment, memory_alignment, release_gate_wiring, hotfix_alignment, observability_contracts, mandatory_structural_gates, artifact_manifest_alignment, evidence_policy, ci_graph_compilation, generated_workflow_parity, semantic_ownership_registry, finding_registry, repo_cleanup_contract, audit_root_enforcement, nested_governance_boundaries, vendored_artifact_provenance, context_budgets, declared_test_roots]
   hotfix_lane_contract:
     eligibility: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
     minimum_required_artifacts: [phase_ledger_hotfix_record, hotfix_phase_log_entry, canonical_artifact_sync_when_contracts_change]
@@ -86,7 +86,7 @@ governance:
   instruction_only: true
 runtime_surfaces:
   authoritative_surfaces: [local_runtime, ci_runner]
-  rules: [CI must be self-seeding, runtime evidence must come from the declared environment]
+  rules: [CI must be self-seeding, runtime evidence must come from the declared environment, hosted jobs must not sleep poll idle or wait for another runner]
 prime_directive:
   statement: implement the smallest valid vertical slice, preserve public contracts unless explicitly instructed, and prove behavior with tests
   forbidden_default_behavior: [broad_refactors_without_explicit_authorization, public_contract_changes_without_migration_note_and_tests, new_architectural_patterns_without_governance_updates, business_logic_in_routers_repositories_or_adapters, generic_helpers_without_two_real_call_sites]

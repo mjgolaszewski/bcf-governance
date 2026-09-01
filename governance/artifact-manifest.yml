@@ -49,12 +49,14 @@ context_budgets:
     architecture-boundaries.yml: {line_hard_cap: 120, kib_hard_cap: 8, intent: boundary map only}
     governance-profile.yml: {line_hard_cap: 220, kib_hard_cap: 28, intent: profile knobs and generated required-gate classification}
     governance/artifact-manifest.yml: {line_hard_cap: 80, kib_hard_cap: 8, intent: artifact index only}
-    governance/canonical-representations.yml: {line_hard_cap: 200, kib_hard_cap: 40, intent: single semantic ownership registry including mechanical CI authority compilation}
+    governance/canonical-representations.yml: {line_hard_cap: 200, kib_hard_cap: 42, intent: single semantic ownership registry including mechanical CI authority compilation}
+    governance/ci-graph.yml: {line_hard_cap: 850, kib_hard_cap: 96, intent: canonical mechanically rendered CI orchestration}
     governance/evidence-policy.yml: {line_hard_cap: 500, kib_hard_cap: 64, intent: computed lifecycle and generated evidence policy}
     governance/gate-contracts.yml: {line_hard_cap: 800, kib_hard_cap: 96, intent: canonical executable gate contracts}
     governance/findings.yml: {line_hard_cap: 400, kib_hard_cap: 96, intent: canonical finding accounting}
     governance/repo-cleanup-contract.yml: {line_hard_cap: 90, kib_hard_cap: 12, intent: cleanup rules only}
     governance/self-governance-policy.yml: {line_hard_cap: 60, kib_hard_cap: 8, intent: source-repository-specific executable policy}
+    governance/test-tombstones.yml: {line_hard_cap: 100, kib_hard_cap: 16, intent: custody for mechanically superseded regression tests}
     plans/build-plan.yml: {line_hard_cap: 95, kib_hard_cap: 24, intent: active roadmap index}
     plans/phase-ledger.yml: {line_hard_cap: 95, kib_hard_cap: 16, intent: current phase state}
     plans/phase-history.yml: {line_hard_cap: 160, kib_hard_cap: 96, intent: evidence-backed compact history index}

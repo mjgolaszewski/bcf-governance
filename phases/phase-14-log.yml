@@ -1,0 +1,105 @@
+document:
+  kind: execution_phase_log
+  name: Phase 14 Log
+  id: bcf-governance-phase-14-log
+  version: 1.0.0
+  generated_at_utc: '2026-09-01T00:00:00Z'
+  status: planned
+  path: phases/phase-14-log.yml
+phase:
+  id: P14
+  build_block: consumer-ci-graph-0.8.0
+summary:
+  outcome: implementation_complete_local_pr_truth_passed_remote_evidence_pending
+  highlights:
+  - P14 is opened for deliver deterministic consumer CI graph generation with bounded
+    project extensions and Identity no-loss proof
+  - phase artifacts were scaffolded from the governance template
+  - implementation uses an isolated worktree based on fetched BCF origin/main c1e1ee27d0f031097ff4c71a7d66409c813deb5b and leaves the existing Identity audit worktree untouched
+  - exact release preflight and all 558 baseline tests passed before graph implementation
+  - BCF now compiles 14 workflows and 24 logical jobs from one root graph and three registered extensions; graph validate render lock and adoption checks are clean
+  - the exact test manifest ratchets to 578 nodes after adding transport-root, condition-scope, and rendered-step regressions
+  - all 15 validator full-profile mutants and all 12 semantic full-profile mutants are killed by their declared nodes
+  - eleven duplicate generated-YAML decoding tests were removed under schema-backed tombstone custody and replaced by canonical graph policy and controller controls
+  - the exact Identity origin/main inventory contains 10 workflows and 46 logical jobs; its five-run median is 2803 wall seconds and 7184 summed runner seconds
+  - no mechanically qualified graph-only optimization reaches the required 15 percent Identity runner-time reduction, so Identity remains byte-identical and no canary or remote run was launched
+  - final local PR-mode truth verifies all 21 exact-tree receipts, 572 executed tests with zero skips, graph workflow execution, and every causal control at commit a9df3401b6b1334a875177ae0183e1c5f71d58f1
+  - the first bounded PR run 33561222812 passed cheap preflight and failed all four evidence shards before gate execution because artifact transport normalized the downloaded session directory mode
+  - the shared transport class is corrected mechanically by a typed restore effect, compiler-enforced immediate ordering after exact download, and a local artifact-mode round-trip regression; no failed job was rerun speculatively
+  - replacement run 33563470217 proved ordering alone was insufficient because the reused restore component had a truth-only condition and a fan-in root; the compiler now binds condition scope, transport condition equality, restored artifact identity, and actual download destination across every explicit job
+workitems:
+- id: P14-P0-01
+  status: DONE
+  summary: deliver canonical CI graph and bounded extension contracts
+- id: P14-P0-02
+  status: DONE
+  summary: deliver deterministic importer renderer parity and diagnostics
+- id: P14-P0-03
+  status: DONE
+  summary: deliver Standard and Lite installer integration plus BCF dogfood and fixture
+    proof
+- id: P14-P0-04
+  status: DONE
+  summary: deliver Identity preservation and offline performance qualification
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python scripts/preflight_governance.py --repo-root . --mode release
+    --python .venv/bin/python --format text
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  executed_commands:
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  - .venv/bin/python -m pytest -q tests
+  - '.venv/bin/python .github/scripts/run_validator_mutants.py --profile full --output .artifacts/p14-full-mutants.json # non-authoritative local artifact'
+  - '.venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full --output .artifacts/p14-semantic-full-mutants.json # non-authoritative local artifact'
+  - '.venv/bin/python .github/scripts/run_validator_mutants.py --profile full --output .artifacts/p14-remediation-full-mutants.json # non-authoritative local artifact; 15 of 15 killed after transport correction'
+  - '.venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full --output .artifacts/p14-remediation-semantic-mutants.json # non-authoritative local artifact; 12 of 12 killed after transport correction'
+  - .venv/bin/python .github/scripts/check_editorial_contract.py
+  - .venv/bin/python -m bcf_governance.cli ci graph validate --repo-root . --format json
+  - .venv/bin/python -m bcf_governance.cli ci graph render --repo-root . --check --format json
+  - .venv/bin/python -m bcf_governance.cli ci adopt github --repo-root . --check --format json
+  - make -f Makefile.fragment release-check PYTHON=.venv/bin/python
+  - '.venv/bin/python scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf/sessions/60b8697620c8c77130bc12c592ffc78e --evaluation-mode pr --format json --compact # non-authoritative local artifact'
+  - 'gh run view 33561222812 --log-failed # read-only remote failure classification'
+  - 'gh run view 33563470217 --log-failed # read-only condition and destination classification'
+  notes:
+  - phase scaffolding was generated by scaffold_governance_artifacts.py
+  - workflow authority was mechanically derived from definition commit 3b332c0f25e23f7cf574b1f9f7fe786e316badb9 after the workflow bytes existed in Git
+  - audits/p14-identity-ci-qualification.yml owns the exact read-only Identity decision evidence
+  - remote attempt 33561222812 consumed only cheap preflight and four fast-failing shard setup paths; no expensive governed gate executed
+  - remote attempt 33563470217 likewise failed before governed gate execution and demonstrated the missing condition-scope invariant without consuming the expensive suite
+closeout_requirements:
+  claims:
+    workitems_closed:
+      required_evidence:
+      - governance-validate
+    required_suites_green:
+      required_evidence:
+      - lint
+      - typecheck
+      - test
+      - contract-test
+    architecture_gates_green:
+      required_evidence:
+      - architecture-test
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+    security_review_complete:
+      required_evidence:
+      - security-review
+    findings_resolved:
+      required_evidence:
+      - security-vulnerability-scan
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml
+known_constraints:
+- update canonical governed artifacts together when behavior or environment contracts
+  change
+- Identity remains a read-only proof target until offline preservation and performance gates pass
+- hosted execution may not poll sleep wait for local capacity or allocate a VM solely as a control-plane waiter
+next_work:
+- recertify the complete transport identity ordering condition and destination invariants offline, mechanically repin the changed definitions, and permit no further remote execution until the rendered workflow is exercised by the artifact-mode emulator

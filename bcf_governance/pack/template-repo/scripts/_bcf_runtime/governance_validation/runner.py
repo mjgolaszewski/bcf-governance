@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import argparse
 
+from ..ci_graph_contracts import CIGraphError, validate_ci_graph
+from ..ci_graph_render import check_ci_graph
 from ..semantic_ownership_registry import (
     SemanticOwnershipRegistryError,
     load_registry as load_semantic_ownership_registry,
@@ -23,6 +25,29 @@ from .phase_catalog import (
 )
 from .release_gates import _validate_ci_profile, _validate_release_gate_targets, _validate_structural_gate_contract
 from .repo_cleanup import _load_repo_cleanup_contract
+
+
+def _validate_test_tombstones(repo_root: Path, schema_cache: dict[str, dict[str, Any]]) -> Path | None:
+    path = repo_root / "governance" / "test-tombstones.yml"
+    if not path.exists():
+        return None
+    registry = _load_yaml(path)
+    _validate_schema(
+        repo_root,
+        schema_cache,
+        registry,
+        schema_name="test-tombstones.schema.json",
+        context=str(path),
+    )
+    _validate_document_path(repo_root, registry, path, context=str(path))
+    nodes = [str(entry["removed_node"]) for entry in registry.get("entries", [])]
+    duplicates = sorted({node for node in nodes if nodes.count(node) > 1})
+    if duplicates:
+        raise GovernanceValidationError(
+            "governance/test-tombstones.yml removed_node values must be unique: "
+            + ", ".join(duplicates)
+        )
+    return path
 
 
 def validate_repo_root(
@@ -78,6 +103,7 @@ def validate_repo_root(
     _validate_gate_contract_registry(
         repo_root, governance_profile, gate_contracts, evidence_policy
     )
+    test_tombstones_path = _validate_test_tombstones(repo_root, schema_cache)
 
     _validate_schema(repo_root, schema_cache, agents, schema_name="agents.schema.json", context="AGENTS.yml")
     _validate_schema(repo_root, schema_cache, memory, schema_name="memory.schema.json", context="MEMORY.yml")
@@ -121,6 +147,17 @@ def validate_repo_root(
     _validate_active_closeout_evidence_ownership(repo_root, ledger, governance_profile)
     _validate_ci_profile(governance_profile)
     _validate_structural_gate_contract(governance_profile, architecture_rules)
+    ci_graph_path = repo_root / "governance/ci-graph.yml"
+    if ci_graph_path.exists():
+        try:
+            validate_ci_graph(repo_root)
+            graph_parity = check_ci_graph(repo_root)
+        except CIGraphError as exc:
+            raise GovernanceValidationError(str(exc)) from exc
+        if graph_parity.status != "clean":
+            raise GovernanceValidationError(
+                "generated CI workflow drift: " + ", ".join(graph_parity.changed_paths)
+            )
     if (repo_root / "governance/canonical-representations.yml").is_file():
         try:
             load_semantic_ownership_registry(repo_root)
@@ -159,6 +196,8 @@ def validate_repo_root(
                 evidence_policy_path,
                 findings_path,
                 gate_contracts_path,
+                *([ci_graph_path] if ci_graph_path.is_file() else []),
+                *([test_tombstones_path] if test_tombstones_path is not None else []),
             ],
         )
     _validate_release_gate_targets(

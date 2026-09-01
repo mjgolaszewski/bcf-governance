@@ -1,5 +1,4 @@
 """CLI for trusted GitHub kickoff, finalization, and publication."""
-
 from __future__ import annotations
 
 import argparse
@@ -10,11 +9,10 @@ import os
 from pathlib import Path
 import sys
 from typing import Any
-
 from .ci_authority_certification import CICertificationError
 from .ci_authority_contracts import CIAuthorityContractError
 from .ci_github_api import GitHubAPIError
-from .ci_github_bootstrap import install_controller
+from .ci_github_bootstrap import install_controller, verify_controller_inventory
 from .ci_github_callbacks import finalize_callback, publish_callback
 from .ci_github_canary import admit_authority_canary, observe_authority_canary
 from .ci_github_controller import (
@@ -46,6 +44,7 @@ from .ci_github_release_inputs import (
     resolve_release_authorization_inputs,
     resolve_release_publication_inputs,
 )
+from .ci_github_release_staging import stage_receipt_bundle, stage_verifier_bundle
 from .ci_self_controller import (
     compile_self_controller_confirmation,
     compile_self_controller_pin,
@@ -58,13 +57,11 @@ from .release_runtime_verification import (
     runtime_evidence_paths,
 )
 
-
 def _required_environment(name: str) -> str:
     value = os.environ.get(name, "")
     if not value:
         raise GitHubControllerError(f"trusted workflow environment is missing {name}")
     return value
-
 
 def _github_output_path() -> Path:
     """Validate the trusted GitHub output channel before authority work begins."""
@@ -74,7 +71,6 @@ def _github_output_path() -> Path:
     if path.is_symlink() or not path.is_file():
         raise GitHubControllerError("GITHUB_OUTPUT must be an existing regular file")
     return path
-
 
 def _github_output(payload: dict[str, object], *, path: Path) -> None:
     """Write validated scalar controller results to a preflighted output channel."""
@@ -283,7 +279,9 @@ def _release_parser() -> argparse.ArgumentParser:
     authorize.add_argument("--controller-run-attempt")
     authorize.add_argument("--controller-provider-digest")
     authorize.add_argument("--controller-wheel-sha256")
-    authorize.add_argument("--controller-wheel", type=Path, required=True)
+    controller_input = authorize.add_mutually_exclusive_group(required=True)
+    controller_input.add_argument("--controller-wheel", type=Path)
+    controller_input.add_argument("--controller-wheel-dir", type=Path)
     authorize.add_argument("--controller-commit")
     authorize.add_argument("--controller-tree")
     authorize.add_argument("--certification-artifact-id")
@@ -321,6 +319,7 @@ def _release_parser() -> argparse.ArgumentParser:
     evidence.add_argument("--runtime-report", type=Path, required=True)
     _runtime_evidence_arguments(evidence)
     evidence.add_argument("--output", type=Path, required=True)
+    evidence.add_argument("--bundle-output", type=Path)
     build = operations.add_parser("build")
     build.add_argument("--authorization", type=Path, required=True)
     build.add_argument("--wheelhouse-manifest", type=Path, required=True)
@@ -338,6 +337,7 @@ def _release_parser() -> argparse.ArgumentParser:
     _runtime_evidence_arguments(collect)
     _release_artifact_arguments(collect)
     collect.add_argument("--output", type=Path, required=True)
+    collect.add_argument("--bundle-output", type=Path)
     collect.add_argument("--verification-artifact-name", required=True)
     for operation in (operations.add_parser("inspect"), operations.add_parser("publish")):
         operation.add_argument("--repository", required=True)
@@ -345,7 +345,9 @@ def _release_parser() -> argparse.ArgumentParser:
         operation.add_argument("--commit", required=True)
         _release_artifact_arguments(operation)
     publish = operations.choices["publish"]
-    publish.add_argument("--release-notes", type=Path, required=True)
+    release_notes = publish.add_mutually_exclusive_group(required=True)
+    release_notes.add_argument("--release-notes", type=Path)
+    release_notes.add_argument("--release-notes-text")
     publish.add_argument("--receipt", type=Path, required=True)
     publish.add_argument("--receipt-artifact-id", required=True)
     publish.add_argument("--receipt-artifact-name", required=True)
@@ -500,10 +502,24 @@ def _release(argv: list[str]) -> None:
             artifact_name=args.artifact_name,
             output_path=args.output,
         )
+        if args.bundle_output is not None:
+            stage_verifier_bundle(
+                args.bundle_output,
+                build_manifest=args.build_manifest,
+                runtime_report=args.runtime_report,
+                verification=args.output,
+            )
     else:
         api = environment_api()
         if args.operation == "authorize":
             inputs = _authorization_inputs(args)
+            controller_wheel = args.controller_wheel
+            if args.controller_wheel_dir is not None:
+                controller_wheel, _ = verify_controller_inventory(
+                    args.controller_wheel_dir
+                )
+            if controller_wheel is None:
+                raise GitHubControllerError("controller wheel input is absent")
             result = authorize_release(
                 api,
                 repository=args.repository,
@@ -512,7 +528,7 @@ def _release(argv: list[str]) -> None:
                 run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
                 controller=inputs["controller"],
                 certification_artifact=inputs["certification_artifact"],
-                controller_wheel_path=args.controller_wheel,
+                controller_wheel_path=controller_wheel,
                 output_path=args.output,
             )
         elif args.operation == "collect":
@@ -531,6 +547,18 @@ def _release(argv: list[str]) -> None:
                 runtime_evidence=_runtime_evidence(args),
                 output_path=args.output,
             )
+            if args.bundle_output is not None:
+                if args.release_artifact_dir is None:
+                    raise GitHubControllerError(
+                        "release receipt bundle requires --release-artifact-dir"
+                    )
+                stage_receipt_bundle(
+                    args.bundle_output,
+                    asset_root=args.release_artifact_dir,
+                    build_manifest=args.build_manifest,
+                    verification=args.verification,
+                    receipt=args.output,
+                )
         else:
             release_artifacts = _release_artifacts(args)
             assets = {
@@ -545,11 +573,16 @@ def _release(argv: list[str]) -> None:
                     expected_commit=args.commit, expected_assets=assets,
                 )
             else:
+                release_body = (
+                    args.release_notes_text
+                    if args.release_notes_text is not None
+                    else args.release_notes.read_text(encoding="utf-8")
+                )
                 result = publish_certified_release(
                     api, repository=args.repository, tag=args.tag,
                     expected_commit=args.commit,
                     release_artifacts=release_artifacts,
-                    body=args.release_notes.read_text(encoding="utf-8"),
+                    body=release_body,
                     receipt_path=args.receipt,
                     receipt_artifact_id=args.receipt_artifact_id,
                     receipt_artifact_name=args.receipt_artifact_name,

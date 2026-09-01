@@ -1,0 +1,50 @@
+document:
+  kind: ci_graph_extension
+  name: Clean consumer fixture extension
+  id: fixture-consumer-extension
+  version: 1.0.0
+  status: active
+  path: governance/ci-extensions/fixture.yml
+schema_version: '1.0'
+extension:
+  id: fixture-consumer
+  owner: fixture-project
+  rationale: prove a project-owned check composes without editing rendered workflows
+  attachment_point: before-truth
+  applicability: [pull_request, workflow_call]
+  required_controls:
+    positive: [fixture-extension-positive]
+    negative: [fixture-extension-negative]
+    topology: [fixture-extension-topology]
+    cleanup: [fixture-extension-cleanup]
+artifacts:
+  fixture-extension-report:
+    path: .artifacts/bcf/fixture-extension.json
+    kind: lane-input
+    scope: run-attempt
+    retention_days: 30
+conditions: {}
+commands:
+  fixture-extension-check:
+    argv: ['{python}', .github/scripts/fixture_extension.py, --output, .artifacts/bcf/fixture-extension.json]
+    cwd: .
+    environment: {}
+step_components: {}
+workflows: []
+jobs:
+- workflow: governance
+  id: fixture-extension
+  display_name: Verify project extension contract
+  semantic_role: fixture-project-extension
+  resource_class: candidate-python
+  trust: candidate
+  needs: [quality-evidence]
+  condition: success
+  timeout_minutes: 5
+  permissions: {contents: read}
+  checkout: true
+  components: [checkout, python, governance-dependencies]
+  executor: {kind: command, command: fixture-extension-check}
+  produces: [fixture-extension-report]
+  consumes: []
+  required: true

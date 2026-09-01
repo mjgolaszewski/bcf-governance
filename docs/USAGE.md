@@ -20,6 +20,53 @@ Standard and regulated profiles cannot represent a partially wired target.
 Their complete profile configuration is validated before BCF mutates the
 repository.
 
+## CI graph ownership
+
+Fresh Standard-v2 installations create `governance/ci-graph.yml` and require
+explicit candidate and trusted runner mappings. The graph is the operator
+interface for orchestration. Generated `.github/workflows/*.yml` files are
+deterministic projections and must not be edited directly.
+
+Use these commands after changing the graph or a registered extension:
+
+```bash
+bcf ci graph lock --repo-root . --apply
+bcf ci graph validate --repo-root .
+bcf ci graph explain --repo-root . --format json
+bcf ci graph diff --repo-root .
+bcf ci graph render --repo-root . --check
+bcf ci graph render --repo-root . --apply
+```
+
+`lock --apply` updates only digests for registered extensions and declared
+value sources. `render --apply` changes only graph-generated workflow paths;
+unrelated workflows remain byte-identical. `bcf ci adopt github --check|--apply`
+uses the graph when present. The older label and producer arguments remain only
+for profile-v1 adoption.
+
+Before translating an established workflow set, capture a non-authoritative
+exact inventory:
+
+```bash
+bcf ci graph import github \
+  --repo-root . \
+  --output governance/ci-workflow-inventory.yml \
+  --write
+```
+
+The inventory retains normalized job definitions plus triggers, edges, runners,
+permissions, matrices, artifacts, cleanup markers, concurrency, and authority
+markers. Import does not authorize a migration or silently convert unsupported
+behavior. Every existing job must map once to a core role or a registered
+project extension before rendered workflows may replace existing bytes.
+
+Standard's reference graph has one main-push authority; the ordinary governance
+workflow remains directly callable for pull requests and exact-main reuse but
+does not independently run on push. Scheduled controls remain scheduled
+evidence and are not pull-request prerequisites. Hosted jobs are rejected when
+their governed command contains polling, sleeping, leasing, or runner-wait
+operations.
+
 Contract version is distinct from profile strictness. An absent
 `profile_contract_version` means `1.0`, so installing newer BCF tooling does not
 silently promote an existing consumer. Contract v2 adds declared SOIP,
@@ -77,6 +124,11 @@ bcf install \
   --profile-config /path/to/standard-gates.yml \
   --project-id example \
   --project-name "Example" \
+  --candidate-runner-label ubuntu-24.04 \
+  --candidate-runner-kind hosted \
+  --trusted-runner-label self-hosted \
+  --trusted-runner-label example-trusted-control \
+  --trusted-runner-kind self-hosted \
   --require-strict-validation
 ```
 

@@ -21,6 +21,8 @@ from .ci_adopt_github import (
     render_github_v11_control_plane,
 )
 from .ci_github import GithubReferenceError, validate_reference_topology
+from .ci_graph_contracts import CIGraphError, validate_ci_graph
+from .ci_graph_render import check_ci_graph
 from .runtime_capacity import RuntimeCapacityError, load_runtime_contract
 
 
@@ -247,8 +249,24 @@ def validate_profile_v2_readiness(
         except CIAuthorityContractError as exc:
             raise ProfileV2Error(f"governance/ci-authority.yml: {exc}") from exc
         authority_state = "valid"
+    graph_path = repo_root / "governance/ci-graph.yml"
     topology_path = repo_root / "governance/github-ci-topology.yml"
     topology_state = "absent"
+    if graph_path.exists():
+        try:
+            validate_ci_graph(repo_root)
+            rendered = check_ci_graph(repo_root)
+        except CIGraphError as exc:
+            raise ProfileV2Error(f"governance/ci-graph.yml: {exc}") from exc
+        if rendered.status != "clean":
+            raise ProfileV2Error(
+                "generated GitHub workflows differ from governance/ci-graph.yml: "
+                + ", ".join(rendered.changed_paths)
+            )
+        topology_state = "valid"
+        # The graph supersedes the v1 GitHub topology renderer.  A retained
+        # topology file is migration custody, not a second workflow owner.
+        topology_path = repo_root / "governance/.retired-github-ci-topology.yml"
     if topology_path.exists():
         topology = _load_mapping(topology_path)
         _validate_schema(repo_root, "github-ci-topology.schema.json", topology)

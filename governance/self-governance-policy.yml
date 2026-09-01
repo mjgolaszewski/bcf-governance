@@ -1,7 +1,7 @@
 schema_version: '1.0'
 thin_wrapper_loc_cap: 20
 tooling_contexts:
-  ci_authority: [ci_authority_, ci_adopt_github.py, ci_commands.py, ci_github.py, ci_github_, ci_self_controller.py, local_pr.py, trusted_inputs.py]
+  ci_authority: [ci_authority_, ci_adopt_github.py, ci_commands.py, ci_graph_, ci_github.py, ci_github_, ci_self_controller.py, local_pr.py, trusted_inputs.py, truth_workflow_graph.py]
   cleanup: [cleanup_ci_resources.py, cleanup_governance_pack.py, evidence_session_cleanup.py, governance_cleanup/]
   evidence: [evidence_attestation.py, evidence_execution.py, evidence_gate_contracts.py, evidence_sessions.py, evidence_test_adapters.py, governance_evidence.py, governance_truth.py, governance_truth_support.py, negative_control_execution.py, release_, test_manifests.py, truth_receipts.py, truth_sessions.py]
   install: [install_governance_pack.py, governance_install/]
@@ -24,35 +24,8 @@ runner_security:
   candidate_lifecycle: provider_fresh_vm_per_job_destroyed_after_completion
   trusted_labels: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
   trusted_instance_labels: [bcf-trusted-control-1, bcf-trusted-control-2]
-  trusted_controller_interpreter: {action: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97, python_version: '3.12', required_workflows: [.github/workflows/bcf-authority-canary.yml, .github/workflows/bcf-trusted-control-bootstrap.yml, .github/workflows/bcf-trusted-control-probe.yml, .github/workflows/bcf-exact-main.yml, .github/workflows/bcf-trusted-finalizer.yml, .github/workflows/bcf-status-publisher.yml, .github/workflows/release.yml, .github/workflows/bcf-release-collector.yml, .github/workflows/bcf-release-publisher.yml]}
-  trusted_controller_artifact_workflows: [.github/workflows/bcf-release-verifier.yml]
   trusted_controller_artifact: {BCF_BOOTSTRAP_ARTIFACT_ID: '9806282487', BCF_BOOTSTRAP_ARTIFACT_NAME: bcf-trusted-control-49272182790342a52ef7ddbcfd6a540ca7df6baf-1, BCF_BOOTSTRAP_ARTIFACT_DIGEST: 'sha256:bf256ac5999f8cde76999e2fe7bcce2a918ecaa530a903b62f9ce7bd41979d49', BCF_BOOTSTRAP_RUN_ID: '33522183544', BCF_BOOTSTRAP_RUN_ATTEMPT: '1', BCF_BOOTSTRAP_COMMIT_SHA: 49272182790342a52ef7ddbcfd6a540ca7df6baf, BCF_BOOTSTRAP_TREE_SHA: cd714d075fb0b2271efe5416fb83191ccd18259c, BCF_BOOTSTRAP_REPOSITORY_ID: '1207503211', BCF_BOOTSTRAP_WHEEL_SHA256: 9e17a9fd84df251bcbfe7509376d1e3fc531443fcb87458bd1c114559dea58ff}
   trusted_controller_installation: {schema_version: '1.0', installed_commit_sha: 49272182790342a52ef7ddbcfd6a540ca7df6baf, subject_commit_sha: fb011a3e49dbb7d5f2bf87ea5cf96abb048555bb, subject_tree_sha: 24b1375577130b401389a8bfebbf06cb66875a7e, bootstrap_run_id: '33524862289', bootstrap_run_attempt: '1', probe_run_id: '33524915966', probe_run_attempt: '1'}
   trusted_release_credential: {secret_name: BCF_RELEASE_ADMIN_TOKEN, lifecycle: provision_before_dispatch_remove_after_publication, required_permissions: [administration_read, attestations_read, contents_write], required_workflow: .github/workflows/bcf-release-publisher.yml}
   coordination_policy: [no_polling, no_sleeping, no_idle_waiters]
   temporary_local_window: {status: closed, closed_at_utc: '2026-08-30T00:00:00Z', reason: GitHub-hosted ephemeral candidate capacity restored, privileged_publication_enabled: true, restore_condition: authority_v1_1_exact_tag_and_certified_bytes_only}
-  jobs:
-    .github/workflows/bcf-authority-canary.yml: {admit: trusted, producer-a: candidate, producer-b: candidate, observe: trusted}
-    .github/workflows/bcf-trusted-control-bootstrap.yml: {bootstrap: trusted_bootstrap}
-    .github/workflows/bcf-trusted-control-probe.yml: {probe: trusted}
-    .github/workflows/bcf-exact-main.yml: {admit: trusted, governance: reusable_candidate, governance-pack: reusable_candidate}
-    .github/workflows/bcf-release-collector.yml: {collect: trusted}
-    .github/workflows/bcf-release-publisher.yml: {publish: trusted}
-    .github/workflows/bcf-release-verifier.yml: {runtime: release_candidate, authenticate: provider_control_hosted}
-    .github/workflows/bcf-trusted-finalizer.yml: {finalize: trusted}
-    .github/workflows/bcf-status-publisher.yml: {publish: trusted}
-    .github/workflows/governance-mutants-nightly.yml: {high-value-mutants: candidate}
-    .github/workflows/governance-mutants-weekly.yml: {full-mutants: candidate}
-    .github/workflows/governance-pack.yml: {pack-checks: candidate, ast-checks: candidate}
-    .github/workflows/governance.yml: {preflight: candidate, evidence: candidate, governance-truthfulness: candidate}
-    .github/workflows/release.yml: {authorize: trusted, build: release_candidate}
-  trusted_job_activation:
-    .github/workflows/bcf-authority-canary.yml: {admit: owner_main_dispatch, producer-a: owner_main_dispatch, producer-b: owner_main_dispatch, observe: owner_main_dispatch_after_dependencies}
-    .github/workflows/bcf-trusted-control-bootstrap.yml: {bootstrap: owner_main_dispatch}
-    .github/workflows/bcf-trusted-control-probe.yml: {probe: owner_main_dispatch}
-    .github/workflows/bcf-exact-main.yml: {admit: repository_variable_enabled}
-    .github/workflows/bcf-trusted-finalizer.yml: {finalize: repository_variable_exact_main_only}
-    .github/workflows/bcf-status-publisher.yml: {publish: repository_variable_all_finalizer_conclusions}
-    .github/workflows/bcf-release-collector.yml: {collect: exact_release_verifier_success}
-    .github/workflows/bcf-release-publisher.yml: {publish: owner_main_dispatch}
-    .github/workflows/release.yml: {authorize: owner_main_dispatch}

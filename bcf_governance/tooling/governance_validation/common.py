@@ -26,6 +26,7 @@ OPTIONAL_PLACEHOLDER_SCAN_PATHS = (
     "governance/REPO_CLEANUP.md",
     "governance/EXISTING_REPO_ADOPTION.md",
     "governance/existing-repo-adoption.yml",
+    "governance/test-tombstones.yml",
     "Makefile.fragment",
     ".github/workflows/governance.yml",
     "phases/phase-NN-hotfixNN.yml",

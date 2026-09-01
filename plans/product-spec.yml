@@ -19,9 +19,9 @@ architecture:
   backend: "python_package_with_private_portable_runtime"
   frontend: "canonical_markdown_operator_and_maintainer_guides"
   data: "closed_yaml_json_contracts_and_content_addressed_evidence"
-phase_history: {path: plans/phase-history.yml, through_phase: P12}
+phase_history: {path: plans/phase-history.yml, through_phase: P13}
 execution_phases:
-  - {phase_id: P13, build_block: post-release-authority-remediation-0.7.1, objective: "remediate exact-main and release authority, register and pin distinct provider roles, close release inputs, and prepare immutable v0.7.1 custody", release_train: release_3}
+  - {phase_id: P14, build_block: consumer-ci-graph-0.8.0, objective: "deliver deterministic consumer CI graph generation with bounded project extensions, BCF dogfood, and Identity no-loss proof", release_train: release_4}
 acceptance:
   release_gate: bcf truth
   evidence_location: phases/

@@ -498,6 +498,62 @@ def test_validate_repo_root_accepts_valid_fixture(tmp_path: Path) -> None:
     validate_repo_root(repo_root)
 
 
+def _add_test_tombstones(repo_root: Path, entries: list[dict[str, Any]]) -> None:
+    shutil.copy2(
+        REPO_ROOT / "schemas/test-tombstones.schema.json",
+        repo_root / "schemas/test-tombstones.schema.json",
+    )
+    _write_yaml(
+        repo_root / "governance/test-tombstones.yml",
+        {
+            "document": {
+                "kind": "test_tombstone_registry",
+                "id": "fixture-test-tombstones",
+                "version": "1.0.0",
+                "status": "active",
+                "path": "governance/test-tombstones.yml",
+            },
+            "schema_version": "1.0",
+            "entries": entries,
+        },
+    )
+
+
+def test_validate_repo_root_accepts_unique_test_tombstone_custody(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    _add_test_tombstones(
+        repo_root,
+        [
+            {
+                "removed_node": "tests.test_old::test_duplicate_projection",
+                "removed_in_phase": "P02",
+                "source_commit": "a" * 40,
+                "reason": "canonical contract now owns this invariant",
+                "replacement_owner": "governance/example.yml::rules",
+                "replacement_tests": ["tests.test_owner::test_rule"],
+            }
+        ],
+    )
+
+    validate_repo_root(repo_root)
+
+
+def test_validate_repo_root_rejects_duplicate_test_tombstone_custody(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    entry = {
+        "removed_node": "tests.test_old::test_duplicate_projection",
+        "removed_in_phase": "P02",
+        "source_commit": "a" * 40,
+        "reason": "canonical contract now owns this invariant",
+        "replacement_owner": "governance/example.yml::rules",
+        "replacement_tests": ["tests.test_owner::test_rule"],
+    }
+    _add_test_tombstones(repo_root, [entry, dict(entry)])
+
+    with pytest.raises(GovernanceValidationError, match="removed_node values must be unique"):
+        validate_repo_root(repo_root)
+
+
 def test_validate_repo_root_rejects_missing_observability_contract(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
     (repo_root / "contracts/observability/v1/telemetry.contract.yml").unlink()

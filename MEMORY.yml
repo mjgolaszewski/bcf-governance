@@ -42,6 +42,7 @@ memory_retention_policy:
     - preserve_replacement_reference_when_available
 environment_facts:
   current_repo_state:
+    - 'P14 implements the BCF 0.8.0 consumer CI graph from BCF origin/main c1e1ee27 and read-only Identity origin/main 0569e6dd; BCF mechanically renders 14 workflows and 24 jobs from one graph plus three extensions. The Identity audit maps all 10 workflows and 46 jobs and computes five-run medians of 2803 wall seconds and 7184 summed runner seconds; graph ownership alone qualifies zero measured savings, so the 15 percent gate blocks Identity mutation and no remote Identity run was launched. PR runs 33561222812 and 33563470217 failed before governed gates because artifact transport normalized private modes and a reused restore component was conditionally skipped; graph compilation now binds private artifact identity, exact download destination, immediate ordering, and condition scope/equality before rendering.'
     - BCF 0.6.1 standard self-governance adopted on 2026-08-14
     - all governance, memory, specs, plans, workitem ledgers, and phase logs are YAML-native
     - observability contracts are scaffolded under contracts/observability/v1/
@@ -49,7 +50,7 @@ environment_facts:
     - v0.7.0 is an annotated unsigned tag at 0e965b2197e776ad411b67820dbd5586263abde1; release 379785364 is published with three attested assets but reports immutable false and is not certified under corrected authority v1.1
     - P13-HF03 merged as de2eeee6c16d074c4c5fffd39ee5d583b36d1a3e; provider-authenticated bootstrap 33513097208 and probe 33513145558 proved it on both trusted runners, promotion PR 86 merged as 6673c6ba7028162e6f0385e1866810559a52e802, and exact-main 33514102987, finalizer 33514433224, publisher 33514473576, scheduled mutants 33514518560 and 33514521143, authority canaries 33514557778 and 33514632374 attempts 1 and 2, release build 33514881671, verifier 33515210677, and collector 33515519688 completed the pre-reconciliation acceptance rehearsal without enabling publication
     - the P13 structural cutover retains authority-v1 readers, requires v1.1 for new exact-main and release commands, and keeps release execution unreachable until provider workflow identities are pinned and activated
-    - P01 through P12 roadmap detail is owned only by plans/phase-history.yml; active product and build roadmaps contain P13 and mechanically validate their history boundary at P12
+    - P01 through P13 roadmap detail is owned only by plans/phase-history.yml; active product and build roadmaps contain P14 and mechanically validate their history boundary at P13
     - P13 preserves 21 gates while exact manifests and cause controls ratchet mechanically; workflow identity, admission roles, privileged jobs, controller custody, and release lock/manifest blobs are compiled from Git/provider bytes, verifier success binds controller-owned offline wheel/sdist/Twine execution and raw evidence, profile-v2 evidence semantics have one gate-contract owner, local PR and scheduled mutant entrypoints select canonical preflight, scheduled runs retain exact-subject artifacts, interpreter/venv identity is checked before evidence or mutants, and named mutants run only exact oracle nodes after one full positive baseline
     - provider-compiled bootstrap 33464640838 plus probe 33464672319 prove 63c7c180 installed on both trusted runners; after PR 55 merged as de8b3ce25f52916e6795a2b9240be969de932788, promoted-controller exact-main 33465739678 passed admission and every producer before active-phase closure refusal, and finalizer 33465936849 plus publisher 33465963703 proved the terminal control path
     - P13 activation PR 44 merged as 35f3ab4ff9fa6b91ac20f706df0cc42def6a1718; exact-main run 33440869640 proved admission but release preflight rejected its incorrectly inherited PR mode before evidence fanout, so exact-main reusable governance must select closure truth and release preflight
@@ -69,9 +70,9 @@ environment_facts:
     build_plan: plans/build-plan.yml
     active_phase_ledger: plans/phase-ledger.yml
     phase_history: plans/phase-history.yml
-    active_phase_plan: plans/phase-13-plan.yml
-    active_workitem_ledger: plans/phase-13-workitems.yml
-    active_phase_log: phases/phase-13-log.yml
+    active_phase_plan: plans/phase-14-plan.yml
+    active_workitem_ledger: plans/phase-14-workitems.yml
+    active_phase_log: phases/phase-14-log.yml
 known_constraints:
   - schema-2 evidence must be recaptured after every governed tree mutation
   - template runtime and packaged template copies must remain byte-identical to canonical sources
@@ -94,12 +95,11 @@ known_constraints:
   - normalized CI certification is an input to truth and cannot claim certified; only independently verified truth may emit the final output-only release receipt
   - PR truth evaluation may report an exact-tree change eligible while its phase train remains active, but it preserves the lifecycle, cannot report release closure, and cannot emit a release receipt; closure evaluation remains the default and sole release authority
   - cleanup revalidates exact Docker IDs/run labels before scoped deletion; retention-removable phase artifacts are consumed only through phase-history plus exact Git commit/hash custody, never live fixture paths
-reusable_commands:
-  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
-  - .venv/bin/python -m pytest tests
-  - bcf profile promote --repo-root . --to standard --contract-version 2.0 --check
-  - bcf ci-cleanup --repo-root . --prune-evidence-sessions
+  - consumer workflow bytes are generated from one graph root plus registered bounded extensions; neither an AI operator nor workflow YAML owns mechanically derivable topology
+  - Identity workflow mutation is prohibited until an offline importer maps every current job exactly once, semantic parity passes, and a credible 15 percent runner-time improvement is demonstrated without removing or renaming jobs
+  - Identity public-PR execution may use fresh hosted runners, but hosted jobs may not poll, sleep, wait for local capacity, lease a runner, or remain allocated as control-plane waiters
+reusable_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests, bcf profile promote --repo-root . --to standard --contract-version 2.0 --check, bcf ci-cleanup --repo-root . --prune-evidence-sessions]
 references:
   governance: [AGENTS.yml, governance-profile.yml, architecture-boundaries.yml, schemas/, contracts/observability/v1/, plans/phase-ledger.yml, plans/phase-history.yml, docs/USAGE.md, docs/MAINTAINING.md, docs/ARCHITECTURE.md, docs/CI_AUTHORITY.md]
   product: [plans/product-spec.yml, plans/build-plan.yml]
-  execution: [plans/phase-13-plan.yml, plans/phase-13-workitems.yml, phases/phase-13-log.yml, phases/phase-13-hotfix01.yml, phases/phase-13-hotfix02.yml, phases/phase-13-hotfix03.yml]
+  execution: [plans/phase-14-plan.yml, plans/phase-14-workitems.yml, phases/phase-14-log.yml]

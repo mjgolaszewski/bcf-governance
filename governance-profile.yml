@@ -15,7 +15,7 @@ profile:
       governance/evidence-policy.yml, governance/findings.yml, plans/product-spec.yml, plans/build-plan.yml, plans/phase-ledger.yml,
       plans/phase-NN-plan.yml, plans/phase-NN-workitems.yml, phases/phase-NN-log.yml, tests/test_self_governance_contracts.py,
       scripts/validate_governance_yaml.py, scripts/governance_evidence.py, scripts/governance_truth.py, scripts/migrate_governance_evidence.py,
-      scripts/scaffold_governance_artifacts.py, .github/workflows/governance.yml]
+      scripts/scaffold_governance_artifacts.py, governance/ci-graph.yml, .github/workflows/governance.yml]
   - name: regulated
     use_when: provenance, security evidence, SBOM, or formal hotfix reconciliation is mandatory
     required_artifacts: [README.md, LICENSE, CHANGELOG.md, AGENTS.yml, MEMORY.yml, governance-profile.yml, architecture-boundaries.yml,

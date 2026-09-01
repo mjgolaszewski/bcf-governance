@@ -11,6 +11,7 @@ import yaml  # type: ignore[import-untyped]
 
 from .ci_github_actions import action_pin
 from .profile_yaml import render_profile_surface
+from .profile_v2_surfaces import apply_profile_v2_artifact_defaults
 
 
 BUILTIN_TARGETS = {"governance-validate", "governance-exposure-scan"}
@@ -678,6 +679,7 @@ def apply_profile_contract(
         raise ProfileContractError("profile contract version must be 1.0 or 2.0")
     profile["profile_contract_version"] = contract_version
     profile["profile"]["selected"] = profile_name
+    apply_profile_v2_artifact_defaults(profile, selected_profile=profile_name, contract_version=contract_version)
     profile["release_gate_profile"]["gates"] = contract["gate_catalog"]
     for value in profile["release_gate_profile"]["gates"].values():
         value["status"] = "required" if value["target"] in active_targets else "deferred"

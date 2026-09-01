@@ -674,11 +674,24 @@ def _validate_ephemeral_evidence_references(repo_root: Path, manifest: dict[str,
     violations: list[str] = []
     for path in _iter_repo_files(repo_root):
         relative_path = _repo_relative_path(repo_root, path)
+        graph_extension = False
+        if _relative_path_is_under(relative_path, "governance/ci-extensions") and path.suffix.lower() in {
+            ".yml",
+            ".yaml",
+        }:
+            payload = _load_yaml(path)
+            document = _require_mapping(
+                payload.get("document"), context=f"{relative_path} document"
+            )
+            graph_extension = document.get("kind") == "ci_graph_extension"
         if relative_path in {
             "governance/artifact-manifest.yml",
+            # This executable contract declares typed run-attempt CI artifact
+            # namespaces and is validated mechanically by the graph compiler.
+            "governance/ci-graph.yml",
             "governance/evidence-policy.yml",
             "governance/gate-contracts.yml",
-        }:
+        } or graph_extension:
             continue
         if relative_path not in {"AGENTS.yml", "MEMORY.yml"} and not _relative_path_is_under_any(
             relative_path, governed_prefixes

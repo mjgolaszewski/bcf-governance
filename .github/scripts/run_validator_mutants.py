@@ -311,7 +311,9 @@ def _runtime_entrypoint(temp_dir: Path, module_name: str) -> Path:
         "from pathlib import Path\n"
         "import sys\n"
         "sys.path.insert(0, str(Path(__file__).resolve().parents[1]))\n"
-        f"from mutant_runtime.tooling.{module_name} import *\n",
+        f"from mutant_runtime.tooling import {module_name} as _implementation\n"
+        "globals().update({name: getattr(_implementation, name) "
+        "for name in dir(_implementation) if name != '__name__'})\n",
         encoding="utf-8",
     )
     return entrypoint

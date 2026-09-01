@@ -6,8 +6,73 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+Release target: `0.8.0`.
+
+### Added
+
+- Added the schema-versioned `governance/ci-graph.yml` contract, digest-locked
+  bounded project extensions, and deterministic graph validation, explanation,
+  import, lock, diff, render, and GitHub adoption commands.
+- Added a Standard-v2 reference graph with explicit candidate and trusted runner
+  mappings, cheap preflight, grouped evidence lanes, exact fan-in, terminal truth,
+  a single exact-main push entry, scheduled controls, and extension points for
+  specialized and release behavior. Lite retains a reduced graph.
+- Added a clean consumer fixture proving Standard-v2 installation, project
+  extension composition, deterministic regeneration, rollback, and preservation
+  of unrelated workflows.
+- Added schema-backed custody for regression tests removed after a stronger
+  canonical mechanical owner superseded their duplicate generated-YAML decoding.
+- Added an exact read-only Chrysalis Identity preservation and performance audit
+  covering 10 workflows, 46 job definitions, and five comparable green runs.
+- Opened the 0.8.0 consumer-CI train to make one governed graph plus explicitly
+  registered bounded extensions the mechanical source for generated GitHub workflows.
+- Defined Identity workflow preservation and performance gates before any migration:
+  existing jobs, stable checks, specialized lanes, schedules, runner topology, cleanup,
+  authority, and evidence behavior may not be removed or silently normalized.
+
+### Changed
+
+- BCF now dogfoods the consumer graph compiler: all 14 repository workflows and
+  24 logical jobs are rendered from the same root graph and registered extensions
+  shipped to consumers, while exact workflow pins remain a separate Git authority.
+- Agents and maintainers edit graph contracts rather than generated GitHub YAML.
+  Graph compilation now checks exact profile-required PR gate ownership, graph
+  cycles, fan-in, resource and trust mappings, semantic owners, action pins,
+  extension applicability, and hosted-wait prohibitions before workflow rendering.
+- Negative-control execution now mechanically refreshes registered graph input
+  locks and generated projections inside each isolated mutant worktree, ensuring
+  the oracle observes the intended semantic defect instead of incidental digest
+  or parity drift.
+- Preserved Chrysalis Identity unchanged because graph ownership alone predicted
+  no runner-time savings against its already optimized CI graph and therefore did
+  not meet the required 15 percent improvement gate. No Identity canary or remote
+  Actions run was started.
+- Permit Identity public-PR candidate work to return to fresh hosted runners while
+  prohibiting polling, sleeping, local-capacity waiting, runner leasing, or hosted
+  control-plane waiters.
+
 ### Fixed
 
+- Made private evidence transport self-repairing and mechanically ordered. The
+  graph now marks the single mode-restoration effect, requires it immediately
+  after an exact session download and before gate execution, binds its root to
+  the actual download destination, and requires its condition to match the
+  transport step. Missing, skipped, delayed, or misdirected restoration fails
+  compilation before artifact-service permission normalization can invalidate a run.
+- Made fresh-install evidence workflow paths and required events a mechanical
+  projection of the installed graph. Standard and Regulated route `main` only
+  through exact-main authority, while Lite retains its direct `push` entry.
+- Scoped workflow truth to the declared graph roots and taught it to resolve
+  both grouped and mechanically sharded gate inventories; an unrelated workflow
+  event can no longer satisfy a root workflow requirement.
+- Kept trusted-controller rotation executable through the independently proven
+  installed controller until the target controller is mechanically confirmed;
+  changing the target pin no longer makes bootstrap depend on uninstalled bytes.
+- Made validator negative-control target checks report the complete stale or
+  ambiguous mutation set in one failure, avoiding serial check/fail/fix discovery.
+- Removed secondary self-workflow tests that re-decoded generated workflow fields;
+  retained unique trust, authority, release, and integration regressions under
+  canonical graph, policy, and controller owners.
 - Made the trusted publisher require `BCF_RELEASE_ADMIN_TOKEN` before resolution or
   attestation and use it only for final publication. GitHub's workflow token cannot read
   repository immutable-release settings; the short-lived credential contract requires

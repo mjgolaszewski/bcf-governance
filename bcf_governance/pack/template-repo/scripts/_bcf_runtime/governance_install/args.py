@@ -42,6 +42,26 @@ def build_parser(
     )
     parser.add_argument("--target-user", default=default_target_user)
     parser.add_argument("--runner-labels", default=default_runner_labels)
+    parser.add_argument(
+        "--candidate-runner-label",
+        action="append",
+        help="Exact candidate runner label; repeat for a label set.",
+    )
+    parser.add_argument(
+        "--trusted-runner-label",
+        action="append",
+        help="Exact trusted control runner label; repeat for a label set.",
+    )
+    parser.add_argument(
+        "--candidate-runner-kind",
+        choices=("hosted", "self-hosted"),
+        help="Declare candidate runner custody without label inference.",
+    )
+    parser.add_argument(
+        "--trusted-runner-kind",
+        choices=("hosted", "self-hosted"),
+        help="Declare trusted control runner custody without label inference.",
+    )
     parser.add_argument("--phase-id", default="P01")
     parser.add_argument("--build-block", default="foundation")
     parser.add_argument("--phase-objective", default="establish governed foundation")

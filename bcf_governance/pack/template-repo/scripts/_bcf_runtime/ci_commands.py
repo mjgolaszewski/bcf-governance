@@ -13,6 +13,9 @@ from .ci_adopt_github import (
     plan_github_adoption,
     render_github_adoption,
 )
+from .ci_graph_commands import add_graph_parser, run_graph_command
+from .ci_graph_contracts import CIGraphError
+from .ci_graph_render import apply_ci_graph, check_ci_graph
 from .ci_authority_pins import CIAuthorityPinError, pin_workflow_authority
 from .ci_github_identity import GitHubControllerError
 from .ci_self_controller import project_self_controller_pin
@@ -49,9 +52,9 @@ def _adopt_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser
     github = providers.add_parser("github")
     github.add_argument("--repo-root", type=Path, default=Path.cwd())
     github.add_argument("--default-branch", default="main")
-    github.add_argument("--candidate-label", action="append", required=True)
-    github.add_argument("--trusted-label", action="append", required=True)
-    github.add_argument("--producer-arg", action="append", required=True)
+    github.add_argument("--candidate-label", action="append")
+    github.add_argument("--trusted-label", action="append")
+    github.add_argument("--producer-arg", action="append")
     mode = github.add_mutually_exclusive_group(required=True)
     mode.add_argument("--check", action="store_true")
     mode.add_argument("--apply", action="store_true")
@@ -62,6 +65,7 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="BCF CI authority operations.")
     subparsers = parser.add_subparsers(dest="operation", required=True)
     _adopt_parser(subparsers)
+    add_graph_parser(subparsers)
     local = subparsers.add_parser("local-pr", help="Run exact local PR validation.")
     local.add_argument("--repo-root", type=Path, default=Path.cwd())
     local.add_argument("--remote", default="origin")
@@ -117,12 +121,30 @@ def _print(payload: dict[str, object], output_format: str) -> None:
 def main(argv: list[str] | None = None) -> None:
     args = _parser().parse_args(argv)
     try:
+        if args.operation == "graph":
+            run_graph_command(args)
+            return
         if args.operation == "adopt":
+            graph_path = args.repo_root / "governance/ci-graph.yml"
+            legacy_values = (args.candidate_label, args.trusted_label, args.producer_arg)
+            if graph_path.is_file() and not any(legacy_values):
+                result = apply_ci_graph(args.repo_root) if args.apply else check_ci_graph(args.repo_root)
+                _print(
+                    {"status": result.status, "changed_paths": list(result.changed_paths)},
+                    args.format,
+                )
+                if args.check and result.status != "clean":
+                    raise SystemExit(1)
+                return
+            if not all(legacy_values):
+                raise CIGraphError(
+                    "legacy GitHub adoption requires candidate labels, trusted labels, and producer argv; graph adoption requires governance/ci-graph.yml"
+                )
             desired = render_github_adoption(
                 default_branch=args.default_branch,
-                candidate_labels=tuple(args.candidate_label),
-                trusted_labels=tuple(args.trusted_label),
-                producer_argv=tuple(args.producer_arg),
+                candidate_labels=tuple(args.candidate_label or ()),
+                trusted_labels=tuple(args.trusted_label or ()),
+                producer_argv=tuple(args.producer_arg or ()),
             )
             result = (
                 apply_github_adoption(args.repo_root.resolve(), desired=desired)
@@ -189,6 +211,7 @@ def main(argv: list[str] | None = None) -> None:
         raise SystemExit(result.returncode)
     except (
         CIAuthorityPinError,
+        CIGraphError,
         GitHubControllerError,
         GithubAdoptionError,
         LocalPRError,

@@ -170,22 +170,21 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     policy = yaml.safe_load(
         (REPO_ROOT / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
     )
-    required = policy["runner_security"]["trusted_controller_interpreter"][
-        "required_workflows"
-    ]
-    artifact_required = policy["runner_security"][
-        "trusted_controller_artifact_workflows"
-    ]
-    paths = list(dict.fromkeys([
+    paths = [
         "governance/self-governance-policy.yml",
-        controller.TOPOLOGY_PATH,
-        *required,
-        *artifact_required,
-    ]))
+        "governance/ci-graph.yml",
+        "schemas/ci-graph.schema.json",
+        "schemas/ci-graph-extension.schema.json",
+    ]
     for relative in paths:
         destination = tmp_path / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(REPO_ROOT / relative, destination)
+    shutil.copytree(
+        REPO_ROOT / "governance/ci-extensions",
+        tmp_path / "governance/ci-extensions",
+    )
+    shutil.copytree(REPO_ROOT / ".github/workflows", tmp_path / ".github/workflows")
     pin = dict(policy["runner_security"]["trusted_controller_artifact"])
     baseline_proof = dict(
         policy["runner_security"]["trusted_controller_installation"]
@@ -197,15 +196,6 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     assert controller.project_self_controller_pin(
         tmp_path, pin=pin, apply=False
     ).status == "clean"
-    artifact_workflows = policy["runner_security"][
-        "trusted_controller_artifact_workflows"
-    ]
-    for relative in artifact_workflows:
-        workflow = yaml.safe_load((tmp_path / relative).read_text(encoding="utf-8"))
-        assert {
-            key: str(workflow["env"][key]) for key in controller.PIN_KEYS
-        } == {key: str(pin[key]) for key in controller.PIN_KEYS}
-
     pin.update(
         {
             "BCF_BOOTSTRAP_ARTIFACT_ID": "400",
@@ -219,26 +209,15 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
             "BCF_BOOTSTRAP_WHEEL_SHA256": "e" * 64,
         }
     )
-    current = dict(policy["runner_security"]["trusted_controller_artifact"])
     started = controller.project_self_controller_pin(tmp_path, pin=pin, apply=True)
     assert started.status == "changed"
-    pending_topology = yaml.safe_load(
-        (tmp_path / controller.TOPOLOGY_PATH).read_text(encoding="utf-8")
+    bootstrap = yaml.safe_load(
+        (tmp_path / controller.BOOTSTRAP_WORKFLOW).read_text(encoding="utf-8")
     )
-    assert pending_topology["controller_commit"] == current[
-        "BCF_BOOTSTRAP_COMMIT_SHA"
-    ]
-    pending_probe = yaml.safe_load(
-        (tmp_path / controller.PROBE_WORKFLOW).read_text(encoding="utf-8")
-    )
-    assert {
-        key: str(value) for key, value in pending_probe["env"].items()
-    } == pin
-    for relative in artifact_workflows:
-        workflow = yaml.safe_load((tmp_path / relative).read_text(encoding="utf-8"))
-        assert {
-            key: str(workflow["env"][key]) for key in controller.PIN_KEYS
-        } == pin
+    assert {key: str(bootstrap["env"][key]) for key in controller.PIN_KEYS} == pin
+    assert policy["runner_security"]["trusted_controller_installation"][
+        "installed_commit_sha"
+    ] in bootstrap["jobs"]["bootstrap"]["steps"][2]["run"]
     second_target = dict(pin)
     second_target["BCF_BOOTSTRAP_ARTIFACT_ID"] = "401"
     with pytest.raises(GitHubControllerError, match="rotation is already pending"):
@@ -260,15 +239,12 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     bootstrap = yaml.safe_load(
         (tmp_path / controller.BOOTSTRAP_WORKFLOW).read_text(encoding="utf-8")
     )
-    assert bootstrap["env"]["BCF_INSTALLED_CONTROLLER_COMMIT_SHA"] == COMMIT
+    assert COMMIT in bootstrap["jobs"]["bootstrap"]["steps"][2]["run"]
     probe = yaml.safe_load(
         (tmp_path / controller.PROBE_WORKFLOW).read_text(encoding="utf-8")
     )
-    assert {key: str(value) for key, value in probe["env"].items()} == pin
-    topology = yaml.safe_load(
-        (tmp_path / controller.TOPOLOGY_PATH).read_text(encoding="utf-8")
-    )
-    assert topology["controller_commit"] == COMMIT
+    assert "env" not in probe
+    assert "probe_trusted_controller.py" in probe["jobs"]["probe"]["steps"][1]["run"]
     assert controller.project_self_controller_pin(
         tmp_path, pin=pin, apply=False
     ).status == "clean"

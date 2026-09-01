@@ -109,6 +109,14 @@ callback re-queries current workflow, run, job, and artifact state through the
 provider API. Exact run and attempt namespaces prevent a rerun from consuming
 an earlier attempt's terminal artifact.
 
+The reference topology is rendered from `governance/ci-graph.yml` and its
+registered extensions. The graph owns orchestration; this authority model owns
+provider identity, admission, state precedence, and certification. Keeping
+those responsibilities separate prevents a workflow renderer from inventing
+release authority and prevents the authority controller from becoming a second
+workflow-topology owner. Generated workflow bytes must pass graph parity first
+and exact committed-workflow pinning second.
+
 ## Release construction and publication
 
 Release inputs are closed for Ubuntu 24.04, CPython 3.12.14, Linux x86-64, and

@@ -15,8 +15,8 @@ then separates two questions:
 - `bcf truth`: are lifecycle and release claims supported by current evidence
   for the exact Git subject?
 
-Current package version: `v0.7.1`. The exact certified release is published as
-an immutable GitHub release.
+Development package version: `v0.8.0`. The latest certified public release is
+immutable `v0.7.1` while the 0.8.0 train is under review.
 
 ## Why these defaults
 
@@ -116,6 +116,32 @@ control and publication jobs do not check out or execute candidate code. The
 GitHub reference implementation uses callbacks instead of runners that poll or
 wait. See [CI authority](docs/CI_AUTHORITY.md).
 
+## Governed CI graph
+
+Profile-contract v2 repositories may make `governance/ci-graph.yml` the single
+orchestration owner. It declares events, stable job IDs, descriptive names,
+dependencies, resource classes, runner mappings, permissions, evidence fan-in,
+truth, exact-main authority, scheduled controls, and optional release roles.
+Project-specific behavior belongs in registered, digest-locked
+`governance/ci-extensions/*.yml` files. Extensions can add bounded nodes and
+edges, but cannot bypass preflight or truth, weaken trust and permissions, or
+inject raw workflow YAML or unrestricted shell fragments.
+
+Agents and maintainers edit those contracts. Deterministic code composes them,
+checks that profile-required gates have exactly one pull-request owner, and
+renders the GitHub workflows. Generated workflow files carry provenance and are
+not an editing surface; byte drift fails validation. This keeps specialized CI
+possible without making a probabilistic operator responsible for synchronizing
+a pile of YAML.
+
+The Standard-v2 reference graph includes cheap preflight, grouped evidence
+lanes, exact run/attempt artifact fan-in, terminal truth, one main-push entry,
+scheduled controls, and explicit candidate/trusted runner classes. It is a
+starting contract, not a claim that one topology fits every repository. Mature
+graphs should first be imported and preservation-checked, then expressed with
+bounded extensions. No migration should proceed merely to change ownership if
+it cannot preserve behavior and meet the repository's performance threshold.
+
 ## Install
 
 Install the current published wheel:
@@ -124,9 +150,10 @@ Install the current published wheel:
 python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v0.7.1/bcf_governance-0.7.1-py3-none-any.whl
 ```
 
-The governed 0.7.1 train builds `bcf_governance-0.7.1-py3-none-any.whl`, but
-that candidate is not an installation source until its immutable release is
-published.
+Immutable `bcf_governance-0.7.1-py3-none-any.whl` remains the published
+installation source. The 0.8.0 development tree builds
+`bcf_governance-0.8.0-py3-none-any.whl`; it is not an installation source until
+its own exact-main certification and immutable release complete.
 
 Git is required. `lite` is the bootstrap profile:
 
@@ -149,6 +176,11 @@ bcf install \
   --profile-config /path/to/standard-gates.yml \
   --project-id example \
   --project-name "Example" \
+  --candidate-runner-label ubuntu-24.04 \
+  --candidate-runner-kind hosted \
+  --trusted-runner-label self-hosted \
+  --trusted-runner-label example-trusted-control \
+  --trusted-runner-kind self-hosted \
   --require-strict-validation
 ```
 
@@ -157,14 +189,9 @@ Promotion and GitHub CI adoption are separate, explicit transactions:
 ```bash
 bcf profile promote --repo-root . --to standard --contract-version 2.0 --check
 bcf profile promote --repo-root . --to standard --contract-version 2.0 --apply
-bcf ci adopt github \
-  --repo-root . \
-  --candidate-label ubuntu-latest \
-  --trusted-label self-hosted \
-  --trusted-label bcf-trusted-control \
-  --producer-arg python3 \
-  --producer-arg scripts/release_check.py \
-  --check
+bcf ci graph validate --repo-root .
+bcf ci graph render --repo-root . --check
+bcf ci adopt github --repo-root . --check
 # Repeat with --apply after reviewing the check output.
 ```
 

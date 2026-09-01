@@ -1,0 +1,93 @@
+document:
+  kind: consumer_ci_graph_qualification
+  name: Chrysalis Identity P14 CI Graph Qualification
+  id: p14-chrysalis-identity-ci-qualification
+  version: 1.0.0
+  generated_at_utc: '2026-09-01T00:00:00Z'
+  status: completed
+  path: audits/p14-identity-ci-qualification.yml
+subject:
+  repository: mjgolaszewski/chrysalis-identity
+  commit: 0569e6dd81b311abf33af5626a32441b0d55cc64
+  tree: 96306a5dbba3327adb948aa183d39dce1129c6e4
+  remote_ref: origin/main
+  worktree_clean: true
+derivation:
+  inventory_owner: bcf_governance.tooling.ci_graph_import.inventory_github_workflows
+  timing_owner: authenticated GitHub Actions run and job timestamps
+  formulas:
+    wall_seconds: workflow.updated_at minus workflow.created_at
+    summed_runner_seconds: sum of job.completed_at minus job.started_at
+    runner_target_seconds: median_summed_runner_seconds multiplied by 0.85
+    wall_ceiling_seconds: median_wall_seconds multiplied by 1.05
+preservation_inventory:
+  workflow_count: 10
+  logical_job_count: 46
+  workflows:
+  - path: .github/workflows/ci-control-plane.yml
+    sha256: 8b84dec01d9dee59cc4f8a2bb36235e989f233c86df8554cb81608db09640f0c
+    mapping: mixed_core_authority_and_identity_extension
+    jobs: [admit-public-pr, exact-main-kickoff, observe-certification-child, queue-exact-main-finalization, cancel-failed-certification-attempt, validate-exact-main-finalization, prepare-sibling-client, dispatch-worker, validate-terminal, dispatch-exact-main, reject-invalid-manual-request, publish-terminal]
+  - path: .github/workflows/ci.yml
+    sha256: 558bcfb13b76948d9f11730fa3b99ce4967f8911e5e664f210bb30bcf85fa416
+    mapping: mixed_core_preflight_truth_and_identity_evidence_extensions
+    jobs: [admission, release-evidence-record, fail-fast-preflight, ordinary-backend-gates, abuse-gates, browser-workflow-gates, postgres-migration-smoke, security-artifact-gates, governance-truthfulness]
+  - path: .github/workflows/governance.yml
+    sha256: 9138069d6dc3e769e2355577326736bac981db0b2cf00b4e771012f9fa2865b2
+    mapping: core_pull_request_governance
+    jobs: [governance-validate]
+  - path: .github/workflows/independent-phase-review.yml
+    sha256: 589f4e891113f31bec7aee71a748da187fc7c3e8e1d1cda08c8661a9b9d88ff6
+    mapping: identity_independent_review_extension
+    jobs: [independent-phase-review-evidence]
+  - path: .github/workflows/mutation-ci.yml
+    sha256: 0edf61f668b9a2abd7b296f223583832fe0a5abce2ec2c269514fecae5e28591
+    mapping: identity_mutation_extension
+    jobs: [mutation-ci-fast-policy]
+  - path: .github/workflows/mutation-nightly.yml
+    sha256: 59891b58714350d9b21191e192f48be69d6ac41d39dd445af5050e684a33f499
+    mapping: identity_mutation_extension
+    jobs: [mutation-nightly-auth-transport]
+  - path: .github/workflows/mutation-weekly.yml
+    sha256: 9d5377de4abebee3fdbf4e4eb413f0995933025d6e9dfad708d4396184e3f6b1
+    mapping: identity_mutation_extension
+    jobs: [mutation-weekly-preflight, mutation-weekly-auth-core, mutation-weekly-identity-replay, mutation-weekly-messaging-dispatch, mutation-weekly-truth]
+  - path: .github/workflows/nightly-risk-matrix.yml
+    sha256: b819a34ce5af2656c8337bc06012edff394598dbfdf10ec635520c711194e11c
+    mapping: identity_scheduled_risk_extension
+    jobs: [docs-architecture-risk, nightly-risk-truth, backend-full-risk, browser-workflow-risk, architecture-ratchet-risk, runtime-preflight-risk, abuse-risk, adversarial-risk, security-supply-chain-risk, chaos-soak-risk, postgres-integration-risk]
+  - path: .github/workflows/oidc-conformance.yml
+    sha256: acca985d318d6a208044492f03315fce286ed37c860d5767f142a85746bf9a47
+    mapping: identity_oidc_extension
+    jobs: [oidc-conformance]
+  - path: .github/workflows/public-pr.yml
+    sha256: 43dfa800efb362a995ad406affe1dcf1f973b1d82f19a54a9b1de292a52acb63
+    mapping: identity_public_pr_extension
+    jobs: [release-evidence-record, public-pr-preflight, public-pr-evidence, public-pr]
+performance_baseline:
+  runs:
+  - {run_id: '33282284036', attempt: 1, head_sha: 0569e6dd81b311abf33af5626a32441b0d55cc64, job_count: 13, wall_seconds: 3407, summed_runner_seconds: 7990}
+  - {run_id: '33275878626', attempt: 1, head_sha: 34131f603d0064a66231c8a34110efca40a5137c, job_count: 13, wall_seconds: 2734, summed_runner_seconds: 7109}
+  - {run_id: '33258804925', attempt: 1, head_sha: e7dd65ddee16cbbd1bf138dc089900de690e4eff, job_count: 13, wall_seconds: 2610, summed_runner_seconds: 7179}
+  - {run_id: '33251597189', attempt: 1, head_sha: e6ef9480bd5a260aff08d903ee64c12480e9c15c, job_count: 13, wall_seconds: 3890, summed_runner_seconds: 9600}
+  - {run_id: '33244086451', attempt: 1, head_sha: 83be205fd603a2ef931adbaeb320af2d7f9720d4, job_count: 13, wall_seconds: 2803, summed_runner_seconds: 7184}
+  median_wall_seconds: 2803
+  median_summed_runner_seconds: 7184
+  activation_wall_ceiling_seconds: 2943.15
+  activation_runner_target_seconds: 6106.4
+qualification:
+  preservation_mapping_complete: true
+  removed_jobs: []
+  renamed_jobs: []
+  remote_runs_started: []
+  identity_files_changed: []
+  mechanically_qualified_optimization_seconds: 0
+  predicted_runner_reduction_percent: 0
+  required_runner_reduction_percent: 15
+  performance_gate: failed
+  decision: leave_identity_unchanged
+  rationale: graph generation changes orchestration ownership but does not itself remove a measured positive execution or setup cost from the already optimized Identity graph
+  public_pr_runner_disposition: hosted execution remains permitted in a future separately qualified Identity change, provided each hosted job runs bounded work and never polls sleeps leases or waits for local capacity
+release_claim:
+  identity_proven: false
+  statement: BCF 0.8.0 must not claim Identity activation or performance proof from this audit

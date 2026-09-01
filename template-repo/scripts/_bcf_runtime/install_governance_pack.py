@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import importlib.util
 import importlib.resources
 import json
 import os
@@ -22,6 +21,8 @@ if str(_SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_ROOT))
 
 from .governance_install.args import build_parser  # noqa: E402
+from .governance_install.ci_graph import write_reference_ci_graph  # noqa: E402
+from .governance_install.phase import generate_phase_artifacts  # noqa: E402
 from .governance_install.artifacts import (  # noqa: E402
     ensure_required_artifacts,
     merge_gitignore as _merge_gitignore,
@@ -64,6 +65,13 @@ RESCAFFOLD_REMOVE_PATHS = (
     "contracts/observability",
     "backend/tests/architecture/test_boundaries_ast.py",
     ".github/workflows/governance.yml",
+    ".github/workflows/bcf-exact-main.yml",
+    ".github/workflows/bcf-trusted-finalizer.yml",
+    ".github/workflows/bcf-status-publisher.yml",
+    ".github/workflows/governance-mutants-nightly.yml",
+    ".github/workflows/governance-mutants-weekly.yml",
+    "governance/ci-graph.yml",
+    "governance/ci-extensions",
     "scripts/check_governance_exposure.py",
     "scripts/governance_evidence.py",
     "scripts/governance_truth.py",
@@ -157,12 +165,6 @@ def _template_root() -> Path:
         return source_template
     packaged_template = importlib.resources.files("bcf_governance").joinpath("pack", "template-repo")
     return Path(str(packaged_template))
-
-
-def _load_scaffold_module() -> Any:
-    from . import scaffold_governance_artifacts
-
-    return scaffold_governance_artifacts
 
 
 def _phase_number(phase_id: str) -> int:
@@ -506,30 +508,6 @@ def _apply_adoption_mode_defaults(args: argparse.Namespace) -> None:
         args.build_block = "existing_repo_adoption"
 
 
-def _validation_commands(profile: str) -> list[str]:
-    if profile == "lite":
-        return ["make governance-validate"]
-    return ["make governance-validate", "make architecture-test", "make release-check"]
-
-
-def _generate_phase_artifacts(args: argparse.Namespace, target_root: Path) -> dict[str, Path]:
-    scaffold = _load_scaffold_module()
-    return scaffold.scaffold_phase_artifacts(
-        repo_root=target_root,
-        project_id=args.project_id,
-        phase_id=args.phase_id,
-        build_block=args.build_block,
-        objective=args.phase_objective,
-        planner=args.planner,
-        date=args.date,
-        hard_dependencies=args.hard_dependency,
-        deliverables=args.deliverable,
-        workstreams=args.workstream,
-        verification_commands=_validation_commands(args.profile),
-        force=True,
-    )
-
-
 def _run_validation(
     target_root: Path,
     *,
@@ -656,8 +634,12 @@ def _install_direct(args: argparse.Namespace, target_root: Path) -> InstallResul
     replace_placeholders_in_files(installed_destinations, values)
     _configure_architecture_boundaries(target_root, args.profile)
     contract = args.profile_contract
-    apply_profile_contract(target_root, contract)
-    generated_artifacts = _generate_phase_artifacts(args, target_root)
+    contract_version = str(contract.get("profile_contract_version", "1.0"))
+    graph_enabled = args.profile == "lite" or contract_version == "2.0"
+    apply_profile_contract(target_root, contract, write_workflow=not graph_enabled)
+    if graph_enabled:
+        write_reference_ci_graph(args, target_root, contract)
+    generated_artifacts = generate_phase_artifacts(args, target_root)
     apply_scaffold_requirements(target_root, contract, generated_artifacts)
 
     strict_validation_passed = False

@@ -20,6 +20,9 @@ from .ci_github_authority import authenticate_role_run, load_authority
 from .ci_github_bootstrap import controller_metadata, verify_controller_inventory
 from .ci_github_identity import GitHubControllerError, resolve_main
 from .ci_github_membership import collect_same_run_producers, select_latest_admission
+from .ci_graph_contracts import CIGraphError, validate_ci_graph
+from .ci_graph_locks import apply_ci_graph_locks, check_ci_graph_locks
+from .ci_graph_render import apply_ci_graph, check_ci_graph
 
 
 PIN_KEYS = (
@@ -403,50 +406,20 @@ def project_self_controller_pin(
         f"  trusted_controller_installation: {installation_flow}".encode(),
         projected_policy,
     )
-    active_commit = installation["installed_commit_sha"]
-    desired: dict[Path, bytes] = {
-        policy_path: projected_policy,
-        root / TOPOLOGY_PATH: _replace_topology_controller(
-            (root / TOPOLOGY_PATH).read_bytes(), active_commit
-        ),
-    }
-    bootstrap = root / BOOTSTRAP_WORKFLOW
-    desired[bootstrap] = _replace_env(
-        bootstrap.read_bytes(),
-        {**exact, "BCF_INSTALLED_CONTROLLER_COMMIT_SHA": active_commit},
-    )
-    probe = root / PROBE_WORKFLOW
-    desired[probe] = _replace_env(probe.read_bytes(), exact)
-    required = runner_security.get("trusted_controller_interpreter", {}).get(
-        "required_workflows"
-    )
-    if not isinstance(required, list):
-        raise GitHubControllerError("trusted controller workflow inventory is invalid")
-    for relative in required:
-        if relative in BOOTSTRAP_WORKFLOWS:
-            continue
-        path = root / str(relative)
-        desired[path] = _replace_env(
-            path.read_bytes(), {"BCF_CONTROL_COMMIT": active_commit}
-        )
-    artifact_required = runner_security.get(
-        "trusted_controller_artifact_workflows"
-    )
-    if not isinstance(artifact_required, list):
-        raise GitHubControllerError("trusted controller artifact workflow inventory is invalid")
-    for relative in artifact_required:
-        path = root / str(relative)
-        desired[path] = _replace_env(desired.get(path, path.read_bytes()), exact)
-    changed = tuple(
-        path.relative_to(root).as_posix()
-        for path, raw in desired.items()
-        if path.read_bytes() != raw
-    )
-    if apply:
-        for path, raw in desired.items():
-            if path.relative_to(root).as_posix() in changed:
-                _write_atomic(path, raw)
-    return SelfControllerProjection("changed" if changed else "clean", changed)
+    changed: set[str] = set()
+    if policy_raw != projected_policy:
+        changed.add("governance/self-governance-policy.yml")
+        if apply:
+            _write_atomic(policy_path, projected_policy)
+    try:
+        lock = apply_ci_graph_locks(root) if apply else check_ci_graph_locks(root)
+        changed.update(lock.changed_inputs)
+        rendered = apply_ci_graph(root) if apply else check_ci_graph(root)
+        changed.update(rendered.changed_paths)
+    except CIGraphError as exc:
+        raise GitHubControllerError(str(exc)) from exc
+    ordered = tuple(sorted(changed))
+    return SelfControllerProjection("changed" if ordered else "clean", ordered)
 
 
 def verify_self_controller_projection(repo_root: Path) -> int:
@@ -467,9 +440,12 @@ def verify_self_controller_projection(repo_root: Path) -> int:
         raise GitHubControllerError(
             "self-controller projection drifted: " + ", ".join(result.changed_paths)
         )
-    required = runner_security.get("trusted_controller_interpreter", {}).get(
-        "required_workflows"
+    try:
+        compiled = validate_ci_graph(root)
+    except CIGraphError as exc:
+        raise GitHubControllerError(str(exc)) from exc
+    return 1 + sum(
+        job["trust"] == "trusted"
+        for workflow in compiled.workflows
+        for job in workflow["jobs"]
     )
-    if not isinstance(required, list):
-        raise GitHubControllerError("trusted controller workflow inventory is invalid")
-    return 1 + len(required)

@@ -31,9 +31,11 @@ regulated contracts must cover:
 - secret scanning, dependency audit, SBOM generation, and vulnerability scans
 - Docker or runtime smoke checks
 
-`Makefile.fragment`, the static CI matrix, evidence overrides, and closeout
-requirements are generated from `governance/gate-contracts.yml`. Do not hand
-author applicability. Use `bcf profile promote` with either `--check` or
+`Makefile.fragment`, gate applicability, evidence behavior, and closeout
+requirements are generated from `governance/gate-contracts.yml`. CI
+orchestration is generated from `governance/ci-graph.yml` and its explicitly
+registered `governance/ci-extensions/*.yml` files. Do not hand-author
+applicability or generated workflow YAML. Use `bcf profile promote` with either `--check` or
 `--apply` and a complete profile contract to change profiles. Make targets remain developer aliases;
 their command text is not verification.
 
@@ -42,11 +44,13 @@ installs default to v2; Lite defaults to v1. Promote explicitly with
 `bcf profile promote --repo-root . --to standard --contract-version 2.0`
 and either `--check` or `--apply`. Promotion and normal upgrades preserve
 workflow bytes. Promotion validation also preserves local Git custody so
-retained phase-history hashes remain mechanically verifiable. Use the separate
-`bcf ci adopt github` transaction, including
-explicit candidate labels, trusted labels, producer argv, and either `--check`
-or `--apply`, when the repository elects to install BCF's GitHub reference
-topology.
+retained phase-history hashes remain mechanically verifiable. Fresh Standard-v2
+installs require explicit candidate and trusted runner mappings and render the
+reference graph. Thereafter edit the graph contract and use
+`bcf ci graph lock --apply`, `bcf ci graph validate`, and
+`bcf ci graph render --check|--apply`. `bcf ci adopt github --check|--apply`
+uses that graph while preserving unrelated workflows. Legacy label and producer
+arguments apply only to profile-v1 adoption.
 
 Required CI jobs invoke the evidence wrapper for their gate IDs, upload the
 content-addressed bundles, and feed them to the final truthfulness job. The
