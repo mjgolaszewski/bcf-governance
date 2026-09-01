@@ -2,39 +2,104 @@ name: bcf/authority-revocation-canary
 
 on:
   workflow_dispatch:
+    inputs:
+      scenario:
+        description: Deterministic producer outcome for this exact run and every rerun attempt
+        required: true
+        default: success
+        type: choice
+        options: [success, producer-b-failure]
 
 permissions: {}
+
+env:
+  BCF_CONTROL_COMMIT: 63c7c18062fc51744853b9b3d8ff5e9d170716d7
 
 jobs:
   admit:
     name: Admit isolated authority canary
-    if: ${{ false }}
+    if: ${{ github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main' }}
     runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
-    timeout-minutes: 1
+    timeout-minutes: 2
+    permissions: {actions: read, contents: read, statuses: write}
     steps:
-      - name: Remain fail-closed until pinned activation
-        run: exit 1
+      - name: Restore the trusted controller interpreter environment
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+      - name: Authenticate admission and publish isolated pending authority
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/$BCF_CONTROL_COMMIT"
+          test -x "$control_root/bin/bcf"
+          "$control_root/bin/bcf" ci-github canary admit \
+            --repository "$GITHUB_REPOSITORY" \
+            --sha "$GITHUB_SHA" \
+            --target-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
   producer-a:
     name: Execute canary producer A
-    if: ${{ false }}
+    needs: [admit]
+    if: ${{ needs.admit.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 1
+    permissions: {}
+    env:
+      BCF_CANARY_SCENARIO: ${{ inputs.scenario }}
     steps:
-      - name: Remain fail-closed until pinned activation
-        run: exit 1
+      - name: Execute deterministic producer A
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$BCF_CANARY_SCENARIO" in
+            success|producer-b-failure) exit 0 ;;
+            *) exit 64 ;;
+          esac
+
   producer-b:
     name: Execute canary producer B
-    if: ${{ false }}
+    needs: [admit]
+    if: ${{ needs.admit.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 1
+    permissions: {}
+    env:
+      BCF_CANARY_SCENARIO: ${{ inputs.scenario }}
     steps:
-      - name: Remain fail-closed until pinned activation
-        run: exit 1
+      - name: Execute deterministic producer B
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$BCF_CANARY_SCENARIO" in
+            success) exit 0 ;;
+            producer-b-failure) exit 86 ;;
+            *) exit 64 ;;
+          esac
+
   observe:
     name: Observe canary precedence mechanically
-    if: ${{ false }}
+    needs: [admit, producer-a, producer-b]
+    if: ${{ always() && github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main' && needs.admit.result == 'success' }}
     runs-on: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
-    timeout-minutes: 1
+    timeout-minutes: 2
+    permissions: {actions: read, contents: read, statuses: write}
     steps:
-      - name: Remain fail-closed until pinned activation
-        run: exit 1
+      - name: Restore the trusted controller interpreter environment
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+      - name: Reconstruct exact-attempt jobs and publish isolated terminal authority
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/$BCF_CONTROL_COMMIT"
+          test -x "$control_root/bin/bcf"
+          "$control_root/bin/bcf" ci-github canary observe \
+            --repository "$GITHUB_REPOSITORY" \
+            --sha "$GITHUB_SHA" \
+            --target-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"

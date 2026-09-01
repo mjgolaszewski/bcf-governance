@@ -74,6 +74,11 @@ summary:
     authority-document publication
   - promoted trusted workflow bytes are committed at df6314803ad71f4cdbf7e591b75814c6e60f43ec;
     their exact Git blobs and SHA-256 values are compiled in the following custody commit
+  - promoted-controller exact-main 33465739678 and its trusted finalizer 33465936849 plus
+    publisher 33465963703 prove the merged terminal control path; the isolated authority
+    canary is prepared for owner-dispatched success, revocation, and rerun precedence proofs
+  - final authority-canary bytes are committed at 544f670980e3f14f25880875241807a37125d675;
+    their workflow blob, digest, job inventory, and source roles are compiled in the next commit
 workitems:
 - id: P13-P0-01
   status: IN_PROGRESS

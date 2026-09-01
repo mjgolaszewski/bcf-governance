@@ -139,6 +139,12 @@ execution_evidence:
   - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
     result: pass
     notes: exact-tree local evidence on 678add59 passed all 242 contract nodes and all 76 isolated causal controls with zero skips, infrastructure exits, or unexpected worktree changes
+  - command: .venv/bin/python scripts/validate_governance_yaml.py --repo-root .; .venv/bin/python -m pytest -q tests/test_ci_github_canary.py tests/test_ci_self_controller.py tests/test_self_governance_contracts.py
+    result: pass
+    notes: governance validation and 46 focused canary, controller, runner-boundary, and workflow-authority tests passed after exact canary pinning
+  - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
+    result: pass
+    notes: exact-tree local evidence on d074e0c5 passed all 243 mechanically collected contract nodes and all 77 isolated causal controls with zero skips, infrastructure exits, or unexpected worktree changes
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
@@ -200,6 +206,9 @@ execution_evidence:
   - bootstrap 33464640838 and probe 33464672319 independently proved controller 63c7c180 on both trusted runners; the provider compiler bound both exact matrices and emitted the only confirmation accepted by the projection command
   - the first local confirmation attempt exposed that the command could write an authority document before rejecting a missing GitHub output channel; all trusted commands now preflight that channel before provider access, controller documents publish only after output succeeds, and a causal mutant forbids regression
   - promoted exact-main, finalizer, status-publisher, and bootstrap workflow bytes are fixed at df6314803ad71f4cdbf7e591b75814c6e60f43ec; the following custody commit mechanically pins all privileged workflow blobs and digests without changing those bytes
+  - PR 55 passed protected runs 33465546007 and 33465546034 and merged as de8b3ce25f52916e6795a2b9240be969de932788; promoted-controller exact-main 33465739678 passed admission and every producer before correctly refusing active P13-HF01 closure, then finalizer 33465936849 and publisher 33465963703 completed the terminal control path
+  - the authority canary uses a typed scenario that is retained across rerun attempts; owner-only trusted jobs admit and observe without checkout, fresh hosted producers execute no repository code and have no permissions, and the observer is allocated only after both producers terminate
+  - final canary bytes are committed at 544f670980e3f14f25880875241807a37125d675; the following custody commit pins its exact blob, SHA-256, descriptive job inventory, and source roles without changing the workflow
 closeout_requirements:
   claims:
     required_suites_green:

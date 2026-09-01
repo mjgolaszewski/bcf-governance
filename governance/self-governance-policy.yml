@@ -27,7 +27,7 @@ runner_security:
   trusted_controller_interpreter:
     action: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
     python_version: '3.12'
-    required_workflows: [.github/workflows/bcf-trusted-control-bootstrap.yml, .github/workflows/bcf-trusted-control-probe.yml, .github/workflows/bcf-exact-main.yml, .github/workflows/bcf-trusted-finalizer.yml, .github/workflows/bcf-status-publisher.yml]
+    required_workflows: [.github/workflows/bcf-authority-canary.yml, .github/workflows/bcf-trusted-control-bootstrap.yml, .github/workflows/bcf-trusted-control-probe.yml, .github/workflows/bcf-exact-main.yml, .github/workflows/bcf-trusted-finalizer.yml, .github/workflows/bcf-status-publisher.yml]
   trusted_controller_artifact: {BCF_BOOTSTRAP_ARTIFACT_ID: '9784024107', BCF_BOOTSTRAP_ARTIFACT_NAME: bcf-trusted-control-63c7c18062fc51744853b9b3d8ff5e9d170716d7-1, BCF_BOOTSTRAP_ARTIFACT_DIGEST: 'sha256:15a594d1113bf461bd64d15aedaca4bfec659884922c937028bb34db51c8028a', BCF_BOOTSTRAP_RUN_ID: '33463382955', BCF_BOOTSTRAP_RUN_ATTEMPT: '1', BCF_BOOTSTRAP_COMMIT_SHA: 63c7c18062fc51744853b9b3d8ff5e9d170716d7, BCF_BOOTSTRAP_TREE_SHA: cf2b89dd14848bd8b465d85e08bc2e8a55e6980b, BCF_BOOTSTRAP_REPOSITORY_ID: '1207503211', BCF_BOOTSTRAP_WHEEL_SHA256: 35aaabbeacb7dddfed50209a9b8b2f9ac4b4c0742ecc6275aa56f0b491a7b1b2}
   trusted_controller_installation: {schema_version: '1.0', installed_commit_sha: 63c7c18062fc51744853b9b3d8ff5e9d170716d7, subject_commit_sha: c76c2c734b76f5c38b38a63e3e97482008837983, subject_tree_sha: fdaa74014c3126df574dde1ce9ead8d537920560, bootstrap_run_id: '33464640838', bootstrap_run_attempt: '1', probe_run_id: '33464672319', probe_run_attempt: '1'}
   coordination_policy: [no_polling, no_sleeping, no_idle_waiters]
@@ -48,7 +48,7 @@ runner_security:
     .github/workflows/governance.yml: {preflight: candidate, evidence: candidate, governance-truthfulness: candidate}
     .github/workflows/release.yml: {authority-cutover-pending: trusted}
   trusted_job_activation:
-    .github/workflows/bcf-authority-canary.yml: {admit: disabled, producer-a: disabled, producer-b: disabled, observe: disabled}
+    .github/workflows/bcf-authority-canary.yml: {admit: owner_main_dispatch, producer-a: owner_main_dispatch, producer-b: owner_main_dispatch, observe: owner_main_dispatch_after_dependencies}
     .github/workflows/bcf-trusted-control-bootstrap.yml: {bootstrap: owner_main_dispatch}
     .github/workflows/bcf-trusted-control-probe.yml: {probe: owner_main_dispatch}
     .github/workflows/bcf-exact-main.yml: {admit: repository_variable_enabled}
