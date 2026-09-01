@@ -193,6 +193,9 @@ execution_evidence:
   - command: bcf ci-github controller-pin resolve|compile; bcf ci sync-self-controller --pin PIN.json --apply
     result: pass
     notes: exact-main 33480666155 passed preflight, every executable producer, and controller packaging before refusing only active P13-HF01 closure; the compiler authenticated its provider artifact and projected the sole pending controller target without operator-authored custody values
+  - command: bcf ci-github controller-pin confirm; bcf ci sync-self-controller --pin PIN.json --confirmation CONFIRMATION.json --apply
+    result: pass
+    notes: bootstrap 33481575825 and probe 33481622963 independently proved the release-activation controller on both trusted runners; the provider compiler produced the only accepted promotion record and the projector updated every trusted consumer together
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
