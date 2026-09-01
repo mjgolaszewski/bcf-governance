@@ -209,13 +209,14 @@ def _compile_inventories(
             raise CIAuthorityPinError(
                 "admission jobs cannot be inferred from exact producer source keys"
             )
-        caller_jobs = [
-            (
-                source,
-                {**value, "role": "producer" if source in producer_ids else "admission"},
-            )
-            for source, value in raw_jobs
-        ]
+        inferred_roles = {
+            source: "producer" if source in producer_ids else "admission"
+            for source, _ in raw_jobs
+        }
+        admission_entry["job_roles"] = inferred_roles
+        caller_jobs = _compiled_workflow_jobs(
+            committed_workflows[admission_reference], roles=inferred_roles
+        )
     elif isinstance(source_roles, dict):
         caller_jobs = _compiled_workflow_jobs(
             committed_workflows[admission_reference],

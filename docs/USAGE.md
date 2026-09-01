@@ -158,7 +158,8 @@ bcf ci pin-authority \
 
 The command reads every registered workflow from that exact Git commit, derives
 blob OIDs and SHA-256 digests, expands literal matrices, and compiles admission,
-producer, and privileged provider job names. Partial registry pinning is rejected.
+producer, and privileged provider job names plus the admission workflow's source-role
+map. Partial registry pinning is rejected.
 `bcf preflight` recomputes the same model before evidence allocation, so edited
 workflow bytes or copied job labels cannot defer a deterministic failure to remote
 CI.

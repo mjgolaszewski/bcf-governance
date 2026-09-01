@@ -159,6 +159,10 @@ def test_self_workflow_authority_is_mechanically_compiled() -> None:
         reference: payload["workflow_registry"][reference].pop("expected_jobs")
         for reference in privileged
     }
+    admission = payload["roles"]["admission"]
+    expected_admission_roles = payload["workflow_registry"][admission].pop(
+        "job_roles"
+    )
     payload.pop("admission_jobs")
     for producer in payload["producers"]:
         producer.pop("expected_jobs")
@@ -169,6 +173,9 @@ def test_self_workflow_authority_is_mechanically_compiled() -> None:
 
     _compile_inventories(payload, workflow_bytes)
 
+    assert payload["workflow_registry"][admission]["job_roles"] == (
+        expected_admission_roles
+    )
     assert all(
         payload["workflow_registry"][reference]["expected_jobs"] == expected[reference]
         for reference in privileged
@@ -181,12 +188,16 @@ def test_self_workflow_authority_is_mechanically_compiled() -> None:
     }
 
 
-def test_bridge_admission_roles_are_inferred_from_exact_producer_source_keys() -> None:
+def test_admission_roles_are_derived_from_exact_producer_source_keys() -> None:
     payload = yaml.safe_load(
         (REPO_ROOT / "governance/ci-authority.yml").read_text(encoding="utf-8")
     )
 
-    assert "job_roles" not in payload["workflow_registry"]["admission"]
+    assert payload["workflow_registry"]["admission"]["job_roles"] == {
+        "admit": "admission",
+        "governance": "producer",
+        "governance-pack": "producer",
+    }
     assert payload["admission_jobs"] == [
         {"job_id": "Authenticate exact-main admission and publish pending authority"}
     ]

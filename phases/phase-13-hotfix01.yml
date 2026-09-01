@@ -182,6 +182,8 @@ execution_evidence:
   - promotion PR 51 passed protected runs 33460963130 and 33460963175 and merged as a9eb330c9d261973f790f4f8d127f5588bbb6208; the installed successor can now consume mechanically derived exact privileged job inventories, so the compatibility omission is retired without copying provider display names
   - selected-environment readiness now verifies lexical executable identity, virtualenv prefix/configuration/isolation, Python compatibility, and every declared distribution version in cheap preflight; BCF governance installation is aligned to pytest 9.0.3 so these defects cannot first surface in evidence or mutation lanes
   - exact local contract capture rejected the initial privileged-inventory control because it skipped recompilation of an already-enriched document; the owner test now strips every derived privileged/admission/producer inventory first and requires exact reconstruction from workflow bytes, making the mutant causal
+  - PR 52 passed protected runs 33462595795 and 33462595818 and merged as d9a1e1809c05c6065b4e71e452cdde5c5cab16fc; exact-main run 33462849318 then failed at trusted admission in 7 seconds before producer allocation because the installed cc3 controller required the inferred admission source-role map to be persisted
+  - the workflow compiler now writes that uniquely inferable role map from exact source job keys and reusable producer IDs; a causal owner test starts without the map and requires reconstruction, eliminating both operator entry and successor-controller bootstrap dependence
 closeout_requirements:
   claims:
     required_suites_green:
