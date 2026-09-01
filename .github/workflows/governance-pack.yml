@@ -9,6 +9,11 @@ on:
         required: false
         default: false
         type: boolean
+      evaluation_mode:
+        description: Preflight mode selected by the authenticated caller
+        required: false
+        default: pr
+        type: string
 
 permissions:
   contents: read
@@ -27,6 +32,11 @@ jobs:
           python-version: "3.12"
       - name: Install governance dependencies
         run: python -m pip install -r requirements-governance.txt
+      - name: Validate selected environment before package work
+        env:
+          BCF_ENFORCE_PR_CHANGELOG: ${{ github.event_name == 'pull_request' }}
+          BCF_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: python scripts/preflight_governance.py --repo-root . --mode "${{ inputs.evaluation_mode || 'pr' }}" --python "$(command -v python)" --format text
       - name: Compile governance scripts and tests
         run: python -m compileall -q bcf_governance scripts template-repo/scripts tests .github/scripts
       - name: Enforce pull-request changelog contract
@@ -50,11 +60,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m pip install build
           mkdir -p .artifacts/trusted-control
           SOURCE_DATE_EPOCH="$(git show -s --format=%ct HEAD)" python -m build --wheel --outdir .artifacts/trusted-control
           python -m pip download --only-binary=:all: --dest .artifacts/trusted-control \
             'PyYAML>=6.0,<7' 'jsonschema>=4.21,<5'
+          python .github/scripts/test_release_artifacts.py \
+            --controller-wheel-dir .artifacts/trusted-control
           python - <<'PY'
           import json
           from pathlib import Path

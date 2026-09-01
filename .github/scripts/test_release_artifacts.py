@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import argparse
+from fnmatch import fnmatchcase
 import os
 import subprocess
 import sys
 import tarfile
 import tempfile
+import tomllib
 import zipfile
 from xml.etree import ElementTree
 from pathlib import Path
@@ -113,6 +115,60 @@ def validate_sdist_test_skips(junit_path: Path) -> None:
         )
 
 
+def discovered_wheel_runtime_assets(source_root: Path) -> tuple[str, ...]:
+    """Return non-Python runtime files the installed package executes."""
+
+    package_root = source_root / "bcf_governance"
+    return tuple(
+        path.relative_to(source_root).as_posix()
+        for path in sorted(package_root.rglob("*.mjs"))
+        if path.is_file()
+    )
+
+
+def validate_package_data_contract(source_root: Path) -> tuple[str, ...]:
+    """Prove every discovered runtime asset is selected by package metadata."""
+
+    assets = discovered_wheel_runtime_assets(source_root)
+    if not assets:
+        raise RuntimeError("no package runtime assets discovered")
+    pyproject = tomllib.loads((source_root / "pyproject.toml").read_text(encoding="utf-8"))
+    patterns = pyproject.get("tool", {}).get("setuptools", {}).get(
+        "package-data", {}
+    ).get("bcf_governance", [])
+    package_prefix = "bcf_governance/"
+    missing = [
+        asset
+        for asset in assets
+        if not any(
+            fnmatchcase(asset.removeprefix(package_prefix), str(pattern))
+            for pattern in patterns
+        )
+    ]
+    if missing:
+        raise RuntimeError("package data excludes runtime assets: " + ", ".join(missing))
+    return assets
+
+
+def validate_wheel_runtime_assets(wheel: Path, source_root: Path) -> None:
+    """Prove the built wheel contains every mechanically discovered runtime file."""
+
+    required = validate_package_data_contract(source_root)
+    with zipfile.ZipFile(wheel) as archive:
+        payload = set(archive.namelist())
+    missing = [asset for asset in required if asset not in payload]
+    if missing:
+        raise RuntimeError("wheel missing runtime assets: " + ", ".join(missing))
+
+
+def validate_controller_wheel_directory(directory: Path, source_root: Path) -> Path:
+    wheels = sorted(directory.glob("bcf_governance-*.whl"))
+    if len(wheels) != 1:
+        raise RuntimeError("expected exactly one BCF controller wheel")
+    validate_wheel_runtime_assets(wheels[0], source_root)
+    return wheels[0]
+
+
 def complete_lite_phase(repo: Path) -> None:
     log_path = repo / "phases/phase-01-log.yml"
     log = yaml.safe_load(log_path.read_text(encoding="utf-8"))
@@ -134,7 +190,8 @@ def complete_lite_phase(repo: Path) -> None:
     ledger_path.write_text(yaml.safe_dump(ledger, sort_keys=False), encoding="utf-8")
 
 
-def verify_wheel(wheel: Path, temporary: Path) -> None:
+def verify_wheel(wheel: Path, temporary: Path, source_root: Path) -> None:
+    validate_wheel_runtime_assets(wheel, source_root)
     with zipfile.ZipFile(wheel) as archive:
         generic_scripts = [
             name for name in archive.namelist() if name.startswith("scripts/")
@@ -283,14 +340,19 @@ def initialize_source_custody(source_root: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dist-dir", type=Path, default=Path("dist"))
+    parser.add_argument("--controller-wheel-dir", type=Path)
     args = parser.parse_args()
+    source_root = Path(__file__).resolve().parents[2]
+    if args.controller_wheel_dir is not None:
+        validate_controller_wheel_directory(args.controller_wheel_dir, source_root)
+        return
     wheels = sorted(args.dist_dir.glob("bcf_governance-*.whl"))
     sdists = sorted(args.dist_dir.glob("bcf_governance-*.tar.gz"))
     if len(wheels) != 1 or len(sdists) != 1:
         raise SystemExit("expected exactly one wheel and one sdist")
     with tempfile.TemporaryDirectory(prefix="bcf-artifact-test-") as name:
         temporary = Path(name)
-        verify_wheel(wheels[0].resolve(), temporary)
+        verify_wheel(wheels[0].resolve(), temporary, source_root)
         verify_sdist(sdists[0].resolve(), temporary)
 
 

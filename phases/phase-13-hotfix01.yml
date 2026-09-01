@@ -196,6 +196,15 @@ execution_evidence:
   - command: bcf ci-github controller-pin confirm; bcf ci sync-self-controller --pin PIN.json --confirmation CONFIRMATION.json --apply
     result: pass
     notes: bootstrap 33481575825 and probe 33481622963 independently proved the release-activation controller on both trusted runners; the provider compiler produced the only accepted promotion record and the projector updated every trusted consumer together
+  - command: GitHub Identity hosted proof 33483336456; mechanically discovered package-runtime asset contract
+    result: expected_fail_remediated
+    notes: selected-environment preflight and the consumer SOIP scan passed, then the installed controller wheel proved its TypeScript analyzer was absent; package metadata, package-workflow preflight, controller-wheel inspection, source tests, and a cause-verified package-data mutant now own that defect before publication or evidence work
+  - command: selected-environment release preflight; exact source gate; exact contract evidence; canonical local PR preflight
+    result: pass
+    notes: committed head 5545fe5 passed selected-interpreter and virtualenv checks before 527 source nodes; its contract receipt passed 261 nodes and all 91 isolated cause-verified controls, including the package-runtime omission, and local PR validation supplied exact base ancestry and event context
+  - command: GitHub PR 71 package run 33484856677
+    result: expected_fail_remediated
+    notes: package preflight stopped before compilation and tests because the direct PR workflow omitted BCF_PR_BASE_SHA; the workflow now supplies exact provider event context and a causal control rejects its removal, while the obsolete independent evidence run was cancelled
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,

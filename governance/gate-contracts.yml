@@ -209,7 +209,7 @@ gates:
           tests/test_ci_certification.py, tests/test_ci_authority_decisions.py, tests/test_ci_self_controller.py, tests/test_release_receipts.py, tests/test_ci_github_reference.py,
           tests/test_ci_github_canary.py,
           tests/test_ci_github_controller.py, tests/test_ci_github_bootstrap.py, tests/test_ci_github_artifacts.py, tests/test_ci_github_release.py, tests/test_release_closure.py, tests/test_local_pr.py, tests/test_runtime_capacity.py, tests/test_trusted_inputs.py,
-          tests/test_preflight.py, 'tests/test_governance_evidence.py::test_test_node_control_derives_minimal_pytest_command', tests/test_release_artifacts.py, tests/test_release_runtime_verification.py, tests/test_release_workflow_contracts.py,
+          tests/test_preflight.py, 'tests/test_governance_evidence.py::test_test_node_control_derives_minimal_pytest_command', tests/test_release_artifacts.py, 'tests/test_self_governance_contracts.py::test_exact_main_controller_wheel_is_built_once_after_pack_checks', tests/test_release_runtime_verification.py, tests/test_release_workflow_contracts.py,
           tests/test_documentation_contracts.py, 'tests/test_profile_contract_v2.py::test_bcf_standard_v2_promotion_fits_declared_context_budgets']
         expected_node_manifest: governance/test-manifests/contract-test.txt
         expected_nodes_mode: exact
@@ -218,10 +218,9 @@ gates:
         max_skipped: 0
         artifact_binding: non_authoritative_until_captured
     negative_controls:
-    - id: contract-test-behavior-must-fail
-      mutation: {path: template-repo/governance/artifact-manifest.yml, search: 'pull_request_policy: required_update', replace: 'pull_request_policy:
-          optional'}
-      oracle: {kind: test_node_failure, node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']}
+    - {id: contract-test-behavior-must-fail, mutation: {path: template-repo/governance/artifact-manifest.yml, search: 'pull_request_policy: required_update', replace: 'pull_request_policy: optional'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']}}
+    - {id: package-runtime-asset-selection-must-fail, mutation: {path: pyproject.toml, search: ', "tooling/*.mjs"', replace: ''}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_artifacts::test_pyproject_packages_every_discovered_runtime_asset']}}
+    - {id: package-preflight-pr-context-must-fail, mutation: {path: .github/workflows/governance-pack.yml, search: 'BCF_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}', replace: 'BCF_PR_BASE_SHA: absent'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_exact_main_controller_wheel_is_built_once_after_pack_checks']}}
     - id: trusted-bootstrap-artifact-identity-must-fail
       mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'if pin["BCF_BOOTSTRAP_ARTIFACT_NAME"] != expected_name:', replace: 'if False:'}
       oracle:
