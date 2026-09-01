@@ -56,6 +56,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Replaced workflow-maintained release and runtime-evidence file lists with exact
   controller-owned directory inventories that reject extra, missing, unsafe, or
   undeclared members.
+- Rotated the pending trusted-controller target to the provider-resolved exact-main
+  artifact containing the activated release workflows; the installed controller
+  remains authoritative until bootstrap and probe independently prove both runners.
 
 ### Fixed
 

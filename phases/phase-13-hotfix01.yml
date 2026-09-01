@@ -190,6 +190,9 @@ execution_evidence:
   - command: .venv/bin/python -m bcf_governance.cli evidence --repo-root . run --gate contract-test --output "$BCF_SESSION_ROOT/contract-test" --python .venv/bin/python --session-manifest "$BCF_SESSION_ROOT/evidence-session.json"
     result: pass
     notes: exact-tree local evidence on 85ea7a9 passed all 250 contract nodes and all 83 controls, including newest-finalizer, controller-inventory, and failed-schedule artifact retention causes
+  - command: bcf ci-github controller-pin resolve|compile; bcf ci sync-self-controller --pin PIN.json --apply
+    result: pass
+    notes: exact-main 33480666155 passed preflight, every executable producer, and controller packaging before refusing only active P13-HF01 closure; the compiler authenticated its provider artifact and projected the sole pending controller target without operator-authored custody values
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
