@@ -53,6 +53,12 @@ Release target: `0.8.0`.
 
 ### Fixed
 
+- Made fresh-install evidence workflow paths and required events a mechanical
+  projection of the installed graph. Standard and Regulated route `main` only
+  through exact-main authority, while Lite retains its direct `push` entry.
+- Scoped workflow truth to the declared graph roots and taught it to resolve
+  both grouped and mechanically sharded gate inventories; an unrelated workflow
+  event can no longer satisfy a root workflow requirement.
 - Kept trusted-controller rotation executable through the independently proven
   installed controller until the target controller is mechanically confirmed;
   changing the target pin no longer makes bootstrap depend on uninstalled bytes.
