@@ -25,6 +25,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Made profile-v2 gate contracts the sole executable owner of evidence assertions and
   negative controls; validation rejects duplicated evidence-policy overrides instead of
   asking an operator to keep parallel declarations synchronized.
+- Added a trusted release-input resolver that derives exact-main, finalizer, controller,
+  run, attempt, artifact, commit, tree, and provider-digest custody from authenticated
+  provider state instead of accepting operator-authored release authority.
 
 ### Fixed
 

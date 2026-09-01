@@ -179,18 +179,21 @@ def authorize_release(
         raise GitHubControllerError("release authorization requires the newest admission")
     required_controller = {
         "run_id", "run_attempt", "artifact_id", "artifact_name", "provider_digest",
-        "wheel_sha256", "commit_sha", "tree_sha",
+        "commit_sha", "tree_sha",
     }
-    if set(controller) != required_controller:
+    if set(controller) not in (required_controller, required_controller | {"wheel_sha256"}):
         raise GitHubControllerError("controller artifact identity is not exact")
     provider_digest(controller["provider_digest"])
     if controller["commit_sha"] != subject["commit_sha"] or (
         controller["tree_sha"] != subject["tree_sha"]
     ):
         raise GitHubControllerError("controller artifact is not bound to release subject")
-    if not re.fullmatch(r"[a-f0-9]{64}", controller["wheel_sha256"]):
-        raise GitHubControllerError("controller wheel digest must be SHA-256")
-    if _sha256(controller_wheel_path) != controller["wheel_sha256"]:
+    wheel_sha256 = _sha256(controller_wheel_path)
+    caller_wheel_sha256 = controller.get("wheel_sha256")
+    if caller_wheel_sha256 is not None and (
+        not re.fullmatch(r"[a-f0-9]{64}", str(caller_wheel_sha256))
+        or str(caller_wheel_sha256) != wheel_sha256
+    ):
         raise GitHubControllerError("controller wheel bytes do not match release authority")
     authenticated_controller = authenticate_role_artifact(
         api,
@@ -226,7 +229,7 @@ def authorize_release(
             "run_attempt": identity.run_attempt,
             "workflow": asdict(identity.workflow),
         },
-        "controller": dict(sorted(controller.items())),
+        "controller": dict(sorted({**controller, "wheel_sha256": wheel_sha256}.items())),
         "authorized_at": _now(),
     }
     write_exclusive(output_path, payload)
