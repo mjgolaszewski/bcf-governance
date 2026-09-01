@@ -204,6 +204,12 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     assert pending_topology["controller_commit"] == current[
         "BCF_BOOTSTRAP_COMMIT_SHA"
     ]
+    pending_probe = yaml.safe_load(
+        (tmp_path / controller.PROBE_WORKFLOW).read_text(encoding="utf-8")
+    )
+    assert {
+        key: str(value) for key, value in pending_probe["env"].items()
+    } == pin
     second_target = dict(pin)
     second_target["BCF_BOOTSTRAP_ARTIFACT_ID"] = "401"
     with pytest.raises(GitHubControllerError, match="rotation is already pending"):
