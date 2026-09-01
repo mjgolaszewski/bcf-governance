@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-13-hotfix01
   version: 1.0.0
   generated_at_utc: '2026-08-31T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-13-hotfix01.yml
 hotfix:
   id: P13-HF01
@@ -256,6 +256,12 @@ execution_evidence:
   - command: GitHub PR 80; bootstrap 33498812446; probe 33498854324; controller-pin confirm; sync-self-controller --confirmation
     result: pass
     notes: PR 80 merged as 8b6d105 after all protected checks passed; both exact two-runner inventories independently proved controller 46180ab, and the provider compiler emitted the sole installation confirmation accepted by the promotion projector
+  - command: GitHub PR 81; exact-main 33499356117; finalizer 33499626801; publisher 33499654668
+    result: pass
+    notes: promotion merged as d116d07 after all protected checks passed; every executable producer and all 21 receipts passed through installed controller 46180ab, truth artifact 9797141765 refused only authored active lifecycle, and the no-checkout finalizer plus publisher completed the authenticated terminal path
+  - command: governed test and contract-test gate manifests
+    result: pass
+    notes: an initial manually typed focused file list named an absent test and was discarded; the canonical gate runners then selected and passed all 533 source nodes and 268 contract nodes, keeping closeout population mechanical
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,

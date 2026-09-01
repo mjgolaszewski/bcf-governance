@@ -1,4 +1,4 @@
-document: {kind: active_execution_phase_ledger, name: BCF Governance Active Phase Ledger, id: bcf-governance-phase-ledger, version: 1.0.0, generated_at_utc: '2026-08-31T00:00:00Z', status: active_phase_active, path: plans/phase-ledger.yml}
+document: {kind: active_execution_phase_ledger, name: BCF Governance Active Phase Ledger, id: bcf-governance-phase-ledger, version: 1.0.0, generated_at_utc: '2026-08-31T00:00:00Z', status: active_phase_completed, path: plans/phase-ledger.yml}
 build_plan_mandate:
   format: yaml
   required_fields: [tightly_scoped_deliverables, parallelizable_workstreams, hard_dependencies, docker_first_local_runtime, completeness_standard]
@@ -12,7 +12,7 @@ active_phase:
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: active
+  lifecycle_status: completed
   owner: codex
   validation_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests]
 hotfix_lane:
@@ -23,17 +23,16 @@ hotfix_lane:
       allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
-  open_records:
+  open_records: []
+  remediation_history:
   - id: P13-HF01
     mode: full
-    status: active
-    triggered_by_commits: [0e965b2197e776ad411b67820dbd5586263abde1]
-    failing_workflows: [.github/workflows/bcf-exact-main.yml, .github/workflows/bcf-trusted-finalizer.yml, .github/workflows/bcf-status-publisher.yml, .github/workflows/release.yml]
-    root_cause: same-SHA producer selection lacked common-admission membership, release authority duplicated success-prefiltered provider selection, and resolver/authorizer artifact shapes had independent owners
+    recorded_at_utc: '2026-09-01T00:00:00Z'
+    action: remediated authority-v1.1 exact-main and release custody defects and prepared publication-disabled 0.7.1 closure
     remediated_in_phase: P13
     hotfix_log: phases/phase-13-hotfix01.yml
     canonical_artifacts: [audits/v0.7.0-post-release-authority.yml, governance/ci-github-authority.yml, bcf_governance/tooling/ci_github_controller.py]
-  remediation_history: []
+    local_validation: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, .venv/bin/python .github/scripts/run_self_governance_gate.py test, .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test]
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
 - {type: decision, statement: BCF 0.7.0 is one release train and BCF must self-adopt every applicable Standard-v2 capability}
