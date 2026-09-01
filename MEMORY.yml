@@ -63,7 +63,7 @@ environment_facts:
     - strict git-history phase retention is selected; completed triplets are compacted with exact commit and SHA-256 custody and no retroactive derived state
     - installed trusted controller 7f116dbc7593688aee178cfdb47ff7bd24f85196 was selected from exact-main artifact 9791739132 and independently confirmed by bootstrap 33486602355 and probe 33486651494 on both trusted runners; all custody values are provider-compiled
     - hosted Identity proof 33487315694 attempt 1 and artifact 9792372773 passed on exact Identity commit 0569e6dd81b311abf33af5626a32441b0d55cc64 with 62 representations, 221 traces, zero uncovered required traces, zero violations or escapes, and median 8.842728 seconds; audits/p13-identity-hosted-validation.json is generated only from authenticated provider records and proof bytes
-    - corrected live-inventory controller candidate f3c4eacbc9900a8b77d36384e0c19112073c12ac was selected from exact-main artifact 9794142932 by provider resolution and checksum compilation; it is not authoritative until both trusted runners pass bootstrap and probe
+    - corrected live-inventory controller f3c4eacbc9900a8b77d36384e0c19112073c12ac was selected from exact-main artifact 9794142932 by provider resolution and checksum compilation, then independently installed and probed on both trusted runners by runs 33492766642 and 33492854861 before promotion
   active_artifacts:
     spec: plans/product-spec.yml
     build_plan: plans/build-plan.yml
