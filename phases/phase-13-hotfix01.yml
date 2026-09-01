@@ -157,6 +157,9 @@ execution_evidence:
   - command: .venv/bin/python .github/scripts/run_self_governance_gate.py test; .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value; .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
     result: pass
     notes: all 512 exact source nodes passed in 126.82 seconds, all 13 high-value validator mutants were killed, and all 10 high-value evidence and truth mutants were killed at their declared owner nodes
+  - command: .venv/bin/python .github/scripts/run_self_governance_gate.py test; .venv/bin/python .github/scripts/run_validator_mutants.py --profile high-value; .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-high-value
+    result: pass
+    notes: all 513 exact source nodes passed in 127.28 seconds after the local-PR default was made mechanical; all 13 validator and all 10 evidence/truth high-value mutants were killed at their declared nodes
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
@@ -223,6 +226,7 @@ execution_evidence:
   - final canary bytes are committed at 544f670980e3f14f25880875241807a37125d675; the following custody commit pins its exact blob, SHA-256, descriptive job inventory, and source roles without changing the workflow
   - profile-v2 evidence semantics now resolve only from gate contracts; evidence policy retains cross-gate policy and validation rejects any per-gate override, eliminating the generated-copy synchronization failure exposed while adding scheduled preflight
   - nightly and weekly mutant workflows now invoke the canonical selected-interpreter preflight before mutation execution, so virtualenv or dependency defects cannot first appear in mutant results
+  - the documented local-PR command now selects the canonical selected-interpreter preflight when no explicit argv is supplied; an exact custom argv remains available after `--`, and a causal control rejects any hidden fallback-path change
 closeout_requirements:
   claims:
     required_suites_green:
