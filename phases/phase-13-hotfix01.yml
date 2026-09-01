@@ -220,6 +220,9 @@ execution_evidence:
   - command: GitHub publication-disabled release 33490451195
     result: expected_fail_remediating
     notes: trusted authorization failed closed before hosted build allocation because exact inventory equality was applied before the workflow was terminal; partial live inventory will accept only a nonempty duplicate-free subset of pinned jobs, while terminal custody still requires the complete set
+  - command: selected-environment release preflight; exact source gate; exact contract evidence; canonical local PR preflight
+    result: pass
+    notes: exact implementation commit 0bc21f2 passed all 532 source nodes, 267 contract nodes, and 95 isolated causal controls; the live-inventory mutant was killed at its exact oracle without infrastructure failure or unrelated worktree change
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
