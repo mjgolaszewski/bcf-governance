@@ -1,0 +1,46 @@
+document:
+  kind: hotfix_execution_log
+  name: P13-HF07 Hotfix Log
+  id: bcf-governance-phase-13-hotfix07
+  version: 1.0.0
+  generated_at_utc: '2026-09-01T00:00:00Z'
+  status: completed
+  path: phases/phase-13-hotfix07.yml
+hotfix:
+  id: P13-HF07
+  mode: full
+  related_phase_id: P13
+  hotfix_number: 7
+  summary: Record immutable v0.7.1 custody and make future release-administration authority explicit
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python scripts/preflight_governance.py --repo-root . --mode release
+    --python .venv/bin/python --format text
+  - .venv/bin/python -m pytest -q tests
+  - make -f Makefile.fragment release-check PYTHON=.venv/bin/python
+  executed_commands: []
+  notes:
+  - release publisher run 33530089943 proved resolution, download, and attestation but
+    failed before provider mutation because the workflow token lacks Administration read
+  - the authorized owner path used the exact controller, authenticated invocation,
+    collector receipt, and already-attested bytes; it introduced no alternate release inputs
+  - future publisher runs require the short-lived BCF_RELEASE_ADMIN_TOKEN secret before
+    resolution and use it only for final provider publication
+  - audits/v0.7.1-release-custody.yml owns exact release and provider evidence
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

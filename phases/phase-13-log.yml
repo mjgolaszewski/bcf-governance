@@ -183,9 +183,9 @@ summary:
   - bootstrap 33524862289 and probe 33524915966 independently proved controller
     49272182790342a52ef7ddbcfd6a540ca7df6baf on both trusted runners; the canonical
     projector then promoted the provider-compiled custody without transcribed values
-  - P13-HF06 consolidates final activation under one production self-workflow preflight
-    owner, removes superseded secondary YAML-decoding tests, activates the no-checkout
-    exact-byte publisher, and records the delivery incident in one governed audit
+  - P13-HF06 merged as 5e8e41a, then exact-main, scheduled mutants, closed build,
+    independent verifier, and trusted collector passed; v0.7.1 release 380654208 is
+    immutable with three exact attested assets, while P13-HF07 closes credential custody
 workitems:
 - id: P13-P0-01
   status: DONE
@@ -393,8 +393,5 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- after this reconciliation merges, obtain fresh exact-main, scheduled-mutant, and
-  publication-disabled release-chain evidence for its exact tree; the resulting provider
-  artifacts remain the authority and are not copied back into a self-invalidating source commit
-- present immutable-release enablement and annotated unsigned v0.7.1 tag/publication as
-  separate explicit owner actions, then record actual publication in a post-release closeout PR
+- merge the post-release custody record and explicit trusted publication credential contract
+- retain P13 as the current triplet until a real successor phase compacts it to Git history

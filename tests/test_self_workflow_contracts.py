@@ -93,6 +93,12 @@ def test_self_workflow_contracts_are_one_preflight_owned_mechanical_control() ->
             "privileged_publication_enabled: false",
             "not mechanically activated",
         ),
+        (
+            ".github/workflows/bcf-release-publisher.yml",
+            "GITHUB_TOKEN: ${{ secrets.BCF_RELEASE_ADMIN_TOKEN }}",
+            "GITHUB_TOKEN: ${{ github.token }}",
+            "administration authority",
+        ),
     ),
     ids=(
         "owner-guard",
@@ -105,6 +111,7 @@ def test_self_workflow_contracts_are_one_preflight_owned_mechanical_control() ->
         "job-name",
         "hosted-fallback",
         "publication-policy",
+        "publication-credential",
     ),
 )
 def test_self_workflow_contract_mutants_fail_at_the_canonical_owner(

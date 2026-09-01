@@ -156,6 +156,10 @@ exact-main collector attempt, its exact provider artifact, the current commit
 and tree, and the tag derived from BCF's version owner. The publisher accepts
 that projection and a controller-owned release-asset directory; operators do
 not supply run, attempt, artifact, digest, subject, tag, or asset-list custody.
+BCF's own publisher additionally requires a short-lived `BCF_RELEASE_ADMIN_TOKEN`
+secret because GitHub's workflow token cannot read repository immutable-release
+settings. Provision it only on the trusted no-checkout path with Administration read,
+Attestations read, and Contents write, then remove it after publication.
 
 Workflow custody is compiled, not transcribed. After committing final workflow
 bytes, derive the complete registry in one operation:

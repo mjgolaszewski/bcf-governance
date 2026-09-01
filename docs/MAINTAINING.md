@@ -210,9 +210,14 @@ For a release:
    The authorizer independently hashes the downloaded controller wheel as well.
 8. After owner approval, enable immutable releases and create one annotated
    unsigned `vX.Y.Z` tag at that exact commit.
-9. The no-checkout publisher creates a draft, attaches and attests the
-   pre-certified files, verifies their digests, and publishes without rebuild.
-10. Re-fetch provider state and require an immutable, non-draft, exact release
+9. Provision the short-lived `BCF_RELEASE_ADMIN_TOKEN` Actions secret. Its fine-grained
+   repository permissions are Administration read, Attestations read, and Contents write.
+   The ordinary workflow token cannot read immutable-release settings. Do not expose this
+   credential to candidate jobs or store it in repository files.
+10. The no-checkout publisher first requires that secret, then creates a draft, attaches
+   and attests the pre-certified files, verifies their digests, and publishes without rebuild.
+11. Delete `BCF_RELEASE_ADMIN_TOKEN` immediately after the publisher completes.
+12. Re-fetch provider state and require an immutable, non-draft, exact release
     before recording closeout.
 
 The tag event does not rebuild. The publisher checks out no repository code and
@@ -221,7 +226,9 @@ during an authority migration; the old path is not a rollback option. If documen
 changes after certification, repeat exact-main certification and artifact
 construction; supersede the older bytes instead of reusing their receipt. PyPI
 is not used. All GitHub actions are pinned and release permissions are scoped
-to the trusted publication job.
+to the trusted publication job. Secret presence and exact workflow wiring are checked
+mechanically; GitHub validates the credential's provider permissions when the controller
+reads immutable-release state before creating a draft.
 
 The BCF repository is itself standard-governed. Its generated governance
 workflow and gate contracts must pass on the merge commit; a release tag never

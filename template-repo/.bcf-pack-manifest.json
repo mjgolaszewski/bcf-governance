@@ -600,7 +600,7 @@
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",
-      "sha256": "e694b0c2b9b0a69e553b10f9c972a65f26690c79ec59ec9bc4251850b3d824d9"
+      "sha256": "24bc38e1964663940f507defc43e1f7a7c136ac8bedc2e1072e58dfe75b0ac13"
     },
     "scripts/_bcf_runtime/semantic_ownership_benchmark.py": {
       "operation": "copy",

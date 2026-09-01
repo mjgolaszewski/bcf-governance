@@ -15,8 +15,8 @@ then separates two questions:
 - `bcf truth`: are lifecycle and release claims supported by current evidence
   for the exact Git subject?
 
-Current published release: `v0.7.0`. Current package version: `v0.7.1`
-(publication is disabled until authority-v1.1 acceptance completes).
+Current package version: `v0.7.1`. The exact certified release is published as
+an immutable GitHub release.
 
 ## Why these defaults
 
@@ -121,7 +121,7 @@ wait. See [CI authority](docs/CI_AUTHORITY.md).
 Install the current published wheel:
 
 ```bash
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v0.7.0/bcf_governance-0.7.0-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v0.7.1/bcf_governance-0.7.1-py3-none-any.whl
 ```
 
 The governed 0.7.1 train builds `bcf_governance-0.7.1-py3-none-any.whl`, but

@@ -1,0 +1,47 @@
+document:
+  kind: post_release_custody_audit
+  name: BCF Governance v0.7.1 Release Custody Audit
+  id: bcf-governance-v0.7.1-release-custody
+  version: 1.0.0
+  generated_at_utc: '2026-09-01T00:00:00Z'
+  status: published_immutable_verified
+  path: audits/v0.7.1-release-custody.yml
+subject:
+  repository: mjgolaszewski/bcf-governance
+  repository_id: 1207503211
+  commit: 5e8e41aeda9b6efa8e5e063f4c301ee78aef101b
+  tree: 58ecd32c1eb5897ce5ac8ab3e07d44744597cae2
+  tag:
+    name: v0.7.1
+    object: dc55bc9b8e1d28359e937421f47c54b38462bca8
+    type: annotated
+    target: 5e8e41aeda9b6efa8e5e063f4c301ee78aef101b
+    verification: {verified: false, reason: unsigned}
+  release:
+    id: 380654208
+    draft: false
+    prerelease: false
+    published_at: '2026-09-01T16:16:51Z'
+    immutable: true
+    assets:
+    - {id: 539810884, name: bcf_governance-0.7.1-py3-none-any.whl, size: 673505, digest: 'sha256:698b923f4162d13c88d19106a7b9f884c93d0aeb7d630d5da922d34f5e5eb3bc', attestations: 2}
+    - {id: 539810904, name: bcf_governance-0.7.1.tar.gz, size: 1200234, digest: 'sha256:a11cc8556178c86a980923949f33ba59654b58c495df7ba8c4b9f98a27b50dad', attestations: 2}
+    - {id: 539810854, name: SHA256SUMS, size: 198, digest: 'sha256:d685c16a5152da28350719b65b491be9d644c8cb004182a66fe6659e58ff3f7a', attestations: 2}
+  immutable_release_setting: {enabled: true, enforced_by_owner: false}
+provider_evidence:
+  exact_main: {run_id: 33528672017, attempt: 1, conclusion: success, truth_artifact_id: 9808920017, truth_provider_digest: 'sha256:ff4d8cafe0ef4899eecc3a5de628254711f827186b921157e4b2bb11e5044860', controller_artifact_id: 9808896556, controller_provider_digest: 'sha256:0cdaa95a76656f9e864b2118880853055017e036a8472b5f4d5b0a5ab824dc00'}
+  finalizer: {run_id: 33529060716, attempt: 1, conclusion: success, artifact_id: 9808935321, provider_digest: 'sha256:30c1adad061b15f05f573eec2dfb58bca17935add93d9051f16833c5bd1f3b55'}
+  status_publisher: {run_id: 33529099816, attempt: 1, conclusion: success}
+  scheduled_high_value: {run_id: 33529158556, attempt: 1, conclusion: success, artifact_id: 9809000355, provider_digest: 'sha256:41541dfa70a90cccafd261fd7dd3d6cb2124195f9fab047fac5e95cbd9af4c92'}
+  scheduled_full: {run_id: 33529161266, attempt: 1, conclusion: success, artifact_id: 9809014328, provider_digest: 'sha256:bb87d93331b8f0c86954fb3a454fb38493e4be7d6a284fff08176d849cbd5e72'}
+  release_build: {run_id: 33529327719, attempt: 1, conclusion: success, artifact_id: 9809162567, provider_digest: 'sha256:418c88ccd99ae723563bae22fbe1829bb81a14f79525e4699c657f27b4cf4208'}
+  release_verifier: {run_id: 33529659367, attempt: 1, conclusion: success, runtime_artifact_id: 9809266072, runtime_provider_digest: 'sha256:fb34b0a0b847249513ea81da18843473d2cbd7450c3de1f11f11b7f46d41e3fd', verification_artifact_id: 9809280508, verification_provider_digest: 'sha256:1279b928d5d30f5f939572a2b62cf01445132f58ff062ddcaa4be9afb1476e22'}
+  release_collector: {run_id: 33529949232, attempt: 1, conclusion: success, artifact_id: 9809301475, provider_digest: 'sha256:ff6b343f741a67c854f055ae5ab8feb5349300efec73f6df8382a18aec60bab5'}
+publication:
+  workflow_run: {run_id: 33530089943, attempt: 1, conclusion: failure_before_provider_mutation}
+  workflow_failure: GitHub workflow tokens cannot read repository immutable-release settings because the endpoint requires Administration read
+  owner_action: the exact hash-verified controller artifact compiled the latest publisher invocation and collector receipt, then published the same attested bytes with the authorized owner credential
+  release_mutations_before_owner_action: none
+historical_custody:
+  v0.7.0: {release_id: 379785364, immutable: false, assets_unchanged: true}
+  mutation_policy: never move or rewrite published tags, releases, assets, or attestations

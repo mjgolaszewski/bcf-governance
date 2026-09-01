@@ -24,6 +24,11 @@ jobs:
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: "3.12"
+      - name: Require the short-lived release administration credential
+        shell: bash
+        env:
+          BCF_RELEASE_ADMIN_TOKEN: ${{ secrets.BCF_RELEASE_ADMIN_TOKEN }}
+        run: test -n "$BCF_RELEASE_ADMIN_TOKEN"
       - name: Resolve the newest exact-main release receipt mechanically
         id: resolve
         shell: bash
@@ -55,7 +60,7 @@ jobs:
       - name: Publish only the authenticated pre-certified bytes
         shell: bash
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.BCF_RELEASE_ADMIN_TOKEN }}
         run: |
           set -euo pipefail
           control_root="${RUNNER_TOOL_CACHE%/}/bcf-governance/$BCF_CONTROL_COMMIT"
