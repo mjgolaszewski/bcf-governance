@@ -9,7 +9,7 @@ permissions:
   actions: read
   contents: read
 env:
-  BCF_CONTROL_COMMIT: 46180ab000744c9123860e1f094fc2a9d85e7199
+  BCF_CONTROL_COMMIT: de2eeee6c16d074c4c5fffd39ee5d583b36d1a3e
 jobs:
   finalize:
     name: Reconstruct the newest same-admission exact-main evidence

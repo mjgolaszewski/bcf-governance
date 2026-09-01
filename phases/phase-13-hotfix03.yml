@@ -37,10 +37,23 @@ execution_evidence:
   - command: isolated exact-main controller construction reproducer
     result: pass
     notes: the wheel built and python -I source verification accepted its mechanically discovered runtime payload without relying on an editable installation
+  - command: PR 84 protected governance and package checks
+    result: pass
+    notes: the hotfix merged as de2eeee6c16d074c4c5fffd39ee5d583b36d1a3e only after all three protected check names passed
+  - command: exact-main 33511582433, finalizer 33511969934, and publisher 33512006400
+    result: pass
+    notes: the repaired merge passed all 21 required receipts, exact-tree truth, package verification, and the terminal authority path; provider resolution selected controller artifact 9801960819
+  - command: rotation PR 85 and exact-main 33512606123
+    result: pass
+    notes: the provider-compiled target merged as e6eebf7ff17bd9c72cc2b6fd97cf27aa88a0fb0d and again passed package verification, both mutant profiles, all evidence shards, and exact-tree truth
+  - command: provider-authenticated bootstrap 33513097208 and independent probe 33513145558
+    result: pass
+    notes: both uniquely labeled trusted runners installed and independently verified controller de2eeee6c16d074c4c5fffd39ee5d583b36d1a3e; the controller compiled the sole promotion confirmation
   notes:
   - the controller build defect was not a package build or hosted environment failure; a file-path Python invocation lacked source-root authority and local editable installation hid it
   - cheap preflight now derives executable Python entrypoints from tracked source and rejects module-time BCF imports that precede the directory-specific repository-root bootstrap
   - the release verifier and a second latent semantic-ownership wrapper now establish source authority explicitly; the exact-main workflow invokes the verifier with isolated Python mode
+  - active trusted authority is promoted only from the authenticated provider pin plus the provider-compiled two-runner installation confirmation; no probabilistic operator supplies custody values
 closeout_requirements:
   claims:
     required_suites_green:
