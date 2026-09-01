@@ -328,7 +328,7 @@ gates:
       mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'package_attempt["conclusion"] != "success"', replace: 'False'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_self_controller::test_controller_pin_rejects_failed_package_producer']}
     - id: self-controller-projection-must-fail
-      mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'desired[probe] = _replace_env(probe.read_bytes(), exact)', replace: 'desired[probe] = _replace_env(probe.read_bytes(), {})'}
+      mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'desired[probe] = _replace_env(probe.read_bytes(), exact)', replace: 'desired[probe] = _replace_env(probe.read_bytes(), {**exact, "BCF_BOOTSTRAP_COMMIT_SHA": active_commit})'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_self_controller::test_self_controller_projection_has_one_canonical_pin_owner']}
     - {id: self-controller-topology-projection-must-fail, mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'root / TOPOLOGY_PATH: _replace_topology_controller(', replace: 'root / TOPOLOGY_PATH: (lambda raw, _: raw)('}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_self_controller::test_self_controller_projection_has_one_canonical_pin_owner']}}
     - id: pinned-workflow-definition-custody-must-fail
