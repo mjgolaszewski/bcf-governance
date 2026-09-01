@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from collections.abc import Mapping
+from dataclasses import asdict, dataclass, fields
 import re
 from typing import Any
 
@@ -24,6 +25,27 @@ class ProviderArtifact:
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+
+def provider_artifact_reference_keys() -> frozenset[str]:
+    """Derive the closed download-coordinate shape from its semantic owner."""
+
+    return frozenset(
+        field.name for field in fields(ProviderArtifact) if field.name != "workflow"
+    )
+
+
+def provider_artifact_reference(
+    value: ProviderArtifact | Mapping[str, Any], *, label: str = "provider artifact"
+) -> dict[str, Any]:
+    """Project or decode the sole closed artifact reference accepted by workflows."""
+
+    keys = provider_artifact_reference_keys()
+    if isinstance(value, ProviderArtifact):
+        return {key: getattr(value, key) for key in sorted(keys)}
+    if set(value) != keys:
+        raise GitHubControllerError(f"{label} identity is not exact")
+    return {key: value[key] for key in sorted(keys)}
 
 
 def provider_digest(value: object) -> str:

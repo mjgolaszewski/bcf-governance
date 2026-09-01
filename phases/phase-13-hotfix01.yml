@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-13-hotfix01
   version: 1.0.0
   generated_at_utc: '2026-08-31T00:00:00Z'
-  status: completed
+  status: planned
   path: phases/phase-13-hotfix01.yml
 hotfix:
   id: P13-HF01
@@ -238,9 +238,18 @@ execution_evidence:
   - command: GitHub exact-main 33493496429; finalizer 33493798399; publisher 33493832405
     result: pass
     notes: exact promotion merge 98d857cc passed every executable producer and all 21 receipts; the downloaded truth report refused only authored active lifecycle, and the trusted terminal path completed without relying on workflow presentation or operator-selected run values
+  - command: GitHub exact-main 33494839465; finalizer 33495135603; publisher 33495174121; publication-disabled release 33495223894
+    result: expected_fail_remediating
+    notes: exact closeout main certified, then release authorization rejected the resolver's full ProviderArtifact representation before allocating a hosted builder; artifact download coordinates are now projected and decoded from the ProviderArtifact dataclass rather than independently maintained field sets
+  - command: exact source and contract evidence diagnostic; canonical pack-manifest preflight
+    result: expected_fail_remediated
+    notes: all 17 source failures shared one stale generated-pack hash cause; that mechanical defect is now checked by preflight before evidence or package work and protected by an isolated causal control
   - command: canonical release preflight; exact source gate; exact contract evidence; canonical local PR preflight
     result: pass
     notes: non-authoritative exact-commit 286d854 evidence passed environment preflight, 532 source nodes, 267 contract nodes, and all 95 isolated cause-verified controls before provider CI; all selection and PR-base inputs were mechanically derived
+  - command: canonical release preflight; .venv/bin/python -m pytest -q tests; exact contract evidence; canonical local PR preflight
+    result: pass
+    notes: committed remediation head 6ddf0de passed selected-interpreter and generated-pack custody before all 533 source nodes; its exact contract receipt passed 268 nodes and all 97 isolated causal controls, including release artifact-shape and preflight pack-custody mutants, and local PR context was fetched and derived mechanically
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,

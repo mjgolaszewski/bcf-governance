@@ -332,7 +332,7 @@
     },
     "scripts/_bcf_runtime/ci_github_artifacts.py": {
       "operation": "copy",
-      "sha256": "9314889bfc75d8288fe55739e5ea90e86c28312a00b7a2020a4b7a22e93f3b06"
+      "sha256": "1e39d11e915c947c416d93d5fdf9f99af7c405f038b7b8fd16e4fc4dc43b18f7"
     },
     "scripts/_bcf_runtime/ci_github_authority.py": {
       "operation": "copy",
@@ -376,11 +376,11 @@
     },
     "scripts/_bcf_runtime/ci_github_release.py": {
       "operation": "copy",
-      "sha256": "2c352f994fd438a38fe5764a9d4119aa3f1659eef532b705825443541a1d8256"
+      "sha256": "014c9309a25965b70941cb186fcf4cefdc61a99ca81aa0802dc40ff2dc7bb2a2"
     },
     "scripts/_bcf_runtime/ci_github_release_inputs.py": {
       "operation": "copy",
-      "sha256": "1f72cf8723a98a807a59cbb667d5bd719bc25cc20f1e1e3ba69173e27ec4f582"
+      "sha256": "ef29c25b5822ae8c87fc52ad3cdc40dfc0efbb86a48060d1c4aabd0adf0345be"
     },
     "scripts/_bcf_runtime/ci_github_status.py": {
       "operation": "copy",
@@ -544,7 +544,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "a8f55c72b6aa16476f5cb52e82bc4bbe3920f0167d3a8b6debb68c236f6c83b2"
+      "sha256": "5061b8f2fcf7eb0e2028f5b04aab751ae5d40eecb418eb7bc883c759620acdf0"
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",

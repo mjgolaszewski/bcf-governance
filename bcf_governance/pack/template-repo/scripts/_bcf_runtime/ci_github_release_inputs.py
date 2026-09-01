@@ -12,7 +12,12 @@ from typing import Any
 
 from .ci_authority_contracts import authority_role_workflow
 from .ci_github_api import GitHubAPI
-from .ci_github_artifacts import ProviderArtifact, resolve_role_artifact
+from .ci_github_artifacts import (
+    ProviderArtifact,
+    provider_artifact_reference,
+    provider_artifact_reference_keys,
+    resolve_role_artifact,
+)
 from .ci_github_authority import authenticate_role_job_inventory, load_authority
 from .ci_github_bundle import write_exclusive
 from .ci_github_identity import GitHubControllerError, MainIdentity, resolve_main
@@ -128,9 +133,9 @@ def resolve_release_authorization_inputs(
             "run_id": admission_run_id,
             "run_attempt": admission_attempt,
         },
-        "certification_artifact": certification.as_dict(),
+        "certification_artifact": provider_artifact_reference(certification),
         "controller": {
-            **controller_artifact.as_dict(),
+            **provider_artifact_reference(controller_artifact),
             "commit_sha": main.checkout_sha,
             "tree_sha": main.tree_sha,
         },
@@ -160,6 +165,14 @@ def load_release_authorization_inputs(path: Path) -> dict[str, Any]:
         subject, exact_main, certification, controller
     )):
         raise GitHubControllerError("release authorization input sections are invalid")
+    provider_artifact_reference(certification, label="certification artifact")
+    controller_keys = provider_artifact_reference_keys() | {"commit_sha", "tree_sha"}
+    if set(controller) != controller_keys:
+        raise GitHubControllerError("controller artifact identity is not exact")
+    provider_artifact_reference(
+        {key: controller[key] for key in provider_artifact_reference_keys()},
+        label="controller artifact",
+    )
     return value
 
 

@@ -13,7 +13,11 @@ import yaml
 
 from bcf_governance.tooling import ci_github_authority
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError
-from bcf_governance.tooling.ci_github_artifacts import ProviderArtifact
+from bcf_governance.tooling.ci_github_artifacts import (
+    ProviderArtifact,
+    provider_artifact_reference,
+    provider_artifact_reference_keys,
+)
 from bcf_governance.tooling.ci_github_api import GitHubContent
 from bcf_governance.tooling.ci_github_identity import MainIdentity
 from bcf_governance.tooling.ci_github_release import (
@@ -613,6 +617,10 @@ def test_release_authorization_inputs_are_provider_resolved_without_caller_ids(
     assert selected["run_id"] == 50
     assert selected["run_attempt"] == 3
     assert load_release_authorization_inputs(path) == result
+    assert result["certification_artifact"] == provider_artifact_reference(certification)
+    assert set(result["controller"]) == provider_artifact_reference_keys() | {
+        "commit_sha", "tree_sha",
+    }
     assert release_input_outputs(result) == {
         "subject_commit": COMMIT,
         "subject_tree": TREE,
