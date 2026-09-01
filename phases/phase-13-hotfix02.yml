@@ -56,6 +56,11 @@ execution_evidence:
   - failed preflight or evidence prerequisites now skip truth fan-in and emit an exact
     run-attempt terminal observation, preserving the real cause without missing-artifact
     noise or allocating evidence work
+  - exact local session fd6eb703381118ff1b9932a584410876 produced all 21 passing
+    gate receipts and 137 cause-verified controls; invoking truth on the retained parent
+    root correctly rejected mixed sessions, exposing that generated release-check still
+    selected the parent, so the generator and BCF's exact generated surface now select
+    only the newly allocated session
 closeout_requirements:
   claims:
     required_suites_green:

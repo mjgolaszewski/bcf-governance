@@ -43,7 +43,7 @@ def render_v2_makefile(contract: dict[str, Any]) -> str:
             f"\tfor gate in {targets}; do \\",
             "\t\t$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output \"$$session_dir/$$gate\" --python $(PYTHON) --session-manifest \"$$session\" || exit $$?; \\",
             "\tdone; \\",
-            "\t$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)",
+            "\t$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir \"$$session_dir\"",
             "",
         ]
     )

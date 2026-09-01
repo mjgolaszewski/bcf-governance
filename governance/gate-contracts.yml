@@ -741,6 +741,7 @@ gates:
         kind: test_node_failure
         node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']
     - {id: pr-truth-progress-separation-must-fail, mutation: {path: bcf_governance/tooling/governance_truth.py, search: 'if evaluation_mode == "pr":', replace: 'if False and evaluation_mode == "pr":'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_governance_truth::test_pr_evaluation_allows_progress_without_claiming_phase_closure']}}
+    - {id: release-check-fresh-session-truth-must-fail, mutation: {path: bcf_governance/tooling/profile_v2_surfaces.py, search: '--evidence-dir \"$$session_dir\"', replace: '--evidence-dir $(BCF_EVIDENCE_DIR)'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_release_check_is_an_exact_generator_product']}}
   typecheck:
     invocation:
       argv: [python3, .github/scripts/run_self_governance_gate.py, typecheck]

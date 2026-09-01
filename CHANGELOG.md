@@ -92,8 +92,10 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   build-system dependency integrity at the canonical cheap preflight boundary. The
   bootstrap requirements file is now an exact generated projection of those owners,
   and failed prerequisites emit a causal terminal observation instead of a missing
-  fan-in error; evidence, mutant, package-test, and release-runtime work cannot be the
-  first mechanism to discover a broken selected environment.
+  fan-in error. Generated local release checks also pass truth only the fresh session
+  they just allocated, so retained sessions cannot contaminate a current run; evidence,
+  mutant, package-test, and release-runtime work cannot be the first mechanism to
+  discover a broken selected environment.
 - Replaced hand-transcribed Identity reference custody with a tracked importer that
   authenticates the exact provider run, attempt, workflow, subject, artifact membership,
   and provider digest before projecting benchmark and SOIP results into governed audits.

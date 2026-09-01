@@ -147,6 +147,11 @@ conclusions into a run/attempt-bound failed observation, uploads it under the st
 truth artifact name, and leaves the protected check red. Missing artifact directories
 are therefore not treated as the cause of an upstream rejection.
 
+Local `release-check` has the same fresh-session rule. It allocates one session, writes
+every receipt beneath that directory, and passes that directory—not the retained parent
+artifact root—to truth. The root `Makefile.fragment` is an exact
+`render_v2_makefile` product, and its parity test rejects a hand-edited session path.
+
 ## Distribution tests
 
 Release verification resolves dependencies once into the committed

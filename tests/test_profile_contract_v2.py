@@ -178,6 +178,8 @@ def test_v2_surfaces_bind_one_session_and_do_not_wait() -> None:
 
     assert "scripts/preflight_governance.py" in makefile
     assert 'session_dir="$${session%/evidence-session.json}"' in makefile
+    assert '--evidence-dir "$$session_dir"' in makefile
+    assert "--evidence-dir $(BCF_EVIDENCE_DIR)" not in makefile.split("release-check:", 1)[1]
     assert workflow["jobs"]["evidence"]["needs"] == ["preflight"]
     assert workflow["jobs"]["governance-truthfulness"]["needs"] == [
         "preflight",

@@ -25,6 +25,7 @@ from bcf_governance.tooling.governance_validation.runner import validate_repo_ro
 from bcf_governance.tooling.release_runtime_verification import (
     is_release_sdist_test_context,
 )
+from bcf_governance.tooling.profile_v2_surfaces import render_v2_makefile
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -993,6 +994,16 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
         "bcf-governance-truth-${{ github.run_id }}-${{ github.run_attempt }}"
     )
     assert not truth_namespace.startswith("bcf-evidence-")
+
+
+def test_self_release_check_is_an_exact_generator_product() -> None:
+    contract = yaml.safe_load(
+        (REPO_ROOT / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    )
+
+    assert (REPO_ROOT / "Makefile.fragment").read_text(
+        encoding="utf-8"
+    ) == render_v2_makefile(contract)
 
 
 def test_self_profile_builder_keeps_evidence_semantics_single_owned() -> None:
