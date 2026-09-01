@@ -298,6 +298,7 @@
         },
         "environment": {"type": "object", "propertyNames": {"pattern": "^[A-Z_][A-Z0-9_]*$"}, "additionalProperties": {"type": "string"}},
         "outputs": {"type": "object", "propertyNames": {"$ref": "#/$defs/identifier"}, "additionalProperties": {"type": "string", "pattern": "^\\$\\{\\{ steps\\.[A-Za-z0-9_.-]+\\.outputs\\.[A-Za-z0-9_.-]+ \\}\\}$"}},
+        "controller_requirement": {"enum": ["current", null]},
         "required": {"type": "boolean"}
       }
     },

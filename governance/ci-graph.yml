@@ -16,7 +16,7 @@ value_sources:
   self-policy:
     kind: yaml
     path: governance/self-governance-policy.yml
-    sha256: f685ca46c4cccdee3548f5a78e22e40eb9186153357263df635e4bf69efdcacf
+    sha256: 1be1df4d36bc8192d9ef24974dee982cd33fa8663d8471e3e2e3a5db6dc1e872
 extension_points:
 - preflight
 - evidence-lane
@@ -29,7 +29,7 @@ extension_points:
 extensions:
 - id: bcf-release
   path: governance/ci-extensions/bcf-release.yml
-  sha256: e6ef0b58c2805b1b61437f611d8ebdad45a7b4feda7d5a1c366a7a4117c27905
+  sha256: e380f4ce12491ebdacecbd10fa25a6ad6f6f67064fcc0072cefde5cf4abc6121
 - id: bcf-trusted-control
   path: governance/ci-extensions/bcf-trusted-control.yml
   sha256: a46a91baf8e5cb608a08b5cb317b642efa6369f13eb35ad48d76e57974f239a6

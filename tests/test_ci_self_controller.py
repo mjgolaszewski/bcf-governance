@@ -215,9 +215,9 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
         (tmp_path / controller.BOOTSTRAP_WORKFLOW).read_text(encoding="utf-8")
     )
     assert {key: str(bootstrap["env"][key]) for key in controller.PIN_KEYS} == pin
-    assert policy["runner_security"]["trusted_controller_installation"][
-        "installed_commit_sha"
-    ] in bootstrap["jobs"]["bootstrap"]["steps"][2]["run"]
+    assert baseline_proof["installed_commit_sha"] in (
+        bootstrap["jobs"]["bootstrap"]["steps"][2]["run"]
+    )
     second_target = dict(pin)
     second_target["BCF_BOOTSTRAP_ARTIFACT_ID"] = "401"
     with pytest.raises(GitHubControllerError, match="rotation is already pending"):

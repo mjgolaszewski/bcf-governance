@@ -23,7 +23,16 @@ hotfix_lane:
       allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
-  open_records: []
+  open_records:
+  - id: P14-HF01
+    mode: full
+    status: active
+    triggered_by_commits: [9261bbb6428f85b884ad03d6d6ba10131f7e92ef]
+    failing_workflows: [bcf/release-authority-cutover run 33568922815]
+    root_cause: generated release roles required controller CLI capabilities newer than the mechanically retained trusted controller
+    remediated_in_phase: P14
+    hotfix_log: phases/phase-14-hotfix01.yml
+    canonical_artifacts: [governance/self-governance-policy.yml, governance/ci-extensions/bcf-release.yml, bcf_governance/tooling/ci_graph_contracts.py, bcf_governance/tooling/ci_graph_render.py]
   remediation_history: []
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}

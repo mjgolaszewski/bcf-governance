@@ -208,7 +208,7 @@
     },
     "schemas/ci-graph.schema.json": {
       "operation": "copy",
-      "sha256": "c5c6473e904620d80b9ae04c45404caf9a5a4955a50f159f13afef65bbd68145"
+      "sha256": "1f1e6e859b2fc203d53b8be7b143c7c368040dddba808337a8ccd4c3804cc753"
     },
     "schemas/ci-provider-snapshot.schema.json": {
       "operation": "copy",
@@ -412,7 +412,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",
-      "sha256": "fd5918e596e6dc22253762ccdf937a02a0a054b8e5c7a51fb0fd2783bc1ed559"
+      "sha256": "59badc19e04e79bf20e6b81203c21763b19be92cea4966265a65dc4655f08d2e"
     },
     "scripts/_bcf_runtime/ci_graph_defaults.py": {
       "operation": "copy",
@@ -428,7 +428,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "af85176c4b31d937f7a1de394f4e286862de395d03a57e22c3b943598cd87e11"
+      "sha256": "6e69fd080f802dfa748ac413474dd1aba45846311bf884adf679a11828844717"
     },
     "scripts/_bcf_runtime/ci_graph_values.py": {
       "operation": "copy",

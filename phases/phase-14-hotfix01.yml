@@ -1,0 +1,53 @@
+document:
+  kind: hotfix_execution_log
+  name: P14-HF01 Hotfix Log
+  id: bcf-governance-phase-14-hotfix01
+  version: 1.0.0
+  generated_at_utc: '2026-09-01T00:00:00Z'
+  status: planned
+  path: phases/phase-14-hotfix01.yml
+hotfix:
+  id: P14-HF01
+  mode: full
+  related_phase_id: P14
+  hotfix_number: 1
+  summary: Rotate the exact 0.8 controller before release authority execution
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python scripts/preflight_governance.py --repo-root . --mode release
+    --python .venv/bin/python --format text
+  - .venv/bin/python -m pytest -q tests
+  executed_commands:
+  - command: release authority run 33568922815 attempt 1
+    result: fail_closed_before_hosted_build
+    notes: the retained 0.7.1 controller rejected the new controller-wheel-dir argument; no hosted build runner was allocated
+  - command: audit every generated trusted-controller release invocation against v0.7.1
+    result: pass
+    notes: the same compatibility class also covered collector bundle staging and publication notes, so a filename-only patch was rejected
+  - command: bcf ci-github controller-pin resolve and compile
+    result: pass
+    notes: provider state and downloaded exact bytes selected run 33568404813 attempt 1 artifact 9824019654 commit 9261bbb6428f85b884ad03d6d6ba10131f7e92ef and tree 28fdc17838422f41a54ed9f11404a6c5653c7b96 without operator transcription
+  - command: bcf ci sync-self-controller --pin compiled-pin.json --apply
+    result: pass
+    notes: the projector set the certified 0.8 controller as the pending target while preserving the proven installed 0.7.1 controller
+  notes:
+  - release authorizer, trusted collector, and publisher now declare a current-controller requirement; generated jobs are mechanically disabled while target and installed controller custody differ
+  - bootstrap and probe remain executable through the proven installed controller and are the only path to activate the pending target
+  - no release retry is permitted before two-runner bootstrap, probe, and provider-compiled confirmation complete
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml
