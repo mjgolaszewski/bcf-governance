@@ -51,8 +51,8 @@ execution_evidence:
   - .venv/bin/python -m pytest -q tests
   - '.venv/bin/python .github/scripts/run_validator_mutants.py --profile full --output .artifacts/p14-full-mutants.json # non-authoritative local artifact'
   - '.venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full --output .artifacts/p14-semantic-full-mutants.json # non-authoritative local artifact'
-  - '.venv/bin/python .github/scripts/run_validator_mutants.py --profile full --output .artifacts/p14-remediation-full-mutants.json # 15 of 15 killed after transport correction'
-  - '.venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full --output .artifacts/p14-remediation-semantic-mutants.json # 12 of 12 killed after transport correction'
+  - '.venv/bin/python .github/scripts/run_validator_mutants.py --profile full --output .artifacts/p14-remediation-full-mutants.json # non-authoritative local artifact; 15 of 15 killed after transport correction'
+  - '.venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full --output .artifacts/p14-remediation-semantic-mutants.json # non-authoritative local artifact; 12 of 12 killed after transport correction'
   - .venv/bin/python .github/scripts/check_editorial_contract.py
   - .venv/bin/python -m bcf_governance.cli ci graph validate --repo-root . --format json
   - .venv/bin/python -m bcf_governance.cli ci graph render --repo-root . --check --format json
