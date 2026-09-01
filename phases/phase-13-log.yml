@@ -104,6 +104,9 @@ summary:
   - provider resolution and artifact checksum compilation selected controller artifact
     9787707826 and its exact run, attempt, provider digest, wheel digest, commit, and tree
     without operator-authored custody values; bootstrap and probe now carry that target
+  - bootstrap 33475183416 installed controller d3c687b9 on both trusted runners and
+    probe 33475219209 independently verified both installations; provider-compiled
+    confirmation is the sole input that promotes this controller to active authority
 workitems:
 - id: P13-P0-01
   status: IN_PROGRESS
