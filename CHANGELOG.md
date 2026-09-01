@@ -36,6 +36,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Bound the release dependency lock and wheelhouse manifest to authenticated exact-main
   Git blob bytes, and made the verifier controller own offline wheel/sdist/Twine
   execution plus raw stdout, stderr, JUnit, interpreter, and artifact evidence.
+- Rotated the pending trusted-controller target to the mechanically resolved exact-main
+  artifact containing that release-runtime verifier; the installed controller remains
+  authoritative until bootstrap and probe independently confirm both trusted runners.
 
 ### Fixed
 
