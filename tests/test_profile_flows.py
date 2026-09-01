@@ -556,6 +556,13 @@ def test_full_profile_install_evidence_truth_flow(
     governance_workflow = next(
         item for item in compiled.workflows if item["path"] == ".github/workflows/governance.yml"
     )
+    evidence_policy = yaml.safe_load(
+        (repo / "governance/evidence-policy.yml").read_text(encoding="utf-8")
+    )
+    assert evidence_policy["workflow_contract"] == {
+        "paths": [governance_workflow["path"]],
+        "required_events": [event["type"] for event in governance_workflow["events"]],
+    }
     governed_gates = [
         gate
         for job in governance_workflow["jobs"]

@@ -514,6 +514,11 @@ def test_lite_reference_graph_has_no_release_or_trusted_control(tmp_path: Path) 
     compiled = validate_ci_graph(tmp_path)
     assert [item["id"] for item in compiled.workflows] == ["governance"]
     assert compiled.workflows[0]["role"] == "exact-main"
+    assert {event["type"] for event in compiled.workflows[0]["events"]} == {
+        "pull_request",
+        "workflow_call",
+        "push",
+    }
 
 
 def _git(repo: Path, *args: str) -> str:

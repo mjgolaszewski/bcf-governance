@@ -7,7 +7,27 @@ from typing import Any
 
 from ..ci_graph_defaults import build_reference_ci_graph
 from ..ci_graph_render import apply_ci_graph
-from ..ci_graph_yaml import render_yaml
+from ..ci_graph_yaml import load_yaml_path, render_yaml
+
+
+def _sync_evidence_workflow_contract(
+    target_root: Path, graph: dict[str, Any]
+) -> None:
+    """Project actual graph roots/events into the evidence requirement surface."""
+
+    governance = next(
+        workflow for workflow in graph["workflows"] if workflow["id"] == "governance"
+    )
+    policy_path = target_root / "governance/evidence-policy.yml"
+    policy = load_yaml_path(policy_path)
+    contract = policy.get("workflow_contract")
+    if not isinstance(contract, dict):
+        raise RuntimeError("evidence policy requires a workflow_contract mapping")
+    contract["paths"] = [governance["path"]]
+    contract["required_events"] = [
+        event["type"] for event in governance["events"]
+    ]
+    policy_path.write_bytes(render_yaml(policy))
 
 
 def _runner_mapping(
@@ -66,5 +86,6 @@ def write_reference_ci_graph(
     graph_path = target_root / "governance/ci-graph.yml"
     graph_path.parent.mkdir(parents=True, exist_ok=True)
     graph_path.write_bytes(render_yaml(graph))
+    _sync_evidence_workflow_contract(target_root, graph)
     (target_root / "governance/ci-extensions").mkdir(parents=True, exist_ok=True)
     apply_ci_graph(target_root)

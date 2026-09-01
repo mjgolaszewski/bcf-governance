@@ -512,7 +512,7 @@
     },
     "scripts/_bcf_runtime/governance_install/ci_graph.py": {
       "operation": "copy",
-      "sha256": "9b6090724538a240cb2a332d07da71146e10da104f38b735abed2f087c906077"
+      "sha256": "2279a989a562cede98bc576a107b2d6673205ef4f6d33810ac4225f20be1926e"
     },
     "scripts/_bcf_runtime/governance_install/phase.py": {
       "operation": "copy",
