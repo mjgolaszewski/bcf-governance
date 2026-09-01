@@ -269,6 +269,7 @@ execution_evidence:
   - the controller resolver and checksum compiler selected artifact 9787707826, provider digest sha256:7d0ef690763190228d484392108c8f3bf54c413e016315aa0db2261374f3a065, and wheel digest e690f2cf9086071071cf044a60743ba0e19d8878a306c7bd7ea653de50e61aea as the pending release-runtime controller target without operator-entered identity values
   - bootstrap 33475183416 and probe 33475219209 passed on both uniquely labeled trusted runners; provider-compiled confirmation now promotes controller d3c687b91fa5f6fdd07a0b04ee8bfa0170902ff9 while preserving its exact artifact custody
   - the hosted verifier now separates token-free `release runtime` package execution from non-executing `release verify-evidence` provider authentication; the runtime subprocess environment is allowlisted and a causal control rejects credential inheritance
+  - exact-main 33476814352 passed all executable producers for token-isolation merge 7c30cdca31fa41eb99c5794f9fbbf61b812589f2 and refused only active P13 closure; finalizer 33477079829 and publisher 33477108514 passed, while provider/checksum compilation selected controller artifact 9788519181 and wheel digest 85ee4b622aa8505a682a4981763177804b5cf2fc988aa70e0690a6f5710806c5 without authored custody
 closeout_requirements:
   claims:
     required_suites_green:

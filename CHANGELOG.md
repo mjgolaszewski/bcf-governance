@@ -44,6 +44,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Split hosted release verification into token-free candidate runtime execution and a
   non-executing provider-authentication step, with a closed subprocess environment that
   cannot inherit GitHub, Actions, cloud, or runner credentials.
+- Rotated the pending trusted-controller target to the mechanically resolved artifact
+  containing that token-isolated release verifier; active authority remains unchanged
+  until both trusted runners independently install and probe the target.
 
 ### Fixed
 

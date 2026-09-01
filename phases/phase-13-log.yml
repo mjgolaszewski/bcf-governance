@@ -113,6 +113,9 @@ summary:
   - canonical preflight on token-isolation commit a0871a7 validated interpreter and
     virtualenv integrity before allocating evidence and reported 525 source nodes, 259
     contract nodes, and 119 total controls; exact contract evidence passed all 87 controls
+  - exact-main 33476814352 passed every executable producer for token-isolation merge
+    7c30cdca, then refused only active P13 closure; finalizer 33477079829 and publisher
+    33477108514 completed, and the controller compiler selected artifact 9788519181
 workitems:
 - id: P13-P0-01
   status: IN_PROGRESS
