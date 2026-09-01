@@ -98,6 +98,12 @@ summary:
   - release authorization now binds the exact-main dependency lock and wheelhouse
     manifest Git blobs; one controller-owned verifier operation creates clean offline
     environments and binds raw output and JUnit evidence for collector recomputation
+  - exact-main run 33474453863 passed preflight, package, template, every evidence
+    producer, and controller build for merge d3c687b9; closure refused only active
+    P13-HF01, then finalizer 33474681199 and publisher 33474704477 completed successfully
+  - provider resolution and artifact checksum compilation selected controller artifact
+    9787707826 and its exact run, attempt, provider digest, wheel digest, commit, and tree
+    without operator-authored custody values; bootstrap and probe now carry that target
 workitems:
 - id: P13-P0-01
   status: IN_PROGRESS
