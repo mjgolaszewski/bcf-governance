@@ -16,6 +16,10 @@ from pathlib import Path
 
 import yaml
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from bcf_governance.tooling.release_runtime_verification import (
     SDIST_CUSTODY_COMMIT_MESSAGE,
     SDIST_PORTABLE_TEST_ENV,
@@ -353,7 +357,7 @@ def main() -> None:
     parser.add_argument("--dist-dir", type=Path, default=Path("dist"))
     parser.add_argument("--controller-wheel-dir", type=Path)
     args = parser.parse_args()
-    source_root = Path(__file__).resolve().parents[2]
+    source_root = REPO_ROOT
     if args.controller_wheel_dir is not None:
         validate_controller_wheel_directory(args.controller_wheel_dir, source_root)
         return

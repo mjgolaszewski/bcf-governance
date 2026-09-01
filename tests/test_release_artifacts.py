@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 from pathlib import Path
+import subprocess
+import sys
 from xml.etree import ElementTree
 import zipfile
 
@@ -15,6 +18,24 @@ if spec is None or spec.loader is None:
     raise RuntimeError("unable to load release artifact verifier")
 release_artifacts = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(release_artifacts)
+
+
+def test_release_artifact_entrypoint_bootstraps_clean_source_checkout() -> None:
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if key not in {"PYTHONPATH", "PYTHONHOME"}
+    }
+    result = subprocess.run(
+        [sys.executable, "-I", str(MODULE_PATH), "--help"],
+        cwd=REPO_ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_current_source_contains_complete_sdist_test_payload() -> None:

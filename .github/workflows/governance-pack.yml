@@ -64,7 +64,7 @@ jobs:
           SOURCE_DATE_EPOCH="$(git show -s --format=%ct HEAD)" python -m build --wheel --outdir .artifacts/trusted-control
           python -m pip download --only-binary=:all: --dest .artifacts/trusted-control \
             'PyYAML>=6.0,<7' 'jsonschema>=4.21,<5'
-          python .github/scripts/test_release_artifacts.py \
+          python -I .github/scripts/test_release_artifacts.py \
             --controller-wheel-dir .artifacts/trusted-control
           python - <<'PY'
           import json

@@ -23,16 +23,7 @@ hotfix_lane:
       allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
-  open_records:
-  - id: P13-HF02
-    mode: full
-    status: active
-    triggered_by_commits: [652df02b77161860a1f5fb066eb37d7bd2dab509]
-    failing_workflows: [.github/workflows/bcf-release-verifier.yml, .github/workflows/governance.yml, .github/workflows/governance-pack.yml]
-    root_cause: extracted-sdist verification reused exact-history self-tests even though the archive has only synthetic one-commit custody; the bootstrap dependency list duplicated its canonical owners; and failed verifier or governance prerequisites did not retain causal terminal evidence
-    remediated_in_phase: P13
-    hotfix_log: phases/phase-13-hotfix02.yml
-    canonical_artifacts: [bcf_governance/tooling/ci_authority_pins.py, bcf_governance/tooling/release_runtime_verification.py, bcf_governance/tooling/interpreter_environment.py, requirements-governance.txt, .github/workflows/bcf-release-verifier.yml, .github/workflows/governance.yml]
+  open_records: []
   remediation_history:
   - id: P13-HF01
     mode: full
@@ -42,6 +33,22 @@ hotfix_lane:
     hotfix_log: phases/phase-13-hotfix01.yml
     canonical_artifacts: [audits/v0.7.0-post-release-authority.yml, governance/ci-github-authority.yml, bcf_governance/tooling/ci_github_controller.py]
     local_validation: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, .venv/bin/python .github/scripts/run_self_governance_gate.py test, .venv/bin/python .github/scripts/run_self_governance_gate.py contract-test]
+  - id: P13-HF02
+    mode: full
+    recorded_at_utc: '2026-09-01T00:00:00Z'
+    action: remediated extracted-sdist custody, selected-environment bootstrap, causal terminal reporting, and fresh-session local truth defects
+    remediated_in_phase: P13
+    hotfix_log: phases/phase-13-hotfix02.yml
+    canonical_artifacts: [bcf_governance/tooling/release_runtime_verification.py, bcf_governance/tooling/interpreter_environment.py, requirements-governance.txt, .github/workflows/bcf-release-verifier.yml, .github/workflows/governance.yml]
+    local_validation: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, make -f Makefile.fragment release-check PYTHON=.venv/bin/python]
+  - id: P13-HF03
+    mode: full
+    recorded_at_utc: '2026-09-01T00:00:00Z'
+    action: made source-entrypoint import authority a mechanically derived cheap-preflight invariant and repaired exact-main controller construction
+    remediated_in_phase: P13
+    hotfix_log: phases/phase-13-hotfix03.yml
+    canonical_artifacts: [bcf_governance/tooling/preflight.py, .github/scripts/test_release_artifacts.py, .github/workflows/governance-pack.yml, governance/gate-contracts.yml]
+    local_validation: [.venv/bin/python -m pytest -q tests, exact contract-test evidence session f5b7e2b5a7175da6994d6256cca4e21b]
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
 - {type: decision, statement: BCF 0.7.0 is one release train and BCF must self-adopt every applicable Standard-v2 capability}

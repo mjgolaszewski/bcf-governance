@@ -72,6 +72,10 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 
 ### Fixed
 
+- Made cheap preflight derive and validate every tracked Python source entrypoint's
+  repository-root import authority. Exact-main controller verification now runs in
+  isolated interpreter mode, so editable installs and ambient import paths cannot
+  mask a broken source command or defer it to package, evidence, mutant, or release work.
 - Made extracted-source workflow custody verify the exact packaged workflow bytes and
   compiled inventories without claiming unavailable Git history; the normal repository
   path still requires exact definition-commit ancestry. Failed verifier attempts now

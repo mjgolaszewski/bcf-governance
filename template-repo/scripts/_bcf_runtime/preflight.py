@@ -133,6 +133,91 @@ def _syntax_checks(repo_root: Path) -> dict[str, int]:
     return counts
 
 
+def _module_time_bcf_imports(tree: ast.Module) -> list[ast.Import | ast.ImportFrom]:
+    """Return package imports that execute while a source entrypoint starts."""
+
+    imports: list[ast.Import | ast.ImportFrom] = []
+
+    def visit(node: ast.AST) -> None:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
+            return
+        if isinstance(node, ast.Import):
+            if any(alias.name == "bcf_governance" or alias.name.startswith("bcf_governance.") for alias in node.names):
+                imports.append(node)
+        elif isinstance(node, ast.ImportFrom):
+            if node.module == "bcf_governance" or (node.module or "").startswith("bcf_governance."):
+                imports.append(node)
+        for child in ast.iter_child_nodes(node):
+            visit(child)
+
+    for statement in tree.body:
+        visit(statement)
+    return imports
+
+
+def _source_entrypoint_authority(repo_root: Path) -> dict[str, int]:
+    """Require source entrypoints to establish their checkout before package imports."""
+
+    roots = {"scripts": 1, ".github/scripts": 2}
+    discovered = 0
+    checked = 0
+    for path in _tracked_files(repo_root):
+        relative = path.relative_to(repo_root)
+        if path.suffix != ".py" or relative.parent not in {
+            Path(prefix) for prefix in roots
+        }:
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=relative.as_posix())
+        if not any(
+            isinstance(node, ast.If)
+            and any(
+                isinstance(value, ast.Constant) and value.value == "__main__"
+                for value in ast.walk(node.test)
+            )
+            for node in tree.body
+        ):
+            continue
+        discovered += 1
+        imports = _module_time_bcf_imports(tree)
+        if not imports:
+            continue
+        first_import_line = min(node.lineno for node in imports)
+        prefix = ".github/scripts" if relative.is_relative_to(Path(".github/scripts")) else "scripts"
+        expected_root = f"Path(__file__).resolve().parents[{roots[prefix]}]"
+        root_names = {
+            target.id
+            for node in tree.body
+            if isinstance(node, (ast.Assign, ast.AnnAssign))
+            and node.lineno < first_import_line
+            and (value := getattr(node, "value", None)) is not None
+            and ast.unparse(value) == expected_root
+            for target in (
+                node.targets if isinstance(node, ast.Assign) else [node.target]
+            )
+            if isinstance(target, ast.Name)
+        }
+        authorized = False
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call) or node.lineno >= first_import_line:
+                continue
+            if ast.unparse(node.func) != "sys.path.insert" or len(node.args) < 2:
+                continue
+            if not isinstance(node.args[0], ast.Constant) or node.args[0].value != 0:
+                continue
+            source = ast.unparse(node.args[1])
+            allowed = {f"str({expected_root})", *(f"str({name})" for name in root_names)}
+            if source in allowed:
+                authorized = True
+                break
+        if not authorized:
+            raise PreflightError(
+                "source entrypoint imports bcf_governance before establishing its "
+                f"repository root: {relative.as_posix()}"
+            )
+        checked += 1
+    return {"discovered": discovered, "package_imports_checked": checked}
+
+
 def _interpreter_identity(python: Path) -> dict[str, str]:
     """Prove the selected executable and any lexical virtual environment agree."""
 
@@ -502,6 +587,9 @@ def run_preflight(
     interpreter = step(
         "interpreter", lambda: _interpreter_requirements(repo_root, python)
     )
+    source_entrypoints = step(
+        "source-entrypoints", lambda: _source_entrypoint_authority(repo_root)
+    )
     step("governance", lambda: validate_repo_root(repo_root))
     workflow_authority = step(
         "workflow-authority", lambda: _workflow_authority(repo_root)
@@ -540,6 +628,7 @@ def run_preflight(
         "subject": subject,
         "syntax": syntax,
         "interpreter": interpreter,
+        "source_entrypoints": source_entrypoints,
         "source_locks": source_locks,
         "pack_manifest": pack_manifest,
         "workflow_authority": workflow_authority,
