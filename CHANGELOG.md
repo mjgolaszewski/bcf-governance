@@ -56,6 +56,8 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Eliminated the resolver/authorizer artifact-shape split exposed by the first
   publication-disabled run, and mechanically selected its exact-main successor
   controller for independent installation on both trusted runners.
+- Promoted that successor only after bootstrap and probe independently proved
+  the exact installation on both uniquely labeled trusted runners.
 - Replaced workflow-maintained release and runtime-evidence file lists with exact
   controller-owned directory inventories that reject extra, missing, unsafe, or
   undeclared members.
