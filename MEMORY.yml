@@ -64,6 +64,7 @@ environment_facts:
     - corrected live-inventory controller f3c4eacbc9900a8b77d36384e0c19112073c12ac was selected from exact-main artifact 9794142932 by provider resolution and checksum compilation, then independently installed and probed on both trusted runners by runs 33492766642 and 33492854861 before promotion
     - release-input controller 46180ab was provider-compiled from exact-main artifact 9796508831, independently proven by bootstrap 33498812446 and probe 33498854324 on both trusted runners, and promoted by PR 81; exact-main 33499356117 then passed every producer and all 21 receipts before lifecycle-only refusal
     - P13-HF04 makes publication activation mechanically derive the newest exact-main collector attempt, receipt artifact identity, current commit and tree, version-owned tag, and closed asset inventory; no operator-entered provider coordinate can select release authority
+    - controller artifact 9806282487 from exact-main 33522183544 is the provider-compiled pending publication controller target; active installed authority remains de2eeee6 until bootstrap and probe independently pass on both trusted runners
   active_artifacts:
     spec: plans/product-spec.yml
     build_plan: plans/build-plan.yml
