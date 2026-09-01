@@ -70,6 +70,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
   analyzer payloads before controller publication, evidence capture, or mutation work.
 - Supplied package preflight with provider-derived pull-request base and enforcement
   context so local and remote front doors make the same decision without operator input.
+- Rotated the pending trusted-controller target from the provider-selected exact-main
+  artifact whose wheel passed the new source-derived runtime-asset inspection; no run,
+  artifact, commit, tree, provider digest, or wheel digest was operator-authored.
 - Reconciled v0.7.0 as published and attested but provider-mutable historical
   custody; its tag, release, assets, and attestations remain unchanged, and no
   corrected-authority certification is claimed retroactively.
