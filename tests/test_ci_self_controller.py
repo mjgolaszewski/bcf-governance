@@ -9,6 +9,7 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
+from bcf_governance.tooling import ci_github_commands as commands
 from bcf_governance.tooling import ci_self_controller as controller
 from bcf_governance.tooling.ci_github_artifacts import ProviderArtifact
 from bcf_governance.tooling.ci_github_identity import (
@@ -305,3 +306,33 @@ def test_controller_installation_confirmation_is_provider_compiled(
     assert proof["installed_commit_sha"] == COMMIT
     assert proof["bootstrap_run_id"] == "200"
     assert proof["probe_run_id"] == "201"
+
+
+@pytest.mark.parametrize("output_channel", [None, "missing"])
+def test_controller_confirmation_preflights_output_before_provider_or_authority(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    output_channel: str | None,
+) -> None:
+    authority_output = tmp_path / "controller-confirmation.json"
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    if output_channel == "missing":
+        monkeypatch.setenv("GITHUB_OUTPUT", str(tmp_path / "missing-output-channel"))
+
+    def forbidden_provider() -> object:
+        raise AssertionError("provider access preceded output-channel preflight")
+
+    monkeypatch.setattr(commands, "environment_api", forbidden_provider)
+
+    with pytest.raises(GitHubControllerError, match="GITHUB_OUTPUT"):
+        commands._controller_pin(
+            [
+                "confirm",
+                "--repository",
+                "owner/repo",
+                "--output",
+                str(authority_output),
+            ]
+        )
+
+    assert not authority_output.exists()

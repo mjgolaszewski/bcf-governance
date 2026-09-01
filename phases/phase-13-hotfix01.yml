@@ -130,6 +130,9 @@ execution_evidence:
   - command: .venv/bin/python -m pytest -q tests/test_preflight.py tests/test_ci_authority.py tests/test_profile_contract_v2.py
     result: pass
     notes: 63 focused tests prove mechanically enriched authority, profile promotion, exact interpreter dependency versions, and symlinked or defective virtual-environment handling before evidence allocation
+  - command: .venv/bin/python -m pytest -q tests/test_ci_self_controller.py tests/test_pack_sync.py; .venv/bin/python .github/scripts/run_self_governance_gate.py lint
+    result: pass
+    notes: 11 controller and generated-copy tests plus canonical lint prove output-channel preflight, authority-document ordering, and exact runtime parity before the workflow-definition commit
   notes:
   - full mode is required because this changes public authority and security contracts
   - triggered by commit 0e965b2197e776ad411b67820dbd5586263abde1 and the exact-main,
@@ -187,6 +190,9 @@ execution_evidence:
   - PR 53 passed protected runs 33463149989 and 33463150009 and merged as 63c7c18062fc51744853b9b3d8ff5e9d170716d7; exact-main 33463382955 then passed admission through installed cc3, all producer jobs, and exact job membership before closure truth correctly rejected active P13-HF01
   - trusted finalizer 33463608679 and status publisher 33463630694 completed successfully for that terminal failure; provider APIs and downloaded bytes compiled artifact 9784024107, provider digest sha256:15a594d1113bf461bd64d15aedaca4bfec659884922c937028bb34db51c8028a, and wheel digest 35aaabbeacb7dddfed50209a9b8b2f9ac4b4c0742ecc6275aa56f0b491a7b1b2 as the pending controller target
   - a focused rotation test initially inherited the repository's legitimate pending target and tried to start another, which production rejected; the fixture now mechanically confirms its copied baseline before exercising installed-to-pending-to-confirmed transitions, making it independent of current repository rotation state
+  - PR 54 passed protected runs 33464164662 and 33464164687 and merged as c76c2c734b76f5c38b38a63e3e97482008837983; exact-main 33464367629 passed admission and every producer, then correctly refused only active P13-HF01 closure before finalizer 33464577782 and publisher 33464595105 recorded the terminal non-certified result
+  - bootstrap 33464640838 and probe 33464672319 independently proved controller 63c7c180 on both trusted runners; the provider compiler bound both exact matrices and emitted the only confirmation accepted by the projection command
+  - the first local confirmation attempt exposed that the command could write an authority document before rejecting a missing GitHub output channel; all trusted commands now preflight that channel before provider access, controller documents publish only after output succeeds, and a causal mutant forbids regression
 closeout_requirements:
   claims:
     required_suites_green:
