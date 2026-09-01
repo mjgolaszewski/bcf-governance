@@ -524,7 +524,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "91d03ea0862f78b1db31ed531c8ac8c94fd2d31deace10e5e75ec3363638805d"
+      "sha256": "a9142bfce5c1bc9c80a29711fff9c921b42d5919d31ac9086b7fd2172fa933d2"
     },
     "scripts/_bcf_runtime/migrate_governance_evidence.py": {
       "operation": "copy",

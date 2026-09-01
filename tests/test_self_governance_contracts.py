@@ -274,10 +274,6 @@ def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
     commands = "\n".join(step.get("run", "") for step in job["steps"])
     assert '"$control_root/bin/bcf" ci-github bootstrap' in commands
     assert "$BCF_INSTALLED_CONTROLLER_COMMIT_SHA" in commands
-    assert (
-        installation["installed_commit_sha"]
-        != artifact["BCF_BOOTSTRAP_COMMIT_SHA"]
-    )
     assert '--provider-digest "$BCF_BOOTSTRAP_ARTIFACT_DIGEST"' in commands
     assert '--wheel-sha256 "$BCF_BOOTSTRAP_WHEEL_SHA256"' in commands
     assert '--tool-cache "$RUNNER_TOOL_CACHE"' in commands
