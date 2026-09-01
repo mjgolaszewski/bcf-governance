@@ -94,6 +94,10 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 - Made workflow-byte compilation persist the uniquely derived admission and reusable-
   producer source-role map. Installed controllers no longer depend on a newer controller
   merely to interpret an enriched authority document, and no operator copies job keys.
+- Compiled the next trusted-controller target from exact-main run `33463382955` and its
+  provider-digested artifact after the installed controller admitted the persisted role
+  map; active authority remains on the separately proven installation until bootstrap
+  and probe confirmation.
 
 ### Changed
 

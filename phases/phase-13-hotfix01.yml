@@ -184,6 +184,8 @@ execution_evidence:
   - exact local contract capture rejected the initial privileged-inventory control because it skipped recompilation of an already-enriched document; the owner test now strips every derived privileged/admission/producer inventory first and requires exact reconstruction from workflow bytes, making the mutant causal
   - PR 52 passed protected runs 33462595795 and 33462595818 and merged as d9a1e1809c05c6065b4e71e452cdde5c5cab16fc; exact-main run 33462849318 then failed at trusted admission in 7 seconds before producer allocation because the installed cc3 controller required the inferred admission source-role map to be persisted
   - the workflow compiler now writes that uniquely inferable role map from exact source job keys and reusable producer IDs; a causal owner test starts without the map and requires reconstruction, eliminating both operator entry and successor-controller bootstrap dependence
+  - PR 53 passed protected runs 33463149989 and 33463150009 and merged as 63c7c18062fc51744853b9b3d8ff5e9d170716d7; exact-main 33463382955 then passed admission through installed cc3, all producer jobs, and exact job membership before closure truth correctly rejected active P13-HF01
+  - trusted finalizer 33463608679 and status publisher 33463630694 completed successfully for that terminal failure; provider APIs and downloaded bytes compiled artifact 9784024107, provider digest sha256:15a594d1113bf461bd64d15aedaca4bfec659884922c937028bb34db51c8028a, and wheel digest 35aaabbeacb7dddfed50209a9b8b2f9ac4b4c0742ecc6275aa56f0b491a7b1b2 as the pending controller target
 closeout_requirements:
   claims:
     required_suites_green:
