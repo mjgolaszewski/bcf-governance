@@ -4,7 +4,7 @@ document:
   id: project-phase-13-hotfix02
   version: 1.0.0
   generated_at_utc: '2026-09-01T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-13-hotfix02.yml
 hotfix:
   id: P13-HF02
@@ -36,6 +36,9 @@ execution_evidence:
   - command: pull-request runs 33505006870 and 33505006839
     result: expected_fail_remediated
     notes: both jobs rejected the selected environment in 11 to 12 seconds before evidence or package work because the independently maintained bootstrap list omitted governed build requirements; the truth job then exposed a separate missing-fan-in reporting defect
+  - command: make -f Makefile.fragment release-check PYTHON=.venv/bin/python
+    result: pass
+    notes: exact head 956f294 produced all 21 passing gate receipts and 138 cause-verified controls in fresh session 18c2d8f765ff2c71cdb92f7662236aeb; truth independently verified the exact tree and computed closed, withholding only the then-authored planned hotfix state
   notes:
   - publication-disabled release run 33500913722 built exact 652df02 bytes, then
     verifier 33501188756 failed only sdist-tests after 529 passes because two tests
