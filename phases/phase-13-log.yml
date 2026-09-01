@@ -393,5 +393,5 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- merge the post-release custody record and explicit trusted publication credential contract
-- retain P13 as the current triplet until a real successor phase compacts it to Git history
+- open a successor only for real product work; that phase will compact the completed P13
+  triplet and its hotfix records to hash-bound Git history

@@ -13,6 +13,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   repository immutable-release settings; the short-lived credential contract requires
   repository Administration read, Attestations read, and Contents write and requires
   removal after publication.
+- Corrected the post-release custody snapshots to defer current provider authority to the
+  mechanical release inspector, removed unstable attestation cardinalities, and reconciled
+  the completed 0.7.1 train and P13 next-work state.
 
 ## [0.7.1] - 2026-09-01
 
@@ -84,9 +87,9 @@ Published as an immutable GitHub release from exact certified merge
 - Kept candidate code on fresh GitHub-hosted runners and short trusted no-checkout
   control work on uniquely labeled local runners. No job polls, sleeps, leases an idle
   runner, or silently falls back between trust classes.
-- Retained current P13 records while the release train is active. Completed earlier
-  phase triplets remain compacted to hash-bound Git history under the declared retention
-  policy.
+- Retained current P13 records until a real successor phase opens. The 0.7.1 train is
+  completed, and earlier phase triplets remain compacted to hash-bound Git history under
+  the declared retention policy.
 - Reorganized maintainer guidance around mechanical authority, exact evidence, runner
   trust boundaries, release custody, and explicit human judgment. AI and human operators
   may propose changes but cannot supply or self-certify mechanically derivable claims.

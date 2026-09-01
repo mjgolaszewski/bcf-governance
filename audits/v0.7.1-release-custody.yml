@@ -6,6 +6,15 @@ document:
   generated_at_utc: '2026-09-01T00:00:00Z'
   status: published_immutable_verified
   path: audits/v0.7.1-release-custody.yml
+authority:
+  audit_role: non_authoritative_historical_snapshot
+  current_provider_state_owner: authenticated_github_api
+  release_decision_owner: bcf_ci_github_release_inspect
+  last_provider_verification:
+    observed_at_utc: '2026-09-01T16:55:26Z'
+    release_assets: pass
+    attestations: pass
+    method: exact_asset_hashes_plus_gh_attestation_verify
 subject:
   repository: mjgolaszewski/bcf-governance
   repository_id: 1207503211
@@ -24,9 +33,9 @@ subject:
     published_at: '2026-09-01T16:16:51Z'
     immutable: true
     assets:
-    - {id: 539810884, name: bcf_governance-0.7.1-py3-none-any.whl, size: 673505, digest: 'sha256:698b923f4162d13c88d19106a7b9f884c93d0aeb7d630d5da922d34f5e5eb3bc', attestations: 2}
-    - {id: 539810904, name: bcf_governance-0.7.1.tar.gz, size: 1200234, digest: 'sha256:a11cc8556178c86a980923949f33ba59654b58c495df7ba8c4b9f98a27b50dad', attestations: 2}
-    - {id: 539810854, name: SHA256SUMS, size: 198, digest: 'sha256:d685c16a5152da28350719b65b491be9d644c8cb004182a66fe6659e58ff3f7a', attestations: 2}
+    - {id: 539810884, name: bcf_governance-0.7.1-py3-none-any.whl, size: 673505, digest: 'sha256:698b923f4162d13c88d19106a7b9f884c93d0aeb7d630d5da922d34f5e5eb3bc'}
+    - {id: 539810904, name: bcf_governance-0.7.1.tar.gz, size: 1200234, digest: 'sha256:a11cc8556178c86a980923949f33ba59654b58c495df7ba8c4b9f98a27b50dad'}
+    - {id: 539810854, name: SHA256SUMS, size: 198, digest: 'sha256:d685c16a5152da28350719b65b491be9d644c8cb004182a66fe6659e58ff3f7a'}
   immutable_release_setting: {enabled: true, enforced_by_owner: false}
 provider_evidence:
   exact_main: {run_id: 33528672017, attempt: 1, conclusion: success, truth_artifact_id: 9808920017, truth_provider_digest: 'sha256:ff4d8cafe0ef4899eecc3a5de628254711f827186b921157e4b2bb11e5044860', controller_artifact_id: 9808896556, controller_provider_digest: 'sha256:0cdaa95a76656f9e864b2118880853055017e036a8472b5f4d5b0a5ab824dc00'}

@@ -26,7 +26,8 @@ execution_evidence:
     collector receipt, and already-attested bytes; it introduced no alternate release inputs
   - future publisher runs require the short-lived BCF_RELEASE_ADMIN_TOKEN secret before
     resolution and use it only for final provider publication
-  - audits/v0.7.1-release-custody.yml owns exact release and provider evidence
+  - audits/v0.7.1-release-custody.yml records the historical snapshot; authenticated
+    provider state and the mechanical release inspector remain authoritative
 closeout_requirements:
   claims:
     required_suites_green:
