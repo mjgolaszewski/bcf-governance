@@ -16,6 +16,8 @@ from .ci_github_api import GitHubAPI
 from .ci_github_bootstrap import controller_metadata, verify_controller_inventory
 from .ci_github_artifacts import (
     authenticate_role_artifact,
+    provider_artifact_reference,
+    provider_artifact_reference_keys,
     provider_digest,
     resolve_role_artifact,
 )
@@ -113,11 +115,9 @@ def authorize_release(
         require_success=False,
         require_terminal=False,
     )
-    required_certification = {
-        "run_id", "run_attempt", "artifact_id", "artifact_name", "provider_digest"
-    }
-    if set(certification_artifact) != required_certification:
-        raise GitHubControllerError("certification artifact identity is not exact")
+    certification_artifact = provider_artifact_reference(
+        certification_artifact, label="certification artifact"
+    )
     authenticated_certification = authenticate_role_artifact(
         api,
         repository=repository,
@@ -149,12 +149,15 @@ def authorize_release(
         != latest_attempt
     ):
         raise GitHubControllerError("release authorization requires the newest admission")
-    required_controller = {
-        "run_id", "run_attempt", "artifact_id", "artifact_name", "provider_digest",
+    required_controller = provider_artifact_reference_keys() | {
         "commit_sha", "tree_sha",
     }
     if set(controller) not in (required_controller, required_controller | {"wheel_sha256"}):
         raise GitHubControllerError("controller artifact identity is not exact")
+    provider_artifact_reference(
+        {key: controller[key] for key in provider_artifact_reference_keys()},
+        label="controller artifact",
+    )
     provider_digest(controller["provider_digest"])
     if controller["commit_sha"] != subject["commit_sha"] or (
         controller["tree_sha"] != subject["tree_sha"]

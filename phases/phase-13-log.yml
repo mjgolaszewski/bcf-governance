@@ -4,13 +4,13 @@ document:
   id: bcf-governance-phase-13-log
   version: 1.0.0
   generated_at_utc: '2026-08-31T00:00:00Z'
-  status: completed
+  status: planned
   path: phases/phase-13-log.yml
 phase:
   id: P13
   build_block: post-release-authority-remediation-0.7.1
 summary:
-  outcome: authority_v1_1_remediation_complete
+  outcome: active_authority_remediation
   highlights:
   - P13 is opened for remediate post-release exact-main and release authority defects
     and prepare BCF 0.7.1
@@ -163,14 +163,14 @@ workitems:
   summary: deliver provider-authenticated common admission and revocation authority plus
     fail-closed registration and exact pinning of every privileged provider workflow
 - id: P13-P0-02
-  status: DONE
+  status: IN_PROGRESS
   summary: deliver independent final-byte verification and trusted release receipt
     construction
 - id: P13-P0-03
   status: DONE
   summary: deliver closed release dependency inputs and immutable publication checks
 - id: P13-P0-04
-  status: DONE
+  status: IN_PROGRESS
   summary: deliver hosted Identity reference proof and reconciled release custody
 execution_evidence:
   planned_commands:
@@ -277,6 +277,9 @@ execution_evidence:
   - command: GitHub exact-main 33493496429; finalizer 33493798399; publisher 33493832405
     result: pass
     notes: all producers and all 21 exact-tree receipts passed on promotion merge 98d857cc; truth artifact 9794837162 failed only the intentionally active P13 and P13-HF01 lifecycle records, after which the no-checkout finalizer and publisher emitted the authenticated terminal revocation
+  - command: GitHub exact-main 33494839465; finalizer 33495135603; publisher 33495174121; publication-disabled release 33495223894
+    result: expected_fail_remediating
+    notes: exact closeout merge e6e33e40 certified successfully and its trusted terminal path published success; release authorization then failed closed before hosted build allocation because the resolver emitted the full ProviderArtifact shape while the authorizer duplicated a narrower field list, so one dataclass-derived projection now owns both production and decoding
   - command: canonical release preflight; exact source gate; exact contract evidence; canonical local PR preflight
     result: pass
     notes: non-authoritative closeout evidence on commit 286d854 passed selected-interpreter and virtualenv preflight before all 532 source nodes; contract evidence passed 267 exact nodes and all 95 isolated causal controls with applied mutations, green baselines, satisfied oracles, clean worktrees, and zero infrastructure-like exits; local PR context was fetched and derived mechanically

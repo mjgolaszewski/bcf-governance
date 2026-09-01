@@ -65,6 +65,9 @@ Release target: `0.7.1` (publication remains disabled pending authority-v1.1 acc
 
 ### Fixed
 
+- Replaced independently maintained resolver and authorizer artifact field sets with one
+  projection derived from the `ProviderArtifact` dataclass, and fail closed on any extra,
+  missing, or differently shaped download coordinates before release build allocation.
 - Made authenticated nonterminal workflow inspection accept only a nonempty subset of
   the pinned job inventory while terminal certification still requires the complete
   exact set, preventing release authorization from depending on future job materialization.
