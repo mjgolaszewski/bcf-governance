@@ -2,7 +2,7 @@ document: {kind: gate_contract_registry, version: '1.0', path: governance/gate-c
 schema_version: '1.0'
 profile_contract_version: '2.0'
 target_profile: standard
-interpreter_contract: {project_dependencies: true, optional_dependency_groups: [dev], gate_requirements: {security-dependency-audit: [pip, packaging]}}
+interpreter_contract: {project_dependencies: true, build_system_requirements: true, optional_dependency_groups: [dev], gate_requirements: {security-dependency-audit: [pip, packaging]}}
 gates:
   architecture-context-membership:
     invocation:
@@ -295,6 +295,7 @@ gates:
     - {id: interpreter-requirements-preflight-must-fail, mutation: {path: bcf_governance/tooling/preflight.py, search: "interpreter = step(\n        \"interpreter\", lambda: _interpreter_requirements(repo_root, python)\n    )", replace: 'interpreter = {}'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_interpreter_failure_prevents_session_allocation']}}
     - {id: pack-manifest-preflight-must-fail, mutation: {path: bcf_governance/tooling/preflight.py, search: 'pack_manifest = step("pack-manifest", lambda: _pack_manifest(repo_root))', replace: 'pack_manifest = {}'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_stale_pack_manifest_fails_before_evidence']}}
     - {id: interpreter-version-contract-must-fail, mutation: {path: bcf_governance/tooling/preflight.py, search: "if req.specifier and not req.specifier.contains(installed,prereleases=True):\\n", replace: "if False:\\n"}, oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_wrong_interpreter_distribution_version_fails_before_evidence']}}
+    - {id: build-system-requirements-preflight-must-fail, mutation: {path: bcf_governance/tooling/preflight.py, search: '        requirements.extend(str(value) for value in build_requirements)', replace: '        pass'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_missing_build_backend_requirement_fails_before_evidence']}}
     - {id: virtualenv-integrity-must-fail, mutation: {path: bcf_governance/tooling/preflight.py, search: 'if claims_venv and not venv_config.is_file():', replace: 'if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_broken_project_virtualenv_fails_before_evidence']}}
     - {id: scheduled-mutant-preflight-order-must-fail, mutation: {path: .github/workflows/governance-mutants-nightly.yml, search: 'python scripts/preflight_governance.py --repo-root . --mode release --python "$(command -v python)" --format text', replace: 'python -m pytest --version'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_scheduled_mutants_preflight_selected_interpreter_before_execution[.github/workflows/governance-mutants-nightly.yml]']}}
     - {id: scheduled-mutant-history-custody-must-fail, mutation: {path: .github/workflows/governance-mutants-nightly.yml, search: '          fetch-depth: 0', replace: '          fetch-depth: 1'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_scheduled_mutants_preflight_selected_interpreter_before_execution[.github/workflows/governance-mutants-nightly.yml]']}}

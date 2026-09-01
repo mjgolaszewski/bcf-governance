@@ -26,6 +26,9 @@ execution_evidence:
     extracted sdists a mechanically recognized one-commit package context, delegates
     workflow byte and inventory checks to the canonical verifier, and uploads failed
     runtime evidence with three cause-verified controls
+  - the local artifact harness then proved cheap preflight omitted build-system
+    requirements and failed at setuptools.build_meta; preflight now derives those
+    requirements from pyproject.toml before allocating any session or evidence work
 closeout_requirements:
   claims:
     required_suites_green:

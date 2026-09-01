@@ -292,6 +292,26 @@ def test_missing_interpreter_distribution_fails_before_evidence(tmp_path: Path) 
         preflight._interpreter_requirements(repo, Path(sys.executable))
 
 
+def test_missing_build_backend_requirement_fails_before_evidence(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "governance").mkdir(parents=True)
+    (repo / "governance/gate-contracts.yml").write_text(
+        "interpreter_contract: {project_dependencies: true, build_system_requirements: true, optional_dependency_groups: [], gate_requirements: {}}\n"
+        "gates: {}\n",
+        encoding="utf-8",
+    )
+    (repo / "pyproject.toml").write_text(
+        "[build-system]\nrequires=['bcf-definitely-absent-build-backend']\n"
+        "build-backend='missing.backend'\n"
+        "[project]\nname='fixture'\nversion='1.0.0'\nrequires-python='>=3.11'\n"
+        "dependencies=[]\n[project.optional-dependencies]\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(preflight.PreflightError, match="dependency contract failed"):
+        preflight._interpreter_requirements(repo, Path(sys.executable))
+
+
 def test_wrong_interpreter_distribution_version_fails_before_evidence(
     tmp_path: Path,
 ) -> None:

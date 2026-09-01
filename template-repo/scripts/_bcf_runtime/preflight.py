@@ -225,6 +225,17 @@ def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, Any]:
     if not isinstance(declared, list):
         raise PreflightError("project dependency inventory is missing")
     requirements = [str(value) for value in declared]
+    include_build_system = contract.get("build_system_requirements", False)
+    if not isinstance(include_build_system, bool):
+        raise PreflightError("interpreter build-system dependency contract is invalid")
+    if include_build_system:
+        build_system = project.get("build-system")
+        build_requirements = (
+            build_system.get("requires") if isinstance(build_system, dict) else None
+        )
+        if not isinstance(build_requirements, list) or not build_requirements:
+            raise PreflightError("build-system dependency inventory is missing")
+        requirements.extend(str(value) for value in build_requirements)
     optional = metadata.get("optional-dependencies", {})
     groups = contract.get("optional_dependency_groups")
     if not isinstance(optional, dict) or not isinstance(groups, list):
