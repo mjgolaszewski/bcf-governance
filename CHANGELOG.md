@@ -59,6 +59,10 @@ Release target: `0.8.0`.
   reports the active phase, phase log, and complete open-hotfix inventory together
   and stops before evidence-session allocation; PR validation and scheduled controls
   retain their existing execution semantics.
+- Made direct-event input defaults a graph-wide invariant. The compiler rejects raw
+  workflow inputs in command arguments or environments, action inputs, reusable-
+  workflow inputs, and job outputs when a workflow also has a direct trigger, preventing
+  absent `workflow_call` inputs from reaching runtime commands as empty strings.
 - Completed trusted-controller rotation through mechanically ordered current-main
   bootstrap and independent probe runs on both trusted runners. Provider-compiled
   confirmation now promotes the exact installed controller, re-enables release roles,

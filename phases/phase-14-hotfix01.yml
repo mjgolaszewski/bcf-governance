@@ -78,6 +78,15 @@ execution_evidence:
   - command: exact manifest and focused lifecycle-fast-fail tests
     result: pass
     notes: 585 source nodes and 294 contract nodes are exact; all 26 preflight and fan-in tests passed before the full final-tree suite
+  - command: protected pull request 98 governance run 33577767423
+    result: fail_closed_in_cheap_preflight
+    notes: direct pull-request events expose workflow-call inputs as empty rather than applying workflow-call defaults; preflight rejected the empty evaluation mode in eleven seconds, skipped all evidence lanes, and package checks passed
+  - command: audit every governed workflow input runtime surface
+    result: pass
+    notes: graph compilation now rejects un-defaulted inputs in command argv and environment, action inputs, reusable-workflow inputs, and job outputs whenever the workflow also has a direct event; the current graph has no violations
+  - command: exact input-fallback manifests and causal control
+    result: pass
+    notes: source scope ratchets to 586 nodes, contract scope to 295 nodes, and the direct-event fallback mutant covers the shared mechanical owner
   notes:
   - release authorizer, trusted collector, and publisher now declare a current-controller requirement; generated jobs are mechanically disabled while target and installed controller custody differ
   - bootstrap and probe remain executable through the proven installed controller and are the only path to activate the pending target
@@ -85,6 +94,7 @@ execution_evidence:
   - trusted no-checkout commands may not reference repository-relative inputs; the controller probe reuses the exact offline bootstrap verifier and its provider-bound artifact
   - release authority is re-enabled only because the ordered current-main bootstrap, probe, and provider-compiled confirmation completed
   - exact-main lifecycle ineligibility is a cheap front-door result and cannot allocate the four hosted evidence lanes
+  - workflow-call defaults are never assumed for direct events; every runtime input crossing uses a mechanically validated fallback
 closeout_requirements:
   claims:
     required_suites_green:
