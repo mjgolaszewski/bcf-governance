@@ -45,6 +45,12 @@ execution_evidence:
   - command: trusted controller probe run 33573259151 attempt 1
     result: fail_closed_on_both_trusted_runners
     notes: both clean no-checkout workspaces rejected the same undeclared repository-relative probe script; the selected absolute interpreter was correct and no hosted runner was allocated
+  - command: .venv/bin/python -m pytest -q tests
+    result: 583_passed
+    notes: the complete committed and authority-pinned trusted-input tree passed in 199.37 seconds
+  - command: capture contract-test evidence session fb22cd6ab0d6a499394e7912d9469e04
+    result: pass_121_controls
+    notes: selected-interpreter and trusted no-checkout controls all preserved green baselines, applied exactly once, failed for their declared causes, and left no unexpected worktree changes
   notes:
   - release authorizer, trusted collector, and publisher now declare a current-controller requirement; generated jobs are mechanically disabled while target and installed controller custody differ
   - bootstrap and probe remain executable through the proven installed controller and are the only path to activate the pending target
