@@ -1,3 +1,5 @@
+tests.test_adoption_soak::test_changed_path_parser_preserves_first_porcelain_path
+tests.test_adoption_soak::test_changed_path_parser_rejects_rename_shape
 tests.test_ci_authority::test_ambiguous_normalized_authority_is_rejected[attempt-duplicate attempt]
 tests.test_ci_authority::test_ambiguous_normalized_authority_is_rejected[job-duplicate jobs]
 tests.test_ci_authority::test_ambiguous_normalized_authority_is_rejected[ordinal-duplicate admission ordinal]

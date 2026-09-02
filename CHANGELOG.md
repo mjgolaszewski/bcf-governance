@@ -40,6 +40,8 @@ Release target: `1.0.0rc1`.
   pack-owned refresh is idempotent, restores each clone to its exact source,
   requires Identity legacy migration to fail closed with complete blockers, and
   launches no Actions runs.
+- Made the soak consume NUL-delimited Git porcelain without trimming status
+  prefixes, reject rename/copy records, and retain the first changed path exactly.
 - Added canonical pre-release version parsing for `a`, `b`, and `rc` packages so
   release inputs, tags, API validation, and GitHub prerelease state share one
   owner.

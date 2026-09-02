@@ -77,8 +77,25 @@ def _upgrade(python: Path, installer: Path, repo: Path) -> None:
 
 
 def _changed_paths(repo: Path) -> tuple[str, ...]:
-    values = _git(repo, "status", "--porcelain=v1", "--untracked-files=all")
-    return tuple(line[3:] for line in values.splitlines() if len(line) > 3)
+    result = subprocess.run(
+        ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    )
+    paths: list[str] = []
+    for entry in result.stdout.split(b"\0"):
+        if not entry:
+            continue
+        if len(entry) < 4 or entry[2:3] != b" ":
+            raise RuntimeError("unexpected Git porcelain status entry")
+        if b"R" in entry[:2] or b"C" in entry[:2]:
+            raise RuntimeError("adoption soak does not admit renamed or copied paths")
+        try:
+            paths.append(entry[3:].decode("utf-8"))
+        except UnicodeDecodeError as exc:
+            raise RuntimeError("adoption soak path is not UTF-8") from exc
+    return tuple(paths)
 
 
 def _upgrade_change_allowed(path: str) -> bool:
