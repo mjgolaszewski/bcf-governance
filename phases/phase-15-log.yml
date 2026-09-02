@@ -24,6 +24,7 @@ summary:
   - structural PR 103 passed all protected checks and merged as baf9f195d9a1592ac8132674ccf7f0af9314b5a7 with the locally proven tree 10d4499271ba89e3d1a77526b5a5c8aca51f8920
   - exact-main run 33600847678 stopped before evidence because closure correctly requires this completed phase record; finalizer 33600916013 and publisher 33600938350 propagated that terminal state without an idle runner
   - release publication is a post-closure provider action and is not an authored prerequisite for completing P15 implementation
+  - P15-HF01 removes stale installed-controller version authority from release publication and binds graph, current-main contract, tag, archives, checksums, receipt, and attestations mechanically before provider mutation
 workitems:
 - id: P15-P0-01
   status: DONE
@@ -93,4 +94,4 @@ known_constraints:
 - Identity remains read-only and its remote workflows runner mappings and CI jobs may not be changed in this phase
 - hosted jobs may not poll sleep wait for local capacity or allocate a runner solely as a control-plane waiter
 next_work:
-- merge the bounded closeout PR, certify its exact merge commit, run scheduled controls, and publish immutable release-candidate bytes without a rebuild
+- merge the single bounded P15-HF01 correction only after complete local closure, certify its exact merge commit once, run scheduled controls once, and publish immutable release-candidate bytes without a rebuild or speculative retry

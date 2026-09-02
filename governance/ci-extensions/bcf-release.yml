@@ -53,7 +53,7 @@ commands:
     cwd: .
     environment: {}
   publish-release:
-    argv: ['{controller}', ci-github, release, publish, --repository, '${{ github.repository }}', --tag, '${{ steps.resolve.outputs.tag }}', --commit, '${{ steps.resolve.outputs.subject_commit }}', --release-artifact-dir, '${{ runner.temp }}/bcf-publication/receipt/assets', --release-notes-text, 'The attached wheel, source archive, and checksums are the exact mechanically certified BCF Governance release bytes.', --receipt, '${{ runner.temp }}/bcf-publication/receipt/release-receipt.json', --receipt-artifact-id, '${{ steps.resolve.outputs.receipt_artifact_id }}', --receipt-artifact-name, '${{ steps.resolve.outputs.receipt_artifact_name }}', --receipt-provider-digest, '${{ steps.resolve.outputs.receipt_provider_digest }}']
+    argv: ['{controller}', ci-github, release, publish, --repository, '${{ github.repository }}', --tag, 'v{source:release-contract:package.version}', --commit, '${{ steps.resolve.outputs.subject_commit }}', --release-artifact-dir, '${{ runner.temp }}/bcf-publication/receipt/assets', --release-notes-text, 'The attached wheel, source archive, and checksums are the exact mechanically certified BCF Governance release bytes.', --receipt, '${{ runner.temp }}/bcf-publication/receipt/release-receipt.json', --receipt-artifact-id, '${{ steps.resolve.outputs.receipt_artifact_id }}', --receipt-artifact-name, '${{ steps.resolve.outputs.receipt_artifact_name }}', --receipt-provider-digest, '${{ steps.resolve.outputs.receipt_provider_digest }}']
     cwd: .
     environment: {}
     required_environment: [BCF_RELEASE_ADMIN_TOKEN]

@@ -10,10 +10,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-try:
-    from bcf_governance import __version__
-except ModuleNotFoundError:  # standalone generated runtime
-    from ._version import __version__
+import yaml
 
 from .ci_authority_contracts import authority_role_workflow
 from .ci_github_api import GitHubAPI
@@ -28,7 +25,7 @@ from .ci_github_bundle import write_exclusive
 from .ci_github_identity import GitHubControllerError, MainIdentity, resolve_main
 from .ci_github_membership import select_latest_admission
 from .ci_self_controller import resolve_self_controller_artifact
-from .release_versions import ReleaseVersionError, parse_release_version
+from .release_versions import ReleaseVersion, ReleaseVersionError, parse_release_version
 
 
 RELEASE_INPUT_KEYS = {
@@ -39,6 +36,35 @@ RELEASE_INPUT_KEYS = {
     "certification_artifact",
     "controller",
 }
+PUBLIC_CONTRACTS_PATH = "governance/public-contracts.yml"
+
+
+def _release_version_at_main(
+    api: GitHubAPI, *, repository: str, main: MainIdentity
+) -> ReleaseVersion:
+    """Read release identity from authenticated current-main contract bytes."""
+
+    content = api.content(repository, PUBLIC_CONTRACTS_PATH, ref=main.checkout_sha)
+    if content.path != PUBLIC_CONTRACTS_PATH:
+        raise GitHubControllerError("release contract path is not exact")
+    try:
+        value = yaml.safe_load(content.content.decode("utf-8"))
+        document = value["document"]
+        package = value["package"]
+        version = package["version"]
+    except (KeyError, TypeError, UnicodeDecodeError, yaml.YAMLError) as exc:
+        raise GitHubControllerError("current-main release contract is invalid") from exc
+    if (
+        not isinstance(document, dict)
+        or document.get("path") != PUBLIC_CONTRACTS_PATH
+        or not isinstance(version, str)
+    ):
+        raise GitHubControllerError("current-main release contract identity is invalid")
+    try:
+        return parse_release_version(version)
+    except ReleaseVersionError as exc:
+        raise GitHubControllerError("current-main release version is not releasable") from exc
+
 
 def _exact_finalizer_run(
     api: GitHubAPI,
@@ -252,11 +278,10 @@ def resolve_release_publication_inputs(
 ) -> dict[str, Any]:
     """Resolve the newest exact-main release receipt without operator coordinates."""
 
-    try:
-        release_version = parse_release_version(__version__)
-    except ReleaseVersionError as exc:
-        raise GitHubControllerError("authoritative package version is not releasable") from exc
     main = resolve_main(api, repository)
+    release_version = _release_version_at_main(
+        api, repository=repository, main=main
+    )
     authority = load_authority(api, repository, main, required_version="1.1")
     collector_run_id, collector_attempt = _exact_collector_run(
         api, repository=repository, main=main, authority=authority

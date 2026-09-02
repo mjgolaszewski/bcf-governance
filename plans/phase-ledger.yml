@@ -24,7 +24,15 @@ hotfix_lane:
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
   open_records: []
-  remediation_history: []
+  remediation_history:
+  - id: P15-HF01
+    mode: full
+    recorded_at_utc: '2026-09-02T00:00:00Z'
+    action: removed stale installed-controller release version authority and bound generated tag current-main contract archives checksums receipt attestations and provider prerequisites before mutation
+    remediated_in_phase: P15
+    hotfix_log: phases/phase-15-hotfix01.yml
+    canonical_artifacts: [governance/ci-graph.yml, governance/ci-extensions/bcf-release.yml, governance/gate-contracts.yml, bcf_governance/tooling/ci_github_release_inputs.py, bcf_governance/tooling/ci_github_release.py, bcf_governance/tooling/release_asset_inventory.py]
+    local_validation: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, .venv/bin/python -m pytest -q tests, .venv/bin/python .github/scripts/run_validator_mutants.py --profile full, .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full]
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
 - {type: decision, statement: BCF 0.7.0 is one release train and BCF must self-adopt every applicable Standard-v2 capability}

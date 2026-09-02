@@ -185,6 +185,7 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     paths = [
         "governance/self-governance-policy.yml",
         "governance/ci-graph.yml",
+        "governance/public-contracts.yml",
         "schemas/ci-graph.schema.json",
         "schemas/ci-graph-extension.schema.json",
     ]

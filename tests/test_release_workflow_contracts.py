@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
+
+import yaml
 
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
 from bcf_governance.tooling.ci_graph_render import render_ci_graph
@@ -117,6 +120,9 @@ def test_verifier_controller_is_bound_to_the_triggering_authorization_attempt() 
 
 def test_release_file_selection_and_attempt_fan_in_are_controller_owned() -> None:
     compiled = validate_ci_graph(REPO_ROOT)
+    release_contract_path = REPO_ROOT / "governance/public-contracts.yml"
+    release_contract = yaml.safe_load(release_contract_path.read_text(encoding="utf-8"))
+    release_tag = f"v{release_contract['package']['version']}"
     commands = {
         name: " ".join(command["argv"])
         for name, command in compiled.commands.items()
@@ -130,6 +136,12 @@ def test_release_file_selection_and_attempt_fan_in_are_controller_owned() -> Non
     assert "--runtime-evidence-dir" in commands["authenticate-release-verification"]
     assert "--release-artifact-dir" in commands["collect-release"]
     assert "resolve-publication" in commands["resolve-release-publication"]
+    assert release_tag in commands["publish-release"]
+    assert "steps.resolve.outputs.tag" not in commands["publish-release"]
+    assert (
+        release_contract_path.relative_to(REPO_ROOT).as_posix(),
+        hashlib.sha256(release_contract_path.read_bytes()).hexdigest(),
+    ) in validate_ci_graph(REPO_ROOT).input_sha256
     download = compiled.graph["step_components"]["download-release-receipt"]
     assert download["with"]["artifact-ids"] == (
         "${{ steps.resolve.outputs.receipt_artifact_id }}"

@@ -254,14 +254,24 @@ For a release:
    The authorizer independently hashes the downloaded controller wheel as well.
 8. After owner approval, enable immutable releases and create one annotated
    unsigned `vX.Y.Z` tag at that exact commit.
-9. Provision the short-lived `BCF_RELEASE_ADMIN_TOKEN` Actions secret. Its fine-grained
+9. Run the pre-dispatch provider check once: the immutable-release API must report
+   enabled, the annotated tag must resolve to the certified commit, no release may
+   already exist for that tag, and the repository secret inventory must contain
+   exactly the required `BCF_RELEASE_ADMIN_TOKEN` name. This check discovers missing
+   provider inputs before workflow dispatch; it never executes candidate code.
+10. Provision the short-lived `BCF_RELEASE_ADMIN_TOKEN` Actions secret. Its fine-grained
    repository permissions are Administration read, Attestations read, and Contents write.
    The ordinary workflow token cannot read immutable-release settings. Do not expose this
    credential to candidate jobs or store it in repository files.
-10. The no-checkout publisher first requires that secret, then creates a draft, attaches
-   and attests the pre-certified files, verifies their digests, and publishes without rebuild.
-11. Delete `BCF_RELEASE_ADMIN_TOKEN` immediately after the publisher completes.
-12. Re-fetch provider state and require an immutable, non-draft, exact release
+11. The no-checkout publisher first requires that secret. Its generated tag comes
+   from the digest-locked `governance/public-contracts.yml` package version, never
+   from a previously installed controller version or an operator-entered value.
+   The controller requires that tag to equal the canonical version encoded by both
+   closed archives, verifies attestations before provider mutation, then creates a
+   draft, uploads the pre-certified files, verifies their digests, and publishes
+   without rebuild.
+12. Delete `BCF_RELEASE_ADMIN_TOKEN` immediately after the publisher completes.
+13. Re-fetch provider state and require an immutable, non-draft, exact release
     before recording closeout.
 
 The tag event does not rebuild. The publisher checks out no repository code and
