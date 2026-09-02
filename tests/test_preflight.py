@@ -390,6 +390,12 @@ def test_stale_trusted_controller_is_a_preflight_failure(
             preflight.TrustedControllerRuntimeStaleError("stale runtime closure")
         ),
     )
+    with pytest.raises(
+        preflight.PreflightError,
+        match="self-controller preflight failed: stale runtime closure",
+    ):
+        preflight._self_controller(tmp_path, allow_stale_runtime=False)
+
     assert preflight._self_controller(
         tmp_path, allow_stale_runtime=True
     ) == {
