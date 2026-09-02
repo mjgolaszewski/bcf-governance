@@ -184,7 +184,7 @@ def test_negative_control_preflight_accepts_unique_tracked_target(tmp_path: Path
     assert preflight._negative_control_targets(repo) == 1
 
 
-def test_negative_control_preflight_rejects_stale_oracle_node(tmp_path: Path) -> None:
+def test_negative_control_preflight_reports_every_stale_oracle_node(tmp_path: Path) -> None:
     repo = _committed_repo(tmp_path, "owner.py", "AUTHORITY = 'new'\n")
     manifest = repo / "governance/test-manifests/contract-test.txt"
     manifest.parent.mkdir(parents=True)
@@ -201,14 +201,21 @@ def test_negative_control_preflight_rejects_stale_oracle_node(tmp_path: Path) ->
         "      mutation: {path: owner.py, search: new, replace: mutant}\n"
         "      oracle:\n"
         "        kind: test_node_failure\n"
-        "        node_ids: [tests.test_owner::test_removed]\n",
+        "        node_ids: [tests.test_owner::test_removed]\n"
+        "    - id: another-stale-oracle-must-fail\n"
+        "      mutation: {path: owner.py, search: new, replace: mutant}\n"
+        "      oracle:\n"
+        "        kind: test_node_failure\n"
+        "        node_ids: [tests.test_owner::test_also_removed]\n",
         encoding="utf-8",
     )
     _git(repo, "add", ".")
     _git(repo, "commit", "-m", "add oracle")
 
-    with pytest.raises(preflight.PreflightError, match="stale-oracle-must-fail"):
+    with pytest.raises(preflight.PreflightError) as captured:
         preflight._negative_control_targets(repo)
+    assert "stale-oracle-must-fail" in str(captured.value)
+    assert "another-stale-oracle-must-fail" in str(captured.value)
 
 
 def test_closure_authoring_reports_every_lifecycle_blocker(tmp_path: Path) -> None:
