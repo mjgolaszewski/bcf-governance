@@ -29,6 +29,9 @@ Release target: `1.0.2`
 - Projected the trusted controller target from an authenticated exact-main package
   artifact and retained separate installed-state proof until both trusted runners
   confirm the new bytes.
+- Rotated the controller target again after the final protection-owner correction;
+  the exact-main package artifact, not an operator-entered identity, supplies every
+  run, commit, tree, provider, and wheel binding.
 - Recorded provider-compiled installation proof only after the generated bootstrap
   and probe passed independently on both trusted-control runners.
 - Completed the authored P18 implementation state only after local validation and
