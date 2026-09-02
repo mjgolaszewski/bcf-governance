@@ -4,15 +4,15 @@ build_plan_mandate:
   required_fields: [tightly_scoped_deliverables, parallelizable_workstreams, hard_dependencies, docker_first_local_runtime, completeness_standard]
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P17
-  build_block: reliability-thesis-and-1.0.1-release
-  plan: plans/phase-17-plan.yml
-  workitems: plans/phase-17-workitems.yml
-  log: phases/phase-17-log.yml
+  id: P18
+  build_block: trusted-automation-changelog-and-pr-authority-1.0.2
+  plan: plans/phase-18-plan.yml
+  workitems: plans/phase-18-workitems.yml
+  log: phases/phase-18-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: completed
+  lifecycle_status: planned
   owner: codex
   validation_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests]
 hotfix_lane:
@@ -38,8 +38,10 @@ operator_requirements_choices_disambiguations:
 - {type: ci_graph_authority, statement: agents and humans modify governance/ci-graph.yml or registered bounded extensions while deterministic code alone renders and validates workflow bytes}
 - {type: identity_preservation, statement: every current Identity workflow job trigger edge stable check runner mapping authority role cleanup contract and scheduled lane is preservation-locked; mutation requires offline no-loss and performance proofs and remote validation is limited to one canary plus activation PR and exact-main}
 - {type: hosted_frugality, statement: hosted candidate jobs execute their own bounded work and terminate; polling sleeping lease waiting and hosted waiters for local capacity are prohibited}
+- {type: automation_authority, statement: automation-authored pull requests remain subject to the universal changelog rule; an explicitly adopted trusted deterministic producer may create only the authenticated bounded changelog commit and receives no approval merge release or certification authority}
+- {type: provider_runner_removal, statement: the persistent Dependabot runner bcf-governance-vm-linux-ci-runner-dependabot-1 and its repository registration are retired; candidate code runs only on fresh hosted workers and trusted local runners execute no candidate checkout}
 active_delivery_priorities:
-  current_tranche: [reliability-thesis-and-1.0.1-release]
+  current_tranche: [trusted-automation-changelog-and-pr-authority-1.0.2]
 release_trains:
   release_1:
     target_version: 0.6.1
@@ -67,7 +69,11 @@ release_trains:
     focus: [stable_packaging, published_support_matrix, github_provider_and_release_support, immutable_exact_main_release]
   release_7:
     target_version: 1.0.1
-    status: active
+    status: completed
     focus: [deterministic_error_correction_thesis, release_documentation_currency, candid_cost_and_limitations, immutable_patch_release]
+  release_8:
+    target_version: 1.0.2
+    status: active
+    focus: [trusted_automation_changelog_producer, exact_head_pr_certification, provider_protection_authority, ai_specific_positioning, immutable_patch_release]
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]

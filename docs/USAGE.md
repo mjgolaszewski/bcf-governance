@@ -97,6 +97,23 @@ the exact pull-request base SHA. It uses a full checkout and fails if the base
 commit cannot be resolved, preventing a shallow clone from silently bypassing
 the policy.
 
+Automation-authored dependency PRs are not exempt. Standard-v2 repositories
+may opt into a deterministic trusted producer after configuring a dedicated
+contents-write GitHub App and protected environment:
+
+```bash
+bcf ci automation adopt github --repo-root . --repository owner/repo \
+  --producer dependabot --check
+bcf ci automation adopt github --repo-root . --repository owner/repo \
+  --producer dependabot --apply
+bcf ci automation validate --repo-root .
+```
+
+Adoption derives allowed dependency paths from `.github/dependabot.yml` and
+resolves the actor's numeric provider identity. It does not activate write
+automation on fresh installations. The reconciler ignores titles, bodies, and
+commit messages; it writes one fixed audit entry and never approves or merges.
+
 Installation treats these artifacts as application-owned. Missing files are
 scaffolded; existing files are never placeholder-rewritten or overwritten. An
 existing incompatible artifact makes validated installation fail and the
@@ -108,7 +125,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.1/bcf_governance-1.0.1-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.2/bcf_governance-1.0.2-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 1.0. Verify the

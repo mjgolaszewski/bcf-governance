@@ -153,6 +153,52 @@ class GitHubAPI:
             raise GitHubAPIError("repository response must be an object")
         return value
 
+    def user(self, login: str) -> dict[str, Any]:
+        if not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9\[\]-]{0,37}[A-Za-z0-9\]])?", login):
+            raise GitHubAPIError("GitHub actor login is unsafe")
+        value = self._request("GET", f"/users/{quote(login)}")
+        if not isinstance(value, dict):
+            raise GitHubAPIError("GitHub actor response must be an object")
+        return value
+
+    def pull_request(self, repository: str, number: object) -> dict[str, Any]:
+        numeric = _positive_id(number, field="pull request number")
+        value = self._request(
+            "GET", f"/repos/{self._repository(repository)}/pulls/{numeric}"
+        )
+        if not isinstance(value, dict):
+            raise GitHubAPIError("pull request response must be an object")
+        return value
+
+    def pull_requests(
+        self, repository: str, *, state: str = "open"
+    ) -> tuple[dict[str, Any], ...]:
+        if state not in {"open", "closed"}:
+            raise GitHubAPIError("pull request state must be open or closed")
+        value = self._request(
+            "GET",
+            f"/repos/{self._repository(repository)}/pulls?state={state}&per_page=100",
+        )
+        if not isinstance(value, list) or any(not isinstance(item, dict) for item in value):
+            raise GitHubAPIError("pull request inventory must contain an object list")
+        if len(value) == 100:
+            raise GitHubAPIError("pull request inventory exceeds one authenticated page")
+        return tuple(value)
+
+    def pull_request_files(
+        self, repository: str, number: object
+    ) -> tuple[dict[str, Any], ...]:
+        numeric = _positive_id(number, field="pull request number")
+        value = self._request(
+            "GET",
+            f"/repos/{self._repository(repository)}/pulls/{numeric}/files?per_page=100",
+        )
+        if not isinstance(value, list) or any(not isinstance(item, dict) for item in value):
+            raise GitHubAPIError("pull request file response must contain an object list")
+        if len(value) == 100:
+            raise GitHubAPIError("pull request file inventory exceeds one authenticated page")
+        return tuple(value)
+
     def run(self, repository: str, run_id: str | int) -> dict[str, Any]:
         numeric = _positive_id(run_id, field="run ID")
         value = self._request(
@@ -427,6 +473,151 @@ class GitHubAPI:
         if len(value) == 100:
             raise GitHubAPIError("commit status inventory exceeds one authenticated page")
         return tuple(value)
+
+    def check_runs(self, repository: str, *, sha: str) -> tuple[dict[str, Any], ...]:
+        value = self._request(
+            "GET",
+            f"/repos/{self._repository(repository)}/commits/{_sha(sha, field='check SHA')}/check-runs?per_page=100",
+        )
+        runs = value.get("check_runs") if isinstance(value, dict) else None
+        if not isinstance(runs, list) or any(not isinstance(item, dict) for item in runs):
+            raise GitHubAPIError("check-run response must contain an object list")
+        if int(value.get("total_count", len(runs))) != len(runs):
+            raise GitHubAPIError("check-run inventory exceeds one authenticated page")
+        return tuple(runs)
+
+    def create_check_run(
+        self,
+        repository: str,
+        *,
+        name: str,
+        sha: str,
+        status: str,
+        conclusion: str | None,
+        details_url: str,
+        external_id: str,
+        title: str,
+        summary: str,
+    ) -> dict[str, Any]:
+        if name != "bcf/pr-certification" or status not in {"in_progress", "completed"}:
+            raise GitHubAPIError("PR certification check identity is unsupported")
+        if (status == "completed") != (conclusion in {"success", "failure"}):
+            raise GitHubAPIError("PR certification check conclusion is inconsistent")
+        value = self._request(
+            "POST",
+            f"/repos/{self._repository(repository)}/check-runs",
+            payload={
+                "name": name,
+                "head_sha": _sha(sha, field="check SHA"),
+                "status": status,
+                **({"conclusion": conclusion} if conclusion is not None else {}),
+                "details_url": details_url,
+                "external_id": external_id,
+                "output": {"title": title[:255], "summary": summary[:65535]},
+            },
+        )
+        if not isinstance(value, dict):
+            raise GitHubAPIError("created check-run response must be an object")
+        return value
+
+    def create_blob(self, repository: str, content: bytes) -> str:
+        if len(content) > 1_048_576:
+            raise GitHubAPIError("automation changelog blob exceeds one MiB")
+        value = self._request(
+            "POST",
+            f"/repos/{self._repository(repository)}/git/blobs",
+            payload={"content": base64.b64encode(content).decode("ascii"), "encoding": "base64"},
+        )
+        if not isinstance(value, dict):
+            raise GitHubAPIError("created blob response must be an object")
+        return _sha(value.get("sha"), field="created blob SHA")
+
+    def create_tree(
+        self, repository: str, *, base_tree: str, path: str, blob_sha: str
+    ) -> str:
+        if path.startswith("/") or ".." in path.split("/") or not path:
+            raise GitHubAPIError("created tree path is unsafe")
+        value = self._request(
+            "POST",
+            f"/repos/{self._repository(repository)}/git/trees",
+            payload={
+                "base_tree": _sha(base_tree, field="base tree SHA"),
+                "tree": [{"path": path, "mode": "100644", "type": "blob", "sha": _sha(blob_sha, field="blob SHA")}],
+            },
+        )
+        if not isinstance(value, dict):
+            raise GitHubAPIError("created tree response must be an object")
+        return _sha(value.get("sha"), field="created tree SHA")
+
+    def create_commit(
+        self, repository: str, *, message: str, tree: str, parent: str
+    ) -> str:
+        if message != "chore(governance): record automated dependency update":
+            raise GitHubAPIError("automation commit message is not canonical")
+        value = self._request(
+            "POST",
+            f"/repos/{self._repository(repository)}/git/commits",
+            payload={
+                "message": message,
+                "tree": _sha(tree, field="commit tree SHA"),
+                "parents": [_sha(parent, field="commit parent SHA")],
+            },
+        )
+        if not isinstance(value, dict):
+            raise GitHubAPIError("created commit response must be an object")
+        return _sha(value.get("sha"), field="created commit SHA")
+
+    def update_reference(
+        self, repository: str, *, branch: str, expected_sha: str, commit_sha: str
+    ) -> None:
+        if not re.fullmatch(r"[A-Za-z0-9._/-]+", branch) or ".." in branch:
+            raise GitHubAPIError("automation branch is unsafe")
+        current = self.reference(repository, f"heads/{branch}").get("object")
+        if not isinstance(current, dict) or current.get("type") != "commit" or current.get("sha") != _sha(expected_sha, field="expected branch SHA"):
+            raise GitHubAPIError("automation branch advanced before compare-and-swap")
+        self._request(
+            "PATCH",
+            f"/repos/{self._repository(repository)}/git/refs/heads/{quote(branch, safe='/')}",
+            payload={"sha": _sha(commit_sha, field="new branch commit SHA"), "force": False},
+        )
+
+    def repository_rulesets(self, repository: str) -> tuple[dict[str, Any], ...]:
+        value = self._request(
+            "GET", f"/repos/{self._repository(repository)}/rulesets?includes_parents=false&per_page=100"
+        )
+        if not isinstance(value, list) or any(not isinstance(item, dict) for item in value):
+            raise GitHubAPIError("repository ruleset response must contain an object list")
+        if len(value) == 100:
+            raise GitHubAPIError("repository ruleset inventory exceeds one authenticated page")
+        return tuple(value)
+
+    def ruleset(self, repository: str, ruleset_id: object) -> dict[str, Any]:
+        numeric = _positive_id(ruleset_id, field="ruleset ID")
+        value = self._request(
+            "GET", f"/repos/{self._repository(repository)}/rulesets/{numeric}"
+        )
+        if not isinstance(value, dict):
+            raise GitHubAPIError("repository ruleset detail must be an object")
+        return value
+
+    def create_ruleset(self, repository: str, payload: dict[str, Any]) -> dict[str, Any]:
+        value = self._request(
+            "POST", f"/repos/{self._repository(repository)}/rulesets", payload=payload
+        )
+        if not isinstance(value, dict):
+            raise GitHubAPIError("created ruleset response must be an object")
+        return value
+
+    def update_ruleset(
+        self, repository: str, ruleset_id: object, payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        numeric = _positive_id(ruleset_id, field="ruleset ID")
+        value = self._request(
+            "PUT", f"/repos/{self._repository(repository)}/rulesets/{numeric}", payload=payload
+        )
+        if not isinstance(value, dict):
+            raise GitHubAPIError("updated ruleset response must be an object")
+        return value
 
 
 def _positive_id(value: object, *, field: str) -> str:

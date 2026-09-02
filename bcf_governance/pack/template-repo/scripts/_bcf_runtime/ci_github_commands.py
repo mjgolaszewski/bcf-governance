@@ -5,7 +5,6 @@ import argparse
 from dataclasses import asdict
 import hashlib
 import json
-import os
 from pathlib import Path
 import sys
 from typing import Any
@@ -23,6 +22,12 @@ from .ci_github_controller import (
     publish,
     result_dict,
 )
+from .ci_github_cli_io import (
+    github_output as _github_output,
+    github_output_path as _github_output_path,
+    required_environment as _required_environment,
+)
+from .ci_github_extension_commands import run_extension_command
 from .ci_github_identity import resolve_main, resolve_trusted_run
 from .ci_github_exact_main import (
     admit_exact_main,
@@ -56,43 +61,6 @@ from .release_runtime_verification import (
     run_release_runtime_verification,
     runtime_evidence_paths,
 )
-
-def _required_environment(name: str) -> str:
-    value = os.environ.get(name, "")
-    if not value:
-        raise GitHubControllerError(f"trusted workflow environment is missing {name}")
-    return value
-
-def _github_output_path() -> Path:
-    """Validate the trusted GitHub output channel before authority work begins."""
-
-    path_value = _required_environment("GITHUB_OUTPUT")
-    path = Path(path_value)
-    if path.is_symlink() or not path.is_file():
-        raise GitHubControllerError("GITHUB_OUTPUT must be an existing regular file")
-    return path
-
-def _github_output(payload: dict[str, object], *, path: Path) -> None:
-    """Write validated scalar controller results to a preflighted output channel."""
-
-    lines: list[str] = []
-    for key, value in sorted(payload.items()):
-        if not key.replace("_", "").isalnum() or not key[0].isalpha():
-            raise GitHubControllerError("controller output name is unsafe")
-        if value is None:
-            rendered = ""
-        elif isinstance(value, bool):
-            rendered = str(value).lower()
-        elif isinstance(value, (str, int)):
-            rendered = str(value)
-        else:
-            continue
-        if "\n" in rendered or "\r" in rendered:
-            raise GitHubControllerError("controller output value is multiline")
-        lines.append(f"{key}={rendered}\n")
-    with path.open("a", encoding="utf-8") as stream:
-        stream.writelines(lines)
-
 
 def _exact_main_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="BCF authority-v1.1 exact-main control.")
@@ -654,6 +622,9 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> None:
     raw = list(sys.argv[1:] if argv is None else argv)
     try:
+        if raw and raw[0] in {"automation", "pr", "protection"}:
+            run_extension_command(raw)
+            return
         if raw and raw[0] == "bootstrap":
             _bootstrap(raw[1:])
             return

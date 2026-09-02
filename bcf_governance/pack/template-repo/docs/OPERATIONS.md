@@ -74,6 +74,13 @@ artifacts. Preserve their application-specific content. Every pull request must
 update `CHANGELOG.md`; governance CI verifies the exact base-to-HEAD diff and
 requires a full Git checkout.
 
+Automation PRs remain subject to the same rule. A repository may explicitly
+adopt a trusted producer with `bcf ci automation adopt github --producer
+dependabot --check|--apply` after provisioning the bounded contents-write App
+and protected environment. Fresh installs do not activate write automation.
+The reconciler uses authenticated numeric identity and dependency paths to
+write fixed text; it does not use PR prose and cannot approve or merge.
+
 Before opening a pull request, reproduce its exact remote context:
 
 ```bash

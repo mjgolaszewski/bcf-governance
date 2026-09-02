@@ -6,6 +6,8 @@ import shutil
 import pytest
 import yaml
 
+from bcf_governance import __version__
+from bcf_governance.cli import COMMANDS
 from bcf_governance.tooling.public_contracts import (
     PublicContractError,
     validate_public_contracts,
@@ -36,9 +38,12 @@ def _fixture(tmp_path: Path) -> Path:
 
 def test_public_contract_inventory_matches_executable_owners() -> None:
     inventory = validate_public_contracts(REPO_ROOT)
-    assert inventory.package_version == "1.0.1"
-    assert inventory.command_count == 19
-    assert inventory.contract_count == 6
+    registry = yaml.safe_load(
+        (REPO_ROOT / "governance/public-contracts.yml").read_text(encoding="utf-8")
+    )
+    assert inventory.package_version == __version__
+    assert inventory.command_count == len(COMMANDS)
+    assert inventory.contract_count == len(registry["contracts"])
 
 
 @pytest.mark.parametrize(

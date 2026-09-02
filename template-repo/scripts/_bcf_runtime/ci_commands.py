@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -14,6 +15,9 @@ from .ci_adopt_github import (
     render_github_adoption,
 )
 from .ci_graph_commands import add_graph_parser, run_graph_command
+from .automation_commands import adopt_dependabot
+from .automation_contracts import AutomationContractError, load_automation_registry
+from .ci_github_api import GitHubAPI
 from .ci_graph_contracts import CIGraphError
 from .ci_graph_render import apply_ci_graph, check_ci_graph
 from .ci_authority_pins import CIAuthorityPinError, pin_workflow_authority
@@ -61,10 +65,29 @@ def _adopt_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser
     github.add_argument("--format", choices=("text", "json"), default="text")
 
 
+def _automation_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    automation = subparsers.add_parser("automation", help="Validate or adopt trusted automation.")
+    operations = automation.add_subparsers(dest="automation_operation", required=True)
+    validate = operations.add_parser("validate")
+    validate.add_argument("--repo-root", type=Path, default=Path.cwd())
+    validate.add_argument("--format", choices=("text", "json"), default="text")
+    adopt = operations.add_parser("adopt")
+    providers = adopt.add_subparsers(dest="automation_provider", required=True)
+    github = providers.add_parser("github")
+    github.add_argument("--producer", choices=("dependabot",), required=True)
+    github.add_argument("--repository", required=True)
+    github.add_argument("--repo-root", type=Path, default=Path.cwd())
+    mode = github.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--check", action="store_true")
+    mode.add_argument("--apply", action="store_true")
+    github.add_argument("--format", choices=("text", "json"), default="text")
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="BCF CI authority operations.")
     subparsers = parser.add_subparsers(dest="operation", required=True)
     _adopt_parser(subparsers)
+    _automation_parser(subparsers)
     add_graph_parser(subparsers)
     local = subparsers.add_parser("local-pr", help="Run exact local PR validation.")
     local.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -123,6 +146,32 @@ def main(argv: list[str] | None = None) -> None:
     try:
         if args.operation == "graph":
             run_graph_command(args)
+            return
+        if args.operation == "automation":
+            if args.automation_operation == "validate":
+                registry = load_automation_registry(args.repo_root)
+                _print(
+                    {
+                        "status": "valid",
+                        "repository": registry["repository"]["full_name"],
+                        "active_producers": sum(
+                            item["activation_state"] == "active"
+                            for item in registry["producers"]
+                        ),
+                    },
+                    args.format,
+                )
+                return
+            token = os.environ.get("GITHUB_TOKEN", "")
+            result = adopt_dependabot(
+                GitHubAPI(token=token),
+                repo_root=args.repo_root,
+                repository=args.repository,
+                apply=args.apply,
+            )
+            _print(result.as_dict(), args.format)
+            if args.check and result.status != "clean":
+                raise SystemExit(1)
             return
         if args.operation == "adopt":
             graph_path = args.repo_root / "governance/ci-graph.yml"
@@ -211,6 +260,7 @@ def main(argv: list[str] | None = None) -> None:
         raise SystemExit(result.returncode)
     except (
         CIAuthorityPinError,
+        AutomationContractError,
         CIGraphError,
         GitHubControllerError,
         GithubAdoptionError,

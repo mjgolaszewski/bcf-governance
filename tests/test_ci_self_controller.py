@@ -186,8 +186,12 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
         "governance/self-governance-policy.yml",
         "governance/ci-graph.yml",
         "governance/public-contracts.yml",
+        "governance/automation-producers.yml",
+        "governance/github-protection.yml",
         "schemas/ci-graph.schema.json",
         "schemas/ci-graph-extension.schema.json",
+        "schemas/automation-producers.schema.json",
+        "schemas/github-protection.schema.json",
     ]
     for relative in paths:
         destination = tmp_path / relative

@@ -147,11 +147,14 @@ def test_workflow_authority_compiles_matrix_names_and_semantic_roles(
 
 
 def test_self_workflow_authority_is_mechanically_compiled() -> None:
+    payload = yaml.safe_load(
+        (REPO_ROOT / "governance/ci-authority.yml").read_text(encoding="utf-8")
+    )
     assert verify_workflow_authority(
         REPO_ROOT,
         authority_path=Path("governance/ci-authority.yml"),
         require_history=not is_release_sdist_test_context(REPO_ROOT),
-    ) == 12
+    ) == len(payload["workflow_registry"])
     payload = yaml.safe_load(
         (REPO_ROOT / "governance/ci-authority.yml").read_text(encoding="utf-8")
     )

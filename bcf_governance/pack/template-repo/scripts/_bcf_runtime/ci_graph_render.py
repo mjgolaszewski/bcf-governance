@@ -425,6 +425,8 @@ def _job(
         }
     if job["environment"]:
         result["env"] = copy.deepcopy(job["environment"])
+    if "protected_environment" in job:
+        result["environment"] = job["protected_environment"]
     steps: list[dict[str, Any]] = []
     required_environment = _required_environment_step(compiled, workflow, job)
     if required_environment is not None:

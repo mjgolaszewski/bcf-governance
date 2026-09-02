@@ -95,12 +95,29 @@ workflows:
         type: string
   permissions: {contents: read}
   jobs:
-  - id: pack-checks
-    display_name: Test package, templates, and release tooling
-    semantic_role: bcf-package-template-parity
+  - id: front-door
+    display_name: Validate package workflow front door
+    semantic_role: bcf-package-cheap-preflight
     resource_class: hosted-python-latest
     trust: candidate
     needs: []
+    condition: success
+    timeout_minutes: 10
+    permissions: {contents: read}
+    checkout: false
+    components: []
+    executor:
+      kind: component_sequence
+      components: [checkout-candidate, setup-python, install-governance, run-governance-preflight]
+    produces: []
+    consumes: []
+    required: true
+  - id: pack-checks
+    display_name: Test package templates and release tooling
+    semantic_role: bcf-package-template-parity
+    resource_class: hosted-python-latest
+    trust: candidate
+    needs: [front-door]
     condition: success
     timeout_minutes: 30
     permissions: {contents: read}
@@ -117,7 +134,7 @@ workflows:
     semantic_role: bcf-template-architecture-parity
     resource_class: hosted-python-latest
     trust: candidate
-    needs: []
+    needs: [front-door]
     condition: success
     timeout_minutes: 10
     permissions: {contents: read}

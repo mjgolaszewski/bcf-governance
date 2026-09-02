@@ -1,6 +1,6 @@
 document: {kind: public_contract_registry, name: BCF Supported Public Contracts, id: bcf-governance-public-contracts, version: 1.0.0, status: active, path: governance/public-contracts.yml}
 package:
-  version: 1.0.1
+  version: 1.0.2
   distribution: github_releases
   executable_ci_providers: [github]
   platforms: [linux_x86_64]
@@ -16,6 +16,8 @@ contracts:
   ci_authority: {path: schemas/ci-authority.schema.json, version_field: schema_version, readable_versions: ['1.0', '1.1'], active_version: '1.1', migration_only_versions: ['1.0']}
   ci_graph: {path: schemas/ci-graph.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
   ci_graph_extension: {path: schemas/ci-graph-extension.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
+  automation_producers: {path: schemas/automation-producers.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
+  github_protection: {path: schemas/github-protection.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
 ci_graph:
   canonical_path: governance/ci-graph.yml
   extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]

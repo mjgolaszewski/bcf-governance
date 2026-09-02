@@ -62,7 +62,7 @@
     },
     "docs/OPERATIONS.md": {
       "operation": "copy",
-      "sha256": "30cc237108aad0b33d0a2ad76b2ae65230b9dfeefb96a6a970642bb63c2c3bde"
+      "sha256": "f8bbbfe23ff4a73726475a5a88c063f42cca7b4f007e87761d0ede6058a6de63"
     },
     "governance-profile.yml": {
       "operation": "generate",
@@ -182,6 +182,10 @@
       "operation": "copy",
       "sha256": "50fe308568dd36872c6c587d2a00cbbfc496013ec5723b6ff3a7c5a5e26180ce"
     },
+    "schemas/automation-producers.schema.json": {
+      "operation": "copy",
+      "sha256": "31214d5750a5efd4f12d27bee01a031ee6934ba5248c763ee000b4d607496795"
+    },
     "schemas/build-plan.schema.json": {
       "operation": "copy",
       "sha256": "88908d8fb214c5b594056ed2abfc6524163a77ab62a4cf88fb27b4b415aaa42d"
@@ -204,11 +208,11 @@
     },
     "schemas/ci-graph-extension.schema.json": {
       "operation": "copy",
-      "sha256": "44e41a7bfe39219a3bfb02b90643b4c85a05271255924b8895eb5af7fe0418fb"
+      "sha256": "83175670beeac31d19834dcb9f30bfec55e71b5a02a4d604fd1600f99c26a6da"
     },
     "schemas/ci-graph.schema.json": {
       "operation": "copy",
-      "sha256": "2bca5f138b38fb164c2b9d4e53143342f0245943b02286ef0aedc0a178f5c26b"
+      "sha256": "4192045bb7e4efeb1d5133f277aaefc91adc1b2c02fa95dcc80c41a4d849482a"
     },
     "schemas/ci-provider-snapshot.schema.json": {
       "operation": "copy",
@@ -241,6 +245,10 @@
     "schemas/github-ci-topology.schema.json": {
       "operation": "copy",
       "sha256": "64f8137ad88a691fca4b05450e8b505cdefdaf0d63587bb7756e4d3f9de36067"
+    },
+    "schemas/github-protection.schema.json": {
+      "operation": "copy",
+      "sha256": "3ffffe503150f6d8cab3499b4cbca490bea3ad79ba6b7bbfbf49a388ee7d3d2a"
     },
     "schemas/governance-profile.schema.json": {
       "operation": "copy",
@@ -304,7 +312,19 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "5e81827bbecf1375568b46df72e73c4b4e7bba364d2813ce1c80a3ae4f50bda7"
+      "sha256": "10eced20bfd5a7b833b9ad11187ca29379e145f1a5b579bf7a91ffec04955d75"
+    },
+    "scripts/_bcf_runtime/automation_changelog.py": {
+      "operation": "copy",
+      "sha256": "0d9db718fc87eedeb3fbb1ed57eade05324dcde25a1a7b0a8b4d66202e5ba69f"
+    },
+    "scripts/_bcf_runtime/automation_commands.py": {
+      "operation": "copy",
+      "sha256": "694b0435d9e46c55996ce6d6cea45ca45281e6661d3641dbdfe1e67a00e1d0ce"
+    },
+    "scripts/_bcf_runtime/automation_contracts.py": {
+      "operation": "copy",
+      "sha256": "157f79d08199681a6d3c30478e78187e427d1b7d97e8c7304f198e46591f406d"
     },
     "scripts/_bcf_runtime/check_governance_exposure.py": {
       "operation": "copy",
@@ -336,7 +356,7 @@
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "1f7b149009e6f780e855e634b07d4a6fa556cbc05b51b4c653f07c2029785e74"
+      "sha256": "07e2c4eb2563b0252539a1245e913870a9476d7a02dcbcfdfd5844bef3faa82e"
     },
     "scripts/_bcf_runtime/ci_github.py": {
       "operation": "copy",
@@ -344,11 +364,11 @@
     },
     "scripts/_bcf_runtime/ci_github_actions.py": {
       "operation": "copy",
-      "sha256": "b6870f8c28445cbc4a88574ad7bc098dbb97a68b5347c619fef9c1496a282d15"
+      "sha256": "7d76fda54183e509b5f4b76c59f704c579891bc0ee3946c69a795a347be0c105"
     },
     "scripts/_bcf_runtime/ci_github_api.py": {
       "operation": "copy",
-      "sha256": "0847404e760800eadc3a119d5a00490a4bf94f643d461033cd90883315fe7944"
+      "sha256": "7ac9f3a1620e853eaef7c8ac07a0e2e3422b125bb46ffcbaed0f00312949ad64"
     },
     "scripts/_bcf_runtime/ci_github_artifacts.py": {
       "operation": "copy",
@@ -357,6 +377,10 @@
     "scripts/_bcf_runtime/ci_github_authority.py": {
       "operation": "copy",
       "sha256": "d8373a3a312c08c5d978a5ba839f8a81358a10ea2251607de530b027b443ccc1"
+    },
+    "scripts/_bcf_runtime/ci_github_automation.py": {
+      "operation": "copy",
+      "sha256": "872562d446650ee8698f2902426b94f69e346e0d573e7249ea2e1373a13a53f1"
     },
     "scripts/_bcf_runtime/ci_github_bootstrap.py": {
       "operation": "copy",
@@ -374,9 +398,13 @@
       "operation": "copy",
       "sha256": "5ca3ee10dadb7c43dcfe66b2e220f0ff607154db5eaaadea4d005cdc8b043749"
     },
+    "scripts/_bcf_runtime/ci_github_cli_io.py": {
+      "operation": "copy",
+      "sha256": "9e4419b5aa8e60f6512f530cfe3b07a48f1ea5ac15e84168c35160837bdfaaec"
+    },
     "scripts/_bcf_runtime/ci_github_commands.py": {
       "operation": "copy",
-      "sha256": "4a7b6c8d29b4986fdc3a81bcc2b39a100d15990d11608c51f304d5cc2e1512fe"
+      "sha256": "a34ca384a90ea93ab5d4bc0bca24864b83f3020e4586d97d962154fd05a0944e"
     },
     "scripts/_bcf_runtime/ci_github_controller.py": {
       "operation": "copy",
@@ -386,6 +414,10 @@
       "operation": "copy",
       "sha256": "a8b3935b55b02df5e6e813b59a2c05e55767aee3172d9f73095e342f011373e0"
     },
+    "scripts/_bcf_runtime/ci_github_extension_commands.py": {
+      "operation": "copy",
+      "sha256": "caf7354e63d5c1418e66bc32686573d7137edbdd1846e490358a9a8580cef391"
+    },
     "scripts/_bcf_runtime/ci_github_identity.py": {
       "operation": "copy",
       "sha256": "70e169dfab4fa1d9a5423d773181de0591d82c62863b4d970f2d6a2f353e5213"
@@ -393,6 +425,10 @@
     "scripts/_bcf_runtime/ci_github_membership.py": {
       "operation": "copy",
       "sha256": "21662fbcd1e079e55b050847f71ceea5bd4356c5b5e0398a0d97ae9c91cfd080"
+    },
+    "scripts/_bcf_runtime/ci_github_pr.py": {
+      "operation": "copy",
+      "sha256": "0d56a8954968463baa0a66f68eaa4615322c4e56476410403c02015700231359"
     },
     "scripts/_bcf_runtime/ci_github_release.py": {
       "operation": "copy",
@@ -410,13 +446,17 @@
       "operation": "copy",
       "sha256": "834934a44c7e50e3205a9a8e3345a6b53ec1a6fb0f99f4986a4e89fbc4a39e14"
     },
+    "scripts/_bcf_runtime/ci_graph_authority_policy.py": {
+      "operation": "copy",
+      "sha256": "4f87291b1038684daecae903a896af7baef45711124e1b00a59e858262323d31"
+    },
     "scripts/_bcf_runtime/ci_graph_commands.py": {
       "operation": "copy",
       "sha256": "41b42b4db9e090f18e818ed0deddaa5c63c200888c96c891027924c3b6b4da1f"
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",
-      "sha256": "c660eaeeac612c84c560db64ea6fc6dba3f09a19141c7376696cc4012e93d24e"
+      "sha256": "18d7169292c0c74cffc97bc0b7b4f7449819c86b163d62882ed3aaf438b2efb8"
     },
     "scripts/_bcf_runtime/ci_graph_defaults.py": {
       "operation": "copy",
@@ -432,7 +472,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_execution.py": {
       "operation": "copy",
-      "sha256": "8a6c48c47c40a98e8bc3d3f7248b8f7f4c6a7e678442e7e4af6d64321d519fb4"
+      "sha256": "82ae0e9b96f6000dc23e032392fd484b8a7370e4c9332be1ba94a8076462c6db"
     },
     "scripts/_bcf_runtime/ci_graph_import.py": {
       "operation": "copy",
@@ -444,7 +484,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "28d8aa6cc331d1657f93f49719e90eb81d8ebe632199327cf2ace86927ef242f"
+      "sha256": "857eefea886b1b651155ed9bc6467270027bd86dce2fce71b2a94e1e763138ad"
     },
     "scripts/_bcf_runtime/ci_graph_values.py": {
       "operation": "copy",
@@ -493,6 +533,10 @@
     "scripts/_bcf_runtime/evidence_test_adapters.py": {
       "operation": "copy",
       "sha256": "6f64bb1d572c347d0ba1bcb1380ee155c4f263d41ac4f4c178df573a86c8eb44"
+    },
+    "scripts/_bcf_runtime/github_protection.py": {
+      "operation": "copy",
+      "sha256": "352136f5cbd7082995af51c044ac609100eba1bb5f17ba6275acb68a235453cc"
     },
     "scripts/_bcf_runtime/governance_cleanup/__init__.py": {
       "operation": "copy",

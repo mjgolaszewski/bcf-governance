@@ -1,11 +1,14 @@
 # Editorial Review Checklist
 
-This checklist records the P17 documentation review. It is non-authoritative:
+This checklist records the current documentation review. It is non-authoritative:
 mechanical validation and exact-main certification determine repository and
 release state.
 
 - [x] README identifies BCF as a deterministic error-correction framework
-  around probabilistic software production.
+  specifically for software produced by probabilistic AI agents and does not
+  present human-led development as a design target.
+- [x] Trusted automation is described as bounded deterministic service
+  authority, not AI authority, approval, or merge authority.
 - [x] The Design thesis states the failure model, response sequence, concise
   failure-mode map, authority boundary, and proof limit.
 - [x] Each position includes a cost or limitation.

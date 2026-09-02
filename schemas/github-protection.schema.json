@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bcf-governance.invalid/schemas/github-protection.schema.json",
+  "title": "BCF GitHub provider protection declaration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document", "schema_version", "repository", "pr_certification", "ruleset"],
+  "properties": {
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "id", "version", "status", "path"],
+      "properties": {
+        "kind": {"const": "github_protection"},
+        "name": {"type": "string", "minLength": 1},
+        "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+        "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "status": {"const": "active"},
+        "path": {"const": "governance/github-protection.yml"}
+      }
+    },
+    "schema_version": {"const": "1.0"},
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["full_name", "numeric_id", "branch"],
+      "properties": {
+        "full_name": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "numeric_id": {"type": "integer", "minimum": 1},
+        "branch": {"const": "main"}
+      }
+    },
+    "pr_certification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["context", "publisher_app_id", "producer_workflows"],
+      "properties": {
+        "context": {"const": "bcf/pr-certification"},
+        "publisher_app_id": {"const": 15368},
+        "producer_workflows": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "path", "required_job_names"],
+            "properties": {
+              "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+              "path": {"type": "string", "pattern": "^\\.github/workflows/[A-Za-z0-9._-]+\\.ya?ml$"},
+              "required_job_names": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+            }
+          }
+        }
+      }
+    },
+    "ruleset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "enforcement", "bypass_actors", "required_status_checks", "strict_required_status_checks_policy", "required_approving_review_count", "dismiss_stale_reviews_on_push", "require_last_push_approval", "required_review_thread_resolution", "block_force_pushes", "block_deletions"],
+      "properties": {
+        "name": {"const": "main-governance"},
+        "enforcement": {"const": "active"},
+        "bypass_actors": {"type": "array", "maxItems": 0},
+        "required_status_checks": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["context", "integration_id"],
+            "properties": {
+              "context": {"const": "bcf/pr-certification"},
+              "integration_id": {"const": 15368}
+            }
+          }
+        },
+        "strict_required_status_checks_policy": {"const": true},
+        "required_approving_review_count": {"const": 0},
+        "dismiss_stale_reviews_on_push": {"const": true},
+        "require_last_push_approval": {"const": false},
+        "required_review_thread_resolution": {"const": true},
+        "block_force_pushes": {"const": true},
+        "block_deletions": {"const": true}
+      }
+    }
+  }
+}

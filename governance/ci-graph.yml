@@ -5,13 +5,15 @@ profile_contract_version: '2.0'
 default_branch: main
 trusted_controller: {kind: self_governance_policy, policy_path: governance/self-governance-policy.yml}
 value_sources:
-  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: be21710e38066482c322897fd89d9cf9785e36bed9a7e9c516ab4b255e8a1a15}
-  release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: 288a190b7b839d1c358525a74beb7afe7265eb7836ce1b587da04e375bf2f44f}
+  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: cebdf42cedb3e6fa35c0f95cfad2ce6d04d8a607d7b5e4c8a2d7d48d993f1357}
+  release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: e22ff1bf31b25e4309b61e27f51158fc6fa8a29786d7367db3acddbc326de408}
+  protection-contract: {kind: yaml, path: governance/github-protection.yml, sha256: d9d78dc2ea8711929b46da008d35b081a2966c2c7d98115c97651efe77128e15}
 extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]
 extensions:
+- {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: f0ce7dbd17a655162acdc03e894983f072b6c864452180cb73deceea3a674022}
 - {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 04240211401c1bdec8988910f5e2f68946bbc982b9d3af9373ddfd1d5c9dfd41}
 - {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: 44db0d6a184d599d5fdee4e6f4fe7e4318a8b3923b5121cba080a333c4c8da69}
-- {id: bcf-package, path: governance/ci-extensions/bcf-package.yml, sha256: 955602d160cd8982c67c52fbdb71d7bc0edb53c740a3fb2801d367599b6a13bf}
+- {id: bcf-package, path: governance/ci-extensions/bcf-package.yml, sha256: 5910bbe104d1d527cc09acf67fba01235ff967a8ed1ea2641db2c73019f01d9f}
 resource_classes:
   hosted-python:
     runner: ubuntu-24.04
@@ -497,3 +499,5 @@ policy:
   generated_workflows_only: true
   forbid_hosted_waiters: true
   forbidden_hosted_tokens: [sleep, poll, wait-for-runner, lease-runner]
+  reserved_status_contexts:
+  - {context: bcf/pr-certification, semantic_role: pr-certification-status-publisher}

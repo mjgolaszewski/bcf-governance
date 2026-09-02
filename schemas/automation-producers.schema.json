@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bcf-governance.invalid/schemas/automation-producers.schema.json",
+  "title": "BCF trusted automation producers",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document", "schema_version", "provider", "repository", "policy", "producers"],
+  "properties": {
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "id", "version", "status", "path"],
+      "properties": {
+        "kind": {"const": "automation_producer_registry"},
+        "name": {"type": "string", "minLength": 1},
+        "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+        "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "status": {"const": "active"},
+        "path": {"const": "governance/automation-producers.yml"}
+      }
+    },
+    "schema_version": {"const": "1.0"},
+    "provider": {"const": "github"},
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["full_name", "numeric_id"],
+      "properties": {
+        "full_name": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "numeric_id": {"type": "integer", "minimum": 1}
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["changelog_path", "section", "entry_template", "marker_prefix", "maximum_changed_paths", "trusted_resource_class", "protected_environment", "observer_token_environment", "writer_token_environment"],
+      "properties": {
+        "changelog_path": {"const": "CHANGELOG.md"},
+        "section": {"const": "Changed"},
+        "entry_template": {"const": "- Automated dependency update `{producer_id}` from PR #{pr_number}: {dependency_paths}."},
+        "marker_prefix": {"const": "bcf-automation-changelog"},
+        "maximum_changed_paths": {"type": "integer", "minimum": 1, "maximum": 100},
+        "trusted_resource_class": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+        "protected_environment": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+        "observer_token_environment": {"const": "GITHUB_TOKEN"},
+        "writer_token_environment": {"const": "BCF_AUTOMATION_APP_TOKEN"}
+      }
+    },
+    "producers": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/producer"}
+    }
+  },
+  "$defs": {
+    "safePathPattern": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9*?._/{}!\\[\\]-]+$"},
+    "controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["positive", "adversarial", "topology", "cleanup"],
+      "properties": {
+        "positive": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+        "adversarial": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+        "topology": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+        "cleanup": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "activation_state", "actor_id", "actor_login", "same_repository_head", "branch_patterns", "dependency_change_classes", "allowed_paths", "controls"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+        "type": {"enum": ["dependabot", "github_app"]},
+        "activation_state": {"enum": ["disabled", "active"]},
+        "actor_id": {"type": "integer", "minimum": 1},
+        "actor_login": {"type": "string", "minLength": 1},
+        "app_id": {"type": "integer", "minimum": 1},
+        "same_repository_head": {"const": true},
+        "branch_patterns": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/safePathPattern"}},
+        "dependency_change_classes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["python", "github-actions", "npm", "docker"]}},
+        "allowed_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/safePathPattern"}},
+        "controls": {"$ref": "#/$defs/controls"}
+      },
+      "allOf": [
+        {"if": {"properties": {"type": {"const": "github_app"}}}, "then": {"required": ["app_id"]}}
+      ]
+    }
+  }
+}

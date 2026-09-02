@@ -14,6 +14,7 @@ from jsonschema import Draft202012Validator
 
 from .ci_graph_errors import CIGraphError, execution_graph_error
 from .ci_graph_execution import job_execution_issues, workflow_input_issues
+from .ci_graph_authority_policy import validate_graph_authority_policy
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 from .ci_graph_values import CIGraphValueError, resolve_graph_values
 
@@ -22,8 +23,6 @@ GRAPH_PATH = Path("governance/ci-graph.yml")
 EXTENSION_ROOT = Path("governance/ci-extensions")
 GRAPH_SCHEMA_PATH = Path("schemas/ci-graph.schema.json")
 EXTENSION_SCHEMA_PATH = Path("schemas/ci-graph-extension.schema.json")
-
-
 @dataclass(frozen=True)
 class CompiledCIGraph:
     graph: dict[str, Any]
@@ -35,8 +34,6 @@ class CompiledCIGraph:
     trusted_controller: str
     trusted_controller_check: str
     trusted_controller_current: bool
-
-
 def _schema(repo_root: Path, relative: Path) -> dict[str, Any]:
     path = repo_root / relative
     try:
@@ -220,6 +217,7 @@ def _compose(graph: dict[str, Any], extensions: list[dict[str, Any]]) -> dict[st
 def _apply_canonical_defaults(graph: dict[str, Any]) -> None:
     """Apply optional contract defaults once, before any downstream consumer."""
 
+    graph["policy"].setdefault("reserved_status_contexts", [])
     for resource in graph["resource_classes"].values():
         resource.setdefault("python_version", "3.12")
     for command in graph["commands"].values():
@@ -779,6 +777,7 @@ def validate_ci_graph(
     _validate_schema(composed, graph_schema, "composed CI graph")
     _validate_step_components(composed)
     _validate_workflows(composed)
+    validate_graph_authority_policy(repo_root, composed)
     _validate_hosted_commands(composed)
     _validate_required_gate_ownership(repo_root, composed)
     controller, controller_check, controller_current, controller_inputs = _trusted_controller(

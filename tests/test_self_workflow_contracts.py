@@ -9,13 +9,21 @@ from bcf_governance.tooling.self_workflow_contracts import (
     SelfWorkflowContractError,
     validate_self_workflow_contracts,
 )
+from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_self_workflow_contracts_are_one_preflight_owned_mechanical_control() -> None:
-    assert validate_self_workflow_contracts(REPO_ROOT) == 22
+    compiled = validate_ci_graph(REPO_ROOT)
+    expected = sum(
+        job["executor"]["kind"] != "reusable_workflow"
+        for workflow in compiled.workflows
+        for job in workflow["jobs"]
+    )
+    assert expected > 0
+    assert validate_self_workflow_contracts(REPO_ROOT) == expected
 
 
 @pytest.mark.parametrize(

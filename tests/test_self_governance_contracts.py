@@ -318,11 +318,61 @@ def test_exact_main_is_the_only_default_branch_producer() -> None:
 
 
 def test_self_ci_authority_matches_immutable_workflow_definitions() -> None:
+    authority = yaml.safe_load(
+        (REPO_ROOT / "governance/ci-authority.yml").read_text(encoding="utf-8")
+    )
     assert verify_workflow_authority(
         REPO_ROOT,
         authority_path=Path("governance/ci-authority.yml"),
         require_history=not is_release_sdist_test_context(REPO_ROOT),
-    ) == 12
+    ) == len(authority["workflow_registry"])
+
+
+def test_automation_authority_is_metadata_only_and_candidate_excluded() -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    admission = _job("automation-admission", "admit")
+    reconcile = _job("automation-reconcile", "reconcile")
+    publisher = _job("pr-status-publisher", "publish")
+    assert _workflow("automation-admission")["events"] == [
+        {"type": "pull_request_target"}
+    ]
+    assert compiled.graph["conditions"]["automation-dependabot-actor"] == (
+        "github.event.pull_request.user.id == 49699333"
+    )
+    assert admission["checkout"] is False and admission["trust"] == "trusted"
+    assert admission["permissions"].get("contents") == "read"
+    assert reconcile["checkout"] is False
+    assert reconcile["protected_environment"] == "bcf-trusted-automation"
+    assert publisher["permissions"] == {
+        "actions": "read",
+        "checks": "write",
+        "contents": "read",
+        "pull-requests": "read",
+    }
+    assert all(
+        job["permissions"].get("checks") != "write"
+        for workflow in compiled.workflows
+        for job in workflow["jobs"]
+        if job["trust"] == "candidate"
+    )
+
+
+def test_automation_front_doors_precede_expensive_fanout_and_old_runner_is_absent() -> None:
+    governance = _workflow("governance")
+    package = _workflow("governance-pack")
+    assert all(
+        "validate" in job["needs"]
+        for job in governance["jobs"]
+        if job["id"] != "validate"
+    )
+    assert all(
+        "front-door" in job["needs"]
+        for job in package["jobs"]
+        if job["id"] != "front-door"
+    )
+    rendered = b"\n".join(render_ci_graph(REPO_ROOT).values())
+    assert b"bcf-governance-vm-linux-ci-runner-dependabot-1" not in rendered
+    assert b"dependabot-1" not in rendered
 
 
 def test_every_github_action_uses_the_canonical_immutable_pin() -> None:
