@@ -34,6 +34,9 @@ execution_evidence:
   - command: trusted bootstrap 33617358764 and independent probe 33617411837
     result: pass
     notes: both provider-authenticated workflows installed or verified controller af037ec on bcf-trusted-control-1 and bcf-trusted-control-2 in 11 to 14 seconds without checkout or hosted execution
+  - command: confirmation PR run 33618772195
+    result: failed_fast_before_evidence
+    notes: PR-only changelog policy was omitted from the initial confirmation commit because only closure preflight was run locally; remote preflight stopped in 18 seconds, every evidence shard skipped, and package checks passed in 10 and 6 seconds
   notes:
   - release authorization, collection, and publication are mechanically disabled while target and independently proven installed controller commits differ
   - cheap preflight derives the trusted Python import closure and packaged schema inventory, then rejects a target whose bytes differ from committed HEAD
