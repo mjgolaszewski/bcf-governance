@@ -25,7 +25,12 @@ def render_v2_makefile(contract: dict[str, Any]) -> str:
         "",
     ]
     for target, gate in gates.items():
-        argv = shlex.join(gate["invocation"]["argv"])
+        command = list(gate["invocation"]["argv"])
+        argv = (
+            "$(PYTHON)" + (" " + shlex.join(command[1:]) if len(command) > 1 else "")
+            if command[0] in {"python", "python3"}
+            else shlex.join(command)
+        )
         env = " ".join(
             f"{key}={shlex.quote(value)}"
             for key, value in gate["invocation"]["env"].items()

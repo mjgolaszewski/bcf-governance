@@ -612,10 +612,11 @@ def test_full_profile_install_evidence_truth_flow(
         assert (repo / "governance/HOTFIX_LANE.md").is_file()
 
 
-def test_clean_standard_v2_fixture_installs_extends_regenerates_and_rolls_back(
-    tmp_path: Path,
+@pytest.mark.parametrize("cycle", range(1, 6))
+def test_clean_standard_v2_fixture_installs_upgrades_customizes_and_rolls_back(
+    tmp_path: Path, cycle: int,
 ) -> None:
-    repo = tmp_path / "clean-standard-graph"
+    repo = tmp_path / f"clean-standard-graph-{cycle}"
     repo.mkdir()
     git(repo, "init", "--quiet")
     git(repo, "config", "user.email", "graph-fixture@example.invalid")
@@ -672,6 +673,31 @@ def test_clean_standard_v2_fixture_installs_extends_regenerates_and_rolls_back(
     assert [job["id"] for job in governance["jobs"]].count("fixture-extension") == 1
     assert check_ci_graph(repo).status == "clean"
     assert unrelated.read_bytes() == unrelated_bytes
+    project_owned = {
+        path: (repo / path).read_bytes()
+        for path in (
+            "governance-profile.yml",
+            "governance/gate-contracts.yml",
+            "governance/ci-graph.yml",
+            "governance/ci-extensions/fixture.yml",
+            ".github/workflows/application.yml",
+        )
+    }
+    subprocess.run(
+        [
+            sys.executable,
+            str(INSTALLER),
+            "--target",
+            str(repo),
+            "--upgrade",
+            "--skip-validation",
+        ],
+        check=True,
+    )
+    assert {
+        path: (repo / path).read_bytes() for path in project_owned
+    } == project_owned
+    assert check_ci_graph(repo).status == "clean"
     output = repo / ".artifacts/bcf/fixture-extension.json"
     subprocess.run([sys.executable, str(script_path), "--output", str(output)], check=True)
     assert json.loads(output.read_text(encoding="utf-8"))["status"] == "pass"

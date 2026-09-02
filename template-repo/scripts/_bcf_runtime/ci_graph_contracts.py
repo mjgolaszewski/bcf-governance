@@ -12,6 +12,7 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
+from .ci_graph_errors import CIGraphError, execution_graph_error
 from .ci_graph_execution import job_execution_issues, workflow_input_issues
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 from .ci_graph_values import CIGraphValueError, resolve_graph_values
@@ -21,10 +22,6 @@ GRAPH_PATH = Path("governance/ci-graph.yml")
 EXTENSION_ROOT = Path("governance/ci-extensions")
 GRAPH_SCHEMA_PATH = Path("schemas/ci-graph.schema.json")
 EXTENSION_SCHEMA_PATH = Path("schemas/ci-graph-extension.schema.json")
-
-
-class CIGraphError(ValueError):
-    """Raised when graph bytes do not define one safe executable topology."""
 
 
 @dataclass(frozen=True)
@@ -432,7 +429,11 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
         item for item in workflows if any(event["type"] == "push" for event in item["events"])
     ]
     if len(push_workflows) != 1 or push_workflows[0]["role"] != "exact-main":
-        raise CIGraphError("CI graph must have one exact-main push authority")
+        raise CIGraphError(
+            "CI graph must have one exact-main push authority",
+            kind="event",
+            identifier="push",
+        )
     semantic_roles: set[str] = set()
     artifact_producers: dict[str, tuple[str, str]] = {}
     graph_resources = graph["resource_classes"]
@@ -450,7 +451,11 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
         if workflow["role"] == "scheduled" and any(
             event["type"] in {"pull_request", "push"} for event in workflow["events"]
         ):
-            raise CIGraphError("scheduled controls cannot be required by PR or push events")
+            raise CIGraphError(
+                "scheduled controls cannot be required by PR or push events",
+                kind="event",
+                identifier=workflow["id"],
+            )
         by_id, dependencies = _job_graph(workflow)
         ancestor_map = {job_id: _ancestors(job_id, dependencies) for job_id in by_id}
         for job in workflow["jobs"]:
@@ -460,17 +465,29 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
             semantic_roles.add(role)
             resource_id = job["resource_class"]
             if resource_id not in graph_resources:
-                raise CIGraphError(f"CI graph job {job['id']} has unknown resource class {resource_id}")
+                raise CIGraphError(
+                    f"CI graph job {job['id']} has unknown resource class {resource_id}",
+                    kind="runner",
+                    identifier=resource_id,
+                )
             resource = graph_resources[resource_id]
             if resource["trust"] != job["trust"]:
-                raise CIGraphError(f"CI graph job {job['id']} trust conflicts with its resource class")
+                raise CIGraphError(
+                    f"CI graph job {job['id']} trust conflicts with its resource class",
+                    kind="runner",
+                    identifier=resource_id,
+                )
             if job["trust"] == "trusted" and (job["checkout"] or "checkout" in job["components"]):
                 raise CIGraphError(f"trusted CI graph job {job['id']} may not check out candidate code")
             if job["trust"] == "candidate" and any(
                 value == "write" and key in {"actions", "checks", "contents", "packages", "pull-requests", "statuses"}
                 for key, value in job["permissions"].items()
             ):
-                raise CIGraphError(f"candidate CI graph job {job['id']} has privileged write authority")
+                raise CIGraphError(
+                    f"candidate CI graph job {job['id']} has privileged write authority",
+                    kind="permission",
+                    identifier=job["id"],
+                )
             executor = job["executor"]
             condition = job["condition"]
             if condition not in {"success", "always", "failure", "cancelled"} and condition not in graph["conditions"]:
@@ -498,9 +515,11 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                     )
                 _validate_condition_scope(graph, job, executor["components"])
                 _validate_private_transport(graph, job, executor)
-                execution_issues = job_execution_issues(graph, job, executor)
+                execution_issues = job_execution_issues(
+                    graph, job, executor, workflow
+                )
                 if execution_issues:
-                    raise CIGraphError(execution_issues[0])
+                    raise execution_graph_error(execution_issues[0], job_id=job["id"])
                 component_produces = {
                     artifact
                     for component_id in executor["components"]
@@ -589,9 +608,11 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
             else:
                 _validate_condition_scope(graph, job, [])
                 _validate_private_transport(graph, job, executor)
-                execution_issues = job_execution_issues(graph, job, executor)
+                execution_issues = job_execution_issues(
+                    graph, job, executor, workflow
+                )
                 if execution_issues:
-                    raise CIGraphError(execution_issues[0])
+                    raise execution_graph_error(execution_issues[0], job_id=job["id"])
         for job in workflow["jobs"]:
             for artifact in job["consumes"]:
                 if artifact not in graph["artifacts"]:

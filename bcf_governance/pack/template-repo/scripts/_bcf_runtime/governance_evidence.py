@@ -45,6 +45,7 @@ from .ci_graph_contracts import CIGraphError, GRAPH_PATH
 from .ci_graph_locks import apply_ci_graph_locks
 from .ci_graph_render import apply_ci_graph
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
+from .yaml_mutations import YAMLMutationPathError, assign_yaml_value, typed_mutation_value
 
 
 RECEIPT_SUFFIX = ".evidence.json"
@@ -121,22 +122,14 @@ def _apply_negative_control(worktree: Path, control: dict[str, Any]) -> tuple[bo
         return False, None
     tracked_relative = path.relative_to(worktree.resolve()).as_posix()
     yaml_path = mutation.get("yaml_path")
-    if isinstance(relative_path, str) and isinstance(yaml_path, str) and "value" in mutation:
+    if isinstance(relative_path, str) and isinstance(yaml_path, str):
         payload = yaml.safe_load(path.read_text(encoding="utf-8"))
-        current: Any = payload
-        tokens = yaml_path.split(".")
         try:
-            for token in tokens[:-1]:
-                current = current[int(token)] if isinstance(current, list) else current[token]
-            last = tokens[-1]
-            previous = current[int(last)] if isinstance(current, list) else current.get(last)
-            if isinstance(current, list):
-                current[int(last)] = mutation["value"]
-            else:
-                current[last] = mutation["value"]
-        except (KeyError, IndexError, TypeError, ValueError):
+            value = typed_mutation_value(mutation)
+            previous = assign_yaml_value(payload, yaml_path, value)
+        except YAMLMutationPathError:
             return False, None
-        if previous == mutation["value"]:
+        if previous == value:
             return False, None
         path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
         return True, tracked_relative

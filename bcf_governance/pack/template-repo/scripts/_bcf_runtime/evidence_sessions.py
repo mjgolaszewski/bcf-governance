@@ -168,14 +168,28 @@ def _closed_inventory(values: Iterable[str], *, field: str) -> list[str]:
     return inventory
 
 
+def _producer_contract(
+    repo_root: Path,
+    expected_producers: Iterable[str],
+    producer_identity: Mapping[str, str] | None,
+) -> tuple[dict[str, str], list[str]]:
+    producer = _producer_identity(repo_root, producer_identity)
+    inventory = _closed_inventory(expected_producers, field="producer inventory")
+    if producer["kind"] == "local" and producer["producer_id"] not in inventory:
+        raise EvidenceError(
+            "local evidence producer ID must be admitted by the producer inventory"
+        )
+    return producer, inventory
+
+
 def _manifest_payload(
     repo_root: Path,
     session_id: str,
     expected_gates: Iterable[str],
-    expected_producers: Iterable[str],
     *,
     root_kind: str,
-    producer_identity: Mapping[str, str] | None,
+    producer: Mapping[str, str],
+    producer_inventory: list[str],
 ) -> dict[str, Any]:
     profile, contract_version = _profile(repo_root)
     return {
@@ -187,13 +201,11 @@ def _manifest_payload(
         },
         "profile": profile,
         "profile_contract_version": contract_version,
-        "producer": _producer_identity(repo_root, producer_identity),
+        "producer": producer,
         "expected_gate_inventory": _closed_inventory(
             expected_gates, field="gate inventory"
         ),
-        "expected_producer_inventory": _closed_inventory(
-            expected_producers, field="producer inventory"
-        ),
+        "expected_producer_inventory": producer_inventory,
         "created_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "session_root_policy": {
             "mode": "0700",
@@ -218,6 +230,10 @@ def allocate_session(
     )
     if status:
         raise EvidenceError("evidence session requires a clean committed HEAD")
+    producers = expected_producers or [os.environ.get("GITHUB_JOB", "local")]
+    producer, producer_inventory = _producer_contract(
+        repo_root, producers, producer_identity
+    )
     artifact_root = _assert_artifact_root(repo_root, artifact_root)
     sessions_root = artifact_root / "sessions"
     _reject_symlink_components(sessions_root)
@@ -228,7 +244,6 @@ def allocate_session(
         if artifact_root.resolve().is_relative_to(repo_root.resolve())
         else "external"
     )
-    producers = expected_producers or [os.environ.get("GITHUB_JOB", "local")]
     for _ in range(SESSION_CREATE_RETRIES):
         session_id = secrets.token_hex(SESSION_ID_BYTES)
         session_root = sessions_root / session_id
@@ -241,9 +256,9 @@ def allocate_session(
             repo_root,
             session_id,
             expected_gates,
-            producers,
             root_kind=root_kind,
-            producer_identity=producer_identity,
+            producer=producer,
+            producer_inventory=producer_inventory,
         )
         encoded = (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8")
         temporary = session_root / f".{SESSION_FILENAME}.{secrets.token_hex(8)}.tmp"

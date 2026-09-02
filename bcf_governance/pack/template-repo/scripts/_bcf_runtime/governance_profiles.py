@@ -12,6 +12,7 @@ import yaml  # type: ignore[import-untyped]
 from .ci_github_actions import action_pin
 from .profile_yaml import render_profile_surface
 from .profile_v2_surfaces import apply_profile_v2_artifact_defaults
+from .yaml_mutations import YAMLMutationPathError, mutation_mode
 
 
 BUILTIN_TARGETS = {"governance-validate", "governance-exposure-scan"}
@@ -91,8 +92,8 @@ def _builtin_contracts() -> dict[str, dict[str, Any]]:
                     "id": "local-workspace-path-is-rejected",
                     "mutation": {
                         "path": "MEMORY.yml",
-                        "search": "canonical_governance_guide: AGENTS.yml",
-                        "replace_base64": "Y2Fub25pY2FsX2dvdmVybmFuY2VfZ3VpZGU6IC9Vc2Vycy9leGFtcGxlL3ByaXZhdGUvQUdFTlRTLnltbA==",
+                        "yaml_path": "stable_decisions.canonical_governance_guide",
+                        "value_base64": "L1VzZXJzL2V4YW1wbGUvcHJpdmF0ZS9BR0VOVFMueW1s",
                     },
                     "oracle": {
                         "kind": "diagnostic",
@@ -129,8 +130,8 @@ def _v2_builtin_contracts() -> dict[str, dict[str, Any]]:
                     "id": "evidence-session-owner-is-enforced",
                     "mutation": {
                         "path": "governance/canonical-representations.yml",
-                        "search": "authorized_constructors_and_factories: ['scripts/_bcf_runtime/evidence_sessions.py::allocate_session', 'scripts/_bcf_runtime/evidence_sessions.py::load_session']",
-                        "replace": "authorized_constructors_and_factories: ['scripts/_bcf_runtime/missing.py::owner']",
+                        "yaml_path": "representations[semantic_id=governance.evidence-session.v1].authorized_constructors_and_factories",
+                        "value": ["scripts/_bcf_runtime/missing.py::owner"],
                     },
                     "oracle": {
                         "kind": "diagnostic",
@@ -192,15 +193,10 @@ def _validate_control(raw: object, *, context: str) -> dict[str, Any]:
     path = mutation.get("path")
     if path != "@active_phase_log":
         _safe_relative(path, context=f"{context}.mutation.path")
-    text_mode = isinstance(mutation.get("search"), str) and (
-        isinstance(mutation.get("replace"), str)
-        != isinstance(mutation.get("replace_base64"), str)
-    )
-    yaml_mode = isinstance(mutation.get("yaml_path"), str) and "value" in mutation
-    if text_mode == yaml_mode:
-        raise ProfileContractError(
-            f"{context}.mutation must declare exactly one of text replacement or YAML assignment"
-        )
+    try:
+        mutation_mode(mutation, suffix=Path(str(path)).suffix)
+    except YAMLMutationPathError as exc:
+        raise ProfileContractError(f"{context}.mutation {exc}") from exc
     return {
         "id": raw["id"],
         "mutation": dict(mutation),
@@ -336,7 +332,9 @@ def required_targets(
     targets = {
         str(gate["target"])
         for gate in gates.values()
-        if isinstance(gate, dict) and isinstance(gate.get("target"), str)
+        if isinstance(gate, dict)
+        and gate.get("status") != "not_applicable"
+        and isinstance(gate.get("target"), str)
     }
     targets.discard("ci-certification")
     if contract_version == "1.0":

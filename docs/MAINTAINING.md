@@ -65,7 +65,10 @@ definition commit in the following commit.
 
 Profile-contract behavior has one packaged owner. Fresh Standard and Regulated
 installs use v2; Lite and version-absent consumers remain v1. Ordinary upgrades
-preserve the selected profile, contract version, and workflow bytes. Promotion
+refresh only pack-owned runtime/schema paths and preserve the project-owned
+profile, gate, evidence, graph, extension, and workflow bytes. Legacy migration
+is explicit through `bcf migrate-contract`; it reports all blockers together and
+does not infer project-specific values. Promotion
 is explicit, monotonic, transactional, and also preserves workflow bytes;
 GitHub workflow changes belong only to fresh installation or the explicit CI
 adopter. Tests must compare those bytes, not merely decoded job names.
@@ -128,6 +131,12 @@ reviewing clarity or technical accuracy.
 
 ## Verification
 
+Use one selected environment for the complete candidate. Install its declared
+requirements once, then run every check with `$(PYTHON) -m ...` or the selected
+interpreter path. Do not borrow a global `pytest`, `ruff`, or `mypy` executable.
+Generated jobs derive the full required-environment set and validate it as their
+first step, before checkout or work.
+
 Run the source and template checks:
 
 ```bash
@@ -146,6 +155,20 @@ mutation—not on collection, import, syntax, or infrastructure failure:
 ```bash
 python3 .github/scripts/run_validator_mutants.py --profile high-value
 python3 .github/scripts/run_validator_mutants.py --profile full
+```
+
+Before a release-candidate PR, run the five-cycle adoption soak from a clean,
+committed candidate. It creates disposable clones, never mutates either source
+repository, launches no Actions runs, and proves project-owned byte preservation,
+idempotent pack-owned refresh, exact rollback, and fail-closed Identity legacy
+diagnostics:
+
+```bash
+python3 .github/scripts/run_adoption_soak.py \
+  --identity-source https://github.com/mjgolaszewski/chrysalis-identity.git \
+  --identity-commit 0569e6dd81b311abf33af5626a32441b0d55cc64 \
+  --python .venv/bin/python --cycles 5 \
+  --output .artifacts/p15-adoption-soak.json # non-authoritative until hashed into the tracked audit
 ```
 
 Pull requests run source tests and semantic mutants; larger implementation and
@@ -207,7 +230,9 @@ python3 -m twine check dist/*
 
 For a release:
 
-1. Set `bcf_governance/_version.py` to `X.Y.Z`.
+1. Set `bcf_governance/_version.py` to `X.Y.Z`, `X.Y.ZrcN`, or another
+   supported pre-release form (`aN` or `bN`). GitHub release drafts are
+   mechanically marked prerelease whenever the canonical version has a suffix.
 2. Update the release heading and comparison links in `CHANGELOG.md`.
 3. Update `manifest.yml`; regenerate template runtime/version surfaces and pack
    manifests.

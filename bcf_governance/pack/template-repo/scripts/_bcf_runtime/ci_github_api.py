@@ -12,6 +12,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
+from .release_versions import ReleaseVersionError, parse_release_tag
+
 
 REPOSITORY_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 
@@ -288,8 +290,10 @@ class GitHubAPI:
         return value
 
     def release_by_tag(self, repository: str, tag: str) -> dict[str, Any]:
-        if not re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+", tag):
-            raise GitHubAPIError("release tag must be exact semantic version")
+        try:
+            parse_release_tag(tag)
+        except ReleaseVersionError as exc:
+            raise GitHubAPIError("release tag must be one canonical public version") from exc
         value = self._request(
             "GET", f"/repos/{self._repository(repository)}/releases/tags/{quote(tag)}"
         )
@@ -300,8 +304,12 @@ class GitHubAPI:
     def create_draft_release(
         self, repository: str, *, tag: str, name: str, body: str
     ) -> dict[str, Any]:
-        if not re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+", tag) or name != tag:
-            raise GitHubAPIError("draft release identity must be one semantic version")
+        try:
+            release_version = parse_release_tag(tag)
+        except ReleaseVersionError as exc:
+            raise GitHubAPIError("draft release identity must be one canonical public version") from exc
+        if name != tag:
+            raise GitHubAPIError("draft release name must equal its canonical tag")
         value = self._request(
             "POST",
             f"/repos/{self._repository(repository)}/releases",
@@ -310,7 +318,7 @@ class GitHubAPI:
                 "name": name,
                 "body": body,
                 "draft": True,
-                "prerelease": False,
+                "prerelease": release_version.prerelease,
                 "generate_release_notes": False,
             },
         )

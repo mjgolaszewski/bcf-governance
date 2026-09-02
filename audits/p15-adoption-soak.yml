@@ -1,0 +1,46 @@
+document:
+  kind: adoption_upgrade_soak
+  name: P15 BCF and Identity Adoption Soak
+  id: p15-adoption-upgrade-soak
+  version: 1.0.0
+  generated_at_utc: '2026-09-02T00:00:00Z'
+  status: completed
+  path: audits/p15-adoption-soak.yml
+execution:
+  owner: .github/scripts/run_adoption_soak.py::run_soak
+  selected_python: {implementation: cpython, version: 3.12.11, platform: linux_x86_64}
+  cycles: 5
+  remote_actions_runs: 0
+  local_report_sha256: 8164678b91fdf652194ed13d4aea03f76abf9dedbca8625d7c762344934445d3
+subjects:
+  bcf:
+    repository: mjgolaszewski/bcf-governance
+    commit: 0172f8a3e4afe44cc78a00b4632224910da1be8c
+    tree: bab3a7a93c684af42cc6da2c2806dd4aa9f9fd77
+  identity:
+    repository: mjgolaszewski/chrysalis-identity
+    commit: 0569e6dd81b311abf33af5626a32441b0d55cc64
+    tree: 96306a5dbba3327adb948aa183d39dce1129c6e4
+results:
+  bcf:
+    project_owned_bytes_preserved: true
+    pack_refresh_idempotent: true
+    refreshed_path_count_per_cycle: 125
+    rollback_exact_in_every_cycle: true
+    contract_status: current
+  identity:
+    project_owned_bytes_preserved: true
+    pack_refresh_idempotent: true
+    refreshed_path_count_per_cycle: 152
+    rollback_exact_in_every_cycle: true
+    workflow_count_per_cycle: 10
+    graph_diagnostic_status: fail_closed
+    graph_diagnostic_kind: graph_input
+    graph_diagnostic: governance/ci-graph.yml is absent from the legacy consumer
+    migration_status: blocked
+    migration_blocker: canonical representation enforcement lacks declared_families required by Standard v2
+  identity_source_mutated: false
+  bcf_source_mutated: false
+conclusion:
+  status: pass
+  statement: ordinary upgrades preserve project-owned governance and workflow bytes, pack-owned refresh is idempotent, rollback is exact, and the legacy Identity consumer fails closed without an inferred graph or migration value

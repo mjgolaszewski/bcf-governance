@@ -169,7 +169,13 @@ def test_transactional_adopter_preserves_unmanaged_workflows(tmp_path: Path) -> 
         assert (tmp_path / relative).read_bytes() == content
 
     producer = yaml.safe_load((tmp_path / ".github/workflows/bcf-exact-ref.yml").read_text())
-    checkout = producer["jobs"]["producer"]["steps"][0]
+    checkout_steps = [
+        step
+        for step in producer["jobs"]["producer"]["steps"]
+        if step.get("uses") == ACTION_PINS["checkout"]
+    ]
+    assert len(checkout_steps) == 1
+    checkout = checkout_steps[0]
     assert checkout["with"]["persist-credentials"] is False
     assert producer["permissions"] == {"contents": "read"}
     assert producer["jobs"]["producer"]["name"] == "Execute exact candidate producer"

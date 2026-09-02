@@ -7,6 +7,7 @@ import argparse
 
 from ..ci_graph_contracts import CIGraphError, validate_ci_graph
 from ..ci_graph_render import check_ci_graph
+from ..public_contracts import PublicContractError, validate_public_contracts
 from ..semantic_ownership_registry import (
     SemanticOwnershipRegistryError,
     load_registry as load_semantic_ownership_registry,
@@ -147,6 +148,12 @@ def validate_repo_root(
     _validate_active_closeout_evidence_ownership(repo_root, ledger, governance_profile)
     _validate_ci_profile(governance_profile)
     _validate_structural_gate_contract(governance_profile, architecture_rules)
+    public_contract_path = repo_root / "governance/public-contracts.yml"
+    if public_contract_path.is_file():
+        try:
+            validate_public_contracts(repo_root)
+        except PublicContractError as exc:
+            raise GovernanceValidationError(str(exc)) from exc
     ci_graph_path = repo_root / "governance/ci-graph.yml"
     if ci_graph_path.exists():
         try:
@@ -198,6 +205,7 @@ def validate_repo_root(
                 gate_contracts_path,
                 *([ci_graph_path] if ci_graph_path.is_file() else []),
                 *([test_tombstones_path] if test_tombstones_path is not None else []),
+                *([public_contract_path] if public_contract_path.is_file() else []),
             ],
         )
     _validate_release_gate_targets(

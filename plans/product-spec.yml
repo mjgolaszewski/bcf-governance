@@ -19,9 +19,9 @@ architecture:
   backend: "python_package_with_private_portable_runtime"
   frontend: "canonical_markdown_operator_and_maintainer_guides"
   data: "closed_yaml_json_contracts_and_content_addressed_evidence"
-phase_history: {path: plans/phase-history.yml, through_phase: P13}
+phase_history: {path: plans/phase-history.yml, through_phase: P14}
 execution_phases:
-  - {phase_id: P14, build_block: consumer-ci-graph-0.8.0, objective: "deliver deterministic consumer CI graph generation with bounded project extensions, BCF dogfood, and Identity no-loss proof", release_train: release_4}
+  - {phase_id: P15, build_block: contract-and-adoption-hardening-1.0.0rc1, objective: "freeze supported contracts and prove deterministic adoption upgrade customization and rollback across BCF Identity and the clean fixture", release_train: release_5}
 acceptance:
   release_gate: bcf truth
   evidence_location: phases/

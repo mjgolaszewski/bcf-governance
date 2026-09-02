@@ -95,7 +95,8 @@
                   "oneOf": [
                     {"required": ["search", "replace"]},
                     {"required": ["search", "replace_base64"]},
-                    {"required": ["yaml_path", "value"]}
+                    {"required": ["yaml_path", "value"]},
+                    {"required": ["yaml_path", "value_base64"]}
                   ],
                   "properties": {
                     "path": {"type": "string", "minLength": 1},
@@ -103,7 +104,8 @@
                     "replace": {"type": "string"},
                     "replace_base64": {"type": "string", "minLength": 1},
                     "yaml_path": {"type": "string", "minLength": 1},
-                    "value": {}
+                    "value": {},
+                    "value_base64": {"type": "string", "minLength": 1}
                   }
                 },
                 "oracle": {

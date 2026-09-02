@@ -14,7 +14,8 @@ release state.
 - [x] Workflow display names are described as presentation, not identity.
 - [x] CI state flow and the trust boundary are represented in a diagram and
   table.
-- [x] CLI and release examples distinguish published 0.7.0 from the unpublished 0.7.1 train.
+- [x] CLI and release examples distinguish immutable published 0.8.0 from the
+  unpublished 1.0.0rc1 train.
 - [x] Local links and anchors resolve.
 - [x] Adoption, cleanup, hotfix, model-risk, and walkthrough documents remain
   focused branches of the canonical guides.

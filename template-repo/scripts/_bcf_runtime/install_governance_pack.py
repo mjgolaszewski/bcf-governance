@@ -36,7 +36,6 @@ from .governance_profiles import (  # noqa: E402
     load_contract,
 )
 from .profile_contract_v2 import resolve_install_contract_version  # noqa: E402
-from . import migrate_governance_evidence  # noqa: E402
 
 PROFILE_CHOICES = ("lite", "standard", "regulated")
 ADOPTION_MODE_CHOICES = ("fresh", "existing")
@@ -137,6 +136,14 @@ UPGRADE_REFRESH_PATHS = (
     "scripts/governance_validation",
     "scripts/scaffold_governance_artifacts.py",
     "scripts/validate_governance_yaml.py",
+)
+UPGRADE_PROJECT_OWNED_PATHS = (
+    "governance-profile.yml",
+    "governance/gate-contracts.yml",
+    "governance/evidence-policy.yml",
+    "governance/ci-graph.yml",
+    "governance/ci-extensions",
+    ".github/workflows",
 )
 UPGRADE_RESET_OPTION_PATHS = (
     "Makefile.fragment",
@@ -563,8 +570,8 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
         reset_options=args.reset_options,
         )
     )
-    migrate_governance_evidence.migration_plan(target_root, apply=True)
-    apply_profile_contract(target_root, args.profile_contract, write_workflow=False)
+    if args.reset_options:
+        apply_profile_contract(target_root, args.profile_contract, write_workflow=False)
     if args.reset_options:
         _configure_architecture_boundaries(target_root, args.profile)
 
@@ -704,12 +711,19 @@ def install(args: argparse.Namespace) -> InstallResult:
         raise RuntimeError("installation target must be the root of an initialized Git repository")
     args.profile, contract_version = resolve_install_contract_version(
         target_root, args.profile, args.profile_contract_version, args.upgrade, args.reset_options)
-    # Profile configuration is validated against the immutable pack catalog so
-    # damaged or partial 0.5 profile state cannot weaken an upgrade.
-    contract_root = _template_root()
-    args.profile_contract = load_contract(
-        contract_root, args.profile, args.profile_config, asset_root=target_root, contract_version=contract_version
-    )
+    # Ordinary upgrades refresh pack-owned code only. Project-owned profiles,
+    # gate contracts, graphs, extensions, workflows, and state change only
+    # through their explicit migration, promotion, or reset commands.
+    args.profile_contract = None
+    if not args.upgrade or args.reset_options:
+        contract_root = _template_root()
+        args.profile_contract = load_contract(
+            contract_root,
+            args.profile,
+            args.profile_config,
+            asset_root=target_root,
+            contract_version=contract_version,
+        )
     if args.force_rescaffold:
         _confirm_force_rescaffold(target_root, args.yes)
     result_box: list[InstallResult] = []

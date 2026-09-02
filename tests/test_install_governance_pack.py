@@ -273,8 +273,12 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         "AGENTS.yml",
         "MEMORY.yml",
         "architecture-boundaries.yml",
+        "governance-profile.yml",
         "governance/artifact-manifest.yml",
+        "governance/gate-contracts.yml",
+        "governance/evidence-policy.yml",
         "governance/findings.yml",
+        "governance/ci-graph.yml",
         "plans/product-spec.yml",
         "plans/build-plan.yml",
         "plans/phase-01-plan.yml",
@@ -310,110 +314,33 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
     } == state_before
 
 
-def test_installer_upgrade_runs_targeted_evidence_migration_without_rewriting_policy(
+def test_upgrade_refreshes_code_without_implicitly_migrating_legacy_state(
     tmp_path: Path,
 ) -> None:
-    target = tmp_path / "upgrade-old-state"
+    target = tmp_path / "upgrade-legacy-state"
     _run_installer(target, "--profile", "lite", "--require-strict-validation")
-    product_spec_before = (target / "plans/product-spec.yml").read_text(encoding="utf-8")
-
-    agents_path = target / "AGENTS.yml"
-    agents = yaml.safe_load(agents_path.read_text(encoding="utf-8"))
-    agents["governance"]["structural_schema_contract"]["required_schemas"].remove(
-        "schemas/phase-history.schema.json"
+    governed = (
+        "AGENTS.yml",
+        "MEMORY.yml",
+        "governance-profile.yml",
+        "governance/gate-contracts.yml",
+        "governance/evidence-policy.yml",
+        "plans/phase-ledger.yml",
+        "phases/phase-01-log.yml",
     )
-    agents["governance"]["semantic_validation_contract"]["required_checks"].remove(
-        "phase_history_retention"
+    before = {path: (target / path).read_bytes() for path in governed}
+    (target / "scripts/validate_governance_yaml.py").write_text(
+        "old validator\n", encoding="utf-8"
     )
-    agents["governance"]["artifact_ownership_contract"]["canonical_owners"].pop(
-        "compact_phase_history_and_archive_hashes"
-    )
-    agents["governance"].pop("phase_retention_contract")
-    agents["structural_guardrails"].pop("agent_deconstruction_contract")
-    agents_path.write_text(yaml.safe_dump(agents, sort_keys=False), encoding="utf-8")
 
-    memory_path = target / "MEMORY.yml"
-    memory = yaml.safe_load(memory_path.read_text(encoding="utf-8"))
-    memory["stable_decisions"].pop("canonical_phase_history")
-    memory["environment_facts"]["active_artifacts"].pop("phase_history")
-    memory["references"]["governance"].remove("plans/phase-history.yml")
-    memory_path.write_text(yaml.safe_dump(memory, sort_keys=False), encoding="utf-8")
-
-    manifest_path = target / "governance/artifact-manifest.yml"
-    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
-    manifest["artifact_roots"].pop("phase_archive")
-    manifest.pop("phase_retention_policy")
-    manifest["context_budgets"].pop("aggregate_agent_required_kib_advisory")
-    manifest["context_budgets"]["agent_required_files"]["MEMORY.yml"] = 105
-    manifest["context_budgets"]["agent_required_files"].pop("plans/phase-history.yml")
-    manifest_path.write_text(yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8")
-
-    profile_path = target / "governance-profile.yml"
-    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
-    profile["release_gate_profile"]["gates"].pop("governance_exposure_scan")
-    profile["ci_profile"]["required_push_jobs"].remove("governance-exposure-scan")
-    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
-
-    makefile_path = target / "Makefile.fragment"
-    makefile = makefile_path.read_text(encoding="utf-8")
-    makefile = makefile.replace(" governance-exposure-scan", "")
-    makefile = makefile.replace(
-        "\ngovernance-exposure-scan:\n\t$(PYTHON) scripts/check_governance_exposure.py --repo-root .\n",
-        "\n",
-    )
-    makefile = makefile.replace("\n\t$(MAKE) governance-exposure-scan\n", "\n")
-    makefile_path.write_text(makefile, encoding="utf-8")
-
-    phase_log_path = target / "phases/phase-01-log.yml"
-    phase_log = yaml.safe_load(phase_log_path.read_text(encoding="utf-8"))
-    phase_log["document"]["status"] = "verified"
-    phase_log.pop("closeout_requirements")
-    phase_log["security_review_complete"] = True
-    phase_log_path.write_text(yaml.safe_dump(phase_log, sort_keys=False), encoding="utf-8")
-
-    ledger_path = target / "plans/phase-ledger.yml"
-    ledger = yaml.safe_load(ledger_path.read_text(encoding="utf-8"))
-    ledger["active_phase"]["lifecycle_status"] = "closed"
-    ledger["release_readiness"]["status"] = "release_ready"
-    ledger_path.write_text(yaml.safe_dump(ledger, sort_keys=False), encoding="utf-8")
-
-    workitems_path = target / "plans/phase-01-workitems.yml"
-    workitems = yaml.safe_load(workitems_path.read_text(encoding="utf-8"))
-    workitems["workitems"][0].pop("acceptance_evidence")
-    workitems_path.write_text(yaml.safe_dump(workitems, sort_keys=False), encoding="utf-8")
-
-    (target / "plans/phase-history.yml").unlink()
-    (target / "scripts/check_governance_exposure.py").unlink()
-
-    protected_paths = (
-        agents_path,
-        memory_path,
-        manifest_path,
-    )
-    state_before = {path: path.read_bytes() for path in protected_paths}
-
-    result = _run_installer(target, "--upgrade", "--profile", "lite", "--skip-validation")
+    result = _run_installer(target, "--upgrade", "--skip-validation")
 
     assert "upgraded governance pack into" in result.stdout
-    assert (target / "plans/product-spec.yml").read_text(encoding="utf-8") == product_spec_before
-    assert {path: path.read_bytes() for path in protected_paths} == state_before
-    migrated_profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
-    assert migrated_profile["profile"]["selected"] == "lite"
-    assert "governance_exposure_scan" in migrated_profile["release_gate_profile"]["gates"]
-    assert "governance-exposure-scan" in makefile_path.read_text(encoding="utf-8")
-    assert (target / "governance/gate-contracts.yml").exists()
-    assert (target / "plans/phase-history.yml").exists()
-    assert (target / "scripts/check_governance_exposure.py").exists()
-    migrated_phase = yaml.safe_load(phase_log_path.read_text(encoding="utf-8"))
-    assert migrated_phase["document"]["status"] == "completed"
-    assert "security_review_complete" not in migrated_phase
-    assert "closeout_requirements" in migrated_phase
-    migrated_ledger = yaml.safe_load(ledger_path.read_text(encoding="utf-8"))
-    assert migrated_ledger["active_phase"]["lifecycle_status"] == "completed"
-    assert "status" not in migrated_ledger["release_readiness"]
-    migrated_workitems = yaml.safe_load(workitems_path.read_text(encoding="utf-8"))
-    assert migrated_workitems["workitems"][0]["acceptance_evidence"]
-    assert (target / "governance/migrations/evidence-integrity-v1.yml").exists()
+    assert "old validator" not in (
+        target / "scripts/validate_governance_yaml.py"
+    ).read_text(encoding="utf-8")
+    assert {path: (target / path).read_bytes() for path in governed} == before
+    assert not (target / "governance/migrations/evidence-integrity-v1.yml").exists()
 
 
 def test_installer_upgrade_can_reset_profile_and_makefile_options(tmp_path: Path) -> None:
