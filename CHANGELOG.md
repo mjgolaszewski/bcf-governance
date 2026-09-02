@@ -29,6 +29,8 @@ Release target: `1.0.2`
 - Projected the trusted controller target from an authenticated exact-main package
   artifact and retained separate installed-state proof until both trusted runners
   confirm the new bytes.
+- Recorded provider-compiled installation proof only after the generated bootstrap
+  and probe passed independently on both trusted-control runners.
 
 ### Fixed
 
