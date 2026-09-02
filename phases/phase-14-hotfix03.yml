@@ -1,0 +1,41 @@
+document:
+  kind: hotfix_execution_log
+  name: P14-HF03 Hotfix Log
+  id: bcf-governance-phase-14-hotfix03
+  version: 1.0.0
+  generated_at_utc: '2026-09-02T00:00:00Z'
+  status: completed
+  path: phases/phase-14-hotfix03.yml
+hotfix:
+  id: P14-HF03
+  mode: full
+  related_phase_id: P14
+  hotfix_number: 3
+  summary: Bind every hosted release verifier to its triggering authorization controller
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests
+  executed_commands:
+  - command: release verifier run 33584968454 attempt 1
+    result: cancelled_before_known_stale_controller_failure
+    notes: token-free wheel and sdist verification passed; the second hosted job was cancelled after offline Git inspection proved the retained controller could not stage its required verifier bundle
+  - command: audit release controller and artifact handoffs as one class
+    result: pass
+    notes: both verifier jobs now download the triggering run-and-attempt authorization artifact and install only its checksum-admitted controller using the authorization-owned wheel digest
+  - command: execute every release parser operation and every canonical graph-owned release command through its real dispatch branch
+    result: pass
+    notes: operation inventory is derived mechanically from argparse and graph commands rather than a hand-maintained selector list
+  notes:
+  - no hosted retry is permitted until full local gates, causal controls, generated parity, and workflow authority pass
+  - the correction removes global bootstrap-controller staleness from the entire hosted verifier class
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence: [test, contract-test]
+    security_review_complete:
+      required_evidence: [security-review]
+    health_checks_green:
+      required_evidence: [runtime-smoke]
+  reconciliation:
+    required_evidence: [governance-validate, governance-exposure-scan]
+  finding_registry: governance/findings.yml

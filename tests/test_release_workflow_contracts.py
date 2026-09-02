@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
+from bcf_governance.tooling.ci_graph_render import render_ci_graph
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -68,11 +69,50 @@ def test_verifier_separates_token_free_runtime_from_provider_authentication() ->
         "ACTIONS_RUNTIME_TOKEN": "",
     }
     assert runtime["produces"] == ["release-runtime-evidence"]
+    assert runtime["consumes"] == [
+        "release-authorization", "release-build-bundle"
+    ]
     assert authenticate["consumes"] == [
-        "release-build-bundle", "release-runtime-evidence"
+        "release-authorization", "release-build-bundle", "release-runtime-evidence"
     ]
     upload = compiled.graph["step_components"]["upload-release-runtime"]
     assert upload["condition"] == "always-step"
+
+
+def test_verifier_controller_is_bound_to_the_triggering_authorization_attempt() -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    download = compiled.graph["step_components"][
+        "download-triggering-release-authorization"
+    ]
+    assert download["with"] == {
+        "name": (
+            "bcf-release-authorization-${{ github.event.workflow_run.id }}-"
+            "${{ github.event.workflow_run.run_attempt }}"
+        ),
+        "github-token": "${{ github.token }}",
+        "repository": "${{ github.repository }}",
+        "run-id": "${{ github.event.workflow_run.id }}",
+        "path": "${{ runner.temp }}/bcf-release-authorization",
+        "digest-mismatch": "error",
+    }
+    install = compiled.graph["step_components"][
+        "install-triggering-release-controller"
+    ]
+    assert install["artifact_dir"].endswith("/bcf-release-authorization/controller")
+    assert install["wheel_sha256_file"].endswith("/release-authorization.json")
+    assert install["wheel_sha256_key"] == "controller.wheel_sha256"
+    for job_id in ("runtime", "authenticate"):
+        components = _job("release-verifier", job_id)["executor"]["components"]
+        assert components.index("download-triggering-release-authorization") < (
+            components.index("install-triggering-release-controller")
+        )
+    rendered = render_ci_graph(REPO_ROOT)[
+        ".github/workflows/bcf-release-verifier.yml"
+    ].decode()
+    assert "trusted_controller_artifact" not in rendered
+    assert "controller.wheel_sha256" not in rendered
+    assert "keys=[" in rendered and "wheel_sha256" in rendered
+    assert "hexdigest()==expected" in rendered
 
 
 def test_release_file_selection_and_attempt_fan_in_are_controller_owned() -> None:

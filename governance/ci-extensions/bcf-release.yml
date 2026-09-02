@@ -137,20 +137,21 @@ step_components:
     environment: {}
     produces: [release-build-bundle]
     consumes: []
-  download-pinned-controller:
+  download-triggering-release-authorization:
     kind: action
-    name: Download the mechanically pinned controller artifact
+    name: Download the triggering run's trusted authorization and controller
     action: download-artifact
-    with: {artifact-ids: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_ARTIFACT_ID}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_RUN_ID}', path: '${{ runner.temp }}/bcf-release-controller', digest-mismatch: error}
+    with: {name: 'bcf-release-authorization-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ github.event.workflow_run.id }}', path: '${{ runner.temp }}/bcf-release-authorization', digest-mismatch: error}
     environment: {}
     produces: []
-    consumes: []
-  install-pinned-controller:
+    consumes: [release-authorization]
+  install-triggering-release-controller:
     kind: controller_install
-    name: Install only the checksum-admitted controller
-    artifact_dir: '${{ runner.temp }}/bcf-release-controller'
+    name: Install the triggering run's checksum-admitted controller
+    artifact_dir: '${{ runner.temp }}/bcf-release-authorization/controller'
     install_root: '${{ runner.temp }}/bcf-controller'
-    wheel_sha256: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_WHEEL_SHA256}'
+    wheel_sha256_file: '${{ runner.temp }}/bcf-release-authorization/release-authorization.json'
+    wheel_sha256_key: controller.wheel_sha256
     produces: []
     consumes: []
   download-triggering-release-build:
@@ -273,8 +274,8 @@ workflows:
   events: [{type: workflow_run, workflows: [bcf/release-authority-cutover], types: [completed]}]
   permissions: {}
   jobs:
-  - {id: runtime, display_name: Execute token-free offline wheel and sdist verification, semantic_role: release-runtime-verifier, resource_class: hosted-release, trust: candidate, needs: [], condition: release-trigger-success, timeout_minutes: 30, permissions: {actions: read, contents: read}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-release-python, download-pinned-controller, install-pinned-controller, download-triggering-release-build, verify-release-runtime, upload-release-runtime]}, produces: [release-runtime-evidence], consumes: [release-build-bundle], required: true}
-  - {id: authenticate, display_name: Authenticate provider custody without executing candidate code, semantic_role: release-provider-verifier, resource_class: hosted-release, trust: candidate, needs: [runtime], condition: release-runtime-green, timeout_minutes: 10, permissions: {actions: read, contents: read}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-release-python, download-pinned-controller, install-pinned-controller, download-triggering-release-build, download-release-runtime, setup-verification-directories, authenticate-release-verification, upload-release-verifier]}, produces: [release-verifier-bundle], consumes: [release-build-bundle, release-runtime-evidence], required: true}
+  - {id: runtime, display_name: Execute token-free offline wheel and sdist verification, semantic_role: release-runtime-verifier, resource_class: hosted-release, trust: candidate, needs: [], condition: release-trigger-success, timeout_minutes: 30, permissions: {actions: read, contents: read}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-release-python, download-triggering-release-authorization, install-triggering-release-controller, download-triggering-release-build, verify-release-runtime, upload-release-runtime]}, produces: [release-runtime-evidence], consumes: [release-authorization, release-build-bundle], required: true}
+  - {id: authenticate, display_name: Authenticate provider custody without executing candidate code, semantic_role: release-provider-verifier, resource_class: hosted-release, trust: candidate, needs: [runtime], condition: release-runtime-green, timeout_minutes: 10, permissions: {actions: read, contents: read}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-release-python, download-triggering-release-authorization, install-triggering-release-controller, download-triggering-release-build, download-release-runtime, setup-verification-directories, authenticate-release-verification, upload-release-verifier]}, produces: [release-verifier-bundle], consumes: [release-authorization, release-build-bundle, release-runtime-evidence], required: true}
 - id: release-collector
   path: .github/workflows/bcf-release-collector.yml
   display_name: bcf/trusted-release-collector

@@ -59,6 +59,12 @@ Release target: `0.8.0`.
   all ten release dispatch paths. Verifier-bundle staging now runs only for the
   `verify-evidence` operation; the release builder cannot reach arguments declared
   by another subcommand after completing its expensive source-test pass.
+- Bound both hosted release-verifier jobs to the exact controller selected by their
+  triggering authorization run and attempt. The verifier downloads that trusted
+  artifact directly, checks its closed inventory and authorization-owned wheel digest,
+  and no longer depends on a potentially older global bootstrap controller.
+- Derived release-operation inventory from the parser and exercised every canonical
+  graph-owned release command through its real dispatch branch before remote execution.
 - Made artifact storage for every trusted no-checkout job independent of persistent
   runner workspace state. The graph renderer now uses run-and-attempt-scoped
   directories under the runner temporary root for declared inputs and outputs, and
@@ -87,8 +93,8 @@ Release target: `0.8.0`.
   awaiting independent installation confirmation. The graph now distinguishes
   target from proven-installed controller custody, disables release authorization,
   collection, and publication during that interval, and leaves only the bounded
-  bootstrap/probe rotation path active; a release cannot discover controller-CLI
-  incompatibility after candidate build allocation.
+  bootstrap/probe rotation path active; trusted local roles cannot execute an
+  unconfirmed target controller.
 - Made private evidence transport self-repairing and mechanically ordered. The
   graph now marks the single mode-restoration effect, requires it immediately
   after an exact session download and before gate execution, binds its root to

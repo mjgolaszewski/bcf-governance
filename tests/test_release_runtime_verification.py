@@ -8,6 +8,7 @@ import subprocess
 import pytest
 
 from bcf_governance.tooling import ci_github_commands
+from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError
 from bcf_governance.tooling.release_runtime_verification import (
     SDIST_CUSTODY_COMMIT_MESSAGE,
@@ -281,12 +282,56 @@ def _release_cli_argv(operation: str, root: Path) -> list[str]:
     return [operation, *operation_argv[operation]]
 
 
+def _canonical_release_cli_argv(operation: str, root: Path) -> list[str] | None:
+    commands = validate_ci_graph(Path(__file__).resolve().parents[1]).commands
+    for command in commands.values():
+        argv = list(command["argv"])
+        if len(argv) < 4 or argv[1:3] != ["ci-github", "release"]:
+            continue
+        if argv[3] != operation:
+            continue
+        substitutions = {
+            "${{ runner.temp }}": str(root),
+            "${{ github.repository }}": "owner/repo",
+            "${{ steps.resolve.outputs.tag }}": "v0.8.0",
+            "${{ steps.resolve.outputs.subject_commit }}": "a" * 40,
+            "${{ steps.resolve.outputs.receipt_artifact_id }}": "1",
+            "${{ steps.resolve.outputs.receipt_artifact_name }}": "receipt",
+            "${{ steps.resolve.outputs.receipt_provider_digest }}": "sha256:" + "b" * 64,
+            "${{ github.event.workflow_run.id }}": "31",
+            "${{ github.event.workflow_run.run_attempt }}": "2",
+            "{python}": str(root / "python"),
+        }
+        resolved = []
+        for value in argv[3:]:
+            for source, target in substitutions.items():
+                value = value.replace(source, target)
+            assert "${{" not in value and not value.startswith("{")
+            resolved.append(value)
+        return resolved
+    return None
+
+
+def _release_assets(root: Path) -> None:
+    for relative in (
+        Path("bcf-release-build/assets"),
+        Path("bcf-publication/receipt/assets"),
+    ):
+        directory = root / relative
+        directory.mkdir(parents=True, exist_ok=True)
+        wheel = directory / "bcf_governance-0.8.0-py3-none-any.whl"
+        sdist = directory / "bcf_governance-0.8.0.tar.gz"
+        wheel.write_bytes(b"wheel")
+        sdist.write_bytes(b"sdist")
+        (directory / "SHA256SUMS").write_text(
+            f"{_sha(wheel)}  {wheel.name}\n{_sha(sdist)}  {sdist.name}\n",
+            encoding="utf-8",
+        )
+
+
 @pytest.mark.parametrize(
     "operation",
-    [
-        "resolve", "resolve-publication", "authorize", "verify", "runtime",
-        "verify-evidence", "build", "collect", "inspect", "publish",
-    ],
+    tuple(ci_github_commands._release_parser()._subparsers._group_actions[0].choices),
 )
 def test_every_release_cli_operation_has_a_complete_owned_namespace(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, operation: str,
@@ -301,6 +346,7 @@ def test_every_release_cli_operation_has_a_complete_owned_namespace(
     monkeypatch.setenv("GITHUB_OUTPUT", str(github_output))
     monkeypatch.setenv("GITHUB_RUN_ID", "41")
     monkeypatch.setenv("GITHUB_RUN_ATTEMPT", "3")
+    _release_assets(tmp_path)
     monkeypatch.setattr(ci_github_commands, "environment_api", lambda: object())
     monkeypatch.setattr(
         ci_github_commands, "_authorization_inputs", lambda _: {"controller": {}, "certification_artifact": {}}
@@ -325,11 +371,37 @@ def test_every_release_cli_operation_has_a_complete_owned_namespace(
     monkeypatch.setattr(
         ci_github_commands, "stage_verifier_bundle", lambda *_, **__: staged.append("verifier")
     )
+    monkeypatch.setattr(
+        ci_github_commands, "stage_receipt_bundle", lambda *_, **__: staged.append("receipt")
+    )
+    monkeypatch.setattr(
+        ci_github_commands,
+        "verify_controller_inventory",
+        lambda *_: (tmp_path / "controller.whl", {}),
+    )
+    monkeypatch.setattr(
+        ci_github_commands,
+        "_release_artifacts",
+        lambda _: (
+            tmp_path / "bcf_governance-0.8.0-py3-none-any.whl",
+            tmp_path / "bcf_governance-0.8.0.tar.gz",
+        ),
+    )
+    monkeypatch.setattr(
+        ci_github_commands,
+        "_runtime_evidence",
+        lambda _: (tmp_path / "runtime.log",),
+    )
 
-    ci_github_commands._release(_release_cli_argv(operation, tmp_path))
+    argv = _canonical_release_cli_argv(operation, tmp_path)
+    ci_github_commands._release(argv or _release_cli_argv(operation, tmp_path))
 
     assert "status=passed" in github_output.read_text(encoding="utf-8")
-    assert staged == (["verifier"] if operation == "verify-evidence" else [])
+    expected_staging = {
+        "verify-evidence": ["verifier"],
+        "collect": ["receipt"],
+    }.get(operation, [])
+    assert staged == expected_staging
 
 
 @pytest.mark.parametrize("mutation", ["wheel", "evidence", "environment", "inventory"])
