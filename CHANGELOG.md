@@ -70,6 +70,10 @@ Release target: `1.0.0rc1`.
 - Made local evidence-session allocation reject a producer ID that is absent from
   its admitted producer inventory before creating a session or running a gate.
   Workflow sessions retain their intentional allocator-to-downstream-job split.
+- Separated implementation completion from immutable provider publication:
+  exact-main closure requires completed workitems, while build, verification,
+  collection, and publication remain post-closure provider actions whose custody
+  is recorded by the following phase.
 
 ## [0.8.0] - 2026-09-02
 
