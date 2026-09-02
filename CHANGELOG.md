@@ -55,6 +55,10 @@ Release target: `0.8.0`.
 
 ### Fixed
 
+- Moved exact-main lifecycle eligibility into cheap preflight. Closure evaluation
+  reports the active phase, phase log, and complete open-hotfix inventory together
+  and stops before evidence-session allocation; PR validation and scheduled controls
+  retain their existing execution semantics.
 - Completed trusted-controller rotation through mechanically ordered current-main
   bootstrap and independent probe runs on both trusted runners. Provider-compiled
   confirmation now promotes the exact installed controller, re-enables release roles,
