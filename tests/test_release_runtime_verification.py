@@ -213,6 +213,125 @@ def test_provider_evidence_cli_never_executes_candidate_runtime(
     assert "status=passed" in github_output.read_text(encoding="utf-8")
 
 
+def _release_cli_argv(operation: str, root: Path) -> list[str]:
+    common_assets = [
+        "--release-artifact", str(root / "bcf_governance-0.8.0-py3-none-any.whl"),
+        "--release-artifact", str(root / "bcf_governance-0.8.0.tar.gz"),
+    ]
+    operation_argv = {
+        "resolve": ["--repository", "owner/repo", "--output", str(root / "resolved.json")],
+        "resolve-publication": [
+            "--repository", "owner/repo", "--output", str(root / "publication.json")
+        ],
+        "authorize": [
+            "--repository", "owner/repo", "--bundle", str(root / "certification"),
+            "--controller-wheel", str(root / "controller.whl"),
+            "--output", str(root / "authorization.json"),
+        ],
+        "verify": [
+            "--repository", "owner/repo", "--authorization", str(root / "authorization.json"),
+            "--build-manifest", str(root / "build.json"),
+            "--wheelhouse-manifest", str(root / "wheelhouse.yml"),
+            "--lock", str(root / "release.lock"), "--wheelhouse", str(root / "wheelhouse"),
+            *common_assets, "--python", str(root / "python"),
+            "--runtime-output", str(root / "runtime"), "--output", str(root / "verified.json"),
+        ],
+        "runtime": [
+            "--wheelhouse-manifest", str(root / "wheelhouse.yml"),
+            "--lock", str(root / "release.lock"), "--wheelhouse", str(root / "wheelhouse"),
+            *common_assets, "--python", str(root / "python"), "--output", str(root / "runtime"),
+        ],
+        "verify-evidence": [
+            "--repository", "owner/repo", "--authorization", str(root / "authorization.json"),
+            "--build-manifest", str(root / "build.json"),
+            "--wheelhouse-manifest", str(root / "wheelhouse.yml"),
+            "--lock", str(root / "release.lock"), "--wheelhouse", str(root / "wheelhouse"),
+            *common_assets, "--runtime-report", str(root / "runtime.json"),
+            "--runtime-evidence", str(root / "runtime.log"),
+            "--output", str(root / "verified.json"),
+            "--bundle-output", str(root / "verifier-bundle"),
+        ],
+        "build": [
+            "--authorization", str(root / "authorization.json"),
+            "--wheelhouse-manifest", str(root / "wheelhouse.yml"),
+            "--lock", str(root / "release.lock"), *common_assets,
+            "--artifact-name", "release-build", "--output", str(root / "build.json"),
+        ],
+        "collect": [
+            "--repository", "owner/repo", "--bundle", str(root / "certification"),
+            "--authorization", str(root / "authorization.json"),
+            "--build-manifest", str(root / "build.json"),
+            "--verification", str(root / "verified.json"),
+            "--runtime-report", str(root / "runtime.json"),
+            "--runtime-evidence", str(root / "runtime.log"), *common_assets,
+            "--output", str(root / "receipt.json"),
+            "--verification-artifact-name", "release-verification",
+        ],
+        "inspect": [
+            "--repository", "owner/repo", "--tag", "v0.8.0", "--commit", "a" * 40,
+            *common_assets,
+        ],
+        "publish": [
+            "--repository", "owner/repo", "--tag", "v0.8.0", "--commit", "a" * 40,
+            *common_assets, "--release-notes-text", "release notes",
+            "--receipt", str(root / "receipt.json"), "--receipt-artifact-id", "1",
+            "--receipt-artifact-name", "receipt", "--receipt-provider-digest", "sha256:" + "b" * 64,
+        ],
+    }
+    return [operation, *operation_argv[operation]]
+
+
+@pytest.mark.parametrize(
+    "operation",
+    [
+        "resolve", "resolve-publication", "authorize", "verify", "runtime",
+        "verify-evidence", "build", "collect", "inspect", "publish",
+    ],
+)
+def test_every_release_cli_operation_has_a_complete_owned_namespace(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, operation: str,
+) -> None:
+    for name in (
+        "bcf_governance-0.8.0-py3-none-any.whl",
+        "bcf_governance-0.8.0.tar.gz",
+    ):
+        (tmp_path / name).write_bytes(name.encode())
+    github_output = tmp_path / "github-output"
+    github_output.touch()
+    monkeypatch.setenv("GITHUB_OUTPUT", str(github_output))
+    monkeypatch.setenv("GITHUB_RUN_ID", "41")
+    monkeypatch.setenv("GITHUB_RUN_ATTEMPT", "3")
+    monkeypatch.setattr(ci_github_commands, "environment_api", lambda: object())
+    monkeypatch.setattr(
+        ci_github_commands, "_authorization_inputs", lambda _: {"controller": {}, "certification_artifact": {}}
+    )
+    monkeypatch.setattr(ci_github_commands, "release_input_outputs", lambda value: value)
+    monkeypatch.setattr(ci_github_commands, "release_publication_outputs", lambda value: value)
+    monkeypatch.setattr(
+        ci_github_commands,
+        "run_release_runtime_verification",
+        lambda **_: {"status": "passed", "evidence": []},
+    )
+    for name in (
+        "resolve_release_authorization_inputs", "resolve_release_publication_inputs",
+        "verify_release_build_provider", "record_release_build", "authorize_release",
+        "collect_release", "inspect_release", "publish_certified_release",
+    ):
+        monkeypatch.setattr(
+            ci_github_commands, name,
+            lambda *_, _name=name, **__: {"status": "passed", "handler": _name},
+        )
+    staged: list[str] = []
+    monkeypatch.setattr(
+        ci_github_commands, "stage_verifier_bundle", lambda *_, **__: staged.append("verifier")
+    )
+
+    ci_github_commands._release(_release_cli_argv(operation, tmp_path))
+
+    assert "status=passed" in github_output.read_text(encoding="utf-8")
+    assert staged == (["verifier"] if operation == "verify-evidence" else [])
+
+
 @pytest.mark.parametrize("mutation", ["wheel", "evidence", "environment", "inventory"])
 def test_runtime_evidence_rejects_every_unbound_authority_surface(
     tmp_path: Path, mutation: str

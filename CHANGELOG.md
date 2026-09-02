@@ -55,6 +55,10 @@ Release target: `0.8.0`.
 
 ### Fixed
 
+- Made release CLI argument ownership operation-specific and mechanically exercised
+  all ten release dispatch paths. Verifier-bundle staging now runs only for the
+  `verify-evidence` operation; the release builder cannot reach arguments declared
+  by another subcommand after completing its expensive source-test pass.
 - Made artifact storage for every trusted no-checkout job independent of persistent
   runner workspace state. The graph renderer now uses run-and-attempt-scoped
   directories under the runner temporary root for declared inputs and outputs, and
