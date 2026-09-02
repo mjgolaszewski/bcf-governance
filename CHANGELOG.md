@@ -10,9 +10,13 @@ Release target: `1.0.0rc1`.
 
 ### Changed
 
+- Opened the `1.0.0rc1` contract and adoption-hardening phase with an explicit
+  supported-surface freeze, isolated legacy migration, transactional rollback,
+  and five-cycle clean-clone soak requirements for BCF and Identity.
 - Recorded immutable `v0.8.0` provider custody after the exact PR, merged-main,
   scheduled-mutant, release-verifier, collector, and no-rebuild publisher chain passed.
-  The current P14 triplet remains retained until a real successor phase opens.
+  P14 is now compacted under exact Git and SHA-256 custody while P15 is the sole
+  active phase triplet.
 
 ## [0.8.0] - 2026-09-02
 

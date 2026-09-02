@@ -1,0 +1,58 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 15 Plan
+  id: bcf-governance-phase-15-plan
+  version: 1.0.0
+  generated_at_utc: '2026-09-02T00:00:00Z'
+  status: planned
+  path: plans/phase-15-plan.yml
+phase:
+  id: P15
+  build_block: contract-and-adoption-hardening-1.0.0rc1
+  planner: codex
+  date: '2026-09-02'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - supported contract freeze and compatibility policy
+  - end-to-end adoption promotion upgrade customization and rollback harness
+  - mechanical capability diagnostics and isolated legacy migration
+  - five-cycle BCF and Identity soak plus immutable release candidate
+  parallelizable_workstreams:
+  - id: P15-WS1
+    name: public contract inventory schemas and compatibility
+  - id: P15-WS2
+    name: transactional adoption upgrade customization and rollback
+  - id: P15-WS3
+    name: BCF fixture and Identity clean-clone soak
+  - id: P15-WS4
+    name: documentation packaging and release evidence
+  hard_dependencies:
+  - P14
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: freeze supported CLI schema profile receipt evidence-session CI-authority graph extension and generated-workflow contracts through an explicit machine-readable inventory
+- order: 2
+  statement: preserve project-owned graph configuration extensions runner mappings and unrelated workflows across adoption promotion upgrade customization and rollback
+- order: 3
+  statement: agents may propose contract changes but deterministic code alone renders validates pins and compares generated workflow bytes
+- order: 4
+  statement: profile-v1 and authority-v1 inputs remain readable only through an isolated migration command and cannot satisfy active 1.0 runtime or release claims
+- order: 5
+  statement: Identity soak runs in clean temporary clones and may not push mutate workflows or consume remote runner capacity
+- order: 6
+  statement: do not allocate remote CI until complete local suites mutants five-cycle soaks and exact generated parity pass
+verification_plan:
+- .venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python
+  .venv/bin/python --format text
+- .venv/bin/python -m pytest -q tests
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python .github/scripts/run_validator_mutants.py --profile full
+- .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full

@@ -1,0 +1,52 @@
+document:
+  kind: execution_phase_workitem_ledger
+  name: Phase 15 Workitems
+  id: bcf-governance-phase-15-workitems
+  version: 1.0.0
+  generated_at_utc: '2026-09-02T00:00:00Z'
+  status: planned
+  path: plans/phase-15-workitems.yml
+  phase_id: P15
+workitems:
+- id: P15-P0-01
+  priority: P0
+  status: TODO
+  summary: deliver supported contract freeze and compatibility policy
+  acceptance:
+  - a machine-readable inventory freezes supported commands exit behavior schemas profiles receipt and session versions authority contracts graph extension points and workflow provenance
+  - compatibility deprecation and migration rules have positive adversarial and mutation coverage
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P15-P0-02
+  priority: P0
+  status: TODO
+  summary: deliver end-to-end adoption promotion upgrade customization and rollback
+    harness
+  acceptance:
+  - fresh Lite fresh Standard-v2 existing adoption promotion 0.8 upgrade customization and rollback execute end to end from clean repositories
+  - every cycle proves deterministic bytes and preservation of project graph configuration extensions and unrelated workflows
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P15-P0-03
+  priority: P0
+  status: TODO
+  summary: deliver mechanical capability diagnostics and isolated legacy migration
+  acceptance:
+  - missing runners tools permissions secrets events and graph inputs produce typed actionable diagnostics before mutation or expensive execution
+  - legacy v1 inputs are accepted only by the isolated migration entry point and rejected by active 1.0 validation and truth
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P15-P0-04
+  priority: P0
+  status: TODO
+  summary: deliver five-cycle BCF and Identity soak plus immutable release candidate
+  acceptance:
+  - five clean-clone cycles pass for BCF and Identity without mutating either remote or launching Identity CI
+  - the clean fixture passes the same packaged compiler adopter upgrader and rollback implementation
+  - exact merged main builds verifies collects attests and publishes immutable v1.0.0rc1 bytes without publisher rebuild
+  acceptance_evidence:
+  - test
+  - contract-test

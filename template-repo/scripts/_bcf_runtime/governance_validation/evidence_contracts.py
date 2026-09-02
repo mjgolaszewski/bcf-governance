@@ -134,16 +134,37 @@ def _validate_gate_contract_registry(
                 )
                 mutation_file = repo_root / mutation_path
                 search = mutation.get("search")
+                yaml_path = mutation.get("yaml_path")
+                text_mode = isinstance(search, str) and bool(search)
+                yaml_mode = isinstance(yaml_path, str) and "value" in mutation
                 if not mutation_file.is_file() or mutation_file.is_symlink():
                     mutation_issues.append(f"{control.get('id')}:missing-path")
-                elif not isinstance(search, str) or not search:
-                    mutation_issues.append(f"{control.get('id')}:missing-search")
-                else:
+                elif text_mode == yaml_mode:
+                    mutation_issues.append(f"{control.get('id')}:invalid-mutation-mode")
+                elif text_mode:
                     occurrences = mutation_file.read_text(encoding="utf-8").count(search)
                     if occurrences != 1:
                         mutation_issues.append(
                             f"{control.get('id')}:search-count={occurrences}"
                         )
+                else:
+                    current: Any = yaml.safe_load(
+                        mutation_file.read_text(encoding="utf-8")
+                    )
+                    try:
+                        for token in yaml_path.split("."):
+                            current = (
+                                current[int(token)]
+                                if isinstance(current, list)
+                                else current[token]
+                            )
+                    except (KeyError, IndexError, TypeError, ValueError):
+                        mutation_issues.append(f"{control.get('id')}:stale-yaml-path")
+                    else:
+                        if current == mutation["value"]:
+                            mutation_issues.append(
+                                f"{control.get('id')}:already-mutated"
+                            )
             oracle = _require_mapping(
                 control.get("oracle"),
                 context=f"gate contract {target}.negative_controls[{index}].oracle",
