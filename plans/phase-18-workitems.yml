@@ -10,7 +10,7 @@ document:
 workitems:
 - id: P18-P0-01
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver opt-in authenticated automation producer contract and deterministic
     changelog commit
   acceptance:
@@ -21,7 +21,7 @@ workitems:
   - contract-test
 - id: P18-P0-02
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver exact-head trusted PR certification and mechanically applied protection
   acceptance:
   - exact-head trusted PR certification and mechanically applied protection_is_complete
@@ -30,10 +30,10 @@ workitems:
   - contract-test
 - id: P18-P0-03
   priority: P0
-  status: TODO
-  summary: deliver README positioning correction and immutable 1.0.2 release
+  status: DONE
+  summary: deliver README positioning correction and immutable 1.0.2 release inputs
   acceptance:
-  - README positioning correction and immutable 1.0.2 release_is_complete
+  - README positioning correction and immutable 1.0.2 release inputs_is_complete
   acceptance_evidence:
   - test
   - contract-test
