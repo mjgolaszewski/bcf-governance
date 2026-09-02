@@ -11,7 +11,6 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from bcf_governance import __version__
 from bcf_governance.tooling import ci_github_authority
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError
 from bcf_governance.tooling.ci_github_artifacts import (
@@ -26,10 +25,12 @@ from bcf_governance.tooling.ci_github_release import (
     collect_release,
     inspect_release,
     publish_certified_release,
+    publish_release,
     verify_release_build,
     verify_release_build_provider,
 )
 from bcf_governance.tooling.ci_github_release_inputs import (
+    _release_version_at_main,
     load_release_authorization_inputs,
     release_input_outputs,
     release_publication_outputs,
@@ -38,7 +39,10 @@ from bcf_governance.tooling.ci_github_release_inputs import (
 )
 from bcf_governance.tooling.ci_authority_state import WorkflowIdentity
 from bcf_governance.tooling.release_closure import verify_release_lock
-from bcf_governance.tooling.release_asset_inventory import release_asset_paths
+from bcf_governance.tooling.release_asset_inventory import (
+    release_asset_paths,
+    release_asset_version,
+)
 from bcf_governance.tooling.release_receipts import (
     ReleaseReceiptError,
     build_trusted_release_receipt,
@@ -48,6 +52,22 @@ from bcf_governance.tooling.release_receipts import (
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMMIT = "a" * 40
 TREE = "b" * 40
+
+
+def _public_contract(
+    version: str = "1.0.0rc1",
+    *,
+    content_path: str = "governance/public-contracts.yml",
+    document_path: object = "governance/public-contracts.yml",
+) -> GitHubContent:
+    payload = yaml.safe_dump(
+        {
+            "document": {"path": document_path},
+            "package": {"version": version},
+        },
+        sort_keys=True,
+    ).encode()
+    return GitHubContent(content_path, "d" * 40, payload)
 
 
 def test_nonterminal_privileged_inventory_accepts_only_pinned_partial_jobs(
@@ -291,6 +311,67 @@ def test_release_asset_directory_rejects_extra_or_unsafe_members(tmp_path: Path)
     (root / "operator-added.txt").write_text("extra\n", encoding="utf-8")
     with pytest.raises(GitHubControllerError, match="one wheel"):
         release_asset_paths(root)
+
+
+def test_release_identity_is_derived_from_closed_archive_names(tmp_path: Path) -> None:
+    values = _release_inputs(tmp_path)
+    artifacts = tuple(values["artifacts"])  # type: ignore[arg-type]
+    assert release_asset_version(artifacts).value == "0.7.1"
+
+    with pytest.raises(GitHubControllerError, match="closed archive version"):
+        publish_release(
+            object(),  # type: ignore[arg-type]
+            repository="owner/repo",
+            tag="v0.8.0",
+            expected_commit=COMMIT,
+            release_artifacts=artifacts,
+            body="notes",
+        )
+
+
+@pytest.mark.parametrize(
+    ("archive_name", "message"),
+    [
+        ("bcf_governance-0.7.2.tar.gz", "wheel and source archive identity differs"),
+        ("different_project-0.7.1.tar.gz", "wheel and source archive identity differs"),
+    ],
+)
+def test_release_identity_rejects_mixed_archive_owners(
+    tmp_path: Path, archive_name: str, message: str
+) -> None:
+    values = _release_inputs(tmp_path)
+    wheel, source, sums = tuple(values["artifacts"])  # type: ignore[arg-type]
+    renamed = source.with_name(archive_name)
+    source.rename(renamed)
+    sums.write_text(
+        f"{_sha(wheel)}  {wheel.name}\n{_sha(renamed)}  {renamed.name}\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(GitHubControllerError, match=message):
+        release_asset_version((wheel, renamed, sums))
+
+
+@pytest.mark.parametrize(
+    ("content", "message"),
+    [
+        (_public_contract(content_path="governance/other.yml"), "path is not exact"),
+        (_public_contract(document_path="governance/other.yml"), "identity is invalid"),
+        (_public_contract(document_path=[]), "identity is invalid"),
+        (_public_contract("v1.0.0rc1"), "version is not releasable"),
+    ],
+)
+def test_release_version_owner_is_authenticated_and_fail_closed(
+    content: GitHubContent, message: str
+) -> None:
+    api = SimpleNamespace(content=lambda *args, **kwargs: content)
+
+    with pytest.raises(GitHubControllerError, match=message):
+        _release_version_at_main(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            main=MainIdentity("101", "main", COMMIT, TREE),
+        )
 
 
 def test_release_verifier_rejects_candidate_manifest_and_dependency_mutants(
@@ -611,7 +692,10 @@ def test_release_authorization_inputs_are_provider_resolved_without_caller_ids(
             "repository": {"id": 101}, "head_repository": {"id": 101},
         },
     )
-    api = SimpleNamespace(workflow_runs=lambda *args, **kwargs: runs)
+    api = SimpleNamespace(
+        workflow_runs=lambda *args, **kwargs: runs,
+        content=lambda *args, **kwargs: _public_contract(),
+    )
     path = tmp_path / "release-inputs.json"
     result = resolve_release_authorization_inputs(
         api, repository="owner/repo", output_path=path  # type: ignore[arg-type]
@@ -681,7 +765,10 @@ def test_release_input_resolution_never_falls_back_from_newest_finalizer(
         }
         for run_id in (50, 51)
     )
-    api = SimpleNamespace(workflow_runs=lambda *args, **kwargs: runs)
+    api = SimpleNamespace(
+        workflow_runs=lambda *args, **kwargs: runs,
+        content=lambda *args, **kwargs: _public_contract(),
+    )
     with pytest.raises(GitHubControllerError, match="newest finalizer is failed"):
         resolve_release_authorization_inputs(
             api, repository="owner/repo", output_path=tmp_path / "inputs.json"  # type: ignore[arg-type]
@@ -730,7 +817,10 @@ def test_release_publication_inputs_select_newest_exact_collector_mechanically(
         }
         for run_id, attempt in ((80, 1), (81, 2))
     )
-    api = SimpleNamespace(workflow_runs=lambda *args, **kwargs: runs)
+    api = SimpleNamespace(
+        workflow_runs=lambda *args, **kwargs: runs,
+        content=lambda *args, **kwargs: _public_contract(),
+    )
     path = tmp_path / "publication-inputs.json"
     result = resolve_release_publication_inputs(
         api, repository="owner/repo", output_path=path  # type: ignore[arg-type]
@@ -746,7 +836,7 @@ def test_release_publication_inputs_select_newest_exact_collector_mechanically(
     assert release_publication_outputs(result) == {
         "subject_commit": COMMIT,
         "subject_tree": TREE,
-        "tag": f"v{__version__}",
+        "tag": "v1.0.0rc1",
         "receipt_artifact_id": "71",
         "receipt_artifact_name": "bcf-release-receipt-81-2",
         "receipt_provider_digest": f"sha256:{'c' * 64}",
@@ -789,7 +879,10 @@ def test_release_publication_resolution_never_falls_back_from_newest_collector(
         }
         for run_id, attempt in ((80, 1), (81, 2))
     )
-    api = SimpleNamespace(workflow_runs=lambda *args, **kwargs: runs)
+    api = SimpleNamespace(
+        workflow_runs=lambda *args, **kwargs: runs,
+        content=lambda *args, **kwargs: _public_contract(),
+    )
     with pytest.raises(GitHubControllerError, match="newest collector is failed"):
         resolve_release_publication_inputs(
             api, repository="owner/repo", output_path=tmp_path / "inputs.json"  # type: ignore[arg-type]
@@ -1079,6 +1172,29 @@ class _ReleaseAPI:
 
     def attestations(self, repository: str, digest: str):
         return ({"bundle": "present"},) if self.attested else ()
+
+
+def test_release_publication_checks_attestations_before_provider_mutation(
+    tmp_path: Path,
+) -> None:
+    values = _release_inputs(tmp_path)
+    api = _ReleaseAPI()
+    api.attested = False
+    provider_mutations: list[str] = []
+    api.create_draft_release = (  # type: ignore[attr-defined]
+        lambda *args, **kwargs: provider_mutations.append("draft")
+    )
+
+    with pytest.raises(GitHubControllerError, match="before provider mutation"):
+        publish_release(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            tag="v0.7.1",
+            expected_commit=COMMIT,
+            release_artifacts=values["artifacts"],  # type: ignore[arg-type]
+            body="notes",
+        )
+    assert provider_mutations == []
 
 
 def test_release_inspection_accepts_only_exact_immutable_attested_provider_state() -> None:

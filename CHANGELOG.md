@@ -52,6 +52,18 @@ Release target: `1.0.0rc1`.
 
 ### Fixed
 
+- Removed release publication's dependency on the version of a previously
+  installed trusted controller. The graph now resolves the tag from the
+  digest-locked current release contract, generated workflow bytes carry that
+  value mechanically, and the controller independently requires the wheel and
+  source archive to name the same distribution and version before any provider
+  mutation. Current-main contract paths and versions, mixed archive identities,
+  missing attestations, generated tag drift, and archive/tag drift all fail
+  closed under causal controls.
+- Moved release-attestation completeness ahead of draft creation. Publication
+  now validates immutable-release state, annotated-tag identity, closed archive
+  identity, checksums, receipt custody, and attestations before it creates or
+  uploads a GitHub Release.
 - Replaced ambiguous YAML text mutations with typed semantic paths and encoded
   typed values. Literal byte mutation now requires a documented byte-level
   reason, preventing formatting drift from masquerading as a causal control.

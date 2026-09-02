@@ -8,6 +8,17 @@ import re
 from typing import Iterable
 
 from .ci_github_identity import GitHubControllerError
+from .release_versions import ReleaseVersion, ReleaseVersionError, parse_release_version
+
+
+_WHEEL_IDENTITY = re.compile(
+    r"^(?P<distribution>[A-Za-z0-9_]+)-"
+    r"(?P<version>[0-9][A-Za-z0-9.]*)-py3-none-any\.whl$"
+)
+_SDIST_IDENTITY = re.compile(
+    r"^(?P<distribution>[A-Za-z0-9_.-]+)-"
+    r"(?P<version>[0-9][A-Za-z0-9.]*)\.tar\.gz$"
+)
 
 
 def _sha256(path: Path) -> str:
@@ -37,8 +48,34 @@ def release_asset_paths(root: Path) -> tuple[Path, ...]:
     paths = tuple(sorted(root.iterdir(), key=lambda path: path.name))
     if any(path.is_symlink() or not path.is_file() for path in paths):
         raise GitHubControllerError("release asset directory contains an unsafe member")
-    verify_checksum_inventory(paths)
+    release_asset_version(paths)
     return paths
+
+
+def release_asset_version(paths: tuple[Path, ...]) -> ReleaseVersion:
+    """Derive one canonical release version from the closed archive inventory."""
+
+    verify_checksum_inventory(paths)
+    wheel = next(path for path in paths if path.suffix == ".whl")
+    sdist = next(path for path in paths if path.name.endswith(".tar.gz"))
+    wheel_identity = _WHEEL_IDENTITY.fullmatch(wheel.name)
+    sdist_identity = _SDIST_IDENTITY.fullmatch(sdist.name)
+    if wheel_identity is None or sdist_identity is None:
+        raise GitHubControllerError("release archive identity is not canonical")
+    distributions = {
+        re.sub(r"[-_.]+", "-", match.group("distribution")).lower()
+        for match in (wheel_identity, sdist_identity)
+    }
+    try:
+        versions = {
+            parse_release_version(match.group("version"))
+            for match in (wheel_identity, sdist_identity)
+        }
+    except ReleaseVersionError as exc:
+        raise GitHubControllerError("release archive version is not canonical") from exc
+    if len(distributions) != 1 or len(versions) != 1:
+        raise GitHubControllerError("release wheel and source archive identity differs")
+    return versions.pop()
 
 
 def verify_checksum_inventory(paths: tuple[Path, ...]) -> None:

@@ -213,9 +213,15 @@ not. Workflow YAML supplies environment and paths; it does not select provider
 state with `jq`, `max_by`, ad hoc API queries, or operator-copied IDs.
 After collection, `resolve-publication` selects the newest authenticated
 exact-main collector attempt, its exact provider artifact, the current commit
-and tree, and the tag derived from BCF's version owner. The publisher accepts
+and tree, and the tag derived from the authenticated current-main public-contract
+registry. The graph compiler separately resolves the same hash-locked package
+version into the generated publisher command, so the installed controller's own
+package version is not release authority. The publisher accepts
 that projection and a controller-owned release-asset directory; operators do
 not supply run, attempt, artifact, digest, subject, tag, or asset-list custody.
+Before provider mutation, the controller also requires the wheel and source
+archive to encode one canonical distribution/version equal to that graph-owned
+tag and requires every certified digest to have an attestation.
 BCF's own publisher additionally requires a short-lived `BCF_RELEASE_ADMIN_TOKEN`
 secret because GitHub's workflow token cannot read repository immutable-release
 settings. Provision it only on the trusted no-checkout path with Administration read,
