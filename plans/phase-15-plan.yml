@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-15-plan
   version: 1.0.0
   generated_at_utc: '2026-09-02T00:00:00Z'
-  status: planned
+  status: completed
   path: plans/phase-15-plan.yml
 phase:
   id: P15
@@ -22,7 +22,7 @@ delivery_contract:
   - supported contract freeze and compatibility policy
   - end-to-end adoption promotion upgrade customization and rollback harness
   - mechanical capability diagnostics and isolated legacy migration
-  - five-cycle BCF and Identity soak plus immutable release candidate
+  - five-cycle BCF and Identity soak plus publication-ready release candidate
   parallelizable_workstreams:
   - id: P15-WS1
     name: public contract inventory schemas and compatibility

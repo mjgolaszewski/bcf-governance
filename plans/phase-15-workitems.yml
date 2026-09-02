@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-15-workitems
   version: 1.0.0
   generated_at_utc: '2026-09-02T00:00:00Z'
-  status: planned
+  status: completed
   path: plans/phase-15-workitems.yml
   phase_id: P15
 workitems:
@@ -41,12 +41,13 @@ workitems:
   - contract-test
 - id: P15-P0-04
   priority: P0
-  status: IN_PROGRESS
-  summary: deliver five-cycle BCF and Identity soak plus immutable release candidate
+  status: DONE
+  summary: deliver five-cycle BCF and Identity soak plus publication-ready release candidate
   acceptance:
   - five clean-clone cycles pass for BCF and Identity without mutating either remote or launching Identity CI
   - the clean fixture passes the same packaged compiler adopter upgrader and rollback implementation
-  - exact merged main builds verifies collects attests and publishes immutable v1.0.0rc1 bytes without publisher rebuild
+  - local rehearsal proves the wheel and sdist before exact merged main builds verifies collects and binds publication-ready v1.0.0rc1 bytes without publisher rebuild
+  - immutable publication occurs only after computed phase closure and is recorded as provider custody when the next phase opens
   acceptance_evidence:
   - test
   - contract-test

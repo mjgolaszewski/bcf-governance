@@ -4,13 +4,13 @@ document:
   id: bcf-governance-phase-15-log
   version: 1.0.0
   generated_at_utc: '2026-09-02T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-15-log.yml
 phase:
   id: P15
   build_block: contract-and-adoption-hardening-1.0.0rc1
 summary:
-  outcome: in_progress
+  outcome: contract_and_adoption_hardening_complete_release_candidate_ready
   highlights:
   - P15 is opened for freeze supported contracts and prove deterministic adoption
     upgrade customization and rollback before the 1.0 release candidate
@@ -21,6 +21,9 @@ summary:
   - five clean-clone BCF and Identity soak cycles passed without a remote run or source-repository mutation; audits/p15-adoption-soak.yml owns the exact result
   - cheap preflight aggregates stale negative-control oracles and rejects mismatched local producer admission before session allocation or gate execution
   - the complete local PR simulation passed all 21 exact-tree receipts and 166 cause-verified controls through one mechanically admitted evidence session and terminal truth
+  - structural PR 103 passed all protected checks and merged as baf9f195d9a1592ac8132674ccf7f0af9314b5a7 with the locally proven tree 10d4499271ba89e3d1a77526b5a5c8aca51f8920
+  - exact-main run 33600847678 stopped before evidence because closure correctly requires this completed phase record; finalizer 33600916013 and publisher 33600938350 propagated that terminal state without an idle runner
+  - release publication is a post-closure provider action and is not an authored prerequisite for completing P15 implementation
 workitems:
 - id: P15-P0-01
   status: DONE
@@ -33,8 +36,8 @@ workitems:
   status: DONE
   summary: deliver mechanical capability diagnostics and isolated legacy migration
 - id: P15-P0-04
-  status: IN_PROGRESS
-  summary: deliver five-cycle BCF and Identity soak plus immutable release candidate
+  status: DONE
+  summary: deliver five-cycle BCF and Identity soak plus publication-ready release candidate
 execution_evidence:
   planned_commands:
   - .venv/bin/python scripts/preflight_governance.py --repo-root . --mode release
@@ -90,4 +93,4 @@ known_constraints:
 - Identity remains read-only and its remote workflows runner mappings and CI jobs may not be changed in this phase
 - hosted jobs may not poll sleep wait for local capacity or allocate a runner solely as a control-plane waiter
 next_work:
-- review the exact local candidate, open one bounded PR, certify its merge commit, run scheduled controls, and publish immutable release-candidate bytes without a rebuild
+- merge the bounded closeout PR, certify its exact merge commit, run scheduled controls, and publish immutable release-candidate bytes without a rebuild
