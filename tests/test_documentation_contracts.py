@@ -83,8 +83,8 @@ def test_editorial_tone_and_topic_owner_mutants_are_rejected(tmp_path: Path) -> 
     readme.write_bytes((REPO_ROOT / "README.md").read_bytes())
     readme.write_text(
         readme.read_text(encoding="utf-8").replace(
-            "releases/download/v1.0.1/bcf_governance-1.0.1-py3-none-any.whl",
-            "releases/download/v1.0.0/bcf_governance-1.0.1-py3-none-any.whl",
+            f"releases/download/v{module.__version__}/bcf_governance-{module.__version__}-py3-none-any.whl",
+            f"releases/download/v0.0.0/bcf_governance-{module.__version__}-py3-none-any.whl",
         ),
         encoding="utf-8",
     )

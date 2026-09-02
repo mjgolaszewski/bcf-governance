@@ -360,13 +360,26 @@ def test_automation_authority_is_metadata_only_and_candidate_excluded() -> None:
 def test_automation_front_doors_precede_expensive_fanout_and_old_runner_is_absent() -> None:
     governance = _workflow("governance")
     package = _workflow("governance-pack")
+    def depends_on(workflow: dict[str, object], job_id: str, owner: str) -> bool:
+        by_id = {job["id"]: job for job in workflow["jobs"]}
+        pending = list(by_id[job_id]["needs"])
+        visited: set[str] = set()
+        while pending:
+            dependency = pending.pop()
+            if dependency == owner:
+                return True
+            if dependency not in visited:
+                visited.add(dependency)
+                pending.extend(by_id[dependency]["needs"])
+        return False
+
     assert all(
-        "validate" in job["needs"]
+        depends_on(governance, job["id"], "preflight")
         for job in governance["jobs"]
-        if job["id"] != "validate"
+        if job["id"] != "preflight"
     )
     assert all(
-        "front-door" in job["needs"]
+        depends_on(package, job["id"], "front-door")
         for job in package["jobs"]
         if job["id"] != "front-door"
     )
