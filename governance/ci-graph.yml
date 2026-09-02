@@ -6,7 +6,7 @@ default_branch: main
 trusted_controller: {kind: self_governance_policy, policy_path: governance/self-governance-policy.yml}
 value_sources:
   self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: be21710e38066482c322897fd89d9cf9785e36bed9a7e9c516ab4b255e8a1a15}
-  release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: 90aac78f03cb3dde4107ff08ef9900e4285f0a3250f1dfc02dbd80fc9cc84a50}
+  release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: 288a190b7b839d1c358525a74beb7afe7265eb7836ce1b587da04e375bf2f44f}
 extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]
 extensions:
 - {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 04240211401c1bdec8988910f5e2f68946bbc982b9d3af9373ddfd1d5c9dfd41}

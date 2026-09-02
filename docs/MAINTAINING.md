@@ -15,6 +15,8 @@ in [CI authority](CI_AUTHORITY.md).
 - `scripts/` contains non-packaged thin wrappers for a source checkout.
 - `template-repo/scripts/_bcf_runtime/` is the private standalone runtime copy.
 - `tests/` owns behavioral and contract coverage.
+- `docs/RELIABILITY_MODEL.md` owns the failure model, verification economics,
+  objections, limits, and empirical measures.
 - `governance/ci-graph.yml` owns BCF's common CI graph.
 - `governance/ci-extensions/*.yml` own bounded BCF-specific additions.
 - `.github/workflows/*.yml` are generated projections and have no independent
@@ -247,17 +249,20 @@ For a release:
    supported pre-release form (`aN` or `bN`). GitHub release drafts are
    mechanically marked prerelease whenever the canonical version has a suffix.
 2. Update the release heading and comparison links in `CHANGELOG.md`.
-3. Update `manifest.yml`; regenerate template runtime/version surfaces and pack
+3. Update README and operator installation examples to the exact versioned
+   GitHub Release URL. The editorial check rejects a stale release path even
+   when the wheel filename alone is current.
+4. Update `manifest.yml`; regenerate template runtime/version surfaces and pack
    manifests.
-4. Run source, profile-flow, mutation, template, exposure, wheel, sdist, and
+5. Run source, profile-flow, mutation, template, exposure, wheel, sdist, and
    editorial verification.
-5. Merge the reviewed pull request after required CI passes and certify that
+6. Merge the reviewed pull request after required CI passes and certify that
    exact main commit through the trusted control plane.
-6. Owner-dispatch the release authorization on exact certified main. A fresh
+7. Owner-dispatch the release authorization on exact certified main. A fresh
    hosted builder emits untrusted bytes; a different fresh hosted runtime job
    installs and tests them from the closed wheelhouse, and another fresh hosted
    job authenticates provider custody without executing candidate code.
-7. Let the no-checkout trusted collector authenticate both runs and emit the
+8. Let the no-checkout trusted collector authenticate both runs and emit the
    sole output-only release receipt. Run provider inspection with publication
    disabled.
    The controller must reconstruct each authorization, build, verification, and
@@ -265,26 +270,26 @@ For a release:
    this step by themselves. It also parses `SHA256SUMS` and recomputes the exact wheel
    and source-archive digests before the trusted collector can issue a receipt.
    The authorizer independently hashes the downloaded controller wheel as well.
-8. After owner approval, enable immutable releases and create one annotated
+9. After owner approval, enable immutable releases and create one annotated
    unsigned `vX.Y.Z` tag at that exact commit.
-9. Run the pre-dispatch provider check once: the immutable-release API must report
+10. Run the pre-dispatch provider check once: the immutable-release API must report
    enabled, the annotated tag must resolve to the certified commit, no release may
    already exist for that tag, and the repository secret inventory must contain
    exactly the required `BCF_RELEASE_ADMIN_TOKEN` name. This check discovers missing
    provider inputs before workflow dispatch; it never executes candidate code.
-10. Provision the short-lived `BCF_RELEASE_ADMIN_TOKEN` Actions secret. Its fine-grained
+11. Provision the short-lived `BCF_RELEASE_ADMIN_TOKEN` Actions secret. Its fine-grained
    repository permissions are Administration read, Attestations read, and Contents write.
    The ordinary workflow token cannot read immutable-release settings. Do not expose this
    credential to candidate jobs or store it in repository files.
-11. The no-checkout publisher first requires that secret. Its generated tag comes
+12. The no-checkout publisher first requires that secret. Its generated tag comes
    from the digest-locked `governance/public-contracts.yml` package version, never
    from a previously installed controller version or an operator-entered value.
    The controller requires that tag to equal the canonical version encoded by both
    closed archives, verifies attestations before provider mutation, then creates a
    draft, uploads the pre-certified files, verifies their digests, and publishes
    without rebuild.
-12. Delete `BCF_RELEASE_ADMIN_TOKEN` immediately after the publisher completes.
-13. Re-fetch provider state and require an immutable, non-draft, exact release
+13. Delete `BCF_RELEASE_ADMIN_TOKEN` immediately after the publisher completes.
+14. Re-fetch provider state and require an immutable, non-draft, exact release
     before recording closeout.
 
 The tag event does not rebuild. The publisher checks out no repository code and

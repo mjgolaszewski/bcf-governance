@@ -2,7 +2,15 @@
 
 This guide explains BCF's design positions. The [README](../README.md) gives the
 short rationale, [Using BCF](USAGE.md) owns operator procedures, and
-[CI authority](CI_AUTHORITY.md) owns provider-backed certification.
+[CI authority](CI_AUTHORITY.md) owns provider-backed certification. The
+[Reliability model](RELIABILITY_MODEL.md) owns the failure model, verification
+economics, common objections, and empirical measures.
+
+BCF's architectural defaults are reliability biases for probabilistic software
+production, not claims of universal optimality. They exchange some flexibility
+for properties that deterministic programs can observe: bounded context,
+explicit ownership, directed dependencies, and thin boundaries. A repository
+chooses the applicable controls and may configure their thresholds.
 
 ## Authority model
 
@@ -31,8 +39,10 @@ BCF uses a small command/query separation:
 
 This is CQRS-lite: it does not require event sourcing, a message bus, or
 separate databases. The split makes side effects visible and supports dry-run
-transactions, but creates interfaces that a smaller project might otherwise
-combine.
+transactions. It also makes mutation versus observation mechanically
+distinguishable, reducing the chance that a query quietly acquires side effects
+during an agent-authored change. The split creates interfaces that a smaller
+project might otherwise combine.
 
 ## Single semantic ownership
 
@@ -51,6 +61,15 @@ SOIP is structural evidence. It can expose competing owners and unresolved
 flows, but it cannot determine whether a single owner implements the intended
 business rule. Maintaining the registry and language-boundary declarations is
 the principal adoption cost.
+
+Single layer and bounded-context membership apply the same bias to
+responsibility. Thin adapters and routers keep business decisions out of
+transport and infrastructure edges, while explicit dependency direction makes
+cross-boundary drift testable. Shared-abstraction constraints discourage a new
+helper for every local need: reuse must follow a declared common concept rather
+than superficial similarity. These constraints reduce semantic reinvention but
+can require refactoring or limited duplication until a stable abstraction is
+known.
 
 ## Mechanical and negative testing
 
@@ -99,9 +118,11 @@ the interpreter. This adds a generated file and regeneration step, but removes a
 operator-maintained dependency list and prevents build-isolation side effects from
 deciding whether later jobs happen to work.
 
-Implementation modules have declared size and context budgets. These bounds
-make complete review more likely for both people and agents, but occasionally
-require a concept to be split across a stable private boundary.
+Implementation modules have declared size and context budgets. Bounded modules
+reduce the chance that a producer reasons from only part of a concept. The
+thresholds are configurable, measurable heuristics rather than universal
+optima. They make complete review more likely for both people and agents, but
+occasionally require a concept to be split across a stable private boundary.
 
 ## CI graph as a compiled contract
 

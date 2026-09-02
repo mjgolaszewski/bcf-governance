@@ -4,19 +4,82 @@
   <img src="docs/assets/bcf-governance-pack-hero.jpg" alt="BCF Governance" width="760">
 </p>
 
-BCF is an executable governance framework for agent-led software delivery. It
-is also usable by human-led teams that want explicit release rules, exact
-evidence, and reproducible repository state. BCF keeps product scope, active
-work, release gates, findings, and evidence in a small machine-readable model,
-then separates two questions:
+BCF is a deterministic error-correction framework around probabilistic software
+production. It is designed for agent-led delivery and is also usable by
+human-led teams that want explicit release rules, exact evidence, and
+reproducible repository state. BCF keeps product scope, active work, release
+gates, findings, and evidence in a machine-readable model, then separates two
+questions:
 
 - `bcf validate`: is the governed repository structurally legal and internally
   consistent?
 - `bcf truth`: are lifecycle and release claims supported by current evidence
   for the exact Git subject?
 
-Development package version: `v1.0.0`. The latest certified public release is
-immutable `v1.0.0rc1` while the stable 1.0 train is under review.
+Development package version: `v1.0.1`. Release artifacts are published through
+immutable GitHub Releases after exact-main certification.
+
+## Design thesis
+
+A capable coding agent remains a probabilistic software producer. It can reason
+incorrectly from incomplete context, drift across successive changes, create a
+second interpretation of an existing rule, write a plausible test that agrees
+with an incorrect implementation, or overstate what a green run establishes.
+This is an engineering failure model, not a claim that models are incompetent
+or malicious.
+
+BCF assumes some of those errors will occur. It does not principally respond by
+asking the producer to be more careful. It places deterministic constraints,
+independent observations, causal challenges, exact provenance, and computed
+claims around the production process:
+
+> Generate probabilistically → constrain structurally → challenge causally
+> → observe exactly → compute truth deterministically.
+
+Common failure modes have explicit responses:
+
+| Failure mode | BCF response |
+|---|---|
+| Incomplete context | Bounded modules and context budgets |
+| Architectural drift | Executable architecture boundaries |
+| Competing representations | Single-owner invariant principle (SOIP) |
+| Test agrees with a defective implementation | Causal negative controls |
+| Gate does not detect its claimed defect | Typed failure oracles |
+| Test population silently changes | Exact test manifests |
+| CI topology drifts | Canonical compiled CI graph |
+| Stale evidence appears current | Exact-tree binding and invalidation |
+| A rerun borrows an earlier success | Exact run, attempt, and session custody |
+| Producer declares terminal success | Computed lifecycle state |
+| Candidate certifies itself | Independent truth and trusted authority |
+| Hidden worker state affects results | Pristine worktrees and fresh candidate workers |
+| Released bytes differ from verified bytes | Certified no-rebuild publication |
+
+BCF deliberately permits redundant verification while resisting duplicated
+semantic authority. Tests challenge an implementation; negative controls
+challenge the tests; truth recomputes evidence; trusted code reconstructs
+provider state; hashes challenge artifacts; and rendered workflows are checked
+against their one graph owner. The goal is multiple observations of one defined
+claim, not multiple competing definitions of it.
+
+Human authority remains necessary. People choose intent, risk appetite,
+architecture, exceptions, and whether to merge. In this authority model, an
+agent cannot certify its own output. Mechanical invariants decide only the
+claims that the repository has made mechanically decidable.
+
+## What BCF establishes
+
+A green BCF result establishes only the claims represented by the selected
+profile, current contracts, and accepted evidence for the exact subject. It
+does not discover an omitted requirement, prove arbitrary business correctness,
+establish the absence of every vulnerability, or repair incorrect product
+intent. Deterministic evaluation is only as sound as its inputs and rules.
+
+If one authority may redefine intent, implementation, tests, and governing
+policy together, internal consistency cannot prove the original intent was
+right. Independent acceptance criteria, review, and policy authority increase
+assurance where that risk matters. BCF reduces dependence on probabilistic
+correctness; it does not turn an incomplete or incorrect specification into a
+correct one.
 
 ## Why these defaults
 
@@ -54,43 +117,37 @@ BCF is intentionally opinionated about several engineering defaults:
   before runner fanout. Preflight must remain fast and cannot replace deeper
   integration or runtime tests.
 
-These are defaults rather than claims that every repository needs the same
-architecture. Profiles and typed not-applicable records make scope explicit;
-security boundaries and release claims still fail closed where the selected
-profile requires them. See [Architecture](docs/ARCHITECTURE.md) for the design
-and its limits.
+These are reliability biases, not claims that every repository needs the same
+architecture. Architectural flexibility is intentionally exchanged for
+additional structural predictability where the selected profile and repository
+configuration choose these controls. Thresholds such as module budgets are
+explicit, configurable heuristics that can be measured and challenged; they are
+not universal laws. Profiles and typed not-applicable records make scope
+explicit, while selected security boundaries and release claims fail closed.
+See [Architecture](docs/ARCHITECTURE.md) for the detailed design and limits.
 
-## The Philosophy: Shifting from Human DevOps to Agentic DevSecOps
+## Verification cost and scope
 
-Traditional DevOps usually assumes that people are the scarce execution
-engine. Reviews, runbooks, and CI summaries are shaped around changes that a
-person can produce and keep in working memory. Coding agents change that
-constraint: they can propose broad changes faster than a reviewer can
-reconstruct every decision. Running the old control model at agent speed makes
-reviewer memory and interpretation the safety boundary.
+BCF may perform more computation than conventional CI: structural checks,
+behavioral tests, causal controls, isolated worktrees, exact-manifest checks,
+evidence capture, provider-state reconstruction, truth recomputation, artifact
+verification, and scheduled controls. That overhead is real. The intended
+trade is to spend machine time to protect correctness and conserve human
+attention.
 
-BCF moves that boundary into versioned contracts and deterministic programs:
+This is not a claim that more tests are always better. BCF runs cheap
+deterministic preflight before expensive fanout, gives negative controls a
+declared invariant and failure oracle, separates scheduled assurance from PR
+latency, and permits graph optimization without dropping required controls. A
+single change may take longer to validate even if fewer defects, remediation
+cycles, and reconstruction tasks improve sustainable delivery throughput.
 
-| Human-centric DevOps default | Agentic DevSecOps default |
-|---|---|
-| Reviewer memory connects requirements, code, tests, and release state. | One canonical owner and machine-readable contracts connect each governed claim. |
-| A green job shows that a command exited successfully. | Positive evidence plus a causal negative control shows what the gate detects. |
-| A branch, tree, or familiar workflow name can stand in for the release subject. | Evidence binds the exact commit, tree, workflow bytes, run, and attempt. |
-| CI runs expensive work, then people diagnose deterministic defects one at a time. | Cheap preflight rejects deterministic defects before fanout or costly gates. |
-| Long-lived workers are trusted because the team operates them. | Candidate code is disposable; trusted control code is isolated and narrowly authorized. |
-| A person interprets checks and decides whether the repository is verified. | Code computes verifiable lifecycle and release claims from policy and current evidence. |
-
-This does not remove people from delivery. Humans still choose product intent,
-risk appetite, architecture, exceptions, and whether to merge. Agents may
-propose, implement, review, and remediate, but an agent cannot certify its own
-output. The practical shift is simple: people govern the rules and the
-decisions that require judgment; mechanical invariants decide the claims that
-can be proved repeatably.
-
-That stricter boundary costs setup time, control execution, and evidence
-storage. It is useful when agent throughput would otherwise outrun reliable
-human reconstruction; it is unnecessary ceremony for claims a repository does
-not make. BCF profiles and typed N/A records keep that scope explicit.
+BCF has not established a universal return on that trade. The useful empirical
+question is how much compute and latency buy how much reduction in escaped
+defects, drift, remediation, and human reconstruction for a given repository.
+Lite is appropriate when the stronger assurance cost is unjustified. The
+[Reliability model](docs/RELIABILITY_MODEL.md) addresses the common objections,
+operational costs, and measurements in more detail.
 
 ## Lifecycle and evidence
 
@@ -144,16 +201,15 @@ it cannot preserve behavior and meet the repository's performance threshold.
 
 ## Install
 
-Install the current published wheel:
+Install the `v1.0.1` wheel from its immutable GitHub Release:
 
 ```bash
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.0rc1/bcf_governance-1.0.0rc1-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.1/bcf_governance-1.0.1-py3-none-any.whl
 ```
 
-Immutable `bcf_governance-1.0.0rc1-py3-none-any.whl` is the published
-installation source. The stable development tree builds
-`bcf_governance-1.0.0-py3-none-any.whl`; it is not an installation source until
-its own exact-main certification and immutable release complete.
+GitHub Releases is the supported distribution channel. Release publication
+uses the exact certified wheel and source archive without rebuilding them in
+the publisher.
 
 Git is required. `lite` is the bootstrap profile:
 
@@ -243,6 +299,7 @@ copies byte-identical.
 
 | Document | Canonical responsibility |
 |---|---|
+| [Reliability model](docs/RELIABILITY_MODEL.md) | Failure model, verification economics, objections, limits, and empirical measures |
 | [Architecture](docs/ARCHITECTURE.md) | Design positions, boundaries, costs, and limitations |
 | [CI authority](docs/CI_AUTHORITY.md) | State flow, trust boundary, admission, and GitHub reference topology |
 | [Using BCF](docs/USAGE.md) | Operator commands, profiles, adoption, evidence, cleanup, and safety |

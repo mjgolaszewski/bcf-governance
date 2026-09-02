@@ -1,6 +1,6 @@
 document: {kind: public_contract_registry, name: BCF Supported Public Contracts, id: bcf-governance-public-contracts, version: 1.0.0, status: active, path: governance/public-contracts.yml}
 package:
-  version: 1.0.0
+  version: 1.0.1
   distribution: github_releases
   executable_ci_providers: [github]
   platforms: [linux_x86_64]

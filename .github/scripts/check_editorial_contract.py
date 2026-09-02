@@ -18,9 +18,19 @@ from bcf_governance.cli import COMMANDS  # noqa: E402
 
 CANONICAL_DOCUMENTS = {
     "README.md": (
+        "Design thesis",
+        "What BCF establishes",
         "Why these defaults",
-        "The Philosophy: Shifting from Human DevOps to Agentic DevSecOps",
+        "Verification cost and scope",
         "Documentation map",
+    ),
+    "docs/RELIABILITY_MODEL.md": (
+        "Failure model",
+        "Redundant verification, single authority",
+        "Compute and attention",
+        "Common objections",
+        "Empirical question",
+        "Limits",
     ),
     "docs/ARCHITECTURE.md": (
         "Authority model",
@@ -139,7 +149,10 @@ def validate_editorial_contract(repo_root: Path = REPO_ROOT) -> list[str]:
     readme = (repo_root / "README.md").read_text(encoding="utf-8")
     normalized_readme = " ".join(readme.split())
     required_positions = (
-        "AI-assisted development",
+        "deterministic error-correction framework",
+        "probabilistic software producer",
+        "Generate probabilistically → constrain structurally → challenge causally",
+        "compute truth deterministically",
         "CQRS-lite",
         "Single-owner invariant principle (SOIP)",
         "Mechanical constraints",
@@ -147,10 +160,10 @@ def validate_editorial_contract(repo_root: Path = REPO_ROOT) -> list[str]:
         "Exact-commit evidence",
         "Bounded modules and context",
         "Cheap preflight before expensive work",
-        "Human-centric DevOps default",
-        "Agentic DevSecOps default",
         "an agent cannot certify its own output",
-        "mechanical invariants decide the claims",
+        "Mechanical invariants decide only the claims",
+        "spend machine time to protect correctness and conserve human attention",
+        "does not turn an incomplete or incorrect specification into a correct one",
         "cost",
         "limitations",
     )
@@ -161,6 +174,20 @@ def validate_editorial_contract(repo_root: Path = REPO_ROOT) -> list[str]:
         errors.append("README.md: package version does not match version authority")
     if f"bcf_governance-{__version__}-py3-none-any.whl" not in readme:
         errors.append("README.md: wheel example does not match package version")
+    expected_release_path = (
+        f"releases/download/v{__version__}/"
+        f"bcf_governance-{__version__}-py3-none-any.whl"
+    )
+    for relative in ("README.md", "docs/USAGE.md"):
+        text = (repo_root / relative).read_text(encoding="utf-8")
+        release_paths = re.findall(
+            r"releases/download/v[^/\s]+/bcf_governance-[^/\s]+-py3-none-any\.whl",
+            text,
+        )
+        if release_paths != [expected_release_path]:
+            errors.append(
+                f"{relative}: release URL must point exactly to the current package version"
+            )
     if "--mode pull_request" in readme or "--mode pr" not in readme:
         errors.append("README.md: preflight example does not use the implemented PR mode")
     for required_graph_command in (

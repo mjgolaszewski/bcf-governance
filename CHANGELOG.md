@@ -6,7 +6,33 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `1.0.0`.
+No unreleased changes.
+
+## [1.0.1] - 2026-09-02
+
+### Changed
+
+- Reframed the README around BCF's deterministic error-correction thesis for
+  probabilistic software production, with a compact failure-mode map and clear
+  human/mechanical authority boundary.
+- Added one focused reliability model covering verification redundancy,
+  compute and attention costs, common objections, limitations, and the
+  empirical measurements needed to evaluate the framework's economic thesis.
+- Explained the architecture defaults as configurable reliability biases that
+  trade some flexibility for mechanically observable structure.
+- Reconciled release-facing installation guidance with the supported immutable
+  GitHub Releases distribution channel.
+
+### Fixed
+
+- Made editorial validation require README and operator-guide release URLs to
+  identify the exact current package version, preventing a current wheel name
+  from concealing a stale release tag.
+
+## [1.0.0] - 2026-09-02
+
+Published as immutable GitHub release `381225147` from exact certified merge
+`57bc2245b3c7913363169b42854b0899c04de401`.
 
 ### Changed
 
@@ -589,7 +615,9 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.0rc1...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.0rc1...v1.0.0
 [1.0.0rc1]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.8.0...v1.0.0rc1
 [0.8.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.7.0...v0.7.1

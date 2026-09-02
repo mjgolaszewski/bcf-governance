@@ -36,7 +36,7 @@ def _fixture(tmp_path: Path) -> Path:
 
 def test_public_contract_inventory_matches_executable_owners() -> None:
     inventory = validate_public_contracts(REPO_ROOT)
-    assert inventory.package_version == "1.0.0"
+    assert inventory.package_version == "1.0.1"
     assert inventory.command_count == 19
     assert inventory.contract_count == 6
 
@@ -44,7 +44,13 @@ def test_public_contract_inventory_matches_executable_owners() -> None:
 @pytest.mark.parametrize(
     ("path", "key", "value", "message"),
     [
-        ("package", "version", "1.0.1", "package version"),
+        pytest.param(
+            "package",
+            "version",
+            "0.0.0",
+            "package version",
+            id="package-version-mismatch",
+        ),
         ("cli", "top_level_commands", ["validate"], "CLI command inventory"),
         ("ci_graph", "extension_points", ["preflight"], "extension points"),
         ("ci_graph", "executor_kinds", ["command"], "executor kinds"),
