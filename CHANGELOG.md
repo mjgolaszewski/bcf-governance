@@ -34,6 +34,8 @@ Release target: `1.0.2`
   run, commit, tree, provider, and wheel binding.
 - Recorded provider-compiled installation proof only after the generated bootstrap
   and probe passed independently on both trusted-control runners.
+- Confirmed the final protection controller only after both trusted runners
+  independently installed and probed the provider-selected artifact.
 - Completed the authored P18 implementation state only after local validation and
   controller installation proof; release closure remains mechanically computed.
 - Provisioned the protected-branch-only `bcf-trusted-automation` environment
