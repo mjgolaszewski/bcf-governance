@@ -296,7 +296,8 @@ def test_trusted_no_checkout_artifacts_are_job_scoped() -> None:
 
 
 def test_exact_main_is_the_only_default_branch_producer() -> None:
-    workflows = validate_ci_graph(REPO_ROOT).workflows
+    compiled = validate_ci_graph(REPO_ROOT)
+    workflows = compiled.workflows
     push = [
         workflow for workflow in workflows
         if any(event["type"] == "push" for event in workflow["events"])
@@ -311,6 +312,9 @@ def test_exact_main_is_the_only_default_branch_producer() -> None:
         "build_controller": True,
         "evaluation_mode": "release",
     }
+    assert compiled.graph["conditions"]["exact-main-authority-enabled"] == (
+        "vars.BCF_CI_AUTHORITY_ENABLED == 'true'"
+    )
 
 
 def test_self_ci_authority_matches_immutable_workflow_definitions() -> None:

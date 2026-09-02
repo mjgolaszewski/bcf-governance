@@ -240,7 +240,7 @@ gates:
     - {id: trusted-no-checkout-artifact-scope-must-fail, mutation: {path: bcf_governance/tooling/ci_graph_render.py, search: '        result = _scope_runner_temp_value(result)', replace: '        result = result'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_trusted_no_checkout_artifacts_are_job_scoped']}}
     - id: ci-authority-activation-gate-must-fail
       mutation: {path: governance/ci-graph.yml, yaml_path: conditions.exact-main-authority-enabled, value: 'true'}
-      oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_control_plane_is_an_exact_v11_generator_product']}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_exact_main_is_the_only_default_branch_producer']}
     - id: trusted-finalizer-main-push-guard-must-fail
       mutation: {path: governance/ci-graph.yml, yaml_path: conditions.exact-main-finalizer-admitted, value: "vars.BCF_CI_AUTHORITY_ENABLED == 'true'"}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner']}
