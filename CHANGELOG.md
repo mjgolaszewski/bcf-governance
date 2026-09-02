@@ -35,6 +35,9 @@ Release target: `1.0.2`
 - Made protection activation require one current successful controlled draft
   automation canary sourced from GitHub Actions App ID `15368` before replacing
   worker checks with the single aggregate status.
+- Allowed self-controller rotation to authenticate one complete package producer
+  from a partial exact-main admission without relaxing complete-inventory
+  requirements for certification.
 
 ## [1.0.1] - 2026-09-02
 
