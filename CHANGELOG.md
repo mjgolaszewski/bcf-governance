@@ -31,6 +31,8 @@ Release target: `1.0.2`
   confirm the new bytes.
 - Recorded provider-compiled installation proof only after the generated bootstrap
   and probe passed independently on both trusted-control runners.
+- Completed the authored P18 implementation state only after local validation and
+  controller installation proof; release closure remains mechanically computed.
 
 ### Fixed
 
