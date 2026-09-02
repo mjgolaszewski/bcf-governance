@@ -33,6 +33,8 @@ Release target: `1.0.2`
   and probe passed independently on both trusted-control runners.
 - Completed the authored P18 implementation state only after local validation and
   controller installation proof; release closure remains mechanically computed.
+- Provisioned the protected-branch-only `bcf-trusted-automation` environment
+  before installing the narrowly scoped changelog writer credentials.
 
 ### Fixed
 
