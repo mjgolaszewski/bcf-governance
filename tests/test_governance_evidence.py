@@ -650,6 +650,28 @@ def test_explicit_local_session_ignores_ambient_github_identity(
     }
 
 
+def test_local_session_rejects_unadmitted_producer_before_allocation(
+    tmp_path: Path,
+) -> None:
+    repo = _make_diagnostic_gate_repo(
+        tmp_path,
+        "BROKEN = False\nprint('ok')\n",
+    )
+    _enable_profile_v2(repo)
+    artifact_root = tmp_path / "evidence"
+
+    with pytest.raises(EvidenceError, match="must be admitted"):
+        allocate_session(
+            repo,
+            artifact_root,
+            ["gate"],
+            expected_producers=["local"],
+            producer_identity=local_producer_identity(repo, "different-local-id"),
+        )
+
+    assert not artifact_root.exists()
+
+
 def test_workflow_session_separates_allocator_from_admitted_evidence_job(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -488,7 +488,7 @@
     },
     "scripts/_bcf_runtime/evidence_sessions.py": {
       "operation": "copy",
-      "sha256": "97f084d911b9e98f69425e061271936ba3cd36db2ffe6e5f4009f72dc8c4057e"
+      "sha256": "b6debc19b6f0b19080f691c9bc45381a3b5d778f929f06d43e17a786ab8340aa"
     },
     "scripts/_bcf_runtime/evidence_test_adapters.py": {
       "operation": "copy",
