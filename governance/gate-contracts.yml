@@ -235,9 +235,9 @@ gates:
     - id: exact-main-controller-build-input-must-fail
       mutation: {path: governance/ci-extensions/bcf-package.yml, search: 'inputs: {build_controller: true, evaluation_mode: release}', replace: 'inputs: {build_controller: false, evaluation_mode: release}'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_exact_main_is_the_only_default_branch_producer']}
-    - id: reusable-mode-input-authority-must-fail
-      mutation: {path: governance/ci-graph.yml, search: "${{ inputs.evaluation_mode == 'closure' && 'release' || 'pr' }}", replace: "${{ 'pr' }}"}
-      oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_governance_fan_in_is_preflight_ordered_and_attempt_exact']}
+    - id: exact-main-closure-preflight-must-fail
+      mutation: {path: bcf_governance/tooling/preflight.py, search: 'closure_requested = evaluation_mode == "closure"', replace: 'closure_requested = False'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_closure_preflight_rejects_open_hotfix_before_session']}
     - id: ci-authority-activation-gate-must-fail
       mutation: {path: governance/ci-graph.yml, search: "exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true'", replace: 'exact-main-authority-enabled: true'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_control_plane_is_an_exact_v11_generator_product']}

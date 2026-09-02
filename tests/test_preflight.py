@@ -211,6 +211,75 @@ def test_negative_control_preflight_rejects_stale_oracle_node(tmp_path: Path) ->
         preflight._negative_control_targets(repo)
 
 
+def test_closure_authoring_reports_every_lifecycle_blocker(tmp_path: Path) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "phases").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        "active_phase:\n"
+        "  id: P02\n"
+        "  lifecycle_status: planned\n"
+        "  log: phases/phase-02-log.yml\n"
+        "hotfix_lane:\n"
+        "  open_records:\n"
+        "  - {id: P02-HF02}\n"
+        "  - {id: P02-HF01}\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "phases/phase-02-log.yml").write_text(
+        "document: {status: planned}\n", encoding="utf-8"
+    )
+
+    with pytest.raises(preflight.PreflightError) as captured:
+        preflight._closure_authoring(tmp_path)
+
+    message = str(captured.value)
+    assert "active phase P02 is planned" in message
+    assert "active phase log is planned" in message
+    assert "open hotfixes: P02-HF01, P02-HF02" in message
+
+
+def test_closure_preflight_rejects_open_hotfix_before_session(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[str] = []
+    monkeypatch.setattr(preflight, "_git_state", lambda _: {})
+    monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
+    monkeypatch.setattr(preflight, "_exposure_scan", lambda _: {})
+    monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {})
+    monkeypatch.setattr(preflight, "_source_entrypoint_authority", lambda _: {})
+    monkeypatch.setattr(preflight, "validate_repo_root", lambda _: None)
+    monkeypatch.setattr(
+        preflight,
+        "_closure_authoring",
+        lambda _: (_ for _ in ()).throw(
+            preflight.PreflightError("closure preflight failed: open hotfixes: P02-HF01")
+        ),
+    )
+    monkeypatch.setattr(
+        preflight, "allocate_session", lambda *_, **__: calls.append("allocated")
+    )
+
+    with pytest.raises(preflight.PreflightError, match="open hotfixes: P02-HF01"):
+        preflight.run_preflight(
+            tmp_path,
+            mode="release",
+            evaluation_mode="closure",
+            python_executable=sys.executable,
+            artifact_root=tmp_path / ".artifacts",
+            trace=calls.append,
+        )
+
+    assert calls == [
+        "git-state",
+        "syntax",
+        "exposure",
+        "interpreter",
+        "source-entrypoints",
+        "governance",
+        "closure-authoring",
+    ]
+
+
 def test_preflight_allocates_session_only_after_all_deterministic_checks(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

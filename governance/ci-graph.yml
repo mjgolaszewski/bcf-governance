@@ -144,6 +144,8 @@ commands:
     - .
     - --mode
     - ${{ inputs.evaluation_mode == 'closure' && 'release' || 'pr' }}
+    - --evaluation-mode
+    - ${{ inputs.evaluation_mode }}
     - --python
     - '{python}'
     - --artifact-root
