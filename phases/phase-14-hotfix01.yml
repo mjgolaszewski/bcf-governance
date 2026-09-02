@@ -99,6 +99,15 @@ execution_evidence:
   - command: audit all graph-rendered trusted no-checkout artifact paths
     result: pass
     notes: the renderer now projects every declared input and output into a runner-temp directory bound to the current run ID and attempt, and compilation rejects repository-relative artifact roots for the complete trusted no-checkout class
+  - command: bcf ci local-pr --repo-root . --remote origin
+    result: pass
+    notes: exact pull-request context, ancestry, changelog policy, graph parity, authority pins, and cheap preflight passed against current origin/main without allocating a runner
+  - command: .venv/bin/python -m pytest -q tests
+    result: 588_passed
+    notes: the full mechanically enumerated source scope passed after the trusted artifact class remediation
+  - command: validator full and semantic-full mutant profiles
+    result: pass_27_of_27_killed
+    notes: all 15 structural and 12 semantic mutants failed only at their declared causal nodes
   notes:
   - release authorizer, trusted collector, and publisher now declare a current-controller requirement; generated jobs are mechanically disabled while target and installed controller custody differ
   - bootstrap and probe remain executable through the proven installed controller and are the only path to activate the pending target
