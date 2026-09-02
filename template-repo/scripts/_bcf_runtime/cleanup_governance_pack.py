@@ -22,14 +22,8 @@ from .governance_cleanup.models import (  # noqa: E402
     CleanupReport,
     ManualAction,
 )
-from .governance_cleanup.phase_retention import (  # noqa: E402
-    load_truth_reports,
-    phase_retention_actions,
-    prune_phase_hotfix_records,
-    set_phase_retention_mode,
-    write_archive_gitignore,
-    write_phase_history,
-)
+from .governance_cleanup import phase_retention as phase_retention_ops  # noqa: E402
+from .governance_cleanup import phase_retention_projection as retention_projection  # noqa: E402
 
 OUTPUT_FORMATS = {"text", "json"}
 PHASE_RETENTION_MODE_CHOICES = {"archive", "git-history"}
@@ -306,8 +300,8 @@ def plan_cleanup(
         phase_retention_mode=phase_retention_mode,
     )
     if effective_retention_mode is not None:
-        truth_reports = load_truth_reports(repo_root, truth_report_paths)
-        retention_actions, retention_warnings = phase_retention_actions(
+        truth_reports = phase_retention_ops.load_truth_reports(repo_root, truth_report_paths)
+        retention_actions, retention_warnings = phase_retention_ops.phase_retention_actions(
             repo_root, mode=effective_retention_mode, truth_reports=truth_reports
         )
         actions.extend(retention_actions)
@@ -497,34 +491,40 @@ def _apply_cleanup_direct(
             warnings=warnings,
         )
 
-    phase_history_path = write_phase_history(
+    phase_history_path = phase_retention_ops.write_phase_history(
         repo_root,
         safe_actions,
         mode=effective_retention_mode,
-        truth_reports=load_truth_reports(repo_root, truth_report_paths),
+        truth_reports=phase_retention_ops.load_truth_reports(repo_root, truth_report_paths),
     )
     if phase_history_path is not None:
         warnings.append(f"phase history updated: {phase_history_path}")
+    roadmap_paths = retention_projection.compact_phase_roadmaps(repo_root, safe_actions)
+    if roadmap_paths:
+        warnings.append("phase roadmaps compacted: " + ", ".join(roadmap_paths))
     if effective_retention_mode is not None:
-        set_phase_retention_mode(repo_root, effective_retention_mode)
-    hotfix_ledger_path = prune_phase_hotfix_records(repo_root, safe_actions)
+        phase_retention_ops.set_phase_retention_mode(repo_root, effective_retention_mode)
+    hotfix_ledger_path = retention_projection.prune_phase_hotfix_records(repo_root, safe_actions)
     if hotfix_ledger_path is not None:
         warnings.append(f"phase hotfix records pruned: {hotfix_ledger_path}")
     for action in safe_actions:
         if action.kind == "create_audit_readme":
             _write_audit_readme(repo_root)
         elif action.kind == "ignore_phase_archive_root":
-            write_archive_gitignore(repo_root)
+            phase_retention_ops.write_archive_gitignore(repo_root)
         elif action.kind == "move_audit_artifact" and action.destination is not None:
             _move_file(repo_root, action.source, action.destination)
         elif action.kind == "archive_phase_artifact" and action.destination is not None:
             _move_file(repo_root, action.source, action.destination)
         elif action.kind == "remove_phase_artifact":
             _remove_path(repo_root, action.source)
-        elif action.kind == "prune_phase_hotfix_records":
+        elif action.kind in {"prune_phase_hotfix_records", "compact_phase_roadmaps"}:
             continue
     _prune_empty_dirs(repo_root)
-    rewritten_files = _rewrite_references(repo_root, _reference_replacements(safe_actions))
+    rewritten_files = sorted(
+        set(roadmap_paths)
+        | set(_rewrite_references(repo_root, _reference_replacements(safe_actions)))
+    )
     if report.manual_actions:
         warnings.append("manual semantic compaction remains after safe cleanup")
 

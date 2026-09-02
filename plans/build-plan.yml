@@ -1,69 +1,29 @@
-document:
-  kind: machine_readable_build_plan
-  name: "BCF Governance Build Plan"
-  id: "bcf-governance-build-plan"
-  version: 1.0.0
-  generated_at_utc: "2026-08-14T00:00:00Z"
-  status: active
-  path: plans/build-plan.yml
+document: {kind: machine_readable_build_plan, name: BCF Governance Build Plan, id: bcf-governance-build-plan, version: 1.0.0, generated_at_utc: '2026-08-14T00:00:00Z', status: active, path: plans/build-plan.yml}
 planning_contract:
   format: yaml
-  mandatory_properties:
-    - tightly_scoped_deliverables
-    - parallelizable_workstreams
-    - hard_dependency_ordering
-    - docker_first_local_runtime
-    - ast_architecture_tests
-    - strict_boundaries
-    - observability_reference_model
-    - completeness_standard
+  mandatory_properties: [tightly_scoped_deliverables, parallelizable_workstreams, hard_dependency_ordering, docker_first_local_runtime, ast_architecture_tests, strict_boundaries, observability_reference_model, completeness_standard]
   completeness_standard: full_completeness_for_declared_scope
 planning_inputs:
-  date: "2026-09-01"
-  planner: "codex"
+  date: '2026-09-01'
+  planner: codex
   primary_source_of_truth: plans/product-spec.yml
-  governance_references:
-    - AGENTS.yml
-    - MEMORY.yml
-    - plans/phase-ledger.yml
-global_delivery_rules:
-  - change units default to the smallest valid vertical slice with low blast radius
-  - every behavior change must update specs, plans, MEMORY, and tests together
-  - preserve public contracts unless an explicit instruction and migration note authorize a breaking change
-  - release gates must run in a declared runtime environment
-  - governed artifacts must pass structural schema validation before semantic cross-artifact validation
-  - architecture boundaries must be encoded in tests, not left as convention-only prose
-  - packaged implementation stays under bcf_governance and public source scripts remain thin wrappers
-  - canonical tooling, standalone private runtime, template source, and packaged template copies stay synchronized
-  - governance changes must pass semantic validation, not only YAML parse checks
-  - observability changes must preserve the shared telemetry and logging contract baseline
-  - active phase lifecycle uses the governed taxonomy and records control metadata when work is blocked, paused, or abandoned
-  - governed build artifacts must follow the template-pack naming and validation conventions
-  - completed release trains must preserve governed phase history for each declared phase
-  - new abstractions require proven reuse across at least two real call sites unless explicitly authorized
-  - emergency red-CI and release-blocking fixes must use the governed hotfix lane
-  - lite hotfix mode is reserved for a single-commit repair with no public-contract or security-scope change; all other hotfixes use full mode
-  - candidate code never executes on persistent or trusted control-plane runners
-  - profile-v1 public contracts remain compatible until a repository explicitly promotes to contract v2
-  - provider state, evidence sessions, certification, and release receipts form an acyclic verification chain
-  - trusted CI workflow, run, attempt, commit, tree, session, and bundle identity are reconstructed and compared mechanically before any status or release mutation
-  - each BCF behavior commit updates and validates BCF's own applicable governance contracts before successor work begins; local implementation may proceed while hosted Actions are unavailable, but remote candidate execution and publication stay disabled until disposable and trusted substrate acceptance is proven
+  governance_references: [AGENTS.yml, MEMORY.yml, plans/phase-ledger.yml]
+global_delivery_rules: [change units default to the smallest valid vertical slice with low blast radius, 'every behavior change must update specs, plans, MEMORY, and tests together', preserve public contracts unless an explicit instruction and migration note authorize a breaking change, release gates must run in a declared runtime environment, governed artifacts must pass structural schema validation before semantic cross-artifact validation, 'architecture boundaries must be encoded in tests, not left as convention-only prose', packaged implementation stays under bcf_governance and public source scripts remain thin wrappers, 'canonical tooling, standalone private runtime, template source, and packaged template copies stay synchronized', 'governance changes must pass semantic validation, not only YAML parse checks', observability changes must preserve the shared telemetry and logging contract baseline, 'active phase lifecycle uses the governed taxonomy and records control metadata when work is blocked, paused, or abandoned', governed build artifacts must follow the template-pack naming and validation conventions, completed release trains must preserve governed phase history for each declared phase, new abstractions require proven reuse across at least two real call sites unless explicitly authorized, emergency red-CI and release-blocking fixes must use the governed hotfix lane, lite hotfix mode is reserved for a single-commit repair with no public-contract or security-scope change; all other hotfixes use full mode, candidate code never executes on persistent or trusted control-plane runners, profile-v1 public contracts remain compatible until a repository explicitly promotes to contract v2, 'provider state, evidence sessions, certification, and release receipts form an acyclic verification chain', 'trusted CI workflow, run, attempt, commit, tree, session, and bundle identity are reconstructed and compared mechanically before any status or release mutation', 'each BCF behavior commit updates and validates BCF''s own applicable governance contracts before successor work begins; local implementation may proceed while hosted Actions are unavailable, but remote candidate execution and publication stay disabled until disposable and trusted substrate acceptance is proven']
 global_gates:
-  - id: G1
-    name: governed_foundation
-    applies_before: P02
-    required_completion_criteria:
-      - canonical governance artifacts exist
-      - phase ledger points to active phase artifacts
-      - semantic governance validation passes
-      - architecture boundary test lane exists
-  - id: G2
-    name: safe_execution_substrate
-    applies_before: P10
-    required_completion_criteria:
-      - trusted control-plane VM executes no candidate code
-      - every code-executing job receives a fresh disposable VM and ephemeral runner identity
-      - no GitHub-hosted fallback is configured
-phase_history: {path: plans/phase-history.yml, through_phase: P14}
+- id: G1
+  name: governed_foundation
+  applies_before: P02
+  required_completion_criteria: [canonical governance artifacts exist, phase ledger points to active phase artifacts, semantic governance validation passes, architecture boundary test lane exists]
+- id: G2
+  name: safe_execution_substrate
+  applies_before: P10
+  required_completion_criteria: [trusted control-plane VM executes no candidate code, every code-executing job receives a fresh disposable VM and ephemeral runner identity, no GitHub-hosted fallback is configured]
+phase_history: {path: plans/phase-history.yml, through_phase: P15}
 phase_sequence:
-  - {phase_id: P15, build_block: contract-and-adoption-hardening-1.0.0rc1, objective: "freeze supported contracts and prove deterministic adoption upgrade customization and rollback", hard_dependencies: [P14], tightly_scoped_deliverables: ["supported contract freeze and compatibility policy", "end-to-end adoption promotion upgrade customization and rollback harness", "mechanical capability diagnostics and isolated legacy migration", "five-cycle BCF and Identity soak plus publication-ready release candidate"], parallelizable_workstreams: ["public contract inventory schemas and compatibility", "transactional adoption upgrade customization and rollback", "BCF fixture and Identity clean-clone soak", "documentation packaging and release evidence"], verification_commands: [".venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text", ".venv/bin/python -m pytest -q tests", ".venv/bin/python scripts/validate_governance_yaml.py --repo-root .", ".venv/bin/python .github/scripts/run_validator_mutants.py --profile full", ".venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full"]}
+- phase_id: P16
+  build_block: stable-packaging-and-support-1.0.0
+  objective: promote the consumer-proven release candidate to a stable mechanically certified 1.0.0 release without changing frozen contracts
+  hard_dependencies: [P15]
+  tightly_scoped_deliverables: [immutable release-candidate custody and P15 retention, stable version and support declaration parity, exact-main stable artifact certification and immutable no-rebuild publication]
+  parallelizable_workstreams: [release-candidate custody and phase retention, stable version and support declaration parity, exact-main stable artifact certification and immutable publication]
+  verification_commands: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, .venv/bin/python -m pytest -q tests, .venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python .github/scripts/run_validator_mutants.py --profile full, .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full]

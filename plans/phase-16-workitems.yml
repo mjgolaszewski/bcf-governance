@@ -1,0 +1,48 @@
+document:
+  kind: execution_phase_workitem_ledger
+  name: Phase 16 Workitems
+  id: bcf-governance-phase-16-workitems
+  version: 1.0.0
+  generated_at_utc: '2026-09-02T00:00:00Z'
+  status: completed
+  path: plans/phase-16-workitems.yml
+  phase_id: P16
+workitems:
+- id: P16-P0-01
+  priority: P0
+  status: DONE
+  summary: deliver record immutable 1.0.0rc1 provider custody and compact P15 under
+    exact Git hashes
+  acceptance:
+  - authenticated provider inspection verifies immutable v1.0.0rc1 tag release asset
+    and attestation custody against the authoritative release receipt
+  - P15 and its hotfix records are compacted under exact Git and SHA-256 custody
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P16-P0-02
+  priority: P0
+  status: DONE
+  summary: deliver promote the frozen package and release contract from 1.0.0rc1 to
+    1.0.0
+  acceptance:
+  - canonical package public-contract manifest and generated release identities agree
+    on 1.0.0
+  - the frozen CLI schema profile receipt authority graph extension platform provider
+    and distribution contracts do not change
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P16-P0-03
+  priority: P0
+  status: DONE
+  summary: deliver build verify attest and publish exact certified stable bytes without
+    rebuild
+  acceptance:
+  - complete local source contract graph mutant and release-rehearsal proof passes
+    before one remote PR execution
+  - stable publication remains a post-closure provider action that can publish only
+    exact collector-certified bytes without rebuilding
+  acceptance_evidence:
+  - test
+  - contract-test

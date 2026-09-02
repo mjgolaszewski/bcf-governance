@@ -4,11 +4,11 @@ build_plan_mandate:
   required_fields: [tightly_scoped_deliverables, parallelizable_workstreams, hard_dependencies, docker_first_local_runtime, completeness_standard]
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P15
-  build_block: contract-and-adoption-hardening-1.0.0rc1
-  plan: plans/phase-15-plan.yml
-  workitems: plans/phase-15-workitems.yml
-  log: phases/phase-15-log.yml
+  id: P16
+  build_block: stable-packaging-and-support-1.0.0
+  plan: plans/phase-16-plan.yml
+  workitems: plans/phase-16-workitems.yml
+  log: phases/phase-16-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
@@ -24,26 +24,7 @@ hotfix_lane:
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
   open_records: []
-  remediation_history:
-  - id: P15-HF01
-    mode: full
-    recorded_at_utc: '2026-09-02T00:00:00Z'
-    action: removed stale installed-controller release version authority and bound generated tag current-main contract archives checksums receipt attestations and provider prerequisites before mutation
-    remediated_in_phase: P15
-    hotfix_log: phases/phase-15-hotfix01.yml
-    canonical_artifacts: [governance/ci-graph.yml, governance/ci-extensions/bcf-release.yml, governance/gate-contracts.yml, bcf_governance/tooling/ci_github_release_inputs.py, bcf_governance/tooling/ci_github_release.py, bcf_governance/tooling/release_asset_inventory.py]
-    local_validation: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, .venv/bin/python -m pytest -q tests, .venv/bin/python .github/scripts/run_validator_mutants.py --profile full, .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full]
-  - id: P15-HF02
-    mode: full
-    recorded_at_utc: '2026-09-02T00:00:00Z'
-    action: derived trusted runtime source compatibility mechanically selected and independently installed the current controller and kept release roles disabled until confirmation
-    remediated_in_phase: P15
-    hotfix_log: phases/phase-15-hotfix02.yml
-    canonical_artifacts: [governance/self-governance-policy.yml, governance/ci-graph.yml, bcf_governance/tooling/trusted_controller_compatibility.py, bcf_governance/tooling/preflight.py]
-    local_validation: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, .venv/bin/python -m pytest -q tests, .venv/bin/python .github/scripts/run_validator_mutants.py --profile full, .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full]
-    remote_validation_completed:
-      commit: f0a9133e2b44ad55b947b9761003c7150eeff694
-      workflows: ['bcf/trusted-control-bootstrap 33617358764', 'bcf/trusted-control-probe 33617411837']
+  remediation_history: []
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
 - {type: decision, statement: BCF 0.7.0 is one release train and BCF must self-adopt every applicable Standard-v2 capability}
@@ -58,7 +39,7 @@ operator_requirements_choices_disambiguations:
 - {type: identity_preservation, statement: every current Identity workflow job trigger edge stable check runner mapping authority role cleanup contract and scheduled lane is preservation-locked; mutation requires offline no-loss and performance proofs and remote validation is limited to one canary plus activation PR and exact-main}
 - {type: hosted_frugality, statement: hosted candidate jobs execute their own bounded work and terminate; polling sleeping lease waiting and hosted waiters for local capacity are prohibited}
 active_delivery_priorities:
-  current_tranche: [contract-and-adoption-hardening-1.0.0rc1]
+  current_tranche: [stable-packaging-and-support-1.0.0]
 release_trains:
   release_1:
     target_version: 0.6.1
@@ -72,7 +53,17 @@ release_trains:
     target_version: 0.7.1
     status: completed
     focus: [authority_v1.1, common_admission_membership, closed_release_dependencies, independent_release_byte_verification, immutable_future_release]
-  release_4: {target_version: 0.8.0, status: completed, focus: [canonical_consumer_ci_graph, bounded_project_extensions, deterministic_workflow_rendering, standard_v2_reference_graph, identity_no_loss_proof, immutable_release]}
-  release_5: {target_version: 1.0.0rc1, status: active, focus: [public_contract_freeze, transactional_adoption_upgrade_rollback, mechanical_capability_diagnostics, multi_repository_soak, immutable_release_candidate]}
+  release_4:
+    target_version: 0.8.0
+    status: completed
+    focus: [canonical_consumer_ci_graph, bounded_project_extensions, deterministic_workflow_rendering, standard_v2_reference_graph, identity_no_loss_proof, immutable_release]
+  release_5:
+    target_version: 1.0.0rc1
+    status: completed
+    focus: [public_contract_freeze, transactional_adoption_upgrade_rollback, mechanical_capability_diagnostics, multi_repository_soak, immutable_release_candidate]
+  release_6:
+    target_version: 1.0.0
+    status: active
+    focus: [stable_packaging, published_support_matrix, github_provider_and_release_support, immutable_exact_main_release]
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]

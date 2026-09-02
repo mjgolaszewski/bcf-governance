@@ -30,7 +30,9 @@ def _write_runtime(root: Path) -> None:
     schemas.mkdir(parents=True)
     (root / "bcf_governance/__init__.py").write_text("", encoding="utf-8")
     (root / "bcf_governance/_version.py").write_text(
-        '__version__ = "1.0.0rc1"\n', encoding="utf-8"
+        '"""Single authoritative BCF release version."""\n\n'
+        '__version__ = "1.0.0rc1"\n',
+        encoding="utf-8",
     )
     (root / "bcf_governance/cli.py").write_text(
         "from bcf_governance.tooling import ci_github_commands\n", encoding="utf-8"
@@ -90,6 +92,57 @@ def test_target_may_lag_unrelated_files_but_not_trusted_runtime(
     with pytest.raises(
         TrustedControllerCompatibilityError,
         match="target is stale.*ci_github_api.py",
+    ):
+        verify_trusted_controller_compatibility(root, target_commit=target)
+
+
+def test_target_may_lag_canonical_inert_version_metadata(tmp_path: Path) -> None:
+    root, target = _repository(tmp_path)
+    version = root / "bcf_governance/_version.py"
+    version.write_text(
+        '"""Single authoritative BCF release version."""\n\n'
+        '__version__ = "1.0.0"\n',
+        encoding="utf-8",
+    )
+    _git(root, "add", version.relative_to(root).as_posix())
+    _git(root, "commit", "-q", "-m", "promote stable metadata")
+
+    report = verify_trusted_controller_compatibility(root, target_commit=target)
+    assert report.target_commit == target
+
+
+def test_version_module_executable_drift_is_trusted_runtime_drift(
+    tmp_path: Path,
+) -> None:
+    root, target = _repository(tmp_path)
+    version = root / "bcf_governance/_version.py"
+    version.write_text(
+        '"""Single authoritative BCF release version."""\n\n'
+        '__version__ = "1.0.0"\nraise RuntimeError("candidate code")\n',
+        encoding="utf-8",
+    )
+    _git(root, "add", version.relative_to(root).as_posix())
+    _git(root, "commit", "-q", "-m", "change executable version module")
+
+    with pytest.raises(
+        TrustedControllerCompatibilityError,
+        match="target is stale.*_version.py",
+    ):
+        verify_trusted_controller_compatibility(root, target_commit=target)
+
+
+def test_noncanonical_version_module_drift_is_trusted_runtime_drift(
+    tmp_path: Path,
+) -> None:
+    root, target = _repository(tmp_path)
+    version = root / "bcf_governance/_version.py"
+    version.write_text('__version__ = "1.0.0"\n', encoding="utf-8")
+    _git(root, "add", version.relative_to(root).as_posix())
+    _git(root, "commit", "-q", "-m", "remove canonical metadata contract")
+
+    with pytest.raises(
+        TrustedControllerCompatibilityError,
+        match="target is stale.*_version.py",
     ):
         verify_trusted_controller_compatibility(root, target_commit=target)
 

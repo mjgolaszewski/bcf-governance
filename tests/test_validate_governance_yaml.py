@@ -270,6 +270,10 @@ def test_validate_repo_root_rejects_malformed_readme_or_license_contract(
             "# Changelog\n\n## [Unreleased]\n\n## 1.2.3\n",
             "release headings must use",
         ),
+        (
+            "# Changelog\n\n## [Unreleased]\n\n## [1.2.3-rc.1] - 2026-09-02\n",
+            "release headings must use",
+        ),
     ],
 )
 def test_validate_repo_root_rejects_malformed_changelog_contract(
@@ -280,6 +284,20 @@ def test_validate_repo_root_rejects_malformed_changelog_contract(
 
     with pytest.raises(GovernanceValidationError, match=message):
         validate_repo_root(repo_root)
+
+
+def test_validate_repo_root_accepts_canonical_prerelease_changelog_heading(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    changelog = repo_root / "CHANGELOG.md"
+    changelog.write_text(
+        changelog.read_text(encoding="utf-8")
+        + "\n## [1.0.0rc1] - 2026-09-02\n\n- Release candidate.\n",
+        encoding="utf-8",
+    )
+
+    validate_repo_root(repo_root)
 
 
 def test_pull_request_validation_requires_changelog_update(

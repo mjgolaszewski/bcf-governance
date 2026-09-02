@@ -391,6 +391,22 @@ def _phase_retention_actions(
     prune_action = _phase_hotfix_ledger_prune_action(repo_root, actions)
     if prune_action is not None:
         actions.append(prune_action)
+    if any(
+        action.kind in {"archive_phase_artifact", "remove_phase_artifact"}
+        for action in actions
+    ):
+        actions.append(
+            CleanupAction(
+                kind="compact_phase_roadmaps",
+                source="plans/build-plan.yml",
+                destination="plans/product-spec.yml",
+                reason=(
+                    "retained phases move from active roadmaps to the canonical "
+                    "phase-history boundary"
+                ),
+                safe_to_apply=True,
+            )
+        )
     return actions, warnings
 
 
@@ -651,40 +667,6 @@ def _write_phase_history(
     return history_rel
 
 
-def _prune_phase_hotfix_records(repo_root: Path, phase_actions: list[CleanupAction]) -> str | None:
-    hotfix_sources = {
-        action.source for action in phase_actions if _is_phase_hotfix_path(action.source)
-    }
-    if not hotfix_sources:
-        return None
-    ledger_path = repo_root / "plans" / "phase-ledger.yml"
-    ledger = _load_yaml(ledger_path)
-    if ledger is None:
-        return None
-    hotfix_lane = ledger.get("hotfix_lane")
-    if not isinstance(hotfix_lane, dict):
-        return None
-    changed = False
-    for key in ("open_records", "remediation_history"):
-        records = hotfix_lane.get(key)
-        if not isinstance(records, list):
-            continue
-        retained = [
-            record
-            for record in records
-            if not (isinstance(record, dict) and record.get("hotfix_log") in hotfix_sources)
-        ]
-        if len(retained) != len(records):
-            hotfix_lane[key] = retained
-            changed = True
-    if not changed:
-        return None
-    ledger_path.write_text(
-        _budgeted_yaml(repo_root, "plans/phase-ledger.yml", ledger), encoding="utf-8"
-    )
-    return "plans/phase-ledger.yml"
-
-
 def _write_archive_gitignore(repo_root: Path) -> None:
     gitignore = repo_root / ".gitignore"
     ignored_pattern, keep_pattern = _archive_gitignore_patterns(repo_root)
@@ -746,4 +728,3 @@ phase_retention_actions = _phase_retention_actions
 write_phase_history = _write_phase_history
 write_archive_gitignore = _write_archive_gitignore
 set_phase_retention_mode = _set_phase_retention_mode
-prune_phase_hotfix_records = _prune_phase_hotfix_records
