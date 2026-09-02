@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-15-hotfix02
   version: 1.0.0
   generated_at_utc: '2026-09-02T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-15-hotfix02.yml
 hotfix:
   id: P15-HF02
@@ -25,6 +25,15 @@ execution_evidence:
   - command: compare the source-derived trusted runtime closure from installed controller 9261bbb through certified target af037ec
     result: pass
     notes: one local audit found all 15 changed runtime or schema files together; exact-main, canary, bootstrap, authorization, collection, and status behavior were compatible while prerelease publication required the newer controller
+  - command: local exact-tree release-check and PR truth
+    result: pass
+    notes: 21 of 21 receipts and 172 of 172 cause-verified controls passed; 661 source nodes, 358 contract nodes, 15 full mutants, and 12 semantic mutants passed; closure truth rejected only this then-planned hotfix while PR truth closed with no issues
+  - command: exact-main run 33617250462
+    result: expected_lifecycle_refusal
+    notes: cheap preflight stopped in 17 seconds because this hotfix was still planned; all expensive evidence shards were skipped and the controller package artifact completed
+  - command: trusted bootstrap 33617358764 and independent probe 33617411837
+    result: pass
+    notes: both provider-authenticated workflows installed or verified controller af037ec on bcf-trusted-control-1 and bcf-trusted-control-2 in 11 to 14 seconds without checkout or hosted execution
   notes:
   - release authorization, collection, and publication are mechanically disabled while target and independently proven installed controller commits differ
   - cheap preflight derives the trusted Python import closure and packaged schema inventory, then rejects a target whose bytes differ from committed HEAD

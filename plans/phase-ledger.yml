@@ -23,16 +23,7 @@ hotfix_lane:
       allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
-  open_records:
-  - id: P15-HF02
-    mode: full
-    status: in_progress
-    triggered_by_commits: [af037ecee3a006d6157923a7862eda653f011d54]
-    failing_workflows: [bcf/immutable-release-publisher]
-    root_cause: trusted runtime source changed after the last controller installation but target freshness was not a release front-door invariant
-    remediated_in_phase: P15
-    hotfix_log: phases/phase-15-hotfix02.yml
-    canonical_artifacts: [governance/self-governance-policy.yml, governance/ci-graph.yml, bcf_governance/tooling/trusted_controller_compatibility.py, bcf_governance/tooling/preflight.py]
+  open_records: []
   remediation_history:
   - id: P15-HF01
     mode: full
@@ -42,6 +33,17 @@ hotfix_lane:
     hotfix_log: phases/phase-15-hotfix01.yml
     canonical_artifacts: [governance/ci-graph.yml, governance/ci-extensions/bcf-release.yml, governance/gate-contracts.yml, bcf_governance/tooling/ci_github_release_inputs.py, bcf_governance/tooling/ci_github_release.py, bcf_governance/tooling/release_asset_inventory.py]
     local_validation: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, .venv/bin/python -m pytest -q tests, .venv/bin/python .github/scripts/run_validator_mutants.py --profile full, .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full]
+  - id: P15-HF02
+    mode: full
+    recorded_at_utc: '2026-09-02T00:00:00Z'
+    action: derived trusted runtime source compatibility mechanically selected and independently installed the current controller and kept release roles disabled until confirmation
+    remediated_in_phase: P15
+    hotfix_log: phases/phase-15-hotfix02.yml
+    canonical_artifacts: [governance/self-governance-policy.yml, governance/ci-graph.yml, bcf_governance/tooling/trusted_controller_compatibility.py, bcf_governance/tooling/preflight.py]
+    local_validation: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, .venv/bin/python -m pytest -q tests, .venv/bin/python .github/scripts/run_validator_mutants.py --profile full, .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full]
+    remote_validation_completed:
+      commit: f0a9133e2b44ad55b947b9761003c7150eeff694
+      workflows: ['bcf/trusted-control-bootstrap 33617358764', 'bcf/trusted-control-probe 33617411837']
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
 - {type: decision, statement: BCF 0.7.0 is one release train and BCF must self-adopt every applicable Standard-v2 capability}
