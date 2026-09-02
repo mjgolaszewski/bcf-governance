@@ -304,7 +304,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     monkeypatch.setattr(preflight, "validate_repo_root", lambda _: None)
     monkeypatch.setattr(preflight, "_self_workflows", lambda _: 18)
     monkeypatch.setattr(preflight, "_workflow_authority", lambda _: 12)
-    monkeypatch.setattr(preflight, "_self_controller", lambda _: 6)
+    monkeypatch.setattr(preflight, "_self_controller", lambda _, **__: 6)
     monkeypatch.setattr(preflight, "_negative_control_targets", lambda _: 1)
     monkeypatch.setattr(
         preflight,
@@ -383,6 +383,21 @@ def test_stale_trusted_controller_is_a_preflight_failure(
     ):
         preflight._self_controller(tmp_path)
 
+    monkeypatch.setattr(
+        preflight,
+        "verify_trusted_controller_compatibility",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            preflight.TrustedControllerRuntimeStaleError("stale runtime closure")
+        ),
+    )
+    assert preflight._self_controller(
+        tmp_path, allow_stale_runtime=True
+    ) == {
+        "status": "pending_rotation",
+        "projection_count": 6,
+        "release_authority": False,
+    }
+
 
 def test_stale_pack_manifest_fails_before_evidence(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -403,7 +418,7 @@ def test_stale_pack_manifest_fails_before_evidence(
     monkeypatch.setattr(preflight, "_source_entrypoint_authority", lambda _: {})
     monkeypatch.setattr(preflight, "validate_repo_root", lambda _: None)
     monkeypatch.setattr(preflight, "_workflow_authority", lambda _: 0)
-    monkeypatch.setattr(preflight, "_self_controller", lambda _: 0)
+    monkeypatch.setattr(preflight, "_self_controller", lambda _, **__: 0)
     monkeypatch.setattr(preflight, "_negative_control_targets", lambda _: 0)
     monkeypatch.setattr(preflight, "_semantic_ownership", lambda _: {})
     monkeypatch.setattr(preflight, "_vendored_source_locks", lambda _: 0)
@@ -445,7 +460,7 @@ def test_workflow_authority_failure_prevents_session_allocation(
             preflight.PreflightError("workflow authority drift")
         ),
     )
-    monkeypatch.setattr(preflight, "_self_controller", lambda _: 6)
+    monkeypatch.setattr(preflight, "_self_controller", lambda _, **__: 6)
     monkeypatch.setattr(
         preflight, "allocate_session", lambda *_, **__: calls.append("allocated")
     )

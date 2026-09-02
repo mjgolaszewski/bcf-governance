@@ -13,7 +13,7 @@ extensions:
 - {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: f0ce7dbd17a655162acdc03e894983f072b6c864452180cb73deceea3a674022}
 - {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 04240211401c1bdec8988910f5e2f68946bbc982b9d3af9373ddfd1d5c9dfd41}
 - {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: 44db0d6a184d599d5fdee4e6f4fe7e4318a8b3923b5121cba080a333c4c8da69}
-- {id: bcf-package, path: governance/ci-extensions/bcf-package.yml, sha256: 5910bbe104d1d527cc09acf67fba01235ff967a8ed1ea2641db2c73019f01d9f}
+- {id: bcf-package, path: governance/ci-extensions/bcf-package.yml, sha256: 3ab92fad389e6633d63a310e7204a65d7ca4133a1014f08a9d761883830af55a}
 resource_classes:
   hosted-python:
     runner: ubuntu-24.04

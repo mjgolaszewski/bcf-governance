@@ -39,6 +39,7 @@ from .self_workflow_contracts import (
 from .test_manifests import check_all
 from .trusted_controller_compatibility import (
     TrustedControllerCompatibilityError,
+    TrustedControllerRuntimeStaleError,
     verify_trusted_controller_compatibility,
 )
 from .yaml_mutations import YAMLMutationPathError, resolve_yaml_target, typed_mutation_value
@@ -452,7 +453,9 @@ def _workflow_authority(repo_root: Path) -> int:
         raise PreflightError(f"workflow authority preflight failed: {exc}") from exc
 
 
-def _self_controller(repo_root: Path) -> int:
+def _self_controller(
+    repo_root: Path, *, allow_stale_runtime: bool = False
+) -> int | dict[str, Any]:
     policy = repo_root / "governance/self-governance-policy.yml"
     if not policy.is_file():
         return 0
@@ -465,9 +468,18 @@ def _self_controller(repo_root: Path) -> int:
         target = str(
             runner["trusted_controller_artifact"]["BCF_BOOTSTRAP_COMMIT_SHA"]
         )
-        verify_trusted_controller_compatibility(
-            repo_root, target_commit=target
-        )
+        try:
+            verify_trusted_controller_compatibility(
+                repo_root, target_commit=target
+            )
+        except TrustedControllerRuntimeStaleError:
+            if not allow_stale_runtime:
+                raise
+            return {
+                "status": "pending_rotation",
+                "projection_count": count,
+                "release_authority": False,
+            }
         return count
     except (GitHubControllerError, KeyError, TypeError, TrustedControllerCompatibilityError) as exc:
         raise PreflightError(f"self-controller preflight failed: {exc}") from exc
@@ -689,7 +701,10 @@ def run_preflight(
     workflow_authority = step(
         "workflow-authority", lambda: _workflow_authority(repo_root)
     )
-    self_controller = step("self-controller", lambda: _self_controller(repo_root))
+    self_controller = step(
+        "self-controller",
+        lambda: _self_controller(repo_root, allow_stale_runtime=mode == "pr"),
+    )
     negative_controls = step(
         "negative-controls", lambda: _negative_control_targets(repo_root)
     )
