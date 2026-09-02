@@ -104,11 +104,14 @@ def desired_ruleset(declaration: dict[str, Any]) -> dict[str, Any]:
             {
                 "type": "pull_request",
                 "parameters": {
+                    "allowed_merge_methods": ["merge", "squash", "rebase"],
                     "dismiss_stale_reviews_on_push": rule["dismiss_stale_reviews_on_push"],
                     "require_code_owner_review": False,
+                    "require_extra_approval_for_unattributed_changes": False,
                     "require_last_push_approval": rule["require_last_push_approval"],
                     "required_approving_review_count": rule["required_approving_review_count"],
                     "required_review_thread_resolution": rule["required_review_thread_resolution"],
+                    "required_reviewers": [],
                 },
             },
             {
@@ -127,7 +130,79 @@ def desired_ruleset(declaration: dict[str, Any]) -> dict[str, Any]:
 
 def _normalized_provider(value: dict[str, Any]) -> dict[str, Any]:
     allowed = {"name", "target", "enforcement", "bypass_actors", "conditions", "rules"}
-    return {key: value.get(key) for key in allowed}
+    normalized = {key: value.get(key) for key in allowed}
+    rules = normalized.get("rules")
+    if not isinstance(rules, list):
+        return normalized
+    normalized_rules: list[Any] = []
+    for item in rules:
+        if not isinstance(item, dict):
+            normalized_rules.append(item)
+            continue
+        copied = dict(item)
+        parameters = copied.get("parameters")
+        if isinstance(parameters, dict):
+            copied_parameters = dict(parameters)
+            checks = copied_parameters.get("required_status_checks")
+            if isinstance(checks, list):
+                copied_parameters["required_status_checks"] = sorted(
+                    checks,
+                    key=lambda check: (
+                        str(check.get("context", "")) if isinstance(check, dict) else "",
+                        str(check.get("integration_id", "")) if isinstance(check, dict) else "",
+                    ),
+                )
+            methods = copied_parameters.get("allowed_merge_methods")
+            if isinstance(methods, list):
+                copied_parameters["allowed_merge_methods"] = sorted(methods)
+            copied["parameters"] = copied_parameters
+        normalized_rules.append(copied)
+    normalized["rules"] = sorted(
+        normalized_rules,
+        key=lambda item: str(item.get("type", "")) if isinstance(item, dict) else "",
+    )
+    return normalized
+
+
+def _select_declared_ruleset(
+    api: GitHubAPI,
+    *,
+    repository: str,
+    declaration: dict[str, Any],
+) -> dict[str, Any] | None:
+    inventory = api.repository_rulesets(repository)
+    matches = [
+        value
+        for value in inventory
+        if value.get("name") == declaration["ruleset"]["name"]
+    ]
+    if len(matches) > 1:
+        raise GitHubControllerError("provider has duplicate canonical rulesets")
+    if matches:
+        return matches[0]
+    branch = declaration["repository"]["branch"]
+    overlaps = []
+    for item in inventory:
+        ruleset_id = positive_int(item.get("id"), field="ruleset ID")
+        detail = api.ruleset(repository, ruleset_id)
+        if _targets_declared_branch(detail, branch=branch):
+            overlaps.append(detail)
+    if len(overlaps) > 1:
+        raise GitHubControllerError(
+            "provider has ambiguous rulesets targeting the declared branch"
+        )
+    return overlaps[0] if overlaps else None
+
+
+def _targets_declared_branch(value: dict[str, Any], *, branch: str) -> bool:
+    if value.get("target") != "branch":
+        return False
+    conditions = value.get("conditions")
+    ref_name = conditions.get("ref_name") if isinstance(conditions, dict) else None
+    includes = ref_name.get("include") if isinstance(ref_name, dict) else None
+    return isinstance(includes, list) and (
+        f"refs/heads/{branch}" in includes or "~DEFAULT_BRANCH" in includes
+    )
 
 
 def inspect_protection(
@@ -140,18 +215,14 @@ def inspect_protection(
         provider_repo.get("id"), field="repository ID"
     ) != int(expected_repo["numeric_id"]):
         raise GitHubControllerError("protection repository identity does not match")
-    matches = [
-        value
-        for value in api.repository_rulesets(repository)
-        if value.get("name") == declaration["ruleset"]["name"]
-    ]
-    if len(matches) > 1:
-        raise GitHubControllerError("provider has duplicate canonical rulesets")
-    if not matches:
+    selected = _select_declared_ruleset(
+        api, repository=repository, declaration=declaration
+    )
+    if selected is None:
         return ProtectionResult("missing", repository, None, ("ruleset",))
-    ruleset_id = str(positive_int(matches[0].get("id"), field="ruleset ID"))
+    ruleset_id = str(positive_int(selected.get("id"), field="ruleset ID"))
     actual = _normalized_provider(api.ruleset(repository, ruleset_id))
-    desired = desired_ruleset(declaration)
+    desired = _normalized_provider(desired_ruleset(declaration))
     differences = tuple(
         sorted(key for key in desired if actual.get(key) != desired.get(key))
     )

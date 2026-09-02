@@ -65,6 +65,13 @@ and package attempts; a separate publisher is the sole owner of
 work revokes an older success. This deterministic service authority does not
 delegate judgment to an AI agent.
 
+Protection activation compares the complete semantic ruleset declared in
+`governance/github-protection.yml`. It updates the canonical-name match or the
+sole existing ruleset targeting the declared branch; more than one matching
+branch target fails closed instead of creating another ruleset. Provider list
+ordering is presentation, while rule types, parameters, status source, branch
+scope, enforcement, and bypass state are authority.
+
 ## Workflow identity and admission
 
 Authority binds provider and numeric repository ID, numeric workflow ID,

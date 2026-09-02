@@ -25,6 +25,7 @@ HEAD = "c" * 40
 HEAD_TREE = "d" * 40
 BLOB = "e" * 40
 WORKFLOW = b"name: trusted\n"
+RULESET_ID = 77
 
 
 class FakePRAuthorityAPI:
@@ -233,7 +234,11 @@ class FakeProtectionAPI:
     def __init__(self) -> None:
         self.declaration = load_protection(ROOT)
         self.desired = desired_ruleset(self.declaration)
-        self.current = {**self.desired, "rules": []}
+        self.current = {
+            **self.desired,
+            "name": "protect-main-owner-prs",
+            "rules": list(reversed(self.desired["rules"])),
+        }
         self.updated = False
 
     def repository(self, repository: str) -> dict[str, object]:
@@ -252,10 +257,11 @@ class FakeProtectionAPI:
         return ({"filename": "pyproject.toml"}, {"filename": "CHANGELOG.md"})
 
     def repository_rulesets(self, repository: str) -> tuple[dict[str, object], ...]:
-        return ({"id": 77, "name": "main-governance"},)
+        return ({"id": RULESET_ID, "name": "protect-main-owner-prs"},)
 
     def ruleset(self, repository: str, ruleset_id: object) -> dict[str, object]:
-        return {"id": 77, **self.current}
+        assert int(ruleset_id) == RULESET_ID
+        return {"id": RULESET_ID, **self.current}
 
     def check_runs(self, repository: str, *, sha: str) -> tuple[dict[str, object], ...]:
         assert sha == HEAD
@@ -271,9 +277,10 @@ class FakeProtectionAPI:
         )
 
     def update_ruleset(self, repository: str, ruleset_id: object, payload: dict[str, object]) -> dict[str, object]:
+        assert int(ruleset_id) == RULESET_ID
         self.current = copy.deepcopy(payload)
         self.updated = True
-        return {"id": 77, **payload}
+        return {"id": RULESET_ID, **payload}
 
 
 def test_protection_requires_canary_and_converges_exactly() -> None:
@@ -282,6 +289,43 @@ def test_protection_requires_canary_and_converges_exactly() -> None:
     result = apply_protection(api, repo_root=ROOT, repository=REPOSITORY)
     assert result.status == "applied" and api.updated
     assert inspect_protection(api, repo_root=ROOT, repository=REPOSITORY).status == "clean"
+
+
+def test_protection_rule_order_is_not_provider_authority() -> None:
+    api = FakeProtectionAPI()
+    api.current = {**api.desired, "rules": list(reversed(api.desired["rules"]))}
+    assert inspect_protection(api, repo_root=ROOT, repository=REPOSITORY).status == "clean"
+    pull_request = next(
+        rule for rule in api.desired["rules"] if rule["type"] == "pull_request"
+    )
+    assert pull_request["parameters"] == {
+        "allowed_merge_methods": ["merge", "squash", "rebase"],
+        "dismiss_stale_reviews_on_push": True,
+        "require_code_owner_review": False,
+        "require_extra_approval_for_unattributed_changes": False,
+        "require_last_push_approval": False,
+        "required_approving_review_count": 0,
+        "required_review_thread_resolution": True,
+        "required_reviewers": [],
+    }
+
+
+def test_protection_rejects_ambiguous_existing_branch_rulesets() -> None:
+    api = FakeProtectionAPI()
+    api.repository_rulesets = lambda _repository: (  # type: ignore[method-assign]
+        {"id": RULESET_ID, "name": "legacy-one"},
+        {"id": 78, "name": "legacy-two"},
+    )
+    api.ruleset = lambda _repository, ruleset_id: {  # type: ignore[method-assign]
+        "id": int(ruleset_id),
+        **api.current,
+        "name": f"legacy-{ruleset_id}",
+    }
+    api.create_ruleset = lambda *_args, **_kwargs: pytest.fail(  # type: ignore[attr-defined, method-assign]
+        "an ambiguous replacement ruleset must not be created"
+    )
+    with pytest.raises(GitHubControllerError, match="ambiguous rulesets"):
+        apply_protection(api, repo_root=ROOT, repository=REPOSITORY)
 
 
 def test_protection_rejects_wrong_canary_app() -> None:

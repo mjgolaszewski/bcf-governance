@@ -33,6 +33,8 @@ Release target: `1.0.2`
   and probe passed independently on both trusted-control runners.
 - Completed the authored P18 implementation state only after local validation and
   controller installation proof; release closure remains mechanically computed.
+- Provisioned the protected-branch-only `bcf-trusted-automation` environment
+  before installing the narrowly scoped changelog writer credentials.
 
 ### Fixed
 
@@ -42,6 +44,9 @@ Release target: `1.0.2`
 - Made protection activation require one current successful controlled draft
   automation canary sourced from GitHub Actions App ID `15368` before replacing
   worker checks with the single aggregate status.
+- Made protection activation update the canonical or sole exact-branch ruleset,
+  compare provider rule order semantically, and reject ambiguous overlapping
+  rulesets instead of creating a second protection plane.
 - Allowed self-controller rotation to authenticate one complete package producer
   from a partial exact-main admission without relaxing complete-inventory
   requirements for certification.
