@@ -99,6 +99,6 @@ known_constraints:
   - Identity public-PR execution may use fresh hosted runners, but hosted jobs may not poll, sleep, wait for local capacity, lease a runner, or remain allocated as control-plane waiters
 reusable_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests, bcf profile promote --repo-root . --to standard --contract-version 2.0 --check, bcf ci-cleanup --repo-root . --prune-evidence-sessions]
 references:
-  governance: [AGENTS.yml, governance-profile.yml, architecture-boundaries.yml, schemas/, contracts/observability/v1/, plans/phase-ledger.yml, plans/phase-history.yml, docs/USAGE.md, docs/MAINTAINING.md, docs/ARCHITECTURE.md, docs/CI_AUTHORITY.md]
+  governance: [AGENTS.yml, governance-profile.yml, architecture-boundaries.yml, schemas/, contracts/observability/v1/, plans/phase-ledger.yml, plans/phase-history.yml, docs/RELIABILITY_MODEL.md, docs/USAGE.md, docs/MAINTAINING.md, docs/ARCHITECTURE.md, docs/CI_AUTHORITY.md]
   product: [plans/product-spec.yml, plans/build-plan.yml]
   execution: [plans/phase-17-plan.yml, plans/phase-17-workitems.yml, phases/phase-17-log.yml]
