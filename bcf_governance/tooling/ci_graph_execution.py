@@ -9,6 +9,16 @@ _EXPLICIT_EXECUTORS = {"component_sequence", "gate_shard", "terminal_truth"}
 _REPOSITORY_PREFIXES = ("./", ".github/", "governance/", "scripts/")
 
 
+def _strings(value: Any) -> tuple[str, ...]:
+    if isinstance(value, str):
+        return (value,)
+    if isinstance(value, dict):
+        return tuple(item for nested in value.values() for item in _strings(nested))
+    if isinstance(value, list):
+        return tuple(item for nested in value for item in _strings(nested))
+    return ()
+
+
 def _command_ids(
     graph: dict[str, Any], executor: dict[str, Any]
 ) -> tuple[str, ...]:
@@ -64,3 +74,38 @@ def job_execution_issues(
                 f"trusted no-checkout job {job['id']} references repository-relative inputs {relative}"
             )
     return tuple(issues)
+
+
+def workflow_input_issues(
+    graph: dict[str, Any], workflow: dict[str, Any]
+) -> tuple[str, ...]:
+    """Reject raw workflow inputs that disappear under a workflow's direct events."""
+
+    direct_events = sorted(
+        event["type"]
+        for event in workflow["events"]
+        if event["type"] not in {"workflow_call", "workflow_dispatch"}
+    )
+    if not direct_events:
+        return ()
+    issues: list[str] = []
+    for job in workflow["jobs"]:
+        surfaces: list[tuple[str, Any]] = [("job outputs", job.get("outputs", {}))]
+        for command_id in _command_ids(graph, job["executor"]):
+            surfaces.append((f"command {command_id}", graph["commands"][command_id]))
+        executor = job["executor"]
+        if executor["kind"] in _EXPLICIT_EXECUTORS:
+            for component_id in executor["components"]:
+                component = graph["step_components"][component_id]
+                if component["kind"] == "action":
+                    surfaces.append((f"action {component_id}", component))
+        if executor["kind"] == "reusable_workflow":
+            surfaces.append(("reusable-workflow inputs", executor["inputs"]))
+        for surface, payload in surfaces:
+            for value in _strings(payload):
+                if "inputs." in value and "||" not in value:
+                    issues.append(
+                        f"direct-event workflow {workflow['id']} {surface} "
+                        f"must provide an input fallback for {direct_events}"
+                    )
+    return tuple(sorted(set(issues)))

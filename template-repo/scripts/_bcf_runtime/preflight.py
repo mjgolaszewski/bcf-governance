@@ -110,6 +110,50 @@ def _git_state(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _closure_authoring(repo_root: Path) -> dict[str, Any]:
+    """Reject every authored lifecycle blocker before exact-main evidence fanout."""
+
+    ledger = yaml.safe_load(
+        (repo_root / "plans/phase-ledger.yml").read_text(encoding="utf-8")
+    )
+    active = ledger.get("active_phase") if isinstance(ledger, dict) else None
+    hotfix_lane = ledger.get("hotfix_lane") if isinstance(ledger, dict) else None
+    if not isinstance(active, dict) or not isinstance(hotfix_lane, dict):
+        raise PreflightError("closure preflight requires the canonical phase ledger")
+    phase_id = str(active.get("id", "unknown"))
+    lifecycle_status = str(active.get("lifecycle_status", "missing"))
+    log_value = active.get("log")
+    log_status = "missing"
+    if isinstance(log_value, str):
+        phase_log = yaml.safe_load(
+            (repo_root / log_value).read_text(encoding="utf-8")
+        )
+        document = phase_log.get("document") if isinstance(phase_log, dict) else None
+        if isinstance(document, dict):
+            log_status = str(document.get("status", "missing"))
+    open_records = hotfix_lane.get("open_records")
+    open_ids = sorted(
+        str(record.get("id", "unknown"))
+        for record in open_records
+        if isinstance(record, dict)
+    ) if isinstance(open_records, list) else ["invalid-inventory"]
+    issues: list[str] = []
+    if lifecycle_status != "completed":
+        issues.append(f"active phase {phase_id} is {lifecycle_status}")
+    if log_status != "completed":
+        issues.append(f"active phase log is {log_status}")
+    if open_ids:
+        issues.append("open hotfixes: " + ", ".join(open_ids))
+    if issues:
+        raise PreflightError("closure preflight failed: " + "; ".join(issues))
+    return {
+        "phase_id": phase_id,
+        "lifecycle_status": lifecycle_status,
+        "log_status": log_status,
+        "open_hotfix_count": 0,
+    }
+
+
 def _syntax_checks(repo_root: Path) -> dict[str, int]:
     counts = {"python": 0, "yaml": 0, "json": 0, "shell": 0}
     for path in _tracked_files(repo_root):
@@ -596,11 +640,17 @@ def run_preflight(
     artifact_root: Path | None = None,
     expected_producers: list[str] | None = None,
     producer_identity: Mapping[str, str] | None = None,
+    evaluation_mode: str | None = None,
     trace: Callable[[str], None] | None = None,
 ) -> dict[str, Any]:
     """Validate deterministic state, then optionally seed one fresh session."""
     if mode not in {"release", "pr"}:
         raise PreflightError("preflight mode must be release or pr")
+    if evaluation_mode not in {None, "pr", "closure"}:
+        raise PreflightError("preflight evaluation mode must be pr or closure")
+    closure_requested = evaluation_mode == "closure"
+    if closure_requested and mode != "release":
+        raise PreflightError("closure evaluation requires release preflight mode")
     repo_root = repo_root.resolve()
     python = _selected_python(python_executable)
 
@@ -619,6 +669,11 @@ def run_preflight(
         "source-entrypoints", lambda: _source_entrypoint_authority(repo_root)
     )
     step("governance", lambda: validate_repo_root(repo_root))
+    closure_authoring = (
+        step("closure-authoring", lambda: _closure_authoring(repo_root))
+        if closure_requested
+        else None
+    )
     self_workflows = step("self-workflows", lambda: _self_workflows(repo_root))
     workflow_authority = step(
         "workflow-authority", lambda: _workflow_authority(repo_root)
@@ -669,6 +724,7 @@ def run_preflight(
         "pr_context": pr_context,
         "selected_interpreter": {"name": python.name},
         "semantic_ownership": semantic_ownership,
+        "closure_authoring": closure_authoring,
         "session_manifest": (
             session.manifest_path.relative_to(repo_root).as_posix()
             if session and session.manifest_path.is_relative_to(repo_root)
@@ -681,6 +737,7 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Run cheap governance preflight.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--mode", choices=("release", "pr"), required=True)
+    parser.add_argument("--evaluation-mode", choices=("pr", "closure"))
     parser.add_argument("--python", type=Path)
     parser.add_argument("--artifact-root", type=Path)
     parser.add_argument("--expected-producer", action="append")
@@ -694,6 +751,7 @@ def main(argv: list[str] | None = None) -> None:
             python_executable=args.python,
             artifact_root=args.artifact_root,
             expected_producers=args.expected_producer,
+            evaluation_mode=args.evaluation_mode,
             producer_identity=(
                 local_producer_identity(args.repo_root, args.local_producer_id)
                 if args.local_producer_id

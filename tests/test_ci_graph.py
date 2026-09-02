@@ -9,6 +9,7 @@ import pytest
 import yaml
 
 from bcf_governance.tooling.ci_graph_contracts import CIGraphError, validate_ci_graph
+from bcf_governance.tooling.ci_graph_execution import workflow_input_issues
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
 from bcf_governance.tooling.ci_graph_import import inventory_github_workflows
 from bcf_governance.tooling.ci_graph_locks import (
@@ -195,6 +196,50 @@ def _graph() -> dict[str, object]:
             "forbidden_hosted_tokens": ["sleep", "poll", "wait-for-runner", "lease-runner"],
         },
     }
+
+
+def test_direct_event_command_inputs_require_mechanical_fallback() -> None:
+    raw = "${{ inputs.evaluation_mode }}"
+
+    def command_argv(graph: dict[str, object], job: dict[str, object]) -> None:
+        graph["commands"][job["executor"]["command"]]["argv"].append(raw)
+
+    def command_environment(graph: dict[str, object], job: dict[str, object]) -> None:
+        graph["commands"][job["executor"]["command"]]["environment"]["MODE"] = raw
+
+    def action_input(graph: dict[str, object], job: dict[str, object]) -> None:
+        graph["step_components"]["raw-action"] = {
+            "kind": "action", "with": {"mode": raw}, "environment": {}
+        }
+        job["executor"] = {"kind": "component_sequence", "components": ["raw-action"]}
+
+    def reusable_input(graph: dict[str, object], job: dict[str, object]) -> None:
+        job["executor"] = {
+            "kind": "reusable_workflow", "path": ".github/workflows/called.yml",
+            "inputs": {"mode": raw},
+        }
+
+    def job_output(_: dict[str, object], job: dict[str, object]) -> None:
+        job["outputs"] = {"mode": raw}
+
+    for mutation in (
+        command_argv, command_environment, action_input, reusable_input, job_output
+    ):
+        graph = _graph()
+        workflow = graph["workflows"][0]
+        job = workflow["jobs"][0]
+        mutation(graph, job)
+        issues = workflow_input_issues(graph, workflow)
+        assert len(issues) == 1
+        assert "must provide an input fallback" in issues[0]
+
+    graph = _graph()
+    workflow = graph["workflows"][0]
+    command_id = workflow["jobs"][0]["executor"]["command"]
+    graph["commands"][command_id]["argv"].append(
+        "${{ inputs.evaluation_mode || 'pr' }}"
+    )
+    assert workflow_input_issues(graph, workflow) == ()
 
 
 def _write_graph(repo: Path, payload: dict[str, object] | None = None) -> Path:

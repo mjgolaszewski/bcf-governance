@@ -23,17 +23,16 @@ hotfix_lane:
       allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
-  open_records:
+  open_records: []
+  remediation_history:
   - id: P14-HF01
     mode: full
-    status: active
-    triggered_by_commits: [9261bbb6428f85b884ad03d6d6ba10131f7e92ef]
-    failing_workflows: [bcf/release-authority-cutover run 33568922815, bcf/trusted-control-bootstrap run 33571626297, bcf/trusted-control-probe run 33573259151]
-    root_cause: generated trusted jobs crossed controller generations and contained mechanically unvalidated environment assumptions including relative interpreter and no-checkout repository paths
+    recorded_at_utc: '2026-09-02T00:00:00Z'
+    action: closed cross-generation controller authority, selected-interpreter, and trusted no-checkout input defects before retrying release execution
     remediated_in_phase: P14
     hotfix_log: phases/phase-14-hotfix01.yml
-    canonical_artifacts: [governance/self-governance-policy.yml, governance/ci-extensions/bcf-release.yml, bcf_governance/tooling/ci_graph_contracts.py, bcf_governance/tooling/ci_graph_render.py]
-  remediation_history: []
+    canonical_artifacts: [governance/self-governance-policy.yml, governance/ci-extensions/bcf-release.yml, bcf_governance/tooling/ci_graph_execution.py, bcf_governance/tooling/ci_graph_render.py]
+    local_validation: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, .venv/bin/python -m pytest -q tests, bcf ci graph render --repo-root . --check]
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
 - {type: decision, statement: BCF 0.7.0 is one release train and BCF must self-adopt every applicable Standard-v2 capability}

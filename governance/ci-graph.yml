@@ -16,7 +16,7 @@ value_sources:
   self-policy:
     kind: yaml
     path: governance/self-governance-policy.yml
-    sha256: 1be1df4d36bc8192d9ef24974dee982cd33fa8663d8471e3e2e3a5db6dc1e872
+    sha256: ab69ea0a0607d8ce956b867bd0e144b571da3b9fe6e42c694b0a1f5a484a7e56
 extension_points:
 - preflight
 - evidence-lane
@@ -144,6 +144,8 @@ commands:
     - .
     - --mode
     - ${{ inputs.evaluation_mode == 'closure' && 'release' || 'pr' }}
+    - --evaluation-mode
+    - ${{ inputs.evaluation_mode || 'pr' }}
     - --python
     - '{python}'
     - --artifact-root

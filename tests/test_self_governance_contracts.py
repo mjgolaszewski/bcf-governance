@@ -351,6 +351,10 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
     assert graph["commands"]["governance-preflight"]["argv"][5] == (
         "${{ inputs.evaluation_mode == 'closure' && 'release' || 'pr' }}"
     )
+    assert graph["commands"]["governance-preflight"]["argv"][6:8] == [
+        "--evaluation-mode",
+        "${{ inputs.evaluation_mode || 'pr' }}",
+    ]
     assert graph["step_components"]["run-governance-truth"]["condition"] == (
         "evidence-prerequisites-green"
     )

@@ -12,7 +12,7 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
-from .ci_graph_execution import job_execution_issues
+from .ci_graph_execution import job_execution_issues, workflow_input_issues
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 from .ci_graph_values import CIGraphValueError, resolve_graph_values
 
@@ -629,6 +629,9 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
 def _validate_hosted_commands(graph: dict[str, Any]) -> None:
     forbidden = tuple(value.lower() for value in graph["policy"]["forbidden_hosted_tokens"])
     for workflow in graph["workflows"]:
+        input_issues = workflow_input_issues(graph, workflow)
+        if input_issues:
+            raise CIGraphError(input_issues[0])
         for job in workflow["jobs"]:
             resource = graph["resource_classes"][job["resource_class"]]
             if not resource["hosted"]:
