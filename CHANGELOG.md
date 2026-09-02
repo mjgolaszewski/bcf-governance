@@ -64,6 +64,12 @@ Release target: `1.0.0rc1`.
   `$(PYTHON)` authority. Workflow contract tests now locate mechanically named
   steps instead of duplicating renderer positions, while the one security-relevant
   first-step environment ordering remains explicitly enforced.
+- Made cheap preflight report every stale negative-control oracle in one defect
+  class before evidence capture, and rebound the exact-main activation mutant to
+  the semantic condition owner it is intended to challenge.
+- Made local evidence-session allocation reject a producer ID that is absent from
+  its admitted producer inventory before creating a session or running a gate.
+  Workflow sessions retain their intentional allocator-to-downstream-job split.
 
 ## [0.8.0] - 2026-09-02
 
