@@ -491,6 +491,13 @@ def _release(argv: list[str]) -> None:
             runtime_report_path=args.runtime_report,
             runtime_evidence=_runtime_evidence(args),
         )
+        if args.bundle_output is not None:
+            stage_verifier_bundle(
+                args.bundle_output,
+                build_manifest=args.build_manifest,
+                runtime_report=args.runtime_report,
+                verification=args.output,
+            )
     elif args.operation == "build":
         result = record_release_build(
             authorization_path=args.authorization,
@@ -502,13 +509,6 @@ def _release(argv: list[str]) -> None:
             artifact_name=args.artifact_name,
             output_path=args.output,
         )
-        if args.bundle_output is not None:
-            stage_verifier_bundle(
-                args.bundle_output,
-                build_manifest=args.build_manifest,
-                runtime_report=args.runtime_report,
-                verification=args.output,
-            )
     else:
         api = environment_api()
         if args.operation == "authorize":
