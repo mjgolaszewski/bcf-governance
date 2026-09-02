@@ -32,7 +32,7 @@ extensions:
   sha256: e380f4ce12491ebdacecbd10fa25a6ad6f6f67064fcc0072cefde5cf4abc6121
 - id: bcf-trusted-control
   path: governance/ci-extensions/bcf-trusted-control.yml
-  sha256: a46a91baf8e5cb608a08b5cb317b642efa6369f13eb35ad48d76e57974f239a6
+  sha256: 44db0d6a184d599d5fdee4e6f4fe7e4318a8b3923b5121cba080a333c4c8da69
 - id: bcf-package
   path: governance/ci-extensions/bcf-package.yml
   sha256: 955602d160cd8982c67c52fbdb71d7bc0edb53c740a3fb2801d367599b6a13bf

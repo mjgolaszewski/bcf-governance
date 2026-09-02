@@ -28,10 +28,6 @@ commands:
     cwd: .
     environment: {}
     required_environment: [BCF_BOOTSTRAP_ARTIFACT_ID, BCF_BOOTSTRAP_ARTIFACT_NAME, BCF_BOOTSTRAP_ARTIFACT_DIGEST, BCF_BOOTSTRAP_RUN_ID, BCF_BOOTSTRAP_RUN_ATTEMPT, BCF_BOOTSTRAP_REPOSITORY_ID, BCF_BOOTSTRAP_COMMIT_SHA, BCF_BOOTSTRAP_TREE_SHA, BCF_BOOTSTRAP_WHEEL_SHA256]
-  probe-controller:
-    argv: ['{python}', .github/scripts/probe_trusted_controller.py, --policy, governance/self-governance-policy.yml, --tool-cache, '${{ runner.tool_cache }}']
-    cwd: .
-    environment: {}
   canary-admit:
     argv: ['{controller}', ci-github, canary, admit, --repository, '${{ github.repository }}', --sha, '${{ github.sha }}', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}']
     cwd: .
@@ -68,13 +64,6 @@ step_components:
     name: Authenticate provider custody and install offline through the controller
     command: bootstrap-controller
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
-    produces: []
-    consumes: []
-  probe-controller:
-    kind: command
-    name: Verify the mechanically pinned trusted BCF control
-    command: probe-controller
-    environment: {}
     produces: []
     consumes: []
   canary-admit:
@@ -149,7 +138,17 @@ workflows:
   display_name: bcf/trusted-control-probe
   role: trusted-control
   events: [{type: workflow_dispatch}]
-  permissions: {contents: read}
+  permissions: {actions: read, contents: read}
+  environment:
+    BCF_BOOTSTRAP_ARTIFACT_ID: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_ARTIFACT_ID}'
+    BCF_BOOTSTRAP_ARTIFACT_NAME: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_ARTIFACT_NAME}'
+    BCF_BOOTSTRAP_ARTIFACT_DIGEST: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_ARTIFACT_DIGEST}'
+    BCF_BOOTSTRAP_RUN_ID: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_RUN_ID}'
+    BCF_BOOTSTRAP_RUN_ATTEMPT: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_RUN_ATTEMPT}'
+    BCF_BOOTSTRAP_COMMIT_SHA: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_COMMIT_SHA}'
+    BCF_BOOTSTRAP_TREE_SHA: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_TREE_SHA}'
+    BCF_BOOTSTRAP_REPOSITORY_ID: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_REPOSITORY_ID}'
+    BCF_BOOTSTRAP_WHEEL_SHA256: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_WHEEL_SHA256}'
   jobs:
   - id: probe
     display_name: Verify exact-main controller / ${{ matrix.trusted_runner }}
@@ -159,7 +158,7 @@ workflows:
     needs: []
     condition: owner-main-dispatch
     timeout_minutes: 5
-    permissions: {contents: read}
+    permissions: {actions: read, contents: read}
     checkout: false
     components: []
     strategy:
@@ -168,7 +167,7 @@ workflows:
       matrix: {trusted_runner: [bcf-trusted-control-1, bcf-trusted-control-2]}
     executor:
       kind: component_sequence
-      components: [setup-python, probe-controller]
+      components: [setup-python, download-bootstrap-controller, bootstrap-controller]
     produces: []
     consumes: []
     required: true

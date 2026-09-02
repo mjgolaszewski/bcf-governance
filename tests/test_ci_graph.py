@@ -481,6 +481,47 @@ def test_selected_python_must_be_provisioned_before_governed_command(
         validate_ci_graph(tmp_path)
 
 
+def test_trusted_no_checkout_command_rejects_repository_relative_input(
+    tmp_path: Path,
+) -> None:
+    graph = _graph()
+    graph["commands"]["trusted-probe"] = {
+        "argv": ["{python}", "scripts/probe.py"],
+        "cwd": ".",
+        "environment": {},
+    }
+    graph["step_components"].update(
+        {
+            "setup-selected-python": {
+                "kind": "action",
+                "name": "Set up Python",
+                "action": "setup-python",
+                "with": {"python-version": "3.12"},
+                "environment": {},
+                "produces": [],
+                "consumes": [],
+            },
+            "trusted-probe": {
+                "kind": "command",
+                "name": "Probe trusted control",
+                "command": "trusted-probe",
+                "environment": {},
+                "produces": [],
+                "consumes": [],
+            },
+        }
+    )
+    job = graph["workflows"][1]["jobs"][0]
+    job["executor"] = {
+        "kind": "component_sequence",
+        "components": ["setup-selected-python", "trusted-probe"],
+    }
+    _write_graph(tmp_path, graph)
+
+    with pytest.raises(CIGraphError, match="repository-relative inputs"):
+        validate_ci_graph(tmp_path)
+
+
 def test_renderer_binds_selected_python_to_setup_action_output() -> None:
     rendered = render_ci_graph(REPO_ROOT)
     seen = 0

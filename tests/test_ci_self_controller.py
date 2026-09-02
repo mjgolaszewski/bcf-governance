@@ -243,8 +243,11 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     probe = yaml.safe_load(
         (tmp_path / controller.PROBE_WORKFLOW).read_text(encoding="utf-8")
     )
-    assert "env" not in probe
-    assert "probe_trusted_controller.py" in probe["jobs"]["probe"]["steps"][1]["run"]
+    assert {key: str(probe["env"][key]) for key in controller.PIN_KEYS} == pin
+    probe_steps = probe["jobs"]["probe"]["steps"]
+    assert probe_steps[1]["uses"].startswith("actions/download-artifact@")
+    assert "ci-github bootstrap" in probe_steps[2]["run"]
+    assert ".github/" not in probe_steps[2]["run"]
     assert controller.project_self_controller_pin(
         tmp_path, pin=pin, apply=False
     ).status == "clean"

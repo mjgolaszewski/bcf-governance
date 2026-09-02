@@ -59,6 +59,9 @@ Release target: `0.8.0`.
   command. Rendered jobs now pass its absolute executable rather than a relative
   PATH token, and graph compilation rejects commands that consume the selected
   interpreter before the setup action runs.
+- Closed trusted no-checkout job inputs: graph compilation rejects repository-relative
+  scripts and policy files, and controller probing now reuses the provider-authenticated
+  offline installer verification instead of relying on an undeclared workspace checkout.
 - Made BCF release roles fail closed while a newly selected trusted controller is
   awaiting independent installation confirmation. The graph now distinguishes
   target from proven-installed controller custody, disables release authorization,
