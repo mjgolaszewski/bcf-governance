@@ -10,7 +10,7 @@ document:
 workitems:
 - id: P15-P0-01
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver supported contract freeze and compatibility policy
   acceptance:
   - a machine-readable inventory freezes supported commands exit behavior schemas profiles receipt and session versions authority contracts graph extension points and workflow provenance
@@ -20,7 +20,7 @@ workitems:
   - contract-test
 - id: P15-P0-02
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver end-to-end adoption promotion upgrade customization and rollback
     harness
   acceptance:
@@ -31,7 +31,7 @@ workitems:
   - contract-test
 - id: P15-P0-03
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver mechanical capability diagnostics and isolated legacy migration
   acceptance:
   - missing runners tools permissions secrets events and graph inputs produce typed actionable diagnostics before mutation or expensive execution
@@ -41,7 +41,7 @@ workitems:
   - contract-test
 - id: P15-P0-04
   priority: P0
-  status: TODO
+  status: IN_PROGRESS
   summary: deliver five-cycle BCF and Identity soak plus immutable release candidate
   acceptance:
   - five clean-clone cycles pass for BCF and Identity without mutating either remote or launching Identity CI

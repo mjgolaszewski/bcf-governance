@@ -42,6 +42,10 @@ Release target: `1.0.0rc1`.
   launches no Actions runs.
 - Made the soak consume NUL-delimited Git porcelain without trimming status
   prefixes, reject rename/copy records, and retain the first changed path exactly.
+- Recorded five passing clean-clone soak cycles for exact BCF commit `0172f8a`
+  and Identity commit `0569e6d`: project-owned bytes and all 10 Identity workflows
+  were preserved, pack refresh was idempotent, rollback was exact, and zero
+  Actions runs were launched.
 - Added canonical pre-release version parsing for `a`, `b`, and `rc` packages so
   release inputs, tags, API validation, and GitHub prerelease state share one
   owner.
