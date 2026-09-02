@@ -1,0 +1,45 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 17 Plan
+  id: project-phase-17-plan
+  version: 1.0.0
+  generated_at_utc: '2026-09-02T00:00:00Z'
+  status: planned
+  path: plans/phase-17-plan.yml
+phase:
+  id: P17
+  build_block: reliability-thesis-and-1.0.1-release
+  planner: codex
+  date: '2026-09-02'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - README-led deterministic error-correction thesis and failure-mode map
+  - focused reliability model, architecture rationale, objections, limitations, and
+    empirical measurement framing
+  - mechanically reconciled 1.0.1 release documentation and exact no-rebuild release inputs
+  parallelizable_workstreams:
+  - id: P17-WS1
+    name: editorial thesis and architecture rationale
+  - id: P17-WS2
+    name: release-state reconciliation and mechanical editorial checks
+  - id: P17-WS3
+    name: exact-main certification and immutable 1.0.1 publication after implementation closure
+  hard_dependencies:
+  - P16
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: keep the phase narrowly scoped to declared deliverables and update canonical
+    governed artifacts in the same change
+verification_plan:
+- .venv/bin/python .github/scripts/check_editorial_contract.py
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest -q tests
+- .venv/bin/python .github/scripts/run_validator_mutants.py --profile full

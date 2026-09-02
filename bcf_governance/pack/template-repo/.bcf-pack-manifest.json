@@ -304,7 +304,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "ab8345815ac38c98e6f42bf78f91f60881ac509f0ff7ede246ebd8c7c4cc8332"
+      "sha256": "5e81827bbecf1375568b46df72e73c4b4e7bba364d2813ce1c80a3ae4f50bda7"
     },
     "scripts/_bcf_runtime/check_governance_exposure.py": {
       "operation": "copy",

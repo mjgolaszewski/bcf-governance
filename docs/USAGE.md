@@ -108,8 +108,12 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install bcf-governance
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.1/bcf_governance-1.0.1-py3-none-any.whl
 ```
+
+GitHub Releases is the supported distribution channel for BCF 1.0. Verify the
+release and asset digest required by your repository's acquisition policy
+before installation.
 
 Bootstrap lite:
 

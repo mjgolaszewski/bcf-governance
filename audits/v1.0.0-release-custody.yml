@@ -1,0 +1,48 @@
+document:
+  kind: post_release_custody_audit
+  name: BCF Governance v1.0.0 Release Custody Audit
+  id: bcf-governance-v1.0.0-release-custody
+  version: 1.0.0
+  generated_at_utc: '2026-09-02T12:12:00Z'
+  status: published_immutable_verified
+  path: audits/v1.0.0-release-custody.yml
+authority:
+  audit_role: non_authoritative_historical_snapshot
+  current_provider_state_owner: authenticated_github_api
+  release_decision_owner: bcf_ci_github_release_inspect
+  last_provider_verification: {observed_at_utc: '2026-09-02T12:12:00Z', release_assets: pass, attestations: pass, method: exact_asset_hashes_plus_signer_constrained_gh_attestation_verify}
+subject:
+  repository: mjgolaszewski/bcf-governance
+  repository_id: 1207503211
+  commit: 57bc2245b3c7913363169b42854b0899c04de401
+  tree: a138390b275ee1ff91d051cb61fa4000c1714872
+  tag: {name: v1.0.0, object: 6fcd41cbc63fb0f28afb4c9eb7590e3492b911bd, type: annotated, target: 57bc2245b3c7913363169b42854b0899c04de401, verification: {verified: false, reason: unsigned}}
+  release:
+    id: 381225147
+    draft: false
+    prerelease: false
+    published_at: '2026-09-02T12:10:56Z'
+    immutable: true
+    assets:
+    - {id: 541125766, name: bcf_governance-1.0.0-py3-none-any.whl, size: 779743, digest: 'sha256:1769e13e2c4e871cdbf9cad9d61889d823e910f6b6a008950e02d247e36240c8'}
+    - {id: 541125781, name: bcf_governance-1.0.0.tar.gz, size: 1356983, digest: 'sha256:5e8de69b9cc298b3c61f93b8e1b357b0397f2318b618f03505315b4c16628cc9'}
+    - {id: 541125751, name: SHA256SUMS, size: 198, digest: 'sha256:fd5221da6f66e002ca9ffe8ffe7c8c034f98a50a44f013f8ddd737f3df11453e'}
+  immutable_release_setting: {enabled: true, enforced_by_owner: false}
+provider_evidence:
+  pull_request: {number: 108, commit: 102fb3032f13ebabdd0e76c6108e32354403ff37, governance_run: {run_id: 33626449478, attempt: 1, conclusion: success}, package_run: {run_id: 33626449592, attempt: 1, conclusion: success}}
+  exact_main: {run_id: 33626943407, attempt: 1, conclusion: success, truth_artifact_id: 9845337518, truth_provider_digest: 'sha256:4b239b0bfb5cf626dcc345370034b66ae2a9a7e2875d400eda7ee83a89ce32f9', controller_artifact_id: 9845179521, controller_provider_digest: 'sha256:6575c111397cc40b7e67e8b927ae780d948e0e8bce4ae77ae0fc3586d6f1dcc0'}
+  finalizer: {run_id: 33627391704, attempt: 1, conclusion: success, artifact_id: 9845350183, provider_digest: 'sha256:5b7bb2bef069910b12c66278cf01c8a9ee381bd7aa4363640125a8ef0fa7f1a6'}
+  status_publisher: {run_id: 33627425155, attempt: 1, conclusion: success}
+  scheduled_high_value: {run_id: 33627476686, attempt: 1, conclusion: success, artifact_id: 9845410445, provider_digest: 'sha256:8946d9d031fbe63e2b80d76f88ef4fe52286e32d8dfaba384402e0fbd9fe0b18'}
+  scheduled_full: {run_id: 33627479615, attempt: 1, conclusion: success, artifact_id: 9845410984, provider_digest: 'sha256:0acff358780eb813f98d8d0daca7c53758e058bc4459b1e27359b199e9109bc7'}
+  release_build: {run_id: 33627619813, attempt: 1, conclusion: success, authorization_artifact_id: 9845447300, authorization_provider_digest: 'sha256:1fa588ab4879fc42534da35bdb079e4cdb0fbab7e9060a39f20dc6e569956474', build_artifact_id: 9845577817, build_provider_digest: 'sha256:fa23236a86a28c505960dbe871186cfac2319e564e122b01be33807aabb4e7c3'}
+  release_verifier: {run_id: 33628018546, attempt: 1, conclusion: success, runtime_artifact_id: 9845676286, runtime_provider_digest: 'sha256:3e83d043f7b8bdff89a71dc3efd47ea4c6807cc3af6456ded871d433e77ef943', verification_artifact_id: 9845687062, verification_provider_digest: 'sha256:798f8bbd7615996d4ff937cc70963c174de603afe304be4653fee0faff3523a6'}
+  release_collector: {run_id: 33628292192, attempt: 1, conclusion: success, artifact_id: 9845705595, provider_digest: 'sha256:4feef6c01fb1907fb39af15a8d7695f825ea2f2384dfb36881fd228efa3fb0bc'}
+  publication: {run_id: 33628472778, attempt: 1, conclusion: success}
+publication: {rebuilt_assets: false, temporary_admin_secret_removed: true, exact_collector_assets_published: true}
+historical_custody:
+  v0.7.0: {release_id: 379785364, immutable: false, assets_unchanged: true}
+  v0.7.1: {release_id: 380654208, immutable: true, assets_unchanged: true}
+  v0.8.0: {release_id: 380963358, immutable: true, assets_unchanged: true}
+  v1.0.0rc1: {release_id: 381170529, immutable: true, assets_unchanged: true}
+  mutation_policy: never move or rewrite published tags releases assets or attestations

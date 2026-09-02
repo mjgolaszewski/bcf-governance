@@ -49,12 +49,12 @@ def test_editorial_tone_and_topic_owner_mutants_are_rejected(tmp_path: Path) -> 
     readme = copied / "README.md"
     readme.write_text(
         readme.read_text(encoding="utf-8").replace(
-            "## Why these defaults", "## A revolutionary manifesto"
+            "## Design thesis", "## A revolutionary manifesto"
         ),
         encoding="utf-8",
     )
     errors = module.validate_editorial_contract(copied)
-    assert any("missing heading: Why these defaults" in error for error in errors)
+    assert any("missing heading: Design thesis" in error for error in errors)
     assert any("disallowed editorial phrase: manifesto" in error for error in errors)
     assert any("disallowed editorial phrase: revolutionary" in error for error in errors)
 
@@ -62,7 +62,7 @@ def test_editorial_tone_and_topic_owner_mutants_are_rejected(tmp_path: Path) -> 
     readme.write_text(
         readme.read_text(encoding="utf-8")
         .replace(
-            "## The Philosophy: Shifting from Human DevOps to Agentic DevSecOps",
+            "## What BCF establishes",
             "## Delivery comparison",
         )
         .replace(
@@ -73,12 +73,23 @@ def test_editorial_tone_and_topic_owner_mutants_are_rejected(tmp_path: Path) -> 
         encoding="utf-8",
     )
     errors = module.validate_editorial_contract(copied)
-    assert any("missing heading: The Philosophy:" in error for error in errors)
+    assert any("missing heading: What BCF establishes" in error for error in errors)
     assert any(
         "missing architectural position: an agent cannot certify its own output"
         in error
         for error in errors
     )
+
+    readme.write_bytes((REPO_ROOT / "README.md").read_bytes())
+    readme.write_text(
+        readme.read_text(encoding="utf-8").replace(
+            "releases/download/v1.0.1/bcf_governance-1.0.1-py3-none-any.whl",
+            "releases/download/v1.0.0/bcf_governance-1.0.1-py3-none-any.whl",
+        ),
+        encoding="utf-8",
+    )
+    errors = module.validate_editorial_contract(copied)
+    assert any("release URL must point exactly" in error for error in errors)
 
 
 def test_broken_local_documentation_link_is_rejected(tmp_path: Path) -> None:

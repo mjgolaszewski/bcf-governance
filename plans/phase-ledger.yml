@@ -4,11 +4,11 @@ build_plan_mandate:
   required_fields: [tightly_scoped_deliverables, parallelizable_workstreams, hard_dependencies, docker_first_local_runtime, completeness_standard]
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P16
-  build_block: stable-packaging-and-support-1.0.0
-  plan: plans/phase-16-plan.yml
-  workitems: plans/phase-16-workitems.yml
-  log: phases/phase-16-log.yml
+  id: P17
+  build_block: reliability-thesis-and-1.0.1-release
+  plan: plans/phase-17-plan.yml
+  workitems: plans/phase-17-workitems.yml
+  log: phases/phase-17-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
@@ -39,7 +39,7 @@ operator_requirements_choices_disambiguations:
 - {type: identity_preservation, statement: every current Identity workflow job trigger edge stable check runner mapping authority role cleanup contract and scheduled lane is preservation-locked; mutation requires offline no-loss and performance proofs and remote validation is limited to one canary plus activation PR and exact-main}
 - {type: hosted_frugality, statement: hosted candidate jobs execute their own bounded work and terminate; polling sleeping lease waiting and hosted waiters for local capacity are prohibited}
 active_delivery_priorities:
-  current_tranche: [stable-packaging-and-support-1.0.0]
+  current_tranche: [reliability-thesis-and-1.0.1-release]
 release_trains:
   release_1:
     target_version: 0.6.1
@@ -63,7 +63,11 @@ release_trains:
     focus: [public_contract_freeze, transactional_adoption_upgrade_rollback, mechanical_capability_diagnostics, multi_repository_soak, immutable_release_candidate]
   release_6:
     target_version: 1.0.0
-    status: active
+    status: completed
     focus: [stable_packaging, published_support_matrix, github_provider_and_release_support, immutable_exact_main_release]
+  release_7:
+    target_version: 1.0.1
+    status: active
+    focus: [deterministic_error_correction_thesis, release_documentation_currency, candid_cost_and_limitations, immutable_patch_release]
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]
