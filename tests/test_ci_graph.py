@@ -9,7 +9,10 @@ import pytest
 import yaml
 
 from bcf_governance.tooling.ci_graph_contracts import CIGraphError, validate_ci_graph
-from bcf_governance.tooling.ci_graph_execution import workflow_input_issues
+from bcf_governance.tooling.ci_graph_execution import (
+    job_execution_issues,
+    workflow_input_issues,
+)
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
 from bcf_governance.tooling.ci_graph_import import inventory_github_workflows
 from bcf_governance.tooling.ci_graph_locks import (
@@ -565,6 +568,53 @@ def test_trusted_no_checkout_command_rejects_repository_relative_input(
 
     with pytest.raises(CIGraphError, match="repository-relative inputs"):
         validate_ci_graph(tmp_path)
+
+
+def test_trusted_no_checkout_rejects_every_execution_input_surface() -> None:
+    def command_environment(graph: dict[str, object], executor: dict[str, object]) -> None:
+        graph["commands"]["trusted"]["environment"] = {
+            "POLICY": "governance/policy.yml"
+        }
+
+    def action_input(graph: dict[str, object], executor: dict[str, object]) -> None:
+        graph["step_components"]["subject"] = {
+            "kind": "action", "action": "download-artifact",
+            "with": {"path": ".artifacts/input"}
+        }
+
+    def action_environment(graph: dict[str, object], executor: dict[str, object]) -> None:
+        graph["step_components"]["subject"] = {
+            "kind": "action", "action": "download-artifact", "with": {},
+            "environment": {"POLICY": "governance/policy.yml"},
+        }
+
+    def directory_input(graph: dict[str, object], executor: dict[str, object]) -> None:
+        graph["step_components"]["subject"] = {
+            "kind": "directory_setup", "paths": [".artifacts/output"]
+        }
+
+    for mutation in (
+        command_environment, action_input, action_environment, directory_input
+    ):
+        graph: dict[str, object] = {
+            "commands": {
+                "trusted": {"argv": ["{controller}"], "cwd": ".", "environment": {}}
+            },
+            "step_components": {
+                "subject": {"kind": "command", "command": "trusted"}
+            },
+        }
+        executor: dict[str, object] = {
+            "kind": "component_sequence", "components": ["subject"]
+        }
+        job: dict[str, object] = {
+            "id": "trusted", "trust": "trusted", "checkout": False,
+            "environment": {},
+        }
+        mutation(graph, executor)
+        issues = job_execution_issues(graph, job, executor)
+        assert len(issues) == 1
+        assert "repository-relative inputs" in issues[0]
 
 
 def test_renderer_binds_selected_python_to_setup_action_output() -> None:

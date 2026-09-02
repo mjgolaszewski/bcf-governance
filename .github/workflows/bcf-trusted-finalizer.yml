@@ -27,8 +27,8 @@ jobs:
         test -d "$RUNNER_TOOL_CACHE"/bcf-governance/9261bbb6428f85b884ad03d6d6ba10131f7e92ef
         test ! -L "$RUNNER_TOOL_CACHE"/bcf-governance/9261bbb6428f85b884ad03d6d6ba10131f7e92ef
         test -x "$RUNNER_TOOL_CACHE"/bcf-governance/9261bbb6428f85b884ad03d6d6ba10131f7e92ef/bin/bcf
-        "$RUNNER_TOOL_CACHE"/bcf-governance/9261bbb6428f85b884ad03d6d6ba10131f7e92ef/bin/bcf ci-github exact-main finalize --repository "$GITHUB_REPOSITORY" --output ".artifacts/bcf/exact-main-certification"
+        "$RUNNER_TOOL_CACHE"/bcf-governance/9261bbb6428f85b884ad03d6d6ba10131f7e92ef/bin/bcf ci-github exact-main finalize --repository "$GITHUB_REPOSITORY" --output "${{ runner.temp }}/bcf-exact-main-certification-${{ github.run_id }}-${{ github.run_attempt }}"
     - name: Upload exact exact-main-certification evidence
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-      with: {name: 'bcf-exact-main-certification-${{ github.run_id }}-${{ github.run_attempt }}', path: .artifacts/bcf/exact-main-certification, if-no-files-found: error, retention-days: 30}
+      with: {name: 'bcf-exact-main-certification-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-exact-main-certification-${{ github.run_id }}-${{ github.run_attempt }}', if-no-files-found: error, retention-days: 30}

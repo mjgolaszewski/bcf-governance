@@ -21,7 +21,7 @@ jobs:
       with: {python-version: '3.12'}
     - name: Download exact exact-main-certification evidence
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-      with: {name: 'bcf-exact-main-certification-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}', path: .artifacts/bcf/exact-main-certification, github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ github.event.workflow_run.id }}'}
+      with: {name: 'bcf-exact-main-certification-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}', path: '${{ runner.temp }}/bcf-exact-main-certification-${{ github.run_id }}-${{ github.run_attempt }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ github.event.workflow_run.id }}'}
       continue-on-error: true
     - name: Publish newest authenticated exact-main status or revocation
       shell: bash
@@ -31,4 +31,4 @@ jobs:
         test -d "$RUNNER_TOOL_CACHE"/bcf-governance/9261bbb6428f85b884ad03d6d6ba10131f7e92ef
         test ! -L "$RUNNER_TOOL_CACHE"/bcf-governance/9261bbb6428f85b884ad03d6d6ba10131f7e92ef
         test -x "$RUNNER_TOOL_CACHE"/bcf-governance/9261bbb6428f85b884ad03d6d6ba10131f7e92ef/bin/bcf
-        "$RUNNER_TOOL_CACHE"/bcf-governance/9261bbb6428f85b884ad03d6d6ba10131f7e92ef/bin/bcf ci-github exact-main publish --repository "$GITHUB_REPOSITORY" --bundle ".artifacts/bcf/exact-main-certification" --target-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/${{ github.event.workflow_run.id }}" --collector-run-id "${{ github.event.workflow_run.id }}" --collector-run-attempt "${{ github.event.workflow_run.run_attempt }}"
+        "$RUNNER_TOOL_CACHE"/bcf-governance/9261bbb6428f85b884ad03d6d6ba10131f7e92ef/bin/bcf ci-github exact-main publish --repository "$GITHUB_REPOSITORY" --bundle "${{ runner.temp }}/bcf-exact-main-certification-${{ github.run_id }}-${{ github.run_attempt }}" --target-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/${{ github.event.workflow_run.id }}" --collector-run-id "${{ github.event.workflow_run.id }}" --collector-run-attempt "${{ github.event.workflow_run.run_attempt }}"
