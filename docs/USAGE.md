@@ -114,6 +114,18 @@ resolves the actor's numeric provider identity. It does not activate write
 automation on fresh installations. The reconciler ignores titles, bodies, and
 commit messages; it writes one fixed audit entry and never approves or merges.
 
+After one current controlled automation canary has published the declared
+aggregate check, inspect and apply provider protection mechanically:
+
+```bash
+bcf ci-github protection inspect --repository owner/repo --repo-root .
+bcf ci-github protection apply --repository owner/repo --repo-root .
+```
+
+Apply updates the canonical ruleset or the sole existing ruleset targeting the
+declared branch. It refuses ambiguous branch-target rulesets and never creates
+a second protection plane beside them.
+
 Installation treats these artifacts as application-owned. Missing files are
 scaffolded; existing files are never placeholder-rewritten or overwritten. An
 existing incompatible artifact makes validated installation fail and the
