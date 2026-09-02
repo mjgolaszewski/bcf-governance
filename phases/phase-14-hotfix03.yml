@@ -25,9 +25,22 @@ execution_evidence:
   - command: execute every release parser operation and every canonical graph-owned release command through its real dispatch branch
     result: pass
     notes: operation inventory is derived mechanically from argparse and graph commands rather than a hand-maintained selector list
+  - command: protected pull request 101 governance run 33587028297 and package run 33587028499
+    result: pass
+    notes: all protected checks passed on the first remote confirmation after complete local validation
+  - command: exact-main 33587343978, trusted finalizer 33587598915, and status publisher 33587622875
+    result: pass
+    notes: the exact merge commit passed all producers, terminal truth, authenticated finalization, and status publication
+  - command: scheduled mutant runs 33587658858 and 33587660260
+    result: pass
+    notes: both bounded exact-main mutant profiles passed on their first attempts
+  - command: release build 33587732982, verifier 33587964911, collector 33588120979, and publisher 33588212766
+    result: pass
+    notes: both verifier roles installed the authorization-owned controller, the collector emitted the sole receipt, and the publisher released the same certified bytes without rebuilding
   notes:
   - no hosted retry is permitted until full local gates, causal controls, generated parity, and workflow authority pass
   - the correction removes global bootstrap-controller staleness from the entire hosted verifier class
+  - audits/v0.8.0-release-custody.yml records exact provider artifact and publication custody
 closeout_requirements:
   claims:
     required_suites_green:
