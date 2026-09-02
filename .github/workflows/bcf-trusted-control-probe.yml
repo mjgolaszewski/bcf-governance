@@ -25,7 +25,7 @@ jobs:
       with: {python-version: '3.12'}
     - name: Download only the mechanically pinned controller artifact
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-      with: {artifact-ids: '${{ env.BCF_BOOTSTRAP_ARTIFACT_ID }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ env.BCF_BOOTSTRAP_RUN_ID }}', path: '${{ runner.temp }}/bcf-trusted-control-bootstrap', digest-mismatch: error}
+      with: {artifact-ids: '${{ env.BCF_BOOTSTRAP_ARTIFACT_ID }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ env.BCF_BOOTSTRAP_RUN_ID }}', path: '${{ runner.temp }}/bcf-trusted-control-bootstrap-${{ github.run_id }}-${{ github.run_attempt }}', digest-mismatch: error}
     - name: Authenticate provider custody and install offline through the controller
       shell: bash
       working-directory: .
@@ -41,4 +41,4 @@ jobs:
         test -n "$BCF_BOOTSTRAP_COMMIT_SHA"
         test -n "$BCF_BOOTSTRAP_TREE_SHA"
         test -n "$BCF_BOOTSTRAP_WHEEL_SHA256"
-        "$RUNNER_TOOL_CACHE"/bcf-governance/9261bbb6428f85b884ad03d6d6ba10131f7e92ef/bin/bcf ci-github bootstrap --repository "${{ github.repository }}" --artifact-dir "${{ runner.temp }}/bcf-trusted-control-bootstrap" --artifact-id "$BCF_BOOTSTRAP_ARTIFACT_ID" --artifact-name "$BCF_BOOTSTRAP_ARTIFACT_NAME" --provider-digest "$BCF_BOOTSTRAP_ARTIFACT_DIGEST" --producer-run-id "$BCF_BOOTSTRAP_RUN_ID" --producer-run-attempt "$BCF_BOOTSTRAP_RUN_ATTEMPT" --repository-id "$BCF_BOOTSTRAP_REPOSITORY_ID" --commit "$BCF_BOOTSTRAP_COMMIT_SHA" --tree "$BCF_BOOTSTRAP_TREE_SHA" --wheel-sha256 "$BCF_BOOTSTRAP_WHEEL_SHA256" --python "$BCF_PYTHON" --tool-cache "${{ runner.tool_cache }}"
+        "$RUNNER_TOOL_CACHE"/bcf-governance/9261bbb6428f85b884ad03d6d6ba10131f7e92ef/bin/bcf ci-github bootstrap --repository "${{ github.repository }}" --artifact-dir "${{ runner.temp }}/bcf-trusted-control-bootstrap-${{ github.run_id }}-${{ github.run_attempt }}" --artifact-id "$BCF_BOOTSTRAP_ARTIFACT_ID" --artifact-name "$BCF_BOOTSTRAP_ARTIFACT_NAME" --provider-digest "$BCF_BOOTSTRAP_ARTIFACT_DIGEST" --producer-run-id "$BCF_BOOTSTRAP_RUN_ID" --producer-run-attempt "$BCF_BOOTSTRAP_RUN_ATTEMPT" --repository-id "$BCF_BOOTSTRAP_REPOSITORY_ID" --commit "$BCF_BOOTSTRAP_COMMIT_SHA" --tree "$BCF_BOOTSTRAP_TREE_SHA" --wheel-sha256 "$BCF_BOOTSTRAP_WHEEL_SHA256" --python "$BCF_PYTHON" --tool-cache "${{ runner.tool_cache }}"

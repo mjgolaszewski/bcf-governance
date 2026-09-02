@@ -87,6 +87,18 @@ execution_evidence:
   - command: exact input-fallback manifests and causal control
     result: pass
     notes: source scope ratchets to 586 nodes, contract scope to 295 nodes, and the direct-event fallback mutant covers the shared mechanical owner
+  - command: protected pull request 98 governance run 33579240705 and package run 33579240713
+    result: pass
+    notes: cheap preflight, all four bounded evidence lanes, exact-tree truth, package, template, and architecture checks passed before merge a43508f14738c4d08c5a9348a87d6e2859eb536b
+  - command: exact-main run 33579540715 attempt 1
+    result: pass
+    notes: admission, preflight, both package producers, all four evidence lanes, and terminal closure truth passed without polling, sleeping, or local-capacity waiting
+  - command: trusted finalizer run 33579872617 attempt 1
+    result: fail_closed_before_status_publication
+    notes: the persistent trusted runner retained the repository-relative exact-main-certification directory from an earlier job, so exclusive output allocation failed before publication; no hosted runner was allocated
+  - command: audit all graph-rendered trusted no-checkout artifact paths
+    result: pass
+    notes: the renderer now projects every declared input and output into a runner-temp directory bound to the current run ID and attempt, and compilation rejects repository-relative artifact roots for the complete trusted no-checkout class
   notes:
   - release authorizer, trusted collector, and publisher now declare a current-controller requirement; generated jobs are mechanically disabled while target and installed controller custody differ
   - bootstrap and probe remain executable through the proven installed controller and are the only path to activate the pending target
@@ -95,6 +107,7 @@ execution_evidence:
   - release authority is re-enabled only because the ordered current-main bootstrap, probe, and provider-compiled confirmation completed
   - exact-main lifecycle ineligibility is a cheap front-door result and cannot allocate the four hosted evidence lanes
   - workflow-call defaults are never assumed for direct events; every runtime input crossing uses a mechanically validated fallback
+  - trusted no-checkout artifact paths are run-and-attempt-scoped under runner temp; persistent workspace residue and an earlier attempt cannot collide with current authority output
 closeout_requirements:
   claims:
     required_suites_green:

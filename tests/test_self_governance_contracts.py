@@ -27,6 +27,18 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 POLICY_PATH = REPO_ROOT / "governance/self-governance-policy.yml"
 
 
+def _all_strings(value: object) -> tuple[str, ...]:
+    if isinstance(value, str):
+        return (value,)
+    if isinstance(value, dict):
+        return tuple(
+            item for nested in value.values() for item in _all_strings(nested)
+        )
+    if isinstance(value, list):
+        return tuple(item for nested in value for item in _all_strings(nested))
+    return ()
+
+
 def _load_github_script(name: str):
     path = REPO_ROOT / ".github/scripts" / name
     spec = importlib.util.spec_from_file_location(path.stem, path)
@@ -235,6 +247,31 @@ def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> N
 
 def test_self_control_plane_is_an_exact_v11_generator_product() -> None:
     assert check_ci_graph(REPO_ROOT).status == "clean"
+
+
+def test_trusted_no_checkout_artifacts_are_job_scoped() -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    rendered = {
+        path: yaml.safe_load(content)
+        for path, content in render_ci_graph(REPO_ROOT).items()
+    }
+    inspected = 0
+    for workflow in compiled.workflows:
+        workflow_jobs = rendered[workflow["path"]]["jobs"]
+        for job in workflow["jobs"]:
+            if job["trust"] != "trusted" or job["checkout"] is not False:
+                continue
+            for step in workflow_jobs[job["id"]].get("steps", []):
+                for value in _all_strings(step):
+                    assert ".artifacts/" not in value
+                    parts = value.split("${{ runner.temp }}/")
+                    for tail in parts[1:]:
+                        suffix = "-${{ github.run_id }}-${{ github.run_attempt }}"
+                        suffix_at = tail.find(suffix)
+                        assert suffix_at > 0
+                        assert "/" not in tail[:suffix_at]
+                        inspected += 1
+    assert inspected >= 15
 
 
 def test_exact_main_is_the_only_default_branch_producer() -> None:

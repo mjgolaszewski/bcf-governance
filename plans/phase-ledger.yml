@@ -28,10 +28,10 @@ hotfix_lane:
   - id: P14-HF01
     mode: full
     recorded_at_utc: '2026-09-02T00:00:00Z'
-    action: closed cross-generation controller authority, selected-interpreter, and trusted no-checkout input defects before retrying release execution
+    action: closed cross-generation controller authority, selected-interpreter, trusted no-checkout input, lifecycle-front-door, direct-event input, and persistent trusted-artifact defects before retrying release execution
     remediated_in_phase: P14
     hotfix_log: phases/phase-14-hotfix01.yml
-    canonical_artifacts: [governance/self-governance-policy.yml, governance/ci-extensions/bcf-release.yml, bcf_governance/tooling/ci_graph_execution.py, bcf_governance/tooling/ci_graph_render.py]
+    canonical_artifacts: [governance/self-governance-policy.yml, governance/ci-extensions/bcf-release.yml, governance/gate-contracts.yml, bcf_governance/tooling/preflight.py, bcf_governance/tooling/ci_graph_execution.py, bcf_governance/tooling/ci_graph_render.py]
     local_validation: [.venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text, .venv/bin/python -m pytest -q tests, bcf ci graph render --repo-root . --check]
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}

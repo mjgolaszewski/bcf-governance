@@ -6,7 +6,7 @@ from typing import Any
 
 
 _EXPLICIT_EXECUTORS = {"component_sequence", "gate_shard", "terminal_truth"}
-_REPOSITORY_PREFIXES = ("./", ".github/", "governance/", "scripts/")
+_REPOSITORY_PREFIXES = ("./", ".artifacts/", ".github/", "governance/", "scripts/")
 
 
 def _strings(value: Any) -> tuple[str, ...]:
@@ -61,11 +61,21 @@ def job_execution_issues(
                 f"CI graph job {job['id']} must provision selected Python before governed commands"
             )
     if job["trust"] == "trusted" and job["checkout"] is False:
+        execution_inputs: list[Any] = [job.get("environment", {})]
+        execution_inputs.extend(
+            graph["commands"][command_id]
+            for command_id in _command_ids(graph, executor)
+        )
+        if executor["kind"] in _EXPLICIT_EXECUTORS:
+            execution_inputs.extend(
+                graph["step_components"][component_id]
+                for component_id in executor["components"]
+            )
         relative = sorted(
             {
                 value
-                for command_id in _command_ids(graph, executor)
-                for value in graph["commands"][command_id]["argv"]
+                for payload in execution_inputs
+                for value in _strings(payload)
                 if value.startswith(_REPOSITORY_PREFIXES)
             }
         )

@@ -22,31 +22,31 @@ jobs:
       shell: bash
       run: |-
         set -euo pipefail
-        mkdir -p -- '${{ runner.temp }}/bcf-release/certification' '${{ runner.temp }}/bcf-release/controller'
+        mkdir -p -- '${{ runner.temp }}/bcf-release-${{ github.run_id }}-${{ github.run_attempt }}/certification' '${{ runner.temp }}/bcf-release-${{ github.run_id }}-${{ github.run_attempt }}/controller'
     - name: Resolve provider-authenticated release inputs
       shell: bash
       working-directory: .
       env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python', GITHUB_TOKEN: '${{ github.token }}'}
       run: |-
         set -euo pipefail
-        "$RUNNER_TOOL_CACHE"/bcf-governance/9261bbb6428f85b884ad03d6d6ba10131f7e92ef/bin/bcf ci-github release resolve --repository "${{ github.repository }}" --output "${{ runner.temp }}/bcf-release/release-inputs.json"
+        "$RUNNER_TOOL_CACHE"/bcf-governance/9261bbb6428f85b884ad03d6d6ba10131f7e92ef/bin/bcf ci-github release resolve --repository "${{ github.repository }}" --output "${{ runner.temp }}/bcf-release-${{ github.run_id }}-${{ github.run_attempt }}/release-inputs.json"
       id: resolve
     - name: Download only the mechanically resolved certification artifact
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-      with: {artifact-ids: '${{ steps.resolve.outputs.certification_artifact_id }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ steps.resolve.outputs.certification_run_id }}', path: '${{ runner.temp }}/bcf-release/certification', digest-mismatch: error}
+      with: {artifact-ids: '${{ steps.resolve.outputs.certification_artifact_id }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ steps.resolve.outputs.certification_run_id }}', path: '${{ runner.temp }}/bcf-release-${{ github.run_id }}-${{ github.run_attempt }}/certification', digest-mismatch: error}
     - name: Download only the mechanically resolved controller artifact
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-      with: {artifact-ids: '${{ steps.resolve.outputs.controller_artifact_id }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ steps.resolve.outputs.controller_run_id }}', path: '${{ runner.temp }}/bcf-release/controller', digest-mismatch: error}
+      with: {artifact-ids: '${{ steps.resolve.outputs.controller_artifact_id }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ steps.resolve.outputs.controller_run_id }}', path: '${{ runner.temp }}/bcf-release-${{ github.run_id }}-${{ github.run_attempt }}/controller', digest-mismatch: error}
     - name: Authorize exact provider and Git custody
       shell: bash
       working-directory: .
       env: {BCF_PYTHON: '${{ env.pythonLocation }}/bin/python', GITHUB_TOKEN: '${{ github.token }}'}
       run: |-
         set -euo pipefail
-        "$RUNNER_TOOL_CACHE"/bcf-governance/9261bbb6428f85b884ad03d6d6ba10131f7e92ef/bin/bcf ci-github release authorize --repository "${{ github.repository }}" --bundle "${{ runner.temp }}/bcf-release/certification" --inputs "${{ runner.temp }}/bcf-release/release-inputs.json" --controller-wheel-dir "${{ runner.temp }}/bcf-release/controller" --output "${{ runner.temp }}/bcf-release/release-authorization.json"
+        "$RUNNER_TOOL_CACHE"/bcf-governance/9261bbb6428f85b884ad03d6d6ba10131f7e92ef/bin/bcf ci-github release authorize --repository "${{ github.repository }}" --bundle "${{ runner.temp }}/bcf-release-${{ github.run_id }}-${{ github.run_attempt }}/certification" --inputs "${{ runner.temp }}/bcf-release-${{ github.run_id }}-${{ github.run_attempt }}/release-inputs.json" --controller-wheel-dir "${{ runner.temp }}/bcf-release-${{ github.run_id }}-${{ github.run_attempt }}/controller" --output "${{ runner.temp }}/bcf-release-${{ github.run_id }}-${{ github.run_attempt }}/release-authorization.json"
     - name: Upload immutable release authorization inputs
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-      with: {name: 'bcf-release-authorization-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-release', if-no-files-found: error, retention-days: 30}
+      with: {name: 'bcf-release-authorization-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-release-${{ github.run_id }}-${{ github.run_attempt }}', if-no-files-found: error, retention-days: 30}
   build:
     name: Build exact certified release bytes on a fresh hosted runner
     needs: [authorize]

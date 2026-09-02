@@ -55,6 +55,10 @@ Release target: `0.8.0`.
 
 ### Fixed
 
+- Made artifact storage for every trusted no-checkout job independent of persistent
+  runner workspace state. The graph renderer now uses run-and-attempt-scoped
+  directories under the runner temporary root for declared inputs and outputs, and
+  compilation rejects repository-relative artifact roots for this entire trust class.
 - Moved exact-main lifecycle eligibility into cheap preflight. Closure evaluation
   reports the active phase, phase log, and complete open-hotfix inventory together
   and stops before evidence-session allocation; PR validation and scheduled controls
