@@ -26,10 +26,35 @@ from bcf_governance.tooling.ci_graph_render import (
     check_ci_graph,
     render_ci_graph,
 )
+from bcf_governance.tooling.ci_graph_values import resolve_graph_values
 from bcf_governance.tooling.truth_workflow_graph import graph_workflow_gate_issues
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_graph_values_resolve_registered_list_members_without_duplicate_authority(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "producer.yml"
+    source.write_text("producers:\n- actor_id: 49699333\n", encoding="utf-8")
+    graph = {
+        "value_sources": {
+            "producer": {
+                "path": "producer.yml",
+                "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+            }
+        },
+        "condition": (
+            "github.event.pull_request.user.id == "
+            "{source:producer:producers.0.actor_id}"
+        ),
+    }
+
+    resolved, inputs = resolve_graph_values(tmp_path, graph)
+
+    assert resolved["condition"] == "github.event.pull_request.user.id == 49699333"
+    assert inputs == (("producer.yml", hashlib.sha256(source.read_bytes()).hexdigest()),)
 
 
 def _job(

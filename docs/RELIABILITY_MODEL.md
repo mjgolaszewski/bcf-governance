@@ -9,8 +9,10 @@ central thesis. The [README](../README.md) provides the overview,
 
 ## Failure model
 
-BCF treats an agent as a capable but probabilistic software producer. Better
-models may reduce error frequency, but they do not make generation,
+BCF is specifically designed to govern software production by probabilistic AI
+agents. It is not a general human-led DevOps framework. BCF treats an agent as
+a capable but probabilistic software producer. Better models may reduce error
+frequency, but they do not make generation,
 observation, or self-evaluation deterministic. Relevant failure modes include:
 
 - reasoning from incomplete working context;

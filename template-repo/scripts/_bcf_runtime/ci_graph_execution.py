@@ -68,6 +68,12 @@ def job_required_environment(
                 and value
                 and value != _ENV_REFERENCE % name
             ]
+            step_outputs = [value for value in usable if "${{ steps." in value]
+            if step_outputs:
+                issues.append(
+                    f"CI graph job {job['id']} cannot preflight required environment {name} from a future step output"
+                )
+                continue
             distinct = list(dict.fromkeys(usable))
             if not distinct:
                 issues.append(

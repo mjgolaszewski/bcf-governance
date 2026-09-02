@@ -42,6 +42,7 @@ memory_retention_policy:
     - preserve_replacement_reference_when_available
 environment_facts:
   current_repo_state:
+    - 'v1.0.1 is immutable release 381405146 at annotated unsigned tag object 21faf111f2599b27bf4e26c3cd4e713d65a4a5fe and exact certified commit 2073b5088484b0df9c9057d3376802c4763f20cf. PR runs 33651210048/33651210114, exact-main 33651787636, finalizer 33652324342, status publisher 33652363649, scheduled mutants 33652416740/33652419325, release build 33652599067, verifier 33653068871, collector 33653523881, and publisher 33653714345 passed on attempt one. audits/v1.0.1-release-custody.yml owns exact provider and asset custody. P18 owns the opt-in trusted automation changelog producer, exact-head PR certification, provider protection, and immutable 1.0.2 patch.'
     - 'v1.0.0 is immutable release 381225147 at annotated unsigned tag object 6fcd41cbc63fb0f28afb4c9eb7590e3492b911bd and exact certified commit 57bc2245b3c7913363169b42854b0899c04de401. PR 108, exact-main 33626943407, finalizer 33627391704, status publisher 33627425155, scheduled mutants 33627476686/33627479615, release build 33627619813, verifier 33628018546, collector 33628292192, and publisher 33628472778 passed on their first attempts. The three assets match the authoritative receipt and signer-constrained attestations; the temporary admin secret was removed. P17 owns release-documentation reconciliation and the immutable 1.0.1 patch.'
     - 'v1.0.0rc1 is immutable release 381170529 at annotated unsigned tag object 8f2a8b264b0d1b0779945e4793e0c0c2d87712ad and exact certified commit d77b13860ce70d32f3754c4ede4e90d12573d76e.'
     - 'v0.8.0 is immutable release 380963358 at annotated unsigned tag object 5722b40eb4e051e405575ffd7a62ab6e53ce95c0 and exact commit bf8490777c9ecc90fb0e4a44deadb24d7cb7050a. Protected PR runs 33587028297/33587028499, exact-main 33587343978, finalizer 33587598915, publisher 33587622875, scheduled mutants 33587658858/33587660260, release build 33587732982, verifier 33587964911, collector 33588120979, and immutable publisher 33588212766 passed. Both verifier roles installed only the exact authorization-owned controller; audits/v0.8.0-release-custody.yml owns provider and asset custody.'
@@ -51,9 +52,8 @@ environment_facts:
     - v0.7.0 is an annotated unsigned tag at 0e965b2197e776ad411b67820dbd5586263abde1; release 379785364 is published with three attested assets but reports immutable false and is not certified under corrected authority v1.1
     - P13-HF03 merged as de2eeee6c16d074c4c5fffd39ee5d583b36d1a3e; provider-authenticated bootstrap 33513097208 and probe 33513145558 proved it on both trusted runners, promotion PR 86 merged as 6673c6ba7028162e6f0385e1866810559a52e802, and exact-main 33514102987, finalizer 33514433224, publisher 33514473576, scheduled mutants 33514518560 and 33514521143, authority canaries 33514557778 and 33514632374 attempts 1 and 2, release build 33514881671, verifier 33515210677, and collector 33515519688 completed the pre-reconciliation acceptance rehearsal without enabling publication
     - the P13 structural cutover retains authority-v1 readers, requires v1.1 for new exact-main and release commands, and keeps release execution unreachable until provider workflow identities are pinned and activated
-    - P01 through P15 roadmap detail is owned only by plans/phase-history.yml; P17 is the active documentation and 1.0.1 release phase, and P16 is eligible for exact Git-history compaction
+    - P01 through P17 roadmap detail is owned only by plans/phase-history.yml; P18 is the active trusted automation changelog and PR authority phase
     - P13 preserves 21 gates while exact manifests and cause controls ratchet mechanically; workflow identity, admission roles, privileged jobs, controller custody, and release lock/manifest blobs are compiled from Git/provider bytes, verifier success binds controller-owned offline wheel/sdist/Twine execution and raw evidence, profile-v2 evidence semantics have one gate-contract owner, local PR and scheduled mutant entrypoints select canonical preflight, scheduled runs retain exact-subject artifacts, interpreter/venv identity is checked before evidence or mutants, and named mutants run only exact oracle nodes after one full positive baseline
-    - provider-compiled bootstrap 33464640838 plus probe 33464672319 prove 63c7c180 installed on both trusted runners; after PR 55 merged as de8b3ce25f52916e6795a2b9240be969de932788, promoted-controller exact-main 33465739678 passed admission and every producer before active-phase closure refusal, and finalizer 33465936849 plus publisher 33465963703 proved the terminal control path
     - exact-main admission and package-producer bytes are fixed at 82dc4f740d9fb2b5920cc66037f0885614b351df; governance reusable-mode bytes remain fixed at 356196fe7fdeca1bd0de80c0d58f198e1476f716, each pinned independently by exact Git blob and SHA-256 identity
     - the 0.7.1 release closure pins Ubuntu 24.04, CPython 3.12.14, pytest 9.0.3, and 41 direct/transitive Linux x86-64 wheels by filename and SHA-256
     - every candidate job uses a fresh standard GitHub-hosted VM; the public repository receives free unlimited standard-runner execution and has no self-hosted fallback
@@ -70,9 +70,9 @@ environment_facts:
     build_plan: plans/build-plan.yml
     active_phase_ledger: plans/phase-ledger.yml
     phase_history: plans/phase-history.yml
-    active_phase_plan: plans/phase-17-plan.yml
-    active_workitem_ledger: plans/phase-17-workitems.yml
-    active_phase_log: phases/phase-17-log.yml
+    active_phase_plan: plans/phase-18-plan.yml
+    active_workitem_ledger: plans/phase-18-workitems.yml
+    active_phase_log: phases/phase-18-log.yml
 known_constraints:
   - schema-2 evidence must be recaptured after every governed tree mutation
   - template runtime and packaged template copies must remain byte-identical to canonical sources
@@ -97,8 +97,9 @@ known_constraints:
   - consumer workflow bytes are generated from one graph root plus registered bounded extensions; neither an AI operator nor workflow YAML owns mechanically derivable topology
   - Identity workflow mutation is prohibited until an offline importer maps every current job exactly once, semantic parity passes, and a credible 15 percent runner-time improvement is demonstrated without removing or renaming jobs
   - Identity public-PR execution may use fresh hosted runners, but hosted jobs may not poll, sleep, wait for local capacity, lease a runner, or remain allocated as control-plane waiters
+  - automation-produced dependency pull requests remain subject to required CHANGELOG.md updates; only a registered deterministic trusted producer may write the bounded entry and it receives no approval merge certification or publication authority
 reusable_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests, bcf profile promote --repo-root . --to standard --contract-version 2.0 --check, bcf ci-cleanup --repo-root . --prune-evidence-sessions]
 references:
   governance: [AGENTS.yml, governance-profile.yml, architecture-boundaries.yml, schemas/, contracts/observability/v1/, plans/phase-ledger.yml, plans/phase-history.yml, docs/RELIABILITY_MODEL.md, docs/USAGE.md, docs/MAINTAINING.md, docs/ARCHITECTURE.md, docs/CI_AUTHORITY.md]
   product: [plans/product-spec.yml, plans/build-plan.yml]
-  execution: [plans/phase-17-plan.yml, plans/phase-17-workitems.yml, phases/phase-17-log.yml]
+  execution: [plans/phase-18-plan.yml, plans/phase-18-workitems.yml, phases/phase-18-log.yml]

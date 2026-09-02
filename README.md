@@ -4,19 +4,20 @@
   <img src="docs/assets/bcf-governance-pack-hero.jpg" alt="BCF Governance" width="760">
 </p>
 
-BCF is a deterministic error-correction framework around probabilistic software
-production. It is designed for agent-led delivery and is also usable by
-human-led teams that want explicit release rules, exact evidence, and
-reproducible repository state. BCF keeps product scope, active work, release
-gates, findings, and evidence in a machine-readable model, then separates two
-questions:
+BCF is a deterministic error-correction framework for software produced by
+probabilistic artificial-intelligence agents. It is designed specifically to
+govern agent-led delivery by moving structural, evidentiary, lifecycle, and
+release authority into deterministic programs and explicit human decisions;
+human-led development is not its design target. BCF keeps product scope, active
+work, release gates, findings, and evidence in a machine-readable model, then
+separates two questions:
 
 - `bcf validate`: is the governed repository structurally legal and internally
   consistent?
 - `bcf truth`: are lifecycle and release claims supported by current evidence
   for the exact Git subject?
 
-Development package version: `v1.0.1`. Release artifacts are published through
+Development package version: `v1.0.2`. Release artifacts are published through
 immutable GitHub Releases after exact-main certification.
 
 ## Design thesis
@@ -62,9 +63,12 @@ against their one graph owner. The goal is multiple observations of one defined
 claim, not multiple competing definitions of it.
 
 Human authority remains necessary. People choose intent, risk appetite,
-architecture, exceptions, and whether to merge. In this authority model, an
-agent cannot certify its own output. Mechanical invariants decide only the
-claims that the repository has made mechanically decidable.
+architecture, exceptions, merges, and publication. That boundary does not make
+human-led development a BCF target. An agent may propose implementation or
+policy, but it cannot authenticate provider facts or author authoritative
+workflow bytes; an agent cannot certify its own output or determine lifecycle
+and release state. Mechanical invariants decide only the claims that the
+repository has made mechanically decidable.
 
 ## What BCF establishes
 
@@ -201,10 +205,10 @@ it cannot preserve behavior and meet the repository's performance threshold.
 
 ## Install
 
-Install the `v1.0.1` wheel from its immutable GitHub Release:
+Install the `v1.0.2` wheel from its immutable GitHub Release:
 
 ```bash
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.1/bcf_governance-1.0.1-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.2/bcf_governance-1.0.2-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel. Release publication

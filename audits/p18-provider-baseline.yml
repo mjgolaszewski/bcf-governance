@@ -1,0 +1,34 @@
+document: {kind: provider_baseline, name: P18 GitHub Provider Baseline, id: p18-github-provider-baseline, version: 1.0.0, status: final, path: audits/p18-provider-baseline.yml}
+captured_at_utc: '2026-09-02T18:14:00Z'
+authority: {role: non_authoritative_transition_snapshot, current_state_owner: authenticated_github_api}
+repository: {full_name: mjgolaszewski/bcf-governance, numeric_id: 1207503211, default_branch: main, commit: 2073b5088484b0df9c9057d3376802c4763f20cf}
+ruleset:
+  id: 21862678
+  name: protect-main-owner-prs
+  enforcement: active
+  bypass_actors: []
+  required_approving_review_count: 0
+  strict_required_status_checks_policy: true
+  required_checks:
+  - Verify exact-tree governance evidence
+  - Test package, templates, and release tooling
+  - Verify template architecture boundaries
+workflows:
+- {id: 346919667, path: .github/workflows/bcf-authority-canary.yml}
+- {id: 346274480, path: .github/workflows/bcf-exact-main.yml}
+- {id: 346919669, path: .github/workflows/bcf-release-collector.yml}
+- {id: 346919671, path: .github/workflows/bcf-release-publisher.yml}
+- {id: 346919672, path: .github/workflows/bcf-release-verifier.yml}
+- {id: 346274482, path: .github/workflows/bcf-status-publisher.yml}
+- {id: 346177113, path: .github/workflows/bcf-trusted-control-bootstrap.yml}
+- {id: 346154319, path: .github/workflows/bcf-trusted-control-probe.yml}
+- {id: 346274484, path: .github/workflows/bcf-trusted-finalizer.yml}
+- {id: 265590974, path: .github/workflows/governance-mutants-nightly.yml}
+- {id: 265590975, path: .github/workflows/governance-mutants-weekly.yml}
+- {id: 265590976, path: .github/workflows/governance-pack.yml}
+- {id: 334490532, path: .github/workflows/governance.yml}
+- {id: 331325235, path: .github/workflows/release.yml}
+runners:
+- {id: 22, name: bcf-governance-vm-linux-ci-runner, status: online, busy: false, labels: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner, bcf-trusted-control-1], disposition: retain_trusted_control}
+- {id: 21, name: bcf-governance-vm-linux-ci-runner-2, status: online, busy: false, labels: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner, bcf-trusted-control-2], disposition: retain_trusted_control}
+- {id: 23, name: bcf-governance-vm-linux-ci-runner-dependabot-1, status: online, busy: false, labels: [self-hosted, Linux, X64, bcf-governance, dependabot], disposition: deregister_after_canary}

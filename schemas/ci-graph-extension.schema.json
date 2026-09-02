@@ -29,7 +29,7 @@
         "owner": {"type": "string", "minLength": 1},
         "rationale": {"type": "string", "minLength": 1},
         "attachment_point": {"enum": ["preflight", "evidence-lane", "before-truth", "after-truth", "exact-main-producer", "trusted-control", "scheduled-lane", "release-role"]},
-        "applicability": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["pull_request", "push", "workflow_call", "workflow_dispatch", "workflow_run", "schedule", "repository_dispatch"]}},
+        "applicability": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["pull_request", "pull_request_target", "push", "workflow_call", "workflow_dispatch", "workflow_run", "schedule", "repository_dispatch"]}},
         "required_controls": {
           "type": "object",
           "additionalProperties": false,

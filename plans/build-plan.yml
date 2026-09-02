@@ -18,12 +18,12 @@ global_gates:
   name: safe_execution_substrate
   applies_before: P10
   required_completion_criteria: [trusted control-plane VM executes no candidate code, every code-executing job receives a fresh disposable VM and ephemeral runner identity, no GitHub-hosted fallback is configured]
-phase_history: {path: plans/phase-history.yml, through_phase: P16}
+phase_history: {path: plans/phase-history.yml, through_phase: P17}
 phase_sequence:
-- phase_id: P17
-  build_block: reliability-thesis-and-1.0.1-release
-  objective: clarify the deterministic error-correction thesis and prepare exact release-facing documentation and inputs for immutable 1.0.1
-  hard_dependencies: [P16]
-  tightly_scoped_deliverables: [README-led deterministic error-correction thesis and failure-mode map, focused reliability model and candid objections, mechanically reconciled release documentation and exact 1.0.1 release inputs]
-  parallelizable_workstreams: [editorial thesis and architecture rationale, release-state reconciliation and mechanical editorial checks, exact-main certification and immutable publication after implementation closure]
-  verification_commands: [.venv/bin/python .github/scripts/check_editorial_contract.py, .venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests, .venv/bin/python .github/scripts/run_validator_mutants.py --profile full]
+- phase_id: P18
+  build_block: trusted-automation-changelog-and-pr-authority-1.0.2
+  objective: deliver deterministic trusted automation changelog production exact PR certification authority and immutable 1.0.2
+  hard_dependencies: [P17]
+  tightly_scoped_deliverables: [opt-in authenticated automation producer contract and deterministic changelog commit, exact-head trusted PR certification and mechanically applied protection, README positioning correction and immutable 1.0.2 release]
+  parallelizable_workstreams: [automation producer contracts and GitHub adapter, compiled workflows PR authority and provider protection, governance documentation validation and release]
+  verification_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests, .venv/bin/python .github/scripts/run_validator_mutants.py --profile full, .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full]

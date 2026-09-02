@@ -1,0 +1,45 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 18 Plan
+  id: project-phase-18-plan
+  version: 1.0.0
+  generated_at_utc: '2026-09-02T00:00:00Z'
+  status: planned
+  path: plans/phase-18-plan.yml
+phase:
+  id: P18
+  build_block: trusted-automation-changelog-and-pr-authority-1.0.2
+  planner: codex
+  date: '2026-09-02'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - opt-in authenticated automation producer contract and deterministic changelog
+    commit
+  - exact-head trusted PR certification and mechanically applied protection
+  - README positioning correction and immutable 1.0.2 release
+  parallelizable_workstreams:
+  - id: P18-WS1
+    name: automation producer contracts and GitHub adapter
+  - id: P18-WS2
+    name: compiled workflows, PR authority, and provider protection
+  - id: P18-WS3
+    name: governance documentation, validation, and release
+  hard_dependencies:
+  - P17
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: keep the phase narrowly scoped to declared deliverables and update canonical
+    governed artifacts in the same change
+verification_plan:
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest -q tests
+- .venv/bin/python .github/scripts/run_validator_mutants.py --profile full
+- .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full

@@ -32,6 +32,10 @@ class TrustedControllerCompatibilityError(ValueError):
     """Raised when trusted jobs need runtime bytes newer than their target."""
 
 
+class TrustedControllerRuntimeStaleError(TrustedControllerCompatibilityError):
+    """Raised only when an otherwise valid ancestor target has stale runtime bytes."""
+
+
 @dataclass(frozen=True)
 class TrustedControllerCompatibility:
     target_commit: str
@@ -178,7 +182,7 @@ def verify_trusted_controller_compatibility(
             )
         ]
     if incompatible:
-        raise TrustedControllerCompatibilityError(
+        raise TrustedControllerRuntimeStaleError(
             "trusted controller target is stale for runtime files: "
             + ", ".join(incompatible)
         )

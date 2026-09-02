@@ -6,8 +6,9 @@ short rationale, [Using BCF](USAGE.md) owns operator procedures, and
 [Reliability model](RELIABILITY_MODEL.md) owns the failure model, verification
 economics, common objections, and empirical measures.
 
-BCF's architectural defaults are reliability biases for probabilistic software
-production, not claims of universal optimality. They exchange some flexibility
+BCF's architectural defaults are reliability biases for software produced by
+probabilistic AI agents, not claims of universal optimality. Human-led
+development is not the design target. The defaults exchange some flexibility
 for properties that deterministic programs can observe: bounded context,
 explicit ownership, directed dependencies, and thin boundaries. A repository
 chooses the applicable controls and may configure their thresholds.
@@ -21,11 +22,13 @@ evidence currency, and lifecycle state. Human authority remains explicit for
 product choices, accepted risk, and approvals that cannot be mechanically
 derived.
 
-This boundary is useful in AI-led work because a model can generate a plausible
+This boundary is necessary in BCF's AI-led target because a model can generate a plausible
 claim without having observed every relevant fact. It also avoids asking the
 same actor to implement and certify a change. The cost is additional policy,
 evidence, and role configuration; deterministic evaluation is only as sound as
-its inputs and rules.
+its inputs and rules. A trusted automation service can hold narrowly bounded
+authority when its observations, inputs, output template, and effects are
+deterministic; that is service authority, not AI authority.
 
 ## CQRS-lite
 

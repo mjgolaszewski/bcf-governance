@@ -1,0 +1,209 @@
+document:
+  kind: ci_graph_extension
+  name: BCF trusted automation changelog and PR authority extension
+  id: bcf-automation-ci-extension
+  version: 1.0.0
+  status: active
+  path: governance/ci-extensions/bcf-automation.yml
+schema_version: '1.0'
+extension:
+  id: bcf-automation
+  owner: bcf-governance
+  rationale: add opt-in deterministic automation changelog production and exact-head PR certification without granting candidate write authority
+  attachment_point: trusted-control
+  applicability: [pull_request_target, workflow_run]
+  required_controls:
+    positive: [trusted-automation-changelog-positive]
+    negative: [trusted-automation-identity-path-and-race-negative]
+    topology: [pr-certification-single-owner-topology]
+    cleanup: [trusted-automation-no-candidate-workspace]
+artifacts:
+  pr-finalization:
+    path: .artifacts/bcf/pr-finalization
+    kind: control
+    scope: run-attempt
+    retention_days: 30
+conditions:
+  automation-dependabot-actor: github.event.pull_request.user.id == {source:automation-contract:producers.0.actor_id}
+  automation-admission-success: github.event.workflow_run.conclusion == 'success'
+  pr-producer-completed: github.event.workflow_run.event == 'pull_request'
+  pr-finalizer-success: github.event.workflow_run.conclusion == 'success'
+commands:
+  automation-admit:
+    argv: ['{controller}', ci-github, automation, admit, --repository, '${{ github.repository }}']
+    cwd: .
+    environment: {}
+  automation-reconcile:
+    argv: ['{controller}', ci-github, automation, reconcile, --repository, '${{ github.repository }}']
+    cwd: .
+    environment: {}
+  pr-finalize:
+    argv: ['{controller}', ci-github, pr, finalize, --repository, '${{ github.repository }}', --output, '${{ runner.temp }}/bcf-pr-finalization']
+    cwd: .
+    environment: {}
+  pr-publish:
+    argv: ['{controller}', ci-github, pr, publish, --repository, '${{ github.repository }}', --bundle, '${{ runner.temp }}/bcf-pr-finalization', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}']
+    cwd: .
+    environment: {}
+step_components:
+  automation-admit:
+    kind: command
+    name: Authenticate the automation producer and bounded changed paths
+    command: automation-admit
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+    produces: []
+    consumes: []
+  create-automation-app-token:
+    kind: action
+    name: Mint one repository-scoped changelog writer token
+    id: automation-app-token
+    action: create-github-app-token
+    with:
+      app-id: '${{ vars.BCF_AUTOMATION_APP_ID }}'
+      private-key: '${{ secrets.BCF_AUTOMATION_APP_PRIVATE_KEY }}'
+      owner: '${{ github.repository_owner }}'
+      repositories: '${{ github.event.repository.name }}'
+      permission-contents: write
+    environment: {}
+    produces: []
+    consumes: []
+  automation-reconcile:
+    kind: command
+    name: Reconstruct provider state and compare-and-swap the fixed changelog entry
+    command: automation-reconcile
+    environment:
+      GITHUB_TOKEN: '${{ github.token }}'
+      BCF_AUTOMATION_APP_TOKEN: '${{ steps.automation-app-token.outputs.token }}'
+    produces: []
+    consumes: []
+  pr-finalize:
+    kind: command
+    name: Aggregate the latest exact-head producer attempts mechanically
+    command: pr-finalize
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+    produces: [pr-finalization]
+    consumes: []
+  upload-pr-finalization:
+    kind: action
+    name: Upload the authenticated PR observation
+    action: upload-artifact
+    with:
+      name: bcf-pr-finalization-${{ github.run_id }}-${{ github.run_attempt }}
+      path: '${{ runner.temp }}/bcf-pr-finalization'
+      if-no-files-found: error
+      retention-days: 30
+    environment: {}
+    produces: [pr-finalization]
+    consumes: []
+  download-pr-finalization:
+    kind: action
+    name: Download only the triggering finalizer observation
+    action: download-artifact
+    with:
+      name: bcf-pr-finalization-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+      github-token: '${{ github.token }}'
+      repository: '${{ github.repository }}'
+      run-id: '${{ github.event.workflow_run.id }}'
+      path: '${{ runner.temp }}/bcf-pr-finalization'
+      digest-mismatch: error
+    environment: {}
+    produces: []
+    consumes: [pr-finalization]
+  pr-publish:
+    kind: command
+    name: Publish the sole exact-head PR certification check
+    command: pr-publish
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+    produces: []
+    consumes: []
+workflows:
+- id: automation-admission
+  path: .github/workflows/bcf-automation-admission.yml
+  display_name: bcf/automation-admission
+  role: trusted-control
+  events: [{type: pull_request_target}]
+  permissions: {actions: read, contents: read, pull-requests: read}
+  jobs:
+  - id: admit
+    display_name: Authenticate an automation-authored dependency PR
+    semantic_role: automation-pr-admission
+    resource_class: trusted-control
+    trust: trusted
+    needs: []
+    condition: automation-dependabot-actor
+    timeout_minutes: 3
+    permissions: {actions: read, contents: read, pull-requests: read}
+    checkout: false
+    components: []
+    executor: {kind: component_sequence, components: [setup-python, automation-admit]}
+    produces: []
+    consumes: []
+    required: true
+- id: automation-reconcile
+  path: .github/workflows/bcf-automation-reconcile.yml
+  display_name: bcf/automation-changelog-reconciler
+  role: trusted-control
+  events: [{type: workflow_run, workflows: [bcf/automation-admission], types: [completed]}]
+  permissions: {actions: read, contents: read, pull-requests: read}
+  jobs:
+  - id: reconcile
+    display_name: Commit the deterministic automation changelog entry
+    semantic_role: automation-changelog-reconciler
+    resource_class: trusted-control
+    trust: trusted
+    needs: []
+    condition: automation-admission-success
+    timeout_minutes: 5
+    permissions: {actions: read, contents: read, pull-requests: read}
+    checkout: false
+    protected_environment: bcf-trusted-automation
+    components: []
+    executor: {kind: component_sequence, components: [setup-python, create-automation-app-token, automation-reconcile]}
+    produces: []
+    consumes: []
+    required: true
+- id: pr-finalizer
+  path: .github/workflows/bcf-pr-finalizer.yml
+  display_name: bcf/pr-finalizer
+  role: trusted-control
+  events: [{type: workflow_run, workflows: [governance, governance-pack], types: [completed]}]
+  permissions: {actions: read, contents: read, pull-requests: read}
+  jobs:
+  - id: finalize
+    display_name: Aggregate exact-head governance and package results
+    semantic_role: pr-certification-finalizer
+    resource_class: trusted-control
+    trust: trusted
+    needs: []
+    condition: pr-producer-completed
+    timeout_minutes: 5
+    permissions: {actions: read, contents: read, pull-requests: read}
+    checkout: false
+    components: []
+    executor: {kind: component_sequence, components: [setup-python, pr-finalize, upload-pr-finalization]}
+    produces: [pr-finalization]
+    consumes: []
+    required: true
+- id: pr-status-publisher
+  path: .github/workflows/bcf-pr-status-publisher.yml
+  display_name: bcf/pr-status-publisher
+  role: trusted-control
+  events: [{type: workflow_run, workflows: [bcf/pr-finalizer], types: [completed]}]
+  permissions: {actions: read, checks: write, contents: read, pull-requests: read}
+  jobs:
+  - id: publish
+    display_name: Publish the authoritative exact-head PR certification
+    semantic_role: pr-certification-status-publisher
+    resource_class: trusted-control
+    trust: trusted
+    needs: []
+    condition: pr-finalizer-success
+    timeout_minutes: 5
+    permissions: {actions: read, checks: write, contents: read, pull-requests: read}
+    checkout: false
+    components: []
+    executor: {kind: component_sequence, components: [setup-python, download-pr-finalization, pr-publish]}
+    produces: []
+    consumes: [pr-finalization]
+    required: true
+jobs: []

@@ -39,12 +39,31 @@ Publication consumes the receipt and certified artifacts downstream.
 | Release verifier | Yes, on a different fresh hosted worker | Read-only build and wheelhouse artifacts | Recompute dependency, archive, install, test, hash, and Twine results |
 | Release collector | No | Read provider state and hash artifacts | Emit the sole authoritative release receipt |
 | Release publisher | No | Artifact read, attestation, release write | Publish the already-certified exact bytes |
+| Automation changelog reconciler | No | Provider read plus repository-scoped App contents write | Commit one fixed, path-derived changelog entry to an authenticated automation branch |
 
 Candidate jobs cannot dispatch or cancel runs, write status, emit authoritative
 callbacks, access trusted or sibling secrets, retain checkout credentials, or
 reach persistent host-control sockets and workspaces. Trusted jobs check out no
 candidate code, execute no candidate-provided script, and do not interpolate
 candidate strings into shell commands.
+
+## Automation-authored pull requests
+
+The universal changelog rule also applies to dependency bots and registered
+GitHub Apps. Repositories may explicitly adopt
+`governance/automation-producers.yml`. A metadata-only admission authenticates
+the numeric provider actor, same-repository branch, and mechanically derived
+dependency paths. A separate protected-environment reconciler ignores PR prose,
+constructs one fixed changelog entry and idempotence marker, then performs a
+single-parent compare-and-swap ref update without force.
+
+The writer App has contents-write authority only. It cannot approve or merge a
+PR, publish certification, administer the repository, or execute candidate
+code. The trusted PR finalizer reconstructs the latest exact-head governance
+and package attempts; a separate publisher is the sole owner of
+`bcf/pr-certification`. Newer pending, failed, cancelled, stale, or malformed
+work revokes an older success. This deterministic service authority does not
+delegate judgment to an AI agent.
 
 ## Workflow identity and admission
 

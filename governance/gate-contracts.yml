@@ -344,7 +344,10 @@ gates:
       mutation: {path: bcf_governance/tooling/ci_self_controller.py, search: 'package_attempt["conclusion"] != "success"', replace: 'False'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_self_controller::test_controller_pin_rejects_failed_package_producer']}
     - id: trusted-controller-source-preflight-must-fail
-      mutation: {path: bcf_governance/tooling/preflight.py, search: "        verify_trusted_controller_compatibility(\n            repo_root, target_commit=target\n        )", replace: '        pass'}
+      mutation: {path: bcf_governance/tooling/preflight.py, search: "            verify_trusted_controller_compatibility(\n                repo_root, target_commit=target\n            )", replace: '            pass'}
+      oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_stale_trusted_controller_is_a_preflight_failure']}
+    - id: pending-controller-pr-only-must-fail
+      mutation: {path: bcf_governance/tooling/preflight.py, search: '            if not allow_stale_runtime:', replace: '            if False:'}
       oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_stale_trusted_controller_is_a_preflight_failure']}
     - id: stale-trusted-controller-runtime-must-fail
       mutation: {path: bcf_governance/tooling/trusted_controller_compatibility.py, search: 'if incompatible:', replace: 'if False and incompatible:'}

@@ -1,0 +1,13 @@
+document: {kind: audit_report, name: BCF v1.0.1 Release Custody, id: bcf-v1.0.1-release-custody, version: 1.0.0, status: final, path: audits/v1.0.1-release-custody.yml}
+subject: {version: 1.0.1, tag: v1.0.1, tag_kind: annotated, tag_object: 21faf111f2599b27bf4e26c3cd4e713d65a4a5fe, tag_signed: false, commit: 2073b5088484b0df9c9057d3376802c4763f20cf}
+provider_release: {id: 381405146, immutable: true, draft: false, prerelease: false, published_at: '2026-09-02T16:15:18Z'}
+assets:
+- {id: 541429929, name: bcf_governance-1.0.1-py3-none-any.whl, size: 780749, sha256: 2b5ff6a50d392350b732d8a534551ae5ae3dce3793ef86a2da6d66d252d1f8ed}
+- {id: 541429950, name: bcf_governance-1.0.1.tar.gz, size: 1366629, sha256: c2704c7bb6f7c28fa2228786357221b7c97257e6d4be9917b277aabbc0d9dcdf}
+- {id: 541429925, name: SHA256SUMS, size: 198, sha256: ecf11b0421ffe4cc2ac233cb37b0fd3d637daa83f93a9cea22ef3dab4bf93857}
+workflow_runs:
+  pull_request: [{id: 33651210048, attempt: 1}, {id: 33651210114, attempt: 1}]
+  exact_main: [{id: 33651787636, attempt: 1}, {id: 33652324342, attempt: 1}, {id: 33652363649, attempt: 1}]
+  scheduled: [{id: 33652416740, attempt: 1}, {id: 33652419325, attempt: 1}]
+  release: [{id: 33652599067, attempt: 1}, {id: 33653068871, attempt: 1}, {id: 33653523881, attempt: 1}, {id: 33653714345, attempt: 1}]
+conclusion: published_immutable_and_attested

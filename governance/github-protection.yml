@@ -1,0 +1,21 @@
+document: {kind: github_protection, name: BCF GitHub Main Protection, id: bcf-github-main-protection, version: 1.0.0, status: active, path: governance/github-protection.yml}
+schema_version: '1.0'
+repository: {full_name: mjgolaszewski/bcf-governance, numeric_id: 1207503211, branch: main}
+pr_certification:
+  context: bcf/pr-certification
+  publisher_app_id: 15368
+  producer_workflows:
+  - {id: governance, path: .github/workflows/governance.yml, required_job_names: [Verify exact-tree governance evidence]}
+  - {id: package, path: .github/workflows/governance-pack.yml, required_job_names: ['Test package, templates, and release tooling', Verify template architecture boundaries]}
+ruleset:
+  name: main-governance
+  enforcement: active
+  bypass_actors: []
+  required_status_checks: [{context: bcf/pr-certification, integration_id: 15368}]
+  strict_required_status_checks_policy: true
+  required_approving_review_count: 0
+  dismiss_stale_reviews_on_push: true
+  require_last_push_approval: false
+  required_review_thread_resolution: true
+  block_force_pushes: true
+  block_deletions: true

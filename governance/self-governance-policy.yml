@@ -1,7 +1,7 @@
 schema_version: '1.0'
 thin_wrapper_loc_cap: 20
 tooling_contexts:
-  ci_authority: [ci_authority_, ci_adopt_github.py, ci_commands.py, ci_graph_, ci_github.py, ci_github_, ci_self_controller.py, local_pr.py, trusted_controller_compatibility.py, trusted_inputs.py, truth_workflow_graph.py]
+  ci_authority: [automation_, ci_authority_, ci_adopt_github.py, ci_commands.py, ci_graph_, ci_github.py, ci_github_, ci_self_controller.py, github_protection.py, local_pr.py, trusted_controller_compatibility.py, trusted_inputs.py, truth_workflow_graph.py]
   cleanup: [cleanup_ci_resources.py, cleanup_governance_pack.py, evidence_session_cleanup.py, governance_cleanup/]
   evidence: [evidence_attestation.py, evidence_execution.py, evidence_gate_contracts.py, evidence_sessions.py, evidence_test_adapters.py, governance_evidence.py, governance_truth.py, governance_truth_support.py, negative_control_execution.py, release_, test_manifests.py, truth_receipts.py, truth_sessions.py]
   install: [install_governance_pack.py, governance_install/]

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "bcf-governance"
 dynamic = ["version"]
-description = "Executable governance templates and validators for agent-led development."
+description = "Deterministic governance for software produced by probabilistic AI agents."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"

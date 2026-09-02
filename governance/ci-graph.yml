@@ -5,13 +5,16 @@ profile_contract_version: '2.0'
 default_branch: main
 trusted_controller: {kind: self_governance_policy, policy_path: governance/self-governance-policy.yml}
 value_sources:
-  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: be21710e38066482c322897fd89d9cf9785e36bed9a7e9c516ab4b255e8a1a15}
-  release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: 288a190b7b839d1c358525a74beb7afe7265eb7836ce1b587da04e375bf2f44f}
+  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: cebdf42cedb3e6fa35c0f95cfad2ce6d04d8a607d7b5e4c8a2d7d48d993f1357}
+  release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: e22ff1bf31b25e4309b61e27f51158fc6fa8a29786d7367db3acddbc326de408}
+  protection-contract: {kind: yaml, path: governance/github-protection.yml, sha256: 9bab9055ec8b52113a593fbc08c8931ea494a53f9af9e19b3eb3f3789c1efaa7}
+  automation-contract: {kind: yaml, path: governance/automation-producers.yml, sha256: f688a0c653baa033abe864610b56bdfef557e6c0e7f178cb3c5f40d136cad172}
 extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]
 extensions:
+- {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: e735825595374b594c7f40375a68208f3e8f031329ab9cdce6783db4a20e3d4a}
 - {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 04240211401c1bdec8988910f5e2f68946bbc982b9d3af9373ddfd1d5c9dfd41}
 - {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: 44db0d6a184d599d5fdee4e6f4fe7e4318a8b3923b5121cba080a333c4c8da69}
-- {id: bcf-package, path: governance/ci-extensions/bcf-package.yml, sha256: 955602d160cd8982c67c52fbdb71d7bc0edb53c740a3fb2801d367599b6a13bf}
+- {id: bcf-package, path: governance/ci-extensions/bcf-package.yml, sha256: 8ab2b0b2692f8c9c44f8a3fd42066789911e0bdf97413e6c92f5c708e53d204b}
 resource_classes:
   hosted-python:
     runner: ubuntu-24.04
@@ -497,3 +500,5 @@ policy:
   generated_workflows_only: true
   forbid_hosted_waiters: true
   forbidden_hosted_tokens: [sleep, poll, wait-for-runner, lease-runner]
+  reserved_status_contexts:
+  - {context: bcf/pr-certification, semantic_role: pr-certification-status-publisher}

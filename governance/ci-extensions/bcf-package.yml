@@ -26,6 +26,10 @@ artifacts:
 conditions:
   build-exact-main-controller: inputs.build_controller == true && github.ref == 'refs/heads/main'
 commands:
+  validate-package-front-door:
+    argv: ['{python}', scripts/validate_governance_yaml.py, --repo-root, .]
+    cwd: .
+    environment: {}
   check-generated-pack:
     argv: ['{python}', .github/scripts/build_pack_manifest.py, --check]
     cwd: .
@@ -39,6 +43,13 @@ commands:
     cwd: .
     environment: {}
 step_components:
+  validate-package-front-door:
+    kind: command
+    name: Validate governed structure and exact PR changelog before package fanout
+    command: validate-package-front-door
+    environment: {}
+    produces: []
+    consumes: []
   check-generated-pack:
     kind: command
     name: Verify canonical and packaged template bytes
@@ -95,12 +106,29 @@ workflows:
         type: string
   permissions: {contents: read}
   jobs:
+  - id: front-door
+    display_name: Validate package workflow front door
+    semantic_role: bcf-package-cheap-preflight
+    resource_class: hosted-python-latest
+    trust: candidate
+    needs: []
+    condition: success
+    timeout_minutes: 10
+    permissions: {contents: read}
+    checkout: false
+    components: []
+    executor:
+      kind: component_sequence
+      components: [checkout-candidate, setup-python, install-governance, validate-package-front-door]
+    produces: []
+    consumes: []
+    required: true
   - id: pack-checks
     display_name: Test package, templates, and release tooling
     semantic_role: bcf-package-template-parity
     resource_class: hosted-python-latest
     trust: candidate
-    needs: []
+    needs: [front-door]
     condition: success
     timeout_minutes: 30
     permissions: {contents: read}
@@ -117,7 +145,7 @@ workflows:
     semantic_role: bcf-template-architecture-parity
     resource_class: hosted-python-latest
     trust: candidate
-    needs: []
+    needs: [front-door]
     condition: success
     timeout_minutes: 10
     permissions: {contents: read}

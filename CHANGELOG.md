@@ -6,7 +6,35 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-No unreleased changes.
+Release target: `1.0.2`
+
+### Added
+
+- Added an opt-in, schema-governed trusted automation producer that derives
+  Dependabot scope from provider identity and `.github/dependabot.yml`, then
+  writes one fixed, idempotent changelog entry through a contents-only GitHub
+  App using a non-force compare-and-swap commit.
+- Added exact-head PR aggregation and the reserved `bcf/pr-certification`
+  publisher, plus a complete declarative provider-protection contract.
+
+### Changed
+
+- Defined BCF specifically as deterministic error correction for software
+  produced by probabilistic AI agents; human-led development is no longer
+  described as a design target.
+- Routed automation admission, reconciliation, PR finalization, and status
+  publication through mechanically rendered no-checkout trusted-control jobs.
+- Put package fanout behind one cheap front door and made automation admission
+  conditional on the authenticated Dependabot numeric actor ID.
+
+### Fixed
+
+- Kept the universal pull-request changelog rule without making automation PRs
+  permanently fail or granting candidate code write, approval, merge, or
+  certification authority.
+- Made protection activation require one current successful controlled draft
+  automation canary sourced from GitHub Actions App ID `15368` before replacing
+  worker checks with the single aggregate status.
 
 ## [1.0.1] - 2026-09-02
 

@@ -1,0 +1,55 @@
+document:
+  kind: automation_producer_registry
+  name: BCF Trusted Automation Producers
+  id: bcf-automation-producers
+  version: 1.0.0
+  status: active
+  path: governance/automation-producers.yml
+schema_version: '1.0'
+provider: github
+repository:
+  full_name: mjgolaszewski/bcf-governance
+  numeric_id: 1207503211
+policy:
+  changelog_path: CHANGELOG.md
+  section: Changed
+  entry_template: '- Automated dependency update `{producer_id}` from PR #{pr_number}:
+    {dependency_paths}.'
+  marker_prefix: bcf-automation-changelog
+  maximum_changed_paths: 40
+  trusted_resource_class: trusted-control
+  protected_environment: bcf-trusted-automation
+  observer_token_environment: GITHUB_TOKEN
+  writer_token_environment: BCF_AUTOMATION_APP_TOKEN
+producers:
+- id: dependabot
+  type: dependabot
+  activation_state: active
+  actor_id: 49699333
+  actor_login: dependabot[bot]
+  same_repository_head: true
+  branch_patterns:
+  - dependabot/**
+  dependency_change_classes:
+  - github-actions
+  - python
+  allowed_paths:
+  - .github/actions/*/action.yaml
+  - .github/actions/*/action.yml
+  - .github/dependabot.yml
+  - .github/workflows/*.yaml
+  - .github/workflows/*.yml
+  - Pipfile.lock
+  - poetry.lock
+  - pyproject.toml
+  - requirements*.txt
+  - uv.lock
+  controls:
+    positive:
+    - dependabot-changelog-reconcile
+    adversarial:
+    - dependabot-numeric-identity-and-path-rejection
+    topology:
+    - trusted-automation-no-candidate-authority
+    cleanup:
+    - trusted-automation-no-persistent-workspace
