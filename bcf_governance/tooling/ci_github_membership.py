@@ -134,8 +134,16 @@ def collect_same_run_producers(
     admission_run_id: object,
     admission_run_attempt: object,
     dispatch_sequence: object = 1,
+    producer_ids: tuple[str, ...] | None = None,
+    require_complete_admission_inventory: bool = True,
 ) -> tuple[dict[str, Any], ...]:
-    """Collect producer observations only from one admission run and exact attempt."""
+    """Collect producer observations only from one admission run and exact attempt.
+
+    Certification uses the default complete-admission contract.  A bootstrap query may
+    select a bounded producer from a partial admission when an earlier failed job kept
+    unrelated matrices from expanding; the selected producer's own inventory remains
+    exact and complete.
+    """
 
     _require_v11(authority)
     run_id = str(positive_int(admission_run_id, field="admission run ID"))
@@ -173,11 +181,32 @@ def collect_same_run_producers(
         ]
         for producer in authority["producers"]
     }
+    selected_ids = (
+        tuple(producer_expected)
+        if producer_ids is None
+        else tuple(str(value) for value in producer_ids)
+    )
+    if (
+        not selected_ids
+        or len(set(selected_ids)) != len(selected_ids)
+        or set(selected_ids) - set(producer_expected)
+    ):
+        raise GitHubControllerError("selected admission producer inventory is invalid")
     expected_all = expected_admission + [
         name for values in producer_expected.values() for name in values
     ]
-    if len(set(expected_all)) != len(expected_all) or set(actual_jobs) != set(expected_all):
+    if len(set(expected_all)) != len(expected_all):
+        raise GitHubControllerError("authority admission job inventory is duplicated")
+    expected_selected = set(expected_admission)
+    for producer_id in selected_ids:
+        expected_selected.update(producer_expected[producer_id])
+    actual_set = set(actual_jobs)
+    if require_complete_admission_inventory and actual_set != set(expected_all):
         raise GitHubControllerError("admission exact job inventory does not match authority")
+    if not require_complete_admission_inventory and not expected_selected.issubset(actual_set):
+        raise GitHubControllerError(
+            "selected producer exact job inventory is incomplete in admission"
+        )
     job_map = {str(value["name"]): value for value in jobs}
     ordinal = admission_ordinal(run_id, attempt, sequence)
     expected_paths = {
@@ -191,6 +220,8 @@ def collect_same_run_producers(
     observations: list[dict[str, Any]] = []
     for producer in authority["producers"]:
         producer_id = str(producer["producer_id"])
+        if producer_id not in selected_ids:
+            continue
         workflow = producer_workflow(authority, producer)
         run_view = {
             **run,

@@ -132,6 +132,8 @@ def resolve_self_controller_artifact(
         authority=authority,
         admission_run_id=run_id,
         admission_run_attempt=attempt,
+        producer_ids=("governance-pack",),
+        require_complete_admission_inventory=False,
     )
     package = [value for value in producers if value["producer_id"] == "governance-pack"]
     if len(package) != 1:

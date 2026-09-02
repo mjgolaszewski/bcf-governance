@@ -394,6 +394,53 @@ def test_v11_collects_all_producers_from_one_exact_admission_attempt() -> None:
     }
 
 
+def test_v11_bootstrap_selects_one_complete_producer_from_partial_admission() -> None:
+    api = FakeAPI()
+    authority = _prepare_v11_run(api)
+    api.run_job_names["100"] = (
+        "Admit exact main",
+        "Governance evidence / ${{ matrix.display_name }}",
+        "Package proof",
+    )
+    main = resolve_main(api, "owner/repo")  # type: ignore[arg-type]
+
+    observed = collect_same_run_producers(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        main=main,
+        authority=authority,
+        admission_run_id="100",
+        admission_run_attempt=1,
+        producer_ids=("pack",),
+        require_complete_admission_inventory=False,
+    )
+
+    assert [value["producer_id"] for value in observed] == ["pack"]
+    assert observed[0]["same_run_membership"]["exact_job_inventory"] is True
+
+
+def test_v11_bootstrap_rejects_missing_selected_producer_in_partial_admission() -> None:
+    api = FakeAPI()
+    authority = _prepare_v11_run(api)
+    api.run_job_names["100"] = (
+        "Admit exact main",
+        "Governance evidence / ${{ matrix.display_name }}",
+    )
+    main = resolve_main(api, "owner/repo")  # type: ignore[arg-type]
+
+    with pytest.raises(GitHubControllerError, match="selected producer exact job inventory"):
+        collect_same_run_producers(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            main=main,
+            authority=authority,
+            admission_run_id="100",
+            admission_run_attempt=1,
+            producer_ids=("pack",),
+            require_complete_admission_inventory=False,
+        )
+
+
 def test_v11_finalizer_builds_certification_only_from_common_run(
     tmp_path: Path,
 ) -> None:
