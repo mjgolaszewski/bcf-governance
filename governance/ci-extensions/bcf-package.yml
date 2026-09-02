@@ -124,7 +124,7 @@ workflows:
     consumes: []
     required: true
   - id: pack-checks
-    display_name: Test package templates and release tooling
+    display_name: Test package, templates, and release tooling
     semantic_role: bcf-package-template-parity
     resource_class: hosted-python-latest
     trust: candidate

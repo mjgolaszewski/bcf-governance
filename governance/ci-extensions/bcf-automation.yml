@@ -24,7 +24,7 @@ artifacts:
     scope: run-attempt
     retention_days: 30
 conditions:
-  automation-dependabot-actor: github.event.pull_request.user.id == 49699333
+  automation-dependabot-actor: github.event.pull_request.user.id == {source:automation-contract:producers.0.actor_id}
   automation-admission-success: github.event.workflow_run.conclusion == 'success'
   pr-producer-completed: github.event.workflow_run.event == 'pull_request'
   pr-finalizer-success: github.event.workflow_run.conclusion == 'success'

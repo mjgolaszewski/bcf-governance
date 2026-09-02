@@ -22,9 +22,14 @@ class CIGraphValueError(ValueError):
 def _lookup(payload: dict[str, Any], selector: str) -> str | int | bool:
     value: Any = payload
     for key in selector.split("."):
-        if not isinstance(value, dict) or key not in value:
+        if isinstance(value, dict) and key in value:
+            value = value[key]
+            continue
+        if isinstance(value, list) and key.isdigit() and int(key) < len(value):
+            value = value[int(key)]
+            continue
+        else:
             raise CIGraphValueError(f"CI graph value selector does not exist: {selector}")
-        value = value[key]
     if not isinstance(value, (str, int, bool)):
         raise CIGraphValueError(f"CI graph value selector is not scalar: {selector}")
     return value

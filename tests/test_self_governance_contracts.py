@@ -388,6 +388,21 @@ def test_automation_front_doors_precede_expensive_fanout_and_old_runner_is_absen
     assert b"dependabot-1" not in rendered
 
 
+def test_pre_activation_protected_checks_remain_rendered_until_mechanical_cutover() -> None:
+    baseline = yaml.safe_load(
+        (REPO_ROOT / "audits/p18-provider-baseline.yml").read_text(encoding="utf-8")
+    )
+    compiled = validate_ci_graph(REPO_ROOT)
+    rendered_job_names = {
+        str(job["display_name"])
+        for workflow in compiled.workflows
+        if any(event["type"] == "pull_request" for event in workflow["events"])
+        for job in workflow["jobs"]
+    }
+
+    assert set(baseline["ruleset"]["required_checks"]) <= rendered_job_names
+
+
 def test_every_github_action_uses_the_canonical_immutable_pin() -> None:
     observed: set[str] = set()
     for content in render_ci_graph(REPO_ROOT).values():

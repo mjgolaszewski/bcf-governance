@@ -6,7 +6,7 @@ pr_certification:
   publisher_app_id: 15368
   producer_workflows:
   - {id: governance, path: .github/workflows/governance.yml, required_job_names: [Verify exact-tree governance evidence]}
-  - {id: package, path: .github/workflows/governance-pack.yml, required_job_names: [Test package templates and release tooling, Verify template architecture boundaries]}
+  - {id: package, path: .github/workflows/governance-pack.yml, required_job_names: ['Test package, templates, and release tooling', Verify template architecture boundaries]}
 ruleset:
   name: main-governance
   enforcement: active

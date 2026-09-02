@@ -124,7 +124,7 @@ class FakePRAuthorityAPI:
         names = (
             ["Verify exact-tree governance evidence"]
             if str(run_id) == "30"
-            else ["Test package templates and release tooling", "Verify template architecture boundaries"]
+            else ["Test package, templates, and release tooling", "Verify template architecture boundaries"]
         )
         return tuple(
             {"name": name, "status": "completed", "conclusion": "success"}

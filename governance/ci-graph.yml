@@ -7,13 +7,14 @@ trusted_controller: {kind: self_governance_policy, policy_path: governance/self-
 value_sources:
   self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: cebdf42cedb3e6fa35c0f95cfad2ce6d04d8a607d7b5e4c8a2d7d48d993f1357}
   release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: e22ff1bf31b25e4309b61e27f51158fc6fa8a29786d7367db3acddbc326de408}
-  protection-contract: {kind: yaml, path: governance/github-protection.yml, sha256: d9d78dc2ea8711929b46da008d35b081a2966c2c7d98115c97651efe77128e15}
+  protection-contract: {kind: yaml, path: governance/github-protection.yml, sha256: 9bab9055ec8b52113a593fbc08c8931ea494a53f9af9e19b3eb3f3789c1efaa7}
+  automation-contract: {kind: yaml, path: governance/automation-producers.yml, sha256: f688a0c653baa033abe864610b56bdfef557e6c0e7f178cb3c5f40d136cad172}
 extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]
 extensions:
-- {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: f0ce7dbd17a655162acdc03e894983f072b6c864452180cb73deceea3a674022}
+- {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: e735825595374b594c7f40375a68208f3e8f031329ab9cdce6783db4a20e3d4a}
 - {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 04240211401c1bdec8988910f5e2f68946bbc982b9d3af9373ddfd1d5c9dfd41}
 - {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: 44db0d6a184d599d5fdee4e6f4fe7e4318a8b3923b5121cba080a333c4c8da69}
-- {id: bcf-package, path: governance/ci-extensions/bcf-package.yml, sha256: 3ab92fad389e6633d63a310e7204a65d7ca4133a1014f08a9d761883830af55a}
+- {id: bcf-package, path: governance/ci-extensions/bcf-package.yml, sha256: 8ab2b0b2692f8c9c44f8a3fd42066789911e0bdf97413e6c92f5c708e53d204b}
 resource_classes:
   hosted-python:
     runner: ubuntu-24.04
