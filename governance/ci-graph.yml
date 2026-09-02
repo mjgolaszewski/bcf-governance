@@ -5,7 +5,7 @@ profile_contract_version: '2.0'
 default_branch: main
 trusted_controller: {kind: self_governance_policy, policy_path: governance/self-governance-policy.yml}
 value_sources:
-  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 8c76922917668f409b10b4fd1951c87a75a9b812f63ab30309ab17f31183dc49}
+  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 977e5d85cc377ac6768f0d7a48c10f61dea65d258d273d946cab58f71ea32b06}
   release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: d6ef9619e46ea8f6152fd37e3a475455cbbed9e0de723a1c87a5ea6e4e61ae69}
 extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]
 extensions:

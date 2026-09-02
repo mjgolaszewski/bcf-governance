@@ -52,6 +52,13 @@ Release target: `1.0.0rc1`.
 
 ### Fixed
 
+- Made trusted-controller freshness a cheap mechanical precondition instead of
+  an operator sequencing obligation. Preflight now derives the trusted GitHub
+  command import closure and packaged schema inventory, compares those exact
+  committed bytes with the authenticated controller target, and reports every
+  stale path together. Release authorization, collection, and publication stay
+  disabled until independent bootstrap and probe evidence promotes that target
+  on every declared trusted runner.
 - Removed release publication's dependency on the version of a previously
   installed trusted controller. The graph now resolves the tag from the
   digest-locked current release contract, generated workflow bytes carry that

@@ -37,6 +37,10 @@ from .self_workflow_contracts import (
     validate_self_workflow_contracts,
 )
 from .test_manifests import check_all
+from .trusted_controller_compatibility import (
+    TrustedControllerCompatibilityError,
+    verify_trusted_controller_compatibility,
+)
 from .yaml_mutations import YAMLMutationPathError, resolve_yaml_target, typed_mutation_value
 
 
@@ -457,8 +461,15 @@ def _self_controller(repo_root: Path) -> int:
     if not isinstance(runner, dict) or "trusted_controller_artifact" not in runner:
         return 0
     try:
-        return verify_self_controller_projection(repo_root)
-    except GitHubControllerError as exc:
+        count = verify_self_controller_projection(repo_root)
+        target = str(
+            runner["trusted_controller_artifact"]["BCF_BOOTSTRAP_COMMIT_SHA"]
+        )
+        verify_trusted_controller_compatibility(
+            repo_root, target_commit=target
+        )
+        return count
+    except (GitHubControllerError, KeyError, TypeError, TrustedControllerCompatibilityError) as exc:
         raise PreflightError(f"self-controller preflight failed: {exc}") from exc
 
 
