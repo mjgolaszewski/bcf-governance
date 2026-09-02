@@ -55,6 +55,11 @@ Release target: `0.8.0`.
 
 ### Fixed
 
+- Completed trusted-controller rotation through mechanically ordered current-main
+  bootstrap and independent probe runs on both trusted runners. Provider-compiled
+  confirmation now promotes the exact installed controller, re-enables release roles,
+  and regenerates every workflow and authority pin without operator-entered run,
+  artifact, commit, tree, or workflow identities.
 - Made setup-python the mechanical interpreter authority for every governed CI
   command. Rendered jobs now pass its absolute executable rather than a relative
   PATH token, and graph compilation rejects commands that consume the selected
