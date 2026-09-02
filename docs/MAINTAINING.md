@@ -91,8 +91,11 @@ Likewise, never copy a controller artifact ID, run ID, provider digest, tree, or
 hash into bootstrap YAML. Use the trusted `ci-github controller-pin resolve|compile`
 sequence, then `bcf ci sync-self-controller --pin PIN.json --apply`. The canonical pin
 record is the single source for the target. Active workflows remain on the separately
-recorded installed controller until exact-main bootstrap and probe runs succeed on all
-trusted runners. Compile that provider proof with `bcf ci-github controller-pin confirm`
+recorded installed controller until rotation, but bootstrap itself must cold-start from
+the downloaded provider- and checksum-admitted artifact rather than assume that cache
+entry exists. Bootstrap and probe stage that wheel under the run-scoped temporary root
+using the project-selected Python before installing it persistently. After both runs
+succeed on all trusted runners, compile that provider proof with `bcf ci-github controller-pin confirm`
 and pass it to `bcf ci sync-self-controller --confirmation`; never edit the installed
 commit or proof run identities. A pending rotation blocks selection of another target.
 

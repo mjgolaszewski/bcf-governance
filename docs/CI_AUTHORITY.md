@@ -106,6 +106,13 @@ causal controls prove that each mismatch fails. A maintainer or AI may propose p
 review a change, and decide whether to merge or publish; neither may substitute a
 copied value or judgment for the computation.
 
+Trusted-controller bootstrap has no warm-cache prerequisite. The generated bootstrap
+first verifies the provider artifact digest, exact checksum inventory, and controller
+wheel digest; it then stages the wheel in a run-scoped environment using the selected
+Python. Only that staged controller authenticates provider custody and creates the
+persistent installation. Restoring or replacing a trusted runner therefore cannot
+silently inherit authority from an absent or stale local cache.
+
 Authority v1.1 has a narrow self-hosting compatibility state. Its base registry,
 admission jobs, and producer inventories remain readable by a pre-enrichment v1.1
 controller while a successor controller is built. Privileged workflow job inventories

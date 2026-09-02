@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import shutil
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 import yaml
@@ -33,6 +34,35 @@ def _job_step(workflow: dict[str, object], job_id: str, name: str) -> dict[str, 
     matches = [step for step in steps if isinstance(step, dict) and step.get("name") == name]
     assert len(matches) == 1, name
     return matches[0]
+
+
+def _copy_self_controller_fixture(root: Path) -> dict[str, Any]:
+    policy = yaml.safe_load(
+        (REPO_ROOT / "governance/self-governance-policy.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    paths = [
+        "governance/self-governance-policy.yml",
+        "governance/ci-graph.yml",
+        "governance/public-contracts.yml",
+        "governance/automation-producers.yml",
+        "governance/github-protection.yml",
+        "schemas/ci-graph.schema.json",
+        "schemas/ci-graph-extension.schema.json",
+        "schemas/automation-producers.schema.json",
+        "schemas/github-protection.schema.json",
+    ]
+    for relative in paths:
+        destination = root / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(REPO_ROOT / relative, destination)
+    shutil.copytree(
+        REPO_ROOT / "governance/ci-extensions",
+        root / "governance/ci-extensions",
+    )
+    shutil.copytree(REPO_ROOT / ".github/workflows", root / ".github/workflows")
+    return policy
 
 
 class ConfirmationAPI:
@@ -179,29 +209,7 @@ def test_controller_pin_rejects_non_derived_artifact_name() -> None:
 def test_self_controller_projection_has_one_canonical_pin_owner(
     tmp_path: Path,
 ) -> None:
-    policy = yaml.safe_load(
-        (REPO_ROOT / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
-    )
-    paths = [
-        "governance/self-governance-policy.yml",
-        "governance/ci-graph.yml",
-        "governance/public-contracts.yml",
-        "governance/automation-producers.yml",
-        "governance/github-protection.yml",
-        "schemas/ci-graph.schema.json",
-        "schemas/ci-graph-extension.schema.json",
-        "schemas/automation-producers.schema.json",
-        "schemas/github-protection.schema.json",
-    ]
-    for relative in paths:
-        destination = tmp_path / relative
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(REPO_ROOT / relative, destination)
-    shutil.copytree(
-        REPO_ROOT / "governance/ci-extensions",
-        tmp_path / "governance/ci-extensions",
-    )
-    shutil.copytree(REPO_ROOT / ".github/workflows", tmp_path / ".github/workflows")
+    policy = _copy_self_controller_fixture(tmp_path)
     pin = dict(policy["runner_security"]["trusted_controller_artifact"])
     baseline_proof = dict(
         policy["runner_security"]["trusted_controller_installation"]
@@ -237,7 +245,10 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
         "bootstrap",
         "Authenticate provider custody and install offline through the controller",
     )
-    assert baseline_proof["installed_commit_sha"] in str(install["run"])
+    assert "/bcf-controller-${{ github.run_id }}-${{ github.run_attempt }}/bin/bcf" in str(
+        install["run"]
+    )
+    assert baseline_proof["installed_commit_sha"] not in str(install["run"])
     second_target = dict(pin)
     second_target["BCF_BOOTSTRAP_ARTIFACT_ID"] = "401"
     with pytest.raises(GitHubControllerError, match="rotation is already pending"):
@@ -264,7 +275,9 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
         "bootstrap",
         "Authenticate provider custody and install offline through the controller",
     )
-    assert COMMIT in str(install["run"])
+    assert "/bcf-controller-${{ github.run_id }}-${{ github.run_attempt }}/bin/bcf" in str(
+        install["run"]
+    )
     probe = yaml.safe_load(
         (tmp_path / controller.PROBE_WORKFLOW).read_text(encoding="utf-8")
     )
@@ -283,6 +296,41 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     assert controller.project_self_controller_pin(
         tmp_path, pin=pin, apply=False
     ).status == "clean"
+
+
+def test_controller_bootstrap_is_cold_start_safe_and_interpreter_owned(
+    tmp_path: Path,
+) -> None:
+    """A restored runner must not need an already-installed controller to bootstrap."""
+
+    policy = _copy_self_controller_fixture(tmp_path)
+    pin = dict(policy["runner_security"]["trusted_controller_artifact"])
+    proof = dict(policy["runner_security"]["trusted_controller_installation"])
+    proof["installed_commit_sha"] = pin["BCF_BOOTSTRAP_COMMIT_SHA"]
+    result = controller.project_self_controller_pin(
+        tmp_path, pin=pin, confirmation=proof, apply=True
+    )
+    assert result.status == "clean"
+    workflow = yaml.safe_load(
+        (tmp_path / controller.BOOTSTRAP_WORKFLOW).read_text(encoding="utf-8")
+    )
+    steps = workflow["jobs"]["bootstrap"]["steps"]
+    names = [step["name"] for step in steps]
+    stage_index = names.index(
+        "Stage the checksum-admitted controller in an isolated temporary environment"
+    )
+    invoke_index = names.index(
+        "Authenticate provider custody and install offline through the controller"
+    )
+    assert stage_index < invoke_index
+    stage = steps[stage_index]
+    invoke = steps[invoke_index]
+    assert stage["env"]["BCF_PYTHON"] == "${{ env.pythonLocation }}/bin/python"
+    assert str(stage["run"]).startswith('set -euo pipefail\n"$BCF_PYTHON" -I -c ')
+    assert "/bcf-controller-${{ github.run_id }}-${{ github.run_attempt }}/bin/bcf" in str(
+        invoke["run"]
+    )
+    assert "/bcf-governance/" not in str(invoke["run"]).split(" ci-github bootstrap", 1)[0]
 
 
 def test_controller_installation_confirmation_is_provider_compiled(

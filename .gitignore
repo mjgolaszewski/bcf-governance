@@ -26,6 +26,7 @@ Thumbs.db
 *.db
 
 # BEGIN BCF GOVERNANCE
+*.private-key.pem
 .artifacts/
 governance/archive/phase-artifacts/*
 !governance/archive/phase-artifacts/.gitkeep
