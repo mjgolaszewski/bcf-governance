@@ -5,6 +5,7 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
+import re
 import subprocess
 from typing import Iterable
 
@@ -19,6 +20,11 @@ DIRECT_RUNTIME_FILES = (
 )
 PACKAGED_SCHEMA_ROOT = PurePosixPath(
     "bcf_governance/pack/template-repo/schemas"
+)
+VERSION_METADATA_FILE = PurePosixPath("bcf_governance/_version.py")
+VERSION_METADATA_PATTERN = re.compile(
+    r'\A"""Single authoritative BCF release version\."""\n\n'
+    r'__version__ = "(?P<version>[0-9]+\.[0-9]+\.[0-9]+(?:(?:a|b|rc)[0-9]+)?)"\n\Z'
 )
 
 
@@ -128,6 +134,19 @@ def trusted_runtime_source_files(repo_root: Path) -> tuple[str, ...]:
     return tuple(sorted(path.as_posix() for path in observed))
 
 
+def _version_metadata_only(
+    repo_root: Path, *, target_commit: str, path: PurePosixPath
+) -> bool:
+    """Admit only a canonical inert release-version literal as metadata drift."""
+
+    current = (repo_root / path).read_text(encoding="utf-8")
+    target = _git(repo_root, "show", f"{target_commit}:{path.as_posix()}") + "\n"
+    return (
+        VERSION_METADATA_PATTERN.fullmatch(current) is not None
+        and VERSION_METADATA_PATTERN.fullmatch(target) is not None
+    )
+
+
 def verify_trusted_controller_compatibility(
     repo_root: Path, *, target_commit: str
 ) -> TrustedControllerCompatibility:
@@ -148,9 +167,19 @@ def verify_trusted_controller_compatibility(
         )
     paths = trusted_runtime_source_files(root)
     changed = _git(root, "diff", "--name-only", target_commit, "HEAD", "--", *paths)
+    incompatible = changed.splitlines()
     if changed:
+        incompatible = [
+            path
+            for path in changed.splitlines()
+            if path != VERSION_METADATA_FILE.as_posix()
+            or not _version_metadata_only(
+                root, target_commit=target_commit, path=VERSION_METADATA_FILE
+            )
+        ]
+    if incompatible:
         raise TrustedControllerCompatibilityError(
             "trusted controller target is stale for runtime files: "
-            + ", ".join(changed.splitlines())
+            + ", ".join(incompatible)
         )
     return TrustedControllerCompatibility(target_commit, paths)

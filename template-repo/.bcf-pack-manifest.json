@@ -304,7 +304,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "5061a4e7e8270f950df27756b685b5db4d5e016aef0ec9b917e01f3b3bad90ef"
+      "sha256": "ab8345815ac38c98e6f42bf78f91f60881ac509f0ff7ede246ebd8c7c4cc8332"
     },
     "scripts/_bcf_runtime/check_governance_exposure.py": {
       "operation": "copy",
@@ -464,7 +464,7 @@
     },
     "scripts/_bcf_runtime/cleanup_governance_pack.py": {
       "operation": "copy",
-      "sha256": "2ba716f7b178e97682f56591fb32465fc5f33b9588717fb56c5b28e64f6a429b"
+      "sha256": "12656990add884de736af92665f6ac5d1a041884962bce51d9079616c1206c64"
     },
     "scripts/_bcf_runtime/doctor_governance_pack.py": {
       "operation": "copy",
@@ -504,7 +504,11 @@
     },
     "scripts/_bcf_runtime/governance_cleanup/phase_retention.py": {
       "operation": "copy",
-      "sha256": "ce9d242f6bfb2dd995398e367dd0cec83cb313aa110c7d922dfbafdb929b47f9"
+      "sha256": "8d75a774ae77d6fefb214f1fa801b92baa4470a67de7280c2915e25b1a418ef5"
+    },
+    "scripts/_bcf_runtime/governance_cleanup/phase_retention_projection.py": {
+      "operation": "copy",
+      "sha256": "db4974bcec90ccb9810225b7a9e9dcbc86ce8b269b88f66588018b84d4024927"
     },
     "scripts/_bcf_runtime/governance_cleanup/truth_reports.py": {
       "operation": "copy",
@@ -596,7 +600,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/required_artifacts.py": {
       "operation": "copy",
-      "sha256": "9cb72d48fd2d9f8b83c983fad36d572e73efd7272f6467effb890f6ad8f796b3"
+      "sha256": "6d785450f883f67bf48390c49bd42ab322a27c2b76ceccd3e6516470ff51cc81"
     },
     "scripts/_bcf_runtime/governance_validation/runner.py": {
       "operation": "copy",
@@ -728,7 +732,7 @@
     },
     "scripts/_bcf_runtime/trusted_controller_compatibility.py": {
       "operation": "copy",
-      "sha256": "786c3515c1a2e10d4cf199540ea25025fdfb1ccf99db9bcf66ecda4f3c061c38"
+      "sha256": "265b815355b7fa5d8965ef78560dfe8ed441168406bb681e229803b84af8f2bb"
     },
     "scripts/_bcf_runtime/trusted_inputs.py": {
       "operation": "copy",

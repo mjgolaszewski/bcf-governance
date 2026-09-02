@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import subprocess
 
+from ..release_versions import ReleaseVersionError, parse_release_version
 from .common import *  # noqa: F403,F405
 
 
@@ -85,26 +86,27 @@ def _validate_required_artifacts(repo_root: Path, manifest: dict[str, Any]) -> l
     level_two = [line.strip() for line in changelog_lines if line.startswith("## ")]
     if level_two.count("## [Unreleased]") != 1:
         raise GovernanceValidationError("CHANGELOG.md must contain exactly one '## [Unreleased]'")
-    release_pattern = re.compile(
-        r"## \[(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)\] - "
-        r"\d{4}-\d{2}-\d{2}"
-    )
-    malformed = [
-        heading
-        for heading in level_two
-        if heading != "## [Unreleased]" and release_pattern.fullmatch(heading) is None
-    ]
+    release_pattern = re.compile(r"## \[([^\]]+)\] - \d{4}-\d{2}-\d{2}")
+    parsed_versions: list[str] = []
+    malformed: list[str] = []
+    for heading in level_two:
+        if heading == "## [Unreleased]":
+            continue
+        match = release_pattern.fullmatch(heading)
+        if match is None:
+            malformed.append(heading)
+            continue
+        try:
+            parsed_versions.append(parse_release_version(match.group(1)).value)
+        except ReleaseVersionError:
+            malformed.append(heading)
     if malformed:
         raise GovernanceValidationError(
-            "CHANGELOG.md release headings must use '## [X.Y.Z] - YYYY-MM-DD': "
+            "CHANGELOG.md release headings must use a canonical public version "
+            "in '## [VERSION] - YYYY-MM-DD': "
             + ", ".join(malformed)
         )
-    versions = [
-        match.groups()[:3]
-        for value in level_two
-        if (match := release_pattern.fullmatch(value)) is not None
-    ]
-    if len(versions) != len(set(versions)):
+    if len(parsed_versions) != len(set(parsed_versions)):
         raise GovernanceValidationError("CHANGELOG.md release versions must be unique")
     _validate_changelog_workflow_contract(repo_root)
     _validate_pull_request_changelog_update(repo_root)

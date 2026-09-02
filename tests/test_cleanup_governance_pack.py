@@ -757,6 +757,15 @@ def test_cleanup_git_history_compacts_completed_without_retroactive_truth(
     assert "derived_state_at_capture" not in entry
     assert "verification_snapshot" not in entry
     assert any("without a retroactive derived closeout claim" in value for value in report.warnings)
+    assert any(action.kind == "compact_phase_roadmaps" for action in report.actions)
+    build_plan = yaml.safe_load((repo / "plans/build-plan.yml").read_text(encoding="utf-8"))
+    product_spec = yaml.safe_load((repo / "plans/product-spec.yml").read_text(encoding="utf-8"))
+    assert [value["phase_id"] for value in build_plan["phase_sequence"]] == ["P02"]
+    assert [value["phase_id"] for value in product_spec["execution_phases"]] == ["P02"]
+    assert set(report.rewritten_files) >= {
+        "plans/build-plan.yml",
+        "plans/product-spec.yml",
+    }
     assert reference_fixture.read_text(encoding="utf-8") == 'OLD_AUDIT_ROOT = "docs/audits/"\n'
 
 

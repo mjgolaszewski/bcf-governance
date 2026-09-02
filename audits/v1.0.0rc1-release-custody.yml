@@ -1,0 +1,70 @@
+document:
+  kind: post_release_custody_audit
+  name: BCF Governance v1.0.0rc1 Release Custody Audit
+  id: bcf-governance-v1.0.0rc1-release-custody
+  version: 1.0.0
+  generated_at_utc: '2026-09-02T10:49:48Z'
+  status: published_immutable_verified
+  path: audits/v1.0.0rc1-release-custody.yml
+authority:
+  audit_role: non_authoritative_historical_snapshot
+  current_provider_state_owner: authenticated_github_api
+  release_decision_owner: bcf_ci_github_release_inspect
+  last_provider_verification:
+    observed_at_utc: '2026-09-02T10:49:48Z'
+    release_assets: pass
+    attestations: pass
+    method: exact_asset_hashes_plus_signer_constrained_gh_attestation_verify
+subject:
+  repository: mjgolaszewski/bcf-governance
+  repository_id: 1207503211
+  commit: d77b13860ce70d32f3754c4ede4e90d12573d76e
+  tree: f708c4b658829082052ea0609d16833357362ecc
+  tag:
+    name: v1.0.0rc1
+    object: 8f2a8b264b0d1b0779945e4793e0c0c2d87712ad
+    type: annotated
+    target: d77b13860ce70d32f3754c4ede4e90d12573d76e
+    verification: {verified: false, reason: unsigned}
+  release:
+    id: 381170529
+    draft: false
+    prerelease: true
+    published_at: '2026-09-02T10:44:11Z'
+    immutable: true
+    assets:
+    - {id: 541024979, name: bcf_governance-1.0.0rc1-py3-none-any.whl, size: 776016, digest: 'sha256:657394ea3140d73835d2f15b40bee7a68c34445c227ccd11ea347a116c3659e9'}
+    - {id: 541025003, name: bcf_governance-1.0.0rc1.tar.gz, size: 1352431, digest: 'sha256:b14f31933b7bb1057e8ba76910c7c9de5757a99b554ffab60f541bba195cf815'}
+    - {id: 541024960, name: SHA256SUMS, size: 204, digest: 'sha256:12e32d61da20f8fca63c5ec43c08eef89fd9975755924f89878eb648fca474ff'}
+  immutable_release_setting: {enabled: true, enforced_by_owner: false}
+provider_evidence:
+  pull_request:
+    number: 107
+    commit: 87c6526ac2587735f7c3a57523d450b62489cde0
+    governance_run: {run_id: 33619058327, attempt: 1, conclusion: success, truth_artifact_id: 9842317021, truth_provider_digest: 'sha256:6bd7da01e29465c50e4f10dd6ee6a09b49688b94c7f64f61864a2816bfc50ca2'}
+    package_run: {run_id: 33619058292, attempt: 1, conclusion: success}
+  exact_main: {run_id: 33619559726, attempt: 1, conclusion: success, truth_artifact_id: 9842472464, truth_provider_digest: 'sha256:bda2ee0aa77897b5e9a6a918481971634745482df0bca6d57cfcc3efd95409ce', controller_artifact_id: 9842343765, controller_provider_digest: 'sha256:a29843efe3a4b5aa4609bc17db018589ce3db1f19fb737a3ca9383927492f269'}
+  finalizer: {run_id: 33619940307, attempt: 1, conclusion: success, artifact_id: 9842484304, provider_digest: 'sha256:731c43d42e87888cb93b5f1f1c0a82384bdfe83d45625180cc360e4ec4b92e3a'}
+  status_publisher: {run_id: 33619974052, attempt: 1, conclusion: success}
+  scheduled_high_value: {run_id: 33620041219, attempt: 1, conclusion: success, artifact_id: 9842547518, provider_digest: 'sha256:1e1b7799b4ddabbe2a1e5edc47da6c5b50cf1a8a92f6caaf4b6991492daa230a'}
+  scheduled_full: {run_id: 33620044013, attempt: 1, conclusion: success, artifact_id: 9842540954, provider_digest: 'sha256:d03546585bd6fbd7f43f62183c363b5a5816ef216d1fa39fcdbeb68be1b2533d'}
+  release_build: {run_id: 33620174454, attempt: 1, conclusion: success, authorization_artifact_id: 9842583808, authorization_provider_digest: 'sha256:2a343b9169b96434206d235a52570416e3af4705602329d665a64a8a13d0e351', build_artifact_id: 9842674719, build_provider_digest: 'sha256:eb8cf3977270b66afa2306f06879867512f1d4f9cbcab0ee3b7a6f8fbb696cc4'}
+  release_verifier: {run_id: 33620465693, attempt: 1, conclusion: success, runtime_artifact_id: 9842794904, runtime_provider_digest: 'sha256:4bc2a76e8e98e01f8a32caafb6c2332db1a59911144ae286264340f6be181d1b', verification_artifact_id: 9842809445, verification_provider_digest: 'sha256:80aa090b747f637e94d86d72fc2d9f21b682aba1a898d27a3cf3b569a592bba1'}
+  release_collector: {run_id: 33620826328, attempt: 1, conclusion: success, artifact_id: 9842825963, provider_digest: 'sha256:38cdfce5865c13a15d04e692b2902d93561ddd3d60c38302b52d48cebb5710e1'}
+  publication: {run_id: 33620954829, attempt: 1, conclusion: success}
+controller_handoff:
+  source: exact_release_authorization_run_and_attempt
+  controller_artifact_id: 9842343765
+  controller_wheel_sha256: 657394ea3140d73835d2f15b40bee7a68c34445c227ccd11ea347a116c3659e9
+  runtime_verifier: passed_with_authorization_controller
+  custody_verifier: passed_with_authorization_controller
+  global_bootstrap_controller_used_by_verifier: false
+publication:
+  rebuilt_assets: false
+  temporary_admin_secret_removed: true
+  exact_collector_assets_published: true
+historical_custody:
+  v0.7.0: {release_id: 379785364, immutable: false, assets_unchanged: true}
+  v0.7.1: {release_id: 380654208, immutable: true, assets_unchanged: true}
+  v0.8.0: {release_id: 380963358, immutable: true, assets_unchanged: true}
+  mutation_policy: never move or rewrite published tags releases assets or attestations

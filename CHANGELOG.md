@@ -6,7 +6,33 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `1.0.0rc1`.
+Release target: `1.0.0`.
+
+### Changed
+
+- Opened the stable 1.0 phase after mechanically verifying immutable
+  `v1.0.0rc1` provider custody, and promoted only the canonical package and
+  release identity from `1.0.0rc1` to `1.0.0`.
+- Kept the release-candidate CLI, schemas, profiles, receipts, CI authority,
+  graph extensions, platform matrix, provider, and distribution contracts
+  frozen for the stable release.
+
+### Fixed
+
+- Made phase retention atomically move completed phases from both active
+  roadmaps into hash-bound Git history, so cleanup no longer requires a human
+  to synchronize the history boundary and roadmap projections.
+- Made changelog validation use the canonical release-version parser, allowing
+  canonical `a`, `b`, and `rc` headings without accepting non-SemVer spellings.
+- Allowed an installed trusted controller to lag only an exact inert
+  `bcf_governance/_version.py` literal during a version-only promotion. Any
+  executable statement, noncanonical metadata form, imported runtime change,
+  or packaged-schema change still fails the cheap compatibility preflight.
+
+## [1.0.0rc1] - 2026-09-02
+
+Published as immutable GitHub release `381170529` from exact certified merge
+`d77b13860ce70d32f3754c4ede4e90d12573d76e`.
 
 ### Changed
 
@@ -563,7 +589,8 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.0rc1...HEAD
+[1.0.0rc1]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.8.0...v1.0.0rc1
 [0.8.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.6.1...v0.7.0

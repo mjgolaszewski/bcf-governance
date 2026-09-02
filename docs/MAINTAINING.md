@@ -97,7 +97,12 @@ commit or proof run identities. A pending rotation blocks selection of another t
 The release front door does not rely on that rotation being remembered. Preflight
 derives the trusted GitHub command's Python import closure and packaged schema
 inventory, then compares their committed bytes with the authenticated target
-commit. Any difference reports the complete stale-path set before evidence work.
+commit. Executable and schema differences report the complete stale-path set
+before evidence work. A version-only promotion may differ in
+`bcf_governance/_version.py` only when both revisions have the exact canonical,
+inert version-literal form; any added statement, import, or noncanonical shape
+is executable drift and fails closed. The installed controller version is not
+release authority: the exact-main public contract and generated graph own the tag.
 While target and independently proven installed commits differ, the graph renders
 release authorization, collection, and publication disabled; bootstrap and probe
 remain the only active rotation path.
