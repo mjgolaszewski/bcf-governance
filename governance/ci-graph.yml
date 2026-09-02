@@ -5,7 +5,7 @@ profile_contract_version: '2.0'
 default_branch: main
 trusted_controller: {kind: self_governance_policy, policy_path: governance/self-governance-policy.yml}
 value_sources:
-  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: cebdf42cedb3e6fa35c0f95cfad2ce6d04d8a607d7b5e4c8a2d7d48d993f1357}
+  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: d6f09446e17bf15c63ba2d23f4a696c9daa5f675781bb6a1ba7fa8ed863976a4}
   release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: e22ff1bf31b25e4309b61e27f51158fc6fa8a29786d7367db3acddbc326de408}
   protection-contract: {kind: yaml, path: governance/github-protection.yml, sha256: 9bab9055ec8b52113a593fbc08c8931ea494a53f9af9e19b3eb3f3789c1efaa7}
   automation-contract: {kind: yaml, path: governance/automation-producers.yml, sha256: f688a0c653baa033abe864610b56bdfef557e6c0e7f178cb3c5f40d136cad172}

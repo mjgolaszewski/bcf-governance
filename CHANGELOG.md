@@ -26,6 +26,9 @@ Release target: `1.0.2`
   publication through mechanically rendered no-checkout trusted-control jobs.
 - Put package fanout behind one cheap front door and made automation admission
   conditional on the authenticated Dependabot numeric actor ID.
+- Projected the trusted controller target from an authenticated exact-main package
+  artifact and retained separate installed-state proof until both trusted runners
+  confirm the new bytes.
 
 ### Fixed
 
