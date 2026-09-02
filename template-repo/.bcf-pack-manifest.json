@@ -628,7 +628,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "b287de6a66491fbca927b0709aef7d38054b05c10efbd189047f057ca6121347"
+      "sha256": "9effce408b229f5d98736866beb7bc252f0445e9787dee5323260b11e3fb21de"
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",
@@ -725,6 +725,10 @@
     "scripts/_bcf_runtime/test_manifests.py": {
       "operation": "copy",
       "sha256": "3ade532ed98be3cf7adf1378527e5e58a95698caf96c0d5fc84462ed469411ff"
+    },
+    "scripts/_bcf_runtime/trusted_controller_compatibility.py": {
+      "operation": "copy",
+      "sha256": "786c3515c1a2e10d4cf199540ea25025fdfb1ccf99db9bcf66ecda4f3c061c38"
     },
     "scripts/_bcf_runtime/trusted_inputs.py": {
       "operation": "copy",

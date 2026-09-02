@@ -94,6 +94,14 @@ trusted runners. Compile that provider proof with `bcf ci-github controller-pin 
 and pass it to `bcf ci sync-self-controller --confirmation`; never edit the installed
 commit or proof run identities. A pending rotation blocks selection of another target.
 
+The release front door does not rely on that rotation being remembered. Preflight
+derives the trusted GitHub command's Python import closure and packaged schema
+inventory, then compares their committed bytes with the authenticated target
+commit. Any difference reports the complete stale-path set before evidence work.
+While target and independently proven installed commits differ, the graph renders
+release authorization, collection, and publication disabled; bootstrap and probe
+remain the only active rotation path.
+
 After changing v2 profile surfaces, test all four copies: packaged tooling,
 standalone private runtime, template source, and packaged template. Generated
 v2 workflows must allocate one session before evidence, execute positive gates

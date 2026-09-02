@@ -1,7 +1,7 @@
 schema_version: '1.0'
 thin_wrapper_loc_cap: 20
 tooling_contexts:
-  ci_authority: [ci_authority_, ci_adopt_github.py, ci_commands.py, ci_graph_, ci_github.py, ci_github_, ci_self_controller.py, local_pr.py, trusted_inputs.py, truth_workflow_graph.py]
+  ci_authority: [ci_authority_, ci_adopt_github.py, ci_commands.py, ci_graph_, ci_github.py, ci_github_, ci_self_controller.py, local_pr.py, trusted_controller_compatibility.py, trusted_inputs.py, truth_workflow_graph.py]
   cleanup: [cleanup_ci_resources.py, cleanup_governance_pack.py, evidence_session_cleanup.py, governance_cleanup/]
   evidence: [evidence_attestation.py, evidence_execution.py, evidence_gate_contracts.py, evidence_sessions.py, evidence_test_adapters.py, governance_evidence.py, governance_truth.py, governance_truth_support.py, negative_control_execution.py, release_, test_manifests.py, truth_receipts.py, truth_sessions.py]
   install: [install_governance_pack.py, governance_install/]
@@ -24,7 +24,7 @@ runner_security:
   candidate_lifecycle: provider_fresh_vm_per_job_destroyed_after_completion
   trusted_labels: [self-hosted, Linux, X64, bcf-governance, vm-linux-ci-runner]
   trusted_instance_labels: [bcf-trusted-control-1, bcf-trusted-control-2]
-  trusted_controller_artifact: {BCF_BOOTSTRAP_ARTIFACT_ID: '9824019654', BCF_BOOTSTRAP_ARTIFACT_NAME: bcf-trusted-control-9261bbb6428f85b884ad03d6d6ba10131f7e92ef-1, BCF_BOOTSTRAP_ARTIFACT_DIGEST: 'sha256:9c64684f83b99ada97cc78c02bbf025341f2b12515001e5221b7197bd77f23f2', BCF_BOOTSTRAP_RUN_ID: '33568404813', BCF_BOOTSTRAP_RUN_ATTEMPT: '1', BCF_BOOTSTRAP_COMMIT_SHA: 9261bbb6428f85b884ad03d6d6ba10131f7e92ef, BCF_BOOTSTRAP_TREE_SHA: 28fdc17838422f41a54ed9f11404a6c5653c7b96, BCF_BOOTSTRAP_REPOSITORY_ID: '1207503211', BCF_BOOTSTRAP_WHEEL_SHA256: c1d5bcc286abcaeeaa4befef2099f9c736e7c87f78998c3b402dbdccba624843}
+  trusted_controller_artifact: {BCF_BOOTSTRAP_ARTIFACT_ID: '9839035628', BCF_BOOTSTRAP_ARTIFACT_NAME: bcf-trusted-control-af037ecee3a006d6157923a7862eda653f011d54-1, BCF_BOOTSTRAP_ARTIFACT_DIGEST: 'sha256:74b8828811e5be849ed63304825d00ace4dd621d3c76f161cc7ddf6f3144f33f', BCF_BOOTSTRAP_RUN_ID: '33611167001', BCF_BOOTSTRAP_RUN_ATTEMPT: '1', BCF_BOOTSTRAP_COMMIT_SHA: af037ecee3a006d6157923a7862eda653f011d54, BCF_BOOTSTRAP_TREE_SHA: 586cd5c44aeee23f4819a05c13af1ed29f8862c2, BCF_BOOTSTRAP_REPOSITORY_ID: '1207503211', BCF_BOOTSTRAP_WHEEL_SHA256: d5a4755f6b42ed82f04fbc6e501db6a8560987d4aebb6f601c7c7cc928768cb6}
   trusted_controller_installation: {schema_version: '1.0', installed_commit_sha: 9261bbb6428f85b884ad03d6d6ba10131f7e92ef, subject_commit_sha: c73578a39dc2f633a83dd17fa3fce95275284fdf, subject_tree_sha: c8cfabda19f4f2a170e39320bfd65ad398fc050d, bootstrap_run_id: '33575069617', bootstrap_run_attempt: '1', probe_run_id: '33575096080', probe_run_attempt: '1'}
   trusted_release_credential: {secret_name: BCF_RELEASE_ADMIN_TOKEN, lifecycle: provision_before_dispatch_remove_after_publication, required_permissions: [administration_read, attestations_read, contents_write], required_workflow: .github/workflows/bcf-release-publisher.yml}
   coordination_policy: [no_polling, no_sleeping, no_idle_waiters]

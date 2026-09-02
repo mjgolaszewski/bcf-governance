@@ -358,6 +358,32 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     assert report["self_controller"] == 6
 
 
+def test_stale_trusted_controller_is_a_preflight_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    target = "a" * 40
+    policy = tmp_path / "governance/self-governance-policy.yml"
+    policy.parent.mkdir(parents=True)
+    policy.write_text(
+        "runner_security:\n"
+        "  trusted_controller_artifact:\n"
+        f"    BCF_BOOTSTRAP_COMMIT_SHA: {target}\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(preflight, "verify_self_controller_projection", lambda _: 6)
+
+    def reject(*_: object, **__: object) -> None:
+        raise preflight.TrustedControllerCompatibilityError("stale runtime closure")
+
+    monkeypatch.setattr(preflight, "verify_trusted_controller_compatibility", reject)
+
+    with pytest.raises(
+        preflight.PreflightError,
+        match="self-controller preflight failed: stale runtime closure",
+    ):
+        preflight._self_controller(tmp_path)
+
+
 def test_stale_pack_manifest_fails_before_evidence(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -1,0 +1,42 @@
+document:
+  kind: hotfix_execution_log
+  name: P15-HF02 Hotfix Log
+  id: bcf-governance-phase-15-hotfix02
+  version: 1.0.0
+  generated_at_utc: '2026-09-02T00:00:00Z'
+  status: planned
+  path: phases/phase-15-hotfix02.yml
+hotfix:
+  id: P15-HF02
+  mode: full
+  related_phase_id: P15
+  hotfix_number: 2
+  summary: Make trusted-controller source compatibility a release front-door invariant
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python scripts/preflight_governance.py --repo-root . --mode release --python .venv/bin/python --format text
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile full
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full
+  executed_commands:
+  - command: publisher run 33612762148
+    result: failed_closed_without_provider_mutation
+    notes: the installed 0.8.0 controller rejected the mechanically supplied prerelease tag before draft creation; the trusted local job consumed no hosted minutes, no release exists, and the temporary credential was removed
+  - command: compare the source-derived trusted runtime closure from installed controller 9261bbb through certified target af037ec
+    result: pass
+    notes: one local audit found all 15 changed runtime or schema files together; exact-main, canary, bootstrap, authorization, collection, and status behavior were compatible while prerelease publication required the newer controller
+  notes:
+  - release authorization, collection, and publication are mechanically disabled while target and independently proven installed controller commits differ
+  - cheap preflight derives the trusted Python import closure and packaged schema inventory, then rejects a target whose bytes differ from committed HEAD
+  - the target artifact coordinates and every generated workflow byte are compiled from authenticated provider state; no operator supplies an artifact, run, commit, tree, digest, or workflow value
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence: [test, contract-test]
+    security_review_complete:
+      required_evidence: [security-review]
+    health_checks_green:
+      required_evidence: [runtime-smoke]
+  reconciliation:
+    required_evidence: [governance-validate, governance-exposure-scan]
+  finding_registry: governance/findings.yml
