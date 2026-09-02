@@ -4,13 +4,13 @@ document:
   id: bcf-governance-phase-16-workitems
   version: 1.0.0
   generated_at_utc: '2026-09-02T00:00:00Z'
-  status: planned
+  status: completed
   path: plans/phase-16-workitems.yml
   phase_id: P16
 workitems:
 - id: P16-P0-01
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver record immutable 1.0.0rc1 provider custody and compact P15 under
     exact Git hashes
   acceptance:
@@ -22,7 +22,7 @@ workitems:
   - contract-test
 - id: P16-P0-02
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver promote the frozen package and release contract from 1.0.0rc1 to
     1.0.0
   acceptance:
@@ -35,7 +35,7 @@ workitems:
   - contract-test
 - id: P16-P0-03
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver build verify attest and publish exact certified stable bytes without
     rebuild
   acceptance:
