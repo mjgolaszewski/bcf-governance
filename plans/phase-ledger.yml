@@ -41,6 +41,7 @@ hotfix_lane:
     hotfix_log: phases/phase-14-hotfix02.yml
     canonical_artifacts: [bcf_governance/tooling/ci_github_commands.py, governance/gate-contracts.yml]
     local_validation: [.venv/bin/python -m pytest -q tests/test_release_runtime_verification.py tests/test_release_workflow_contracts.py tests/test_release_artifacts.py tests/test_ci_github_release.py tests/test_ci_github_artifacts.py, .venv/bin/python -m pytest -q tests]
+  - {id: P14-HF03, mode: full, recorded_at_utc: '2026-09-02T00:00:00Z', action: replaced stale global verifier-controller selection with exact triggering authorization run-and-attempt custody and derived release-command conformance, remediated_in_phase: P14, hotfix_log: phases/phase-14-hotfix03.yml, canonical_artifacts: [governance/ci-extensions/bcf-release.yml, schemas/ci-graph.schema.json, bcf_governance/tooling/ci_graph_render.py, governance/gate-contracts.yml], local_validation: [.venv/bin/python -m pytest -q tests, .venv/bin/python .github/scripts/run_validator_mutants.py --profile full, .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full]}
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
 - {type: decision, statement: BCF 0.7.0 is one release train and BCF must self-adopt every applicable Standard-v2 capability}

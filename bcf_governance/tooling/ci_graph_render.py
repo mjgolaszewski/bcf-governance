@@ -133,11 +133,28 @@ def _component_steps(
             )
             continue
         if component["kind"] == "controller_install":
+            if "wheel_sha256" in component:
+                expected_digest = repr(component["wheel_sha256"])
+                digest_loader = ""
+            else:
+                expected_digest = "expected"
+                digest_loader = (
+                    f"authority=pathlib.Path({component['wheel_sha256_file']!r})\n"
+                    "assert authority.is_file() and not authority.is_symlink()\n"
+                    "payload=json.loads(authority.read_text())\n"
+                    f"keys={component['wheel_sha256_keys']!r}\n"
+                    "expected=payload\n"
+                    "for key in keys:\n"
+                    " assert isinstance(expected,dict) and key in expected\n"
+                    " expected=expected[key]\n"
+                    "assert isinstance(expected,str) and re.fullmatch(r'[a-f0-9]{64}',expected)\n"
+                )
             script = (
-                "import hashlib,pathlib,subprocess,sys,venv\n"
+                "import hashlib,json,pathlib,re,subprocess,sys,venv\n"
                 f"source=pathlib.Path({component['artifact_dir']!r})\n"
                 f"target=pathlib.Path({component['install_root']!r})\n"
-                "inventory=source/'SHA256SUMS'\n"
+                + digest_loader
+                + "inventory=source/'SHA256SUMS'\n"
                 "assert inventory.is_file() and not inventory.is_symlink()\n"
                 "declared={}\n"
                 "for line in inventory.read_text().splitlines():\n"
@@ -149,7 +166,7 @@ def _component_steps(
                 "assert all(path.is_file() and not path.is_symlink() and hashlib.sha256(path.read_bytes()).hexdigest()==declared[name] for name,path in actual.items())\n"
                 "wheels=sorted(source.glob('bcf_governance-*.whl'))\n"
                 "assert len(wheels)==1 and not wheels[0].is_symlink()\n"
-                f"assert hashlib.sha256(wheels[0].read_bytes()).hexdigest()=={component['wheel_sha256']!r}\n"
+                f"assert hashlib.sha256(wheels[0].read_bytes()).hexdigest()=={expected_digest}\n"
                 "venv.EnvBuilder(with_pip=True,clear=True).create(target)\n"
                 "subprocess.run([str(target/'bin/python'),'-m','pip','install','--no-index','--find-links',str(source),str(wheels[0])],check=True)\n"
                 "subprocess.run([str(target/'bin/bcf'),'ci-github','--help'],check=True)\n"
