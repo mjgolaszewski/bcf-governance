@@ -142,7 +142,7 @@ def _component_steps(
                     f"authority=pathlib.Path({component['wheel_sha256_file']!r})\n"
                     "assert authority.is_file() and not authority.is_symlink()\n"
                     "payload=json.loads(authority.read_text())\n"
-                    f"keys={component['wheel_sha256_key'].split('.')!r}\n"
+                    f"keys={component['wheel_sha256_keys']!r}\n"
                     "expected=payload\n"
                     "for key in keys:\n"
                     " assert isinstance(expected,dict) and key in expected\n"

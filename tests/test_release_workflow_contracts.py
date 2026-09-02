@@ -100,7 +100,7 @@ def test_verifier_controller_is_bound_to_the_triggering_authorization_attempt() 
     ]
     assert install["artifact_dir"].endswith("/bcf-release-authorization/controller")
     assert install["wheel_sha256_file"].endswith("/release-authorization.json")
-    assert install["wheel_sha256_key"] == "controller.wheel_sha256"
+    assert install["wheel_sha256_keys"] == ["controller", "wheel_sha256"]
     for job_id in ("runtime", "authenticate"):
         components = _job("release-verifier", job_id)["executor"]["components"]
         assert components.index("download-triggering-release-authorization") < (

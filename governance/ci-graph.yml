@@ -8,7 +8,7 @@ value_sources:
   self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: ab69ea0a0607d8ce956b867bd0e144b571da3b9fe6e42c694b0a1f5a484a7e56}
 extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]
 extensions:
-- {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 1fe45246a82d4fa04bc732ae147e690c3251b0be39bc318c529545f3b7e9379d}
+- {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 71534f7e56ed676319d2f7aa7c5bfffc3ad0115a9893a1855d973f90c6c1db41}
 - {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: 44db0d6a184d599d5fdee4e6f4fe7e4318a8b3923b5121cba080a333c4c8da69}
 - {id: bcf-package, path: governance/ci-extensions/bcf-package.yml, sha256: 955602d160cd8982c67c52fbdb71d7bc0edb53c740a3fb2801d367599b6a13bf}
 resource_classes:

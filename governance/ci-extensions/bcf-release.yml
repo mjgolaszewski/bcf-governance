@@ -151,7 +151,7 @@ step_components:
     artifact_dir: '${{ runner.temp }}/bcf-release-authorization/controller'
     install_root: '${{ runner.temp }}/bcf-controller'
     wheel_sha256_file: '${{ runner.temp }}/bcf-release-authorization/release-authorization.json'
-    wheel_sha256_key: controller.wheel_sha256
+    wheel_sha256_keys: [controller, wheel_sha256]
     produces: []
     consumes: []
   download-triggering-release-build:
