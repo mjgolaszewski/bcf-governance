@@ -37,6 +37,7 @@ from .self_workflow_contracts import (
     validate_self_workflow_contracts,
 )
 from .test_manifests import check_all
+from .yaml_mutations import YAMLMutationPathError, resolve_yaml_target, typed_mutation_value
 
 
 class PreflightError(ValueError):
@@ -565,17 +566,17 @@ def _negative_control_targets(repo_root: Path) -> int:
                     )
             else:
                 yaml_path = mutation.get("yaml_path")
-                if not isinstance(yaml_path, str) or "value" not in mutation:
+                if not isinstance(yaml_path, str):
                     raise PreflightError(f"negative control mutation is unsupported: {control_id}")
                 current: Any = yaml.safe_load(target.read_text(encoding="utf-8"))
                 try:
-                    for token in yaml_path.split("."):
-                        current = current[int(token)] if isinstance(current, list) else current[token]
-                except (KeyError, IndexError, TypeError, ValueError) as exc:
+                    value = typed_mutation_value(mutation)
+                    current = resolve_yaml_target(current, yaml_path).value
+                except YAMLMutationPathError as exc:
                     raise PreflightError(
                         f"negative control YAML target is stale: {control_id}"
                     ) from exc
-                if current == mutation["value"]:
+                if current == value:
                     raise PreflightError(
                         f"negative control YAML target is already mutated: {control_id}"
                     )

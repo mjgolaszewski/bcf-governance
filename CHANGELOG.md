@@ -13,10 +13,50 @@ Release target: `1.0.0rc1`.
 - Opened the `1.0.0rc1` contract and adoption-hardening phase with an explicit
   supported-surface freeze, isolated legacy migration, transactional rollback,
   and five-cycle clean-clone soak requirements for BCF and Identity.
+- Froze the release-candidate's supported top-level CLI and exit classes,
+  active/readable schema contracts, Standard-v2 graph extension points and
+  executors, Linux x86-64 CPython 3.11–3.14 runtime matrix, GitHub CI provider,
+  GitHub Releases distribution, and compatibility/deprecation boundaries in one
+  mechanically validated public-contract registry.
+- Made ordinary upgrades refresh only pack-owned runtime and schema surfaces.
+  Project-owned profiles, gate contracts, evidence policy, graphs, extensions,
+  generated and unrelated workflows, and legacy lifecycle state remain byte
+  preserving; legacy contract migration is an explicit fail-closed transaction.
+- Replaced the obsolete regression for implicit upgrade-time evidence migration
+  with preservation and isolated-migration coverage, and added five clean-clone
+  install/upgrade/customize/rollback cycles.
 - Recorded immutable `v0.8.0` provider custody after the exact PR, merged-main,
   scheduled-mutant, release-verifier, collector, and no-rebuild publisher chain passed.
   P14 is now compacted under exact Git and SHA-256 custody while P15 is the sole
   active phase triplet.
+
+### Added
+
+- Added typed CI graph prerequisite diagnostics for runners, tools, permissions,
+  secrets, events, and graph inputs, plus one mechanically composed first-step
+  environment check before checkout or governed work.
+- Added an offline five-cycle BCF/Identity adoption soak that uses disposable
+  clones, preserves Identity's project-owned governance and workflows exactly,
+  requires legacy migration to fail closed with complete blockers, and launches
+  no Actions runs.
+- Added canonical pre-release version parsing for `a`, `b`, and `rc` packages so
+  release inputs, tags, API validation, and GitHub prerelease state share one
+  owner.
+
+### Fixed
+
+- Replaced ambiguous YAML text mutations with typed semantic paths and encoded
+  typed values. Literal byte mutation now requires a documented byte-level
+  reason, preventing formatting drift from masquerading as a causal control.
+- Ensured Standard applicability excludes only explicitly `not_applicable`
+  gates while retaining required, deferred, and optional migration targets.
+- Made upgrade preservation paths executable installer data consumed by public
+  contract validation and the adoption soak rather than repeated hand-maintained
+  lists.
+- Made generated local Make targets route every Python gate through the selected
+  `$(PYTHON)` authority. Workflow contract tests now locate mechanically named
+  steps instead of duplicating renderer positions, while the one security-relevant
+  first-step environment ordering remains explicitly enforced.
 
 ## [0.8.0] - 2026-09-02
 

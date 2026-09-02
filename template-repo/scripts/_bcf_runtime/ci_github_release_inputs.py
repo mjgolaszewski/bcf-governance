@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-import re
 from typing import Any
 
 try:
@@ -29,6 +28,7 @@ from .ci_github_bundle import write_exclusive
 from .ci_github_identity import GitHubControllerError, MainIdentity, resolve_main
 from .ci_github_membership import select_latest_admission
 from .ci_self_controller import resolve_self_controller_artifact
+from .release_versions import ReleaseVersionError, parse_release_version
 
 
 RELEASE_INPUT_KEYS = {
@@ -252,8 +252,10 @@ def resolve_release_publication_inputs(
 ) -> dict[str, Any]:
     """Resolve the newest exact-main release receipt without operator coordinates."""
 
-    if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", __version__):
-        raise GitHubControllerError("authoritative package version is not semantic")
+    try:
+        release_version = parse_release_version(__version__)
+    except ReleaseVersionError as exc:
+        raise GitHubControllerError("authoritative package version is not releasable") from exc
     main = resolve_main(api, repository)
     authority = load_authority(api, repository, main, required_version="1.1")
     collector_run_id, collector_attempt = _exact_collector_run(
@@ -279,7 +281,7 @@ def resolve_release_publication_inputs(
             "commit_sha": main.checkout_sha,
             "tree_sha": main.tree_sha,
         },
-        "tag": f"v{__version__}",
+        "tag": release_version.tag,
         "receipt_artifact": provider_artifact_reference(receipt),
     }
     write_exclusive(output_path, payload)

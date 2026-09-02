@@ -15,8 +15,8 @@ then separates two questions:
 - `bcf truth`: are lifecycle and release claims supported by current evidence
   for the exact Git subject?
 
-Development package version: `v0.8.0`. The latest certified public release is
-immutable `v0.7.1` while the 0.8.0 train is under review.
+Development package version: `v1.0.0rc1`. The latest certified public release is
+immutable `v0.8.0` while the 1.0 release-candidate train is under review.
 
 ## Why these defaults
 
@@ -147,12 +147,12 @@ it cannot preserve behavior and meet the repository's performance threshold.
 Install the current published wheel:
 
 ```bash
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v0.7.1/bcf_governance-0.7.1-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v0.8.0/bcf_governance-0.8.0-py3-none-any.whl
 ```
 
-Immutable `bcf_governance-0.7.1-py3-none-any.whl` remains the published
-installation source. The 0.8.0 development tree builds
-`bcf_governance-0.8.0-py3-none-any.whl`; it is not an installation source until
+Immutable `bcf_governance-0.8.0-py3-none-any.whl` is the published
+installation source. The 1.0.0rc1 development tree builds
+`bcf_governance-1.0.0rc1-py3-none-any.whl`; it is not an installation source until
 its own exact-main certification and immutable release complete.
 
 Git is required. `lite` is the bootstrap profile:
@@ -190,15 +190,24 @@ Promotion and GitHub CI adoption are separate, explicit transactions:
 bcf profile promote --repo-root . --to standard --contract-version 2.0 --check
 bcf profile promote --repo-root . --to standard --contract-version 2.0 --apply
 bcf ci graph validate --repo-root .
+bcf ci graph diagnose --repo-root .
 bcf ci graph render --repo-root . --check
 bcf ci adopt github --repo-root . --check
 # Repeat with --apply after reviewing the check output.
 ```
 
 Use `--adoption-mode existing` for an established repository. Normal
-`bcf install --upgrade` preserves its selected profile, contract version, and
-workflow bytes. The destructive replacement path is the explicitly confirmed
-`--force-rescaffold`; BCF has no generic `--force` bypass.
+`bcf install --upgrade` refreshes pack-owned runtime and schema files while
+preserving project-owned profile, gate, evidence, graph, extension, and workflow
+bytes. Legacy contracts move only through the explicit, fail-closed
+`bcf migrate-contract` command. The destructive replacement path is the
+explicitly confirmed `--force-rescaffold`; BCF has no generic `--force` bypass.
+
+The 1.0 release-candidate contract supports Linux x86-64 and CPython 3.11–3.14.
+GitHub is its only executable CI provider and GitHub Releases is its distribution
+channel. The mechanically frozen CLI surface is the top-level command inventory
+and its exit-code classes; nested arguments remain documented interfaces until
+the stable-release review completes.
 
 ## Operate
 

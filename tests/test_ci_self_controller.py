@@ -23,6 +23,18 @@ COMMIT = "a" * 40
 TREE = "b" * 40
 
 
+def _job_step(workflow: dict[str, object], job_id: str, name: str) -> dict[str, object]:
+    jobs = workflow["jobs"]
+    assert isinstance(jobs, dict)
+    job = jobs[job_id]
+    assert isinstance(job, dict)
+    steps = job["steps"]
+    assert isinstance(steps, list)
+    matches = [step for step in steps if isinstance(step, dict) and step.get("name") == name]
+    assert len(matches) == 1, name
+    return matches[0]
+
+
 class ConfirmationAPI:
     def __init__(self, policy: dict[str, object]) -> None:
         self.policy = policy
@@ -215,9 +227,12 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
         (tmp_path / controller.BOOTSTRAP_WORKFLOW).read_text(encoding="utf-8")
     )
     assert {key: str(bootstrap["env"][key]) for key in controller.PIN_KEYS} == pin
-    assert baseline_proof["installed_commit_sha"] in (
-        bootstrap["jobs"]["bootstrap"]["steps"][2]["run"]
+    install = _job_step(
+        bootstrap,
+        "bootstrap",
+        "Authenticate provider custody and install offline through the controller",
     )
+    assert baseline_proof["installed_commit_sha"] in str(install["run"])
     second_target = dict(pin)
     second_target["BCF_BOOTSTRAP_ARTIFACT_ID"] = "401"
     with pytest.raises(GitHubControllerError, match="rotation is already pending"):
@@ -239,15 +254,27 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     bootstrap = yaml.safe_load(
         (tmp_path / controller.BOOTSTRAP_WORKFLOW).read_text(encoding="utf-8")
     )
-    assert COMMIT in bootstrap["jobs"]["bootstrap"]["steps"][2]["run"]
+    install = _job_step(
+        bootstrap,
+        "bootstrap",
+        "Authenticate provider custody and install offline through the controller",
+    )
+    assert COMMIT in str(install["run"])
     probe = yaml.safe_load(
         (tmp_path / controller.PROBE_WORKFLOW).read_text(encoding="utf-8")
     )
     assert {key: str(probe["env"][key]) for key in controller.PIN_KEYS} == pin
-    probe_steps = probe["jobs"]["probe"]["steps"]
-    assert probe_steps[1]["uses"].startswith("actions/download-artifact@")
-    assert "ci-github bootstrap" in probe_steps[2]["run"]
-    assert ".github/" not in probe_steps[2]["run"]
+    download = _job_step(
+        probe, "probe", "Download only the mechanically pinned controller artifact"
+    )
+    assert str(download["uses"]).startswith("actions/download-artifact@")
+    install = _job_step(
+        probe,
+        "probe",
+        "Authenticate provider custody and install offline through the controller",
+    )
+    assert "ci-github bootstrap" in str(install["run"])
+    assert ".github/" not in str(install["run"])
     assert controller.project_self_controller_pin(
         tmp_path, pin=pin, apply=False
     ).status == "clean"

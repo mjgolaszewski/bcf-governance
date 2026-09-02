@@ -11,9 +11,11 @@ import yaml
 from bcf_governance.tooling.ci_graph_contracts import CIGraphError, validate_ci_graph
 from bcf_governance.tooling.ci_graph_execution import (
     job_execution_issues,
+    job_required_environment,
     workflow_input_issues,
 )
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
+from bcf_governance.tooling.ci_graph_diagnostics import diagnose_ci_graph
 from bcf_governance.tooling.ci_graph_import import inventory_github_workflows
 from bcf_governance.tooling.ci_graph_locks import (
     apply_ci_graph_locks,
@@ -527,6 +529,125 @@ def test_selected_python_must_be_provisioned_before_governed_command(
 
     with pytest.raises(CIGraphError, match="provision selected Python before"):
         validate_ci_graph(tmp_path)
+
+
+def test_required_environment_is_bound_once_and_validated_before_checkout(
+    tmp_path: Path,
+) -> None:
+    graph = _graph()
+    workflow = graph["workflows"][0]
+    job = workflow["jobs"][0]
+    graph["commands"]["preflight"]["required_environment"] = ["REQUIRED_TOKEN"]
+    job["environment"] = {"REQUIRED_TOKEN": "${{ secrets.REQUIRED_TOKEN }}"}
+    _write_graph(tmp_path, graph)
+
+    compiled = validate_ci_graph(tmp_path)
+    rendered = yaml.safe_load(render_ci_graph(tmp_path)[".github/workflows/governance.yml"])
+    steps = rendered["jobs"]["preflight"]["steps"]
+    assert steps[0]["name"] == "Validate all required environment inputs before work"
+    assert steps[0]["env"] == {"REQUIRED_TOKEN": "${{ secrets.REQUIRED_TOKEN }}"}
+    assert steps[1]["name"] == "Check out the exact candidate commit"
+    bindings, issues = job_required_environment(
+        compiled.graph,
+        next(item for item in compiled.workflows if item["id"] == "governance"),
+        next(
+            item
+            for item in next(
+                value for value in compiled.workflows if value["id"] == "governance"
+            )["jobs"]
+            if item["id"] == "preflight"
+        ),
+        job["executor"],
+    )
+    assert bindings == {"REQUIRED_TOKEN": "${{ secrets.REQUIRED_TOKEN }}"}
+    assert issues == ()
+
+
+def test_missing_or_conflicting_required_environment_fails_at_graph_compile(
+    tmp_path: Path,
+) -> None:
+    graph = _graph()
+    graph["commands"]["preflight"]["required_environment"] = ["REQUIRED_TOKEN"]
+    _write_graph(tmp_path, graph)
+    with pytest.raises(CIGraphError, match="missing required environment binding"):
+        validate_ci_graph(tmp_path)
+
+    graph["workflows"][0]["jobs"][0]["environment"] = {
+        "REQUIRED_TOKEN": "job-value"
+    }
+    graph["commands"]["preflight"]["environment"]["REQUIRED_TOKEN"] = (
+        "command-value"
+    )
+    _write_graph(tmp_path, graph)
+    with pytest.raises(CIGraphError, match="conflicting required environment binding"):
+        validate_ci_graph(tmp_path)
+
+
+def test_graph_diagnostics_cover_every_frozen_prerequisite_kind(tmp_path: Path) -> None:
+    graph = _graph()
+    graph["commands"]["preflight"]["required_environment"] = ["REQUIRED_TOKEN"]
+    graph["workflows"][0]["jobs"][0]["environment"] = {
+        "REQUIRED_TOKEN": "${{ secrets.REQUIRED_TOKEN }}"
+    }
+    _write_graph(tmp_path, graph)
+
+    report = diagnose_ci_graph(tmp_path)
+
+    assert report["status"] == "pass"
+    assert {item["kind"] for item in report["diagnostics"]} == {
+        "runner",
+        "tool",
+        "permission",
+        "secret",
+        "event",
+        "graph_input",
+    }
+    assert all(
+        set(item) == {"kind", "identifier", "status", "remediation"}
+        for item in report["diagnostics"]
+    )
+
+
+@pytest.mark.parametrize(
+    ("mutate", "kind"),
+    [
+        (
+            lambda graph: graph["workflows"][0]["jobs"][0].update(
+                {"resource_class": "absent-runner"}
+            ),
+            "runner",
+        ),
+        (
+            lambda graph: graph["commands"]["preflight"].update(
+                {"required_environment": ["ABSENT_TOKEN"]}
+            ),
+            "secret",
+        ),
+        (
+            lambda graph: graph["workflows"][0]["jobs"][0]["permissions"].update(
+                {"statuses": "write"}
+            ),
+            "permission",
+        ),
+        (
+            lambda graph: graph["workflows"][2]["events"].append(
+                {"type": "push", "branches": ["main"]}
+            ),
+            "event",
+        ),
+    ],
+)
+def test_graph_diagnostics_classify_prerequisite_failures(
+    tmp_path: Path, mutate, kind: str
+) -> None:
+    graph = _graph()
+    mutate(graph)
+    _write_graph(tmp_path, graph)
+
+    report = diagnose_ci_graph(tmp_path)
+
+    assert report["status"] == "fail"
+    assert report["diagnostics"][0]["kind"] == kind
 
 
 def test_trusted_no_checkout_command_rejects_repository_relative_input(

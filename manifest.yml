@@ -2,7 +2,7 @@ document:
   kind: template_governance_pack_manifest
   name: BCF Template And Governance Pack
   id: bcf-governance
-  version: 0.8.0
+  version: 1.0.0rc1
   generated_at_utc: "2026-08-14T00:00:00Z"
   status: tracked_inventory
 source_model:

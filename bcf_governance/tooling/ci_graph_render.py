@@ -12,6 +12,7 @@ from typing import Any
 
 from .ci_github_actions import action_pin
 from .ci_graph_contracts import CompiledCIGraph, validate_ci_graph
+from .ci_graph_execution import job_required_environment
 from .ci_graph_yaml import render_yaml
 from .governance_install.transaction import apply_transaction
 
@@ -110,9 +111,29 @@ def _command_step(
         "env": environment,
         "run": (
             "set -euo pipefail\n"
-            + "".join(f'test -n "${name}"\n' for name in command["required_environment"])
             + " ".join(argv)
         ),
+    }
+
+
+def _required_environment_step(
+    compiled: CompiledCIGraph,
+    workflow: dict[str, Any],
+    job: dict[str, Any],
+) -> dict[str, Any] | None:
+    bindings, issues = job_required_environment(
+        compiled.graph, workflow, job, job["executor"]
+    )
+    if issues:
+        raise AssertionError(issues[0])
+    if not bindings:
+        return None
+    return {
+        "name": "Validate all required environment inputs before work",
+        "shell": "bash",
+        "env": bindings,
+        "run": "set -euo pipefail\n"
+        + "".join(f'test -n "${name}"\n' for name in sorted(bindings)),
     }
 
 
@@ -405,6 +426,9 @@ def _job(
     if job["environment"]:
         result["env"] = copy.deepcopy(job["environment"])
     steps: list[dict[str, Any]] = []
+    required_environment = _required_environment_step(compiled, workflow, job)
+    if required_environment is not None:
+        steps.append(required_environment)
     if job["checkout"]:
         steps.append(
             {

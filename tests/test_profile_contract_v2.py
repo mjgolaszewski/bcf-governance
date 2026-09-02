@@ -177,6 +177,8 @@ def test_v2_surfaces_bind_one_session_and_do_not_wait() -> None:
     workflow = yaml.safe_load(workflow_text)
 
     assert "scripts/preflight_governance.py" in makefile
+    assert "@cd . && $(PYTHON) scripts/validate_governance_yaml.py" in makefile
+    assert "@cd . && python3 scripts/validate_governance_yaml.py" not in makefile
     assert 'session_dir="$${session%/evidence-session.json}"' in makefile
     assert '--evidence-dir "$$session_dir"' in makefile
     assert "--evidence-dir $(BCF_EVIDENCE_DIR)" not in makefile.split("release-check:", 1)[1]

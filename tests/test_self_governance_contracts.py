@@ -15,6 +15,7 @@ from bcf_governance.cli import COMMANDS
 from bcf_governance.tooling.ci_authority_pins import verify_workflow_authority
 from bcf_governance.tooling.ci_github_actions import ACTION_PINS
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
+from bcf_governance.tooling.ci_graph_execution import job_required_environment
 from bcf_governance.tooling.ci_graph_render import check_ci_graph, render_ci_graph
 from bcf_governance.tooling.governance_validation.runner import validate_repo_root
 from bcf_governance.tooling.profile_v2_surfaces import render_v2_makefile
@@ -195,6 +196,26 @@ def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
     assert set(command["required_environment"]) == set(
         _policy()["runner_security"]["trusted_controller_artifact"]
     )
+
+
+def test_every_required_environment_is_validated_once_before_generated_work() -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    rendered = render_ci_graph(REPO_ROOT)
+    observed = 0
+    for workflow in compiled.workflows:
+        projection = yaml.safe_load(rendered[workflow["path"]])
+        for job in workflow["jobs"]:
+            bindings, issues = job_required_environment(
+                compiled.graph, workflow, job, job["executor"]
+            )
+            assert not issues
+            if not bindings:
+                continue
+            observed += 1
+            first = projection["jobs"][job["id"]]["steps"][0]
+            assert first["name"] == "Validate all required environment inputs before work"
+            assert first["env"] == bindings
+    assert observed > 0
 
 
 def test_authority_canary_is_owner_dispatched_and_attempt_deterministic() -> None:

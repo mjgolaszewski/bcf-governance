@@ -8,67 +8,67 @@ governance-truthfulness:
 	$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)
 
 architecture-context-membership:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py architecture-context-membership
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py architecture-context-membership
 
 architecture-cqrs-side:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py architecture-cqrs-side
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py architecture-cqrs-side
 
 architecture-duplication:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py architecture-duplication
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py architecture-duplication
 
 architecture-import-boundaries:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py architecture-import-boundaries
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py architecture-import-boundaries
 
 architecture-layer-membership:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py architecture-layer-membership
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py architecture-layer-membership
 
 architecture-module-size:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py architecture-module-size
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py architecture-module-size
 
 architecture-router-thinness:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py architecture-router-thinness
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py architecture-router-thinness
 
 architecture-test:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py architecture-test
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py architecture-test
 
 contract-test:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py contract-test
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py contract-test
 
 governance-exposure-scan:
-	@cd . && python3 scripts/check_governance_exposure.py --repo-root .
+	@cd . && $(PYTHON) scripts/check_governance_exposure.py --repo-root .
 
 governance-validate:
-	@cd . && python3 scripts/validate_governance_yaml.py --repo-root .
+	@cd . && $(PYTHON) scripts/validate_governance_yaml.py --repo-root .
 
 lint:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py lint
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py lint
 
 runtime-smoke:
-	@cd . && BCF_EXECUTION_PROFILE=production python3 .github/scripts/run_self_governance_gate.py runtime-smoke
+	@cd . && BCF_EXECUTION_PROFILE=production $(PYTHON) .github/scripts/run_self_governance_gate.py runtime-smoke
 
 security-dependency-audit:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py security-dependency-audit
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py security-dependency-audit
 
 security-review:
-	@cd . && BCF_EXECUTION_PROFILE=production python3 .github/scripts/run_self_governance_gate.py security-review
+	@cd . && BCF_EXECUTION_PROFILE=production $(PYTHON) .github/scripts/run_self_governance_gate.py security-review
 
 security-sbom:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py security-sbom
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py security-sbom
 
 security-secret-scan:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py security-secret-scan
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py security-secret-scan
 
 security-vulnerability-scan:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py security-vulnerability-scan
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py security-vulnerability-scan
 
 semantic-ownership:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py semantic-ownership
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py semantic-ownership
 
 test:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py test
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py test
 
 typecheck:
-	@cd . && python3 .github/scripts/run_self_governance_gate.py typecheck
+	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py typecheck
 
 release-check:
 	@mkdir -p $(BCF_EVIDENCE_DIR)

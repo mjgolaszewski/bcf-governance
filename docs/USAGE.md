@@ -32,6 +32,7 @@ Use these commands after changing the graph or a registered extension:
 ```bash
 bcf ci graph lock --repo-root . --apply
 bcf ci graph validate --repo-root .
+bcf ci graph diagnose --repo-root . --format json
 bcf ci graph explain --repo-root . --format json
 bcf ci graph diff --repo-root .
 bcf ci graph render --repo-root . --check
@@ -66,6 +67,13 @@ does not independently run on push. Scheduled controls remain scheduled
 evidence and are not pull-request prerequisites. Hosted jobs are rejected when
 their governed command contains polling, sleeping, leasing, or runner-wait
 operations.
+
+`diagnose` compiles the graph once and reports typed `runner`, `tool`,
+`permission`, `secret`, `event`, and `graph_input` prerequisites with a specific
+remediation. Required environment bindings are composed from the canonical job,
+command, and component contracts. Generated jobs validate the complete set in
+their first step, before checkout or any other work; later steps consume those
+validated bindings rather than restating them.
 
 Contract version is distinct from profile strictness. An absent
 `profile_contract_version` means `1.0`, so installing newer BCF tooling does not
@@ -176,7 +184,7 @@ Adopt a GitHub topology separately and explicitly with
 `bcf ci adopt github`, supplying the reviewed candidate labels, trusted labels,
 producer argv, and either `--check` or `--apply`.
 
-The 0.7.1 controller treats command-line workflow values only as compatibility
+The authority controller treats command-line workflow values only as compatibility
 pins. It reconstructs numeric repository and workflow IDs, the active path,
 trusted workflow bytes, event, run attempt, commit, and tree through the
 provider API. A v1 CI-authority document may omit `admission_workflow`; an
@@ -314,7 +322,7 @@ compatibility `release verify` command remains available, but BCF's governed top
 requires the split operations. The trusted collector recomputes the bindings; a
 candidate-authored pass label is not authority.
 
-BCF 0.7 retains the additive `finalize-callback` and `publish-callback` controller
+BCF retains the additive `finalize-callback` and `publish-callback` controller
 operations for event-driven fan-in. The finalizer always emits one immutable
 callback envelope: a pending envelope contains no candidate artifact, while a
 terminal envelope binds the closed bundle-manifest digest. The publisher
@@ -351,19 +359,33 @@ claim.
 
 ## Upgrade and rescaffold
 
-Normal upgrade refreshes pack-owned runtime and schemas, creates newly required
-artifacts only when absent, and runs the idempotent evidence migration:
+Normal upgrade refreshes pack-owned runtime and schemas and creates required root
+artifacts only when absent:
 
 ```bash
 bcf install --target . --upgrade
 ```
 
-Upgrade preserves the repository's selected profile, contract version, and
-workflow bytes. A conflicting `--profile` or `--profile-contract-version`
+Upgrade preserves the repository's profile, gate contracts, evidence policy,
+CI graph, registered extensions, and all workflow bytes. It does not run a
+contract or evidence migration implicitly. A conflicting `--profile` or `--profile-contract-version`
 fails with direction to use explicit promotion. Use `--reset-options` only
 when intentionally rebuilding profile-derived non-workflow surfaces; it still
-does not change the contract version. Migration may normalize legacy authored terminal state and booleans;
-the original values and hashes remain in a non-authoritative migration report.
+does not change the contract version.
+
+Legacy profile or authority contracts are readable only by the isolated
+migration path. Review every blocker together before applying it:
+
+```bash
+bcf migrate-contract --repo-root . --check --format json
+bcf migrate-contract --repo-root . --apply --format json
+```
+
+Migration fails closed when the current graph, authority pins, or gate controls
+cannot support the active v2 contract. It never invents project-specific graph
+or authority values. Evidence-integrity migration remains a separate explicit
+`bcf migrate-evidence` operation; original values and hashes remain in its
+non-authoritative report.
 
 `--force-rescaffold` is destructive and confirmation-gated. Use it only after
 reviewing cleanup and history retention. BCF has no `--force` escape hatch.
@@ -512,6 +534,7 @@ clears the general artifact root.
 - `bcf exposure-scan`: local-path and private-infrastructure scanning.
 - `bcf scaffold`: phase and hotfix artifact generation.
 - `bcf migrate-evidence`: preview/apply 0.5 state migration.
+- `bcf migrate-contract`: preview/apply isolated legacy contract migration.
 - `bcf ci-cleanup`: dry-run cleanup of exact-label CI resources only.
 - `bcf publish-audit --history`: opt-in redacted scan of reachable Git history.
 

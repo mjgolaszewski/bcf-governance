@@ -1,6 +1,12 @@
 document: {kind: test_tombstone_registry, id: bcf-governance-test-tombstones, version: 1.0.0, status: active, path: governance/test-tombstones.yml}
 schema_version: '1.0'
 entries:
+- removed_node: tests.test_install_governance_pack::test_installer_upgrade_runs_targeted_evidence_migration_without_rewriting_policy
+  removed_in_phase: P15
+  source_commit: 35a2ef915f87209c60b0a95b1dfa85bc094e9d98
+  reason: implicit migration contradicted the frozen upgrade contract and the test preserved behavior that is now prohibited
+  replacement_owner: bcf_governance/tooling/install_governance_pack.py::_upgrade_pack
+  replacement_tests: [tests.test_install_governance_pack::test_installer_upgrade_refreshes_pack_support_files_without_state_reset, tests.test_install_governance_pack::test_upgrade_refreshes_code_without_implicitly_migrating_legacy_state, tests.test_contract_migration::test_legacy_authority_and_graph_are_reported_together]
 - removed_node: tests.test_self_workflow_contracts::test_self_workflow_contract_mutants_fail_at_the_canonical_owner[owner-guard]
   removed_in_phase: P14
   source_commit: c1e1ee27d0f031097ff4c71a7d66409c813deb5b

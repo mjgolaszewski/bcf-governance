@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from .ci_graph_contracts import validate_ci_graph
+from .ci_graph_diagnostics import diagnose_ci_graph
 from .ci_graph_import import check_workflow_inventory, write_workflow_inventory
 from .ci_graph_locks import apply_ci_graph_locks, check_ci_graph_locks
 from .ci_graph_render import apply_ci_graph, check_ci_graph, diff_ci_graph
@@ -17,7 +18,7 @@ def add_graph_parser(
 ) -> None:
     graph = subparsers.add_parser("graph", help="Validate and render the governed CI graph.")
     operations = graph.add_subparsers(dest="graph_operation", required=True)
-    for name in ("validate", "explain", "diff"):
+    for name in ("validate", "diagnose", "explain", "diff"):
         parser = operations.add_parser(name)
         parser.add_argument("--repo-root", type=Path, default=Path.cwd())
         parser.add_argument("--format", choices=("text", "json"), default="text")
@@ -68,6 +69,12 @@ def run_graph_command(args: argparse.Namespace) -> None:
             },
             args.format,
         )
+        return
+    if args.graph_operation == "diagnose":
+        report = diagnose_ci_graph(repo_root)
+        _print(report, args.format)
+        if report["status"] != "pass":
+            raise SystemExit(1)
         return
     if args.graph_operation == "explain":
         compiled = validate_ci_graph(repo_root)

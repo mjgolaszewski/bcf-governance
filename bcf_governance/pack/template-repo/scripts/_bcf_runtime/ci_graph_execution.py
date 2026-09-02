@@ -7,6 +7,7 @@ from typing import Any
 
 _EXPLICIT_EXECUTORS = {"component_sequence", "gate_shard", "terminal_truth"}
 _REPOSITORY_PREFIXES = ("./", ".artifacts/", ".github/", "governance/", "scripts/")
+_ENV_REFERENCE = "${{ env.%s }}"
 
 
 def _strings(value: Any) -> tuple[str, ...]:
@@ -33,12 +34,68 @@ def _command_ids(
     return ()
 
 
+def job_required_environment(
+    graph: dict[str, Any],
+    workflow: dict[str, Any],
+    job: dict[str, Any],
+    executor: dict[str, Any],
+) -> tuple[dict[str, str], tuple[str, ...]]:
+    """Derive each job's required environment once and reject missing/conflicting bindings."""
+
+    inherited = {**workflow.get("environment", {}), **job.get("environment", {})}
+    component_bindings: dict[str, list[str]] = {}
+    if executor["kind"] in _EXPLICIT_EXECUTORS:
+        for component_id in executor["components"]:
+            component = graph["step_components"][component_id]
+            if component["kind"] != "command":
+                continue
+            for name, value in component.get("environment", {}).items():
+                component_bindings.setdefault(name, []).append(value)
+    bindings: dict[str, str] = {}
+    issues: list[str] = []
+    for command_id in _command_ids(graph, executor):
+        command = graph["commands"][command_id]
+        for name in command.get("required_environment", []):
+            candidates = [
+                *component_bindings.get(name, ()),
+                *([command["environment"][name]] if name in command["environment"] else []),
+                *([inherited[name]] if name in inherited else []),
+            ]
+            usable = [
+                value
+                for value in candidates
+                if isinstance(value, str)
+                and value
+                and value != _ENV_REFERENCE % name
+            ]
+            distinct = list(dict.fromkeys(usable))
+            if not distinct:
+                issues.append(
+                    f"CI graph job {job['id']} is missing required environment binding {name}"
+                )
+            elif len(distinct) > 1:
+                issues.append(
+                    f"CI graph job {job['id']} has conflicting required environment binding {name}"
+                )
+            else:
+                bindings[name] = distinct[0]
+    return bindings, tuple(issues)
+
+
 def job_execution_issues(
-    graph: dict[str, Any], job: dict[str, Any], executor: dict[str, Any]
+    graph: dict[str, Any],
+    job: dict[str, Any],
+    executor: dict[str, Any],
+    workflow: dict[str, Any] | None = None,
 ) -> tuple[str, ...]:
     """Return deterministic interpreter and trusted-input contract violations."""
 
     issues: list[str] = []
+    if workflow is not None:
+        _, environment_issues = job_required_environment(
+            graph, workflow, job, executor
+        )
+        issues.extend(environment_issues)
     if executor["kind"] in _EXPLICIT_EXECUTORS:
         python_ready = False
         for component_id in executor["components"]:

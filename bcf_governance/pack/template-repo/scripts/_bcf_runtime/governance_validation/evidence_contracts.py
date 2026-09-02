@@ -4,6 +4,12 @@ from __future__ import annotations
 
 from .common import *  # noqa: F403,F405
 from .phase_artifacts import _validate_document_path
+from ..yaml_mutations import (
+    YAMLMutationPathError,
+    mutation_mode,
+    resolve_yaml_target,
+    typed_mutation_value,
+)
 
 TEST_COMMAND_POLICIES = {
     "automated_tests",
@@ -135,13 +141,20 @@ def _validate_gate_contract_registry(
                 mutation_file = repo_root / mutation_path
                 search = mutation.get("search")
                 yaml_path = mutation.get("yaml_path")
-                text_mode = isinstance(search, str) and bool(search)
-                yaml_mode = isinstance(yaml_path, str) and "value" in mutation
                 if not mutation_file.is_file() or mutation_file.is_symlink():
                     mutation_issues.append(f"{control.get('id')}:missing-path")
-                elif text_mode == yaml_mode:
-                    mutation_issues.append(f"{control.get('id')}:invalid-mutation-mode")
-                elif text_mode:
+                    continue
+                try:
+                    mode = mutation_mode(mutation, suffix=mutation_file.suffix)
+                except YAMLMutationPathError as exc:
+                    issue = (
+                        "untyped-yaml-mutation"
+                        if "byte_level_reason" in str(exc)
+                        else "invalid-mutation-mode"
+                    )
+                    mutation_issues.append(f"{control.get('id')}:{issue}")
+                    continue
+                if mode == "text":
                     occurrences = mutation_file.read_text(encoding="utf-8").count(search)
                     if occurrences != 1:
                         mutation_issues.append(
@@ -152,16 +165,12 @@ def _validate_gate_contract_registry(
                         mutation_file.read_text(encoding="utf-8")
                     )
                     try:
-                        for token in yaml_path.split("."):
-                            current = (
-                                current[int(token)]
-                                if isinstance(current, list)
-                                else current[token]
-                            )
-                    except (KeyError, IndexError, TypeError, ValueError):
+                        value = typed_mutation_value(mutation)
+                        current = resolve_yaml_target(current, yaml_path).value
+                    except YAMLMutationPathError:
                         mutation_issues.append(f"{control.get('id')}:stale-yaml-path")
                     else:
-                        if current == mutation["value"]:
+                        if current == value:
                             mutation_issues.append(
                                 f"{control.get('id')}:already-mutated"
                             )
