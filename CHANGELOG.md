@@ -6,7 +6,18 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `0.8.0`.
+Release target: `1.0.0rc1`.
+
+### Changed
+
+- Recorded immutable `v0.8.0` provider custody after the exact PR, merged-main,
+  scheduled-mutant, release-verifier, collector, and no-rebuild publisher chain passed.
+  The current P14 triplet remains retained until a real successor phase opens.
+
+## [0.8.0] - 2026-09-02
+
+Published as an immutable GitHub release from exact certified merge
+`bf8490777c9ecc90fb0e4a44deadb24d7cb7050a`.
 
 ### Added
 
@@ -115,8 +126,9 @@ Release target: `0.8.0`.
 - Removed secondary self-workflow tests that re-decoded generated workflow fields;
   retained unique trust, authority, release, and integration regressions under
   canonical graph, policy, and controller owners.
-- Made the trusted publisher require `BCF_RELEASE_ADMIN_TOKEN` before resolution or
-  attestation and use it only for final publication. GitHub's workflow token cannot read
+- Made the trusted publisher require `BCF_RELEASE_ADMIN_TOKEN` for final publication
+  while its resolver and attestation steps retain their narrower workflow permissions.
+  GitHub's workflow token cannot read
   repository immutable-release settings; the short-lived credential contract requires
   repository Administration read, Attestations read, and Contents write and requires
   removal after publication.
@@ -467,7 +479,9 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.7.1...v0.8.0
+[0.7.1]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.5.0...v0.6.0

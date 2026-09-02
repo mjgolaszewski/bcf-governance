@@ -70,6 +70,6 @@ release_trains:
     target_version: 0.7.1
     status: completed
     focus: [authority_v1.1, common_admission_membership, closed_release_dependencies, independent_release_byte_verification, immutable_future_release]
-  release_4: {target_version: 0.8.0, status: active, focus: [canonical_consumer_ci_graph, bounded_project_extensions, deterministic_workflow_rendering, standard_v2_reference_graph, identity_no_loss_proof]}
+  release_4: {target_version: 0.8.0, status: completed, focus: [canonical_consumer_ci_graph, bounded_project_extensions, deterministic_workflow_rendering, standard_v2_reference_graph, identity_no_loss_proof, immutable_release]}
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]
