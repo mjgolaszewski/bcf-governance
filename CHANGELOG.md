@@ -36,9 +36,10 @@ Release target: `1.0.0rc1`.
   secrets, events, and graph inputs, plus one mechanically composed first-step
   environment check before checkout or governed work.
 - Added an offline five-cycle BCF/Identity adoption soak that uses disposable
-  clones, preserves Identity's project-owned governance and workflows exactly,
-  requires legacy migration to fail closed with complete blockers, and launches
-  no Actions runs.
+  clones, preserves project-owned governance and workflows exactly, proves
+  pack-owned refresh is idempotent, restores each clone to its exact source,
+  requires Identity legacy migration to fail closed with complete blockers, and
+  launches no Actions runs.
 - Added canonical pre-release version parsing for `a`, `b`, and `rc` packages so
   release inputs, tags, API validation, and GitHub prerelease state share one
   owner.

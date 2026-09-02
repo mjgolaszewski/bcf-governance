@@ -81,9 +81,17 @@ def _changed_paths(repo: Path) -> tuple[str, ...]:
     return tuple(line[3:] for line in values.splitlines() if len(line) > 3)
 
 
-def _identity_change_allowed(path: str) -> bool:
+def _upgrade_change_allowed(path: str) -> bool:
     allowed = (*UPGRADE_REFRESH_PATHS, "schemas", "scripts/_bcf_runtime")
     return any(path == root or path.startswith(root.rstrip("/") + "/") for root in allowed)
+
+
+def _changed_inventory(repo: Path) -> dict[str, str]:
+    inventory: dict[str, str] = {}
+    for relative in _changed_paths(repo):
+        path = repo / relative
+        inventory[relative] = _sha256(path) if path.is_file() and not path.is_symlink() else "absent"
+    return inventory
 
 
 def _reset_temporary_clone(repo: Path) -> None:
@@ -125,11 +133,24 @@ def run_soak(
             if check_ci_graph(bcf).status != "clean":
                 raise RuntimeError(f"BCF graph drift in soak cycle {cycle}")
             _upgrade(python, installer, bcf)
-            if _owned_inventory(bcf) != bcf_owned or _changed_paths(bcf):
-                raise RuntimeError(f"BCF upgrade was not byte-stable in soak cycle {cycle}")
+            if _owned_inventory(bcf) != bcf_owned:
+                raise RuntimeError(f"BCF project-owned bytes changed in soak cycle {cycle}")
+            bcf_changed = _changed_paths(bcf)
+            unexpected = [path for path in bcf_changed if not _upgrade_change_allowed(path)]
+            if unexpected:
+                raise RuntimeError(
+                    f"BCF upgrade touched unexpected paths in cycle {cycle}: {unexpected}"
+                )
+            bcf_refresh = _changed_inventory(bcf)
+            _upgrade(python, installer, bcf)
+            if _changed_inventory(bcf) != bcf_refresh:
+                raise RuntimeError(f"BCF pack refresh was not idempotent in soak cycle {cycle}")
+            if check_ci_graph(bcf).status != "clean":
+                raise RuntimeError(f"BCF graph changed after upgrade in soak cycle {cycle}")
             bcf_migration, _ = plan_contract_migration(bcf)
             if bcf_migration.status != "current":
                 raise RuntimeError(f"BCF contract was not current in soak cycle {cycle}")
+            _reset_temporary_clone(bcf)
 
             identity_owned = _owned_inventory(identity)
             workflow_inventory = inventory_github_workflows(identity)
@@ -139,10 +160,16 @@ def run_soak(
                     f"Identity project-owned bytes changed in soak cycle {cycle}"
                 )
             changed = _changed_paths(identity)
-            unexpected = [path for path in changed if not _identity_change_allowed(path)]
+            unexpected = [path for path in changed if not _upgrade_change_allowed(path)]
             if unexpected:
                 raise RuntimeError(
                     f"Identity upgrade touched unexpected paths in cycle {cycle}: {unexpected}"
+                )
+            identity_refresh = _changed_inventory(identity)
+            _upgrade(python, installer, identity)
+            if _changed_inventory(identity) != identity_refresh:
+                raise RuntimeError(
+                    f"Identity pack refresh was not idempotent in soak cycle {cycle}"
                 )
             identity_migration, _ = plan_contract_migration(identity)
             diagnostics = diagnose_ci_graph(identity)
@@ -154,8 +181,10 @@ def run_soak(
             results.append(
                 {
                     "cycle": cycle,
-                    "bcf_status": "current_byte_stable",
-                    "identity_status": "preserved_fail_closed",
+                    "bcf_status": "project_owned_preserved_pack_refresh_idempotent",
+                    "bcf_refreshed_path_count": len(bcf_changed),
+                    "identity_status": "project_owned_preserved_pack_refresh_idempotent_fail_closed",
+                    "identity_refreshed_path_count": len(changed),
                     "identity_workflow_count": len(workflow_inventory["workflows"]),
                     "identity_migration_blockers": list(identity_migration.blockers),
                     "identity_graph_diagnostic": diagnostics["diagnostics"][0],
