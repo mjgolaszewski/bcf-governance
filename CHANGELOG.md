@@ -19,6 +19,9 @@ Release target: `1.0.2`
 
 ### Changed
 
+<!-- bcf-automation-changelog:1207503211:dependabot:111:8e9868ffdd74cef903d6e8eb0d18fead9d3c7f8a1236c1f3f7a63d6de8c1de2e -->
+- Automated dependency update `dependabot` from PR #111: `.github/workflows/bcf-automation-reconcile.yml`.
+
 - Defined BCF specifically as deterministic error correction for software
   produced by probabilistic AI agents; human-led development is no longer
   described as a design target.
