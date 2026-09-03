@@ -6,7 +6,12 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `1.0.2`
+No unreleased changes.
+
+## [1.0.2] - 2026-09-03
+
+Published as immutable GitHub release `381757666` from exact certified merge
+`0c46175f0b6628721050bbd5b5526f18a61bb886`.
 
 ### Added
 
