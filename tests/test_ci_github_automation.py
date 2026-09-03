@@ -43,7 +43,7 @@ class FakeAutomationAPI:
                 "workflow_id": 101,
                 "repository": {"id": REPOSITORY_ID},
                 "event": "pull_request_target",
-                "head_sha": MAIN,
+                "head_sha": HEAD,
                 "status": "completed",
                 "conclusion": "success",
                 "pull_requests": [{"number": 7}],
@@ -171,6 +171,46 @@ def test_actor_name_spoof_does_not_replace_numeric_authority() -> None:
             admission_run_attempt="1",
         )
     assert api.updated is None
+
+
+def test_admission_binds_candidate_head_separately_from_main_workflow_bytes() -> None:
+    api = FakeAutomationAPI()
+    api.runs["10"]["head_sha"] = "9" * 40
+
+    with pytest.raises(GitHubControllerError, match="expected candidate"):
+        admit_automation_pr(
+            api,
+            repository=REPOSITORY,
+            admission_run_id="10",
+            admission_run_attempt="1",
+        )
+
+
+def test_admission_rejects_pr_that_advances_during_provider_observation() -> None:
+    api = FakeAutomationAPI()
+    calls = 0
+    original = api.pull_request
+
+    def advancing(repository: str, number: object) -> dict[str, object]:
+        nonlocal calls
+        calls += 1
+        result = original(repository, number)
+        if calls == 2:
+            result["head"] = {
+                "sha": "9" * 40,
+                "ref": "dependabot/pip/pytest-9.1",
+                "repo": {"id": REPOSITORY_ID},
+            }
+        return result
+
+    api.pull_request = advancing  # type: ignore[method-assign]
+    with pytest.raises(GitHubControllerError, match="advanced while provider state"):
+        admit_automation_pr(
+            api,
+            repository=REPOSITORY,
+            admission_run_id="10",
+            admission_run_attempt="1",
+        )
 
 
 def test_stale_writer_head_fails_before_blob_construction() -> None:

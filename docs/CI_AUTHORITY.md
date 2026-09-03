@@ -53,7 +53,10 @@ The universal changelog rule also applies to dependency bots and registered
 GitHub Apps. Repositories may explicitly adopt
 `governance/automation-producers.yml`. A metadata-only admission authenticates
 the numeric provider actor, same-repository branch, and mechanically derived
-dependency paths. A separate protected-environment reconciler ignores PR prose,
+dependency paths. Workflow-definition custody is always resolved from current
+default main, while the run subject is separately bound to the provider-resolved
+current PR commit and tree. A stale run head or a PR that advances during API
+observation fails closed. A separate protected-environment reconciler ignores PR prose,
 constructs one fixed changelog entry and idempotence marker, then performs a
 single-parent compare-and-swap ref update without force.
 

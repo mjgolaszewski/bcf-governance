@@ -34,16 +34,28 @@ producers:
   - github-actions
   - python
   allowed_paths:
-  - .github/actions/*/action.yaml
-  - .github/actions/*/action.yml
-  - .github/dependabot.yml
-  - .github/workflows/*.yaml
-  - .github/workflows/*.yml
-  - Pipfile.lock
-  - poetry.lock
+  - .github/workflows/bcf-authority-canary.yml
+  - .github/workflows/bcf-automation-admission.yml
+  - .github/workflows/bcf-automation-reconcile.yml
+  - .github/workflows/bcf-exact-main.yml
+  - .github/workflows/bcf-pr-finalizer.yml
+  - .github/workflows/bcf-pr-status-publisher.yml
+  - .github/workflows/bcf-release-collector.yml
+  - .github/workflows/bcf-release-publisher.yml
+  - .github/workflows/bcf-release-verifier.yml
+  - .github/workflows/bcf-status-publisher.yml
+  - .github/workflows/bcf-trusted-control-bootstrap.yml
+  - .github/workflows/bcf-trusted-control-probe.yml
+  - .github/workflows/bcf-trusted-finalizer.yml
+  - .github/workflows/governance-mutants-nightly.yml
+  - .github/workflows/governance-mutants-weekly.yml
+  - .github/workflows/governance-pack.yml
+  - .github/workflows/governance.yml
+  - .github/workflows/release.yml
+  - bcf_governance/pack/template-repo/requirements-governance.txt
   - pyproject.toml
-  - requirements*.txt
-  - uv.lock
+  - requirements-governance.txt
+  - template-repo/requirements-governance.txt
   controls:
     positive:
     - dependabot-changelog-reconcile

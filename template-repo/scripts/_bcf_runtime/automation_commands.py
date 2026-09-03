@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 from dataclasses import dataclass
 from pathlib import Path
+import subprocess
 from typing import Any
 
 import yaml
@@ -49,6 +50,29 @@ def _dependabot_configuration(repo_root: Path) -> dict[str, Any]:
     return value
 
 
+def _tracked_repository_paths(repo_root: Path) -> tuple[str, ...]:
+    result = subprocess.run(
+        ["git", "-C", str(repo_root), "ls-files", "-z"],
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode:
+        raise AutomationContractError(
+            "Dependabot adoption requires an exact Git-tracked file inventory"
+        )
+    try:
+        values = tuple(
+            sorted(value.decode("utf-8") for value in result.stdout.split(b"\0") if value)
+        )
+    except UnicodeDecodeError as exc:
+        raise AutomationContractError(
+            "Dependabot adoption requires UTF-8 Git-tracked paths"
+        ) from exc
+    if not values:
+        raise AutomationContractError("Dependabot adoption found no Git-tracked files")
+    return values
+
+
 def _desired_dependabot(
     api: GitHubAPI,
     *,
@@ -66,7 +90,20 @@ def _desired_dependabot(
     actor = api.user("dependabot[bot]")
     if actor.get("type") != "Bot" or actor.get("login") != "dependabot[bot]":
         raise AutomationContractError("provider Dependabot identity is not exact")
-    classes, paths = dependabot_allowed_paths(_dependabot_configuration(repo_root))
+    classes, paths = dependabot_allowed_paths(
+        _dependabot_configuration(repo_root),
+        repository_paths=_tracked_repository_paths(repo_root),
+    )
+    unsafe = [
+        path
+        for path in paths
+        if (repo_root / path).is_symlink() or not (repo_root / path).is_file()
+    ]
+    if unsafe:
+        raise AutomationContractError(
+            "Dependabot dependency files must be tracked regular files: "
+            + ", ".join(unsafe)
+        )
     producer = {
         "id": "dependabot",
         "type": "dependabot",

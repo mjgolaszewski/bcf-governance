@@ -8,6 +8,7 @@ from pathlib import PurePosixPath
 import re
 from typing import Any
 
+from .ci_authority_state import CandidateIdentity
 from .ci_github import GithubReferenceError, GithubRunIdentity, authenticate_github_run
 from .ci_github_api import GitHubAPI, GitHubContent
 
@@ -141,8 +142,9 @@ def authenticate_trusted_run(
     expected_workflow_sha256: str | None = None,
     expected_workflow_blob_oid: object | None = None,
     expected_workflow_definition_commit: object | None = None,
+    expected_candidate: CandidateIdentity | None = None,
 ) -> GithubRunIdentity:
-    """Authenticate provider identity without self-embedding workflow digests."""
+    """Authenticate workflow custody and its provider-derived subject separately."""
 
     numeric_run = str(positive_int(run_id, field="trusted run ID"))
     attempt = positive_int(run_attempt, field="trusted run attempt")
@@ -168,6 +170,10 @@ def authenticate_trusted_run(
         expected_sha256=expected_workflow_sha256,
         definition_commit=expected_workflow_definition_commit,
     )
+    subject = expected_candidate or CandidateIdentity(
+        checkout_sha=main.checkout_sha,
+        tree_sha=main.tree_sha,
+    )
     try:
         identity = authenticate_github_run(
             expected_repository_id=main.repository_id,
@@ -180,7 +186,7 @@ def authenticate_trusted_run(
             trusted_workflow_bytes=trusted.content,
             trusted_workflow_blob_oid=trusted.blob_oid,
             trusted_workflow_definition_commit=definition_commit,
-            candidate_tree_sha=main.tree_sha,
+            candidate_tree_sha=subject.tree_sha,
         )
     except GithubReferenceError as exc:
         raise GitHubControllerError(
@@ -189,10 +195,10 @@ def authenticate_trusted_run(
     if (
         identity.run_id != numeric_run
         or identity.run_attempt != attempt
-        or identity.candidate.checkout_sha != main.checkout_sha
-        or identity.candidate.tree_sha != main.tree_sha
+        or identity.candidate != subject
     ):
-        raise GitHubControllerError("trusted run is not bound to current exact main")
+        qualifier = "current exact main" if expected_candidate is None else "expected candidate"
+        raise GitHubControllerError(f"trusted run is not bound to {qualifier}")
     digest = hashlib.sha256(trusted.content).hexdigest()
     if expected_workflow_sha256 is not None:
         if not re.fullmatch(r"[a-f0-9]{64}", expected_workflow_sha256):

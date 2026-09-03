@@ -61,6 +61,12 @@ Release target: `1.0.2`
 - Allowed self-controller rotation to authenticate one complete package producer
   from a partial exact-main admission without relaxing complete-inventory
   requirements for certification.
+- Separated trusted default-main workflow-definition custody from an automation
+  run's provider-resolved PR commit and tree. Admissions now reject stale run
+  heads and PRs that advance while their provider state is being observed.
+- Replaced root-only Dependabot path globs with exact Git-tracked dependency and
+  Actions surfaces derived from every configured update directory, including
+  nested template and packaged projections.
 
 ## [1.0.1] - 2026-09-02
 

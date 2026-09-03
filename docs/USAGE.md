@@ -109,8 +109,10 @@ bcf ci automation adopt github --repo-root . --repository owner/repo \
 bcf ci automation validate --repo-root .
 ```
 
-Adoption derives allowed dependency paths from `.github/dependabot.yml` and
-resolves the actor's numeric provider identity. It does not activate write
+Adoption derives exact allowed paths from `.github/dependabot.yml` and the
+Git-tracked dependency and Actions files under each configured update directory,
+including tracked nested projections. It resolves the actor's numeric provider
+identity and fails when a configured update has no matching tracked files. It does not activate write
 automation on fresh installations. The reconciler ignores titles, bodies, and
 commit messages; it writes one fixed audit entry and never approves or merges.
 

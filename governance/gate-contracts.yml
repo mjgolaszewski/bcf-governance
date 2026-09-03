@@ -749,6 +749,9 @@ gates:
     - {id: local-session-producer-admission-must-fail, mutation: {path: bcf_governance/tooling/evidence_sessions.py, search: '    if producer["kind"] == "local" and producer["producer_id"] not in inventory:', replace: '    if False and producer["kind"] == "local" and producer["producer_id"] not in inventory:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_governance_evidence::test_local_session_rejects_unadmitted_producer_before_allocation']}}
     - {id: protection-ambiguous-ruleset-takeover-must-fail, mutation: {path: bcf_governance/tooling/github_protection.py, search: '    if len(overlaps) > 1:', replace: '    if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_pr_authority::test_protection_rejects_ambiguous_existing_branch_rulesets']}}
     - {id: cold-bootstrap-installed-controller-dependency-must-fail, mutation: {path: bcf_governance/tooling/ci_graph_render.py, search: '            argv.append(''"${{ runner.temp }}/bcf-controller/bin/bcf"'')', replace: '            argv.append(compiled.trusted_controller)'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_self_controller::test_controller_bootstrap_is_cold_start_safe_and_interpreter_owned']}}
+    - {id: automation-run-candidate-binding-must-fail, mutation: {path: bcf_governance/tooling/ci_github_identity.py, search: '        or identity.candidate != subject', replace: '        or False'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_automation::test_admission_binds_candidate_head_separately_from_main_workflow_bytes']}}
+    - {id: automation-provider-observation-race-must-fail, mutation: {path: bcf_governance/tooling/ci_github_automation.py, search: '    if confirmed_pr != pr:', replace: '    if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_automation::test_admission_rejects_pr_that_advances_during_provider_observation']}}
+    - {id: dependabot-tracked-nested-surface-must-fail, mutation: {path: bcf_governance/tooling/automation_contracts.py, search: '    return path if ecosystem == "github-actions" else PurePosixPath(path).name', replace: '    return path'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_automation_changelog::test_dependabot_paths_are_derived_from_update_contract']}}
   typecheck:
     invocation:
       argv: [python3, .github/scripts/run_self_governance_gate.py, typecheck]
@@ -784,16 +787,13 @@ gate_catalog:
   lint: {target: lint, status: required, command_policy: lint, rationale: lint rules are wired before release-check is trusted}
   typecheck: {target: typecheck, status: required, command_policy: typecheck, rationale: static analysis is wired before release-check is trusted}
   test: {target: test, status: required, command_policy: automated_tests, rationale: touched behavior has automated tests}
-  contract_test: {target: contract-test, status: required, command_policy: contract_tests, rationale: public contracts and
-      adapters have explicit checks}
+  contract_test: {target: contract-test, status: required, command_policy: contract_tests, rationale: public contracts and adapters have explicit checks}
   security_secret_scan: {target: security-secret-scan, status: required, command_policy: security_secret_scan, rationale: pushed
       code is scanned for secrets}
-  security_dependency_audit: {target: security-dependency-audit, status: required, command_policy: security_dependency_audit,
-    rationale: dependencies have a vulnerability audit lane}
+  security_dependency_audit: {target: security-dependency-audit, status: required, command_policy: security_dependency_audit, rationale: dependencies have a vulnerability audit lane}
   security_sbom: {target: security-sbom, status: required, command_policy: security_sbom, rationale: production-bound artifacts
       produce an SBOM}
-  security_vulnerability_scan: {target: security-vulnerability-scan, status: required, command_policy: security_vulnerability_scan,
-    rationale: source or image vulnerability scan is wired}
+  security_vulnerability_scan: {target: security-vulnerability-scan, status: required, command_policy: security_vulnerability_scan, rationale: source or image vulnerability scan is wired}
   security_review: {target: security-review, status: required, command_policy: security_review, rationale: canonical review findings and remediation proofs bind to the governed tree}
   runtime_smoke: {target: runtime-smoke, status: required, command_policy: runtime_smoke, rationale: runtime behavior is proven in a declared environment}
   semantic_ownership: {target: semantic-ownership, status: required, command_policy: semantic_ownership, rationale: declared canonical representations have one mechanically enforced owner}
