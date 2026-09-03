@@ -39,6 +39,9 @@ Release target: `1.0.2`
   inventory; the previously confirmed controller remains installed until proof.
 - Confirmed that controller only after both uniquely labelled trusted runners
   independently installed and probed the provider-authenticated artifact.
+- Projected the final generated-workflow exclusion controller from its
+  authenticated exact-main package artifact while retaining the confirmed
+  predecessor until independent installation proof.
 - Confirmed the final protection controller only after both trusted runners
   independently installed and probed the provider-selected artifact.
 - Completed the authored P18 implementation state only after local validation and
