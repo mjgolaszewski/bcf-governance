@@ -55,9 +55,9 @@ Release target: `1.0.2`
 - Made trusted-controller bootstrap work from an empty runner tool cache by
   staging the provider- and checksum-admitted wheel in a run-scoped environment
   before installing the persistent controller with the selected Python.
-- Rotated BCF's own trusted controller target to the exact merged cold-start-safe
-  artifact while retaining the previously proven installation until independent
-  bootstrap and probe confirmation.
+- Rotated BCF's own trusted controller to the exact merged cold-start-safe
+  artifact, retaining the previous installation until independent bootstrap and
+  probe runs mechanically confirmed the replacement on both trusted runners.
 - Allowed self-controller rotation to authenticate one complete package producer
   from a partial exact-main admission without relaxing complete-inventory
   requirements for certification.
