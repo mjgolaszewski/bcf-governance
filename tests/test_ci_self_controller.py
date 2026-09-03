@@ -305,10 +305,8 @@ def test_controller_bootstrap_is_cold_start_safe_and_interpreter_owned(
 
     policy = _copy_self_controller_fixture(tmp_path)
     pin = dict(policy["runner_security"]["trusted_controller_artifact"])
-    proof = dict(policy["runner_security"]["trusted_controller_installation"])
-    proof["installed_commit_sha"] = pin["BCF_BOOTSTRAP_COMMIT_SHA"]
     result = controller.project_self_controller_pin(
-        tmp_path, pin=pin, confirmation=proof, apply=True
+        tmp_path, pin=pin, confirmation=None, apply=True
     )
     assert result.status == "clean"
     workflow = yaml.safe_load(
