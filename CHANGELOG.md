@@ -56,6 +56,12 @@ Release target: `1.0.2`
   controller installation proof; release closure remains mechanically computed.
 - Provisioned the protected-branch-only `bcf-trusted-automation` environment
   before installing the narrowly scoped changelog writer credentials.
+- Replaced the three worker-level required checks with the unique mechanically
+  aggregated `bcf/pr-certification` check after a successful controlled
+  Dependabot canary; strict pull requests and all existing protection boundaries
+  remain active.
+- Deregistered the obsolete persistent Dependabot runner after mechanically
+  confirming that no compiled workflow could select its name or labels.
 
 ### Fixed
 
