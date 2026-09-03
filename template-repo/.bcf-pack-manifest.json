@@ -168,7 +168,7 @@
     },
     "requirements-governance.txt": {
       "operation": "copy",
-      "sha256": "f5c209de8f018f5666d741369172e5e82edb5cee33c97edf8c7f22540f61bcd5"
+      "sha256": "b0cfdd3679ec6a4c88c2c4f8a4c76777e0f18098436fb0658c84629ef0d87cca"
     },
     "schemas/agents.schema.json": {
       "operation": "copy",

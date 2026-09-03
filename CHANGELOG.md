@@ -21,6 +21,9 @@ Release target: `1.0.2`
 
 ### Changed
 
+<!-- bcf-automation-changelog:1207503211:dependabot:112:a590d0c587742f6223acfb2e06e14aa485af8c3b9f8e0301ad24f33d8b722789 -->
+- Automated dependency update `dependabot` from PR #112: `pyproject.toml`, `requirements-governance.txt`, `template-repo/requirements-governance.txt`.
+
 - Defined BCF specifically as deterministic error correction for software
   produced by probabilistic AI agents; human-led development is no longer
   described as a design target.
