@@ -88,6 +88,10 @@ Release target: `1.0.2`
   content-addressed manifest entries from authenticated source blobs. It rejects
   stale baselines, independent output edits, and output-only changes before the
   App creates one multi-path compare-and-swap commit.
+- Made the generated local `release-check` preserve the preflight command's exit
+  status before selecting its session path. A failed front door now stops before
+  evidence capture instead of letting `tail` mask the failure and derive a root
+  output path from an empty session value.
 
 ## [1.0.1] - 2026-09-02
 

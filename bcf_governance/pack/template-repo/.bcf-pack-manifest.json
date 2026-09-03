@@ -692,7 +692,7 @@
     },
     "scripts/_bcf_runtime/profile_v2_surfaces.py": {
       "operation": "copy",
-      "sha256": "f7044d2d013c2f2b716d12dbbfea7a10042ab2c5f36c59148af86bde43f86e4f"
+      "sha256": "609eb294f6d32ff50774624c21ed3da1d4fbe265484c555744d96c634c06178b"
     },
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",
