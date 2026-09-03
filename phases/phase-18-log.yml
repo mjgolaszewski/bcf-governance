@@ -111,7 +111,8 @@ execution_evidence:
     because pull_request_target candidate identity was incorrectly conflated with
     current-main workflow-definition custody; governance 33701082380 and package
     33701082414 stopped at their cheap changelog front doors
-  - offline replay against the authenticated PR then exposed the complete related
+  - >-
+    offline replay against the authenticated PR then exposed the complete related
     path class: Dependabot may update tracked nested dependency projections, so
     adoption now derives exact ecosystem files from Git rather than root-only globs
   notes:
