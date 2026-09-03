@@ -752,6 +752,7 @@ gates:
     - {id: automation-run-candidate-binding-must-fail, mutation: {path: bcf_governance/tooling/ci_github_identity.py, search: '        or identity.candidate != subject', replace: '        or False'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_automation::test_admission_binds_candidate_head_separately_from_main_workflow_bytes']}}
     - {id: automation-provider-observation-race-must-fail, mutation: {path: bcf_governance/tooling/ci_github_automation.py, search: '    if confirmed_pr != pr:', replace: '    if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_automation::test_admission_rejects_pr_that_advances_during_provider_observation']}}
     - {id: dependabot-tracked-nested-surface-must-fail, mutation: {path: bcf_governance/tooling/automation_contracts.py, search: '    return path if ecosystem == "github-actions" else PurePosixPath(path).name', replace: '    return path'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_automation_changelog::test_dependabot_paths_are_derived_from_update_contract']}}
+    - {id: dependabot-rendered-workflow-exclusion-must-fail, mutation: {path: bcf_governance/tooling/automation_commands.py, search: '        if first_line == GENERATED_HEADER:', replace: '        if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_automation_changelog::test_dependabot_adoption_rejects_renderer_owned_only_action_surface']}}
   typecheck:
     invocation:
       argv: [python3, .github/scripts/run_self_governance_gate.py, typecheck]
@@ -788,8 +789,7 @@ gate_catalog:
   typecheck: {target: typecheck, status: required, command_policy: typecheck, rationale: static analysis is wired before release-check is trusted}
   test: {target: test, status: required, command_policy: automated_tests, rationale: touched behavior has automated tests}
   contract_test: {target: contract-test, status: required, command_policy: contract_tests, rationale: public contracts and adapters have explicit checks}
-  security_secret_scan: {target: security-secret-scan, status: required, command_policy: security_secret_scan, rationale: pushed
-      code is scanned for secrets}
+  security_secret_scan: {target: security-secret-scan, status: required, command_policy: security_secret_scan, rationale: pushed code is scanned for secrets}
   security_dependency_audit: {target: security-dependency-audit, status: required, command_policy: security_dependency_audit, rationale: dependencies have a vulnerability audit lane}
   security_sbom: {target: security-sbom, status: required, command_policy: security_sbom, rationale: production-bound artifacts
       produce an SBOM}

@@ -70,8 +70,12 @@ Release target: `1.0.2`
   run's provider-resolved PR commit and tree. Admissions now reject stale run
   heads and PRs that advance while their provider state is being observed.
 - Replaced root-only Dependabot path globs with exact Git-tracked dependency and
-  Actions surfaces derived from every configured update directory, including
-  nested template and packaged projections.
+  eligible project-owned Actions surfaces derived from every configured update
+  directory, including nested template and packaged projections.
+- Excluded renderer-owned workflow bytes from Dependabot producer scope and made
+  adoption reject an Actions updater with no project-owned surface. BCF now uses
+  Dependabot only for Python inputs; action pins remain canonical source changes
+  followed by mechanical rendering and authority pinning.
 
 ## [1.0.1] - 2026-09-02
 

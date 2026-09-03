@@ -143,6 +143,12 @@ non-force compare-and-swap commit. PR prose and operator-supplied identities
 are not authority. The changelog writer cannot approve, merge, or publish the
 reserved PR certification check.
 
+Do not configure native Dependabot to edit BCF-rendered workflow files. The
+adopter excludes files bearing the exact generated-workflow provenance header
+and rejects an Actions ecosystem with no remaining project-owned surface. Change
+the canonical action-pin source, render the graph, commit those workflow bytes,
+and derive their authority pins in a following commit instead.
+
 Run the editorial contract after changing prose or examples:
 
 ```bash

@@ -109,12 +109,17 @@ bcf ci automation adopt github --repo-root . --repository owner/repo \
 bcf ci automation validate --repo-root .
 ```
 
-Adoption derives exact allowed paths from `.github/dependabot.yml` and the
-Git-tracked dependency and Actions files under each configured update directory,
-including tracked nested projections. It resolves the actor's numeric provider
-identity and fails when a configured update has no matching tracked files. It does not activate write
-automation on fresh installations. The reconciler ignores titles, bodies, and
-commit messages; it writes one fixed audit entry and never approves or merges.
+Adoption derives exact allowed paths from `.github/dependabot.yml` and eligible
+Git-tracked dependency files under each configured update directory, including
+tracked nested projections. Renderer-owned workflow files are mechanically
+excluded: native Dependabot cannot update generated workflow bytes because their
+canonical action pins must change first and the workflows must then be rendered
+and pinned from committed source. An Actions update with no project-owned action
+surface fails adoption with that diagnostic. BCF itself therefore enables only
+the `pip` updater. Adoption resolves the actor's numeric provider identity and
+does not activate write automation on fresh installations. The reconciler ignores
+titles, bodies, and commit messages; it writes one fixed audit entry and never
+approves or merges.
 
 After one current controlled automation canary has published the declared
 aggregate check, inspect and apply provider protection mechanically:
