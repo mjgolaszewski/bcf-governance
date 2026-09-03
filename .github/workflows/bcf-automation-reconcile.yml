@@ -21,7 +21,7 @@ jobs:
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
       with: {python-version: '3.12'}
     - name: Mint one repository-scoped changelog writer token
-      uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
+      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
       with: {app-id: '${{ vars.BCF_AUTOMATION_APP_ID }}', private-key: '${{ secrets.BCF_AUTOMATION_APP_PRIVATE_KEY }}', owner: '${{ github.repository_owner }}', repositories: '${{ github.event.repository.name }}', permission-contents: write}
       id: automation-app-token
     - name: Reconstruct provider state and compare-and-swap the fixed changelog entry
