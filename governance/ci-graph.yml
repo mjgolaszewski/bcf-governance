@@ -8,7 +8,7 @@ value_sources:
   self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 77a5185bf9322476c2110e8f77ea6a7f11aed362813c71c6deca03c9598df89f}
   release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: e22ff1bf31b25e4309b61e27f51158fc6fa8a29786d7367db3acddbc326de408}
   protection-contract: {kind: yaml, path: governance/github-protection.yml, sha256: 9bab9055ec8b52113a593fbc08c8931ea494a53f9af9e19b3eb3f3789c1efaa7}
-  automation-contract: {kind: yaml, path: governance/automation-producers.yml, sha256: 0e68210fe3bc802e134b2aa0207c9da09a15ab842bdf87e270baf3fddc7d6841}
+  automation-contract: {kind: yaml, path: governance/automation-producers.yml, sha256: 5a5f49cf5fc488b2c903a275a48c07f631a10123e22b41b1576aa1d983d3c477}
 extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]
 extensions:
 - {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: e735825595374b594c7f40375a68208f3e8f031329ab9cdce6783db4a20e3d4a}

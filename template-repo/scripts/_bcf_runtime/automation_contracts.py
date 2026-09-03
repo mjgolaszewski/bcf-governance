@@ -146,7 +146,10 @@ def _dependabot_match_subject(path: str, ecosystem: object) -> str:
 
 
 def dependabot_allowed_paths(
-    configuration: dict[str, Any], *, repository_paths: tuple[str, ...]
+    configuration: dict[str, Any],
+    *,
+    repository_paths: tuple[str, ...],
+    excluded_paths: tuple[str, ...] = (),
 ) -> tuple[tuple[str, ...], tuple[str, ...]]:
     """Derive exact tracked dependency surfaces from dependabot.yml and Git."""
 
@@ -156,6 +159,11 @@ def dependabot_allowed_paths(
     tracked = tuple(sorted({_safe_path(value) for value in repository_paths}))
     if len(tracked) != len(repository_paths):
         raise AutomationContractError("Git-tracked path inventory contains duplicates")
+    excluded = {_safe_path(value) for value in excluded_paths}
+    if len(excluded) != len(excluded_paths) or not excluded.issubset(tracked):
+        raise AutomationContractError(
+            "Dependabot excluded paths must be a duplicate-free tracked subset"
+        )
     paths: set[str] = set()
     classes: set[str] = set()
     ecosystem_patterns = {
@@ -186,9 +194,11 @@ def dependabot_allowed_paths(
                 for name in names
             )
         }
+        matches.difference_update(excluded)
         if not matches:
             raise AutomationContractError(
-                f"Dependabot {ecosystem} update at {directory} has no tracked dependency files"
+                f"Dependabot {ecosystem} update at {directory} has no eligible tracked "
+                "dependency files after mechanical exclusions"
             )
         paths.update(matches)
     return tuple(sorted(classes)), tuple(sorted(paths))

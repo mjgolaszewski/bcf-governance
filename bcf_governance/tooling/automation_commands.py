@@ -17,6 +17,7 @@ from .automation_contracts import (
     load_automation_registry,
 )
 from .ci_github_api import GitHubAPI
+from .ci_graph_render import GENERATED_HEADER
 from .governance_install.transaction import apply_transaction
 
 
@@ -73,6 +74,26 @@ def _tracked_repository_paths(repo_root: Path) -> tuple[str, ...]:
     return values
 
 
+def _renderer_owned_paths(
+    repo_root: Path, repository_paths: tuple[str, ...]
+) -> tuple[str, ...]:
+    owned: list[str] = []
+    for relative in repository_paths:
+        if not relative.startswith(".github/"):
+            continue
+        path = repo_root / relative
+        if path.is_symlink() or not path.is_file():
+            continue
+        try:
+            with path.open(encoding="utf-8") as stream:
+                first_line = stream.readline().rstrip("\n")
+        except (OSError, UnicodeDecodeError):
+            continue
+        if first_line == GENERATED_HEADER:
+            owned.append(relative)
+    return tuple(owned)
+
+
 def _desired_dependabot(
     api: GitHubAPI,
     *,
@@ -90,9 +111,11 @@ def _desired_dependabot(
     actor = api.user("dependabot[bot]")
     if actor.get("type") != "Bot" or actor.get("login") != "dependabot[bot]":
         raise AutomationContractError("provider Dependabot identity is not exact")
+    tracked_paths = _tracked_repository_paths(repo_root)
     classes, paths = dependabot_allowed_paths(
         _dependabot_configuration(repo_root),
-        repository_paths=_tracked_repository_paths(repo_root),
+        repository_paths=tracked_paths,
+        excluded_paths=_renderer_owned_paths(repo_root, tracked_paths),
     )
     unsafe = [
         path

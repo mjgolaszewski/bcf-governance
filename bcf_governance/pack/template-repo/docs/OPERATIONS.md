@@ -78,9 +78,13 @@ Automation PRs remain subject to the same rule. A repository may explicitly
 adopt a trusted producer with `bcf ci automation adopt github --producer
 dependabot --check|--apply` after provisioning the bounded contents-write App
 and protected environment. Adoption derives exact allowed paths from the
-Dependabot configuration and Git-tracked dependency and Actions files. Fresh
-installs do not activate write automation. The reconciler uses authenticated numeric identity and dependency paths to
-write fixed text; it does not use PR prose and cannot approve or merge.
+Dependabot configuration and eligible Git-tracked dependency files. Files with
+the exact BCF generated-workflow provenance header are excluded because action
+pins must be changed in their canonical source and rendered mechanically. An
+Actions update with no project-owned surface fails adoption. Fresh installs do
+not activate write automation. The reconciler uses authenticated numeric identity
+and dependency paths to write fixed text; it does not use PR prose and cannot
+approve or merge.
 
 Before opening a pull request, reproduce its exact remote context:
 
