@@ -34,6 +34,7 @@ workitems:
   summary: deliver README positioning correction and immutable 1.0.2 release inputs
   acceptance:
   - README positioning correction and immutable 1.0.2 release inputs_is_complete
+  - source archive contains the complete Git-tracked source inventory before upload
   acceptance_evidence:
   - test
   - contract-test

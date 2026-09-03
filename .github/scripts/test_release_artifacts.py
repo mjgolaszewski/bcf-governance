@@ -19,11 +19,15 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
+SCRIPT_ROOT = Path(__file__).resolve().parent
+if str(SCRIPT_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_ROOT))
 
 from bcf_governance.tooling.release_runtime_verification import (
     SDIST_CUSTODY_COMMIT_MESSAGE,
     SDIST_PORTABLE_TEST_ENV,
 )
+from release_source_inventory import validate_sdist_source_inventory
 
 
 REQUIRED_SDIST_PATHS = (
@@ -47,6 +51,7 @@ REQUIRED_SDIST_PATHS = (
     "tests/fixtures",
 )
 REQUIRED_SDIST_FILES = (
+    ".github/dependabot.yml",
     "AGENTS.yml",
     "CHANGELOG.md",
     "docs/ARCHITECTURE.md",
@@ -67,6 +72,10 @@ REQUIRED_SDIST_FILES = (
     "release/wheelhouse-manifest.yml",
 )
 ALLOWED_SDIST_CUSTODY_SKIPS = {
+    (
+        "tests.test_release_artifacts",
+        "test_built_sdist_contains_every_governed_source_file",
+    ),
     (
         "tests.test_profile_contract_v2",
         "test_bcf_standard_v2_promotion_fits_declared_context_budgets",
@@ -300,6 +309,7 @@ def verify_wheel(wheel: Path, temporary: Path, source_root: Path) -> None:
 
 
 def verify_sdist(sdist: Path, temporary: Path) -> None:
+    validate_sdist_source_inventory(REPO_ROOT, sdist)
     source = temporary / "sdist-source"
     source.mkdir()
     with tarfile.open(sdist, "r:gz") as archive:

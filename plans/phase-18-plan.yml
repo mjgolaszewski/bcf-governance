@@ -38,6 +38,9 @@ scope_lock:
 - order: 1
   statement: keep the phase narrowly scoped to declared deliverables and update canonical
     governed artifacts in the same change
+- order: 2
+  statement: build and compare the source archive with the complete Git-tracked source
+    inventory before release bytes leave the candidate build job
 verification_plan:
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
 - .venv/bin/python -m pytest -q tests
