@@ -86,6 +86,12 @@ not activate write automation. The reconciler uses authenticated numeric identit
 and dependency paths to write fixed text; it does not use PR prose and cannot
 approve or merge.
 
+If a dependency input owns generated copies, register bounded
+`mechanical_projections` for its exact-copy targets and SHA-256 manifest entries.
+The trusted reconciler verifies and derives those bytes from authenticated Git
+objects in the same changelog commit without running candidate code. Repeated
+Dependabot adoption preserves this project-owned configuration.
+
 Before opening a pull request, reproduce its exact remote context:
 
 ```bash

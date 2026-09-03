@@ -94,6 +94,29 @@ def _renderer_owned_paths(
     return tuple(owned)
 
 
+def _projected_output_paths(current: dict[str, Any] | None) -> tuple[str, ...]:
+    if current is None:
+        return ()
+    producer = next(
+        (item for item in current["producers"] if item["id"] == "dependabot"),
+        None,
+    )
+    if producer is None:
+        return ()
+    return tuple(
+        sorted(
+            {
+                str(path)
+                for projection in producer.get("mechanical_projections", [])
+                for path in (
+                    *projection["exact_copy_targets"],
+                    *(item["manifest_path"] for item in projection["sha256_manifest_entries"]),
+                )
+            }
+        )
+    )
+
+
 def _desired_dependabot(
     api: GitHubAPI,
     *,
@@ -112,10 +135,17 @@ def _desired_dependabot(
     if actor.get("type") != "Bot" or actor.get("login") != "dependabot[bot]":
         raise AutomationContractError("provider Dependabot identity is not exact")
     tracked_paths = _tracked_repository_paths(repo_root)
+    projection_outputs = _projected_output_paths(current)
     classes, paths = dependabot_allowed_paths(
         _dependabot_configuration(repo_root),
         repository_paths=tracked_paths,
-        excluded_paths=_renderer_owned_paths(repo_root, tracked_paths),
+        excluded_paths=tuple(
+            sorted(
+                set(_renderer_owned_paths(repo_root, tracked_paths)).union(
+                    projection_outputs
+                )
+            )
+        ),
     )
     unsafe = [
         path
@@ -144,6 +174,15 @@ def _desired_dependabot(
             "cleanup": ["trusted-automation-no-persistent-workspace"],
         },
     }
+    if current is not None:
+        prior = next(
+            (item for item in current["producers"] if item["id"] == "dependabot"),
+            None,
+        )
+        if prior is not None and prior.get("mechanical_projections"):
+            producer["mechanical_projections"] = copy.deepcopy(
+                prior["mechanical_projections"]
+            )
     desired = copy.deepcopy(current) if current is not None else {
         "document": {
             "kind": "automation_producer_registry",

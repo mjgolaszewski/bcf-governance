@@ -699,13 +699,7 @@ gates:
         exit_codes: [1]
         stream: stderr
         regex: downstream_normalization
-    - id: local-pr-context-owner-must-fail
-      mutation: {path: governance/canonical-representations.yml, yaml_path: 'representations[semantic_id=governance.local-pr-context.v1].authorized_constructors_and_factories', value: [bcf_governance/tooling/missing.py::owner]}
-      oracle:
-        kind: diagnostic
-        exit_codes: [1]
-        stream: stderr
-        regex: governance.local-pr-context.v1 owner must be an authorized constructor
+    - {id: local-pr-context-owner-must-fail, mutation: {path: governance/canonical-representations.yml, yaml_path: 'representations[semantic_id=governance.local-pr-context.v1].authorized_constructors_and_factories', value: [bcf_governance/tooling/missing.py::owner]}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: governance.local-pr-context.v1 owner must be an authorized constructor}}
     - id: runtime-capacity-owner-must-fail
       mutation: {path: governance/canonical-representations.yml, yaml_path: 'representations[semantic_id=governance.runtime-capacity-decision.v1].authorized_constructors_and_factories', value: [bcf_governance/tooling/missing.py::owner]}
       oracle:
@@ -753,6 +747,10 @@ gates:
     - {id: automation-provider-observation-race-must-fail, mutation: {path: bcf_governance/tooling/ci_github_automation.py, search: '    if confirmed_pr != pr:', replace: '    if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_automation::test_admission_rejects_pr_that_advances_during_provider_observation']}}
     - {id: dependabot-tracked-nested-surface-must-fail, mutation: {path: bcf_governance/tooling/automation_contracts.py, search: '    return path if ecosystem == "github-actions" else PurePosixPath(path).name', replace: '    return path'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_automation_changelog::test_dependabot_paths_are_derived_from_update_contract']}}
     - {id: dependabot-rendered-workflow-exclusion-must-fail, mutation: {path: bcf_governance/tooling/automation_commands.py, search: '        if first_line == GENERATED_HEADER:', replace: '        if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_automation_changelog::test_dependabot_adoption_rejects_renderer_owned_only_action_surface']}}
+    - {id: automation-derived-copy-must-fail, mutation: {path: bcf_governance/tooling/automation_projections.py, search: '            if candidate_target != candidate_source:', replace: '            if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_automation_projections::test_projection_repairs_exact_copy_and_both_manifests']}}
+    - {id: automation-source-less-output-must-fail, mutation: {path: bcf_governance/tooling/automation_projections.py, search: '        if source_path not in changed_sources:', replace: '        if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_automation_projections::test_projection_rejects_independent_or_source_less_outputs']}}
+    - {id: automation-manifest-forgery-must-fail, mutation: {path: bcf_governance/tooling/automation_projections.py, search: '            if candidate != baseline and candidate != expected:', replace: '            if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_automation_projections::test_projection_rejects_stale_baseline_or_unrelated_manifest_change']}}
+    - {id: release-front-door-pipeline-must-fail, mutation: {path: bcf_governance/tooling/profile_v2_surfaces.py, search: '--format text)\" || exit $$?;', replace: '--format text)\";'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_profile_contract_v2::test_v2_release_check_stops_at_a_failed_preflight']}}
   typecheck:
     invocation:
       argv: [python3, .github/scripts/run_self_governance_gate.py, typecheck]

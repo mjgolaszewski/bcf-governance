@@ -116,6 +116,30 @@ def test_numeric_identity_and_paths_are_both_authoritative() -> None:
         changed_paths=("CHANGELOG.md", "requirements-governance.txt"),
     )
     assert match.dependency_paths == ("requirements-governance.txt",)
+    assert match.projection_output_paths == ()
+    projected = select_producer(
+        registry,
+        repository="mjgolaszewski/bcf-governance",
+        repository_id=1207503211,
+        actor_id=49699333,
+        actor_login="dependabot[bot]",
+        head_repository_id=1207503211,
+        head_branch="dependabot/pip/pytest-9.1",
+        changed_paths=(
+            "bcf_governance/pack/template-repo/.bcf-pack-manifest.json",
+            "bcf_governance/pack/template-repo/requirements-governance.txt",
+            "template-repo/.bcf-pack-manifest.json",
+            "template-repo/requirements-governance.txt",
+        ),
+    )
+    assert projected.dependency_paths == (
+        "template-repo/requirements-governance.txt",
+    )
+    assert projected.projection_output_paths == (
+        "bcf_governance/pack/template-repo/.bcf-pack-manifest.json",
+        "bcf_governance/pack/template-repo/requirements-governance.txt",
+        "template-repo/.bcf-pack-manifest.json",
+    )
     for mutation, message in (
         ({"actor_id": 1}, "numeric actor"),
         ({"actor_login": "dependabot"}, "actor login"),

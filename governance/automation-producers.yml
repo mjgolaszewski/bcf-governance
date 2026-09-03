@@ -33,10 +33,20 @@ producers:
   dependency_change_classes:
   - python
   allowed_paths:
-  - bcf_governance/pack/template-repo/requirements-governance.txt
   - pyproject.toml
   - requirements-governance.txt
   - template-repo/requirements-governance.txt
+  mechanical_projections:
+  - id: template-requirements-pack-copy
+    kind: exact_copy_with_sha256_manifests
+    source_path: template-repo/requirements-governance.txt
+    exact_copy_targets:
+    - bcf_governance/pack/template-repo/requirements-governance.txt
+    sha256_manifest_entries:
+    - manifest_path: template-repo/.bcf-pack-manifest.json
+      entry_path: requirements-governance.txt
+    - manifest_path: bcf_governance/pack/template-repo/.bcf-pack-manifest.json
+      entry_path: requirements-governance.txt
   controls:
     positive:
     - dependabot-changelog-reconcile

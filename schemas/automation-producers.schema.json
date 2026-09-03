@@ -53,6 +53,40 @@
   },
   "$defs": {
     "safePathPattern": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9*?._/{}!\\[\\]-]+$"},
+    "literalPath": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/@+-]+$"},
+    "sha256ManifestEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifest_path", "entry_path"],
+      "properties": {
+        "manifest_path": {"$ref": "#/$defs/literalPath"},
+        "entry_path": {"$ref": "#/$defs/literalPath"}
+      }
+    },
+    "mechanicalProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "source_path", "exact_copy_targets", "sha256_manifest_entries"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+        "kind": {"const": "exact_copy_with_sha256_manifests"},
+        "source_path": {"$ref": "#/$defs/literalPath"},
+        "exact_copy_targets": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/literalPath"}
+        },
+        "sha256_manifest_entries": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/sha256ManifestEntry"}
+        }
+      }
+    },
     "controls": {
       "type": "object",
       "additionalProperties": false,
@@ -79,6 +113,13 @@
         "branch_patterns": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/safePathPattern"}},
         "dependency_change_classes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["python", "github-actions", "npm", "docker"]}},
         "allowed_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/safePathPattern"}},
+        "mechanical_projections": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/mechanicalProjection"}
+        },
         "controls": {"$ref": "#/$defs/controls"}
       },
       "allOf": [

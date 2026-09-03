@@ -14,6 +14,7 @@ from .automation_contracts import (
     load_automation_registry_bytes,
     select_producer,
 )
+from .automation_projections import project_automation_outputs
 from .ci_github_api import GitHubAPI
 from .ci_github_authority import packaged_repo_root
 from .ci_authority_state import CandidateIdentity
@@ -75,7 +76,7 @@ def _pr_identity(pr: dict[str, Any]) -> dict[str, Any]:
 
 def _changed_inventory(
     files: tuple[dict[str, Any], ...], *, changelog_path: str
-) -> tuple[tuple[str, ...], str]:
+) -> tuple[tuple[str, str, str], ...]:
     normalized: list[tuple[str, str, str]] = []
     for item in files:
         if item.get("status") not in {"added", "modified", "removed"} or item.get("previous_filename") is not None:
@@ -86,11 +87,21 @@ def _changed_inventory(
     if len(normalized) != len(set(normalized)):
         raise AutomationContractError("provider returned duplicate changed-file records")
     normalized.sort()
-    governed_source = [item for item in normalized if item[0] != changelog_path]
-    if not governed_source:
+    if not any(item[0] != changelog_path for item in normalized):
         raise AutomationContractError("automation PR contains no dependency source state")
-    raw = json.dumps(governed_source, separators=(",", ":")).encode()
-    return tuple(item[0] for item in normalized), hashlib.sha256(raw).hexdigest()
+    return tuple(normalized)
+
+
+def _source_state(
+    inventory: tuple[tuple[str, str, str], ...], dependency_paths: tuple[str, ...]
+) -> str:
+    selected = tuple(item for item in inventory if item[0] in dependency_paths)
+    if tuple(item[0] for item in selected) != dependency_paths:
+        raise AutomationContractError(
+            "automation dependency inventory does not match its selected source paths"
+        )
+    raw = json.dumps(selected, separators=(",", ":")).encode()
+    return hashlib.sha256(raw).hexdigest()
 
 
 def _authenticated_match(
@@ -110,10 +121,11 @@ def _authenticated_match(
         raise GitHubControllerError(
             "automation pull request advanced while provider state was observed"
         )
-    changed_paths, source_state = _changed_inventory(
+    inventory = _changed_inventory(
         files,
         changelog_path=str(registry["policy"]["changelog_path"]),
     )
+    changed_paths = tuple(item[0] for item in inventory)
     match = select_producer(
         registry,
         repository=repository,
@@ -124,7 +136,7 @@ def _authenticated_match(
         head_branch=pr["head_branch"],
         changed_paths=changed_paths,
     )
-    return pr, match, source_state
+    return pr, match, _source_state(inventory, match.dependency_paths)
 
 
 def _candidate_identity(
@@ -289,7 +301,17 @@ def reconcile_automation_changelog(
         "dependency_paths": list(match.dependency_paths),
         "marker": projection.marker,
     }
-    if not projection.changed:
+    generated = project_automation_outputs(
+        observer,
+        repository=repository,
+        main_sha=main.checkout_sha,
+        candidate_sha=pr["head_sha"],
+        match=match,
+    )
+    writes = dict(generated)
+    if projection.changed:
+        writes[changelog_path] = projection.content
+    if not writes:
         return {"status": "unchanged", **common, "commit": pr["head_sha"]}
     writer_repo = writer.repository(repository)
     if positive_int(writer_repo.get("id"), field="writer repository ID") != repository_id:
@@ -303,9 +325,12 @@ def reconcile_automation_changelog(
     if not isinstance(tree, dict):
         raise GitHubControllerError("automation source tree is missing")
     base_tree = exact_sha(tree.get("sha"), field="automation source tree SHA")
-    blob = writer.create_blob(repository, projection.content)
-    projected_tree = writer.create_tree(
-        repository, base_tree=base_tree, path=changelog_path, blob_sha=blob
+    blobs = tuple(
+        (path, writer.create_blob(repository, content))
+        for path, content in sorted(writes.items())
+    )
+    projected_tree = writer.create_tree_entries(
+        repository, base_tree=base_tree, entries=blobs
     )
     new_commit = writer.create_commit(
         repository,
@@ -321,4 +346,9 @@ def reconcile_automation_changelog(
     )
     if not re.fullmatch(r"[a-f0-9]{40}", new_commit):
         raise GitHubControllerError("writer returned an invalid commit identity")
-    return {"status": "committed", **common, "commit": new_commit}
+    return {
+        "status": "committed",
+        **common,
+        "mechanical_outputs": sorted(generated),
+        "commit": new_commit,
+    }

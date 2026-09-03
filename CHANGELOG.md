@@ -14,6 +14,8 @@ Release target: `1.0.2`
   Dependabot scope from provider identity and `.github/dependabot.yml`, then
   writes one fixed, idempotent changelog entry through a contents-only GitHub
   App using a non-force compare-and-swap commit.
+- Added bounded mechanical projection declarations for dependency inputs whose
+  exact copies and SHA-256 manifests are repository-owned generated surfaces.
 - Added exact-head PR aggregation and the reserved `bcf/pr-certification`
   publisher, plus a complete declarative provider-protection contract.
 
@@ -76,11 +78,20 @@ Release target: `1.0.2`
   heads and PRs that advance while their provider state is being observed.
 - Replaced root-only Dependabot path globs with exact Git-tracked dependency and
   eligible project-owned Actions surfaces derived from every configured update
-  directory, including nested template and packaged projections.
+  directory. Generated dependency copies and their hashes are outputs rather
+  than independently accepted source changes.
 - Excluded renderer-owned workflow bytes from Dependabot producer scope and made
   adoption reject an Actions updater with no project-owned surface. BCF now uses
   Dependabot only for Python inputs; action pins remain canonical source changes
   followed by mechanical rendering and authority pinning.
+- Made the trusted reconciler derive declared exact-copy dependency surfaces and
+  content-addressed manifest entries from authenticated source blobs. It rejects
+  stale baselines, independent output edits, and output-only changes before the
+  App creates one multi-path compare-and-swap commit.
+- Made the generated local `release-check` preserve the preflight command's exit
+  status before selecting its session path. A failed front door now stops before
+  evidence capture instead of letting `tail` mask the failure and derive a root
+  output path from an empty session value.
 
 ## [1.0.1] - 2026-09-02
 

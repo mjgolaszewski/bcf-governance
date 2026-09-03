@@ -117,12 +117,17 @@ class FakeAutomationAPI:
         self.created_content = content
         return CREATED_BLOB
 
-    def create_tree(self, repository: str, *, base_tree: str, path: str, blob_sha: str) -> str:
-        assert (repository, base_tree, path, blob_sha) == (
+    def create_tree_entries(
+        self,
+        repository: str,
+        *,
+        base_tree: str,
+        entries: tuple[tuple[str, str], ...],
+    ) -> str:
+        assert (repository, base_tree, entries) == (
             REPOSITORY,
             HEAD_TREE,
-            "CHANGELOG.md",
-            CREATED_BLOB,
+            (("CHANGELOG.md", CREATED_BLOB),),
         )
         return CREATED_TREE
 

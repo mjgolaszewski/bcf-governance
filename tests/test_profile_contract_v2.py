@@ -177,6 +177,9 @@ def test_v2_surfaces_bind_one_session_and_do_not_wait() -> None:
     workflow = yaml.safe_load(workflow_text)
 
     assert "scripts/preflight_governance.py" in makefile
+    assert 'preflight_output="$$($(PYTHON) scripts/preflight_governance.py' in makefile
+    assert '--format text)" || exit $$?' in makefile
+    assert 'test -n "$$session" && test -f "$$session"' in makefile
     assert "@cd . && $(PYTHON) scripts/validate_governance_yaml.py" in makefile
     assert "@cd . && python3 scripts/validate_governance_yaml.py" not in makefile
     assert 'session_dir="$${session%/evidence-session.json}"' in makefile
@@ -191,6 +194,57 @@ def test_v2_surfaces_bind_one_session_and_do_not_wait() -> None:
     assert "persist-credentials: false" in workflow_text
     assert "merge-multiple: true" not in workflow_text
     assert not any(value in workflow_text for value in ("sleep ", "poll", "while "))
+
+
+def test_v2_release_check_stops_at_a_failed_preflight(tmp_path: Path) -> None:
+    contract = {
+        "profile_contract_version": "2.0",
+        "gates": {
+            "governance-validate": {
+                "invocation": {
+                    "argv": ["python3", "scripts/validate_governance_yaml.py"],
+                    "cwd": ".",
+                    "env": {},
+                }
+            }
+        },
+    }
+    (tmp_path / "Makefile.fragment").write_text(
+        render_v2_makefile(contract), encoding="utf-8"
+    )
+    fake_python = tmp_path / "fake-python"
+    fake_python.write_text(
+        "#!/bin/sh\n"
+        "if [ \"$1\" = scripts/preflight_governance.py ]; then\n"
+        "  echo controlled-preflight-failure >&2\n"
+        "  exit 17\n"
+        "fi\n"
+        "touch \"$BCF_TEST_MARKER\"\n",
+        encoding="utf-8",
+    )
+    fake_python.chmod(0o755)
+    marker = tmp_path / "evidence-started"
+    environment = dict(os.environ)
+    environment["BCF_TEST_MARKER"] = str(marker)
+    result = subprocess.run(
+        [
+            "make",
+            "-f",
+            "Makefile.fragment",
+            "release-check",
+            f"PYTHON={fake_python}",
+            f"BCF_EVIDENCE_DIR={tmp_path / 'evidence'}",
+        ],
+        cwd=tmp_path,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert "controlled-preflight-failure" in result.stderr
+    assert "preflight did not produce an evidence session" not in result.stderr
+    assert not marker.exists()
 
 
 def test_bcf_standard_v2_promotion_fits_declared_context_budgets(tmp_path: Path) -> None:
