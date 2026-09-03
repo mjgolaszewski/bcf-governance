@@ -189,10 +189,13 @@ def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
     assert job["trust"] == "trusted" and job["checkout"] is False
     assert job["resource_class"] == "trusted-control-instance"
     assert job["executor"]["components"] == [
-        "setup-python", "download-bootstrap-controller", "bootstrap-controller",
+        "setup-python",
+        "download-bootstrap-controller",
+        "stage-bootstrap-controller",
+        "bootstrap-controller",
     ]
     command = validate_ci_graph(REPO_ROOT).commands["bootstrap-controller"]
-    assert command["argv"][:3] == ["{controller}", "ci-github", "bootstrap"]
+    assert command["argv"][:3] == ["{ephemeral_controller}", "ci-github", "bootstrap"]
     assert set(command["required_environment"]) == set(
         _policy()["runner_security"]["trusted_controller_artifact"]
     )

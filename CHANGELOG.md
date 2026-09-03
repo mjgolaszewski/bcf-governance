@@ -52,6 +52,9 @@ Release target: `1.0.2`
 - Made protection activation update the canonical or sole exact-branch ruleset,
   compare provider rule order semantically, and reject ambiguous overlapping
   rulesets instead of creating a second protection plane.
+- Made trusted-controller bootstrap work from an empty runner tool cache by
+  staging the provider- and checksum-admitted wheel in a run-scoped environment
+  before installing the persistent controller with the selected Python.
 - Allowed self-controller rotation to authenticate one complete package producer
   from a partial exact-main admission without relaxing complete-inventory
   requirements for certification.

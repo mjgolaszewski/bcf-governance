@@ -86,7 +86,7 @@ def _command_step(
         elif value == "{controller}":
             argv.append(compiled.trusted_controller)
         elif value == "{ephemeral_controller}":
-            argv.append('"$RUNNER_TEMP"/bcf-controller/bin/bcf')
+            argv.append('"${{ runner.temp }}/bcf-controller/bin/bcf"')
         elif value.startswith("{env:") and value.endswith("}"):
             env_name = value[5:-1]
             if not env_name.replace("_", "A").isalnum() or env_name.upper() != env_name:
@@ -195,7 +195,9 @@ def _component_steps(
             step = {
                 "name": component["name"],
                 "shell": "bash",
-                "run": "set -euo pipefail\npython -I -c " + shlex.quote(script),
+                "env": {"BCF_PYTHON": SELECTED_PYTHON},
+                "run": "set -euo pipefail\n\"$BCF_PYTHON\" -I -c "
+                + shlex.quote(script),
             }
             steps.append(step)
             continue

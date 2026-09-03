@@ -311,7 +311,10 @@ artifact is downloaded, `controller-pin compile` verifies its checksum inventory
 metadata, and wheel bytes and emits a pin record. A maintainer projects that record
 with `bcf ci sync-self-controller --pin PIN.json --apply`. The target pin and the
 last provider-proven installation are distinct: active control jobs stay on the
-installed commit while that commit installs the new target. After exact-main
+installed commit during rotation. Bootstrap and probe do not require that commit
+to exist on a newly restored runner: they stage the downloaded, provider-digest-
+checked and checksum-admitted target wheel in a run-scoped environment, invoke it
+to authenticate custody, and then install the persistent target. After exact-main
 bootstrap and probe runs pass on every declared trusted runner,
 `bcf ci-github controller-pin confirm --repository OWNER/REPO --output PROOF.json`
 compiles their identities from provider state. Passing that proof through

@@ -24,7 +24,7 @@ conditions:
   owner-main-observer: always() && github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main' && needs.admit.result == 'success'
 commands:
   bootstrap-controller:
-    argv: ['{controller}', ci-github, bootstrap, --repository, '${{ github.repository }}', --artifact-dir, '${{ runner.temp }}/bcf-trusted-control-bootstrap', --artifact-id, '{env:BCF_BOOTSTRAP_ARTIFACT_ID}', --artifact-name, '{env:BCF_BOOTSTRAP_ARTIFACT_NAME}', --provider-digest, '{env:BCF_BOOTSTRAP_ARTIFACT_DIGEST}', --producer-run-id, '{env:BCF_BOOTSTRAP_RUN_ID}', --producer-run-attempt, '{env:BCF_BOOTSTRAP_RUN_ATTEMPT}', --repository-id, '{env:BCF_BOOTSTRAP_REPOSITORY_ID}', --commit, '{env:BCF_BOOTSTRAP_COMMIT_SHA}', --tree, '{env:BCF_BOOTSTRAP_TREE_SHA}', --wheel-sha256, '{env:BCF_BOOTSTRAP_WHEEL_SHA256}', --python, '{python}', --tool-cache, '${{ runner.tool_cache }}']
+    argv: ['{ephemeral_controller}', ci-github, bootstrap, --repository, '${{ github.repository }}', --artifact-dir, '${{ runner.temp }}/bcf-trusted-control-bootstrap', --artifact-id, '{env:BCF_BOOTSTRAP_ARTIFACT_ID}', --artifact-name, '{env:BCF_BOOTSTRAP_ARTIFACT_NAME}', --provider-digest, '{env:BCF_BOOTSTRAP_ARTIFACT_DIGEST}', --producer-run-id, '{env:BCF_BOOTSTRAP_RUN_ID}', --producer-run-attempt, '{env:BCF_BOOTSTRAP_RUN_ATTEMPT}', --repository-id, '{env:BCF_BOOTSTRAP_REPOSITORY_ID}', --commit, '{env:BCF_BOOTSTRAP_COMMIT_SHA}', --tree, '{env:BCF_BOOTSTRAP_TREE_SHA}', --wheel-sha256, '{env:BCF_BOOTSTRAP_WHEEL_SHA256}', --python, '{python}', --tool-cache, '${{ runner.tool_cache }}']
     cwd: .
     environment: {}
     required_environment: [BCF_BOOTSTRAP_ARTIFACT_ID, BCF_BOOTSTRAP_ARTIFACT_NAME, BCF_BOOTSTRAP_ARTIFACT_DIGEST, BCF_BOOTSTRAP_RUN_ID, BCF_BOOTSTRAP_RUN_ATTEMPT, BCF_BOOTSTRAP_REPOSITORY_ID, BCF_BOOTSTRAP_COMMIT_SHA, BCF_BOOTSTRAP_TREE_SHA, BCF_BOOTSTRAP_WHEEL_SHA256]
@@ -57,6 +57,14 @@ step_components:
       path: '${{ runner.temp }}/bcf-trusted-control-bootstrap'
       digest-mismatch: error
     environment: {}
+    produces: []
+    consumes: []
+  stage-bootstrap-controller:
+    kind: controller_install
+    name: Stage the checksum-admitted controller in an isolated temporary environment
+    artifact_dir: '${{ runner.temp }}/bcf-trusted-control-bootstrap'
+    install_root: '${{ runner.temp }}/bcf-controller'
+    wheel_sha256: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_WHEEL_SHA256}'
     produces: []
     consumes: []
   bootstrap-controller:
@@ -129,7 +137,7 @@ workflows:
       matrix: {trusted_runner: [bcf-trusted-control-1, bcf-trusted-control-2]}
     executor:
       kind: component_sequence
-      components: [setup-python, download-bootstrap-controller, bootstrap-controller]
+      components: [setup-python, download-bootstrap-controller, stage-bootstrap-controller, bootstrap-controller]
     produces: []
     consumes: []
     required: true
@@ -167,7 +175,7 @@ workflows:
       matrix: {trusted_runner: [bcf-trusted-control-1, bcf-trusted-control-2]}
     executor:
       kind: component_sequence
-      components: [setup-python, download-bootstrap-controller, bootstrap-controller]
+      components: [setup-python, download-bootstrap-controller, stage-bootstrap-controller, bootstrap-controller]
     produces: []
     consumes: []
     required: true
