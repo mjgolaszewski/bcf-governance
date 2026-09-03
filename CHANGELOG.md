@@ -37,6 +37,8 @@ Release target: `1.0.2`
 - Projected the controller containing the automation subject and tracked-surface
   repairs only from its authenticated exact-main package artifact and checksum
   inventory; the previously confirmed controller remains installed until proof.
+- Confirmed that controller only after both uniquely labelled trusted runners
+  independently installed and probed the provider-authenticated artifact.
 - Confirmed the final protection controller only after both trusted runners
   independently installed and probed the provider-selected artifact.
 - Completed the authored P18 implementation state only after local validation and
