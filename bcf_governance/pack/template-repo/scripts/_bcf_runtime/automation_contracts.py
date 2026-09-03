@@ -141,13 +141,22 @@ def select_producer(
     return ProducerMatch(producer=producer, dependency_paths=dependency_paths)
 
 
-def dependabot_allowed_paths(configuration: dict[str, Any]) -> tuple[tuple[str, ...], tuple[str, ...]]:
-    """Derive dependency classes and path patterns from dependabot.yml."""
+def _dependabot_match_subject(path: str, ecosystem: object) -> str:
+    return path if ecosystem == "github-actions" else PurePosixPath(path).name
+
+
+def dependabot_allowed_paths(
+    configuration: dict[str, Any], *, repository_paths: tuple[str, ...]
+) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Derive exact tracked dependency surfaces from dependabot.yml and Git."""
 
     updates = configuration.get("updates")
     if configuration.get("version") != 2 or not isinstance(updates, list) or not updates:
         raise AutomationContractError("dependabot.yml must declare version 2 updates")
-    patterns: set[str] = {".github/dependabot.yml"}
+    tracked = tuple(sorted({_safe_path(value) for value in repository_paths}))
+    if len(tracked) != len(repository_paths):
+        raise AutomationContractError("Git-tracked path inventory contains duplicates")
+    paths: set[str] = set()
     classes: set[str] = set()
     ecosystem_patterns = {
         "pip": ("python", ("pyproject.toml", "requirements*.txt", "uv.lock", "poetry.lock", "Pipfile.lock")),
@@ -167,9 +176,19 @@ def dependabot_allowed_paths(configuration: dict[str, Any]) -> tuple[tuple[str, 
             raise AutomationContractError("Dependabot directory is unsafe")
         change_class, names = ecosystem_patterns[ecosystem]
         classes.add(change_class)
-        for name in names:
-            if ecosystem == "github-actions":
-                patterns.add(name)
-            else:
-                patterns.add(f"{root}/{name}" if root else name)
-    return tuple(sorted(classes)), tuple(sorted(patterns))
+        prefix = f"{root}/" if root else ""
+        matches = {
+            path
+            for path in tracked
+            if (not prefix or path.startswith(prefix))
+            and any(
+                fnmatchcase(_dependabot_match_subject(path, ecosystem), name)
+                for name in names
+            )
+        }
+        if not matches:
+            raise AutomationContractError(
+                f"Dependabot {ecosystem} update at {directory} has no tracked dependency files"
+            )
+        paths.update(matches)
+    return tuple(sorted(classes)), tuple(sorted(paths))

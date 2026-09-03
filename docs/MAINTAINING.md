@@ -137,7 +137,8 @@ the event's exact base SHA. Generated workflows use full history so an
 unavailable base fails rather than bypassing the rule.
 
 Do not exempt automation actors from this rule. Opt-in trusted automation uses
-the canonical producer registry, numeric provider identity, fixed text, and a
+the canonical producer registry, numeric provider identity, exact paths derived
+from the tracked repository inventory, fixed text, and a
 non-force compare-and-swap commit. PR prose and operator-supplied identities
 are not authority. The changelog writer cannot approve, merge, or publish the
 reserved PR certification check.

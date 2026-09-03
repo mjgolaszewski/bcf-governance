@@ -16,8 +16,10 @@ from .automation_contracts import (
 )
 from .ci_github_api import GitHubAPI
 from .ci_github_authority import packaged_repo_root
+from .ci_authority_state import CandidateIdentity
 from .ci_github_identity import (
     GitHubControllerError,
+    MainIdentity,
     authenticate_trusted_run,
     exact_sha,
     positive_int,
@@ -102,8 +104,14 @@ def _authenticated_match(
     pr = _pr_identity(observer.pull_request(repository, pr_number))
     if pr["number"] != pr_number:
         raise GitHubControllerError("provider pull request number is inconsistent")
+    files = observer.pull_request_files(repository, pr_number)
+    confirmed_pr = _pr_identity(observer.pull_request(repository, pr_number))
+    if confirmed_pr != pr:
+        raise GitHubControllerError(
+            "automation pull request advanced while provider state was observed"
+        )
     changed_paths, source_state = _changed_inventory(
-        observer.pull_request_files(repository, pr_number),
+        files,
         changelog_path=str(registry["policy"]["changelog_path"]),
     )
     match = select_producer(
@@ -117,6 +125,48 @@ def _authenticated_match(
         changed_paths=changed_paths,
     )
     return pr, match, source_state
+
+
+def _candidate_identity(
+    observer: GitHubAPI, *, repository: str, pr: dict[str, Any]
+) -> CandidateIdentity:
+    commit = observer.commit(repository, pr["head_sha"])
+    tree = commit.get("tree")
+    if not isinstance(tree, dict):
+        raise GitHubControllerError("automation candidate commit tree is missing")
+    return CandidateIdentity(
+        checkout_sha=pr["head_sha"],
+        tree_sha=exact_sha(tree.get("sha"), field="automation candidate tree SHA"),
+    )
+
+
+def _automation_subject(
+    observer: GitHubAPI,
+    *,
+    repository: str,
+    registry: dict[str, Any],
+    main: MainIdentity,
+    run_id: object,
+) -> tuple[dict[str, Any], Any, str, CandidateIdentity]:
+    run = observer.run(repository, run_id)
+    pr_number = _pull_request_number(run)
+    pr, match, source_state = _authenticated_match(
+        observer,
+        repository=repository,
+        registry=registry,
+        pr_number=pr_number,
+        repository_id=int(main.repository_id),
+    )
+    if (
+        pr["base_branch"] != main.default_branch
+        or pr["base_repository_id"] != int(main.repository_id)
+    ):
+        raise GitHubControllerError(
+            "automation pull request does not target current default main"
+        )
+    return pr, match, source_state, _candidate_identity(
+        observer, repository=repository, pr=pr
+    )
 
 
 def admit_automation_pr(
@@ -136,6 +186,13 @@ def admit_automation_pr(
         registry_content.content,
         schema_path=packaged_repo_root() / "schemas/automation-producers.schema.json",
     )
+    pr, match, source_state, candidate = _automation_subject(
+        observer,
+        repository=repository,
+        registry=registry,
+        main=main,
+        run_id=admission_run_id,
+    )
     admission = authenticate_trusted_run(
         observer,
         repository=repository,
@@ -145,18 +202,12 @@ def admit_automation_pr(
         workflow_path=ADMISSION_WORKFLOW,
         expected_event="pull_request_target",
         require_success=False,
+        expected_candidate=candidate,
     )
     run = observer.run(repository, admission.run_id)
     pr_number = _pull_request_number(run)
-    pr, match, source_state = _authenticated_match(
-        observer,
-        repository=repository,
-        registry=registry,
-        pr_number=pr_number,
-        repository_id=int(main.repository_id),
-    )
-    if pr["base_branch"] != main.default_branch or pr["base_repository_id"] != int(main.repository_id):
-        raise GitHubControllerError("automation pull request does not target current default main")
+    if pr_number != pr["number"]:
+        raise GitHubControllerError("admission run pull request identity changed")
     return {
         "status": "admitted",
         "producer_id": str(match.producer["id"]),
@@ -196,6 +247,13 @@ def reconcile_automation_changelog(
         require_success=False,
     )
     trigger_run_id, trigger_attempt = _trigger(event)
+    pr, match, source_state, candidate = _automation_subject(
+        observer,
+        repository=repository,
+        registry=registry,
+        main=main,
+        run_id=trigger_run_id,
+    )
     admission = authenticate_trusted_run(
         observer,
         repository=repository,
@@ -205,22 +263,13 @@ def reconcile_automation_changelog(
         workflow_path=ADMISSION_WORKFLOW,
         expected_event="pull_request_target",
         require_success=True,
+        expected_candidate=candidate,
     )
     admission_run = observer.run(repository, admission.run_id)
     pr_number = _pull_request_number(admission_run)
-    pr = _pr_identity(observer.pull_request(repository, pr_number))
-    if pr["number"] != pr_number or pr["base_branch"] != main.default_branch:
-        raise GitHubControllerError("pull request does not target current default main")
+    if pr["number"] != pr_number:
+        raise GitHubControllerError("admission run pull request identity changed")
     repository_id = int(main.repository_id)
-    if pr["base_repository_id"] != repository_id:
-        raise GitHubControllerError("pull request base repository is not exact")
-    pr, match, source_state = _authenticated_match(
-        observer,
-        repository=repository,
-        registry=registry,
-        pr_number=pr_number,
-        repository_id=repository_id,
-    )
     changelog_path = str(registry["policy"]["changelog_path"])
     current = observer.content(repository, changelog_path, ref=pr["head_sha"])
     projection = render_automation_changelog(
