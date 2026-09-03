@@ -42,6 +42,8 @@ Release target: `1.0.2`
 - Projected the final generated-workflow exclusion controller from its
   authenticated exact-main package artifact while retaining the confirmed
   predecessor until independent installation proof.
+- Confirmed that final controller only after independent bootstrap and probe
+  success on both uniquely labelled trusted runners.
 - Confirmed the final protection controller only after both trusted runners
   independently installed and probed the provider-selected artifact.
 - Completed the authored P18 implementation state only after local validation and
