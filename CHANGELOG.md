@@ -34,6 +34,8 @@ Release target: `1.0.2`
 - Rotated the controller target again after the final protection-owner correction;
   the exact-main package artifact, not an operator-entered identity, supplies every
   run, commit, tree, provider, and wheel binding.
+- Projected the dependency-output and fail-closed local-front-door controller only
+  from the authenticated exact-main package artifact and checksum inventory.
 - Recorded provider-compiled installation proof only after the generated bootstrap
   and probe passed independently on both trusted-control runners.
 - Projected the controller containing the automation subject and tracked-surface
