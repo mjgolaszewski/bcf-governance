@@ -60,6 +60,14 @@ observation fails closed. A separate protected-environment reconciler ignores PR
 constructs one fixed changelog entry and idempotence marker, then performs a
 single-parent compare-and-swap ref update without force.
 
+Some repositories retain generated dependency copies or content-addressed pack
+manifests. An adopted producer may declare bounded exact-copy and SHA-256
+manifest projections. The installed trusted controller reads authenticated Git
+blobs, verifies the default-main baseline, and writes all stale outputs in the
+same commit as the changelog entry. It never executes a candidate generator.
+Output-only edits, unrelated manifest changes, and stale source/copy baselines
+fail before writer use.
+
 The writer App has contents-write authority only. It cannot approve or merge a
 PR, publish certification, administer the repository, or execute candidate
 code. The trusted PR finalizer reconstructs the latest exact-head governance

@@ -522,7 +522,7 @@ class GitHubAPI:
 
     def create_blob(self, repository: str, content: bytes) -> str:
         if len(content) > 1_048_576:
-            raise GitHubAPIError("automation changelog blob exceeds one MiB")
+            raise GitHubAPIError("automation blob exceeds one MiB")
         value = self._request(
             "POST",
             f"/repos/{self._repository(repository)}/git/blobs",
@@ -535,14 +535,41 @@ class GitHubAPI:
     def create_tree(
         self, repository: str, *, base_tree: str, path: str, blob_sha: str
     ) -> str:
-        if path.startswith("/") or ".." in path.split("/") or not path:
+        return self.create_tree_entries(
+            repository, base_tree=base_tree, entries=((path, blob_sha),)
+        )
+
+    def create_tree_entries(
+        self,
+        repository: str,
+        *,
+        base_tree: str,
+        entries: tuple[tuple[str, str], ...],
+    ) -> str:
+        if not entries or len(entries) > 20:
+            raise GitHubAPIError("created tree requires one to twenty entries")
+        paths = tuple(path for path, _blob in entries)
+        if len(paths) != len(set(paths)) or paths != tuple(sorted(paths)):
+            raise GitHubAPIError("created tree paths must be unique and sorted")
+        if any(
+            path.startswith("/") or ".." in path.split("/") or not path
+            for path in paths
+        ):
             raise GitHubAPIError("created tree path is unsafe")
         value = self._request(
             "POST",
             f"/repos/{self._repository(repository)}/git/trees",
             payload={
                 "base_tree": _sha(base_tree, field="base tree SHA"),
-                "tree": [{"path": path, "mode": "100644", "type": "blob", "sha": _sha(blob_sha, field="blob SHA")}],
+                "tree": [
+                    {
+                        "path": path,
+                        "mode": "100644",
+                        "type": "blob",
+                        "sha": _sha(blob_sha, field=f"blob SHA for {path}"),
+                    }
+                    for path, blob_sha in entries
+                ],
             },
         )
         if not isinstance(value, dict):

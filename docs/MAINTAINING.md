@@ -149,6 +149,12 @@ and rejects an Actions ecosystem with no remaining project-owned surface. Change
 the canonical action-pin source, render the graph, commit those workflow bytes,
 and derive their authority pins in a following commit instead.
 
+When an admitted dependency file owns generated copies, declare the exact source,
+copy targets, and SHA-256 manifest entries under the producer's
+`mechanical_projections`. Do not teach Dependabot to edit those outputs or relax
+pack parity. The trusted controller verifies the main baseline and projects all
+declared bytes in the changelog commit without executing repository code.
+
 Run the editorial contract after changing prose or examples:
 
 ```bash

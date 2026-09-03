@@ -121,6 +121,13 @@ does not activate write automation on fresh installations. The reconciler ignore
 titles, bodies, and commit messages; it writes one fixed audit entry and never
 approves or merges.
 
+Repositories with deterministic dependency mirrors may register
+`mechanical_projections` on the producer. Each declaration names one admitted
+source, exact-copy targets, and specific SHA-256 manifest entries. These are
+project-owned customizations preserved by repeated adoption. The trusted
+controller derives their bytes from authenticated provider blobs and includes
+them in the same compare-and-swap commit; candidate scripts are never run.
+
 After one current controlled automation canary has published the declared
 aggregate check, inspect and apply provider protection mechanically:
 

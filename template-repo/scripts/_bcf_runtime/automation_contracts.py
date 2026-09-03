@@ -26,6 +26,7 @@ class AutomationContractError(ValueError):
 class ProducerMatch:
     producer: dict[str, Any]
     dependency_paths: tuple[str, ...]
+    projection_output_paths: tuple[str, ...]
 
 
 def _mapping(path: Path) -> dict[str, Any]:
@@ -61,6 +62,39 @@ def _validate_registry(registry: object, *, schema_path: Path) -> dict[str, Any]
     identities = [int(item["actor_id"]) for item in registry["producers"]]
     if len(ids) != len(set(ids)) or len(identities) != len(set(identities)):
         raise AutomationContractError("producer IDs and numeric actor identities must be unique")
+    for producer in registry["producers"]:
+        projections = producer.get("mechanical_projections", [])
+        projection_ids = [str(item["id"]) for item in projections]
+        if len(projection_ids) != len(set(projection_ids)):
+            raise AutomationContractError("mechanical projection IDs must be unique per producer")
+        outputs: list[str] = []
+        for projection in projections:
+            source = str(projection["source_path"])
+            if not any(fnmatchcase(source, pattern) for pattern in producer["allowed_paths"]):
+                raise AutomationContractError(
+                    f"mechanical projection source is not producer-owned: {source}"
+                )
+            outputs.extend(str(path) for path in projection["exact_copy_targets"])
+            outputs.extend(
+                str(item["manifest_path"])
+                for item in projection["sha256_manifest_entries"]
+            )
+        if len(outputs) != len(set(outputs)):
+            raise AutomationContractError(
+                "mechanical projection output paths must be unique per producer"
+            )
+        if len(outputs) > 19 or str(registry["policy"]["changelog_path"]) in outputs:
+            raise AutomationContractError(
+                "mechanical projections exceed the bounded automation commit surface"
+            )
+        if any(
+            fnmatchcase(output, pattern)
+            for output in outputs
+            for pattern in producer["allowed_paths"]
+        ):
+            raise AutomationContractError(
+                "mechanical projection outputs cannot also be dependency source paths"
+            )
     return registry
 
 
@@ -126,7 +160,23 @@ def select_producer(
     if len(safe_paths) != len(changed_paths):
         raise AutomationContractError("automation changed-path inventory contains duplicates")
     changelog = str(registry["policy"]["changelog_path"])
-    dependency_paths = tuple(path for path in safe_paths if path != changelog)
+    projection_outputs = tuple(
+        sorted(
+            {
+                str(path)
+                for projection in producer.get("mechanical_projections", [])
+                for path in (
+                    *projection["exact_copy_targets"],
+                    *(item["manifest_path"] for item in projection["sha256_manifest_entries"]),
+                )
+            }
+        )
+    )
+    dependency_paths = tuple(
+        path
+        for path in safe_paths
+        if path != changelog and path not in projection_outputs
+    )
     if not dependency_paths:
         raise AutomationContractError("automation PR contains no dependency change")
     rejected = [
@@ -138,7 +188,13 @@ def select_producer(
         raise AutomationContractError(
             f"automation PR contains unexpected paths: {', '.join(rejected)}"
         )
-    return ProducerMatch(producer=producer, dependency_paths=dependency_paths)
+    return ProducerMatch(
+        producer=producer,
+        dependency_paths=dependency_paths,
+        projection_output_paths=tuple(
+            path for path in safe_paths if path in projection_outputs
+        ),
+    )
 
 
 def _dependabot_match_subject(path: str, ecosystem: object) -> str:

@@ -62,7 +62,7 @@
     },
     "docs/OPERATIONS.md": {
       "operation": "copy",
-      "sha256": "d5fee59e427a8ee7e324c07df43696123c92e7f1b9d43c1023a9adca8c91547d"
+      "sha256": "5896b6c52285165803cb5985023bfda785596a20a1d6b845b0bbbf1d52df2210"
     },
     "governance-profile.yml": {
       "operation": "generate",
@@ -184,7 +184,7 @@
     },
     "schemas/automation-producers.schema.json": {
       "operation": "copy",
-      "sha256": "31214d5750a5efd4f12d27bee01a031ee6934ba5248c763ee000b4d607496795"
+      "sha256": "8cdff6796faae39b684987f1c90c5440fad984a8970ab35bd2f21eba01e22a1c"
     },
     "schemas/build-plan.schema.json": {
       "operation": "copy",
@@ -320,11 +320,15 @@
     },
     "scripts/_bcf_runtime/automation_commands.py": {
       "operation": "copy",
-      "sha256": "84551a0d0af5403bfa32d585c0dd626f330c81f73b111b9c54df2f3f48e3c722"
+      "sha256": "48956209d4d9bdf7c09f02b836bb79bc1c7c94a12347aa6cc50fe80aefcc2706"
     },
     "scripts/_bcf_runtime/automation_contracts.py": {
       "operation": "copy",
-      "sha256": "205d991bd6d56f16fcc1d7d4b223b82c9e61991a19ef8283196fa36b015adaa3"
+      "sha256": "43dd3c931f9a79b0b00b13ccd81e605c7b6d82145377118c5e830bbb26ea6b51"
+    },
+    "scripts/_bcf_runtime/automation_projections.py": {
+      "operation": "copy",
+      "sha256": "28e460928d0c991403a9261762c0e454b40307efdd762f9a6267ddeb1f02082c"
     },
     "scripts/_bcf_runtime/check_governance_exposure.py": {
       "operation": "copy",
@@ -368,7 +372,7 @@
     },
     "scripts/_bcf_runtime/ci_github_api.py": {
       "operation": "copy",
-      "sha256": "7ac9f3a1620e853eaef7c8ac07a0e2e3422b125bb46ffcbaed0f00312949ad64"
+      "sha256": "2983eca768561e96d681d4b07a0be976cce92e9f63d9129b737e7e85dc88669e"
     },
     "scripts/_bcf_runtime/ci_github_artifacts.py": {
       "operation": "copy",
@@ -380,7 +384,7 @@
     },
     "scripts/_bcf_runtime/ci_github_automation.py": {
       "operation": "copy",
-      "sha256": "b4543d312aac0b19065d30c6e92f66401b8933bdae79c180a05729acaab6cd95"
+      "sha256": "85658cd41b093c5ba769d55f82359aff0167e30d2d4af2954b34194c35354a71"
     },
     "scripts/_bcf_runtime/ci_github_bootstrap.py": {
       "operation": "copy",
