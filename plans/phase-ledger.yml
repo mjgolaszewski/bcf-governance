@@ -73,7 +73,7 @@ release_trains:
     focus: [deterministic_error_correction_thesis, release_documentation_currency, candid_cost_and_limitations, immutable_patch_release]
   release_8:
     target_version: 1.0.2
-    status: active
+    status: completed
     focus: [trusted_automation_changelog_producer, exact_head_pr_certification, provider_protection_authority, ai_specific_positioning, immutable_patch_release]
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]
