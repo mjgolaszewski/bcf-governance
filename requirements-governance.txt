@@ -2,7 +2,7 @@ build==1.6.0
 jsonschema>=4.21,<5
 packaging
 pip
-pytest==9.0.3
+pytest==9.1.1
 PyYAML>=6.0,<7
 setuptools>=69
 wheel
