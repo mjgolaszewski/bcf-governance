@@ -36,6 +36,8 @@ Release target: `1.0.2`
   run, commit, tree, provider, and wheel binding.
 - Projected the dependency-output and fail-closed local-front-door controller only
   from the authenticated exact-main package artifact and checksum inventory.
+- Confirmed that controller only after both uniquely labeled trusted runners
+  independently installed and probed the exact provider-authenticated artifact.
 - Recorded provider-compiled installation proof only after the generated bootstrap
   and probe passed independently on both trusted-control runners.
 - Projected the controller containing the automation subject and tracked-surface
