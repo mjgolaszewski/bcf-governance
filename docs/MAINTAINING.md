@@ -137,10 +137,23 @@ the event's exact base SHA. Generated workflows use full history so an
 unavailable base fails rather than bypassing the rule.
 
 Do not exempt automation actors from this rule. Opt-in trusted automation uses
-the canonical producer registry, numeric provider identity, fixed text, and a
+the canonical producer registry, numeric provider identity, exact paths derived
+from the tracked repository inventory, fixed text, and a
 non-force compare-and-swap commit. PR prose and operator-supplied identities
 are not authority. The changelog writer cannot approve, merge, or publish the
 reserved PR certification check.
+
+Do not configure native Dependabot to edit BCF-rendered workflow files. The
+adopter excludes files bearing the exact generated-workflow provenance header
+and rejects an Actions ecosystem with no remaining project-owned surface. Change
+the canonical action-pin source, render the graph, commit those workflow bytes,
+and derive their authority pins in a following commit instead.
+
+When an admitted dependency file owns generated copies, declare the exact source,
+copy targets, and SHA-256 manifest entries under the producer's
+`mechanical_projections`. Do not teach Dependabot to edit those outputs or relax
+pack parity. The trusted controller verifies the main baseline and projects all
+declared bytes in the changelog commit without executing repository code.
 
 Run the editorial contract after changing prose or examples:
 

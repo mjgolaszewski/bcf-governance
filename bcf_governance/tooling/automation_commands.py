@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 from dataclasses import dataclass
 from pathlib import Path
+import subprocess
 from typing import Any
 
 import yaml
@@ -16,6 +17,7 @@ from .automation_contracts import (
     load_automation_registry,
 )
 from .ci_github_api import GitHubAPI
+from .ci_graph_render import GENERATED_HEADER
 from .governance_install.transaction import apply_transaction
 
 
@@ -49,6 +51,72 @@ def _dependabot_configuration(repo_root: Path) -> dict[str, Any]:
     return value
 
 
+def _tracked_repository_paths(repo_root: Path) -> tuple[str, ...]:
+    result = subprocess.run(
+        ["git", "-C", str(repo_root), "ls-files", "-z"],
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode:
+        raise AutomationContractError(
+            "Dependabot adoption requires an exact Git-tracked file inventory"
+        )
+    try:
+        values = tuple(
+            sorted(value.decode("utf-8") for value in result.stdout.split(b"\0") if value)
+        )
+    except UnicodeDecodeError as exc:
+        raise AutomationContractError(
+            "Dependabot adoption requires UTF-8 Git-tracked paths"
+        ) from exc
+    if not values:
+        raise AutomationContractError("Dependabot adoption found no Git-tracked files")
+    return values
+
+
+def _renderer_owned_paths(
+    repo_root: Path, repository_paths: tuple[str, ...]
+) -> tuple[str, ...]:
+    owned: list[str] = []
+    for relative in repository_paths:
+        if not relative.startswith(".github/"):
+            continue
+        path = repo_root / relative
+        if path.is_symlink() or not path.is_file():
+            continue
+        try:
+            with path.open(encoding="utf-8") as stream:
+                first_line = stream.readline().rstrip("\n")
+        except (OSError, UnicodeDecodeError):
+            continue
+        if first_line == GENERATED_HEADER:
+            owned.append(relative)
+    return tuple(owned)
+
+
+def _projected_output_paths(current: dict[str, Any] | None) -> tuple[str, ...]:
+    if current is None:
+        return ()
+    producer = next(
+        (item for item in current["producers"] if item["id"] == "dependabot"),
+        None,
+    )
+    if producer is None:
+        return ()
+    return tuple(
+        sorted(
+            {
+                str(path)
+                for projection in producer.get("mechanical_projections", [])
+                for path in (
+                    *projection["exact_copy_targets"],
+                    *(item["manifest_path"] for item in projection["sha256_manifest_entries"]),
+                )
+            }
+        )
+    )
+
+
 def _desired_dependabot(
     api: GitHubAPI,
     *,
@@ -66,7 +134,29 @@ def _desired_dependabot(
     actor = api.user("dependabot[bot]")
     if actor.get("type") != "Bot" or actor.get("login") != "dependabot[bot]":
         raise AutomationContractError("provider Dependabot identity is not exact")
-    classes, paths = dependabot_allowed_paths(_dependabot_configuration(repo_root))
+    tracked_paths = _tracked_repository_paths(repo_root)
+    projection_outputs = _projected_output_paths(current)
+    classes, paths = dependabot_allowed_paths(
+        _dependabot_configuration(repo_root),
+        repository_paths=tracked_paths,
+        excluded_paths=tuple(
+            sorted(
+                set(_renderer_owned_paths(repo_root, tracked_paths)).union(
+                    projection_outputs
+                )
+            )
+        ),
+    )
+    unsafe = [
+        path
+        for path in paths
+        if (repo_root / path).is_symlink() or not (repo_root / path).is_file()
+    ]
+    if unsafe:
+        raise AutomationContractError(
+            "Dependabot dependency files must be tracked regular files: "
+            + ", ".join(unsafe)
+        )
     producer = {
         "id": "dependabot",
         "type": "dependabot",
@@ -84,6 +174,15 @@ def _desired_dependabot(
             "cleanup": ["trusted-automation-no-persistent-workspace"],
         },
     }
+    if current is not None:
+        prior = next(
+            (item for item in current["producers"] if item["id"] == "dependabot"),
+            None,
+        )
+        if prior is not None and prior.get("mechanical_projections"):
+            producer["mechanical_projections"] = copy.deepcopy(
+                prior["mechanical_projections"]
+            )
     desired = copy.deepcopy(current) if current is not None else {
         "document": {
             "kind": "automation_producer_registry",

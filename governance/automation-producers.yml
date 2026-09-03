@@ -31,19 +31,22 @@ producers:
   branch_patterns:
   - dependabot/**
   dependency_change_classes:
-  - github-actions
   - python
   allowed_paths:
-  - .github/actions/*/action.yaml
-  - .github/actions/*/action.yml
-  - .github/dependabot.yml
-  - .github/workflows/*.yaml
-  - .github/workflows/*.yml
-  - Pipfile.lock
-  - poetry.lock
   - pyproject.toml
-  - requirements*.txt
-  - uv.lock
+  - requirements-governance.txt
+  - template-repo/requirements-governance.txt
+  mechanical_projections:
+  - id: template-requirements-pack-copy
+    kind: exact_copy_with_sha256_manifests
+    source_path: template-repo/requirements-governance.txt
+    exact_copy_targets:
+    - bcf_governance/pack/template-repo/requirements-governance.txt
+    sha256_manifest_entries:
+    - manifest_path: template-repo/.bcf-pack-manifest.json
+      entry_path: requirements-governance.txt
+    - manifest_path: bcf_governance/pack/template-repo/.bcf-pack-manifest.json
+      entry_path: requirements-governance.txt
   controls:
     positive:
     - dependabot-changelog-reconcile

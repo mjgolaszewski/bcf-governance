@@ -26,6 +26,7 @@ class AutomationContractError(ValueError):
 class ProducerMatch:
     producer: dict[str, Any]
     dependency_paths: tuple[str, ...]
+    projection_output_paths: tuple[str, ...]
 
 
 def _mapping(path: Path) -> dict[str, Any]:
@@ -61,6 +62,39 @@ def _validate_registry(registry: object, *, schema_path: Path) -> dict[str, Any]
     identities = [int(item["actor_id"]) for item in registry["producers"]]
     if len(ids) != len(set(ids)) or len(identities) != len(set(identities)):
         raise AutomationContractError("producer IDs and numeric actor identities must be unique")
+    for producer in registry["producers"]:
+        projections = producer.get("mechanical_projections", [])
+        projection_ids = [str(item["id"]) for item in projections]
+        if len(projection_ids) != len(set(projection_ids)):
+            raise AutomationContractError("mechanical projection IDs must be unique per producer")
+        outputs: list[str] = []
+        for projection in projections:
+            source = str(projection["source_path"])
+            if not any(fnmatchcase(source, pattern) for pattern in producer["allowed_paths"]):
+                raise AutomationContractError(
+                    f"mechanical projection source is not producer-owned: {source}"
+                )
+            outputs.extend(str(path) for path in projection["exact_copy_targets"])
+            outputs.extend(
+                str(item["manifest_path"])
+                for item in projection["sha256_manifest_entries"]
+            )
+        if len(outputs) != len(set(outputs)):
+            raise AutomationContractError(
+                "mechanical projection output paths must be unique per producer"
+            )
+        if len(outputs) > 19 or str(registry["policy"]["changelog_path"]) in outputs:
+            raise AutomationContractError(
+                "mechanical projections exceed the bounded automation commit surface"
+            )
+        if any(
+            fnmatchcase(output, pattern)
+            for output in outputs
+            for pattern in producer["allowed_paths"]
+        ):
+            raise AutomationContractError(
+                "mechanical projection outputs cannot also be dependency source paths"
+            )
     return registry
 
 
@@ -126,7 +160,23 @@ def select_producer(
     if len(safe_paths) != len(changed_paths):
         raise AutomationContractError("automation changed-path inventory contains duplicates")
     changelog = str(registry["policy"]["changelog_path"])
-    dependency_paths = tuple(path for path in safe_paths if path != changelog)
+    projection_outputs = tuple(
+        sorted(
+            {
+                str(path)
+                for projection in producer.get("mechanical_projections", [])
+                for path in (
+                    *projection["exact_copy_targets"],
+                    *(item["manifest_path"] for item in projection["sha256_manifest_entries"]),
+                )
+            }
+        )
+    )
+    dependency_paths = tuple(
+        path
+        for path in safe_paths
+        if path != changelog and path not in projection_outputs
+    )
     if not dependency_paths:
         raise AutomationContractError("automation PR contains no dependency change")
     rejected = [
@@ -138,16 +188,39 @@ def select_producer(
         raise AutomationContractError(
             f"automation PR contains unexpected paths: {', '.join(rejected)}"
         )
-    return ProducerMatch(producer=producer, dependency_paths=dependency_paths)
+    return ProducerMatch(
+        producer=producer,
+        dependency_paths=dependency_paths,
+        projection_output_paths=tuple(
+            path for path in safe_paths if path in projection_outputs
+        ),
+    )
 
 
-def dependabot_allowed_paths(configuration: dict[str, Any]) -> tuple[tuple[str, ...], tuple[str, ...]]:
-    """Derive dependency classes and path patterns from dependabot.yml."""
+def _dependabot_match_subject(path: str, ecosystem: object) -> str:
+    return path if ecosystem == "github-actions" else PurePosixPath(path).name
+
+
+def dependabot_allowed_paths(
+    configuration: dict[str, Any],
+    *,
+    repository_paths: tuple[str, ...],
+    excluded_paths: tuple[str, ...] = (),
+) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Derive exact tracked dependency surfaces from dependabot.yml and Git."""
 
     updates = configuration.get("updates")
     if configuration.get("version") != 2 or not isinstance(updates, list) or not updates:
         raise AutomationContractError("dependabot.yml must declare version 2 updates")
-    patterns: set[str] = {".github/dependabot.yml"}
+    tracked = tuple(sorted({_safe_path(value) for value in repository_paths}))
+    if len(tracked) != len(repository_paths):
+        raise AutomationContractError("Git-tracked path inventory contains duplicates")
+    excluded = {_safe_path(value) for value in excluded_paths}
+    if len(excluded) != len(excluded_paths) or not excluded.issubset(tracked):
+        raise AutomationContractError(
+            "Dependabot excluded paths must be a duplicate-free tracked subset"
+        )
+    paths: set[str] = set()
     classes: set[str] = set()
     ecosystem_patterns = {
         "pip": ("python", ("pyproject.toml", "requirements*.txt", "uv.lock", "poetry.lock", "Pipfile.lock")),
@@ -167,9 +240,21 @@ def dependabot_allowed_paths(configuration: dict[str, Any]) -> tuple[tuple[str, 
             raise AutomationContractError("Dependabot directory is unsafe")
         change_class, names = ecosystem_patterns[ecosystem]
         classes.add(change_class)
-        for name in names:
-            if ecosystem == "github-actions":
-                patterns.add(name)
-            else:
-                patterns.add(f"{root}/{name}" if root else name)
-    return tuple(sorted(classes)), tuple(sorted(patterns))
+        prefix = f"{root}/" if root else ""
+        matches = {
+            path
+            for path in tracked
+            if (not prefix or path.startswith(prefix))
+            and any(
+                fnmatchcase(_dependabot_match_subject(path, ecosystem), name)
+                for name in names
+            )
+        }
+        matches.difference_update(excluded)
+        if not matches:
+            raise AutomationContractError(
+                f"Dependabot {ecosystem} update at {directory} has no eligible tracked "
+                "dependency files after mechanical exclusions"
+            )
+        paths.update(matches)
+    return tuple(sorted(classes)), tuple(sorted(paths))

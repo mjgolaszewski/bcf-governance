@@ -14,6 +14,8 @@ Release target: `1.0.2`
   Dependabot scope from provider identity and `.github/dependabot.yml`, then
   writes one fixed, idempotent changelog entry through a contents-only GitHub
   App using a non-force compare-and-swap commit.
+- Added bounded mechanical projection declarations for dependency inputs whose
+  exact copies and SHA-256 manifests are repository-owned generated surfaces.
 - Added exact-head PR aggregation and the reserved `bcf/pr-certification`
   publisher, plus a complete declarative provider-protection contract.
 
@@ -32,8 +34,22 @@ Release target: `1.0.2`
 - Rotated the controller target again after the final protection-owner correction;
   the exact-main package artifact, not an operator-entered identity, supplies every
   run, commit, tree, provider, and wheel binding.
+- Projected the dependency-output and fail-closed local-front-door controller only
+  from the authenticated exact-main package artifact and checksum inventory.
+- Confirmed that controller only after both uniquely labeled trusted runners
+  independently installed and probed the exact provider-authenticated artifact.
 - Recorded provider-compiled installation proof only after the generated bootstrap
   and probe passed independently on both trusted-control runners.
+- Projected the controller containing the automation subject and tracked-surface
+  repairs only from its authenticated exact-main package artifact and checksum
+  inventory; the previously confirmed controller remains installed until proof.
+- Confirmed that controller only after both uniquely labelled trusted runners
+  independently installed and probed the provider-authenticated artifact.
+- Projected the final generated-workflow exclusion controller from its
+  authenticated exact-main package artifact while retaining the confirmed
+  predecessor until independent installation proof.
+- Confirmed that final controller only after independent bootstrap and probe
+  success on both uniquely labelled trusted runners.
 - Confirmed the final protection controller only after both trusted runners
   independently installed and probed the provider-selected artifact.
 - Completed the authored P18 implementation state only after local validation and
@@ -61,6 +77,25 @@ Release target: `1.0.2`
 - Allowed self-controller rotation to authenticate one complete package producer
   from a partial exact-main admission without relaxing complete-inventory
   requirements for certification.
+- Separated trusted default-main workflow-definition custody from an automation
+  run's provider-resolved PR commit and tree. Admissions now reject stale run
+  heads and PRs that advance while their provider state is being observed.
+- Replaced root-only Dependabot path globs with exact Git-tracked dependency and
+  eligible project-owned Actions surfaces derived from every configured update
+  directory. Generated dependency copies and their hashes are outputs rather
+  than independently accepted source changes.
+- Excluded renderer-owned workflow bytes from Dependabot producer scope and made
+  adoption reject an Actions updater with no project-owned surface. BCF now uses
+  Dependabot only for Python inputs; action pins remain canonical source changes
+  followed by mechanical rendering and authority pinning.
+- Made the trusted reconciler derive declared exact-copy dependency surfaces and
+  content-addressed manifest entries from authenticated source blobs. It rejects
+  stale baselines, independent output edits, and output-only changes before the
+  App creates one multi-path compare-and-swap commit.
+- Made the generated local `release-check` preserve the preflight command's exit
+  status before selecting its session path. A failed front door now stops before
+  evidence capture instead of letting `tail` mask the failure and derive a root
+  output path from an empty session value.
 
 ## [1.0.1] - 2026-09-02
 
