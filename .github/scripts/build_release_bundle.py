@@ -10,8 +10,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
+from release_source_inventory import validate_sdist_source_inventory
 
 
 def _run(
@@ -123,6 +123,7 @@ def build(output: Path, *, authorization: Path, artifact_name: str) -> list[Path
     sdists = [path for path in built if path.name.endswith(".tar.gz")]
     if len(wheels) != 1 or len(sdists) != 1 or len(built) != 2:
         raise ValueError("release build did not produce exactly one wheel and one sdist")
+    validate_sdist_source_inventory(REPO_ROOT, sdists[0])
     (assets / "SHA256SUMS").write_text(
         "".join(
             f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n"

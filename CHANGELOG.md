@@ -102,6 +102,10 @@ Release target: `1.0.2`
   status before selecting its session path. A failed front door now stops before
   evidence capture instead of letting `tail` mask the failure and derive a root
   output path from an empty session value.
+- Made the PR contract suite build an actual source archive and compare its
+  contents with the complete Git-tracked source inventory. Release
+  construction repeats the same check before upload, and all governed `.github`
+  Python and YAML inputs are now included mechanically rather than by subdirectory.
 
 ## [1.0.1] - 2026-09-02
 

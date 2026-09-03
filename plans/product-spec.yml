@@ -6,7 +6,7 @@ product:
   target_users: [framework maintainers and operators governing agent-led software delivery]
   non_goals: [proving application behavior without repository-specific executable evidence, treating AI output or provider presentation metadata as release authority, 'prescribing application-specific runner, database, browser, or service topology']
 constraints:
-  operating_constraints: [repo_native_runtime, candidate_code_executes_only_on_one_job_disposable_workers, trusted_status_and_release_mutations_require_authenticated_exact_workflow_run_session_and_bundle_identity]
+  operating_constraints: [repo_native_runtime, candidate_code_executes_only_on_one_job_disposable_workers, trusted_status_and_release_mutations_require_authenticated_exact_workflow_run_session_and_bundle_identity, release_sdist_contains_complete_git_tracked_source]
   known_external_dependencies: [github_actions, trusted_control_plane_and_disposable_vm_runner_substrate]
 architecture: {backend: python_package_with_private_portable_runtime, frontend: canonical_markdown_operator_and_maintainer_guides, data: closed_yaml_json_contracts_and_content_addressed_evidence}
 phase_history: {path: plans/phase-history.yml, through_phase: P17}

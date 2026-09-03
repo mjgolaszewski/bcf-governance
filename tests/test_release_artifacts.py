@@ -5,10 +5,15 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import tarfile
 from xml.etree import ElementTree
 import zipfile
 
 import pytest
+
+from bcf_governance.tooling.release_runtime_verification import (
+    is_release_sdist_test_context,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -18,6 +23,7 @@ if spec is None or spec.loader is None:
     raise RuntimeError("unable to load release artifact verifier")
 release_artifacts = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(release_artifacts)
+validate_sdist_source_inventory = release_artifacts.validate_sdist_source_inventory
 
 
 def test_release_artifact_entrypoint_bootstraps_clean_source_checkout() -> None:
@@ -40,6 +46,51 @@ def test_release_artifact_entrypoint_bootstraps_clean_source_checkout() -> None:
 
 def test_current_source_contains_complete_sdist_test_payload() -> None:
     release_artifacts.validate_sdist_payload(REPO_ROOT)
+
+
+def test_built_sdist_contains_every_governed_source_file(tmp_path: Path) -> None:
+    if is_release_sdist_test_context(REPO_ROOT):
+        pytest.skip("requires the canonical source repository's Git custody")
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "build",
+            "--no-isolation",
+            "--sdist",
+            "--outdir",
+            str(tmp_path),
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    archives = tuple(tmp_path.glob("bcf_governance-*.tar.gz"))
+    assert len(archives) == 1
+    validate_sdist_source_inventory(REPO_ROOT, archives[0])
+
+
+def test_missing_tracked_source_is_rejected_from_built_sdist(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "--quiet"], cwd=repo, check=True)
+    (repo / ".gitignore").write_text("dist/\n", encoding="utf-8")
+    (repo / "included.txt").write_text("included\n", encoding="utf-8")
+    (repo / "omitted.yml").write_text("omitted: true\n", encoding="utf-8")
+    subprocess.run(["git", "add", "."], cwd=repo, check=True)
+    archive = tmp_path / "fixture.tar.gz"
+    payload = tmp_path / "payload"
+    payload.mkdir()
+    included = payload / "included.txt"
+    included.write_text("included\n", encoding="utf-8")
+    with tarfile.open(archive, "w:gz") as output:
+        output.add(repo / ".gitignore", arcname="fixture/.gitignore")
+        output.add(included, arcname="fixture/included.txt")
+
+    with pytest.raises(ValueError, match="source archive omits tracked source: omitted.yml"):
+        validate_sdist_source_inventory(repo, archive)
 
 
 def test_pyproject_packages_every_discovered_runtime_asset() -> None:
