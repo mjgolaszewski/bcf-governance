@@ -17,8 +17,8 @@ inventory:
   jobs: 29
   semantic_roles: 29
   required_gates: 21
-  gate_negative_controls: 191
-  exact_test_nodes: {source: 747, contract: 371}
+  gate_negative_controls: 194
+  exact_test_nodes: {source: 759, contract: 383}
   scheduled_mutants: {validator_full: 15, semantic_full: 12}
   generated_workflow_owner: governance/ci-graph.yml plus four registered extensions
   generated_parity_owner: bcf ci graph render --check
@@ -77,12 +77,19 @@ authority_map:
   synchronization: typed manifest/lockfile decoders derive dependency previous version and new version
   drift_detection: schema 1.1 source coverage transition agreement and idempotent projection checks
   failure_behavior: titles bodies commit messages unsupported formats versionless changes conflicting manifests stale heads or unsafe paths cannot influence the write
+- fact: trusted-controller runtime dependency closure
+  canonical_owner: pyproject.toml project dependencies plus wheel Requires-Dist metadata decoded by governance.controller-wheelhouse-closure.v1
+  consumers: exact-main controller builder pin compiler bootstrap installer and release authorizer
+  synchronization: builder downloads the package-derived direct and transitive wheel closure records its build environment and completes one offline install
+  drift_detection: non-executing recursive wheel metadata validation runs before upload and again before pin compilation
+  failure_behavior: missing duplicate incompatible malformed direct-URL or environment-ambiguous wheels cannot produce or become a controller target
 duplication_disposition:
   mechanically_removed:
   - independent evidence-session root selection in gate-group and shard capture
   - hard-coded evidence subprocess deadline disconnected from gate contracts
   - path-only automated dependency changelog facts
   - ambiguous first-match mutation targets after runtime-owner decomposition
+  - hard-coded trusted-controller runtime requirement list
   already_mechanical:
   - generated workflow bytes and action pins
   - exact expected-job and matrix inventories
@@ -97,6 +104,12 @@ duplication_disposition:
   mutation_target_validation: every scheduled mutant search must identify exactly one canonical runtime location before execution
 historical_diagnosis:
   confirmed:
+  - run: 34412310621
+    sha: 7451d92263f7dcbc30d19a8567c6552009f4d124
+    class: incomplete trusted-controller dependency closure
+    evidence: both uniquely labelled trusted runners failed the identical offline staging command because artifact 10126859645 omitted packaging even though the project wheel required packaging greater than or equal to 24 and less than 27
+    product_assertion: true
+    disposition: no retry or probe; reproduce locally, derive all runtime requirements from pyproject metadata, validate recursive wheel closure before pin admission, and build a new exact-main artifact
   - run: local pre-remote artifact verification
     sha: 16eee0ade75baca1160626937263fea0fe8cfd22
     class: undeclared runtime dependency
@@ -151,6 +164,12 @@ safety_case:
   rendered_byte_change: provenance header digest only
   rollback: revert the policy/helper commit and mechanically rerender; no provider setting or stable check identity changes
   consumer_benefit: Standard-v2 installed runtimes receive the same audit command timeout validation typed dependency decoders and generated-copy parity
+rollout_replan:
+  original_pr_budget: 4
+  completed_before_incident: [implementation, initial_controller_target]
+  safe_total_pr_count: 6
+  remaining: [controller_closure_correction, corrected_controller_target, controller_confirmation, post_release_closeout]
+  reason: a corrected exact-main controller artifact cannot exist until the builder correction is merged; artifact custody prohibits local substitution or mutation of the failed bundle
 remaining_manual_authority:
 - fact: external runner availability repository permissions secrets environments ruleset and App installation
   owner: repository owner and GitHub provider

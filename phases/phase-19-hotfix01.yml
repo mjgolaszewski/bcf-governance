@@ -22,6 +22,8 @@ execution_evidence:
   - record failing workflows, diagnosed root cause, remediation scope, and merge-back
     status
   - preserve the generated workflow topology and complete all deterministic class validation before remote execution
+  - bootstrap run 34412310621 exposed one systemic incomplete-controller-wheelhouse defect on both runners; do not retry it or run probe until package-derived closure and a real offline install pass before upload
+  - 'the authenticated artifact prerequisite expands the safe train from four to six PRs: implementation, initial target, closure correction, corrected target, confirmation, and post-release closeout'
 closeout_requirements:
   claims:
     required_suites_green:

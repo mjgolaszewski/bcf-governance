@@ -90,12 +90,12 @@ validation:
     topology_change: none
     expected_version_drift: generated provenance headers and the immutable publisher tag advance to 1.0.3
   full_validation:
-    pytest: 747_collected
+    pytest: 759_collected
     governance_validation: passed
     exposure_scan: passed
     graph_validation_and_render_check: passed
-    exact_test_manifests: {source: 747, contract: 371}
-    gate_negative_controls: 191
+    exact_test_manifests: {source: 759, contract: 383}
+    gate_negative_controls: 194
     scheduled_mutants: {validator_full: 15_killed, semantic_full: 12_killed}
     package_artifacts:
       wheel: clean_install_cli_install_evidence_and_truth_passed
@@ -103,6 +103,14 @@ validation:
       twine: passed
       issue_reproductions: passed_inside_built_sdist_suite
     remaining_before_implementation_pr: [exact_local_pr_context, exact_commit_release_check]
+rollout_incident:
+  bootstrap_run: 34412310621
+  subject_commit: 7451d92263f7dcbc30d19a8567c6552009f4d124
+  failed_artifact_id: 10126859645
+  confirmed_cause: controller artifact omitted the newly declared packaging runtime wheel because its builder duplicated an older two-dependency list
+  failed_stage: checksum-admitted offline environment staging before controller execution or persistent installation
+  repeated_runner_result: identical_failure_on_both_trusted_runners
+  response: no retry and no probe; package-derived recursive closure validation and a real offline-install build check are required before a corrected exact-main artifact can be targeted
 consumer_handoff:
   policy: publish BCF 1.0.3 before consumer adoption
   racecar_mutation_in_this_phase: prohibited

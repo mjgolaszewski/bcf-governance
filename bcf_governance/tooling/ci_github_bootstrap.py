@@ -9,9 +9,36 @@ import re
 import shutil
 import subprocess
 from typing import Any
+import zipfile
+
+from packaging.markers import default_environment
+from packaging.requirements import InvalidRequirement, Requirement
+from packaging.utils import InvalidWheelFilename, canonicalize_name, parse_wheel_filename
 
 from .ci_github_api import GitHubAPI
 from .ci_github_identity import GitHubControllerError, positive_int
+
+
+_SUBJECT_METADATA_FIELDS = {
+    "commit_sha",
+    "tree_sha",
+    "workflow_run_id",
+    "workflow_run_attempt",
+}
+_RUNTIME_METADATA_FIELDS = {
+    "extra",
+    "implementation_name",
+    "implementation_version",
+    "os_name",
+    "platform_machine",
+    "platform_python_implementation",
+    "platform_release",
+    "platform_system",
+    "platform_version",
+    "python_full_version",
+    "python_version",
+    "sys_platform",
+}
 
 
 def _regular(path: Path, label: str) -> Path:
@@ -26,6 +53,100 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _wheel_metadata(path: Path) -> tuple[str, str, tuple[Requirement, ...]]:
+    try:
+        filename_name, filename_version, _, _ = parse_wheel_filename(path.name)
+        with zipfile.ZipFile(path) as archive:
+            metadata_names = [
+                name for name in archive.namelist() if name.endswith(".dist-info/METADATA")
+            ]
+            if len(metadata_names) != 1:
+                raise GitHubControllerError(
+                    f"controller dependency wheel metadata is not exact: {path.name}"
+                )
+            lines = archive.read(metadata_names[0]).decode("utf-8").splitlines()
+    except (InvalidWheelFilename, OSError, UnicodeError, zipfile.BadZipFile) as exc:
+        raise GitHubControllerError(
+            f"controller dependency wheel is invalid: {path.name}"
+        ) from exc
+    names = [line.partition(":")[2].strip() for line in lines if line.startswith("Name:")]
+    versions = [
+        line.partition(":")[2].strip() for line in lines if line.startswith("Version:")
+    ]
+    if len(names) != 1 or len(versions) != 1 or (
+        canonicalize_name(names[0]) != canonicalize_name(str(filename_name))
+        or versions[0] != str(filename_version)
+    ):
+        raise GitHubControllerError(
+            f"controller dependency wheel identity is invalid: {path.name}"
+        )
+    try:
+        requirements = tuple(
+            Requirement(line.partition(":")[2].strip())
+            for line in lines
+            if line.startswith("Requires-Dist:")
+        )
+    except InvalidRequirement as exc:
+        raise GitHubControllerError(
+            f"controller dependency metadata is invalid: {path.name}"
+        ) from exc
+    return canonicalize_name(names[0]), versions[0], requirements
+
+
+def _marker_environment(root: Path) -> dict[str, str]:
+    metadata = controller_metadata(root / "CONTROL-METADATA.json")
+    if metadata.get("schema_version") == "1.1":
+        if set(metadata) != {"schema_version", *_SUBJECT_METADATA_FIELDS, *_RUNTIME_METADATA_FIELDS}:
+            raise GitHubControllerError("controller metadata v1.1 field inventory is not exact")
+        environment = default_environment()
+        environment.update({field: metadata[field] for field in _RUNTIME_METADATA_FIELDS})
+        return environment
+    if metadata.get("schema_version") != "1.0" or set(metadata) != {
+        "schema_version",
+        *_SUBJECT_METADATA_FIELDS,
+    }:
+        raise GitHubControllerError("controller metadata schema is unsupported")
+    environment = default_environment()
+    environment["extra"] = ""
+    return environment
+
+
+def verify_controller_dependency_closure(root: Path) -> dict[str, str]:
+    """Reject a controller wheelhouse that cannot satisfy its own runtime metadata."""
+
+    environment = _marker_environment(root)
+    wheels = sorted(root.glob("*.whl"))
+    distributions: dict[str, tuple[str, tuple[Requirement, ...]]] = {}
+    for wheel in wheels:
+        name, version, requirements = _wheel_metadata(wheel)
+        if name in distributions:
+            raise GitHubControllerError(
+                f"controller dependency wheel is duplicated: {name}"
+            )
+        distributions[name] = (version, requirements)
+    for owner, (_, requirements) in sorted(distributions.items()):
+        for requirement in requirements:
+            if requirement.url is not None:
+                raise GitHubControllerError(
+                    f"controller dependency uses a direct URL: {owner} -> {requirement.name}"
+                )
+            if requirement.marker is not None and not requirement.marker.evaluate(environment):
+                continue
+            dependency = canonicalize_name(requirement.name)
+            selected = distributions.get(dependency)
+            if selected is None:
+                raise GitHubControllerError(
+                    f"controller dependency wheel is missing: {owner} -> {dependency}"
+                )
+            if requirement.specifier and not requirement.specifier.contains(
+                selected[0], prereleases=True
+            ):
+                raise GitHubControllerError(
+                    f"controller dependency version is incompatible: {owner} -> {dependency}"
+                )
+    return {name: value[0] for name, value in sorted(distributions.items())}
 
 
 def verify_controller_inventory(root: Path) -> tuple[Path, dict[str, str]]:
@@ -53,6 +174,7 @@ def verify_controller_inventory(root: Path) -> tuple[Path, dict[str, str]]:
     wheels = [path for name, path in actual.items() if name.startswith("bcf_governance-")]
     if len(wheels) != 1 or wheels[0].suffix != ".whl":
         raise GitHubControllerError("controller wheel inventory must contain exactly one wheel")
+    verify_controller_dependency_closure(root)
     return wheels[0], declared
 
 
@@ -64,6 +186,21 @@ def controller_metadata(path: Path) -> dict[str, str]:
     if not isinstance(value, dict) or any(not isinstance(item, str) for item in value.values()):
         raise GitHubControllerError("controller metadata must contain string fields")
     return value
+
+
+def verify_controller_subject_metadata(
+    path: Path, *, commit_sha: str, tree_sha: str, run_id: str, run_attempt: str
+) -> dict[str, str]:
+    metadata = controller_metadata(path)
+    if {field: metadata.get(field) for field in _SUBJECT_METADATA_FIELDS} != {
+        "commit_sha": commit_sha,
+        "tree_sha": tree_sha,
+        "workflow_run_id": run_id,
+        "workflow_run_attempt": run_attempt,
+    }:
+        raise GitHubControllerError("controller metadata is not the selected provider subject")
+    _marker_environment(path.parent)
+    return metadata
 
 
 def _safe_root(root: Path, tool_cache: Path, commit_sha: str) -> Path:
@@ -135,14 +272,13 @@ def install_controller(
     wheel, _ = verify_controller_inventory(artifact_dir.resolve())
     if _sha256(wheel) != wheel_sha256:
         raise GitHubControllerError("controller wheel digest does not match custody")
-    if controller_metadata(artifact_dir / "CONTROL-METADATA.json") != {
-        "schema_version": "1.0",
-        "commit_sha": commit_sha,
-        "tree_sha": tree_sha,
-        "workflow_run_id": run_id,
-        "workflow_run_attempt": str(attempt),
-    }:
-        raise GitHubControllerError("controller metadata is not the pinned exact-main subject")
+    verify_controller_subject_metadata(
+        artifact_dir / "CONTROL-METADATA.json",
+        commit_sha=commit_sha,
+        tree_sha=tree_sha,
+        run_id=run_id,
+        run_attempt=str(attempt),
+    )
     python = _regular(selected_python.resolve(), "selected bootstrap Python")
     cache = tool_cache.resolve()
     install_root = _safe_root(cache / "bcf-governance" / commit_sha, cache, commit_sha)

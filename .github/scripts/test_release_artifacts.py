@@ -27,6 +27,7 @@ from bcf_governance.tooling.release_runtime_verification import (
     SDIST_CUSTODY_COMMIT_MESSAGE,
     SDIST_PORTABLE_TEST_ENV,
 )
+from bcf_governance.tooling.ci_github_bootstrap import verify_controller_inventory
 from release_source_inventory import validate_sdist_source_inventory
 
 
@@ -179,11 +180,12 @@ def validate_wheel_runtime_assets(wheel: Path, source_root: Path) -> None:
 
 
 def validate_controller_wheel_directory(directory: Path, source_root: Path) -> Path:
-    wheels = sorted(directory.glob("bcf_governance-*.whl"))
-    if len(wheels) != 1:
-        raise RuntimeError("expected exactly one BCF controller wheel")
-    validate_wheel_runtime_assets(wheels[0], source_root)
-    return wheels[0]
+    try:
+        wheel, _ = verify_controller_inventory(directory.resolve())
+    except ValueError as exc:
+        raise RuntimeError(str(exc)) from exc
+    validate_wheel_runtime_assets(wheel, source_root)
+    return wheel
 
 
 def complete_lite_phase(repo: Path) -> None:

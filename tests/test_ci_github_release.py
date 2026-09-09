@@ -47,6 +47,7 @@ from bcf_governance.tooling.release_receipts import (
     ReleaseReceiptError,
     build_trusted_release_receipt,
 )
+from tests._wheel_fixture import write_wheel
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -546,7 +547,7 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
     controller_root = tmp_path / "controller"
     controller_root.mkdir()
     controller_wheel = controller_root / "bcf_governance-0.7.1-py3-none-any.whl"
-    controller_wheel.write_bytes(b"controller")
+    write_wheel(controller_wheel, name="bcf-governance", version="0.7.1")
     controller_metadata = _json(
         controller_root / "CONTROL-METADATA.json",
         {

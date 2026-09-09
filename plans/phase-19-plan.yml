@@ -22,6 +22,7 @@ delivery_contract:
   - canonical direct-root evidence-session selection shared by graph and shard capture
   - fail-closed duplicate receipt evidence and execution identity admission
   - deterministic effective-graph authority audit, timeout compatibility, and manifest-derived automation dependency transitions
+  - package-derived trusted-controller dependency closure with build-time offline installation and pre-pin rejection
   - immutable BCF 1.0.3 release and deterministic Racecar migration guidance
   parallelizable_workstreams:
   - id: P19-WS1
@@ -31,7 +32,7 @@ delivery_contract:
   - id: P19-WS3
     name: 'P19-WS3: CI authority audit timeout and automation dependency mechanics'
   - id: P19-WS4
-    name: 'P19-WS4: governed packaging controller rotation release and consumer handoff'
+    name: 'P19-WS4: governed controller closure rotation release and consumer handoff'
   hard_dependencies:
   - P18
   docker_first_local_runtime: repo_native_validation_and_governance_commands

@@ -17,6 +17,7 @@ from bcf_governance.tooling.ci_github_identity import (
     GitHubControllerError,
     MainIdentity,
 )
+from tests._wheel_fixture import write_wheel
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -106,7 +107,7 @@ class ConfirmationAPI:
 def _artifact_dir(root: Path) -> tuple[Path, str]:
     root.mkdir(parents=True)
     wheel = root / "bcf_governance-0.7.1-py3-none-any.whl"
-    wheel.write_bytes(b"controller-wheel")
+    write_wheel(wheel, name="bcf-governance", version="0.7.1")
     metadata = root / "CONTROL-METADATA.json"
     metadata.write_text(
         json.dumps(

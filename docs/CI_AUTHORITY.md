@@ -132,6 +132,15 @@ Python. Only that staged controller authenticates provider custody and creates t
 persistent installation. Restoring or replacing a trusted runner therefore cannot
 silently inherit authority from an absent or stale local cache.
 
+The controller builder does not maintain a second dependency list. It reads the
+package runtime requirements, downloads their complete binary closure, records the
+build interpreter and platform in controller metadata v1.1, validates every applicable
+direct and transitive `Requires-Dist` edge, and performs a real offline install and CLI
+smoke before upload. The trusted pin compiler repeats the non-executing metadata and
+closure validation against downloaded bytes. Missing, duplicated, incompatible,
+direct-URL, malformed, or environment-ambiguous dependency wheels therefore fail
+before a controller target can be projected or a trusted runner allocated.
+
 Authority v1.1 has a narrow self-hosting compatibility state. Its base registry,
 admission jobs, and producer inventories remain readable by a pre-enrichment v1.1
 controller while a successor controller is built. Privileged workflow job inventories

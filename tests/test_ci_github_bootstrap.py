@@ -4,11 +4,17 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import zipfile
 
 import pytest
 
-from bcf_governance.tooling.ci_github_bootstrap import install_controller
+from bcf_governance.tooling.ci_github_bootstrap import (
+    install_controller,
+    verify_controller_dependency_closure,
+    verify_controller_inventory,
+)
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError
+from tests._wheel_fixture import write_wheel
 
 
 COMMIT = "a" * 40
@@ -43,7 +49,7 @@ class FakeAPI:
 def _artifact(root: Path) -> tuple[Path, str]:
     root.mkdir()
     wheel = root / "bcf_governance-0.7.1-py3-none-any.whl"
-    wheel.write_bytes(b"controller-wheel")
+    write_wheel(wheel, name="bcf-governance", version="0.7.1")
     metadata = root / "CONTROL-METADATA.json"
     metadata.write_text(json.dumps({
         "schema_version": "1.0",
@@ -58,6 +64,143 @@ def _artifact(root: Path) -> tuple[Path, str]:
     ]
     (root / "SHA256SUMS").write_text("\n".join(lines) + "\n")
     return wheel, hashlib.sha256(wheel.read_bytes()).hexdigest()
+
+
+def _dependency_artifact(root: Path) -> None:
+    root.mkdir()
+    write_wheel(
+        root / "bcf_governance-1.0.3-py3-none-any.whl",
+        name="bcf-governance",
+        version="1.0.3",
+        requirements=(
+            "alpha>=2",
+            "optional; extra == 'dev'",
+            "fixture-only; platform_system == 'FixtureOS'",
+        ),
+    )
+    write_wheel(
+        root / "alpha-2.0-py3-none-any.whl",
+        name="alpha",
+        version="2.0",
+        requirements=("gamma==3",),
+    )
+    write_wheel(root / "gamma-3.0-py3-none-any.whl", name="gamma", version="3.0")
+    write_wheel(
+        root / "fixture_only-4.0-py3-none-any.whl",
+        name="fixture-only",
+        version="4.0",
+    )
+    (root / "CONTROL-METADATA.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1.1",
+                "commit_sha": COMMIT,
+                "tree_sha": TREE,
+                "workflow_run_id": "100",
+                "workflow_run_attempt": "1",
+                "extra": "",
+                "implementation_name": "cpython",
+                "implementation_version": "3.12.14",
+                "os_name": "posix",
+                "platform_machine": "x86_64",
+                "platform_python_implementation": "CPython",
+                "platform_release": "fixture-release",
+                "platform_system": "FixtureOS",
+                "platform_version": "fixture-version",
+                "python_full_version": "3.12.14",
+                "python_version": "3.12",
+                "sys_platform": "linux",
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_controller_dependency_closure_is_recursive_and_marker_aware(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "artifact"
+    _dependency_artifact(root)
+
+    assert verify_controller_dependency_closure(root) == {
+        "alpha": "2.0",
+        "bcf-governance": "1.0.3",
+        "fixture-only": "4.0",
+        "gamma": "3.0",
+    }
+
+
+def test_controller_dependency_markers_use_recorded_build_environment(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "artifact"
+    _dependency_artifact(root)
+    (root / "fixture_only-4.0-py3-none-any.whl").unlink()
+
+    with pytest.raises(GitHubControllerError, match="fixture-only"):
+        verify_controller_dependency_closure(root)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["missing", "version", "duplicate", "direct-url", "malformed", "environment", "metadata"],
+)
+def test_controller_dependency_closure_rejects_every_ambiguous_runtime(
+    tmp_path: Path, mutation: str
+) -> None:
+    root = tmp_path / "artifact"
+    _dependency_artifact(root)
+    if mutation == "missing":
+        (root / "gamma-3.0-py3-none-any.whl").unlink()
+    elif mutation == "version":
+        (root / "alpha-2.0-py3-none-any.whl").unlink()
+        write_wheel(root / "alpha-1.0-py3-none-any.whl", name="alpha", version="1.0")
+    elif mutation == "duplicate":
+        write_wheel(root / "alpha-2.1-py3-none-any.whl", name="alpha", version="2.1")
+    elif mutation in {"direct-url", "malformed"}:
+        write_wheel(
+            root / "bcf_governance-1.0.3-py3-none-any.whl",
+            name="bcf-governance",
+            version="1.0.3",
+            requirements=(
+                "remote @ https://example.invalid/remote.whl"
+                if mutation == "direct-url"
+                else "alpha=>2",
+            ),
+        )
+    elif mutation == "environment":
+        metadata = root / "CONTROL-METADATA.json"
+        value = json.loads(metadata.read_text(encoding="utf-8"))
+        del value["platform_system"]
+        metadata.write_text(json.dumps(value), encoding="utf-8")
+    else:
+        with zipfile.ZipFile(
+            root / "alpha-2.0-py3-none-any.whl", "a"
+        ) as archive:
+            archive.writestr("duplicate-2.0.dist-info/METADATA", "Name: duplicate\nVersion: 2.0\n")
+
+    with pytest.raises(GitHubControllerError, match="controller (dependency|metadata)"):
+        verify_controller_dependency_closure(root)
+
+
+def test_controller_inventory_rejects_missing_dependency_before_admission(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "artifact"
+    _dependency_artifact(root)
+    (root / "gamma-3.0-py3-none-any.whl").unlink()
+    admitted = sorted(root.glob("*.whl")) + [root / "CONTROL-METADATA.json"]
+    (root / "SHA256SUMS").write_text(
+        "".join(
+            f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n"
+            for path in admitted
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(GitHubControllerError, match="controller dependency wheel is missing"):
+        verify_controller_inventory(root)
 
 
 def test_bootstrap_authenticates_and_installs_one_exact_offline_controller(
