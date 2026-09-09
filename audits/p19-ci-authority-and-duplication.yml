@@ -99,6 +99,11 @@ historical_diagnosis:
     class: undeclared runtime dependency
     evidence: clean wheel installation failed importing automation_dependencies because packaging was present only in governance and release tooling inputs
     product_assertion: true
+  - run: local pre-remote extracted-sdist verification
+    sha: ce5fb6b718984ef7c45ee1e15c18b9935ef5928f
+    class: duplicate interpreter dependency ownership
+    evidence: packaging was declared by both project runtime dependencies and security-dependency-audit gate additions; the canonical environment compiler rejected both affected tests before projection
+    product_assertion: true
   - run: 33698496638
     sha: ef43d62ef78c03678ec3b7a884762bf29d5d1cc1
     class: artifact dispatch/fan-in error

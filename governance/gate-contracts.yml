@@ -2,7 +2,7 @@ document: {kind: gate_contract_registry, version: '1.0', path: governance/gate-c
 schema_version: '1.0'
 profile_contract_version: '2.0'
 target_profile: standard
-interpreter_contract: {project_dependencies: true, build_system_requirements: true, requirements_projection: requirements-governance.txt, optional_dependency_groups: [dev], gate_requirements: {security-dependency-audit: [pip, packaging]}}
+interpreter_contract: {project_dependencies: true, build_system_requirements: true, requirements_projection: requirements-governance.txt, optional_dependency_groups: [dev], gate_requirements: {security-dependency-audit: [pip]}}
 execution_policy: {default_timeout_seconds: 1800}
 gates:
   architecture-context-membership:
