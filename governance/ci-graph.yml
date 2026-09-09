@@ -5,10 +5,10 @@ profile_contract_version: '2.0'
 default_branch: main
 trusted_controller: {kind: self_governance_policy, policy_path: governance/self-governance-policy.yml}
 value_sources:
-  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 42e54a8089b054585c36e5c84d0e5c2c5d506f6a9b47b61865df6630bebd762c}
-  release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: e22ff1bf31b25e4309b61e27f51158fc6fa8a29786d7367db3acddbc326de408}
+  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: f2ae2f0a2277c3dfd473b5254fa502acdcfe8850865844cff51e9f7cb39df4f3}
+  release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: 5a1cf8ac5753478bbbbad5d9f08d19399e610eb59708f2a27580d2e491b12309}
   protection-contract: {kind: yaml, path: governance/github-protection.yml, sha256: 9bab9055ec8b52113a593fbc08c8931ea494a53f9af9e19b3eb3f3789c1efaa7}
-  automation-contract: {kind: yaml, path: governance/automation-producers.yml, sha256: 25256ba56927c91678705c6a3424114bb873bdc5109ab0f6e714b92808b7b504}
+  automation-contract: {kind: yaml, path: governance/automation-producers.yml, sha256: 74c02575f7599f9e4a82cacc60f6d60692ee81dd1f7bec20441e6b375cf77cce}
 extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]
 extensions:
 - {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: e735825595374b594c7f40375a68208f3e8f031329ab9cdce6783db4a20e3d4a}
@@ -500,5 +500,6 @@ policy:
   generated_workflows_only: true
   forbid_hosted_waiters: true
   forbidden_hosted_tokens: [sleep, poll, wait-for-runner, lease-runner]
+  minimum_gate_timeout_headroom_seconds: 300
   reserved_status_contexts:
   - {context: bcf/pr-certification, semantic_role: pr-certification-status-publisher}

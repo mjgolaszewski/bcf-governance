@@ -476,5 +476,6 @@ def build_reference_ci_graph(
             "generated_workflows_only": True,
             "forbid_hosted_waiters": True,
             "forbidden_hosted_tokens": ["sleep", "poll", "wait-for-runner", "lease-runner"],
+            "minimum_gate_timeout_headroom_seconds": 300,
         },
     }

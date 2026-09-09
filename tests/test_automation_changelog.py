@@ -9,6 +9,11 @@ import pytest
 import yaml
 
 from bcf_governance.tooling.automation_changelog import render_automation_changelog
+from bcf_governance.tooling.automation_dependencies import (
+    DependencyTransition,
+    dependency_source_kind,
+    derive_dependency_transitions,
+)
 from bcf_governance.tooling.automation_commands import adopt_dependabot
 from bcf_governance.tooling.automation_contracts import (
     AutomationContractError,
@@ -88,6 +93,129 @@ def test_changelog_projection_is_fixed_idempotent_and_source_sensitive() -> None
     assert changed.changed
     assert changed.content.count(b"bcf-automation-changelog") == 1
     assert changed.content.count(b"Automated dependency update") == 1
+
+
+def test_changelog_projection_uses_manifest_derived_version_transitions() -> None:
+    original = b"# Changelog\n\n## [Unreleased]\n\nNo unreleased changes.\n"
+    transition = DependencyTransition(
+        "pytest", "==9.0.3", "==9.1.1", ("requirements-governance.txt",)
+    )
+    result = render_automation_changelog(
+        original,
+        repository_id=42,
+        producer_id="dependabot",
+        pr_number=7,
+        source_state=SOURCE_A,
+        dependency_paths=("requirements-governance.txt",),
+        dependency_transitions=(transition,),
+    )
+    assert result.entry == (
+        "- Automated dependency update `dependabot` from PR #7: "
+        "`pytest` from `==9.0.3` to `==9.1.1` (`requirements-governance.txt`)."
+    )
+
+
+def test_dependency_transitions_are_derived_from_exact_manifest_bytes() -> None:
+    content = {
+        ("pyproject.toml", "base"): b'[project]\ndependencies=["demo==1.0"]\n',
+        ("pyproject.toml", "head"): b'[project]\ndependencies=["demo==2.0"]\n',
+        ("requirements.txt", "base"): b"demo==1.0\n",
+        ("requirements.txt", "head"): b"demo==2.0\n",
+    }
+    transitions = derive_dependency_transitions(
+        (
+            {"path": "pyproject.toml", "kind": "python-pyproject"},
+            {"path": "requirements.txt", "kind": "python-requirements"},
+        ),
+        content=lambda path, ref: content[(path, ref)],
+        base_ref="base",
+        head_ref="head",
+    )
+    assert transitions == (
+        DependencyTransition(
+            "demo", "==1.0", "==2.0", ("pyproject.toml", "requirements.txt")
+        ),
+    )
+
+
+def test_dependency_transition_rejects_versionless_or_conflicting_changes() -> None:
+    with pytest.raises(AutomationContractError, match="no version transition"):
+        derive_dependency_transitions(
+            ({"path": "requirements.txt", "kind": "python-requirements"},),
+            content=lambda _path, _ref: b"demo==1.0\n",
+            base_ref="base",
+            head_ref="head",
+        )
+    content = {
+        ("a.txt", "base"): b"demo==1.0\n",
+        ("a.txt", "head"): b"demo==2.0\n",
+        ("b.txt", "base"): b"demo==1.0\n",
+        ("b.txt", "head"): b"demo==3.0\n",
+    }
+    with pytest.raises(AutomationContractError, match="disagree"):
+        derive_dependency_transitions(
+            (
+                {"path": "a.txt", "kind": "python-requirements"},
+                {"path": "b.txt", "kind": "python-requirements"},
+            ),
+            content=lambda path, ref: content[(path, ref)],
+            base_ref="base",
+            head_ref="head",
+        )
+
+
+@pytest.mark.parametrize(
+    ("path", "kind", "before", "after", "dependency", "old", "new"),
+    [
+        ("requirements.txt", "python-requirements", b"demo==1\n", b"demo==2\n", "demo", "==1", "==2"),
+        ("pyproject.toml", "python-pyproject", b'[project]\ndependencies=["demo>=1"]\n', b'[project]\ndependencies=["demo>=2"]\n', "demo", ">=1", ">=2"),
+        ("uv.lock", "python-lock", b'[[package]]\nname="demo"\nversion="1"\n', b'[[package]]\nname="demo"\nversion="2"\n', "demo", "1", "2"),
+        ("Pipfile.lock", "python-pipfile-lock", b'{"default":{"demo":{"version":"==1"}}}', b'{"default":{"demo":{"version":"==2"}}}', "demo", "==1", "==2"),
+        ("package.json", "npm-package", b'{"dependencies":{"demo-js":"1"}}', b'{"dependencies":{"demo-js":"2"}}', "demo-js", "1", "2"),
+        ("package-lock.json", "npm-lock", b'{"packages":{"node_modules/demo-js":{"version":"1"}}}', b'{"packages":{"node_modules/demo-js":{"version":"2"}}}', "demo-js", "1", "2"),
+        (".github/workflows/ci.yml", "github-actions", b'jobs:\n  test:\n    steps:\n    - uses: actions/checkout@v4\n', b'jobs:\n  test:\n    steps:\n    - uses: actions/checkout@v5\n', "actions/checkout", "v4", "v5"),
+        ("Dockerfile", "dockerfile", b"FROM python:3.13\n", b"FROM python:3.14\n", "python", "3.13", "3.14"),
+    ],
+)
+def test_supported_dependency_manifests_have_exact_version_decoders(
+    path: str,
+    kind: str,
+    before: bytes,
+    after: bytes,
+    dependency: str,
+    old: str,
+    new: str,
+) -> None:
+    content = {(path, "base"): before, (path, "head"): after}
+
+    assert dependency_source_kind(path) == kind
+    assert derive_dependency_transitions(
+        ({"path": path, "kind": kind},),
+        content=lambda source, ref: content[(source, ref)],
+        base_ref="base",
+        head_ref="head",
+    ) == (DependencyTransition(dependency, old, new, (path,)),)
+
+
+def test_dependency_source_kind_rejects_unparsed_dependency_authority() -> None:
+    with pytest.raises(AutomationContractError, match="no deterministic version extractor"):
+        dependency_source_kind("vendor/custom.dependencies")
+
+
+@pytest.mark.parametrize(
+    ("before", "after", "old", "new"),
+    [(None, b"demo==2\n", "absent", "==2"), (b"demo==1\n", None, "==1", "absent")],
+)
+def test_dependency_transition_supports_added_and_removed_manifests(
+    before: bytes | None, after: bytes | None, old: str, new: str
+) -> None:
+    content = {("requirements.txt", "base"): before, ("requirements.txt", "head"): after}
+    assert derive_dependency_transitions(
+        ({"path": "requirements.txt", "kind": "python-requirements"},),
+        content=lambda path, ref: content[(path, ref)],
+        base_ref="base",
+        head_ref="head",
+    ) == (DependencyTransition("demo", old, new, ("requirements.txt",)),)
 
 
 def test_changelog_projection_rejects_duplicate_or_detached_markers() -> None:

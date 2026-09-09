@@ -1,12 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Schema 2.0 validates one receipt. Bundle-level admission is owned by governance.evidence-receipt-admission.v1: evidence identity and execution-slot collisions invalidate every member before grouping or claim selection.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "kind", "evidence_id", "gate_id", "producer", "invocation", "subject", "artifacts", "observations", "behavioral_probes", "result", "started_at", "timestamp"],
   "properties": {
     "schema_version": {"const": "2.0"},
     "kind": {"enum": ["gate", "test_suite", "runtime_health", "security_review", "finding_verification", "phase_closeout", "release"]},
-    "evidence_id": {"type": "string", "minLength": 1},
+    "evidence_id": {"type": "string", "minLength": 1, "description": "Unique within the exact subject and evidence session; filenames and directories do not provide identity."},
     "gate_id": {"type": "string", "minLength": 1},
     "producer": {
       "type": "object",
@@ -35,7 +36,7 @@
             "job": {"type": "string", "minLength": 1},
             "run_id": {"type": "string", "minLength": 1},
             "run_attempt": {"type": "string", "minLength": 1},
-            "matrix": {"type": "object"}
+            "matrix": {"type": "object", "description": "Canonical execution partition. Absence is normalized to an empty object only by the receipt-admission decoder."}
           }
         }
       }

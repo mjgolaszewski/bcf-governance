@@ -34,6 +34,7 @@ bcf ci graph lock --repo-root . --apply
 bcf ci graph validate --repo-root .
 bcf ci graph diagnose --repo-root . --format json
 bcf ci graph explain --repo-root . --format json
+bcf ci graph audit --repo-root . --format json
 bcf ci graph diff --repo-root .
 bcf ci graph render --repo-root . --check
 bcf ci graph render --repo-root . --apply
@@ -67,6 +68,21 @@ does not independently run on push. Scheduled controls remain scheduled
 evidence and are not pull-request prerequisites. Hosted jobs are rejected when
 their governed command contains polling, sleeping, leasing, or runner-wait
 operations.
+
+`audit` is the complete machine-readable authority and duplication view. It
+includes events and dispatch inputs, jobs and matrices, edges, permissions,
+conditions, concurrency, runner mappings, gate invocations and controls,
+artifacts, receipt schemas, exact test manifests, Make targets, truth claims,
+dependency surfaces, Dependabot rules, and remaining human/provider authority.
+Its output is derived from current repository bytes and does not copy facts from
+an earlier CI result.
+
+Gate execution deadlines are declared in
+`governance/gate-contracts.yml.execution_policy`, with optional per-invocation
+overrides. `ci-graph.yml` declares minimum outer headroom. Compilation fails
+when a gate-group or gate-shard workflow timeout cannot contain its longest gate
+deadline and that headroom; increasing either deadline still requires an
+evidence-backed review rather than being an automatic response to a failure.
 
 `diagnose` compiles the graph once and reports typed `runner`, `tool`,
 `permission`, `secret`, `event`, and `graph_input` prerequisites with a specific
@@ -118,8 +134,13 @@ and pinned from committed source. An Actions update with no project-owned action
 surface fails adoption with that diagnostic. BCF itself therefore enables only
 the `pip` updater. Adoption resolves the actor's numeric provider identity and
 does not activate write automation on fresh installations. The reconciler ignores
-titles, bodies, and commit messages; it writes one fixed audit entry and never
-approves or merges.
+titles, bodies, and commit messages. Producer contract v1.1 registers a typed
+version source for every dependency path, reads the exact authenticated base and
+head manifest bytes, and writes one fixed entry naming each dependency's previous
+and new version. Unsupported formats, unchanged versions, incomplete coverage,
+and conflicting manifests fail before write authority. Contract v1.0 remains
+readable for compatible existing consumers. The reconciler never approves or
+merges.
 
 Repositories with deterministic dependency mirrors may register
 `mechanical_projections` on the producer. Each declaration names one admitted
@@ -151,7 +172,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.2/bcf_governance-1.0.2-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.3/bcf_governance-1.0.3-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 1.0. Verify the
@@ -422,6 +443,14 @@ artifacts only when absent:
 bcf install --target . --upgrade
 ```
 
+For the 1.0.3 evidence-integrity patch, install the exact release artifact,
+run this upgrade to refresh pack-owned runtime and schema copies, and then run
+`bcf ci graph validate`, `bcf ci graph render --check`, and the repository's
+normal graph render/apply workflow. Commit any mechanically generated workflow
+bytes before recompiling workflow-authority pins in a following commit. Existing
+evidence must be recaptured because installed runtime and governed-tree bytes
+changed; do not copy or relabel pre-upgrade receipts.
+
 Upgrade preserves the repository's profile, gate contracts, evidence policy,
 CI graph, registered extensions, and all workflow bytes. It does not run a
 contract or evidence migration implicitly. A conflicting `--profile` or `--profile-contract-version`
@@ -526,6 +555,26 @@ a session manifest. Local automation that runs inside a provider process must
 declare its local identity explicitly with `--local-producer-id`; the immutable
 session then governs receipt producer binding instead of ambient provider
 environment variables.
+
+Dependent evidence producers select the session mechanically:
+
+```bash
+bcf evidence select-session --session-root .artifacts/bcf/sessions # non-authoritative until captured
+```
+
+Only direct children named `<session-id>/evidence-session.json` are candidates.
+Exactly one validated canonical root manifest is required. Receipt-local copies
+deeper in the selected session remain immutable evidence and do not create a
+second session candidate. Missing, multiple, symlinked, malformed, unreadable,
+misnamed, or permission-unsafe root manifests fail before a gate starts.
+
+Truth admits receipts before grouping them by gate or selecting claim evidence.
+Within one exact subject and session, both `evidence_id` and each execution slot
+must be unique. An execution slot is the gate, declared producer, workflow job,
+run, attempt, and canonical matrix or partition. A collision invalidates every
+member with a stable duplicate-identity diagnostic; a filename, directory,
+timestamp, reported result, artifact list, or observation cannot distinguish a
+copy. Distinct gates, producers, jobs, matrices, and partitions remain valid.
 
 ## Findings and provenance
 

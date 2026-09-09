@@ -34,7 +34,12 @@ from .evidence_gate_contracts import (
     expected_evidence_kinds,
     expected_invocations,
 )
-from .evidence_sessions import allocate_session, bind_session, local_producer_identity
+from .evidence_sessions import (
+    allocate_session,
+    bind_session,
+    local_producer_identity,
+    select_session,
+)
 from .evidence_sessions import receipt_workflow_identity
 from .evidence_test_adapters import (
     recompute_test_artifact_observations,
@@ -294,7 +299,14 @@ def _negative_control_results(
                 )
                 env, _ = _execution_env(worktree, contract, python_executable)
                 observed = (
-                    _run(negative_control_command(command, contract, control, python_executable, worktree), cwd=_execution_cwd(worktree, contract), env=env)
+                    _run(
+                        negative_control_command(
+                            command, contract, control, python_executable, worktree
+                        ),
+                        cwd=_execution_cwd(worktree, contract),
+                        env=env,
+                        timeout_seconds=contract["execution_timeout_seconds"],
+                    )
                     if applied
                     else None
                 )
@@ -528,7 +540,10 @@ def capture_gate(
                 worktree, contract, selected_python
             )
             result = _run(
-                runtime_command, cwd=_execution_cwd(worktree, contract), env=env
+                runtime_command,
+                cwd=_execution_cwd(worktree, contract),
+                env=env,
+                timeout_seconds=contract["execution_timeout_seconds"],
             )
             artifacts = _write_output_artifacts(output_dir, target, result)
             if session_artifact is not None:
@@ -536,6 +551,7 @@ def capture_gate(
             observations: dict[str, Any] = {
                 "exit_code": result.returncode,
                 "execution_environment": environment_metadata,
+                "execution_timeout_seconds": contract["execution_timeout_seconds"],
                 "environment_assertions": _environment_observations(contract, env),
             }
             if session is not None:
@@ -661,6 +677,8 @@ def main(argv: list[str] | None = None) -> None:
     session_parser.add_argument("--expected-gate", action="append", default=[])
     session_parser.add_argument("--expected-producer", action="append", default=[])
     session_parser.add_argument("--local-producer-id")
+    select_parser = subparsers.add_parser("select-session")
+    select_parser.add_argument("--session-root", type=Path, required=True)
     attest_parser = subparsers.add_parser("attest")
     attest_parser.add_argument("--bundle-dir", type=Path, required=True)
     attest_parser.add_argument("--private-key", type=Path, required=True)
@@ -698,6 +716,8 @@ def main(argv: list[str] | None = None) -> None:
                 ),
             )
             path = session.manifest_path
+        elif args.operation == "select-session":
+            path = select_session(args.session_root).manifest_path
         else:
             path = attest_bundle(
                 args.repo_root.resolve(),

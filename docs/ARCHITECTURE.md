@@ -100,6 +100,16 @@ Profile-v2 sessions additionally bind producer, provider run, attempt, profile,
 and the expected gate inventory. Truth recomputes observations rather than
 trusting the receipt's reported result.
 
+Session discovery and receipt admission each have one semantic owner. Capture
+selects the sole canonical manifest from direct session-root children, while
+retained receipt-local manifest copies are traversed only for safe mode
+restoration and later verification. Before aggregation, the receipt-admission
+decoder normalizes exact subject, session, evidence, producer, workflow,
+run-attempt, matrix or partition, and invocation identity. Duplicate evidence
+identities or execution slots invalidate every colliding receipt. This costs an
+extra bundle-wide comparison but prevents copied, renamed, or contradictory
+receipts from becoming independent evidence.
+
 Authors report only `planned` or `completed`. `verified`, `closed`, and release
 readiness are computed for the current subject. This avoids retroactive claims
 and makes invalidation explicit. It also means meaningful changes require new
@@ -113,6 +123,13 @@ manifests, workflow and architecture ownership, line budgets, applicable SOIP,
 syntax, and artifact namespace separation. Expensive integration and runtime
 gates still run after preflight; a green preflight is not release evidence by
 itself.
+
+Inner execution and outer workflow deadlines have separate purposes but cannot
+contradict each other. Gate contracts own subprocess deadlines. The compiled CI
+graph owns job deadlines and explicit minimum headroom, and refuses to render an
+evidence lane whose outer deadline cannot contain its longest possible gate.
+Historical duration measurements inform policy review; they are not values
+copied automatically from a previous green run.
 
 Selected-environment declarations follow the same ownership rule. Project,
 build-system, optional, and gate-specific requirements compile into one bootstrap

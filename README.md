@@ -17,7 +17,8 @@ separates two questions:
 - `bcf truth`: are lifecycle and release claims supported by current evidence
   for the exact Git subject?
 
-Development package version: `v1.0.2`. Release artifacts are published through
+Development package version: `v1.0.3`. The latest released artifacts remain
+`v1.0.2` until the governed 1.0.3 publication completes. Releases are published through
 immutable GitHub Releases after exact-main certification.
 
 ## Design thesis
@@ -205,10 +206,10 @@ it cannot preserve behavior and meet the repository's performance threshold.
 
 ## Install
 
-Install the `v1.0.2` wheel from its immutable GitHub Release:
+Install the `v1.0.3` wheel from its immutable GitHub Release:
 
 ```bash
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.2/bcf_governance-1.0.2-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.3/bcf_governance-1.0.3-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel. Release publication
@@ -251,6 +252,7 @@ bcf profile promote --repo-root . --to standard --contract-version 2.0 --check
 bcf profile promote --repo-root . --to standard --contract-version 2.0 --apply
 bcf ci graph validate --repo-root .
 bcf ci graph diagnose --repo-root .
+bcf ci graph audit --repo-root . --format json
 bcf ci graph render --repo-root . --check
 bcf ci adopt github --repo-root . --check
 # Repeat with --apply after reviewing the check output.
@@ -262,6 +264,12 @@ preserving project-owned profile, gate, evidence, graph, extension, and workflow
 bytes. Legacy contracts move only through the explicit, fail-closed
 `bcf migrate-contract` command. The destructive replacement path is the
 explicitly confirmed `--force-rescaffold`; BCF has no generic `--force` bypass.
+
+The graph audit renders the complete effective workflow, gate, artifact,
+receipt, test-manifest, dependency, timeout, and authority inventory from its
+canonical inputs. Evidence subprocess deadlines come from gate contracts; graph
+validation rejects an outer evidence job that cannot contain the longest inner
+deadline plus explicit headroom.
 
 The 1.0 contract supports Linux x86-64 and CPython 3.11–3.14.
 GitHub is its only executable CI provider and GitHub Releases is its distribution

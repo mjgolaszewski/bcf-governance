@@ -19,7 +19,7 @@
         "path": {"const": "governance/automation-producers.yml"}
       }
     },
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"enum": ["1.0", "1.1"]},
     "provider": {"const": "github"},
     "repository": {
       "type": "object",
@@ -37,7 +37,7 @@
       "properties": {
         "changelog_path": {"const": "CHANGELOG.md"},
         "section": {"const": "Changed"},
-        "entry_template": {"const": "- Automated dependency update `{producer_id}` from PR #{pr_number}: {dependency_paths}."},
+        "entry_template": {"enum": ["- Automated dependency update `{producer_id}` from PR #{pr_number}: {dependency_paths}.", "- Automated dependency update `{producer_id}` from PR #{pr_number}: {dependency_transitions}."]},
         "marker_prefix": {"const": "bcf-automation-changelog"},
         "maximum_changed_paths": {"type": "integer", "minimum": 1, "maximum": 100},
         "trusted_resource_class": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
@@ -87,6 +87,15 @@
         }
       }
     },
+    "dependencyVersionSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "kind"],
+      "properties": {
+        "path": {"$ref": "#/$defs/literalPath"},
+        "kind": {"enum": ["python-requirements", "python-pyproject", "python-lock", "python-pipfile-lock", "npm-package", "npm-lock", "github-actions", "dockerfile"]}
+      }
+    },
     "controls": {
       "type": "object",
       "additionalProperties": false,
@@ -113,6 +122,12 @@
         "branch_patterns": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/safePathPattern"}},
         "dependency_change_classes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["python", "github-actions", "npm", "docker"]}},
         "allowed_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/safePathPattern"}},
+        "dependency_version_sources": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {"$ref": "#/$defs/dependencyVersionSource"}
+        },
         "mechanical_projections": {
           "type": "array",
           "minItems": 1,
@@ -126,5 +141,22 @@
         {"if": {"properties": {"type": {"const": "github_app"}}}, "then": {"required": ["app_id"]}}
       ]
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"schema_version": {"const": "1.1"}}},
+      "then": {
+        "properties": {
+          "policy": {
+            "properties": {
+              "entry_template": {"const": "- Automated dependency update `{producer_id}` from PR #{pr_number}: {dependency_transitions}."}
+            }
+          },
+          "producers": {
+            "items": {"required": ["dependency_version_sources"]}
+          }
+        }
+      }
+    }
+  ]
 }

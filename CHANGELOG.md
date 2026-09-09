@@ -6,7 +6,49 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-No unreleased changes.
+Release target: `1.0.3`.
+
+### Added
+
+- Added `bcf evidence select-session`, the canonical fail-closed selector for a
+  dependent producer to locate one validated direct-child session manifest
+  without mistaking retained receipt copies for additional sessions.
+- Added the canonical `governance.evidence-receipt-admission.v1`
+  representation and causal controls for session selection and duplicate
+  receipt admission.
+- Added `bcf ci graph audit`, a deterministic inventory and authority map for
+  workflows, gates, tests, artifacts, receipts, dependencies, timeouts,
+  generated parity, and remaining external authority.
+- Added automation-producer contract v1.1 with typed dependency-manifest
+  decoders so trusted changelog entries name the dependency and its exact
+  previous and new versions without consuming pull-request prose.
+
+### Fixed
+
+- Generated gate-group jobs and BCF shard capture now share the same canonical
+  session selector, so transported receipt-local manifest copies cannot prevent
+  subsequent gates from starting.
+- Truth rejects every receipt involved in a duplicate evidence identity or
+  execution slot before gate grouping or claim selection; renamed,
+  contradictory, or relocated copies can no longer satisfy closure.
+- Evidence execution now consumes its deadline from the canonical gate contract,
+  and graph compilation rejects an outer evidence timeout that cannot contain
+  the longest inner deadline plus declared headroom.
+- Scheduled mutation validation now rejects missing or ambiguous source targets
+  before execution instead of replacing the first matching fragment.
+- Package validation now derives the complete third-party import set from the
+  runtime source and rejects undeclared runtime dependencies; `packaging` is
+  declared explicitly for dependency-manifest decoding.
+- Issue-remediation controls now belong to the exact contract-test population,
+  including the explicit parametrized receipt-collision oracle identity.
+
+### Compatibility
+
+- Receipt schema 2.0, profile contracts, the 21-gate Standard profile, CI graph
+  topology, and existing profile-v1 sessionless receipt support are unchanged.
+- Automation-producer contract v1.0 remains readable; explicit new adoption uses
+  v1.1. All 18 workflow paths, 29 job IDs and roles, runner mappings, required
+  checks, events, edges, permissions, and failure semantics remain unchanged.
 
 ## [1.0.2] - 2026-09-03
 

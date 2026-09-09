@@ -1,0 +1,109 @@
+document:
+  kind: defect_remediation_audit
+  name: BCF Governance P19 Issue 135 Remediation Audit
+  id: bcf-governance-p19-issue-135-remediation
+  version: 1.0.0
+  generated_at_utc: '2026-09-09T00:00:00Z'
+  status: corrective_action_applied
+  path: audits/p19-issue-135-remediation.yml
+scope:
+  repository: mjgolaszewski/bcf-governance
+  issue: https://github.com/mjgolaszewski/bcf-governance/issues/135
+  source_commit: f7934c45c758286c9369270306422d3110845925
+  affected_version: 1.0.2
+  target_version: 1.0.3
+  tracking_ids:
+  - P02-BCF-SESSION-SELECTION-001
+  - P02-BCF-DUPLICATE-RECEIPT-001
+  related_ci_authority_audit: audits/p19-ci-authority-and-duplication.yml
+compatibility:
+  receipt_schema: '2.0'
+  profile_contracts: unchanged
+  standard_required_gate_count: 21
+  ci_topology: unchanged
+  profile_v1_sessionless_receipts: retained
+  racecar_product_behavior: unchanged
+  workflow_paths_and_jobs: unchanged
+affected_source_custody:
+- path: bcf_governance/tooling/ci_graph_render.py
+  sha256: 5cc6f429e0f47ad9411b7e751fcacd84921f01bdb4d2851213d3da4b085bd0cc
+- path: bcf_governance/tooling/truth_receipts.py
+  sha256: 7b21ef8f7dc90d252ac917d6a6456cc89cc135c46dd5fbb183e6413774c7200c
+- path: bcf_governance/tooling/governance_truth.py
+  sha256: ad9a63fe70f1e5d6bd236c03f4c42bc7c868795eab3143b9efcea0d36cf15e17
+remediated_source_custody:
+- {path: bcf_governance/tooling/ci_graph_render.py, sha256: 612012f866f3a778104096027a625df59414eeefc13a7057fb2f4e47d6a91fc9}
+- {path: bcf_governance/tooling/evidence_sessions.py, sha256: 4903063250108595ffa299d11a6db46596e8b985bbf018db5839bf3f0baf6565}
+- {path: bcf_governance/tooling/truth_receipts.py, sha256: 9dc67f78523ffdfa6bfee0e5374b687c6b12639f8d2bc32db19e4154b2d7faed}
+- {path: .github/scripts/capture_governance_shard.py, sha256: 25d44be31f720148694e604ee26cf993da2e0a3ca911125f94c7269bc9680801}
+defects:
+- tracking_id: P02-BCF-SESSION-SELECTION-001
+  observed_before:
+    fixture: one canonical root plus four nested receipt manifest copies
+    exit_code: 1
+    observed_gate_calls: 0
+    required_gate_calls: 2
+    cause: generated gate_group recursively treated receipt-local manifest copies as session roots
+  semantic_owner:
+    representation: governance.evidence-session.v1
+    selector: bcf_governance/tooling/evidence_sessions.py::select_session
+    consumers:
+    - bcf_governance/tooling/ci_graph_render.py::_executor_steps
+    - .github/scripts/capture_governance_shard.py::main
+  observed_after:
+    fixture: six layout cases from the public observer reproduction
+    admitted_layout: one canonical root with any number of nested receipt copies
+    rejected_layouts: [empty, receipt_only, multiple_roots]
+    observed_gate_calls: 2
+    byte_mutation: none
+  causal_control: evidence-session-selection-must-remain-root-scoped
+- tracking_id: P02-BCF-DUPLICATE-RECEIPT-001
+  observed_before:
+    fixture: valid profile-v2 closed bundle plus an identical renamed receipt copy
+    evidence_integrity: pass
+    effective_state: closed
+    duplicate_diagnostic: absent
+    cause: receipts were grouped before any bundle-wide identity admission
+  semantic_owner:
+    representation: governance.evidence-receipt-admission.v1
+    decoder: bcf_governance/tooling/truth_receipts.py::_receipt_admission_identity
+    admission: bcf_governance/tooling/truth_receipts.py::_apply_receipt_identity_validation
+    consumer: bcf_governance/tooling/truth_receipts.py::load_receipts
+  observed_after:
+    identical_and_contradictory_copies: invalidated_before_grouping
+    stable_diagnostics:
+    - evidence_receipt_duplicate_evidence_identity
+    - evidence_receipt_duplicate_execution_identity
+    effective_state: not_closed
+    legal_distinctions: [gate, producer, workflow_job, matrix, partition]
+  causal_control: duplicate-receipt-admission-must-not-be-bypassed
+validation:
+  focused_tests:
+  - tests/test_ci_graph.py::test_gate_group_uses_the_canonical_session_selector_before_capture
+  - tests/test_governance_evidence.py::test_session_selector_admits_one_root_and_preserves_nested_receipt_copies
+  - tests/test_governance_evidence.py::test_transported_session_supports_a_dependent_producer_without_rewriting_inputs
+  - tests/test_governance_truth.py::test_duplicate_receipt_identity_invalidates_every_copy_before_aggregation
+  - tests/test_governance_truth.py::test_changed_evidence_id_cannot_hide_a_duplicate_execution
+  architecture_regression: tests/test_ci_graph.py::test_capture_surfaces_do_not_reimplement_session_root_selection
+  graph_render:
+    session_fix_effect_on_bcf_gate_shard_jobs: none
+    topology_change: none
+    expected_version_drift: generated provenance headers and the immutable publisher tag advance to 1.0.3
+  full_validation:
+    pytest: 747_collected
+    governance_validation: passed
+    exposure_scan: passed
+    graph_validation_and_render_check: passed
+    exact_test_manifests: {source: 747, contract: 371}
+    gate_negative_controls: 191
+    scheduled_mutants: {validator_full: 15_killed, semantic_full: 12_killed}
+    package_artifacts:
+      wheel: clean_install_cli_install_evidence_and_truth_passed
+      extracted_sdist: 744_passed_3_custody_skips
+      twine: passed
+      issue_reproductions: passed_inside_built_sdist_suite
+    remaining_before_implementation_pr: [exact_local_pr_context, exact_commit_release_check]
+consumer_handoff:
+  policy: publish BCF 1.0.3 before consumer adoption
+  racecar_mutation_in_this_phase: prohibited
+  preserved_visibility: Racecar security review may independently reject unresolved findings after capture proceeds

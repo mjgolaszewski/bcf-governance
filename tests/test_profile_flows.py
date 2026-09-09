@@ -13,6 +13,7 @@ import pytest
 import yaml
 
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
+from bcf_governance.tooling.ci_graph_audit import audit_ci_graph
 from bcf_governance.tooling.ci_graph_render import apply_ci_graph, check_ci_graph
 from bcf_governance.tooling.evidence_sessions import (
     allocate_session,
@@ -647,7 +648,12 @@ def test_clean_standard_v2_fixture_installs_upgrades_customizes_and_rolls_back(
         check=True,
     )
     unrelated = repo / ".github/workflows/application.yml"
-    unrelated.write_text("name: application\non: workflow_dispatch\njobs: {}\n", encoding="utf-8")
+    unrelated.write_text(
+        "name: application\non: workflow_dispatch\n"
+        "jobs:\n  application:\n    runs-on: ubuntu-24.04\n"
+        "    steps:\n    - run: 'true'\n",
+        encoding="utf-8",
+    )
     unrelated_bytes = unrelated.read_bytes()
     fixture_root = REPO_ROOT / "tests/fixtures/consumer_ci_graph"
     extension_path = repo / "governance/ci-extensions/fixture.yml"
@@ -672,6 +678,13 @@ def test_clean_standard_v2_fixture_installs_upgrades_customizes_and_rolls_back(
     governance = next(item for item in compiled.workflows if item["id"] == "governance")
     assert [job["id"] for job in governance["jobs"]].count("fixture-extension") == 1
     assert check_ci_graph(repo).status == "clean"
+    audit = audit_ci_graph(repo)
+    assert audit["status"] == "pass"
+    assert audit["inventory"]["required_status_checks"] == []
+    assert audit["inventory"]["dependabot_update_rules"] == []
+    assert audit["inventory"]["unmanaged_workflow_paths"] == [
+        ".github/workflows/application.yml"
+    ]
     assert unrelated.read_bytes() == unrelated_bytes
     project_owned = {
         path: (repo / path).read_bytes()

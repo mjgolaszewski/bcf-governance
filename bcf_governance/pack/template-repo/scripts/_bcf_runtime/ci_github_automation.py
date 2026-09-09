@@ -8,6 +8,7 @@ import re
 from typing import Any
 
 from .automation_changelog import render_automation_changelog
+from .automation_dependencies import derive_dependency_transitions
 from .automation_contracts import (
     AutomationContractError,
     REGISTRY_PATH,
@@ -68,6 +69,7 @@ def _pr_identity(pr: dict[str, Any]) -> dict[str, Any]:
         "head_branch": str(head.get("ref", "")),
         "head_repository_id": positive_int(head_repo.get("id"), field="head repository ID"),
         "base_branch": str(base.get("ref", "")),
+        "base_sha": exact_sha(base.get("sha"), field="pull request base SHA"),
         "base_repository_id": positive_int(base_repo.get("id"), field="base repository ID"),
         "actor_id": positive_int(actor.get("id"), field="actor ID"),
         "actor_login": str(actor.get("login", "")),
@@ -111,7 +113,7 @@ def _authenticated_match(
     registry: dict[str, Any],
     pr_number: int,
     repository_id: int,
-) -> tuple[dict[str, Any], Any, str]:
+) -> tuple[dict[str, Any], Any, str, tuple[tuple[str, str, str], ...]]:
     pr = _pr_identity(observer.pull_request(repository, pr_number))
     if pr["number"] != pr_number:
         raise GitHubControllerError("provider pull request number is inconsistent")
@@ -136,7 +138,7 @@ def _authenticated_match(
         head_branch=pr["head_branch"],
         changed_paths=changed_paths,
     )
-    return pr, match, _source_state(inventory, match.dependency_paths)
+    return pr, match, _source_state(inventory, match.dependency_paths), inventory
 
 
 def _candidate_identity(
@@ -159,10 +161,12 @@ def _automation_subject(
     registry: dict[str, Any],
     main: MainIdentity,
     run_id: object,
-) -> tuple[dict[str, Any], Any, str, CandidateIdentity]:
+) -> tuple[
+    dict[str, Any], Any, str, CandidateIdentity, tuple[tuple[str, str, str], ...]
+]:
     run = observer.run(repository, run_id)
     pr_number = _pull_request_number(run)
-    pr, match, source_state = _authenticated_match(
+    pr, match, source_state, _inventory = _authenticated_match(
         observer,
         repository=repository,
         registry=registry,
@@ -176,8 +180,12 @@ def _automation_subject(
         raise GitHubControllerError(
             "automation pull request does not target current default main"
         )
-    return pr, match, source_state, _candidate_identity(
-        observer, repository=repository, pr=pr
+    return (
+        pr,
+        match,
+        source_state,
+        _candidate_identity(observer, repository=repository, pr=pr),
+        _inventory,
     )
 
 
@@ -198,7 +206,7 @@ def admit_automation_pr(
         registry_content.content,
         schema_path=packaged_repo_root() / "schemas/automation-producers.schema.json",
     )
-    pr, match, source_state, candidate = _automation_subject(
+    pr, match, source_state, candidate, _inventory = _automation_subject(
         observer,
         repository=repository,
         registry=registry,
@@ -259,7 +267,7 @@ def reconcile_automation_changelog(
         require_success=False,
     )
     trigger_run_id, trigger_attempt = _trigger(event)
-    pr, match, source_state, candidate = _automation_subject(
+    pr, match, source_state, candidate, inventory = _automation_subject(
         observer,
         repository=repository,
         registry=registry,
@@ -284,6 +292,33 @@ def reconcile_automation_changelog(
     repository_id = int(main.repository_id)
     changelog_path = str(registry["policy"]["changelog_path"])
     current = observer.content(repository, changelog_path, ref=pr["head_sha"])
+    transitions = ()
+    if registry["schema_version"] == "1.1":
+        dependency_inventory = {
+            path: (status, blob)
+            for path, status, blob in inventory
+            if path in match.dependency_paths
+        }
+
+        def dependency_content(path: str, ref: str) -> bytes | None:
+            status, expected_head_blob = dependency_inventory[path]
+            if (status == "added" and ref == pr["base_sha"]) or (
+                status == "removed" and ref == pr["head_sha"]
+            ):
+                return None
+            observed = observer.content(repository, path, ref=ref)
+            if ref == pr["head_sha"] and observed.blob_oid != expected_head_blob:
+                raise AutomationContractError(
+                    f"dependency head blob disagrees with changed-file inventory: {path}"
+                )
+            return observed.content
+
+        transitions = derive_dependency_transitions(
+            match.dependency_version_sources,
+            content=dependency_content,
+            base_ref=pr["base_sha"],
+            head_ref=pr["head_sha"],
+        )
     projection = render_automation_changelog(
         current.content,
         repository_id=repository_id,
@@ -291,6 +326,7 @@ def reconcile_automation_changelog(
         pr_number=pr_number,
         source_state=source_state,
         dependency_paths=match.dependency_paths,
+        dependency_transitions=transitions,
     )
     common = {
         "repository_id": repository_id,
@@ -299,6 +335,15 @@ def reconcile_automation_changelog(
         "source_head": pr["head_sha"],
         "source_state": source_state,
         "dependency_paths": list(match.dependency_paths),
+        "dependency_transitions": [
+            {
+                "dependency": item.dependency,
+                "previous_version": item.previous_version,
+                "new_version": item.new_version,
+                "paths": list(item.paths),
+            }
+            for item in transitions
+        ],
         "marker": projection.marker,
     }
     generated = project_automation_outputs(

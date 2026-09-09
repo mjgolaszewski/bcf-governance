@@ -64,11 +64,20 @@ def _runtime_command(command: list[str], python_executable: Path) -> list[str]:
 
 
 def _run(
-    command: list[str], *, cwd: Path, env: dict[str, str] | None = None
+    command: list[str],
+    *,
+    cwd: Path,
+    env: dict[str, str] | None = None,
+    timeout_seconds: int,
 ) -> subprocess.CompletedProcess[str]:
     try:
         return subprocess.run(
-            command, cwd=cwd, env=env, capture_output=True, text=True, timeout=1800
+            command,
+            cwd=cwd,
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
         return subprocess.CompletedProcess(

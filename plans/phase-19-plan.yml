@@ -1,0 +1,48 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 19 Plan
+  id: project-phase-19-plan
+  version: 1.0.0
+  generated_at_utc: '2026-09-09T00:00:00Z'
+  status: planned
+  path: plans/phase-19-plan.yml
+phase:
+  id: P19
+  build_block: evidence-session-and-receipt-integrity-1.0.3
+  planner: codex
+  date: '2026-09-09'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - canonical direct-root evidence-session selection shared by graph and shard capture
+  - fail-closed duplicate receipt evidence and execution identity admission
+  - deterministic effective-graph authority audit, timeout compatibility, and manifest-derived automation dependency transitions
+  - immutable BCF 1.0.3 release and deterministic Racecar migration guidance
+  parallelizable_workstreams:
+  - id: P19-WS1
+    name: 'P19-WS1: session selection contract and transported-artifact capture'
+  - id: P19-WS2
+    name: 'P19-WS2: receipt admission identity and aggregate truth integrity'
+  - id: P19-WS3
+    name: 'P19-WS3: CI authority audit timeout and automation dependency mechanics'
+  - id: P19-WS4
+    name: 'P19-WS4: governed packaging controller rotation release and consumer handoff'
+  hard_dependencies:
+  - P18
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: preserve all workflow topology and required-check identities unless a mechanical audit proves a smaller change safer than validation
+- order: 2
+  statement: complete deterministic local validation and defect-class mutation coverage before any remote implementation run
+verification_plan:
+- .venv/bin/python -m pytest -q tests
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python .github/scripts/run_validator_mutants.py --profile full
+- .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full

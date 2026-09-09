@@ -7,6 +7,7 @@ import json
 import re
 import subprocess
 import xml.etree.ElementTree as ET
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -30,6 +31,42 @@ SECURITY_TOKENS = {
 
 class ReceiptError(ValueError):
     """Raised when a receipt bundle cannot be parsed."""
+
+
+@dataclass(frozen=True)
+class ReceiptAdmission:
+    """Canonical identity projections decoded from one hostile receipt."""
+
+    subject_identity: str
+    session_identity: str
+    evidence_id: str
+    gate_id: str
+    kind: str
+    producer_identity: str
+    workflow_identity: str
+    invocation_identity: str
+
+    @property
+    def evidence_identity(self) -> str:
+        return _identity_text(
+            {
+                "subject": self.subject_identity,
+                "session": self.session_identity,
+                "evidence_id": self.evidence_id,
+            }
+        )
+
+    @property
+    def execution_identity(self) -> str:
+        return _identity_text(
+            {
+                "subject": self.subject_identity,
+                "session": self.session_identity,
+                "gate_id": self.gate_id,
+                "producer": self.producer_identity,
+                "workflow": self.workflow_identity,
+            }
+        )
 
 
 def _git(repo_root: Path, *args: str, check: bool = True) -> str:
@@ -372,6 +409,158 @@ def _receipt_result(
     }
 
 
+def _identity_text(value: object) -> str:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+
+
+def _receipt_admission_identity(
+    result: dict[str, Any],
+) -> tuple[ReceiptAdmission | None, list[str]]:
+    """Decode the canonical admission representation for one receipt."""
+    receipt = result.get("receipt")
+    if not isinstance(receipt, dict):
+        return None, ["evidence_receipt_identity_ambiguous"]
+    subject = receipt.get("subject")
+    producer = receipt.get("producer")
+    invocation = receipt.get("invocation")
+    workflow = invocation.get("workflow") if isinstance(invocation, dict) else None
+    observations = receipt.get("observations")
+    issues: list[str] = []
+    subject_fields = {
+        "binding",
+        "commit_sha",
+        "tree_sha",
+        "execution_tree_sha",
+        "tracked_clean",
+        "untracked_clean",
+        "status_porcelain_sha256",
+    }
+    if not isinstance(subject, dict) or not subject_fields.issubset(subject):
+        issues.append("evidence_receipt_identity_ambiguous")
+    elif (
+        any(
+            not isinstance(subject.get(field), str) or not subject.get(field)
+            for field in (
+                "binding",
+                "commit_sha",
+                "tree_sha",
+                "execution_tree_sha",
+                "status_porcelain_sha256",
+            )
+        )
+        or not isinstance(subject.get("tracked_clean"), bool)
+        or not isinstance(subject.get("untracked_clean"), bool)
+    ):
+        issues.append("evidence_receipt_identity_ambiguous")
+    if not isinstance(producer, dict) or any(
+        not isinstance(producer.get(field), str) or not producer.get(field)
+        for field in ("kind", "id")
+    ):
+        issues.append("evidence_receipt_identity_ambiguous")
+    if (
+        not isinstance(invocation, dict)
+        or not isinstance(invocation.get("argv"), list)
+        or not invocation.get("argv")
+        or any(not isinstance(value, str) or not value for value in invocation.get("argv", []))
+        or not isinstance(invocation.get("cwd"), str)
+        or not invocation.get("cwd")
+        or not isinstance(invocation.get("environment"), dict)
+        or not isinstance(workflow, dict)
+    ):
+        issues.append("evidence_receipt_identity_ambiguous")
+    workflow_fields = ("provider", "path", "job", "run_id", "run_attempt")
+    if not isinstance(workflow, dict) or any(
+        not isinstance(workflow.get(field), str) or not workflow.get(field)
+        for field in workflow_fields
+    ):
+        issues.append("evidence_receipt_identity_ambiguous")
+    matrix = workflow.get("matrix", {}) if isinstance(workflow, dict) else None
+    if not isinstance(matrix, dict):
+        issues.append("evidence_receipt_identity_ambiguous")
+    session: dict[str, str] | str = "sessionless"
+    session_observation = (
+        observations.get("evidence_session") if isinstance(observations, dict) else None
+    )
+    if isinstance(observations, dict) and "evidence_session" in observations:
+        if not isinstance(session_observation, dict) or any(
+            not isinstance(session_observation.get(field), str)
+            or not session_observation.get(field)
+            for field in ("session_id", "manifest_sha256")
+        ):
+            issues.append("evidence_receipt_identity_ambiguous")
+        else:
+            session = {
+                "session_id": session_observation["session_id"],
+                "manifest_sha256": session_observation["manifest_sha256"],
+            }
+    for field in ("schema_version", "kind", "evidence_id", "gate_id"):
+        if not isinstance(receipt.get(field), str) or not receipt.get(field):
+            issues.append("evidence_receipt_identity_ambiguous")
+    if issues:
+        return None, sorted(set(issues))
+    admission = ReceiptAdmission(
+        subject_identity=_identity_text(subject),
+        session_identity=_identity_text(session),
+        evidence_id=receipt["evidence_id"],
+        gate_id=receipt["gate_id"],
+        kind=receipt["kind"],
+        producer_identity=_identity_text(producer),
+        workflow_identity=_identity_text(
+            {
+                **{field: workflow[field] for field in workflow_fields},
+                "matrix": matrix,
+            }
+        ),
+        invocation_identity=_identity_text(
+            {
+                "argv": invocation["argv"],
+                "cwd": invocation["cwd"],
+                "environment": invocation["environment"],
+            }
+        ),
+    )
+    return admission, []
+
+
+def _apply_receipt_identity_validation(results: list[dict[str, Any]]) -> None:
+    """Invalidate every ambiguous or colliding receipt before aggregation."""
+    evidence_identities: dict[str, list[dict[str, Any]]] = {}
+    execution_identities: dict[str, list[dict[str, Any]]] = {}
+    for result in results:
+        admission, issues = _receipt_admission_identity(result)
+        result["issues"] = sorted(set([*result.get("issues", []), *issues]))
+        if admission is not None:
+            evidence_identities.setdefault(admission.evidence_identity, []).append(result)
+            execution_identities.setdefault(admission.execution_identity, []).append(result)
+    for values in evidence_identities.values():
+        if len(values) <= 1:
+            continue
+        for result in values:
+            result["issues"] = sorted(
+                set(
+                    [
+                        *result.get("issues", []),
+                        "evidence_receipt_duplicate_evidence_identity",
+                    ]
+                )
+            )
+    for values in execution_identities.values():
+        if len(values) <= 1:
+            continue
+        for result in values:
+            result["issues"] = sorted(
+                set(
+                    [
+                        *result.get("issues", []),
+                        "evidence_receipt_duplicate_execution_identity",
+                    ]
+                )
+            )
+    for result in results:
+        if result.get("issues"):
+            result["result"] = "invalid"
+
+
 def load_receipts(
     repo_root: Path,
     evidence_dir: Path,
@@ -385,7 +574,7 @@ def load_receipts(
     selected_profile: str = "standard",
     contract_version: str = "1.0",
 ) -> dict[str, list[dict[str, Any]]]:
-    by_gate: dict[str, list[dict[str, Any]]] = {}
+    results: list[dict[str, Any]] = []
     schema_path = repo_root / "schemas/evidence-receipt.schema.json"
     receipt_schema = yaml.safe_load(schema_path.read_text(encoding="utf-8"))
     if not isinstance(receipt_schema, dict):
@@ -408,15 +597,19 @@ def load_receipts(
             expected_kinds=expected_kinds,
             invocations=invocations,
         )
-        gate_id = str(result.get("gate_id") or "")
-        by_gate.setdefault(gate_id, []).append(result)
+        results.append(result)
+    _apply_receipt_identity_validation(results)
     if require_session:
         apply_session_validation(
             repo_root,
-            (result for values in by_gate.values() for result in values),
+            results,
             current=current,
             selected_profile=selected_profile,
             contract_version=contract_version,
             expected_gates=set(expected_kinds),
         )
+    by_gate: dict[str, list[dict[str, Any]]] = {}
+    for result in results:
+        gate_id = str(result.get("gate_id") or "")
+        by_gate.setdefault(gate_id, []).append(result)
     return by_gate

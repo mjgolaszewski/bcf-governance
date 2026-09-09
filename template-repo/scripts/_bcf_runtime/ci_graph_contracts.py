@@ -17,6 +17,7 @@ from .ci_graph_execution import job_execution_issues, workflow_input_issues
 from .ci_graph_authority_policy import validate_graph_authority_policy
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 from .ci_graph_values import CIGraphValueError, resolve_graph_values
+from .ci_graph_timeouts import validate_gate_job_timeouts
 
 
 GRAPH_PATH = Path("governance/ci-graph.yml")
@@ -777,6 +778,7 @@ def validate_ci_graph(
     _validate_schema(composed, graph_schema, "composed CI graph")
     _validate_step_components(composed)
     _validate_workflows(composed)
+    validate_gate_job_timeouts(repo_root, composed)
     validate_graph_authority_policy(repo_root, composed)
     _validate_hosted_commands(composed)
     _validate_required_gate_ownership(repo_root, composed)

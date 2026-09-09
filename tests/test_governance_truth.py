@@ -531,6 +531,16 @@ def _rewrite_receipt(path: Path, transform: Any) -> None:
     path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _copy_receipt_with_artifacts(source: Path, destination: Path) -> Path:
+    destination.mkdir(parents=True)
+    receipt = json.loads(source.read_text(encoding="utf-8"))
+    for artifact in receipt["artifacts"]:
+        shutil.copy2(source.parent / artifact["path"], destination / artifact["path"])
+    target = destination / "renamed.evidence.json"
+    shutil.copy2(source, target)
+    return target
+
+
 def test_completed_without_evidence_remains_completed_and_truth_fails(tmp_path: Path) -> None:
     repo = _make_repo(tmp_path)
     evidence_dir = repo / ".artifacts/bcf"
@@ -714,6 +724,140 @@ def test_profile_v2_session_computes_closed(tmp_path: Path) -> None:
 
     assert report["status"] == "pass"
     assert report["effective_state"] == "closed"
+
+
+@pytest.mark.parametrize("contradictory", [False, True])
+def test_duplicate_receipt_identity_invalidates_every_copy_before_aggregation(
+    tmp_path: Path, contradictory: bool
+) -> None:
+    repo = _make_repo(tmp_path)
+    evidence = _enable_v2_session(repo)
+    duplicate = _copy_receipt_with_artifacts(
+        evidence / "test.evidence.json", evidence / "transported" / "quality"
+    )
+    if contradictory:
+        _rewrite_receipt(duplicate, lambda receipt: receipt.update({"result": "failed"}))
+
+    report = derive_truth(repo, evidence)
+
+    refs = [
+        ref
+        for ref in report["claims"]["required_suites_green"]["evidence_refs"]
+        if ref["gate_id"] == "test"
+    ]
+    assert report["status"] == "fail"
+    assert report["checks"]["evidence_integrity"] == "fail"
+    assert len(refs) == 2
+    assert all(
+        "evidence_receipt_duplicate_evidence_identity" in ref["issues"]
+        and "evidence_receipt_duplicate_execution_identity" in ref["issues"]
+        for ref in refs
+    )
+
+
+def test_changed_evidence_id_cannot_hide_a_duplicate_execution(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+    evidence = _enable_v2_session(repo)
+    duplicate = _copy_receipt_with_artifacts(
+        evidence / "test.evidence.json", evidence / "transported"
+    )
+    _rewrite_receipt(
+        duplicate,
+        lambda receipt: receipt.update({"evidence_id": "renamed-test-evidence"}),
+    )
+
+    report = derive_truth(repo, evidence)
+
+    refs = report["claims"]["required_suites_green"]["evidence_refs"]
+    assert report["checks"]["evidence_integrity"] == "fail"
+    assert all(
+        "evidence_receipt_duplicate_execution_identity" in ref["issues"]
+        for ref in refs
+        if ref["gate_id"] == "test"
+    )
+
+
+def test_missing_and_empty_matrix_forms_share_one_execution_slot(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+    evidence = _enable_v2_session(repo)
+    original = evidence / "test.evidence.json"
+    _rewrite_receipt(
+        original,
+        lambda receipt: receipt["invocation"]["workflow"].pop("matrix"),
+    )
+    duplicate = _copy_receipt_with_artifacts(original, evidence / "transported")
+
+    def normalize_as_explicit_empty(receipt: dict[str, Any]) -> None:
+        receipt["evidence_id"] = "different-id"
+        receipt["invocation"]["workflow"]["matrix"] = {}
+
+    _rewrite_receipt(duplicate, normalize_as_explicit_empty)
+
+    report = derive_truth(repo, evidence)
+
+    refs = report["claims"]["required_suites_green"]["evidence_refs"]
+    assert report["checks"]["evidence_integrity"] == "fail"
+    assert all(
+        "evidence_receipt_duplicate_execution_identity" in ref["issues"]
+        for ref in refs
+        if ref["gate_id"] == "test"
+    )
+
+
+def test_ambiguous_receipt_identity_fails_closed(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+    evidence = _enable_v2_session(repo)
+    receipt = evidence / "test.evidence.json"
+    _rewrite_receipt(
+        receipt,
+        lambda value: value["invocation"]["workflow"].update({"matrix": None}),
+    )
+
+    report = derive_truth(repo, evidence)
+
+    refs = report["claims"]["required_suites_green"]["evidence_refs"]
+    assert report["status"] == "fail"
+    assert any(
+        "evidence_receipt_identity_ambiguous" in ref["issues"] for ref in refs
+    )
+
+
+@pytest.mark.parametrize("distinction", ["producer", "job", "matrix", "partition"])
+def test_distinct_legal_receipt_producers_and_shards_remain_admissible(
+    tmp_path: Path, distinction: str
+) -> None:
+    repo = _make_repo(tmp_path)
+    evidence = _enable_v2_session(repo)
+    if distinction in {"producer", "job"}:
+        _rewrite_session_bundle(
+            evidence,
+            lambda manifest: manifest["expected_producer_inventory"].append("evidence-2"),
+        )
+    duplicate = _copy_receipt_with_artifacts(
+        evidence / "test.evidence.json", evidence / "transported" / distinction
+    )
+
+    def distinguish(receipt: dict[str, Any]) -> None:
+        receipt["evidence_id"] = f"test-evidence-{distinction}"
+        if distinction == "producer":
+            receipt["producer"] = {"kind": "workflow", "id": "test-ci-2"}
+            receipt["invocation"]["workflow"]["job"] = "evidence-2"
+        elif distinction == "job":
+            receipt["invocation"]["workflow"]["job"] = "evidence-2"
+        else:
+            receipt["invocation"]["workflow"]["matrix"] = {
+                "gate": "test",
+                "shard" if distinction == "matrix" else "partition": (
+                    2 if distinction == "matrix" else "quality"
+                ),
+            }
+
+    _rewrite_receipt(duplicate, distinguish)
+
+    report = derive_truth(repo, evidence)
+
+    assert report["status"] == "pass"
+    assert report["checks"]["evidence_integrity"] == "pass"
 
 
 @pytest.mark.parametrize(

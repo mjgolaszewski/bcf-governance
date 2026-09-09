@@ -1,0 +1,41 @@
+document:
+  kind: hotfix_execution_log
+  name: P19-HF01 Hotfix Log
+  id: project-phase-19-hotfix01
+  version: 1.0.0
+  generated_at_utc: '2026-09-09T00:00:00Z'
+  status: planned
+  path: phases/phase-19-hotfix01.yml
+hotfix:
+  id: P19-HF01
+  mode: full
+  related_phase_id: P19
+  hotfix_number: 1
+  summary: Issue 135 release-blocking evidence-session and receipt-admission defects plus owner-directed CI authority class audit
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests/test_ci_graph.py tests/test_governance_evidence.py
+    tests/test_governance_truth.py
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  executed_commands: []
+  notes:
+  - record failing workflows, diagnosed root cause, remediation scope, and merge-back
+    status
+  - preserve the generated workflow topology and complete all deterministic class validation before remote execution
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml
