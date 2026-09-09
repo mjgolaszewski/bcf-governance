@@ -92,6 +92,9 @@ class FakeAutomationAPI:
         if path == "CHANGELOG.md":
             assert ref == HEAD
             return GitHubContent(path, WORKFLOW_BLOB, self.changelog)
+        if path == "requirements-governance.txt":
+            version = "9.0.3" if ref == MAIN else "9.1.1"
+            return GitHubContent(path, DEPENDENCY_BLOB, f"pytest=={version}\n".encode())
         assert path.startswith(".github/workflows/") and ref == MAIN
         return GitHubContent(path, WORKFLOW_BLOB, WORKFLOW)
 
@@ -103,7 +106,7 @@ class FakeAutomationAPI:
             "draft": True,
             "user": {"id": self.actor_id, "login": self.actor_login},
             "head": {"sha": HEAD, "ref": "dependabot/pip/pytest-9.1", "repo": {"id": REPOSITORY_ID}},
-            "base": {"ref": "main", "repo": {"id": REPOSITORY_ID}},
+            "base": {"ref": "main", "sha": MAIN, "repo": {"id": REPOSITORY_ID}},
         }
 
     def pull_request_files(self, repository: str, number: object) -> tuple[dict[str, object], ...]:
@@ -163,6 +166,7 @@ def test_metadata_admission_and_reconciliation_use_provider_identity_only() -> N
     assert api.updated == ("dependabot/pip/pytest-9.1", HEAD, CREATED_COMMIT)
     assert b"PR #7" in api.created_content
     assert b"pytest-9.1" not in api.created_content
+    assert b"`pytest` from `==9.0.3` to `==9.1.1`" in api.created_content
 
 
 def test_actor_name_spoof_does_not_replace_numeric_authority() -> None:
@@ -239,6 +243,23 @@ def test_unrelated_path_is_rejected_before_writer_use() -> None:
         {"filename": "src/product.py", "status": "modified", "sha": DEPENDENCY_BLOB},
     )
     with pytest.raises(AutomationContractError, match="unexpected paths"):
+        reconcile_automation_changelog(
+            api,
+            api,
+            repository=REPOSITORY,
+            event={"workflow_run": {"id": 10, "run_attempt": 1}},
+            reconciler_run_id="20",
+            reconciler_run_attempt="1",
+        )
+    assert api.updated is None
+
+
+def test_dependency_head_blob_must_match_changed_file_inventory() -> None:
+    api = FakeAutomationAPI()
+    api.pull_request_files = lambda *_args, **_kwargs: (  # type: ignore[method-assign]
+        {"filename": "requirements-governance.txt", "status": "modified", "sha": "8" * 40},
+    )
+    with pytest.raises(AutomationContractError, match="blob disagrees"):
         reconcile_automation_changelog(
             api,
             api,

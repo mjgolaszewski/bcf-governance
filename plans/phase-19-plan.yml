@@ -21,6 +21,7 @@ delivery_contract:
   tightly_scoped_deliverables:
   - canonical direct-root evidence-session selection shared by graph and shard capture
   - fail-closed duplicate receipt evidence and execution identity admission
+  - deterministic effective-graph authority audit, timeout compatibility, and manifest-derived automation dependency transitions
   - immutable BCF 1.0.3 release and deterministic Racecar migration guidance
   parallelizable_workstreams:
   - id: P19-WS1
@@ -28,15 +29,18 @@ delivery_contract:
   - id: P19-WS2
     name: 'P19-WS2: receipt admission identity and aggregate truth integrity'
   - id: P19-WS3
-    name: 'P19-WS3: governed packaging controller rotation release and consumer handoff'
+    name: 'P19-WS3: CI authority audit timeout and automation dependency mechanics'
+  - id: P19-WS4
+    name: 'P19-WS4: governed packaging controller rotation release and consumer handoff'
   hard_dependencies:
   - P18
   docker_first_local_runtime: repo_native_validation_and_governance_commands
   completeness_standard: full_completeness_for_declared_scope
 scope_lock:
 - order: 1
-  statement: keep the phase narrowly scoped to declared deliverables and update canonical
-    governed artifacts in the same change
+  statement: preserve all workflow topology and required-check identities unless a mechanical audit proves a smaller change safer than validation
+- order: 2
+  statement: complete deterministic local validation and defect-class mutation coverage before any remote implementation run
 verification_plan:
 - .venv/bin/python -m pytest -q tests
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .

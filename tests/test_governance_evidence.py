@@ -240,6 +240,7 @@ sys.exit(0 if PASS else 1)
     assert receipt["subject"]["binding"] == "exact_tree"
     assert receipt["subject"]["tracked_clean"] is True
     assert receipt["observations"]["exit_code"] == 0
+    assert receipt["observations"]["execution_timeout_seconds"] == 1800
     assert receipt["observations"]["test_counts"]["executed"] == 1
     assert receipt["observations"]["test_counts"]["skipped"] == 0
     assert receipt["behavioral_probes"][0]["mutation_applied"] is True

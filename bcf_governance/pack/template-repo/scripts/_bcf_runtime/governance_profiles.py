@@ -452,6 +452,7 @@ def load_contract(
         "schema_version": "1.0",
         "profile_contract_version": contract_version,
         "target_profile": profile,
+        "execution_policy": {"default_timeout_seconds": 1800},
         "gates": gates,
         "gate_catalog": gate_catalog,
         "provenance": provenance,

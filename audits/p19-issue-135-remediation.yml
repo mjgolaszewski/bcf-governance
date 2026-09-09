@@ -15,6 +15,7 @@ scope:
   tracking_ids:
   - P02-BCF-SESSION-SELECTION-001
   - P02-BCF-DUPLICATE-RECEIPT-001
+  related_ci_authority_audit: audits/p19-ci-authority-and-duplication.yml
 compatibility:
   receipt_schema: '2.0'
   profile_contracts: unchanged
@@ -22,6 +23,7 @@ compatibility:
   ci_topology: unchanged
   profile_v1_sessionless_receipts: retained
   racecar_product_behavior: unchanged
+  workflow_paths_and_jobs: unchanged
 affected_source_custody:
 - path: bcf_governance/tooling/ci_graph_render.py
   sha256: 5cc6f429e0f47ad9411b7e751fcacd84921f01bdb4d2851213d3da4b085bd0cc

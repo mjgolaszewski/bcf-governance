@@ -34,6 +34,7 @@ bcf ci graph lock --repo-root . --apply
 bcf ci graph validate --repo-root .
 bcf ci graph diagnose --repo-root . --format json
 bcf ci graph explain --repo-root . --format json
+bcf ci graph audit --repo-root . --format json
 bcf ci graph diff --repo-root .
 bcf ci graph render --repo-root . --check
 bcf ci graph render --repo-root . --apply
@@ -67,6 +68,21 @@ does not independently run on push. Scheduled controls remain scheduled
 evidence and are not pull-request prerequisites. Hosted jobs are rejected when
 their governed command contains polling, sleeping, leasing, or runner-wait
 operations.
+
+`audit` is the complete machine-readable authority and duplication view. It
+includes events and dispatch inputs, jobs and matrices, edges, permissions,
+conditions, concurrency, runner mappings, gate invocations and controls,
+artifacts, receipt schemas, exact test manifests, Make targets, truth claims,
+dependency surfaces, Dependabot rules, and remaining human/provider authority.
+Its output is derived from current repository bytes and does not copy facts from
+an earlier CI result.
+
+Gate execution deadlines are declared in
+`governance/gate-contracts.yml.execution_policy`, with optional per-invocation
+overrides. `ci-graph.yml` declares minimum outer headroom. Compilation fails
+when a gate-group or gate-shard workflow timeout cannot contain its longest gate
+deadline and that headroom; increasing either deadline still requires an
+evidence-backed review rather than being an automatic response to a failure.
 
 `diagnose` compiles the graph once and reports typed `runner`, `tool`,
 `permission`, `secret`, `event`, and `graph_input` prerequisites with a specific
@@ -118,8 +134,13 @@ and pinned from committed source. An Actions update with no project-owned action
 surface fails adoption with that diagnostic. BCF itself therefore enables only
 the `pip` updater. Adoption resolves the actor's numeric provider identity and
 does not activate write automation on fresh installations. The reconciler ignores
-titles, bodies, and commit messages; it writes one fixed audit entry and never
-approves or merges.
+titles, bodies, and commit messages. Producer contract v1.1 registers a typed
+version source for every dependency path, reads the exact authenticated base and
+head manifest bytes, and writes one fixed entry naming each dependency's previous
+and new version. Unsupported formats, unchanged versions, incomplete coverage,
+and conflicting manifests fail before write authority. Contract v1.0 remains
+readable for compatible existing consumers. The reconciler never approves or
+merges.
 
 Repositories with deterministic dependency mirrors may register
 `mechanical_projections` on the producer. Each declaration names one admitted

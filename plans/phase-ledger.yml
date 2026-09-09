@@ -29,10 +29,10 @@ hotfix_lane:
     status: active
     triggered_by_commits: [f7934c45c758286c9369270306422d3110845925]
     failing_workflows: [generated gate_group evidence capture, aggregate governance truth]
-    root_cause: recursive session-manifest selection mistakes retained receipt copies for roots and aggregate truth lacks canonical duplicate receipt identity admission
+    root_cause: recursive session-manifest selection mistakes retained receipt copies for roots; aggregate truth lacks canonical duplicate receipt identity admission; remaining timeout and dependency changelog facts require deterministic ownership instead of manual synchronization
     remediated_in_phase: P19
     hotfix_log: phases/phase-19-hotfix01.yml
-    canonical_artifacts: [bcf_governance/tooling/evidence_sessions.py, bcf_governance/tooling/truth_receipts.py, bcf_governance/tooling/ci_graph_render.py, governance/canonical-representations.yml]
+    canonical_artifacts: [bcf_governance/tooling/evidence_sessions.py, bcf_governance/tooling/truth_receipts.py, bcf_governance/tooling/ci_graph_render.py, bcf_governance/tooling/ci_graph_audit.py, bcf_governance/tooling/automation_dependencies.py, governance/canonical-representations.yml, governance/ci-graph.yml, governance/automation-producers.yml]
   remediation_history: []
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
@@ -87,6 +87,6 @@ release_trains:
   release_9:
     target_version: 1.0.3
     status: active
-    focus: [canonical_session_selection, duplicate_receipt_identity_rejection, immutable_patch_release]
+    focus: [canonical_session_selection, duplicate_receipt_identity_rejection, deterministic_ci_authority_audit, timeout_compatibility, manifest_derived_dependency_changelog, immutable_patch_release]
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]

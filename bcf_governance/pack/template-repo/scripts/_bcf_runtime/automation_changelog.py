@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import hashlib
 import re
 
+from .automation_dependencies import DependencyTransition
 from .automation_contracts import AutomationContractError
 
 
@@ -33,6 +34,7 @@ def render_automation_changelog(
     pr_number: int,
     source_state: str,
     dependency_paths: tuple[str, ...],
+    dependency_transitions: tuple[DependencyTransition, ...] = (),
 ) -> ChangelogProjection:
     """Replace this PR's sole marker/entry under Unreleased/Changed."""
 
@@ -51,11 +53,38 @@ def render_automation_changelog(
     paths = tuple(sorted(set(dependency_paths)))
     if paths != dependency_paths or not paths:
         raise AutomationContractError("dependency paths must be nonempty, unique, and sorted")
-    entry = (
-        f"- Automated dependency update `{producer_id}` from PR #{pr_number}: "
-        + ", ".join(f"`{path}`" for path in paths)
-        + "."
-    )
+    if dependency_transitions:
+        ordered = tuple(
+            sorted(
+                dependency_transitions,
+                key=lambda item: (
+                    item.dependency,
+                    item.previous_version,
+                    item.new_version,
+                    item.paths,
+                ),
+            )
+        )
+        if ordered != dependency_transitions:
+            raise AutomationContractError("dependency transitions must be canonically ordered")
+        covered = tuple(sorted({path for item in ordered for path in item.paths}))
+        if covered != paths:
+            raise AutomationContractError(
+                "dependency transitions must cover every authenticated dependency path"
+            )
+        rendered = []
+        for item in ordered:
+            fields = (item.dependency, item.previous_version, item.new_version, *item.paths)
+            if any(not value or "`" in value or "\n" in value or "\r" in value for value in fields):
+                raise AutomationContractError("dependency transition contains unsafe text")
+            rendered.append(
+                f"`{item.dependency}` from `{item.previous_version}` to `{item.new_version}` "
+                f"({', '.join(f'`{path}`' for path in item.paths)})"
+            )
+        detail = "; ".join(rendered)
+    else:
+        detail = ", ".join(f"`{path}`" for path in paths)
+    entry = f"- Automated dependency update `{producer_id}` from PR #{pr_number}: {detail}."
     marker = automation_marker(
         repository_id=repository_id,
         producer_id=producer_id,

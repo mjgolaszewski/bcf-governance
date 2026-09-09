@@ -22,8 +22,8 @@ phase_history: {path: plans/phase-history.yml, through_phase: P18}
 phase_sequence:
 - phase_id: P19
   build_block: evidence-session-and-receipt-integrity-1.0.3
-  objective: correct canonical evidence-session selection and fail closed on duplicate receipt identities before aggregate truth
+  objective: correct evidence-session and receipt admission defects and mechanize the remaining demonstrably safe CI authority gaps without changing topology
   hard_dependencies: [P18]
-  tightly_scoped_deliverables: [canonical direct-root session selection, duplicate receipt identity rejection, immutable 1.0.3 release and Racecar handoff]
-  parallelizable_workstreams: [session selection and transport, receipt admission identity, governed packaging controller rotation and release]
+  tightly_scoped_deliverables: [canonical direct-root session selection, duplicate receipt identity rejection, deterministic CI authority audit and timeout compatibility, manifest-derived automation dependency transitions, immutable 1.0.3 release and Racecar handoff]
+  parallelizable_workstreams: [session selection and transport, receipt admission identity, CI authority audit timeout and automation dependency mechanics, governed packaging controller rotation and release]
   verification_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests, .venv/bin/python .github/scripts/run_validator_mutants.py --profile full, .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full]

@@ -85,6 +85,7 @@ def _match(
             ]
         },
         dependency_paths=dependency_paths,
+        dependency_version_sources=(),
         projection_output_paths=output_paths,
     )
 

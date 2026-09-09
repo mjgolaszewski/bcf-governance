@@ -2,10 +2,10 @@ document:
   kind: automation_producer_registry
   name: BCF Trusted Automation Producers
   id: bcf-automation-producers
-  version: 1.0.0
+  version: 1.1.0
   status: active
   path: governance/automation-producers.yml
-schema_version: '1.0'
+schema_version: '1.1'
 provider: github
 repository:
   full_name: mjgolaszewski/bcf-governance
@@ -14,7 +14,7 @@ policy:
   changelog_path: CHANGELOG.md
   section: Changed
   entry_template: '- Automated dependency update `{producer_id}` from PR #{pr_number}:
-    {dependency_paths}.'
+    {dependency_transitions}.'
   marker_prefix: bcf-automation-changelog
   maximum_changed_paths: 40
   trusted_resource_class: trusted-control
@@ -36,6 +36,10 @@ producers:
   - pyproject.toml
   - requirements-governance.txt
   - template-repo/requirements-governance.txt
+  dependency_version_sources:
+  - {path: pyproject.toml, kind: python-pyproject}
+  - {path: requirements-governance.txt, kind: python-requirements}
+  - {path: template-repo/requirements-governance.txt, kind: python-requirements}
   mechanical_projections:
   - id: template-requirements-pack-copy
     kind: exact_copy_with_sha256_manifests

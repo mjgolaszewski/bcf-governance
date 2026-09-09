@@ -299,7 +299,14 @@ def _negative_control_results(
                 )
                 env, _ = _execution_env(worktree, contract, python_executable)
                 observed = (
-                    _run(negative_control_command(command, contract, control, python_executable, worktree), cwd=_execution_cwd(worktree, contract), env=env)
+                    _run(
+                        negative_control_command(
+                            command, contract, control, python_executable, worktree
+                        ),
+                        cwd=_execution_cwd(worktree, contract),
+                        env=env,
+                        timeout_seconds=contract["execution_timeout_seconds"],
+                    )
                     if applied
                     else None
                 )
@@ -533,7 +540,10 @@ def capture_gate(
                 worktree, contract, selected_python
             )
             result = _run(
-                runtime_command, cwd=_execution_cwd(worktree, contract), env=env
+                runtime_command,
+                cwd=_execution_cwd(worktree, contract),
+                env=env,
+                timeout_seconds=contract["execution_timeout_seconds"],
             )
             artifacts = _write_output_artifacts(output_dir, target, result)
             if session_artifact is not None:
@@ -541,6 +551,7 @@ def capture_gate(
             observations: dict[str, Any] = {
                 "exit_code": result.returncode,
                 "execution_environment": environment_metadata,
+                "execution_timeout_seconds": contract["execution_timeout_seconds"],
                 "environment_assertions": _environment_observations(contract, env),
             }
             if session is not None:

@@ -12,6 +12,7 @@ import pytest
 import yaml
 
 from bcf_governance.tooling.ci_graph_contracts import CIGraphError, validate_ci_graph
+from bcf_governance.tooling.ci_graph_audit import audit_ci_graph
 from bcf_governance.tooling.ci_graph_execution import (
     job_execution_issues,
     job_required_environment,
@@ -81,7 +82,7 @@ def _job(
         "trust": trust,
         "needs": needs or [],
         "condition": "success",
-        "timeout_minutes": 20,
+        "timeout_minutes": 35,
         "permissions": {"contents": "read"},
         "checkout": trust == "candidate",
         "components": components if components is not None else (["checkout", "python"] if trust == "candidate" else []),
@@ -456,6 +457,35 @@ def test_graph_rejects_semantic_defect_classes(tmp_path: Path, mutate, message: 
 
     with pytest.raises(CIGraphError, match=message):
         validate_ci_graph(tmp_path)
+
+
+def test_evidence_job_timeout_must_contain_inner_gate_deadline_and_headroom(
+    tmp_path: Path,
+) -> None:
+    graph = _graph()
+    graph["policy"]["minimum_gate_timeout_headroom_seconds"] = 300
+    graph["workflows"][0]["jobs"][1]["timeout_minutes"] = 34
+    _write_graph(tmp_path, graph)
+
+    with pytest.raises(CIGraphError, match="cannot contain.*gate timeout.*headroom"):
+        validate_ci_graph(tmp_path)
+
+
+def test_graph_growth_preserves_deterministic_gate_ownership_and_rendering(
+    tmp_path: Path,
+) -> None:
+    graph = _graph()
+    graph["workflows"][0]["jobs"][1]["executor"]["gates"] = [
+        f"gate-{index:03d}" for index in range(128)
+    ]
+    _write_graph(tmp_path, graph)
+
+    compiled = validate_ci_graph(tmp_path)
+    first = render_ci_graph(tmp_path)
+    second = render_ci_graph(tmp_path)
+
+    assert compiled.workflows[0]["jobs"][1]["executor"]["gates"][-1] == "gate-127"
+    assert first == second
 
 
 def _make_explicit_private_transport(graph: dict[str, object]) -> None:
@@ -1204,3 +1234,40 @@ jobs:
     assert job["matrix"] == {"shard": ["one", "two"]}
     assert job["cleanup_steps"] == [1]
     assert job["definition_sha256"]
+
+
+def test_bcf_ci_authority_audit_reports_the_complete_effective_graph() -> None:
+    report = audit_ci_graph(REPO_ROOT)
+
+    assert report["status"] == "pass"
+    assert report["repository_state"]["available"] is True
+    assert report["repository_state"]["status_sha256"]
+    assert report["inventory"]["workflow_count"] == 18
+    assert report["inventory"]["job_count"] == 29
+    assert report["inventory"]["semantic_role_count"] == 29
+    assert len(report["effective_graph"]) == 18
+    assert len(report["inventory"]["gates"]) == 21
+    assert sum(
+        item["node_count"] for item in report["inventory"]["test_manifests"]
+    ) >= 1
+    assert report["inventory"]["artifacts"]["governance-receipts"]["scope"] == "run-attempt"
+    assert report["inventory"]["receipt_schemas"][0]["sha256"]
+    assert "release_ready" in report["inventory"]["truth_claim_dependencies"]
+    assert not report["mechanical_findings"]
+    assert report["inventory"]["gate_count"] == 21
+    assert report["inventory"]["required_status_checks"] == [
+        {"context": "bcf/pr-certification", "integration_id": 15368}
+    ]
+    assert report["timeout_contract"] == {
+        "default_gate_seconds": 1800,
+        "per_gate_seconds": {},
+        "minimum_outer_headroom_seconds": 300,
+    }
+    assert {item["fact"] for item in report["authority_map"]} >= {
+        "workflow_topology",
+        "artifact_and_receipt_contracts",
+        "workflow_identity_and_expected_jobs",
+        "gate_and_outer_job_timeouts",
+        "automation_dependency_versions_and_changelog",
+    }
+    assert report["mechanical_findings"] == []

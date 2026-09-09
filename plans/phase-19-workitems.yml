@@ -30,6 +30,18 @@ workitems:
 - id: P19-P0-03
   priority: P0
   status: TODO
+  summary: deliver deterministic CI authority audit timeout compatibility and manifest-derived automation dependency transitions
+  acceptance:
+  - deterministic effective-graph authority audit, timeout compatibility, and manifest-derived automation dependency transitions
+  - effective graph and repeated authority are mechanically reportable
+  - inner evidence and outer job timeouts fail closed when incompatible
+  - automation changelog entries derive dependency and old and new versions from authenticated manifest bytes
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P19-P0-04
+  priority: P0
+  status: TODO
   summary: deliver immutable BCF 1.0.3 release and deterministic Racecar migration
     guidance
   acceptance:

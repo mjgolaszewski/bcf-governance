@@ -10,6 +10,7 @@ from typing import Any
 
 import yaml
 
+from .automation_dependencies import dependency_source_kind
 from .automation_contracts import (
     AutomationContractError,
     REGISTRY_PATH,
@@ -167,6 +168,9 @@ def _desired_dependabot(
         "branch_patterns": ["dependabot/**"],
         "dependency_change_classes": list(classes),
         "allowed_paths": list(paths),
+        "dependency_version_sources": [
+            {"path": path, "kind": dependency_source_kind(path)} for path in paths
+        ],
         "controls": {
             "positive": ["dependabot-changelog-reconcile"],
             "adversarial": ["dependabot-numeric-identity-and-path-rejection"],
@@ -188,17 +192,17 @@ def _desired_dependabot(
             "kind": "automation_producer_registry",
             "name": "BCF Trusted Automation Producers",
             "id": "bcf-automation-producers",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "status": "active",
             "path": REGISTRY_PATH.as_posix(),
         },
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "provider": "github",
         "repository": repository_identity,
         "policy": {
             "changelog_path": "CHANGELOG.md",
             "section": "Changed",
-            "entry_template": "- Automated dependency update `{producer_id}` from PR #{pr_number}: {dependency_paths}.",
+            "entry_template": "- Automated dependency update `{producer_id}` from PR #{pr_number}: {dependency_transitions}.",
             "marker_prefix": "bcf-automation-changelog",
             "maximum_changed_paths": 40,
             "trusted_resource_class": "trusted-control",
@@ -208,6 +212,12 @@ def _desired_dependabot(
         },
         "producers": [],
     }
+    desired["document"]["version"] = "1.1.0"
+    desired["schema_version"] = "1.1"
+    desired["policy"]["entry_template"] = (
+        "- Automated dependency update `{producer_id}` from PR #{pr_number}: "
+        "{dependency_transitions}."
+    )
     desired["producers"] = [
         item for item in desired["producers"] if item["id"] != "dependabot"
     ] + [producer]

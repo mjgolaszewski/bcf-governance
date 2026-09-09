@@ -3,11 +3,25 @@ tests.test_adoption_soak::test_changed_path_parser_rejects_rename_shape
 tests.test_automation_changelog::test_bcf_automation_registry_is_valid_and_provider_bound
 tests.test_automation_changelog::test_changelog_projection_is_fixed_idempotent_and_source_sensitive
 tests.test_automation_changelog::test_changelog_projection_rejects_duplicate_or_detached_markers
+tests.test_automation_changelog::test_changelog_projection_uses_manifest_derived_version_transitions
 tests.test_automation_changelog::test_dependabot_adoption_rejects_renderer_owned_only_action_surface
 tests.test_automation_changelog::test_dependabot_paths_are_derived_from_update_contract
+tests.test_automation_changelog::test_dependency_source_kind_rejects_unparsed_dependency_authority
+tests.test_automation_changelog::test_dependency_transition_rejects_versionless_or_conflicting_changes
+tests.test_automation_changelog::test_dependency_transition_supports_added_and_removed_manifests[None-demo==2\n-absent-==2]
+tests.test_automation_changelog::test_dependency_transition_supports_added_and_removed_manifests[demo==1\n-None-==1-absent]
+tests.test_automation_changelog::test_dependency_transitions_are_derived_from_exact_manifest_bytes
 tests.test_automation_changelog::test_fresh_standard_adoption_is_explicit_transactional_and_idempotent
 tests.test_automation_changelog::test_numeric_identity_and_paths_are_both_authoritative
 tests.test_automation_changelog::test_registry_rejects_duplicate_numeric_authority
+tests.test_automation_changelog::test_supported_dependency_manifests_have_exact_version_decoders[.github/workflows/ci.yml-github-actions-jobs:\n  test:\n    steps:\n    - uses: actions/checkout@v4\n-jobs:\n  test:\n    steps:\n    - uses: actions/checkout@v5\n-actions/checkout-v4-v5]
+tests.test_automation_changelog::test_supported_dependency_manifests_have_exact_version_decoders[Dockerfile-dockerfile-FROM python:3.13\n-FROM python:3.14\n-python-3.13-3.14]
+tests.test_automation_changelog::test_supported_dependency_manifests_have_exact_version_decoders[Pipfile.lock-python-pipfile-lock-{"default":{"demo":{"version":"==1"}}}-{"default":{"demo":{"version":"==2"}}}-demo-==1-==2]
+tests.test_automation_changelog::test_supported_dependency_manifests_have_exact_version_decoders[package-lock.json-npm-lock-{"packages":{"node_modules/demo-js":{"version":"1"}}}-{"packages":{"node_modules/demo-js":{"version":"2"}}}-demo-js-1-2]
+tests.test_automation_changelog::test_supported_dependency_manifests_have_exact_version_decoders[package.json-npm-package-{"dependencies":{"demo-js":"1"}}-{"dependencies":{"demo-js":"2"}}-demo-js-1-2]
+tests.test_automation_changelog::test_supported_dependency_manifests_have_exact_version_decoders[pyproject.toml-python-pyproject-[project]\ndependencies=["demo>=1"]\n-[project]\ndependencies=["demo>=2"]\n-demo->=1->=2]
+tests.test_automation_changelog::test_supported_dependency_manifests_have_exact_version_decoders[requirements.txt-python-requirements-demo==1\n-demo==2\n-demo-==1-==2]
+tests.test_automation_changelog::test_supported_dependency_manifests_have_exact_version_decoders[uv.lock-python-lock-[[package]]\nname="demo"\nversion="1"\n-[[package]]\nname="demo"\nversion="2"\n-demo-1-2]
 tests.test_automation_projections::test_projection_is_idempotent_when_outputs_are_exact
 tests.test_automation_projections::test_projection_rejects_independent_or_source_less_outputs
 tests.test_automation_projections::test_projection_rejects_stale_baseline_or_unrelated_manifest_change
@@ -95,6 +109,7 @@ tests.test_ci_github_artifacts::test_role_artifact_uses_the_authenticated_attemp
 tests.test_ci_github_automation::test_actor_name_spoof_does_not_replace_numeric_authority
 tests.test_ci_github_automation::test_admission_binds_candidate_head_separately_from_main_workflow_bytes
 tests.test_ci_github_automation::test_admission_rejects_pr_that_advances_during_provider_observation
+tests.test_ci_github_automation::test_dependency_head_blob_must_match_changed_file_inventory
 tests.test_ci_github_automation::test_metadata_admission_and_reconciliation_use_provider_identity_only
 tests.test_ci_github_automation::test_stale_writer_head_fails_before_blob_construction
 tests.test_ci_github_automation::test_unrelated_path_is_rejected_before_writer_use
@@ -204,8 +219,10 @@ tests.test_ci_github_release::test_release_version_owner_is_authenticated_and_fa
 tests.test_ci_github_release::test_release_version_owner_is_authenticated_and_fail_closed[content2-identity is invalid]
 tests.test_ci_github_release::test_release_version_owner_is_authenticated_and_fail_closed[content3-version is not releasable]
 tests.test_ci_github_release::test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles
+tests.test_ci_graph::test_bcf_ci_authority_audit_reports_the_complete_effective_graph
 tests.test_ci_graph::test_capture_surfaces_do_not_reimplement_session_root_selection
 tests.test_ci_graph::test_direct_event_command_inputs_require_mechanical_fallback
+tests.test_ci_graph::test_evidence_job_timeout_must_contain_inner_gate_deadline_and_headroom
 tests.test_ci_graph::test_explicit_private_artifact_transport_requires_immediate_mode_restore[late]
 tests.test_ci_graph::test_explicit_private_artifact_transport_requires_immediate_mode_restore[missing]
 tests.test_ci_graph::test_explicit_private_artifact_transport_requires_immediate_mode_restore[wrong-condition]
@@ -217,6 +234,7 @@ tests.test_ci_graph::test_graph_diagnostics_classify_prerequisite_failures[<lamb
 tests.test_ci_graph::test_graph_diagnostics_classify_prerequisite_failures[<lambda>-runner]
 tests.test_ci_graph::test_graph_diagnostics_classify_prerequisite_failures[<lambda>-secret]
 tests.test_ci_graph::test_graph_diagnostics_cover_every_frozen_prerequisite_kind
+tests.test_ci_graph::test_graph_growth_preserves_deterministic_gate_ownership_and_rendering
 tests.test_ci_graph::test_graph_lock_repairs_registered_extension_digest
 tests.test_ci_graph::test_graph_rejects_semantic_defect_classes[<lambda>-cycle]
 tests.test_ci_graph::test_graph_rejects_semantic_defect_classes[<lambda>-fan-in]

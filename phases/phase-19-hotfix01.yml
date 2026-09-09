@@ -11,8 +11,7 @@ hotfix:
   mode: full
   related_phase_id: P19
   hotfix_number: 1
-  summary: Issue 135 release-blocking evidence-session selection and duplicate receipt
-    admission defects
+  summary: Issue 135 release-blocking evidence-session and receipt-admission defects plus owner-directed CI authority class audit
 execution_evidence:
   planned_commands:
   - .venv/bin/python -m pytest -q tests/test_ci_graph.py tests/test_governance_evidence.py
@@ -22,6 +21,7 @@ execution_evidence:
   notes:
   - record failing workflows, diagnosed root cause, remediation scope, and merge-back
     status
+  - preserve the generated workflow topology and complete all deterministic class validation before remote execution
 closeout_requirements:
   claims:
     required_suites_green:

@@ -124,6 +124,13 @@ syntax, and artifact namespace separation. Expensive integration and runtime
 gates still run after preflight; a green preflight is not release evidence by
 itself.
 
+Inner execution and outer workflow deadlines have separate purposes but cannot
+contradict each other. Gate contracts own subprocess deadlines. The compiled CI
+graph owns job deadlines and explicit minimum headroom, and refuses to render an
+evidence lane whose outer deadline cannot contain its longest possible gate.
+Historical duration measurements inform policy review; they are not values
+copied automatically from a previous green run.
+
 Selected-environment declarations follow the same ownership rule. Project,
 build-system, optional, and gate-specific requirements compile into one bootstrap
 projection; preflight compares its exact bytes with the canonical plan before checking

@@ -57,8 +57,16 @@ dependency paths. Workflow-definition custody is always resolved from current
 default main, while the run subject is separately bound to the provider-resolved
 current PR commit and tree. A stale run head or a PR that advances during API
 observation fails closed. A separate protected-environment reconciler ignores PR prose,
-constructs one fixed changelog entry and idempotence marker, then performs a
+uses producer-contract v1.1 typed decoders to compare exact authenticated base
+and head manifest bytes, constructs one fixed changelog entry naming every
+dependency's previous and new version plus an idempotence marker, then performs a
 single-parent compare-and-swap ref update without force.
+
+Every admitted dependency path must have one version source. Unsupported or
+unchanged manifests, incomplete path coverage, conflicting transitions, and
+unsafe values fail before the writer is used. Contract v1.0 remains readable,
+but explicit new adoption writes v1.1. PR titles, bodies, commit messages, and
+agent-written prose never supply changelog facts.
 
 Some repositories retain generated dependency copies or content-addressed pack
 manifests. An adopted producer may declare bounded exact-copy and SHA-256

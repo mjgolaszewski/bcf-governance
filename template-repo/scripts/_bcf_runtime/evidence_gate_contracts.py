@@ -104,6 +104,15 @@ def _gate_contract(repo_root: Path, gate_id: str) -> dict[str, Any]:
         environment = override.get("environment_assertions", [])
         outputs = override.get("output_requirements", [])
         freshness = override.get("freshness_limit_seconds")
+    execution_policy = registry.get("execution_policy", {})
+    default_timeout = (
+        execution_policy.get("default_timeout_seconds", 1800)
+        if isinstance(execution_policy, dict)
+        else 1800
+    )
+    timeout = executable["invocation"].get("timeout_seconds", default_timeout)
+    if isinstance(timeout, bool) or not isinstance(timeout, int) or timeout < 1:
+        raise EvidenceError(f"gate {gate_id!r} execution timeout is invalid")
     return {
         "id": configured_id,
         "target": str(gate["target"]),
@@ -115,6 +124,7 @@ def _gate_contract(repo_root: Path, gate_id: str) -> dict[str, Any]:
         "environment_assertions": environment,
         "output_requirements": outputs,
         "freshness_limit_seconds": freshness,
+        "execution_timeout_seconds": timeout,
         "invocation": executable["invocation"],
     }
 

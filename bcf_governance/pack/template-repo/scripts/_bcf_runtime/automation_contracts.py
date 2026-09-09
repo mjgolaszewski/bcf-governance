@@ -26,6 +26,7 @@ class AutomationContractError(ValueError):
 class ProducerMatch:
     producer: dict[str, Any]
     dependency_paths: tuple[str, ...]
+    dependency_version_sources: tuple[dict[str, str], ...]
     projection_output_paths: tuple[str, ...]
 
 
@@ -94,6 +95,23 @@ def _validate_registry(registry: object, *, schema_path: Path) -> dict[str, Any]
         ):
             raise AutomationContractError(
                 "mechanical projection outputs cannot also be dependency source paths"
+            )
+        version_sources = producer.get("dependency_version_sources", [])
+        version_paths = [str(item["path"]) for item in version_sources]
+        if len(version_paths) != len(set(version_paths)):
+            raise AutomationContractError(
+                "dependency version-source paths must be unique per producer"
+            )
+        if registry["schema_version"] == "1.1" and not version_paths:
+            raise AutomationContractError(
+                "automation contract 1.1 requires dependency version sources"
+            )
+        if any(
+            not any(fnmatchcase(path, pattern) for pattern in producer["allowed_paths"])
+            for path in version_paths
+        ):
+            raise AutomationContractError(
+                "dependency version sources must be producer-owned allowed paths"
             )
     return registry
 
@@ -188,9 +206,23 @@ def select_producer(
         raise AutomationContractError(
             f"automation PR contains unexpected paths: {', '.join(rejected)}"
         )
+    source_by_path = {
+        str(item["path"]): {"path": str(item["path"]), "kind": str(item["kind"])}
+        for item in producer.get("dependency_version_sources", [])
+    }
+    if registry["schema_version"] == "1.1":
+        missing_sources = sorted(set(dependency_paths) - set(source_by_path))
+        if missing_sources:
+            raise AutomationContractError(
+                "automation dependency paths lack version sources: "
+                + ", ".join(missing_sources)
+            )
     return ProducerMatch(
         producer=producer,
         dependency_paths=dependency_paths,
+        dependency_version_sources=tuple(
+            source_by_path[path] for path in dependency_paths if path in source_by_path
+        ),
         projection_output_paths=tuple(
             path for path in safe_paths if path in projection_outputs
         ),

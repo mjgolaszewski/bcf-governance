@@ -48,9 +48,17 @@ retained phase-history hashes remain mechanically verifiable. Fresh Standard-v2
 installs require explicit candidate and trusted runner mappings and render the
 reference graph. Thereafter edit the graph contract and use
 `bcf ci graph lock --apply`, `bcf ci graph validate`, and
-`bcf ci graph render --check|--apply`. `bcf ci adopt github --check|--apply`
+`bcf ci graph render --check|--apply`. Use
+`bcf ci graph audit --format json` for the complete effective workflow, gate,
+artifact, receipt, test, dependency, timeout, and authority inventory.
+`bcf ci adopt github --check|--apply`
 uses that graph while preserving unrelated workflows. Legacy label and producer
 arguments apply only to profile-v1 adoption.
+
+Gate subprocess deadlines come from `governance/gate-contracts.yml`; graph
+validation requires every outer evidence job to contain its longest inner
+deadline plus declared headroom. Change timeout policy only with measured
+evidence for the relevant runner and gate class.
 
 Required CI jobs invoke the evidence wrapper for their gate IDs, upload the
 content-addressed bundles, and feed them to the final truthfulness job. The
@@ -82,9 +90,11 @@ Dependabot configuration and eligible Git-tracked dependency files. Files with
 the exact BCF generated-workflow provenance header are excluded because action
 pins must be changed in their canonical source and rendered mechanically. An
 Actions update with no project-owned surface fails adoption. Fresh installs do
-not activate write automation. The reconciler uses authenticated numeric identity
-and dependency paths to write fixed text; it does not use PR prose and cannot
-approve or merge.
+not activate write automation. Automation contract v1.1 assigns every admitted
+dependency path a typed manifest decoder. The reconciler compares authenticated
+base and head blobs and writes the dependency name plus exact previous and new
+versions; an unsupported, ambiguous, or versionless change fails before write
+authority is used. It does not use PR prose and cannot approve or merge.
 
 If a dependency input owns generated copies, register bounded
 `mechanical_projections` for its exact-copy targets and SHA-256 manifest entries.

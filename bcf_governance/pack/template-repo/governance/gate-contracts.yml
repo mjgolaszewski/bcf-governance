@@ -4,6 +4,8 @@ document:
   path: governance/gate-contracts.yml
 schema_version: '1.0'
 target_profile: lite
+execution_policy:
+  default_timeout_seconds: 1800
 gates:
   governance-exposure-scan:
     invocation:

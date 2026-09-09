@@ -1,0 +1,140 @@
+document:
+  kind: ci_authority_and_duplication_audit
+  name: BCF Governance P19 CI Authority and Duplication Audit
+  id: bcf-governance-p19-ci-authority-and-duplication
+  version: 1.0.0
+  generated_at_utc: '2026-09-09T20:45:15Z'
+  status: corrective_action_applied
+  path: audits/p19-ci-authority-and-duplication.yml
+assessment_subject:
+  repository: mjgolaszewski/bcf-governance
+  commit: f7934c45c758286c9369270306422d3110845925
+  tree: 98a2ba3352fb8bda6aa72c6b8e4d782b150a7ada
+  source: authenticated origin/main plus GitHub provider API
+inventory:
+  canonical_command: bcf ci graph audit --repo-root . --format json
+  workflows: 18
+  jobs: 29
+  semantic_roles: 29
+  required_gates: 21
+  generated_workflow_owner: governance/ci-graph.yml plus four registered extensions
+  generated_parity_owner: bcf ci graph render --check
+  required_status_checks:
+  - {context: bcf/pr-certification, integration_id: 15368}
+  live_ruleset:
+    id: 21862678
+    name: main-governance
+    enforcement: active
+    strict: true
+    bypass_actors: []
+  rendered_graph:
+    paths: [.github/workflows/bcf-authority-canary.yml, .github/workflows/bcf-automation-admission.yml, .github/workflows/bcf-automation-reconcile.yml, .github/workflows/bcf-exact-main.yml, .github/workflows/bcf-pr-finalizer.yml, .github/workflows/bcf-pr-status-publisher.yml, .github/workflows/bcf-release-collector.yml, .github/workflows/bcf-release-publisher.yml, .github/workflows/bcf-release-verifier.yml, .github/workflows/bcf-status-publisher.yml, .github/workflows/bcf-trusted-control-bootstrap.yml, .github/workflows/bcf-trusted-control-probe.yml, .github/workflows/bcf-trusted-finalizer.yml, .github/workflows/governance-mutants-nightly.yml, .github/workflows/governance-mutants-weekly.yml, .github/workflows/governance-pack.yml, .github/workflows/governance.yml, .github/workflows/release.yml]
+    complete_machine_readable_view: bcf ci graph audit --repo-root . --format json
+    includes: [events, dispatch_inputs, jobs, matrices, needs, conditions, permissions, concurrency, timeouts, runner_mappings, trust_classes, executors, artifacts, receipts, gates, Make_targets, test_manifests, truth_claims, dependency_surfaces, Dependabot_rules]
+authority_map:
+- fact: workflow topology events jobs matrices edges conditions permissions concurrency runners and artifacts
+  canonical_owner: governance/ci-graph.yml plus registered governance/ci-extensions
+  consumers: generated GitHub workflows and CI authority pin compiler
+  synchronization: deterministic rendering with stable serialization
+  drift_detection: graph validation import inventory generated-byte parity and authority-pin verification
+  failure_behavior: cycles missing edges unreachable truth incomplete fan-in overlaps unsafe trust crossings unregistered roles or hand edits fail closed
+- fact: gate commands evidence contracts and negative controls
+  canonical_owner: governance/gate-contracts.yml
+  consumers: evidence runtime graph gate executors Make projection and truth
+  synchronization: direct contract resolution
+  drift_detection: profile/graph/gate parity exact invocation checks and evidence admission
+  failure_behavior: missing duplicate skipped malformed wrong-invocation or unsuccessful evidence cannot satisfy truth
+- fact: test populations and counts
+  canonical_owner: governance/test-manifests/*.txt collected from governed selectors
+  consumers: preflight evidence receipts and truth
+  synchronization: bcf test-manifest collect/check
+  drift_detection: exact collected-node comparison
+  failure_behavior: missing extra duplicated or skipped tests invalidate evidence without manual count edits
+- fact: expected provider jobs and workflow identity
+  canonical_owner: compiled workflow bytes plus governance/ci-authority.yml
+  consumers: admissions finalizers status publishers release authority and trusted controller
+  synchronization: bcf ci pin-authority derives paths blobs matrices semantic roles and expected jobs
+  drift_detection: preflight self-controller and authenticated run-attempt membership checks
+  failure_behavior: lane add rename remove skip timeout malformed output or attempt replay revokes authority rather than borrowing earlier success
+- fact: evidence sessions receipts and truth inputs
+  canonical_owner: evidence-session allocator canonical root selector receipt-admission decoder and schema 2.0
+  consumers: capture fan-in truth certification and release collection
+  synchronization: exact session/run/attempt/commit/tree/invocation identities
+  drift_detection: session manifest digest producer inventory artifact hashes and collision checks
+  failure_behavior: missing duplicated malformed wrong-SHA replayed mixed-session mixed-attempt or unsuccessful evidence invalidates every ambiguous member
+- fact: gate and outer workflow timeouts
+  canonical_owner: governance/gate-contracts.yml execution_policy plus ci-graph job timeout_minutes and headroom policy
+  consumers: evidence subprocess runtime and graph compiler
+  synchronization: direct timeout consumption and compile-time containment validation
+  drift_detection: bcf ci graph validate
+  failure_behavior: an evidence job shorter than its longest inner deadline plus explicit headroom cannot render
+- fact: automated dependency changelog facts
+  canonical_owner: authenticated exact base/head bytes selected by governance/automation-producers.yml
+  consumers: trusted reconciler and CHANGELOG.md projection
+  synchronization: typed manifest/lockfile decoders derive dependency previous version and new version
+  drift_detection: schema 1.1 source coverage transition agreement and idempotent projection checks
+  failure_behavior: titles bodies commit messages unsupported formats versionless changes conflicting manifests stale heads or unsafe paths cannot influence the write
+duplication_disposition:
+  mechanically_removed:
+  - independent evidence-session root selection in gate-group and shard capture
+  - hard-coded evidence subprocess deadline disconnected from gate contracts
+  - path-only automated dependency changelog facts
+  already_mechanical:
+  - generated workflow bytes and action pins
+  - exact expected-job and matrix inventories
+  - test-node counts and partitions
+  - artifact namespaces and exact run-attempt fan-in
+  - exact candidate commit tree invocation and gate-contract receipt binding
+  retained_assertions:
+  - focused topology tests consume the compiled graph and assert security or failure semantics; they do not author workflow bytes
+  - authority state-machine fixtures retain explicit synthetic jobs because they test transitions independently of BCF's current product graph
+  obsolete_tests_or_lists_removed: []
+  reason_no_test_tombstones: no reviewed test was subsumed without retaining a unique security branch failure cause or public contract
+historical_diagnosis:
+  confirmed:
+  - run: 33698496638
+    sha: ef43d62ef78c03678ec3b7a884762bf29d5d1cc1
+    class: artifact dispatch/fan-in error
+    evidence: exact-main status publisher requested absent bcf-exact-main-certification-33698472050-1 and failed before controller execution
+    product_assertion: false
+  - run: 33694579805
+    sha: 1f382bec937dc903455ab952b73f041ada2ea8d1
+    class: runner/controller installation drift
+    evidence: trusted local runner exited 127 because pinned /opt/runner_toolcache controller executable did not exist
+    product_assertion: false
+  - run: 33713078511
+    sha: 4a68a3cfd9e52869d8a227367800705e8d5eb0f8
+    class: valid cheap-front-door product-policy rejection
+    evidence: missing CHANGELOG.md update failed in 11 seconds and both expensive package jobs were skipped
+    product_assertion: true
+  - run: 33715135981
+    sha: c3a7a2f3187982bf2c0d4f0b026629bbc2f6b871
+    class: source-distribution packaging defect
+    evidence: artifact 9878297661 digest sha256:9379c5a27ff6142a77d891dfe0ffa8a9c6bfb1c2efc30f35d3c6527b5f0cfab2 records 696 passed and one sdist failure because .github/dependabot.yml was absent from the extracted source
+    product_assertion: true
+  evidence_backed_inferences:
+  - same-SHA mixtures of green and red trusted callback runs are authority-state transitions unless the authenticated terminal artifact or log proves a producer defect
+  - scheduled and dispatched mutant runs share governed commands but have distinct provider event identities; neither substitutes for the other
+  unavailable_evidence:
+  - the first three listed runs have no retained Actions artifacts; conclusions above use retained provider logs and job metadata
+timeout_basis:
+  source: authenticated GitHub job APIs for the five most recent comparable green governance PR runs available at assessment
+  run_ids: [33719414196, 33716999236, 33714001233, 33713129983, 33712373613]
+  maximum_observed_evidence_job_seconds: 270
+  declared_inner_gate_timeout_seconds: 1800
+  existing_outer_evidence_job_timeout_seconds: 3600
+  newly_explicit_minimum_headroom_seconds: 300
+  decision: retain existing deadlines; add mechanical containment and do not increase a timeout to mask a failure
+safety_case:
+  topology_change: none
+  workflow_paths_jobs_edges_events_permissions_conditions_runners_required_checks: unchanged
+  rendered_byte_change: provenance header digest only
+  rollback: revert the policy/helper commit and mechanically rerender; no provider setting or stable check identity changes
+  consumer_benefit: Standard-v2 installed runtimes receive the same audit command timeout validation typed dependency decoders and generated-copy parity
+remaining_manual_authority:
+- fact: external runner availability repository permissions secrets environments ruleset and App installation
+  owner: repository owner and GitHub provider
+  justification: provider state must be authenticated at use time and cannot be inferred from repository bytes
+- fact: risk appetite policy exceptions merge and publication intent
+  owner: explicit human authority
+  justification: deterministic mechanics enforce declared intent but do not choose it
