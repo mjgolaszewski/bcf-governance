@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import json
+import os
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -22,6 +25,7 @@ from bcf_governance.tooling.ci_graph_locks import (
     check_ci_graph_locks,
 )
 from bcf_governance.tooling.ci_graph_render import (
+    _executor_steps,
     apply_ci_graph,
     check_ci_graph,
     render_ci_graph,
@@ -1022,6 +1026,105 @@ def test_standard_reference_graph_is_rich_single_push_authority(tmp_path: Path) 
         "sleep" not in " ".join(command["argv"])
         for command in compiled.commands.values()
     )
+
+
+def test_gate_group_uses_the_canonical_session_selector_before_capture() -> None:
+    step = _executor_steps(
+        None,
+        {"executor": {"kind": "gate_group", "gates": ["test", "lint"]}},
+    )[0]
+
+    assert "select-session --session-root .artifacts/bcf/sessions" in step["run"]
+    assert "find .artifacts/bcf/sessions" not in step["run"]
+    assert step["run"].index("select-session") < step["run"].index("for gate")
+
+
+@pytest.mark.parametrize(
+    ("roots", "copies", "expected_calls"),
+    [(0, 0, 0), (1, 0, 2), (1, 4, 2), (2, 0, 0), (2, 4, 0), (0, 4, 0)],
+)
+def test_rendered_gate_group_selects_only_one_canonical_root_before_capture(
+    tmp_path: Path, roots: int, copies: int, expected_calls: int
+) -> None:
+    sessions = tmp_path / ".artifacts/bcf/sessions"
+    sessions.mkdir(parents=True)
+    session_ids = [f"{index + 1:032x}" for index in range(max(roots, 1))]
+    for session_id in session_ids[:roots]:
+        root = sessions / session_id
+        root.mkdir(mode=0o700)
+        manifest = root / "evidence-session.json"
+        manifest.write_text(
+            json.dumps({"schema_version": "1.0", "session_id": session_id}) + "\n",
+            encoding="utf-8",
+        )
+        manifest.chmod(0o400)
+    for index in range(copies):
+        copy = sessions / session_ids[0] / f"gate-{index}" / "evidence-session.json"
+        copy.parent.mkdir(parents=True, exist_ok=True)
+        copy.write_text("{\"retained\":true}\n", encoding="utf-8")
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    observer = scripts / "governance_evidence.py"
+    observer.write_text(
+        """from pathlib import Path
+import sys
+from bcf_governance.tooling.evidence_sessions import select_session
+if "select-session" in sys.argv:
+    root = Path(sys.argv[sys.argv.index("--session-root") + 1])
+    try:
+        print(select_session(root).manifest_path)
+    except ValueError as exc:
+        print(exc, file=sys.stderr)
+        raise SystemExit(1)
+else:
+    gate = sys.argv[sys.argv.index("--gate") + 1]
+    with Path("calls.txt").open("a", encoding="utf-8") as stream:
+        stream.write(gate + "\\n")
+""",
+        encoding="utf-8",
+    )
+    before = {
+        path.relative_to(tmp_path).as_posix(): path.read_bytes()
+        for path in sessions.rglob("*")
+        if path.is_file()
+    }
+    step = _executor_steps(
+        None,
+        {"executor": {"kind": "gate_group", "gates": ["test", "lint"]}},
+    )[0]
+
+    result = subprocess.run(
+        ["bash", "-c", step["run"]],
+        cwd=tmp_path,
+        env={
+            **os.environ,
+            "BCF_PYTHON": sys.executable,
+            "BCF_GATES": step["env"]["BCF_GATES"],
+        },
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    calls = (tmp_path / "calls.txt").read_text().splitlines() if (tmp_path / "calls.txt").exists() else []
+    assert result.returncode == (0 if roots == 1 else 1)
+    assert len(calls) == expected_calls
+    assert {
+        path.relative_to(tmp_path).as_posix(): path.read_bytes()
+        for path in sessions.rglob("*")
+        if path.is_file()
+    } == before
+
+
+def test_capture_surfaces_do_not_reimplement_session_root_selection() -> None:
+    renderer = (REPO_ROOT / "bcf_governance/tooling/ci_graph_render.py").read_text()
+    shard = (REPO_ROOT / ".github/scripts/capture_governance_shard.py").read_text()
+
+    assert "find .artifacts/bcf/sessions" not in renderer
+    assert "select-session --session-root" in renderer
+    for forbidden in ("evidence-session.json", ".glob(", ".rglob(", ".iterdir("):
+        assert forbidden not in shard
+    assert "select_session(" in shard
 
 
 def test_lite_reference_graph_has_no_release_or_trusted_control(tmp_path: Path) -> None:

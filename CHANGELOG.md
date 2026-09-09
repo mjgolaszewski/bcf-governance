@@ -6,7 +6,30 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-No unreleased changes.
+Release target: `1.0.3`.
+
+### Added
+
+- Added `bcf evidence select-session`, the canonical fail-closed selector for a
+  dependent producer to locate one validated direct-child session manifest
+  without mistaking retained receipt copies for additional sessions.
+- Added the canonical `governance.evidence-receipt-admission.v1`
+  representation and causal controls for session selection and duplicate
+  receipt admission.
+
+### Fixed
+
+- Generated gate-group jobs and BCF shard capture now share the same canonical
+  session selector, so transported receipt-local manifest copies cannot prevent
+  subsequent gates from starting.
+- Truth rejects every receipt involved in a duplicate evidence identity or
+  execution slot before gate grouping or claim selection; renamed,
+  contradictory, or relocated copies can no longer satisfy closure.
+
+### Compatibility
+
+- Receipt schema 2.0, profile contracts, the 21-gate Standard profile, CI graph
+  topology, and existing profile-v1 sessionless receipt support are unchanged.
 
 ## [1.0.2] - 2026-09-03
 

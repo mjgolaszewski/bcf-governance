@@ -329,9 +329,14 @@ def load_session(manifest_path: Path) -> EvidenceSession:
     root = manifest_path.parent
     _assert_owned_private_directory(root)
     metadata = manifest_path.stat()
+    if not stat.S_IMODE(metadata.st_mode) & stat.S_IRUSR:
+        raise EvidenceError("evidence session manifest must be owner-readable")
     if stat.S_IMODE(metadata.st_mode) & 0o222:
         raise EvidenceError("evidence session manifest must be immutable")
-    encoded = manifest_path.read_bytes()
+    try:
+        encoded = manifest_path.read_bytes()
+    except OSError as exc:
+        raise EvidenceError("evidence session manifest is unreadable") from exc
     try:
         payload = json.loads(encoded)
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
@@ -352,6 +357,24 @@ def load_session(manifest_path: Path) -> EvidenceSession:
         payload=payload,
         digest=_sha256_bytes(encoded),
     )
+
+
+def select_session(session_root: Path) -> EvidenceSession:
+    """Select and validate the sole canonical manifest below a sessions root."""
+    root = _absolute_lexical(session_root)
+    _reject_symlink_components(root)
+    try:
+        metadata = root.stat()
+        if not stat.S_ISDIR(metadata.st_mode):
+            raise EvidenceError("evidence session root must be a directory")
+        manifests = sorted(root.glob(f"*/{SESSION_FILENAME}"))
+    except OSError as exc:
+        raise EvidenceError("evidence session root is unreadable") from exc
+    if len(manifests) != 1:
+        raise EvidenceError(
+            "evidence session root must contain exactly one canonical manifest"
+        )
+    return load_session(manifests[0])
 
 
 def bind_session(

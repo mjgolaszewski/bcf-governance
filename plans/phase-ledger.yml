@@ -4,15 +4,15 @@ build_plan_mandate:
   required_fields: [tightly_scoped_deliverables, parallelizable_workstreams, hard_dependencies, docker_first_local_runtime, completeness_standard]
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P18
-  build_block: trusted-automation-changelog-and-pr-authority-1.0.2
-  plan: plans/phase-18-plan.yml
-  workitems: plans/phase-18-workitems.yml
-  log: phases/phase-18-log.yml
+  id: P19
+  build_block: evidence-session-and-receipt-integrity-1.0.3
+  plan: plans/phase-19-plan.yml
+  workitems: plans/phase-19-workitems.yml
+  log: phases/phase-19-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: completed
+  lifecycle_status: active
   owner: codex
   validation_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests]
 hotfix_lane:
@@ -23,7 +23,16 @@ hotfix_lane:
       allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
-  open_records: []
+  open_records:
+  - id: P19-HF01
+    mode: full
+    status: active
+    triggered_by_commits: [f7934c45c758286c9369270306422d3110845925]
+    failing_workflows: [generated gate_group evidence capture, aggregate governance truth]
+    root_cause: recursive session-manifest selection mistakes retained receipt copies for roots and aggregate truth lacks canonical duplicate receipt identity admission
+    remediated_in_phase: P19
+    hotfix_log: phases/phase-19-hotfix01.yml
+    canonical_artifacts: [bcf_governance/tooling/evidence_sessions.py, bcf_governance/tooling/truth_receipts.py, bcf_governance/tooling/ci_graph_render.py, governance/canonical-representations.yml]
   remediation_history: []
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
@@ -41,7 +50,7 @@ operator_requirements_choices_disambiguations:
 - {type: automation_authority, statement: automation-authored pull requests remain subject to the universal changelog rule; an explicitly adopted trusted deterministic producer may create only the authenticated bounded changelog commit and receives no approval merge release or certification authority}
 - {type: provider_runner_removal, statement: the persistent Dependabot runner bcf-governance-vm-linux-ci-runner-dependabot-1 and its repository registration are retired; candidate code runs only on fresh hosted workers and trusted local runners execute no candidate checkout}
 active_delivery_priorities:
-  current_tranche: [trusted-automation-changelog-and-pr-authority-1.0.2]
+  current_tranche: [evidence-session-and-receipt-integrity-1.0.3]
 release_trains:
   release_1:
     target_version: 0.6.1
@@ -75,5 +84,9 @@ release_trains:
     target_version: 1.0.2
     status: completed
     focus: [trusted_automation_changelog_producer, exact_head_pr_certification, provider_protection_authority, ai_specific_positioning, immutable_patch_release]
+  release_9:
+    target_version: 1.0.3
+    status: active
+    focus: [canonical_session_selection, duplicate_receipt_identity_rejection, immutable_patch_release]
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]

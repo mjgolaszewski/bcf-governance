@@ -321,9 +321,8 @@ def _executor_steps(compiled: CompiledCIGraph, job: dict[str, Any]) -> list[dict
                 },
                 "run": (
                     "set -euo pipefail\n"
-                    "mapfile -t manifests < <(find .artifacts/bcf/sessions -type f -name evidence-session.json -print)\n"
-                    "test \"${#manifests[@]}\" -eq 1\n"
-                    "session=\"${manifests[0]}\"\n"
+                    "session=\"$(\"$BCF_PYTHON\" scripts/governance_evidence.py "
+                    "--repo-root . select-session --session-root .artifacts/bcf/sessions)\"\n"
                     "session_dir=\"${session%/evidence-session.json}\"\n"
                     "for gate in $BCF_GATES; do\n"
                     "  \"$BCF_PYTHON\" scripts/governance_evidence.py --repo-root . run "

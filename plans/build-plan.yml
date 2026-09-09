@@ -18,12 +18,12 @@ global_gates:
   name: safe_execution_substrate
   applies_before: P10
   required_completion_criteria: [trusted control-plane VM executes no candidate code, every code-executing job receives a fresh disposable VM and ephemeral runner identity, no GitHub-hosted fallback is configured]
-phase_history: {path: plans/phase-history.yml, through_phase: P17}
+phase_history: {path: plans/phase-history.yml, through_phase: P18}
 phase_sequence:
-- phase_id: P18
-  build_block: trusted-automation-changelog-and-pr-authority-1.0.2
-  objective: deliver deterministic trusted automation changelog production exact PR certification authority and immutable 1.0.2
-  hard_dependencies: [P17]
-  tightly_scoped_deliverables: [opt-in authenticated automation producer contract and deterministic changelog commit, exact-head trusted PR certification and mechanically applied protection, README positioning correction and immutable 1.0.2 release]
-  parallelizable_workstreams: [automation producer contracts and GitHub adapter, compiled workflows PR authority and provider protection, governance documentation validation and release]
+- phase_id: P19
+  build_block: evidence-session-and-receipt-integrity-1.0.3
+  objective: correct canonical evidence-session selection and fail closed on duplicate receipt identities before aggregate truth
+  hard_dependencies: [P18]
+  tightly_scoped_deliverables: [canonical direct-root session selection, duplicate receipt identity rejection, immutable 1.0.3 release and Racecar handoff]
+  parallelizable_workstreams: [session selection and transport, receipt admission identity, governed packaging controller rotation and release]
   verification_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests, .venv/bin/python .github/scripts/run_validator_mutants.py --profile full, .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full]

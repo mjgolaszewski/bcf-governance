@@ -230,6 +230,13 @@ Local `release-check` has the same fresh-session rule. It allocates one session,
 every receipt beneath that directory, and passes that directory—not the retained parent
 artifact root—to truth. The root `Makefile.fragment` is an exact
 `render_v2_makefile` product, and its parity test rejects a hand-edited session path.
+Generated `gate_group` jobs and BCF's shard helper both call the canonical
+`select_session` owner before gate execution; capture code must not reproduce its own
+filesystem selector. Recursive manifest traversal is reserved for restoring modes on
+all transported manifest copies. Truth similarly runs canonical receipt admission
+before grouping: copied evidence IDs or execution slots invalidate every collider.
+Changes to either rule require a cause-verified control for the owner and an
+architecture test preventing a second selector or admission path.
 
 ## Distribution tests
 

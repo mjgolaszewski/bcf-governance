@@ -34,7 +34,12 @@ from .evidence_gate_contracts import (
     expected_evidence_kinds,
     expected_invocations,
 )
-from .evidence_sessions import allocate_session, bind_session, local_producer_identity
+from .evidence_sessions import (
+    allocate_session,
+    bind_session,
+    local_producer_identity,
+    select_session,
+)
 from .evidence_sessions import receipt_workflow_identity
 from .evidence_test_adapters import (
     recompute_test_artifact_observations,
@@ -661,6 +666,8 @@ def main(argv: list[str] | None = None) -> None:
     session_parser.add_argument("--expected-gate", action="append", default=[])
     session_parser.add_argument("--expected-producer", action="append", default=[])
     session_parser.add_argument("--local-producer-id")
+    select_parser = subparsers.add_parser("select-session")
+    select_parser.add_argument("--session-root", type=Path, required=True)
     attest_parser = subparsers.add_parser("attest")
     attest_parser.add_argument("--bundle-dir", type=Path, required=True)
     attest_parser.add_argument("--private-key", type=Path, required=True)
@@ -698,6 +705,8 @@ def main(argv: list[str] | None = None) -> None:
                 ),
             )
             path = session.manifest_path
+        elif args.operation == "select-session":
+            path = select_session(args.session_root).manifest_path
         else:
             path = attest_bundle(
                 args.repo_root.resolve(),

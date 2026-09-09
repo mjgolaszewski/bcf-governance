@@ -17,7 +17,8 @@ separates two questions:
 - `bcf truth`: are lifecycle and release claims supported by current evidence
   for the exact Git subject?
 
-Development package version: `v1.0.2`. Release artifacts are published through
+Development package version: `v1.0.3`. The latest released artifacts remain
+`v1.0.2` until the governed 1.0.3 publication completes. Releases are published through
 immutable GitHub Releases after exact-main certification.
 
 ## Design thesis

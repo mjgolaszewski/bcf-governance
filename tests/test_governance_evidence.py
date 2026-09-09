@@ -33,6 +33,7 @@ finally:
 EvidenceError = EVIDENCE_MODULE.EvidenceError
 capture_gate = EVIDENCE_MODULE.capture_gate
 allocate_session = EVIDENCE_MODULE.allocate_session
+select_session = EVIDENCE_MODULE.select_session
 local_producer_identity = EVIDENCE_MODULE.local_producer_identity
 negative_control_command = EVIDENCE_MODULE.negative_control_command
 project_graph_mutation = EVIDENCE_MODULE._project_graph_mutation
@@ -543,6 +544,160 @@ def test_evidence_sessions_are_fresh_private_and_immutable(tmp_path: Path) -> No
         text=True,
         check=True,
     ).stdout.strip()
+
+
+def test_session_selector_admits_one_root_and_preserves_nested_receipt_copies(
+    tmp_path: Path,
+) -> None:
+    repo = _make_diagnostic_gate_repo(tmp_path, "BROKEN = False\nprint('ok')\n")
+    session = allocate_session(repo, tmp_path / "evidence", ["gate"])
+    for gate in ("test", "lint", "contract-test", "typecheck"):
+        target = session.root / gate / "evidence-session.json"
+        target.parent.mkdir()
+        shutil.copy2(session.manifest_path, target)
+    before = {
+        path.relative_to(session.root).as_posix(): path.read_bytes()
+        for path in session.root.rglob("*")
+        if path.is_file()
+    }
+
+    selected = select_session(session.root.parent)
+
+    after = {
+        path.relative_to(session.root).as_posix(): path.read_bytes()
+        for path in session.root.rglob("*")
+        if path.is_file()
+    }
+    assert selected.manifest_path == session.manifest_path.resolve()
+    assert after == before
+
+
+def test_select_session_cli_prints_the_validated_absolute_manifest(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    repo = _make_diagnostic_gate_repo(tmp_path, "BROKEN = False\nprint('ok')\n")
+    session = allocate_session(repo, tmp_path / "evidence", ["gate"])
+
+    EVIDENCE_MODULE.main(
+        ["select-session", "--session-root", str(session.root.parent)]
+    )
+
+    assert capsys.readouterr().out.strip() == str(session.manifest_path.resolve())
+
+
+def test_session_selector_rejects_missing_receipt_only_and_multiple_roots(
+    tmp_path: Path,
+) -> None:
+    repo = _make_diagnostic_gate_repo(tmp_path, "BROKEN = False\nprint('ok')\n")
+    sessions = tmp_path / "evidence" / "sessions"
+    sessions.mkdir(parents=True)
+    with pytest.raises(EvidenceError, match="exactly one canonical manifest"):
+        select_session(sessions)
+    copy = sessions / ("a" * 32) / "gate" / "evidence-session.json"
+    copy.parent.mkdir(parents=True)
+    copy.write_text("{}\n", encoding="utf-8")
+    with pytest.raises(EvidenceError, match="exactly one canonical manifest"):
+        select_session(sessions)
+    first = allocate_session(repo, tmp_path / "other", ["gate"])
+    second = allocate_session(repo, tmp_path / "other", ["gate"])
+    with pytest.raises(EvidenceError, match="exactly one canonical manifest"):
+        select_session(first.root.parent)
+    assert first.root.parent == second.root.parent
+
+
+@pytest.mark.parametrize("defect", ["linked-root", "linked-manifest", "malformed", "unsafe-mode", "unreadable"])
+def test_session_selector_rejects_unsafe_or_invalid_root_manifest(
+    tmp_path: Path, defect: str
+) -> None:
+    repo = _make_diagnostic_gate_repo(tmp_path, "BROKEN = False\nprint('ok')\n")
+    session = allocate_session(repo, tmp_path / "evidence", ["gate"])
+    sessions = session.root.parent
+    if defect == "linked-root":
+        link = tmp_path / "linked-sessions"
+        link.symlink_to(sessions, target_is_directory=True)
+        sessions = link
+    elif defect == "linked-manifest":
+        original = tmp_path / "original-session.json"
+        shutil.copy2(session.manifest_path, original)
+        session.manifest_path.unlink()
+        session.manifest_path.symlink_to(original)
+    elif defect == "malformed":
+        session.manifest_path.chmod(0o600)
+        session.manifest_path.write_text("{\n", encoding="utf-8")
+        session.manifest_path.chmod(0o400)
+    elif defect == "unsafe-mode":
+        session.root.chmod(0o755)
+    else:
+        session.manifest_path.chmod(0o000)
+
+    with pytest.raises(EvidenceError):
+        select_session(sessions)
+
+
+def test_transported_session_supports_a_dependent_producer_without_rewriting_inputs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _make_diagnostic_gate_repo(
+        tmp_path,
+        "import sys\nBROKEN = False\nif BROKEN:\n print('expected policy violation', file=sys.stderr); raise SystemExit(1)\nprint('ok')\n",
+    )
+    profile_path = repo / "governance-profile.yml"
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    profile["release_gate_profile"]["gates"]["dependent"] = {
+        **profile["release_gate_profile"]["gates"]["gate"],
+        "target": "dependent",
+    }
+    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
+    contracts_path = repo / "governance/gate-contracts.yml"
+    contracts = yaml.safe_load(contracts_path.read_text(encoding="utf-8"))
+    contracts["gates"]["dependent"] = {
+        **contracts["gates"]["gate"],
+        "invocation": {**contracts["gates"]["gate"]["invocation"]},
+    }
+    contracts_path.write_text(yaml.safe_dump(contracts, sort_keys=False), encoding="utf-8")
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "add dependent gate")
+    _enable_profile_v2(repo)
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "owner/repository")
+    monkeypatch.setenv("GITHUB_REPOSITORY_ID", "42")
+    monkeypatch.setenv("GITHUB_RUN_ID", "9001")
+    monkeypatch.setenv("GITHUB_RUN_ATTEMPT", "1")
+    monkeypatch.setenv("GITHUB_WORKFLOW_REF", "owner/repository/.github/workflows/governance.yml@refs/heads/main")
+    monkeypatch.setenv("GITHUB_JOB", "preflight")
+    session = allocate_session(
+        repo,
+        tmp_path / "upstream",
+        ["gate", "dependent"],
+        expected_producers=["upstream", "dependent"],
+    )
+    monkeypatch.setenv("GITHUB_JOB", "upstream")
+    capture_gate(repo, "gate", session.root / "gate", session_manifest=session.manifest_path)
+    transported = tmp_path / "transported" / "sessions"
+    shutil.copytree(session.root.parent, transported, copy_function=shutil.copy2)
+    before = {
+        path.relative_to(transported).as_posix(): path.read_bytes()
+        for path in transported.rglob("*")
+        if path.is_file()
+    }
+
+    selected = select_session(transported)
+    monkeypatch.setenv("GITHUB_JOB", "dependent")
+    receipt_path = capture_gate(
+        repo,
+        "dependent",
+        selected.root / "dependent",
+        session_manifest=selected.manifest_path,
+    )
+
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert receipt["result"] == "passed"
+    assert receipt["invocation"]["workflow"]["job"] == "dependent"
+    assert all(
+        path.read_bytes() == content
+        for relative, content in before.items()
+        if (path := transported / relative).is_file()
+    )
 
 
 def test_evidence_session_rejects_symlinked_artifact_root(tmp_path: Path) -> None:

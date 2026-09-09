@@ -10,6 +10,8 @@ from typing import Any
 
 import yaml
 
+from bcf_governance.tooling.evidence_sessions import select_session
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SHARD_DISPLAY_NAMES = (
@@ -93,11 +95,9 @@ def main() -> None:
         output_root = args.output_root
         session_manifest = args.session_manifest
     else:
-        manifests = sorted(args.session_root.glob("*/evidence-session.json"))
-        if len(manifests) != 1 or any(path.is_symlink() for path in manifests):
-            raise SystemExit("session root must contain exactly one nonsymlink manifest")
-        session_manifest = manifests[0]
-        output_root = session_manifest.parent
+        session = select_session(args.session_root)
+        session_manifest = session.manifest_path
+        output_root = session.root
     gates = partition_required_gates(
         REPO_ROOT, shard_index=args.shard_index, shard_count=args.shard_count
     )

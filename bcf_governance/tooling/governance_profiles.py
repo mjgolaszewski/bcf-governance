@@ -139,6 +139,20 @@ def _v2_builtin_contracts() -> dict[str, dict[str, Any]]:
                         "stream": "stdout",
                         "regex": "governance.evidence-session.v1 owner must be an authorized constructor",
                     },
+                },
+                {
+                    "id": "evidence-receipt-admission-owner-is-enforced",
+                    "mutation": {
+                        "path": "governance/canonical-representations.yml",
+                        "yaml_path": "representations[semantic_id=governance.evidence-receipt-admission.v1].authorized_constructors_and_factories",
+                        "value": ["scripts/_bcf_runtime/missing.py::owner"],
+                    },
+                    "oracle": {
+                        "kind": "diagnostic",
+                        "exit_codes": [1],
+                        "stream": "stdout",
+                        "regex": "governance.evidence-receipt-admission.v1 owner must be an authorized constructor",
+                    },
                 }
             ],
         }

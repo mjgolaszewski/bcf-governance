@@ -422,6 +422,14 @@ artifacts only when absent:
 bcf install --target . --upgrade
 ```
 
+For the 1.0.3 evidence-integrity patch, install the exact release artifact,
+run this upgrade to refresh pack-owned runtime and schema copies, and then run
+`bcf ci graph validate`, `bcf ci graph render --check`, and the repository's
+normal graph render/apply workflow. Commit any mechanically generated workflow
+bytes before recompiling workflow-authority pins in a following commit. Existing
+evidence must be recaptured because installed runtime and governed-tree bytes
+changed; do not copy or relabel pre-upgrade receipts.
+
 Upgrade preserves the repository's profile, gate contracts, evidence policy,
 CI graph, registered extensions, and all workflow bytes. It does not run a
 contract or evidence migration implicitly. A conflicting `--profile` or `--profile-contract-version`
@@ -526,6 +534,26 @@ a session manifest. Local automation that runs inside a provider process must
 declare its local identity explicitly with `--local-producer-id`; the immutable
 session then governs receipt producer binding instead of ambient provider
 environment variables.
+
+Dependent evidence producers select the session mechanically:
+
+```bash
+bcf evidence select-session --session-root .artifacts/bcf/sessions # non-authoritative until captured
+```
+
+Only direct children named `<session-id>/evidence-session.json` are candidates.
+Exactly one validated canonical root manifest is required. Receipt-local copies
+deeper in the selected session remain immutable evidence and do not create a
+second session candidate. Missing, multiple, symlinked, malformed, unreadable,
+misnamed, or permission-unsafe root manifests fail before a gate starts.
+
+Truth admits receipts before grouping them by gate or selecting claim evidence.
+Within one exact subject and session, both `evidence_id` and each execution slot
+must be unique. An execution slot is the gate, declared producer, workflow job,
+run, attempt, and canonical matrix or partition. A collision invalidates every
+member with a stable duplicate-identity diagnostic; a filename, directory,
+timestamp, reported result, artifact list, or observation cannot distinguish a
+copy. Distinct gates, producers, jobs, matrices, and partitions remain valid.
 
 ## Findings and provenance
 
