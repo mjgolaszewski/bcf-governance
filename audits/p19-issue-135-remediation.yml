@@ -90,12 +90,19 @@ validation:
     topology_change: none
     expected_version_drift: generated provenance headers and the immutable publisher tag advance to 1.0.3
   full_validation:
-    pytest: 727_passed
+    pytest: 747_collected
     governance_validation: passed
     exposure_scan: passed
     graph_validation_and_render_check: passed
-    exact_test_manifests: {source: 727, contract: 366}
-    remaining_before_implementation_pr: [full_validator_mutants, semantic_validator_mutants, package_artifacts, exact_local_pr_context]
+    exact_test_manifests: {source: 747, contract: 368}
+    gate_negative_controls: 191
+    scheduled_mutants: {validator_full: 15_killed, semantic_full: 12_killed}
+    package_artifacts:
+      wheel: clean_install_cli_install_evidence_and_truth_passed
+      extracted_sdist: 744_passed_3_custody_skips
+      twine: passed
+      issue_reproductions: passed_inside_built_sdist_suite
+    remaining_before_implementation_pr: [exact_local_pr_context, exact_commit_release_check]
 consumer_handoff:
   policy: publish BCF 1.0.3 before consumer adoption
   racecar_mutation_in_this_phase: prohibited

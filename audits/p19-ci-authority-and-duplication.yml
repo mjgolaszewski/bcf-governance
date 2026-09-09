@@ -17,6 +17,9 @@ inventory:
   jobs: 29
   semantic_roles: 29
   required_gates: 21
+  gate_negative_controls: 191
+  exact_test_nodes: {source: 747, contract: 368}
+  scheduled_mutants: {validator_full: 15, semantic_full: 12}
   generated_workflow_owner: governance/ci-graph.yml plus four registered extensions
   generated_parity_owner: bcf ci graph render --check
   required_status_checks:
