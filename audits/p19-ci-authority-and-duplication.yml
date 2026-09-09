@@ -79,6 +79,7 @@ duplication_disposition:
   - independent evidence-session root selection in gate-group and shard capture
   - hard-coded evidence subprocess deadline disconnected from gate contracts
   - path-only automated dependency changelog facts
+  - ambiguous first-match mutation targets after runtime-owner decomposition
   already_mechanical:
   - generated workflow bytes and action pins
   - exact expected-job and matrix inventories
@@ -90,6 +91,7 @@ duplication_disposition:
   - authority state-machine fixtures retain explicit synthetic jobs because they test transitions independently of BCF's current product graph
   obsolete_tests_or_lists_removed: []
   reason_no_test_tombstones: no reviewed test was subsumed without retaining a unique security branch failure cause or public contract
+  mutation_target_validation: every scheduled mutant search must identify exactly one canonical runtime location before execution
 historical_diagnosis:
   confirmed:
   - run: 33698496638

@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import json
 import os
+import runpy
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -39,6 +41,23 @@ def test_mutant_harness_uses_its_selected_python_for_pytest() -> None:
     source = HARNESS.read_text(encoding="utf-8")
     assert 'PYTEST = (sys.executable, "-m", "pytest")' in source
     assert "shutil.which(\"pytest\")" not in source
+
+
+def test_every_mutant_targets_exactly_one_canonical_semantic_owner() -> None:
+    harness = runpy.run_path(HARNESS)
+    mutants = (*harness["MUTANTS"], *harness["TRUTH_MUTANTS"])
+
+    for mutant in mutants:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            if mutant.target_path in harness["TRUTH_TARGETS"] | harness["EVIDENCE_TARGETS"]:
+                harness["_copy_truth_sources"](root)
+            else:
+                harness["_copy_validator_sources"](root)
+            target = harness["_target_path"](mutant, root)
+            assert target.read_text(encoding="utf-8").count(mutant.search) == 1, (
+                mutant.mutant_id
+            )
 
 
 def test_mutant_harness_emits_exact_subject_result(tmp_path: Path) -> None:

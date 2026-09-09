@@ -34,6 +34,8 @@ Release target: `1.0.3`.
 - Evidence execution now consumes its deadline from the canonical gate contract,
   and graph compilation rejects an outer evidence timeout that cannot contain
   the longest inner deadline plus declared headroom.
+- Scheduled mutation validation now rejects missing or ambiguous source targets
+  before execution instead of replacing the first matching fragment.
 
 ### Compatibility
 

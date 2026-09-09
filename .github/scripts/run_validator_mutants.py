@@ -174,8 +174,14 @@ TRUTH_MUTANTS = (
     Mutant(
         mutant_id="evidence-isolated-positive",
         description="positive gates must execute in a pristine detached tree",
-        search="runtime_command, cwd=_execution_cwd(worktree, contract), env=env\n",
-        replace="runtime_command, cwd=_execution_cwd(repo_root, contract), env=env\n",
+        search=(
+            "                runtime_command,\n"
+            "                cwd=_execution_cwd(worktree, contract),\n"
+        ),
+        replace=(
+            "                runtime_command,\n"
+            "                cwd=_execution_cwd(repo_root, contract),\n"
+        ),
         profiles=("semantic-high-value", "semantic-full"),
         target_path="scripts/governance_evidence.py",
     ),
@@ -246,8 +252,16 @@ TRUTH_MUTANTS = (
     Mutant(
         mutant_id="truth-production-environment",
         description="development preflight cannot satisfy production assertions",
-        search='        if not isinstance(raw, dict) or raw.get("satisfied") is not True\n',
-        replace='        if False and (not isinstance(raw, dict) or raw.get("satisfied") is not True)\n',
+        search=(
+            "        f\"environment_assertion_{raw.get('name', 'unknown')}_failed\"\n"
+            "        for raw in assertions\n"
+            '        if not isinstance(raw, dict) or raw.get("satisfied") is not True\n'
+        ),
+        replace=(
+            "        f\"environment_assertion_{raw.get('name', 'unknown')}_failed\"\n"
+            "        for raw in assertions\n"
+            '        if False and (not isinstance(raw, dict) or raw.get("satisfied") is not True)\n'
+        ),
         profiles=("semantic-full",),
         target_path="scripts/truth_receipts.py",
     ),
@@ -358,9 +372,11 @@ def _mutate_source(mutant: Mutant, temp_dir: Path) -> Path:
         validator_entrypoint = _copy_validator_sources(temp_dir)
     target_path = _target_path(mutant, temp_dir)
     source = target_path.read_text(encoding="utf-8")
-    if mutant.search not in source:
+    occurrences = source.count(mutant.search)
+    if occurrences != 1:
         raise RuntimeError(
-            f"mutant {mutant.mutant_id} could not find its target in {mutant.target_path}"
+            f"mutant {mutant.mutant_id} requires exactly one target in "
+            f"{mutant.target_path}; found {occurrences}"
         )
     mutated = source.replace(mutant.search, mutant.replace, 1)
     if mutated == source:

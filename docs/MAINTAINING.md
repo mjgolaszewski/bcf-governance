@@ -72,6 +72,11 @@ gate registry, and evidence code consumes them directly. The graph's outer job
 deadline must retain its declared headroom. Record provider job measurements when
 changing timeout policy; do not raise a deadline to hide an unexplained failure.
 
+Scheduled causal mutants retain explicit, reviewable source mutations, but the
+harness mechanically requires every search fragment to identify exactly one
+canonical runtime location. Moving or duplicating an owner therefore fails the
+local mutant-contract test before a scheduled profile is dispatched.
+
 Profile-contract behavior has one packaged owner. Fresh Standard and Regulated
 installs use v2; Lite and version-absent consumers remain v1. Ordinary upgrades
 refresh only pack-owned runtime/schema paths and preserve the project-owned
