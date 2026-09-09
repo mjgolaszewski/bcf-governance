@@ -17,7 +17,10 @@ from .ci_authority_contracts import authority_role_workflow
 from .ci_github_api import GitHubAPI
 from .ci_github_artifacts import ProviderArtifact, resolve_role_artifact
 from .ci_github_authority import authenticate_role_run, load_authority
-from .ci_github_bootstrap import controller_metadata, verify_controller_inventory
+from .ci_github_bootstrap import (
+    verify_controller_inventory,
+    verify_controller_subject_metadata,
+)
 from .ci_github_identity import GitHubControllerError, resolve_main
 from .ci_github_membership import collect_same_run_producers, select_latest_admission
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
@@ -170,15 +173,13 @@ def compile_self_controller_pin(
     subject, artifact = resolve_self_controller_artifact(api, repository=repository)
     root = artifact_dir.resolve()
     wheel, _ = verify_controller_inventory(root)
-    expected_metadata = {
-        "schema_version": "1.0",
-        "commit_sha": subject["commit_sha"],
-        "tree_sha": subject["tree_sha"],
-        "workflow_run_id": artifact.run_id,
-        "workflow_run_attempt": str(artifact.run_attempt),
-    }
-    if controller_metadata(root / "CONTROL-METADATA.json") != expected_metadata:
-        raise GitHubControllerError("controller metadata is not the selected provider subject")
+    verify_controller_subject_metadata(
+        root / "CONTROL-METADATA.json",
+        commit_sha=subject["commit_sha"],
+        tree_sha=subject["tree_sha"],
+        run_id=artifact.run_id,
+        run_attempt=str(artifact.run_attempt),
+    )
     return _pin(
         {
             "BCF_BOOTSTRAP_ARTIFACT_ID": artifact.artifact_id,

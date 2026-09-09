@@ -110,6 +110,10 @@ using the project-selected Python before installing it persistently. After both 
 succeed on all trusted runners, compile that provider proof with `bcf ci-github controller-pin confirm`
 and pass it to `bcf ci sync-self-controller --confirmation`; never edit the installed
 commit or proof run identities. A pending rotation blocks selection of another target.
+Controller artifacts derive runtime requirements directly from `pyproject.toml`; do not
+add a dependency to a builder-specific list. The build must validate recursive wheel
+metadata closure and complete an offline installation before upload, and `controller-pin
+compile` independently rejects an incomplete downloaded closure before projection.
 
 The release front door does not rely on that rotation being remembered. Preflight
 derives the trusted GitHub command's Python import closure and packaged schema

@@ -41,6 +41,10 @@ Release target: `1.0.3`.
   declared explicitly for dependency-manifest decoding.
 - Issue-remediation controls now belong to the exact contract-test population,
   including the explicit parametrized receipt-collision oracle identity.
+- Trusted-controller bundles now derive all runtime requirements from package
+  metadata, declare their build environment, prove recursive wheel closure,
+  and complete a real offline install before upload; pin compilation rejects an
+  incomplete bundle before either trusted runner is used.
 
 ### Changed
 

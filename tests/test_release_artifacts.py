@@ -27,6 +27,13 @@ release_artifacts = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(release_artifacts)
 validate_sdist_source_inventory = release_artifacts.validate_sdist_source_inventory
 
+BUILDER_PATH = REPO_ROOT / ".github/scripts/build_trusted_controller.py"
+builder_spec = importlib.util.spec_from_file_location("trusted_controller_builder", BUILDER_PATH)
+if builder_spec is None or builder_spec.loader is None:
+    raise RuntimeError("unable to load trusted controller builder")
+trusted_controller_builder = importlib.util.module_from_spec(builder_spec)
+builder_spec.loader.exec_module(trusted_controller_builder)
+
 
 def test_runtime_third_party_imports_are_declared_as_package_dependencies() -> None:
     project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
@@ -59,6 +66,29 @@ def test_runtime_third_party_imports_are_declared_as_package_dependencies() -> N
         and name not in internal_modules
     }
     assert third_party <= declared, sorted(third_party - declared)
+
+
+def test_controller_builder_derives_every_runtime_requirement_from_pyproject() -> None:
+    project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+
+    assert trusted_controller_builder._runtime_requirements() == tuple(
+        project["project"]["dependencies"]
+    )
+    assert any(
+        requirement.startswith("packaging")
+        for requirement in trusted_controller_builder._runtime_requirements()
+    )
+
+
+def test_controller_builder_rejects_dirty_tree_before_expense(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(trusted_controller_builder, "_git", lambda *args: " M source.py")
+
+    with pytest.raises(ValueError, match="clean committed HEAD"):
+        trusted_controller_builder.build(
+            Path(".artifacts/unused-controller"), run_id="1", run_attempt="1"
+        )
 
 
 def test_release_artifact_entrypoint_bootstraps_clean_source_checkout() -> None:

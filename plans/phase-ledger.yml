@@ -29,10 +29,10 @@ hotfix_lane:
     status: active
     triggered_by_commits: [f7934c45c758286c9369270306422d3110845925]
     failing_workflows: [generated gate_group evidence capture, aggregate governance truth]
-    root_cause: recursive session-manifest selection mistakes retained receipt copies for roots; aggregate truth lacks canonical duplicate receipt identity admission; remaining timeout and dependency changelog facts require deterministic ownership instead of manual synchronization
+    root_cause: recursive session-manifest selection mistakes retained receipt copies for roots; aggregate truth lacks canonical duplicate receipt identity admission; controller construction hand-maintained an incomplete runtime dependency list and pin admission did not prove wheel closure; remaining timeout and dependency changelog facts require deterministic ownership instead of manual synchronization
     remediated_in_phase: P19
     hotfix_log: phases/phase-19-hotfix01.yml
-    canonical_artifacts: [bcf_governance/tooling/evidence_sessions.py, bcf_governance/tooling/truth_receipts.py, bcf_governance/tooling/ci_graph_render.py, bcf_governance/tooling/ci_graph_audit.py, bcf_governance/tooling/automation_dependencies.py, governance/canonical-representations.yml, governance/ci-graph.yml, governance/automation-producers.yml]
+    canonical_artifacts: [bcf_governance/tooling/evidence_sessions.py, bcf_governance/tooling/truth_receipts.py, bcf_governance/tooling/ci_graph_render.py, bcf_governance/tooling/ci_graph_audit.py, bcf_governance/tooling/automation_dependencies.py, bcf_governance/tooling/ci_github_bootstrap.py, .github/scripts/build_trusted_controller.py, governance/canonical-representations.yml, governance/ci-graph.yml, governance/automation-producers.yml]
   remediation_history: []
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
