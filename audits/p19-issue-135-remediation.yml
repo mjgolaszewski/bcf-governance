@@ -33,7 +33,7 @@ remediated_source_custody:
 - {path: bcf_governance/tooling/ci_graph_render.py, sha256: 612012f866f3a778104096027a625df59414eeefc13a7057fb2f4e47d6a91fc9}
 - {path: bcf_governance/tooling/evidence_sessions.py, sha256: 4903063250108595ffa299d11a6db46596e8b985bbf018db5839bf3f0baf6565}
 - {path: bcf_governance/tooling/truth_receipts.py, sha256: 9dc67f78523ffdfa6bfee0e5374b687c6b12639f8d2bc32db19e4154b2d7faed}
-- {path: .github/scripts/capture_governance_shard.py, sha256: 6d981c59f2b1bbd10949136884eeff32ca487457da8a0bd4374e6b49989e8a4c}
+- {path: .github/scripts/capture_governance_shard.py, sha256: 25d44be31f720148694e604ee26cf993da2e0a3ca911125f94c7269bc9680801}
 defects:
 - tracking_id: P02-BCF-SESSION-SELECTION-001
   observed_before:
@@ -87,7 +87,13 @@ validation:
     session_fix_effect_on_bcf_gate_shard_jobs: none
     topology_change: none
     expected_version_drift: generated provenance headers and the immutable publisher tag advance to 1.0.3
-  full_validation: pending_before_implementation_pr
+  full_validation:
+    pytest: 727_passed
+    governance_validation: passed
+    exposure_scan: passed
+    graph_validation_and_render_check: passed
+    exact_test_manifests: {source: 727, contract: 366}
+    remaining_before_implementation_pr: [full_validator_mutants, semantic_validator_mutants, package_artifacts, exact_local_pr_context]
 consumer_handoff:
   policy: publish BCF 1.0.3 before consumer adoption
   racecar_mutation_in_this_phase: prohibited

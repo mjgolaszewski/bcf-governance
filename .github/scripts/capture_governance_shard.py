@@ -10,10 +10,13 @@ from typing import Any
 
 import yaml
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from bcf_governance.tooling.evidence_sessions import select_session
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
 SHARD_DISPLAY_NAMES = (
     "Boundaries, contracts, runtime, types, and secrets",
     "CQRS, module size, exposure, and dependency risk",
