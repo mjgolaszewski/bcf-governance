@@ -111,6 +111,16 @@ rollout_incident:
   failed_stage: checksum-admitted offline environment staging before controller execution or persistent installation
   repeated_runner_result: identical_failure_on_both_trusted_runners
   response: no retry and no probe; package-derived recursive closure validation and a real offline-install build check are required before a corrected exact-main artifact can be targeted
+  corrected_exact_main:
+    run_id: 34418184933
+    run_attempt: 1
+    subject_commit: d383352c8bb00eb5a38262c2a94a6a3ff9aea6b6
+    subject_tree: 4820f8741ff865da075c581648215a1319d02ecf
+    artifact_id: 10129903368
+    artifact_provider_digest: sha256:49af460454b6d2aba5b15f0a1357e2d028aef31db58f62b8fa2b09b77afb7e84
+    wheel_sha256: aaaa679172fde6b49c184c4ea288a5a0c96a249e8c84f82b13fe994efed5cf7e
+    state: targeted_pending_independent_bootstrap_and_probe
+    custody: provider metadata and downloaded artifact bytes were compiled by the controller-pin command; no identity value was operator-authored
 consumer_handoff:
   policy: publish BCF 1.0.3 before consumer adoption
   racecar_mutation_in_this_phase: prohibited

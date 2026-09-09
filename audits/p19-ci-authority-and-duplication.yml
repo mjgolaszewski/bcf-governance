@@ -166,10 +166,21 @@ safety_case:
   consumer_benefit: Standard-v2 installed runtimes receive the same audit command timeout validation typed dependency decoders and generated-copy parity
 rollout_replan:
   original_pr_budget: 4
-  completed_before_incident: [implementation, initial_controller_target]
+  completed: [implementation, initial_controller_target, controller_closure_correction]
   safe_total_pr_count: 6
-  remaining: [controller_closure_correction, corrected_controller_target, controller_confirmation, post_release_closeout]
+  current: corrected_controller_target
+  remaining_after_current: [controller_confirmation, post_release_closeout]
   reason: a corrected exact-main controller artifact cannot exist until the builder correction is merged; artifact custody prohibits local substitution or mutation of the failed bundle
+  corrected_target:
+    exact_main_run: 34418184933
+    exact_main_attempt: 1
+    commit: d383352c8bb00eb5a38262c2a94a6a3ff9aea6b6
+    tree: 4820f8741ff865da075c581648215a1319d02ecf
+    artifact_id: 10129903368
+    provider_digest: sha256:49af460454b6d2aba5b15f0a1357e2d028aef31db58f62b8fa2b09b77afb7e84
+    wheel_sha256: aaaa679172fde6b49c184c4ea288a5a0c96a249e8c84f82b13fe994efed5cf7e
+    selection: mechanically_compiled_from_authenticated_provider_metadata_and_downloaded_bytes
+    installation: pending_independent_bootstrap_and_probe
 remaining_manual_authority:
 - fact: external runner availability repository permissions secrets environments ruleset and App installation
   owner: repository owner and GitHub provider

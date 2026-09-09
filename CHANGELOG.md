@@ -48,9 +48,12 @@ Release target: `1.0.3`.
 
 ### Changed
 
-- Rotated the trusted self-controller target from authenticated exact-main
-  package metadata and checksum-verified artifact bytes; workflow authority
-  pins are derived from the preceding generated-workflow freeze commit.
+- Replaced the unconfirmed controller target whose authenticated bundle omitted
+  `packaging` with the corrected exact-main artifact only after package-derived
+  closure, recursive wheel checks, and an offline installation passed before
+  upload. Workflow authority pins are derived from the preceding generated-byte
+  freeze commit; the prior proven installation remains authoritative until the
+  corrected target passes independent bootstrap and probe.
 
 ### Compatibility
 
