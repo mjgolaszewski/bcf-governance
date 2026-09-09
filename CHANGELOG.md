@@ -42,6 +42,12 @@ Release target: `1.0.3`.
 - Issue-remediation controls now belong to the exact contract-test population,
   including the explicit parametrized receipt-collision oracle identity.
 
+### Changed
+
+- Rotated the trusted self-controller target from authenticated exact-main
+  package metadata and checksum-verified artifact bytes; workflow authority
+  pins are derived from the preceding generated-workflow freeze commit.
+
 ### Compatibility
 
 - Receipt schema 2.0, profile contracts, the 21-gate Standard profile, CI graph
