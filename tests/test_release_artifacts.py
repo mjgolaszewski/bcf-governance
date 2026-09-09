@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import ast
 import importlib.util
 import os
 from pathlib import Path
 import subprocess
 import sys
 import tarfile
+import tomllib
 from xml.etree import ElementTree
 import zipfile
 
@@ -24,6 +26,39 @@ if spec is None or spec.loader is None:
 release_artifacts = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(release_artifacts)
 validate_sdist_source_inventory = release_artifacts.validate_sdist_source_inventory
+
+
+def test_runtime_third_party_imports_are_declared_as_package_dependencies() -> None:
+    project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    declared = {
+        value.split("[", 1)[0].split("<", 1)[0].split(">", 1)[0]
+        .split("=", 1)[0].strip().lower()
+        for value in project["project"]["dependencies"]
+    }
+    imported: set[str] = set()
+    tooling_root = REPO_ROOT / "bcf_governance/tooling"
+    internal_modules = {
+        path.stem for path in tooling_root.rglob("*.py") if path.name != "__init__.py"
+    }
+    internal_modules.update(
+        path.name for path in tooling_root.iterdir() if path.is_dir()
+    )
+    for path in sorted(tooling_root.rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imported.update(alias.name.split(".", 1)[0] for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+                imported.add(node.module.split(".", 1)[0])
+    distribution = {"yaml": "pyyaml"}
+    third_party = {
+        distribution.get(name, name)
+        for name in imported
+        if name not in sys.stdlib_module_names
+        and name != "bcf_governance"
+        and name not in internal_modules
+    }
+    assert third_party <= declared, sorted(third_party - declared)
 
 
 def test_release_artifact_entrypoint_bootstraps_clean_source_checkout() -> None:

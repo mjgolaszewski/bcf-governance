@@ -13,7 +13,7 @@ tooling_contexts:
 cli_commands:
   read_only: [doctor, exposure-scan, preflight, publish-audit, semantic-ownership, truth, validate]
   mutating: [ci, ci-cleanup, ci-github, cleanup, environment, evidence, install, migrate-contract, migrate-evidence, profile, scaffold, test-manifest]
-required_dependencies: {PyYAML: '>=6.0,<7', jsonschema: '>=4.21,<5'}
+required_dependencies: {PyYAML: '>=6.0,<7', jsonschema: '>=4.21,<5', packaging: '>=24,<27'}
 sbom_format: CycloneDX
 forbid_subprocess_shell: true
 runner_security:

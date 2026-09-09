@@ -94,6 +94,11 @@ duplication_disposition:
   mutation_target_validation: every scheduled mutant search must identify exactly one canonical runtime location before execution
 historical_diagnosis:
   confirmed:
+  - run: local pre-remote artifact verification
+    sha: 16eee0ade75baca1160626937263fea0fe8cfd22
+    class: undeclared runtime dependency
+    evidence: clean wheel installation failed importing automation_dependencies because packaging was present only in governance and release tooling inputs
+    product_assertion: true
   - run: 33698496638
     sha: ef43d62ef78c03678ec3b7a884762bf29d5d1cc1
     class: artifact dispatch/fan-in error

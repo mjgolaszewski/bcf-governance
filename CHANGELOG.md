@@ -36,6 +36,9 @@ Release target: `1.0.3`.
   the longest inner deadline plus declared headroom.
 - Scheduled mutation validation now rejects missing or ambiguous source targets
   before execution instead of replacing the first matching fragment.
+- Package validation now derives the complete third-party import set from the
+  runtime source and rejects undeclared runtime dependencies; `packaging` is
+  declared explicitly for dependency-manifest decoding.
 
 ### Compatibility
 
