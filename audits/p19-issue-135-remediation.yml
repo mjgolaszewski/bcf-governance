@@ -94,7 +94,7 @@ validation:
     governance_validation: passed
     exposure_scan: passed
     graph_validation_and_render_check: passed
-    exact_test_manifests: {source: 747, contract: 368}
+    exact_test_manifests: {source: 747, contract: 371}
     gate_negative_controls: 191
     scheduled_mutants: {validator_full: 15_killed, semantic_full: 12_killed}
     package_artifacts:

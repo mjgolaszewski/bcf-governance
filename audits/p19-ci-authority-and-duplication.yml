@@ -18,7 +18,7 @@ inventory:
   semantic_roles: 29
   required_gates: 21
   gate_negative_controls: 191
-  exact_test_nodes: {source: 747, contract: 368}
+  exact_test_nodes: {source: 747, contract: 371}
   scheduled_mutants: {validator_full: 15, semantic_full: 12}
   generated_workflow_owner: governance/ci-graph.yml plus four registered extensions
   generated_parity_owner: bcf ci graph render --check
@@ -106,6 +106,11 @@ historical_diagnosis:
     sha: ce5fb6b718984ef7c45ee1e15c18b9935ef5928f
     class: duplicate interpreter dependency ownership
     evidence: packaging was declared by both project runtime dependencies and security-dependency-audit gate additions; the canonical environment compiler rejected both affected tests before projection
+    product_assertion: true
+  - run: local exact-PR preflight
+    sha: 38795f22174ba5751665b0f3a87c3c896a40c988
+    class: negative-control oracle population drift
+    evidence: the front door reported both issue-remediation controls together because their killer tests were not members of the contract-test manifest and one parametrized oracle lacked its exact node suffix
     product_assertion: true
   - run: 33698496638
     sha: ef43d62ef78c03678ec3b7a884762bf29d5d1cc1

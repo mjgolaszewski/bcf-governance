@@ -39,6 +39,8 @@ Release target: `1.0.3`.
 - Package validation now derives the complete third-party import set from the
   runtime source and rejects undeclared runtime dependencies; `packaging` is
   declared explicitly for dependency-manifest decoding.
+- Issue-remediation controls now belong to the exact contract-test population,
+  including the explicit parametrized receipt-collision oracle identity.
 
 ### Compatibility
 
