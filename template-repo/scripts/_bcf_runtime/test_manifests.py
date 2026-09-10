@@ -134,7 +134,7 @@ def _safe_pytest_node(value: str) -> str:
 
 def _selector_map_from_nodes(
     gate_id: str, raw_nodes: list[str]
-) -> VerifiedTestSelectorMap:
+) -> PytestSelectorMap:
     by_identity: dict[str, str] = {}
     for raw_node in raw_nodes:
         selector = _safe_pytest_node(raw_node)

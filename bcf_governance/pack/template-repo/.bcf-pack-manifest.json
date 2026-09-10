@@ -788,7 +788,7 @@
     },
     "scripts/_bcf_runtime/test_manifests.py": {
       "operation": "copy",
-      "sha256": "13b55d3ca17ea4207f188dc6a2e841311df20538fa2132c0004a413126b1ea2b"
+      "sha256": "60dca2065ae18e87aea53454e3894a11a1e0192696a7bc1391e99de795d7f252"
     },
     "scripts/_bcf_runtime/trusted_controller_compatibility.py": {
       "operation": "copy",

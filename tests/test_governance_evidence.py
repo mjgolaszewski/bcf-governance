@@ -136,6 +136,28 @@ def test_test_node_control_rejects_unverified_selector(tmp_path: Path) -> None:
         )
 
 
+def test_test_node_control_requires_verified_mapping(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="requires a verified pytest collection mapping"):
+        negative_control_command(
+            [sys.executable, "-m", "pytest", "tests/test_example.py"],
+            {
+                "test_contract": {
+                    "selectors": ["tests/test_example.py"],
+                    "expected_node_manifest": "governance/test-manifests/test.txt",
+                    "junit_xml": ".artifacts/junit/test.xml",
+                }
+            },
+            {
+                "oracle": {
+                    "kind": "test_node_failure",
+                    "node_ids": ["tests.test_example.TestExample::test_roundtrip"],
+                }
+            },
+            Path(sys.executable),
+            tmp_path,
+        )
+
+
 def test_diagnostic_control_preserves_canonical_command(tmp_path: Path) -> None:
     canonical = [sys.executable, "scripts/validate_governance_yaml.py"]
     assert negative_control_command(
