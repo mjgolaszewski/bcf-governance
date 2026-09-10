@@ -56,5 +56,32 @@ validation:
   - cleanup does not select declared first-party audit source or tests
   rollout:
     superseded_pull_request: 147
-    superseded_reason: controller 789df57 predates the issue-146 runtime and was never merged
-    remaining: implementation PR exact-main controller rotation scheduled controls and immutable publication
+    superseded_reason: its confirmation projection predates the issue-146 runtime and was never merged
+    implementation:
+      pull_request: 148
+      head: ec0db9c2877cfd22ddc41c04d099b0a23059ac09
+      merge_commit: e48d1878ebad644e456dc268cfcd57a14e918820
+      governance_run: {id: 34504769080, attempt: 1, result: pass}
+      package_run: {id: 34504769037, attempt: 1, result: pass}
+      pr_finalizer_run: {id: 34505429506, attempt: 1, result: pass}
+      pr_publisher_run: {id: 34505468749, attempt: 1, result: pass}
+    exact_main:
+      admission_run: {id: 34505535532, attempt: 1, result: pass}
+      finalizer_run: {id: 34506216317, attempt: 1, computed_state: certified}
+      publisher_run: {id: 34506264426, attempt: 1, result: pass}
+    controller_rotation:
+      pending_target_bridge:
+        installed_commit: 789df57ce3cac27bba8f9f5782073c023a86d013
+        subject_commit: e48d1878ebad644e456dc268cfcd57a14e918820
+        bootstrap_run: {id: 34506012959, attempt: 1, runner_jobs_passed: 2}
+        probe_run: {id: 34506089019, attempt: 1, runner_jobs_passed: 2}
+        proof: mechanically compiled from authenticated provider state
+      final_target:
+        source_run: {id: 34505535532, attempt: 1}
+        artifact_id: '10163668905'
+        artifact_name: bcf-trusted-control-e48d1878ebad644e456dc268cfcd57a14e918820-1
+        provider_digest: sha256:cc32bd00fd75c49af377dc1f070e828e2a4bf6bb673ecafa042ee3d12420ed30
+        wheel_sha256: 0d4e12b8edc9570286a02b2df755bdd16823d4264a65e7136eab2a2ca886664e
+        source_tree: bd4146db47259775dfd14564474cdca3b7d83ae8
+        selection: mechanically resolved from authenticated provider state and verified artifact bytes
+    remaining: final controller proof scheduled controls and immutable publication

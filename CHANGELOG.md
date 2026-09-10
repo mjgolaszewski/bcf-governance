@@ -27,10 +27,11 @@ Release target: `1.0.4`.
 - Test-gate evidence verifies the collected mapping against the governed exact
   node manifest once per gate and reuses it across isolated mutants; collection
   errors, missing identities, and ambiguous identities fail closed.
-- BCF's 1.0.4 trusted-controller target is projected only from the authenticated
-  exact-main package artifact after all 1.0.4 behavior is final; installed
-  authority remains independently proven until bootstrap and probe complete on
-  both trusted runners.
+- BCF's final 1.0.4 trusted-controller target is projected only from the
+  authenticated exact-main package artifact after both issue corrections; a
+  previously pending target is first re-proven on current main, and installed
+  authority remains independently proven until the final bootstrap and probe
+  complete on both trusted runners.
 - Fixed issue #146: regular Python or declared TypeScript code beneath the
   repository's declared source and test roots is no longer treated as misplaced
   governance evidence merely because an ancestor package is named `audit` or
