@@ -1,0 +1,44 @@
+document: {kind: defect_remediation_audit, id: bcf-governance-p20-issue-146, version: 1.0.0, status: active, path: audits/p20-issue-146-remediation.yml}
+issue:
+  provider: github
+  repository: mjgolaszewski/bcf-governance
+  number: 146
+  consumer_tracking_id: P02-BCF-AUDIT-PATH-001
+  title: Audit-root policy rejects governed product audit source and test packages
+  affected_release: 1.0.3
+  target_release: 1.0.4
+baseline:
+  commit: 89670b1b2f9707a9ad7d8faa16535dfa71a43a89
+  tree: 1ed46e28c2cd0da4217441f922a9e130d2d65302
+  affected_source: bcf_governance/tooling/governance_validation/artifact_policy.py
+classification:
+  kind: upstream_defect
+  false_pass_possible: false
+  impact: declared first-party source and test modules are rejected solely because an ancestor directory is named audit or audits
+root_cause:
+  defect: audit-root enforcement treats a path component as sufficient evidence classification
+  missing_inputs: [architecture-boundaries.yml architecture.source_roots, AGENTS.yml testing_governance.test_roots, mechanically recognized code artifact]
+remediation:
+  canonical_owner: bcf_governance/tooling/governance_validation/artifact_policy.py
+  behavior:
+  - admit regular recognized code files beneath declared first-party source or test roots
+  - retain canonical audit-root and validated vendor custody
+  - reject evidence-like files concealed beneath source or test roots
+  - reject symlinks unsafe roots traversal and spoofed or invalid declarations
+  compatibility:
+  - receipt schema 2.0 remains unchanged
+  - profile contracts and 21-gate inventory remain unchanged
+  - workflow bytes and topology remain unchanged
+controls:
+  positive: [canonical audit evidence, ordinary domain code, audit domain code, audit application code, audit port code, audit test package]
+  adversarial: [misplaced documentation evidence, misplaced governance evidence, hidden source-root report, hidden test-root report, undeclared root, symlink, traversal, invalid vendor]
+  causal_mutants: [audit-code-classification-must-not-be-bypassed, audit-evidence-custody-must-not-be-weakened]
+exclusions: [Racecar mutation, workflow topology, receipt schema, profile contracts, gate count, broad artifact-policy redesign]
+validation:
+  status: pending
+  required:
+  - complete source and contract suites
+  - full and semantic-full mutant profiles
+  - canonical standalone and packaged runtime parity
+  - unchanged generated workflow bytes
+  - built wheel and extracted-sdist issue reproductions
