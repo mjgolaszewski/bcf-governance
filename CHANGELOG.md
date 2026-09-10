@@ -27,7 +27,8 @@ Release target: `1.0.4`.
   errors, missing identities, and ambiguous identities fail closed.
 - BCF's 1.0.4 trusted-controller target is projected only from the authenticated
   exact-main package artifact; installed authority remains independently proven
-  until bootstrap and probe complete on both trusted runners.
+  until bootstrap and probe complete on both trusted runners. Release roles are
+  enabled only after the provider-derived installation proof is projected.
 
 ## [1.0.3] - 2026-09-10
 

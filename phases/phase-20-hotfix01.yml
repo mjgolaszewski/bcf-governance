@@ -29,6 +29,8 @@ execution_evidence:
   - no remote execution was started before the complete local failure class passed
   - implementation PR 144 passed on attempt 1 and merged as exact commit
     789df57ce3cac27bba8f9f5782073c023a86d013
+  - target PR 145 passed on attempt 1; bootstrap 34497184341 and probe 34497274111
+    proved the exact controller independently on both trusted runners
 closeout_requirements:
   claims:
     required_suites_green:

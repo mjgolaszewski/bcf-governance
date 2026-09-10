@@ -93,3 +93,12 @@ validation:
     source_tree: bd761ed90f3eb8f098dde22d44a1e12f1dae740b
     selection: mechanically resolved from authenticated provider state and verified artifact bytes
     expected_pre_rotation_result: exact-main failed closed at completed-lifecycle precondition before evidence fanout
+    target_pull_request: 145
+    target_merge_commit: 89670b1b2f9707a9ad7d8faa16535dfa71a43a89
+    bootstrap: {run_id: 34497184341, attempt: 1, runner_jobs_passed: 2}
+    probe: {run_id: 34497274111, attempt: 1, runner_jobs_passed: 2}
+    installation_proof:
+      installed_commit: 789df57ce3cac27bba8f9f5782073c023a86d013
+      subject_commit: 89670b1b2f9707a9ad7d8faa16535dfa71a43a89
+      subject_tree: 1ed46e28c2cd0da4217441f922a9e130d2d65302
+      compilation: reconstructed from authenticated workflow and exact job inventories
