@@ -6,7 +6,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `1.0.4`.
+## [1.0.4] - 2026-09-10
+
+Published as immutable GitHub release `386507232` from exact certified merge
+`c3513576d76212ae0afd4d624df1dd8d4e665559`.
 
 ### Added
 
@@ -831,7 +834,10 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.4...HEAD
+[1.0.4]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.3...v1.0.4
+[1.0.3]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.2...v1.0.3
+[1.0.2]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.0rc1...v1.0.0
 [1.0.0rc1]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.8.0...v1.0.0rc1
