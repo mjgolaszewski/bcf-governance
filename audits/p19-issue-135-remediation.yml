@@ -146,7 +146,12 @@ release_runtime_incident:
     workflow_definition_commit: b6b014600db10668530bfb126b6265ad011eda11
     workflow_authority_projection: mechanically_compiled
     source_tests: 762_passed
-    remaining: [cause_verified_controls, validator_mutants, semantic_mutants, clean_room_release_path, exact_local_pr_context, exact_commit_release_check]
+    exact_local_pr_context: passed
+    exact_commit_release_check: {receipts: 21_of_21, controls: 197_of_197, effective_state: closed}
+    validator_mutants: 15_of_15_killed
+    semantic_mutants: 12_of_12_killed
+    clean_room_release_path: {source_tests: 762_passed, build_assets: passed, build_manifest: passed, independent_wheel_and_sdist_verification: passed}
+    remaining: [one_normal_pr_cycle, exact_merged_main_certification, scheduled_controls, one_release_attempt, immutable_publication, post_release_closeout]
 consumer_handoff:
   policy: publish BCF 1.0.3 before consumer adoption
   racecar_mutation_in_this_phase: prohibited

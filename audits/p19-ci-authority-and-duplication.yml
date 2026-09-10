@@ -199,7 +199,10 @@ rollout_replan:
     workflow_definition_commit: b6b014600db10668530bfb126b6265ad011eda11
     authority_projection: mechanically_compiled_from_exact_git_workflow_bytes
     source_tests: 762_passed
-    remote_retry: not_authorized_until_remaining_local_gates_and_clean_room_release_path_pass
+    local_release_check: {receipts: 21_of_21, controls: 197_of_197, effective_state: closed}
+    clean_room_builder: {python: 3.12.14, source_tests: 762_passed, assets: [wheel, sdist, checksums], build_manifest_sha256: 0c5130e953d64680767a4b84c00db9738cde8347347a26a102911a2680b8ea02}
+    independent_verifier: {wheel_smoke: passed, twine: passed, sdist_tests: 759_passed_3_declared_git_custody_skips, report_sha256: 0706609914a2ae8f75ec9a333ce21e9ad7dbd04bbba6c14d942b2e42921c812e}
+    remote_retry: authorized_only_as_one_normal_pr_and_one_post_merge_release_attempt
 remaining_manual_authority:
 - fact: external runner availability repository permissions secrets environments ruleset and App installation
   owner: repository owner and GitHub provider

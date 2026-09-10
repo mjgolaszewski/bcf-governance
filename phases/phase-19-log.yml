@@ -64,6 +64,7 @@ execution_evidence:
   - publication-disabled release run 34422503200 attempt 1 reached the final candidate build but exposed the release builder's undeclared source-test import authority; its success-only upload also withheld the already-written raw failure files
   - P19-HF02 fixes the entire observed release-runtime failure class locally, retains failed-attempt diagnostics without admitting them downstream, and prohibits a remote retry until exact clean-room release validation passes
   - generated workflow bytes were frozen at b6b014600db10668530bfb126b6265ad011eda11 and workflow identity was mechanically recompiled from Git; the resulting complete local source suite passed all 762 tests
+  - the exact local release check computed closed from 21 of 21 receipts and 197 cause-verified controls; the clean CPython 3.12.14 builder passed 762 source tests and produced exact artifacts, and an independent offline verifier passed wheel smoke, Twine, and 759 extracted-sdist tests with three declared Git-custody skips
 closeout_requirements:
   claims:
     workitems_closed:
