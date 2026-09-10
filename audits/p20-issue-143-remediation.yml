@@ -51,3 +51,28 @@ controls:
   - class-node-selector-mapping-must-not-be-bypassed
   - junit-selector-collision-must-fail
 exclusions: [workflow topology, receipt schema, profile contracts, gate count, Racecar source]
+validation:
+  source_suite: {result: pass, tests: 770, commit: 0ef23960e0f9133f055109884117e89c64e90e95}
+  contract_evidence:
+    result: pass
+    tests: 389
+    controls_satisfied: 149
+    controls_total: 149
+    session_id: ef831d2a2a09037946977dcc376e20c0
+  selector_controls:
+  - {id: class-node-selector-mapping-must-not-be-bypassed, exit: 1, intended_node_failed: true}
+  - {id: junit-selector-collision-must-fail, exit: 1, intended_node_failed: true}
+  - {id: exact-oracle-node-selection-must-fail, exit: 1, intended_node_failed: true}
+  mutation_profiles:
+  - {profile: full, result: pass, killed: 15, total: 15}
+  - {profile: semantic-full, result: pass, killed: 12, total: 12}
+  release_artifacts:
+    version: 1.0.4
+    wheel: pass
+    extracted_sdist: {result: pass, tests: 767, expected_environment_skips: 3}
+  deterministic_checks:
+  - governance validation and exposure scan passed
+  - lint, typecheck, and semantic ownership passed
+  - source and packaged runtime copies are byte-equivalent
+  - exact manifests contain 770 source and 389 contract nodes
+  - CI graph render is clean with 18 workflows, 29 jobs, and 4 extensions

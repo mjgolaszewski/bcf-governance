@@ -16,10 +16,17 @@ execution_evidence:
   planned_commands:
   - .venv/bin/python -m pytest -q tests
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
-  executed_commands: []
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests (770 passed)
+  - exact contract evidence (389 passed; 149 of 149 cause controls satisfied)
+  - validator and semantic-full mutant profiles (15 of 15 and 12 of 12 killed)
+  - wheel and extracted-sdist verification (pass)
   notes:
   - record failing workflows, diagnosed root cause, remediation scope, and merge-back
     status
+  - class, nested-class, unittest, and parameterized selectors are resolved only from
+    one verified selected-interpreter collection mapping
+  - no remote execution was started before the complete local failure class passed
 closeout_requirements:
   claims:
     required_suites_green:

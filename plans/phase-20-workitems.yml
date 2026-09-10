@@ -10,7 +10,7 @@ document:
 workitems:
 - id: P20-P0-01
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver canonical lossless pytest selector mapping
   acceptance:
   - canonical lossless pytest selector mapping_is_complete
@@ -19,7 +19,7 @@ workitems:
   - contract-test
 - id: P20-P0-02
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver class-based negative-control execution and causal regression coverage
   acceptance:
   - class-based negative-control execution and causal regression coverage_is_complete
