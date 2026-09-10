@@ -180,10 +180,10 @@ safety_case:
   consumer_benefit: Standard-v2 installed runtimes receive the same audit command timeout validation typed dependency decoders and generated-copy parity
 rollout_replan:
   original_pr_budget: 4
-  completed: [implementation, initial_controller_target, controller_closure_correction, corrected_controller_target, controller_confirmation]
+  completed: [implementation, initial_controller_target, controller_closure_correction, corrected_controller_target, controller_confirmation, release_runtime_correction]
   safe_total_pr_count: 7
-  current: release_runtime_correction
-  remaining_after_current: [post_release_closeout]
+  current: post_release_closeout
+  remaining_after_current: []
   reason: the sole publication-disabled release attempt exposed a clean-runner-only release environment and diagnostic-retention class after controller confirmation; no retry is permitted until the whole class passes locally, and release custody prohibits altering or substituting the failed attempt
   corrected_target:
     exact_main_run: 34418184933
@@ -203,6 +203,12 @@ rollout_replan:
     clean_room_builder: {python: 3.12.14, source_tests: 762_passed, assets: [wheel, sdist, checksums], build_manifest_sha256: 0c5130e953d64680767a4b84c00db9738cde8347347a26a102911a2680b8ea02}
     independent_verifier: {wheel_smoke: passed, twine: passed, sdist_tests: 759_passed_3_declared_git_custody_skips, report_sha256: 0706609914a2ae8f75ec9a333ce21e9ad7dbd04bbba6c14d942b2e42921c812e}
     remote_retry: authorized_only_as_one_normal_pr_and_one_post_merge_release_attempt
+  release_completion:
+    corrective_pr: {number: 141, merge_commit: bb8faf21116f644491e2997cb8ec7ea73e30bc83, governance_run: 34429480034, package_run: 34429479995, attempts: 1}
+    exact_main: {producer: 34430038100, finalizer: 34430402805, publisher: 34430428197, attempts: 1}
+    scheduled: {nightly: 34430476314, weekly: 34430476699, attempts: 1}
+    release: {build: 34430626218, verifier: 34430961757, collector: 34431293005, publisher: 34431431532, attempts: 1}
+    custody_owner: audits/v1.0.3-release-custody.yml
 remaining_manual_authority:
 - fact: external runner availability repository permissions secrets environments ruleset and App installation
   owner: repository owner and GitHub provider
