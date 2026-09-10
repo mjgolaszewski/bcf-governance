@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import os
 import subprocess
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +16,29 @@ from .evidence_execution import _selected_python
 
 class TestManifestError(ValueError):
     """Raised when a governed test population cannot be reproduced."""
+
+
+@dataclass(frozen=True)
+class PytestSelectorMap:
+    """An exact, collision-free mapping from JUnit identities to pytest selectors."""
+
+    gate_id: str
+    entries: tuple[tuple[str, str], ...]
+
+    @property
+    def normalized_nodes(self) -> tuple[str, ...]:
+        return tuple(identity for identity, _ in self.entries)
+
+    def selector_for(self, identity: object) -> str:
+        if not isinstance(identity, str) or not identity:
+            raise TestManifestError("test-node oracle is not exact")
+        for normalized, selector in self.entries:
+            if normalized == identity:
+                return selector
+        raise TestManifestError(
+            f"test-node oracle {identity!r} is absent from the verified "
+            f"collection mapping for {self.gate_id}"
+        )
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -79,22 +103,61 @@ def _selectors(repo_root: Path, values: object) -> list[str]:
 
 
 def _junit_node_id(pytest_node_id: str) -> str:
-    tokens = pytest_node_id.split("::")
-    module = Path(tokens[0]).with_suffix("").as_posix().replace("/", ".")
-    if len(tokens) == 1:
+    if "::" not in pytest_node_id:
+        module = Path(pytest_node_id).with_suffix("").as_posix().replace("/", ".")
         return module
-    if len(tokens) > 2:
-        module = ".".join([module, *tokens[1:-1]])
-    return f"{module}::{tokens[-1]}"
+    source, remainder = pytest_node_id.split("::", 1)
+    parameter_at = remainder.find("[")
+    structural = remainder if parameter_at < 0 else remainder[:parameter_at]
+    parameter = "" if parameter_at < 0 else remainder[parameter_at:]
+    names = structural.split("::")
+    module = Path(source).with_suffix("").as_posix().replace("/", ".")
+    if len(names) > 1:
+        module = ".".join([module, *names[:-1]])
+    return f"{module}::{names[-1]}{parameter}"
 
 
-def collect_nodes(
+def _safe_pytest_node(value: str) -> str:
+    if value.count("::") < 1 or any(character in value for character in "\x00\r\n"):
+        raise TestManifestError(f"pytest collection returned an unsafe node {value!r}")
+    source = value.split("::", 1)[0]
+    relative = Path(source)
+    if (
+        not source.endswith(".py")
+        or source.startswith("-")
+        or relative.is_absolute()
+        or ".." in relative.parts
+    ):
+        raise TestManifestError(f"pytest collection returned an unsafe node {value!r}")
+    return value
+
+
+def _selector_map_from_nodes(
+    gate_id: str, raw_nodes: list[str]
+) -> PytestSelectorMap:
+    by_identity: dict[str, str] = {}
+    for raw_node in raw_nodes:
+        selector = _safe_pytest_node(raw_node)
+        identity = _junit_node_id(selector)
+        previous = by_identity.get(identity)
+        if previous is not None and previous != selector:
+            raise TestManifestError(
+                f"ambiguous JUnit node identity for {gate_id}: {identity!r} maps to "
+                f"both {previous!r} and {selector!r}"
+            )
+        by_identity[identity] = selector
+    if not by_identity:
+        raise TestManifestError(f"pytest collection returned zero nodes for {gate_id}")
+    return PytestSelectorMap(gate_id, tuple(sorted(by_identity.items())))
+
+
+def collect_selector_map(
     repo_root: Path,
     gate_id: str,
     *,
     python_executable: str | Path | None = None,
-) -> list[str]:
-    """Collect the exact JUnit-normalized nodes selected by one gate contract."""
+) -> PytestSelectorMap:
+    """Collect the lossless pytest/JUnit identity mapping for one test gate."""
     repo_root = repo_root.resolve()
     contract = _test_contract(repo_root, gate_id)
     python = _selected_python(python_executable)
@@ -121,16 +184,28 @@ def collect_nodes(
         raise TestManifestError(
             f"pytest collection infrastructure failure for {gate_id}: {diagnostic}"
         )
-    nodes = sorted(
-        {
-            _junit_node_id(line.strip())
+    return _selector_map_from_nodes(
+        gate_id,
+        [
+            line.strip()
             for line in result.stdout.splitlines()
             if ".py::" in line and not line.startswith((" ", "="))
-        }
+        ],
     )
-    if not nodes:
-        raise TestManifestError(f"pytest collection returned zero nodes for {gate_id}")
-    return nodes
+
+
+def collect_nodes(
+    repo_root: Path,
+    gate_id: str,
+    *,
+    python_executable: str | Path | None = None,
+) -> list[str]:
+    """Collect the exact JUnit-normalized nodes selected by one gate contract."""
+    return list(
+        collect_selector_map(
+            repo_root, gate_id, python_executable=python_executable
+        ).normalized_nodes
+    )
 
 
 def declared_test_gates(repo_root: Path) -> list[str]:
@@ -148,13 +223,13 @@ def declared_test_gates(repo_root: Path) -> list[str]:
     )
 
 
-def check_gate(
+def check_gate_selectors(
     repo_root: Path,
     gate_id: str,
     *,
     python_executable: str | Path | None = None,
-) -> list[str]:
-    """Return collected nodes or raise when the committed manifest drifts."""
+) -> PytestSelectorMap:
+    """Return the verified lossless mapping or raise on manifest drift."""
     contract = _test_contract(repo_root, gate_id)
     path = _safe_manifest_path(repo_root, contract.get("expected_node_manifest"))
     if not path.is_file() or path.is_symlink():
@@ -164,14 +239,31 @@ def check_gate(
         for line in path.read_text(encoding="utf-8").splitlines()
         if line.strip() and not line.lstrip().startswith("#")
     )
-    actual = collect_nodes(repo_root, gate_id, python_executable=python_executable)
+    mapping = collect_selector_map(
+        repo_root, gate_id, python_executable=python_executable
+    )
+    actual = list(mapping.normalized_nodes)
     if expected != actual:
         missing = sorted(set(expected) - set(actual))
         extra = sorted(set(actual) - set(expected))
         raise TestManifestError(
             f"test node manifest drift for {gate_id}; missing={missing}; extra={extra}"
         )
-    return actual
+    return mapping
+
+
+def check_gate(
+    repo_root: Path,
+    gate_id: str,
+    *,
+    python_executable: str | Path | None = None,
+) -> list[str]:
+    """Return collected nodes or raise when the committed manifest drifts."""
+    return list(
+        check_gate_selectors(
+            repo_root, gate_id, python_executable=python_executable
+        ).normalized_nodes
+    )
 
 
 def update_gate(

@@ -254,6 +254,14 @@ before grouping: copied evidence IDs or execution slots invalidate every collide
 Changes to either rule require a cause-verified control for the owner and an
 architecture test preventing a second selector or admission path.
 
+Test-node execution follows the same ownership rule. `test_manifests.py` alone maps
+raw pytest selectors to JUnit-normalized identities, rejects normalization collisions,
+and verifies the mapping against the governed manifest. Negative-control execution
+may look up an admitted raw selector; it must not reverse-parse a JUnit classname or
+maintain a second path heuristic. Collection errors, absent identities, ambiguous
+identities, and empty collections are infrastructure failures rather than successful
+negative controls.
+
 ## Distribution tests
 
 Release verification resolves dependencies once into the committed

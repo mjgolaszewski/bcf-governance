@@ -17,8 +17,8 @@ separates two questions:
 - `bcf truth`: are lifecycle and release claims supported by current evidence
   for the exact Git subject?
 
-Development package version: `v1.0.3`. The latest released artifacts remain
-`v1.0.2` until the governed 1.0.3 publication completes. Releases are published through
+Development package version: `v1.0.4`. The latest released artifacts remain
+`v1.0.3` until the governed 1.0.4 publication completes. Releases are published through
 immutable GitHub Releases after exact-main certification.
 
 ## Design thesis
@@ -206,10 +206,10 @@ it cannot preserve behavior and meet the repository's performance threshold.
 
 ## Install
 
-Install the `v1.0.3` wheel from its immutable GitHub Release:
+Install the `v1.0.4` wheel from its immutable GitHub Release after publication:
 
 ```bash
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.3/bcf_governance-1.0.3-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.4/bcf_governance-1.0.4-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel. Release publication

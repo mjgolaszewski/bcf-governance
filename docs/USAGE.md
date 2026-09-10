@@ -172,7 +172,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.3/bcf_governance-1.0.3-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.4/bcf_governance-1.0.4-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 1.0. Verify the
@@ -337,7 +337,11 @@ evidence lane.
 For test-suite controls, evidence capture runs the full positive selection once, then
 runs only each control's declared pytest oracle nodes in its detached mutant worktree.
 The positive baseline must contain those nodes, and the isolated JUnit must show those
-same nodes failing. Diagnostic controls continue to execute the canonical gate command.
+same nodes failing. BCF collects a lossless mapping from each raw pytest node to its
+JUnit-normalized identity once per applicable gate, verifies that mapping against the
+governed exact-node manifest, and reuses it for every isolated control. Missing or
+ambiguous mappings fail closed; BCF never guesses a filesystem path from a JUnit
+classname. Diagnostic controls continue to execute the canonical gate command.
 
 BCF self-controller rotation has a separate mechanical path. Trusted control runs
 `bcf ci-github controller-pin resolve` to select the newest exact-main package
@@ -443,13 +447,17 @@ artifacts only when absent:
 bcf install --target . --upgrade
 ```
 
-For the 1.0.3 evidence-integrity patch, install the exact release artifact,
+For the 1.0.4 selector-integrity patch, install the exact release artifact,
 run this upgrade to refresh pack-owned runtime and schema copies, and then run
 `bcf ci graph validate`, `bcf ci graph render --check`, and the repository's
 normal graph render/apply workflow. Commit any mechanically generated workflow
 bytes before recompiling workflow-authority pins in a following commit. Existing
 evidence must be recaptured because installed runtime and governed-tree bytes
 changed; do not copy or relabel pre-upgrade receipts.
+
+The 1.0.4 runtime fixes class-based pytest and `unittest.TestCase` controls by
+preserving the raw selector collected for each JUnit identity. Upgrade does not
+rewrite a consumer's normalized test manifests or gate contracts.
 
 Upgrade preserves the repository's profile, gate contracts, evidence policy,
 CI graph, registered extensions, and all workflow bytes. It does not run a

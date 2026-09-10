@@ -62,7 +62,7 @@
     },
     "docs/OPERATIONS.md": {
       "operation": "copy",
-      "sha256": "fa8dc7389f08cc73963e39eeb76527739ae77612ccfd6d9cf8c9ed2c6f24c302"
+      "sha256": "6a23ec53b025922581598e8399bd489f2754e90e662b55df6404c0408b600c54"
     },
     "governance-profile.yml": {
       "operation": "generate",
@@ -312,7 +312,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "31952ba67bf862b2645a89376221025ffdab54f4730f80f58012f9fe003b3134"
+      "sha256": "1884d3cf3447fa3bacc033c6be998d1a294c48c3b04cf578a3d2ea5c56c9ac7a"
     },
     "scripts/_bcf_runtime/automation_changelog.py": {
       "operation": "copy",
@@ -576,7 +576,7 @@
     },
     "scripts/_bcf_runtime/governance_evidence.py": {
       "operation": "copy",
-      "sha256": "b53ff2d385349c02395d5860c15729099ea537126725cebcd957feb16b281504"
+      "sha256": "6c9bd0949b4dc3a1ed44b1fee8ccf1edfce595f0291786f488847499aab6eb43"
     },
     "scripts/_bcf_runtime/governance_install/__init__.py": {
       "operation": "copy",
@@ -688,7 +688,7 @@
     },
     "scripts/_bcf_runtime/negative_control_execution.py": {
       "operation": "copy",
-      "sha256": "ca264b7a792c7f4738beb82966a1247a85a23a31cab1f0893b749a8d379c5246"
+      "sha256": "74f3c8568554f8668878bc92bd496644ddf2da753273bcf078f95bb0b9994055"
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
@@ -788,7 +788,7 @@
     },
     "scripts/_bcf_runtime/test_manifests.py": {
       "operation": "copy",
-      "sha256": "3ade532ed98be3cf7adf1378527e5e58a95698caf96c0d5fc84462ed469411ff"
+      "sha256": "60dca2065ae18e87aea53454e3894a11a1e0192696a7bc1391e99de795d7f252"
     },
     "scripts/_bcf_runtime/trusted_controller_compatibility.py": {
       "operation": "copy",

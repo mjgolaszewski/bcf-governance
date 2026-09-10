@@ -12,6 +12,8 @@ from pathlib import Path
 import pytest
 import yaml
 
+from bcf_governance.tooling.test_manifests import _selector_map_from_nodes
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_MODULE_PATH = Path(
     os.environ.get(
@@ -44,6 +46,13 @@ def _git(repo: Path, *args: str) -> None:
 
 
 def test_test_node_control_derives_minimal_pytest_command(tmp_path: Path) -> None:
+    selector_map = _selector_map_from_nodes(
+        "contract-test",
+        [
+            "tests/test_preflight.py::test_interpreter_failure_prevents_session_allocation",
+            "tests/test_ci_github_artifacts.py::test_identity[digest-artifact identity]",
+        ],
+    )
     command = negative_control_command(
         [sys.executable, ".github/scripts/run_self_governance_gate.py", "contract-test"],
         {
@@ -64,6 +73,7 @@ def test_test_node_control_derives_minimal_pytest_command(tmp_path: Path) -> Non
         },
         Path(sys.executable),
         tmp_path,
+        selector_map,
     )
 
     assert command == [
@@ -75,6 +85,77 @@ def test_test_node_control_derives_minimal_pytest_command(tmp_path: Path) -> Non
         "tests/test_ci_github_artifacts.py::test_identity[digest-artifact identity]",
         "--junitxml=.artifacts/junit/contract-test.xml",
     ]
+
+
+def test_test_node_control_preserves_class_based_raw_selector(tmp_path: Path) -> None:
+    identity = "tests.test_example.TestExample::test_roundtrip"
+    selector_map = _selector_map_from_nodes(
+        "test", ["tests/test_example.py::TestExample::test_roundtrip"]
+    )
+
+    command = negative_control_command(
+        [sys.executable, "-m", "pytest", "tests/test_example.py"],
+        {
+            "test_contract": {
+                "selectors": ["tests/test_example.py"],
+                "expected_node_manifest": "governance/test-manifests/test.txt",
+                "junit_xml": ".artifacts/junit/test.xml",
+            }
+        },
+        {"oracle": {"kind": "test_node_failure", "node_ids": [identity]}},
+        Path(sys.executable),
+        tmp_path,
+        selector_map,
+    )
+
+    assert command[4] == "tests/test_example.py::TestExample::test_roundtrip"
+
+
+def test_test_node_control_rejects_unverified_selector(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="absent from the verified collection mapping"):
+        negative_control_command(
+            [sys.executable, "-m", "pytest", "tests/test_example.py"],
+            {
+                "test_contract": {
+                    "selectors": ["tests/test_example.py"],
+                    "expected_node_manifest": "governance/test-manifests/test.txt",
+                    "junit_xml": ".artifacts/junit/test.xml",
+                }
+            },
+            {
+                "oracle": {
+                    "kind": "test_node_failure",
+                    "node_ids": ["tests.test_example.TestExample::test_missing"],
+                }
+            },
+            Path(sys.executable),
+            tmp_path,
+            _selector_map_from_nodes(
+                "test", ["tests/test_example.py::TestExample::test_roundtrip"]
+            ),
+        )
+
+
+def test_test_node_control_requires_verified_mapping(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="requires a verified pytest collection mapping"):
+        negative_control_command(
+            [sys.executable, "-m", "pytest", "tests/test_example.py"],
+            {
+                "test_contract": {
+                    "selectors": ["tests/test_example.py"],
+                    "expected_node_manifest": "governance/test-manifests/test.txt",
+                    "junit_xml": ".artifacts/junit/test.xml",
+                }
+            },
+            {
+                "oracle": {
+                    "kind": "test_node_failure",
+                    "node_ids": ["tests.test_example.TestExample::test_roundtrip"],
+                }
+            },
+            Path(sys.executable),
+            tmp_path,
+        )
 
 
 def test_diagnostic_control_preserves_canonical_command(tmp_path: Path) -> None:
@@ -246,6 +327,187 @@ sys.exit(0 if PASS else 1)
     assert receipt["behavioral_probes"][0]["mutation_applied"] is True
     assert receipt["behavioral_probes"][0]["observed_exit_code"] != 0
     assert all(len(artifact["sha256"]) == 64 for artifact in receipt["artifacts"])
+
+
+def test_class_based_control_runs_collected_selector_and_observes_intended_failure(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "class-repo"
+    (repo / "governance/test-manifests").mkdir(parents=True)
+    (repo / "tests").mkdir()
+    (repo / ".gitignore").write_text(".artifacts/\n", encoding="utf-8")
+    (repo / "tests/test_class_gate.py").write_text(
+        """import unittest
+import pytest
+
+PYTEST_BROKEN = False
+UNITTEST_BROKEN = False
+PARAM_BROKEN = False
+
+class TestRoundTrip:
+    def test_class_case(self):
+        assert not PYTEST_BROKEN
+
+    @pytest.mark.parametrize("value", ["one::two"])
+    def test_parameterized_class(self, value):
+        assert value and not PARAM_BROKEN
+
+class TestUnitRoundTrip(unittest.TestCase):
+    def test_unittest_case(self):
+        self.assertFalse(UNITTEST_BROKEN)
+""",
+        encoding="utf-8",
+    )
+    identity = "tests.test_class_gate.TestRoundTrip::test_class_case"
+    unittest_identity = (
+        "tests.test_class_gate.TestUnitRoundTrip::test_unittest_case"
+    )
+    parameter_identity = (
+        "tests.test_class_gate.TestRoundTrip::test_parameterized_class[one::two]"
+    )
+    (repo / "governance/test-manifests/test.txt").write_text(
+        identity + "\n" + parameter_identity + "\n" + unittest_identity + "\n",
+        encoding="utf-8",
+    )
+    controls = [
+        {
+            "id": "break-class-case",
+            "mutation": {
+                "path": "tests/test_class_gate.py",
+                "search": "PYTEST_BROKEN = False",
+                "replace": "PYTEST_BROKEN = True",
+            },
+            "oracle": {"kind": "test_node_failure", "node_ids": [identity]},
+        },
+        {
+            "id": "break-unittest-case",
+            "mutation": {
+                "path": "tests/test_class_gate.py",
+                "search": "UNITTEST_BROKEN = False",
+                "replace": "UNITTEST_BROKEN = True",
+            },
+            "oracle": {
+                "kind": "test_node_failure",
+                "node_ids": [unittest_identity],
+            },
+        },
+        {
+            "id": "break-parameterized-class",
+            "mutation": {
+                "path": "tests/test_class_gate.py",
+                "search": "PARAM_BROKEN = False",
+                "replace": "PARAM_BROKEN = True",
+            },
+            "oracle": {
+                "kind": "test_node_failure",
+                "node_ids": [parameter_identity],
+            },
+        },
+    ]
+    (repo / "governance-profile.yml").write_text(
+        yaml.safe_dump(
+            {
+                "profile": {"selected": "standard"},
+                "release_gate_profile": {
+                    "gates": {
+                        "test": {
+                            "target": "test",
+                            "status": "required",
+                            "command_policy": "automated_tests",
+                        }
+                    }
+                },
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    (repo / "governance/evidence-policy.yml").write_text(
+        yaml.safe_dump(
+            {
+                "gate_overrides": {
+                    "test": {
+                        "evidence_kind": "test_suite",
+                        "test_contract": {
+                            "selectors": ["tests/test_class_gate.py"],
+                            "expected_node_manifest": (
+                                "governance/test-manifests/test.txt"
+                            ),
+                            "junit_xml": ".artifacts/junit/test.xml",
+                            "min_collected": 1,
+                            "min_executed": 1,
+                            "max_skipped": 0,
+                        },
+                        "negative_controls": controls,
+                    }
+                }
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    (repo / "governance/gate-contracts.yml").write_text(
+        yaml.safe_dump(
+            {
+                "gates": {
+                    "test": {
+                        "invocation": {
+                            "argv": [
+                                "python3",
+                                "-m",
+                                "pytest",
+                                "-q",
+                                "tests/test_class_gate.py",
+                                "--junitxml=.artifacts/junit/test.xml",
+                            ],
+                            "cwd": ".",
+                            "env": {},
+                            "required_env": [],
+                        },
+                        "evidence": {
+                            "kind": "test_suite",
+                            "test_contract": {
+                                "selectors": ["tests/test_class_gate.py"],
+                                "expected_node_manifest": (
+                                    "governance/test-manifests/test.txt"
+                                ),
+                                "junit_xml": ".artifacts/junit/test.xml",
+                            },
+                        },
+                        "negative_controls": controls,
+                    }
+                }
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    _git(repo, "init")
+    _git(repo, "config", "user.email", "evidence@example.test")
+    _git(repo, "config", "user.name", "Evidence Test")
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "class gate")
+
+    receipt = json.loads(
+        capture_gate(repo, "test", tmp_path / "class-evidence").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert [probe["observed_exit_code"] for probe in receipt["behavioral_probes"]] == [
+        1,
+        1,
+        1,
+    ]
+    assert all(
+        probe["oracle_observation"]["satisfied"]
+        for probe in receipt["behavioral_probes"]
+    )
+    assert [
+        probe["oracle_observation"]["failed_node_ids"]
+        for probe in receipt["behavioral_probes"]
+    ] == [[identity], [unittest_identity], [parameter_identity]]
+    assert receipt["result"] == "passed"
 
 
 def _make_diagnostic_gate_repo(

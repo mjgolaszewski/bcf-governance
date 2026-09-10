@@ -68,6 +68,13 @@ worktrees. A control must satisfy its typed failure oracle; command-not-found,
 timeout, signal, or an arbitrary crash is never proof. Dynamic or unresolved
 mandatory workflow paths fail closed.
 
+Test-node controls use one mechanical selector owner. The selected interpreter
+collects raw pytest selectors once per applicable gate; the runtime maps them to
+their JUnit-normalized identities, rejects collisions, verifies the exact-node
+manifest, and reuses the admitted raw selectors for isolated controls. It never
+reconstructs a filesystem path from a JUnit classname. Missing or ambiguous
+mappings fail closed.
+
 In profile v2, preflight allocates one private immutable evidence session for
 the exact commit, tree, profile, producer, run, attempt, and gate inventory.
 Every positive gate executes once and writes inside that session. Truth rejects

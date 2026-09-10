@@ -1,0 +1,78 @@
+document: {kind: defect_remediation_audit, id: bcf-governance-p20-issue-143, version: 1.0.0, status: active, path: audits/p20-issue-143-remediation.yml}
+issue:
+  provider: github
+  repository: mjgolaszewski/bcf-governance
+  number: 143
+  title: Class-based JUnit identities produce nonexistent pytest paths in negative controls
+  affected_release: 1.0.3
+  target_release: 1.0.4
+baseline:
+  commit: 9526f0150f3e0caf3adf332ac0c5543e0509fad0
+  tree: 4d5af83baf4ade307764146d9e368ac26bdc7064
+  source_hashes:
+    bcf_governance/tooling/test_manifests.py: 3ade532ed98be3cf7adf1378527e5e58a95698caf96c0d5fc84462ed469411ff
+    bcf_governance/tooling/negative_control_execution.py: ca264b7a792c7f4738beb82966a1247a85a23a31cab1f0893b749a8d379c5246
+    bcf_governance/tooling/governance_evidence.py: b53ff2d385349c02395d5860c15729099ea537126725cebcd957feb16b281504
+classification:
+  kind: upstream_defect
+  false_pass_possible: false
+  impact: class-based pytest and unittest negative controls exit during collection before exercising their declared mutation
+  consumer_observation: Racecar used a function-level workaround and remains outside this repository change
+root_cause:
+  canonical_manifest_identity: tests.test_example.TestExample::test_roundtrip
+  defective_reconstruction: tests/test_example/TestExample.py::test_roundtrip
+  defect: a lossy JUnit identity was reverse-parsed by treating every dotted classname component as a filesystem component
+remediation:
+  owner: bcf_governance/tooling/test_manifests.py::check_gate_selectors
+  mechanical_owner: bcf_governance/tooling/test_manifests.py::PytestSelectorMap
+  behavior:
+  - collect raw pytest selectors once per applicable gate through the selected interpreter
+  - normalize each raw selector to its JUnit identity and reject collisions
+  - compare normalized identities exactly with the governed node manifest
+  - supply the verified raw mapping to every isolated negative control
+  - reject missing mappings rather than guessing a path
+  compatibility:
+  - receipt schema 2.0 remains unchanged
+  - profile contracts and gate inventory remain unchanged
+  - governed normalized node manifests remain byte-format compatible
+controls:
+  positive:
+  - module function
+  - pytest class
+  - unittest TestCase
+  - supported nested pytest class
+  - parameterized node
+  - real positive baseline followed by intended class assertion failure
+  adversarial:
+  - absent normalized identity
+  - ambiguous normalized identity
+  - unsafe raw selector
+  causal_mutants:
+  - class-node-selector-mapping-must-not-be-bypassed
+  - junit-selector-collision-must-fail
+exclusions: [workflow topology, receipt schema, profile contracts, gate count, Racecar source]
+validation:
+  source_suite: {result: pass, tests: 770, commit: 0ef23960e0f9133f055109884117e89c64e90e95}
+  contract_evidence:
+    result: pass
+    tests: 389
+    controls_satisfied: 149
+    controls_total: 149
+    session_id: ef831d2a2a09037946977dcc376e20c0
+  selector_controls:
+  - {id: class-node-selector-mapping-must-not-be-bypassed, exit: 1, intended_node_failed: true}
+  - {id: junit-selector-collision-must-fail, exit: 1, intended_node_failed: true}
+  - {id: exact-oracle-node-selection-must-fail, exit: 1, intended_node_failed: true}
+  mutation_profiles:
+  - {profile: full, result: pass, killed: 15, total: 15}
+  - {profile: semantic-full, result: pass, killed: 12, total: 12}
+  release_artifacts:
+    version: 1.0.4
+    wheel: pass
+    extracted_sdist: {result: pass, tests: 767, expected_environment_skips: 3}
+  deterministic_checks:
+  - governance validation and exposure scan passed
+  - lint, typecheck, and semantic ownership passed
+  - source and packaged runtime copies are byte-equivalent
+  - exact manifests contain 770 source and 389 contract nodes
+  - CI graph render is clean with 18 workflows, 29 jobs, and 4 extensions

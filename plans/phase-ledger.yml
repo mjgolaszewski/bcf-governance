@@ -4,15 +4,15 @@ build_plan_mandate:
   required_fields: [tightly_scoped_deliverables, parallelizable_workstreams, hard_dependencies, docker_first_local_runtime, completeness_standard]
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P19
-  build_block: evidence-session-and-receipt-integrity-1.0.3
-  plan: plans/phase-19-plan.yml
-  workitems: plans/phase-19-workitems.yml
-  log: phases/phase-19-log.yml
+  id: P20
+  build_block: junit-selector-integrity-1.0.4
+  plan: plans/phase-20-plan.yml
+  workitems: plans/phase-20-workitems.yml
+  log: phases/phase-20-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: completed
+  lifecycle_status: planned
   owner: codex
   validation_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests]
 hotfix_lane:
@@ -23,20 +23,8 @@ hotfix_lane:
       allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
-  open_records: []
-  remediation_history:
-  - id: P19-HF01
-    mode: full
-    recorded_at_utc: '2026-09-10T00:06:00Z'
-    action: centralized evidence-session selection and receipt identity admission; derived timeout, dependency changelog, and controller closure authority mechanically; independently installed and probed the corrected controller
-    remediated_in_phase: P19
-    hotfix_log: phases/phase-19-hotfix01.yml
-    canonical_artifacts: [bcf_governance/tooling/evidence_sessions.py, bcf_governance/tooling/truth_receipts.py, bcf_governance/tooling/ci_graph_render.py, bcf_governance/tooling/ci_graph_audit.py, bcf_governance/tooling/automation_dependencies.py, bcf_governance/tooling/ci_github_bootstrap.py, .github/scripts/build_trusted_controller.py, governance/canonical-representations.yml, governance/ci-graph.yml, governance/automation-producers.yml]
-    local_validation: [759 source tests passed, 383 contract tests passed, 194 negative controls declared, 15 validator mutants killed, 12 semantic mutants killed, wheel and sdist issue reproductions passed]
-    remote_validation_completed:
-      commit: e268a3e49b1d9c2e9ff81d95cf6bf3229d16692c
-      workflows: [governance 34419081319, governance-pack 34419081272, trusted-bootstrap 34419701832, trusted-probe 34419770290]
-  - {id: P19-HF02, mode: full, recorded_at_utc: '2026-09-10T16:00:00Z', action: bound release source tests to the exact checkout and retained and surfaced same-attempt diagnostics without admitting failed builds downstream, remediated_in_phase: P19, hotfix_log: phases/phase-19-hotfix02.yml, canonical_artifacts: [.github/scripts/build_release_bundle.py, governance/ci-extensions/bcf-release.yml, governance/ci-graph.yml, governance/gate-contracts.yml], local_validation: [762 source and 386 contract nodes passed, all 197 controls passed in one closed 21-gate session, 27 scheduled-style mutants killed, clean CPython 3.12.14 builder and independent wheel sdist Twine verifier passed]}
+  open_records: [{id: P20-HF01, mode: full, status: planned, triggered_by_commits: [9526f0150f3e0caf3adf332ac0c5543e0509fad0], failing_workflows: [], root_cause: lossy reverse parsing treated class components in JUnit identities as filesystem components, remediated_in_phase: P20, hotfix_log: phases/phase-20-hotfix01.yml, canonical_artifacts: [bcf_governance/tooling/test_manifests.py, bcf_governance/tooling/negative_control_execution.py, bcf_governance/tooling/governance_evidence.py] }]
+  remediation_history: []
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
 - {type: decision, statement: BCF 0.7.0 is one release train and BCF must self-adopt every applicable Standard-v2 capability}
@@ -52,8 +40,7 @@ operator_requirements_choices_disambiguations:
 - {type: hosted_frugality, statement: hosted candidate jobs execute their own bounded work and terminate; polling sleeping lease waiting and hosted waiters for local capacity are prohibited}
 - {type: automation_authority, statement: automation-authored pull requests remain subject to the universal changelog rule; an explicitly adopted trusted deterministic producer may create only the authenticated bounded changelog commit and receives no approval merge release or certification authority}
 - {type: provider_runner_removal, statement: the persistent Dependabot runner bcf-governance-vm-linux-ci-runner-dependabot-1 and its repository registration are retired; candidate code runs only on fresh hosted workers and trusted local runners execute no candidate checkout}
-active_delivery_priorities:
-  current_tranche: [evidence-session-and-receipt-integrity-1.0.3]
+active_delivery_priorities: {current_tranche: [junit-selector-integrity-1.0.4]}
 release_trains:
   release_1:
     target_version: 0.6.1
@@ -91,5 +78,6 @@ release_trains:
     target_version: 1.0.3
     status: completed
     focus: [canonical_session_selection, duplicate_receipt_identity_rejection, deterministic_ci_authority_audit, timeout_compatibility, manifest_derived_dependency_changelog, immutable_patch_release]
+  release_10: {target_version: 1.0.4, status: active, focus: [lossless_pytest_selector_mapping, class_based_negative_controls, immutable_patch_release]}
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]
