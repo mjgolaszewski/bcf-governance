@@ -101,3 +101,9 @@ validation:
       bootstrap: {run_id: 34507460174, attempt: 1, runner_jobs_passed: 2}
       probe: {run_id: 34507540767, attempt: 1, runner_jobs_passed: 2}
       installation_proof: mechanically compiled from authenticated provider state
+  release_resolution:
+    version: 1.0.4
+    tag: v1.0.4
+    release_id: '386507232'
+    immutable: true
+    issue_state: closed
