@@ -63,6 +63,7 @@ execution_evidence:
   - PR 140 merged as exact main c3cf96de9a15b17342f46be66cc68033b01ff34d; exact-main 34421908675, finalizer 34422320855, status publisher 34422350293, and scheduled mutants 34422396843 and 34422396884 passed on attempt 1
   - publication-disabled release run 34422503200 attempt 1 reached the final candidate build but exposed the release builder's undeclared source-test import authority; its success-only upload also withheld the already-written raw failure files
   - P19-HF02 fixes the entire observed release-runtime failure class locally, retains failed-attempt diagnostics without admitting them downstream, and prohibits a remote retry until exact clean-room release validation passes
+  - generated workflow bytes were frozen at b6b014600db10668530bfb126b6265ad011eda11 and workflow identity was mechanically recompiled from Git; the resulting complete local source suite passed all 762 tests
 closeout_requirements:
   claims:
     workitems_closed:

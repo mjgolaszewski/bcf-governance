@@ -142,6 +142,11 @@ release_runtime_incident:
   - {path: .github/scripts/build_release_bundle.py, sha256: 92bc248c250c290ede6808126df30d485120c6bcb9db45413d7ba718f7e63dd5}
   - {path: governance/ci-extensions/bcf-release.yml, sha256: 78245dc6c106cf1c26f9f1dd0f2c87f6e02117d4fa6de6034532023b55b4204f}
   causal_controls: [release-source-test-import-authority-must-fail, release-build-failure-diagnostics-must-fail, release-build-partial-evidence-upload-must-fail]
+  local_validation:
+    workflow_definition_commit: b6b014600db10668530bfb126b6265ad011eda11
+    workflow_authority_projection: mechanically_compiled
+    source_tests: 762_passed
+    remaining: [cause_verified_controls, validator_mutants, semantic_mutants, clean_room_release_path, exact_local_pr_context, exact_commit_release_check]
 consumer_handoff:
   policy: publish BCF 1.0.3 before consumer adoption
   racecar_mutation_in_this_phase: prohibited

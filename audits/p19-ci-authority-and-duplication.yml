@@ -195,6 +195,11 @@ rollout_replan:
     wheel_sha256: aaaa679172fde6b49c184c4ea288a5a0c96a249e8c84f82b13fe994efed5cf7e
     selection: mechanically_compiled_from_authenticated_provider_metadata_and_downloaded_bytes
     installation: proven_by_bootstrap_34419701832_and_probe_34419770290_on_both_trusted_runners
+  release_runtime_correction:
+    workflow_definition_commit: b6b014600db10668530bfb126b6265ad011eda11
+    authority_projection: mechanically_compiled_from_exact_git_workflow_bytes
+    source_tests: 762_passed
+    remote_retry: not_authorized_until_remaining_local_gates_and_clean_room_release_path_pass
 remaining_manual_authority:
 - fact: external runner availability repository permissions secrets environments ruleset and App installation
   owner: repository owner and GitHub provider
