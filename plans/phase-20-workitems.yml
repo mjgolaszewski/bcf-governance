@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-20-workitems
   version: 1.0.0
   generated_at_utc: '2026-09-10T00:00:00Z'
-  status: planned
+  status: completed
   path: plans/phase-20-workitems.yml
   phase_id: P20
 workitems:
@@ -37,7 +37,7 @@ workitems:
   - contract-test
 - id: P20-P0-04
   priority: P0
-  status: IN_PROGRESS
+  status: DONE
   summary: deliver declared first-party audit source and test code classification without weakening audit-evidence custody
   acceptance:
   - declared source and test code in audit contexts is admitted
