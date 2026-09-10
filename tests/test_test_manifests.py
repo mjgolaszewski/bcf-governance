@@ -9,7 +9,9 @@ import yaml
 
 from bcf_governance.tooling.test_manifests import (
     TestManifestError as ManifestError,
+    _selector_map_from_nodes,
     check_gate,
+    check_gate_selectors,
     collect_nodes,
     declared_test_gates,
     update_gate,
@@ -91,6 +93,79 @@ def test_manifest_collection_classifies_missing_pytest_as_infrastructure(
 
     with pytest.raises(ManifestError, match="collection infrastructure failure"):
         collect_nodes(repo, "test", python_executable=selected)
+
+
+def test_selector_map_preserves_function_class_unittest_nested_and_parameter_nodes(
+    tmp_path: Path,
+) -> None:
+    repo = _repo(tmp_path)
+    (repo / "tests/test_sample.py").write_text(
+        """import unittest
+import pytest
+
+def test_function():
+    assert True
+
+class TestPytestClass:
+    def test_method(self):
+        assert True
+
+    class TestNestedClass:
+        def test_nested(self):
+            assert True
+
+class TestUnittestCase(unittest.TestCase):
+    def test_unittest_method(self):
+        self.assertTrue(True)
+
+@pytest.mark.parametrize("value", ["one::two", "two"])
+def test_parameterized(value):
+    assert value
+""",
+        encoding="utf-8",
+    )
+    update_gate(repo, "test", python_executable=sys.executable)
+
+    mapping = check_gate_selectors(repo, "test", python_executable=sys.executable)
+
+    assert mapping.selector_for("tests.test_sample::test_function") == (
+        "tests/test_sample.py::test_function"
+    )
+    assert mapping.selector_for("tests.test_sample.TestPytestClass::test_method") == (
+        "tests/test_sample.py::TestPytestClass::test_method"
+    )
+    assert mapping.selector_for(
+        "tests.test_sample.TestPytestClass.TestNestedClass::test_nested"
+    ) == "tests/test_sample.py::TestPytestClass::TestNestedClass::test_nested"
+    assert mapping.selector_for(
+        "tests.test_sample.TestUnittestCase::test_unittest_method"
+    ) == "tests/test_sample.py::TestUnittestCase::test_unittest_method"
+    assert mapping.selector_for("tests.test_sample::test_parameterized[one::two]") == (
+        "tests/test_sample.py::test_parameterized[one::two]"
+    )
+
+
+def test_selector_map_rejects_ambiguous_junit_identity() -> None:
+    with pytest.raises(ManifestError, match="ambiguous JUnit node identity"):
+        _selector_map_from_nodes(
+            "test",
+            [
+                "tests/test_collision.py::TestCase::test_same",
+                "tests/test_collision/TestCase.py::test_same",
+            ],
+        )
+
+
+def test_selector_map_rejects_absent_oracle_node() -> None:
+    mapping = _selector_map_from_nodes("test", ["tests/test_sample.py::test_present"])
+
+    with pytest.raises(ManifestError, match="absent from the verified collection mapping"):
+        mapping.selector_for("tests.test_sample.TestCase::test_missing")
+
+
+def test_selector_map_rejects_unsafe_raw_selector() -> None:
+    with pytest.raises(ManifestError, match="unsafe node"):
+        _selector_map_from_nodes("test", ["-tests/test_sample.py::test_option"])
 
 
 def test_current_repo_declares_exact_manifest_for_every_test_gate() -> None:

@@ -6,7 +6,25 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-No unreleased changes.
+Release target: `1.0.4`.
+
+### Added
+
+- Added one canonical selector-map owner that preserves the exact raw pytest
+  selector associated with each JUnit-normalized test identity and rejects
+  collisions.
+- Added positive, adversarial, and causal coverage for module functions,
+  pytest classes, `unittest.TestCase`, nested classes, parameterized nodes,
+  missing mappings, ambiguous mappings, and unsafe selectors.
+
+### Fixed
+
+- Fixed issue #143: class-based negative controls now execute the raw selector
+  admitted by selected-interpreter collection instead of guessing a filesystem
+  path from the JUnit classname.
+- Test-gate evidence verifies the collected mapping against the governed exact
+  node manifest once per gate and reuses it across isolated mutants; collection
+  errors, missing identities, and ambiguous identities fail closed.
 
 ## [1.0.3] - 2026-09-10
 

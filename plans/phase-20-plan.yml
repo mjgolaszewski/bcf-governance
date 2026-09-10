@@ -1,0 +1,44 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 20 Plan
+  id: bcf-governance-phase-20-plan
+  version: 1.0.0
+  generated_at_utc: '2026-09-10T00:00:00Z'
+  status: planned
+  path: plans/phase-20-plan.yml
+phase:
+  id: P20
+  build_block: junit-selector-integrity-1.0.4
+  planner: codex
+  date: '2026-09-10'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - canonical lossless pytest selector mapping
+  - class-based negative-control execution and causal regression coverage
+  - compatible immutable BCF 1.0.4 patch release
+  parallelizable_workstreams:
+  - id: P20-WS1
+    name: 'P20-WS1: collection identity and selector authority'
+  - id: P20-WS2
+    name: 'P20-WS2: evidence integration adversarial tests and generated parity'
+  - id: P20-WS3
+    name: 'P20-WS3: package release and consumer handoff'
+  hard_dependencies:
+  - P19
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: keep the phase narrowly scoped to declared deliverables and update canonical
+    governed artifacts in the same change
+verification_plan:
+- .venv/bin/python -m pytest -q tests
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python .github/scripts/run_validator_mutants.py --profile full
+- .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full

@@ -46,6 +46,7 @@ from .evidence_test_adapters import (
     test_observations as _test_observations,
 )
 from .negative_control_execution import negative_control_command
+from .test_manifests import TestManifestError, check_gate_selectors
 from .ci_graph_contracts import CIGraphError, GRAPH_PATH
 from .ci_graph_locks import apply_ci_graph_locks
 from .ci_graph_render import apply_ci_graph
@@ -284,6 +285,29 @@ def _negative_control_results(
     controls = contract.get("negative_controls")
     if not isinstance(controls, list):
         return [], []
+    selector_map = None
+    test_contract = contract.get("test_contract")
+    supports_isolated_nodes = (
+        isinstance(test_contract, dict)
+        and isinstance(test_contract.get("selectors"), list)
+        and isinstance(test_contract.get("expected_node_manifest"), str)
+    )
+    if supports_isolated_nodes and any(
+        isinstance(control, dict)
+        and isinstance(control.get("oracle"), dict)
+        and control["oracle"].get("kind") == "test_node_failure"
+        for control in controls
+    ):
+        try:
+            selector_map = check_gate_selectors(
+                repo_root,
+                str(contract["target"]),
+                python_executable=python_executable,
+            )
+        except TestManifestError as exc:
+            raise EvidenceError(
+                f"negative-control selector admission failed: {exc}"
+            ) from exc
     results: list[dict[str, Any]] = []
     artifacts: list[dict[str, str]] = []
     for index, raw_control in enumerate(controls, start=1):
@@ -301,7 +325,12 @@ def _negative_control_results(
                 observed = (
                     _run(
                         negative_control_command(
-                            command, contract, control, python_executable, worktree
+                            command,
+                            contract,
+                            control,
+                            python_executable,
+                            worktree,
+                            selector_map,
                         ),
                         cwd=_execution_cwd(worktree, contract),
                         env=env,
@@ -362,7 +391,6 @@ def _negative_control_results(
                     }
                     artifacts.append(artifact)
                     artifact_names[stream] = path.name
-                test_contract = contract.get("test_contract")
                 junit_value = (
                     test_contract.get("junit_xml")
                     if isinstance(test_contract, dict)

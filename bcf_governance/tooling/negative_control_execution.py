@@ -3,31 +3,26 @@
 from __future__ import annotations
 
 from pathlib import Path
-import re
 from typing import Any
+
+from .test_manifests import PytestSelectorMap, TestManifestError
 
 
 class NegativeControlCommandError(ValueError):
     """Raised when a declared test-node oracle cannot be executed exactly."""
 
 
-def _pytest_selector(value: object) -> str:
-    if not isinstance(value, str) or value.count("::") < 1:
-        raise NegativeControlCommandError("test-node oracle is not exact")
-    module, remainder = value.split("::", 1)
-    if not remainder or any(
-        ord(character) < 32 or ord(character) > 126 for character in remainder
-    ):
-        raise NegativeControlCommandError("test-node oracle contains an unsafe node")
-    if module.endswith(".py"):
-        relative = Path(module)
-    else:
-        if not re.fullmatch(r"[A-Za-z0-9_.]+", module):
-            raise NegativeControlCommandError("test-node oracle contains an unsafe module")
-        relative = Path(*module.split(".")).with_suffix(".py")
-    if relative.is_absolute() or ".." in relative.parts:
-        raise NegativeControlCommandError("test-node oracle escapes the repository")
-    return f"{relative.as_posix()}::{remainder}"
+def _pytest_selector(
+    value: object, selector_map: PytestSelectorMap | None
+) -> str:
+    if selector_map is None:
+        raise NegativeControlCommandError(
+            "test-node oracle requires a verified pytest collection mapping"
+        )
+    try:
+        return selector_map.selector_for(value)
+    except TestManifestError as exc:
+        raise NegativeControlCommandError(str(exc)) from exc
 
 
 def negative_control_command(
@@ -36,6 +31,7 @@ def negative_control_command(
     control: dict[str, Any],
     python_executable: Path,
     worktree: Path,
+    selector_map: PytestSelectorMap | None = None,
 ) -> list[str]:
     """Run only named pytest oracle nodes when the test contract supports it."""
 
@@ -67,6 +63,6 @@ def negative_control_command(
         "-m",
         "pytest",
         "-q",
-        *(_pytest_selector(value) for value in nodes),
+        *(_pytest_selector(value, selector_map) for value in nodes),
         f"--junitxml={junit.as_posix()}",
     ]
