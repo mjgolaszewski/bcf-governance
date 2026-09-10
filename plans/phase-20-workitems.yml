@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-20-workitems
   version: 1.0.0
   generated_at_utc: '2026-09-10T00:00:00Z'
-  status: planned
+  status: completed
   path: plans/phase-20-workitems.yml
   phase_id: P20
 workitems:
@@ -28,10 +28,10 @@ workitems:
   - contract-test
 - id: P20-P0-03
   priority: P0
-  status: TODO
-  summary: deliver compatible immutable BCF 1.0.4 patch release
+  status: DONE
+  summary: prepare compatible BCF 1.0.4 artifacts and immutable publication path
   acceptance:
-  - compatible immutable BCF 1.0.4 patch release_is_complete
+  - publication-ready BCF 1.0.4 artifacts and immutable release path_is_complete
   acceptance_evidence:
   - test
   - contract-test

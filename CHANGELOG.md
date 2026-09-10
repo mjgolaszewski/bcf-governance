@@ -25,6 +25,9 @@ Release target: `1.0.4`.
 - Test-gate evidence verifies the collected mapping against the governed exact
   node manifest once per gate and reuses it across isolated mutants; collection
   errors, missing identities, and ambiguous identities fail closed.
+- BCF's 1.0.4 trusted-controller target is projected only from the authenticated
+  exact-main package artifact; installed authority remains independently proven
+  until bootstrap and probe complete on both trusted runners.
 
 ## [1.0.3] - 2026-09-10
 
