@@ -93,3 +93,11 @@ validation:
     source_tree: bd761ed90f3eb8f098dde22d44a1e12f1dae740b
     selection: mechanically resolved from authenticated provider state and verified artifact bytes
     expected_pre_rotation_result: exact-main failed closed at completed-lifecycle precondition before evidence fanout
+    final_combined_controller:
+      reason: issue 146 changed trusted validation runtime before the original confirmation merged
+      target_commit: e48d1878ebad644e456dc268cfcd57a14e918820
+      target_artifact_id: '10163668905'
+      target_merge_commit: e5559d8e3856fc495a0ea28f5de002d2f80b43e4
+      bootstrap: {run_id: 34507460174, attempt: 1, runner_jobs_passed: 2}
+      probe: {run_id: 34507540767, attempt: 1, runner_jobs_passed: 2}
+      installation_proof: mechanically compiled from authenticated provider state

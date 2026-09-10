@@ -39,6 +39,10 @@ execution_evidence:
   - all deterministic validation completed locally before remote implementation execution
   - the previously pending issue-143 target was re-proven on the current merge commit before
     the final issue-146 target was projected; no pending target was silently replaced
+  - final target PR 149 passed once and merged as e5559d8e3856fc495a0ea28f5de002d2f80b43e4;
+    bootstrap 34507460174 and probe 34507540767 then passed on both trusted runners
+  - target exact-main 34507442049, finalizer 34508177449, and publisher 34508222577
+    certified the exact target merge on attempt 1
 closeout_requirements:
   claims:
     required_suites_green:

@@ -84,4 +84,21 @@ validation:
         wheel_sha256: 0d4e12b8edc9570286a02b2df755bdd16823d4264a65e7136eab2a2ca886664e
         source_tree: bd4146db47259775dfd14564474cdca3b7d83ae8
         selection: mechanically resolved from authenticated provider state and verified artifact bytes
-    remaining: final controller proof scheduled controls and immutable publication
+        target_pull_request: 149
+        target_merge_commit: e5559d8e3856fc495a0ea28f5de002d2f80b43e4
+        target_governance_run: {id: 34506681449, attempt: 1, result: pass}
+        target_package_run: {id: 34506681519, attempt: 1, result: pass}
+        target_pr_finalizer_run: {id: 34507340698, attempt: 1, result: pass}
+        target_pr_publisher_run: {id: 34507379929, attempt: 1, result: pass}
+        target_exact_main:
+          admission_run: {id: 34507442049, attempt: 1, result: pass}
+          finalizer_run: {id: 34508177449, attempt: 1, computed_state: certified}
+          publisher_run: {id: 34508222577, attempt: 1, result: pass}
+        bootstrap: {run_id: 34507460174, attempt: 1, runner_jobs_passed: 2}
+        probe: {run_id: 34507540767, attempt: 1, runner_jobs_passed: 2}
+        installation_proof:
+          installed_commit: e48d1878ebad644e456dc268cfcd57a14e918820
+          subject_commit: e5559d8e3856fc495a0ea28f5de002d2f80b43e4
+          subject_tree: b61ee5f718b5b920408180ac0d4a1858a764fd18
+          compilation: reconstructed from authenticated workflow and exact job inventories
+    remaining: confirmation PR and its exact-main certification scheduled controls and immutable publication
