@@ -43,10 +43,10 @@ workitems:
 - id: P19-P0-04
   priority: P0
   status: DONE
-  summary: deliver immutable BCF 1.0.3 release and deterministic Racecar migration
+  summary: prepare immutable BCF 1.0.3 release and deliver deterministic Racecar migration
     guidance
   acceptance:
-  - immutable BCF 1.0.3 release and deterministic Racecar migration guidance_is_complete
+  - publication-ready BCF 1.0.3 release chain and deterministic Racecar migration guidance_is_complete
   acceptance_evidence:
   - test
   - contract-test

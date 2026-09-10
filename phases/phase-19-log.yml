@@ -35,7 +35,7 @@ workitems:
   summary: deliver deterministic CI authority audit timeout compatibility and manifest-derived automation dependency transitions plus package-derived trusted-controller dependency closure with build-time offline installation and pre-pin rejection
 - id: P19-P0-04
   status: DONE
-  summary: deliver immutable BCF 1.0.3 release and deterministic Racecar migration
+  summary: prepare immutable BCF 1.0.3 release and deliver deterministic Racecar migration
     guidance
 execution_evidence:
   planned_commands:
@@ -60,6 +60,11 @@ execution_evidence:
   - the owner expanded P19 after repeated CI defects to require a holistic read-only authority and duplication audit before remote execution
   - controller bootstrap 34412310621 failed identically on both trusted runners before install because the controller builder hand-maintained two runtime requirements and omitted packaging; the failed artifact is now rejected locally before pin compilation and the train was replanned rather than retried
   - exact-main run 34418184933 produced corrected artifact 10129903368 only after recursive wheel-closure validation and a real offline install; its provider identity and bytes were mechanically compiled as the replacement target while the last independently proven installation remains authoritative
+  - PR 140 merged as exact main c3cf96de9a15b17342f46be66cc68033b01ff34d; exact-main 34421908675, finalizer 34422320855, status publisher 34422350293, and scheduled mutants 34422396843 and 34422396884 passed on attempt 1
+  - publication-disabled release run 34422503200 attempt 1 reached the final candidate build but exposed the release builder's undeclared source-test import authority; its success-only upload also withheld the already-written raw failure files
+  - P19-HF02 fixes the entire observed release-runtime failure class locally, retains failed-attempt diagnostics without admitting them downstream, and prohibits a remote retry until exact clean-room release validation passes
+  - generated workflow bytes were frozen at b6b014600db10668530bfb126b6265ad011eda11 and workflow identity was mechanically recompiled from Git; the resulting complete local source suite passed all 762 tests
+  - the exact local release check computed closed from 21 of 21 receipts and 197 cause-verified controls; the clean CPython 3.12.14 builder passed 762 source tests and produced exact artifacts, and an independent offline verifier passed wheel smoke, Twine, and 759 extracted-sdist tests with three declared Git-custody skips
 closeout_requirements:
   claims:
     workitems_closed:
@@ -92,5 +97,6 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify the exact completion merge, execute both scheduled mutant profiles,
-  publish the already verified immutable 1.0.3 artifacts, and record provider custody
+- merge the locally proven P19-HF02 correction, recertify its exact main and scheduled
+  controls, publish the independently verified immutable 1.0.3 artifacts, and record
+  provider custody

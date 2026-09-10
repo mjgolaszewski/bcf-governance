@@ -123,6 +123,35 @@ rollout_incident:
     custody: provider metadata and downloaded artifact bytes were compiled by the controller-pin command; no identity value was operator-authored
     bootstrap_run: 34419701832
     probe_run: 34419770290
+release_runtime_incident:
+  run_id: 34422503200
+  run_attempt: 1
+  subject_commit: c3cf96de9a15b17342f46be66cc68033b01ff34d
+  subject_tree: 96ce9b0f23d8d6043c09f9bb4d48a69fc062fb91
+  failed_job: Build exact certified release bytes on a fresh hosted runner
+  confirmed_causes:
+  - source pytest inherited no exact checkout import authority, while developer and ordinary evidence environments had concealed that dependency
+  - release build artifact upload was success-only, so raw stdout, stderr, and JUnit written before failure were not retained by the provider
+  class_remediation:
+  - overwrite source-test PYTHONPATH with the builder-derived exact repository root
+  - preserve and replay failed subprocess output after closing its files
+  - upload the same-attempt build directory on both success and failure
+  - retain complete-workflow-success as the verifier admission condition
+  remote_retry_policy: prohibited_until_full_local_clean_room_release_validation_passes
+  source_custody:
+  - {path: .github/scripts/build_release_bundle.py, sha256: 92bc248c250c290ede6808126df30d485120c6bcb9db45413d7ba718f7e63dd5}
+  - {path: governance/ci-extensions/bcf-release.yml, sha256: 78245dc6c106cf1c26f9f1dd0f2c87f6e02117d4fa6de6034532023b55b4204f}
+  causal_controls: [release-source-test-import-authority-must-fail, release-build-failure-diagnostics-must-fail, release-build-partial-evidence-upload-must-fail]
+  local_validation:
+    workflow_definition_commit: b6b014600db10668530bfb126b6265ad011eda11
+    workflow_authority_projection: mechanically_compiled
+    source_tests: 762_passed
+    exact_local_pr_context: passed
+    exact_commit_release_check: {receipts: 21_of_21, controls: 197_of_197, effective_state: closed}
+    validator_mutants: 15_of_15_killed
+    semantic_mutants: 12_of_12_killed
+    clean_room_release_path: {source_tests: 762_passed, build_assets: passed, build_manifest: passed, independent_wheel_and_sdist_verification: passed}
+    remaining: [one_normal_pr_cycle, exact_merged_main_certification, scheduled_controls, one_release_attempt, immutable_publication, post_release_closeout]
 consumer_handoff:
   policy: publish BCF 1.0.3 before consumer adoption
   racecar_mutation_in_this_phase: prohibited

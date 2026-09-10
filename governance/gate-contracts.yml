@@ -225,6 +225,9 @@ gates:
     - {id: controller-wheelhouse-closure-admission-must-fail, mutation: {path: bcf_governance/tooling/ci_github_bootstrap.py, search: '    verify_controller_dependency_closure(root)', replace: '    pass'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_bootstrap::test_controller_inventory_rejects_missing_dependency_before_admission']}}
     - {id: sdist-tracked-source-inventory-must-fail, mutation: {path: MANIFEST.in, search: 'recursive-include .github *.py *.yml *.yaml', replace: 'recursive-include .github *.py'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_artifacts::test_built_sdist_contains_every_governed_source_file']}}
     - {id: source-entrypoint-import-authority-must-fail, mutation: {path: .github/scripts/test_release_artifacts.py, search: '    sys.path.insert(0, str(REPO_ROOT))', replace: '    pass'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_repository_source_entrypoints_establish_import_authority']}}
+    - {id: release-source-test-import-authority-must-fail, mutation: {path: .github/scripts/build_release_bundle.py, search: '    environment["PYTHONPATH"] = str(REPO_ROOT)', replace: '    environment.pop("PYTHONPATH", None)'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_release_source_tests_receive_exact_import_authority']}}
+    - {id: release-build-failure-diagnostics-must-fail, mutation: {path: .github/scripts/build_release_bundle.py, search: '            check=False,', replace: '            check=True,'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_release_builder_preserves_and_surfaces_failed_command_evidence']}}
+    - {id: release-build-partial-evidence-upload-must-fail, mutation: {path: governance/ci-extensions/bcf-release.yml, yaml_path: step_components.upload-release-build.condition, value: release-runtime-green}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_release_builder_uploads_partial_attempt_evidence_on_failure']}}
     - {id: preflight-exposure-scan-must-fail, mutation: {path: bcf_governance/tooling/preflight.py, search: '    if report.status != "pass":', replace: '    if False:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_preflight::test_exposure_preflight_rejects_local_workspace_paths']}}
     - {id: release-current-main-version-owner-must-fail, mutation: {path: bcf_governance/tooling/ci_github_release_inputs.py, search: '        return parse_release_version(version)', replace: '        return parse_release_version("0.8.0")'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_release::test_release_publication_inputs_select_newest_exact_collector_mechanically']}}
     - {id: release-publisher-version-source-must-fail, mutation: {path: governance/ci-extensions/bcf-release.yml, yaml_path: commands.publish-release.argv.7, value: v0.8.0}, oracle: {kind: test_node_failure, node_ids: ['tests.test_release_workflow_contracts::test_release_file_selection_and_attempt_fan_in_are_controller_owned']}}
@@ -511,11 +514,7 @@ gates:
         stream: stderr
         regex: verified.*(?:not one of|computed)
   lint:
-    invocation:
-      argv: [python3, .github/scripts/run_self_governance_gate.py, lint]
-      cwd: .
-      env: {}
-      required_env: []
+    invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, lint], cwd: ., env: {}, required_env: []}
     evidence: {kind: gate}
     negative_controls:
     - id: lint-behavior-must-fail
