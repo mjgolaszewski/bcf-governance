@@ -7,6 +7,7 @@ import hashlib
 import shlex
 import subprocess
 from .common import *  # noqa: F403,F405
+from .audit_artifacts import validate_audit_root_policy as _validate_audit_root_policy
 from .context_budgets import _validate_context_budgets
 from .phase_artifacts import _phase_number
 from .required_artifacts import _validate_required_artifacts
@@ -103,35 +104,6 @@ def _is_nested_governance_marker(relative_path: str) -> bool:
         if marker_dir in parts[:-1] and parts[0] != marker_dir:
             return True
     return False
-
-
-def _validate_audit_root_policy(
-    repo_root: Path,
-    manifest: dict[str, Any],
-    *,
-    root_paths: dict[str, str],
-    vendor_prefixes: list[str],
-) -> None:
-    audit_root = root_paths.get("audits")
-    if audit_root is None:
-        raise GovernanceValidationError("governance/artifact-manifest.yml must declare artifact_roots.audits")
-    _require_path(repo_root, audit_root, context="governance/artifact-manifest.yml artifact_roots.audits.path")
-
-    violations: list[str] = []
-    for path in _iter_repo_files(repo_root):
-        relative_path = _repo_relative_path(repo_root, path)
-        if _relative_path_is_under(relative_path, audit_root) or _relative_path_is_under_any(
-            relative_path, vendor_prefixes
-        ):
-            continue
-        if any(part.lower() in AUDIT_PATH_COMPONENTS for part in Path(relative_path).parts[:-1]):
-            violations.append(relative_path)
-
-    if violations:
-        raise GovernanceValidationError(
-            "audit artifacts must live under the declared audit root "
-            f"{audit_root}: " + ", ".join(sorted(violations)[:20])
-        )
 
 
 def _validate_nested_governance_policy(

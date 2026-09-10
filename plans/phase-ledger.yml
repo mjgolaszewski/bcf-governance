@@ -24,7 +24,9 @@ hotfix_lane:
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
   open_records: []
-  remediation_history: [{id: P20-HF01, mode: full, recorded_at_utc: '2026-09-10T15:24:00Z', action: replaced lossy JUnit reverse parsing with a verified raw pytest selector map, remediated_in_phase: P20, hotfix_log: phases/phase-20-hotfix01.yml, canonical_artifacts: [bcf_governance/tooling/test_manifests.py, bcf_governance/tooling/negative_control_execution.py, bcf_governance/tooling/governance_evidence.py], local_validation: [770 source tests passed, 389 contract tests and 149 controls passed, wheel and extracted sdist verification passed], remote_validation_completed: {commit: 3167947a218ed70070dee6b9c5c1818cee6f5b6d, workflows: ['governance 34494691094 attempt 1', 'governance-pack 34494691359 attempt 1', 'bcf/pr-certification 34495292476 attempt 1']} }]
+  remediation_history:
+  - {id: P20-HF01, mode: full, recorded_at_utc: '2026-09-10T15:24:00Z', action: replaced lossy JUnit reverse parsing with a verified raw pytest selector map, remediated_in_phase: P20, hotfix_log: phases/phase-20-hotfix01.yml, canonical_artifacts: [bcf_governance/tooling/test_manifests.py, bcf_governance/tooling/negative_control_execution.py, bcf_governance/tooling/governance_evidence.py], local_validation: [770 source tests passed, 389 contract tests and 149 controls passed, wheel and extracted sdist verification passed], remote_validation_completed: {commit: 3167947a218ed70070dee6b9c5c1818cee6f5b6d, workflows: ['governance 34494691094 attempt 1', 'governance-pack 34494691359 attempt 1', 'bcf/pr-certification 34495292476 attempt 1']}}
+  - {id: P20-HF02, mode: full, recorded_at_utc: '2026-09-10T23:30:00Z', action: replaced path-component-only audit classification with one typed classifier for canonical evidence declared vendors and recognized first-party source/test code, remediated_in_phase: P20, hotfix_log: phases/phase-20-hotfix02.yml, canonical_artifacts: [bcf_governance/tooling/governance_validation/audit_artifacts.py, bcf_governance/tooling/governance_validation/artifact_policy.py, governance/canonical-representations.yml], local_validation: [781 source tests passed, 389 exact contract nodes preserved, 199 gate controls preserved, 17 validator and 12 semantic mutants killed, wheel and extracted sdist verification passed]}
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
 - {type: decision, statement: BCF 0.7.0 is one release train and BCF must self-adopt every applicable Standard-v2 capability}
@@ -40,7 +42,7 @@ operator_requirements_choices_disambiguations:
 - {type: hosted_frugality, statement: hosted candidate jobs execute their own bounded work and terminate; polling sleeping lease waiting and hosted waiters for local capacity are prohibited}
 - {type: automation_authority, statement: automation-authored pull requests remain subject to the universal changelog rule; an explicitly adopted trusted deterministic producer may create only the authenticated bounded changelog commit and receives no approval merge release or certification authority}
 - {type: provider_runner_removal, statement: the persistent Dependabot runner bcf-governance-vm-linux-ci-runner-dependabot-1 and its repository registration are retired; candidate code runs only on fresh hosted workers and trusted local runners execute no candidate checkout}
-active_delivery_priorities: {current_tranche: [junit-selector-integrity-1.0.4]}
+active_delivery_priorities: {current_tranche: [junit-selector-integrity-1.0.4, audit-artifact-classification-1.0.4]}
 release_trains:
   release_1:
     target_version: 0.6.1
@@ -78,6 +80,6 @@ release_trains:
     target_version: 1.0.3
     status: completed
     focus: [canonical_session_selection, duplicate_receipt_identity_rejection, deterministic_ci_authority_audit, timeout_compatibility, manifest_derived_dependency_changelog, immutable_patch_release]
-  release_10: {target_version: 1.0.4, status: active, focus: [lossless_pytest_selector_mapping, class_based_negative_controls, immutable_patch_release]}
+  release_10: {target_version: 1.0.4, status: active, focus: [lossless_pytest_selector_mapping, class_based_negative_controls, first_party_audit_code_classification, immutable_patch_release]}
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]

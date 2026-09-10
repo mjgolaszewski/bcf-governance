@@ -1,0 +1,52 @@
+document:
+  kind: hotfix_execution_log
+  name: P20-HF02 Hotfix Log
+  id: bcf-governance-phase-20-hotfix02
+  version: 1.0.0
+  generated_at_utc: '2026-09-10T00:00:00Z'
+  status: completed
+  path: phases/phase-20-hotfix02.yml
+hotfix:
+  id: P20-HF02
+  mode: full
+  related_phase_id: P20
+  hotfix_number: 2
+  summary: Correct audit artifact classification for declared first-party source and
+    test code
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests (781 passed)
+  - exact test manifests (781 source nodes and 389 contract nodes)
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root . (pass)
+  - .venv/bin/python scripts/check_governance_exposure.py --repo-root . (pass)
+  - validator and semantic-full mutant profiles (17 of 17 and 12 of 12 killed)
+  - canonical and generated issue-146 eight-case reproductions (pass)
+  - wheel and extracted-sdist verification (pass; sdist 778 passed and 3 declared skips)
+  - graph validate and render check (18 workflows 29 jobs 4 extensions; no changed paths)
+  notes:
+  - issue 146 demonstrates that the canonical audit-root policy classifies by path component alone
+    and therefore rejects valid product source/test code in an audit bounded context
+  - remediation is limited to mechanically declared roots and recognized code artifacts; reports,
+    unsafe paths, symlinks, invalid vendors, and undeclared roots remain fail-closed
+  - workflow topology, receipt/profile contracts, gate count, and Racecar are excluded
+  - all deterministic validation completed locally before remote implementation execution
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

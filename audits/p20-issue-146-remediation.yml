@@ -1,0 +1,60 @@
+document: {kind: defect_remediation_audit, id: bcf-governance-p20-issue-146, version: 1.0.0, status: completed, path: audits/p20-issue-146-remediation.yml}
+issue:
+  provider: github
+  repository: mjgolaszewski/bcf-governance
+  number: 146
+  consumer_tracking_id: P02-BCF-AUDIT-PATH-001
+  title: Audit-root policy rejects governed product audit source and test packages
+  affected_release: 1.0.3
+  target_release: 1.0.4
+baseline:
+  commit: 89670b1b2f9707a9ad7d8faa16535dfa71a43a89
+  tree: 1ed46e28c2cd0da4217441f922a9e130d2d65302
+  affected_source: bcf_governance/tooling/governance_validation/artifact_policy.py
+classification:
+  kind: upstream_defect
+  false_pass_possible: false
+  impact: declared first-party source and test modules are rejected solely because an ancestor directory is named audit or audits
+root_cause:
+  defect: audit-root enforcement treats a path component as sufficient evidence classification
+  missing_inputs: [architecture-boundaries.yml architecture.source_roots, AGENTS.yml testing_governance.test_roots, mechanically recognized code artifact]
+remediation:
+  canonical_owner: bcf_governance/tooling/governance_validation/artifact_policy.py
+  behavior:
+  - admit regular recognized code files beneath declared first-party source or test roots
+  - retain canonical audit-root and validated vendor custody
+  - reject evidence-like files concealed beneath source or test roots
+  - reject symlinks unsafe roots traversal and spoofed or invalid declarations
+  compatibility:
+  - receipt schema 2.0 remains unchanged
+  - profile contracts and 21-gate inventory remain unchanged
+  - workflow bytes and topology remain unchanged
+controls:
+  positive: [canonical audit evidence, ordinary domain code, audit domain code, audit application code, audit port code, audit test package]
+  adversarial: [misplaced documentation evidence, misplaced governance evidence, hidden source-root report, hidden test-root report, undeclared root, symlink, traversal, invalid vendor]
+  causal_mutants: [audit-code-classification-must-not-be-bypassed, audit-evidence-custody-must-not-be-weakened]
+exclusions: [Racecar mutation, workflow topology, receipt schema, profile contracts, gate count, broad artifact-policy redesign]
+validation:
+  status: local_pass
+  implementation_commit: 5799e383d15412dbd8d217223256bdb40cf1a3cb
+  implementation_tree: 9979f2357e21426c700ac1e2648a4d66d9132344
+  source_hashes:
+    bcf_governance/tooling/governance_validation/audit_artifacts.py: 0a93820ac7203468085dee03e7af85e3dae650ad4a94dda4f4585267a7891ddc
+    bcf_governance/tooling/governance_validation/artifact_policy.py: 8482542357cefda17257e912affd2f6173a51f1538c8cf1488ea5d25476b5c44
+  exact_populations: {source_tests: 781, contract_tests: 389, required_gates: 21, gate_negative_controls: 199}
+  issue_reproduction: {canonical_cases: 8, generated_runtime_cases: 8, result: pass}
+  mutation_profiles:
+  - {profile: full, result: pass, killed: 17, total: 17}
+  - {profile: semantic-full, result: pass, killed: 12, total: 12}
+  artifact_verification:
+    wheel: {result: pass, provisional_sha256: 135f2f36c93e9ecc248c9bf9e96f33c8aebd4d8e47a6f59ff24e01dd3cc50075}
+    extracted_sdist: {result: pass, tests_passed: 778, declared_skips: 3, provisional_sha256: 8e6571ed8a30dc3760aed5c744d0f99532517e651d8daa5e0d094e7fef62b420}
+    note: provisional local bytes are validation evidence only and are not release-authoritative
+  deterministic_checks:
+  - canonical standalone and packaged runtime bytes match
+  - generated CI remains 18 workflows 29 jobs and four extensions with no changed workflow path
+  - cleanup does not select declared first-party audit source or tests
+  rollout:
+    superseded_pull_request: 147
+    superseded_reason: controller 789df57 predates the issue-146 runtime and was never merged
+    remaining: implementation PR exact-main controller rotation scheduled controls and immutable publication

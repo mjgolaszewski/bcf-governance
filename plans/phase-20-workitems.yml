@@ -35,3 +35,15 @@ workitems:
   acceptance_evidence:
   - test
   - contract-test
+- id: P20-P0-04
+  priority: P0
+  status: DONE
+  summary: deliver declared first-party audit source and test code classification without weakening audit-evidence custody
+  acceptance:
+  - declared source and test code in audit contexts is admitted
+  - misplaced evidence and unsafe or spoofed declarations remain rejected
+  - canonical packaged and template runtimes remain byte-equivalent
+  acceptance_evidence:
+  - governance-validate
+  - test
+  - contract-test

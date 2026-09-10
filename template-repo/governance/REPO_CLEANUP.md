@@ -33,6 +33,10 @@ passing truth report, maintain compact `plans/phase-history.yml`, archive artifa
 `governance/archive/phase-artifacts/` storage, prune related hotfix lane records, remove known BCF-owned files
 and dedicated governance CI gates, and reinstall known BCF-owned files.
 
+The move inventory is limited to the fixed legacy evidence roots in
+`governance/repo-cleanup-contract.yml`. It does not move regular first-party
+source or tests from product packages named `audit` or `audits`.
+
 With no phase-retention switch, cleanup preserves current historical triplet
 behavior. Once a mode is selected, validation enforces the active retention
 window and rejects stale historical triplets or phase-scoped hotfix logs that

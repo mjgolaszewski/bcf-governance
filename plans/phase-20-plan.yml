@@ -22,6 +22,7 @@ delivery_contract:
   - canonical lossless pytest selector mapping
   - class-based negative-control execution and causal regression coverage
   - publication-ready BCF 1.0.4 artifacts and immutable release path
+  - declared first-party audit source and test code classification without weakening audit-evidence custody
   parallelizable_workstreams:
   - id: P20-WS1
     name: 'P20-WS1: collection identity and selector authority'
@@ -29,6 +30,8 @@ delivery_contract:
     name: 'P20-WS2: evidence integration adversarial tests and generated parity'
   - id: P20-WS3
     name: 'P20-WS3: package release and consumer handoff'
+  - id: P20-WS4
+    name: 'P20-WS4: audit artifact classification and causal controls'
   hard_dependencies:
   - P19
   docker_first_local_runtime: repo_native_validation_and_governance_commands

@@ -110,6 +110,25 @@ def test_cleanup_plan_reports_safe_moves_and_manual_work(tmp_path: Path) -> None
     assert any(action.path == "plans" for action in report.manual_actions)
 
 
+def test_cleanup_does_not_move_first_party_audit_source_or_tests(tmp_path: Path) -> None:
+    cleanup = _load_cleanup_module()
+    repo = tmp_path / "repo"
+    paths = (
+        repo / "backend/src/product/domain/audit/value.py",
+        repo / "backend/tests/audit/test_reader.py",
+    )
+    for path in paths:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('"""First-party code."""\n', encoding="utf-8")
+
+    report = cleanup.plan_cleanup(repo)
+
+    moved_sources = {action.source for action in report.actions}
+    assert "backend/src/product/domain/audit/value.py" not in moved_sources
+    assert "backend/tests/audit/test_reader.py" not in moved_sources
+    assert all(path.is_file() for path in paths)
+
+
 def test_cleanup_apply_moves_audits_and_rewrites_references(tmp_path: Path) -> None:
     cleanup = _load_cleanup_module()
     repo = tmp_path / "repo"

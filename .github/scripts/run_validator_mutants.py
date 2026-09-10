@@ -41,6 +41,36 @@ def _pytest_environment() -> dict[str, str]:
 
 MUTANTS = (
     Mutant(
+        mutant_id="audit-code-classification",
+        description="declared first-party audit-context code must not be rejected as evidence",
+        search=(
+            "    elif _is_declared_first_party_code(\n"
+            "        repo_root, path, relative_path, code_roots=code_roots\n"
+            "    ):\n"
+        ),
+        replace=(
+            "    elif False and _is_declared_first_party_code(\n"
+            "        repo_root, path, relative_path, code_roots=code_roots\n"
+            "    ):\n"
+        ),
+        profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/audit_artifacts.py",
+    ),
+    Mutant(
+        mutant_id="audit-evidence-custody",
+        description="misplaced audit artifacts must not be admitted as unrelated files",
+        search=(
+            "    else:\n"
+            "        kind = AuditArtifactKind.MISPLACED_AUDIT_ARTIFACT\n"
+        ),
+        replace=(
+            "    else:\n"
+            "        kind = AuditArtifactKind.UNRELATED\n"
+        ),
+        profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/audit_artifacts.py",
+    ),
+    Mutant(
         mutant_id="schema-classifier",
         description="schema failures must stay classified as schema failures",
         search='    if "failed structural schema" in message:\n',
@@ -276,6 +306,8 @@ TRUTH_MUTANTS = (
 )
 
 KILLER_NODES = {
+    "audit-code-classification": ("tests/test_validate_governance_yaml.py::test_validate_repo_root_admits_declared_first_party_audit_code",),
+    "audit-evidence-custody": ("tests/test_validate_governance_yaml.py::test_validate_repo_root_rejects_audits_outside_audit_root",),
     "evidence-untracked-preflight": ("tests/test_governance_evidence.py::test_capture_rejects_nonignored_untracked_helper_before_execution",),
     "evidence-isolated-positive": ("tests/test_governance_evidence.py::test_ignored_helper_cannot_influence_isolated_positive_execution",),
     "evidence-typed-oracle": ("tests/test_governance_evidence.py::test_arbitrary_crash_does_not_satisfy_typed_diagnostic_oracle",),

@@ -62,7 +62,7 @@
     },
     "docs/OPERATIONS.md": {
       "operation": "copy",
-      "sha256": "6a23ec53b025922581598e8399bd489f2754e90e662b55df6404c0408b600c54"
+      "sha256": "a991606ecef3a27cb527434bde0c3c4968c9bb11acf28c72405b7bd916bb337e"
     },
     "governance-profile.yml": {
       "operation": "generate",
@@ -70,7 +70,7 @@
     },
     "governance/EXISTING_REPO_ADOPTION.md": {
       "operation": "copy",
-      "sha256": "66c4bc460c839d3d2d6d44028ad1fc5c6e9b9b618c12203a3255f35de580e2ce"
+      "sha256": "691489c3ddae62dacf50a3a64a11b246fa6eece27d6f2c8e94935a00e47de2ae"
     },
     "governance/HOTFIX_LANE.md": {
       "operation": "copy",
@@ -88,7 +88,7 @@
     },
     "governance/REPO_CLEANUP.md": {
       "operation": "copy",
-      "sha256": "0f9da85a250ddd58f489129cfb01c20792ef262d99c15c0fe6c4437a559a16c0"
+      "sha256": "d29f644d7d11009544bbe2742dbfae5791ec91744a0fb55461df0eec9ddea80e"
     },
     "governance/archive/phase-artifacts/.gitkeep": {
       "operation": "copy",
@@ -628,7 +628,11 @@
     },
     "scripts/_bcf_runtime/governance_validation/artifact_policy.py": {
       "operation": "copy",
-      "sha256": "9aa89e6323072d854d9cf0f42d58b019c32b26727189a3f19408074295df06f3"
+      "sha256": "8482542357cefda17257e912affd2f6173a51f1538c8cf1488ea5d25476b5c44"
+    },
+    "scripts/_bcf_runtime/governance_validation/audit_artifacts.py": {
+      "operation": "copy",
+      "sha256": "0a93820ac7203468085dee03e7af85e3dae650ad4a94dda4f4585267a7891ddc"
     },
     "scripts/_bcf_runtime/governance_validation/common.py": {
       "operation": "copy",

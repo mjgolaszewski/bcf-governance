@@ -165,6 +165,12 @@ Interactive apply asks for confirmation. In non-TTY automation, append `--yes`
 only after the dry-run has been reviewed; otherwise cleanup refuses before any
 mutation.
 
+Product source or tests may use an `audit` or `audits` package beneath the roots
+declared in `architecture-boundaries.yml` and `AGENTS.yml`. Governance validation
+admits only regular recognized code there; evidence-like files still belong in
+the canonical `audits/` root. Cleanup considers only the fixed legacy evidence
+locations in its contract and never moves first-party audit-domain code.
+
 Do not use cleanup as a substitute for semantic review. Product specs, phase history, architecture docs, security docs, runbooks, and vendored governance require owner judgment before rewriting or removal. Phase-history entries must stay compact and point to retained artifacts or git-history refs with hashes.
 Use `governance/repo-cleanup-contract.yml` for machine-readable cleanup rules and `governance/REPO_CLEANUP.md` for the human sequence.
 

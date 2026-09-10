@@ -456,8 +456,13 @@ evidence must be recaptured because installed runtime and governed-tree bytes
 changed; do not copy or relabel pre-upgrade receipts.
 
 The 1.0.4 runtime fixes class-based pytest and `unittest.TestCase` controls by
-preserving the raw selector collected for each JUnit identity. Upgrade does not
-rewrite a consumer's normalized test manifests or gate contracts.
+preserving the raw selector collected for each JUnit identity. It also permits
+regular Python and TypeScript source files in an `audit` or `audits` package
+when the file is beneath a source root declared by `architecture-boundaries.yml`
+or a test root declared by `AGENTS.yml`. The classifier still rejects reports,
+YAML, Markdown, symlinks, unsafe roots, and other evidence-like artifacts outside
+the canonical `audits/` root. Upgrade does not rewrite a consumer's normalized
+test manifests, gate contracts, CI graph, or product paths.
 
 Upgrade preserves the repository's profile, gate contracts, evidence policy,
 CI graph, registered extensions, and all workflow bytes. It does not run a
@@ -612,6 +617,10 @@ history row records authored completion only. Archive retention remains
 fail-closed and requires the report plus its durable CI/release reference.
 Product intent, architecture/security docs, runbooks, and semantic compaction
 remain owner-reviewed work. Non-interactive apply requires `--yes`.
+
+An `audit` package inside a declared product source or test root is not a cleanup
+source. Cleanup recognizes only its fixed legacy evidence locations; it neither
+moves nor rewrites first-party audit-domain code.
 
 ```bash
 bcf cleanup --repo-root . --phase-retention-mode --apply

@@ -22,8 +22,8 @@ phase_history: {path: plans/phase-history.yml, through_phase: P19}
 phase_sequence:
 - phase_id: P20
   build_block: junit-selector-integrity-1.0.4
-  objective: preserve a lossless verified pytest selector mapping so class-based JUnit identities execute the intended negative-control nodes
+  objective: preserve lossless pytest selector identity and distinguish declared first-party audit source/test code from governance audit evidence without weakening audit-root custody
   hard_dependencies: [P19]
-  tightly_scoped_deliverables: [canonical lossless pytest selector mapping, class-based negative-control execution and causal regression coverage, compatible immutable BCF 1.0.4 patch release]
-  parallelizable_workstreams: [collection identity and selector authority, evidence integration adversarial tests and generated parity, package release and consumer handoff]
+  tightly_scoped_deliverables: [canonical lossless pytest selector mapping, class-based negative-control execution and causal regression coverage, declared first-party code versus audit-evidence classification, compatible immutable BCF 1.0.4 patch release]
+  parallelizable_workstreams: [collection identity and selector authority, audit artifact classification and causal controls, evidence integration adversarial tests and generated parity, package release and consumer handoff]
   verification_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests, .venv/bin/python .github/scripts/run_validator_mutants.py --profile full, .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full]

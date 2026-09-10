@@ -16,6 +16,8 @@ Release target: `1.0.4`.
 - Added positive, adversarial, and causal coverage for module functions,
   pytest classes, `unittest.TestCase`, nested classes, parameterized nodes,
   missing mappings, ambiguous mappings, and unsafe selectors.
+- Added one canonical audit-context artifact classifier with cause-verified
+  controls for product-code admission and governance-evidence custody.
 
 ### Fixed
 
@@ -26,8 +28,23 @@ Release target: `1.0.4`.
   node manifest once per gate and reuses it across isolated mutants; collection
   errors, missing identities, and ambiguous identities fail closed.
 - BCF's 1.0.4 trusted-controller target is projected only from the authenticated
-  exact-main package artifact; installed authority remains independently proven
-  until bootstrap and probe complete on both trusted runners.
+  exact-main package artifact after all 1.0.4 behavior is final; installed
+  authority remains independently proven until bootstrap and probe complete on
+  both trusted runners.
+- Fixed issue #146: regular Python or declared TypeScript code beneath the
+  repository's declared source and test roots is no longer treated as misplaced
+  governance evidence merely because an ancestor package is named `audit` or
+  `audits`.
+- Audit reports and evidence-like files outside the canonical `audits/` root
+  remain rejected, including files concealed under source/test trees and files
+  admitted through unsafe, linked, or audit-named root declarations.
+
+### Compatibility
+
+- Receipt schema 2.0, profile contracts, the 21-gate Standard profile, CI graph
+  topology, cleanup behavior, and existing consumer graph configuration remain
+  unchanged. Audit code recognition is bounded to BCF's supported Python and
+  declared TypeScript source forms.
 
 ## [1.0.3] - 2026-09-10
 
