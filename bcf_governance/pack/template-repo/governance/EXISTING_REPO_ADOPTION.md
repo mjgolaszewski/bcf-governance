@@ -55,6 +55,11 @@ otherwise apply refuses before mutation.
 
 `bcf cleanup` moves legacy audit/review evidence into `audits/` and rewrites exact path references. It only reports semantic compaction work; it does not rewrite product specs, phase history, architecture docs, security docs, runbooks, or vendored governance. Archived phase-history rows must retain artifact hashes.
 
+An existing product package named `audit` or `audits` remains product code when
+it is regular recognized source beneath a declared architecture source root or
+test root. Do not rename or vendor it to satisfy audit-evidence custody. Reports
+and evidence-like files in the same tree remain invalid outside `audits/`.
+
 Use `governance/repo-cleanup-contract.yml` as the cleanup contract and `governance/REPO_CLEANUP.md` as the terse human sequence. Documentation currency is semantic work: update each section against current repo evidence before closeout.
 
 ## Conversion Sequence

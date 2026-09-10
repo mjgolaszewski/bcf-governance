@@ -1177,6 +1177,129 @@ def test_validate_repo_root_rejects_audits_outside_audit_root(tmp_path: Path) ->
     assert "audit artifacts must live under the declared audit root audits/" in str(excinfo.value)
 
 
+def test_validate_repo_root_admits_declared_first_party_audit_code(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    source_files = {
+        "audits/report.yml": "finding: retained-governance-evidence\n",
+        "backend/src/product/domain/evidence/value.py": '"""Ordinary domain value."""\n',
+        "backend/src/product/domain/audit/value.py": '"""Domain audit value."""\n',
+        "backend/src/product/application/audit/queries/reconstruct.py": (
+            '"""Audit reconstruction query."""\n'
+        ),
+        "backend/src/product/ports/audit/reader.py": '"""Audit reader port."""\n',
+        "backend/src/product/domain/audit/types.ts": "export type AuditId = string;\n",
+        "backend/tests/audit/test_reader.py": (
+            '"""Audit reader test."""\n\ndef test_reader() -> None:\n    assert True\n'
+        ),
+    }
+    for relative_path, content in source_files.items():
+        path = repo_root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+
+    validate_repo_root(repo_root)
+
+
+@pytest.mark.parametrize(
+    "relative_path",
+    [
+        "governance/audit/report.yml",
+        "backend/src/product/domain/audit/report.yml",
+        "backend/tests/audit/report.md",
+        "other/src/product/audit/value.py",
+    ],
+)
+def test_validate_repo_root_rejects_misplaced_audit_artifacts_even_near_code(
+    tmp_path: Path, relative_path: str
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    path = repo_root / relative_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("report: must-remain-governed\n", encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "audit artifacts must live under the declared audit root audits/" in str(excinfo.value)
+    assert relative_path in str(excinfo.value)
+
+
+def test_validate_repo_root_rejects_symlinked_audit_code(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    target = repo_root / "backend/src/product/domain/value.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text('"""Ordinary source."""\n', encoding="utf-8")
+    linked = repo_root / "backend/src/product/domain/audit/value.py"
+    linked.parent.mkdir(parents=True, exist_ok=True)
+    linked.symlink_to(target)
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "audit artifacts must live under the declared audit root audits/" in str(excinfo.value)
+    assert "backend/src/product/domain/audit/value.py" in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    ("source_root", "expected_message"),
+    [
+        ("../outside", "must not escape the repository root"),
+        ("docs/audits", "must identify a first-party code root, not an audit path"),
+    ],
+)
+def test_validate_repo_root_rejects_unsafe_or_spoofed_source_roots(
+    tmp_path: Path, source_root: str, expected_message: str
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    if source_root == "docs/audits":
+        path = repo_root / source_root
+        path.mkdir(parents=True, exist_ok=True)
+        (path / "report.py").write_text('"""Not a product root."""\n', encoding="utf-8")
+    architecture_path = repo_root / "architecture-boundaries.yml"
+    architecture = yaml.safe_load(architecture_path.read_text(encoding="utf-8"))
+    architecture["architecture"]["source_roots"] = [source_root]
+    _write_yaml(architecture_path, architecture)
+
+    with pytest.raises(GovernanceValidationError, match=expected_message):
+        validate_repo_root(repo_root)
+
+
+def test_validate_repo_root_rejects_symlinked_source_root(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    outside = tmp_path / "outside-source"
+    outside.mkdir()
+    linked_root = repo_root / "linked-src"
+    linked_root.symlink_to(outside, target_is_directory=True)
+    architecture_path = repo_root / "architecture-boundaries.yml"
+    architecture = yaml.safe_load(architecture_path.read_text(encoding="utf-8"))
+    architecture["architecture"]["source_roots"] = ["linked-src"]
+    _write_yaml(architecture_path, architecture)
+
+    with pytest.raises(
+        GovernanceValidationError, match="must reference a regular directory"
+    ):
+        validate_repo_root(repo_root)
+
+
+def test_validate_repo_root_rejects_invalid_vendor_declaration(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    manifest_path = repo_root / "governance/artifact-manifest.yml"
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    manifest["nested_governance"]["declared_vendors"].append(
+        {
+            "path": "backend/src",
+            "source_repo": "spoofed",
+            "refresh_policy": "none",
+        }
+    )
+    _write_yaml(manifest_path, manifest)
+
+    with pytest.raises(GovernanceValidationError) as excinfo:
+        validate_repo_root(repo_root)
+    assert "failed structural schema schemas/artifact-manifest.schema.json" in str(
+        excinfo.value
+    )
+    assert "ownership" in str(excinfo.value)
+
+
 def test_validate_repo_root_rejects_undeclared_nested_governance(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
     nested_agents = repo_root / "vendor/client/AGENTS.yml"
