@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-20-plan
   version: 1.0.0
   generated_at_utc: '2026-09-10T00:00:00Z'
-  status: planned
+  status: completed
   path: plans/phase-20-plan.yml
 phase:
   id: P20
@@ -21,7 +21,7 @@ delivery_contract:
   tightly_scoped_deliverables:
   - canonical lossless pytest selector mapping
   - class-based negative-control execution and causal regression coverage
-  - compatible immutable BCF 1.0.4 patch release
+  - publication-ready BCF 1.0.4 artifacts and immutable release path
   parallelizable_workstreams:
   - id: P20-WS1
     name: 'P20-WS1: collection identity and selector authority'

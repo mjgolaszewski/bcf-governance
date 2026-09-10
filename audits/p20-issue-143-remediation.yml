@@ -76,3 +76,20 @@ validation:
   - source and packaged runtime copies are byte-equivalent
   - exact manifests contain 770 source and 389 contract nodes
   - CI graph render is clean with 18 workflows, 29 jobs, and 4 extensions
+  remote_implementation:
+    pull_request: 144
+    head: 3167947a218ed70070dee6b9c5c1818cee6f5b6d
+    merge_commit: 789df57ce3cac27bba8f9f5782073c023a86d013
+    governance_run: {id: 34494691094, attempt: 1, result: pass}
+    package_run: {id: 34494691359, attempt: 1, result: pass}
+    pr_finalizer_run: {id: 34495253732, attempt: 1, result: pass}
+    pr_publisher_run: {id: 34495292476, attempt: 1, result: pass}
+  controller_rotation:
+    source_run: {id: 34495373484, attempt: 1}
+    artifact_id: '10159561509'
+    artifact_name: bcf-trusted-control-789df57ce3cac27bba8f9f5782073c023a86d013-1
+    provider_digest: sha256:8f37739a153ed5dda32ca0324405769d27d3ed86282eb22ba9080cba50786bf8
+    wheel_sha256: a5685015c2978d7dd8f4e5a8dbd9d35bd21c59d2e79ba5c4b8f579b0ce1fd945
+    source_tree: bd761ed90f3eb8f098dde22d44a1e12f1dae740b
+    selection: mechanically resolved from authenticated provider state and verified artifact bytes
+    expected_pre_rotation_result: exact-main failed closed at completed-lifecycle precondition before evidence fanout

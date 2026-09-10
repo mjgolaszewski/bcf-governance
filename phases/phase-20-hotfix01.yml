@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-20-hotfix01
   version: 1.0.0
   generated_at_utc: '2026-09-10T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-20-hotfix01.yml
 hotfix:
   id: P20-HF01
@@ -27,6 +27,8 @@ execution_evidence:
   - class, nested-class, unittest, and parameterized selectors are resolved only from
     one verified selected-interpreter collection mapping
   - no remote execution was started before the complete local failure class passed
+  - implementation PR 144 passed on attempt 1 and merged as exact commit
+    789df57ce3cac27bba8f9f5782073c023a86d013
 closeout_requirements:
   claims:
     required_suites_green:
