@@ -1,0 +1,44 @@
+document:
+  kind: hotfix_execution_log
+  name: P19-HF02 Hotfix Log
+  id: project-phase-19-hotfix02
+  version: 1.0.0
+  generated_at_utc: '2026-09-10T00:00:00Z'
+  status: completed
+  path: phases/phase-19-hotfix02.yml
+hotfix:
+  id: P19-HF02
+  mode: full
+  related_phase_id: P19
+  hotfix_number: 2
+  summary: Release source-test environment authority and failure-evidence retention
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests/test_release_workflow_contracts.py tests/test_ci_graph.py tests/test_profile_contract_v2.py tests/test_preflight.py tests/test_ci_github_release.py (121 passed)
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py lint (pass)
+  - .venv/bin/python .github/scripts/run_self_governance_gate.py typecheck (pass)
+  notes:
+  - release run 34422503200 attempt 1 failed on exact completed main c3cf96de9a15b17342f46be66cc68033b01ff34d because source tests launched from the release builder did not receive exact checkout import authority
+  - the same failed attempt discarded its raw pytest and JUnit files because the build artifact upload was success-only; the hosted run is the sole diagnostic sample and is not retried
+  - source tests now receive an exact mechanically derived repository-root PYTHONPATH, failed subprocess output is closed, preserved, and replayed, and the same-attempt build bundle uploads on failure
+  - the verifier remains success-gated on the complete release workflow conclusion, so partial diagnostic artifacts cannot become release inputs
+  - focused release, graph, profile, preflight, and provider-authority tests passed locally before full validation
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

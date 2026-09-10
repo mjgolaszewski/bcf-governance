@@ -1,8 +1,13 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
+import os
 from pathlib import Path
+import subprocess
+import sys
 
+import pytest
 import yaml
 
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
@@ -10,6 +15,21 @@ from bcf_governance.tooling.ci_graph_render import render_ci_graph
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _release_builder_module():
+    script_root = REPO_ROOT / ".github/scripts"
+    sys.path.insert(0, str(script_root))
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "bcf_test_build_release_bundle", script_root / "build_release_bundle.py"
+        )
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    finally:
+        sys.path.remove(str(script_root))
 
 
 def _workflow(workflow_id: str) -> dict[str, object]:
@@ -55,6 +75,70 @@ def test_release_builder_uses_exact_subject_closed_runtime_and_no_credentials() 
     }
     command = compiled.commands["build-release-bundle"]["argv"]
     assert command[:3] == ["{python}", ".github/scripts/build_release_bundle.py", "--output"]
+
+
+def test_release_source_tests_receive_exact_import_authority(
+    monkeypatch, tmp_path: Path
+) -> None:
+    module = _release_builder_module()
+    monkeypatch.setenv("PYTHONPATH", "/untrusted/caller/path")
+    calls = []
+    monkeypatch.setattr(
+        module,
+        "_run",
+        lambda argv, **kwargs: calls.append((argv, kwargs)),
+    )
+
+    module._run_source_tests(tmp_path)
+
+    assert len(calls) == 1
+    argv, options = calls[0]
+    assert argv[:4] == [sys.executable, "-m", "pytest", "-q"]
+    environment = options["environment"]
+    assert environment["PYTHONPATH"] == str(REPO_ROOT)
+    assert os.environ["PYTHONPATH"] == "/untrusted/caller/path"
+
+
+def test_release_builder_preserves_and_surfaces_failed_command_evidence(
+    tmp_path: Path, capsys
+) -> None:
+    module = _release_builder_module()
+    stdout = tmp_path / "command.stdout"
+    stderr = tmp_path / "command.stderr"
+
+    with pytest.raises(subprocess.CalledProcessError):
+        module._run(
+            [
+                sys.executable,
+                "-c",
+                "import sys; print('retained-output'); print('retained-error', file=sys.stderr); raise SystemExit(17)",
+            ],
+            stdout=stdout,
+            stderr=stderr,
+        )
+
+    captured = capsys.readouterr()
+    assert stdout.read_text(encoding="utf-8") == "retained-output\n"
+    assert stderr.read_text(encoding="utf-8") == "retained-error\n"
+    assert captured.out == "retained-output\n"
+    assert captured.err == "retained-error\n"
+
+
+def test_release_builder_uploads_partial_attempt_evidence_on_failure() -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    upload = compiled.graph["step_components"]["upload-release-build"]
+    assert upload["condition"] == "always-step"
+    assert upload["with"]["if-no-files-found"] == "error"
+    assert compiled.graph["conditions"]["release-trigger-success"] == (
+        "github.event.workflow_run.event == 'workflow_dispatch' && "
+        "github.event.workflow_run.head_branch == 'main' && "
+        "github.event.workflow_run.conclusion == 'success'"
+    )
+
+    verifier = render_ci_graph(REPO_ROOT)[
+        ".github/workflows/bcf-release-verifier.yml"
+    ].decode()
+    assert "github.event.workflow_run.conclusion == 'success'" in verifier
 
 
 def test_verifier_separates_token_free_runtime_from_provider_authentication() -> None:

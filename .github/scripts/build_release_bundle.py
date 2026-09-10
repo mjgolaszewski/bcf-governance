@@ -24,19 +24,49 @@ def _run(
     stdout_handle = stdout.open("wb") if stdout is not None else None
     stderr_handle = stderr.open("wb") if stderr is not None else None
     try:
-        subprocess.run(
+        result = subprocess.run(
             argv,
             cwd=REPO_ROOT,
             env=environment,
             stdout=stdout_handle,
             stderr=stderr_handle,
-            check=True,
+            check=False,
         )
     finally:
         if stdout_handle is not None:
             stdout_handle.close()
         if stderr_handle is not None:
             stderr_handle.close()
+    if result.returncode:
+        for path, stream in ((stdout, sys.stdout), (stderr, sys.stderr)):
+            if path is not None and path.is_file():
+                stream.write(path.read_text(encoding="utf-8", errors="replace"))
+                stream.flush()
+        raise subprocess.CalledProcessError(result.returncode, argv)
+
+
+def _source_test_environment() -> dict[str, str]:
+    """Bind subprocess imports to the exact checked-out source under test."""
+
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(REPO_ROOT)
+    return environment
+
+
+def _run_source_tests(evidence: Path) -> None:
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            "tests",
+            f"--junitxml={evidence / 'source-tests.xml'}",
+        ],
+        stdout=evidence / "source-tests.stdout",
+        stderr=evidence / "source-tests.stderr",
+        environment=_source_test_environment(),
+    )
 
 
 def build(output: Path, *, authorization: Path, artifact_name: str) -> list[Path]:
@@ -83,18 +113,7 @@ def build(output: Path, *, authorization: Path, artifact_name: str) -> list[Path
             str(lock),
         ]
     )
-    _run(
-        [
-            sys.executable,
-            "-m",
-            "pytest",
-            "-q",
-            "tests",
-            f"--junitxml={evidence / 'source-tests.xml'}",
-        ],
-        stdout=evidence / "source-tests.stdout",
-        stderr=evidence / "source-tests.stderr",
-    )
+    _run_source_tests(evidence)
     environment = dict(os.environ)
     environment["SOURCE_DATE_EPOCH"] = subprocess.run(
         ["git", "show", "-s", "--format=%ct", "HEAD"],

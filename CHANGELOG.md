@@ -45,6 +45,13 @@ Release target: `1.0.3`.
   metadata, declare their build environment, prove recursive wheel closure,
   and complete a real offline install before upload; pin compilation rejects an
   incomplete bundle before either trusted runner is used.
+- Release source tests now execute with import authority bound mechanically to
+  the exact checked-out repository instead of inheriting an editable developer
+  environment that can conceal clean-runner failures.
+- Failed release commands now close and retain raw stdout, stderr, and JUnit
+  evidence, replay their diagnostics to the job log, and always upload the
+  same-attempt diagnostic bundle. The verifier remains gated on complete build
+  success, so failed bundles cannot enter release authority.
 
 ### Changed
 

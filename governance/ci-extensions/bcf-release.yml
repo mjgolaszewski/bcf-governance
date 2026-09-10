@@ -132,6 +132,7 @@ step_components:
   upload-release-build:
     kind: action
     name: Upload the exact untrusted build bundle
+    condition: always-step
     action: upload-artifact
     with: {name: 'bcf-release-build-${{ needs.authorize.outputs.subject_commit }}-${{ github.run_attempt }}', path: .artifacts/release-build, if-no-files-found: error, retention-days: 30}
     environment: {}

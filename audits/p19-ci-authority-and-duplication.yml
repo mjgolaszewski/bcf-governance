@@ -17,8 +17,8 @@ inventory:
   jobs: 29
   semantic_roles: 29
   required_gates: 21
-  gate_negative_controls: 194
-  exact_test_nodes: {source: 759, contract: 383}
+  gate_negative_controls: 197
+  exact_test_nodes: {source: 762, contract: 386}
   scheduled_mutants: {validator_full: 15, semantic_full: 12}
   generated_workflow_owner: governance/ci-graph.yml plus four registered extensions
   generated_parity_owner: bcf ci graph render --check
@@ -83,6 +83,12 @@ authority_map:
   synchronization: builder downloads the package-derived direct and transitive wheel closure records its build environment and completes one offline install
   drift_detection: non-executing recursive wheel metadata validation runs before upload and again before pin compilation
   failure_behavior: missing duplicate incompatible malformed direct-URL or environment-ambiguous wheels cannot produce or become a controller target
+- fact: release source-test environment and failed-attempt diagnostics
+  canonical_owner: .github/scripts/build_release_bundle.py plus the registered BCF release extension
+  consumers: release source tests operator diagnostics and release-verifier admission
+  synchronization: the builder derives the exact checkout root and the graph renders the always-run same-attempt upload
+  drift_detection: focused contract tests generated-workflow parity and cause-verified controls
+  failure_behavior: wrong import authority fails before artifact construction while raw evidence is retained; the failed workflow conclusion prevents verifier admission
 duplication_disposition:
   mechanically_removed:
   - independent evidence-session root selection in gate-group and shard capture
@@ -90,6 +96,7 @@ duplication_disposition:
   - path-only automated dependency changelog facts
   - ambiguous first-match mutation targets after runtime-owner decomposition
   - hard-coded trusted-controller runtime requirement list
+  - inherited release source-import environment and success-only failed-attempt evidence retention
   already_mechanical:
   - generated workflow bytes and action pins
   - exact expected-job and matrix inventories
@@ -145,6 +152,12 @@ historical_diagnosis:
     class: source-distribution packaging defect
     evidence: artifact 9878297661 digest sha256:9379c5a27ff6142a77d891dfe0ffa8a9c6bfb1c2efc30f35d3c6527b5f0cfab2 records 696 passed and one sdist failure because .github/dependabot.yml was absent from the extracted source
     product_assertion: true
+  - run: 34422503200
+    sha: c3cf96de9a15b17342f46be66cc68033b01ff34d
+    class: undeclared release source-import authority and discarded failure evidence
+    evidence: a clean CPython 3.12.14 reproduction recovered two source-test failures caused by a child interpreter launched outside the repository without PYTHONPATH; the provider retained no build artifact because the upload step was success-only
+    product_assertion: true
+    disposition: bind source tests to the builder-derived exact checkout, preserve and surface failed subprocess evidence, always upload same-attempt diagnostics, and keep verifier admission gated on complete release-run success
   evidence_backed_inferences:
   - same-SHA mixtures of green and red trusted callback runs are authority-state transitions unless the authenticated terminal artifact or log proves a producer defect
   - scheduled and dispatched mutant runs share governed commands but have distinct provider event identities; neither substitutes for the other
@@ -160,17 +173,18 @@ timeout_basis:
   decision: retain existing deadlines; add mechanical containment and do not increase a timeout to mask a failure
 safety_case:
   topology_change: none
-  workflow_paths_jobs_edges_events_permissions_conditions_runners_required_checks: unchanged
-  rendered_byte_change: provenance header digest only
+  workflow_paths_jobs_edges_events_permissions_runners_required_checks: unchanged
+  failure_semantics_change: the release build uploads same-attempt diagnostics after failure while the verifier continues to admit only a completely successful release workflow
+  rendered_byte_change: generated provenance headers plus one always-run release-build upload condition
   rollback: revert the policy/helper commit and mechanically rerender; no provider setting or stable check identity changes
   consumer_benefit: Standard-v2 installed runtimes receive the same audit command timeout validation typed dependency decoders and generated-copy parity
 rollout_replan:
   original_pr_budget: 4
-  completed: [implementation, initial_controller_target, controller_closure_correction, corrected_controller_target]
-  safe_total_pr_count: 6
-  current: controller_confirmation
+  completed: [implementation, initial_controller_target, controller_closure_correction, corrected_controller_target, controller_confirmation]
+  safe_total_pr_count: 7
+  current: release_runtime_correction
   remaining_after_current: [post_release_closeout]
-  reason: a corrected exact-main controller artifact cannot exist until the builder correction is merged; artifact custody prohibits local substitution or mutation of the failed bundle
+  reason: the sole publication-disabled release attempt exposed a clean-runner-only release environment and diagnostic-retention class after controller confirmation; no retry is permitted until the whole class passes locally, and release custody prohibits altering or substituting the failed attempt
   corrected_target:
     exact_main_run: 34418184933
     exact_main_attempt: 1
