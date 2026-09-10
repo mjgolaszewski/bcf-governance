@@ -119,8 +119,10 @@ rollout_incident:
     artifact_id: 10129903368
     artifact_provider_digest: sha256:49af460454b6d2aba5b15f0a1357e2d028aef31db58f62b8fa2b09b77afb7e84
     wheel_sha256: aaaa679172fde6b49c184c4ea288a5a0c96a249e8c84f82b13fe994efed5cf7e
-    state: targeted_pending_independent_bootstrap_and_probe
+    state: independently_installed_and_proven_pending_repository_projection
     custody: provider metadata and downloaded artifact bytes were compiled by the controller-pin command; no identity value was operator-authored
+    bootstrap_run: 34419701832
+    probe_run: 34419770290
 consumer_handoff:
   policy: publish BCF 1.0.3 before consumer adoption
   racecar_mutation_in_this_phase: prohibited

@@ -12,7 +12,7 @@ active_phase:
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: active
+  lifecycle_status: completed
   owner: codex
   validation_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests]
 hotfix_lane:
@@ -23,17 +23,19 @@ hotfix_lane:
       allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
-  open_records:
+  open_records: []
+  remediation_history:
   - id: P19-HF01
     mode: full
-    status: active
-    triggered_by_commits: [f7934c45c758286c9369270306422d3110845925]
-    failing_workflows: [generated gate_group evidence capture, aggregate governance truth]
-    root_cause: recursive session-manifest selection mistakes retained receipt copies for roots; aggregate truth lacks canonical duplicate receipt identity admission; controller construction hand-maintained an incomplete runtime dependency list and pin admission did not prove wheel closure; remaining timeout and dependency changelog facts require deterministic ownership instead of manual synchronization
+    recorded_at_utc: '2026-09-10T00:06:00Z'
+    action: centralized evidence-session selection and receipt identity admission; derived timeout, dependency changelog, and controller closure authority mechanically; independently installed and probed the corrected controller
     remediated_in_phase: P19
     hotfix_log: phases/phase-19-hotfix01.yml
     canonical_artifacts: [bcf_governance/tooling/evidence_sessions.py, bcf_governance/tooling/truth_receipts.py, bcf_governance/tooling/ci_graph_render.py, bcf_governance/tooling/ci_graph_audit.py, bcf_governance/tooling/automation_dependencies.py, bcf_governance/tooling/ci_github_bootstrap.py, .github/scripts/build_trusted_controller.py, governance/canonical-representations.yml, governance/ci-graph.yml, governance/automation-producers.yml]
-  remediation_history: []
+    local_validation: [759 source tests passed, 383 contract tests passed, 194 negative controls declared, 15 validator mutants killed, 12 semantic mutants killed, wheel and sdist issue reproductions passed]
+    remote_validation_completed:
+      commit: e268a3e49b1d9c2e9ff81d95cf6bf3229d16692c
+      workflows: [governance 34419081319, governance-pack 34419081272, trusted-bootstrap 34419701832, trusted-probe 34419770290]
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
 - {type: decision, statement: BCF 0.7.0 is one release train and BCF must self-adopt every applicable Standard-v2 capability}
@@ -86,7 +88,7 @@ release_trains:
     focus: [trusted_automation_changelog_producer, exact_head_pr_certification, provider_protection_authority, ai_specific_positioning, immutable_patch_release]
   release_9:
     target_version: 1.0.3
-    status: active
+    status: completed
     focus: [canonical_session_selection, duplicate_receipt_identity_rejection, deterministic_ci_authority_audit, timeout_compatibility, manifest_derived_dependency_changelog, immutable_patch_release]
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]

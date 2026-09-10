@@ -4,13 +4,13 @@ document:
   id: project-phase-19-workitems
   version: 1.0.0
   generated_at_utc: '2026-09-09T00:00:00Z'
-  status: planned
+  status: completed
   path: plans/phase-19-workitems.yml
   phase_id: P19
 workitems:
 - id: P19-P0-01
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver canonical direct-root evidence-session selection shared by graph
     and shard capture
   acceptance:
@@ -20,7 +20,7 @@ workitems:
   - contract-test
 - id: P19-P0-02
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver fail-closed duplicate receipt evidence and execution identity admission
   acceptance:
   - fail-closed duplicate receipt evidence and execution identity admission_is_complete
@@ -29,7 +29,7 @@ workitems:
   - contract-test
 - id: P19-P0-03
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver deterministic CI authority audit timeout compatibility and manifest-derived automation dependency transitions plus package-derived trusted-controller dependency closure with build-time offline installation and pre-pin rejection
   acceptance:
   - deterministic effective-graph authority audit, timeout compatibility, and manifest-derived automation dependency transitions
@@ -42,7 +42,7 @@ workitems:
   - contract-test
 - id: P19-P0-04
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver immutable BCF 1.0.3 release and deterministic Racecar migration
     guidance
   acceptance:

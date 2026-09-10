@@ -54,6 +54,10 @@ Release target: `1.0.3`.
   upload. Workflow authority pins are derived from the preceding generated-byte
   freeze commit; the prior proven installation remains authoritative until the
   corrected target passes independent bootstrap and probe.
+- Promoted that target only after bootstrap run `34419701832` and independent
+  probe run `34419770290` authenticated and exercised it on both uniquely labeled
+  trusted runners; installation proof and release-role availability are projected
+  mechanically from those provider results.
 
 ### Compatibility
 
