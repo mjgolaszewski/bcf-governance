@@ -90,9 +90,17 @@ copied by an operator.
 Provenance proves repeatability and custody, not that the canonical meaning is
 correct. Exceptions are migration tools, not alternate owners.
 
-The source-first scanner inventories tracked types before loading the registry,
-then evaluates declared ownership and causal paths. Standard v2 blocks declared
-families; Regulated can require repository-wide completeness. Optional
+The source-first scanner inventories every tracked Python source before loading
+the registry. It then qualifies neutral absolute and relative import facts
+through `source_authority.python_import_roots` and evaluates declared ownership
+and causal paths. Repository root (`.`) is the compatibility default; `src/` or
+nested source layouts must declare their exact import roots. Roots cannot hide
+tracked files, overlap, resolve through symlinks, or map one import name to more
+than one file. Package exports and aliases resolve through tracked
+`__init__.py` import declarations rather than suffix or basename guesses.
+
+Standard v2 blocks declared families; Regulated can require repository-wide
+completeness. Optional
 TypeScript analysis uses the consumer's locked compiler and configuration and
 does not download tools or fall back to Docker.
 

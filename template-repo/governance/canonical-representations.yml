@@ -12,6 +12,7 @@ source_authority:
   typescript_engine: not_applicable_until_declared_by_consumer
   cross_language_trace: not_applicable_until_declared_by_consumer
   completeness_authority: independent_exact_tree_source_inventory
+  python_import_roots: ['.']
   authoritative_python_roots: [scripts/_bcf_runtime]
   generated_mirror_roots: []
 representations:

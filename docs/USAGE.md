@@ -172,7 +172,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.1.0/bcf_governance-1.1.0-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.1.1/bcf_governance-1.1.1-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 1.x. Verify the
@@ -659,6 +659,15 @@ Regulated repositories may select `repository_wide_blocking`, which additionally
 requires every discovered type in the authoritative Python roots to be
 registered. The report is structural evidence about representation ownership;
 it does not prove arbitrary business correctness.
+
+Set `source_authority.python_import_roots` in
+`governance/canonical-representations.yml` to the directories Python treats as
+import roots. Flat packages use `['.']`; a package imported as `racecar.*` from
+`backend/src/racecar` uses `[backend/src]`. Multiple roots must be disjoint and
+must not expose the same module name. BCF rejects missing, symlinked,
+overlapping, or ambiguous roots before ownership evaluation. Omitting the field
+retains the 1.1.0 compatibility behavior of repository root, so existing flat
+consumers do not require a migration.
 
 Repositories with TypeScript can replace the registry's typed
 `not_applicable_until_declared_by_consumer` value with a compiler contract that

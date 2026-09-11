@@ -46,6 +46,7 @@
           "enum": ["not_applicable_until_declared_by_consumer", "derived_from_declared_endpoint_and_typescript_contracts"]
         },
         "completeness_authority": {"const": "independent_exact_tree_source_inventory"},
+        "python_import_roots": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
         "authoritative_python_roots": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
         "generated_mirror_roots": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
       }

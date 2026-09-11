@@ -46,6 +46,7 @@ class Registry:
     generated_mirror_roots: tuple[str, ...]
     entries: tuple[RegistryEntry, ...]
     raw: dict[str, Any]
+    python_import_roots: tuple[str, ...] = (".",)
 
 
 def _mapping(path: Path) -> dict[str, Any]:
@@ -171,4 +172,8 @@ def load_registry(repo_root: Path) -> Registry:
         ),
         entries=tuple(entries),
         raw=payload,
+        python_import_roots=_safe_roots(
+            source_authority.get("python_import_roots", ["."]),
+            field="source_authority.python_import_roots",
+        ),
     )

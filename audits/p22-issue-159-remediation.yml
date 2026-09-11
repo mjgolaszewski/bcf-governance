@@ -1,0 +1,50 @@
+document: {kind: defect_remediation_audit, id: bcf-governance-p22-issue-159, version: 1.0.0, status: active, path: audits/p22-issue-159-remediation.yml}
+issue:
+  provider: github
+  repository: mjgolaszewski/bcf-governance
+  number: 159
+  consumer_tracking_id: P02-BCF-SOIP-IMPORT-ROOT-001
+  title: Semantic ownership silently admits unauthorized constructors in Python src layouts
+  affected_releases: [1.0.4, 1.1.0]
+  target_release: 1.1.1
+baseline:
+  repository_head: e1a9571681b2c3fc425b543aa6b530ba1a80e0fd
+  affected_release_commit: e1053ae4530e595d3f5453668f6c93a35fec45fb
+  affected_wheel_sha256: c68daac94bd22255ead32caf2c1cf98844dc6b1c3cb9d81a0afdd7f3e0ed3be2
+  affected_source: bcf_governance/tooling/semantic_ownership_inventory.py
+  reproduction_sha256: b0de639230a1a466d6a9a3612b21d8af8daa95db15a66a89dd24d03d2e0b123a
+classification:
+  kind: upstream_defect
+  severity: high
+  false_pass_possible: true
+  impact: an independently discovered authorized constructor can mask an imported unauthorized constructor below a src-style package root
+root_cause:
+  defect: repository-relative module names diverge from Python absolute import names below src or nested source roots
+  prior_failure_mode: exact constructed-symbol comparison omits the mismatched imported identity and reports the blocking family conformant
+  required_authority: explicit source-bound import roots applied only after independent tracked-source discovery
+remediation:
+  canonical_owner: bcf_governance/tooling/semantic_ownership_inventory.py::resolve_python_imports
+  configuration_owner: governance/canonical-representations.yml::source_authority.python_import_roots
+  behavior:
+  - inventory all tracked Python files and neutral import facts before loading semantic declarations
+  - resolve absolute relative aliased and package-exported imports through exact declared roots
+  - preserve repository root as the compatibility default when the new field is absent
+  - reject missing empty symlinked overlapping conflicting and ambiguous roots without suffix or basename guessing
+  compatibility:
+  - receipt schema 2.0 profile contracts authority v1.1 and all 21 gate IDs remain unchanged
+  - existing flat consumers retain repository-root import behavior without migration
+  - src-layout consumers explicitly declare the directories Python places on sys.path
+controls:
+  positive: [flat package, src package, nested src package, disjoint multiple roots, relative import, import alias, package init re-export, authorized imported constructor]
+  adversarial: [masked unauthorized constructor, ambiguous module, overlapping roots, missing root, empty root, symlink root, unsafe traversal]
+  causal_mutants: [python-import-root-normalization-must-fail]
+exclusions: [Racecar mutation, CI graph or workflow topology, receipt schema, profile contracts, authority contracts, gate count]
+validation:
+  status: in_progress
+  implementation_commit: pending
+  implementation_tree: pending
+  exact_populations: {source_tests: pending, contract_tests: pending, required_gates: 21, gate_negative_controls: pending}
+  consumer_proof: {repository: mjgolaszewski/racecar, commit: pending, disposition: read_only}
+  generated_parity: pending
+  mutation_profiles: pending
+  artifact_verification: pending

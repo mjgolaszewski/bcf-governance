@@ -71,7 +71,7 @@ BRANCH_DOCUMENTS = (
     "template-repo/governance/REPO_CLEANUP.md",
 )
 
-EDITORIAL_AUDIT = "audits/v1.1.0-editorial-review.yml"
+EDITORIAL_AUDIT = f"audits/v{__version__}-editorial-review.yml"
 
 BANNED_TONE = (
     "manifesto",

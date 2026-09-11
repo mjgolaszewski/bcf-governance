@@ -1,0 +1,46 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 22 Plan
+  id: bcf-governance-phase-22-plan
+  version: 1.0.0
+  generated_at_utc: '2026-09-11T00:00:00Z'
+  status: planned
+  path: plans/phase-22-plan.yml
+phase:
+  id: P22
+  build_block: semantic-import-root-integrity-1.1.1
+  planner: codex
+  date: '2026-09-11'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - governed exact Python import-root mapping and fail-closed resolver
+  - flat src nested-src multi-root package-export and alias regressions
+  - mirrored runtime documentation Racecar proof and immutable 1.1.1 release
+  parallelizable_workstreams:
+  - id: P22-WS1
+    name: 'P22-WS1: import identity contract and resolver'
+  - id: P22-WS2
+    name: 'P22-WS2: adversarial tests causal control and consumer compatibility'
+  - id: P22-WS3
+    name: 'P22-WS3: generated parity provider activation and release'
+  hard_dependencies:
+  - P21
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: keep the phase narrowly scoped to declared deliverables and update canonical
+    governed artifacts in the same change
+- order: 2
+  statement: preserve receipt profile CI graph authority and gate identifiers while correcting only Python semantic import identity
+- order: 3
+  statement: inventory all tracked Python source before declarations and allow import roots only to qualify never select source
+verification_plan:
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest -q tests

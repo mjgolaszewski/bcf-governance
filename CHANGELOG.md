@@ -6,6 +6,28 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-09-11
+
+### Fixed
+
+- Fixed issue #159 by qualifying imported Python constructor identities through
+  exact, declared import roots after the independent tracked-source inventory.
+  Flat, `src/`, nested-source, relative-import, alias, and package re-export
+  layouts now enforce the same canonical constructor identity.
+- Rejected missing, empty, symlinked, overlapping, conflicting, and ambiguous
+  import-root mappings instead of guessing from suffixes or basenames.
+
+### Changed
+
+- Added the optional `source_authority.python_import_roots` registry field.
+  Existing consumers retain repository-root behavior when it is absent; new
+  Standard-v2 templates declare `['.']`, and src-layout consumers declare the
+  exact directories placed on Python's import path.
+- Added focused consumer-layout regressions and a cause-verified control that
+  proves bypassing constructor normalization restores the reported false pass.
+- Preserved receipt schema 2.0, profile and authority contracts, all 21 gate
+  IDs, and the generated CI topology.
+
 ## [1.1.0] - 2026-09-11
 
 Published as immutable GitHub release `387076379` from exact certified merge
@@ -895,7 +917,8 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.4...v1.1.0
 [1.0.4]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.2...v1.0.3
