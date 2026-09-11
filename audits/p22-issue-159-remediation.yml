@@ -1,4 +1,4 @@
-document: {kind: defect_remediation_audit, id: bcf-governance-p22-issue-159, version: 1.0.0, status: active, path: audits/p22-issue-159-remediation.yml}
+document: {kind: defect_remediation_audit, id: bcf-governance-p22-issue-159, version: 1.0.0, status: final, path: audits/p22-issue-159-remediation.yml}
 issue:
   provider: github
   repository: mjgolaszewski/bcf-governance
@@ -51,6 +51,7 @@ validation:
   pull_requests:
   - {number: 160, reviewed_head: b4b201cf10a2e438a8ac02b7cb890f49507f46d9, governance_run: 34624059584, package_run: 34624059596, attempts: 1, merge_commit: a0cb25e98308de89187ca69fbbfab30796cb7b1d}
   - {number: 161, reviewed_head: 68264d7024335b6dc4059c74aa7f13785bb853c3, governance_run: 34625548667, package_run: 34625548841, attempts: 1, merge_commit: d67a95be16d3ab0ba05299d72e224f0743d3bd17}
+  - {number: 162, reviewed_head: d8b5108a8c484f97e63667e5084328978ea31b34, governance_run: 34628788861, package_run: 34628788885, attempts: 1, merge_commit: fe85d200c16ef296280fef59c8f7888978e43d2c}
   controller:
     artifact: {id: 10274391593, run_id: 34624865063, run_attempt: 1, provider_digest: 'sha256:335e0cf94a357ed8c2ca13d3986337c3c01f5de8b36775131d789bfbd9f91717', wheel_sha256: 289a7a73a6cf16abf95ee7eec4eec3a275bc179dba4448ee5368590638e04c7d}
     bootstrap: {run_id: 34626883865, run_attempt: 1, result: both_trusted_runners_passed}
@@ -61,3 +62,6 @@ validation:
     recovered_attempt: 2
     classification: fail_closed_30_second_check_runs_network_timeout
     impact: certification remained pending and no candidate work was repeated
+  exact_main: {run_id: 34629882892, run_attempt: 1, finalizer_run: 34630888133, publisher_run: 34630934434, commit: fe85d200c16ef296280fef59c8f7888978e43d2c, tree: 207003dc5b0d625a4e7d5cc4c157c1b6c367614c, result: certified}
+  scheduled_mutants: [{run_id: 34630995566, run_attempt: 1, profile: high_value, result: passed}, {run_id: 34630997777, run_attempt: 1, profile: full, result: passed}]
+  release: {release_id: 387251389, tag: v1.1.1, tag_object: c354c79d48c41f1e6e55d09ab1e08f5d50fba36d, immutable: true, receipt_artifact_id: 10277276079, build_run: 34631297629, verifier_run: 34632153453, collector_run: 34632960928, publisher_run: 34633065923, result: published_attested_exact_bytes}
