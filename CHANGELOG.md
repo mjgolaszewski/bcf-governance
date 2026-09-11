@@ -30,6 +30,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Projected the trusted-controller target from the authenticated exact-main
   artifact; provider coordinates and workflow bytes remain mechanically
   derived rather than operator-authored.
+- Promoted that controller only after provider-compiled bootstrap and probe
+  evidence proved the exact installation independently on both trusted
+  runners.
 
 ## [1.1.0] - 2026-09-11
 

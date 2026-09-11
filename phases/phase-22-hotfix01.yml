@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-22-hotfix01
   version: 1.0.0
   generated_at_utc: '2026-09-11T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-22-hotfix01.yml
 hotfix:
   id: P22-HF01
@@ -16,12 +16,19 @@ execution_evidence:
   planned_commands:
   - .venv/bin/python -m pytest -q tests
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
-  executed_commands: []
+  executed_commands:
+  - exact source and contract manifests (841 and 389 passed)
+  - complete exact-tree PR evidence (21 receipts and 211 cause-verified controls passed)
+  - full and semantic-full mutant profiles (25 and 12 killed)
+  - generated runtime package template graph and workflow parity (pass)
+  - clean Racecar backend/src import-root proof at PR 14 head 95a8866cf8fdcd92674876931385d2b88eec4608
   notes:
   - issue 159 is a high-severity upstream fail-open defect reproduced against exact BCF 1.1.0 source and release bytes
   - repository-relative module identity diverges from absolute import identity below src-style roots and exact symbol comparison silently omits the imported constructor
   - remediation owns explicit import-root qualification after independent tracked-source discovery and rejects unsafe ambiguous or conflicting roots
   - Racecar remains read-only and receipt profile CI graph authority and gate identifiers are excluded
+  - implementation PR 160 and controller-target PR 161 passed every candidate producer on their first attempts
+  - provider-compiled bootstrap 34626883865 and probe 34626953649 proved the target controller independently on both trusted runners
 closeout_requirements:
   claims:
     required_suites_green:
