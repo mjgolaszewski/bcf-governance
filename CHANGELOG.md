@@ -50,6 +50,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   consolidated into durable maintainer guidance and exact audit custody.
 - Editorial custody remains mechanically verifiable in an extracted source
   distribution even when the original review-base Git object is unavailable.
+- The self-hosting controller target is projected from the authenticated
+  exact-main artifact; its provider identity and wheel digest are mechanically
+  compiled rather than copied into workflow or policy files.
 
 ### Compatibility
 
