@@ -1,0 +1,73 @@
+document:
+  kind: execution_phase_log
+  name: Phase 23 Log
+  id: bcf-governance-phase-23-log
+  version: 1.0.0
+  generated_at_utc: '2026-09-11T00:00:00Z'
+  status: planned
+  path: phases/phase-23-log.yml
+phase:
+  id: P23
+  build_block: same-instance-method-effect-integrity-1.1.2
+summary:
+  outcome: in_progress
+  highlights:
+  - P22 and immutable 1.1.1 custody are compacted into phase history before opening P23
+  - issue 164 reproduces a distinct same-instance method identity false pass in the operation-effect walker
+  - the local correction resolves exact lexical class methods and rejects ambiguous dispatch without changing generated CI topology
+  - a conservative Actions-artifact purge removed 1614 superseded artifacts and retained the active pinned controller
+workitems:
+- id: P23-P0-01
+  status: IN_PROGRESS
+  summary: exact same-instance method identity and fail-closed ambiguous dispatch implementation
+- id: P23-P0-02
+  status: TODO
+  summary: complete public-operation adversarial and causal regression coverage
+- id: P23-P0-03
+  status: TODO
+  summary: generated-runtime parity read-only Racecar proof and immutable 1.1.2 release
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  - .venv/bin/python -m pytest -q tests
+  executed_commands:
+  - issue 164 public reproduction confirmed direct writes reject while an identical write behind self._save falsely passed with zero observed effects
+  - focused local method-dispatch and import-identity suites passed 33 tests
+  - clean Racecar PR 14 head 18fddaeb53bee90f512a8d80935f2d3d4c6cbaf8 read-only inventory resolved session authorize and logout self._current calls to the exact BrowserSessionService._current method
+  - conservative artifact purge deleted 1614 superseded Actions artifacts with zero failures reclaimed 531.1 MiB and preserved active controller artifact 10274391593
+  notes:
+  - audits/p23-issue-164-remediation.yml owns the defect-class review consumer proof and release-train storage forecast
+  - remote execution starts only after the complete deterministic local acceptance set passes
+closeout_requirements:
+  claims:
+    workitems_closed:
+      required_evidence:
+      - governance-validate
+    required_suites_green:
+      required_evidence:
+      - lint
+      - typecheck
+      - test
+      - contract-test
+    architecture_gates_green:
+      required_evidence:
+      - architecture-test
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+    security_review_complete:
+      required_evidence:
+      - security-review
+    findings_resolved:
+      required_evidence:
+      - security-vulnerability-scan
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml
+known_constraints:
+- update canonical governed artifacts together when behavior or environment contracts change
+next_work:
+- complete exact local manifests controls mutants package and artifact checks before opening the implementation PR
+- mechanically activate the resulting controller then certify and immutably publish 1.1.2

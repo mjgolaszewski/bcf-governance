@@ -1,0 +1,88 @@
+document: {kind: defect_remediation_audit, id: bcf-governance-p23-issue-164, version: 1.0.0, status: active, path: audits/p23-issue-164-remediation.yml}
+issue:
+  provider: github
+  repository: mjgolaszewski/bcf-governance
+  number: 164
+  consumer_tracking_id: P02-BCF-SOIP-METHOD-EFFECT-001
+  title: BCF 1.1.1 operation effects falsely admit writes through self method calls
+  affected_releases: [1.1.0, 1.1.1]
+  target_release: 1.1.2
+baseline:
+  repository_head: cc15925523cd92e380c60d075dbb884a85d20585
+  affected_release_commit: fe85d200c16ef296280fef59c8f7888978e43d2c
+  affected_release_id: 387251389
+  affected_wheel_sha256: 45884b94cfe3a2424d6463d0c2776bb8a08e7e9e202c26c5454454bf283227ca
+  affected_source: bcf_governance/tooling/semantic_ownership_inventory.py
+  reproduction_sha256: d88fbb1fc2891e9ac1e419a25206050162ecf519250b253b883ecef7bbe541b3
+classification:
+  kind: upstream_defect
+  severity: high
+  false_pass_possible: true
+  impact: a query or other closed operation can conceal a write or authority effect behind an unresolved same-instance helper call
+root_cause:
+  defect: source discovery records self method calls as repository-path plus self attribute text instead of the exact declaring-class method identity
+  prior_failure_mode: the effect walker does not resolve the edge visits no helper effects and reports zero writes and zero authority effects
+  required_authority: source-first lexical class and receiver facts normalized by one exact fail-closed method-dispatch owner before effect evaluation
+dispatch_class_review:
+  exact_resolution: [direct same-instance method, async same-instance method, unconventional receiver parameter, same-named methods in distinct lexical classes]
+  fail_closed: [receiver rebinding, receiver alias, bound-method alias, classmethod receiver, getattr receiver dispatch, type receiver dispatch, inheritance, overrides, super, unresolved same-instance callable, decorated class, decorated method, decorated entrypoint, metaclass, dynamic attribute lookup, instance method replacement]
+  boundary_behavior: [pure resolved helpers remain legal, exact resolved helper ports are reachable, chained component calls require an explicit declared port, hard same-instance ambiguity cannot be hidden by a raw declaration]
+  excluded: [runtime monkey-patching proof, whole-program external subclass discovery, arbitrary dynamic Python dispatch]
+remediation:
+  discovery_owner: bcf_governance/tooling/semantic_ownership_inventory.py::discover_python_source
+  identity_owner: bcf_governance/tooling/semantic_python_method_identity.py::resolve_method_dispatch
+  effect_owner: bcf_governance/tooling/semantic_operation_effects.py::validate_operation_effects
+  behavior:
+  - collect class methods bases receiver bindings and neutral dispatch facts during the existing source-first AST inventory
+  - resolve direct same-instance calls only to an exact method in the declaring lexical class
+  - reject hierarchy-sensitive and dynamically rebound dispatch before it can conceal effects
+  - allow unresolved component calls only when the operation declares their exact boundary identity
+  - preserve one shared inventory and the existing public operation validator
+  compatibility:
+  - receipt schema 2.0 profile contracts authority v1.1 all 21 gate IDs and generated CI topology remain unchanged
+  - flat and src-layout import-root behavior from 1.1.1 remains unchanged
+  - consumers with ambiguous operation paths receive a fail-closed diagnostic and must declare real component ports or remove dynamic dispatch
+  context_budget_disposition:
+  - inventory remains within the existing 800-line production-module limit
+  - canonical-representations gains only the exact method owner and four required generated projections so its self-governance cap moves from 56 to 58 KiB
+  - the mechanically generated semantic lock gains four projection rows so its self-governance line cap moves from 300 to 325
+  - completed 1.0.0rc1 release detail was removed from active memory because phase history and immutable provider custody already own it
+controls:
+  positive: [direct forbidden write, indirect forbidden write, indirect authority effect, pure helper, exact declared helper port, exact declared component port, canonical YAML public operation]
+  adversarial: [receiver rebinding, receiver alias, bound-method alias, classmethod, chained undeclared component, missing method, getattr, type receiver, inheritance, override, super, same-name collision, async dispatch, decorated class, decorated method, decorated entrypoint, metaclass, dynamic attribute lookup, instance method replacement]
+  causal_mutants: [same-instance-method-effect-resolution-must-fail]
+consumer_proof:
+  repository: mjgolaszewski/racecar
+  pull_request: 14
+  commit: 18fddaeb53bee90f512a8d80935f2d3d4c6cbaf8
+  tree: b965d0bbae98d97737272e36ec88d56ee8718f5e
+  tracked_python_files: 274
+  result: BrowserSessionService session authorize and logout edges resolve exactly to the tracked BrowserSessionService._current method
+  disposition: read_only_method_graph_proof_only_no_product_or_governance_mutation
+actions_storage_forecast:
+  measured_baseline: immutable_1.1.1_train
+  measured_run_ids: [34624059584, 34624865063, 34625548667, 34626861427, 34628788861, 34629882892, 34630995566, 34630997777, 34631297629, 34632153453, 34632960928, 34635033779, 34636094172]
+  segments_mib:
+    local_validation: 0
+    implementation_pr_and_fail_closed_main: 3.0
+    mechanical_controller_target_pr_and_fail_closed_main: 3.0
+    controller_confirmation_pr_and_green_main: 3.7
+    scheduled_mutant_profiles: 0.01
+    release_build_verifier_and_receipt: 36.8
+    post_release_closeout_pr_and_green_main: 3.7
+  expected_actions_artifact_peak_mib: 50.2
+  authorized_ceiling_with_contingency_mib: 60.3
+  immutable_release_assets_mib: 2.5
+  immutable_release_assets_count_against_actions_artifact_quota: false
+  controls:
+  - remote execution starts only after complete deterministic local validation
+  - no hosted job polls sleeps idles or waits for local capacity
+  - a provider failure stops the train until its complete class is reproduced and corrected offline
+  - superseded PR failed-run and controller artifacts may be purged after their consumers finish while the active pinned controller is retained
+validation:
+  status: local_implementation_in_progress
+  generated_parity: pending
+  exact_populations: pending
+  mutation_profiles: pending
+  artifact_verification: pending
+  provider_evidence: pending

@@ -63,7 +63,7 @@ def test_bcf_declares_every_semantic_family_and_public_operation_once(
     assert structure == {"families": 21, "operations": 19}
     assert evaluation.family_count == 21
     assert evaluation.operation_count == 19
-    assert evaluation.derived_count == 56
+    assert evaluation.derived_count == 60
     assert evaluation.exception_count == 0
 
 

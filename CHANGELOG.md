@@ -6,6 +6,33 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-09-11
+
+### Fixed
+
+- Fixed issue #164 by resolving direct Python `self.method()` operation edges
+  to the exact method in their declaring lexical class. Writes and authority
+  effects in private helpers can no longer disappear behind an unqualified
+  `self` call.
+- Made receiver rebinding, receiver and bound-method aliases, inheritance or
+  override ambiguity, `super()`, reflective receiver dispatch, and missing
+  same-instance targets fail closed instead of relying on suffix or basename
+  guesses. Decorated classes or methods, metaclasses, dynamic attribute lookup,
+  and method rebinding are likewise rejected when static ownership is not exact.
+
+### Changed
+
+- Added exact class, base, decorator, method-binding, receiver, and method-rebinding
+  facts to the existing source-first Python inventory without adding another AST
+  scan.
+- Preserved pure helper traversal and exact declared helper ports. Component
+  calls require an explicit operation port, while a raw declaration cannot
+  conceal ambiguous same-instance dispatch.
+- Added complete public-operation, source-layout, adversarial dispatch, lexical
+  collision, consumer-method, and cause-verified regression coverage.
+- Preserved receipt schema 2.0, profile and authority contracts, all 21 gate
+  IDs, and the mechanically generated CI topology.
+
 ## [1.1.1] - 2026-09-11
 
 Published as immutable GitHub release `387251389` from exact certified merge
@@ -926,7 +953,8 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.4...v1.1.0
 [1.0.4]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.3...v1.0.4

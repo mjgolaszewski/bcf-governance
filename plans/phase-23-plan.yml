@@ -1,0 +1,47 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 23 Plan
+  id: bcf-governance-phase-23-plan
+  version: 1.0.0
+  generated_at_utc: '2026-09-11T00:00:00Z'
+  status: active
+  path: plans/phase-23-plan.yml
+phase:
+  id: P23
+  build_block: same-instance-method-effect-integrity-1.1.2
+  planner: codex
+  date: '2026-09-11'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - exact same-instance method identity and fail-closed ambiguous dispatch implementation
+  - complete public-operation adversarial and causal regression coverage
+  - generated-runtime parity read-only Racecar proof and immutable 1.1.2 release
+  parallelizable_workstreams:
+  - id: P23-WS1
+    name: 'P23-WS1: exact method identity and effect enforcement'
+  - id: P23-WS2
+    name: 'P23-WS2: adversarial controls generated parity and consumer proof'
+  - id: P23-WS3
+    name: 'P23-WS3: mechanical controller activation and immutable release'
+  hard_dependencies:
+  - P22
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: preserve receipt profile CI graph authority gate identifiers and workflow topology
+- order: 2
+  statement: resolve method dispatch from mechanically discovered lexical source facts and fail closed on ambiguity
+- order: 3
+  statement: complete deterministic local validation before remote execution and stop on a provider-only failure until the entire class is qualified offline
+- order: 4
+  statement: keep Racecar read-only and limit proof to exact current source identity and compatibility
+verification_plan:
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest -q tests

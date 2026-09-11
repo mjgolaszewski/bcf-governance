@@ -8,7 +8,7 @@ tooling_contexts:
   operations: [migrate_contracts.py, migrate_governance_evidence.py, publish_audit.py, scaffold_governance_artifacts.py]
   profiles: [governance_profiles.py, profile_]
   runtime: [runtime_capacity.py]
-  semantic_ownership: [semantic_adoption_diagnostics.py, semantic_authority_, semantic_derivations.py, semantic_locking.py, semantic_operation_, semantic_ownership_, semantic_yaml.py]
+  semantic_ownership: [semantic_adoption_diagnostics.py, semantic_authority_, semantic_derivations.py, semantic_locking.py, semantic_operation_, semantic_ownership_, semantic_python_method_identity.py, semantic_yaml.py]
   validation: [check_governance_exposure.py, doctor_governance_pack.py, interpreter_environment.py, preflight.py, public_contracts.py, self_workflow_contracts.py, validate_governance_yaml.py, yaml_mutations.py, governance_validation/]
 required_dependencies: {PyYAML: '>=6.0,<7', jsonschema: '>=4.21,<5', packaging: '>=24,<27'}
 sbom_format: CycloneDX

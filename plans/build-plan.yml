@@ -18,12 +18,12 @@ global_gates:
   name: safe_execution_substrate
   applies_before: P10
   required_completion_criteria: [trusted control-plane VM executes no candidate code, every code-executing job receives a fresh disposable VM and ephemeral runner identity, no GitHub-hosted fallback is configured]
-phase_history: {path: plans/phase-history.yml, through_phase: P21}
+phase_history: {path: plans/phase-history.yml, through_phase: P22}
 phase_sequence:
-- phase_id: P22
-  build_block: semantic-import-root-integrity-1.1.1
-  objective: qualify imported Python semantic identities through explicit exact source roots without weakening source-first discovery or consumer compatibility
-  hard_dependencies: [P21]
-  tightly_scoped_deliverables: [governed exact Python import-root mapping and fail-closed resolution, complete layout alias re-export ambiguity and causal regressions, compatible mirrored runtime Racecar proof and immutable BCF 1.1.1 release]
-  parallelizable_workstreams: [import identity contract and resolver, adversarial tests causal control and consumer compatibility, generated parity provider activation and release]
+- phase_id: P23
+  build_block: same-instance-method-effect-integrity-1.1.2
+  objective: close same-instance operation-effect identity without weakening source-first discovery dynamic-dispatch safety or consumer compatibility
+  hard_dependencies: [P22]
+  tightly_scoped_deliverables: [exact same-instance method identity and fail-closed ambiguous dispatch, complete public operation adversarial and causal regression coverage, compatible mirrored runtime Racecar proof and immutable 1.1.2 release]
+  parallelizable_workstreams: [Python method identity and effect tracing, adversarial tests causal controls and consumer compatibility, generated parity provider activation and release]
   verification_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests, .venv/bin/python .github/scripts/run_validator_mutants.py --profile full, .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full]

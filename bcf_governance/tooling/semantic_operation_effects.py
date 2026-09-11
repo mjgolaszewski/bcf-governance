@@ -95,13 +95,32 @@ def validate_operation_effects(
             raise SemanticOperationEffectError(
                 f"operation {operation['id']} contains an unresolved dynamic call path at {symbol}"
             )
+        if any(
+            failure.get("port_eligible") is not True
+            for failure in function.get("effect_unresolved", [])
+        ):
+            raise SemanticOperationEffectError(
+                f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
+            )
         for call in function.get("calls", []):
             raw = str(call.get("called_symbol", ""))
             callee = _resolve_function(raw, functions)
             identity = ("function", callee) if callee is not None else ("call", raw)
+            hard_dispatch_failure = (
+                call.get("dispatch_resolution") == "unresolved"
+                and call.get("dispatch_port_eligible") is not True
+            )
+            if hard_dispatch_failure:
+                raise SemanticOperationEffectError(
+                    f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
+                )
             if identity in declared_ports:
                 reached.add(identity)
                 continue
+            if call.get("dispatch_resolution") == "unresolved":
+                raise SemanticOperationEffectError(
+                    f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
+                )
             name = str(call.get("call_name", ""))
             receiver = raw.rsplit("::", 1)[-1].rsplit(".replace", 1)[0]
             file_replace = name == "replace" and (

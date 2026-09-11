@@ -20,6 +20,7 @@ observation, or self-evaluation deterministic. Relevant failure modes include:
 - competing representations, defaults, normalizers, or state transitions;
 - material semantic families omitted from the declared governance scope;
 - public operations whose mutation or authority effects are unclassified;
+- method-call identities that omit their lexical owner and hide downstream effects;
 - synchronized semantic copies with no reproducible derivation or bounded exception;
 - tests that reproduce the same incorrect assumption as the implementation;
 - gates that exist but are insensitive to the defect they claim to detect;

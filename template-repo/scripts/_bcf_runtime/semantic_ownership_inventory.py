@@ -14,6 +14,18 @@ from pathlib import Path
 from pathlib import PurePosixPath
 from typing import Any
 
+from .semantic_python_method_identity import (
+    bound_method_origins,
+    call_name as _call_name,
+    call_reference as _call_reference,
+    discover_class_facts,
+    method_binding,
+    method_dispatch_reference,
+    resolve_method_dispatch,
+    root_name as _root_name,
+    source_symbol,
+)
+
 
 NORMALIZERS = {
     "casefold",
@@ -82,27 +94,6 @@ def _annotation(node: ast.expr | None) -> str:
         return "unresolved"
 
 
-def _root_name(node: ast.AST) -> str | None:
-    while isinstance(node, (ast.Attribute, ast.Subscript, ast.Call)):
-        if isinstance(node, ast.Attribute):
-            node = node.value
-        elif isinstance(node, ast.Subscript):
-            node = node.value
-        elif isinstance(node.func, ast.Attribute):
-            node = node.func.value
-        else:
-            break
-    return node.id if isinstance(node, ast.Name) else None
-
-
-def _call_name(node: ast.Call) -> str:
-    if isinstance(node.func, ast.Name):
-        return node.func.id
-    if isinstance(node.func, ast.Attribute):
-        return node.func.attr
-    return "<dynamic>"
-
-
 def _imports(
     tree: ast.Module, module_index: dict[str, str], current_module: str
 ) -> dict[str, str]:
@@ -165,23 +156,6 @@ def _import_bindings(
                     }
                 )
     return bindings
-
-
-def _call_reference(
-    function: ast.expr, bindings: dict[str, dict[str, Any]]
-) -> dict[str, Any] | None:
-    parts: list[str] = []
-    current = function
-    while isinstance(current, ast.Attribute):
-        parts.append(current.attr)
-        current = current.value
-    if not isinstance(current, ast.Name) or current.id not in bindings:
-        return None
-    return {
-        "local": current.id,
-        "attributes": list(reversed(parts)),
-        "binding": bindings[current.id],
-    }
 
 
 def _module_name(repo_root: Path, path: Path) -> str:
@@ -293,6 +267,9 @@ class _FunctionVisitor(ast.NodeVisitor):
         self.imports = imports
         self.import_bindings = import_bindings
         self.local_types = local_types
+        self.class_symbol = f"{path}::{class_name}" if class_name else None
+        self.method_binding_kind, self.receiver = method_binding(function)
+        self.decorators = sorted(ast.unparse(value) for value in function.decorator_list)
         suffix = f"{class_name}.{function.name}" if class_name else function.name
         self.symbol = f"{path}::{suffix}"
         arguments = [
@@ -312,17 +289,19 @@ class _FunctionVisitor(ast.NodeVisitor):
         self.unresolved: list[dict[str, Any]] = []
         self.return_fingerprints: list[str] = []
         self.return_annotation = _annotation(function.returns)
+        self.receiver_attribute_mutations: set[str] = set()
+
+    def _record_receiver_attribute_target(self, target: ast.AST) -> None:
+        if (
+            self.receiver is not None
+            and isinstance(target, ast.Attribute)
+            and isinstance(target.value, ast.Name)
+            and target.value.id == self.receiver
+        ):
+            self.receiver_attribute_mutations.add(target.attr)
 
     def _resolved_symbol(self, call: ast.Call) -> str:
-        if isinstance(call.func, ast.Name):
-            return self.imports.get(call.func.id, f"{self.path}::{call.func.id}")
-        if isinstance(call.func, ast.Attribute):
-            root = _root_name(call.func)
-            imported = self.imports.get(root or "")
-            if imported:
-                return f"{imported}.{call.func.attr}"
-            return f"{self.path}::{ast.unparse(call.func)}"
-        return f"{self.path}::<dynamic>"
+        return source_symbol(call.func, self.path, self.imports)
 
     def _origins(self, node: ast.AST) -> set[str]:
         origins: set[str] = set()
@@ -332,15 +311,39 @@ class _FunctionVisitor(ast.NodeVisitor):
         return origins
 
     def visit_Assign(self, node: ast.Assign) -> None:  # noqa: N802
-        origins = self._origins(node.value)
+        origins = bound_method_origins(
+            node.value,
+            class_symbol=self.class_symbol,
+            receiver=self.receiver,
+            assignments=self.assignments,
+        ) or self._origins(node.value)
         for target in node.targets:
+            self._record_receiver_attribute_target(target)
             if isinstance(target, ast.Name):
-                self.assignments[target.id] = origins
+                self.assignments[target.id] = self.assignments.get(target.id, set()) | origins
         self.generic_visit(node)
 
     def visit_AnnAssign(self, node: ast.AnnAssign) -> None:  # noqa: N802
+        self._record_receiver_attribute_target(node.target)
         if isinstance(node.target, ast.Name) and node.value is not None:
-            self.assignments[node.target.id] = self._origins(node.value)
+            origins = bound_method_origins(
+                node.value,
+                class_symbol=self.class_symbol,
+                receiver=self.receiver,
+                assignments=self.assignments,
+            ) or self._origins(node.value)
+            self.assignments[node.target.id] = (
+                self.assignments.get(node.target.id, set()) | origins
+            )
+        self.generic_visit(node)
+
+    def visit_AugAssign(self, node: ast.AugAssign) -> None:  # noqa: N802
+        self._record_receiver_attribute_target(node.target)
+        self.generic_visit(node)
+
+    def visit_Delete(self, node: ast.Delete) -> None:  # noqa: N802
+        for target in node.targets:
+            self._record_receiver_attribute_target(target)
         self.generic_visit(node)
 
     def visit_Return(self, node: ast.Return) -> None:  # noqa: N802
@@ -352,6 +355,20 @@ class _FunctionVisitor(ast.NodeVisitor):
 
     def visit_Call(self, node: ast.Call) -> None:  # noqa: N802
         name = _call_name(node)
+        if (
+            name in {"delattr", "setattr"}
+            and self.receiver is not None
+            and node.args
+            and isinstance(node.args[0], ast.Name)
+            and node.args[0].id == self.receiver
+        ):
+            attribute = node.args[1] if len(node.args) > 1 else None
+            self.receiver_attribute_mutations.add(
+                attribute.value
+                if isinstance(attribute, ast.Constant)
+                and isinstance(attribute.value, str)
+                else "*"
+            )
         symbol = self._resolved_symbol(node)
         fact = {
             "caller": self.symbol,
@@ -363,6 +380,15 @@ class _FunctionVisitor(ast.NodeVisitor):
         reference = _call_reference(node.func, self.import_bindings)
         if reference is not None:
             fact["import_reference"] = reference
+        dispatch = method_dispatch_reference(
+            node.func,
+            class_symbol=self.class_symbol,
+            method_binding_kind=self.method_binding_kind,
+            receiver=self.receiver,
+            assignments=self.assignments,
+        )
+        if dispatch is not None:
+            fact["method_dispatch"] = dispatch
         self.calls.append(fact)
         if name in self.local_types or (name[:1].isupper() and name not in PRIMITIVES):
             constructed = (
@@ -383,7 +409,9 @@ class _FunctionVisitor(ast.NodeVisitor):
                     "parameter_origins": parameter_origins,
                 }
             )
-        if name in DYNAMIC_CALLS:
+        if name in DYNAMIC_CALLS or not isinstance(
+            node.func, (ast.Name, ast.Attribute)
+        ):
             self.unresolved.append(
                 {
                     "kind": "dynamic_call",
@@ -404,6 +432,9 @@ class _FunctionVisitor(ast.NodeVisitor):
             "constructors": self.constructors,
             "normalizations": self.normalizations,
             "unresolved": self.unresolved,
+            "class_symbol": self.class_symbol,
+            "decorators": self.decorators,
+            "receiver_attribute_mutations": sorted(self.receiver_attribute_mutations),
         }
 
 
@@ -419,6 +450,7 @@ def discover_python_source(
     types: list[str] = []
     endpoints: list[dict[str, Any]] = []
     import_rows: list[dict[str, Any]] = []
+    class_rows: list[dict[str, Any]] = []
     for path in paths:
         relative = _relative(repo_root, path)
         raw = path.read_bytes()
@@ -436,6 +468,14 @@ def discover_python_source(
         bindings = _import_bindings(tree)
         import_rows.append({"path": relative, "bindings": bindings})
         bindings_by_local = {str(value["local"]): value for value in bindings}
+        class_rows.extend(
+            discover_class_facts(
+                tree,
+                path=relative,
+                imports=imports,
+                import_bindings=bindings_by_local,
+            )
+        )
         for node in tree.body:
             members = node.body if isinstance(node, ast.ClassDef) else [node]
             class_name = node.name if isinstance(node, ast.ClassDef) else None
@@ -460,6 +500,7 @@ def discover_python_source(
         "language": "python",
         "files": file_rows,
         "imports": import_rows,
+        "classes": class_rows,
         "types": sorted(types),
         "functions": functions,
         "constructors": [
@@ -719,6 +760,20 @@ def resolve_python_imports(
                 fact["called_symbol"] = target
                 if "constructed_symbol" in fact:
                     fact["constructed_symbol"] = target
+    for class_row in resolved.get("classes", []):
+        path = str(class_row["symbol"]).split("::", 1)[0]
+        for fact in class_row.get("bases", []):
+            reference = fact.get("import_reference")
+            if not isinstance(reference, dict):
+                continue
+            binding = reference.get("binding")
+            attributes = reference.get("attributes", [])
+            if not isinstance(binding, dict) or not isinstance(attributes, list):
+                continue
+            target = binding_target(path, binding, [str(value) for value in attributes])
+            if target is not None:
+                fact["called_symbol"] = target
+    resolve_method_dispatch(resolved)
     resolved["constructors"] = [
         fact
         for function in resolved.get("functions", [])

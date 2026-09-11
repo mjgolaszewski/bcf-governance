@@ -1,0 +1,44 @@
+document:
+  kind: hotfix_execution_log
+  name: P23-HF01 Hotfix Log
+  id: bcf-governance-phase-23-hotfix01
+  version: 1.0.0
+  generated_at_utc: '2026-09-11T00:00:00Z'
+  status: planned
+  path: phases/phase-23-hotfix01.yml
+hotfix:
+  id: P23-HF01
+  mode: full
+  related_phase_id: P23
+  hotfix_number: 1
+  summary: Correct exact same-instance method effect identity
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  executed_commands: []
+  notes:
+  - issue 164 is a high-severity upstream false pass reproduced against exact immutable BCF 1.1.1 release bytes and current source
+  - source discovery recorded self._save without its declaring class so the effect walker never visited the known helper write
+  - the correction records neutral lexical class receiver base and method facts during the existing source-first AST inventory
+  - exact non-hierarchical same-instance calls resolve mechanically while rebinding aliases hierarchy super reflection decorators metaclasses dynamic lookup method replacement and missing targets fail closed
+  - declared exact helpers and component ports remain valid but declarations cannot conceal ambiguous same-instance source
+  - receipt profile authority gate IDs and generated CI topology are excluded from behavior changes
+  - Racecar remains read-only and only the exact current PR method graph is qualified
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

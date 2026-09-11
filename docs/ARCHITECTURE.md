@@ -76,6 +76,17 @@ Dynamic dispatch that the selected adapter cannot resolve fails closed when
 the capability is blocking. Declaring closed populations and precise boundary
 ports adds maintenance, especially for plugin-heavy applications.
 
+For Python instance methods, the source-first inventory records the declaring
+class and receiver binding during its existing AST pass. Direct
+`self.method()` calls resolve only to that class's exact tracked method.
+Rebinding, aliases, inheritance or override ambiguity, `super()`, reflection,
+decorated methods or classes, metaclasses, dynamic attribute lookup, method
+replacement, and missing targets do not fall back to a basename or suffix
+guess. Component calls remain explicit operation ports. This deliberately
+rejects some dynamic designs: BCF cannot prove their effects from a closed
+static inventory, so a blocking profile requires a mechanically visible
+boundary instead.
+
 ### Representation provenance
 
 Canonical representations remain in

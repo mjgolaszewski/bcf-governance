@@ -36,7 +36,7 @@ gates:
       kind: test_suite
       test_contract:
         junit_xml: .artifacts/junit/architecture-cqrs-side.xml
-        selectors: ['tests/test_self_governance_contracts.py::test_cli_application_operations_are_closed_and_effect_safe']
+        selectors: ['tests/test_self_governance_contracts.py::test_cli_application_operations_are_closed_and_effect_safe', 'tests/test_semantic_method_effects.py::test_public_operation_rejects_write_hidden_by_same_instance_method']
         expected_node_manifest: governance/test-manifests/architecture-cqrs-side.txt
         expected_nodes_mode: exact
         min_collected: 1
@@ -46,6 +46,7 @@ gates:
     negative_controls:
     - {id: architecture-cqrs-side-behavior-must-fail, mutation: {path: governance/application-operations.yml, yaml_path: 'operations[id=governance.cli.doctor.v1].authoritative_mutation', value: true}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_cli_application_operations_are_closed_and_effect_safe']}}
     - {id: projection-authority-conferral-must-fail, mutation: {path: governance/application-operations.yml, yaml_path: 'operations[id=governance.cli.publish-audit.v1].authority_conferral', value: true}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_cli_application_operations_are_closed_and_effect_safe']}}
+    - {id: same-instance-method-effect-resolution-must-fail, mutation: {path: bcf_governance/tooling/semantic_python_method_identity.py, search: '                call["called_symbol"] = target', replace: '                call["called_symbol"] = str(call["called_symbol"])'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_semantic_method_effects::test_public_operation_rejects_write_hidden_by_same_instance_method']}}
   architecture-duplication:
     invocation:
       argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-duplication]

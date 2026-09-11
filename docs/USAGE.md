@@ -172,7 +172,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.1.1/bcf_governance-1.1.1-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.1.2/bcf_governance-1.1.2-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 1.x. Verify the
@@ -668,6 +668,15 @@ must not expose the same module name. BCF rejects missing, symlinked,
 overlapping, or ambiguous roots before ownership evaluation. Omitting the field
 retains the 1.1.0 compatibility behavior of repository root, so existing flat
 consumers do not require a migration.
+
+Python operation-effect analysis resolves a direct `self.method()` call to the
+exact method in its declaring lexical class before walking effects. Receiver
+rebinding, receiver or bound-method aliases, inheritance-sensitive dispatch,
+`super()`, decorators, metaclasses, dynamic attribute lookup, method replacement,
+and reflective dispatch fail closed. Calls through component fields, such as
+`self.store.save()`, are admitted only when the operation declares the exact
+component boundary as a permitted port. Declarations cannot turn an ambiguous
+same-instance helper into an exact source identity.
 
 Repositories with TypeScript can replace the registry's typed
 `not_applicable_until_declared_by_consumer` value with a compiler contract that

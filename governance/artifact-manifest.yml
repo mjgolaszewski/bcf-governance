@@ -49,10 +49,10 @@ context_budgets:
     architecture-boundaries.yml: {line_hard_cap: 120, kib_hard_cap: 8, intent: boundary map only}
     governance-profile.yml: {line_hard_cap: 220, kib_hard_cap: 28, intent: profile knobs and generated required-gate classification}
     governance/artifact-manifest.yml: {line_hard_cap: 80, kib_hard_cap: 8, intent: artifact index only}
-    governance/canonical-representations.yml: {line_hard_cap: 220, kib_hard_cap: 56, intent: canonical representations and explicit secondary provenance}
+    governance/canonical-representations.yml: {line_hard_cap: 220, kib_hard_cap: 58, intent: canonical representations and explicit secondary provenance}
     governance/semantic-families.yml: {line_hard_cap: 180, kib_hard_cap: 32, intent: complete material semantic-family inventory}
     governance/application-operations.yml: {line_hard_cap: 80, kib_hard_cap: 36, intent: closed public application-operation inventory}
-    governance/semantic-lock.yml: {line_hard_cap: 300, kib_hard_cap: 48, intent: mechanically derived semantic source recipe and output digests}
+    governance/semantic-lock.yml: {line_hard_cap: 325, kib_hard_cap: 48, intent: mechanically derived semantic source recipe and output digests}
     governance/public-contracts.yml: {line_hard_cap: 75, kib_hard_cap: 12, intent: frozen supported surface and compatibility policy}
     governance/ci-graph.yml: {line_hard_cap: 850, kib_hard_cap: 96, intent: canonical mechanically rendered CI orchestration}
     governance/evidence-policy.yml: {line_hard_cap: 500, kib_hard_cap: 64, intent: computed lifecycle and generated evidence policy}

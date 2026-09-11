@@ -17,7 +17,7 @@ separates two questions:
 - `bcf truth`: are lifecycle and release claims supported by current evidence
   for the exact Git subject?
 
-Supported package version: `v1.1.1`. Every release is published from certified
+Supported package version: `v1.1.2`. Every release is published from certified
 exact-main bytes through an immutable GitHub Release; the publisher never
 rebuilds the verified wheel or source archive.
 
@@ -47,6 +47,7 @@ Common failure modes have explicit responses:
 | Competing representations | Single-owner invariant principle (SOIP) |
 | Material concept omitted from governance | Declared semantic-family completeness |
 | Public operation has unclear effects | Closed operation inventory and CQRS-side checks |
+| A method call loses its source owner | Exact lexical dispatch or a fail-closed operation result |
 | Synchronized copy has no accountable origin | Reproducible representation provenance |
 | Test agrees with a defective implementation | Causal negative controls |
 | Gate does not detect its claimed defect | Typed failure oracles |
@@ -212,10 +213,10 @@ it cannot preserve behavior and meet the repository's performance threshold.
 
 ## Install
 
-Install the `v1.1.1` wheel from its immutable GitHub Release:
+Install the `v1.1.2` wheel from its immutable GitHub Release:
 
 ```bash
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.1.1/bcf_governance-1.1.1-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.1.2/bcf_governance-1.1.2-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel. Release publication

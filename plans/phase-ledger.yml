@@ -4,15 +4,15 @@ build_plan_mandate:
   required_fields: [tightly_scoped_deliverables, parallelizable_workstreams, hard_dependencies, docker_first_local_runtime, completeness_standard]
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P22
-  build_block: semantic-import-root-integrity-1.1.1
-  plan: plans/phase-22-plan.yml
-  workitems: plans/phase-22-workitems.yml
-  log: phases/phase-22-log.yml
+  id: P23
+  build_block: same-instance-method-effect-integrity-1.1.2
+  plan: plans/phase-23-plan.yml
+  workitems: plans/phase-23-workitems.yml
+  log: phases/phase-23-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: completed
+  lifecycle_status: active
   owner: codex
   validation_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests]
 hotfix_lane:
@@ -23,9 +23,9 @@ hotfix_lane:
       allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
-  open_records: []
-  remediation_history:
-  - {id: P22-HF01, mode: full, recorded_at_utc: '2026-09-11T17:20:00Z', action: qualified imported Python constructor identities through explicit exact roots after independent source discovery, remediated_in_phase: P22, hotfix_log: phases/phase-22-hotfix01.yml, canonical_artifacts: [bcf_governance/tooling/semantic_ownership_inventory.py, schemas/canonical-representations.schema.json, audits/p22-issue-159-remediation.yml, audits/v1.1.1-release-custody.yml], local_validation: [841 source tests passed, 389 contract tests passed, 211 cause-verified controls passed, wheel and extracted-sdist verification passed], remote_validation_completed: {commit: fe85d200c16ef296280fef59c8f7888978e43d2c, workflows: ['implementation governance 34624059584 attempt 1', 'implementation governance-pack 34624059596 attempt 1', 'controller-target governance 34625548667 attempt 1', 'controller-target governance-pack 34625548841 attempt 1', 'bootstrap 34626883865 attempt 1', 'probe 34626953649 attempt 1', 'controller-confirmation governance 34628788861 attempt 1', 'controller-confirmation governance-pack 34628788885 attempt 1', 'exact-main 34629882892 attempt 1', 'scheduled mutants 34630995566 and 34630997777 attempt 1', 'release build verifier collector publisher 34631297629 34632153453 34632960928 34633065923 attempt 1', 'immutable release 387251389']}}
+  open_records:
+  - {id: P23-HF01, mode: full, status: planned, triggered_by_commits: [fe85d200c16ef296280fef59c8f7888978e43d2c], failing_workflows: [issue-164-public-operation-reproduction], root_cause: same-instance method calls omit their lexical class identity and bypass downstream effect traversal, remediated_in_phase: P23, hotfix_log: phases/phase-23-hotfix01.yml, canonical_artifacts: [bcf_governance/tooling/semantic_python_method_identity.py, bcf_governance/tooling/semantic_ownership_inventory.py, bcf_governance/tooling/semantic_operation_effects.py, audits/p23-issue-164-remediation.yml]}
+  remediation_history: []
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
 - {type: decision, statement: BCF 0.7.0 is one release train and BCF must self-adopt every applicable Standard-v2 capability}
@@ -41,7 +41,7 @@ operator_requirements_choices_disambiguations:
 - {type: hosted_frugality, statement: hosted candidate jobs execute their own bounded work and terminate; polling sleeping lease waiting and hosted waiters for local capacity are prohibited}
 - {type: automation_authority, statement: automation-authored pull requests remain subject to the universal changelog rule; an explicitly adopted trusted deterministic producer may create only the authenticated bounded changelog commit and receives no approval merge release or certification authority}
 - {type: provider_runner_removal, statement: the persistent Dependabot runner bcf-governance-vm-linux-ci-runner-dependabot-1 and its repository registration are retired; candidate code runs only on fresh hosted workers and trusted local runners execute no candidate checkout}
-active_delivery_priorities: {current_tranche: [python-import-root-integrity, semantic-constructor-enforcement, consumer-compatibility, immutable-1.1.1-release]}
+active_delivery_priorities: {current_tranche: [same-instance-method-identity, fail-closed-operation-effects, Racecar-read-only-proof, immutable-1.1.2-release]}
 release_trains:
   release_1:
     target_version: 0.6.1
@@ -82,5 +82,6 @@ release_trains:
   release_10: {target_version: 1.0.4, status: completed, focus: [lossless_pytest_selector_mapping, class_based_negative_controls, first_party_audit_code_classification, immutable_patch_release]}
   release_11: {target_version: 1.1.0, status: completed, focus: [semantic_family_completeness, application_operation_inventory, representation_provenance, editorial_custody, immutable_minor_release]}
   release_12: {target_version: 1.1.1, status: completed, focus: [python_import_root_identity, imported_constructor_enforcement, consumer_compatibility, immutable_patch_release]}
+  release_13: {target_version: 1.1.2, status: planned, focus: [same_instance_method_identity, fail_closed_dynamic_dispatch, operation_effect_enforcement, consumer_compatibility, immutable_patch_release]}
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]
