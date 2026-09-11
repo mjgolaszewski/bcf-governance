@@ -1,17 +1,15 @@
 # Lifecycle Walkthrough
 
-This walkthrough demonstrates the BCF 0.6 lifecycle: bootstrap with the only
-partial profile (`lite`), promote transactionally with a complete executable
-gate contract, author `completed`, and let evidence compute `verified` and
-`closed`.
+This walkthrough demonstrates the BCF 1.1 lifecycle: bootstrap Lite, declare
+Standard-v2 gates and semantic authority, promote transactionally, author
+`completed`, and let exact evidence compute `verified` and `closed`.
 
 ## 1. Bootstrap Lite
 
-The target must be the root of an initialized Git repository.
+The target must be the root of an initialized Git repository with a committed,
+clean HEAD.
 
 ```bash
-git -C /tmp/demo-governed-app init
-
 bcf install \
   --target /tmp/demo-governed-app \
   --profile lite \
@@ -22,114 +20,76 @@ bcf install \
   --require-strict-validation
 ```
 
-Lite generates exactly two mandatory gates—`governance-validate` and
-`governance-exposure-scan`—with contained negative controls. It does not
-generate `true` aliases or CI jobs for deferred standard gates.
+Lite installs the inexpensive structural front door. It does not claim that
+the repository's application operations or semantic families have been
+classified.
 
-## 2. Define And Check Standard Gates
+## 2. Declare Standard Gates And Semantics
 
-Create `/tmp/demo-standard-gates.yml` with `schema_version: "1.0"`,
-`target_profile: standard`, and a `gates` mapping for every non-built-in target
-listed in `governance-profile.yml`. Each gate must contain:
+Create the complete Standard gate configuration described in
+[Using BCF](../../docs/USAGE.md). Every gate uses exact argv, declared outputs
+and environment, and a typed causal control. Do not embed shell pipelines or
+copy test-node populations into the configuration.
 
-```yaml
-invocation:
-  argv: [python3, scripts/run_gate.py, test]
-  cwd: .
-  env: {}
-  required_env: []
-evidence:
-  kind: test_suite
-  test_contract:
-    junit_xml: .artifacts/junit/test.xml
-    min_collected: 1
-    min_executed: 1
-    max_skipped: 0
-negative_controls:
-  - id: test-assertion-is-required
-    mutation:
-      path: tests/test_gate.py
-      search: "EXPECTED = True"
-      replace: "EXPECTED = False"
-    oracle:
-      kind: test_node_failure
-      node_ids: [tests/test_gate.py::test_gate]
+Generate a non-authoritative semantic candidate:
+
+```bash
+bcf semantic-ownership scaffold \
+  --repo-root /tmp/demo-governed-app \
+  --output /tmp/demo-semantic-config.yml
 ```
 
-Use argv only. Complex behavior belongs in a tracked script. Production gates
-also declare their non-secret environment, required environment names, output
-artifacts, and environment assertions. Every control must identify the
-specific expected diagnostic or test-node transition; an arbitrary nonzero
-exit is not a valid oracle.
-
-Preview promotion, then apply the exact reviewed transaction:
+Complete its unresolved family, public-operation, and secondary-representation
+classifications. The scaffold is not evidence and cannot approve its own
+contents. Preview the complete transaction before applying it:
 
 ```bash
 bcf profile promote \
   --repo-root /tmp/demo-governed-app \
   --to standard \
+  --contract-version 2.0 \
   --config /tmp/demo-standard-gates.yml \
+  --semantic-config /tmp/demo-semantic-config.yml \
   --check
 
 bcf profile promote \
   --repo-root /tmp/demo-governed-app \
   --to standard \
+  --contract-version 2.0 \
   --config /tmp/demo-standard-gates.yml \
+  --semantic-config /tmp/demo-semantic-config.yml \
   --apply
 ```
 
-Promotion is monotonic and does not regenerate or overwrite phase artifacts.
-Any conflict or validation failure leaves the repository byte-identical.
+Promotion is monotonic and atomic. Missing classifications are reported
+together before the repository is mutated.
 
 ## 3. Author Completion
 
-After implementation, set the active phase log status to `completed`, set its
-workitems and the matching plan workitems to `DONE`, and set the active ledger
-lifecycle to `completed`:
+After implementation, set the active phase plan and log status to `completed`,
+set matching workitems to `DONE`, and set the ledger lifecycle to `completed`.
+Do not author `verified`, `closed`, suite-health booleans, finding closure, or
+release readiness; their schemas and deterministic evaluators own those claims.
 
-```yaml
-document:
-  status: completed
-```
+Commit the completed tree before evidence capture.
 
-Do not write `verified`, `closed`, `all_tickets_closed`, suite/health booleans,
-or a release-ready status. Those assertions are computed and writable schema
-fields for them do not exist.
+## 4. Preflight, Capture, And Compute
 
-Commit the completed governed tree before capturing evidence:
-
-```bash
-git -C /tmp/demo-governed-app add .
-git -C /tmp/demo-governed-app commit -m "Complete governed phase"
-```
-
-## 4. Capture Evidence And Compute Truth
-
-Capture every required gate into an ignored directory. Each command executes
-the positive gate and every negative control in separate pristine detached
-worktrees:
+Use the canonical release front door:
 
 ```bash
 cd /tmp/demo-governed-app
-for gate in $(python3 - <<'PY'
-import yaml
-payload = yaml.safe_load(open('governance/gate-contracts.yml', encoding='utf-8'))
-print(' '.join(payload['gates']))
-PY
-); do
-  bcf evidence run --gate "$gate" --output .artifacts/bcf
-done
-
-bcf validate --repo-root .
-bcf truth --evidence-dir .artifacts/bcf --output .artifacts/bcf/truth-report.json
+make -f Makefile.fragment release-check
 ```
 
-`bcf validate` answers whether governance artifacts are structurally legal.
-`bcf truth` independently recomputes factual claims from schema-2.0 receipts.
-Current evidence computes `verified`; current reconciliation plus balanced,
-evidence-backed finding closure computes `closed` and release readiness.
+The generated target validates the clean committed HEAD, allocates one evidence
+session, derives the required gate population from the gate contract, captures
+each positive result and causal control once in isolated worktrees, and passes
+that exact session to truth. There is no hand-built gate loop and no operator-
+selected session path.
 
-Any staged, unstaged, or non-ignored untracked content prevents capture. Any
-subsequent governed-tree change makes the receipts stale and returns effective
-state to `completed`. Evidence produced by BCF 0.5 is intentionally rejected as
-`unsupported_schema_version` and must be recaptured.
+`bcf validate` answers whether authored governance is structurally legal.
+`bcf truth` independently recomputes factual claims from schema-2 receipts.
+Current evidence computes `verified`; reconciliation plus evidence-backed
+finding closure computes `closed` and release readiness. Any governed-tree
+change invalidates the receipts and returns effective state to `completed`.

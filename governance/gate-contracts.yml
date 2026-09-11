@@ -36,7 +36,7 @@ gates:
       kind: test_suite
       test_contract:
         junit_xml: .artifacts/junit/architecture-cqrs-side.xml
-        selectors: ['tests/test_self_governance_contracts.py::test_cli_command_query_sides_are_complete_and_disjoint']
+        selectors: ['tests/test_self_governance_contracts.py::test_cli_application_operations_are_closed_and_effect_safe']
         expected_node_manifest: governance/test-manifests/architecture-cqrs-side.txt
         expected_nodes_mode: exact
         min_collected: 1
@@ -44,11 +44,8 @@ gates:
         max_skipped: 0
         artifact_binding: non_authoritative_until_captured
     negative_controls:
-    - id: architecture-cqrs-side-behavior-must-fail
-      mutation: {path: governance/self-governance-policy.yml, yaml_path: cli_commands.read_only, value: [validate]}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_self_governance_contracts::test_cli_command_query_sides_are_complete_and_disjoint']
+    - {id: architecture-cqrs-side-behavior-must-fail, mutation: {path: governance/application-operations.yml, yaml_path: 'operations[id=governance.cli.doctor.v1].authoritative_mutation', value: true}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_cli_application_operations_are_closed_and_effect_safe']}}
+    - {id: projection-authority-conferral-must-fail, mutation: {path: governance/application-operations.yml, yaml_path: 'operations[id=governance.cli.publish-audit.v1].authority_conferral', value: true}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_cli_application_operations_are_closed_and_effect_safe']}}
   architecture-duplication:
     invocation:
       argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-duplication]
@@ -515,6 +512,7 @@ gates:
         exit_codes: [1]
         stream: stderr
         regex: verified.*(?:not one of|computed)
+    - {id: unknown-operation-family-is-rejected, mutation: {path: governance/application-operations.yml, yaml_path: 'operations[id=governance.cli.doctor.v1].family', value: missing_semantic_family}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: references an unknown semantic family}}
   lint:
     invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, lint], cwd: ., env: {}, required_env: []}
     evidence: {kind: gate}
@@ -645,13 +643,7 @@ gates:
     negative_controls:
     - {id: semantic-ownership-behavior-must-fail, mutation: {path: governance/canonical-representations.yml, yaml_path: 'representations[semantic_id=governance.evidence-session.v1].authorized_constructors_and_factories', value: [bcf_governance/tooling/missing.py::owner]}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: owner must be an authorized constructor}}
     - {id: evidence-receipt-admission-owner-must-fail, mutation: {path: governance/canonical-representations.yml, yaml_path: 'representations[semantic_id=governance.evidence-receipt-admission.v1].authorized_constructors_and_factories', value: [bcf_governance/tooling/missing.py::owner]}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: governance.evidence-receipt-admission.v1 owner must be an authorized constructor}}
-    - id: ci-authority-owner-behavior-must-fail
-      mutation: {path: governance/canonical-representations.yml, yaml_path: 'representations[semantic_id=governance.ci-authority-state.v1].authorized_constructors_and_factories', value: [bcf_governance/tooling/missing.py::owner]}
-      oracle:
-        kind: diagnostic
-        exit_codes: [1]
-        stream: stderr
-        regex: governance.ci-authority-state.v1 owner must be an authorized constructor
+    - {id: ci-authority-owner-behavior-must-fail, mutation: {path: governance/canonical-representations.yml, yaml_path: 'representations[semantic_id=governance.ci-authority-state.v1].authorized_constructors_and_factories', value: [bcf_governance/tooling/missing.py::owner]}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: governance.ci-authority-state.v1 owner must be an authorized constructor}}
     - id: ci-certification-verification-owner-must-fail
       mutation: {path: governance/canonical-representations.yml, yaml_path: 'representations[semantic_id=governance.ci-certification-verification.v1].authorized_constructors_and_factories', value: [bcf_governance/tooling/missing.py::owner]}
       oracle:
@@ -714,6 +706,15 @@ gates:
         exit_codes: [1]
         stream: stderr
         regex: governance.trusted-input-verification.v1 owner must be an authorized constructor
+    - {id: omitted-semantic-family-owner-must-fail, mutation: {path: governance/semantic-families.yml, yaml_path: 'families[id=evidence_session_identity].canonical_semantic_ids', value: []}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: semantic-families.schema.json}}
+    - {id: ambiguous-semantic-family-owner-must-fail, mutation: {path: governance/semantic-families.yml, yaml_path: 'families[id=application_operation_registry].canonical_semantic_ids', value: [governance.semantic-family-registry.v1]}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'contradicts|belongs to both'}}
+    - {id: unclassified-public-operation-must-fail, mutation: {path: bcf_governance/cli.py, search: 'COMMANDS = {', replace: "COMMANDS = {\n    'unclassified-operation': doctor_governance_pack.main,"}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: unclassified public application operations}}
+    - {id: multiply-classified-operation-must-fail, mutation: {path: governance/application-operations.yml, yaml_path: 'operations[id=governance.cli.ci-cleanup.v1].population_key', value: ci}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: multiply classified}}
+    - {id: read-operation-authority-must-fail, mutation: {path: governance/application-operations.yml, yaml_path: 'operations[id=governance.cli.doctor.v1].authority_conferral', value: true}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: cannot mutate or confer authority}}
+    - {id: unreachable-operation-port-must-fail, mutation: {path: governance/application-operations.yml, yaml_path: 'operations[id=governance.cli.install.v1].allowed_mutation_ports', value: [bcf_governance/tooling/install_governance_pack.py::missing_port]}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: unreachable effect ports}}
+    - {id: unattributed-secondary-representation-must-fail, mutation: {path: governance/semantic-families.yml, yaml_path: 'families[id=evidence_session_identity].material_selectors.secondary_paths', value: [README.md]}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: lacks derivation provenance}}
+    - {id: stale-generated-projection-must-fail, mutation: {path: governance/canonical-representations.yml, yaml_path: 'representations[semantic_id=governance.evidence-session.v1].generated_source_authority.generated_mirrors', value: [template-repo/scripts/_bcf_runtime/missing.py]}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'generated mirror.*(?:regular file|unreadable)'}}
+    - {id: stale-semantic-lock-must-fail, mutation: {path: governance/semantic-lock.yml, yaml_path: source_inventory_sha256, value: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: semantic-lock.yml is stale}}
   test:
     invocation:
       argv: [python3, .github/scripts/run_self_governance_gate.py, test]
@@ -791,8 +792,7 @@ gate_catalog:
   contract_test: {target: contract-test, status: required, command_policy: contract_tests, rationale: public contracts and adapters have explicit checks}
   security_secret_scan: {target: security-secret-scan, status: required, command_policy: security_secret_scan, rationale: pushed code is scanned for secrets}
   security_dependency_audit: {target: security-dependency-audit, status: required, command_policy: security_dependency_audit, rationale: dependencies have a vulnerability audit lane}
-  security_sbom: {target: security-sbom, status: required, command_policy: security_sbom, rationale: production-bound artifacts
-      produce an SBOM}
+  security_sbom: {target: security-sbom, status: required, command_policy: security_sbom, rationale: production-bound artifacts produce an SBOM}
   security_vulnerability_scan: {target: security-vulnerability-scan, status: required, command_policy: security_vulnerability_scan, rationale: source or image vulnerability scan is wired}
   security_review: {target: security-review, status: required, command_policy: security_review, rationale: canonical review findings and remediation proofs bind to the governed tree}
   runtime_smoke: {target: runtime-smoke, status: required, command_policy: runtime_smoke, rationale: runtime behavior is proven in a declared environment}

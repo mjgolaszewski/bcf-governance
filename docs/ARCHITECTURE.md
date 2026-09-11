@@ -36,8 +36,8 @@ BCF uses a small command/query separation:
 
 - commands such as install, promote, cleanup, scaffold, and evidence capture
   may change state;
-- queries such as validate, doctor, exposure scan, semantic ownership, and
-  computed truth inspect state;
+- queries such as validate, doctor, exposure scan, semantic-ownership scan,
+  and computed truth inspect state;
 - a query does not repair the condition it reports.
 
 This is CQRS-lite: it does not require event sourcing, a message bus, or
@@ -47,12 +47,48 @@ distinguishable, reducing the chance that a query quietly acquires side effects
 during an agent-authored change. The split creates interfaces that a smaller
 project might otherwise combine.
 
-## Single semantic ownership
+## Complete semantic authority
 
-SOIP assigns each governed representation one canonical owner and construction
-path. A representation may be a state enum, normalized identifier, workflow
-identity, default, projection, or language-boundary translation. Consumers
-refer to that owner instead of independently decoding or normalizing it.
+SOIP assigns each governed meaning one canonical owner and construction path.
+BCF evaluates three separate contracts around that principle; none substitutes
+for the others.
+
+### Semantic-family completeness
+
+`governance/semantic-families.yml` declares which material concepts are in
+scope, their significance, canonical semantic IDs, source selectors, and
+construction, decoding, transition, and projection responsibilities. The
+source-first scanner can identify candidate symbols, but it cannot infer a
+missing business concept. Adoption therefore requires an explicit semantic
+classification, and weakening or reassigning a governed family requires an
+exact-base migration record.
+
+### Application-operation inventory
+
+`governance/application-operations.yml` closes declared public populations and
+classifies each entrypoint exactly once as a command, query, projection,
+proposal, validation, execution, or event handler. It records mutation,
+authority, model-callability, and permitted port effects. This makes CQRS-side
+claims inspectable without turning file names into the classification owner;
+path-based architecture checks remain independent corroborating observers.
+
+Dynamic dispatch that the selected adapter cannot resolve fails closed when
+the capability is blocking. Declaring closed populations and precise boundary
+ports adds maintenance, especially for plugin-heavy applications.
+
+### Representation provenance
+
+Canonical representations remain in
+`governance/canonical-representations.yml`. A secondary representation must be
+mechanically derived from a named canonical source or covered by a bounded,
+owned, expiring exception. Generated derivations execute exact tracked recipes
+in isolated temporary trees and compare only declared outputs; runtime
+derivations are checked against the source-first call graph. Recipe, source,
+and output digests are produced by `bcf semantic-ownership lock` rather than
+copied by an operator.
+
+Provenance proves repeatability and custody, not that the canonical meaning is
+correct. Exceptions are migration tools, not alternate owners.
 
 The source-first scanner inventories tracked types before loading the registry,
 then evaluates declared ownership and causal paths. Standard v2 blocks declared
@@ -60,10 +96,11 @@ families; Regulated can require repository-wide completeness. Optional
 TypeScript analysis uses the consumer's locked compiler and configuration and
 does not download tools or fall back to Docker.
 
-SOIP is structural evidence. It can expose competing owners and unresolved
-flows, but it cannot determine whether a single owner implements the intended
-business rule. Maintaining the registry and language-boundary declarations is
-the principal adoption cost.
+Together these contracts can expose omitted declarations, competing owners,
+unclassified effects, stale projections, and unresolved flows. They cannot
+determine whether the declared owner implements the intended business rule.
+Maintaining the declarations and migration custody is the principal adoption
+cost.
 
 Single layer and bounded-context membership apply the same bias to
 responsibility. Thin adapters and routers keep business decisions out of

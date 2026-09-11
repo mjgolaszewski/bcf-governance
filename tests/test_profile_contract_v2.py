@@ -45,13 +45,18 @@ def _profile_repo(tmp_path: Path) -> Path:
     return repo
 
 
-def _na_record(subject_commit: str, *, trigger: dict[str, str] | None = None) -> dict:
+def _na_record(
+    subject_commit: str,
+    *,
+    trigger: dict[str, str] | None = None,
+    capability: str = "typescript",
+) -> dict:
     record = {
         "schema_version": "1.0",
-        "record_id": "typescript-not-present",
-        "subject": {"kind": "capability", "id": "typescript"},
-        "repository_scope": "tracked source tree",
-        "rationale": "No tracked TypeScript roots exist.",
+        "record_id": f"{capability.replace('_', '-')}-not-present",
+        "subject": {"kind": "capability", "id": capability},
+        "repository_scope": "tracked source and application surface",
+        "rationale": f"No material {capability} surface exists.",
         "supporting_evidence": ["git ls-files"],
         "approving_governance_role": "maintainer",
         "subject_commit": subject_commit,
@@ -137,6 +142,46 @@ def test_typed_na_re_review_trigger_fails_closed(tmp_path: Path) -> None:
     _git(repo, "commit", "--quiet", "-m", "introduce applicable capability")
     with pytest.raises(ProfileV2Error, match="re-review trigger is active"):
         validate_profile_v2_readiness(repo, profile="standard")
+
+
+def test_standard_semantic_na_requires_one_typed_record_per_capability(
+    tmp_path: Path,
+) -> None:
+    repo = _profile_repo(tmp_path)
+    profile_path = repo / "governance-profile.yml"
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    capabilities = (
+        "semantic_family_completeness",
+        "application_operation_inventory",
+        "representation_provenance",
+    )
+    profile["semantic_capabilities"] = {
+        capability: "not_applicable" for capability in capabilities
+    }
+    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
+    _git(repo, "add", ".")
+    _git(repo, "commit", "--quiet", "-m", "declare semantic applicability")
+
+    with pytest.raises(ProfileV2Error, match="requires a typed N/A record"):
+        validate_profile_v2_readiness(repo, profile="standard")
+
+    subject = _git(repo, "rev-parse", "HEAD")
+    na_root = repo / "governance/capability-na"
+    na_root.mkdir(parents=True, exist_ok=True)
+    for capability in capabilities:
+        (na_root / f"{capability}.yml").write_text(
+            yaml.safe_dump(
+                _na_record(subject, capability=capability), sort_keys=False
+            ),
+            encoding="utf-8",
+        )
+    _git(repo, "add", ".")
+    _git(repo, "commit", "--quiet", "-m", "record semantic non-applicability")
+
+    report = validate_profile_v2_readiness(repo, profile="standard")
+    assert report.capability_na_records == 3
+    with pytest.raises(ProfileV2Error, match="cannot be bypassed by N/A"):
+        validate_profile_v2_readiness(repo, profile="regulated")
 
 
 def test_declared_github_topology_requires_exact_installed_workflows(

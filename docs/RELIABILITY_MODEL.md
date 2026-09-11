@@ -18,6 +18,9 @@ observation, or self-evaluation deterministic. Relevant failure modes include:
 - reasoning from incomplete working context;
 - architectural or responsibility drift across successive changes;
 - competing representations, defaults, normalizers, or state transitions;
+- material semantic families omitted from the declared governance scope;
+- public operations whose mutation or authority effects are unclassified;
+- synchronized semantic copies with no reproducible derivation or bounded exception;
 - tests that reproduce the same incorrect assumption as the implementation;
 - gates that exist but are insensitive to the defect they claim to detect;
 - test-population, workflow, or configuration drift;
@@ -48,6 +51,12 @@ These observations are useful only if the meaning of the claim has one owner.
 SOIP, graph contracts, gate contracts, schemas, and generated projections are
 designed to prevent each observer from inventing a competing definition. BCF
 may therefore add execution while reducing independent sources of truth.
+
+Family completeness, operation classification, representation parity, and
+derivation provenance answer different questions. A complete family registry
+does not classify effects; a closed operation inventory does not prove a
+generated copy is current; byte parity does not identify which copy owns the
+meaning; and provenance does not prove that the source meaning is correct.
 
 The analogy to checksums or error-correcting systems is limited but useful:
 additional structured observations can expose disagreement. They do not prove

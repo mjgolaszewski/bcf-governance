@@ -10,6 +10,7 @@ import argparse
 import hashlib
 import json
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +31,11 @@ from .semantic_ownership_typescript import (
     discover_typescript_source,
     tracked_typescript_files,
 )
+from .semantic_authority_contracts import (
+    SemanticAuthorityError,
+    validate_semantic_authority,
+)
+from .semantic_authority_commands import main as authority_main
 
 
 def _path_in_roots(symbol: str, roots: tuple[str, ...]) -> bool:
@@ -311,6 +317,12 @@ def run_scan(repo_root: Path) -> dict[str, Any]:
             browser_contract_roots=contract.browser_contract_roots,
         )
     evaluation = evaluate_discovery(inventory, registry, typescript_inventory)
+    authority = validate_semantic_authority(
+        repo_root,
+        inventory,
+        registry,
+        require_lock=evaluation["verdict"] == "conformant",
+    )
     file_rows = [*inventory["files"], *typescript_inventory["files"]]
     file_material = "\n".join(
         f"{value['path']}:{value['sha256']}" for value in file_rows
@@ -348,17 +360,24 @@ def run_scan(repo_root: Path) -> dict[str, Any]:
             },
             "cross_language_endpoint_traces": traces,
         },
+        "semantic_authority": authority.as_dict(),
         **evaluation,
     }
 
 
 def main(argv: list[str] | None = None) -> None:
+    raw_args = list(sys.argv[1:] if argv is None else argv)
+    if raw_args and raw_args[0] in {"scaffold", "adopt", "lock"}:
+        authority_main(raw_args)
+        return
+    if raw_args and raw_args[0] == "scan":
+        raw_args = raw_args[1:]
     parser = argparse.ArgumentParser(description="Enforce semantic ownership invariants.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument(
         "--output", type=Path, default=Path(".artifacts/semantic-ownership/report.json")
     )
-    args = parser.parse_args(argv)
+    args = parser.parse_args(raw_args)
     repo_root = args.repo_root.resolve()
     output = args.output if args.output.is_absolute() else repo_root / args.output
     try:
@@ -367,6 +386,7 @@ def main(argv: list[str] | None = None) -> None:
         SemanticInventoryError,
         SemanticOwnershipRegistryError,
         TypeScriptDiscoveryError,
+        SemanticAuthorityError,
     ) as exc:
         report = {
             "document": {"kind": "exact_tree_semantic_ownership_report", "version": "1.0.0"},

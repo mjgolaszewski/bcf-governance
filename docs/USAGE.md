@@ -172,10 +172,10 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.4/bcf_governance-1.0.4-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.1.0/bcf_governance-1.1.0-py3-none-any.whl
 ```
 
-GitHub Releases is the supported distribution channel for BCF 1.0. Verify the
+GitHub Releases is the supported distribution channel for BCF 1.x. Verify the
 release and asset digest required by your repository's acquisition policy
 before installation.
 
@@ -198,6 +198,7 @@ bcf install \
   --target /path/to/repo \
   --profile standard \
   --profile-config /path/to/standard-gates.yml \
+  --semantic-config /path/to/semantic-authority.yml \
   --project-id example \
   --project-name "Example" \
   --candidate-runner-label ubuntu-24.04 \
@@ -238,8 +239,10 @@ to complete, not standard-profile exceptions.
 Preview and apply monotonic promotion:
 
 ```bash
-bcf profile promote --repo-root . --to standard --contract-version 2.0 --check
-bcf profile promote --repo-root . --to standard --contract-version 2.0 --apply
+bcf profile promote --repo-root . --to standard --contract-version 2.0 \
+  --semantic-config /path/to/semantic-authority.yml --check
+bcf profile promote --repo-root . --to standard --contract-version 2.0 \
+  --semantic-config /path/to/semantic-authority.yml --apply
 ```
 
 `--config standard-gates.yml` is optional when the canonical gate contracts
@@ -447,23 +450,6 @@ artifacts only when absent:
 bcf install --target . --upgrade
 ```
 
-For the 1.0.4 selector-integrity patch, install the exact release artifact,
-run this upgrade to refresh pack-owned runtime and schema copies, and then run
-`bcf ci graph validate`, `bcf ci graph render --check`, and the repository's
-normal graph render/apply workflow. Commit any mechanically generated workflow
-bytes before recompiling workflow-authority pins in a following commit. Existing
-evidence must be recaptured because installed runtime and governed-tree bytes
-changed; do not copy or relabel pre-upgrade receipts.
-
-The 1.0.4 runtime fixes class-based pytest and `unittest.TestCase` controls by
-preserving the raw selector collected for each JUnit identity. It also permits
-regular Python and TypeScript source files in an `audit` or `audits` package
-when the file is beneath a source root declared by `architecture-boundaries.yml`
-or a test root declared by `AGENTS.yml`. The classifier still rejects reports,
-YAML, Markdown, symlinks, unsafe roots, and other evidence-like artifacts outside
-the canonical `audits/` root. Upgrade does not rewrite a consumer's normalized
-test manifests, gate contracts, CI graph, or product paths.
-
 Upgrade preserves the repository's profile, gate contracts, evidence policy,
 CI graph, registered extensions, and all workflow bytes. It does not run a
 contract or evidence migration implicitly. A conflicting `--profile` or `--profile-contract-version`
@@ -647,8 +633,15 @@ clears the general artifact root.
 ## Supporting commands
 
 - `bcf validate`: schema and cross-file semantics.
-- `bcf semantic-ownership`: source-first Python SOIP evaluation against the
-  repository's canonical representation registry.
+- `bcf semantic-ownership scan`: source-first evaluation of adopted semantic
+  families, application operations, and representation provenance. The legacy
+  invocation without `scan` remains accepted.
+- `bcf semantic-ownership scaffold --output PATH`: write a non-authoritative
+  adoption candidate with unresolved classifications.
+- `bcf semantic-ownership adopt --config PATH --check|--apply`: validate or
+  transactionally install a complete semantic configuration.
+- `bcf semantic-ownership lock --check|--apply`: verify or derive contract,
+  source, recipe, and projection digests mechanically.
 - `bcf ci local-pr`: exact local pull-request context and preflight.
 - `bcf ci adopt github`: transactional GitHub reference-topology adoption.
 - `bcf truth`: evidence-derived lifecycle and release state.

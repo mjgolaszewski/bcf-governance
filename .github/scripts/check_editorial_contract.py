@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import re
+import subprocess
 import sys
 from pathlib import Path
 from urllib.parse import unquote
@@ -35,7 +36,7 @@ CANONICAL_DOCUMENTS = {
     "docs/ARCHITECTURE.md": (
         "Authority model",
         "CQRS-lite",
-        "Single semantic ownership",
+        "Complete semantic authority",
         "Mechanical and negative testing",
         "Exact evidence and computed lifecycle",
         "Fail-fast and bounded execution",
@@ -70,9 +71,7 @@ BRANCH_DOCUMENTS = (
     "template-repo/governance/REPO_CLEANUP.md",
 )
 
-EDITORIAL_DOCUMENTS = tuple(CANONICAL_DOCUMENTS) + BRANCH_DOCUMENTS + (
-    "docs/EDITORIAL_CHECKLIST.md",
-)
+EDITORIAL_AUDIT = "audits/v1.1.0-editorial-review.yml"
 
 BANNED_TONE = (
     "manifesto",
@@ -119,6 +118,38 @@ def _check_link(
 
 def validate_editorial_contract(repo_root: Path = REPO_ROOT) -> list[str]:
     errors: list[str] = []
+    audit_path = repo_root / EDITORIAL_AUDIT
+    audit: dict = {}
+    if not audit_path.is_file() or audit_path.is_symlink():
+        errors.append(f"missing exact editorial audit: {EDITORIAL_AUDIT}")
+        editorial_documents = tuple(CANONICAL_DOCUMENTS) + BRANCH_DOCUMENTS
+    else:
+        import yaml
+
+        loaded = yaml.safe_load(audit_path.read_text(encoding="utf-8"))
+        audit = loaded if isinstance(loaded, dict) else {}
+        rows = audit.get("documents", [])
+        editorial_documents = tuple(
+            row["path"]
+            for row in rows
+            if isinstance(row, dict)
+            and isinstance(row.get("path"), str)
+            and row.get("after_sha256") is not None
+            and (
+                str(row["path"]).endswith((".md", ".yml", ".yaml"))
+                or row["path"] == "LICENSE"
+            )
+        )
+        paths = [row.get("path") for row in rows if isinstance(row, dict)]
+        if len(paths) != len(set(paths)):
+            errors.append(f"{EDITORIAL_AUDIT}: duplicate document coverage")
+        canonical_owners = [
+            row.get("canonical_topic_owner")
+            for row in rows
+            if isinstance(row, dict) and row.get("topic_role") == "canonical"
+        ]
+        if len(canonical_owners) != len(set(canonical_owners)):
+            errors.append(f"{EDITORIAL_AUDIT}: duplicate canonical topic ownership")
     for relative, required_headings in CANONICAL_DOCUMENTS.items():
         path = repo_root / relative
         if not path.is_file():
@@ -130,7 +161,7 @@ def validate_editorial_contract(repo_root: Path = REPO_ROOT) -> list[str]:
             if heading not in headings:
                 errors.append(f"{relative}: missing heading: {heading}")
 
-    for relative in EDITORIAL_DOCUMENTS:
+    for relative in editorial_documents:
         path = repo_root / relative
         if not path.is_file():
             errors.append(f"missing editorial document: {relative}")
@@ -145,6 +176,29 @@ def validate_editorial_contract(repo_root: Path = REPO_ROOT) -> list[str]:
         for command in BCF_COMMAND.findall(text):
             if command not in COMMANDS:
                 errors.append(f"{relative}: unknown bcf command: {command}")
+        if relative not in {"CHANGELOG.md"} and re.search(
+            r"For the [0-9]+\.[0-9]+\.[0-9]+(?: patch| release)", text
+        ):
+            errors.append(f"{relative}: obsolete patch-specific instructions")
+
+    if audit:
+        check = subprocess.run(
+            [
+                sys.executable,
+                str(repo_root / ".github/scripts/build_editorial_audit.py"),
+                "--repo-root",
+                str(repo_root),
+                "--audit",
+                EDITORIAL_AUDIT,
+                "--check",
+            ],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if check.returncode:
+            errors.append(check.stdout.strip() or check.stderr.strip())
 
     readme = (repo_root / "README.md").read_text(encoding="utf-8")
     normalized_readme = " ".join(readme.split())
@@ -170,7 +224,7 @@ def validate_editorial_contract(repo_root: Path = REPO_ROOT) -> list[str]:
     for phrase in required_positions:
         if phrase not in normalized_readme:
             errors.append(f"README.md: missing architectural position: {phrase}")
-    if f"Development package version: `v{__version__}`" not in readme:
+    if f"Supported package version: `v{__version__}`" not in readme:
         errors.append("README.md: package version does not match version authority")
     if f"bcf_governance-{__version__}-py3-none-any.whl" not in readme:
         errors.append("README.md: wheel example does not match package version")
@@ -204,11 +258,13 @@ def validate_editorial_contract(repo_root: Path = REPO_ROOT) -> list[str]:
     if "| Role | Executes candidate code | Credentials | Permitted effects |" not in ci_guide:
         errors.append("docs/CI_AUTHORITY.md: missing canonical trust table")
 
-    checklist = (repo_root / "docs/EDITORIAL_CHECKLIST.md").read_text(encoding="utf-8")
-    if "- [ ]" in checklist:
-        errors.append("docs/EDITORIAL_CHECKLIST.md: incomplete review item")
-    if "non-authoritative" not in checklist:
-        errors.append("docs/EDITORIAL_CHECKLIST.md: review authority boundary is absent")
+    for relative in editorial_documents:
+        if not relative.startswith("template-repo/"):
+            continue
+        source = repo_root / relative
+        mirror = repo_root / "bcf_governance/pack" / relative
+        if not mirror.is_file() or source.read_bytes() != mirror.read_bytes():
+            errors.append(f"{relative}: packaged documentation mirror differs")
     return errors
 
 

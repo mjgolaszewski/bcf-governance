@@ -11,7 +11,6 @@ import sys
 import pytest
 import yaml
 
-from bcf_governance.cli import COMMANDS
 from bcf_governance.tooling.ci_authority_pins import verify_workflow_authority
 from bcf_governance.tooling.ci_github_actions import ACTION_PINS
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
@@ -22,6 +21,10 @@ from bcf_governance.tooling.profile_v2_surfaces import render_v2_makefile
 from bcf_governance.tooling.release_runtime_verification import (
     is_release_sdist_test_context,
 )
+from bcf_governance.tooling.semantic_authority_contracts import (
+    validate_application_operations,
+)
+from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -126,11 +129,13 @@ def test_packaged_code_does_not_import_public_wrapper_package() -> None:
     assert not violations
 
 
-def test_cli_command_query_sides_are_complete_and_disjoint() -> None:
-    groups = _policy()["cli_commands"]
-    read_only, mutating = set(groups["read_only"]), set(groups["mutating"])
-    assert not read_only & mutating
-    assert read_only | mutating == set(COMMANDS)
+def test_cli_application_operations_are_closed_and_effect_safe() -> None:
+    observations = validate_application_operations(
+        REPO_ROOT, discover_python_source(REPO_ROOT)
+    )
+
+    assert len(observations) == 19
+    assert len({row["operation"] for row in observations}) == len(observations)
 
 
 def test_cli_and_source_wrappers_remain_thin() -> None:

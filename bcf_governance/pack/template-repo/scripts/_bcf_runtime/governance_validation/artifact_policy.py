@@ -661,6 +661,9 @@ def _validate_ephemeral_evidence_references(repo_root: Path, manifest: dict[str,
             # This executable contract declares typed run-attempt CI artifact
             # namespaces and is validated mechanically by the graph compiler.
             "governance/ci-graph.yml",
+            # The schema fixes the semantic scan output path and the scanner
+            # always treats it as non-authoritative until receipt capture.
+            "governance/canonical-representations.yml",
             "governance/evidence-policy.yml",
             "governance/gate-contracts.yml",
         } or graph_extension:

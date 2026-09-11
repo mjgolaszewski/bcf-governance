@@ -11,6 +11,8 @@ from pathlib import Path
 
 from .governance_install.transaction import apply_transaction, copy_repository_shadow
 from .governance_profiles import apply_profile_contract, promote
+from .semantic_authority_commands import _apply_config, _load_config
+from .semantic_authority_contracts import capability_states
 
 
 MANAGED_PROFILE_PATHS = (
@@ -20,6 +22,10 @@ MANAGED_PROFILE_PATHS = (
     "Makefile.fragment",
     "governance/MODEL_RISK_AND_PROVENANCE.md",
     "governance/HOTFIX_LANE.md",
+    "governance/semantic-families.yml",
+    "governance/application-operations.yml",
+    "governance/canonical-representations.yml",
+    "governance/semantic-lock.yml",
 )
 
 
@@ -29,11 +35,19 @@ def _render_in_shadow(
     config: Path | None,
     shadow: Path,
     contract_version: str | None,
+    semantic_config: dict | None,
 ) -> dict:
     contract = promote(
         repo_root, target, config, contract_version=contract_version
     )
     apply_profile_contract(shadow, contract, write_workflow=False)
+    if semantic_config is not None:
+        _apply_config(shadow, semantic_config)
+    elif contract["profile_contract_version"] == "2.0" and target in {"standard", "regulated"}:
+        if any(value != "blocking" for value in capability_states(shadow).values()):
+            raise ValueError(
+                "--semantic-config is required before Standard-v2 or Regulated-v2 semantic adoption"
+            )
     validation = subprocess.run(
         [
             sys.executable,
@@ -61,11 +75,14 @@ def _check(
     target: str,
     config: Path | None,
     contract_version: str | None,
+    semantic_config: dict | None,
 ) -> dict:
     with tempfile.TemporaryDirectory(prefix="bcf-profile-check-") as temporary:
         shadow = Path(temporary) / "repo"
         copy_repository_shadow(repo_root, shadow, preserve_git_history=True)
-        return _render_in_shadow(repo_root, target, config, shadow, contract_version)
+        return _render_in_shadow(
+            repo_root, target, config, shadow, contract_version, semantic_config
+        )
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -84,12 +101,18 @@ def main(argv: list[str] | None = None) -> None:
         help="Optional replacement gate config; otherwise promote canonical existing contracts.",
     )
     parser.add_argument("--contract-version", choices=("1.0", "2.0"))
+    parser.add_argument(
+        "--semantic-config",
+        type=Path,
+        help="Complete semantic declarations required when enabling Standard-v2 or Regulated-v2 capabilities.",
+    )
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--check", action="store_true")
     mode.add_argument("--apply", action="store_true")
     parser.add_argument("--format", choices=("text", "json"), default="text")
     args = parser.parse_args(raw_args)
     repo_root = args.repo_root.resolve()
+    semantic_config = _load_config(args.semantic_config.resolve()) if args.semantic_config else None
     git_root = subprocess.run(
         ["git", "-C", str(repo_root), "rev-parse", "--show-toplevel"],
         capture_output=True,
@@ -100,7 +123,7 @@ def main(argv: list[str] | None = None) -> None:
         raise SystemExit("profile promotion requires the root of an initialized Git repository")
     if args.check:
         contract = _check(
-            repo_root, args.to, args.config, args.contract_version
+            repo_root, args.to, args.config, args.contract_version, semantic_config
         )
         status = "profile-promotion-check-pass"
     else:
@@ -113,6 +136,13 @@ def main(argv: list[str] | None = None) -> None:
 
         def mutate(shadow: Path) -> None:
             apply_profile_contract(shadow, contract, write_workflow=False)
+            if semantic_config is not None:
+                _apply_config(shadow, semantic_config)
+            elif contract["profile_contract_version"] == "2.0" and args.to in {"standard", "regulated"}:
+                if any(value != "blocking" for value in capability_states(shadow).values()):
+                    raise ValueError(
+                        "--semantic-config is required before Standard-v2 or Regulated-v2 semantic adoption"
+                    )
             validation = subprocess.run(
                 [
                     sys.executable,

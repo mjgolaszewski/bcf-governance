@@ -6,6 +6,58 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-11
+
+### Added
+
+- Added `governance/semantic-families.yml`, a source-bound registry that makes
+  every adopted material semantic family explicit and requires exact-base
+  migration custody for retirement, downgrade, or ownership reassignment.
+- Added `governance/application-operations.yml`, which closes configured public
+  operation populations and classifies every entrypoint exactly once by
+  CQRS-side behavior, mutation, authority, projection, and model-callability.
+- Added derivation provenance for secondary representations, including isolated
+  tracked-command reproduction, direct-edit detection, bounded expiring
+  exceptions, and a mechanically derived `governance/semantic-lock.yml`.
+- Added nested `bcf semantic-ownership scan`, `scaffold`, `adopt`, and `lock`
+  interfaces. Existing no-subcommand scans remain compatible.
+- Added aggregate adoption diagnostics that report every independently
+  evaluable semantic blocker before a transaction can mutate its target.
+- Added source, contract, and causal mutation coverage for each semantic owner,
+  plus a complete exact-file editorial review.
+
+### Changed
+
+- Fixed issues #152, #153, and #154 by making family completeness, application
+  operation classification, and representation provenance separate blocking
+  capabilities for fresh Standard-v2 and Regulated consumers.
+- BCF self-adopts all three capabilities without changing its 21 gate IDs, 18
+  generated workflows, 29-job topology, receipt schema 2.0, profile contract
+  2.0, or CI authority v1.1.
+- Ordinary upgrades preserve consumer-owned semantic contracts and capability
+  state. Fresh Standard-v2 and Regulated adoption requires a complete explicit
+  semantic configuration before mutation; Lite remains unchanged.
+- Closed population adapters reject duplicate Python decorators, exports,
+  canonical-YAML entries and keys, and TypeScript exports instead of allowing
+  one declaration to hide another.
+- Negative-control target freshness is evaluated after the governed target's
+  own semantics, so an active control reports its declared failure cause while
+  stale controls in an unmodified baseline still fail closed.
+- Primary semantic violations are reported before derived semantic-lock drift,
+  preventing projection freshness from masking the defect that caused it.
+- Documentation now distinguishes semantic scope, operation effects, parity,
+  and provenance; patch-specific upgrade prose and the release checklist were
+  consolidated into durable maintainer guidance and exact audit custody.
+- Editorial custody remains mechanically verifiable in an extracted source
+  distribution even when the original review-base Git object is unavailable.
+
+### Compatibility
+
+- Existing 1.0.x consumers remain readable and unchanged until explicit
+  adoption. GitHub remains the only executable CI provider, GitHub Releases the
+  distribution channel, and Linux x86-64 with CPython 3.11–3.14 the supported
+  runtime matrix.
+
 ## [1.0.4] - 2026-09-10
 
 Published as immutable GitHub release `386507232` from exact certified merge
@@ -834,7 +886,8 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.4...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.4...v1.1.0
 [1.0.4]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.1...v1.0.2

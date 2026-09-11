@@ -15,7 +15,6 @@ from bcf_governance.tooling import (
     doctor_governance_pack,
     governance_evidence,
     governance_truth,
-    install_governance_pack,
     interpreter_environment,
     migrate_contracts,
     migrate_governance_evidence,
@@ -27,6 +26,7 @@ from bcf_governance.tooling import (
     test_manifests,
     validate_governance_yaml,
 )
+from bcf_governance.tooling.governance_install import cli as governance_install_cli
 
 COMMANDS = {
     "ci": ci_commands.main,
@@ -34,7 +34,7 @@ COMMANDS = {
     "cleanup": cleanup_governance_pack.main,
     "ci-cleanup": cleanup_ci_resources.main,
     "exposure-scan": check_governance_exposure.main,
-    "install": install_governance_pack.main,
+    "install": governance_install_cli.main,
     "migrate-contract": migrate_contracts.main,
     "environment": interpreter_environment.main,
     "evidence": governance_evidence.main,

@@ -12,6 +12,10 @@ from ..semantic_ownership_registry import (
     SemanticOwnershipRegistryError,
     load_registry as load_semantic_ownership_registry,
 )
+from ..semantic_authority_contracts import (
+    SemanticAuthorityError,
+    validate_semantic_contract_structure,
+)
 
 from .common import *  # noqa: F403,F405
 from .artifact_policy import _load_phase_history, _validate_artifact_manifest, _validate_observability_contracts
@@ -102,8 +106,18 @@ def validate_repo_root(
             "governance/gate-contracts.yml gates must exactly match profile-required targets"
         )
     _validate_gate_contract_registry(
-        repo_root, governance_profile, gate_contracts, evidence_policy
+        repo_root,
+        governance_profile,
+        gate_contracts,
+        evidence_policy,
+        check_mutation_state=False,
     )
+    if (repo_root / "governance/canonical-representations.yml").is_file():
+        try:
+            semantic_registry = load_semantic_ownership_registry(repo_root)
+            validate_semantic_contract_structure(repo_root, semantic_registry)
+        except (SemanticOwnershipRegistryError, SemanticAuthorityError) as exc:
+            raise GovernanceValidationError(str(exc)) from exc
     test_tombstones_path = _validate_test_tombstones(repo_root, schema_cache)
 
     _validate_schema(repo_root, schema_cache, agents, schema_name="agents.schema.json", context="AGENTS.yml")
@@ -165,12 +179,6 @@ def validate_repo_root(
             raise GovernanceValidationError(
                 "generated CI workflow drift: " + ", ".join(graph_parity.changed_paths)
             )
-    if (repo_root / "governance/canonical-representations.yml").is_file():
-        try:
-            load_semantic_ownership_registry(repo_root)
-        except SemanticOwnershipRegistryError as exc:
-            raise GovernanceValidationError(str(exc)) from exc
-
     if not allow_placeholders:
         optional_paths = [
             repo_root / relative_path
@@ -206,12 +214,27 @@ def validate_repo_root(
                 *([ci_graph_path] if ci_graph_path.is_file() else []),
                 *([test_tombstones_path] if test_tombstones_path is not None else []),
                 *([public_contract_path] if public_contract_path.is_file() else []),
+                *[
+                    path
+                    for path in (
+                        repo_root / "governance/semantic-families.yml",
+                        repo_root / "governance/application-operations.yml",
+                        repo_root / "governance/semantic-lock.yml",
+                    )
+                    if path.is_file()
+                ],
             ],
         )
     _validate_release_gate_targets(
         repo_root,
         governance_profile,
         allow_release_gate_placeholders=allow_release_gate_placeholders,
+    )
+    # Mutation freshness is a baseline invariant, not the semantic cause that an
+    # active negative control is designed to expose. Run it only after every
+    # governed target has had the opportunity to report its own defect.
+    _validate_gate_contract_registry(
+        repo_root, governance_profile, gate_contracts, evidence_policy
     )
 
 

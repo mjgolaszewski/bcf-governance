@@ -20,6 +20,11 @@ TRUTH_TARGETS = {
     "scripts/truth_receipts.py",
 }
 EVIDENCE_TARGETS = {"scripts/governance_evidence.py"}
+SEMANTIC_TARGETS = {
+    "scripts/semantic_authority_contracts.py",
+    "scripts/semantic_derivations.py",
+    "scripts/semantic_operation_effects.py",
+}
 
 
 @dataclass(frozen=True)
@@ -40,6 +45,70 @@ def _pytest_environment() -> dict[str, str]:
 
 
 MUTANTS = (
+    Mutant(
+        mutant_id="semantic-family-completeness",
+        description="every canonical representation must remain in one semantic family",
+        search="    if missing_ids:\n",
+        replace="    if False and missing_ids:\n",
+        profiles=("high-value", "full"),
+        target_path="scripts/semantic_authority_contracts.py",
+    ),
+    Mutant(
+        mutant_id="application-operation-completeness",
+        description="every discovered public operation must remain classified",
+        search="    if missing:\n        raise SemanticAuthorityError(\"unclassified public application operations: \" + \", \".join(missing))\n",
+        replace="    if False and missing:\n        raise SemanticAuthorityError(\"unclassified public application operations: \" + \", \".join(missing))\n",
+        profiles=("high-value", "full"),
+        target_path="scripts/semantic_authority_contracts.py",
+    ),
+    Mutant(
+        mutant_id="application-operation-effects",
+        description="operation implementations must not bypass declared mutation ports",
+        search="    if writes:\n",
+        replace="    if False and writes:\n",
+        profiles=("high-value", "full"),
+        target_path="scripts/semantic_operation_effects.py",
+    ),
+    Mutant(
+        mutant_id="application-operation-port-reachability",
+        description="declared operation effect ports must be source-reachable",
+        search="    if missing:\n",
+        replace="    if False and missing:\n",
+        profiles=("high-value", "full"),
+        target_path="scripts/semantic_operation_effects.py",
+    ),
+    Mutant(
+        mutant_id="application-operation-transitive-effects",
+        description="imported helpers must not conceal operation effects",
+        search="            if callee is not None:\n                pending.append(callee)\n",
+        replace="            if False and callee is not None:\n                pending.append(callee)\n",
+        profiles=("high-value", "full"),
+        target_path="scripts/semantic_operation_effects.py",
+    ),
+    Mutant(
+        mutant_id="representation-provenance-parity",
+        description="a stale generated projection must remain rejected",
+        search="            if source_path.read_bytes() != output_path.read_bytes():\n",
+        replace="            if False and source_path.read_bytes() != output_path.read_bytes():\n",
+        profiles=("high-value", "full"),
+        target_path="scripts/semantic_derivations.py",
+    ),
+    Mutant(
+        mutant_id="representation-provenance-collision",
+        description="legacy and explicit provenance cannot own one output",
+        search="        if path in projections:\n",
+        replace="        if False and path in projections:\n",
+        profiles=("high-value", "full"),
+        target_path="scripts/semantic_derivations.py",
+    ),
+    Mutant(
+        mutant_id="representation-runtime-role",
+        description="runtime derivations require an authorized source-first role",
+        search='            if recipe["symbol"] not in authorized_runtime_roles:\n',
+        replace='            if False and recipe["symbol"] not in authorized_runtime_roles:\n',
+        profiles=("high-value", "full"),
+        target_path="scripts/semantic_derivations.py",
+    ),
     Mutant(
         mutant_id="audit-code-classification",
         description="declared first-party audit-context code must not be rejected as evidence",
@@ -307,6 +376,14 @@ TRUTH_MUTANTS = (
 
 KILLER_NODES = {
     "audit-code-classification": ("tests/test_validate_governance_yaml.py::test_validate_repo_root_admits_declared_first_party_audit_code",),
+    "semantic-family-completeness": ("tests/test_semantic_authority.py::test_omitted_family_is_rejected",),
+    "application-operation-completeness": ("tests/test_semantic_authority.py::test_unclassified_operation_is_rejected",),
+    "application-operation-effects": ("tests/test_semantic_authority.py::test_query_implementation_cannot_hide_a_write",),
+    "application-operation-port-reachability": ("tests/test_semantic_authority.py::test_declared_operation_port_must_be_reachable",),
+    "application-operation-transitive-effects": ("tests/test_semantic_authority.py::test_query_cannot_hide_a_write_behind_an_imported_helper",),
+    "representation-provenance-parity": ("tests/test_semantic_authority.py::test_stale_generated_projection_is_rejected",),
+    "representation-provenance-collision": ("tests/test_semantic_authority.py::test_legacy_and_explicit_provenance_cannot_claim_the_same_output",),
+    "representation-runtime-role": ("tests/test_semantic_authority.py::test_runtime_derivation_requires_an_authorized_source_first_role",),
     "audit-evidence-custody": ("tests/test_validate_governance_yaml.py::test_validate_repo_root_rejects_audits_outside_audit_root",),
     "evidence-untracked-preflight": ("tests/test_governance_evidence.py::test_capture_rejects_nonignored_untracked_helper_before_execution",),
     "evidence-isolated-positive": ("tests/test_governance_evidence.py::test_ignored_helper_cannot_influence_isolated_positive_execution",),
@@ -400,6 +477,11 @@ def _mutate_source(mutant: Mutant, temp_dir: Path) -> Path:
         validator_entrypoint = _copy_truth_sources(temp_dir)
         if mutant.target_path in EVIDENCE_TARGETS:
             validator_entrypoint = temp_dir / "scripts/governance_evidence.py"
+    elif mutant.target_path in SEMANTIC_TARGETS:
+        _copy_runtime_package(temp_dir)
+        validator_entrypoint = _runtime_entrypoint(
+            temp_dir, "semantic_authority_contracts"
+        )
     else:
         validator_entrypoint = _copy_validator_sources(temp_dir)
     target_path = _target_path(mutant, temp_dir)
@@ -424,6 +506,9 @@ def _run_tests(mutant: Mutant, mutated_path: Path) -> subprocess.CompletedProces
         test_paths = KILLER_NODES[mutant.mutant_id]
     elif mutant.target_path in EVIDENCE_TARGETS:
         env["BCF_EVIDENCE_MODULE_PATH"] = str(mutated_path)
+        test_paths = KILLER_NODES[mutant.mutant_id]
+    elif mutant.target_path in SEMANTIC_TARGETS:
+        env["BCF_SEMANTIC_AUTHORITY_MODULE_PATH"] = str(mutated_path)
         test_paths = KILLER_NODES[mutant.mutant_id]
     else:
         env["BCF_VALIDATOR_MODULE_PATH"] = str(mutated_path)

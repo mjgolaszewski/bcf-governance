@@ -44,13 +44,14 @@ remain active. Phase-history entries must be compact and hash-backed. An entry
 without an exact truth report remains authored `completed`; do not add a
 derived state or replace removed artifacts with empty history rows.
 
-## Human or model-assisted review
+## Editorial and semantic review
 
 Use judgment for documentation currency, product specs, architecture/security
 docs, runbooks, semantic phase history compaction, abandoned YAML, and nested
-governance. A model may propose those edits, but deterministic validation and
-the declared approval role remain authoritative. Each change must preserve
-intent while removing stale or duplicate surfaces.
+governance. An agent may propose those edits. Deterministic validation owns
+mechanically decidable claims, and the declared governance role owns intent and
+approval. Each change must preserve intent while removing stale or duplicate
+surfaces.
 
 ## Closeout
 

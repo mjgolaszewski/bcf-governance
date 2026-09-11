@@ -1,0 +1,54 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 21 Plan
+  id: bcf-governance-phase-21-plan
+  version: 1.0.0
+  generated_at_utc: '2026-09-11T00:00:00Z'
+  status: completed
+  path: plans/phase-21-plan.yml
+phase:
+  id: P21
+  build_block: complete-semantic-authority-1.1.0
+  planner: codex
+  date: '2026-09-11'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - semantic-family completeness and exact-base migration authority
+  - closed application-operation inventory and effect enforcement
+  - representation provenance, deterministic locking, and explicit adoption
+  - complete editorial audit, consolidation, and current documentation
+  - consumer compatibility and immutable BCF 1.1.0 release path
+  parallelizable_workstreams:
+  - id: P21-WS1
+    name: 'P21-WS1: semantic families and shared source inventory'
+  - id: P21-WS2
+    name: 'P21-WS2: application operations and CQRS effect authority'
+  - id: P21-WS3
+    name: 'P21-WS3: provenance, adoption, profiles, and generated parity'
+  - id: P21-WS4
+    name: 'P21-WS4: editorial inventory and documentation consolidation'
+  - id: P21-WS5
+    name: 'P21-WS5: packaging, Racecar compatibility, provider activation, and release'
+  hard_dependencies:
+  - P20
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: keep the phase narrowly scoped to declared deliverables and update canonical
+    governed artifacts in the same change
+- order: 2
+  statement: preserve the 21 gate IDs and generated CI topology while strengthening their canonical semantic owners
+- order: 3
+  statement: validate Racecar read-only and require a later explicit adoption decision for every unresolved semantic classification
+verification_plan:
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest -q tests
+- .venv/bin/python .github/scripts/run_validator_mutants.py --profile full
+- .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full

@@ -80,6 +80,11 @@ def build_parser(
         help="Typed gate-contract configuration required by standard and regulated profiles.",
     )
     parser.add_argument(
+        "--semantic-config",
+        type=Path,
+        help="Complete semantic-family, application-operation, and representation declarations required for fresh Standard-v2 and Regulated-v2 adoption.",
+    )
+    parser.add_argument(
         "--force-rescaffold",
         action="store_true",
         help="Delete known BCF governance artifacts, then install a fresh governance pack.",

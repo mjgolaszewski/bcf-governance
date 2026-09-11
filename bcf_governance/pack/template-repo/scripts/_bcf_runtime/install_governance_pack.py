@@ -12,7 +12,6 @@ import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -20,14 +19,12 @@ _SCRIPT_ROOT = Path(__file__).resolve().parent
 if str(_SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_ROOT))
 
-from .governance_install.args import build_parser  # noqa: E402
 from .governance_install.ci_graph import write_reference_ci_graph  # noqa: E402
 from .governance_install.phase import generate_phase_artifacts  # noqa: E402
 from .governance_install.artifacts import (  # noqa: E402
     ensure_required_artifacts,
     merge_gitignore as _merge_gitignore,
 )
-from .governance_install.reporting import print_summary  # noqa: E402
 from .governance_install.transaction import apply_transaction  # noqa: E402
 from .governance_install.upgrade import replace_placeholders_in_files, upgrade_state_files  # noqa: E402
 from .governance_profiles import (  # noqa: E402
@@ -36,6 +33,7 @@ from .governance_profiles import (  # noqa: E402
     load_contract,
 )
 from .profile_contract_v2 import resolve_install_contract_version  # noqa: E402
+from .semantic_authority_commands import _apply_config, _load_config  # noqa: E402
 
 PROFILE_CHOICES = ("lite", "standard", "regulated")
 ADOPTION_MODE_CHOICES = ("fresh", "existing")
@@ -71,6 +69,9 @@ RESCAFFOLD_REMOVE_PATHS = (
     ".github/workflows/governance-mutants-weekly.yml",
     "governance/ci-graph.yml",
     "governance/ci-extensions",
+    "governance/semantic-families.yml",
+    "governance/application-operations.yml",
+    "governance/semantic-lock.yml",
     "scripts/check_governance_exposure.py",
     "scripts/governance_evidence.py",
     "scripts/governance_truth.py",
@@ -144,6 +145,10 @@ UPGRADE_PROJECT_OWNED_PATHS = (
     "governance/ci-graph.yml",
     "governance/ci-extensions",
     ".github/workflows",
+    "governance/semantic-families.yml",
+    "governance/application-operations.yml",
+    "governance/canonical-representations.yml",
+    "governance/semantic-lock.yml",
 )
 UPGRADE_RESET_OPTION_PATHS = (
     "Makefile.fragment",
@@ -490,28 +495,32 @@ def _configure_architecture_boundaries(target_root: Path, profile: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
-def _customized_default(args: argparse.Namespace, name: str) -> bool:
-    return getattr(args, name) != _parser().get_default(name)
+def _customized_default(
+    args: argparse.Namespace, defaults: argparse.ArgumentParser, name: str
+) -> bool:
+    return getattr(args, name) != defaults.get_default(name)
 
 
-def _apply_adoption_mode_defaults(args: argparse.Namespace) -> None:
+def _apply_adoption_mode_defaults(
+    args: argparse.Namespace, defaults: argparse.ArgumentParser
+) -> None:
     if args.adoption_mode != "existing":
         return
-    if not _customized_default(args, "phase_objective"):
+    if not _customized_default(args, defaults, "phase_objective"):
         args.phase_objective = "convert existing repository into governed delivery"
-    if args.deliverable == _parser().get_default("deliverable"):
+    if args.deliverable == defaults.get_default("deliverable"):
         args.deliverable = [
             "inventory existing architecture, tests, CI, and release gates",
             "install governed artifacts without rewriting application code",
             "wire or classify mandatory structural gates",
         ]
-    if args.workstream == _parser().get_default("workstream"):
+    if args.workstream == defaults.get_default("workstream"):
         args.workstream = [
             "existing_repo_inventory",
             "governance_artifact_install",
             "gate_gap_analysis",
         ]
-    if not _customized_default(args, "build_block"):
+    if not _customized_default(args, defaults, "build_block"):
         args.build_block = "existing_repo_adoption"
 
 
@@ -644,6 +653,8 @@ def _install_direct(args: argparse.Namespace, target_root: Path) -> InstallResul
     contract_version = str(contract.get("profile_contract_version", "1.0"))
     graph_enabled = args.profile == "lite" or contract_version == "2.0"
     apply_profile_contract(target_root, contract, write_workflow=not graph_enabled)
+    if args.semantic_config_payload is not None:
+        _apply_config(target_root, args.semantic_config_payload)
     if graph_enabled:
         write_reference_ci_graph(args, target_root, contract)
     generated_artifacts = generate_phase_artifacts(args, target_root)
@@ -711,6 +722,7 @@ def install(args: argparse.Namespace) -> InstallResult:
         raise RuntimeError("installation target must be the root of an initialized Git repository")
     args.profile, contract_version = resolve_install_contract_version(
         target_root, args.profile, args.profile_contract_version, args.upgrade, args.reset_options)
+    args.semantic_config_payload = None
     # Ordinary upgrades refresh pack-owned code only. Project-owned profiles,
     # gate contracts, graphs, extensions, workflows, and state change only
     # through their explicit migration, promotion, or reset commands.
@@ -724,6 +736,21 @@ def install(args: argparse.Namespace) -> InstallResult:
             asset_root=target_root,
             contract_version=contract_version,
         )
+    semantic_required = (
+        not args.upgrade
+        and contract_version == "2.0"
+        and args.profile in {"standard", "regulated"}
+    )
+    if semantic_required and args.semantic_config is None:
+        raise RuntimeError(
+            "--semantic-config is required for fresh Standard-v2 and Regulated-v2 installation"
+        )
+    if args.semantic_config is not None:
+        if args.upgrade:
+            raise RuntimeError(
+                "ordinary upgrade preserves semantic authority; use bcf semantic-ownership adopt"
+            )
+        args.semantic_config_payload = _load_config(args.semantic_config.resolve())
     if args.force_rescaffold:
         _confirm_force_rescaffold(target_root, args.yes)
     result_box: list[InstallResult] = []
@@ -737,6 +764,7 @@ def install(args: argparse.Namespace) -> InstallResult:
         target_root,
         managed_paths=INSTALL_MANAGED_PATHS,
         mutate_shadow=mutate,
+        preserve_git_history=args.semantic_config_payload is not None,
     )
     result = result_box[0]
     generated = {
@@ -757,39 +785,10 @@ def install(args: argparse.Namespace) -> InstallResult:
     )
 
 
-def _parser() -> argparse.ArgumentParser:
-    return build_parser(
-        profile_choices=PROFILE_CHOICES,
-        adoption_mode_choices=ADOPTION_MODE_CHOICES,
-        default_target_user=DEFAULT_TARGET_USER,
-        default_runner_labels=DEFAULT_RUNNER_LABELS,
-        default_date=datetime.now(UTC).date().isoformat(),
-    )
-
-
-def _finalize_args(args: argparse.Namespace) -> argparse.Namespace:
-    if args.project_id is None:
-        args.project_id = _project_id_from_name(args.target.resolve().name)
-    if args.project_name is None:
-        args.project_name = _title_from_id(args.project_id)
-    if args.product_name is None:
-        args.product_name = args.project_name
-    _apply_adoption_mode_defaults(args)
-    return args
-
-
 def main(argv: list[str] | None = None) -> None:
-    args = _finalize_args(_parser().parse_args(argv))
-    try:
-        result = install(args)
-    except Exception as exc:
-        print(f"install-governance-pack failed: {exc}", file=sys.stderr)
-        raise SystemExit(1) from exc
-    print_summary(
-        args,
-        result,
-        required_standard_gates=REQUIRED_STANDARD_GATES,
-    )
+    from .governance_install.cli import main as cli_main
+
+    cli_main(argv)
 
 
 if __name__ == "__main__":

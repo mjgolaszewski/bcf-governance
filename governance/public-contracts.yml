@@ -1,6 +1,6 @@
 document: {kind: public_contract_registry, name: BCF Supported Public Contracts, id: bcf-governance-public-contracts, version: 1.0.0, status: active, path: governance/public-contracts.yml}
 package:
-  version: 1.0.4
+  version: 1.1.0
   distribution: github_releases
   executable_ci_providers: [github]
   platforms: [linux_x86_64]
@@ -18,6 +18,9 @@ contracts:
   ci_graph_extension: {path: schemas/ci-graph-extension.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
   automation_producers: {path: schemas/automation-producers.schema.json, version_field: schema_version, readable_versions: ['1.0', '1.1'], active_version: '1.1', migration_only_versions: []}
   github_protection: {path: schemas/github-protection.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
+  semantic_families: {path: schemas/semantic-families.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
+  application_operations: {path: schemas/application-operations.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
+  semantic_lock: {path: schemas/semantic-lock.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
 ci_graph:
   canonical_path: governance/ci-graph.yml
   extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]
@@ -26,7 +29,7 @@ ci_graph:
   renderer: bcf_governance/tooling/ci_graph_render.py::render_ci_graph
   parity_check: bcf_governance/tooling/ci_graph_render.py::check_ci_graph
 compatibility:
-  project_owned_paths: [governance-profile.yml, governance/gate-contracts.yml, governance/evidence-policy.yml, governance/ci-graph.yml, governance/ci-extensions, .github/workflows]
+  project_owned_paths: [governance-profile.yml, governance/gate-contracts.yml, governance/evidence-policy.yml, governance/ci-graph.yml, governance/ci-extensions, .github/workflows, governance/semantic-families.yml, governance/application-operations.yml, governance/canonical-representations.yml, governance/semantic-lock.yml]
   preserved_unrelated_workflows: true
   generated_workflow_manual_edits: rejected
   deprecated_contracts_require_migration_command: true

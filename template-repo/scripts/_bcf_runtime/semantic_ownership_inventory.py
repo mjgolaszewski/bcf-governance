@@ -101,7 +101,9 @@ def _call_name(node: ast.Call) -> str:
     return "<dynamic>"
 
 
-def _imports(tree: ast.Module, module_index: dict[str, str]) -> dict[str, str]:
+def _imports(
+    tree: ast.Module, module_index: dict[str, str], current_module: str
+) -> dict[str, str]:
     resolved: dict[str, str] = {}
     for node in tree.body:
         if isinstance(node, ast.Import):
@@ -109,7 +111,14 @@ def _imports(tree: ast.Module, module_index: dict[str, str]) -> dict[str, str]:
                 local = alias.asname or alias.name.split(".", 1)[0]
                 resolved[local] = f"{module_index.get(alias.name, alias.name)}::module"
         elif isinstance(node, ast.ImportFrom) and node.module:
-            module = module_index.get(node.module, node.module)
+            import_module = node.module
+            if node.level:
+                package = current_module.split(".")[:-1]
+                retained = len(package) - node.level + 1
+                import_module = ".".join(
+                    [*package[:retained], *node.module.split(".")]
+                )
+            module = module_index.get(import_module, import_module)
             for alias in node.names:
                 resolved[alias.asname or alias.name] = f"{module}::{alias.name}"
     return resolved
@@ -357,7 +366,7 @@ def discover_python_source(
         local_types = {node.name for node in tree.body if isinstance(node, ast.ClassDef)}
         types.extend(f"{relative}::{name}" for name in sorted(local_types))
         endpoints.extend(_endpoint_facts(tree, relative))
-        imports = _imports(tree, module_index)
+        imports = _imports(tree, module_index, _module_name(repo_root, path))
         for node in tree.body:
             members = node.body if isinstance(node, ast.ClassDef) else [node]
             class_name = node.name if isinstance(node, ast.ClassDef) else None
