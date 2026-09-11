@@ -57,13 +57,23 @@ def test_source_discovery_precedes_registry_access(
     )
     monkeypatch.setattr(
         scan,
+        "resolve_python_imports",
+        lambda _root, value, _roots: (events.append("import-root-resolution") or value),
+    )
+    monkeypatch.setattr(
+        scan,
         "tracked_typescript_files",
         lambda _: (events.append("typescript-discovery") or []),
     )
 
     report = scan.run_scan(tmp_path)
 
-    assert events == ["discovery", "typescript-discovery", "registry"]
+    assert events == [
+        "discovery",
+        "typescript-discovery",
+        "registry",
+        "import-root-resolution",
+    ]
     assert report["subject"]["discovery_preceded_registry_load"] is True
 
 

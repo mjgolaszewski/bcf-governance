@@ -20,11 +20,11 @@ ADDITIONAL_HUMAN_FACING_SOURCES = {
 }
 SPECIFIC_FINDINGS = {
     "AGENTS.yml": "reviewed canonical repository-agent guidance for current profile, lifecycle, and authority boundaries",
-    "README.md": "revised thesis summary, semantic-control distinctions, version authority, and adoption examples",
-    "docs/ARCHITECTURE.md": "separated family completeness, operation classification, and representation provenance",
+    "README.md": "updated the mechanically checked package and release example to 1.1.1",
+    "docs/ARCHITECTURE.md": "documented source-first Python import identity and explicit import-root qualification",
     "docs/RELIABILITY_MODEL.md": "added omitted-family, unclassified-operation, and unowned-copy failure modes",
-    "docs/USAGE.md": "removed patch-specific upgrade prose and added semantic adoption and locking commands",
-    "docs/MAINTAINING.md": "consolidated durable editorial rules and exact audit procedure",
+    "docs/USAGE.md": "documented safe Python import-root configuration and updated the release example",
+    "docs/MAINTAINING.md": "updated the exact release-audit procedure for 1.1.1",
     "examples/lifecycle-walkthrough/README.md": "replaced obsolete 0.6 and hand-built gate loop with 1.1 preflight and session mechanics",
     "template-repo/governance/EXISTING_REPO_ADOPTION.md": "corrected upgrade and workflow ownership boundaries",
     "template-repo/governance/REPO_CLEANUP.md": "clarified editorial, semantic, deterministic, and approval authority",
@@ -221,6 +221,8 @@ def build_rows(repo_root: Path, base_sha: str) -> list[dict[str, Any]]:
                         relative,
                         "reviewed; no currency, consolidation, or pruning change required",
                     )
+                    if before != after
+                    else "reviewed; no currency, consolidation, or pruning change required"
                 ],
                 "disposition": disposition,
             }
@@ -228,14 +230,20 @@ def build_rows(repo_root: Path, base_sha: str) -> list[dict[str, Any]]:
     return rows
 
 
-def build_audit(repo_root: Path, base_sha: str) -> dict[str, Any]:
+def build_audit(
+    repo_root: Path, base_sha: str, audit_path: Path
+) -> dict[str, Any]:
+    relative_audit = audit_path.relative_to(repo_root).as_posix()
+    version = audit_path.name.removeprefix("v").removesuffix(
+        "-editorial-review.yml"
+    )
     return {
         "schema_version": "1.0",
         "document": {
             "kind": "editorial_review",
-            "id": "bcf-governance-v1.1.0-editorial-review",
+            "id": f"bcf-governance-v{version}-editorial-review",
             "status": "completed",
-            "path": "audits/v1.1.0-editorial-review.yml",
+            "path": relative_audit,
         },
         "base_commit": base_sha,
         "inventory_policy": {
@@ -261,7 +269,7 @@ def main() -> None:
     if args.apply:
         if not args.base_sha:
             raise SystemExit("--apply requires --base-sha")
-        payload = build_audit(root, args.base_sha)
+        payload = build_audit(root, args.base_sha, audit_path)
         audit_path.parent.mkdir(parents=True, exist_ok=True)
         audit_path.write_text(yaml.safe_dump(payload, sort_keys=False, width=140), encoding="utf-8")
         print(f"editorial-audit-written:{len(payload['documents'])}")
@@ -273,7 +281,7 @@ def main() -> None:
     if not isinstance(actual, dict):
         raise SystemExit("editorial audit must contain a mapping")
     if _base_is_available(root, base_sha):
-        expected = build_audit(root, base_sha)
+        expected = build_audit(root, base_sha, audit_path)
         if actual != expected:
             raise SystemExit("editorial audit differs from exact tracked document inventory or bytes")
     else:

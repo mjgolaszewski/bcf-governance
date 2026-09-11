@@ -23,7 +23,7 @@ from .semantic_authority_contracts import (
     render_lock_yaml,
     validate_semantic_authority,
 )
-from .semantic_ownership_inventory import discover_python_source
+from .semantic_ownership_inventory import discover_python_source, resolve_python_imports
 from .semantic_ownership_registry import load_registry
 
 
@@ -65,6 +65,7 @@ def _contract_bytes(payload: dict[str, Any], key: str) -> bytes:
 def _lock(repo_root: Path, *, apply: bool) -> dict[str, Any]:
     inventory = discover_python_source(repo_root)
     registry = load_registry(repo_root)
+    inventory = resolve_python_imports(repo_root, inventory, registry.python_import_roots)
     evaluation = validate_semantic_authority(repo_root, inventory, registry, require_lock=False)
     expected = build_semantic_lock(repo_root, inventory, evaluation.projection_outputs)
     path = repo_root / LOCK_PATH
@@ -101,6 +102,7 @@ def _apply_config(repo_root: Path, payload: dict[str, Any]) -> None:
     _set_capabilities(repo_root)
     inventory = discover_python_source(repo_root)
     registry = load_registry(repo_root)
+    inventory = resolve_python_imports(repo_root, inventory, registry.python_import_roots)
     validate_adoption_repository(repo_root, inventory, registry)
     _lock(repo_root, apply=True)
     validate_semantic_authority(repo_root, inventory, registry)

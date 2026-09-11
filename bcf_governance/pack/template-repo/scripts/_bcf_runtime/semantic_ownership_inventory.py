@@ -7,9 +7,11 @@ Licensed under the MIT License.
 from __future__ import annotations
 
 import ast
+import copy
 import hashlib
 import subprocess
 from pathlib import Path
+from pathlib import PurePosixPath
 from typing import Any
 
 
@@ -124,6 +126,64 @@ def _imports(
     return resolved
 
 
+def _import_bindings(
+    tree: ast.Module | ast.FunctionDef | ast.AsyncFunctionDef,
+    *,
+    recursive: bool = False,
+) -> list[dict[str, Any]]:
+    """Retain neutral import syntax for source-root resolution after discovery."""
+    bindings: list[dict[str, Any]] = []
+    nodes = ast.walk(tree) if recursive else tree.body
+    for node in nodes:
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                bindings.append(
+                    {
+                        "kind": "import",
+                        "local": alias.asname or alias.name.split(".", 1)[0],
+                        "module": (
+                            alias.name
+                            if alias.asname is not None
+                            else alias.name.split(".", 1)[0]
+                        ),
+                        "aliased": alias.asname is not None,
+                        "line": node.lineno,
+                    }
+                )
+        elif isinstance(node, ast.ImportFrom):
+            for alias in node.names:
+                if alias.name == "*":
+                    continue
+                bindings.append(
+                    {
+                        "kind": "from",
+                        "local": alias.asname or alias.name,
+                        "module": node.module or "",
+                        "member": alias.name,
+                        "level": node.level,
+                        "line": node.lineno,
+                    }
+                )
+    return bindings
+
+
+def _call_reference(
+    function: ast.expr, bindings: dict[str, dict[str, Any]]
+) -> dict[str, Any] | None:
+    parts: list[str] = []
+    current = function
+    while isinstance(current, ast.Attribute):
+        parts.append(current.attr)
+        current = current.value
+    if not isinstance(current, ast.Name) or current.id not in bindings:
+        return None
+    return {
+        "local": current.id,
+        "attributes": list(reversed(parts)),
+        "binding": bindings[current.id],
+    }
+
+
 def _module_name(repo_root: Path, path: Path) -> str:
     return _relative(repo_root, path).removesuffix("/__init__.py").removesuffix(
         ".py"
@@ -224,12 +284,14 @@ class _FunctionVisitor(ast.NodeVisitor):
         *,
         path: str,
         imports: dict[str, str],
+        import_bindings: dict[str, dict[str, Any]],
         local_types: set[str],
         class_name: str | None,
         function: ast.FunctionDef | ast.AsyncFunctionDef,
     ) -> None:
         self.path = path
         self.imports = imports
+        self.import_bindings = import_bindings
         self.local_types = local_types
         suffix = f"{class_name}.{function.name}" if class_name else function.name
         self.symbol = f"{path}::{suffix}"
@@ -298,6 +360,9 @@ class _FunctionVisitor(ast.NodeVisitor):
             "line": node.lineno,
             "argument_origins": sorted(self._origins(node)),
         }
+        reference = _call_reference(node.func, self.import_bindings)
+        if reference is not None:
+            fact["import_reference"] = reference
         self.calls.append(fact)
         if name in self.local_types or (name[:1].isupper() and name not in PRIMITIVES):
             constructed = (
@@ -353,6 +418,7 @@ def discover_python_source(
     functions: list[dict[str, Any]] = []
     types: list[str] = []
     endpoints: list[dict[str, Any]] = []
+    import_rows: list[dict[str, Any]] = []
     for path in paths:
         relative = _relative(repo_root, path)
         raw = path.read_bytes()
@@ -367,15 +433,23 @@ def discover_python_source(
         types.extend(f"{relative}::{name}" for name in sorted(local_types))
         endpoints.extend(_endpoint_facts(tree, relative))
         imports = _imports(tree, module_index, _module_name(repo_root, path))
+        bindings = _import_bindings(tree)
+        import_rows.append({"path": relative, "bindings": bindings})
+        bindings_by_local = {str(value["local"]): value for value in bindings}
         for node in tree.body:
             members = node.body if isinstance(node, ast.ClassDef) else [node]
             class_name = node.name if isinstance(node, ast.ClassDef) else None
             for member in members:
                 if not isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)):
                     continue
+                local_bindings = {
+                    str(value["local"]): value
+                    for value in _import_bindings(member, recursive=True)
+                }
                 visitor = _FunctionVisitor(
                     path=relative,
                     imports=imports,
+                    import_bindings={**bindings_by_local, **local_bindings},
                     local_types=local_types,
                     class_name=class_name,
                     function=member,
@@ -385,6 +459,7 @@ def discover_python_source(
     return {
         "language": "python",
         "files": file_rows,
+        "imports": import_rows,
         "types": sorted(types),
         "functions": functions,
         "constructors": [
@@ -399,3 +474,254 @@ def discover_python_source(
             key=lambda value: (value["path"], value["method"], value["symbol"]),
         ),
     }
+
+
+def _root_contains(root: str, path: str) -> str | None:
+    if root == ".":
+        return path
+    prefix = root + "/"
+    return path[len(prefix) :] if path.startswith(prefix) else None
+
+
+def _validate_import_roots(
+    repo_root: Path, inventory: dict[str, Any], import_roots: tuple[str, ...]
+) -> tuple[dict[str, str], dict[str, str]]:
+    if not import_roots:
+        raise SemanticInventoryError("Python import roots must not be empty")
+    normalized = tuple(sorted(set(import_roots)))
+    if len(normalized) != len(import_roots):
+        raise SemanticInventoryError("Python import roots must be unique")
+    for index, root in enumerate(normalized):
+        relative = PurePosixPath(root)
+        if root != relative.as_posix() or relative.is_absolute() or ".." in relative.parts:
+            raise SemanticInventoryError(f"unsafe Python import root: {root}")
+        for other in normalized[index + 1 :]:
+            if root == "." or other.startswith(root + "/"):
+                raise SemanticInventoryError(
+                    f"Python import roots overlap: {root} and {other}"
+                )
+        directory = repo_root if root == "." else repo_root / root
+        components = [] if root == "." else list(relative.parts)
+        cursor = repo_root
+        unsafe_link = False
+        for component in components:
+            cursor /= component
+            if cursor.is_symlink():
+                unsafe_link = True
+                break
+        try:
+            resolved_directory = directory.resolve(strict=True)
+            resolved_directory.relative_to(repo_root)
+        except (FileNotFoundError, RuntimeError, ValueError):
+            resolved_directory = None
+        if unsafe_link or resolved_directory is None or not directory.is_dir():
+            raise SemanticInventoryError(
+                f"Python import root must be an existing regular directory: {root}"
+            )
+
+    module_index: dict[str, str] = {}
+    module_by_path: dict[str, str] = {}
+    paths = [str(value["path"]) for value in inventory.get("files", [])]
+    for root in normalized:
+        discovered = 0
+        for path in paths:
+            suffix = _root_contains(root, path)
+            if suffix is None or not suffix.endswith(".py"):
+                continue
+            parts = list(PurePosixPath(suffix).parts)
+            if parts[-1] == "__init__.py":
+                parts = parts[:-1]
+            else:
+                parts[-1] = parts[-1][:-3]
+            if not parts or not all(part.isidentifier() for part in parts):
+                continue
+            discovered += 1
+            module = ".".join(parts)
+            previous = module_index.get(module)
+            if previous is not None and previous != path:
+                raise SemanticInventoryError(
+                    f"Python import module {module} is ambiguous between {previous} and {path}"
+                )
+            previous_module = module_by_path.get(path)
+            if previous_module is not None and previous_module != module:
+                raise SemanticInventoryError(
+                    f"Python source {path} has conflicting import identities"
+                )
+            module_index[module] = path
+            module_by_path[path] = module
+        if discovered == 0:
+            raise SemanticInventoryError(
+                f"Python import root contains no discovered importable source: {root}"
+            )
+    return module_index, module_by_path
+
+
+def _absolute_module(
+    binding: dict[str, Any], current_module: str, *, is_package: bool
+) -> str | None:
+    module = str(binding.get("module", ""))
+    level = int(binding.get("level", 0))
+    if not level:
+        return module
+    package = current_module if is_package else current_module.rpartition(".")[0]
+    parts = package.split(".") if package else []
+    ascend = level - 1
+    if ascend > len(parts):
+        return None
+    retained = parts[: len(parts) - ascend] if ascend else parts
+    return ".".join([*retained, *([module] if module else [])])
+
+
+def _binding_map(
+    inventory: dict[str, Any], admitted_paths: set[str]
+) -> dict[str, dict[str, dict[str, Any]]]:
+    result: dict[str, dict[str, dict[str, Any]]] = {}
+    for row in inventory.get("imports", []):
+        path = str(row.get("path", ""))
+        if path not in admitted_paths:
+            continue
+        by_local: dict[str, dict[str, Any]] = {}
+        for binding in row.get("bindings", []):
+            local = str(binding.get("local", ""))
+            previous = by_local.get(local)
+            identity = {key: value for key, value in binding.items() if key != "line"}
+            previous_identity = (
+                {key: value for key, value in previous.items() if key != "line"}
+                if previous is not None
+                else None
+            )
+            if previous_identity is not None and previous_identity != identity:
+                raise SemanticInventoryError(
+                    f"Python import binding {path}::{local} is ambiguous"
+                )
+            by_local[local] = binding
+        result[path] = by_local
+    return result
+
+
+def resolve_python_imports(
+    repo_root: Path,
+    inventory: dict[str, Any],
+    import_roots: tuple[str, ...] = (".",),
+) -> dict[str, Any]:
+    """Resolve neutral import facts against exact, declared source roots.
+
+    Discovery is completed before this function receives any declaration. The
+    roots can qualify discovered identities, but cannot hide source files or
+    introduce a suffix/name guess.
+    """
+    repo_root = repo_root.resolve()
+    resolved = copy.deepcopy(inventory)
+    module_index, module_by_path = _validate_import_roots(
+        repo_root, resolved, import_roots
+    )
+    bindings_by_path = _binding_map(resolved, set(module_by_path))
+    known_symbols = {
+        *[str(value) for value in resolved.get("types", [])],
+        *[str(value["symbol"]) for value in resolved.get("functions", [])],
+    }
+
+    def exported_symbol(
+        module: str, members: list[str], seen: frozenset[tuple[str, str]]
+    ) -> str | None:
+        path = module_index.get(module)
+        if path is None or not members:
+            return None
+        direct = f"{path}::{'.'.join(members)}"
+        if direct in known_symbols:
+            return direct
+        local = members[0]
+        marker = (path, local)
+        if marker in seen:
+            raise SemanticInventoryError(
+                f"cyclic Python package export while resolving {module}::{local}"
+            )
+        binding = bindings_by_path.get(path, {}).get(local)
+        if binding is None:
+            return None
+        target = binding_target(
+            path, binding, members[1:], seen | {marker}
+        )
+        return target
+
+    def module_member(
+        module: str,
+        parts: list[str],
+        seen: frozenset[tuple[str, str]],
+    ) -> str | None:
+        for retained in range(len(parts), -1, -1):
+            candidate = (
+                ".".join([module, *parts[:retained]])
+                if module
+                else ".".join(parts[:retained])
+            )
+            if candidate not in module_index:
+                continue
+            remaining = parts[retained:]
+            if not remaining:
+                return f"{module_index[candidate]}::module"
+            exported = exported_symbol(candidate, remaining, seen)
+            return exported or f"{module_index[candidate]}::{'.'.join(remaining)}"
+        return None
+
+    def binding_target(
+        path: str,
+        binding: dict[str, Any],
+        attributes: list[str],
+        seen: frozenset[tuple[str, str]] = frozenset(),
+    ) -> str | None:
+        current_module = module_by_path.get(path)
+        if current_module is None:
+            return None
+        is_package = path.endswith("/__init__.py") or path == "__init__.py"
+        module = _absolute_module(binding, current_module, is_package=is_package)
+        if module is None:
+            raise SemanticInventoryError(
+                f"Python relative import escapes its declared root: {path}"
+            )
+        if binding["kind"] == "from":
+            member = str(binding["member"])
+            exported = exported_symbol(module, [member, *attributes], seen)
+            if exported is not None:
+                return exported
+            submodule = ".".join(filter(None, (module, member)))
+            if submodule in module_index:
+                return module_member(submodule, attributes, seen)
+            return module_member(module, [member, *attributes], seen)
+
+        imported = str(binding["module"])
+        if bool(binding.get("aliased")):
+            return module_member(imported, attributes, seen)
+        imported_parts = imported.split(".")
+        remainder = imported_parts[1:]
+        if attributes[: len(remainder)] == remainder:
+            return module_member(imported, attributes[len(remainder) :], seen)
+        return module_member(imported_parts[0], attributes, seen)
+
+    for function in resolved.get("functions", []):
+        path = str(function["symbol"]).split("::", 1)[0]
+        for collection in ("calls", "constructors"):
+            for fact in function.get(collection, []):
+                reference = fact.get("import_reference")
+                if not isinstance(reference, dict):
+                    continue
+                binding = reference.get("binding")
+                if not isinstance(binding, dict):
+                    binding = bindings_by_path.get(path, {}).get(
+                        str(reference.get("local", ""))
+                    )
+                attributes = reference.get("attributes", [])
+                if binding is None or not isinstance(attributes, list):
+                    continue
+                target = binding_target(path, binding, [str(value) for value in attributes])
+                if target is None:
+                    continue
+                fact["called_symbol"] = target
+                if "constructed_symbol" in fact:
+                    fact["constructed_symbol"] = target
+    resolved["constructors"] = [
+        fact
+        for function in resolved.get("functions", [])
+        for fact in function.get("constructors", [])
+    ]
+    return resolved

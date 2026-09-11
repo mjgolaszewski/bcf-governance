@@ -4,15 +4,15 @@ build_plan_mandate:
   required_fields: [tightly_scoped_deliverables, parallelizable_workstreams, hard_dependencies, docker_first_local_runtime, completeness_standard]
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P21
-  build_block: complete-semantic-authority-1.1.0
-  plan: plans/phase-21-plan.yml
-  workitems: plans/phase-21-workitems.yml
-  log: phases/phase-21-log.yml
+  id: P22
+  build_block: semantic-import-root-integrity-1.1.1
+  plan: plans/phase-22-plan.yml
+  workitems: plans/phase-22-workitems.yml
+  log: phases/phase-22-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: completed
+  lifecycle_status: active
   owner: codex
   validation_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests]
 hotfix_lane:
@@ -23,7 +23,8 @@ hotfix_lane:
       allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
-  open_records: []
+  open_records:
+  - {id: P22-HF01, mode: full, status: active, triggered_by_commits: [e1053ae4530e595d3f5453668f6c93a35fec45fb, e1a9571681b2c3fc425b543aa6b530ba1a80e0fd], failing_workflows: [consumer_semantic_ownership], root_cause: repository_relative_module_identity_does_not_match_absolute_import_identity_below_python_source_roots, remediated_in_phase: P22, hotfix_log: phases/phase-22-hotfix01.yml, canonical_artifacts: [bcf_governance/tooling/semantic_ownership_inventory.py, schemas/canonical-representations.schema.json, audits/p22-issue-159-remediation.yml]}
   remediation_history: []
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
@@ -40,7 +41,7 @@ operator_requirements_choices_disambiguations:
 - {type: hosted_frugality, statement: hosted candidate jobs execute their own bounded work and terminate; polling sleeping lease waiting and hosted waiters for local capacity are prohibited}
 - {type: automation_authority, statement: automation-authored pull requests remain subject to the universal changelog rule; an explicitly adopted trusted deterministic producer may create only the authenticated bounded changelog commit and receives no approval merge release or certification authority}
 - {type: provider_runner_removal, statement: the persistent Dependabot runner bcf-governance-vm-linux-ci-runner-dependabot-1 and its repository registration are retired; candidate code runs only on fresh hosted workers and trusted local runners execute no candidate checkout}
-active_delivery_priorities: {current_tranche: [semantic-family-completeness, application-operation-inventory, representation-provenance, editorial-currency]}
+active_delivery_priorities: {current_tranche: [python-import-root-integrity, semantic-constructor-enforcement, consumer-compatibility, immutable-1.1.1-release]}
 release_trains:
   release_1:
     target_version: 0.6.1
@@ -80,5 +81,6 @@ release_trains:
     focus: [canonical_session_selection, duplicate_receipt_identity_rejection, deterministic_ci_authority_audit, timeout_compatibility, manifest_derived_dependency_changelog, immutable_patch_release]
   release_10: {target_version: 1.0.4, status: completed, focus: [lossless_pytest_selector_mapping, class_based_negative_controls, first_party_audit_code_classification, immutable_patch_release]}
   release_11: {target_version: 1.1.0, status: completed, focus: [semantic_family_completeness, application_operation_inventory, representation_provenance, editorial_custody, immutable_minor_release]}
+  release_12: {target_version: 1.1.1, status: active, focus: [python_import_root_identity, imported_constructor_enforcement, consumer_compatibility, immutable_patch_release]}
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]

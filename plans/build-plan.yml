@@ -18,12 +18,12 @@ global_gates:
   name: safe_execution_substrate
   applies_before: P10
   required_completion_criteria: [trusted control-plane VM executes no candidate code, every code-executing job receives a fresh disposable VM and ephemeral runner identity, no GitHub-hosted fallback is configured]
-phase_history: {path: plans/phase-history.yml, through_phase: P20}
+phase_history: {path: plans/phase-history.yml, through_phase: P21}
 phase_sequence:
-- phase_id: P21
-  build_block: complete-semantic-authority-1.1.0
-  objective: make material semantic families public application operations and secondary representation provenance mechanically complete while preserving compatible consumer adoption
-  hard_dependencies: [P20]
-  tightly_scoped_deliverables: [semantic-family completeness and exact-base migrations, closed application-operation inventory and effect enforcement, representation provenance and deterministic locking, complete editorial audit and consolidation, compatible immutable BCF 1.1.0 release]
-  parallelizable_workstreams: [semantic families and shared source inventory, operation inventory and CQRS effects, provenance adoption profiles and generated parity, editorial inventory and documentation consolidation, package compatibility provider activation and release]
+- phase_id: P22
+  build_block: semantic-import-root-integrity-1.1.1
+  objective: qualify imported Python semantic identities through explicit exact source roots without weakening source-first discovery or consumer compatibility
+  hard_dependencies: [P21]
+  tightly_scoped_deliverables: [governed exact Python import-root mapping and fail-closed resolution, complete layout alias re-export ambiguity and causal regressions, compatible mirrored runtime Racecar proof and immutable BCF 1.1.1 release]
+  parallelizable_workstreams: [import identity contract and resolver, adversarial tests causal control and consumer compatibility, generated parity provider activation and release]
   verification_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests, .venv/bin/python .github/scripts/run_validator_mutants.py --profile full, .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full]

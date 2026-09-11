@@ -17,6 +17,7 @@ from typing import Any
 from .semantic_ownership_inventory import (
     SemanticInventoryError,
     discover_python_source,
+    resolve_python_imports,
 )
 from .semantic_ownership_registry import (
     Registry,
@@ -296,6 +297,9 @@ def run_scan(repo_root: Path) -> dict[str, Any]:
     inventory = discover_python_source(repo_root)
     typescript_files = tracked_typescript_files(repo_root)
     registry = load_registry(repo_root)
+    inventory = resolve_python_imports(
+        repo_root, inventory, registry.python_import_roots
+    )
     typescript_config = registry.raw["source_authority"]["typescript_engine"]
     typescript_inventory: dict[str, Any] = {
         "language": "typescript",
@@ -342,6 +346,7 @@ def run_scan(repo_root: Path) -> dict[str, Any]:
         "source_inventory": {
             "python": {
                 "files": inventory["files"],
+                "import_roots": list(registry.python_import_roots),
                 "file_count": len(inventory["files"]),
                 "type_count": len(inventory["types"]),
                 "function_count": len(inventory["functions"]),

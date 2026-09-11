@@ -733,11 +733,7 @@ gates:
         max_skipped: 0
         artifact_binding: non_authoritative_until_captured
     negative_controls:
-    - id: test-behavior-must-fail
-      mutation: {path: template-repo/governance/artifact-manifest.yml, yaml_path: required_artifacts.readme.contract, value: broken_readme}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']
+    - {id: test-behavior-must-fail, mutation: {path: template-repo/governance/artifact-manifest.yml, yaml_path: required_artifacts.readme.contract, value: broken_readme}, oracle: {kind: test_node_failure, node_ids: ['tests.test_validate_governance_yaml::test_artifact_manifest_requires_standard_repository_artifact_contracts']}}
     - {id: pr-truth-progress-separation-must-fail, mutation: {path: bcf_governance/tooling/governance_truth.py, search: 'if evaluation_mode == "pr":', replace: 'if False and evaluation_mode == "pr":'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_governance_truth::test_pr_evaluation_allows_progress_without_claiming_phase_closure']}}
     - {id: release-check-fresh-session-truth-must-fail, mutation: {path: bcf_governance/tooling/profile_v2_surfaces.py, search: '--evidence-dir \"$$session_dir\"', replace: '--evidence-dir $(BCF_EVIDENCE_DIR)'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_self_release_check_is_an_exact_generator_product']}}
     - {id: package-preflight-pr-context-must-fail, mutation: {path: bcf_governance/tooling/ci_graph_render.py, search: '"BCF_PR_BASE_SHA": "${{ github.event.pull_request.base.sha }}",', replace: '"BCF_PR_BASE_SHA": "absent",'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_changelog_pr_enforcement_is_wired_into_repository_ci']}}
@@ -754,6 +750,7 @@ gates:
     - {id: release-front-door-pipeline-must-fail, mutation: {path: bcf_governance/tooling/profile_v2_surfaces.py, search: '--format text)\" || exit $$?;', replace: '--format text)\";'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_profile_contract_v2::test_v2_release_check_stops_at_a_failed_preflight']}}
     - {id: gate-timeout-containment-must-fail, mutation: {path: bcf_governance/tooling/ci_graph_contracts.py, search: '    validate_gate_job_timeouts(repo_root, composed)', replace: '    # timeout containment disabled'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_graph::test_evidence_job_timeout_must_contain_inner_gate_deadline_and_headroom']}}
     - {id: dependency-version-transition-must-fail, mutation: {path: bcf_governance/tooling/ci_github_automation.py, search: '        dependency_transitions=transitions,', replace: '        dependency_transitions=(),'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_automation::test_metadata_admission_and_reconciliation_use_provider_identity_only']}}
+    - {id: python-import-root-normalization-must-fail, mutation: {path: bcf_governance/tooling/semantic_ownership_inventory.py, search: '                    fact["constructed_symbol"] = target', replace: '                    fact["constructed_symbol"] = fact["constructed_symbol"]'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_semantic_import_roots::test_import_root_normalization_rejects_masked_unauthorized_constructor']}}
   typecheck:
     invocation:
       argv: [python3, .github/scripts/run_self_governance_gate.py, typecheck]
