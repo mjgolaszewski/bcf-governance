@@ -2,10 +2,10 @@ document:
   kind: semantic_authority_release_audit
   id: bcf-governance-p21-semantic-authority
   version: 1.0.0
-  status: active
+  status: completed
   path: audits/p21-semantic-authority.yml
 phase: P21
-release: {version: 1.1.0, release_train: release_11, publication: disabled_until_certified}
+release: {version: 1.1.0, release_train: release_11, publication: immutable_release_387076379}
 baseline:
   repository: mjgolaszewski/bcf-governance
   commit: beb3512a9c9ddd1066e2f5578bb0b765810b39b4
@@ -135,7 +135,7 @@ editorial_review:
   pruned: [docs/EDITORIAL_CHECKLIST.md]
   packaged_history_behavior: current document custody remains verifiable when the original base Git object is absent from an extracted sdist
 validation:
-  status: local_pre_pin_pass
+  status: certified_release_pass
   exact_populations: {source_tests: 831, contract_tests: 389, required_gates: 21, gate_negative_controls: 210}
   mutation_profiles:
   - {profile: full, result: pass, killed: 25, total: 25}
@@ -157,14 +157,57 @@ validation:
     - tests/test_governance_evidence.py::test_governance_validation_controls_preserve_their_declared_failure_causes
     - tests/test_semantic_ownership.py::test_primary_semantic_violation_precedes_derived_lock_freshness
     - tests/test_governance_evidence.py::test_governance_validation_controls_preserve_their_declared_failure_causes
-  provisional_artifacts:
-    wheel: passed
-    extracted_sdist: pending final workflow pin commit
-    note: local provisional bytes are not release-authoritative and will be rebuilt after mechanical workflow pinning
+  remote_acceptance:
+    stopped_attempts:
+    - {run_id: 34585727203, conclusion: cancelled, class: negative_control_diagnostic_ordering, disposition: reproduced_and_corrected_as_one_local_class_before_final_implementation_head}
+    - {run_id: 34598099199, conclusion: failure, class: stale_installed_controller, disposition: planned_fail_closed_transition_that_emitted_the_authenticated_controller_target}
+    - {run_id: 34598620169, conclusion: cancelled, class: editorial_digest_freshness, disposition: expensive_governance_work_cancelled_and_exact_audit_regenerated_locally}
+    - {run_id: 34602125664, conclusion: failure, class: pull_request_changelog_front_door, disposition: missing_closeout_changelog_entry_added_and_canonical_local_pr_context_used_before_final_push}
+    implementation_pr:
+      number: 155
+      merge_commit: 99930501c1c4fc1773a75f3008c94a1646397852
+      governance_run: {id: 34597232975, attempt: 1}
+      package_run: {id: 34597232905, attempt: 1}
+      finalizer_run: {id: 34598014357, attempt: 1}
+      status_publisher_run: {id: 34598045233, attempt: 1}
+    controller_target_pr:
+      number: 156
+      merge_commit: d9b0de9d6afbf70ed9ea6b8563550e559dd4b779
+      governance_run: {id: 34599451102, attempt: 1}
+      package_run: {id: 34599451051, attempt: 1}
+      finalizer_run: {id: 34600302428, attempt: 1}
+      status_publisher_run: {id: 34600336904, attempt: 1}
+    controller_confirmation_pr:
+      number: 157
+      merge_commit: e1053ae4530e595d3f5453668f6c93a35fec45fb
+      governance_run: {id: 34602493577, attempt: 1}
+      package_run: {id: 34602493385, attempt: 1}
+      finalizer_run: {id: 34603431228, attempt: 1}
+      status_publisher_run: {id: 34603469044, attempt: 1}
+    controller_installation:
+      artifact_id: 10263351503
+      artifact_digest: sha256:d94444394610decf9340a65d86e43c9e29623ae7f3dfc3fddeca3079d072f867
+      installed_commit: 99930501c1c4fc1773a75f3008c94a1646397852
+      bootstrap: {run_id: 34600419661, attempt: 1, trusted_runner_jobs_passed: 2}
+      probe: {run_id: 34600500924, attempt: 1, trusted_runner_jobs_passed: 2}
+    final_exact_main:
+      subject: {commit: e1053ae4530e595d3f5453668f6c93a35fec45fb, tree: 5cf8aa0e270069d61de01d96fcbe409cbed8fd5f}
+      admission: {run_id: 34603532743, attempt: 1, ordinal: '34603532743001001'}
+      finalizer: {run_id: 34604461291, attempt: 1, artifact_id: 10265348468, artifact_digest: sha256:f7c11ad2c6b0272557be587f3c81d464aea4c2e88292c0b4b2225db807d9ea4f}
+      status_publisher: {run_id: 34604510046, attempt: 1}
+    scheduled_mutants:
+    - {profile: high-value, run_id: 34604561705, attempt: 1, result: passed}
+    - {profile: full, run_id: 34604564121, attempt: 1, result: passed}
+  release_artifacts:
+    wheel: {name: bcf_governance-1.1.0-py3-none-any.whl, sha256: c68daac94bd22255ead32caf2c1cf98844dc6b1c3cb9d81a0afdd7f3e0ed3be2}
+    sdist: {name: bcf_governance-1.1.0.tar.gz, sha256: db204c4918a59953b9fcb90639f4d3bef36a3548818d9f17cd8b567ccc946be2}
+    checksums: {name: SHA256SUMS, sha256: 376acd897e40aedb8d9d049138f75476f5b520f621f5cc5e2a8fbda792ac3314}
 rollout:
-  implementation_pr: pending
-  exact_main_certification: pending
-  scheduled_mutants: pending
-  release_build_verify_collect: pending
-  immutable_publication: pending
-  issues_closed: pending
+  implementation_pr: {number: 155, status: merged}
+  controller_target_pr: {number: 156, status: merged}
+  controller_confirmation_pr: {number: 157, status: merged}
+  exact_main_certification: passed
+  scheduled_mutants: passed
+  release_build_verify_collect: passed
+  immutable_publication: {release_id: 387076379, publisher_run: 34606763804, immutable: true}
+  issues_closed: [152, 153, 154]
