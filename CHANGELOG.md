@@ -40,6 +40,11 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Closed population adapters reject duplicate Python decorators, exports,
   canonical-YAML entries and keys, and TypeScript exports instead of allowing
   one declaration to hide another.
+- Negative-control target freshness is evaluated after the governed target's
+  own semantics, so an active control reports its declared failure cause while
+  stale controls in an unmodified baseline still fail closed.
+- Primary semantic violations are reported before derived semantic-lock drift,
+  preventing projection freshness from masking the defect that caused it.
 - Documentation now distinguishes semantic scope, operation effects, parity,
   and provenance; patch-specific upgrade prose and the release checklist were
   consolidated into durable maintainer guidance and exact audit custody.

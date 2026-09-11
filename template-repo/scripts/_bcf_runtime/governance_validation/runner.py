@@ -106,8 +106,18 @@ def validate_repo_root(
             "governance/gate-contracts.yml gates must exactly match profile-required targets"
         )
     _validate_gate_contract_registry(
-        repo_root, governance_profile, gate_contracts, evidence_policy
+        repo_root,
+        governance_profile,
+        gate_contracts,
+        evidence_policy,
+        check_mutation_state=False,
     )
+    if (repo_root / "governance/canonical-representations.yml").is_file():
+        try:
+            semantic_registry = load_semantic_ownership_registry(repo_root)
+            validate_semantic_contract_structure(repo_root, semantic_registry)
+        except (SemanticOwnershipRegistryError, SemanticAuthorityError) as exc:
+            raise GovernanceValidationError(str(exc)) from exc
     test_tombstones_path = _validate_test_tombstones(repo_root, schema_cache)
 
     _validate_schema(repo_root, schema_cache, agents, schema_name="agents.schema.json", context="AGENTS.yml")
@@ -169,13 +179,6 @@ def validate_repo_root(
             raise GovernanceValidationError(
                 "generated CI workflow drift: " + ", ".join(graph_parity.changed_paths)
             )
-    if (repo_root / "governance/canonical-representations.yml").is_file():
-        try:
-            semantic_registry = load_semantic_ownership_registry(repo_root)
-            validate_semantic_contract_structure(repo_root, semantic_registry)
-        except (SemanticOwnershipRegistryError, SemanticAuthorityError) as exc:
-            raise GovernanceValidationError(str(exc)) from exc
-
     if not allow_placeholders:
         optional_paths = [
             repo_root / relative_path
@@ -226,6 +229,12 @@ def validate_repo_root(
         repo_root,
         governance_profile,
         allow_release_gate_placeholders=allow_release_gate_placeholders,
+    )
+    # Mutation freshness is a baseline invariant, not the semantic cause that an
+    # active negative control is designed to expose. Run it only after every
+    # governed target has had the opportunity to report its own defect.
+    _validate_gate_contract_registry(
+        repo_root, governance_profile, gate_contracts, evidence_policy
     )
 
 

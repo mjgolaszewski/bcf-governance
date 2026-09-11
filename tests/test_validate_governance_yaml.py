@@ -15,6 +15,9 @@ import pytest
 import yaml
 
 from bcf_governance.tooling import preflight
+from bcf_governance.tooling.release_runtime_verification import (
+    is_release_sdist_test_context,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -789,6 +792,71 @@ def test_profile_v2_rejects_duplicated_evidence_semantic_ownership(
 
     with pytest.raises(GovernanceValidationError, match="owned only by governance/gate-contracts.yml"):
         validate_repo_root(repo_root)
+
+
+def test_semantic_control_reports_its_cause_before_baseline_mutation_freshness(
+    tmp_path: Path,
+) -> None:
+    worktree = tmp_path / "repo"
+    subprocess.run(
+        ["git", "worktree", "add", "--quiet", "--detach", str(worktree), "HEAD"],
+        cwd=REPO_ROOT,
+        check=True,
+    )
+    try:
+        operations_path = worktree / "governance/application-operations.yml"
+        operations_text = operations_path.read_text(encoding="utf-8")
+        original = "population_key: doctor, family: exposure_report"
+        assert operations_text.count(original) == 1
+        operations_path.write_text(
+            operations_text.replace(
+                original,
+                "population_key: doctor, family: missing_semantic_family",
+            ),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(GovernanceValidationError) as excinfo:
+            validate_repo_root(worktree)
+        assert "references an unknown semantic family" in str(excinfo.value)
+        assert "already-mutated" not in str(excinfo.value)
+    finally:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", str(worktree)],
+            cwd=REPO_ROOT,
+            check=False,
+        )
+
+
+def test_clean_baseline_still_rejects_an_already_satisfied_control(
+    tmp_path: Path,
+) -> None:
+    if is_release_sdist_test_context(REPO_ROOT):
+        pytest.skip("exact repository validation requires original Git custody")
+    worktree = tmp_path / "repo"
+    subprocess.run(
+        ["git", "worktree", "add", "--quiet", "--detach", str(worktree), "HEAD"],
+        cwd=REPO_ROOT,
+        check=True,
+        )
+    try:
+        contracts_path = worktree / "governance/gate-contracts.yml"
+        contracts_text = contracts_path.read_text(encoding="utf-8")
+        original = "value: missing_semantic_family"
+        assert contracts_text.count(original) == 1
+        contracts_path.write_text(
+            contracts_text.replace(original, "value: exposure_report"),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(GovernanceValidationError, match="already-mutated"):
+            validate_repo_root(worktree)
+    finally:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", str(worktree)],
+            cwd=REPO_ROOT,
+            check=False,
+        )
 
 
 def test_validate_repo_root_does_not_certify_release_loop_from_command_text(tmp_path: Path) -> None:

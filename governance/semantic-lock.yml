@@ -8,7 +8,7 @@ contracts:
   semantic_families: 010e0ac8860d8822bd4364cc5832a5cc288b6d6016b0679208e38c96cc9394d6
   application_operations: 16ef009e2c96173a30f79d6b06f8e44809c9be60ec2e543340a44dc288458536
   canonical_representations: 0bfbe87f964428f1fdec0261ed26188169b29f9aef224632e728cd001d3b210c
-source_inventory_sha256: 11ed1bf7b6999973d2f72c6217bea013bf1c8da99a88d2ec35d60a946d3b37fd
+source_inventory_sha256: ef11c22ed8605cbe759f5a94ab91ac62402d43d0fdca331c71960cb33b71afe6
 projection_outputs:
 - path: bcf_governance/pack/template-repo/scripts/_bcf_runtime/check_governance_exposure.py
   canonical_source: bcf_governance/tooling/check_governance_exposure.py
@@ -118,8 +118,8 @@ projection_outputs:
 - path: bcf_governance/pack/template-repo/scripts/_bcf_runtime/semantic_authority_contracts.py
   canonical_source: bcf_governance/tooling/semantic_authority_contracts.py
   recipe_sha256: 5fa9cda3c75b3182c541e6a1dd754c3efcaa862c56f9ee83553dcec3869abcb6
-  source_sha256: fc5d3069af6e40ce8bf407e9a04b968acccf91cb4d8c48a1e18ed98591e33177
-  output_sha256: fc5d3069af6e40ce8bf407e9a04b968acccf91cb4d8c48a1e18ed98591e33177
+  source_sha256: 08e95a19140acb6d088c58e94ab1a2366da5b139a8bc148411ded25ba7c4a5a5
+  output_sha256: 08e95a19140acb6d088c58e94ab1a2366da5b139a8bc148411ded25ba7c4a5a5
 - path: bcf_governance/pack/template-repo/scripts/_bcf_runtime/semantic_authority_migrations.py
   canonical_source: bcf_governance/tooling/semantic_authority_migrations.py
   recipe_sha256: 5fa9cda3c75b3182c541e6a1dd754c3efcaa862c56f9ee83553dcec3869abcb6
@@ -258,8 +258,8 @@ projection_outputs:
 - path: template-repo/scripts/_bcf_runtime/semantic_authority_contracts.py
   canonical_source: bcf_governance/tooling/semantic_authority_contracts.py
   recipe_sha256: 5fa9cda3c75b3182c541e6a1dd754c3efcaa862c56f9ee83553dcec3869abcb6
-  source_sha256: fc5d3069af6e40ce8bf407e9a04b968acccf91cb4d8c48a1e18ed98591e33177
-  output_sha256: fc5d3069af6e40ce8bf407e9a04b968acccf91cb4d8c48a1e18ed98591e33177
+  source_sha256: 08e95a19140acb6d088c58e94ab1a2366da5b139a8bc148411ded25ba7c4a5a5
+  output_sha256: 08e95a19140acb6d088c58e94ab1a2366da5b139a8bc148411ded25ba7c4a5a5
 - path: template-repo/scripts/_bcf_runtime/semantic_authority_migrations.py
   canonical_source: bcf_governance/tooling/semantic_authority_migrations.py
   recipe_sha256: 5fa9cda3c75b3182c541e6a1dd754c3efcaa862c56f9ee83553dcec3869abcb6

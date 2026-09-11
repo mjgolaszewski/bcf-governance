@@ -509,7 +509,7 @@ def _validate_operation_structure(
             )
         if known_families is not None and operation["family"] not in known_families:
             raise SemanticAuthorityError(
-                f"operation {operation['id']} references unknown semantic family"
+                f"operation {operation['id']} references an unknown semantic family"
             )
     return population_ids
 

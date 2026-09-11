@@ -12,6 +12,9 @@ from pathlib import Path
 import pytest
 import yaml
 
+from bcf_governance.tooling.release_runtime_verification import (
+    is_release_sdist_test_context,
+)
 from bcf_governance.tooling.test_manifests import _selector_map_from_nodes
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -961,6 +964,38 @@ def test_transported_session_supports_a_dependent_producer_without_rewriting_inp
         for relative, content in before.items()
         if (path := transported / relative).is_file()
     )
+
+
+def test_governance_validation_controls_preserve_their_declared_failure_causes(
+    tmp_path: Path,
+) -> None:
+    if is_release_sdist_test_context(REPO_ROOT):
+        pytest.skip("exact repository validation requires original Git custody")
+    producer = local_producer_identity(REPO_ROOT, "local")
+    session = allocate_session(
+        REPO_ROOT,
+        tmp_path / "evidence",
+        ["governance-validate"],
+        expected_producers=["local"],
+        producer_identity=producer,
+    )
+
+    receipt_path = capture_gate(
+        REPO_ROOT,
+        "governance-validate",
+        session.root / "governance-validate",
+        python_executable=Path(sys.executable),
+        session_manifest=session.manifest_path,
+    )
+
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    controls = receipt["behavioral_probes"]
+    assert receipt["result"] == "passed"
+    assert {control["id"] for control in controls} == {
+        "authored-verified-state-is-rejected",
+        "unknown-operation-family-is-rejected",
+    }
+    assert all(control["oracle_observation"]["satisfied"] for control in controls)
 
 
 def test_evidence_session_rejects_symlinked_artifact_root(tmp_path: Path) -> None:

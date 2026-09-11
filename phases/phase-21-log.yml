@@ -44,7 +44,7 @@ execution_evidence:
   - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full
   executed_commands:
   - semantic ownership scan and lock check (21 families; 19 operations; 56 projections; zero exceptions)
-  - exact test-manifest checks (827 source nodes; 389 contract nodes)
+  - exact test-manifest checks (831 source nodes; 389 contract nodes)
   - validator full mutant profile (25 of 25 killed)
   - semantic full mutant profile (12 of 12 killed)
   - governance validation exposure all eight architecture gates lint typecheck runtime and security gates (pass)

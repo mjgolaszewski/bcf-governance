@@ -26,7 +26,12 @@ TEST_COMMAND_POLICIES = {
 
 
 def _validate_gate_contract_registry(
-    repo_root: Path, profile: dict[str, Any], contracts: dict[str, Any], policy: dict[str, Any]
+    repo_root: Path,
+    profile: dict[str, Any],
+    contracts: dict[str, Any],
+    policy: dict[str, Any],
+    *,
+    check_mutation_state: bool = True,
 ) -> None:
     if str(profile.get("profile_contract_version", "1.0")) == "2.0" and policy.get("gate_overrides"):
         raise GovernanceValidationError(
@@ -138,42 +143,43 @@ def _validate_gate_contract_registry(
                     mutation_path,
                     context=f"gate contract {target}.negative_controls[{index}].mutation.path",
                 )
-                mutation_file = repo_root / mutation_path
-                search = mutation.get("search")
-                yaml_path = mutation.get("yaml_path")
-                if not mutation_file.is_file() or mutation_file.is_symlink():
-                    mutation_issues.append(f"{control.get('id')}:missing-path")
-                    continue
-                try:
-                    mode = mutation_mode(mutation, suffix=mutation_file.suffix)
-                except YAMLMutationPathError as exc:
-                    issue = (
-                        "untyped-yaml-mutation"
-                        if "byte_level_reason" in str(exc)
-                        else "invalid-mutation-mode"
-                    )
-                    mutation_issues.append(f"{control.get('id')}:{issue}")
-                    continue
-                if mode == "text":
-                    occurrences = mutation_file.read_text(encoding="utf-8").count(search)
-                    if occurrences != 1:
-                        mutation_issues.append(
-                            f"{control.get('id')}:search-count={occurrences}"
-                        )
-                else:
-                    current: Any = yaml.safe_load(
-                        mutation_file.read_text(encoding="utf-8")
-                    )
+                if check_mutation_state:
+                    mutation_file = repo_root / mutation_path
+                    search = mutation.get("search")
+                    yaml_path = mutation.get("yaml_path")
+                    if not mutation_file.is_file() or mutation_file.is_symlink():
+                        mutation_issues.append(f"{control.get('id')}:missing-path")
+                        continue
                     try:
-                        value = typed_mutation_value(mutation)
-                        current = resolve_yaml_target(current, yaml_path).value
-                    except YAMLMutationPathError:
-                        mutation_issues.append(f"{control.get('id')}:stale-yaml-path")
-                    else:
-                        if current == value:
+                        mode = mutation_mode(mutation, suffix=mutation_file.suffix)
+                    except YAMLMutationPathError as exc:
+                        issue = (
+                            "untyped-yaml-mutation"
+                            if "byte_level_reason" in str(exc)
+                            else "invalid-mutation-mode"
+                        )
+                        mutation_issues.append(f"{control.get('id')}:{issue}")
+                        continue
+                    if mode == "text":
+                        occurrences = mutation_file.read_text(encoding="utf-8").count(search)
+                        if occurrences != 1:
                             mutation_issues.append(
-                                f"{control.get('id')}:already-mutated"
+                                f"{control.get('id')}:search-count={occurrences}"
                             )
+                    else:
+                        current: Any = yaml.safe_load(
+                            mutation_file.read_text(encoding="utf-8")
+                        )
+                        try:
+                            value = typed_mutation_value(mutation)
+                            current = resolve_yaml_target(current, yaml_path).value
+                        except YAMLMutationPathError:
+                            mutation_issues.append(f"{control.get('id')}:stale-yaml-path")
+                        else:
+                            if current == value:
+                                mutation_issues.append(
+                                    f"{control.get('id')}:already-mutated"
+                                )
             oracle = _require_mapping(
                 control.get("oracle"),
                 context=f"gate contract {target}.negative_controls[{index}].oracle",

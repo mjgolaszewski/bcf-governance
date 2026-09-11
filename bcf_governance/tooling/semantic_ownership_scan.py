@@ -317,7 +317,12 @@ def run_scan(repo_root: Path) -> dict[str, Any]:
             browser_contract_roots=contract.browser_contract_roots,
         )
     evaluation = evaluate_discovery(inventory, registry, typescript_inventory)
-    authority = validate_semantic_authority(repo_root, inventory, registry)
+    authority = validate_semantic_authority(
+        repo_root,
+        inventory,
+        registry,
+        require_lock=evaluation["verdict"] == "conformant",
+    )
     file_rows = [*inventory["files"], *typescript_inventory["files"]]
     file_material = "\n".join(
         f"{value['path']}:{value['sha256']}" for value in file_rows

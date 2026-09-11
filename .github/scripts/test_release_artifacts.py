@@ -84,6 +84,14 @@ ALLOWED_SDIST_CUSTODY_SKIPS = {
         "tests.test_self_governance_contracts",
         "test_required_repository_artifact_contract_is_executable",
     ),
+    (
+        "tests.test_governance_evidence",
+        "test_governance_validation_controls_preserve_their_declared_failure_causes",
+    ),
+    (
+        "tests.test_validate_governance_yaml",
+        "test_clean_baseline_still_rejects_an_already_satisfied_control",
+    ),
 }
 
 

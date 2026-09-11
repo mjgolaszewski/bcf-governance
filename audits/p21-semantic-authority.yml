@@ -89,12 +89,15 @@ compatibility:
   fresh_regulated_v2: complete semantic config required and all three capabilities blocking
   top_level_cli_inventory: unchanged
 source_hashes:
-  bcf_governance/tooling/semantic_authority_contracts.py: fc5d3069af6e40ce8bf407e9a04b968acccf91cb4d8c48a1e18ed98591e33177
+  bcf_governance/tooling/semantic_authority_contracts.py: 08e95a19140acb6d088c58e94ab1a2366da5b139a8bc148411ded25ba7c4a5a5
   bcf_governance/tooling/semantic_operation_effects.py: 92496e993e887cc4149ccf3cb9b3df56a7f57c2d41cffe34cbc624b57d574acf
   bcf_governance/tooling/semantic_operation_typescript.py: 070f1f0a40248d2154481c202b038a71d00733fe1c0e88cbec7d0c65090761c1
   bcf_governance/tooling/semantic_derivations.py: 6fc00883e23768c38d9afdd09bf3f8f5bcd643b73eda94c56fe6d77fefc07940
   bcf_governance/tooling/semantic_adoption_diagnostics.py: 3742aa705118ea38716755a45883fdb52fb931c191bf08342634d93790d158a1
+  bcf_governance/tooling/semantic_ownership_scan.py: 1b3073b45b150247e1492e94ad50fb52f7ab504ef38460f85b419eb278d72a50
   bcf_governance/tooling/semantic_yaml.py: dd8c267d2cc8dbdffe47e94eb6e096355765ecb73265384d06ac80a4de13c0c4
+  bcf_governance/tooling/governance_validation/evidence_contracts.py: c122a7bc00c790c7513a3d989c9fcf08df9f996e77e48a314eb6a6e807d22c4c
+  bcf_governance/tooling/governance_validation/runner.py: b1061ac9e4ef29ebb0673a03d7c42871b069449b96e855429b7dd6d5f0841a4e
   schemas/semantic-families.schema.json: 952a979c9ea51b30c44adfac8ce8b1bf490be1a9fd7d4ee1189ccea65f4c9b77
   schemas/application-operations.schema.json: 3b5b6133f7b2cba47fda6e50a3d45b0b046127dbfe36806ca3f08724408bee6a
   schemas/semantic-lock.schema.json: bf8f06dc9bcd1ad869de204db363711d4265aae00880232d68241e717f6491ae
@@ -133,7 +136,7 @@ editorial_review:
   packaged_history_behavior: current document custody remains verifiable when the original base Git object is absent from an extracted sdist
 validation:
   status: local_pre_pin_pass
-  exact_populations: {source_tests: 827, contract_tests: 389, required_gates: 21, gate_negative_controls: 210}
+  exact_populations: {source_tests: 831, contract_tests: 389, required_gates: 21, gate_negative_controls: 210}
   mutation_profiles:
   - {profile: full, result: pass, killed: 25, total: 25}
   - {profile: semantic-full, result: pass, killed: 12, total: 12}
@@ -142,6 +145,18 @@ validation:
   - canonical standalone and packaged runtime bytes match
   - semantic lock and CI graph lock are mechanically current
   - generated CI retains 18 workflows, 29 jobs, and four extensions
+  pr_observation:
+    run_id: 34585727203
+    attempt: 1
+    disposition: cancelled_after_first_failed_lane
+    failure_class: baseline negative-control freshness masked the active control's intended semantic diagnostic
+    remediation: structural control validation remains in preflight while mutation-state freshness runs after governed target semantics
+    regressions:
+    - tests/test_validate_governance_yaml.py::test_semantic_control_reports_its_cause_before_baseline_mutation_freshness
+    - tests/test_validate_governance_yaml.py::test_clean_baseline_still_rejects_an_already_satisfied_control
+    - tests/test_governance_evidence.py::test_governance_validation_controls_preserve_their_declared_failure_causes
+    - tests/test_semantic_ownership.py::test_primary_semantic_violation_precedes_derived_lock_freshness
+    - tests/test_governance_evidence.py::test_governance_validation_controls_preserve_their_declared_failure_causes
   provisional_artifacts:
     wheel: passed
     extracted_sdist: pending final workflow pin commit

@@ -145,6 +145,40 @@ def test_downstream_normalization_is_causal() -> None:
     )
 
 
+def test_primary_semantic_violation_precedes_derived_lock_freshness(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    discovered, registry = _current_inventory_and_registry()
+    evaluation = scan.evaluate_discovery(discovered, registry)
+    evaluation = {
+        **evaluation,
+        "verdict": "non_conformant",
+        "blocking_violation_count": 1,
+        "violations": [
+            {
+                "semantic_id": registry.entries[0].semantic_id,
+                "kind": "downstream_normalization",
+                "blocking": True,
+            }
+        ],
+    }
+    observed_lock_requirements: list[bool] = []
+    original_validate = scan.validate_semantic_authority
+
+    monkeypatch.setattr(scan, "evaluate_discovery", lambda *_args: evaluation)
+
+    def validate(*args: object, require_lock: bool = True, **kwargs: object):
+        observed_lock_requirements.append(require_lock)
+        return original_validate(*args, require_lock=False, **kwargs)
+
+    monkeypatch.setattr(scan, "validate_semantic_authority", validate)
+
+    report = scan.run_scan(REPO_ROOT)
+
+    assert report["verdict"] == "non_conformant"
+    assert observed_lock_requirements == [False]
+
+
 def test_fail_closed_dynamic_flow_is_causal() -> None:
     discovered, registry = _current_inventory_and_registry()
     discovered["unresolved"].append(
