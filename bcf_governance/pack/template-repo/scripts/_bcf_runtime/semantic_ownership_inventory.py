@@ -409,9 +409,7 @@ class _FunctionVisitor(ast.NodeVisitor):
                     "parameter_origins": parameter_origins,
                 }
             )
-        if name in DYNAMIC_CALLS or not isinstance(
-            node.func, (ast.Name, ast.Attribute)
-        ):
+        if name in DYNAMIC_CALLS:
             self.unresolved.append(
                 {
                     "kind": "dynamic_call",

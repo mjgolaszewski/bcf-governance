@@ -173,6 +173,16 @@ def method_dispatch_reference(
         return None
     if (
         receiver is not None
+        and isinstance(function, ast.Subscript)
+        and root_name(function) == receiver
+    ):
+        return {
+            "kind": "dynamic_receiver_expression",
+            "class_symbol": class_symbol,
+            "method": ast.unparse(function),
+        }
+    if (
+        receiver is not None
         and isinstance(function, ast.Attribute)
         and isinstance(function.value, ast.Attribute)
         and root_name(function.value) == receiver

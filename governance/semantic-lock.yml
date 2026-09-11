@@ -8,7 +8,7 @@ contracts:
   semantic_families: 010e0ac8860d8822bd4364cc5832a5cc288b6d6016b0679208e38c96cc9394d6
   application_operations: 16ef009e2c96173a30f79d6b06f8e44809c9be60ec2e543340a44dc288458536
   canonical_representations: 6d4777a03e7133ef23d14ef74f4921fc745eeb83a96616fdac22797c701ad1f0
-source_inventory_sha256: 9ad80578a8618988662a28c3e91d5d6d16aa8e4bbb11b7438621e8f3d15d19f6
+source_inventory_sha256: 9e6385d8c148e6acf6d796830a6b8489e89e37f2f3e9365035ace907c4242a68
 projection_outputs:
 - path: bcf_governance/pack/template-repo/scripts/_bcf_runtime/check_governance_exposure.py
   canonical_source: bcf_governance/tooling/check_governance_exposure.py
@@ -143,13 +143,13 @@ projection_outputs:
 - path: bcf_governance/pack/template-repo/scripts/_bcf_runtime/semantic_ownership_inventory.py
   canonical_source: bcf_governance/tooling/semantic_ownership_inventory.py
   recipe_sha256: 5fa9cda3c75b3182c541e6a1dd754c3efcaa862c56f9ee83553dcec3869abcb6
-  source_sha256: 468860a1b49d92ab915224dca49ae85b3c2933a1796545d68dfe2d59ca57d1e4
-  output_sha256: 468860a1b49d92ab915224dca49ae85b3c2933a1796545d68dfe2d59ca57d1e4
+  source_sha256: 78bf11c0f554c10cd22515fc568fcbb3f083c54dd1f2257070f011faf84be30a
+  output_sha256: 78bf11c0f554c10cd22515fc568fcbb3f083c54dd1f2257070f011faf84be30a
 - path: bcf_governance/pack/template-repo/scripts/_bcf_runtime/semantic_python_method_identity.py
   canonical_source: bcf_governance/tooling/semantic_python_method_identity.py
   recipe_sha256: 5fa9cda3c75b3182c541e6a1dd754c3efcaa862c56f9ee83553dcec3869abcb6
-  source_sha256: c18af81f8c31ab2196da7d6fb8ed615dd11e65ecb249cee7db4e41e40b533b7a
-  output_sha256: c18af81f8c31ab2196da7d6fb8ed615dd11e65ecb249cee7db4e41e40b533b7a
+  source_sha256: a8d0ba49ade34cebf8ccce8df7a75a6db98df25ba243a01720d6ff274c0a2917
+  output_sha256: a8d0ba49ade34cebf8ccce8df7a75a6db98df25ba243a01720d6ff274c0a2917
 - path: bcf_governance/pack/template-repo/scripts/_bcf_runtime/trusted_inputs.py
   canonical_source: bcf_governance/tooling/trusted_inputs.py
   recipe_sha256: 5fa9cda3c75b3182c541e6a1dd754c3efcaa862c56f9ee83553dcec3869abcb6
@@ -293,13 +293,13 @@ projection_outputs:
 - path: template-repo/scripts/_bcf_runtime/semantic_ownership_inventory.py
   canonical_source: bcf_governance/tooling/semantic_ownership_inventory.py
   recipe_sha256: 5fa9cda3c75b3182c541e6a1dd754c3efcaa862c56f9ee83553dcec3869abcb6
-  source_sha256: 468860a1b49d92ab915224dca49ae85b3c2933a1796545d68dfe2d59ca57d1e4
-  output_sha256: 468860a1b49d92ab915224dca49ae85b3c2933a1796545d68dfe2d59ca57d1e4
+  source_sha256: 78bf11c0f554c10cd22515fc568fcbb3f083c54dd1f2257070f011faf84be30a
+  output_sha256: 78bf11c0f554c10cd22515fc568fcbb3f083c54dd1f2257070f011faf84be30a
 - path: template-repo/scripts/_bcf_runtime/semantic_python_method_identity.py
   canonical_source: bcf_governance/tooling/semantic_python_method_identity.py
   recipe_sha256: 5fa9cda3c75b3182c541e6a1dd754c3efcaa862c56f9ee83553dcec3869abcb6
-  source_sha256: c18af81f8c31ab2196da7d6fb8ed615dd11e65ecb249cee7db4e41e40b533b7a
-  output_sha256: c18af81f8c31ab2196da7d6fb8ed615dd11e65ecb249cee7db4e41e40b533b7a
+  source_sha256: a8d0ba49ade34cebf8ccce8df7a75a6db98df25ba243a01720d6ff274c0a2917
+  output_sha256: a8d0ba49ade34cebf8ccce8df7a75a6db98df25ba243a01720d6ff274c0a2917
 - path: template-repo/scripts/_bcf_runtime/trusted_inputs.py
   canonical_source: bcf_governance/tooling/trusted_inputs.py
   recipe_sha256: 5fa9cda3c75b3182c541e6a1dd754c3efcaa862c56f9ee83553dcec3869abcb6
