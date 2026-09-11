@@ -40,11 +40,24 @@ controls:
   causal_mutants: [python-import-root-normalization-must-fail]
 exclusions: [Racecar mutation, CI graph or workflow topology, receipt schema, profile contracts, authority contracts, gate count]
 validation:
-  status: in_progress
-  implementation_commit: pending
-  implementation_tree: pending
-  exact_populations: {source_tests: pending, contract_tests: pending, required_gates: 21, gate_negative_controls: pending}
-  consumer_proof: {repository: mjgolaszewski/racecar, commit: pending, disposition: read_only}
-  generated_parity: pending
-  mutation_profiles: pending
-  artifact_verification: pending
+  status: completed
+  implementation_commit: a0cb25e98308de89187ca69fbbfab30796cb7b1d
+  implementation_tree: 6d79de7b71a39bfbb07e02f6466c95a883fa2972
+  exact_populations: {source_tests: 841, contract_tests: 389, required_gates: 21, gate_negative_controls: 211}
+  consumer_proof: {repository: mjgolaszewski/racecar, commit: 95a8866cf8fdcd92674876931385d2b88eec4608, tree: f1182d57258520bba22aec462b06e753060b8a39, import_root: backend/src, tracked_python_files: 273, constructor_facts: 3994, disposition: read_only_exact_issue_proof_passed_full_upgrade_not_claimed}
+  generated_parity: canonical_standalone_template_and_packaged_runtime_bytes_identical
+  mutation_profiles: {full: 25, semantic_full: 12, result: all_killed_for_declared_causes}
+  artifact_verification: {wheel_sha256: 93e0dca05e88f8093419f149a56be5d72dd50b90fc7dcc65eb534e693dee94dd, sdist_sha256: 724ce90916ff8d92210397b9fb7d0cccdd1e01dec27cda7153e87ae6a6848de2, result: 836_passed_5_declared_git_custody_skips}
+  pull_requests:
+  - {number: 160, reviewed_head: b4b201cf10a2e438a8ac02b7cb890f49507f46d9, governance_run: 34624059584, package_run: 34624059596, attempts: 1, merge_commit: a0cb25e98308de89187ca69fbbfab30796cb7b1d}
+  - {number: 161, reviewed_head: 68264d7024335b6dc4059c74aa7f13785bb853c3, governance_run: 34625548667, package_run: 34625548841, attempts: 1, merge_commit: d67a95be16d3ab0ba05299d72e224f0743d3bd17}
+  controller:
+    artifact: {id: 10274391593, run_id: 34624865063, run_attempt: 1, provider_digest: 'sha256:335e0cf94a357ed8c2ca13d3986337c3c01f5de8b36775131d789bfbd9f91717', wheel_sha256: 289a7a73a6cf16abf95ee7eec4eec3a275bc179dba4448ee5368590638e04c7d}
+    bootstrap: {run_id: 34626883865, run_attempt: 1, result: both_trusted_runners_passed}
+    probe: {run_id: 34626953649, run_attempt: 1, result: both_trusted_runners_passed}
+  provider_transient:
+    run_id: 34626630950
+    failed_attempt: 1
+    recovered_attempt: 2
+    classification: fail_closed_30_second_check_runs_network_timeout
+    impact: certification remained pending and no candidate work was repeated

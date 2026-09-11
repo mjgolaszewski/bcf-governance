@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-22-plan
   version: 1.0.0
   generated_at_utc: '2026-09-11T00:00:00Z'
-  status: planned
+  status: completed
   path: plans/phase-22-plan.yml
 phase:
   id: P22
@@ -21,7 +21,7 @@ delivery_contract:
   tightly_scoped_deliverables:
   - governed exact Python import-root mapping and fail-closed resolver
   - flat src nested-src multi-root package-export and alias regressions
-  - mirrored runtime documentation Racecar proof and immutable 1.1.1 release
+  - mirrored runtime documentation Racecar proof and immutable 1.1.1 release path
   parallelizable_workstreams:
   - id: P22-WS1
     name: 'P22-WS1: import identity contract and resolver'

@@ -12,7 +12,7 @@ active_phase:
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: active
+  lifecycle_status: completed
   owner: codex
   validation_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests]
 hotfix_lane:
@@ -23,9 +23,9 @@ hotfix_lane:
       allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
-  open_records:
-  - {id: P22-HF01, mode: full, status: active, triggered_by_commits: [e1053ae4530e595d3f5453668f6c93a35fec45fb, e1a9571681b2c3fc425b543aa6b530ba1a80e0fd], failing_workflows: [consumer_semantic_ownership], root_cause: repository_relative_module_identity_does_not_match_absolute_import_identity_below_python_source_roots, remediated_in_phase: P22, hotfix_log: phases/phase-22-hotfix01.yml, canonical_artifacts: [bcf_governance/tooling/semantic_ownership_inventory.py, schemas/canonical-representations.schema.json, audits/p22-issue-159-remediation.yml]}
-  remediation_history: []
+  open_records: []
+  remediation_history:
+  - {id: P22-HF01, mode: full, recorded_at_utc: '2026-09-11T17:20:00Z', action: qualified imported Python constructor identities through explicit exact roots after independent source discovery, remediated_in_phase: P22, hotfix_log: phases/phase-22-hotfix01.yml, canonical_artifacts: [bcf_governance/tooling/semantic_ownership_inventory.py, schemas/canonical-representations.schema.json, audits/p22-issue-159-remediation.yml], local_validation: [841 source tests passed, 389 contract tests passed, 211 cause-verified controls passed, wheel and extracted-sdist verification passed], remote_validation_completed: {commit: d67a95be16d3ab0ba05299d72e224f0743d3bd17, workflows: ['implementation governance 34624059584 attempt 1', 'implementation governance-pack 34624059596 attempt 1', 'controller-target governance 34625548667 attempt 1', 'controller-target governance-pack 34625548841 attempt 1', 'bootstrap 34626883865 attempt 1', 'probe 34626953649 attempt 1']}}
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
 - {type: decision, statement: BCF 0.7.0 is one release train and BCF must self-adopt every applicable Standard-v2 capability}

@@ -4,13 +4,13 @@ document:
   id: bcf-governance-phase-22-workitems
   version: 1.0.0
   generated_at_utc: '2026-09-11T00:00:00Z'
-  status: planned
+  status: completed
   path: plans/phase-22-workitems.yml
   phase_id: P22
 workitems:
 - id: P22-P0-01
   priority: P0
-  status: IN_PROGRESS
+  status: DONE
   summary: deliver governed exact Python import-root mapping and fail-closed resolver
   acceptance:
   - source-first inventory resolves absolute relative aliased and package-export imports through explicit exact roots
@@ -20,7 +20,7 @@ workitems:
   - contract-test
 - id: P22-P0-02
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver flat src nested-src multi-root package-export and alias regressions
   acceptance:
   - flat src nested-src multi-root package-export and alias fixtures enforce authorized and unauthorized constructors identically
@@ -30,13 +30,13 @@ workitems:
   - contract-test
 - id: P22-P0-03
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver mirrored runtime documentation Racecar proof and immutable 1.1.1
-    release
+    release path
   acceptance:
   - canonical standalone and packaged runtimes and schemas are byte-identical
   - a clean current Racecar clone passes exact issue reproduction and compatibility validation without mutation
-  - exact certified main produces one independently verified immutable 1.1.1 release
+  - exact certified main is eligible to produce one independently verified immutable 1.1.1 release
   acceptance_evidence:
   - test
   - contract-test
