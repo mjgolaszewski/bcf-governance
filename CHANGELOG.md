@@ -8,6 +8,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [1.1.1] - 2026-09-11
 
+Published as immutable GitHub release `387251389` from exact certified merge
+`fe85d200c16ef296280fef59c8f7888978e43d2c`.
+
 ### Fixed
 
 - Fixed issue #159 by qualifying imported Python constructor identities through
