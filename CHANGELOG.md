@@ -53,6 +53,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - The self-hosting controller target is projected from the authenticated
   exact-main artifact; its provider identity and wheel digest are mechanically
   compiled rather than copied into workflow or policy files.
+- The target becomes installed authority only after provider-compiled bootstrap
+  and probe evidence succeeds independently on both declared trusted runners;
+  release roles remain fail closed until that proof is projected.
 
 ### Compatibility
 
