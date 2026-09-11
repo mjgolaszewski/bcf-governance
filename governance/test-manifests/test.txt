@@ -248,7 +248,8 @@ tests.test_ci_graph::test_graph_growth_preserves_deterministic_gate_ownership_an
 tests.test_ci_graph::test_graph_lock_repairs_registered_extension_digest
 tests.test_ci_graph::test_graph_rejects_semantic_defect_classes[<lambda>-cycle]
 tests.test_ci_graph::test_graph_rejects_semantic_defect_classes[<lambda>-fan-in]
-tests.test_ci_graph::test_graph_rejects_semantic_defect_classes[<lambda>-hosted waiter]
+tests.test_ci_graph::test_graph_rejects_semantic_defect_classes[<lambda>-hosted waiter0]
+tests.test_ci_graph::test_graph_rejects_semantic_defect_classes[<lambda>-hosted waiter1]
 tests.test_ci_graph::test_graph_rejects_semantic_defect_classes[<lambda>-push authority]
 tests.test_ci_graph::test_graph_rejects_semantic_defect_classes[<lambda>-resource class]
 tests.test_ci_graph::test_graph_rejects_semantic_defect_classes[<lambda>-semantic role]
@@ -273,6 +274,7 @@ tests.test_ci_graph::test_renderer_binds_selected_python_to_setup_action_output
 tests.test_ci_graph::test_renderer_is_deterministic_and_parity_owned
 tests.test_ci_graph::test_required_environment_is_bound_once_and_validated_before_checkout
 tests.test_ci_graph::test_selected_python_must_be_provisioned_before_governed_command
+tests.test_ci_graph::test_self_graph_run_and_done_policy_is_mechanically_complete
 tests.test_ci_graph::test_standard_reference_graph_is_rich_single_push_authority
 tests.test_ci_graph::test_trusted_no_checkout_command_rejects_repository_relative_input
 tests.test_ci_graph::test_trusted_no_checkout_rejects_every_execution_input_surface

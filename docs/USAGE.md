@@ -678,6 +678,13 @@ and reflective dispatch fail closed. Calls through component fields, such as
 component boundary as a permitted port. Declarations cannot turn an ambiguous
 same-instance helper into an exact source identity.
 
+Fresh Standard-v2 graphs set `policy.hosted_orchestration: run_and_done`.
+Hosted jobs begin only when their GitHub dependency or event is ready, execute
+bounded candidate work, and exit. The compiler rejects sleep, polling, watch,
+shell-wait, and local-runner lease commands on hosted resources. Put trusted
+one-shot control work on an explicitly mapped trusted resource; never create a
+hosted supervisor for local capacity.
+
 Repositories with TypeScript can replace the registry's typed
 `not_applicable_until_declared_by_consumer` value with a compiler contract that
 declares the Node command, tsconfig, package lock, source roots, and browser

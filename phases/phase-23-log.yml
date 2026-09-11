@@ -26,6 +26,9 @@ workitems:
 - id: P23-P0-03
   status: TODO
   summary: generated-runtime parity read-only Racecar proof and immutable 1.1.2 release
+- id: P23-P0-04
+  status: IN_PROGRESS
+  summary: run-and-done hosted orchestration policy for BCF and fresh Standard-v2 graphs
 execution_evidence:
   planned_commands:
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
@@ -35,6 +38,7 @@ execution_evidence:
   - focused local method-dispatch and import-identity suites passed 33 tests
   - clean Racecar PR 14 head 18fddaeb53bee90f512a8d80935f2d3d4c6cbaf8 read-only inventory resolved session authorize and logout self._current calls to the exact BrowserSessionService._current method
   - conservative artifact purge deleted 1614 superseded Actions artifacts with zero failures reclaimed 531.1 MiB and preserved active controller artifact 10274391593
+  - current BCF and fresh Standard-v2 graph inventories contain no hosted waiter poller sleeper watcher shell wait loop or local-runner lease command
   notes:
   - audits/p23-issue-164-remediation.yml owns the defect-class review consumer proof and release-train storage forecast
   - remote execution starts only after the complete deterministic local acceptance set passes

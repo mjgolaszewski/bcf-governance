@@ -335,6 +335,7 @@
         "single_push_authority": {"const": true},
         "generated_workflows_only": {"const": true},
         "forbid_hosted_waiters": {"const": true},
+        "hosted_orchestration": {"enum": ["run_and_done"]},
         "forbidden_hosted_tokens": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
         "minimum_gate_timeout_headroom_seconds": {
           "type": "integer",

@@ -21,6 +21,7 @@ delivery_contract:
   tightly_scoped_deliverables:
   - exact same-instance method identity and fail-closed ambiguous dispatch implementation
   - complete public-operation adversarial and causal regression coverage
+  - run-and-done hosted orchestration policy for BCF and fresh Standard-v2 graphs
   - generated-runtime parity read-only Racecar proof and immutable 1.1.2 release
   parallelizable_workstreams:
   - id: P23-WS1
@@ -29,6 +30,8 @@ delivery_contract:
     name: 'P23-WS2: adversarial controls generated parity and consumer proof'
   - id: P23-WS3
     name: 'P23-WS3: mechanical controller activation and immutable release'
+  - id: P23-WS4
+    name: 'P23-WS4: hosted runner frugality and reference-graph qualification'
   hard_dependencies:
   - P22
   docker_first_local_runtime: repo_native_validation_and_governance_commands

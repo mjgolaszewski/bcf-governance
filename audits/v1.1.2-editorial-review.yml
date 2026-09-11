@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: 7a4b874f3aa360d97ac68434c22d62048a1071fa3387f5ce778b2c97af136928
-  after_sha256: 35614b6f6bde7d778494b58e0a37ce647fafe82326a990e6de34346ec9efc522
+  after_sha256: 28065b2bc4c4262a650480dccc2f869ef0bfde68416f5ffd3bc4dffdc7367fd9
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: historical
@@ -78,7 +78,7 @@ documents:
   canonical_topic_owner: docs/ARCHITECTURE.md
   topic_role: canonical
   before_sha256: 50772ca489d33e7348c9f95f708dee120b31eacc0f6ac381e78075637588aa50
-  after_sha256: 160784acc0cf116b1fbf00f80bf80a44063ccdb704870bfa3ed03a98bc13d7ce
+  after_sha256: 341e1079632c043a801ab707886009b3a7edef3261568467fb11da737eb8eed0
   findings:
   - documented exact same-instance method identity and fail-closed dynamic or replaceable dispatch
   disposition: revised
@@ -114,7 +114,7 @@ documents:
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
   before_sha256: 800781a2c1c04f1f0c51c90a17a503f1813d86ad966a88e8b470029e0f4c50ee
-  after_sha256: bdba466fab165780846ce2f593b16c88b075b56a21238f791fc84f555fd6fd38
+  after_sha256: 877f338d75230454cc5fba063994814533b705e4333924b04b6055d5b17aea7f
   findings:
   - documented exact method dispatch, explicit component ports, dynamic-dispatch limits, and the 1.1.2 release example
   disposition: revised

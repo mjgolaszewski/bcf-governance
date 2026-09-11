@@ -24,6 +24,6 @@ phase_sequence:
   build_block: same-instance-method-effect-integrity-1.1.2
   objective: close same-instance operation-effect identity without weakening source-first discovery dynamic-dispatch safety or consumer compatibility
   hard_dependencies: [P22]
-  tightly_scoped_deliverables: [exact same-instance method identity and fail-closed ambiguous dispatch, complete public operation adversarial and causal regression coverage, compatible mirrored runtime Racecar proof and immutable 1.1.2 release]
-  parallelizable_workstreams: [Python method identity and effect tracing, adversarial tests causal controls and consumer compatibility, generated parity provider activation and release]
+  tightly_scoped_deliverables: [exact same-instance method identity and fail-closed ambiguous dispatch, complete public operation adversarial and causal regression coverage, run-and-done hosted orchestration for BCF and fresh Standard-v2 graphs, compatible mirrored runtime Racecar proof and immutable 1.1.2 release]
+  parallelizable_workstreams: [Python method identity and effect tracing, adversarial tests causal controls and consumer compatibility, hosted runner frugality and reference-graph qualification, generated parity provider activation and release]
   verification_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests, .venv/bin/python .github/scripts/run_validator_mutants.py --profile full, .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full]

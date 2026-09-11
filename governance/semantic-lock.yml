@@ -8,7 +8,7 @@ contracts:
   semantic_families: 010e0ac8860d8822bd4364cc5832a5cc288b6d6016b0679208e38c96cc9394d6
   application_operations: 16ef009e2c96173a30f79d6b06f8e44809c9be60ec2e543340a44dc288458536
   canonical_representations: 6d4777a03e7133ef23d14ef74f4921fc745eeb83a96616fdac22797c701ad1f0
-source_inventory_sha256: 9e6385d8c148e6acf6d796830a6b8489e89e37f2f3e9365035ace907c4242a68
+source_inventory_sha256: c92d4be1cd9f604e1d2c2763fc885a154c075ae8a16d0be6bde27faa58f483dd
 projection_outputs:
 - path: bcf_governance/pack/template-repo/scripts/_bcf_runtime/check_governance_exposure.py
   canonical_source: bcf_governance/tooling/check_governance_exposure.py
@@ -73,8 +73,8 @@ projection_outputs:
 - path: bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_graph_contracts.py
   canonical_source: bcf_governance/tooling/ci_graph_contracts.py
   recipe_sha256: 5fa9cda3c75b3182c541e6a1dd754c3efcaa862c56f9ee83553dcec3869abcb6
-  source_sha256: a626280a6db0640eb2dab302d5c17b1b5df65380fd0a62e436c65e465d641085
-  output_sha256: a626280a6db0640eb2dab302d5c17b1b5df65380fd0a62e436c65e465d641085
+  source_sha256: 5e4cd07f896e2681fa6542f6d68c7ae1341b15f09a3ecb5cb6c63707b79f9728
+  output_sha256: 5e4cd07f896e2681fa6542f6d68c7ae1341b15f09a3ecb5cb6c63707b79f9728
 - path: bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_graph_render.py
   canonical_source: bcf_governance/tooling/ci_graph_render.py
   recipe_sha256: 5fa9cda3c75b3182c541e6a1dd754c3efcaa862c56f9ee83553dcec3869abcb6
@@ -223,8 +223,8 @@ projection_outputs:
 - path: template-repo/scripts/_bcf_runtime/ci_graph_contracts.py
   canonical_source: bcf_governance/tooling/ci_graph_contracts.py
   recipe_sha256: 5fa9cda3c75b3182c541e6a1dd754c3efcaa862c56f9ee83553dcec3869abcb6
-  source_sha256: a626280a6db0640eb2dab302d5c17b1b5df65380fd0a62e436c65e465d641085
-  output_sha256: a626280a6db0640eb2dab302d5c17b1b5df65380fd0a62e436c65e465d641085
+  source_sha256: 5e4cd07f896e2681fa6542f6d68c7ae1341b15f09a3ecb5cb6c63707b79f9728
+  output_sha256: 5e4cd07f896e2681fa6542f6d68c7ae1341b15f09a3ecb5cb6c63707b79f9728
 - path: template-repo/scripts/_bcf_runtime/ci_graph_render.py
   canonical_source: bcf_governance/tooling/ci_graph_render.py
   recipe_sha256: 5fa9cda3c75b3182c541e6a1dd754c3efcaa862c56f9ee83553dcec3869abcb6

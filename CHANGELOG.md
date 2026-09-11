@@ -32,6 +32,11 @@ All notable changes to BCF Governance are recorded here. This file follows
   collision, consumer-method, and cause-verified regression coverage.
 - Preserved receipt schema 2.0, profile and authority contracts, all 21 gate
   IDs, and the mechanically generated CI topology.
+- Made fresh Standard-v2 and BCF self-graphs declare a mechanically validated
+  run-and-done hosted-execution policy. Hosted command paths reject sleeping,
+  polling, watching, shell wait loops, and local-runner lease coordination;
+  dependency edges and completion events defer allocation in GitHub rather than
+  occupying a hosted VM.
 
 ## [1.1.1] - 2026-09-11
 

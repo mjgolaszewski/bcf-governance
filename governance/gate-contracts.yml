@@ -514,6 +514,7 @@ gates:
         stream: stderr
         regex: verified.*(?:not one of|computed)
     - {id: unknown-operation-family-is-rejected, mutation: {path: governance/application-operations.yml, yaml_path: 'operations[id=governance.cli.doctor.v1].family', value: missing_semantic_family}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: references an unknown semantic family}}
+    - {id: hosted-run-and-done-policy-must-fail, mutation: {path: governance/ci-graph.yml, yaml_path: policy.forbidden_hosted_tokens, value: [sleep, poll, wait-for-runner, lease-runner]}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_graph::test_self_graph_run_and_done_policy_is_mechanically_complete']}}
   lint:
     invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, lint], cwd: ., env: {}, required_env: []}
     evidence: {kind: gate}

@@ -79,6 +79,26 @@ actions_storage_forecast:
   - no hosted job polls sleeps idles or waits for local capacity
   - a provider failure stops the train until its complete class is reproduced and corrected offline
   - superseded PR failed-run and controller artifacts may be purged after their consumers finish while the active pinned controller is retained
+hosted_execution_review:
+  policy_owner: governance/ci-graph.yml
+  compiler_owner: bcf_governance/tooling/ci_graph_execution.py::hosted_command_issues
+  compatibility: existing consumer graphs remain unchanged until explicit adoption or regeneration
+  bcf_self_graph:
+    hosted_runner_allocating_job_definitions: 13
+    hosted_waiter_definitions: 0
+    trusted_control_resource: self_hosted
+    scheduling: needs edges allocate no downstream runner and workflow_run handlers start only after provider completion
+  fresh_standard_v2_graph:
+    hosted_runner_allocating_job_definitions: 12
+    hosted_waiter_definitions: 0
+    exact_main_reusable_call_allocates_caller_runner: false
+    trusted_control_mapping: explicitly selected by adopter
+  mechanical_controls:
+  - run_and_done policy requires the complete sleep poll watch wait while until wait-for-runner and lease-runner vocabulary
+  - every hosted command and command component is checked against the policy after graph extension composition
+  - generated workflow parity prevents a hand-authored waiter from bypassing the graph
+  - no hosted job waits for trusted or local capacity; dependencies and completion events defer allocation at the provider
+  limitation: a declared product gate may perform bounded readiness work inside its own executable; the graph contract prevents orchestration waiters rather than claiming arbitrary program termination proof
 validation:
   status: local_implementation_in_progress
   generated_parity: pending

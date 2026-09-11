@@ -43,3 +43,15 @@ workitems:
   acceptance_evidence:
   - test
   - contract-test
+- id: P23-P0-04
+  priority: P0
+  status: IN_PROGRESS
+  summary: run-and-done hosted orchestration policy for BCF and fresh Standard-v2 graphs
+  acceptance:
+  - hosted jobs start only after provider-resolved dependencies or completion events and never supervise local capacity
+  - graph validation rejects incomplete waiter-token policy and sleep poll watch wait loop or runner-lease commands
+  - current BCF and fresh Standard-v2 graphs pass exact runner executor dependency and rendered-workflow audits
+  acceptance_evidence:
+  - governance-validate
+  - test
+  - contract-test

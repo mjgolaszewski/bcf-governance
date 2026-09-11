@@ -87,6 +87,14 @@ rejects some dynamic designs: BCF cannot prove their effects from a closed
 static inventory, so a blocking profile requires a mechanically visible
 boundary instead.
 
+Hosted graph nodes are run-and-done execution units. Dependency edges are
+provider scheduling constraints and do not allocate the downstream runner;
+cross-workflow control starts from completion events. The graph compiler rejects
+sleep, polling, watch, shell-wait, and runner-lease coordination commands on a
+hosted resource. Product gates may perform bounded readiness checks as part of
+their declared work, but the reference graph does not allocate a hosted VM to
+supervise another job or wait for self-hosted capacity.
+
 ### Representation provenance
 
 Canonical representations remain in
