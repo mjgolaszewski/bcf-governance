@@ -17,9 +17,9 @@ separates two questions:
 - `bcf truth`: are lifecycle and release claims supported by current evidence
   for the exact Git subject?
 
-Development package version: `v1.0.4`. The latest immutable release is also
-`v1.0.4`. Releases are published through immutable GitHub Releases after
-exact-main certification.
+Supported package version: `v1.1.0`. Every release is published from certified
+exact-main bytes through an immutable GitHub Release; the publisher never
+rebuilds the verified wheel or source archive.
 
 ## Design thesis
 
@@ -45,6 +45,9 @@ Common failure modes have explicit responses:
 | Incomplete context | Bounded modules and context budgets |
 | Architectural drift | Executable architecture boundaries |
 | Competing representations | Single-owner invariant principle (SOIP) |
+| Material concept omitted from governance | Declared semantic-family completeness |
+| Public operation has unclear effects | Closed operation inventory and CQRS-side checks |
+| Synchronized copy has no accountable origin | Reproducible representation provenance |
 | Test agrees with a defective implementation | Causal negative controls |
 | Gate does not detect its claimed defect | Typed failure oracles |
 | Test population silently changes | Exact test manifests |
@@ -100,11 +103,14 @@ BCF is intentionally opinionated about several engineering defaults:
 - **CQRS-lite** separates state-changing commands from inspections. This makes
   it easier to distinguish a proposed change from a computed observation. It
   adds command and query boundaries, but does not require event sourcing.
-- **Single-owner invariant principle (SOIP)** gives each governed
-  representation, normalization, default, and state transition one canonical
-  semantic owner. This limits inconsistent copies across code, tests, and
-  workflows. Registry maintenance is an adoption cost, and structural
-  ownership does not prove arbitrary business correctness.
+- **Single-owner invariant principle (SOIP)** separates four related claims.
+  Family completeness declares the material concepts in scope; operation
+  inventory classifies every public entrypoint and its effects; representation
+  parity detects competing owners; provenance proves how noncanonical copies
+  are derived or bounds a temporary exception. These controls limit
+  inconsistent code, tests, and workflows. They cannot infer an omitted
+  business concept, and their registries and migration records are an adoption
+  cost.
 - **Mechanical constraints** replace review discretion when a rule can be
   evaluated repeatably. They improve reproducibility and reduce dependence on
   any one agent's context. The rules and fixtures still need maintenance.
@@ -206,10 +212,10 @@ it cannot preserve behavior and meet the repository's performance threshold.
 
 ## Install
 
-Install the `v1.0.4` wheel from its immutable GitHub Release:
+Install the `v1.1.0` wheel from its immutable GitHub Release:
 
 ```bash
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.0.4/bcf_governance-1.0.4-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.1.0/bcf_governance-1.1.0-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel. Release publication
@@ -235,6 +241,7 @@ bcf install \
   --target /path/to/repo \
   --profile standard \
   --profile-config /path/to/standard-gates.yml \
+  --semantic-config /path/to/semantic-authority.yml \
   --project-id example \
   --project-name "Example" \
   --candidate-runner-label ubuntu-24.04 \
@@ -248,8 +255,10 @@ bcf install \
 Promotion and GitHub CI adoption are separate, explicit transactions:
 
 ```bash
-bcf profile promote --repo-root . --to standard --contract-version 2.0 --check
-bcf profile promote --repo-root . --to standard --contract-version 2.0 --apply
+bcf profile promote --repo-root . --to standard --contract-version 2.0 \
+  --semantic-config /path/to/semantic-authority.yml --check
+bcf profile promote --repo-root . --to standard --contract-version 2.0 \
+  --semantic-config /path/to/semantic-authority.yml --apply
 bcf ci graph validate --repo-root .
 bcf ci graph diagnose --repo-root .
 bcf ci graph audit --repo-root . --format json
@@ -271,7 +280,7 @@ canonical inputs. Evidence subprocess deadlines come from gate contracts; graph
 validation rejects an outer evidence job that cannot contain the longest inner
 deadline plus explicit headroom.
 
-The 1.0 contract supports Linux x86-64 and CPython 3.11–3.14.
+The 1.x contract supports Linux x86-64 and CPython 3.11–3.14.
 GitHub is its only executable CI provider and GitHub Releases is its distribution
 channel. The mechanically frozen CLI surface is the top-level command inventory
 and its exit-code classes; nested arguments remain documented interfaces governed
@@ -285,6 +294,9 @@ bcf exposure-scan
 bcf doctor --repo-root .
 bcf preflight --repo-root . --mode pr
 bcf ci local-pr --repo-root .
+bcf semantic-ownership scaffold --repo-root . --output /tmp/semantic-candidate.yml
+bcf semantic-ownership adopt --repo-root . --config /path/to/semantic-authority.yml --check
+bcf semantic-ownership lock --repo-root . --check
 bcf evidence run --gate test --output .artifacts/bcf/test
 bcf truth --evidence-dir .artifacts/bcf
 ```

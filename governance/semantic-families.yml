@@ -1,0 +1,130 @@
+schema_version: '1.0'
+document: {kind: semantic_family_registry, id: bcf-governance-semantic-families, version: 1.0.0, status: active, path: governance/semantic-families.yml}
+families:
+- id: semantic_family_registry
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.semantic-family-registry.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/semantic_authority_contracts.py], symbols: [bcf_governance/tooling/semantic_authority_contracts.py::SemanticFamilyRegistry]}
+  responsibilities: {construction: [load_semantic_families], decoding: [load_semantic_families], transition: [validate_exact_base_migrations], projection: [scaffold]}
+- id: application_operation_registry
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.application-operation-registry.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/semantic_authority_contracts.py], symbols: [bcf_governance/tooling/semantic_authority_contracts.py::ApplicationOperationRegistry]}
+  responsibilities: {construction: [load_application_operations], decoding: [discover_population], transition: [validate_exact_base_migrations], projection: [operation_observations]}
+- id: representation_provenance
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.representation-provenance.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/semantic_authority_contracts.py], symbols: [bcf_governance/tooling/semantic_authority_contracts.py::RepresentationProvenance]}
+  responsibilities: {construction: [collect_representation_provenance], decoding: [generated_source_authority], transition: [validate_exact_base_migrations], projection: [build_semantic_lock]}
+- id: audit_artifact_classification
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.audit-artifact-classification.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/governance_validation/audit_artifacts.py], symbols: [bcf_governance/tooling/governance_validation/audit_artifacts.py::AuditArtifactClassification]}
+  responsibilities: {construction: [classify_audit_context_artifact], decoding: [], transition: [], projection: []}
+- id: ci_graph_compilation
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.ci-graph-compilation.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/ci_graph_contracts.py], symbols: [bcf_governance/tooling/ci_graph_contracts.py::CompiledCIGraph]}
+  responsibilities: {construction: [validate_ci_graph], decoding: [load_graph], transition: [], projection: [render_ci_graph]}
+- id: public_contract_inventory
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.public-contract-inventory.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/public_contracts.py], symbols: [bcf_governance/tooling/public_contracts.py::PublicContractInventory]}
+  responsibilities: {construction: [validate_public_contracts], decoding: [load_public_contracts], transition: [], projection: []}
+- id: ci_authority_state
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.ci-authority-state.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/ci_authority_state.py], symbols: [bcf_governance/tooling/ci_authority_state.py::AuthorityEvaluation]}
+  responsibilities: {construction: [evaluate_authority], decoding: [], transition: [total_admission_order], projection: [certification_state]}
+- id: evidence_session_identity
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.evidence-session.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/evidence_sessions.py], symbols: [bcf_governance/tooling/evidence_sessions.py::EvidenceSession], secondary_paths: []}
+  responsibilities: {construction: [allocate_session], decoding: [load_session], transition: [], projection: [bind_session]}
+- id: evidence_receipt_admission
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.evidence-receipt-admission.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/truth_receipts.py], symbols: [bcf_governance/tooling/truth_receipts.py::ReceiptAdmission]}
+  responsibilities: {construction: [_receipt_admission_identity], decoding: [load_receipts], transition: [collision_rejection], projection: []}
+- id: docker_resource_ownership
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.docker-resource.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/cleanup_ci_resources.py], symbols: [bcf_governance/tooling/cleanup_ci_resources.py::DockerResource]}
+  responsibilities: {construction: [discover_resources], decoding: [inspect_resource], transition: [revalidate_before_cleanup], projection: []}
+- id: exposure_report
+  significance: descriptive
+  ownership_required: true
+  canonical_semantic_ids: [governance.exposure-report.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/check_governance_exposure.py], symbols: [bcf_governance/tooling/check_governance_exposure.py::ExposureReport]}
+  responsibilities: {construction: [scan_exposures], decoding: [], transition: [], projection: [report]}
+- id: ci_certification_verification
+  significance: projection
+  ownership_required: true
+  canonical_semantic_ids: [governance.ci-certification-verification.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/ci_authority_certification.py], symbols: [bcf_governance/tooling/ci_authority_certification.py::CertificationVerification]}
+  responsibilities: {construction: [verify_ci_certification], decoding: [authenticated_snapshot], transition: [], projection: [certification_report]}
+- id: ci_cancellation_decision
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.ci-cancellation-decision.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/ci_authority_decisions.py], symbols: [bcf_governance/tooling/ci_authority_decisions.py::CancellationDecision]}
+  responsibilities: {construction: [owned_cancellation_targets], decoding: [authenticated_runs], transition: [admission_precedence], projection: []}
+- id: ci_status_decision
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.ci-status-decision.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/ci_authority_decisions.py], symbols: [bcf_governance/tooling/ci_authority_decisions.py::StatusDecision]}
+  responsibilities: {construction: [decide_status_publication], decoding: [authenticated_statuses], transition: [newer_authority_precedence], projection: [commit_status]}
+- id: release_receipt
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.release-receipt.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/release_receipts.py], symbols: [bcf_governance/tooling/release_receipts.py::ReleaseReceipt]}
+  responsibilities: {construction: [build_release_receipt], decoding: [verified_release_inputs], transition: [], projection: [emit_release_receipt]}
+- id: github_run_identity
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.github-run-identity.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/ci_github.py], symbols: [bcf_governance/tooling/ci_github.py::GithubRunIdentity]}
+  responsibilities: {construction: [authenticate_github_run], decoding: [provider_api], transition: [], projection: [identity_as_dict]}
+- id: ci_workflow_authority_compilation
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.ci-workflow-authority-compilation.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/ci_authority_pins.py], symbols: [bcf_governance/tooling/ci_authority_pins.py::CIAuthorityPinResult]}
+  responsibilities: {construction: [pin_workflow_authority], decoding: [verify_workflow_authority], transition: [], projection: [authority_yaml]}
+- id: github_provider_artifact_identity
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.github-provider-artifact.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/ci_github_artifacts.py], symbols: [bcf_governance/tooling/ci_github_artifacts.py::ProviderArtifact]}
+  responsibilities: {construction: [_materialize_artifact], decoding: [provider_artifact_api], transition: [], projection: [artifact_identity]}
+- id: local_pr_context
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.local-pr-context.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/local_pr.py], symbols: [bcf_governance/tooling/local_pr.py::LocalPRContext]}
+  responsibilities: {construction: [resolve_local_pr_context], decoding: [git_remote], transition: [], projection: [pr_event_context]}
+- id: runtime_capacity_decision
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.runtime-capacity-decision.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/runtime_capacity.py], symbols: [bcf_governance/tooling/runtime_capacity.py::RuntimeCapacityReport]}
+  responsibilities: {construction: [check_runtime_capacity], decoding: [filesystem_and_container_state], transition: [], projection: [capacity_report]}
+- id: trusted_input_verification
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.trusted-input-verification.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/trusted_inputs.py], symbols: [bcf_governance/tooling/trusted_inputs.py::TrustedInputVerification]}
+  responsibilities: {construction: [verify_trusted_input], decoding: [authenticated_external_artifact], transition: [], projection: [verified_input]}
+migrations: []

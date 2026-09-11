@@ -61,7 +61,6 @@ def copy_repository_shadow(
                 "clone",
                 "--shared",
                 "--quiet",
-                "--no-checkout",
                 str(source),
                 str(destination),
             ],

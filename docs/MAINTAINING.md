@@ -148,6 +148,35 @@ Every pull request:
   maintainer guidance;
 - runs focused tests while editing and the full source suite before handoff.
 
+### Editorial contract
+
+Human-facing documents have one declared topic owner and must be covered by the
+current release's generated editorial audit. The README owns the short thesis;
+Architecture owns design details and limitations; CI Authority owns provider
+trust; Usage owns operator procedures; this guide owns repository maintenance
+and release procedure; Reliability Model owns objections and empirical limits;
+installed and branch guides remain narrowly scoped derivatives.
+
+Review prose for technical currency, audience, duplication, links, anchors,
+examples, version claims, and tone. Requirements must be distinguishable from
+recommendations. Absolute language is reserved for enforced contracts and
+security boundaries. Remove hype, moral framing, anthropomorphic claims, stale
+patch instructions, checked-box review records, and parallel procedures.
+Generated pack mirrors are reviewed through their canonical template source and
+byte-parity checks rather than as independent documents.
+
+Run the release audit generator after editorial behavior is final:
+
+```bash
+python3 .github/scripts/build_editorial_audit.py \
+  --repo-root . --audit audits/v1.1.0-editorial-review.yml --apply
+python3 .github/scripts/check_editorial_contract.py
+```
+
+The audit records the exact base and current digest of every tracked
+human-facing source document, its audience, canonical topic owner, findings,
+and disposition. It is review evidence, not lifecycle or release authority.
+
 The governance validator enforces the changelog diff in pull-request CI using
 the event's exact base SHA. Generated workflows use full history so an
 unavailable base fails rather than bypassing the rule.
@@ -177,10 +206,10 @@ Run the editorial contract after changing prose or examples:
 python3 .github/scripts/check_editorial_contract.py
 ```
 
-It checks the documentation ownership map, local links and anchors, current
-version and CLI examples, required architecture/trust sections, and measured
-tone constraints. It is a mechanical consistency check, not a substitute for
-reviewing clarity or technical accuracy.
+It checks complete audit coverage, topic ownership, local links and anchors,
+current version and CLI examples, required architecture/trust sections, and
+measured tone constraints. It is a mechanical consistency check, not a
+substitute for reviewing clarity or technical accuracy.
 
 ## Verification
 

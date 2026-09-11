@@ -1,0 +1,155 @@
+document:
+  kind: semantic_authority_release_audit
+  id: bcf-governance-p21-semantic-authority
+  version: 1.0.0
+  status: active
+  path: audits/p21-semantic-authority.yml
+phase: P21
+release: {version: 1.1.0, release_train: release_11, publication: disabled_until_certified}
+baseline:
+  repository: mjgolaszewski/bcf-governance
+  commit: beb3512a9c9ddd1066e2f5578bb0b765810b39b4
+  tree: 94df92b8165bc41863eef2398540ccacc49bf2d9
+  required_gates: 21
+  source_tests: 781
+  contract_tests: 389
+  cause_verified_controls: 199
+issues:
+- number: 152
+  title: Generalize SOIP with semantic-family completeness for adopting projects
+  canonical_owner: governance/semantic-families.yml
+  enforcement_owner: bcf_governance/tooling/semantic_authority_contracts.py::_validate_families
+  controls:
+  - tests/test_semantic_authority.py::test_omitted_family_is_rejected
+  - tests/test_semantic_authority.py::test_duplicate_family_is_rejected
+  - tests/test_semantic_authority.py::test_contradictory_family_significance_is_rejected
+  - tests/test_semantic_authority.py::test_family_downgrade_requires_exact_base_migration
+  causal_mutant: semantic-family-completeness
+- number: 153
+  title: Make CQRS enforcement exhaustive with a closed application-operation inventory
+  canonical_owner: governance/application-operations.yml
+  enforcement_owners:
+  - bcf_governance/tooling/semantic_authority_contracts.py::_validate_operations
+  - bcf_governance/tooling/semantic_operation_effects.py::validate_operation_effects
+  controls:
+  - tests/test_semantic_authority.py::test_unclassified_operation_is_rejected
+  - tests/test_semantic_authority.py::test_multiply_classified_operation_is_rejected
+  - tests/test_semantic_authority.py::test_query_implementation_cannot_hide_a_write
+  - tests/test_semantic_authority.py::test_query_cannot_hide_a_write_behind_an_imported_helper
+  - tests/test_semantic_authority.py::test_projection_implementation_cannot_confer_authority
+  causal_mutants:
+  - application-operation-completeness
+  - application-operation-effects
+  - application-operation-port-reachability
+  - application-operation-transitive-effects
+- number: 154
+  title: Require provenance for derived semantic representations and detect synchronized semantic copies
+  canonical_owner: governance/canonical-representations.yml
+  enforcement_owner: bcf_governance/tooling/semantic_derivations.py::collect_provenance
+  controls:
+  - tests/test_semantic_authority.py::test_stale_generated_projection_is_rejected
+  - tests/test_semantic_authority.py::test_direct_edit_to_derived_projection_is_rejected
+  - tests/test_semantic_authority.py::test_material_secondary_representation_requires_provenance
+  - tests/test_semantic_authority.py::test_runtime_derivation_requires_an_authorized_source_first_role
+  - tests/test_semantic_authority.py::test_derivation_recipe_change_requires_exact_base_migration
+  causal_mutants:
+  - representation-provenance-parity
+  - representation-provenance-collision
+  - representation-runtime-role
+semantic_model:
+  shared_source_inventory: bcf_governance/tooling/semantic_ownership_inventory.py::discover_python_source
+  family_contract: governance/semantic-families.yml
+  operation_contract: governance/application-operations.yml
+  representation_contract: governance/canonical-representations.yml
+  mechanical_lock: governance/semantic-lock.yml
+  source_scan_count: 1
+  adoption_diagnostics:
+    owner: bcf_governance/tooling/semantic_adoption_diagnostics.py::validate_adoption_repository
+    behavior: independently evaluable family, operation, provenance, and migration blockers are reported together before target mutation
+  bcf_self_adoption:
+    profile: standard
+    profile_contract_version: '2.0'
+    capabilities:
+      semantic_family_completeness: blocking
+      application_operation_inventory: blocking
+      representation_provenance: blocking
+    semantic_families: 21
+    public_operations: 19
+    derived_projections: 56
+    bounded_exceptions: 0
+compatibility:
+  receipt_schema: '2.0'
+  profile_contract: '2.0'
+  ci_authority: '1.1'
+  gate_ids: unchanged
+  ci_topology: {workflows: 18, jobs: 29, extensions: 4, topology_changed: false}
+  existing_consumers: ordinary upgrade preserves capability state and project-owned semantic files
+  fresh_lite: semantic capabilities disabled
+  fresh_standard_v2: complete semantic config required before mutation
+  fresh_regulated_v2: complete semantic config required and all three capabilities blocking
+  top_level_cli_inventory: unchanged
+source_hashes:
+  bcf_governance/tooling/semantic_authority_contracts.py: fc5d3069af6e40ce8bf407e9a04b968acccf91cb4d8c48a1e18ed98591e33177
+  bcf_governance/tooling/semantic_operation_effects.py: 92496e993e887cc4149ccf3cb9b3df56a7f57c2d41cffe34cbc624b57d574acf
+  bcf_governance/tooling/semantic_operation_typescript.py: 070f1f0a40248d2154481c202b038a71d00733fe1c0e88cbec7d0c65090761c1
+  bcf_governance/tooling/semantic_derivations.py: 6fc00883e23768c38d9afdd09bf3f8f5bcd643b73eda94c56fe6d77fefc07940
+  bcf_governance/tooling/semantic_adoption_diagnostics.py: 3742aa705118ea38716755a45883fdb52fb931c191bf08342634d93790d158a1
+  bcf_governance/tooling/semantic_yaml.py: dd8c267d2cc8dbdffe47e94eb6e096355765ecb73265384d06ac80a4de13c0c4
+  schemas/semantic-families.schema.json: 952a979c9ea51b30c44adfac8ce8b1bf490be1a9fd7d4ee1189ccea65f4c9b77
+  schemas/application-operations.schema.json: 3b5b6133f7b2cba47fda6e50a3d45b0b046127dbfe36806ca3f08724408bee6a
+  schemas/semantic-lock.schema.json: bf8f06dc9bcd1ad869de204db363711d4265aae00880232d68241e717f6491ae
+racecar_read_only_validation:
+  repository: mjgolaszewski/racecar
+  clone: clean_origin_main
+  commit: 02789b17056bcb256a2ed8a2fc252e39db9ff5ea
+  tree: bb5a116b6bde90a5d51b9d6be92efd964a12d189
+  repository_mutated: false
+  current_graph:
+    structural_validation: pass
+    graph_sha256: ea1943da4931438adaffbc6e223231948284c2bfa00152ea0fad43f5cb0f076a
+    workflows: 18
+    jobs: 32
+    extensions: 3
+  current_semantic_scan: {result: pass, blocking_violations: 0, new_capabilities: disabled_until_explicit_adoption}
+  dry_run_upgrade:
+    result: blocked_without_mutation
+    reason: current 1.1 renderer would update three workflow projections for the previously released canonical session selector
+    changed_workflows:
+    - .github/workflows/governance.yml
+    - .github/workflows/governance-mutants-nightly.yml
+    - .github/workflows/governance-mutants-weekly.yml
+  adoption_scaffold:
+    authority: non_authoritative
+    sha256: e703e1012b1cd9aa019684de1c3ef9a1112add1aa9bd7fe98822e1fb107251c0
+    source_files: 144
+    discovered_types: 117
+    unresolved_classifications: 1
+  disposition: Racecar requires a separately reviewed explicit adoption; this release changes no Racecar bytes
+editorial_review:
+  owner: audits/v1.1.0-editorial-review.yml
+  base_commit: beb3512a9c9ddd1066e2f5578bb0b765810b39b4
+  exact_human_facing_items: 26
+  pruned: [docs/EDITORIAL_CHECKLIST.md]
+  packaged_history_behavior: current document custody remains verifiable when the original base Git object is absent from an extracted sdist
+validation:
+  status: local_pre_pin_pass
+  exact_populations: {source_tests: 827, contract_tests: 389, required_gates: 21, gate_negative_controls: 210}
+  mutation_profiles:
+  - {profile: full, result: pass, killed: 25, total: 25}
+  - {profile: semantic-full, result: pass, killed: 12, total: 12}
+  deterministic_checks:
+  - governance validation, exposure, all eight architecture gates, lint, typecheck, runtime, dependency, review, SBOM, secret, vulnerability, and semantic ownership passed
+  - canonical standalone and packaged runtime bytes match
+  - semantic lock and CI graph lock are mechanically current
+  - generated CI retains 18 workflows, 29 jobs, and four extensions
+  provisional_artifacts:
+    wheel: passed
+    extracted_sdist: pending final workflow pin commit
+    note: local provisional bytes are not release-authoritative and will be rebuilt after mechanical workflow pinning
+rollout:
+  implementation_pr: pending
+  exact_main_certification: pending
+  scheduled_mutants: pending
+  release_build_verify_collect: pending
+  immutable_publication: pending
+  issues_closed: pending

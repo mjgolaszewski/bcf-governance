@@ -1,0 +1,246 @@
+schema_version: '1.0'
+document:
+  kind: editorial_review
+  id: bcf-governance-v1.1.0-editorial-review
+  status: completed
+  path: audits/v1.1.0-editorial-review.yml
+base_commit: beb3512a9c9ddd1066e2f5578bb0b765810b39b4
+inventory_policy:
+  source_documents: tracked Markdown and root LICENSE from base union current tree
+  packaged_mirror_root: bcf_governance/pack/template-repo
+  packaged_mirror_review: canonical template source plus byte-parity gate
+documents:
+- path: AGENTS.md
+  audience: repository agents
+  canonical_topic_owner: AGENTS.yml
+  topic_role: compatibility_redirect
+  before_sha256: a5203b1fe4f3f74d9408dd6d568a1c06781201db25c55f03319ee34fc30ef4a9
+  after_sha256: a5203b1fe4f3f74d9408dd6d568a1c06781201db25c55f03319ee34fc30ef4a9
+  findings:
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: compatibility_redirect
+- path: AGENTS.yml
+  audience: repository agents
+  canonical_topic_owner: AGENTS.yml
+  topic_role: canonical
+  before_sha256: 949e185d1865727dd9836f8988f11ddc59faee6467538e1c860375ca22f552ed
+  after_sha256: 949e185d1865727dd9836f8988f11ddc59faee6467538e1c860375ca22f552ed
+  findings:
+  - reviewed canonical repository-agent guidance for current profile, lifecycle, and authority boundaries
+  disposition: retained
+- path: CHANGELOG.md
+  audience: adopters and release operators
+  canonical_topic_owner: CHANGELOG.md
+  topic_role: historical
+  before_sha256: 03ee4e5c60ce8c4849a1a748171c7dd936d076f3b01d83e72c05d71ec6d7e9ce
+  after_sha256: 747b5c75be3401ac4269672767c7ba6c8ed5d48e8e66273849ce9bcd04e57579
+  findings:
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: historical
+- path: CLAUDE.md
+  audience: repository agents
+  canonical_topic_owner: AGENTS.yml
+  topic_role: compatibility_redirect
+  before_sha256: 8a360d201eb35ce7d1f4718b53f23ca93ffa8ea93b1682e4c92ce0cee6c99310
+  after_sha256: 8a360d201eb35ce7d1f4718b53f23ca93ffa8ea93b1682e4c92ce0cee6c99310
+  findings:
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: compatibility_redirect
+- path: LICENSE
+  audience: redistributors
+  canonical_topic_owner: LICENSE
+  topic_role: canonical
+  before_sha256: 4b5bd93700515293f29d5306cd65526f71b89dfa8cf72ed4a0bdf4ca4a4a68d8
+  after_sha256: 4b5bd93700515293f29d5306cd65526f71b89dfa8cf72ed4a0bdf4ca4a4a68d8
+  findings:
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
+- path: README.md
+  audience: BCF evaluators and adopters
+  canonical_topic_owner: README.md
+  topic_role: canonical
+  before_sha256: cfb52637ada8e8ee120ce0b617c24f514ef0fa1bd2499f01471ec5399ed89586
+  after_sha256: 46339c3e408ef4f6925e2f717860ed15f6208aa52cd3aeb4b478dced3754b026
+  findings:
+  - revised thesis summary, semantic-control distinctions, version authority, and adoption examples
+  disposition: revised
+- path: audits/README.md
+  audience: governance reviewers
+  canonical_topic_owner: audits/README.md
+  topic_role: canonical
+  before_sha256: 2e4b6c9c9bd0a967cceb71a15bdc4e3caa5190fa23b582fbb3c48565d1382c13
+  after_sha256: 8574defb82a880789be05a319ad0913fc55499ecfe81e11768252d9599c5a714
+  findings:
+  - replaced human-specific wording with operator and governance language
+  disposition: revised
+- path: docs/ARCHITECTURE.md
+  audience: BCF adopters and maintainers
+  canonical_topic_owner: docs/ARCHITECTURE.md
+  topic_role: canonical
+  before_sha256: fdd38d06bfb5b89966e69fb84e75c9e64833ce4f4df0a94b637e3702b13362a0
+  after_sha256: 2d4006cf50c26bbe25eb8a7b796d0907976413884020a6e611253736f3608b56
+  findings:
+  - separated family completeness, operation classification, and representation provenance
+  disposition: revised
+- path: docs/CI_AUTHORITY.md
+  audience: BCF adopters and maintainers
+  canonical_topic_owner: docs/CI_AUTHORITY.md
+  topic_role: canonical
+  before_sha256: 7203a56ce7c3aca8167820d5200f4cce7151f366d6236e4feba5df8fbc9e7e89
+  after_sha256: 7203a56ce7c3aca8167820d5200f4cce7151f366d6236e4feba5df8fbc9e7e89
+  findings:
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
+- path: docs/EDITORIAL_CHECKLIST.md
+  audience: BCF adopters and maintainers
+  canonical_topic_owner: docs/EDITORIAL_CHECKLIST.md
+  topic_role: canonical
+  before_sha256: afeffc38ad91ff21243e221480df5bbe8df69f593d2e9825bb78288afdf7c152
+  after_sha256: null
+  findings:
+  - pruned checked-box release evidence after durable rules moved to maintainer guidance
+  disposition: pruned
+- path: docs/MAINTAINING.md
+  audience: BCF adopters and maintainers
+  canonical_topic_owner: docs/MAINTAINING.md
+  topic_role: canonical
+  before_sha256: 8a13986b010c2054b1e85dfe71e639ea52c9a23ebf792f7f69a8c8bc96279f19
+  after_sha256: 84d28aa93540afa74aedcec923ceaa46a8c590cc6fc8dbacc903db49ad0f9204
+  findings:
+  - consolidated durable editorial rules and exact audit procedure
+  disposition: revised
+- path: docs/RELIABILITY_MODEL.md
+  audience: BCF adopters and maintainers
+  canonical_topic_owner: docs/RELIABILITY_MODEL.md
+  topic_role: canonical
+  before_sha256: 22a8e565282593d7812f7a6de58d399a788e569c2678e05fc3c885294ddb04d7
+  after_sha256: 06ea796871d321804e3fa7974f0912a6e8992fb9a71cc963c9f03dfb1dfe700e
+  findings:
+  - added omitted-family, unclassified-operation, and unowned-copy failure modes
+  disposition: revised
+- path: docs/USAGE.md
+  audience: BCF adopters and maintainers
+  canonical_topic_owner: docs/USAGE.md
+  topic_role: canonical
+  before_sha256: 54a6224c21b9652eaadc24832789ac81e1e37bb77b3992c1c36a83abf0233f3a
+  after_sha256: b6c0aefa3f6afaabe2096778ddab5b9f79e53960df48d9fb40fef1ee78ab1367
+  findings:
+  - removed patch-specific upgrade prose and added semantic adoption and locking commands
+  disposition: revised
+- path: docs/assets/bcf-governance-pack-hero.jpg
+  audience: BCF evaluators and adopters
+  canonical_topic_owner: README.md
+  topic_role: supporting_asset
+  before_sha256: 44be4fec4f7d0ef1576338fafa2455f2aa4d52faa08b7fcf3242e1828bc46218
+  after_sha256: 44be4fec4f7d0ef1576338fafa2455f2aa4d52faa08b7fcf3242e1828bc46218
+  findings:
+  - retained the established project identity asset; no semantic or release claim is encoded in its pixels
+  disposition: retained
+- path: examples/lifecycle-walkthrough/README.md
+  audience: consumer repository operators
+  canonical_topic_owner: examples/lifecycle-walkthrough/README.md
+  topic_role: canonical
+  before_sha256: 7ce0d021bb02ae356450db978d6401ca5e3d6c5965c4e3c26e56046360de3760
+  after_sha256: 8fa65165e33b01390b8ece7905d8f3535fd1254e3823017df2a7d01440ae4904
+  findings:
+  - replaced obsolete 0.6 and hand-built gate loop with 1.1 preflight and session mechanics
+  disposition: revised
+- path: template-repo/AGENTS.md
+  audience: repository agents
+  canonical_topic_owner: template-repo/AGENTS.yml
+  topic_role: compatibility_redirect
+  before_sha256: a5203b1fe4f3f74d9408dd6d568a1c06781201db25c55f03319ee34fc30ef4a9
+  after_sha256: a5203b1fe4f3f74d9408dd6d568a1c06781201db25c55f03319ee34fc30ef4a9
+  findings:
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: compatibility_redirect
+- path: template-repo/AGENTS.yml
+  audience: repository agents
+  canonical_topic_owner: template-repo/AGENTS.yml
+  topic_role: canonical
+  before_sha256: d7616fa49dcb53acc3f83b818df228367db87efa28231add4e088819d4b894b6
+  after_sha256: d7616fa49dcb53acc3f83b818df228367db87efa28231add4e088819d4b894b6
+  findings:
+  - reviewed installed repository-agent guidance and retained its generated-template ownership
+  disposition: retained
+- path: template-repo/CHANGELOG.md
+  audience: adopters and release operators
+  canonical_topic_owner: template-repo/CHANGELOG.md
+  topic_role: historical
+  before_sha256: dd7789e648e63d45648c6bbc2b966a2420ed1d94a9acec98be1da06a6e3e1010
+  after_sha256: dd7789e648e63d45648c6bbc2b966a2420ed1d94a9acec98be1da06a6e3e1010
+  findings:
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: historical
+- path: template-repo/CLAUDE.md
+  audience: repository agents
+  canonical_topic_owner: template-repo/AGENTS.yml
+  topic_role: compatibility_redirect
+  before_sha256: 8a360d201eb35ce7d1f4718b53f23ca93ffa8ea93b1682e4c92ce0cee6c99310
+  after_sha256: 8a360d201eb35ce7d1f4718b53f23ca93ffa8ea93b1682e4c92ce0cee6c99310
+  findings:
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: compatibility_redirect
+- path: template-repo/README.md
+  audience: consumer repository operators
+  canonical_topic_owner: template-repo/README.md
+  topic_role: canonical
+  before_sha256: 3977363516dcd4c65efae9a0099577ed43b3be3d8faf83becb2ffa04329d7c4f
+  after_sha256: 3977363516dcd4c65efae9a0099577ed43b3be3d8faf83becb2ffa04329d7c4f
+  findings:
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
+- path: template-repo/audits/README.md
+  audience: consumer repository operators
+  canonical_topic_owner: template-repo/audits/README.md
+  topic_role: canonical
+  before_sha256: 2e4b6c9c9bd0a967cceb71a15bdc4e3caa5190fa23b582fbb3c48565d1382c13
+  after_sha256: 8574defb82a880789be05a319ad0913fc55499ecfe81e11768252d9599c5a714
+  findings:
+  - replaced human-specific wording with operator and governance language
+  disposition: revised
+- path: template-repo/docs/OPERATIONS.md
+  audience: consumer repository operators
+  canonical_topic_owner: template-repo/docs/OPERATIONS.md
+  topic_role: canonical
+  before_sha256: a991606ecef3a27cb527434bde0c3c4968c9bb11acf28c72405b7bd916bb337e
+  after_sha256: a991606ecef3a27cb527434bde0c3c4968c9bb11acf28c72405b7bd916bb337e
+  findings:
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
+- path: template-repo/governance/EXISTING_REPO_ADOPTION.md
+  audience: consumer repository operators
+  canonical_topic_owner: template-repo/governance/EXISTING_REPO_ADOPTION.md
+  topic_role: canonical
+  before_sha256: 691489c3ddae62dacf50a3a64a11b246fa6eece27d6f2c8e94935a00e47de2ae
+  after_sha256: 7b601ec7c456232dbdc1275744291e3d667e1c28ebd0d9878eb4cfe1a1d3de74
+  findings:
+  - corrected upgrade and workflow ownership boundaries
+  disposition: revised
+- path: template-repo/governance/HOTFIX_LANE.md
+  audience: consumer repository operators
+  canonical_topic_owner: template-repo/governance/HOTFIX_LANE.md
+  topic_role: canonical
+  before_sha256: 570b5505b432b324a9f4d6de3626ddbf61a6d4beaa1c9bdee94896f7957b87ed
+  after_sha256: 570b5505b432b324a9f4d6de3626ddbf61a6d4beaa1c9bdee94896f7957b87ed
+  findings:
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
+- path: template-repo/governance/MODEL_RISK_AND_PROVENANCE.md
+  audience: consumer repository operators
+  canonical_topic_owner: template-repo/governance/MODEL_RISK_AND_PROVENANCE.md
+  topic_role: canonical
+  before_sha256: 3388684d39568452925c4b70ef0c7bc62bd9688938cd1ff6a0c065e79ed06bf4
+  after_sha256: 3388684d39568452925c4b70ef0c7bc62bd9688938cd1ff6a0c065e79ed06bf4
+  findings:
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
+- path: template-repo/governance/REPO_CLEANUP.md
+  audience: consumer repository operators
+  canonical_topic_owner: template-repo/governance/REPO_CLEANUP.md
+  topic_role: canonical
+  before_sha256: d29f644d7d11009544bbe2742dbfae5791ec91744a0fb55461df0eec9ddea80e
+  after_sha256: dcf43347cd010c2db908f04723fa5b6398a209dd3a015271b011ccf46a294114
+  findings:
+  - clarified editorial, semantic, deterministic, and approval authority
+  disposition: revised

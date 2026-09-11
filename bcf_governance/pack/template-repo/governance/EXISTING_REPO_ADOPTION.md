@@ -32,10 +32,12 @@ Start with `lite` when the existing repo has not yet mapped its architecture,
 CI, and release gates. Promote to `standard` only after every mandatory gate
 has a complete executable contract and behavioral control.
 
-Use `bcf install --upgrade` for normal pack updates. It refreshes support
-scripts, schemas, workflow, and missing current governance fields while
-preserving product and phase state. Use `--force-rescaffold` only when the
-owner intends to replace the active BCF layer.
+Use `bcf install --upgrade` for normal pack updates. It refreshes pack-owned
+runtime and schemas while preserving project-owned profiles, gate contracts,
+semantic contracts, graph configuration, extensions, unrelated workflows, and
+generated workflow bytes. Workflow changes occur only through explicit graph
+adoption or rendering. Use `--force-rescaffold` only when the owner intends to
+replace the active BCF layer.
 
 Before deleting or rescaffolding a drifted governance tree, run a dry cleanup plan:
 
@@ -73,7 +75,9 @@ Use `governance/repo-cleanup-contract.yml` as the cleanup contract and `governan
 7. Merge or include `Makefile.fragment`.
 8. Build a complete standard profile config with real argv, measurements,
    outputs, environment assertions, and negative controls for every gate.
-9. Preview and apply `bcf profile promote`; use the generated static CI matrix.
+9. Scaffold and complete the semantic configuration, then preview and apply
+   `bcf profile promote` with `--semantic-config`; render the governed CI graph
+   only after promotion succeeds.
 10. Record adoption evidence and known gaps in the active phase log.
 11. Treat unavailable mandatory gates as adoption work; standard and regulated
     profiles do not permit partial gate configuration.

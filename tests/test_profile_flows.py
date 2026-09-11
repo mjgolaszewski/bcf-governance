@@ -69,33 +69,247 @@ def gate_catalog() -> dict[str, dict[str, Any]]:
 def write_gate_runner(repo: Path) -> None:
     (repo / "gate.py").write_text(
         """from __future__ import annotations
+from dataclasses import dataclass
 import json
 import pathlib
 import sys
 
 BROKEN = False
-gate = sys.argv[1]
-artifacts = pathlib.Path('.artifacts')
-artifacts.mkdir(exist_ok=True)
-if gate.startswith('architecture-') or gate in {'test', 'contract-test'}:
-    junit = artifacts / 'junit' / f'{gate}.xml'
-    junit.parent.mkdir(parents=True, exist_ok=True)
-    failure = '<failure>mutated gate</failure>' if BROKEN else ''
-    junit.write_text(f'<testsuite tests="1" failures="{int(BROKEN)}"><testcase classname="tests/gates.py" name="{gate}">{failure}</testcase></testsuite>')
-for name in {
-    'security-sbom': 'sbom.json',
-    'security-vulnerability-scan': 'vulnerability-scan.json',
-    'runtime-smoke': 'runtime-smoke.json',
-}.items():
-    if gate == name[0]:
-        (artifacts / name[1]).write_text(json.dumps({'gate': gate, 'production': True}))
-if BROKEN:
-    print(f'mutated gate {gate}', file=sys.stderr)
-    raise SystemExit(1)
-print(f'gate passed: {gate}')
+
+@dataclass(frozen=True)
+class GateResult:
+    gate: str
+    passed: bool
+
+def build_gate_result(gate: str) -> GateResult:
+    return GateResult(gate=gate, passed=not BROKEN)
+
+def main() -> None:
+    gate = sys.argv[1]
+    artifacts = pathlib.Path('.artifacts')
+    artifacts.mkdir(exist_ok=True)
+    if gate.startswith('architecture-') or gate in {'test', 'contract-test'}:
+        junit = artifacts / 'junit' / f'{gate}.xml'
+        junit.parent.mkdir(parents=True, exist_ok=True)
+        failure = '<failure>mutated gate</failure>' if BROKEN else ''
+        junit.write_text(f'<testsuite tests="1" failures="{int(BROKEN)}"><testcase classname="tests/gates.py" name="{gate}">{failure}</testcase></testsuite>')
+    for name in {
+        'security-sbom': 'sbom.json',
+        'security-vulnerability-scan': 'vulnerability-scan.json',
+        'runtime-smoke': 'runtime-smoke.json',
+    }.items():
+        if gate == name[0]:
+            (artifacts / name[1]).write_text(json.dumps({'gate': gate, 'production': True}))
+    if BROKEN:
+        print(f'mutated gate {gate}', file=sys.stderr)
+        raise SystemExit(1)
+    print(f'gate passed: {gate}')
+
+PUBLIC_OPERATIONS = {'gate': main}
+
+if __name__ == '__main__':
+    main()
 """,
         encoding="utf-8",
     )
+    (repo / "gate-contract-source.json").write_text(
+        '{"kind":"gate-result","version":1}\n', encoding="utf-8"
+    )
+    generator = repo / "generate_gate_contract.py"
+    generator.write_text(
+        """from __future__ import annotations
+import json
+from pathlib import Path
+
+def main() -> None:
+    source = json.loads(Path('gate-contract-source.json').read_text(encoding='utf-8'))
+    Path('gate-contract.json').write_text(json.dumps(source, sort_keys=True, separators=(',', ':')) + '\\n', encoding='utf-8')
+
+if __name__ == '__main__':
+    main()
+""",
+        encoding="utf-8",
+    )
+    subprocess.run([sys.executable, str(generator)], cwd=repo, check=True)
+
+
+def semantic_config(repo: Path) -> Path:
+    """Write an explicit, complete semantic adoption decision for the fixture."""
+    semantic_id = "fixture.gate-result.v1"
+    family_id = "gate_result"
+    source = "gate.py"
+    canonical_symbol = "gate.py::GateResult"
+    owner = "gate.py::build_gate_result"
+    contract = {
+        "semantic_families": {
+            "schema_version": "1.0",
+            "document": {
+                "kind": "semantic_family_registry",
+                "id": "fixture-semantic-families",
+                "version": "1.0.0",
+                "status": "active",
+                "path": "governance/semantic-families.yml",
+            },
+            "families": [{
+                "id": family_id,
+                "significance": "authoritative",
+                "ownership_required": True,
+                "canonical_semantic_ids": [semantic_id],
+                "material_selectors": {
+                    "source_paths": [source],
+                    "symbols": [canonical_symbol],
+                    "secondary_paths": ["gate-contract.json"],
+                },
+                "responsibilities": {
+                    "construction": ["build_gate_result"],
+                    "decoding": [],
+                    "transition": [],
+                    "projection": [],
+                },
+            }],
+            "migrations": [],
+        },
+        "application_operations": {
+            "schema_version": "1.0",
+            "document": {
+                "kind": "application_operation_registry",
+                "id": "fixture-application-operations",
+                "version": "1.0.0",
+                "status": "active",
+                "path": "governance/application-operations.yml",
+            },
+            "populations": [{
+                "id": "fixture_cli",
+                "adapter": "python_mapping",
+                "source": source,
+                "symbol": "PUBLIC_OPERATIONS",
+                "public_only": True,
+            }],
+            "operations": [{
+                "id": "fixture.operation.gate.v1",
+                "population": "fixture_cli",
+                "population_key": "gate",
+                "family": family_id,
+                "bounded_context": "fixture",
+                "entrypoints": ["gate.py::main"],
+                "semantic_kind": "command",
+                "authoritative_read": True,
+                "authoritative_mutation": True,
+                "authority_conferral": False,
+                "produces_projection": False,
+                "model_callable": False,
+                "allowed_mutation_ports": [
+                    "gate.py::artifacts.mkdir",
+                    "gate.py::junit.parent.mkdir",
+                    "gate.py::junit.write_text",
+                    "gate.py::(artifacts / name[1]).write_text",
+                ],
+                "allowed_authority_ports": [],
+                "non_authoritative_output_effects": [],
+            }],
+            "migrations": [],
+        },
+        "canonical_representations": {
+            "document": {
+                "kind": "canonical_representation_registry",
+                "id": "fixture-canonical-representations",
+                "version": "1.0.0",
+                "status": "active",
+                "path": "governance/canonical-representations.yml",
+            },
+            "enforcement": {
+                "phase": "P01",
+                "default_mode": "declared_families_blocking",
+                "declared_families": [family_id],
+                "blocking_semantic_ids": [semantic_id],
+                "report_path": ".artifacts/semantic-ownership/report.json",
+                "unresolved_dynamic_policy": "fail_closed",
+            },
+            "source_authority": {
+                "discovery_precedes_registry_load": True,
+                "python_engine": "scripts/_bcf_runtime/semantic_ownership_inventory.py",
+                "typescript_engine": "not_applicable_until_declared_by_consumer",
+                "cross_language_trace": "not_applicable_until_declared_by_consumer",
+                "completeness_authority": "independent_exact_tree_source_inventory",
+                "authoritative_python_roots": [source],
+                "generated_mirror_roots": [],
+            },
+            "representations": [{
+                "semantic_id": semantic_id,
+                "family": family_id,
+                "schema_version": 1,
+                "lifecycle": "enforced",
+                "finding_ids": [],
+                "canonical_type": {"language": "python", "symbol": canonical_symbol},
+                "authoritative_owner": {"symbol": owner, "owner_kind": "constructor"},
+                "authorized_constructors_and_factories": [owner],
+                "authorized_pure_delegates": [],
+                "hostile_boundary_decoder": {
+                    "symbol": owner,
+                    "trust_boundary": "fixture input",
+                },
+                "field_invariants": [{"field": "passed", "invariant": "reflects gate outcome"}],
+                "permitted_defaults_and_single_application_point": [],
+                "accepted_aliases_and_single_ingress_boundary": [],
+                "persistence_codec_and_envelope": {
+                    "applicability": "not_applicable",
+                    "codec_symbol": owner,
+                    "semantic_id": semantic_id,
+                    "schema_version": 1,
+                    "exact_byte_format": "frozen in-memory value",
+                    "integrity_algorithm": "source inventory",
+                    "identity_bindings": ["gate", "passed"],
+                    "migration_dispatch": "none",
+                },
+                "protocol_translations": [],
+                "intentional_projections": [],
+                "declared_consumer_layers_and_sinks": {
+                    "read": [],
+                    "authorization": ["gate.py::main"],
+                    "persistence": [],
+                    "cache": [],
+                    "queue": [],
+                    "network": [],
+                    "api": [],
+                    "browser": [],
+                },
+                "generated_source_authority": {
+                    "authoritative_roots": [],
+                    "generated_mirrors": [],
+                    "generator": "not_applicable",
+                    "parity_proof": "not_applicable",
+                },
+                "migration_policy": {
+                    "source_versions": [],
+                    "destination_version": 1,
+                    "owner": owner,
+                    "runtime_exclusion": "none",
+                    "removal_condition": "reviewed successor",
+                },
+                "narrow_suppressions": [],
+            }],
+            "secondary_representations": [{
+                "id": "fixture.gate-contract-projection.v1",
+                "classification": "derived",
+                "canonical_semantic_id": semantic_id,
+                "derivation_kind": "exact_generated_projection",
+                "source_inputs": ["gate-contract-source.json"],
+                "outputs": ["gate-contract.json"],
+                "recipe": {
+                    "kind": "tracked_command",
+                    "argv": ["python3", "generate_gate_contract.py"],
+                },
+                "migration_owner": "fixture-maintainer",
+                "direct_edit_policy": "prohibited",
+            }],
+        },
+    }
+    path = repo / "semantic-config.yml"
+    path.write_text(
+        yaml.safe_dump({"contracts": contract}, sort_keys=False, width=120),
+        encoding="utf-8",
+    )
+    return path
 
 
 def gate_config(repo: Path, profile: str, public_key: Path | None) -> Path:
@@ -376,6 +590,7 @@ def test_standard_v1_to_v2_promotion_is_explicit_and_preserves_workflow(
     git(repo, "config", "user.name", "Profile Flow")
     write_gate_runner(repo)
     config = gate_config(repo, "standard", None)
+    semantic = semantic_config(repo)
     git(repo, "add", ".")
     git(repo, "commit", "--quiet", "-m", "application gate contracts")
     subprocess.run(
@@ -424,6 +639,8 @@ def test_standard_v1_to_v2_promotion_is_explicit_and_preserves_workflow(
         "standard",
         "--contract-version",
         "2.0",
+        "--semantic-config",
+        str(semantic),
     ]
 
     subprocess.run([*command, "--check"], check=True)
@@ -472,6 +689,104 @@ def test_standard_v1_to_v2_promotion_is_explicit_and_preserves_workflow(
     assert receipt["behavioral_probes"][0]["oracle_observation"]["satisfied"] is True
 
 
+def test_fresh_standard_v2_missing_semantic_config_fails_before_mutation(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "missing-semantic-config"
+    repo.mkdir()
+    git(repo, "init", "--quiet")
+    git(repo, "config", "user.email", "profile-flow@example.invalid")
+    git(repo, "config", "user.name", "Profile Flow")
+    write_gate_runner(repo)
+    config = gate_config(repo, "standard", None)
+    git(repo, "add", ".")
+    git(repo, "commit", "--quiet", "-m", "application gate contracts")
+    before = git(repo, "status", "--porcelain=v1", "--untracked-files=all")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(INSTALLER),
+            "--target",
+            str(repo),
+            "--profile",
+            "standard",
+            "--profile-config",
+            str(config),
+            "--project-id",
+            "missing-semantic-config",
+            "--project-name",
+            "Missing Semantic Config",
+            *EXPLICIT_HOSTED_RUNNERS,
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    assert "--semantic-config is required" in result.stderr
+    assert git(repo, "status", "--porcelain=v1", "--untracked-files=all") == before
+
+
+def test_incomplete_semantic_config_reports_independent_blockers_before_mutation(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "incomplete-semantic-config"
+    repo.mkdir()
+    git(repo, "init", "--quiet")
+    git(repo, "config", "user.email", "profile-flow@example.invalid")
+    git(repo, "config", "user.name", "Profile Flow")
+    write_gate_runner(repo)
+    config = gate_config(repo, "standard", None)
+    semantic = semantic_config(repo)
+    payload = yaml.safe_load(semantic.read_text(encoding="utf-8"))
+    payload["contracts"]["semantic_families"]["families"][0][
+        "canonical_semantic_ids"
+    ] = []
+    semantic.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    gate_source = repo / "gate.py"
+    gate_source.write_text(
+        gate_source.read_text(encoding="utf-8").replace(
+            "PUBLIC_OPERATIONS = {'gate': main}",
+            "PUBLIC_OPERATIONS = {'gate': main, 'unclassified': main}",
+        ),
+        encoding="utf-8",
+    )
+    git(repo, "add", ".")
+    git(repo, "commit", "--quiet", "-m", "application gate contracts")
+    before = git(repo, "status", "--porcelain=v1", "--untracked-files=all")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(INSTALLER),
+            "--target",
+            str(repo),
+            "--profile",
+            "standard",
+            "--profile-config",
+            str(config),
+            "--semantic-config",
+            str(semantic),
+            "--project-id",
+            "incomplete-semantic-config",
+            "--project-name",
+            "Incomplete Semantic Config",
+            *EXPLICIT_HOSTED_RUNNERS,
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    assert "semantic adoption has 2 blocker(s)" in result.stderr
+    assert "[semantic_family_completeness]" in result.stderr
+    assert "should be non-empty" in result.stderr
+    assert "[application_operation_inventory]" in result.stderr
+    assert "unclassified public application operations" in result.stderr
+    assert git(repo, "status", "--porcelain=v1", "--untracked-files=all") == before
+
+
 @pytest.mark.parametrize("profile", ["standard", "regulated"])
 def test_full_profile_install_evidence_truth_flow(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, profile: str
@@ -499,6 +814,7 @@ def test_full_profile_install_evidence_truth_flow(
             capture_output=True,
         )
     config = gate_config(repo, profile, public_key)
+    semantic = semantic_config(repo)
     git(repo, "add", ".")
     git(repo, "commit", "--quiet", "-m", "application gate contracts")
     subprocess.run(
@@ -511,6 +827,8 @@ def test_full_profile_install_evidence_truth_flow(
             profile,
             "--profile-config",
             str(config),
+            "--semantic-config",
+            str(semantic),
             "--project-id",
             "profile-flow",
             "--project-name",
@@ -624,6 +942,7 @@ def test_clean_standard_v2_fixture_installs_upgrades_customizes_and_rolls_back(
     git(repo, "config", "user.name", "Graph Fixture")
     write_gate_runner(repo)
     config = gate_config(repo, "standard", None)
+    semantic = semantic_config(repo)
     git(repo, "add", ".")
     git(repo, "commit", "--quiet", "-m", "fixture gate contracts")
     subprocess.run(
@@ -636,6 +955,8 @@ def test_clean_standard_v2_fixture_installs_upgrades_customizes_and_rolls_back(
             "standard",
             "--profile-config",
             str(config),
+            "--semantic-config",
+            str(semantic),
             "--project-id",
             "clean-graph-fixture",
             "--project-name",
@@ -693,6 +1014,10 @@ def test_clean_standard_v2_fixture_installs_upgrades_customizes_and_rolls_back(
             "governance/gate-contracts.yml",
             "governance/ci-graph.yml",
             "governance/ci-extensions/fixture.yml",
+            "governance/semantic-families.yml",
+            "governance/application-operations.yml",
+            "governance/canonical-representations.yml",
+            "governance/semantic-lock.yml",
             ".github/workflows/application.yml",
         )
     }

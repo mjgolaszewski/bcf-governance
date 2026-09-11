@@ -277,6 +277,25 @@ function discoverEndpointContracts(sourceFile, checker, repoRoot) {
   return contracts;
 }
 
+function discoverPublicExports(sourceFile, checker, repoRoot) {
+  const moduleSymbol = checker.getSymbolAtLocation(sourceFile);
+  if (!moduleSymbol) return [];
+  return checker.getExportsOfModule(moduleSymbol).map((exported) => {
+    const name = exported.getName();
+    const resolved = exported.flags & ts.SymbolFlags.Alias
+      ? checker.getAliasedSymbol(exported)
+      : exported;
+    const declaration = resolved.valueDeclaration ?? resolved.declarations?.[0];
+    return {
+      name,
+      symbol: `${relative(repoRoot, sourceFile.fileName)}::${name}`,
+      declaration: declaration
+        ? `${relative(repoRoot, declaration.getSourceFile().fileName)}::${resolved.getName()}`
+        : null,
+    };
+  }).sort((left, right) => left.name.localeCompare(right.name));
+}
+
 function main() {
   const { repoRoot, tsconfig, files } = parseArguments(process.argv.slice(2));
   const require = createRequire(path.join(repoRoot, "package.json"));
@@ -307,6 +326,7 @@ function main() {
   const checker = program.getTypeChecker();
   const functions = [];
   const endpointContracts = [];
+  const publicExports = [];
   const selectedFiles = new Set(files.map((value) => path.resolve(value)));
   for (const sourceFile of program.getSourceFiles()) {
     if (!selectedFiles.has(path.resolve(sourceFile.fileName))) continue;
@@ -316,6 +336,7 @@ function main() {
     }
     visit(sourceFile);
     endpointContracts.push(...discoverEndpointContracts(sourceFile, checker, repoRoot));
+    publicExports.push(...discoverPublicExports(sourceFile, checker, repoRoot));
   }
   const diagnostics = ts.getPreEmitDiagnostics(program).map((diagnostic) => ({
     path: diagnostic.file ? relative(repoRoot, diagnostic.file.fileName) : "<compiler>",
@@ -348,6 +369,7 @@ function main() {
     endpoint_calls: functions.flatMap((value) => value.endpoint_calls),
     decoder_calls: functions.flatMap((value) => value.decoder_calls),
     endpoint_contracts: endpointContracts,
+    public_exports: publicExports,
     diagnostics,
   };
   process.stdout.write(`${JSON.stringify(payload)}\n`);

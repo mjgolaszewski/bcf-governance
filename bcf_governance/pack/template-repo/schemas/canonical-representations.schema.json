@@ -54,6 +54,10 @@
       "type": "array",
       "minItems": 1,
       "items": {"$ref": "#/$defs/representation"}
+    },
+    "secondary_representations": {
+      "type": "array",
+      "items": {"oneOf": [{"$ref": "#/$defs/derivedRepresentation"}, {"$ref": "#/$defs/representationException"}]}
     }
   },
   "$defs": {
@@ -99,6 +103,54 @@
         "symbol": {"$ref": "#/$defs/symbol"}, "rule": {"type": "string", "minLength": 1}, "issue": {"type": "string", "minLength": 1},
         "expires_on": {"type": "string", "format": "date"}, "runtime_guard": {"type": "string", "minLength": 1}, "causal_fixture": {"type": "string", "minLength": 1}
       }
+    },
+    "safePath": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"},
+    "derivedRepresentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "classification", "canonical_semantic_id", "derivation_kind", "source_inputs", "outputs", "recipe", "migration_owner", "direct_edit_policy"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9_.-]+\\.v[1-9][0-9]*$"},
+        "classification": {"const": "derived"},
+        "canonical_semantic_id": {"$ref": "#/$defs/semanticId"},
+        "derivation_kind": {"enum": ["exact_generated_projection", "deterministic_build_projection", "runtime_constructor", "runtime_codec", "schema_generation", "authenticated_external_projection"]},
+        "source_inputs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}},
+        "outputs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}},
+        "recipe": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": {"enum": ["tracked_command", "runtime_symbol", "authenticated_external"]},
+            "argv": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+            "symbol": {"type": "string", "pattern": "::"},
+            "identity": {"type": "string", "minLength": 1}
+          },
+          "allOf": [
+            {"if": {"properties": {"kind": {"const": "tracked_command"}}}, "then": {"required": ["argv"]}},
+            {"if": {"properties": {"kind": {"const": "runtime_symbol"}}}, "then": {"required": ["symbol"]}},
+            {"if": {"properties": {"kind": {"const": "authenticated_external"}}}, "then": {"required": ["identity"]}}
+          ]
+        },
+        "migration_owner": {"type": "string", "minLength": 1},
+        "direct_edit_policy": {"const": "prohibited"}
+      }
+    },
+    "representationException": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "classification", "locations", "rationale", "accountable_owner", "issue"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9_.-]+\\.v[1-9][0-9]*$"},
+        "classification": {"const": "exception"},
+        "locations": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}},
+        "rationale": {"type": "string", "minLength": 1},
+        "accountable_owner": {"type": "string", "minLength": 1},
+        "issue": {"type": "string", "minLength": 1},
+        "expires_on": {"type": "string", "format": "date"},
+        "re_review_trigger": {"type": "string", "minLength": 1}
+      },
+      "anyOf": [{"required": ["expires_on"]}, {"required": ["re_review_trigger"]}]
     },
     "representation": {
       "type": "object",

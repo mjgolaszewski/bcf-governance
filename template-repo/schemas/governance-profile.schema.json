@@ -5,6 +5,16 @@
   "required": ["document", "profile", "release_gate_profile", "ci_profile", "drift_guardrails"],
   "properties": {
     "profile_contract_version": {"type": "string", "enum": ["1.0", "2.0"]},
+    "semantic_capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["semantic_family_completeness", "application_operation_inventory", "representation_provenance"],
+      "properties": {
+        "semantic_family_completeness": {"enum": ["disabled", "advisory", "blocking", "not_applicable"]},
+        "application_operation_inventory": {"enum": ["disabled", "advisory", "blocking", "not_applicable"]},
+        "representation_provenance": {"enum": ["disabled", "advisory", "blocking", "not_applicable"]}
+      }
+    },
     "document": {
       "type": "object",
       "additionalProperties": false,

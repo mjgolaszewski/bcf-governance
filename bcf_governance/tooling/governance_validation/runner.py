@@ -12,6 +12,10 @@ from ..semantic_ownership_registry import (
     SemanticOwnershipRegistryError,
     load_registry as load_semantic_ownership_registry,
 )
+from ..semantic_authority_contracts import (
+    SemanticAuthorityError,
+    validate_semantic_contract_structure,
+)
 
 from .common import *  # noqa: F403,F405
 from .artifact_policy import _load_phase_history, _validate_artifact_manifest, _validate_observability_contracts
@@ -167,8 +171,9 @@ def validate_repo_root(
             )
     if (repo_root / "governance/canonical-representations.yml").is_file():
         try:
-            load_semantic_ownership_registry(repo_root)
-        except SemanticOwnershipRegistryError as exc:
+            semantic_registry = load_semantic_ownership_registry(repo_root)
+            validate_semantic_contract_structure(repo_root, semantic_registry)
+        except (SemanticOwnershipRegistryError, SemanticAuthorityError) as exc:
             raise GovernanceValidationError(str(exc)) from exc
 
     if not allow_placeholders:
@@ -206,6 +211,15 @@ def validate_repo_root(
                 *([ci_graph_path] if ci_graph_path.is_file() else []),
                 *([test_tombstones_path] if test_tombstones_path is not None else []),
                 *([public_contract_path] if public_contract_path.is_file() else []),
+                *[
+                    path
+                    for path in (
+                        repo_root / "governance/semantic-families.yml",
+                        repo_root / "governance/application-operations.yml",
+                        repo_root / "governance/semantic-lock.yml",
+                    )
+                    if path.is_file()
+                ],
             ],
         )
     _validate_release_gate_targets(

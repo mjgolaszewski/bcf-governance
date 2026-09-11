@@ -57,7 +57,6 @@ REQUIRED_SDIST_FILES = (
     "CHANGELOG.md",
     "docs/ARCHITECTURE.md",
     "docs/CI_AUTHORITY.md",
-    "docs/EDITORIAL_CHECKLIST.md",
     "docs/MAINTAINING.md",
     "docs/USAGE.md",
     "LICENSE",

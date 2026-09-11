@@ -24,6 +24,15 @@ from .ci_github import GithubReferenceError, validate_reference_topology
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
 from .ci_graph_render import check_ci_graph
 from .runtime_capacity import RuntimeCapacityError, load_runtime_contract
+from .semantic_authority_contracts import (
+    SemanticAuthorityError,
+    capability_states,
+    validate_semantic_contract_structure,
+)
+from .semantic_ownership_registry import (
+    SemanticOwnershipRegistryError,
+    load_registry as load_semantic_registry,
+)
 
 
 CONTRACT_ORDER = {"1.0": 1, "2.0": 2}
@@ -224,9 +233,14 @@ def validate_profile_v2_readiness(
     representations = registry.get("representations")
     if not isinstance(representations, list) or not representations:
         raise ProfileV2Error("profile v2 requires at least one declared semantic representation")
+    try:
+        validate_semantic_contract_structure(repo_root, load_semantic_registry(repo_root))
+    except (SemanticAuthorityError, SemanticOwnershipRegistryError) as exc:
+        raise ProfileV2Error(f"semantic authority: {exc}") from exc
     head = _head(repo_root)
     instant = evaluated_at or datetime.now(timezone.utc)
     na_paths = sorted((repo_root / "governance/capability-na").glob("*.yml"))
+    na_capabilities: set[str] = set()
     for path in na_paths:
         payload = _load_mapping(path)
         try:
@@ -234,6 +248,14 @@ def validate_profile_v2_readiness(
         except CIAuthorityContractError as exc:
             raise ProfileV2Error(f"{path.relative_to(repo_root)}: {exc}") from exc
         _assert_subject_commit(repo_root, payload.get("subject_commit"), head)
+        subject = payload.get("subject", {})
+        if subject.get("kind") == "capability":
+            capability = str(subject.get("id", ""))
+            if capability in na_capabilities:
+                raise ProfileV2Error(
+                    f"duplicate N/A authority for capability {capability}"
+                )
+            na_capabilities.add(capability)
         trigger = payload.get("re_review_trigger")
         if isinstance(trigger, dict) and _trigger_is_active(repo_root, trigger):
             raise ProfileV2Error(
@@ -241,6 +263,21 @@ def validate_profile_v2_readiness(
             )
         if profile == "regulated":
             raise ProfileV2Error("regulated profile requirements cannot be bypassed by N/A")
+    semantic_states = capability_states(repo_root)
+    for capability, state in semantic_states.items():
+        has_record = capability in na_capabilities
+        if state == "not_applicable" and not has_record:
+            raise ProfileV2Error(
+                f"semantic capability {capability} requires a typed N/A record"
+            )
+        if state != "not_applicable" and has_record:
+            raise ProfileV2Error(
+                f"semantic capability {capability} has an N/A record but state {state}"
+            )
+        if profile == "regulated" and state != "blocking":
+            raise ProfileV2Error(
+                f"regulated semantic capability {capability} must be blocking"
+            )
     authority_path = repo_root / "governance/ci-authority.yml"
     authority_state = "absent"
     if authority_path.exists():

@@ -5,8 +5,8 @@ profile_contract_version: '2.0'
 default_branch: main
 trusted_controller: {kind: self_governance_policy, policy_path: governance/self-governance-policy.yml}
 value_sources:
-  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: c79e88b07d930afabc5ab98a77e75c205ee4250cbee226b3a2eed03f9f827e41}
-  release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: e5b0cc60c9cf710b6f2d07bacb9a6d749457995a7f91053f0034514c961287bf}
+  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 407859a3a82b106f2b8a95147afd69381891c9544208654d2a33ac254679a031}
+  release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: c4a461041376a8f3260c0938d842e169e5589a4ed1c1c26bfb89c52aabee88af}
   protection-contract: {kind: yaml, path: governance/github-protection.yml, sha256: 9bab9055ec8b52113a593fbc08c8931ea494a53f9af9e19b3eb3f3789c1efaa7}
   automation-contract: {kind: yaml, path: governance/automation-producers.yml, sha256: 74c02575f7599f9e4a82cacc60f6d60692ee81dd1f7bec20441e6b375cf77cce}
 extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]

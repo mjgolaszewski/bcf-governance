@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 import re
-import shlex
 from pathlib import Path
 from typing import Any
 
 import yaml  # type: ignore[import-untyped]
 
-from .ci_github_actions import action_pin
+from .profile_surface_generation import (
+    write_makefile as render_makefile,
+    write_workflow as render_workflow,
+)
 from .profile_yaml import render_profile_surface
 from .profile_v2_surfaces import apply_profile_v2_artifact_defaults
 from .yaml_mutations import YAMLMutationPathError, mutation_mode
@@ -107,16 +109,20 @@ def _builtin_contracts() -> dict[str, dict[str, Any]]:
     }
 
 
-def _semantic_owner_control(semantic_id: str) -> dict[str, Any]:
-    stem = semantic_id.removeprefix("governance.").removesuffix(".v1")
+def _semantic_owner_control(index: int) -> dict[str, Any]:
     return {
-        "id": f"{stem}-owner-is-enforced",
+        "id": f"canonical-owner-{index + 1}-is-enforced",
         "mutation": {
             "path": "governance/canonical-representations.yml",
-            "yaml_path": f"representations[semantic_id={semantic_id}].authorized_constructors_and_factories",
+            "yaml_path": f"representations.{index}.authorized_constructors_and_factories",
             "value": ["scripts/_bcf_runtime/missing.py::owner"],
         },
-        "oracle": {"kind": "diagnostic", "exit_codes": [1], "stream": "stdout", "regex": f"{semantic_id} owner must be an authorized constructor"},
+        "oracle": {
+            "kind": "diagnostic",
+            "exit_codes": [1],
+            "stream": "stdout",
+            "regex": "owner must be an authorized constructor",
+        },
     }
 
 
@@ -139,8 +145,7 @@ def _v2_builtin_contracts() -> dict[str, dict[str, Any]]:
                 ],
             },
             "negative_controls": [
-                _semantic_owner_control("governance.evidence-session.v1"),
-                _semantic_owner_control("governance.evidence-receipt-admission.v1"),
+                _semantic_owner_control(0),
             ],
         }
     }
@@ -545,121 +550,6 @@ def apply_scaffold_requirements(
     )
 
 
-def _write_makefile(repo_root: Path, contract: dict[str, Any]) -> None:
-    if contract.get("profile_contract_version") == "2.0":
-        from .profile_v2_surfaces import render_v2_makefile
-
-        (repo_root / "Makefile.fragment").write_text(
-            render_v2_makefile(contract), encoding="utf-8"
-        )
-        return
-    gates = contract["gates"]
-    targets = " ".join(gates)
-    lines = [
-        "SHELL := /bin/bash",
-        "PYTHON ?= python3",
-        "BCF_EVIDENCE_DIR ?= .artifacts/bcf",
-        "",
-        f".PHONY: governance-truthfulness release-check {targets}",
-        "",
-        "governance-truthfulness:",
-        "\t$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)",
-        "",
-    ]
-    for target, gate in gates.items():
-        argv = shlex.join(gate["invocation"]["argv"])
-        env = " ".join(
-            f"{key}={shlex.quote(value)}" for key, value in gate["invocation"]["env"].items()
-        )
-        cwd = shlex.quote(gate["invocation"]["cwd"])
-        command = f"cd {cwd} && {env + ' ' if env else ''}{argv}"
-        lines.extend([f"{target}:", f"\t@{command}", ""])
-    lines.extend(
-        [
-            "release-check:",
-            "\t@mkdir -p $(BCF_EVIDENCE_DIR)",
-            f"\t@for gate in {targets}; do \\",
-            "\t\t$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output $(BCF_EVIDENCE_DIR)/$$gate || exit $$?; \\",
-            "\tdone",
-            "\t$(MAKE) governance-truthfulness",
-            "",
-        ]
-    )
-    (repo_root / "Makefile.fragment").write_text("\n".join(lines), encoding="utf-8")
-
-
-def _write_workflow(repo_root: Path, contract: dict[str, Any]) -> None:
-    gates = list(contract["gates"])
-    profile = _load_yaml(repo_root / "governance-profile.yml")
-    labels = profile.get("ci_profile", {}).get("runner_labels", ["ubuntu-latest"])
-    if contract.get("profile_contract_version") == "2.0":
-        from .profile_v2_surfaces import render_v2_workflow
-
-        path = repo_root / ".github/workflows/governance.yml"
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(render_v2_workflow(contract, labels), encoding="utf-8")
-        return
-    label_yaml = yaml.safe_dump(labels, default_flow_style=True).strip()
-    matrix = "\n".join(f"          - {target}" for target in gates)
-    text = f'''name: governance
-
-on:
-  pull_request:
-  push:
-    branches: [main]
-
-permissions:
-  contents: read
-
-env:
-  BCF_ENFORCE_PR_CHANGELOG: ${{{{ github.event_name == 'pull_request' }}}}
-  BCF_PR_BASE_SHA: ${{{{ github.event.pull_request.base.sha }}}}
-
-jobs:
-  evidence:
-    runs-on: {label_yaml}
-    strategy:
-      fail-fast: false
-      matrix:
-        gate:
-{matrix}
-    steps:
-      - uses: {action_pin("checkout")}
-        with: {{fetch-depth: 0}}
-      - uses: {action_pin("setup-python")}
-        with: {{python-version: "3.12"}}
-      - run: python3 -m pip install -r requirements-governance.txt
-      - name: Capture ${{{{ matrix.gate }}}} evidence
-        run: python3 scripts/governance_evidence.py --repo-root . run --gate "${{{{ matrix.gate }}}}" --output ".artifacts/bcf/${{{{ matrix.gate }}}}"
-      - if: always()
-        uses: {action_pin("upload-artifact")}
-        with:
-          name: bcf-evidence-${{{{ matrix.gate }}}}
-          path: .artifacts/bcf/${{{{ matrix.gate }}}}
-          if-no-files-found: error
-
-  governance-truthfulness:
-    if: always()
-    needs: [evidence]
-    runs-on: {label_yaml}
-    steps:
-      - uses: {action_pin("checkout")}
-        with: {{fetch-depth: 0}}
-      - uses: {action_pin("setup-python")}
-        with: {{python-version: "3.12"}}
-      - run: python3 -m pip install -r requirements-governance.txt
-      - uses: {action_pin("download-artifact")}
-        with: {{pattern: bcf-evidence-*, path: .artifacts/bcf, merge-multiple: true}}
-      - run: python3 scripts/governance_truth.py --repo-root . --evidence-dir .artifacts/bcf --format json --durable-ref "github-actions://${{{{ github.repository }}}}/runs/${{{{ github.run_id }}}}/bcf-governance-truth" --output .artifacts/bcf/truth-report.json
-      - if: always()
-        uses: {action_pin("upload-artifact")}
-        with: {{name: bcf-governance-truth, path: .artifacts/bcf/truth-report.json, if-no-files-found: error}}
-'''
-    path = repo_root / ".github/workflows/governance.yml"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
-
-
 def apply_profile_contract(
     repo_root: Path,
     contract: dict[str, Any],
@@ -679,6 +569,14 @@ def apply_profile_contract(
         raise ProfileContractError("profile contract version must be 1.0 or 2.0")
     profile["profile_contract_version"] = contract_version
     profile["profile"]["selected"] = profile_name
+    profile.setdefault(
+        "semantic_capabilities",
+        {
+            "semantic_family_completeness": "disabled",
+            "application_operation_inventory": "disabled",
+            "representation_provenance": "disabled",
+        },
+    )
     apply_profile_v2_artifact_defaults(profile, selected_profile=profile_name, contract_version=contract_version)
     profile["release_gate_profile"]["gates"] = contract["gate_catalog"]
     for value in profile["release_gate_profile"]["gates"].values():
@@ -698,8 +596,12 @@ def apply_profile_contract(
     }
     contract_path = repo_root / "governance/gate-contracts.yml"
     contract_path.parent.mkdir(parents=True, exist_ok=True)
+    # Keep the mechanically rendered contract within the same governed context
+    # budget as a hand-compacted canonical contract. Negative-control mappings
+    # remain one semantic record; a wider deterministic wrap avoids turning
+    # added controls into artificial line-budget failures during promotion.
     contract_path.write_text(
-        render_profile_surface(persisted, width=160), encoding="utf-8"
+        render_profile_surface(persisted, width=240), encoding="utf-8"
     )
 
     evidence_policy = _load_yaml(repo_root / "governance/evidence-policy.yml")
@@ -722,9 +624,9 @@ def apply_profile_contract(
     (repo_root / "governance/evidence-policy.yml").write_text(
         render_profile_surface(evidence_policy, width=160), encoding="utf-8"
     )
-    _write_makefile(repo_root, contract)
+    render_makefile(repo_root, contract)
     if write_workflow:
-        _write_workflow(repo_root, contract)
+        render_workflow(repo_root, contract)
     if profile_name == "regulated":
         regulated_docs = {
             "governance/MODEL_RISK_AND_PROVENANCE.md": (

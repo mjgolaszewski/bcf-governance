@@ -37,7 +37,10 @@ def test_editorial_contract_command_runs_from_outside_repository(tmp_path: Path)
 def test_editorial_tone_and_topic_owner_mutants_are_rejected(tmp_path: Path) -> None:
     module = _checker()
     copied = tmp_path / "repo"
-    for relative in module.EDITORIAL_DOCUMENTS:
+    # Copy the checker-owned topic inventory. The exact release audit owns the
+    # complete human-facing population; this focused mutant needs only the
+    # canonical and branch documents whose content it changes.
+    for relative in (*module.CANONICAL_DOCUMENTS, *module.BRANCH_DOCUMENTS):
         source = REPO_ROOT / relative
         target = copied / relative
         target.parent.mkdir(parents=True, exist_ok=True)
