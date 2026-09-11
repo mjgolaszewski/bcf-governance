@@ -1,0 +1,42 @@
+document: {kind: audit_report, name: BCF v1.1.0 Release Custody, id: bcf-v1.1.0-release-custody, version: 1.0.0, status: final, path: audits/v1.1.0-release-custody.yml}
+subject: {version: 1.1.0, tag: v1.1.0, tag_kind: annotated, tag_object: 4c918409914c50f1b806826f03aff6a2e529f02d, tag_signed: false, tag_verification_reason: unsigned, commit: e1053ae4530e595d3f5453668f6c93a35fec45fb, tree: 5cf8aa0e270069d61de01d96fcbe409cbed8fd5f}
+provider_release: {id: 387076379, immutable: true, draft: false, prerelease: false, published_at: '2026-09-11T13:52:36Z'}
+assets:
+- {id: 557344141, name: bcf_governance-1.1.0-py3-none-any.whl, size: 929816, sha256: c68daac94bd22255ead32caf2c1cf98844dc6b1c3cb9d81a0afdd7f3e0ed3be2}
+- {id: 557344186, name: bcf_governance-1.1.0.tar.gz, size: 1634388, sha256: db204c4918a59953b9fcb90639f4d3bef36a3548818d9f17cd8b567ccc946be2}
+- {id: 557344119, name: SHA256SUMS, size: 198, sha256: 376acd897e40aedb8d9d049138f75476f5b520f621f5cc5e2a8fbda792ac3314}
+authority:
+  release_receipt: {artifact_id: 10266636912, artifact_digest: 'sha256:8b4267535115c811d11f1b1676e47eef44fc02090d9867e166b09f6b4bb47f98', receipt_sha256: c1993399faa27f5d5ddf8e458627d6f9260ce2dae04cd8676782a25749554791, admission_ordinal: '34603532743001001'}
+  controller: {commit: e1053ae4530e595d3f5453668f6c93a35fec45fb, artifact_id: 10265127923, artifact_digest: 'sha256:00e972528f987048a31cc479baf7704cf2becae28286f3e25bca8c7ceddc1f16', wheel_sha256: c68daac94bd22255ead32caf2c1cf98844dc6b1c3cb9d81a0afdd7f3e0ed3be2}
+  installed_control_plane: {commit: 99930501c1c4fc1773a75f3008c94a1646397852, artifact_id: 10263351503, artifact_digest: 'sha256:d94444394610decf9340a65d86e43c9e29623ae7f3dfc3fddeca3079d072f867', wheel_sha256: 4c32057a5ef67ba384aa5f45d4976d0942db59563aa45caec625eb68a71ae37d, bootstrap_run: 34600419661, probe_run: 34600500924, trusted_runners_proven: 2}
+  ruleset: {id: 21862678, required_check: bcf/pr-certification, integration_id: 15368, strict: true, approvals: 0, bypasses: 0}
+  trusted_runners:
+  - {id: 24, name: bcf-governance-vm-linux-ci-runner-1, label: bcf-trusted-control-1}
+  - {id: 25, name: bcf-governance-vm-linux-ci-runner-2, label: bcf-trusted-control-2}
+workflow_runs:
+  stopped_attempts:
+  - {id: 34585727203, attempt: 1, conclusion: cancelled, class: negative_control_diagnostic_ordering}
+  - {id: 34598099199, attempt: 1, conclusion: failure, class: planned_stale_controller_transition}
+  - {id: 34598620169, attempt: 1, conclusion: cancelled, class: editorial_digest_freshness}
+  - {id: 34602125664, attempt: 1, conclusion: failure, class: pull_request_changelog_front_door}
+  implementation_pull_request: [{id: 34597232975, attempt: 1}, {id: 34597232905, attempt: 1}, {id: 34598014357, attempt: 1}, {id: 34598045233, attempt: 1}]
+  controller_target_pull_request: [{id: 34599451102, attempt: 1}, {id: 34599451051, attempt: 1}, {id: 34600302428, attempt: 1}, {id: 34600336904, attempt: 1}]
+  controller_confirmation_pull_request: [{id: 34602493577, attempt: 1}, {id: 34602493385, attempt: 1}, {id: 34603431228, attempt: 1}, {id: 34603469044, attempt: 1}]
+  controller_target_exact_main: [{id: 34600389634, attempt: 1}, {id: 34601269155, attempt: 1}, {id: 34601306368, attempt: 1}]
+  final_exact_main: [{id: 34603532743, attempt: 1}, {id: 34604461291, attempt: 1}, {id: 34604510046, attempt: 1}]
+  scheduled: [{id: 34604561705, attempt: 1}, {id: 34604564121, attempt: 1}]
+  release: [{id: 34605007505, attempt: 1}, {id: 34605828512, attempt: 1}, {id: 34606422858, attempt: 1}, {id: 34606763804, attempt: 1}]
+release_provider_artifacts:
+  authorization: {id: 10265985009, digest: 'sha256:eccb8cad6731571f9a3e2b9cdf8e78ca5fa79fa03cc8dfed648cc01838afcc04'}
+  build: {id: 10266980606, digest: 'sha256:2cc02ae431fc2d0cfaf779947290674378f22fcb8f3819acc27ccf7ac3b3bca3'}
+  verification: {id: 10266646880, digest: 'sha256:20dda59bf301568117877db0e72fb1a0a559d6c92b391388d0dded244778a719'}
+  runtime: {id: 10266776725, digest: 'sha256:ca9f207e2c1fd5acb8afa65901298a7ad4bd96e06909fbd1d61e9562590175f0'}
+  receipt: {id: 10266636912, digest: 'sha256:8b4267535115c811d11f1b1676e47eef44fc02090d9867e166b09f6b4bb47f98'}
+attestation: {workflow: .github/workflows/bcf-release-publisher.yml, run_id: 34606763804, attempt: 1, source_commit: e1053ae4530e595d3f5453668f6c93a35fec45fb, transparency_log_index: '2794016463', verified_at: '2026-09-11T13:52:24Z', subjects: [SHA256SUMS, bcf_governance-1.1.0-py3-none-any.whl, bcf_governance-1.1.0.tar.gz]}
+issue_resolution:
+- {issue: 152, state: closed, reason: completed, closed_at: '2026-09-11T12:16:41Z'}
+- {issue: 153, state: closed, reason: completed, closed_at: '2026-09-11T12:16:41Z'}
+- {issue: 154, state: closed, reason: completed, closed_at: '2026-09-11T12:16:42Z'}
+consumer_scope: {racecar_mutated: false, validated_commit: 02789b17056bcb256a2ed8a2fc252e39db9ff5ea, handoff: separate_explicit_adoption_required}
+security_hygiene: {temporary_release_admin_secret_present_after_publication: false, registered_runner_ids: [24, 25]}
+conclusion: published_immutable_attested_and_exact_receipt_bound

@@ -8,6 +8,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [1.1.0] - 2026-09-11
 
+Published as immutable GitHub release `387076379` from exact certified merge
+`e1053ae4530e595d3f5453668f6c93a35fec45fb`.
+
 ### Added
 
 - Added `governance/semantic-families.yml`, a source-bound registry that makes
