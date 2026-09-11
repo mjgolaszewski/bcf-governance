@@ -27,6 +27,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   proves bypassing constructor normalization restores the reported false pass.
 - Preserved receipt schema 2.0, profile and authority contracts, all 21 gate
   IDs, and the generated CI topology.
+- Projected the trusted-controller target from the authenticated exact-main
+  artifact; provider coordinates and workflow bytes remain mechanically
+  derived rather than operator-authored.
 
 ## [1.1.0] - 2026-09-11
 
