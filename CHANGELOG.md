@@ -96,6 +96,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   the corrected authenticated GitHub transport, from exact-main provider
   evidence on both trusted runners; provider coordinates and generated workflow
   bytes remain mechanically derived rather than operator-authored.
+- Re-projected the trusted-controller target from the authenticated HF04
+  implementation artifact after separating repository-settings inspection from
+  Release mutation; the controller compiler, not an operator, owns every pin.
 - Completed P23-HF03 on explicit owner authority from its exact local, protected
   PR, bootstrap, and probe evidence. The existing closure preflight rejected the
   omitted lifecycle transition before any evidence lane was allocated.
