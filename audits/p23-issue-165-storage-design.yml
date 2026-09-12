@@ -168,7 +168,14 @@ racecar_read_only_qualification:
   consumer_remote_mutated: false
 acceptance:
   local: passed_except_expected_controller_rotation
-  GitHub_provider_qualification: pending
+  GitHub_provider_qualification: implementation_and_controller_target_passed_confirmation_pending
   Racecar_dry_run: passed
-  storage_measurement: baseline_passed_remote_segments_pending
+  storage_measurement:
+    observed_after_controller_probe_utc: '2026-09-12T06:35:00Z'
+    live_artifacts: 844
+    live_bytes: 421143948
+    live_mib: 401.634
+    increment_from_baseline_mib: 6.854
+    hard_incremental_ceiling_mib: 67.5
+    result: pass
   release: pending

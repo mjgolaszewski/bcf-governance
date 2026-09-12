@@ -71,6 +71,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Projected the 1.2.0 trusted-controller target from the authenticated
   exact-main artifact; provider coordinates and generated workflow bytes remain
   mechanically derived rather than operator-authored.
+- Confirmed that controller installation through provider-compiled bootstrap
+  and probe evidence from both trusted runners; release and exact-main roles
+  activate only from the mechanically projected proof.
 - Bound durable publication credentials, GitHub App permissions, source commit
   and tree, workflow bytes, job, run, attempt, provider assets, attestations,
   freshness, and materialized member bytes mechanically. Concurrent or

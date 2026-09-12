@@ -12,7 +12,7 @@ active_phase:
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
-  lifecycle_status: active
+  lifecycle_status: completed
   owner: codex
   validation_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest tests]
 hotfix_lane:
@@ -23,9 +23,9 @@ hotfix_lane:
       allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]
     full:
       required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]
-  open_records:
-  - {id: P23-HF01, mode: full, status: planned, triggered_by_commits: [fe85d200c16ef296280fef59c8f7888978e43d2c], failing_workflows: [issue-164-public-operation-reproduction], root_cause: same-instance method calls omit their lexical class identity and bypass downstream effect traversal, remediated_in_phase: P23, hotfix_log: phases/phase-23-hotfix01.yml, canonical_artifacts: [bcf_governance/tooling/semantic_python_method_identity.py, bcf_governance/tooling/semantic_ownership_inventory.py, bcf_governance/tooling/semantic_operation_effects.py, audits/p23-issue-164-remediation.yml]}
-  remediation_history: []
+  open_records: []
+  remediation_history:
+  - {id: P23-HF01, mode: full, recorded_at_utc: '2026-09-12T06:35:00Z', action: resolved exact same-instance method identity and fail-closed ambiguous dispatch while preserving one source-first inventory, remediated_in_phase: P23, hotfix_log: phases/phase-23-hotfix01.yml, canonical_artifacts: [bcf_governance/tooling/semantic_python_method_identity.py, bcf_governance/tooling/semantic_ownership_inventory.py, bcf_governance/tooling/semantic_operation_effects.py, audits/p23-issue-164-remediation.yml], local_validation: [912 source tests passed, 389 contract tests passed, 213 cause-verified controls passed, wheel and extracted-sdist verification passed], remote_validation_completed: {commit: c7efe4257ea2763151d423e10f19b80cb7f404de, workflows: ['corrected implementation governance 34676966751 attempt 1', 'corrected implementation governance-pack 34676966730 attempt 1', 'controller-target governance 34677718493 attempt 1', 'controller-target governance-pack 34677718488 attempt 1', 'bootstrap 34678412739 attempt 1', 'probe 34678449918 attempt 1']}}
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
 - {type: decision, statement: BCF 0.7.0 is one release train and BCF must self-adopt every applicable Standard-v2 capability}
@@ -82,6 +82,6 @@ release_trains:
   release_10: {target_version: 1.0.4, status: completed, focus: [lossless_pytest_selector_mapping, class_based_negative_controls, first_party_audit_code_classification, immutable_patch_release]}
   release_11: {target_version: 1.1.0, status: completed, focus: [semantic_family_completeness, application_operation_inventory, representation_provenance, editorial_custody, immutable_minor_release]}
   release_12: {target_version: 1.1.1, status: completed, focus: [python_import_root_identity, imported_constructor_enforcement, consumer_compatibility, immutable_patch_release]}
-  release_13: {target_version: 1.2.0, status: planned, focus: [same_instance_method_identity, fail_closed_dynamic_dispatch, operation_effect_enforcement, hosted_run_and_done_orchestration, content_addressed_evidence_inputs, authenticated_GitHub_transport, reachability_retention, consumer_compatibility, immutable_minor_release]}
+  release_13: {target_version: 1.2.0, status: active, focus: [same_instance_method_identity, fail_closed_dynamic_dispatch, operation_effect_enforcement, hosted_run_and_done_orchestration, content_addressed_evidence_inputs, authenticated_GitHub_transport, reachability_retention, consumer_compatibility, immutable_minor_release]}
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]
