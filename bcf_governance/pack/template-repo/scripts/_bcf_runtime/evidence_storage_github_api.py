@@ -10,7 +10,7 @@ import tempfile
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
 from .ci_github_api import GitHubAPI, GitHubAPIError, _positive_id, _sha
 from .ci_github_downloads import (
@@ -165,7 +165,7 @@ class GitHubEvidenceAPI(GitHubAPI):
         try:
             with path.open("rb") as stream:
                 request.data = stream
-                with urlopen(request, timeout=300) as response:  # noqa: S310
+                with open_download(request, timeout=300) as response:
                     raw = response.read(1_048_577)
         except HTTPError as exc:
             raise GitHubAPIError(f"GitHub evidence asset upload returned {exc.code}") from exc

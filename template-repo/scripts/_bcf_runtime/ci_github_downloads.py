@@ -75,7 +75,7 @@ def build_download_request(
 
 
 def open_download(request: Request, *, timeout: int) -> Any:
-    """Open one request with the sole credential-safe redirect policy."""
+    """Open one authenticated provider request with the sole redirect policy."""
 
     return build_opener(CredentialSafeRedirectHandler()).open(request, timeout=timeout)
 

@@ -29,9 +29,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 ### Fixed
 
 - Gave GitHub Actions-artifact ZIPs and Release assets distinct, typed media
-  types in one download owner. Both the general provider adapter and durable
-  evidence adapter now use that owner, strip credentials on cross-origin HTTPS
-  redirects, and reject redirect downgrades.
+  types in one transport owner. Every authenticated GitHub JSON, upload, and
+  binary request now uses its credential-safe redirect policy; cross-origin
+  HTTPS redirects lose credentials and redirect downgrades are rejected.
 - Kept the exact-main evidence fanout fail-closed during a controller rotation
   while allowing only the short read-only package producer needed to build the
   replacement controller. A pending controller can no longer force either a
@@ -47,7 +47,7 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Moved an applicable repository editorial-inventory check into canonical cheap
   preflight, before exact test-manifest collection, session allocation, or
   evidence fanout. Stale documentation custody now fails at the front door.
-- Ratcheted BCF's own canonical gate-contract context ceiling from 96 to 98 KiB
+- Ratcheted BCF's own canonical gate-contract context ceiling from 96 to 99 KiB
   for the complete causal preflight, download, redirect, and controller-transition
   controls; installed consumer defaults remain unchanged.
 - Preserved bounded project-owned package metadata classifications across

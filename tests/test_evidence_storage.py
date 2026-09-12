@@ -425,6 +425,54 @@ def test_github_download_redirects_confine_credentials_to_the_api_origin() -> No
         )
 
 
+def test_every_authenticated_github_request_uses_the_redirect_policy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    requests: list[Any] = []
+
+    def open_download(request: Any, *, timeout: int) -> _DownloadResponse:
+        requests.append((request, timeout))
+        return _DownloadResponse(b'{"id":7,"full_name":"owner/project"}')
+
+    monkeypatch.setattr(ci_github_api, "open_download", open_download)
+    monkeypatch.setattr(evidence_storage_github_api, "open_download", open_download)
+    api = GitHubEvidenceAPI(token="secret")
+
+    assert api.repository("owner/project")["id"] == 7
+    assert api.upload_release_asset(
+        upload_url="https://uploads.github.com/repos/owner/project/releases/8/assets{?name,label}",
+        repository="owner/project",
+        release_id=8,
+        name="release.bin",
+        payload=b"release bytes",
+    )["id"] == 7
+    source = tmp_path / "evidence.bin"
+    source.write_bytes(b"evidence bytes")
+    assert api.upload_evidence_asset(
+        upload_url="https://uploads.github.com/repos/owner/project/releases/9/assets{?name,label}",
+        repository="owner/project",
+        release_id=9,
+        name="evidence.bin",
+        path=source,
+        maximum_bytes=1024,
+    )["id"] == 7
+
+    assert [request.get_method() for request, _timeout in requests] == [
+        "GET",
+        "POST",
+        "POST",
+    ]
+    assert [timeout for _request, timeout in requests] == [30, 60, 300]
+    assert all(
+        request.get_header("Authorization") == "Bearer secret"
+        for request, _timeout in requests
+    )
+    assert "urlopen" not in Path(ci_github_api.__file__).read_text(encoding="utf-8")
+    assert "urlopen" not in Path(evidence_storage_github_api.__file__).read_text(
+        encoding="utf-8"
+    )
+
+
 def test_archives_are_deterministic_and_deduplicate_equal_bytes(tmp_path: Path) -> None:
     root = _storage_repo(tmp_path)
     prepared = root / "prepared"

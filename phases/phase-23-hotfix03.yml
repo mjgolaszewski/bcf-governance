@@ -30,10 +30,11 @@ execution_evidence:
     application/vnd.github+json as 200 for the exact artifact without launching
     another workflow
   - class review found the same media-type assumption in the general GitHub API
-    adapter and found that default urllib redirect behavior could forward a bearer
-    credential to a cross-origin signed download URL
-  - one endpoint-kind owner now supplies media types to both adapters and one
-    redirect owner strips credentials cross-origin and rejects HTTP downgrade
+    adapter and found every authenticated JSON upload or binary call using default
+    urllib redirect behavior could forward a bearer credential cross-origin
+  - one endpoint-kind owner supplies binary media types and one transport owner
+    now handles every authenticated provider request, strips credentials
+    cross-origin, and rejects HTTP downgrade
   - the pending-controller exact-main graph now blocks expensive governance
     evidence while leaving the bounded package/controller producer runnable, so
     mechanical rotation cannot deadlock or allocate a useless full fanout

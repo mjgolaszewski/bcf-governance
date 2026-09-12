@@ -10,7 +10,7 @@ import re
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
 from .ci_github_downloads import (
     GitHubDownloadKind,
@@ -68,7 +68,7 @@ class GitHubAPI:
             },
         )
         try:
-            with urlopen(request, timeout=30) as response:  # noqa: S310 - fixed HTTPS origin
+            with open_download(request, timeout=30) as response:
                 raw = response.read()
         except HTTPError as exc:
             raise GitHubAPIError(f"GitHub API {method} {path} returned {exc.code}") from exc
@@ -128,7 +128,7 @@ class GitHubAPI:
             },
         )
         try:
-            with urlopen(request, timeout=60) as response:  # noqa: S310 - closed HTTPS origin
+            with open_download(request, timeout=60) as response:
                 raw = response.read(1_048_577)
         except HTTPError as exc:
             raise GitHubAPIError(f"GitHub release asset upload returned {exc.code}") from exc
