@@ -35,6 +35,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Moved an applicable repository editorial-inventory check into canonical cheap
   preflight, before exact test-manifest collection, session allocation, or
   evidence fanout. Stale documentation custody now fails at the front door.
+- Ratcheted BCF's own canonical gate-contract context ceiling from 96 to 97 KiB
+  for the added causal preflight control; installed consumer defaults remain
+  unchanged.
 - Preserved bounded project-owned package metadata classifications across
   upgrades so a newer pack schema does not invalidate an otherwise compatible
   consumer architecture contract.

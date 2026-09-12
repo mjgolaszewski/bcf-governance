@@ -21,6 +21,7 @@ from .common import *  # noqa: F403,F405
 from .artifact_policy import _load_phase_history, _validate_artifact_manifest, _validate_observability_contracts
 from .context_budgets import _context_budget_advisories
 from .evidence_contracts import _load_evidence_contracts, _validate_gate_contract_registry
+from .editorial_contract import check_editorial
 from .phase_artifacts import _validate_agents
 from .phase_catalog import (
     _validate_active_closeout_evidence_ownership,

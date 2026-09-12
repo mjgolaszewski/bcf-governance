@@ -24,7 +24,7 @@ from .evidence_sessions import (
     allocate_session,
     local_producer_identity,
 )
-from .governance_validation.runner import validate_repo_root
+from .governance_validation.runner import check_editorial, validate_repo_root
 from .install_governance_pack import _pack_manifest_entries
 from .interpreter_environment import (
     InterpreterEnvironmentError,
@@ -655,31 +655,6 @@ def _pack_manifest(repo_root: Path) -> dict[str, Any]:
     return {"applicable": True, "file_count": len(entries)}
 
 
-def _editorial_contract(repo_root: Path, python: Path) -> dict[str, Any]:
-    """Run a repository-declared editorial checker before test fanout."""
-
-    checker = repo_root / ".github/scripts/check_editorial_contract.py"
-    if not checker.exists():
-        return {"applicable": False}
-    if checker.is_symlink() or not checker.is_file():
-        raise PreflightError("editorial contract checker must be one regular nonsymlink file")
-    environment = dict(os.environ)
-    environment.pop("PYTHONPATH", None)
-    result = subprocess.run(
-        [str(python), str(checker)],
-        cwd=repo_root,
-        env=environment,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    editorial_failed = result.returncode != 0
-    if editorial_failed:
-        detail = result.stderr.strip() or result.stdout.strip() or "checker failed"
-        raise PreflightError(f"editorial contract preflight failed: {detail}")
-    return {"applicable": True, "status": "current"}
-
-
 def run_preflight(
     repo_root: Path,
     *,
@@ -738,9 +713,7 @@ def run_preflight(
     )
     source_locks = step("source-locks", lambda: _vendored_source_locks(repo_root))
     pack_manifest = step("pack-manifest", lambda: _pack_manifest(repo_root))
-    editorial_contract = step(
-        "editorial-contract", lambda: _editorial_contract(repo_root, python)
-    )
+    editorial_contract = step("editorial-contract", lambda: check_editorial(repo_root, python))
     test_manifests = step(
         "test-manifests", lambda: check_all(repo_root, python_executable=python)
     )

@@ -153,6 +153,7 @@ offline_failure_class_remediation:
   - same-workflow fixture satisfies unrelated dependency and event constraints so only the workflow boundary decides its outcome
   - all thirteen graph transport adversaries assert cause-specific diagnostics
   - applicable editorial inventory validation runs in canonical cheap preflight
+  - BCF's self-governed gate-contract ceiling ratchets from 96 to 97 KiB for the added causal control while consumer defaults remain unchanged
   acceptance_rule: actual local evidence execution including every affected negative control must pass from one clean committed session before another provider attempt
 racecar_read_only_qualification:
   repository: mjgolaszewski/racecar

@@ -314,7 +314,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     monkeypatch.setattr(preflight, "_vendored_source_locks", lambda _: 0)
     monkeypatch.setattr(preflight, "_pack_manifest", lambda _: {"applicable": False})
     monkeypatch.setattr(
-        preflight, "_editorial_contract", lambda *_: {"applicable": False}
+        preflight, "check_editorial", lambda *_: {"applicable": False}
     )
     monkeypatch.setattr(preflight, "check_all", lambda *_, **__: {"test": 1})
     monkeypatch.setattr(preflight, "_pr_context", lambda *_: {"applicable": False})
@@ -370,10 +370,10 @@ def test_editorial_contract_rejection_is_a_preflight_failure(tmp_path: Path) -> 
     )
 
     with pytest.raises(
-        preflight.PreflightError,
+        ValueError,
         match="editorial contract preflight failed: editorial inventory is stale",
     ):
-        preflight._editorial_contract(tmp_path, Path(sys.executable))
+        preflight.check_editorial(tmp_path, Path(sys.executable))
 
 
 def test_stale_trusted_controller_is_a_preflight_failure(

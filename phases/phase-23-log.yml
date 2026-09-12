@@ -59,6 +59,7 @@ execution_evidence:
   - the complete storage-control class was decomposed into cause-specific diagnostics; canonical preflight now rejects stale editorial custody before exact manifests session allocation or evidence fanout
   - implementation PR 166 run 34670160515 passed all 912 positive tests but failed closed because two new storage negative controls were non-causal; no rerun was requested
   - the complete new storage-control class was audited locally, composite publisher validation was decomposed into cause-specific diagnostics, and pre-remote qualification now includes direct execution of every gate-level negative control
+  - BCF's canonical gate-contract context ceiling ratchets from 96 to 97 KiB for the added causal preflight control without changing consumer defaults
   notes:
   - audits/p23-issue-164-remediation.yml owns the defect-class review consumer proof and release-train storage forecast
   - remote execution starts only after the complete deterministic local acceptance set passes

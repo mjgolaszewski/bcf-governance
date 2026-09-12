@@ -726,6 +726,10 @@
       "operation": "copy",
       "sha256": "da5180e3ff5cd4bfa9ae1dc3d6feb41c1b52fc6d2bf7aa44ef13893af6c20b84"
     },
+    "scripts/_bcf_runtime/governance_validation/editorial_contract.py": {
+      "operation": "copy",
+      "sha256": "636cc4037b9ed68a844672c3dfdc807a8b79e90d400b99883aa074f4803d5ba1"
+    },
     "scripts/_bcf_runtime/governance_validation/evidence_contracts.py": {
       "operation": "copy",
       "sha256": "c122a7bc00c790c7513a3d989c9fcf08df9f996e77e48a314eb6a6e807d22c4c"
@@ -752,7 +756,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/runner.py": {
       "operation": "copy",
-      "sha256": "b1061ac9e4ef29ebb0673a03d7c42871b069449b96e855429b7dd6d5f0841a4e"
+      "sha256": "9ccf90309ee985ee88dae377a6ef263976e15ed3c897175bb8239cd7092a1455"
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
@@ -780,7 +784,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "4eb4bcbec421b48c9d16f9d6faa9a4cf52b9839850ad95e35209490514265d19"
+      "sha256": "8e9e9d2840ab5ff0888ea4ec1b7f337899c7c9aa610c1685ccdb2870ead18520"
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",
