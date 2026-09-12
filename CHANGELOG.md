@@ -75,6 +75,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Projected the 1.2.0 trusted-controller target from the authenticated
   exact-main artifact; provider coordinates and generated workflow bytes remain
   mechanically derived rather than operator-authored.
+- Re-projected the controller target after the cold-runtime correction from the
+  authenticated implementation-merge artifact; no controller coordinate or
+  generated workflow value is hand-authored.
 - Confirmed that controller installation through provider-compiled bootstrap
   and probe evidence from both trusted runners; release and exact-main roles
   activate only from the mechanically projected proof.
