@@ -1,0 +1,254 @@
+document:
+  kind: custody_incident_audit
+  id: bcf-governance-p23-prune-custody-incident
+  version: 1.0.0
+  status: active
+  path: audits/p23-prune-custody-incident.yml
+finding_id: P23-CUSTODY-01
+disposition: accepted_risk
+scope: Interrupted local legacy Actions-artifact prune during the issue 165 release train
+cause: The review scanned current tracked files but did not follow hash-bound archived Git files retained by plans/phase-history.yml. Its historical custody conclusion was incomplete.
+authorization_boundary: Only qualified unreachable transient Actions artifacts were authorized for deletion; explicit historical custody was protected.
+actual_executor_exit_code: 130
+actual_removed:
+  count: 481
+  bytes: 22632069
+  journal_HTTP_404_count: 480
+  journal_HTTP_404_bytes: 22630755
+  separate_interruption_HTTP_404_count: 1
+  separate_interruption_HTTP_404_bytes: 1314
+  actual_executor_exit_code: 130
+  full_inventory_absence_reconfirmed_at_utc: '2026-09-12T19:04:35.600874Z'
+  full_inventory_absence_reconfirmed_count: 481
+archived_selector_intersection: &id001
+  count: 112
+  bytes: 5837369
+  producer_run_count: 32
+  direct_artifact_id_reference_count: 1
+  direct_artifact_id_reference_bytes: 6881
+  named_run_only_count: 111
+  named_run_only_bytes: 5830488
+definite_custody_failure:
+  artifact_id: 9797152911
+  name: bcf-exact-main-certification-33499626801-1
+  bytes: 6881
+  producer_run_id: 33499626801
+  references:
+  - phase: P13
+    path: phases/phase-13-log.yml
+    commit: c1e1ee27d0f031097ff4c71a7d66409c813deb5b
+    sha256: d6a19e504d998f3cd608fa9424ddc9609b127ceaca26c08199e98573233bfff0
+    line: 163
+    selectors:
+    - kind: run_id
+      selector: '33499626801'
+    context: "    controller 46180ab, with truth artifact 9797141765 refusing only the authored active lifecycle\n  - trusted finalizer 33499626801 and publisher 33499654668 completed the authenticated terminal\n    path; certification artifact 9797152911 remains non-success authority until this closeout tree\n    receives fresh exact-main evidence"
+  - phase: P13
+    path: phases/phase-13-log.yml
+    commit: c1e1ee27d0f031097ff4c71a7d66409c813deb5b
+    sha256: d6a19e504d998f3cd608fa9424ddc9609b127ceaca26c08199e98573233bfff0
+    line: 164
+    selectors:
+    - kind: artifact_id
+      selector: '9797152911'
+    context: "  - trusted finalizer 33499626801 and publisher 33499654668 completed the authenticated terminal\n    path; certification artifact 9797152911 remains non-success authority until this closeout tree\n    receives fresh exact-main evidence\n  - P13-HF03 repaired source-entrypoint authority at the cheap front door; PR 84 merged as"
+  - phase: P13
+    path: phases/phase-13-log.yml
+    commit: c1e1ee27d0f031097ff4c71a7d66409c813deb5b
+    sha256: d6a19e504d998f3cd608fa9424ddc9609b127ceaca26c08199e98573233bfff0
+    line: 327
+    selectors:
+    - kind: run_id
+      selector: '33499626801'
+    context: "    notes: PR 80 merged as 8b6d105 after all protected checks passed; both exact two-runner inventories independently proved controller 46180ab, and the provider compiler emitted the sole installation confirmation accepted by the promotion projector\n  - command: GitHub PR 81; exact-main 33499356117; finalizer 33499626801; publisher 33499654668\n    result: pass\n    notes: promotion merged as d116d07 after all protected checks passed; every executable producer and all 21 receipts passed through installed controller 46180ab, truth artifact 9797141765 refused only authored active lifecycle, and the no-checkout finalizer plus publisher completed the authenticated terminal path"
+  - phase: P13
+    path: phases/phase-13-hotfix01.yml
+    commit: c1e1ee27d0f031097ff4c71a7d66409c813deb5b
+    sha256: 91e1efee0bb95ce397e43db09bd2e2e6f29aa1f171b66d5948c1cc5ad15a9caa
+    line: 259
+    selectors:
+    - kind: run_id
+      selector: '33499626801'
+    context: "    notes: PR 80 merged as 8b6d105 after all protected checks passed; both exact two-runner inventories independently proved controller 46180ab, and the provider compiler emitted the sole installation confirmation accepted by the promotion projector\n  - command: GitHub PR 81; exact-main 33499356117; finalizer 33499626801; publisher 33499654668\n    result: pass\n    notes: promotion merged as d116d07 after all protected checks passed; every executable producer and all 21 receipts passed through installed controller 46180ab, truth artifact 9797141765 refused only authored active lifecycle, and the no-checkout finalizer plus publisher completed the authenticated terminal path"
+  provider_digest: sha256:cecc938996bb7f9ce734d8ce9ac29e93ed9fd12bc68a444f0e41808247ff6f62
+  producer_head: d116d07dd6a129d039890b14a6d65a26c5949eaf
+  provider_absence_proof: journal_delete_acknowledged_and_HTTP_404
+  journal_events:
+  - artifact_bytes: 6881
+    artifact_id: 9797152911
+    at_utc: '2026-09-12T18:50:24.733341Z'
+    entry_sha256: 738986551ba39ea356e9444646344c0ea93da2315353c90ad4ee1d4a5ad64071
+    event: delete_requested
+    plan_sha256: 43a06c773de2171facea90d848284b2088e33630268427f7b3cd370511b10c6a
+    previous_sha256: 11ce4b9ddcad689ab6aceff04c43a1c4e3194740822d323b5ef9c5266fb2bd3c
+    provider_digest: sha256:cecc938996bb7f9ce734d8ce9ac29e93ed9fd12bc68a444f0e41808247ff6f62
+  - artifact_id: 9797152911
+    at_utc: '2026-09-12T18:50:25.316639Z'
+    entry_sha256: 64545af9cb7e2282d8d398f05481c50f4cde287f633b0d26c98e619ca11839b0
+    event: delete_acknowledged
+    plan_sha256: 43a06c773de2171facea90d848284b2088e33630268427f7b3cd370511b10c6a
+    previous_sha256: 738986551ba39ea356e9444646344c0ea93da2315353c90ad4ee1d4a5ad64071
+  - artifact_bytes: 6881
+    artifact_id: 9797152911
+    at_utc: '2026-09-12T18:50:25.744380Z'
+    entry_sha256: f55f8c5559e7f11d873463babd664bf216d7a845ac2ecdb1228d7d5ffb9425db
+    event: absent_verified
+    plan_sha256: 43a06c773de2171facea90d848284b2088e33630268427f7b3cd370511b10c6a
+    previous_sha256: 64545af9cb7e2282d8d398f05481c50f4cde287f633b0d26c98e619ca11839b0
+    verification: HTTP_404
+  semantic_class: direct_named_archived_artifact_reference
+remaining_historical_review: The other run-linked deletions are unresolved artifact-retention classifications. They are not asserted to be protected certificates or approved transients.
+recovery:
+  search: Bounded local archive and extracted certification-content search
+  zip_files_checked: 156
+  certification_content_files_checked: 3311
+  unreadable_permission_test_fixtures: 4
+  exact_zip_matches: 0
+  content_selector_matches: 0
+  conclusion: Original certificate bytes are unrecovered in this search. Retained Git narrative, provider metadata and deletion proofs do not replace the archive. Global irrecoverability is not established.
+containment:
+- Prune process interrupted and the pending deletion checked with a fresh provider GET.
+- Executor apply mode disabled before any further API call; original executor and chained journal retained.
+- No additional prune pool applied. No restoration or risk acceptance inferred.
+- The incident was recorded as an open finding; the subsequent explicit owner risk acceptance is recorded below. Fresh release certification remains required.
+retained_actions_accounting:
+  inventory_count: 532
+  live_count: 532
+  inventory_bytes: 441151165
+  live_bytes: 441151165
+  live_mib: 420.7145357131958
+  net_live_bytes_since_baseline: 27194073
+  net_live_mib_since_baseline: 25.93428897857666
+  incremental_ceiling_bytes: 70778880
+  effective_total_ceiling_bytes: 484735972
+  remaining_incremental_bytes: 43584807
+  repository_contract_ceiling_bytes: 1073741824
+execution_accounting:
+  hosted_seconds: 29178.0
+  trusted_local_seconds: 2364.0
+  unclassified_seconds: 0
+  not_allocated_seconds: 0
+  retained_artifact_count: 197
+  retained_artifact_bytes: 49826142
+  run_count: 205
+release_asset_accounting:
+  product:
+    release_count: 24
+    asset_count: 59
+    bytes: 29165978
+  durable_asset_bytes: 0
+remaining_storage_forecast:
+  basis: Authenticated complete provider inventory captured 2026-09-12T19:04:35.600874Z, independently counted and summed; all481 deleted IDs remain absent; zero future deletes assumed.
+  pre_prune_inventory_bytes: 463783234
+  confirmed_deleted_bytes: 22632069
+  computed_retained_bytes: 441151165
+  effective_storage_ceiling_bytes: 484735972
+  computed_remaining_headroom_bytes: 43584807
+  remaining_original_ids_unapproved_count: 25
+  remaining_original_ids_unapproved_bytes: 1384813
+  point_future_bytes: 54597833
+  working_contingency_bytes: 1048576
+  point_gap_bytes: 11013026
+  conservative_gap_bytes: 12061602
+  point_required_incremental_ceiling_mib: 78.00284004211426
+  conservative_required_incremental_ceiling_mib: 79.00284004211426
+  point_gap_if_user_authorized_76_mib_bytes: 2100130
+  no_76_mib_authorization_inferred: true
+  evidence_recovery_reupload_bytes_not_estimated_or_authorized: true
+  provider_inventory_snapshot: 20260912T190435Z
+  provider_inventory_count: 532
+  provider_inventory_bytes: 441151165
+  provider_remaining_headroom_bytes: 43584807
+  provider_incremental_growth_mib: 25.93428897857666
+  computed_retained_bytes_matches_fresh_provider_inventory: true
+  computed_remaining_headroom_matches_fresh_provider_inventory: true
+budget_authorization: The later owner-approved 80 MiB growth ceiling is recorded in audits/p23-issue-165-storage-design.yml. The separate historical custody exception is recorded under owner_risk_acceptance here.
+source_validation:
+  diagnosis_input: ".artifacts/release-train-resume/hf05-full-test-failure-diagnosis.json" # non-authoritative local locator; retained input hashes recorded
+  state: Full source gate failed its promotion context budget before behavioral controls. Rationale-only compaction preserves all executable gate data; complete source evidence remains pending.
+evidence_limitations:
+- Removed bytes are recorded as actual deletion, not validated storage savings.
+- Provider execution durations exclude local validation, CPU electricity and AI token costs.
+- The ignored incident executor is distinct from the packaged durable-handoff retention implementation.
+retained_input_sha256:
+  ".artifacts/release-train-resume/accounting/independent-prune-incident-accounting.json": 8e1982317386d7d20a0db8328103a6f345d8f4270d0bd8d3caaf7f2730337a36 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/direct-custody-artifact-recovery-search.json": 6b3a3f0704c435a60bcc67ede317692b9ca555d6b85d9d82ecf5c0adc8787962 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/interrupted-prune-custody-reconciliation.json": 0098c66f0112b07c72e890df4e6f072dc8d75ff5eaf1b650b06c503cab9044a9 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/archived-custody-selector-audit.json": 467e13e73ef868304a88adbcf5b0058312ca2ae172d30cadc9d061fc0c31c802 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/artifact-specific-legacy-custody-review.json": b515bc8b3910383f0ddeda971843f7d32c448ae230c6389638f85c8afd64a3a3 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/legacy-prune-journal.jsonl": f573262618b9f734aabc972c47c5638653c5c46f34a9f19444aaae78392b68a5 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/prune-interruption-review.json": bc214a1bee5a8bc4bcffc26bccb89aac44cbb5418ac8d60c4ed23a513a7c9b4b # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/prune-mutation-disabled.json": 08fe35decac75633be4af17a9e68e9d49ed7b41879ac13fcb86df17742ffe9ba # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-full-test-failure-diagnosis.json": 92954b6cd43622e96ee24763150f15d79253835da68442d3e63135ecca0e7e1c # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-catalog-rationale-proposal.json": f68607cc3b1b905d2faf9a2ff5fc05b60cdc3af5cc912c8261fc1ca3d0f27ea2 # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-catalog-rationale-applied.json": 6e5f1eb7cef5791784339e8dacf33f0a7b72de37a5d8a4bbffeb4365fbc8d18f # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/summary-incident-20260912T190435Z.json": 67c4105c58df2076bf06f23d1c597ae7d078ef583f162e50a84d708d210ce6ec # sha256 of retained input
+  ".artifacts/release-train-resume/provider/custody-risk-owner-repository.json": f381f55107b705af8fad5fee08f61ea437d33761cc603d1555a1973577c050af # sha256 of retained input
+bounded_historical_reference_review:
+  scope:
+    deleted_named_run_only_artifacts: 111
+    bytes: 5830488
+    producer_runs: 31
+    actual_yaml_claim_units: 36
+    hash_verified_archived_files: 13
+    provider_api_calls: 0
+    tests_run: 0
+    tracked_or_provider_mutations: 0
+  claim_categories:
+    artifact_role_specific_historical_evidence_claim:
+      count: 43
+      bytes: 1660681
+      producer_run_count: 11
+    different_artifact_source_coordinate:
+      count: 6
+      bytes: 509449
+      producer_run_count: 1
+    historical_run_execution_or_certification_claim:
+      count: 51
+      bytes: 3651246
+      producer_run_count: 19
+    unselected_companion_dependency_unknown:
+      count: 11
+      bytes: 9112
+      producer_run_count: 11
+  retention_interpretation:
+    definite_direct_artifact_selector_count_in_scope: 0
+    role_specific_claims_are_inferences_not_additional_definite_direct_custody_findings: true
+    direct_match_to_another_artifact_narrows_six_claims_but_does_not_clear_transitive_dependencies: true
+    historical_narrative_does_not_erase_governed_evidence_support_claims: true
+    retention_obligation_residual_unknown_count: 111
+    safe_to_delete_or_retroactively_authorized_count: 0
+    accepted_risk_or_exemption_inferred: false
+    current_release_impact_not_reassessed: Root/publication reviewer owns this separate current-root check.
+    specific_narrowing: Six rows from 33568404813 were selected only through another controller artifact coordinate; 43 rows have stronger role-specific proof claims; 51 rows have run-level history claims; 11 session rows have no selected output role and possible dependency custody.
+inspected_current_authority_context:
+  basis_snapshot: 20260912T190435Z
+  preserved_associated_artifact_count: 10
+  preserved_metadata_equal: true
+  bundle_hashes_reverified: true
+  deleted_certificate_reference_hits: []
+  assessment: The inspected current controller and exact-main authority have distinct provider identities and all their producer-run artifacts remain in the authenticated post-interruption inventory unchanged. Their current pin/authority/certificate bundle does not reference the deleted historical certificate identity, run or provider digest. This establishes no dependency on that one historical certificate in the inspected current path; it does not establish that every historical custody edge is unaffected. Fresh HF05/controller/main/release evidence remains required for the changed tree.
+  scope_limit: This inspection concerns the one directly named historical certificate. It does not resolve the retention obligations of the other run-linked artifacts or certify the future HF05 release subject.
+additional_review_input_sha256:
+  ".artifacts/release-train-resume/accounting/archived-run-linked-artifact-semantic-review.json": 263ba2a8d8c5c61b7acbcfd2b4325e43629f44f6f1cef4f2f5a3422d542820a2 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/custody-owner-options-assessment-frozen-inputs.json": edd469344028972b187a3bc5e551e927f8d6f047ce7456627bda9f638f605d5d # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/custody-owner-options-input-freeze.json": acfdd395b4a2b5620bfb058b8900603c47e6d75352b429ba41419ecdbdec2476 # sha256 of retained input
+owner_risk_acceptance:
+  recorded_at_utc: '2026-09-12T21:20:03.774568+00:00'
+  authority:
+    kind: human
+    id: github:mjgolaszewski
+  source: Explicit repository-owner reply selecting option 2 in the current conversation
+  approval_excerpt: option 2
+  accepted_proposal: Accept the documented historical audit gap and continue; permanently retain the incident record, accept the lost certificate and remaining historical uncertainty, keep pruning disabled, and require complete fresh certification before publishing 1.2.0.
+  finding_id: P23-CUSTODY-01
+  historical_scope: *id001
+  conditions:
+  - Keep further artifact pruning disabled for this release train.
+  - Preserve the original incident, deletion proofs, recovery limitations and reference classifications.
+  - Require all existing 21 gates and exact current controller, source, scheduled and release evidence before publication.
+  - The exception applies only to the documented historical custody incident; it does not approve later evidence loss or waive any other finding.
+  - Do not claim restored original bytes, restored provider identities or retrospective deletion authorization.
+  repository_identity_source: ".artifacts/release-train-resume/provider/custody-risk-owner-repository.json" # non-authoritative local locator; retained input hashes recorded
+  repository_identity_source_sha256: f381f55107b705af8fad5fee08f61ea437d33761cc603d1555a1973577c050af
+historical_review_scope_note: The retained independent review reports precede the owner decision. Their unresolved-retention and no-acceptance conclusions remain historical evidence; the decision accepts that documented residual uncertainty.

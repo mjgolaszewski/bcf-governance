@@ -30,4 +30,4 @@ provenance:
   regulated_independent_severities: [critical, high]
   regulated_requires_attestation: true
   trusted_verifier_keys: {}
-  permitted_risk_authorities: []
+  permitted_risk_authorities: ["github:mjgolaszewski"]

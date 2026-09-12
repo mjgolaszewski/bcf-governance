@@ -96,7 +96,7 @@ actions_storage_forecast:
     release_build_verifier_and_receipt: 36.8
     post_release_closeout_pr_and_green_main: 3.7
   expected_actions_artifact_peak_mib: 56.2
-  authorized_ceiling_with_contingency_mib: 67.5
+  authorized_ceiling_with_contingency_mib: 80.0
   durable_fixture_release_assets_ceiling_mib: 5.0
   product_release_assets_mib: 2.5
   accounting_rule: retained Actions bytes and peak incremental Actions bytes are release acceptance criteria rather than informational telemetry
@@ -173,7 +173,7 @@ racecar_read_only_qualification:
   consumer_remote_mutated: false
 acceptance:
   local: passed_except_expected_controller_rotation
-  GitHub_provider_qualification: implementation_and_controller_target_passed_confirmation_pending
+  GitHub_provider_qualification: blocked_by_HF05_upload_framing
   Racecar_dry_run: passed
   storage_measurement:
     observed_after_controller_probe_utc: '2026-09-12T06:35:00Z'
@@ -539,3 +539,224 @@ P23_HF04_confirmation:
   - scheduled controls
   - immutable publication
   - release closeout
+
+P23_HF05_upload_framing:
+  hotfix: P23-HF05
+  implementation_status: planned
+  classification: release_blocking_regression
+  subject:
+    commit_sha: ef5a498e743bfa4e54689dc027eba4b39aee1b1d
+    tree_sha: c550434ef261836bc0aab3873134f32795bed496
+  source_run:
+    id: 34711171316
+    run_attempt: 1
+    path: .github/workflows/bcf-evidence-storage-qualification-source.yml
+    event: workflow_dispatch
+    head_sha: ef5a498e743bfa4e54689dc027eba4b39aee1b1d
+    head_branch: main
+    status: completed
+    conclusion: success
+    created_at: '2026-09-12T18:26:01Z'
+    updated_at: '2026-09-12T18:26:16Z'
+    html_url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/34711171316
+  publisher_run:
+    id: 34711184418
+    run_attempt: 1
+    path: .github/workflows/bcf-evidence-storage-qualification.yml
+    event: workflow_run
+    head_sha: ef5a498e743bfa4e54689dc027eba4b39aee1b1d
+    head_branch: main
+    status: completed
+    conclusion: failure
+    created_at: '2026-09-12T18:26:18Z'
+    updated_at: '2026-09-12T18:26:44Z'
+    html_url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/34711184418
+  jobs:
+  - id: 103600121837
+    run_id: 34711171316
+    run_attempt: 1
+    name: Prepare one bounded content-addressed evidence input
+    runner_id: 1000005560
+    runner_name: GitHub Actions 1000005560
+    labels:
+    - ubuntu-24.04
+    started_at: '2026-09-12T18:26:05Z'
+    completed_at: '2026-09-12T18:26:15Z'
+    status: completed
+    conclusion: success
+  - id: 103600155703
+    run_id: 34711184418
+    run_attempt: 1
+    name: Publish one authenticated immutable evidence input
+    runner_id: 25
+    runner_name: bcf-governance-vm-linux-ci-runner-2
+    labels:
+    - self-hosted
+    - Linux
+    - X64
+    - bcf-governance
+    - vm-linux-ci-runner
+    started_at: '2026-09-12T18:26:21Z'
+    completed_at: '2026-09-12T18:26:43Z'
+    status: completed
+    conclusion: failure
+  - id: 103600213547
+    run_id: 34711184418
+    run_attempt: 1
+    name: Cold-reconstruct and verify the authenticated evidence input
+    runner_id: null
+    runner_name: null
+    labels:
+    - ubuntu-24.04
+    started_at: '2026-09-12T18:26:43Z'
+    completed_at: '2026-09-12T18:26:43Z'
+    status: completed
+    conclusion: skipped
+  provider_http_status: 400
+  empty_unpublished_draft:
+    id: 387663446
+    tag_name: bcf-evidence-inputs-object-25788f4f19c4ed074587e00f0c3605b1a6f7a3e3acbf88929d03534bc9a5fb16
+    target_commitish: ef5a498e743bfa4e54689dc027eba4b39aee1b1d
+    draft: true
+    immutable: false
+    prerelease: true
+    published_at: null
+    created_at: '2026-09-12T18:26:40Z'
+    assets: []
+  cold_consumer_allocated: false
+  unresolved_failure_custody:
+    reason: unresolved qualification upload-framing failure
+    source_artifact:
+      id: 10303636492
+      name: bcf-evidence-storage-qualification-source-34711171316-1
+      digest: sha256:70426d3359d30dcd3c02f06be5ad17d1a75f1e9a759183584b2893668fe5a4f1
+      size_in_bytes: 2918
+      workflow_run:
+        id: 34711171316
+        repository_id: 1207503211
+        head_repository_id: 1207503211
+        head_branch: main
+        head_sha: ef5a498e743bfa4e54689dc027eba4b39aee1b1d
+      expires_at: '2026-09-13T18:26:12Z'
+    source_zip: ".artifacts/release-train-resume/qualification-failed-source/source.zip" # non-authoritative local locator; retained input hashes recorded
+    source_zip_sha256: 70426d3359d30dcd3c02f06be5ad17d1a75f1e9a759183584b2893668fe5a4f1
+    source_manifest_sha256: d64a18c7428263981b9f0c208a5bc99a2136dc75c31782b9f70c984ba2b19733
+    retention: preserve while this hotfix or its qualification failure remains unresolved; no durable Release deletion
+  offline_diagnosis:
+    provider_requests: 0
+    source_revision: ef5a498e743bfa4e54689dc027eba4b39aee1b1d
+    diagnosis: Request.data assignment removes the initially supplied Content-Length; urllib sends file bodies with chunked framing. All streamed durable object and manifest uploads through this method are affected.
+    live_evidence_limit: The captured publisher log reports HTTP 400 only; no provider response body is recorded. The malformed upload framing is independently reproduced with identical valid URL, content type, payload bytes and filename.
+    regression_boundaries:
+    - strict HTTP framing for small binary and multi-chunk evidence streams
+    - exact Content-Length and absent Transfer-Encoding on wire
+    - exact payload bytes and encoded filename preserved
+    - data remains a file stream; no whole-file buffering
+    - canonical byte upload continues to pass
+    - unsafe identity/symlink/empty/oversize rejected before transport
+    - HTTP errors, response size/JSON/object validation and credential redirects remain unchanged
+    - both durable object archives and manifest assets use the repaired transport
+    cases:
+    - case: canonical_bytes
+      body_is_stream: false
+      wire:
+        content_length: '65539'
+        transfer_encoding: null
+        body_bytes: 65539
+        body_sha256: 709f23deee335560c67c588b62b4375111d677fc23a1cae67426a959d117df99
+        status: 201
+    - case: current_stream
+      body_is_stream: true
+      wire:
+        content_length: null
+        transfer_encoding: chunked
+        body_bytes: 65539
+        body_sha256: 709f23deee335560c67c588b62b4375111d677fc23a1cae67426a959d117df99
+        status: 400
+    - case: stream_length_set_after_data
+      body_is_stream: true
+      wire:
+        content_length: '65539'
+        transfer_encoding: null
+        body_bytes: 65539
+        body_sha256: 709f23deee335560c67c588b62b4375111d677fc23a1cae67426a959d117df99
+        status: 201
+  local_command_results: []
+  focused_tests:
+    exit_code: 0
+    passed: 73
+    selection: not graph
+    exact_git_subject_recorded: false
+    result_sha256: d091c2688570c495ec8890807245f9816671e5235a9297bfdda58fef54d4e64a
+    log_sha256: 49c532bbb4b9584a73cec9e03bb930597aeebe3d8cb2f952f17e3cadc5890eb3
+    junit_sha256: 79af7da4bbba8344749d62acc994bc0c3929c51ac04724de6c9a4372e5dde0c4
+  postfix_wire_checks:
+    provider_requests: 0
+    cases: 2
+    statuses:
+    - 201
+    - 201
+    result_sha256: e5c6ed37dbed28c0b94a1177cbb5083e8c971fc21a4e0fc8d010f3b8e22960fc
+  review_record_sha256: {}
+  preserved_contracts:
+    package_version: 1.2.0
+    required_gate_ids:
+    - architecture-context-membership
+    - architecture-cqrs-side
+    - architecture-duplication
+    - architecture-import-boundaries
+    - architecture-layer-membership
+    - architecture-module-size
+    - architecture-router-thinness
+    - architecture-test
+    - contract-test
+    - governance-exposure-scan
+    - governance-validate
+    - lint
+    - runtime-smoke
+    - security-dependency-audit
+    - security-review
+    - security-sbom
+    - security-secret-scan
+    - security-vulnerability-scan
+    - semantic-ownership
+    - test
+    - typecheck
+    required_gate_count: 21
+  local_test_inventory:
+    source_nodes: 963
+    test_controls: 36
+    framing_control: durable-upload-content-length-must-fail
+    framing_oracle_nodes:
+    - tests.test_evidence_storage::test_evidence_asset_streams_exact_content_length[object-archive]
+    - tests.test_evidence_storage::test_evidence_asset_streams_exact_content_length[manifest]
+    controls_execution: pending canonical exact-source gate capture
+  input_sha256:
+    ".artifacts/release-train-resume/provider/qualification-producer-run.json": ac76f70aada784aab0d2cbdb20e39fdbafdd560f17a1e14423709f0c74261e07 # sha256 of retained input
+    ".artifacts/release-train-resume/provider/qualification-publisher-run.json": 667b09caf8e29023e5a62b06a60e63cc96c67c6616da383f4985f8c9afc08c04 # sha256 of retained input
+    ".artifacts/release-train-resume/provider/qualification-producer-jobs.json": 30815ca98e80133af3ced311565d1c054864a02c5834a8901bb24b27fccab415 # sha256 of retained input
+    ".artifacts/release-train-resume/provider/qualification-publisher-failure-jobs.json": 4c270de740f2de5b3c983a810156645e5a60034805fa3f7047c5f18478954b4e # sha256 of retained input
+    ".artifacts/release-train-resume/provider/qualification-publisher-failure.log": 3e9249a1d76d8e7661652eb9adc0ddce6831de64db304c7a2cc2f840b15e5bb2 # sha256 of retained input
+    ".artifacts/release-train-resume/provider/qualification-failure-release-inventory.json": 2637bbee22baf218c3163426dd308c58d65d6d1fef3cccca364c620a1194adf4 # sha256 of retained input
+    ".artifacts/release-train-resume/qualification-failed-source/capture.json": dd329c2bb7fdc99f78938f01cb303087818856de48875adef0d696010c5477f1 # sha256 of retained input
+    ".artifacts/release-train-resume/qualification-failed-source/artifact.json": ce763cdfbfe3287eb2ca5fed8f288b240a1b4132880d015805e0c50184e8c191 # sha256 of retained input
+    ".artifacts/release-train-resume/qualification-failed-source/source.zip": 70426d3359d30dcd3c02f06be5ad17d1a75f1e9a759183584b2893668fe5a4f1 # sha256 of retained input
+    ".artifacts/release-train-resume/accounting/upload-framing-reproduction.json": fb7b85ff4d4d0fa74941b8ac162863c67c428af53e000a1476b50d70d8311be1 # sha256 of retained input
+    ".artifacts/release-train-resume/accounting/upload-framing-diagnosis.json": e2696264c732e7b923cc86d0498d8d9b8e7cc4fbbdb672dda9893d7b3be57799 # sha256 of retained input
+    governance/test-manifests/test.txt: 3eeff7ac7f72f488affe23573c8e57aaaa8e63012b684bf85cb0dca7e2380926
+    governance/gate-contracts.yml: 5e4a531ca13ea8cb717b764b792586643e0eb0b2198c312980a9d48cf102dc14
+    ".artifacts/release-train-resume/hf05-focused-tests-result.json": d091c2688570c495ec8890807245f9816671e5235a9297bfdda58fef54d4e64a # sha256 of retained input
+    ".artifacts/release-train-resume/hf05-focused-tests.log": 49c532bbb4b9584a73cec9e03bb930597aeebe3d8cb2f952f17e3cadc5890eb3 # sha256 of retained input
+    ".artifacts/release-train-resume/hf05-focused-tests.xml": 79af7da4bbba8344749d62acc994bc0c3929c51ac04724de6c9a4372e5dde0c4 # sha256 of retained input
+    ".artifacts/release-train-resume/accounting/upload-framing-postfix.json": e5c6ed37dbed28c0b94a1177cbb5083e8c971fc21a4e0fc8d010f3b8e22960fc # sha256 of retained input
+  remaining:
+  - complete transport repair and local source/control/package evidence
+  - one consolidated repair PR
+  - controller target and confirmation
+  - successful qualification
+  - scheduled controls
+  - immutable release
+  - postpublication closeout
+prune_custody_incident: {"finding_id": "P23-CUSTODY-01", "audit": "audits/p23-prune-custody-incident.yml", "disposition": "accepted_risk", "fresh_release_certification_required": true, "further_pruning_disabled": true}
+owner_storage_growth_authorization: {"recorded_at_utc": "2026-09-12T21:06:16.664689+00:00", "authority": "repository_owner_in_current_conversation", "approval_text": "Authorized for the storage growth.", "approved_proposal": "80 MiB of Actions artifact growth above the original post-purge baseline", "previous_growth_ceiling_mib": 67.5, "authorized_growth_ceiling_mib": 80.0, "baseline_bytes": 413957092, "authorized_total_actions_bytes": 497843172, "inventory_snapshot_utc": "2026-09-12T19:04:35.600874Z", "retained_bytes_at_snapshot": 441151165, "headroom_bytes_at_snapshot": 56692007, "remaining_forecast_with_contingency_bytes": 55646409, "further_pruning_assumed": false, "custody_risk_accepted": false, "custody_finding_disposition": "open"}
+owner_custody_decision: {"audit": "audits/p23-prune-custody-incident.yml", "decision": "explicit_option_2_acceptance", "finding_disposition": "accepted_risk"}

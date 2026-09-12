@@ -168,22 +168,21 @@ class GitHubEvidenceAPI(GitHubAPI):
         size = path.stat().st_size
         if size < 1 or size > maximum_bytes:
             raise GitHubAPIError("evidence asset exceeds the closed size limit")
-        request = Request(
-            f"{base}?{urlencode({'name': name})}",
-            data=None,
-            method="POST",
-            headers={
-                "Accept": "application/vnd.github+json",
-                "Authorization": f"Bearer {self._token}",
-                "User-Agent": "bcf-governance-trusted-control",
-                "X-GitHub-Api-Version": "2022-11-28",
-                "Content-Type": "application/octet-stream",
-                "Content-Length": str(size),
-            },
-        )
         try:
             with path.open("rb") as stream:
-                request.data = stream
+                request = Request(
+                    f"{base}?{urlencode({'name': name})}",
+                    data=stream,
+                    method="POST",
+                    headers={
+                        "Accept": "application/vnd.github+json",
+                        "Authorization": f"Bearer {self._token}",
+                        "User-Agent": "bcf-governance-trusted-control",
+                        "X-GitHub-Api-Version": "2022-11-28",
+                        "Content-Type": "application/octet-stream",
+                        "Content-Length": str(size),
+                    },
+                )
                 with open_download(request, timeout=300) as response:
                     raw = response.read(1_048_577)
         except HTTPError as exc:

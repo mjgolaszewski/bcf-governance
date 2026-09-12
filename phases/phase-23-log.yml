@@ -23,6 +23,7 @@ summary:
   - P23-HF03 corrects the complete GitHub binary-download protocol class and makes pending-controller exact-main execution both fail-closed and rotation-capable
   - P23-HF04 separates immutable-settings read authority from ordinary provider reads and Release writes and prevents missing durable outputs from masking producer failures; its remaining draft discovery, release-ID reads, and inventory scope are reproduced locally before controller installation
   - P23-HF04 implementation completed from retained source exit 0, 961 passed source nodes and 35 satisfied causal controls; provider bootstrap 34709120753 attempt 1 and probe 34709207747 attempt 1 passed on every declared trusted runner. Storage qualification, immutable publication, and release closeout remain pending.
+  - P23-HF05 owns the release-blocking streamed upload framing regression. Source run 34711171316 attempt 1 passed; trusted publisher 34711184418 attempt 1 returned HTTP 400, left empty draft 387663446, and the dependent cold resolver had no runner allocation. The exact source ZIP is retained as unresolved failure custody. HF04 remains completed; 1.2.0 publication and closeout remain pending.
 workitems:
 - id: P23-P0-01
   status: DONE
@@ -88,6 +89,8 @@ execution_evidence:
   - remote execution starts only after the complete deterministic local acceptance set passes
   - every changed gate control must pass through the actual local evidence executor before another remote attempt
   - PR 166 exposed that the original local acceptance set ran mutation profiles but not the distinct gate-level behavioral probes; the corrected acceptance set requires both before any successor remote execution
+  - P23-HF05 owns the release-blocking streamed upload framing regression. Source run 34711171316 attempt 1 passed; trusted publisher 34711184418 attempt 1 returned HTTP 400, left empty draft 387663446, and the dependent cold resolver had no runner allocation. The exact source ZIP is retained as unresolved failure custody. HF04 remains completed; 1.2.0 publication and closeout remain pending.
+  - Assigning a file stream to Request.data removed Content-Length, so urllib sent chunked Release asset uploads; the strict local HTTP reproduction rejects that framing while fixed-length streaming and canonical bytes pass.
 closeout_requirements:
   claims:
     workitems_closed:
@@ -117,6 +120,9 @@ closeout_requirements:
     - governance-exposure-scan
   finding_registry: governance/findings.yml
 known_constraints:
+- "The owner explicitly accepted the limited historical custody gap in P23-CUSTODY-01, including the documented residual uncertainty. audits/p23-prune-custody-incident.yml retains the loss and decision. Further pruning stays disabled and complete fresh 1.2.0 certification remains required."
 - update canonical governed artifacts together when behavior or environment contracts change
 next_work:
-- run exact-main certification and storage qualification, then scheduled controls, immutable publication, and provider-evidenced closeout
+- Complete the full HF05 upload framing and publication/resumption class locally in one consolidated repair PR.
+- Compile the repaired exact-main controller target and confirm its installation through the governed two-commit workflow/pin sequence.
+- Resume qualification only after confirmed repaired authority, then scheduled controls, immutable 1.2.0 publication and one closeout PR.
