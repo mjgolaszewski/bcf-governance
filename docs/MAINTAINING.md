@@ -169,7 +169,8 @@ Run the release audit generator after editorial behavior is final:
 
 ```bash
 python3 .github/scripts/build_editorial_audit.py \
-  --repo-root . --audit audits/v1.2.0-editorial-review.yml --apply
+  --repo-root . --audit audits/v1.2.0-editorial-review.yml \
+  --base-sha "$(git rev-parse origin/main)" --apply
 python3 .github/scripts/check_editorial_contract.py
 ```
 

@@ -4,7 +4,7 @@ document:
   id: bcf-governance-v1.2.0-editorial-review
   status: completed
   path: audits/v1.2.0-editorial-review.yml
-base_commit: origin/main
+base_commit: 5ea9debb9fc7f27a72971ba32e87c7a35ebab45e
 inventory_policy:
   source_documents: tracked Markdown and root LICENSE from base union current tree
   packaged_mirror_root: bcf_governance/pack/template-repo
@@ -32,8 +32,8 @@ documents:
   audience: adopters and release operators
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
-  before_sha256: b1ed0784292a70beca571ee21b6c30b3f70895682589fc255aab4f2bcc04ec23
-  after_sha256: 2655e3cf42d68ebd161ffdddb6480cdab1aea628160a8610346058cbbcbab40e
+  before_sha256: 2655e3cf42d68ebd161ffdddb6480cdab1aea628160a8610346058cbbcbab40e
+  after_sha256: 32eb95a54c21e594a708d3f75d44cd2ee0e15d31c412cb48c82098becaacc102
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: historical
@@ -59,11 +59,11 @@ documents:
   audience: BCF evaluators and adopters
   canonical_topic_owner: README.md
   topic_role: canonical
-  before_sha256: 09f37c8217cb6a3e7112275ae12908a22f0f0afb3e1dfaea679ab9bb869965c1
+  before_sha256: e793bf80d8c06169528977bf20bc7946b892b93a5b088c8c74a4258b4ed417fb
   after_sha256: e793bf80d8c06169528977bf20bc7946b892b93a5b088c8c74a4258b4ed417fb
   findings:
-  - updated the mechanically checked package example and exact method-dispatch failure mode to 1.1.2
-  disposition: revised
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
 - path: audits/README.md
   audience: governance reviewers
   canonical_topic_owner: audits/README.md
@@ -95,10 +95,10 @@ documents:
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/MAINTAINING.md
   topic_role: canonical
-  before_sha256: ca81dc070ea7dc904d53ad65d804e384ce0a7ad3eeabe36f333fc23800245074
-  after_sha256: 7ceb71b65ed5e5307ef5f500372255ddd0778c89ea7b470382e3370eabb95695
+  before_sha256: 7ceb71b65ed5e5307ef5f500372255ddd0778c89ea7b470382e3370eabb95695
+  after_sha256: c8d8efc5b0cd96474958f41f92c0b361e7d419b964544bd6164e38cf13a0aa89
   findings:
-  - updated the exact release-audit procedure for 1.1.2
+  - updated the exact release-audit procedure and base selection
   disposition: revised
 - path: docs/RELIABILITY_MODEL.md
   audience: BCF adopters and maintainers
@@ -113,11 +113,11 @@ documents:
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
-  before_sha256: f5947fdec9de997b94f63b7824488a03877957d7c4a50e4bea8a1d5fdaf5c5f1
+  before_sha256: d5cbe77efda633657cc21974051f6273497238c929d5fbbb07989cddee2a05b9
   after_sha256: d5cbe77efda633657cc21974051f6273497238c929d5fbbb07989cddee2a05b9
   findings:
-  - documented exact method dispatch, explicit component ports, dynamic-dispatch limits, and the 1.1.2 release example
-  disposition: revised
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
 - path: docs/assets/bcf-governance-pack-hero.jpg
   audience: BCF evaluators and adopters
   canonical_topic_owner: README.md
@@ -194,11 +194,11 @@ documents:
   audience: consumer repository operators
   canonical_topic_owner: template-repo/docs/OPERATIONS.md
   topic_role: canonical
-  before_sha256: 57f7b8da8cf8886a05adab09edd648975c529b9865717b5f446e39b9c277c00e
+  before_sha256: 1dc4fb48968fa40e3df44b98721dd3def4d8d96b7dd5548a2d238a4bad3c055e
   after_sha256: 1dc4fb48968fa40e3df44b98721dd3def4d8d96b7dd5548a2d238a4bad3c055e
   findings:
   - reviewed; no currency, consolidation, or pruning change required
-  disposition: revised
+  disposition: retained
 - path: template-repo/governance/EXISTING_REPO_ADOPTION.md
   audience: consumer repository operators
   canonical_topic_owner: template-repo/governance/EXISTING_REPO_ADOPTION.md

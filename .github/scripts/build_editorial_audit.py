@@ -20,11 +20,11 @@ ADDITIONAL_HUMAN_FACING_SOURCES = {
 }
 SPECIFIC_FINDINGS = {
     "AGENTS.yml": "reviewed canonical repository-agent guidance for current profile, lifecycle, and authority boundaries",
-    "README.md": "updated the mechanically checked package example and exact method-dispatch failure mode to 1.1.2",
+    "README.md": "updated the mechanically checked package example and exact method-dispatch failure mode",
     "docs/ARCHITECTURE.md": "documented exact same-instance method identity and fail-closed dynamic or replaceable dispatch",
     "docs/RELIABILITY_MODEL.md": "added method-owner loss as an explicit operation-effect failure mode",
-    "docs/USAGE.md": "documented exact method dispatch, explicit component ports, dynamic-dispatch limits, and the 1.1.2 release example",
-    "docs/MAINTAINING.md": "updated the exact release-audit procedure for 1.1.2",
+    "docs/USAGE.md": "documented exact method dispatch, explicit component ports, dynamic-dispatch limits, and the release example",
+    "docs/MAINTAINING.md": "updated the exact release-audit procedure and base selection",
     "examples/lifecycle-walkthrough/README.md": "replaced obsolete 0.6 and hand-built gate loop with 1.1 preflight and session mechanics",
     "template-repo/governance/EXISTING_REPO_ADOPTION.md": "corrected upgrade and workflow ownership boundaries",
     "template-repo/governance/REPO_CLEANUP.md": "clarified editorial, semantic, deterministic, and approval authority",
