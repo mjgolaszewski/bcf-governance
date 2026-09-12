@@ -62,7 +62,11 @@ def _job(
         "checkout": trust == "candidate" and executor["kind"] != "reusable_workflow",
         "components": components
         if components is not None
-        else (["checkout", "python", "governance-dependencies"] if trust == "candidate" else []),
+        else (
+            ["checkout", "python", "governance-dependencies"]
+            if trust == "candidate"
+            else (["python"] if executor["kind"] in {"authority", "durable_publish"} else [])
+        ),
         "executor": executor,
         "produces": produces or [],
         "consumes": consumes or [],

@@ -85,7 +85,13 @@ def _job(
         "timeout_minutes": 35,
         "permissions": {"contents": "read"},
         "checkout": trust == "candidate",
-        "components": components if components is not None else (["checkout", "python"] if trust == "candidate" else []),
+        "components": components
+        if components is not None
+        else (
+            ["checkout", "python"]
+            if trust == "candidate"
+            else (["python"] if (executor or {}).get("kind") == "authority" else [])
+        ),
         "executor": executor or {"kind": "command", "command": "preflight"},
         "produces": produces or [],
         "consumes": consumes or [],
@@ -350,12 +356,24 @@ def _add_self_controller_release_job(
         "produces": [],
         "consumes": [],
     }
+    graph["step_components"]["setup-release-python"] = {
+        "kind": "action",
+        "name": "Provision the declared Python runtime",
+        "action": "setup-python",
+        "with": {"python-version": "3.12"},
+        "environment": {},
+        "produces": [],
+        "consumes": [],
+    }
     job = _job(
         "authorize",
         "release-authorizer",
         resource="trusted-control",
         trust="trusted",
-        executor={"kind": "component_sequence", "components": ["release-authorize"]},
+        executor={
+            "kind": "component_sequence",
+            "components": ["setup-release-python", "release-authorize"],
+        },
         components=[],
     )
     job["controller_requirement"] = "current"
@@ -595,6 +613,20 @@ def test_selected_python_must_be_provisioned_before_governed_command(
         validate_ci_graph(tmp_path)
 
 
+@pytest.mark.parametrize("executable", ["{controller}", "{ephemeral_controller}"])
+def test_every_python_backed_governed_executable_requires_selected_runtime(
+    tmp_path: Path, executable: str
+) -> None:
+    graph = _graph()
+    graph["commands"]["preflight"]["argv"] = [executable, "--help"]
+    job = graph["workflows"][0]["jobs"][0]
+    job["components"] = []
+    _write_graph(tmp_path, graph)
+
+    with pytest.raises(CIGraphError, match="provision selected Python before"):
+        validate_ci_graph(tmp_path)
+
+
 def test_required_environment_is_bound_once_and_validated_before_checkout(
     tmp_path: Path,
 ) -> None:
@@ -786,11 +818,12 @@ def test_trusted_no_checkout_rejects_every_execution_input_surface() -> None:
                 "trusted": {"argv": ["{controller}"], "cwd": ".", "environment": {}}
             },
             "step_components": {
-                "subject": {"kind": "command", "command": "trusted"}
+                "setup-python": {"kind": "action", "action": "setup-python"},
+                "subject": {"kind": "command", "command": "trusted"},
             },
         }
         executor: dict[str, object] = {
-            "kind": "component_sequence", "components": ["subject"]
+            "kind": "component_sequence", "components": ["setup-python", "subject"]
         }
         job: dict[str, object] = {
             "id": "trusted", "trust": "trusted", "checkout": False,
@@ -815,6 +848,29 @@ def test_renderer_binds_selected_python_to_setup_action_output() -> None:
                 seen += 1
                 assert environment["BCF_PYTHON"] == (
                     "${{ env.pythonLocation }}/bin/python"
+                )
+    assert seen > 0
+
+
+def test_every_rendered_controller_invocation_has_selected_python_first() -> None:
+    rendered = render_ci_graph(REPO_ROOT)
+    seen = 0
+    for path, content in rendered.items():
+        workflow = yaml.safe_load(content)
+        for job_id, job in workflow["jobs"].items():
+            steps = job.get("steps", [])
+            setup_indexes = [
+                index
+                for index, step in enumerate(steps)
+                if "setup-python" in step.get("uses", "")
+            ]
+            for index, step in enumerate(steps):
+                if "/bin/bcf" not in step.get("run", ""):
+                    continue
+                seen += 1
+                assert setup_indexes and min(setup_indexes) < index, (
+                    f"{path}:{job_id} invokes a Python-backed controller before "
+                    "provisioning the selected runtime"
                 )
     assert seen > 0
 

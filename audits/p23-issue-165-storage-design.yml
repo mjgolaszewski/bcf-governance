@@ -179,3 +179,13 @@ acceptance:
     hard_incremental_ceiling_mib: 67.5
     result: pass
   release: pending
+provider_qualification_failure:
+  source_run: {id: 34679461415, attempt: 1, result: pass, hosted_seconds: 12}
+  publisher_run: {id: 34679474421, attempt: 1, result: failed_before_publication, runner_class: trusted_local}
+  cold_resolver: {result: not_allocated, hosted_seconds: 0}
+  diagnostic: installed controller Python could not load libpython3.12.so.1.0 in the cold trusted job environment
+  classification: locally_derivable_graph_runtime_contract_defect
+  response: P23-HF02 blocks further provider execution until the whole Python-backed-controller execution class passes offline
+  expected_additional_hosted_minutes: {lower: 70, upper: 95}
+  expected_additional_actions_storage_mib: {upper: 12}
+  hard_budget_disposition: within_original_train_ceiling_but_requires_explicit_corrective_accounting

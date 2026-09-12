@@ -1149,7 +1149,7 @@ def _durable_graph_repo(tmp_path: Path) -> Path:
             "contents": "read",
         },
         "checkout": False,
-        "components": [],
+        "components": ["python"],
         "executor": {
             "kind": "durable_publish",
             "source": "prepared-inputs",
@@ -1241,13 +1241,23 @@ def test_graph_renders_short_handoff_trusted_publish_and_cold_resolve(
     assert any("prepare --repo-root" in step.get("run", "") for step in preflight_steps)
     assert publisher["runs-on"] == ["self-hosted", "fixture-trusted"]
     assert publisher["environment"] == "bcf-trusted-evidence"
-    token_step = publisher["steps"][0]
+    python_step = next(
+        step for step in publisher["steps"] if "setup-python" in step.get("uses", "")
+    )
+    token_step = next(
+        step
+        for step in publisher["steps"]
+        if "create-github-app-token" in step.get("uses", "")
+    )
+    publish_step = next(
+        step for step in publisher["steps"] if "publish-github" in step.get("run", "")
+    )
+    assert publisher["steps"].index(python_step) < publisher["steps"].index(publish_step)
     assert token_step["with"] == {
         "app-id": "${{ vars.BCF_EVIDENCE_APP_ID }}",
         "private-key": "${{ secrets.BCF_EVIDENCE_APP_PRIVATE_KEY }}",
         "permission-contents": "write",
     }
-    publish_step = next(step for step in publisher["steps"] if "publish-github" in step.get("run", ""))
     assert publish_step["env"] == {
         "GITHUB_TOKEN": "${{ github.token }}",
         "BCF_EVIDENCE_WRITE_TOKEN": "${{ steps.evidence-app-token.outputs.token }}",
@@ -1289,6 +1299,7 @@ def test_graph_renders_short_handoff_trusted_publish_and_cold_resolve(
         ("orphan-reference", "prepared-input-reference has no verifying consumer"),
         ("same-workflow-publisher", "must run in a separate trusted workflow"),
         ("manual-publisher", "must authenticate the exact completed source workflow"),
+        ("publisher-runtime", "must provision selected Python before governed commands"),
     ],
     ids=lambda case: case[0],
 )
@@ -1349,6 +1360,8 @@ def test_graph_rejects_durable_transport_authority_bypasses(
         ]
     elif mutation == "manual-publisher":
         workflow["events"] = [{"type": "workflow_dispatch"}]
+    elif mutation == "publisher-runtime":
+        publisher["components"] = []
     else:
         evidence = next(item for item in workflow["jobs"] if item["id"] == "verify-inputs")
         evidence["consumes"].append("prepared-inputs")
