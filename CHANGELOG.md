@@ -28,6 +28,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Project the fixed-length durable upload controller for installation on the
+  declared trusted runners.
+
 - Compact gate-catalog explanations within the existing promotion context budget.
 - Record the historical custody incident and the owner’s limited risk acceptance;
   require fresh release certification.
