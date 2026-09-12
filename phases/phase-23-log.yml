@@ -24,6 +24,7 @@ summary:
   - P23-HF04 separates immutable-settings read authority from ordinary provider reads and Release writes and prevents missing durable outputs from masking producer failures; its remaining draft discovery, release-ID reads, and inventory scope are reproduced locally before controller installation
   - P23-HF04 implementation completed from retained source exit 0, 961 passed source nodes and 35 satisfied causal controls; provider bootstrap 34709120753 attempt 1 and probe 34709207747 attempt 1 passed on every declared trusted runner. Storage qualification, immutable publication, and release closeout remain pending.
   - P23-HF05 owns the release-blocking streamed upload framing regression. Source run 34711171316 attempt 1 passed; trusted publisher 34711184418 attempt 1 returned HTTP 400, left empty draft 387663446, and the dependent cold resolver had no runner allocation. The exact source ZIP is retained as unresolved failure custody. HF04 remains completed; 1.2.0 publication and closeout remain pending.
+  - 'P23-HF05 implementation completed: retained source command exit 0, 963 passed source nodes, 36 satisfied causal controls, build/package verification and both local PR checks passed. Provider bootstrap 34722455893 attempt 1 and probe 34722586088 attempt 1 passed on every declared trusted runner. Failure source ZIP custody remains unresolved until qualification passes; qualification, scheduled controls, publication and closeout remain pending.'
 workitems:
 - id: P23-P0-01
   status: DONE
@@ -84,6 +85,7 @@ execution_evidence:
   - controller bootstrap 34697472883 and probe 34697517410 passed on both trusted runners; confirmation PR 174 merged as 0cca402ff5a8c4fb622107bb44b2548040d8b0c7
   - exact-main 34698441190 rejected the open HF03 record at the 19-second closure front door and allocated no evidence lane; explicit owner authority completes the hotfix from its recorded evidence before another exact-main execution
   - P23-HF04 implementation completed from retained source exit 0, 961 passed source nodes and 35 satisfied causal controls; provider bootstrap 34709120753 attempt 1 and probe 34709207747 attempt 1 passed on every declared trusted runner. Storage qualification, immutable publication, and release closeout remain pending.
+  - 'P23-HF05 implementation completed: retained source command exit 0, 963 passed source nodes, 36 satisfied causal controls, build/package verification and both local PR checks passed. Provider bootstrap 34722455893 attempt 1 and probe 34722586088 attempt 1 passed on every declared trusted runner. Failure source ZIP custody remains unresolved until qualification passes; qualification, scheduled controls, publication and closeout remain pending.'
   notes:
   - audits/p23-issue-164-remediation.yml owns the defect-class review consumer proof and release-train storage forecast
   - remote execution starts only after the complete deterministic local acceptance set passes
@@ -123,6 +125,4 @@ known_constraints:
 - "The owner explicitly accepted the limited historical custody gap in P23-CUSTODY-01, including the documented residual uncertainty. audits/p23-prune-custody-incident.yml retains the loss and decision. Further pruning stays disabled and complete fresh 1.2.0 certification remains required."
 - update canonical governed artifacts together when behavior or environment contracts change
 next_work:
-- Complete the full HF05 upload framing and publication/resumption class locally in one consolidated repair PR.
-- Compile the repaired exact-main controller target and confirm its installation through the governed two-commit workflow/pin sequence.
-- Resume qualification only after confirmed repaired authority, then scheduled controls, immutable 1.2.0 publication and one closeout PR.
+- Run exact-main certification and successful storage qualification, then scheduled controls, immutable publication and one postpublication closeout PR.

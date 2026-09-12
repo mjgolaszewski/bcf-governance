@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-23-hotfix05
   version: 1.0.0
   generated_at_utc: '2026-09-12T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-23-hotfix05.yml
 hotfix:
   id: P23-HF05
@@ -17,16 +17,23 @@ execution_evidence:
   - .venv/bin/bcf ci local-pr --repo-root . --remote origin
   - .venv/bin/python -m pytest -q tests/test_evidence_storage.py
   - .venv/bin/bcf ci graph render --repo-root . --check
-  executed_commands: []
+  executed_commands:
+  - 'source receipt sha256 d81f1158de13ed0ba5d6e8df4b8adc1508b3a6eb0e6b38eb7b750c4d08d10080: exit 0; passed 963; causal controls 36'
+  - 'build_result: exit 0; command result sha256 3bf610a662cbe55ac1f63e6363681833486e6fd7091641a943943c3ca1792e06'
+  - 'package_verification_result: exit 0; command result sha256 5bcd6ae67ef4f500b11eae07ea9b34659fc590a5a9b6cb074745a16dd8d5a499'
+  - 'implementation_local_pr_result: exit 0; command result sha256 b312ed198aa9982c2217406d4f90698788483fae9ab0b4c6524945d3167e85c0'
+  - 'target_local_pr_result: exit 0; command result sha256 89b0d131adb83181441af6fa45601b339b668bcd18b851f505c950a51cfb805c'
+  - package runtime verification subject 4a680a938cfa68020b0a443ed8543874de9bb344; identical material Git inventory sha256 3664946648ca5c732519fe49fd973a0f6ad91c1fccbe03ba6a5a1ae402d1a1fb; changed governed sdist inputs remain separately recorded
+  - source capture subject d8c7544d3216ce40c39fe2664bd8dac2331a18f5; unchanged non-prose Git inventory sha256 07073e86f5fed973c3e6d16becfa4dd41792fa00dd0b6a8cd6bfc99ba91cf371; final local PR subject e8d2327fae1993007d3bce88306113f957d89b5e
+  - bootstrap run 34722455893 attempt 1 success
+  - probe run 34722586088 attempt 1 success
   notes:
   - The owner approved the 80 MiB incremental Actions storage ceiling. The subsequent custody exception is separately recorded and further pruning stays disabled; audits/p23-issue-165-storage-design.yml records the authorization.
-  - "The owner explicitly accepted the limited historical custody gap in P23-CUSTODY-01, including the documented residual uncertainty. audits/p23-prune-custody-incident.yml retains the loss and decision. Further pruning stays disabled and complete fresh 1.2.0 certification remains required."
+  - The owner explicitly accepted the limited historical custody gap in P23-CUSTODY-01, including the documented residual uncertainty. audits/p23-prune-custody-incident.yml retains the loss and decision. Further pruning stays disabled and complete fresh 1.2.0 certification remains required.
   - P23-HF05 owns the release-blocking streamed upload framing regression. Source run 34711171316 attempt 1 passed; trusted publisher 34711184418 attempt 1 returned HTTP 400, left empty draft 387663446, and the dependent cold resolver had no runner allocation. The exact source ZIP is retained as unresolved failure custody. HF04 remains completed; 1.2.0 publication and closeout remain pending.
   - Assigning a file stream to Request.data removed Content-Length, so urllib sent chunked Release asset uploads; the strict local HTTP reproduction rejects that framing while fixed-length streaming and canonical bytes pass.
   - The captured publisher log reports HTTP 400 only; no provider response body is recorded. The malformed upload framing is independently reproduced with identical valid URL, content type, payload bytes and filename.
-  - The fixed-length streaming repair passed package verification. Full source validation failed only the promotion context budget; controls did not run. Rationale-only compaction preserves every executable gate contract. Complete source/control evidence and controller confirmation remain pending.
-  - Complete the upload-to-publish/resume class locally before the single consolidated repair PR; no provider rerun is authorized by this record.
-  - After repair exact-main produces the controller, use a separate mechanically compiled target and provider-confirmed installation PR before qualification resumes.
+  - 'P23-HF05 implementation completed: retained source command exit 0, 963 passed source nodes, 36 satisfied causal controls, build/package verification and both local PR checks passed. Provider bootstrap 34722455893 attempt 1 and probe 34722586088 attempt 1 passed on every declared trusted runner. Failure source ZIP custody remains unresolved until qualification passes; qualification, scheduled controls, publication and closeout remain pending.'
 closeout_requirements:
   claims:
     required_suites_green:
