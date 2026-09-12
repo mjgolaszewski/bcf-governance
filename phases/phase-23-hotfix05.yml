@@ -1,0 +1,44 @@
+document:
+  kind: hotfix_execution_log
+  name: P23-HF05 Hotfix Log
+  id: bcf-governance-phase-23-hotfix05
+  version: 1.0.0
+  generated_at_utc: '2026-09-12T00:00:00Z'
+  status: planned
+  path: phases/phase-23-hotfix05.yml
+hotfix:
+  id: P23-HF05
+  mode: full
+  related_phase_id: P23
+  hotfix_number: 5
+  summary: Restore fixed-length streamed durable Release uploads
+execution_evidence:
+  planned_commands:
+  - .venv/bin/bcf ci local-pr --repo-root . --remote origin
+  - .venv/bin/python -m pytest -q tests/test_evidence_storage.py
+  - .venv/bin/bcf ci graph render --repo-root . --check
+  executed_commands: []
+  notes:
+  - P23-HF05 owns the release-blocking streamed upload framing regression. Source run 34711171316 attempt 1 passed; trusted publisher 34711184418 attempt 1 returned HTTP 400, left empty draft 387663446, and the dependent cold resolver had no runner allocation. The exact source ZIP is retained as unresolved failure custody. HF04 remains completed; 1.2.0 publication and closeout remain pending.
+  - Assigning a file stream to Request.data removed Content-Length, so urllib sent chunked Release asset uploads; the strict local HTTP reproduction rejects that framing while fixed-length streaming and canonical bytes pass.
+  - The captured publisher log reports HTTP 400 only; no provider response body is recorded. The malformed upload framing is independently reproduced with identical valid URL, content type, payload bytes and filename.
+  - The fixed-length streaming repair is present; full local source/control/package evidence and controller confirmation remain pending.
+  - Complete the upload-to-publish/resume class locally before the single consolidated repair PR; no provider rerun is authorized by this record.
+  - After repair exact-main produces the controller, use a separate mechanically compiled target and provider-confirmed installation PR before qualification resumes.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

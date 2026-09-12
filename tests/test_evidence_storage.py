@@ -8,6 +8,7 @@ from pathlib import Path
 import shutil
 import stat
 from typing import Any
+from urllib.request import HTTPSHandler, build_opener
 import zipfile
 
 import pytest
@@ -614,6 +615,49 @@ def test_every_authenticated_github_request_uses_the_redirect_policy(
     assert "urlopen" not in Path(evidence_storage_github_api.__file__).read_text(
         encoding="utf-8"
     )
+
+
+@pytest.mark.parametrize(
+    ("name", "payload"),
+    [
+        ("object.tar.gz", bytes(range(256)) * 65 + b"\x00\xff"),
+        ("manifest.json", '{"input":"données","schema_version":"1.0"}\n'.encode()),
+    ],
+    ids=["object-archive", "manifest"],
+)
+def test_evidence_asset_streams_exact_content_length(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, name: str, payload: bytes
+) -> None:
+    source = tmp_path / name
+    source.write_bytes(payload)
+    handler = HTTPSHandler()
+    build_opener(handler)
+    requests: list[Any] = []
+
+    def open_upload(request: Any, *, timeout: int) -> _DownloadResponse:
+        assert timeout == 300
+        # Run urllib's actual outgoing header preparation without opening a socket.
+        prepared = handler.https_request(request)
+        assert prepared.get_method() == "POST"
+        assert prepared.get_header("Content-length") == str(len(payload))
+        assert prepared.get_header("Transfer-encoding") is None
+        assert prepared.get_header("Content-type") == "application/octet-stream"
+        assert isinstance(prepared.data, io.BufferedIOBase)
+        assert b"".join(iter(lambda: prepared.data.read(8192), b"")) == payload
+        requests.append(prepared)
+        return _DownloadResponse(b'{"id":9}')
+
+    monkeypatch.setattr(evidence_storage_github_api, "open_download", open_upload)
+    api = GitHubEvidenceAPI(token="secret")
+    assert api.upload_evidence_asset(
+        upload_url="https://uploads.github.com/repos/owner/project/releases/9/assets{?name,label}",
+        repository="owner/project",
+        release_id=9,
+        name=name,
+        path=source,
+        maximum_bytes=len(payload),
+    ) == {"id": 9}
+    assert len(requests) == 1
 
 
 def test_archives_are_deterministic_and_deduplicate_equal_bytes(tmp_path: Path) -> None:

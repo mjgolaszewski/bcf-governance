@@ -28,6 +28,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Preserve Content-Length when streaming durable object and manifest uploads;
+  cover urllib framing and empty-draft resumption.
+
 - Completed the evidence-publication controller installation from independently
   authenticated bootstrap and probe evidence.
 
