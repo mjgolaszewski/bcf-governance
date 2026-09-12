@@ -29,7 +29,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 ### Fixed
 
 - Compact gate-catalog explanations within the existing promotion context budget.
-- Record the historical artifact custody incident as an open release blocker.
+- Record the historical custody incident and the owner’s limited risk acceptance;
+  require fresh release certification.
 
 - Preserve Content-Length when streaming durable object and manifest uploads;
   cover urllib framing and empty-draft resumption.
