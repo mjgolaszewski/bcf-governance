@@ -33,6 +33,11 @@ execution_evidence:
     mechanically distinct credential paths
   - no remote retry is permitted until the complete credential, prerequisite,
     required-output, generated-graph, and packaged-runtime class passes locally
+  - offline draft-visibility reproduction exposed failures in fresh publication,
+    interrupted and concurrent recovery, and draft-inclusive budget accounting;
+    audits/p23-issue-165-storage-design.yml retains actual local results
+  - controller installation and storage qualification remain deferred until the
+    complete draft transaction and retention inventory class passes locally
 closeout_requirements:
   claims:
     required_suites_green:

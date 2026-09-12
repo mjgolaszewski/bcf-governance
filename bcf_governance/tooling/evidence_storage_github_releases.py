@@ -186,6 +186,63 @@ def verify_release(
     return release, assets, target_commit
 
 
+def _find_publication_release(
+    writer: GitHubEvidenceAPI, repository: str, tag: str
+) -> dict[str, Any] | None:
+    """Discover one exact pending tag through the draft-visible inventory."""
+
+    matches = [
+        release for release in writer.evidence_releases(repository)
+        if release.get("tag_name") == tag
+    ]
+    if len(matches) > 1:
+        raise EvidenceStorageError("GitHub evidence pending tag is ambiguous")
+    if not matches:
+        return None
+    return writer.evidence_release_by_id(repository, matches[0].get("id"), tag=tag)
+
+
+def _publication_identity(
+    release: dict[str, Any], *, tag: str, target_commit: str, reusable: bool
+) -> None:
+    """Reject contradictory pending state before any release mutation."""
+
+    draft = release.get("draft")
+    target = release.get("target_commitish")
+    if (
+        release.get("tag_name") != tag
+        or release.get("prerelease") is not True
+        or type(release.get("id")) is not int
+        or release["id"] < 1
+        or type(draft) is not bool
+        or release.get("immutable") is not (not draft)
+        or (draft and (
+            not isinstance(target, str)
+            or not re.fullmatch(r"[a-f0-9]{40}", target)
+            or (not reusable and target != target_commit)
+        ))
+    ):
+        raise EvidenceStorageError("GitHub evidence draft identity is inconsistent")
+
+
+def _publication_assets(
+    release: dict[str, Any], expected: dict[str, tuple[int, str]], *, complete: bool
+) -> dict[str, dict[str, Any]]:
+    """Admit only exact uploaded bytes, including a concurrent writer's assets."""
+
+    assets = asset_inventory(release)
+    if set(assets) - set(expected) or (complete and set(assets) != set(expected)):
+        raise EvidenceStorageError("draft evidence release contains undeclared or missing assets")
+    for name, item in assets.items():
+        if (
+            item.get("state") != "uploaded"
+            or item.get("size") != expected[name][0]
+            or provider_digest(item.get("digest")) != f"sha256:{expected[name][1]}"
+        ):
+            raise EvidenceStorageError("draft evidence release asset is contradictory")
+    return assets
+
+
 def publish_release_assets(
     api: GitHubEvidenceAPI,
     *,
@@ -202,43 +259,38 @@ def publish_release_assets(
     expected = {
         name: (path.stat().st_size, file_sha256(path)) for name, path in paths.items()
     }
+    release: dict[str, Any] | None
     try:
         release = api.evidence_release_by_tag(repository, tag)
     except GitHubAPIError as exc:
         if "returned 404" not in str(exc):
             raise
-        try:
-            release = writer.create_evidence_draft_release(
-                repository,
-                tag=tag,
-                target_commit=target_commit,
-                body=body,
-            )
-        except GitHubAPIError as create_exc:
-            if "returned 422" not in str(create_exc):
-                raise
-            release = api.evidence_release_by_tag(repository, tag)
-    if (
-        release.get("tag_name") != tag
-        or release.get("prerelease") is not True
-        or release.get("draft") not in {True, False}
-    ):
-        raise EvidenceStorageError("GitHub evidence draft identity is inconsistent")
+        release = _find_publication_release(writer, repository, tag)
+        if release is None:
+            try:
+                release = writer.create_evidence_draft_release(
+                    repository,
+                    tag=tag,
+                    target_commit=target_commit,
+                    body=body,
+                )
+            except GitHubAPIError as create_exc:
+                if "returned 422" not in str(create_exc):
+                    raise
+                release = _find_publication_release(writer, repository, tag)
+                if release is None:
+                    raise EvidenceStorageError(
+                        "concurrent evidence release could not be authenticated"
+                    ) from create_exc
+    _publication_identity(
+        release, tag=tag, target_commit=target_commit, reusable=reusable
+    )
     if release.get("draft") is True:
-        assets = asset_inventory(release)
-        if set(assets) - set(expected):
-            raise EvidenceStorageError("draft evidence release contains undeclared assets")
+        assets = _publication_assets(release, expected, complete=False)
         release_id = release.get("id")
         upload_url = str(release.get("upload_url", ""))
         for name, path in paths.items():
             if name in assets:
-                item = assets[name]
-                if item.get("size") != expected[name][0] or provider_digest(
-                    item.get("digest")
-                ) != f"sha256:{expected[name][1]}":
-                    raise EvidenceStorageError(
-                        "draft evidence release asset is contradictory"
-                    )
                 continue
             try:
                 writer.upload_evidence_asset(
@@ -252,19 +304,25 @@ def publish_release_assets(
             except GitHubAPIError as upload_exc:
                 if "returned 422" not in str(upload_exc):
                     raise
-                observed = api.evidence_release_by_tag(repository, tag)
-                observed_asset = asset_inventory(observed).get(name)
-                if observed_asset is None or (
-                    observed_asset.get("size") != expected[name][0]
-                    or provider_digest(observed_asset.get("digest"))
-                    != f"sha256:{expected[name][1]}"
-                ):
+                observed = writer.evidence_release_by_id(repository, release_id, tag=tag)
+                observed_assets = _publication_assets(observed, expected, complete=False)
+                if name not in observed_assets:
                     raise EvidenceStorageError(
                         "concurrent evidence publication produced contradictory bytes"
                     ) from upload_exc
-        release = api.evidence_release_by_tag(repository, tag)
+        release = writer.evidence_release_by_id(repository, release_id, tag=tag)
+        _publication_identity(
+            release, tag=tag, target_commit=target_commit, reusable=reusable
+        )
+        _publication_assets(release, expected, complete=True)
         if release.get("draft") is True:
-            release = writer.publish_release(repository, release_id)
+            try:
+                writer.publish_release(repository, release_id)
+            except GitHubAPIError as publish_exc:
+                if "returned 422" not in str(publish_exc):
+                    raise
+                # A concurrent publisher may have made the release immutable.
+                # The ordinary reader below must still prove its exact final state.
     resolved_target = None if reusable else target_commit
     return verify_release(
         api,

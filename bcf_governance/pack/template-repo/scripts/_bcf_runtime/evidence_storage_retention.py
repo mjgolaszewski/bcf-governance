@@ -79,9 +79,10 @@ def plan_retention(
     snapshot_path: Path,
     *,
     api: GitHubEvidenceAPI,
+    publication_api: GitHubEvidenceAPI | None = None,
     now: datetime | None = None,
 ) -> dict[str, Any]:
-    """Authenticate provider state and compute a non-mutating retention plan."""
+    """Plan retention; publication_api (or api) must see unpublished releases."""
 
     root = repo_root.resolve()
     contract = load_storage_contract(root)
@@ -230,7 +231,7 @@ def plan_retention(
                 int(asset["release_id"]) for asset in reference["assets"]
             )
     durable_releases = durable_release_inventory(
-        api, contract=contract, repository=repository
+        publication_api or api, contract=contract, repository=repository
     )
     unreachable = set(durable_releases) - protected_release_ids
     usage = StorageUsage(
@@ -264,11 +265,14 @@ def apply_actions_retention(
     snapshot_path: Path,
     *,
     api: GitHubEvidenceAPI,
+    publication_api: GitHubEvidenceAPI | None = None,
     now: datetime | None = None,
 ) -> dict[str, Any]:
     """Delete only exact transient handoffs admitted by a fresh retention plan."""
 
-    plan = plan_retention(repo_root, snapshot_path, api=api, now=now)
+    plan = plan_retention(
+        repo_root, snapshot_path, api=api, publication_api=publication_api, now=now
+    )
     contract = load_storage_contract(repo_root.resolve())
     repository = str(contract["provider"]["repository"])
     deleted: list[int] = []

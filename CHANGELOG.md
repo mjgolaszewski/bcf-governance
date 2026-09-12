@@ -28,6 +28,13 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Made durable publication discover drafts with the contents-write credential
+  and refresh them by release ID. Fresh publication, interrupted uploads,
+  concurrent publication, and storage budgets now account for drafts that
+  published-release tag lookups cannot return.
+- Required `BCF_EVIDENCE_WRITE_TOKEN` alongside `GITHUB_TOKEN` for both retention
+  commands so their budget inventory includes unpublished drafts. Command flags,
+  evidence schemas, and exact transient-deletion rules remain compatible.
 - Split durable evidence publication into mechanically distinct ordinary-read,
   contents-write, and repository-settings-read credentials. Immutable-Release
   preflight now uses the Administration-read credential declared by the storage
@@ -56,9 +63,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Moved an applicable repository editorial-inventory check into canonical cheap
   preflight, before exact test-manifest collection, session allocation, or
   evidence fanout. Stale documentation custody now fails at the front door.
-- Ratcheted BCF's own canonical gate-contract context ceiling from 96 to 100 KiB
-  for the complete causal preflight, download, redirect, and controller-transition
-  controls; installed consumer defaults remain unchanged.
+- Ratcheted BCF's own canonical gate-contract context ceiling from 96 to 101 KiB
+  for the complete causal preflight, download, redirect, draft-authority, and
+  controller-transition controls; installed consumer defaults remain unchanged.
 - Preserved bounded project-owned package metadata classifications across
   upgrades so a newer pack schema does not invalidate an otherwise compatible
   consumer architecture contract.
@@ -96,9 +103,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   the corrected authenticated GitHub transport, from exact-main provider
   evidence on both trusted runners; provider coordinates and generated workflow
   bytes remain mechanically derived rather than operator-authored.
-- Re-projected the trusted-controller target from the authenticated HF04
-  implementation artifact after separating repository-settings inspection from
-  Release mutation; the controller compiler, not an operator, owns every pin.
+- Deferred the HF04 controller target until the complete draft-publication
+  correction passes local validation and produces an exact-main artifact.
 - Completed P23-HF03 on explicit owner authority from its exact local, protected
   PR, bootstrap, and probe evidence. The existing closure preflight rejected the
   omitted lifecycle transition before any evidence lane was allocated.

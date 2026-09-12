@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: 2655e3cf42d68ebd161ffdddb6480cdab1aea628160a8610346058cbbcbab40e
-  after_sha256: 32eb95a54c21e594a708d3f75d44cd2ee0e15d31c412cb48c82098becaacc102
+  after_sha256: 5144c2b6d81d9e07b01827a02dc4a616d25e34e96582df30ef9006502d8eb219
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: historical
@@ -96,7 +96,7 @@ documents:
   canonical_topic_owner: docs/MAINTAINING.md
   topic_role: canonical
   before_sha256: 7ceb71b65ed5e5307ef5f500372255ddd0778c89ea7b470382e3370eabb95695
-  after_sha256: c8d8efc5b0cd96474958f41f92c0b361e7d419b964544bd6164e38cf13a0aa89
+  after_sha256: 96186fd9dec857d26592a97443443e46adc546e9480afad82153af924908517b
   findings:
   - updated the exact release-audit procedure and base selection
   disposition: revised
@@ -114,10 +114,10 @@ documents:
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
   before_sha256: d5cbe77efda633657cc21974051f6273497238c929d5fbbb07989cddee2a05b9
-  after_sha256: d5cbe77efda633657cc21974051f6273497238c929d5fbbb07989cddee2a05b9
+  after_sha256: 3de1da823a0d82bc440ee42278bda02a209042c97f3a119355c4847a8fde079f
   findings:
-  - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  - documented exact method dispatch, explicit component ports, dynamic-dispatch limits, and the release example
+  disposition: revised
 - path: docs/assets/bcf-governance-pack-hero.jpg
   audience: BCF evaluators and adopters
   canonical_topic_owner: README.md
@@ -195,10 +195,10 @@ documents:
   canonical_topic_owner: template-repo/docs/OPERATIONS.md
   topic_role: canonical
   before_sha256: 1dc4fb48968fa40e3df44b98721dd3def4d8d96b7dd5548a2d238a4bad3c055e
-  after_sha256: 1dc4fb48968fa40e3df44b98721dd3def4d8d96b7dd5548a2d238a4bad3c055e
+  after_sha256: 422099796f6d4b53024abd8bf3470033003ac29874a9bbcc689c3625c8e51e7b
   findings:
   - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  disposition: revised
 - path: template-repo/governance/EXISTING_REPO_ADOPTION.md
   audience: consumer repository operators
   canonical_topic_owner: template-repo/governance/EXISTING_REPO_ADOPTION.md

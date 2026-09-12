@@ -41,6 +41,25 @@ class GitHubEvidenceAPI(GitHubAPI):
             raise GitHubAPIError("evidence release response must be an object")
         return value
 
+    def evidence_release_by_id(
+        self, repository: str, release_id: object, *, tag: str
+    ) -> dict[str, Any]:
+        """Read a draft or published release by ID and bind its evidence tag."""
+
+        numeric = _positive_id(release_id, field="evidence release ID")
+        exact_tag = self._tag(tag)
+        value = self._request(
+            "GET", f"/repos/{self._repository(repository)}/releases/{numeric}"
+        )
+        if (
+            not isinstance(value, dict)
+            or type(value.get("id")) is not int
+            or str(value["id"]) != numeric
+            or value.get("tag_name") != exact_tag
+        ):
+            raise GitHubAPIError("GitHub evidence release identity mismatch")
+        return value
+
     def repository_artifacts(self, repository: str) -> tuple[dict[str, Any], ...]:
         """Read the complete current artifact inventory without caller pagination."""
 

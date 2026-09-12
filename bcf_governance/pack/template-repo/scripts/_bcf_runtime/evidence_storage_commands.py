@@ -114,15 +114,25 @@ def run(args: argparse.Namespace) -> None:
         for path in resolved:
             print(path.resolve())
     elif args.operation == "retention-plan":
+        tokens = _required_tokens("GITHUB_TOKEN", "BCF_EVIDENCE_WRITE_TOKEN")
         write_canonical_json(
             args.output,
-            plan_retention(args.repo_root, args.snapshot, api=_api()),
+            plan_retention(
+                args.repo_root, args.snapshot,
+                api=_api(tokens["GITHUB_TOKEN"]),
+                publication_api=_api(tokens["BCF_EVIDENCE_WRITE_TOKEN"]),
+            ),
         )
         print(args.output.resolve())
     elif args.operation == "retention-apply-actions":
+        tokens = _required_tokens("GITHUB_TOKEN", "BCF_EVIDENCE_WRITE_TOKEN")
         write_canonical_json(
             args.output,
-            apply_actions_retention(args.repo_root, args.snapshot, api=_api()),
+            apply_actions_retention(
+                args.repo_root, args.snapshot,
+                api=_api(tokens["GITHUB_TOKEN"]),
+                publication_api=_api(tokens["BCF_EVIDENCE_WRITE_TOKEN"]),
+            ),
         )
         print(args.output.resolve())
 

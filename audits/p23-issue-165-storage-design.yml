@@ -39,7 +39,7 @@ authority_model:
   - required objects are published before compact references and Actions handoff deletion
   - current heads certified commits releases unresolved findings and explicit custody roots remain reachable
   - unavailable storage exceeded budgets expired freshness or failed reconstruction fails closed
-  - trusted workflow tokens authenticate ordinary reads while distinct short-lived contents-write and Administration-read credentials perform Release mutation and immutable-setting inspection respectively
+  - trusted workflow tokens authenticate ordinary reads while distinct short-lived contents-write and Administration-read credentials own draft-visible Release transactions and immutable-setting inspection respectively
 transport_design:
   durable_backend: immutable_github_release_assets
   release_namespace: non_product_bcf-evidence-inputs
@@ -69,7 +69,7 @@ hosted_execution:
   provider_edges: needs and completion events defer runner allocation rather than occupying a VM
 provider_permission_model:
   ordinary_read: {credential: workflow_token, permissions: [actions_read, attestations_read, contents_read]}
-  release_mutation: {credential: protected_environment_GitHub_App_token, permissions: [contents_write]}
+  release_mutation: {credential: protected_environment_GitHub_App_token, permissions: [contents_write], reads: [draft_discovery, publication_release_ID, draft_inclusive_inventory]}
   immutable_settings_preflight: {credential: protected_environment_short_lived_token, permissions: [administration_read]}
   invariant: no credential may be silently substituted for a differently scoped provider operation
 implementation_scope:
@@ -266,3 +266,99 @@ P23_HF03_cost_forecast:
     comparison: prior target merge exact-main 34688183780 allocated 358 hosted seconds before cancellation and would ordinarily allocate about 23 hosted minutes
     new_behavior: a pending rotation allocates only the approximately one-minute package/controller producer and zero governance evidence shards
     expected_saving_per_pending_rotation_minutes: 22
+draft_publication_failure_class:
+  scope: offline documented draft visibility and pending-tag semantics; no provider qualification retry
+  reproduction:
+    status: offline_failure_class_reproduced
+    qualification: Modeled API visibility; no live-provider behavior claim.
+    results:
+    - name: control_with_drafts_visible
+      attempts:
+      - result: passed_control
+      hidden_draft_reads: 0
+      writer_mutations:
+      - create_evidence_draft_release
+      - upload_evidence_asset
+      - publish_release
+      - create_evidence_draft_release
+      - upload_evidence_asset
+      - publish_release
+      ordinary_inventory_objects: 2
+      privileged_inventory_objects: 2
+      ordinary_inventory_bytes: 1895
+      privileged_inventory_bytes: 1895
+      reference_emitted: true
+    - name: fresh_then_interrupted_resume
+      attempts:
+      - result: expected_visibility_failure
+        error: GitHub API GET release returned 404
+        production_line: 265
+        production_statement: release = api.evidence_release_by_tag(repository, tag)
+      - result: expected_visibility_failure
+        error: GitHub API GET release returned 404
+        production_line: 220
+        production_statement: release = api.evidence_release_by_tag(repository, tag)
+      hidden_draft_reads: 3
+      writer_mutations:
+      - create_evidence_draft_release
+      - upload_evidence_asset
+      - create_evidence_draft_release
+      ordinary_inventory_objects: 0
+      privileged_inventory_objects: 1
+      ordinary_inventory_bytes: 0
+      privileged_inventory_bytes: 110
+      reference_emitted: false
+    - name: concurrent_create
+      attempts:
+      - result: expected_visibility_failure
+        error: GitHub API GET release returned 404
+        production_line: 220
+        production_statement: release = api.evidence_release_by_tag(repository, tag)
+      hidden_draft_reads: 1
+      writer_mutations:
+      - create_evidence_draft_release
+      ordinary_inventory_objects: 0
+      privileged_inventory_objects: 1
+      ordinary_inventory_bytes: 0
+      privileged_inventory_bytes: 0
+      reference_emitted: false
+    - name: concurrent_upload
+      attempts:
+      - result: expected_visibility_failure
+        error: GitHub API GET release returned 404
+        production_line: 255
+        production_statement: observed = api.evidence_release_by_tag(repository, tag)
+      hidden_draft_reads: 1
+      writer_mutations:
+      - create_evidence_draft_release
+      - upload_evidence_asset
+      ordinary_inventory_objects: 0
+      privileged_inventory_objects: 1
+      ordinary_inventory_bytes: 0
+      privileged_inventory_bytes: 110
+      reference_emitted: false
+  reproduction_script_sha256: b2461adf2833ccc6f664e4e05cd27f74f3fba054372ab24b6e263c4a9ae3fdde
+  reference_sources:
+  - https://docs.github.com/en/rest/releases/releases#list-releases
+  - https://raw.githubusercontent.com/cli/cli/trunk/pkg/cmd/release/shared/fetch.go
+  bounded_cancellation:
+    id: 34705221033
+    run_attempt: 1
+    head_sha: e892f03f0c5d88639e57fb6966dd0cc634ef509e
+    status: completed
+    conclusion: cancelled
+    html_url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/34705221033
+  remediation_scope:
+  - writer-authorized exact draft discovery
+  - release-ID refresh and concurrent reconciliation
+  - draft-inclusive publication and retention budget inventory
+  - ordinary-token published custody and independent settings authority
+  - realistic draft visibility regression coverage
+  controller_state: uninstalled target restored from exact Git base; replacement compilation requires repaired exact main
+draft_publication_focused_validation:
+  exit_code: 0
+  executed_nodes: 71
+  skipped_nodes: 0
+  junit_sha256: f71a234bdb75cbc8acac8017553aae59ea4a14de20641db177a54e0e386f8ce2
+  log_sha256: 272aeb31c568f301f1d6331e47f14bd998b401768157d7b7903e6a449fc466e8
+  remaining: full exact source gate, causal controls, generated parity, package artifact validation, canonical local PR preflight

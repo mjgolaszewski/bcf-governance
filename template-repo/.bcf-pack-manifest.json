@@ -62,7 +62,7 @@
     },
     "docs/OPERATIONS.md": {
       "operation": "copy",
-      "sha256": "1dc4fb48968fa40e3df44b98721dd3def4d8d96b7dd5548a2d238a4bad3c055e"
+      "sha256": "422099796f6d4b53024abd8bf3470033003ac29874a9bbcc689c3625c8e51e7b"
     },
     "governance-profile.yml": {
       "operation": "generate",
@@ -592,7 +592,7 @@
     },
     "scripts/_bcf_runtime/evidence_storage_commands.py": {
       "operation": "copy",
-      "sha256": "4761ae28dc04fb4bc9ff1c04d5f47e0613d434abf7a1bc0c1abdb01a23078924"
+      "sha256": "a646af08354a0488f26ac63a4a90c17ec811c1fc506059e73ff51ec670a5c5a9"
     },
     "scripts/_bcf_runtime/evidence_storage_contracts.py": {
       "operation": "copy",
@@ -600,15 +600,15 @@
     },
     "scripts/_bcf_runtime/evidence_storage_github.py": {
       "operation": "copy",
-      "sha256": "b96e3d91bda3ac6199e1ccf8afe9dfb98a0012b0474948c4c3be1e32ff7bccb8"
+      "sha256": "2dfb852d61bbb8da61df41a36481035022e46d713fe1a27586ab197241da4d74"
     },
     "scripts/_bcf_runtime/evidence_storage_github_api.py": {
       "operation": "copy",
-      "sha256": "27fce2ff8242c18411022e99d236a318bba9ff070f5b30902ac9ccc3346e938d"
+      "sha256": "8396d86467267a1c2d4abd3bcf93919c6af6b350f664c1cf1224fdc51e57a8b1"
     },
     "scripts/_bcf_runtime/evidence_storage_github_releases.py": {
       "operation": "copy",
-      "sha256": "9282a9e993b73c341d62315bd73b8260ff8e259d15e7442929469acdc3ade4d6"
+      "sha256": "299460a410e3f0d11f064de5ec0304dea41d279afb78cac9bd0bb4e9db10bae5"
     },
     "scripts/_bcf_runtime/evidence_storage_graph.py": {
       "operation": "copy",
@@ -628,7 +628,7 @@
     },
     "scripts/_bcf_runtime/evidence_storage_retention.py": {
       "operation": "copy",
-      "sha256": "45aaff23384ad01338463f3c380bd8e4ae318b4ae65d14421e4a3c2a58982975"
+      "sha256": "040c5302ec045127deb7936d87de91404172039eccac90d790b4cc58cff99509"
     },
     "scripts/_bcf_runtime/evidence_test_adapters.py": {
       "operation": "copy",

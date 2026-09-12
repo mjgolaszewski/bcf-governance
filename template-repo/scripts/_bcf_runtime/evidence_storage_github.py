@@ -58,12 +58,13 @@ def _expected_assets(bundle_dir: Path, manifest: dict[str, Any]) -> dict[str, Pa
 def provider_storage_usage(
     api: GitHubEvidenceAPI,
     *,
+    publication_api: GitHubEvidenceAPI | None = None,
     contract: dict[str, Any],
     repository: str,
     run_id: str,
     artifact_name: str,
 ) -> StorageUsage:
-    """Derive the complete budget observation from authenticated provider state."""
+    """Count Actions with api and releases with a draft-visible publication API."""
 
     repository_artifacts = api.repository_artifacts(repository)
     matches = [
@@ -77,7 +78,7 @@ def provider_storage_usage(
     if len(matches) != 1 or not isinstance(matches[0].get("size_in_bytes"), int):
         raise EvidenceStorageError("storage budget cannot identify the exact handoff")
     durable_releases = durable_release_inventory(
-        api, contract=contract, repository=repository
+        publication_api or api, contract=contract, repository=repository
     )
     usage = StorageUsage(
         actions_bytes=sum(
@@ -248,7 +249,7 @@ def _publish_input_bundle(
         for name, path in paths.items()
     }
     existing_releases = durable_release_records(
-        api, contract=contract, repository=repository
+        publication_api or api, contract=contract, repository=repository
     )
     new_bytes = sum(
         max(size - existing_releases.get(tag, (0, 0))[1], 0)
@@ -587,6 +588,7 @@ def publish_action_handoff(
             raise EvidenceStorageError("evidence handoff contract uses the wrong repository")
         provider_storage_usage(
             api,
+            publication_api=publication_api,
             contract=contract,
             repository=repository,
             run_id=str(run_id),
