@@ -105,7 +105,7 @@ hosted_execution_review:
 validation:
   status: local_pass_provider_evidence_pending
   generated_parity: {result: pass, workflows: 20, jobs: 32, extensions: 5}
-  exact_populations: {result: pass, source_tests: 911, contract_tests: 390}
+  exact_populations: {result: pass, source_tests: 912, contract_tests: 389}
   mutation_profiles: {result: pass, validator_mutants: 25, semantic_mutants: 12}
   artifact_verification: {wheel: pass, extracted_sdist: pass}
   provider_evidence: pending

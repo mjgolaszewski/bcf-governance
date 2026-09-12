@@ -6,7 +6,7 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-## [1.2.0] - 2026-09-11
+## [1.2.0] - 2026-09-12
 
 ### Added
 

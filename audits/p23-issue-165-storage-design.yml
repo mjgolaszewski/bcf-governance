@@ -117,15 +117,16 @@ actions_minutes_forecast:
   - a failed remote canary stops the train until the complete defect class passes offline
   - authenticate job timestamps and runner labels after every remote phase and stop before exceeding the train ceiling
 local_qualification:
-  subject_commit: c89ea434e1406701905fd23f2f3c3731b60db996
-  subject_tree: 059ce9751872c54f4e9bc33402a65547500ca8f1
-  source_tests: {result: pass, nodes: 911, duration_seconds: 691.57, junit: .artifacts/local-validation/source-tests-current.xml, junit_authority: non-authoritative_local_ignored_record}
-  exact_test_manifests: {source_nodes: 911, contract_nodes: 390, result: pass}
+  subject_commit: 2bf9cc112a491b5dfd8aa1b1ae81ca0eaf0960b9
+  subject_tree: d1c050d0498eab4e084da76457ff7a88ef3456be
+  source_tests: {result: pass, nodes: 912, duration_seconds: 696.81, junit: .artifacts/local-validation/source-tests-pinned.xml, junit_authority: non-authoritative_local_ignored_record}
+  exact_test_manifests: {source_nodes: 912, contract_nodes: 389, result: pass}
   mutation_profiles:
     full: {result: pass, mutants_killed: 25}
     semantic_full: {result: pass, mutants_killed: 12}
   artifact_verification: {wheel: pass, extracted_sdist: pass, sdist_tests_passed: 905, sdist_expected_skips: 5}
   release_check: {result: expected_fail_closed, reason: installed trusted controller remains pinned to 1.1.1 until the mechanical post-merge controller rotation}
+  local_pr_preflight: {result: pass, subject_commit: 216cb039b463a1886d012df560fda962b5d89542}
 racecar_read_only_qualification:
   repository: mjgolaszewski/racecar
   exact_pr_head: 18fddaeb53bee90f512a8d80935f2d3d4c6cbaf8

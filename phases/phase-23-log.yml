@@ -19,25 +19,25 @@ summary:
   - issue 165 requires a separate content-addressed durable-input capability and changes the target release from 1.1.2 to 1.2.0
 workitems:
 - id: P23-P0-01
-  status: IN_PROGRESS
+  status: DONE
   summary: exact same-instance method identity and fail-closed ambiguous dispatch implementation
 - id: P23-P0-02
-  status: TODO
+  status: DONE
   summary: complete public-operation adversarial and causal regression coverage
 - id: P23-P0-03
-  status: TODO
+  status: IN_PROGRESS
   summary: generated-runtime parity read-only Racecar proofs and immutable 1.2.0 release
 - id: P23-P0-04
-  status: IN_PROGRESS
+  status: DONE
   summary: run-and-done hosted orchestration policy for BCF and fresh Standard-v2 graphs
 - id: P23-P0-05
   status: IN_PROGRESS
   summary: GitHub-native content-addressed evidence inputs with authenticated manifests, cold reconstruction, and reachability-based retention
 - id: P23-P0-06
-  status: TODO
+  status: IN_PROGRESS
   summary: GitHub-native immutable publication resolution and cold reconstruction
 - id: P23-P0-07
-  status: TODO
+  status: IN_PROGRESS
   summary: graph transport migration reachability retention and storage budgets
 execution_evidence:
   planned_commands:
@@ -51,7 +51,7 @@ execution_evidence:
   - current BCF and fresh Standard-v2 graph inventories contain no hosted waiter poller sleeper watcher shell wait loop or local-runner lease command
   - issue 165 baseline records 55.778 GiB in Racecar Actions artifacts of which approximately 54.694 GiB is repeated preparation transport; Racecar remains read-only
   - BCF provider baseline after conservative cleanup is 816 live artifacts and 413957092 bytes; P23 treats retained Actions bytes and hosted execution minutes as coequal hard release budgets
-  - exact current-tree local source suite passed all 911 tests in 691.57 seconds with JUnit evidence; the contract manifest remains 390 nodes
+  - exact mechanically pinned local tree passed all 912 source tests in 696.81 seconds; exact contract collection is 389 nodes and local PR preflight passed
   - full validator and semantic mutation profiles killed 25 and 12 mutants respectively; clean wheel verification passed and extracted sdist passed 905 tests with five custody-context skips
   - exact Racecar PR 14 head 18fddaeb53bee90f512a8d80935f2d3d4c6cbaf8 accepted a strict upgrade from the locally built 1.2.0 wheel while preserving its graph and workflow inventory byte identities; no Racecar workspace or remote mutation occurred
   - local release-check fails closed at the mechanically expected stale 1.1.1 trusted-controller boundary before gate execution and will be rerun after post-merge controller rotation

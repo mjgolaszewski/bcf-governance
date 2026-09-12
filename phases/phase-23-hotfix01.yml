@@ -16,7 +16,11 @@ execution_evidence:
   planned_commands:
   - .venv/bin/python -m pytest -q tests
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
-  executed_commands: []
+  executed_commands:
+  - exact source and contract manifests passed 912 and 389 nodes
+  - full and semantic-full mutation profiles killed 25 and 12 mutants
+  - generated runtime package template graph and workflow parity passed
+  - clean Racecar PR 14 method graph and strict upgrade compatibility passed read-only
   notes:
   - issue 164 is a high-severity upstream false pass reproduced against exact immutable BCF 1.1.1 release bytes and current source
   - source discovery recorded self._save without its declaring class so the effect walker never visited the known helper write

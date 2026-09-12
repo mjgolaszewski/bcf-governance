@@ -10,7 +10,7 @@ document:
 workitems:
 - id: P23-P0-01
   priority: P0
-  status: IN_PROGRESS
+  status: DONE
   summary: exact same-instance method identity and fail-closed ambiguous dispatch implementation
   acceptance:
   - direct same-instance helpers resolve to exact lexical class methods and expose downstream write and authority effects
@@ -22,7 +22,7 @@ workitems:
   - contract-test
 - id: P23-P0-02
   priority: P0
-  status: TODO
+  status: DONE
   summary: complete public-operation adversarial and causal regression coverage
   acceptance:
   - the issue 164 public operation reproducer fails before remediation and passes only after exact helper traversal
@@ -34,7 +34,7 @@ workitems:
   - contract-test
 - id: P23-P0-03
   priority: P0
-  status: TODO
+  status: IN_PROGRESS
   summary: generated-runtime parity read-only Racecar proofs and immutable 1.2.0 release
   acceptance:
   - canonical standalone and packaged runtimes remain byte-identical and workflow topology remains graph-rendered
@@ -45,7 +45,7 @@ workitems:
   - contract-test
 - id: P23-P0-04
   priority: P0
-  status: IN_PROGRESS
+  status: DONE
   summary: run-and-done hosted orchestration policy for BCF and fresh Standard-v2 graphs
   acceptance:
   - hosted jobs start only after provider-resolved dependencies or completion events and never supervise local capacity
@@ -69,7 +69,7 @@ workitems:
   - contract-test
 - id: P23-P0-06
   priority: P0
-  status: TODO
+  status: IN_PROGRESS
   summary: GitHub-native immutable publication resolution and cold reconstruction
   acceptance:
   - trusted publication creates a fully populated draft before immutable publication and candidate jobs receive no publication authority
@@ -81,7 +81,7 @@ workitems:
   - contract-test
 - id: P23-P0-07
   priority: P0
-  status: TODO
+  status: IN_PROGRESS
   summary: graph transport migration reachability retention and storage budgets
   acceptance:
   - graph-owned producer publisher resolver and consumer edges move one verified input set rather than duplicating preparation payloads per lane
