@@ -655,6 +655,31 @@ def _pack_manifest(repo_root: Path) -> dict[str, Any]:
     return {"applicable": True, "file_count": len(entries)}
 
 
+def _editorial_contract(repo_root: Path, python: Path) -> dict[str, Any]:
+    """Run a repository-declared editorial checker before test fanout."""
+
+    checker = repo_root / ".github/scripts/check_editorial_contract.py"
+    if not checker.exists():
+        return {"applicable": False}
+    if checker.is_symlink() or not checker.is_file():
+        raise PreflightError("editorial contract checker must be one regular nonsymlink file")
+    environment = dict(os.environ)
+    environment.pop("PYTHONPATH", None)
+    result = subprocess.run(
+        [str(python), str(checker)],
+        cwd=repo_root,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    editorial_failed = result.returncode != 0
+    if editorial_failed:
+        detail = result.stderr.strip() or result.stdout.strip() or "checker failed"
+        raise PreflightError(f"editorial contract preflight failed: {detail}")
+    return {"applicable": True, "status": "current"}
+
+
 def run_preflight(
     repo_root: Path,
     *,
@@ -713,6 +738,9 @@ def run_preflight(
     )
     source_locks = step("source-locks", lambda: _vendored_source_locks(repo_root))
     pack_manifest = step("pack-manifest", lambda: _pack_manifest(repo_root))
+    editorial_contract = step(
+        "editorial-contract", lambda: _editorial_contract(repo_root, python)
+    )
     test_manifests = step(
         "test-manifests", lambda: check_all(repo_root, python_executable=python)
     )
@@ -742,6 +770,7 @@ def run_preflight(
         "source_entrypoints": source_entrypoints,
         "source_locks": source_locks,
         "pack_manifest": pack_manifest,
+        "editorial_contract": editorial_contract,
         "self_workflows": self_workflows,
         "workflow_authority": workflow_authority,
         "self_controller": self_controller,

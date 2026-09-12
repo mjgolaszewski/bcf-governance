@@ -32,6 +32,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   diagnostics and made each new storage negative control isolate the invariant
   it claims to prove. A masked same-workflow rejection and a non-causal
   projected-byte mutant can no longer appear to test those controls.
+- Moved an applicable repository editorial-inventory check into canonical cheap
+  preflight, before exact test-manifest collection, session allocation, or
+  evidence fanout. Stale documentation custody now fails at the front door.
 - Preserved bounded project-owned package metadata classifications across
   upgrades so a newer pack schema does not invalidate an otherwise compatible
   consumer architecture contract.
