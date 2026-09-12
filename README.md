@@ -222,6 +222,11 @@ commit, tree, workflow, job, run, attempt, freshness class, and immutable asset
 identity. Every consuming lane cold-resolves and rehashes the declared members
 before its existing evidence gate runs.
 
+Provider authority is split mechanically: the workflow token performs ordinary
+reads, a bounded App token performs contents writes, and a separate
+Administration-read credential verifies immutable-Release settings before any
+publication.
+
 Actions artifacts are bounded handoffs, caches are acceleration only, and
 required bytes do not depend on a NAS or user-operated archive service.
 Reachability roots, leases, and provider-derived byte/count budgets govern

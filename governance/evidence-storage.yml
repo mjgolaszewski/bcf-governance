@@ -10,6 +10,7 @@ provider:
   credential_kind: github_app
   app_id_variable: BCF_EVIDENCE_APP_ID
   private_key_secret: BCF_EVIDENCE_APP_PRIVATE_KEY
+  settings_read_token_secret: BCF_EVIDENCE_ADMIN_TOKEN
   immutable_required: true
   attestation_required: true
   max_assets_per_release: 1000

@@ -37,6 +37,16 @@ def _api(token: str | None = None) -> GitHubEvidenceAPI:
     )
 
 
+def _required_tokens(*names: str) -> dict[str, str]:
+    values = {name: os.environ.get(name, "") for name in names}
+    missing = sorted(name for name, value in values.items() if not value)
+    if missing:
+        raise EvidenceStorageError(
+            "required provider credentials are missing: " + ", ".join(missing)
+        )
+    return values
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="bcf evidence-store")
     operations = parser.add_subparsers(dest="operation", required=True)
@@ -77,9 +87,15 @@ def run(args: argparse.Namespace) -> None:
         )
         print(path.resolve())
     elif args.operation == "publish-github":
+        tokens = _required_tokens(
+            "GITHUB_TOKEN",
+            "BCF_EVIDENCE_WRITE_TOKEN",
+            "BCF_EVIDENCE_SETTINGS_READ_TOKEN",
+        )
         publish_action_handoff(
-            _api(),
-            publication_api=_api(os.environ.get("BCF_EVIDENCE_WRITE_TOKEN", "")),
+            _api(tokens["GITHUB_TOKEN"]),
+            publication_api=_api(tokens["BCF_EVIDENCE_WRITE_TOKEN"]),
+            configuration_api=_api(tokens["BCF_EVIDENCE_SETTINGS_READ_TOKEN"]),
             schema_root=_schemas(),
             repository=args.repository,
             run_id=args.run_id,

@@ -13,7 +13,11 @@ import zipfile
 import pytest
 import yaml
 
-from bcf_governance.tooling import ci_github_api, evidence_storage_github_api
+from bcf_governance.tooling import (
+    ci_github_api,
+    evidence_storage_commands,
+    evidence_storage_github_api,
+)
 from bcf_governance.tooling.ci_graph_contracts import CIGraphError, validate_ci_graph
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
 from bcf_governance.tooling.ci_graph_render import render_ci_graph
@@ -24,9 +28,11 @@ from bcf_governance.tooling.evidence_storage_contracts import (
     EvidenceStorageError,
     load_input_manifest,
     load_input_reference,
+    load_storage_contract,
 )
 from bcf_governance.tooling.evidence_storage_github import (
     extract_handoff_zip,
+    publish_action_handoff,
     publish_input_bundle,
     provider_storage_usage,
     resolve_input_reference,
@@ -161,6 +167,92 @@ def _published_reference(
         output_path=reference_path,
     )
     return api, manifest_path, reference_path
+
+
+def test_enabled_storage_requires_declared_settings_read_authority(
+    tmp_path: Path,
+) -> None:
+    root = _storage_repo(tmp_path)
+    contract_path = root / "governance/evidence-storage.yml"
+    contract = yaml.safe_load(contract_path.read_text())
+    contract["provider"]["settings_read_token_secret"] = None
+    contract_path.write_text(yaml.safe_dump(contract, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(EvidenceStorageError, match="settings read authority"):
+        load_storage_contract(root)
+
+
+def test_enabled_storage_separates_settings_token_from_app_private_key() -> None:
+    contract = load_storage_contract(REPO_ROOT)
+    assert (
+        contract["provider"]["settings_read_token_secret"]
+        != contract["provider"]["private_key_secret"]
+    )
+
+
+@pytest.mark.parametrize(
+    "missing",
+    ["BCF_EVIDENCE_WRITE_TOKEN", "BCF_EVIDENCE_SETTINGS_READ_TOKEN"],
+)
+def test_publish_command_requires_complete_provider_credentials_before_api_use(
+    monkeypatch: pytest.MonkeyPatch, missing: str
+) -> None:
+    monkeypatch.setenv("BCF_EVIDENCE_WRITE_TOKEN", "write-token")
+    monkeypatch.setenv("BCF_EVIDENCE_SETTINGS_READ_TOKEN", "settings-token")
+    monkeypatch.setenv("GITHUB_TOKEN", "read-token")
+    monkeypatch.delenv(missing)
+
+    with pytest.raises(EvidenceStorageError, match=missing):
+        evidence_storage_commands.run(
+            evidence_storage_commands._parser().parse_args(  # noqa: SLF001
+                [
+                    "publish-github",
+                    "--repository",
+                    "owner/project",
+                    "--run-id",
+                    "1",
+                    "--run-attempt",
+                    "1",
+                    "--artifact-name",
+                    "source",
+                    "--output",
+                    "reference.json",
+                ]
+            )
+        )
+
+
+def test_publish_command_reports_every_missing_provider_credential_together(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for name in (
+        "GITHUB_TOKEN",
+        "BCF_EVIDENCE_WRITE_TOKEN",
+        "BCF_EVIDENCE_SETTINGS_READ_TOKEN",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+    with pytest.raises(EvidenceStorageError) as caught:
+        evidence_storage_commands.run(
+            evidence_storage_commands._parser().parse_args(  # noqa: SLF001
+                [
+                    "publish-github",
+                    "--repository",
+                    "owner/project",
+                    "--run-id",
+                    "1",
+                    "--run-attempt",
+                    "1",
+                    "--artifact-name",
+                    "source",
+                    "--output",
+                    "reference.json",
+                ]
+            )
+        )
+    assert str(caught.value).endswith(
+        "BCF_EVIDENCE_SETTINGS_READ_TOKEN, BCF_EVIDENCE_WRITE_TOKEN, GITHUB_TOKEN"
+    )
 
 
 class FakeEvidenceAPI:
@@ -337,6 +429,32 @@ class ScopedEvidenceAPI:
         return call
 
 
+def test_immutable_settings_fail_before_handoff_download_or_publication(
+    tmp_path: Path,
+) -> None:
+    class ForbiddenPrimaryAPI:
+        def __getattr__(self, name: str) -> Any:
+            raise AssertionError(f"provider work began before settings preflight: {name}")
+
+    class DisabledSettingsAPI:
+        def immutable_releases(self, repository: str) -> dict[str, Any]:
+            assert repository == "owner/project"
+            return {"enabled": False}
+
+    with pytest.raises(EvidenceStorageError, match="immutable releases must be enabled"):
+        publish_action_handoff(
+            ForbiddenPrimaryAPI(),  # type: ignore[arg-type]
+            publication_api=ForbiddenPrimaryAPI(),  # type: ignore[arg-type]
+            configuration_api=DisabledSettingsAPI(),  # type: ignore[arg-type]
+            schema_root=tmp_path,
+            repository="owner/project",
+            run_id="1",
+            run_attempt=1,
+            artifact_name="source",
+            output_path=tmp_path / "reference.json",
+        )
+
+
 def test_github_download_media_types_are_owned_by_endpoint_kind(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -488,7 +606,7 @@ def test_archives_are_deterministic_and_deduplicate_equal_bytes(tmp_path: Path) 
     assert manifest["total_archive_bytes"] < manifest["total_expanded_bytes"] + 1024
 
 
-def test_publication_uses_workflow_token_for_reads_and_app_token_only_for_writes(
+def test_publication_uses_separate_read_write_and_settings_credentials(
     tmp_path: Path,
 ) -> None:
     root = _storage_repo(tmp_path)
@@ -501,6 +619,28 @@ def test_publication_uses_workflow_token_for_reads_and_app_token_only_for_writes
         {"create_evidence_draft_release", "upload_evidence_asset", "publish_release"}
     )
     reader = ScopedEvidenceAPI(backing, forbidden=writer_methods)
+    settings_reader = ScopedEvidenceAPI(
+        backing,
+        forbidden=frozenset(
+            {
+                "artifacts",
+                "attestations",
+                "commit",
+                "content",
+                "create_evidence_draft_release",
+                "download_action_artifact",
+                "download_evidence_asset",
+                "evidence_release_by_tag",
+                "evidence_releases",
+                "jobs",
+                "publish_release",
+                "repository",
+                "run",
+                "upload_evidence_asset",
+                "workflow",
+            }
+        ),
+    )
     writer = ScopedEvidenceAPI(
         backing,
         forbidden=frozenset(
@@ -524,6 +664,7 @@ def test_publication_uses_workflow_token_for_reads_and_app_token_only_for_writes
     publish_input_bundle(
         reader,  # type: ignore[arg-type]
         publication_api=writer,  # type: ignore[arg-type]
+        configuration_api=settings_reader,  # type: ignore[arg-type]
         schema_root=root,
         bundle_dir=manifest_path.parent,
         handoff={
@@ -537,6 +678,8 @@ def test_publication_uses_workflow_token_for_reads_and_app_token_only_for_writes
     )
 
     assert set(writer.calls) == writer_methods
+    assert settings_reader.calls == ["immutable_releases"]
+    assert "immutable_releases" not in reader.calls
     assert "attestations" in reader.calls
     assert "evidence_release_by_tag" in reader.calls
 
@@ -1419,7 +1562,21 @@ def test_graph_renders_short_handoff_trusted_publish_and_cold_resolve(
     assert publish_step["env"] == {
         "GITHUB_TOKEN": "${{ github.token }}",
         "BCF_EVIDENCE_WRITE_TOKEN": "${{ steps.evidence-app-token.outputs.token }}",
+        "BCF_EVIDENCE_SETTINGS_READ_TOKEN": "${{ secrets.BCF_EVIDENCE_ADMIN_TOKEN }}",
     }
+    source_upload = next(
+        step
+        for step in source_rendered["jobs"]["cheap-preflight"]["steps"]
+        if "upload-artifact" in step.get("uses", "")
+        and step.get("with", {}).get("name", "").startswith(
+            "bcf-prepared-inputs-"
+        )
+    )
+    reference_upload = next(
+        step for step in publisher["steps"] if "upload-artifact" in step.get("uses", "")
+    )
+    assert source_upload["if"] == "${{ success() }}"
+    assert reference_upload["if"] == "${{ success() }}"
     assert any("publish-github" in step.get("run", "") for step in publisher["steps"])
     assert not any("download-artifact" in step.get("uses", "") for step in publisher["steps"])
     assert any("resolve-github" in step.get("run", "") for step in evidence["steps"])

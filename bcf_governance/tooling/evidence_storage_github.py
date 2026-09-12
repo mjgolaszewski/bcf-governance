@@ -175,10 +175,19 @@ def _authenticate_source(
         raise EvidenceStorageError("evidence input handoff artifact identity mismatch")
 
 
+def _require_immutable_release_settings(
+    api: GitHubEvidenceAPI, repository: str
+) -> None:
+    immutable = api.immutable_releases(repository)
+    if immutable.get("enabled") is not True:
+        raise EvidenceStorageError("GitHub immutable releases must be enabled")
+
+
 def publish_input_bundle(
     api: GitHubEvidenceAPI,
     *,
     publication_api: GitHubEvidenceAPI | None = None,
+    configuration_api: GitHubEvidenceAPI | None = None,
     schema_root: Path,
     bundle_dir: Path,
     handoff: dict[str, Any],
@@ -189,6 +198,33 @@ def publish_input_bundle(
     manifest, contract = verify_input_bundle_contract(
         schema_root, bundle_dir, bundle_dir / CONTRACT_NAME
     )
+    repository = str(contract["provider"]["repository"])
+    _require_immutable_release_settings(configuration_api or api, repository)
+    return _publish_input_bundle(
+        api,
+        publication_api=publication_api,
+        schema_root=schema_root,
+        bundle_dir=bundle_dir,
+        handoff=handoff,
+        output_path=output_path,
+        manifest=manifest,
+        contract=contract,
+    )
+
+
+def _publish_input_bundle(
+    api: GitHubEvidenceAPI,
+    *,
+    publication_api: GitHubEvidenceAPI | None,
+    schema_root: Path,
+    bundle_dir: Path,
+    handoff: dict[str, Any],
+    output_path: Path,
+    manifest: dict[str, Any],
+    contract: dict[str, Any],
+) -> dict[str, Any]:
+    """Publish a bundle after its repository settings were authenticated."""
+
     provider = contract["provider"]
     repository = str(provider["repository"])
     if contract["activation"] != "enabled":
@@ -200,9 +236,6 @@ def publish_input_bundle(
         handoff=handoff,
         bundle_dir=bundle_dir,
     )
-    immutable = api.immutable_releases(repository)
-    if immutable.get("enabled") is not True:
-        raise EvidenceStorageError("GitHub immutable releases must be enabled")
     digest = manifest_digest(manifest)
     manifest_tag = f"{provider['tag_prefix']}-manifest-{digest}"
     paths = _expected_assets(bundle_dir, manifest)
@@ -514,6 +547,7 @@ def publish_action_handoff(
     api: GitHubEvidenceAPI,
     *,
     publication_api: GitHubEvidenceAPI | None = None,
+    configuration_api: GitHubEvidenceAPI | None = None,
     schema_root: Path,
     repository: str,
     run_id: str,
@@ -523,6 +557,8 @@ def publish_action_handoff(
 ) -> dict[str, Any]:
     """Resolve one authenticated Actions handoff without caller-supplied identity."""
 
+    settings_api = configuration_api or api
+    _require_immutable_release_settings(settings_api, repository)
     run = api.run(repository, run_id)
     if (
         run.get("id") != int(run_id)
@@ -589,11 +625,16 @@ def publish_action_handoff(
             "run_id": str(run_id),
             "run_attempt": run_attempt,
         }
-        return publish_input_bundle(
+        manifest, verified_contract = verify_input_bundle_contract(
+            schema_root, bundle, bundle / CONTRACT_NAME
+        )
+        return _publish_input_bundle(
             api,
             publication_api=publication_api,
             schema_root=schema_root,
             bundle_dir=bundle,
             handoff=handoff,
             output_path=output_path,
+            manifest=manifest,
+            contract=verified_contract,
         )

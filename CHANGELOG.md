@@ -28,6 +28,15 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Split durable evidence publication into mechanically distinct ordinary-read,
+  contents-write, and repository-settings-read credentials. Immutable-Release
+  preflight now uses the Administration-read credential declared by the storage
+  contract instead of a workflow token that GitHub cannot authorize for that
+  endpoint.
+- Made required durable-source and durable-reference uploads conditional on
+  successful production. A failed producer now reports its original cause
+  without a second always-run missing-output failure, while ordinary gate
+  evidence continues to upload on failure for diagnosis.
 - Gave GitHub Actions-artifact ZIPs and Release assets distinct, typed media
   types in one transport owner. Every authenticated GitHub JSON, upload, and
   binary request now uses its credential-safe redirect policy; cross-origin
@@ -47,7 +56,7 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Moved an applicable repository editorial-inventory check into canonical cheap
   preflight, before exact test-manifest collection, session allocation, or
   evidence fanout. Stale documentation custody now fails at the front door.
-- Ratcheted BCF's own canonical gate-contract context ceiling from 96 to 99 KiB
+- Ratcheted BCF's own canonical gate-contract context ceiling from 96 to 100 KiB
   for the complete causal preflight, download, redirect, and controller-transition
   controls; installed consumer defaults remain unchanged.
 - Preserved bounded project-owned package metadata classifications across

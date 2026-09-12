@@ -288,10 +288,13 @@ storage contract owns provider namespace, credentials, freshness, archive
 safety, reachability, and budgets; the CI graph owns source/publisher/reference
 edges. Do not copy App variable names, release IDs, asset IDs, run IDs, or
 digests into workflow YAML. `ci graph lock` projects the contract digest and the
-renderer projects its credential references. Provider reads use the trusted
-workflow token; the short-lived App token receives only `contents:write` and is
-used only for Release mutation. Candidate jobs may prepare an input but cannot publish, retain,
-delete, or certify it.
+renderer projects its credential references. Ordinary provider reads use the
+trusted workflow token; the short-lived App token receives only `contents:write`
+and is used only for Release mutation. A separate short-lived credential with
+Administration read proves the repository's immutable-Release setting before
+any publication. The storage contract owns both secret names, and generated CI
+passes them to separate API clients. Candidate jobs may prepare an input but
+cannot publish, retain, delete, or certify it.
 
 Qualification must include two runs with identical source bytes, one cold
 resolution with no warm cache, an expired mutable-database input, provider and

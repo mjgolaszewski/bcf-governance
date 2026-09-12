@@ -147,9 +147,16 @@ def load_storage_contract_path(schema_root: Path, path: Path) -> dict[str, Any]:
             or provider["credential_kind"] != "github_app"
             or provider["app_id_variable"] is None
             or provider["private_key_secret"] is None
+            or provider["settings_read_token_secret"] is None
         ):
             raise EvidenceStorageError(
-                "enabled evidence storage requires repository identity and protected GitHub App authority"
+                "enabled evidence storage requires repository identity, protected "
+                "GitHub App write authority, and repository-settings read authority"
+            )
+        if provider["settings_read_token_secret"] == provider["private_key_secret"]:
+            raise EvidenceStorageError(
+                "evidence storage settings-read token and App private key secrets "
+                "must be distinct"
             )
     return payload
 
