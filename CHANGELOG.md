@@ -83,10 +83,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Made BCF's exact-main admission require its mechanically confirmed controller.
   A pending controller rotation now stops before hosted evidence fanout and runs
   only the bounded package producer needed for mechanical controller rotation.
-- Projected the 1.2.0 trusted-controller target, including the corrected
-  authenticated GitHub transport, from the exact-main artifact; provider
-  coordinates and generated workflow bytes remain mechanically derived rather
-  than operator-authored.
+- Projected and independently confirmed the 1.2.0 trusted controller, including
+  the corrected authenticated GitHub transport, from exact-main provider
+  evidence on both trusted runners; provider coordinates and generated workflow
+  bytes remain mechanically derived rather than operator-authored.
 - Re-projected the controller target after the cold-runtime correction from the
   authenticated implementation-merge artifact; no controller coordinate or
   generated workflow value is hand-authored.
