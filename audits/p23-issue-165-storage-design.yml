@@ -115,9 +115,9 @@ actions_minutes_forecast:
   - a failed remote canary stops the train until the complete defect class passes offline
   - authenticate job timestamps and runner labels after every remote phase and stop before exceeding the train ceiling
 local_qualification:
-  subject_commit: 201ad4f17a4631c0ff3b0a0601926a4d3a88b9f2
-  subject_tree: 0e804c9a56f64119998ea66c222116e120c247c9
-  source_tests: {result: pass, nodes: 910, duration_seconds: 687.01, note: run before the bounded consumer-schema regression ratcheted the manifest to 911}
+  subject_commit: c89ea434e1406701905fd23f2f3c3731b60db996
+  subject_tree: 059ce9751872c54f4e9bc33402a65547500ca8f1
+  source_tests: {result: pass, nodes: 911, duration_seconds: 691.57, junit: .artifacts/local-validation/source-tests-current.xml, junit_authority: non-authoritative_local_ignored_record}
   exact_test_manifests: {source_nodes: 911, contract_nodes: 390, result: pass}
   mutation_profiles:
     full: {result: pass, mutants_killed: 25}
