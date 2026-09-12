@@ -19,6 +19,7 @@ execution_evidence:
   - .venv/bin/bcf ci graph render --repo-root . --check
   executed_commands: []
   notes:
+  - The owner approved the 80 MiB incremental Actions storage ceiling. The custody finding remains open and further pruning stays disabled; audits/p23-issue-165-storage-design.yml records the authorization.
   - "P23-CUSTODY-01 is open after an interrupted prune deleted explicitly retained historical certification custody; audits/p23-prune-custody-incident.yml owns actual deletion, recovery limits and corrected storage accounting. Publication remains blocked; no risk acceptance is inferred."
   - P23-HF05 owns the release-blocking streamed upload framing regression. Source run 34711171316 attempt 1 passed; trusted publisher 34711184418 attempt 1 returned HTTP 400, left empty draft 387663446, and the dependent cold resolver had no runner allocation. The exact source ZIP is retained as unresolved failure custody. HF04 remains completed; 1.2.0 publication and closeout remain pending.
   - Assigning a file stream to Request.data removed Content-Length, so urllib sent chunked Release asset uploads; the strict local HTTP reproduction rejects that framing while fixed-length streaming and canonical bytes pass.

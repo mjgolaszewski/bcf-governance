@@ -9,7 +9,7 @@ document:
 reviews:
 - id: P23-PRUNE-CUSTODY-REVIEW
   source_path: audits/p23-prune-custody-incident.yml
-  source_sha256: 0df5cd605021954bf18367d0401ea5153354043dc94c962c4c58d6bd98ed1e21
+  source_sha256: 51b5e0169f292cc47f4422ba816424f0dae54aa5c9a127204a793daed3463050
   reviewer: &id001
     kind: model
     id: codex/publication_review

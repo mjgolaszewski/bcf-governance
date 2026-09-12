@@ -162,7 +162,7 @@ remaining_storage_forecast:
   provider_incremental_growth_mib: 25.93428897857666
   computed_retained_bytes_matches_fresh_provider_inventory: true
   computed_remaining_headroom_matches_fresh_provider_inventory: true
-budget_authorization: The committed 67.5 MiB growth ceiling remains unchanged. The pending 76 MiB proposal is insufficient under the corrected forecast; no increase is inferred.
+budget_authorization: At incident capture the growth ceiling was 67.5 MiB. The later owner-approved 80 MiB ceiling is recorded in audits/p23-issue-165-storage-design.yml under owner_storage_growth_authorization; custody risk acceptance remains undecided.
 source_validation:
   diagnosis_input: ".artifacts/release-train-resume/hf05-full-test-failure-diagnosis.json" # non-authoritative local locator; retained input hashes recorded
   state: Full source gate failed its promotion context budget before behavioral controls. Rationale-only compaction preserves all executable gate data; complete source evidence remains pending.
