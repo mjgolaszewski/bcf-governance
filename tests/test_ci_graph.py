@@ -985,6 +985,16 @@ def test_release_controller_jobs_activate_only_after_mechanical_confirmation(
     assert "if" not in release["jobs"]["authorize"]
 
 
+def test_bcf_exact_main_admission_waits_for_current_controller() -> None:
+    graph = yaml.safe_load((REPO_ROOT / "governance/ci-graph.yml").read_text())
+    exact_main = next(
+        workflow for workflow in graph["workflows"] if workflow["id"] == "exact-main"
+    )
+    admission = next(job for job in exact_main["jobs"] if job["id"] == "admit")
+
+    assert admission["controller_requirement"] == "current"
+
+
 def test_pull_request_gate_ownership_exactly_matches_profile(tmp_path: Path) -> None:
     graph = _graph()
     _write_graph(tmp_path, graph)

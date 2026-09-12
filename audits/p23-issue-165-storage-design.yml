@@ -188,7 +188,7 @@ provider_qualification_failure:
   response: P23-HF02 blocks further provider execution until the whole Python-backed-controller execution class passes offline
   expected_additional_hosted_minutes: {lower: 70, upper: 95}
   expected_additional_actions_storage_mib: {upper: 12}
-  hard_budget_disposition: within_original_train_ceiling_but_requires_explicit_corrective_accounting
+  hard_budget_disposition: original_240_minute_ceiling_will_be_exceeded_under_the_explicit_complete_the_train_direction
   offline_remediation:
     source_tests: {nodes: 917, result: pass, duration_seconds: 706.82}
     contract_tests: {nodes: 390, result: pass}
@@ -198,3 +198,18 @@ provider_qualification_failure:
     causal_runtime_control: {id: durable-publisher-selected-python-must-fail, failed_node: tests.test_ci_graph::test_every_rendered_controller_invocation_has_selected_python_first, result: pass}
     parity: {graph: pass, workflows: pass, pack: pass, editorial: pass}
     remote_resume: permitted_only_after_this_complete_class_passed
+controller_transition_cost_correction:
+  implementation_pr: {number: 169, governance_run: 34686747197, package_run: 34686747173, hosted_seconds: 1491, actions_artifact_bytes: 735497, result: pass_first_attempt}
+  implementation_merge: {commit: 0f36dd895d970377b73a895a12bc3096ea1aa2aa, exact_main_run: 34687292040, hosted_seconds: 68, actions_artifact_bytes: 2505419, result: expected_controller_transition_failure}
+  controller_target_pr: {number: 170, governance_run: 34687544655, package_run: 34687544669, hosted_seconds: 1466, actions_artifact_bytes: 732569, result: pass_first_attempt}
+  controller_target_merge: {commit: 0cfc0b9464286ec691f49627fdfdfefb4cbf8998, exact_main_run: 34688183780, result: cancelled_to_stop_redundant_fanout, hosted_seconds_before_cancellation: 358, actions_artifact_bytes: 2603614}
+  installation_proof: {bootstrap_run: 34688364688, probe_run: 34688399445, result: pass_on_both_trusted_runners}
+  observed_defect_class: exact_main_admission_remained_enabled_while_the_self_controller_target_and_confirmed_installation_differed
+  correction:
+  - BCF exact-main admission declares controller_requirement current in the canonical graph
+  - the renderer mechanically disables admission while a controller rotation is pending
+  - a cause-verified graph mutant removes the declaration and must fail the BCF self-graph oracle
+  - downstream hosted evidence cannot be allocated when admission is disabled
+  current_budget_observation: {observed_at_utc: '2026-09-12T10:27:00Z', completed_hosted_minutes: 177.80, retained_actions_bytes: 431702148, retained_actions_mib: 411.703, increment_from_baseline_mib: 16.923}
+  revised_completion_forecast: {hosted_minutes_lower: 291, hosted_minutes_upper: 300, actions_storage_increment_mib_lower: 55, actions_storage_increment_mib_upper: 65}
+  disposition: the original compute forecast and 240-minute ceiling were inaccurate; complete the authorized train, preserve the storage ceiling, and carry the transition-proof optimization as explicit follow-up work

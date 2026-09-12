@@ -26,6 +26,10 @@ execution_evidence:
   - durable-publisher-selected-python-must-fail killed the repository-wide rendered-controller inventory node for its declared cause
   - focused CI graph and evidence-storage suites passed 96 nodes
   - generated graph lock render editorial and pack parity checks passed
+  - implementation PR 169 passed once; its exact-main artifact mechanically
+    supplied controller target 0f36dd895d970377b73a895a12bc3096ea1aa2aa
+  - controller-target PR 170 passed once; bootstrap 34688364688 and probe
+    34688399445 installed and verified the target on both trusted runners
   notes:
   - qualification source run 34679461415 completed its hosted work in 12 seconds
     and terminated; the dependent hosted resolver was never allocated
@@ -37,6 +41,9 @@ execution_evidence:
   - the compiler, not a workflow editor, owns and enforces selected-runtime
     ordering for Python, installed-controller, and ephemeral-controller commands
   - no provider execution resumed until the complete locally derivable class passed
+  - target exact-main run 34688183780 exposed a separate cost-policy gap by
+    admitting hosted evidence before controller confirmation; it was cancelled,
+    and exact-main admission now mechanically requires the current controller
 closeout_requirements:
   claims:
     required_suites_green:
