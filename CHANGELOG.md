@@ -72,6 +72,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   polling, watching, shell wait loops, and local-runner lease coordination;
   dependency edges and completion events defer allocation in GitHub rather than
   occupying a hosted VM.
+- Made BCF's exact-main admission require its mechanically confirmed controller.
+  A pending controller rotation now stops before hosted evidence fanout instead
+  of spending a full exact-main run that cannot authorize release.
 - Projected the 1.2.0 trusted-controller target from the authenticated
   exact-main artifact; provider coordinates and generated workflow bytes remain
   mechanically derived rather than operator-authored.

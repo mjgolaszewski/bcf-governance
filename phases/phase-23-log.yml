@@ -72,6 +72,8 @@ execution_evidence:
   - storage qualification source 34679461415 used 12 hosted seconds; trusted publisher 34679474421 failed before publication and prevented allocation of the hosted resolver
   - the failed publisher exposed a missing selected-Python edge for the special durable-publish executor; P23-HF02 audits every rendered controller invocation and makes runtime provisioning a graph-compiler invariant
   - P23-HF02 passed 917 source nodes 390 contract nodes 214 causal controls both mutation profiles and exact graph pack and editorial parity before provider execution resumed
+  - P23-HF02 implementation PR 169 and controller-target PR 170 passed on their first attempts; controller bootstrap 34688364688 and probe 34688399445 passed on both trusted runners
+  - target exact-main run 34688183780 was cancelled after 358 hosted seconds when it admitted redundant evidence during a pending controller rotation; the canonical graph now makes current-controller confirmation a prerequisite to exact-main admission
   notes:
   - audits/p23-issue-164-remediation.yml owns the defect-class review consumer proof and release-train storage forecast
   - remote execution starts only after the complete deterministic local acceptance set passes
