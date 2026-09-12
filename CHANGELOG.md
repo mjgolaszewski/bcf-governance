@@ -87,6 +87,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   the corrected authenticated GitHub transport, from exact-main provider
   evidence on both trusted runners; provider coordinates and generated workflow
   bytes remain mechanically derived rather than operator-authored.
+- Completed P23-HF03 on explicit owner authority from its exact local, protected
+  PR, bootstrap, and probe evidence. The existing closure preflight rejected the
+  omitted lifecycle transition before any evidence lane was allocated.
 - Re-projected the controller target after the cold-runtime correction from the
   authenticated implementation-merge artifact; no controller coordinate or
   generated workflow value is hand-authored.

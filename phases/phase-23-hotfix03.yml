@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-23-hotfix03
   version: 1.0.0
   generated_at_utc: '2026-09-12T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-23-hotfix03.yml
 hotfix:
   id: P23-HF03
@@ -18,7 +18,14 @@ execution_evidence:
   - .venv/bin/python -m pytest -q tests
   - .venv/bin/python .github/scripts/run_validator_mutants.py --profile full
   - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full
-  executed_commands: []
+  executed_commands:
+  - exact source manifest passed all 921 nodes in 706.53 seconds from committed HEAD
+  - exact contract manifest passed all 390 nodes
+  - canonical test evidence passed all 921 positive nodes and all 29 test-gate controls from one clean detached session
+  - full and semantic-full mutation profiles killed 25 and 12 mutants
+  - wheel smoke and extracted-sdist verification passed; the extracted sdist passed 916 nodes with five declared custody-context skips
+  - implementation PR 172, controller-target PR 173, and controller-confirmation PR 174 passed every protected check on their first complete attempts
+  - bootstrap 34697472883 and probe 34697517410 authenticated and installed the exact implementation controller on both trusted runners
   notes:
   - qualification source run 34691496221 passed in 13 hosted seconds and emitted
     Actions artifact 10296794770 with provider SHA-256
@@ -38,6 +45,10 @@ execution_evidence:
   - the pending-controller exact-main graph now blocks expensive governance
     evidence while leaving the bounded package/controller producer runnable, so
     mechanical rotation cannot deadlock or allocate a useless full fanout
+  - exact-main 34698441190 rejected the still-open authored hotfix at the cheap
+    closure preflight and allocated no evidence lane; the repository owner then
+    explicitly authorized completion from the recorded local, PR, bootstrap,
+    and probe evidence
 closeout_requirements:
   claims:
     required_suites_green:
