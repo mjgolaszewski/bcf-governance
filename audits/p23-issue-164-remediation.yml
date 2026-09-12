@@ -103,9 +103,14 @@ hosted_execution_review:
   - no hosted job waits for trusted or local capacity; dependencies and completion events defer allocation at the provider
   limitation: a declared product gate may perform bounded readiness work inside its own executable; the graph contract prevents orchestration waiters rather than claiming arbitrary program termination proof
 validation:
-  status: local_pass_provider_evidence_pending
+  status: implementation_complete_controller_confirmation_pending
   generated_parity: {result: pass, workflows: 20, jobs: 32, extensions: 5}
   exact_populations: {result: pass, source_tests: 912, contract_tests: 389}
   mutation_profiles: {result: pass, validator_mutants: 25, semantic_mutants: 12}
   artifact_verification: {wheel: pass, extracted_sdist: pass}
-  provider_evidence: pending
+  provider_evidence:
+    implementation_pr: {number: 166, corrected_head: ef5f22d03972c95aea58389ba7dfcbb7c9075313, governance_run: 34676966751, package_run: 34676966730, result: pass}
+    implementation_merge: {commit: 1b6442d88ea7a4ced8d83fae1b13e303a9ac7a5c, exact_main_run: 34677370141, result: expected_lifecycle_fail_closed_before_evidence}
+    controller_target_pr: {number: 167, head: 2ca345b56a01c78e67276f2df0ecc5bc8ee87664, governance_run: 34677718493, package_run: 34677718488, result: pass}
+    controller_target_merge: {commit: c7efe4257ea2763151d423e10f19b80cb7f404de, exact_main_run: 34678330757, result: expected_lifecycle_fail_closed_before_evidence}
+    controller_installation: {artifact_id: 10292329000, bootstrap_run: 34678412739, probe_run: 34678449918, trusted_runners: 2, result: pass}

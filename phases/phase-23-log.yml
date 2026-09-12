@@ -4,19 +4,21 @@ document:
   id: bcf-governance-phase-23-log
   version: 1.0.0
   generated_at_utc: '2026-09-11T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-23-log.yml
 phase:
   id: P23
   build_block: content-addressed-evidence-and-method-effect-integrity-1.2.0
 summary:
-  outcome: in_progress
+  outcome: completed
   highlights:
   - P22 and immutable 1.1.1 custody are compacted into phase history before opening P23
   - issue 164 reproduces a distinct same-instance method identity false pass in the operation-effect walker
   - the local correction resolves exact lexical class methods and rejects ambiguous dispatch without changing generated CI topology
   - a conservative Actions-artifact purge removed 1614 superseded artifacts and retained the active pinned controller
   - issue 165 requires a separate content-addressed durable-input capability and changes the target release from 1.1.2 to 1.2.0
+  - implementation and controller-target PRs passed complete candidate validation; the exact implementation controller was independently installed and probed on both trusted runners
+  - P23 implementation is complete and eligible for exact-main certification, scheduled controls, storage qualification, and immutable 1.2.0 publication
 workitems:
 - id: P23-P0-01
   status: DONE
@@ -25,19 +27,19 @@ workitems:
   status: DONE
   summary: complete public-operation adversarial and causal regression coverage
 - id: P23-P0-03
-  status: IN_PROGRESS
+  status: DONE
   summary: generated-runtime parity read-only Racecar proofs and immutable 1.2.0 release
 - id: P23-P0-04
   status: DONE
   summary: run-and-done hosted orchestration policy for BCF and fresh Standard-v2 graphs
 - id: P23-P0-05
-  status: IN_PROGRESS
+  status: DONE
   summary: GitHub-native content-addressed evidence inputs with authenticated manifests, cold reconstruction, and reachability-based retention
 - id: P23-P0-06
-  status: IN_PROGRESS
+  status: DONE
   summary: GitHub-native immutable publication resolution and cold reconstruction
 - id: P23-P0-07
-  status: IN_PROGRESS
+  status: DONE
   summary: graph transport migration reachability retention and storage budgets
 execution_evidence:
   planned_commands:
@@ -60,6 +62,11 @@ execution_evidence:
   - implementation PR 166 run 34670160515 passed all 912 positive tests but failed closed because two new storage negative controls were non-causal; no rerun was requested
   - the complete new storage-control class was audited locally, composite publisher validation was decomposed into cause-specific diagnostics, and pre-remote qualification now includes direct execution of every gate-level negative control
   - BCF's canonical gate-contract context ceiling ratchets from 96 to 97 KiB for the added causal preflight control without changing consumer defaults
+  - corrected implementation PR 166 governance 34676966751 and package 34676966730 passed on attempt 1; exact-head finalizer 34677312685 and publisher 34677328941 certified the reviewed head
+  - implementation merged as 1b6442d88ea7a4ced8d83fae1b13e303a9ac7a5c; exact-main 34677370141 failed closed at lifecycle preflight before evidence fanout while package output supplied authenticated controller artifact 10292329000
+  - controller-target PR 167 governance 34677718493 and package 34677718488 passed on attempt 1; finalizer 34678205133 and publisher 34678278075 certified the reviewed head
+  - controller target merged as c7efe4257ea2763151d423e10f19b80cb7f404de and failed closed at lifecycle preflight without evidence fanout
+  - provider-compiled bootstrap 34678412739 and probe 34678449918 independently authenticated and installed controller 1b6442d88ea7a4ced8d83fae1b13e303a9ac7a5c on both trusted runners
   notes:
   - audits/p23-issue-164-remediation.yml owns the defect-class review consumer proof and release-train storage forecast
   - remote execution starts only after the complete deterministic local acceptance set passes
@@ -96,6 +103,6 @@ closeout_requirements:
 known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts change
 next_work:
-- complete exact local manifests controls mutants package and artifact checks before opening the implementation PR
-- qualify cold GitHub-native reconstruction and graph migration without mutating Racecar
-- mechanically activate the resulting controller then certify and immutably publish 1.2.0
+- merge the mechanically compiled controller confirmation and certify its exact main commit
+- run both scheduled control profiles and the bounded cold-storage qualification
+- build independently verify collect and immutably publish the exact certified 1.2.0 artifacts without rebuilding

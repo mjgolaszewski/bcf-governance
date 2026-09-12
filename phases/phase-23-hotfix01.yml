@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-23-hotfix01
   version: 1.0.0
   generated_at_utc: '2026-09-11T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-23-hotfix01.yml
 hotfix:
   id: P23-HF01
@@ -21,6 +21,8 @@ execution_evidence:
   - full and semantic-full mutation profiles killed 25 and 12 mutants
   - generated runtime package template graph and workflow parity passed
   - clean Racecar PR 14 method graph and strict upgrade compatibility passed read-only
+  - implementation PR 166 and controller-target PR 167 passed complete candidate validation and exact-head certification
+  - bootstrap 34678412739 and probe 34678449918 authenticated and installed the implementation controller on both trusted runners
   notes:
   - issue 164 is a high-severity upstream false pass reproduced against exact immutable BCF 1.1.1 release bytes and current source
   - source discovery recorded self._save without its declaring class so the effect walker never visited the known helper write
