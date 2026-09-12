@@ -30,9 +30,9 @@ def _schemas(repo_root: Path | None = None) -> Path:
     return packaged
 
 
-def _api() -> GitHubEvidenceAPI:
+def _api(token: str | None = None) -> GitHubEvidenceAPI:
     return GitHubEvidenceAPI(
-        token=os.environ.get("GITHUB_TOKEN", ""),
+        token=os.environ.get("GITHUB_TOKEN", "") if token is None else token,
         api_url=os.environ.get("GITHUB_API_URL", "https://api.github.com"),
     )
 
@@ -79,6 +79,7 @@ def run(args: argparse.Namespace) -> None:
     elif args.operation == "publish-github":
         publish_action_handoff(
             _api(),
+            publication_api=_api(os.environ.get("BCF_EVIDENCE_WRITE_TOKEN", "")),
             schema_root=_schemas(),
             repository=args.repository,
             run_id=args.run_id,

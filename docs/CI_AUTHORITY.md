@@ -50,8 +50,11 @@ candidate strings into shell commands.
 
 Durable-input publication is transport authority, not certification or product
 release authority. The graph compiler derives its credential names and exact
-App permissions from `governance/evidence-storage.yml`; the job may inspect and
-hash candidate bytes but never import or execute them. Evidence tags are
+App permissions from `governance/evidence-storage.yml`. The trusted workflow
+token authenticates Actions, source, Release, and attestation reads; the
+short-lived App token receives only `contents:write` and is used only to create,
+populate, and publish the evidence Release. The job may inspect and hash
+candidate bytes but never import or execute them. Evidence tags are
 mechanically disjoint from product tags, and the publisher cannot write status
 or create a release receipt. See [Using BCF](USAGE.md#content-addressed-preparation-inputs)
 for adoption and retention behavior.

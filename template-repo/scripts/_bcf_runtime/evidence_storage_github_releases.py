@@ -189,6 +189,7 @@ def verify_release(
 def publish_release_assets(
     api: GitHubEvidenceAPI,
     *,
+    publication_api: GitHubEvidenceAPI | None = None,
     repository: str,
     contract: dict[str, Any],
     tag: str,
@@ -197,6 +198,7 @@ def publish_release_assets(
     paths: dict[str, Path],
     reusable: bool,
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]], str]:
+    writer = publication_api or api
     expected = {
         name: (path.stat().st_size, file_sha256(path)) for name, path in paths.items()
     }
@@ -206,7 +208,7 @@ def publish_release_assets(
         if "returned 404" not in str(exc):
             raise
         try:
-            release = api.create_evidence_draft_release(
+            release = writer.create_evidence_draft_release(
                 repository,
                 tag=tag,
                 target_commit=target_commit,
@@ -239,7 +241,7 @@ def publish_release_assets(
                     )
                 continue
             try:
-                api.upload_evidence_asset(
+                writer.upload_evidence_asset(
                     upload_url=upload_url,
                     repository=repository,
                     release_id=release_id,
@@ -262,7 +264,7 @@ def publish_release_assets(
                     ) from upload_exc
         release = api.evidence_release_by_tag(repository, tag)
         if release.get("draft") is True:
-            release = api.publish_release(repository, release_id)
+            release = writer.publish_release(repository, release_id)
     resolved_target = None if reusable else target_commit
     return verify_release(
         api,

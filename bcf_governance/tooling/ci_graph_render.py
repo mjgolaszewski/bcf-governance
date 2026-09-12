@@ -425,8 +425,6 @@ def _executor_steps(
                     "private-key": "${{ secrets."
                     + provider["private_key_secret"]
                     + " }}",
-                    "permission-actions": "read",
-                    "permission-attestations": "read",
                     "permission-contents": "write",
                 },
             },
@@ -434,7 +432,8 @@ def _executor_steps(
                 "name": job["display_name"],
                 "shell": "bash",
                 "env": {
-                    "GITHUB_TOKEN": "${{ steps.evidence-app-token.outputs.token }}"
+                    "GITHUB_TOKEN": "${{ github.token }}",
+                    "BCF_EVIDENCE_WRITE_TOKEN": "${{ steps.evidence-app-token.outputs.token }}",
                 },
                 "run": (
                     "set -euo pipefail\n"

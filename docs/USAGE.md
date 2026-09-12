@@ -99,9 +99,12 @@ bcf ci graph validate --repo-root .
 bcf ci graph render --repo-root . --apply
 ```
 
-Generated CI authenticates and publishes the handoff through the declared App,
-then each consuming job downloads the compact reference and cold-resolves the
-immutable assets. `bcf evidence-store retention-plan` accepts a schema-checked
+Generated CI authenticates source and provider reads with the trusted workflow
+token and uses the declared App token only for contents-write Release operations.
+Each consuming job downloads the compact reference and cold-resolves the
+immutable assets. A hosted consumer is allocated only after the trusted publisher
+has completed successfully; it never waits for trusted or local capacity.
+`bcf evidence-store retention-plan` accepts a schema-checked
 candidate inventory and rederives its repository, run, attempt, artifact,
 release, asset, and digest claims from the provider before computing handoff
 deletion candidates, leases, unreachable durable releases, and budget state.

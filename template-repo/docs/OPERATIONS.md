@@ -91,8 +91,10 @@ freshness classes, reachability roots, and budgets, then declare graph-owned
 `durable-source` and `durable-reference` artifacts plus one trusted no-checkout
 `durable_publish` job. Run `bcf evidence-store validate`, `bcf ci graph lock
 --apply`, and `bcf ci graph render --apply`; never hand-edit the generated
-transport steps or provider identities. Consumers cold-resolve and rehash every
-member before gate execution. Caches are acceleration only, GitHub immutable
+transport steps or provider identities. The workflow token authenticates reads;
+the short-lived App token receives only `contents:write` for Release mutation.
+Consumers are allocated only after trusted publication succeeds, then cold-resolve
+and rehash every member before gate execution. Caches are acceleration only, GitHub immutable
 Release assets preserve the bytes, and no NAS fallback is authoritative.
 
 Use `bcf evidence-store retention-plan` to authenticate a candidate retention

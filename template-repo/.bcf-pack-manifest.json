@@ -62,7 +62,7 @@
     },
     "docs/OPERATIONS.md": {
       "operation": "copy",
-      "sha256": "b9049812737a9d8d499d283e3e43983621f5bef1b0ee22bf20a9c7e807715376"
+      "sha256": "57f7b8da8cf8886a05adab09edd648975c529b9865717b5f446e39b9c277c00e"
     },
     "governance-profile.yml": {
       "operation": "generate",
@@ -528,11 +528,11 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "3284db9806b7b16ac60801bad3cf51a4e2b991044a4dd4b80721dbc0596e228c"
+      "sha256": "597ebc6e08ed18f5ab6c2f2c3a919f19d8fbf947c10c397f8ca4fa1f55ad5d5e"
     },
     "scripts/_bcf_runtime/ci_graph_storage.py": {
       "operation": "copy",
-      "sha256": "37a693ba49f7bff213e062f7d09808e06497825e047ced7a71dcbbe61aaa0a1e"
+      "sha256": "9a6fc8f8bb6a6399370d026b4166ee4e29af028d14442d7711c25b5ff8223781"
     },
     "scripts/_bcf_runtime/ci_graph_timeouts.py": {
       "operation": "copy",
@@ -588,7 +588,7 @@
     },
     "scripts/_bcf_runtime/evidence_storage_commands.py": {
       "operation": "copy",
-      "sha256": "446d0ef67aed9b72b1de688f4da3a265909a3aafbf460ddae95a2f5706306518"
+      "sha256": "23a97228642d518586a915f049ce9caad68f94ce2172db26e1d1c13bee4d207d"
     },
     "scripts/_bcf_runtime/evidence_storage_contracts.py": {
       "operation": "copy",
@@ -596,7 +596,7 @@
     },
     "scripts/_bcf_runtime/evidence_storage_github.py": {
       "operation": "copy",
-      "sha256": "935af95644a36c86aa06c59698e05f0097387db0b1652d71b6ddd375988d584c"
+      "sha256": "a9ea36fb198ef3a5362a64243bc1628fed37acec751f1dfe25ae903afca08917"
     },
     "scripts/_bcf_runtime/evidence_storage_github_api.py": {
       "operation": "copy",
@@ -604,7 +604,7 @@
     },
     "scripts/_bcf_runtime/evidence_storage_github_releases.py": {
       "operation": "copy",
-      "sha256": "2b860c47fce7f6d2c2edc3db5819709265d9e7fda8085624ca5dfe6822b51f77"
+      "sha256": "9282a9e993b73c341d62315bd73b8260ff8e259d15e7442929469acdc3ade4d6"
     },
     "scripts/_bcf_runtime/evidence_storage_graph.py": {
       "operation": "copy",

@@ -39,6 +39,7 @@ authority_model:
   - required objects are published before compact references and Actions handoff deletion
   - current heads certified commits releases unresolved findings and explicit custody roots remain reachable
   - unavailable storage exceeded budgets expired freshness or failed reconstruction fails closed
+  - trusted workflow tokens authenticate reads while the short-lived contents-write App token performs only Release mutation
 transport_design:
   durable_backend: immutable_github_release_assets
   release_namespace: non_product_bcf-evidence-inputs
@@ -71,7 +72,8 @@ implementation_scope:
   layers: [tooling, pack, public]
   target_modules: [evidence_storage_contracts.py, evidence_storage_archives.py, evidence_storage_github.py, evidence_storage_commands.py, ci_graph_contracts.py, ci_graph_render.py, ci_github_api.py]
   expected_tests: [contract_validation, deterministic_archives, provider_authentication, cold_materialization, unsafe_archive_rejection, freshness, graph_edges, retention_reachability, budgets, legacy_compatibility, package_parity]
-  forbidden_surfaces: [Racecar_repository, Chrysalis_Identity_repository, receipt_schema_2_top_level, existing_21_gate_ids, BCF_self_graph_job_topology, product_release_authority]
+  forbidden_surfaces: [Racecar_repository, Chrysalis_Identity_repository, receipt_schema_2_top_level, existing_21_gate_ids, existing_PR_exact_main_scheduled_and_product_release_topology, product_release_authority]
+  BCF_qualification_topology: {workflows_added: 2, jobs_added: 3, activation: owner_dispatch_only, hosted_waiters: 0}
 actions_storage_forecast:
   basis: immutable_1.1.1_train_plus_new_compact_fixtures
   provider_baseline:

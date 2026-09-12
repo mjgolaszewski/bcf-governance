@@ -84,7 +84,10 @@ hosted_execution_review:
   compiler_owner: bcf_governance/tooling/ci_graph_execution.py::hosted_command_issues
   compatibility: existing consumer graphs remain unchanged until explicit adoption or regeneration
   bcf_self_graph:
-    hosted_runner_allocating_job_definitions: 13
+    workflows: 20
+    jobs: 32
+    extensions: 5
+    hosted_runner_allocating_job_definitions: 15
     hosted_waiter_definitions: 0
     trusted_control_resource: self_hosted
     scheduling: needs edges allocate no downstream runner and workflow_run handlers start only after provider completion
@@ -100,9 +103,9 @@ hosted_execution_review:
   - no hosted job waits for trusted or local capacity; dependencies and completion events defer allocation at the provider
   limitation: a declared product gate may perform bounded readiness work inside its own executable; the graph contract prevents orchestration waiters rather than claiming arbitrary program termination proof
 validation:
-  status: local_implementation_in_progress
-  generated_parity: pending
-  exact_populations: pending
-  mutation_profiles: pending
-  artifact_verification: pending
+  status: local_pass_provider_evidence_pending
+  generated_parity: {result: pass, workflows: 20, jobs: 32, extensions: 5}
+  exact_populations: {result: pass, source_tests: 911, contract_tests: 390}
+  mutation_profiles: {result: pass, validator_mutants: 25, semantic_mutants: 12}
+  artifact_verification: {wheel: pass, extracted_sdist: pass}
   provider_evidence: pending

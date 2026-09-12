@@ -178,6 +178,7 @@ def _authenticate_source(
 def publish_input_bundle(
     api: GitHubEvidenceAPI,
     *,
+    publication_api: GitHubEvidenceAPI | None = None,
     schema_root: Path,
     bundle_dir: Path,
     handoff: dict[str, Any],
@@ -239,6 +240,7 @@ def publish_input_bundle(
         object_tag = f"{provider['tag_prefix']}-object-{object_digest}"
         object_release, object_assets, object_target = publish_release_assets(
             api,
+            publication_api=publication_api,
             repository=repository,
             contract=contract,
             tag=object_tag,
@@ -264,6 +266,7 @@ def publish_input_bundle(
         )
     release, assets, manifest_target = publish_release_assets(
         api,
+        publication_api=publication_api,
         repository=repository,
         contract=contract,
         tag=manifest_tag,
@@ -510,6 +513,7 @@ def extract_handoff_zip(
 def publish_action_handoff(
     api: GitHubEvidenceAPI,
     *,
+    publication_api: GitHubEvidenceAPI | None = None,
     schema_root: Path,
     repository: str,
     run_id: str,
@@ -587,6 +591,7 @@ def publish_action_handoff(
         }
         return publish_input_bundle(
             api,
+            publication_api=publication_api,
             schema_root=schema_root,
             bundle_dir=bundle,
             handoff=handoff,

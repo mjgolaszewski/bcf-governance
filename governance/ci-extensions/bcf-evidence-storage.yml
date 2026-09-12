@@ -1,0 +1,115 @@
+document:
+  kind: ci_graph_extension
+  name: BCF durable evidence storage qualification extension
+  id: bcf-evidence-storage-ci-extension
+  version: 1.0.0
+  status: active
+  path: governance/ci-extensions/bcf-evidence-storage.yml
+schema_version: '1.0'
+extension:
+  id: bcf-evidence-storage
+  owner: bcf-governance
+  rationale: qualify one GitHub-native content-addressed input through candidate preparation trusted publication and independent cold reconstruction without allocating a hosted waiter
+  attachment_point: trusted-control
+  applicability: [workflow_dispatch, workflow_run]
+  required_controls:
+    positive: [bcf-evidence-storage-cold-reconstruction]
+    negative: [bcf-evidence-storage-authority-boundary]
+    topology: [bcf-evidence-storage-run-and-done]
+    cleanup: [bcf-evidence-storage-retention]
+artifacts:
+  evidence-storage-qualification-source:
+    path: .artifacts/bcf/evidence-storage-qualification/source
+    kind: durable-source
+    scope: run-attempt
+    retention_days: 1
+    durable_input:
+      namespace: bcf-qualification
+      objects:
+      - id: license
+        source_path: LICENSE
+        target_path: qualification/LICENSE
+        freshness_class: immutable
+  evidence-storage-qualification-reference:
+    path: .artifacts/bcf/evidence-storage-qualification/reference
+    kind: durable-reference
+    scope: run-attempt
+    retention_days: 30
+    durable_source: evidence-storage-qualification-source
+    materialization_root: .artifacts/bcf/evidence-storage-qualification/resolved
+conditions:
+  evidence-storage-owner-main-dispatch: github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main'
+commands:
+  evidence-storage-contract-validate:
+    argv: ['{python}', scripts/evidence_storage.py, validate, --repo-root, .]
+    cwd: .
+    environment: {}
+step_components: {}
+workflows:
+- id: evidence-storage-qualification-source
+  path: .github/workflows/bcf-evidence-storage-qualification-source.yml
+  display_name: bcf/evidence-storage-qualification-source
+  role: custom
+  events: [{type: workflow_dispatch}]
+  permissions: {contents: read}
+  jobs:
+  - id: prepare-evidence-input
+    display_name: Prepare one bounded content-addressed evidence input
+    semantic_role: evidence-storage-qualification-producer
+    resource_class: hosted-python
+    trust: candidate
+    needs: []
+    condition: evidence-storage-owner-main-dispatch
+    timeout_minutes: 5
+    permissions: {contents: read}
+    checkout: true
+    components: [python, governance-dependencies]
+    executor: {kind: command, command: evidence-storage-contract-validate}
+    produces: [evidence-storage-qualification-source]
+    consumes: []
+    required: true
+- id: evidence-storage-qualification
+  path: .github/workflows/bcf-evidence-storage-qualification.yml
+  display_name: bcf/evidence-storage-qualification
+  role: trusted-control
+  events:
+  - type: workflow_run
+    workflows: [bcf/evidence-storage-qualification-source]
+    types: [completed]
+  permissions: {contents: read}
+  jobs:
+  - id: publish-evidence-input
+    display_name: Publish one authenticated immutable evidence input
+    semantic_role: evidence-storage-qualification-publisher
+    resource_class: trusted-control
+    trust: trusted
+    needs: []
+    condition: success
+    timeout_minutes: 5
+    permissions: {actions: read, attestations: read, contents: read}
+    checkout: false
+    components: []
+    executor:
+      kind: durable_publish
+      source: evidence-storage-qualification-source
+      reference: evidence-storage-qualification-reference
+    produces: [evidence-storage-qualification-reference]
+    consumes: [evidence-storage-qualification-source]
+    protected_environment: bcf-trusted-evidence
+    required: true
+  - id: reconstruct-evidence-input
+    display_name: Cold-reconstruct and verify the authenticated evidence input
+    semantic_role: evidence-storage-qualification-consumer
+    resource_class: hosted-python
+    trust: candidate
+    needs: [publish-evidence-input]
+    condition: success
+    timeout_minutes: 5
+    permissions: {actions: read, attestations: read, contents: read}
+    checkout: true
+    components: [python, governance-dependencies]
+    executor: {kind: command, command: evidence-storage-contract-validate}
+    produces: []
+    consumes: [evidence-storage-qualification-reference]
+    required: true
+jobs: []

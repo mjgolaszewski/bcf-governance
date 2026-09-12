@@ -149,6 +149,10 @@ def _validate_publishers(graph: dict[str, Any], contract: dict[str, Any]) -> Non
             or job.get("protected_environment")
             != contract["provider"]["protected_environment"]
             or any(value == "write" for value in job["permissions"].values())
+            or any(
+                job["permissions"].get(permission) != "read"
+                for permission in ("actions", "attestations", "contents")
+            )
         ):
             raise CIGraphError(
                 f"durable publisher {job['id']} lacks closed trusted publication authority"

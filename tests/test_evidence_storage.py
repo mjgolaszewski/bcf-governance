@@ -290,6 +290,31 @@ class ConcurrentCreateEvidenceAPI(FakeEvidenceAPI):
         raise GitHubAPIError("GitHub API POST release returned 422")
 
 
+class ScopedEvidenceAPI:
+    """Record and constrain the provider operations available to one token."""
+
+    def __init__(
+        self,
+        delegate: FakeEvidenceAPI,
+        *,
+        forbidden: frozenset[str],
+    ) -> None:
+        self.delegate = delegate
+        self.forbidden = forbidden
+        self.calls: list[str] = []
+
+    def __getattr__(self, name: str) -> Any:
+        if name in self.forbidden:
+            raise AssertionError(f"token crossed its declared authority boundary: {name}")
+        target = getattr(self.delegate, name)
+
+        def call(*args: Any, **kwargs: Any) -> Any:
+            self.calls.append(name)
+            return target(*args, **kwargs)
+
+        return call
+
+
 def test_archives_are_deterministic_and_deduplicate_equal_bytes(tmp_path: Path) -> None:
     root = _storage_repo(tmp_path)
     prepared = root / "prepared"
@@ -303,6 +328,59 @@ def test_archives_are_deterministic_and_deduplicate_equal_bytes(tmp_path: Path) 
     assert manifest["objects"][0]["asset_name"] == manifest["objects"][1]["asset_name"]
     assert len(tuple((manifest_path.parent / "objects").iterdir())) == 1
     assert manifest["total_archive_bytes"] < manifest["total_expanded_bytes"] + 1024
+
+
+def test_publication_uses_workflow_token_for_reads_and_app_token_only_for_writes(
+    tmp_path: Path,
+) -> None:
+    root = _storage_repo(tmp_path)
+    prepared = root / "prepared"
+    prepared.mkdir()
+    prepared.joinpath("scanner.bin").write_bytes(b"exact scanner bytes")
+    prepared.joinpath("scanner-copy.bin").write_bytes(b"exact scanner bytes")
+    backing = FakeEvidenceAPI(root)
+    writer_methods = frozenset(
+        {"create_evidence_draft_release", "upload_evidence_asset", "publish_release"}
+    )
+    reader = ScopedEvidenceAPI(backing, forbidden=writer_methods)
+    writer = ScopedEvidenceAPI(
+        backing,
+        forbidden=frozenset(
+            {
+                "artifacts",
+                "attestations",
+                "commit",
+                "content",
+                "evidence_release_by_tag",
+                "evidence_releases",
+                "immutable_releases",
+                "jobs",
+                "repository",
+                "run",
+                "workflow",
+            }
+        ),
+    )
+    manifest_path = _bundle(root, tmp_path / "bundle", 1)
+
+    publish_input_bundle(
+        reader,  # type: ignore[arg-type]
+        publication_api=writer,  # type: ignore[arg-type]
+        schema_root=root,
+        bundle_dir=manifest_path.parent,
+        handoff={
+            "artifact_id": 501,
+            "artifact_name": "bcf-source-1-1",
+            "provider_digest": "sha256:" + "0" * 64,
+            "run_id": "1",
+            "run_attempt": 1,
+        },
+        output_path=root / ".artifacts/split-authority-reference.json",
+    )
+
+    assert set(writer.calls) == writer_methods
+    assert "attestations" in reader.calls
+    assert "evidence_release_by_tag" in reader.calls
 
 
 @pytest.mark.parametrize(
@@ -1065,7 +1143,11 @@ def _durable_graph_repo(tmp_path: Path) -> Path:
         "needs": [],
         "condition": "success",
         "timeout_minutes": 5,
-        "permissions": {"contents": "read"},
+        "permissions": {
+            "actions": "read",
+            "attestations": "read",
+            "contents": "read",
+        },
         "checkout": False,
         "components": [],
         "executor": {
@@ -1163,9 +1245,12 @@ def test_graph_renders_short_handoff_trusted_publish_and_cold_resolve(
     assert token_step["with"] == {
         "app-id": "${{ vars.BCF_EVIDENCE_APP_ID }}",
         "private-key": "${{ secrets.BCF_EVIDENCE_APP_PRIVATE_KEY }}",
-        "permission-actions": "read",
-        "permission-attestations": "read",
         "permission-contents": "write",
+    }
+    publish_step = next(step for step in publisher["steps"] if "publish-github" in step.get("run", ""))
+    assert publish_step["env"] == {
+        "GITHUB_TOKEN": "${{ github.token }}",
+        "BCF_EVIDENCE_WRITE_TOKEN": "${{ steps.evidence-app-token.outputs.token }}",
     }
     assert any("publish-github" in step.get("run", "") for step in publisher["steps"])
     assert not any("download-artifact" in step.get("uses", "") for step in publisher["steps"])

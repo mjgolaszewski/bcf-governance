@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: 7a4b874f3aa360d97ac68434c22d62048a1071fa3387f5ce778b2c97af136928
-  after_sha256: 0618a6dd6b74b595c203f6a369f136aefaa966338cfbbb4d6db3803e581aebd9
+  after_sha256: 42385813927e4073bcba0c81eb452909afac0f5a01cc90ea0ba236aea2d7d10c
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: historical
@@ -87,7 +87,7 @@ documents:
   canonical_topic_owner: docs/CI_AUTHORITY.md
   topic_role: canonical
   before_sha256: 7203a56ce7c3aca8167820d5200f4cce7151f366d6236e4feba5df8fbc9e7e89
-  after_sha256: 5f4a9bdeb29c150add677c4c8c7998b826a341d2696f612209987291d5bc53a4
+  after_sha256: 46662e2ae9c974e940770dae805d41ca110d070b4a6ca3f3adeb2afd2fb09682
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: revised
@@ -96,7 +96,7 @@ documents:
   canonical_topic_owner: docs/MAINTAINING.md
   topic_role: canonical
   before_sha256: b2db156c72f0a9a2a4bb8a2125db4a4ad2b54c7847cb9f0dea82c8647db96528
-  after_sha256: 8e198485e4d866d31757e1b9d85b17851a24cde17f878df7d5be13454fe44517
+  after_sha256: ca81dc070ea7dc904d53ad65d804e384ce0a7ad3eeabe36f333fc23800245074
   findings:
   - updated the exact release-audit procedure for 1.1.2
   disposition: revised
@@ -114,7 +114,7 @@ documents:
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
   before_sha256: 800781a2c1c04f1f0c51c90a17a503f1813d86ad966a88e8b470029e0f4c50ee
-  after_sha256: d95cfef9c4fa4ed085e4a7f420af383cbe5bfcca28d29ee4875e4a9a245740e5
+  after_sha256: f5947fdec9de997b94f63b7824488a03877957d7c4a50e4bea8a1d5fdaf5c5f1
   findings:
   - documented exact method dispatch, explicit component ports, dynamic-dispatch limits, and the 1.1.2 release example
   disposition: revised
@@ -195,7 +195,7 @@ documents:
   canonical_topic_owner: template-repo/docs/OPERATIONS.md
   topic_role: canonical
   before_sha256: a991606ecef3a27cb527434bde0c3c4968c9bb11acf28c72405b7bd916bb337e
-  after_sha256: b9049812737a9d8d499d283e3e43983621f5bef1b0ee22bf20a9c7e807715376
+  after_sha256: 57f7b8da8cf8886a05adab09edd648975c529b9865717b5f446e39b9c277c00e
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: revised

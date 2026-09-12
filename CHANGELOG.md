@@ -63,6 +63,14 @@ All notable changes to BCF Governance are recorded here. This file follows
   freshness, and materialized member bytes mechanically. Concurrent or
   interrupted publication is idempotent and contradictory provider state fails
   closed.
+- Split trusted publication credentials by operation: the workflow token owns
+  authenticated Actions, repository, Release, and attestation reads, while the
+  short-lived App token is requested with only `contents:write` and performs
+  only Release mutation.
+- Added an owner-dispatched BCF qualification graph that prepares one bounded
+  input on a hosted worker, publishes it after completion on trusted local
+  control, and allocates the hosted cold resolver only after publication
+  succeeds. No hosted job waits for local capacity.
 - Preserved receipt schema 2.0 and Actions-only artifacts. Large Actions
   archives are bounded transient handoffs, compact references retain the
   existing schedule, and every detached evidence worktree re-verifies its
