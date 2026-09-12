@@ -127,6 +127,25 @@ local_qualification:
   artifact_verification: {wheel: pass, extracted_sdist: pass, sdist_tests_passed: 905, sdist_expected_skips: 5}
   release_check: {result: expected_fail_closed, reason: installed trusted controller remains pinned to 1.1.1 until the mechanical post-merge controller rotation}
   local_pr_preflight: {result: pass, subject_commit: 216cb039b463a1886d012df560fda962b5d89542}
+implementation_pr_observation:
+  pull_request: 166
+  head_commit: ecaf1797f952147d8ad6e8c5ea1da204cff7270a
+  governance_run: {id: 34670160515, attempt: 1, result: failed_closed}
+  positive_test_population: {nodes: 912, passed: 912, failed: 0, skipped: 0}
+  defect_class: gate_level_negative_controls_not_executed_by_original_local_acceptance_set
+  failed_controls:
+  - {id: projected-durable-storage-budget-must-fail, cause: mutant zeroed existing durable bytes while its oracle fixture exceeded the budget using new bytes}
+  - {id: durable-publisher-workflow-boundary-must-fail, cause: the same-workflow fixture also violated exact dependency fan-in so a second invariant masked the claimed condition}
+  corrective_rule: every new gate-level behavioral probe must execute from a clean committed tree before successor provider execution and must fail only for a cause-specific diagnostic or node
+  provider_cost:
+    hosted_job_seconds: 1413
+    hosted_job_minutes: 23.55
+    actions_artifact_baseline_bytes: 413957092
+    actions_artifact_after_bytes: 414676941
+    actions_artifact_increment_bytes: 719849
+    actions_artifact_increment_mib: 0.687
+  budget_disposition: within_both_hard_ceilings
+  rerun_requested: false
 racecar_read_only_qualification:
   repository: mjgolaszewski/racecar
   exact_pr_head: 18fddaeb53bee90f512a8d80935f2d3d4c6cbaf8

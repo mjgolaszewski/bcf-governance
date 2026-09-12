@@ -138,24 +138,43 @@ def _validate_publishers(graph: dict[str, Any], contract: dict[str, Any]) -> Non
             raise CIGraphError(
                 f"durable publisher {job['id']} must exclusively transform its source into its reference"
             )
-        if (
-            job["trust"] != "trusted"
-            or job["checkout"] is not False
-            or job["components"]
-            or job["condition"] != "success"
-            or job["required"] is not True
-            or publisher_workflow is source_workflow
-            or publisher_workflow["events"] != [expected_event]
-            or job.get("protected_environment")
-            != contract["provider"]["protected_environment"]
-            or any(value == "write" for value in job["permissions"].values())
-            or any(
-                job["permissions"].get(permission) != "read"
-                for permission in ("actions", "attestations", "contents")
+        if job["trust"] != "trusted":
+            raise CIGraphError(
+                f"durable publisher {job['id']} must be trusted control"
             )
+        if job["checkout"] is not False or job["components"]:
+            raise CIGraphError(
+                f"durable publisher {job['id']} must not execute candidate code"
+            )
+        if job["condition"] != "success" or job["required"] is not True:
+            raise CIGraphError(
+                f"durable publisher {job['id']} must be required after source success"
+            )
+        if publisher_workflow is source_workflow:
+            raise CIGraphError(
+                f"durable publisher {job['id']} must run in a separate trusted workflow"
+            )
+        if publisher_workflow["events"] != [expected_event]:
+            raise CIGraphError(
+                f"durable publisher {job['id']} must authenticate the exact completed source workflow"
+            )
+        if (
+            job.get("protected_environment")
+            != contract["provider"]["protected_environment"]
         ):
             raise CIGraphError(
-                f"durable publisher {job['id']} lacks closed trusted publication authority"
+                f"durable publisher {job['id']} must use the declared protected environment"
+            )
+        if any(value == "write" for value in job["permissions"].values()):
+            raise CIGraphError(
+                f"durable publisher {job['id']} workflow token must remain read-only"
+            )
+        if any(
+            job["permissions"].get(permission) != "read"
+            for permission in ("actions", "attestations", "contents")
+        ):
+            raise CIGraphError(
+                f"durable publisher {job['id']} lacks complete read authority"
             )
     sources = {
         artifact_id

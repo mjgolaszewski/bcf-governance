@@ -1274,25 +1274,25 @@ def test_graph_renders_short_handoff_trusted_publish_and_cold_resolve(
 
 
 @pytest.mark.parametrize(
-    "mutation",
+    ("mutation", "diagnostic"),
     [
-        "retention",
-        "candidate-publisher",
-        "publisher-write-token",
-        "source-bypass",
-        "missing-contract",
-        "contract-digest",
-        "overlap",
-        "matrix-source",
-        "consumer-permissions",
-        "optional-publisher",
-        "orphan-reference",
-        "same-workflow-publisher",
-        "manual-publisher",
+        ("retention", "source prepared-inputs retention differs"),
+        ("candidate-publisher", "publish-inputs must be trusted control"),
+        ("publisher-write-token", "workflow token must remain read-only"),
+        ("source-bypass", "verify-inputs bypasses the durable evidence reference"),
+        ("missing-contract", "durable evidence topology lacks a storage contract"),
+        ("contract-digest", "evidence storage contract digest mismatch"),
+        ("overlap", "durable evidence materialization roots overlap"),
+        ("matrix-source", "prepared-inputs requires one non-matrix producer"),
+        ("consumer-permissions", "verify-inputs lacks read authority"),
+        ("optional-publisher", "publish-inputs must be required after source success"),
+        ("orphan-reference", "prepared-input-reference has no verifying consumer"),
+        ("same-workflow-publisher", "must run in a separate trusted workflow"),
+        ("manual-publisher", "must authenticate the exact completed source workflow"),
     ],
 )
 def test_graph_rejects_durable_transport_authority_bypasses(
-    tmp_path: Path, mutation: str
+    tmp_path: Path, mutation: str, diagnostic: str
 ) -> None:
     root = _durable_graph_repo(tmp_path)
     path = root / "governance/ci-graph.yml"
@@ -1333,8 +1333,11 @@ def test_graph_rejects_durable_transport_authority_bypasses(
         evidence = next(item for item in workflow["jobs"] if item["id"] == "verify-inputs")
         evidence["consumes"].remove("prepared-input-reference")
     elif mutation == "same-workflow-publisher":
+        evidence = next(item for item in workflow["jobs"] if item["id"] == "verify-inputs")
         workflow["jobs"].remove(publisher)
         source_workflow["jobs"].append(publisher)
+        publisher["needs"] = ["cheap-preflight"]
+        evidence["needs"] = []
         source_workflow["events"] = [
             {
                 "type": "workflow_run",
@@ -1349,5 +1352,5 @@ def test_graph_rejects_durable_transport_authority_bypasses(
         evidence["consumes"].append("prepared-inputs")
     path.write_bytes(render_yaml(graph))
 
-    with pytest.raises(CIGraphError):
+    with pytest.raises(CIGraphError, match=diagnostic):
         validate_ci_graph(root)

@@ -55,9 +55,12 @@ execution_evidence:
   - full validator and semantic mutation profiles killed 25 and 12 mutants respectively; clean wheel verification passed and extracted sdist passed 905 tests with five custody-context skips
   - exact Racecar PR 14 head 18fddaeb53bee90f512a8d80935f2d3d4c6cbaf8 accepted a strict upgrade from the locally built 1.2.0 wheel while preserving its graph and workflow inventory byte identities; no Racecar workspace or remote mutation occurred
   - local release-check fails closed at the mechanically expected stale 1.1.1 trusted-controller boundary before gate execution and will be rerun after post-merge controller rotation
+  - implementation PR 166 run 34670160515 passed all 912 positive tests but failed closed because two new storage negative controls were non-causal; no rerun was requested
+  - the complete new storage-control class was audited locally, composite publisher validation was decomposed into cause-specific diagnostics, and pre-remote qualification now includes direct execution of every gate-level negative control
   notes:
   - audits/p23-issue-164-remediation.yml owns the defect-class review consumer proof and release-train storage forecast
   - remote execution starts only after the complete deterministic local acceptance set passes
+  - PR 166 exposed that the original local acceptance set ran mutation profiles but not the distinct gate-level behavioral probes; the corrected acceptance set requires both before any successor remote execution
 closeout_requirements:
   claims:
     workitems_closed:

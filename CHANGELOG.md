@@ -28,6 +28,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Split durable-publisher graph validation into cause-specific mechanical
+  diagnostics and made each new storage negative control isolate the invariant
+  it claims to prove. A masked same-workflow rejection and a non-causal
+  projected-byte mutant can no longer appear to test those controls.
 - Preserved bounded project-owned package metadata classifications across
   upgrades so a newer pack schema does not invalidate an otherwise compatible
   consumer architecture contract.
