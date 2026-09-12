@@ -13,6 +13,11 @@ from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
 from .ci_github_api import GitHubAPI, GitHubAPIError, _positive_id, _sha
+from .ci_github_downloads import (
+    GitHubDownloadKind,
+    build_download_request,
+    open_download,
+)
 
 
 EVIDENCE_TAG = re.compile(r"^bcf-evidence-[a-z0-9-]+-[a-f0-9]{64}$")
@@ -191,7 +196,12 @@ class GitHubEvidenceAPI(GitHubAPI):
         if destination.parent.is_symlink():
             raise GitHubAPIError("evidence asset destination parent is symlinked")
         path = f"/repos/{self._repository(repository)}/releases/assets/{numeric}"
-        self._download_endpoint(path, destination=destination, maximum_bytes=maximum_bytes)
+        self._download_endpoint(
+            path,
+            kind=GitHubDownloadKind.RELEASE_ASSET,
+            destination=destination,
+            maximum_bytes=maximum_bytes,
+        )
 
     def download_action_artifact(
         self,
@@ -208,22 +218,29 @@ class GitHubEvidenceAPI(GitHubAPI):
         if destination.parent.is_symlink():
             raise GitHubAPIError("Actions artifact destination parent is symlinked")
         path = f"/repos/{self._repository(repository)}/actions/artifacts/{numeric}/zip"
-        self._download_endpoint(path, destination=destination, maximum_bytes=maximum_bytes)
+        self._download_endpoint(
+            path,
+            kind=GitHubDownloadKind.ACTIONS_ARTIFACT,
+            destination=destination,
+            maximum_bytes=maximum_bytes,
+        )
 
     def _download_endpoint(
-        self, path: str, *, destination: Path, maximum_bytes: int
+        self,
+        path: str,
+        *,
+        kind: GitHubDownloadKind,
+        destination: Path,
+        maximum_bytes: int,
     ) -> None:
         if maximum_bytes < 1:
             raise GitHubAPIError("GitHub evidence download limit must be positive")
-        request = Request(
-            self._api_url + path,
-            method="GET",
-            headers={
-                "Accept": "application/octet-stream",
-                "Authorization": f"Bearer {self._token}",
-                "User-Agent": "bcf-governance-evidence-resolver",
-                "X-GitHub-Api-Version": "2022-11-28",
-            },
+        request = build_download_request(
+            api_url=self._api_url,
+            path=path,
+            token=self._token,
+            kind=kind,
+            user_agent="bcf-governance-evidence-resolver",
         )
         descriptor, temporary_name = tempfile.mkstemp(
             prefix=f".{destination.name}.", suffix=".tmp", dir=destination.parent
@@ -232,7 +249,7 @@ class GitHubEvidenceAPI(GitHubAPI):
         total = 0
         try:
             with os.fdopen(descriptor, "wb") as output:
-                with urlopen(request, timeout=300) as response:  # noqa: S310
+                with open_download(request, timeout=300) as response:  # noqa: S310
                     for chunk in iter(lambda: response.read(1024 * 1024), b""):
                         total += len(chunk)
                         if total > maximum_bytes:

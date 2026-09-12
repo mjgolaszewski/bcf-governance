@@ -57,7 +57,7 @@ context_budgets:
     governance/ci-graph.yml: {line_hard_cap: 850, kib_hard_cap: 96, intent: canonical mechanically rendered CI orchestration}
     governance/evidence-storage.yml: {line_hard_cap: 90, kib_hard_cap: 12, intent: content-addressed evidence storage and retention policy}
     governance/evidence-policy.yml: {line_hard_cap: 500, kib_hard_cap: 64, intent: computed lifecycle and generated evidence policy}
-    governance/gate-contracts.yml: {line_hard_cap: 800, kib_hard_cap: 97, intent: canonical executable gate contracts}
+    governance/gate-contracts.yml: {line_hard_cap: 800, kib_hard_cap: 98, intent: canonical executable gate contracts}
     governance/findings.yml: {line_hard_cap: 400, kib_hard_cap: 96, intent: canonical finding accounting}
     governance/repo-cleanup-contract.yml: {line_hard_cap: 90, kib_hard_cap: 12, intent: cleanup rules only}
     governance/self-governance-policy.yml: {line_hard_cap: 60, kib_hard_cap: 8, intent: source-repository-specific executable policy}

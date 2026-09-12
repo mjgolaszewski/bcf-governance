@@ -985,14 +985,28 @@ def test_release_controller_jobs_activate_only_after_mechanical_confirmation(
     assert "if" not in release["jobs"]["authorize"]
 
 
-def test_bcf_exact_main_admission_waits_for_current_controller() -> None:
+def test_bcf_exact_main_rotation_blocks_evidence_but_builds_controller() -> None:
     graph = yaml.safe_load((REPO_ROOT / "governance/ci-graph.yml").read_text())
     exact_main = next(
         workflow for workflow in graph["workflows"] if workflow["id"] == "exact-main"
     )
     admission = next(job for job in exact_main["jobs"] if job["id"] == "admit")
+    governance = next(job for job in exact_main["jobs"] if job["id"] == "governance")
+    package_extension = yaml.safe_load(
+        (REPO_ROOT / "governance/ci-extensions/bcf-package.yml").read_text()
+    )
+    package = next(
+        job
+        for job in package_extension["jobs"]
+        if job["workflow"] == "exact-main" and job["id"] == "governance-pack"
+    )
 
     assert admission["controller_requirement"] == "current"
+    assert governance["needs"] == ["admit"]
+    assert governance["condition"] == "exact-main-admitted"
+    assert package["needs"] == []
+    assert package["condition"] == "success"
+    assert package["executor"]["inputs"]["build_controller"] is True
 
 
 def test_pull_request_gate_ownership_exactly_matches_profile(tmp_path: Path) -> None:

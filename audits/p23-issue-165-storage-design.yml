@@ -70,7 +70,7 @@ hosted_execution:
 implementation_scope:
   bounded_contexts: [evidence, ci_authority, cleanup, install]
   layers: [tooling, pack, public]
-  target_modules: [evidence_storage_contracts.py, evidence_storage_archives.py, evidence_storage_github.py, evidence_storage_commands.py, ci_graph_contracts.py, ci_graph_render.py, ci_github_api.py]
+  target_modules: [evidence_storage_contracts.py, evidence_storage_archives.py, evidence_storage_github.py, evidence_storage_commands.py, evidence_storage_github_api.py, ci_github_downloads.py, ci_graph_contracts.py, ci_graph_render.py, ci_github_api.py]
   expected_tests: [contract_validation, deterministic_archives, provider_authentication, cold_materialization, unsafe_archive_rejection, freshness, graph_edges, retention_reachability, budgets, legacy_compatibility, package_parity]
   forbidden_surfaces: [Racecar_repository, Chrysalis_Identity_repository, receipt_schema_2_top_level, existing_21_gate_ids, existing_PR_exact_main_scheduled_and_product_release_topology, product_release_authority]
   BCF_qualification_topology: {workflows_added: 2, jobs_added: 3, activation: owner_dispatch_only, hosted_waiters: 0}
@@ -153,7 +153,7 @@ offline_failure_class_remediation:
   - same-workflow fixture satisfies unrelated dependency and event constraints so only the workflow boundary decides its outcome
   - all thirteen graph transport adversaries assert cause-specific diagnostics
   - applicable editorial inventory validation runs in canonical cheap preflight
-  - BCF's self-governed gate-contract ceiling ratchets from 96 to 97 KiB for the added causal control while consumer defaults remain unchanged
+  - BCF's self-governed gate-contract ceiling ratchets from 96 to 98 KiB for the complete causal preflight transport and controller-transition controls while consumer defaults remain unchanged
   acceptance_rule: actual local evidence execution including every affected negative control must pass from one clean committed session before another provider attempt
 racecar_read_only_qualification:
   repository: mjgolaszewski/racecar
@@ -213,3 +213,51 @@ controller_transition_cost_correction:
   current_budget_observation: {observed_at_utc: '2026-09-12T10:27:00Z', completed_hosted_minutes: 177.80, retained_actions_bytes: 431702148, retained_actions_mib: 411.703, increment_from_baseline_mib: 16.923}
   revised_completion_forecast: {hosted_minutes_lower: 291, hosted_minutes_upper: 300, actions_storage_increment_mib_lower: 55, actions_storage_increment_mib_upper: 65}
   disposition: the original compute forecast and 240-minute ceiling were inaccurate; complete the authorized train, preserve the storage ceiling, and carry the transition-proof optimization as explicit follow-up work
+provider_qualification_failure_2:
+  certified_source: {commit: ea7668c036c7f0e5a2271cc17b0b3f684efcee4c, exact_main_run: 34690951804, finalizer_run: 34691452471, publisher_run: 34691470599, result: pass}
+  source_run: {id: 34691496221, attempt: 1, result: pass, hosted_seconds: 13, artifact_id: 10296794770, artifact_bytes: 2891, provider_digest: 'sha256:5738caac09399876b9dd7dccfb85eebeabdf071bb009482ae8d8fdaa8f480ba3'}
+  publisher_run: {id: 34691509652, attempt: 1, result: failed_before_publication, runner_class: trusted_local, hosted_seconds: 0}
+  cold_resolver: {result: not_allocated, hosted_seconds: 0}
+  diagnostic: GitHub evidence asset download returned 415
+  reproduced_protocol_matrix:
+  - {endpoint: Actions_artifact_ZIP, accept: application/octet-stream, status: 415}
+  - {endpoint: Actions_artifact_ZIP, accept: application/vnd.github+json, status: 200, bytes: 2891, sha256: 5738caac09399876b9dd7dccfb85eebeabdf071bb009482ae8d8fdaa8f480ba3}
+  class_review:
+  - the evidence adapter gave Actions artifact ZIPs the media type required by Release-asset downloads
+  - the general GitHub API adapter independently encoded the same latent Actions media-type defect
+  - both adapters delegated redirects to urllib behavior that could copy Authorization to a different signed-download origin
+  - the prior pending-controller guard prevented evidence fanout but also prevented the only exact-main package producer that can emit the replacement controller
+  correction:
+  - one closed endpoint-kind enum mechanically owns the Actions-artifact and Release-asset media types for both adapters
+  - one credential-safe redirect handler retains credentials only on the exact API origin and rejects non-HTTPS redirects
+  - the exact previously failing artifact downloads through both corrected adapters with its provider digest unchanged
+  - pending-controller exact-main execution keeps admission and evidence disabled but runs the read-only package/controller producer without an admission dependency
+  causal_controls: [actions-artifact-media-type-must-fail, cross-origin-download-credential-confinement-must-fail, pending-controller-exact-main-admission-must-fail, pending-controller-artifact-producer-must-fail]
+  retry_rule: no provider workflow resumes until both adapters all redirect adversaries graph rendering pack parity and every named causal control pass from one exact committed tree
+P23_HF03_cost_forecast:
+  observed_before_hotfix:
+    at_utc: '2026-09-12T11:45:00Z'
+    live_actions_artifacts: 905
+    live_actions_bytes: 435688495
+    live_actions_mib: 415.505
+    increment_from_P23_baseline_mib: 20.725
+    approximate_completed_hosted_minutes: 224.4
+  remaining_segments:
+  - {segment: P23_HF03_implementation_PR, hosted_minutes: 23.5, actions_mib: 0.8}
+  - {segment: implementation_merge_bounded_controller_producer, hosted_minutes: 1.0, actions_mib: 2.6}
+  - {segment: controller_target_PR, hosted_minutes: 23.5, actions_mib: 0.8}
+  - {segment: target_merge_bounded_controller_producer, hosted_minutes: 1.0, actions_mib: 2.6}
+  - {segment: controller_confirmation_PR_and_exact_main, hosted_minutes: 47.0, actions_mib: 4.2}
+  - {segment: storage_qualification_source_publish_and_cold_resolve, hosted_minutes: 1.0, actions_mib: 0.2}
+  - {segment: scheduled_mutant_profiles, hosted_minutes: 5.3, actions_mib: 0.1}
+  - {segment: release_build_and_independent_verifier, hosted_minutes: 17.5, actions_mib: 36.8}
+  - {segment: post_release_closeout_PR_and_exact_main, hosted_minutes: 47.0, actions_mib: 4.2}
+  remaining_hosted_minutes_upper: 166.8
+  remaining_actions_mib_upper_before_retention: 52.3
+  projected_train_hosted_minutes_upper: 391.2
+  projected_incremental_actions_mib_upper_before_retention: 73.1
+  retention_response: before release verify and delete only superseded transient controller and merged-run artifacts that the authenticated reachability planner classifies as unreachable; never delete the active controller release receipt unresolved finding or current-run evidence
+  admission_savings:
+    comparison: prior target merge exact-main 34688183780 allocated 358 hosted seconds before cancellation and would ordinarily allocate about 23 hosted minutes
+    new_behavior: a pending rotation allocates only the approximately one-minute package/controller producer and zero governance evidence shards
+    expected_saving_per_pending_rotation_minutes: 22

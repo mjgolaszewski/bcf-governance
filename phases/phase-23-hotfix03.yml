@@ -1,0 +1,56 @@
+document:
+  kind: hotfix_execution_log
+  name: P23-HF03 Hotfix Log
+  id: bcf-governance-phase-23-hotfix03
+  version: 1.0.0
+  generated_at_utc: '2026-09-12T00:00:00Z'
+  status: planned
+  path: phases/phase-23-hotfix03.yml
+hotfix:
+  id: P23-HF03
+  mode: full
+  related_phase_id: P23
+  hotfix_number: 3
+  summary: Correct GitHub evidence download protocol and controller-rotation cost
+    gating
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile full
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full
+  executed_commands: []
+  notes:
+  - qualification source run 34691496221 passed in 13 hosted seconds and emitted
+    Actions artifact 10296794770 with provider SHA-256
+    5738caac09399876b9dd7dccfb85eebeabdf071bb009482ae8d8fdaa8f480ba3
+  - trusted qualification run 34691509652 failed before publication because the
+    Actions-artifact ZIP endpoint rejected a Release-asset Accept header with 415;
+    the dependent hosted cold resolver was never allocated
+  - a direct protocol matrix reproduced octet-stream as 415 and
+    application/vnd.github+json as 200 for the exact artifact without launching
+    another workflow
+  - class review found the same media-type assumption in the general GitHub API
+    adapter and found that default urllib redirect behavior could forward a bearer
+    credential to a cross-origin signed download URL
+  - one endpoint-kind owner now supplies media types to both adapters and one
+    redirect owner strips credentials cross-origin and rejects HTTP downgrade
+  - the pending-controller exact-main graph now blocks expensive governance
+    evidence while leaving the bounded package/controller producer runnable, so
+    mechanical rotation cannot deadlock or allocate a useless full fanout
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - security-review
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml
