@@ -4,7 +4,7 @@ document:
   id: bcf-governance-v1.2.0-editorial-review
   status: completed
   path: audits/v1.2.0-editorial-review.yml
-base_commit: 0cc9345c1fea302df622cda67ce6279187a51251
+base_commit: e8f405ccbbe033713ba35c06060caaa824c60540
 inventory_policy:
   source_documents: tracked Markdown and root LICENSE from base union current tree
   packaged_mirror_root: bcf_governance/pack/template-repo
@@ -32,8 +32,8 @@ documents:
   audience: adopters and release operators
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
-  before_sha256: 31227cc53eff026878b3681090b91c2719beec2518e44e64da07b3c5e22d7b7e
-  after_sha256: f48f07d9a05059f278e6ab5cf093c3a237983dcde6efcbc1597d3e2f80b70f08
+  before_sha256: f48f07d9a05059f278e6ab5cf093c3a237983dcde6efcbc1597d3e2f80b70f08
+  after_sha256: 5b2f2c8bc510804fd2403abb22cf326f03f8ba6860078257d642c2f6e95b3b5c
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: historical

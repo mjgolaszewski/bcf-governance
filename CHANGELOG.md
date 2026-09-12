@@ -28,6 +28,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Installed the fixed-length durable upload controller on every declared trusted
+  runner using authenticated bootstrap and probe evidence.
+
 - Project the fixed-length durable upload controller for installation on the
   declared trusted runners.
 
