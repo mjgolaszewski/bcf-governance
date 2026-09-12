@@ -183,3 +183,51 @@ retained_input_sha256:
   ".artifacts/release-train-resume/hf05-full-test-failure-diagnosis.json": 92954b6cd43622e96ee24763150f15d79253835da68442d3e63135ecca0e7e1c # sha256 of retained input
   ".artifacts/release-train-resume/hf05-catalog-rationale-proposal.json": f68607cc3b1b905d2faf9a2ff5fc05b60cdc3af5cc912c8261fc1ca3d0f27ea2 # sha256 of retained input
   ".artifacts/release-train-resume/hf05-catalog-rationale-applied.json": 6e5f1eb7cef5791784339e8dacf33f0a7b72de37a5d8a4bbffeb4365fbc8d18f # sha256 of retained input
+bounded_historical_reference_review:
+  scope:
+    deleted_named_run_only_artifacts: 111
+    bytes: 5830488
+    producer_runs: 31
+    actual_yaml_claim_units: 36
+    hash_verified_archived_files: 13
+    provider_api_calls: 0
+    tests_run: 0
+    tracked_or_provider_mutations: 0
+  claim_categories:
+    artifact_role_specific_historical_evidence_claim:
+      count: 43
+      bytes: 1660681
+      producer_run_count: 11
+    different_artifact_source_coordinate:
+      count: 6
+      bytes: 509449
+      producer_run_count: 1
+    historical_run_execution_or_certification_claim:
+      count: 51
+      bytes: 3651246
+      producer_run_count: 19
+    unselected_companion_dependency_unknown:
+      count: 11
+      bytes: 9112
+      producer_run_count: 11
+  retention_interpretation:
+    definite_direct_artifact_selector_count_in_scope: 0
+    role_specific_claims_are_inferences_not_additional_definite_direct_custody_findings: true
+    direct_match_to_another_artifact_narrows_six_claims_but_does_not_clear_transitive_dependencies: true
+    historical_narrative_does_not_erase_governed_evidence_support_claims: true
+    retention_obligation_residual_unknown_count: 111
+    safe_to_delete_or_retroactively_authorized_count: 0
+    accepted_risk_or_exemption_inferred: false
+    current_release_impact_not_reassessed: Root/publication reviewer owns this separate current-root check.
+    specific_narrowing: Six rows from 33568404813 were selected only through another controller artifact coordinate; 43 rows have stronger role-specific proof claims; 51 rows have run-level history claims; 11 session rows have no selected output role and possible dependency custody.
+inspected_current_authority_context:
+  basis_snapshot: 20260912T190435Z
+  preserved_associated_artifact_count: 10
+  preserved_metadata_equal: true
+  bundle_hashes_reverified: true
+  deleted_certificate_reference_hits: []
+  assessment: The inspected current controller and exact-main authority have distinct provider identities and all their producer-run artifacts remain in the authenticated post-interruption inventory unchanged. Their current pin/authority/certificate bundle does not reference the deleted historical certificate identity, run or provider digest. This establishes no dependency on that one historical certificate in the inspected current path; it does not establish that every historical custody edge is unaffected. Fresh HF05/controller/main/release evidence remains required for the changed tree.
+  scope_limit: This inspection concerns the one directly named historical certificate. It does not resolve the retention obligations of the other run-linked artifacts or certify the future HF05 release subject.
+additional_review_input_sha256:
+  ".artifacts/release-train-resume/accounting/archived-run-linked-artifact-semantic-review.json": 263ba2a8d8c5c61b7acbcfd2b4325e43629f44f6f1cef4f2f5a3422d542820a2 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/custody-owner-options-assessment.json": 226e3fdf943ca2ce8640ffd8530c44e2f6fe1f416b470960e6f8940a292a8780 # sha256 of retained input
