@@ -28,6 +28,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Projected the repaired exact-main controller from authenticated package bytes.
+  Release operations remain disabled until both trusted runners install the
+  target and independently confirm it.
 - Made durable publication discover drafts with the contents-write credential
   and refresh them by release ID. Fresh publication, interrupted uploads,
   concurrent publication, and storage budgets now account for drafts that
