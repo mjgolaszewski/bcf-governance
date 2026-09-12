@@ -88,7 +88,7 @@ workflows:
     timeout_minutes: 5
     permissions: {actions: read, attestations: read, contents: read}
     checkout: false
-    components: []
+    components: [python]
     executor:
       kind: durable_publish
       source: evidence-storage-qualification-source

@@ -142,9 +142,11 @@ def _validate_publishers(graph: dict[str, Any], contract: dict[str, Any]) -> Non
             raise CIGraphError(
                 f"durable publisher {job['id']} must be trusted control"
             )
-        if job["checkout"] is not False or job["components"]:
+        if job["checkout"] is not False or any(
+            component != "python" for component in job["components"]
+        ):
             raise CIGraphError(
-                f"durable publisher {job['id']} must not execute candidate code"
+                f"durable publisher {job['id']} may provision only selected Python and must not execute candidate code"
             )
         if job["condition"] != "success" or job["required"] is not True:
             raise CIGraphError(

@@ -19,6 +19,7 @@ summary:
   - issue 165 requires a separate content-addressed durable-input capability and changes the target release from 1.1.2 to 1.2.0
   - implementation and controller-target PRs passed complete candidate validation; the exact implementation controller was independently installed and probed on both trusted runners
   - P23 implementation is complete and eligible for exact-main certification, scheduled controls, storage qualification, and immutable 1.2.0 publication
+  - P23-HF02 corrects the cold trusted-publisher runtime as one compiler-enforced controller-execution class before storage qualification resumes
 workitems:
 - id: P23-P0-01
   status: DONE
@@ -67,6 +68,10 @@ execution_evidence:
   - controller-target PR 167 governance 34677718493 and package 34677718488 passed on attempt 1; finalizer 34678205133 and publisher 34678278075 certified the reviewed head
   - controller target merged as c7efe4257ea2763151d423e10f19b80cb7f404de and failed closed at lifecycle preflight without evidence fanout
   - provider-compiled bootstrap 34678412739 and probe 34678449918 independently authenticated and installed controller 1b6442d88ea7a4ced8d83fae1b13e303a9ac7a5c on both trusted runners
+  - controller confirmation merged as 0fdb57a46b24bc7d677842bb5f7146c11062b18d after governance 34678901654 package 34678901647 and exact-head certification passed
+  - storage qualification source 34679461415 used 12 hosted seconds; trusted publisher 34679474421 failed before publication and prevented allocation of the hosted resolver
+  - the failed publisher exposed a missing selected-Python edge for the special durable-publish executor; P23-HF02 audits every rendered controller invocation and makes runtime provisioning a graph-compiler invariant
+  - P23-HF02 passed 917 source nodes 390 contract nodes 214 causal controls both mutation profiles and exact graph pack and editorial parity before provider execution resumed
   notes:
   - audits/p23-issue-164-remediation.yml owns the defect-class review consumer proof and release-train storage forecast
   - remote execution starts only after the complete deterministic local acceptance set passes
@@ -103,6 +108,6 @@ closeout_requirements:
 known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts change
 next_work:
-- merge the mechanically compiled controller confirmation and certify its exact main commit
-- run both scheduled control profiles and the bounded cold-storage qualification
+- complete P23-HF02 offline class validation and mechanically rotate its changed controller
+- certify exact main then run both scheduled control profiles and the bounded cold-storage qualification
 - build independently verify collect and immutably publish the exact certified 1.2.0 artifacts without rebuilding

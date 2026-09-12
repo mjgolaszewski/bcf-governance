@@ -12,6 +12,9 @@ _ENV_REFERENCE = "${{ env.%s }}"
 _RUN_AND_DONE_FORBIDDEN = frozenset(
     {"sleep", "poll", "watch", "wait", "while", "until", "wait-for-runner", "lease-runner"}
 )
+_SELECTED_PYTHON_EXECUTABLES = frozenset(
+    {"{python}", "{controller}", "{ephemeral_controller}"}
+)
 
 
 def _strings(value: Any) -> tuple[str, ...]:
@@ -36,6 +39,12 @@ def _command_ids(
     if executor["kind"] in {"command", "truth"}:
         return (executor["command"],)
     return ()
+
+
+def _requires_selected_python(command: dict[str, Any]) -> bool:
+    """Return whether a governed executable depends on the selected Python runtime."""
+
+    return bool(_SELECTED_PYTHON_EXECUTABLES.intersection(command["argv"]))
 
 
 def job_required_environment(
@@ -115,7 +124,9 @@ def job_execution_issues(
                 continue
             if (
                 component["kind"] == "command"
-                and "{python}" in graph["commands"][component["command"]]["argv"]
+                and _requires_selected_python(
+                    graph["commands"][component["command"]]
+                )
                 and not python_ready
             ):
                 issues.append(
@@ -123,10 +134,17 @@ def job_execution_issues(
                 )
     elif executor["kind"] in {"command", "truth"}:
         command = graph["commands"][executor["command"]]
-        if "{python}" in command["argv"] and "python" not in job["components"]:
+        if _requires_selected_python(command) and "python" not in job["components"]:
             issues.append(
                 f"CI graph job {job['id']} must provision selected Python before governed commands"
             )
+    elif (
+        executor["kind"] in {"authority", "durable_publish"}
+        and "python" not in job["components"]
+    ):
+        issues.append(
+            f"CI graph job {job['id']} must provision selected Python before governed commands"
+        )
     if job["trust"] == "trusted" and job["checkout"] is False:
         execution_inputs: list[Any] = [job.get("environment", {})]
         execution_inputs.extend(

@@ -28,6 +28,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Required the selected Python runtime before every Python, installed-controller,
+  or ephemeral-controller invocation. Trusted no-checkout durable publishers now
+  provision the declared runtime without checking out candidate code, and fresh
+  Standard graphs receive the same mechanical invariant.
 - Split durable-publisher graph validation into cause-specific mechanical
   diagnostics and made each new storage negative control isolate the invariant
   it claims to prove. A masked same-workflow rejection and a non-causal
