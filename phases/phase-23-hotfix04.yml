@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-23-hotfix04
   version: 1.0.0
   generated_at_utc: '2026-09-12T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-23-hotfix04.yml
 hotfix:
   id: P23-HF04
@@ -18,7 +18,11 @@ execution_evidence:
   - .venv/bin/python .github/scripts/run_validator_mutants.py --profile full
   - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full
   - .venv/bin/bcf ci graph render --repo-root . --check
-  executed_commands: []
+  executed_commands:
+  - 'source receipt f76ac93324caf68109ea936783f58a3a3efc9201679a70f049029ee77967d184: exit 0; passed 961; skipped 0; causal controls 35'
+  - '.venv/bin/bcf ci local-pr --repo-root . --remote origin: exit 0 on tree 3450f94536db64fbcf2b1e1f18ff50139285c629'
+  - bootstrap run 34709120753 attempt 1 success
+  - probe run 34709207747 attempt 1 success
   notes:
   - exact-main 34699585412, finalizer 34700173859, status publisher 34700193972,
     and scheduled mutants 34700223849 and 34700225045 passed
@@ -36,8 +40,9 @@ execution_evidence:
   - offline draft-visibility reproduction exposed failures in fresh publication,
     interrupted and concurrent recovery, and draft-inclusive budget accounting;
     audits/p23-issue-165-storage-design.yml retains actual local results
-  - controller installation and storage qualification remain deferred until the
-    complete draft transaction and retention inventory class passes locally
+  - controller installation and storage qualification were initially deferred
+    until the complete draft transaction and retention inventory class passed locally
+  - P23-HF04 implementation completed from retained source exit 0, 961 passed source nodes and 35 satisfied causal controls; provider bootstrap 34709120753 attempt 1 and probe 34709207747 attempt 1 passed on every declared trusted runner. Storage qualification, immutable publication, and release closeout remain pending.
 closeout_requirements:
   claims:
     required_suites_green:
