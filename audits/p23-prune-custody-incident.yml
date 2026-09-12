@@ -5,7 +5,7 @@ document:
   status: active
   path: audits/p23-prune-custody-incident.yml
 finding_id: P23-CUSTODY-01
-disposition: open
+disposition: accepted_risk
 scope: Interrupted local legacy Actions-artifact prune during the issue 165 release train
 cause: The review scanned current tracked files but did not follow hash-bound archived Git files retained by plans/phase-history.yml. Its historical custody conclusion was incomplete.
 authorization_boundary: Only qualified unreachable transient Actions artifacts were authorized for deletion; explicit historical custody was protected.
@@ -20,7 +20,7 @@ actual_removed:
   actual_executor_exit_code: 130
   full_inventory_absence_reconfirmed_at_utc: '2026-09-12T19:04:35.600874Z'
   full_inventory_absence_reconfirmed_count: 481
-archived_selector_intersection:
+archived_selector_intersection: &id001
   count: 112
   bytes: 5837369
   producer_run_count: 32
@@ -110,7 +110,7 @@ containment:
 - Prune process interrupted and the pending deletion checked with a fresh provider GET.
 - Executor apply mode disabled before any further API call; original executor and chained journal retained.
 - No additional prune pool applied. No restoration or risk acceptance inferred.
-- Open finding blocks release truth until an authorized, evidenced disposition.
+- The incident was recorded as an open finding; the subsequent explicit owner risk acceptance is recorded below. Fresh release certification remains required.
 retained_actions_accounting:
   inventory_count: 532
   live_count: 532
@@ -162,7 +162,7 @@ remaining_storage_forecast:
   provider_incremental_growth_mib: 25.93428897857666
   computed_retained_bytes_matches_fresh_provider_inventory: true
   computed_remaining_headroom_matches_fresh_provider_inventory: true
-budget_authorization: At incident capture the growth ceiling was 67.5 MiB. The later owner-approved 80 MiB ceiling is recorded in audits/p23-issue-165-storage-design.yml under owner_storage_growth_authorization; custody risk acceptance remains undecided.
+budget_authorization: The later owner-approved 80 MiB growth ceiling is recorded in audits/p23-issue-165-storage-design.yml. The separate historical custody exception is recorded under owner_risk_acceptance here.
 source_validation:
   diagnosis_input: ".artifacts/release-train-resume/hf05-full-test-failure-diagnosis.json" # non-authoritative local locator; retained input hashes recorded
   state: Full source gate failed its promotion context budget before behavioral controls. Rationale-only compaction preserves all executable gate data; complete source evidence remains pending.
@@ -179,10 +179,11 @@ retained_input_sha256:
   ".artifacts/release-train-resume/accounting/legacy-prune-journal.jsonl": f573262618b9f734aabc972c47c5638653c5c46f34a9f19444aaae78392b68a5 # sha256 of retained input
   ".artifacts/release-train-resume/accounting/prune-interruption-review.json": bc214a1bee5a8bc4bcffc26bccb89aac44cbb5418ac8d60c4ed23a513a7c9b4b # sha256 of retained input
   ".artifacts/release-train-resume/accounting/prune-mutation-disabled.json": 08fe35decac75633be4af17a9e68e9d49ed7b41879ac13fcb86df17742ffe9ba # sha256 of retained input
-  ".artifacts/release-train-resume/accounting/summary-latest.json": 67c4105c58df2076bf06f23d1c597ae7d078ef583f162e50a84d708d210ce6ec # sha256 of retained input
   ".artifacts/release-train-resume/hf05-full-test-failure-diagnosis.json": 92954b6cd43622e96ee24763150f15d79253835da68442d3e63135ecca0e7e1c # sha256 of retained input
   ".artifacts/release-train-resume/hf05-catalog-rationale-proposal.json": f68607cc3b1b905d2faf9a2ff5fc05b60cdc3af5cc912c8261fc1ca3d0f27ea2 # sha256 of retained input
   ".artifacts/release-train-resume/hf05-catalog-rationale-applied.json": 6e5f1eb7cef5791784339e8dacf33f0a7b72de37a5d8a4bbffeb4365fbc8d18f # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/summary-incident-20260912T190435Z.json": 67c4105c58df2076bf06f23d1c597ae7d078ef583f162e50a84d708d210ce6ec # sha256 of retained input
+  ".artifacts/release-train-resume/provider/custody-risk-owner-repository.json": f381f55107b705af8fad5fee08f61ea437d33761cc603d1555a1973577c050af # sha256 of retained input
 bounded_historical_reference_review:
   scope:
     deleted_named_run_only_artifacts: 111
@@ -230,4 +231,24 @@ inspected_current_authority_context:
   scope_limit: This inspection concerns the one directly named historical certificate. It does not resolve the retention obligations of the other run-linked artifacts or certify the future HF05 release subject.
 additional_review_input_sha256:
   ".artifacts/release-train-resume/accounting/archived-run-linked-artifact-semantic-review.json": 263ba2a8d8c5c61b7acbcfd2b4325e43629f44f6f1cef4f2f5a3422d542820a2 # sha256 of retained input
-  ".artifacts/release-train-resume/accounting/custody-owner-options-assessment.json": 226e3fdf943ca2ce8640ffd8530c44e2f6fe1f416b470960e6f8940a292a8780 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/custody-owner-options-assessment-frozen-inputs.json": edd469344028972b187a3bc5e551e927f8d6f047ce7456627bda9f638f605d5d # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/custody-owner-options-input-freeze.json": acfdd395b4a2b5620bfb058b8900603c47e6d75352b429ba41419ecdbdec2476 # sha256 of retained input
+owner_risk_acceptance:
+  recorded_at_utc: '2026-09-12T21:20:03.774568+00:00'
+  authority:
+    kind: human
+    id: github:mjgolaszewski
+  source: Explicit repository-owner reply selecting option 2 in the current conversation
+  approval_excerpt: option 2
+  accepted_proposal: Accept the documented historical audit gap and continue; permanently retain the incident record, accept the lost certificate and remaining historical uncertainty, keep pruning disabled, and require complete fresh certification before publishing 1.2.0.
+  finding_id: P23-CUSTODY-01
+  historical_scope: *id001
+  conditions:
+  - Keep further artifact pruning disabled for this release train.
+  - Preserve the original incident, deletion proofs, recovery limitations and reference classifications.
+  - Require all existing 21 gates and exact current controller, source, scheduled and release evidence before publication.
+  - The exception applies only to the documented historical custody incident; it does not approve later evidence loss or waive any other finding.
+  - Do not claim restored original bytes, restored provider identities or retrospective deletion authorization.
+  repository_identity_source: ".artifacts/release-train-resume/provider/custody-risk-owner-repository.json" # non-authoritative local locator; retained input hashes recorded
+  repository_identity_source_sha256: f381f55107b705af8fad5fee08f61ea437d33761cc603d1555a1973577c050af
+historical_review_scope_note: The retained independent review reports precede the owner decision. Their unresolved-retention and no-acceptance conclusions remain historical evidence; the decision accepts that documented residual uncertainty.

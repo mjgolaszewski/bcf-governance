@@ -120,7 +120,7 @@ closeout_requirements:
     - governance-exposure-scan
   finding_registry: governance/findings.yml
 known_constraints:
-- "P23-CUSTODY-01 is open after an interrupted prune deleted explicitly retained historical certification custody; audits/p23-prune-custody-incident.yml owns actual deletion, recovery limits and corrected storage accounting. Publication remains blocked; no risk acceptance is inferred."
+- "The owner explicitly accepted the limited historical custody gap in P23-CUSTODY-01, including the documented residual uncertainty. audits/p23-prune-custody-incident.yml retains the loss and decision. Further pruning stays disabled and complete fresh 1.2.0 certification remains required."
 - update canonical governed artifacts together when behavior or environment contracts change
 next_work:
 - Complete the full HF05 upload framing and publication/resumption class locally in one consolidated repair PR.

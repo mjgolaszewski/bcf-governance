@@ -757,5 +757,6 @@ P23_HF05_upload_framing:
   - scheduled controls
   - immutable release
   - postpublication closeout
-prune_custody_incident: {"finding_id": "P23-CUSTODY-01", "audit": "audits/p23-prune-custody-incident.yml", "disposition": "open", "release_blocked": true}
+prune_custody_incident: {"finding_id": "P23-CUSTODY-01", "audit": "audits/p23-prune-custody-incident.yml", "disposition": "accepted_risk", "fresh_release_certification_required": true, "further_pruning_disabled": true}
 owner_storage_growth_authorization: {"recorded_at_utc": "2026-09-12T21:06:16.664689+00:00", "authority": "repository_owner_in_current_conversation", "approval_text": "Authorized for the storage growth.", "approved_proposal": "80 MiB of Actions artifact growth above the original post-purge baseline", "previous_growth_ceiling_mib": 67.5, "authorized_growth_ceiling_mib": 80.0, "baseline_bytes": 413957092, "authorized_total_actions_bytes": 497843172, "inventory_snapshot_utc": "2026-09-12T19:04:35.600874Z", "retained_bytes_at_snapshot": 441151165, "headroom_bytes_at_snapshot": 56692007, "remaining_forecast_with_contingency_bytes": 55646409, "further_pruning_assumed": false, "custody_risk_accepted": false, "custody_finding_disposition": "open"}
+owner_custody_decision: {"audit": "audits/p23-prune-custody-incident.yml", "decision": "explicit_option_2_acceptance", "finding_disposition": "accepted_risk"}
