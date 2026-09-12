@@ -356,7 +356,7 @@ gates:
     negative_controls:
     - {id: authored-verified-state-is-rejected, mutation: {path: '@active_phase_log', yaml_path: document.status, value: verified}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'verified.*(?:not one of|computed)'}}
     - {id: unknown-operation-family-is-rejected, mutation: {path: governance/application-operations.yml, yaml_path: 'operations[id=governance.cli.doctor.v1].family', value: missing_semantic_family}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: references an unknown semantic family}}
-    - {id: hosted-run-and-done-policy-must-fail, mutation: {path: governance/ci-graph.yml, yaml_path: policy.forbidden_hosted_tokens, value: [sleep, poll, wait-for-runner, lease-runner]}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: run-and-done hosted policy is missing tokens}}
+    - {id: hosted-run-and-done-policy-must-fail, mutation: {path: governance/ci-graph.yml, search: 'forbidden_hosted_tokens: [sleep, poll, watch, wait, while, until, wait-for-runner, lease-runner]', replace: 'forbidden_hosted_tokens: [sleep, poll, watch, wait, while, until, wait-for-runner]', byte_level_reason: generated graph byte mutation preserves unrelated context-budget behavior}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: run-and-done hosted policy is missing tokens}}
   lint:
     invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, lint], cwd: ., env: {}, required_env: []}
     evidence: {kind: gate}
