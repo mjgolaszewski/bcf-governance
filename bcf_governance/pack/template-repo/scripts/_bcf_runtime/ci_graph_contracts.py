@@ -18,12 +18,15 @@ from .ci_graph_authority_policy import validate_graph_authority_policy
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 from .ci_graph_values import CIGraphValueError, resolve_graph_values
 from .ci_graph_timeouts import validate_gate_job_timeouts
+from .ci_graph_storage import validate_evidence_storage
 
 
 GRAPH_PATH = Path("governance/ci-graph.yml")
 EXTENSION_ROOT = Path("governance/ci-extensions")
 GRAPH_SCHEMA_PATH = Path("schemas/ci-graph.schema.json")
 EXTENSION_SCHEMA_PATH = Path("schemas/ci-graph-extension.schema.json")
+
+
 @dataclass(frozen=True)
 class CompiledCIGraph:
     graph: dict[str, Any]
@@ -35,6 +38,9 @@ class CompiledCIGraph:
     trusted_controller: str
     trusted_controller_check: str
     trusted_controller_current: bool
+    evidence_storage: dict[str, Any] | None
+
+
 def _schema(repo_root: Path, relative: Path) -> dict[str, Any]:
     path = repo_root / relative
     try:
@@ -747,6 +753,7 @@ def validate_ci_graph(
         raise CIGraphError(str(exc)) from exc
     _validate_schema(composed, graph_schema, "composed CI graph")
     _validate_step_components(composed)
+    storage_inputs, storage_contract = validate_evidence_storage(repo_root, composed)
     _validate_workflows(composed)
     validate_gate_job_timeouts(repo_root, composed)
     validate_graph_authority_policy(repo_root, composed)
@@ -757,7 +764,7 @@ def validate_ci_graph(
     controller, controller_check, controller_current, controller_inputs = _trusted_controller(
         repo_root, composed
     )
-    inputs = tuple(sorted(set(value_inputs + controller_inputs)))
+    inputs = tuple(sorted(set(value_inputs + controller_inputs + storage_inputs)))
     graph_digest = hashlib.sha256(path.read_bytes()).hexdigest()
     return CompiledCIGraph(
         graph=composed,
@@ -769,4 +776,5 @@ def validate_ci_graph(
         trusted_controller=controller,
         trusted_controller_check=controller_check,
         trusted_controller_current=controller_current,
+        evidence_storage=storage_contract,
     )

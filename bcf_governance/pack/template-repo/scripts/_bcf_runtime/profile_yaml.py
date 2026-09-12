@@ -32,6 +32,8 @@ def _compact_control_mappings(value: Any) -> Any:
             key: (
                 [_FlowMapping(control) for control in item]
                 if key == "negative_controls" and isinstance(item, list)
+                else _FlowMapping(_compact_control_mappings(item))
+                if key == "invocation" and isinstance(item, dict)
                 else _compact_control_mappings(item)
             )
             for key, item in value.items()

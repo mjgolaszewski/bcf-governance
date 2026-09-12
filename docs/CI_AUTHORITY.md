@@ -40,12 +40,21 @@ Publication consumes the receipt and certified artifacts downstream.
 | Release collector | No | Read provider state and hash artifacts | Emit the sole authoritative release receipt |
 | Release publisher | No | Artifact read, attestation, release write | Publish the already-certified exact bytes |
 | Automation changelog reconciler | No | Provider read plus repository-scoped App contents write | Commit one fixed, path-derived changelog entry to an authenticated automation branch |
+| Durable-input publisher | No | Provider read plus repository-scoped App release write | Authenticate a completed handoff and publish attested bytes in the non-product evidence namespace |
 
 Candidate jobs cannot dispatch or cancel runs, write status, emit authoritative
 callbacks, access trusted or sibling secrets, retain checkout credentials, or
 reach persistent host-control sockets and workspaces. Trusted jobs check out no
 candidate code, execute no candidate-provided script, and do not interpolate
 candidate strings into shell commands.
+
+Durable-input publication is transport authority, not certification or product
+release authority. The graph compiler derives its credential names and exact
+App permissions from `governance/evidence-storage.yml`; the job may inspect and
+hash candidate bytes but never import or execute them. Evidence tags are
+mechanically disjoint from product tags, and the publisher cannot write status
+or create a release receipt. See [Using BCF](USAGE.md#content-addressed-preparation-inputs)
+for adoption and retention behavior.
 
 ## Automation-authored pull requests
 

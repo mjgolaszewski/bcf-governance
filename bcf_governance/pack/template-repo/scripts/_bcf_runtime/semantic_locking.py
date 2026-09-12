@@ -24,7 +24,23 @@ def sha256_bytes(value: bytes) -> str:
 
 def render_lock_yaml(payload: dict[str, Any]) -> bytes:
     """Render the canonical semantic lock bytes."""
-    return yaml.safe_dump(payload, sort_keys=False, width=1000).encode("utf-8")
+    header = {key: value for key, value in payload.items() if key != "projection_outputs"}
+    rendered = yaml.safe_dump(header, sort_keys=False, width=1000)
+    rows = payload.get("projection_outputs", [])
+    if not isinstance(rows, list):
+        raise ValueError("semantic lock projection_outputs must be a list")
+    lines = [rendered, "projection_outputs:\n"]
+    for row in rows:
+        if not isinstance(row, dict):
+            raise ValueError("semantic lock projection output must be an object")
+        flow = yaml.safe_dump(
+            row,
+            sort_keys=False,
+            default_flow_style=True,
+            width=1000,
+        ).strip()
+        lines.append(f"- {flow}\n")
+    return "".join(lines).encode("utf-8")
 
 
 def atomic_write(path: Path, content: bytes) -> None:

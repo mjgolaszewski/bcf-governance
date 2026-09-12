@@ -8,7 +8,7 @@ document:
   path: plans/phase-23-plan.yml
 phase:
   id: P23
-  build_block: same-instance-method-effect-integrity-1.1.2
+  build_block: content-addressed-evidence-and-method-effect-integrity-1.2.0
   planner: codex
   date: '2026-09-11'
   scope_source:
@@ -22,7 +22,8 @@ delivery_contract:
   - exact same-instance method identity and fail-closed ambiguous dispatch implementation
   - complete public-operation adversarial and causal regression coverage
   - run-and-done hosted orchestration policy for BCF and fresh Standard-v2 graphs
-  - generated-runtime parity read-only Racecar proof and immutable 1.1.2 release
+  - GitHub-native content-addressed evidence inputs with authenticated manifests, cold reconstruction, and reachability-based retention
+  - generated-runtime parity read-only Racecar proofs and immutable 1.2.0 release
   parallelizable_workstreams:
   - id: P23-WS1
     name: 'P23-WS1: exact method identity and effect enforcement'
@@ -32,6 +33,10 @@ delivery_contract:
     name: 'P23-WS3: mechanical controller activation and immutable release'
   - id: P23-WS4
     name: 'P23-WS4: hosted runner frugality and reference-graph qualification'
+  - id: P23-WS5
+    name: 'P23-WS5: durable evidence input contracts transport and resolver'
+  - id: P23-WS6
+    name: 'P23-WS6: retention budgets migration and GitHub qualification'
   hard_dependencies:
   - P22
   docker_first_local_runtime: repo_native_validation_and_governance_commands
@@ -45,6 +50,12 @@ scope_lock:
   statement: complete deterministic local validation before remote execution and stop on a provider-only failure until the entire class is qualified offline
 - order: 4
   statement: keep Racecar read-only and limit proof to exact current source identity and compatibility
+- order: 5
+  statement: preserve required original bytes through authenticated immutable GitHub publication; a digest cache or later rerun never substitutes for evidence
+- order: 6
+  statement: keep current receipt schema 2.0 readable and materialize verified durable inputs before existing receipt and truth validation
+- order: 7
+  statement: treat authenticated retained Actions bytes and hosted runner minutes as coequal release budgets with per-phase forecasts hard ceilings and stop-before-overrun enforcement
 verification_plan:
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
 - .venv/bin/python -m pytest -q tests

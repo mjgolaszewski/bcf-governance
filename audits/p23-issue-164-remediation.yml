@@ -6,7 +6,7 @@ issue:
   consumer_tracking_id: P02-BCF-SOIP-METHOD-EFFECT-001
   title: BCF 1.1.1 operation effects falsely admit writes through self method calls
   affected_releases: [1.1.0, 1.1.1]
-  target_release: 1.1.2
+  target_release: 1.2.0
 baseline:
   repository_head: cc15925523cd92e380c60d075dbb884a85d20585
   affected_release_commit: fe85d200c16ef296280fef59c8f7888978e43d2c

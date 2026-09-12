@@ -35,11 +35,11 @@ workitems:
 - id: P23-P0-03
   priority: P0
   status: TODO
-  summary: generated-runtime parity read-only Racecar proof and immutable 1.1.2 release
+  summary: generated-runtime parity read-only Racecar proofs and immutable 1.2.0 release
   acceptance:
   - canonical standalone and packaged runtimes remain byte-identical and workflow topology remains graph-rendered
   - current Racecar PR method edges resolve exactly without product workspace or repository mutation
-  - exact certified main produces one independently verified immutable 1.1.2 release without rebuilding
+  - exact certified main produces one independently verified immutable 1.2.0 release without rebuilding
   acceptance_evidence:
   - test
   - contract-test
@@ -51,6 +51,43 @@ workitems:
   - hosted jobs start only after provider-resolved dependencies or completion events and never supervise local capacity
   - graph validation rejects incomplete waiter-token policy and sleep poll watch wait loop or runner-lease commands
   - current BCF and fresh Standard-v2 graphs pass exact runner executor dependency and rendered-workflow audits
+  acceptance_evidence:
+  - governance-validate
+  - test
+  - contract-test
+- id: P23-P0-05
+  priority: P0
+  status: IN_PROGRESS
+  summary: GitHub-native content-addressed evidence inputs with authenticated manifests, cold reconstruction, and reachability-based retention
+  acceptance:
+  - canonical manifests bind original bytes subject producer freshness archive metadata and exact GitHub provider identities
+  - deterministic archives and materialization reject missing changed extra expired unsafe or oversized content
+  - legacy schema-2 receipts remain readable and validate only after required durable bytes are reconstructed
+  acceptance_evidence:
+  - governance-validate
+  - test
+  - contract-test
+- id: P23-P0-06
+  priority: P0
+  status: TODO
+  summary: GitHub-native immutable publication resolution and cold reconstruction
+  acceptance:
+  - trusted publication creates a fully populated draft before immutable publication and candidate jobs receive no publication authority
+  - a fresh environment reconstructs required bytes using authenticated GitHub provider state without NAS NFS cache or local archive service
+  - cache miss release deletion attestation absence or provider mismatch fails without minting evidence success
+  acceptance_evidence:
+  - governance-validate
+  - test
+  - contract-test
+- id: P23-P0-07
+  priority: P0
+  status: TODO
+  summary: graph transport migration reachability retention and storage budgets
+  acceptance:
+  - graph-owned producer publisher resolver and consumer edges move one verified input set rather than duplicating preparation payloads per lane
+  - Actions artifacts remain bounded handoff only and caches remain acceleration only
+  - reachability roots leases byte count age telemetry and fail-closed preflight budgets protect all required current and historical evidence
+  - provider-authenticated Actions storage and hosted-minute observations stay within the governed P23 forecast and hard ceilings after every remote phase
   acceptance_evidence:
   - governance-validate
   - test

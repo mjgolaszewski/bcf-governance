@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bcf-governance.invalid/schemas/evidence-input-reference.schema.json",
+  "title": "BCF authenticated durable evidence input reference",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "manifest_sha256", "storage_contract_sha256", "subject", "producer", "source_handoff", "provider", "assets"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "governance.evidence-input-reference.v1"},
+    "manifest_sha256": {"$ref": "#/$defs/sha256"},
+    "storage_contract_sha256": {"$ref": "#/$defs/sha256"},
+    "subject": {"$ref": "#/$defs/subject"},
+    "producer": {"$ref": "#/$defs/producer"},
+    "source_handoff": {"$ref": "#/$defs/sourceHandoff"},
+    "provider": {"$ref": "#/$defs/provider"},
+    "assets": {"type": "array", "minItems": 2, "maxItems": 1000, "items": {"$ref": "#/$defs/asset"}}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "safePath": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"},
+    "subject": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repository_id", "commit_sha", "tree_sha"],
+      "properties": {"repository_id": {"type": "integer", "minimum": 1}, "commit_sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"}, "tree_sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"}}
+    },
+    "producer": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "workflow_path", "workflow_sha256", "job_id", "job_name", "run_id", "run_attempt"],
+      "properties": {"kind": {"enum": ["workflow", "local_fixture"]}, "workflow_path": {"oneOf": [{"$ref": "#/$defs/safePath"}, {"type": "null"}]}, "workflow_sha256": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}, "job_id": {"type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$"}, "job_name": {"type": "string", "minLength": 1, "maxLength": 255}, "run_id": {"type": "string", "pattern": "^[1-9][0-9]*$"}, "run_attempt": {"type": "integer", "minimum": 1}}
+    },
+    "sourceHandoff": {
+      "type": "object", "additionalProperties": false,
+      "required": ["artifact_id", "artifact_name", "provider_digest", "run_id", "run_attempt"],
+      "properties": {"artifact_id": {"type": "integer", "minimum": 1}, "artifact_name": {"type": "string", "pattern": "^bcf-[a-zA-Z0-9._-]+-[1-9][0-9]*-[1-9][0-9]*$"}, "provider_digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}, "run_id": {"type": "string", "pattern": "^[1-9][0-9]*$"}, "run_attempt": {"type": "integer", "minimum": 1}}
+    },
+    "provider": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "repository", "repository_id", "release_id", "tag", "target_commit", "immutable", "draft", "published_at"],
+      "properties": {"kind": {"const": "github_release"}, "repository": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"}, "repository_id": {"type": "integer", "minimum": 1}, "release_id": {"type": "integer", "minimum": 1}, "tag": {"type": "string", "pattern": "^bcf-evidence-[a-z0-9-]+-[a-f0-9]{64}$"}, "target_commit": {"type": "string", "pattern": "^[a-f0-9]{40}$"}, "immutable": {"const": true}, "draft": {"const": false}, "published_at": {"type": "string", "format": "date-time"}}
+    },
+    "asset": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "name", "size", "sha256", "release_id", "tag", "target_commit"],
+      "properties": {"id": {"type": "integer", "minimum": 1}, "name": {"type": "string", "pattern": "^(?:evidence-input-manifest\\.json|sha256-[a-f0-9]{64}\\.tar\\.gz)$"}, "size": {"type": "integer", "minimum": 1}, "sha256": {"$ref": "#/$defs/sha256"}, "release_id": {"type": "integer", "minimum": 1}, "tag": {"type": "string", "pattern": "^bcf-evidence-[a-z0-9-]+-[a-f0-9]{64}$"}, "target_commit": {"type": "string", "pattern": "^[a-f0-9]{40}$"}}
+    }
+  }
+}

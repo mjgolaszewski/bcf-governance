@@ -158,6 +158,33 @@ nodes to keep that cost bounded.
 
 ## Exact evidence and computed lifecycle
 
+### Content-addressed evidence inputs
+
+Large qualification inputs have a separate transport contract from ordinary
+receipts and outputs. A candidate producer creates deterministic bounded
+archives with exact member hashes and modes. A trusted no-checkout publisher
+authenticates the repository, commit and tree, workflow bytes, job, run,
+attempt, and Actions handoff before publishing each distinct archive under a
+non-product immutable GitHub Release tag. It publishes the compact per-run
+manifest only after every object is available and attested. Consumers resolve
+that reference into an isolated tree and recompute every original member before
+normal gate and truth processing.
+
+Integrity and freshness remain separate: an unchanged vulnerability database
+can still be too old. Caches never establish availability, and a digest without
+retrievable bytes is not evidence. The graph permits this transport only
+through one declared source, trusted publisher, compact reference, and bounded
+materialization root. Existing Actions artifacts and schema-2 receipts remain
+valid, so adoption does not rewrite historical evidence.
+
+The design trades repeated Actions storage for more Release objects, download
+traffic, provider dependence, and retention bookkeeping. Exact reachability
+roots and leases protect live or historically required evidence; automated
+durable deletion is deliberately excluded until authenticated unreachability
+has separate authority. Unique retained inputs can still grow without bound.
+The supported backend is GitHub immutable Release assets; no NAS, mutable URL,
+or user-operated storage server is part of the authority chain.
+
 Schema-2 receipts bind invocation, environment, outputs, raw process material,
 commit, tree, execution tree, cleanliness, and negative-control observations.
 Profile-v2 sessions additionally bind producer, provider run, attempt, profile,

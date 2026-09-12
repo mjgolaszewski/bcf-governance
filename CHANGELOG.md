@@ -6,7 +6,25 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-## [1.1.2] - 2026-09-11
+## [1.2.0] - 2026-09-11
+
+### Added
+
+- Added issue #165's opt-in GitHub-native durable evidence-input contract,
+  deterministic bounded archives, compact authenticated run manifests, cold
+  resolver, provider-derived storage budgets, and reachability/lease retention
+  planner. Identical inputs reuse one attested immutable non-product Release
+  asset; required bytes never depend on a NAS or cache.
+- Added graph-owned `durable-source`, `durable-reference`, and trusted
+  `durable_publish` vocabulary plus `bcf evidence-store` validation,
+  preparation, publication, resolution, retention-plan, and exact transient
+  retention-apply operations. Apply repeats provider authentication and cold
+  reconstruction, deletes no durable Release, and verifies each deleted
+  Actions artifact is absent. Fresh installations receive the inactive
+  contract; existing consumers remain unchanged until explicit adoption.
+
+- Made retained Actions bytes and hosted job minutes co-equal governed release
+  budgets with measured baselines, per-train forecasts, and hard stop ceilings.
 
 ### Fixed
 
@@ -37,6 +55,15 @@ All notable changes to BCF Governance are recorded here. This file follows
   polling, watching, shell wait loops, and local-runner lease coordination;
   dependency edges and completion events defer allocation in GitHub rather than
   occupying a hosted VM.
+- Bound durable publication credentials, GitHub App permissions, source commit
+  and tree, workflow bytes, job, run, attempt, provider assets, attestations,
+  freshness, and materialized member bytes mechanically. Concurrent or
+  interrupted publication is idempotent and contradictory provider state fails
+  closed.
+- Preserved receipt schema 2.0 and Actions-only artifacts. Large Actions
+  archives are bounded transient handoffs, compact references retain the
+  existing schedule, and every detached evidence worktree re-verifies its
+  declared durable inputs before gate execution.
 
 ## [1.1.1] - 2026-09-11
 
@@ -958,8 +985,8 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.2...HEAD
-[1.1.2]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.1...v1.1.2
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.4...v1.1.0
 [1.0.4]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.3...v1.0.4

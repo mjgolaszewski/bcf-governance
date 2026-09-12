@@ -11,5 +11,5 @@ constraints:
 architecture: {backend: python_package_with_private_portable_runtime, frontend: canonical_markdown_operator_and_maintainer_guides, data: closed_yaml_json_contracts_and_content_addressed_evidence}
 phase_history: {path: plans/phase-history.yml, through_phase: P22}
 execution_phases:
-- {phase_id: P23, build_block: same-instance-method-effect-integrity-1.1.2, objective: close same-instance operation-effect identity without weakening source-first discovery dynamic-dispatch safety or consumer compatibility, release_train: release_13}
+- {phase_id: P23, build_block: content-addressed-evidence-and-method-effect-integrity-1.2.0, objective: close same-instance operation-effect identity and add bounded GitHub-native content-addressed evidence transport without weakening evidence custody or consumer compatibility, release_train: release_13}
 acceptance: {release_gate: bcf truth, evidence_location: phases/}

@@ -5,7 +5,7 @@ build_plan_mandate:
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
   id: P23
-  build_block: same-instance-method-effect-integrity-1.1.2
+  build_block: content-addressed-evidence-and-method-effect-integrity-1.2.0
   plan: plans/phase-23-plan.yml
   workitems: plans/phase-23-workitems.yml
   log: phases/phase-23-log.yml
@@ -41,7 +41,7 @@ operator_requirements_choices_disambiguations:
 - {type: hosted_frugality, statement: hosted candidate jobs execute their own bounded work and terminate; polling sleeping lease waiting and hosted waiters for local capacity are prohibited}
 - {type: automation_authority, statement: automation-authored pull requests remain subject to the universal changelog rule; an explicitly adopted trusted deterministic producer may create only the authenticated bounded changelog commit and receives no approval merge release or certification authority}
 - {type: provider_runner_removal, statement: the persistent Dependabot runner bcf-governance-vm-linux-ci-runner-dependabot-1 and its repository registration are retired; candidate code runs only on fresh hosted workers and trusted local runners execute no candidate checkout}
-active_delivery_priorities: {current_tranche: [same-instance-method-identity, fail-closed-operation-effects, hosted-run-and-done-orchestration, Racecar-read-only-proof, immutable-1.1.2-release]}
+active_delivery_priorities: {current_tranche: [same-instance-method-identity, fail-closed-operation-effects, hosted-run-and-done-orchestration, content-addressed-evidence-inputs, GitHub-native-cold-reconstruction, reachability-retention, Racecar-read-only-proof, immutable-1.2.0-release]}
 release_trains:
   release_1:
     target_version: 0.6.1
@@ -82,6 +82,6 @@ release_trains:
   release_10: {target_version: 1.0.4, status: completed, focus: [lossless_pytest_selector_mapping, class_based_negative_controls, first_party_audit_code_classification, immutable_patch_release]}
   release_11: {target_version: 1.1.0, status: completed, focus: [semantic_family_completeness, application_operation_inventory, representation_provenance, editorial_custody, immutable_minor_release]}
   release_12: {target_version: 1.1.1, status: completed, focus: [python_import_root_identity, imported_constructor_enforcement, consumer_compatibility, immutable_patch_release]}
-  release_13: {target_version: 1.1.2, status: planned, focus: [same_instance_method_identity, fail_closed_dynamic_dispatch, operation_effect_enforcement, hosted_run_and_done_orchestration, consumer_compatibility, immutable_patch_release]}
+  release_13: {target_version: 1.2.0, status: planned, focus: [same_instance_method_identity, fail_closed_dynamic_dispatch, operation_effect_enforcement, hosted_run_and_done_orchestration, content_addressed_evidence_inputs, authenticated_GitHub_transport, reachability_retention, consumer_compatibility, immutable_minor_release]}
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]

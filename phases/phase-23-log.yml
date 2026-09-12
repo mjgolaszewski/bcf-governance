@@ -8,7 +8,7 @@ document:
   path: phases/phase-23-log.yml
 phase:
   id: P23
-  build_block: same-instance-method-effect-integrity-1.1.2
+  build_block: content-addressed-evidence-and-method-effect-integrity-1.2.0
 summary:
   outcome: in_progress
   highlights:
@@ -16,6 +16,7 @@ summary:
   - issue 164 reproduces a distinct same-instance method identity false pass in the operation-effect walker
   - the local correction resolves exact lexical class methods and rejects ambiguous dispatch without changing generated CI topology
   - a conservative Actions-artifact purge removed 1614 superseded artifacts and retained the active pinned controller
+  - issue 165 requires a separate content-addressed durable-input capability and changes the target release from 1.1.2 to 1.2.0
 workitems:
 - id: P23-P0-01
   status: IN_PROGRESS
@@ -25,10 +26,19 @@ workitems:
   summary: complete public-operation adversarial and causal regression coverage
 - id: P23-P0-03
   status: TODO
-  summary: generated-runtime parity read-only Racecar proof and immutable 1.1.2 release
+  summary: generated-runtime parity read-only Racecar proofs and immutable 1.2.0 release
 - id: P23-P0-04
   status: IN_PROGRESS
   summary: run-and-done hosted orchestration policy for BCF and fresh Standard-v2 graphs
+- id: P23-P0-05
+  status: IN_PROGRESS
+  summary: GitHub-native content-addressed evidence inputs with authenticated manifests, cold reconstruction, and reachability-based retention
+- id: P23-P0-06
+  status: TODO
+  summary: GitHub-native immutable publication resolution and cold reconstruction
+- id: P23-P0-07
+  status: TODO
+  summary: graph transport migration reachability retention and storage budgets
 execution_evidence:
   planned_commands:
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
@@ -39,6 +49,8 @@ execution_evidence:
   - clean Racecar PR 14 head 18fddaeb53bee90f512a8d80935f2d3d4c6cbaf8 read-only inventory resolved session authorize and logout self._current calls to the exact BrowserSessionService._current method
   - conservative artifact purge deleted 1614 superseded Actions artifacts with zero failures reclaimed 531.1 MiB and preserved active controller artifact 10274391593
   - current BCF and fresh Standard-v2 graph inventories contain no hosted waiter poller sleeper watcher shell wait loop or local-runner lease command
+  - issue 165 baseline records 55.778 GiB in Racecar Actions artifacts of which approximately 54.694 GiB is repeated preparation transport; Racecar remains read-only
+  - BCF provider baseline after conservative cleanup is 816 live artifacts and 413957092 bytes; P23 treats retained Actions bytes and hosted execution minutes as coequal hard release budgets
   notes:
   - audits/p23-issue-164-remediation.yml owns the defect-class review consumer proof and release-train storage forecast
   - remote execution starts only after the complete deterministic local acceptance set passes
@@ -74,4 +86,5 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts change
 next_work:
 - complete exact local manifests controls mutants package and artifact checks before opening the implementation PR
-- mechanically activate the resulting controller then certify and immutably publish 1.1.2
+- qualify cold GitHub-native reconstruction and graph migration without mutating Racecar
+- mechanically activate the resulting controller then certify and immutably publish 1.2.0

@@ -6,26 +6,9 @@ interpreter_contract: {project_dependencies: true, build_system_requirements: tr
 execution_policy: {default_timeout_seconds: 1800}
 gates:
   architecture-context-membership:
-    invocation:
-      argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-context-membership]
-      cwd: .
-      env: {}
-      required_env: []
-    evidence:
-      kind: test_suite
-      test_contract:
-        junit_xml: .artifacts/junit/architecture-context-membership.xml
-        selectors: ['tests/test_self_governance_contracts.py::test_tooling_modules_map_to_exactly_one_context']
-        expected_node_manifest: governance/test-manifests/architecture-context-membership.txt
-        expected_nodes_mode: exact
-        min_collected: 1
-        min_executed: 1
-        max_skipped: 0
-        artifact_binding: non_authoritative_until_captured
-    negative_controls:
-    - id: architecture-context-membership-behavior-must-fail
-      mutation: {path: governance/self-governance-policy.yml, yaml_path: tooling_contexts.validation, value: [missing_validation/]}
-      oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_tooling_modules_map_to_exactly_one_context']}
+    invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-context-membership], cwd: ., env: {}, required_env: []}
+    evidence: {kind: test_suite, test_contract: {junit_xml: .artifacts/junit/architecture-context-membership.xml, selectors: ['tests/test_self_governance_contracts.py::test_tooling_modules_map_to_exactly_one_context'], expected_node_manifest: governance/test-manifests/architecture-context-membership.txt, expected_nodes_mode: exact, min_collected: 1, min_executed: 1, max_skipped: 0, artifact_binding: non_authoritative_until_captured}}
+    negative_controls: [{id: architecture-context-membership-behavior-must-fail, mutation: {path: governance/self-governance-policy.yml, yaml_path: tooling_contexts.validation, value: [missing_validation/]}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_tooling_modules_map_to_exactly_one_context']}}]
   architecture-cqrs-side:
     invocation:
       argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-cqrs-side]
@@ -48,144 +31,29 @@ gates:
     - {id: projection-authority-conferral-must-fail, mutation: {path: governance/application-operations.yml, yaml_path: 'operations[id=governance.cli.publish-audit.v1].authority_conferral', value: true}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_cli_application_operations_are_closed_and_effect_safe']}}
     - {id: same-instance-method-effect-resolution-must-fail, mutation: {path: bcf_governance/tooling/semantic_python_method_identity.py, search: '                call["called_symbol"] = target', replace: '                call["called_symbol"] = str(call["called_symbol"])'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_semantic_method_effects::test_public_operation_rejects_write_hidden_by_same_instance_method']}}
   architecture-duplication:
-    invocation:
-      argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-duplication]
-      cwd: .
-      env: {}
-      required_env: []
-    evidence:
-      kind: test_suite
-      test_contract:
-        junit_xml: .artifacts/junit/architecture-duplication.xml
-        selectors: ['tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact']
-        expected_node_manifest: governance/test-manifests/architecture-duplication.txt
-        expected_nodes_mode: exact
-        min_collected: 1
-        min_executed: 1
-        max_skipped: 0
-        artifact_binding: non_authoritative_until_captured
-    negative_controls:
-    - id: architecture-duplication-behavior-must-fail
-      mutation: {path: template-repo/scripts/_bcf_runtime/governance_validation/required_artifacts.py, search: '"""Semantic
-          contracts for standard repository root artifacts."""', replace: '"""Mutated standalone runtime contract."""'}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_self_governance_contracts::test_template_and_private_runtime_copies_are_exact']
+    invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-duplication], cwd: ., env: {}, required_env: []}
+    evidence: {kind: test_suite, test_contract: {junit_xml: .artifacts/junit/architecture-duplication.xml, selectors: ['tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact'], expected_node_manifest: governance/test-manifests/architecture-duplication.txt, expected_nodes_mode: exact, min_collected: 1, min_executed: 1, max_skipped: 0, artifact_binding: non_authoritative_until_captured}}
+    negative_controls: [{id: architecture-duplication-behavior-must-fail, mutation: {path: template-repo/scripts/_bcf_runtime/governance_validation/required_artifacts.py, search: '"""Semantic contracts for standard repository root artifacts."""', replace: '"""Mutated standalone runtime contract."""'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_template_and_private_runtime_copies_are_exact']}}]
   architecture-import-boundaries:
-    invocation:
-      argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-import-boundaries]
-      cwd: .
-      env: {}
-      required_env: []
-    evidence:
-      kind: test_suite
-      test_contract:
-        junit_xml: .artifacts/junit/architecture-import-boundaries.xml
-        selectors: ['tests/test_self_governance_contracts.py::test_packaged_code_does_not_import_public_wrapper_package']
-        expected_node_manifest: governance/test-manifests/architecture-import-boundaries.txt
-        expected_nodes_mode: exact
-        min_collected: 1
-        min_executed: 1
-        max_skipped: 0
-        artifact_binding: non_authoritative_until_captured
-    negative_controls:
-    - id: architecture-import-boundaries-behavior-must-fail
-      mutation: {path: bcf_governance/__init__.py, search: from ._version import __version__, replace: "import scripts\n\nfrom ._version import __version__"}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_self_governance_contracts::test_packaged_code_does_not_import_public_wrapper_package']
+    invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-import-boundaries], cwd: ., env: {}, required_env: []}
+    evidence: {kind: test_suite, test_contract: {junit_xml: .artifacts/junit/architecture-import-boundaries.xml, selectors: ['tests/test_self_governance_contracts.py::test_packaged_code_does_not_import_public_wrapper_package'], expected_node_manifest: governance/test-manifests/architecture-import-boundaries.txt, expected_nodes_mode: exact, min_collected: 1, min_executed: 1, max_skipped: 0, artifact_binding: non_authoritative_until_captured}}
+    negative_controls: [{id: architecture-import-boundaries-behavior-must-fail, mutation: {path: bcf_governance/__init__.py, search: from ._version import __version__, replace: "import scripts\n\nfrom ._version import __version__"}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_packaged_code_does_not_import_public_wrapper_package']}}]
   architecture-layer-membership:
-    invocation:
-      argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-layer-membership]
-      cwd: .
-      env: {}
-      required_env: []
-    evidence:
-      kind: test_suite
-      test_contract:
-        junit_xml: .artifacts/junit/architecture-layer-membership.xml
-        selectors: ['tests/test_self_governance_contracts.py::test_source_layout_maps_to_declared_package_layers']
-        expected_node_manifest: governance/test-manifests/architecture-layer-membership.txt
-        expected_nodes_mode: exact
-        min_collected: 1
-        min_executed: 1
-        max_skipped: 0
-        artifact_binding: non_authoritative_until_captured
-    negative_controls:
-    - id: architecture-layer-membership-behavior-must-fail
-      mutation: {path: architecture-boundaries.yml, yaml_path: architecture.layers.pack.path_tokens, value: [missing_pack]}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_self_governance_contracts::test_source_layout_maps_to_declared_package_layers']
+    invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-layer-membership], cwd: ., env: {}, required_env: []}
+    evidence: {kind: test_suite, test_contract: {junit_xml: .artifacts/junit/architecture-layer-membership.xml, selectors: ['tests/test_self_governance_contracts.py::test_source_layout_maps_to_declared_package_layers'], expected_node_manifest: governance/test-manifests/architecture-layer-membership.txt, expected_nodes_mode: exact, min_collected: 1, min_executed: 1, max_skipped: 0, artifact_binding: non_authoritative_until_captured}}
+    negative_controls: [{id: architecture-layer-membership-behavior-must-fail, mutation: {path: architecture-boundaries.yml, yaml_path: architecture.layers.pack.path_tokens, value: [missing_pack]}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_source_layout_maps_to_declared_package_layers']}}]
   architecture-module-size:
-    invocation:
-      argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-module-size]
-      cwd: .
-      env: {}
-      required_env: []
-    evidence:
-      kind: test_suite
-      test_contract:
-        junit_xml: .artifacts/junit/architecture-module-size.xml
-        selectors: ['tests/test_self_governance_contracts.py::test_production_modules_respect_self_governance_loc_cap']
-        expected_node_manifest: governance/test-manifests/architecture-module-size.txt
-        expected_nodes_mode: exact
-        min_collected: 1
-        min_executed: 1
-        max_skipped: 0
-        artifact_binding: non_authoritative_until_captured
-    negative_controls:
-    - id: architecture-module-size-behavior-must-fail
-      mutation: {path: architecture-boundaries.yml, yaml_path: architecture.production_module_policy.max_loc, value: 1}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_self_governance_contracts::test_production_modules_respect_self_governance_loc_cap']
+    invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-module-size], cwd: ., env: {}, required_env: []}
+    evidence: {kind: test_suite, test_contract: {junit_xml: .artifacts/junit/architecture-module-size.xml, selectors: ['tests/test_self_governance_contracts.py::test_production_modules_respect_self_governance_loc_cap'], expected_node_manifest: governance/test-manifests/architecture-module-size.txt, expected_nodes_mode: exact, min_collected: 1, min_executed: 1, max_skipped: 0, artifact_binding: non_authoritative_until_captured}}
+    negative_controls: [{id: architecture-module-size-behavior-must-fail, mutation: {path: architecture-boundaries.yml, yaml_path: architecture.production_module_policy.max_loc, value: 1}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_production_modules_respect_self_governance_loc_cap']}}]
   architecture-router-thinness:
-    invocation:
-      argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-router-thinness]
-      cwd: .
-      env: {}
-      required_env: []
-    evidence:
-      kind: test_suite
-      test_contract:
-        junit_xml: .artifacts/junit/architecture-router-thinness.xml
-        selectors: ['tests/test_self_governance_contracts.py::test_cli_and_source_wrappers_remain_thin']
-        expected_node_manifest: governance/test-manifests/architecture-router-thinness.txt
-        expected_nodes_mode: exact
-        min_collected: 1
-        min_executed: 1
-        max_skipped: 0
-        artifact_binding: non_authoritative_until_captured
-    negative_controls:
-    - id: architecture-router-thinness-behavior-must-fail
-      mutation: {path: governance/self-governance-policy.yml, yaml_path: thin_wrapper_loc_cap, value: 1}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_self_governance_contracts::test_cli_and_source_wrappers_remain_thin']
+    invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-router-thinness], cwd: ., env: {}, required_env: []}
+    evidence: {kind: test_suite, test_contract: {junit_xml: .artifacts/junit/architecture-router-thinness.xml, selectors: ['tests/test_self_governance_contracts.py::test_cli_and_source_wrappers_remain_thin'], expected_node_manifest: governance/test-manifests/architecture-router-thinness.txt, expected_nodes_mode: exact, min_collected: 1, min_executed: 1, max_skipped: 0, artifact_binding: non_authoritative_until_captured}}
+    negative_controls: [{id: architecture-router-thinness-behavior-must-fail, mutation: {path: governance/self-governance-policy.yml, yaml_path: thin_wrapper_loc_cap, value: 1}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_cli_and_source_wrappers_remain_thin']}}]
   architecture-test:
-    invocation:
-      argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-test]
-      cwd: .
-      env: {}
-      required_env: []
-    evidence:
-      kind: test_suite
-      test_contract:
-        junit_xml: .artifacts/junit/architecture-test.xml
-        selectors: ['tests/test_self_governance_contracts.py::test_source_roots_match_packaged_implementation']
-        expected_node_manifest: governance/test-manifests/architecture-test.txt
-        expected_nodes_mode: exact
-        min_collected: 1
-        min_executed: 1
-        max_skipped: 0
-        artifact_binding: non_authoritative_until_captured
-    negative_controls:
-    - id: architecture-test-behavior-must-fail
-      mutation: {path: architecture-boundaries.yml, yaml_path: architecture.source_roots, value: [missing_package]}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_self_governance_contracts::test_source_roots_match_packaged_implementation']
+    invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, architecture-test], cwd: ., env: {}, required_env: []}
+    evidence: {kind: test_suite, test_contract: {junit_xml: .artifacts/junit/architecture-test.xml, selectors: ['tests/test_self_governance_contracts.py::test_source_roots_match_packaged_implementation'], expected_node_manifest: governance/test-manifests/architecture-test.txt, expected_nodes_mode: exact, min_collected: 1, min_executed: 1, max_skipped: 0, artifact_binding: non_authoritative_until_captured}}
+    negative_controls: [{id: architecture-test-behavior-must-fail, mutation: {path: architecture-boundaries.yml, yaml_path: architecture.source_roots, value: [missing_package]}, oracle: {kind: test_node_failure, node_ids: ['tests.test_self_governance_contracts::test_source_roots_match_packaged_implementation']}}]
   contract-test:
     invocation:
       argv: [python3, .github/scripts/run_self_governance_gate.py, contract-test]
@@ -477,161 +345,46 @@ gates:
         node_ids: ['tests.test_runtime_capacity::test_runtime_contract_rejects_escape_and_broad_cleanup[mutation3-exact, scoped]']
     - {id: local-pr-ancestry-must-fail, mutation: {path: bcf_governance/tooling/local_pr.py, search: 'if ancestry.returncode != 0:', replace: 'if False and ancestry.returncode != 0:'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_local_pr::test_local_pr_rejects_head_without_default_branch_ancestry']}}
     - {id: local-pr-changelog-enforcement-must-fail, mutation: {path: bcf_governance/tooling/local_pr.py, search: '"BCF_ENFORCE_PR_CHANGELOG": "true"', replace: '"BCF_ENFORCE_PR_CHANGELOG": "false"'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_local_pr::test_local_pr_context_fetches_default_branch_and_supplies_exact_event']}}
-    - id: trusted-input-role-must-fail
-      mutation: {path: bcf_governance/tooling/trusted_inputs.py, search: 'if executor_role != "trusted-collector":', replace: 'if
-          False and executor_role != "trusted-collector":'}
-      oracle:
-        kind: test_node_failure
-        node_ids: ['tests.test_trusted_inputs::test_trusted_input_boundary_mutants_fail[candidate-True-valid-trusted collector]']
+    - {id: trusted-input-role-must-fail, mutation: {path: bcf_governance/tooling/trusted_inputs.py, search: 'if executor_role != "trusted-collector":', replace: 'if False and executor_role != "trusted-collector":'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_trusted_inputs::test_trusted_input_boundary_mutants_fail[candidate-True-valid-trusted collector]']}}
   governance-exposure-scan:
-    invocation:
-      argv: [python3, scripts/check_governance_exposure.py, --repo-root, .]
-      cwd: .
-      env: {}
-      required_env: []
+    invocation: {argv: [python3, scripts/check_governance_exposure.py, --repo-root, .], cwd: ., env: {}, required_env: []}
     evidence: {kind: gate}
-    negative_controls:
-    - id: local-workspace-path-is-rejected
-      mutation: {path: MEMORY.yml, yaml_path: stable_decisions.canonical_governance_guide, value_base64: L1VzZXJzL2V4YW1wbGUvcHJpdmF0ZS9BR0VOVFMueW1s}
-      oracle:
-        kind: diagnostic
-        exit_codes: [1]
-        stream: stdout
-        regex: local_workspace_path
+    negative_controls: [{id: local-workspace-path-is-rejected, mutation: {path: MEMORY.yml, yaml_path: stable_decisions.canonical_governance_guide, value_base64: L1VzZXJzL2V4YW1wbGUvcHJpdmF0ZS9BR0VOVFMueW1s}, oracle: {kind: diagnostic, exit_codes: [1], stream: stdout, regex: local_workspace_path}}]
   governance-validate:
-    invocation:
-      argv: [python3, scripts/validate_governance_yaml.py, --repo-root, .]
-      cwd: .
-      env: {}
-      required_env: []
+    invocation: {argv: [python3, scripts/validate_governance_yaml.py, --repo-root, .], cwd: ., env: {}, required_env: []}
     evidence: {kind: gate}
     negative_controls:
-    - id: authored-verified-state-is-rejected
-      mutation: {path: '@active_phase_log', yaml_path: document.status, value: verified}
-      oracle:
-        kind: diagnostic
-        exit_codes: [1]
-        stream: stderr
-        regex: verified.*(?:not one of|computed)
+    - {id: authored-verified-state-is-rejected, mutation: {path: '@active_phase_log', yaml_path: document.status, value: verified}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'verified.*(?:not one of|computed)'}}
     - {id: unknown-operation-family-is-rejected, mutation: {path: governance/application-operations.yml, yaml_path: 'operations[id=governance.cli.doctor.v1].family', value: missing_semantic_family}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: references an unknown semantic family}}
-    - {id: hosted-run-and-done-policy-must-fail, mutation: {path: governance/ci-graph.yml, yaml_path: policy.forbidden_hosted_tokens, value: [sleep, poll, wait-for-runner, lease-runner]}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_graph::test_self_graph_run_and_done_policy_is_mechanically_complete']}}
+    - {id: hosted-run-and-done-policy-must-fail, mutation: {path: governance/ci-graph.yml, yaml_path: policy.forbidden_hosted_tokens, value: [sleep, poll, wait-for-runner, lease-runner]}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: run-and-done hosted policy is missing tokens}}
   lint:
     invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, lint], cwd: ., env: {}, required_env: []}
     evidence: {kind: gate}
-    negative_controls:
-    - id: lint-behavior-must-fail
-      mutation: {path: README.md, search: '# BCF Governance', replace: '# BCF Governance  '}
-      oracle:
-        kind: diagnostic
-        exit_codes: [1]
-        stream: stderr
-        regex: 'self-governance gate lint failed:'
+    negative_controls: [{id: lint-behavior-must-fail, mutation: {path: README.md, search: '# BCF Governance', replace: '# BCF Governance  '}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'self-governance gate lint failed:'}}]
   runtime-smoke:
-    invocation:
-      argv: [python3, .github/scripts/run_self_governance_gate.py, runtime-smoke]
-      cwd: .
-      env: {BCF_EXECUTION_PROFILE: production}
-      required_env: []
-    evidence:
-      kind: runtime_health
-      output_requirements:
-      - {path: .artifacts/runtime-smoke.json, media_type: application/json, authority: non_authoritative_until_captured}
-      environment_assertions:
-      - {name: BCF_EXECUTION_PROFILE, operator: equals, value: production}
-    negative_controls:
-    - id: runtime-smoke-behavior-must-fail
-      mutation: {path: manifest.yml, yaml_path: document.version, value: 0.0.0}
-      oracle:
-        kind: diagnostic
-        exit_codes: [1]
-        stream: stderr
-        regex: 'self-governance gate runtime-smoke failed:'
+    invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, runtime-smoke], cwd: ., env: {BCF_EXECUTION_PROFILE: production}, required_env: []}
+    evidence: {kind: runtime_health, output_requirements: [{path: .artifacts/runtime-smoke.json, media_type: application/json, authority: non_authoritative_until_captured}], environment_assertions: [{name: BCF_EXECUTION_PROFILE, operator: equals, value: production}]}
+    negative_controls: [{id: runtime-smoke-behavior-must-fail, mutation: {path: manifest.yml, yaml_path: document.version, value: 0.0.0}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'self-governance gate runtime-smoke failed:'}}]
   security-dependency-audit:
-    invocation:
-      argv: [python3, .github/scripts/run_self_governance_gate.py, security-dependency-audit]
-      cwd: .
-      env: {}
-      required_env: []
+    invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, security-dependency-audit], cwd: ., env: {}, required_env: []}
     evidence: {kind: gate}
-    negative_controls:
-    - id: security-dependency-audit-behavior-must-fail
-      mutation: {path: pyproject.toml, search: '"jsonschema>=4.21,<5",', replace: '"jsonschema>=4.21,<4",'}
-      oracle:
-        kind: diagnostic
-        exit_codes: [1]
-        stream: stderr
-        regex: 'self-governance gate security-dependency-audit failed:'
+    negative_controls: [{id: security-dependency-audit-behavior-must-fail, mutation: {path: pyproject.toml, search: '"jsonschema>=4.21,<5",', replace: '"jsonschema>=4.21,<4",'}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'self-governance gate security-dependency-audit failed:'}}]
   security-review:
-    invocation:
-      argv: [python3, .github/scripts/run_self_governance_gate.py, security-review]
-      cwd: .
-      env: {BCF_EXECUTION_PROFILE: production}
-      required_env: []
-    evidence:
-      kind: security_review
-      output_requirements:
-      - {path: governance/findings.yml, media_type: application/yaml, authority: non_authoritative_until_captured}
-      environment_assertions:
-      - {name: BCF_EXECUTION_PROFILE, operator: equals, value: production}
-    negative_controls:
-    - id: security-review-behavior-must-fail
-      mutation: {path: governance/findings.yml, yaml_path: reviews, value: [invalid]}
-      oracle:
-        kind: diagnostic
-        exit_codes: [1]
-        stream: stderr
-        regex: 'self-governance gate security-review failed:'
+    invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, security-review], cwd: ., env: {BCF_EXECUTION_PROFILE: production}, required_env: []}
+    evidence: {kind: security_review, output_requirements: [{path: governance/findings.yml, media_type: application/yaml, authority: non_authoritative_until_captured}], environment_assertions: [{name: BCF_EXECUTION_PROFILE, operator: equals, value: production}]}
+    negative_controls: [{id: security-review-behavior-must-fail, mutation: {path: governance/findings.yml, yaml_path: reviews, value: [invalid]}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'self-governance gate security-review failed:'}}]
   security-sbom:
-    invocation:
-      argv: [python3, .github/scripts/run_self_governance_gate.py, security-sbom]
-      cwd: .
-      env: {}
-      required_env: []
-    evidence:
-      kind: gate
-      output_requirements:
-      - {path: .artifacts/sbom.json, media_type: application/json, authority: non_authoritative_until_captured}
-    negative_controls:
-    - id: security-sbom-behavior-must-fail
-      mutation: {path: governance/self-governance-policy.yml, yaml_path: sbom_format, value: Unknown}
-      oracle:
-        kind: diagnostic
-        exit_codes: [1]
-        stream: stderr
-        regex: 'self-governance gate security-sbom failed:'
+    invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, security-sbom], cwd: ., env: {}, required_env: []}
+    evidence: {kind: gate, output_requirements: [{path: .artifacts/sbom.json, media_type: application/json, authority: non_authoritative_until_captured}]}
+    negative_controls: [{id: security-sbom-behavior-must-fail, mutation: {path: governance/self-governance-policy.yml, yaml_path: sbom_format, value: Unknown}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'self-governance gate security-sbom failed:'}}]
   security-secret-scan:
-    invocation:
-      argv: [python3, .github/scripts/run_self_governance_gate.py, security-secret-scan]
-      cwd: .
-      env: {}
-      required_env: []
+    invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, security-secret-scan], cwd: ., env: {}, required_env: []}
     evidence: {kind: gate}
-    negative_controls:
-    - id: security-secret-scan-behavior-must-fail
-      mutation: {path: README.md, search: BCF is a deterministic error-correction framework, replace_base64: QUtJQUlPU0ZPRE5ON0VYQU1QTEUgQkNGIGlzIGEgZGV0ZXJtaW5pc3RpYyBlcnJvci1jb3JyZWN0aW9uIGZyYW1ld29yaw==}
-      oracle:
-        kind: diagnostic
-        exit_codes: [1]
-        stream: stderr
-        regex: 'self-governance gate security-secret-scan failed:'
+    negative_controls: [{id: security-secret-scan-behavior-must-fail, mutation: {path: README.md, search: BCF is a deterministic error-correction framework, replace_base64: QUtJQUlPU0ZPRE5ON0VYQU1QTEUgQkNGIGlzIGEgZGV0ZXJtaW5pc3RpYyBlcnJvci1jb3JyZWN0aW9uIGZyYW1ld29yaw==}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'self-governance gate security-secret-scan failed:'}}]
   security-vulnerability-scan:
-    invocation:
-      argv: [python3, .github/scripts/run_self_governance_gate.py, security-vulnerability-scan]
-      cwd: .
-      env: {}
-      required_env: []
-    evidence:
-      kind: gate
-      output_requirements:
-      - {path: .artifacts/vulnerability-scan.json, media_type: application/json, authority: non_authoritative_until_captured}
-    negative_controls:
-    - id: security-vulnerability-scan-behavior-must-fail
-      mutation: {path: governance/self-governance-policy.yml, yaml_path: forbid_subprocess_shell, value: false}
-      oracle:
-        kind: diagnostic
-        exit_codes: [1]
-        stream: stderr
-        regex: 'self-governance gate security-vulnerability-scan failed:'
+    invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, security-vulnerability-scan], cwd: ., env: {}, required_env: []}
+    evidence: {kind: gate, output_requirements: [{path: .artifacts/vulnerability-scan.json, media_type: application/json, authority: non_authoritative_until_captured}]}
+    negative_controls: [{id: security-vulnerability-scan-behavior-must-fail, mutation: {path: governance/self-governance-policy.yml, yaml_path: forbid_subprocess_shell, value: false}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'self-governance gate security-vulnerability-scan failed:'}}]
   semantic-ownership:
     invocation:
       argv: [python3, .github/scripts/run_self_governance_gate.py, semantic-ownership]
@@ -717,6 +470,7 @@ gates:
     - {id: unattributed-secondary-representation-must-fail, mutation: {path: governance/semantic-families.yml, yaml_path: 'families[id=evidence_session_identity].material_selectors.secondary_paths', value: [README.md]}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: lacks derivation provenance}}
     - {id: stale-generated-projection-must-fail, mutation: {path: governance/canonical-representations.yml, yaml_path: 'representations[semantic_id=governance.evidence-session.v1].generated_source_authority.generated_mirrors', value: [template-repo/scripts/_bcf_runtime/missing.py]}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'generated mirror.*(?:regular file|unreadable)'}}
     - {id: stale-semantic-lock-must-fail, mutation: {path: governance/semantic-lock.yml, yaml_path: source_inventory_sha256, value: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: semantic-lock.yml is stale}}
+    - {id: evidence-input-reference-owner-must-fail, mutation: {path: governance/canonical-representations.yml, yaml_path: 'representations[semantic_id=governance.evidence-input-reference.v1].authorized_constructors_and_factories', value: [bcf_governance/tooling/missing.py::owner]}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: governance.evidence-input-reference.v1 owner must be an authorized constructor}}
   test:
     invocation:
       argv: [python3, .github/scripts/run_self_governance_gate.py, test]
@@ -753,21 +507,14 @@ gates:
     - {id: gate-timeout-containment-must-fail, mutation: {path: bcf_governance/tooling/ci_graph_contracts.py, search: '    validate_gate_job_timeouts(repo_root, composed)', replace: '    # timeout containment disabled'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_graph::test_evidence_job_timeout_must_contain_inner_gate_deadline_and_headroom']}}
     - {id: dependency-version-transition-must-fail, mutation: {path: bcf_governance/tooling/ci_github_automation.py, search: '        dependency_transitions=transitions,', replace: '        dependency_transitions=(),'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_ci_github_automation::test_metadata_admission_and_reconciliation_use_provider_identity_only']}}
     - {id: python-import-root-normalization-must-fail, mutation: {path: bcf_governance/tooling/semantic_ownership_inventory.py, search: '                    fact["constructed_symbol"] = target', replace: '                    fact["constructed_symbol"] = fact["constructed_symbol"]'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_semantic_import_roots::test_import_root_normalization_rejects_masked_unauthorized_constructor']}}
+    - {id: complete-actions-storage-budget-must-fail, mutation: {path: bcf_governance/tooling/evidence_storage_github.py, search: '        actions_bytes=sum(', replace: '        actions_bytes=0 * sum('}, oracle: {kind: test_node_failure, node_ids: ['tests.test_evidence_storage::test_provider_budget_is_derived_from_complete_authenticated_inventory']}}
+    - {id: projected-durable-storage-budget-must-fail, mutation: {path: bcf_governance/tooling/evidence_storage_github.py, search: '            durable_unique_bytes=sum(size for _, size in existing_releases.values())', replace: '            durable_unique_bytes=0 * sum(size for _, size in existing_releases.values())'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_evidence_storage::test_projected_durable_budget_fails_before_publication']}}
+    - {id: durable-publisher-workflow-boundary-must-fail, mutation: {path: bcf_governance/tooling/ci_graph_storage.py, search: '            or publisher_workflow is source_workflow', replace: '            or False'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_evidence_storage::test_graph_rejects_durable_transport_authority_bypasses[same-workflow-publisher]']}}
+    - {id: actions-retention-delete-verification-must-fail, mutation: {path: bcf_governance/tooling/evidence_storage_retention.py, search: '        api.delete_action_artifact(repository, artifact_id)', replace: '        pass'}, oracle: {kind: test_node_failure, node_ids: ['tests.test_evidence_storage::test_retention_requires_retrieval_before_deleting_handoff']}}
   typecheck:
-    invocation:
-      argv: [python3, .github/scripts/run_self_governance_gate.py, typecheck]
-      cwd: .
-      env: {}
-      required_env: []
+    invocation: {argv: [python3, .github/scripts/run_self_governance_gate.py, typecheck], cwd: ., env: {}, required_env: []}
     evidence: {kind: gate}
-    negative_controls:
-    - id: typecheck-behavior-must-fail
-      mutation: {path: bcf_governance/_version.py, search: '__version__ = ', replace: 'VERSION = '}
-      oracle:
-        kind: diagnostic
-        exit_codes: [1]
-        stream: stderr
-        regex: 'self-governance gate typecheck failed:'
+    negative_controls: [{id: typecheck-behavior-must-fail, mutation: {path: bcf_governance/_version.py, search: '__version__ = ', replace: 'VERSION = '}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'self-governance gate typecheck failed:'}}]
 gate_catalog:
   governance_validate: {target: governance-validate, status: required, command_policy: governance_validation, rationale: governed
       YAML passes schema semantic path and placeholder validation}

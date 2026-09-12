@@ -21,9 +21,9 @@ global_gates:
 phase_history: {path: plans/phase-history.yml, through_phase: P22}
 phase_sequence:
 - phase_id: P23
-  build_block: same-instance-method-effect-integrity-1.1.2
-  objective: close same-instance operation-effect identity without weakening source-first discovery dynamic-dispatch safety or consumer compatibility
+  build_block: content-addressed-evidence-and-method-effect-integrity-1.2.0
+  objective: close same-instance operation-effect identity and add bounded GitHub-native content-addressed evidence transport without weakening evidence custody or consumer compatibility
   hard_dependencies: [P22]
-  tightly_scoped_deliverables: [exact same-instance method identity and fail-closed ambiguous dispatch, complete public operation adversarial and causal regression coverage, run-and-done hosted orchestration for BCF and fresh Standard-v2 graphs, compatible mirrored runtime Racecar proof and immutable 1.1.2 release]
-  parallelizable_workstreams: [Python method identity and effect tracing, adversarial tests causal controls and consumer compatibility, hosted runner frugality and reference-graph qualification, generated parity provider activation and release]
+  tightly_scoped_deliverables: [exact same-instance method identity and fail-closed ambiguous dispatch, complete public operation adversarial and causal regression coverage, run-and-done hosted orchestration for BCF and fresh Standard-v2 graphs, GitHub-native content-addressed evidence inputs authenticated manifests cold reconstruction and reachability retention, compatible mirrored runtime Racecar proofs and immutable 1.2.0 release]
+  parallelizable_workstreams: [Python method identity and effect tracing, adversarial tests causal controls and consumer compatibility, hosted runner frugality and reference-graph qualification, durable input contracts GitHub transport and retention budgets, generated parity provider activation and release]
   verification_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests, .venv/bin/python .github/scripts/run_validator_mutants.py --profile full, .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full]

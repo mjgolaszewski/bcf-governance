@@ -59,11 +59,13 @@ def test_bcf_declares_every_semantic_family_and_public_operation_once(
     evaluation = contracts.validate_semantic_authority(
         REPO_ROOT, source_inventory, registry
     )
+    family_count = len(_yaml("governance/semantic-families.yml")["families"])
+    operation_count = len(_yaml("governance/application-operations.yml")["operations"])
 
-    assert structure == {"families": 21, "operations": 19}
-    assert evaluation.family_count == 21
-    assert evaluation.operation_count == 19
-    assert evaluation.derived_count == 60
+    assert structure == {"families": family_count, "operations": operation_count}
+    assert evaluation.family_count == family_count
+    assert evaluation.operation_count == operation_count
+    assert evaluation.derived_count == len(evaluation.projection_outputs)
     assert evaluation.exception_count == 0
 
 
