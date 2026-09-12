@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: 7a4b874f3aa360d97ac68434c22d62048a1071fa3387f5ce778b2c97af136928
-  after_sha256: 9aa86206a3e53d0be32552a843aec12e4b1874723272e57a271164d82623ff68
+  after_sha256: 0618a6dd6b74b595c203f6a369f136aefaa966338cfbbb4d6db3803e581aebd9
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: historical

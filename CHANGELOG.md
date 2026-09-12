@@ -28,6 +28,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Preserved bounded project-owned package metadata classifications across
+  upgrades so a newer pack schema does not invalidate an otherwise compatible
+  consumer architecture contract.
 - Fixed issue #164 by resolving direct Python `self.method()` operation edges
   to the exact method in their declaring lexical class. Writes and authority
   effects in private helpers can no longer disappear behind an unqualified

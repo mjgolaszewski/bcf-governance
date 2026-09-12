@@ -184,7 +184,7 @@
     },
     "schemas/architecture-boundaries.schema.json": {
       "operation": "copy",
-      "sha256": "4dc4cbb4e874f1ef00c797bc022b1fd463f9e9364503a1c3864717f74817c98a"
+      "sha256": "fa7ac5f2397307553976b9d592e7fbe5f3e76199dd33c82c1b1013e641486d48"
     },
     "schemas/artifact-manifest.schema.json": {
       "operation": "copy",
