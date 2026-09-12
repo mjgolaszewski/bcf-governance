@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-23-hotfix02
   version: 1.0.0
   generated_at_utc: '2026-09-12T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-23-hotfix02.yml
 hotfix:
   id: P23-HF02
@@ -18,7 +18,14 @@ execution_evidence:
   - .venv/bin/python .github/scripts/run_validator_mutants.py --profile full
   - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full
   - .venv/bin/bcf ci graph render --repo-root . --check
-  executed_commands: []
+  executed_commands:
+  - exact source manifest passed all 917 nodes in 706.82 seconds from committed HEAD
+  - exact contract manifest passed all 390 nodes
+  - full and semantic-full mutation profiles killed 25 and 12 mutants
+  - canonical test evidence passed all 917 positive nodes and all 24 gate controls from one clean detached session
+  - durable-publisher-selected-python-must-fail killed the repository-wide rendered-controller inventory node for its declared cause
+  - focused CI graph and evidence-storage suites passed 96 nodes
+  - generated graph lock render editorial and pack parity checks passed
   notes:
   - qualification source run 34679461415 completed its hosted work in 12 seconds
     and terminated; the dependent hosted resolver was never allocated
@@ -29,6 +36,7 @@ execution_evidence:
     are reviewed as one runtime-provisioning class before another provider run
   - the compiler, not a workflow editor, owns and enforces selected-runtime
     ordering for Python, installed-controller, and ephemeral-controller commands
+  - no provider execution resumed until the complete locally derivable class passed
 closeout_requirements:
   claims:
     required_suites_green:

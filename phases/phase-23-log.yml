@@ -71,6 +71,7 @@ execution_evidence:
   - controller confirmation merged as 0fdb57a46b24bc7d677842bb5f7146c11062b18d after governance 34678901654 package 34678901647 and exact-head certification passed
   - storage qualification source 34679461415 used 12 hosted seconds; trusted publisher 34679474421 failed before publication and prevented allocation of the hosted resolver
   - the failed publisher exposed a missing selected-Python edge for the special durable-publish executor; P23-HF02 audits every rendered controller invocation and makes runtime provisioning a graph-compiler invariant
+  - P23-HF02 passed 917 source nodes 390 contract nodes 214 causal controls both mutation profiles and exact graph pack and editorial parity before provider execution resumed
   notes:
   - audits/p23-issue-164-remediation.yml owns the defect-class review consumer proof and release-train storage forecast
   - remote execution starts only after the complete deterministic local acceptance set passes
