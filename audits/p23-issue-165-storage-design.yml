@@ -114,9 +114,30 @@ actions_minutes_forecast:
   - no hosted polling sleeping idling lease waiting or local-runner supervision
   - a failed remote canary stops the train until the complete defect class passes offline
   - authenticate job timestamps and runner labels after every remote phase and stop before exceeding the train ceiling
+local_qualification:
+  subject_commit: 201ad4f17a4631c0ff3b0a0601926a4d3a88b9f2
+  subject_tree: 0e804c9a56f64119998ea66c222116e120c247c9
+  source_tests: {result: pass, nodes: 910, duration_seconds: 687.01, note: run before the bounded consumer-schema regression ratcheted the manifest to 911}
+  exact_test_manifests: {source_nodes: 911, contract_nodes: 390, result: pass}
+  mutation_profiles:
+    full: {result: pass, mutants_killed: 25}
+    semantic_full: {result: pass, mutants_killed: 12}
+  artifact_verification: {wheel: pass, extracted_sdist: pass, sdist_tests_passed: 905, sdist_expected_skips: 5}
+  release_check: {result: expected_fail_closed, reason: installed trusted controller remains pinned to 1.1.1 until the mechanical post-merge controller rotation}
+racecar_read_only_qualification:
+  repository: mjgolaszewski/racecar
+  exact_pr_head: 18fddaeb53bee90f512a8d80935f2d3d4c6cbaf8
+  bcf_wheel_sha256: e9aad59e0cf7cda2bf3ae1d579c4dc091843ac9ac0b60ef7d2fd93232bbe92bf
+  strict_upgrade: pass
+  graph_sha256: 899806254eff8b08f9703988c9c6da31fd0212e93f61fecc77bb08d702a31cef
+  workflow_inventory_sha256: 948cd2af5eac99b0938011a518d45e864fe2f0bab04bc4d09c7f54e9719b41c7
+  graph_preserved: true
+  workflows_preserved: true
+  consumer_workspace_mutated: false
+  consumer_remote_mutated: false
 acceptance:
-  local: pending
+  local: passed_except_expected_controller_rotation
   GitHub_provider_qualification: pending
-  Racecar_dry_run: pending
-  storage_measurement: pending
+  Racecar_dry_run: passed
+  storage_measurement: baseline_passed_remote_segments_pending
   release: pending
