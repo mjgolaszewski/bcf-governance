@@ -39,6 +39,7 @@ from bcf_governance.tooling.evidence_storage_github import (
 )
 from bcf_governance.tooling.ci_github_downloads import CredentialSafeRedirectHandler
 from bcf_governance.tooling.evidence_storage_github_api import GitHubEvidenceAPI
+from bcf_governance.tooling.evidence_storage_github_releases import publish_release_assets
 from bcf_governance.tooling.evidence_storage_manifests import (
     build_input_bundle,
     verify_input_bundle,
@@ -309,9 +310,22 @@ class FakeEvidenceAPI:
         return {"enabled": True}
 
     def evidence_release_by_tag(self, repository: str, tag: str) -> dict[str, Any]:
-        if tag not in self.releases:
+        if tag not in self.releases or self.releases[tag]["draft"]:
             raise GitHubAPIError("GitHub API GET release returned 404")
         return self.releases[tag]
+
+    def evidence_release_by_id(
+        self, repository: str, release_id: object, *, tag: str
+    ) -> dict[str, Any]:
+        release = next(
+            (item for item in self.releases.values() if item["id"] == int(str(release_id))),
+            None,
+        )
+        if release is None:
+            raise GitHubAPIError("GitHub API GET release returned 404")
+        if release["tag_name"] != tag:
+            raise GitHubAPIError("GitHub evidence release identity mismatch")
+        return release
 
     def evidence_releases(self, repository: str) -> tuple[dict[str, Any], ...]:
         return tuple(self.releases.values())
@@ -319,11 +333,14 @@ class FakeEvidenceAPI:
     def create_evidence_draft_release(
         self, repository: str, *, tag: str, target_commit: str, body: str
     ) -> dict[str, Any]:
+        if tag in self.releases:
+            raise GitHubAPIError("GitHub API POST release returned 422")
         release_id = self.next_release
         self.next_release += 1
         release = {
             "id": release_id,
             "tag_name": tag,
+            "target_commitish": target_commit,
             "draft": True,
             "immutable": False,
             "prerelease": True,
@@ -332,7 +349,6 @@ class FakeEvidenceAPI:
             "published_at": None,
         }
         self.releases[tag] = release
-        self.tags[tag] = target_commit
         return release
 
     def upload_evidence_asset(
@@ -368,6 +384,7 @@ class FakeEvidenceAPI:
             immutable=True,
             published_at="2026-09-11T00:00:00Z",
         )
+        self.tags[release["tag_name"]] = release["target_commitish"]
         return release
 
     def reference(self, repository: str, reference: str) -> dict[str, Any]:
@@ -412,10 +429,12 @@ class ScopedEvidenceAPI:
         delegate: FakeEvidenceAPI,
         *,
         forbidden: frozenset[str],
+        drafts_visible: bool = True,
     ) -> None:
         self.delegate = delegate
         self.forbidden = forbidden
         self.calls: list[str] = []
+        self.drafts_visible = drafts_visible
 
     def __getattr__(self, name: str) -> Any:
         if name in self.forbidden:
@@ -424,7 +443,13 @@ class ScopedEvidenceAPI:
 
         def call(*args: Any, **kwargs: Any) -> Any:
             self.calls.append(name)
-            return target(*args, **kwargs)
+            result = target(*args, **kwargs)
+            if not self.drafts_visible:
+                if name == "evidence_releases":
+                    return tuple(item for item in result if not item["draft"])
+                if name == "evidence_release_by_id" and result["draft"]:
+                    raise GitHubAPIError("GitHub API GET release returned 404")
+            return result
 
         return call
 
@@ -615,10 +640,11 @@ def test_publication_uses_separate_read_write_and_settings_credentials(
     prepared.joinpath("scanner.bin").write_bytes(b"exact scanner bytes")
     prepared.joinpath("scanner-copy.bin").write_bytes(b"exact scanner bytes")
     backing = FakeEvidenceAPI(root)
-    writer_methods = frozenset(
-        {"create_evidence_draft_release", "upload_evidence_asset", "publish_release"}
-    )
-    reader = ScopedEvidenceAPI(backing, forbidden=writer_methods)
+    writer_methods = frozenset({
+        "create_evidence_draft_release", "upload_evidence_asset", "publish_release",
+        "evidence_release_by_id", "evidence_releases",
+    })
+    reader = ScopedEvidenceAPI(backing, forbidden=writer_methods, drafts_visible=False)
     settings_reader = ScopedEvidenceAPI(
         backing,
         forbidden=frozenset(
@@ -631,6 +657,7 @@ def test_publication_uses_separate_read_write_and_settings_credentials(
                 "download_action_artifact",
                 "download_evidence_asset",
                 "evidence_release_by_tag",
+                "evidence_release_by_id",
                 "evidence_releases",
                 "jobs",
                 "publish_release",
@@ -650,7 +677,6 @@ def test_publication_uses_separate_read_write_and_settings_credentials(
                 "commit",
                 "content",
                 "evidence_release_by_tag",
-                "evidence_releases",
                 "immutable_releases",
                 "jobs",
                 "repository",
@@ -1333,24 +1359,35 @@ def test_provider_budget_counts_manifests_objects_and_resumable_drafts(
         for release in api.releases.values()
         for asset in release["assets"]
     )
-    interrupted_tag = f"bcf-evidence-inputs-object-{'f' * 64}"
-    api.create_evidence_draft_release(
+    pending = tmp_path / "pending.tar.gz"
+    pending.write_bytes(b"unpublished durable bytes")
+    pending_digest = hashlib.sha256(pending.read_bytes()).hexdigest()
+    interrupted_tag = f"bcf-evidence-inputs-object-{pending_digest}"
+    draft = api.create_evidence_draft_release(
         "owner/project",
         tag=interrupted_tag,
         target_commit=COMMIT,
         body="interrupted",
     )
+    api.upload_evidence_asset(
+        upload_url=draft["upload_url"], repository="owner/project", release_id=draft["id"],
+        name=f"sha256-{pending_digest}.tar.gz", path=pending, maximum_bytes=1024,
+    )
+    reader = ScopedEvidenceAPI(api, forbidden=frozenset({"evidence_releases"}), drafts_visible=False)
+    writer = ScopedEvidenceAPI(api, forbidden=frozenset({"repository_artifacts"}))
 
     usage = provider_storage_usage(  # type: ignore[arg-type]
-        api,
+        reader,
+        publication_api=writer,
         contract=contract,
         repository="owner/project",
         run_id="1",
         artifact_name="bcf-source-1-1",
     )
 
-    assert usage.durable_unique_bytes == expected_bytes
+    assert usage.durable_unique_bytes == expected_bytes + pending.stat().st_size
     assert usage.object_count == 3
+    assert writer.calls == ["evidence_releases"]
 
 
 def test_projected_durable_budget_fails_before_publication(tmp_path: Path) -> None:
@@ -1381,6 +1418,346 @@ def test_projected_durable_budget_fails_before_publication(tmp_path: Path) -> No
             output_path=root / ".artifacts/budget-reference.json",
         )
     assert api.releases == {}
+
+
+@pytest.mark.parametrize("response_case", ["exact", "wrong-id", "wrong-tag", "bool-id", "non-object"])
+def test_evidence_release_id_read_binds_safe_requested_identity(
+    monkeypatch: pytest.MonkeyPatch, response_case: str
+) -> None:
+    api = GitHubEvidenceAPI(token="fake-write-token")
+    tag = f"bcf-evidence-inputs-object-{'a' * 64}"
+    value: Any = {"id": 101, "tag_name": tag, "draft": True}
+    if response_case == "wrong-id":
+        value["id"] = 102
+    elif response_case == "wrong-tag":
+        value["tag_name"] = f"bcf-evidence-inputs-object-{'b' * 64}"
+    elif response_case == "bool-id":
+        value["id"] = True
+    elif response_case == "non-object":
+        value = []
+    requests = []
+
+    def request(method, path):
+        requests.append((method, path))
+        return value
+
+    monkeypatch.setattr(api, "_request", request)
+    if response_case == "exact":
+        assert api.evidence_release_by_id("owner/project", 101, tag=tag) == value
+    else:
+        with pytest.raises(GitHubAPIError, match="identity mismatch"):
+            api.evidence_release_by_id("owner/project", 101, tag=tag)
+    assert requests == [("GET", "/repos/owner/project/releases/101")]
+    for invalid_id, invalid_tag in ((0, tag), ("../101", tag), (101, "v1.2.0")):
+        with pytest.raises(GitHubAPIError):
+            api.evidence_release_by_id("owner/project", invalid_id, tag=invalid_tag)
+    assert len(requests) == 1
+
+
+@pytest.mark.parametrize(
+    "scenario", ["fresh", "empty-draft", "uploaded-draft", "create-race", "upload-race", "published-race", "final-publish-race"]
+)
+def test_draft_publication_preserves_scoped_authority_and_resumption(
+    tmp_path: Path, scenario: str
+) -> None:
+    class PublicationAPI(FakeEvidenceAPI):
+        def create_evidence_draft_release(self, *args, **kwargs):
+            release = super().create_evidence_draft_release(*args, **kwargs)
+            if scenario == "create-race":
+                raise GitHubAPIError("GitHub API POST release returned 422")
+            return release
+
+        def upload_evidence_asset(self, **kwargs):
+            asset = super().upload_evidence_asset(**kwargs)
+            if scenario == "published-race":
+                super().publish_release(kwargs["repository"], kwargs["release_id"])
+            if scenario in {"upload-race", "published-race"}:
+                raise GitHubAPIError("GitHub evidence asset upload returned 422")
+            return asset
+
+        def publish_release(self, repository, release_id):
+            release = super().publish_release(repository, release_id)
+            if scenario == "final-publish-race":
+                raise GitHubAPIError("GitHub API PATCH release returned 422")
+            return release
+
+    root = _storage_repo(tmp_path)
+    contract = load_storage_contract(root)
+    source = tmp_path / "source.tar.gz"
+    source.write_bytes(b"exact compressed evidence")
+    digest = hashlib.sha256(source.read_bytes()).hexdigest()
+    tag = f"bcf-evidence-inputs-object-{digest}"
+    name = f"sha256-{digest}.tar.gz"
+    backing = PublicationAPI(root)
+    if scenario in {"empty-draft", "uploaded-draft"}:
+        draft = backing.create_evidence_draft_release(
+            "owner/project", tag=tag, target_commit=COMMIT, body="pending"
+        )
+        if scenario == "uploaded-draft":
+            backing.upload_evidence_asset(
+                upload_url=draft["upload_url"], repository="owner/project",
+                release_id=draft["id"], name=name, path=source, maximum_bytes=1024,
+            )
+    reader = ScopedEvidenceAPI(backing, forbidden=frozenset({
+        "create_evidence_draft_release", "upload_evidence_asset", "publish_release",
+        "evidence_release_by_id", "evidence_releases",
+    }), drafts_visible=False)
+    writer = ScopedEvidenceAPI(backing, forbidden=frozenset({
+        "evidence_release_by_tag", "attestations", "reference", "immutable_releases",
+    }))
+
+    release, assets, target = publish_release_assets(
+        reader, publication_api=writer, repository="owner/project", contract=contract,
+        tag=tag, target_commit=COMMIT, body="pending", paths={name: source}, reusable=False,
+    )
+
+    assert release["immutable"] is True and release["draft"] is False
+    assert target == COMMIT and assets[name]["digest"] == f"sha256:{digest}"
+    assert len(backing.releases) == len(backing.assets) == 1
+    assert "evidence_release_by_id" in writer.calls
+    assert "attestations" in reader.calls
+    if scenario in {"empty-draft", "uploaded-draft"}:
+        assert "create_evidence_draft_release" not in writer.calls
+    if scenario == "uploaded-draft":
+        assert "upload_evidence_asset" not in writer.calls
+    if scenario == "published-race":
+        assert "publish_release" not in writer.calls
+
+
+@pytest.mark.parametrize(
+    "mutation", ["duplicate-tag", "wrong-id", "wrong-target", "non-sha-target", "wrong-asset", "extra-asset", "pending-asset"]
+)
+def test_draft_publication_rejects_ambiguous_or_contradictory_state(
+    tmp_path: Path, mutation: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _storage_repo(tmp_path)
+    backing = FakeEvidenceAPI(root)
+    source = tmp_path / "source.tar.gz"
+    source.write_bytes(b"expected bytes")
+    digest = hashlib.sha256(source.read_bytes()).hexdigest()
+    tag = f"bcf-evidence-inputs-object-{digest}"
+    name = f"sha256-{digest}.tar.gz"
+    draft = backing.create_evidence_draft_release(
+        "owner/project", tag=tag, target_commit=COMMIT, body="pending"
+    )
+    if mutation == "duplicate-tag":
+        monkeypatch.setattr(backing, "evidence_releases", lambda repository: (draft, dict(draft, id=102)))
+    elif mutation == "wrong-id":
+        monkeypatch.setattr(backing, "evidence_releases", lambda repository: (dict(draft, id=102),))
+    elif mutation in {"wrong-target", "non-sha-target"}:
+        draft["target_commitish"] = "9" * 40 if mutation == "wrong-target" else "main"
+    else:
+        asset = backing.upload_evidence_asset(
+            upload_url=draft["upload_url"], repository="owner/project", release_id=draft["id"],
+            name=name, path=source, maximum_bytes=1024,
+        )
+        if mutation == "wrong-asset":
+            asset["digest"] = "sha256:" + "f" * 64
+        elif mutation == "extra-asset":
+            draft["assets"].append(dict(asset, name="undeclared"))
+        else:
+            asset["state"] = "new"
+    reader = ScopedEvidenceAPI(backing, forbidden=frozenset(), drafts_visible=False)
+    writer = ScopedEvidenceAPI(backing, forbidden=frozenset())
+
+    with pytest.raises((EvidenceStorageError, GitHubAPIError)):
+        publish_release_assets(
+            reader, publication_api=writer, repository="owner/project",
+            contract=load_storage_contract(root), tag=tag, target_commit=COMMIT,
+            body="pending", paths={name: source}, reusable=False,
+        )
+
+    assert draft["draft"] is True
+    assert not set(writer.calls).intersection({
+        "create_evidence_draft_release", "upload_evidence_asset", "publish_release",
+    })
+
+
+@pytest.mark.parametrize("operation", ["retention-plan", "retention-apply-actions"])
+@pytest.mark.parametrize("present", [None, "GITHUB_TOKEN", "BCF_EVIDENCE_WRITE_TOKEN"])
+def test_retention_commands_require_complete_credentials_before_api(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, operation: str, present: str | None
+) -> None:
+    names = {"GITHUB_TOKEN", "BCF_EVIDENCE_WRITE_TOKEN"}
+    for name in names:
+        monkeypatch.delenv(name, raising=False)
+    if present:
+        monkeypatch.setenv(present, "fake-token")
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("API constructed before missing credentials were reported")
+
+    monkeypatch.setattr(evidence_storage_commands, "_api", forbidden)
+    args = evidence_storage_commands._parser().parse_args([
+        operation, "--repo-root", str(tmp_path), "--snapshot", str(tmp_path / "snapshot"),
+        "--output", str(tmp_path / "output"),
+    ])
+    with pytest.raises(EvidenceStorageError) as caught:
+        evidence_storage_commands.run(args)
+    expected = names - ({present} if present else set())
+    assert str(caught.value) == "required provider credentials are missing: " + ", ".join(sorted(expected))
+    assert not (tmp_path / "output").exists()
+
+
+@pytest.mark.parametrize(
+    "conflict", ["missing-create", "missing-upload", "wrong-upload", "unpublished-final", "wrong-final"]
+)
+def test_publication_conflicts_require_exact_provider_completion(tmp_path: Path, conflict: str) -> None:
+    class ConflictingAPI(FakeEvidenceAPI):
+        def create_evidence_draft_release(self, *args, **kwargs):
+            if conflict == "missing-create":
+                raise GitHubAPIError("GitHub API POST release returned 422")
+            return super().create_evidence_draft_release(*args, **kwargs)
+
+        def upload_evidence_asset(self, **kwargs):
+            if conflict == "missing-upload":
+                raise GitHubAPIError("GitHub evidence asset upload returned 422")
+            asset = super().upload_evidence_asset(**kwargs)
+            if conflict == "wrong-upload":
+                asset["digest"] = "sha256:" + "f" * 64
+                raise GitHubAPIError("GitHub evidence asset upload returned 422")
+            return asset
+
+        def publish_release(self, repository, release_id):
+            if conflict == "unpublished-final":
+                raise GitHubAPIError("GitHub API PATCH release returned 422")
+            release = super().publish_release(repository, release_id)
+            if conflict == "wrong-final":
+                release["assets"][0]["digest"] = "sha256:" + "f" * 64
+                raise GitHubAPIError("GitHub API PATCH release returned 422")
+            return release
+
+    root = _storage_repo(tmp_path)
+    backing = ConflictingAPI(root)
+    source = tmp_path / "source.tar.gz"
+    source.write_bytes(b"expected bytes")
+    digest = hashlib.sha256(source.read_bytes()).hexdigest()
+    tag = f"bcf-evidence-inputs-object-{digest}"
+    writer = ScopedEvidenceAPI(backing, forbidden=frozenset({"evidence_release_by_tag"}))
+    reader = ScopedEvidenceAPI(backing, forbidden=frozenset({"evidence_release_by_id"}), drafts_visible=False)
+    with pytest.raises((EvidenceStorageError, GitHubAPIError)):
+        publish_release_assets(
+            reader, publication_api=writer, repository="owner/project",
+            contract=load_storage_contract(root), tag=tag, target_commit=COMMIT,
+            body="pending", paths={f"sha256-{digest}.tar.gz": source}, reusable=False,
+        )
+    if conflict in {"missing-create", "missing-upload", "wrong-upload"}:
+        assert "publish_release" not in writer.calls
+
+
+def test_action_handoff_routes_draft_inventory_with_complete_custody(tmp_path: Path) -> None:
+    root = _storage_repo(tmp_path)
+    prepared = root / "prepared"
+    prepared.mkdir()
+    for name in ("scanner.bin", "scanner-copy.bin"):
+        (prepared / name).write_bytes(b"exact scanner bytes")
+    manifest = _bundle(root, tmp_path / "bundle", 1)
+    archive = tmp_path / "handoff.zip"
+    with zipfile.ZipFile(archive, "w") as output:
+        for source in sorted(manifest.parent.rglob("*")):
+            if source.is_file():
+                output.write(source, source.relative_to(manifest.parent).as_posix())
+    digest = "sha256:" + hashlib.sha256(archive.read_bytes()).hexdigest()
+    backing = FakeEvidenceAPI(root)
+    artifact = dict(backing.artifacts("owner/project", 1)[0], digest=digest, size_in_bytes=archive.stat().st_size)
+    backing.artifacts = lambda repository, run_id: (artifact,)  # type: ignore[method-assign]
+    backing.repository_artifacts = lambda repository: (artifact,)  # type: ignore[attr-defined]
+    backing.download_action_artifact = (  # type: ignore[attr-defined]
+        lambda repository, artifact_id, *, destination, maximum_bytes: shutil.copyfile(archive, destination)
+    )
+    reader = ScopedEvidenceAPI(backing, forbidden=frozenset({
+        "evidence_releases", "evidence_release_by_id", "immutable_releases",
+        "create_evidence_draft_release", "upload_evidence_asset", "publish_release",
+    }), drafts_visible=False)
+    writer = ScopedEvidenceAPI(backing, forbidden=frozenset({
+        "repository_artifacts", "artifacts", "run", "content", "jobs", "attestations",
+        "download_action_artifact", "evidence_release_by_tag", "immutable_releases",
+    }))
+    settings = ScopedEvidenceAPI(backing, forbidden=frozenset())
+    output_path = root / ".artifacts/handoff-reference.json"
+
+    reference = publish_action_handoff(
+        reader, publication_api=writer, configuration_api=settings, schema_root=root,
+        repository="owner/project", run_id="1", run_attempt=1,
+        artifact_name="bcf-source-1-1", output_path=output_path,
+    )
+
+    assert reference["source_handoff"]["provider_digest"] == digest
+    assert load_input_reference(root, output_path) == reference
+    assert writer.calls.count("evidence_releases") >= 2
+    assert settings.calls == ["immutable_releases"]
+    assert "download_action_artifact" in reader.calls
+
+
+@pytest.mark.parametrize("operation", ["retention-plan", "retention-apply-actions"])
+def test_retention_commands_route_distinct_inventory_authority(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, operation: str
+) -> None:
+    monkeypatch.setenv("GITHUB_TOKEN", "ordinary-token")
+    monkeypatch.setenv("BCF_EVIDENCE_WRITE_TOKEN", "draft-visible-token")
+    monkeypatch.setattr(evidence_storage_commands, "_api", lambda token: token)
+    calls = []
+
+    def retain(root, snapshot, *, api, publication_api):
+        calls.append((api, publication_api))
+        return {"status": "passed"}
+
+    monkeypatch.setattr(evidence_storage_commands, "plan_retention", retain)
+    monkeypatch.setattr(evidence_storage_commands, "apply_actions_retention", retain)
+    evidence_storage_commands.run(evidence_storage_commands._parser().parse_args([
+        operation, "--repo-root", str(tmp_path), "--snapshot", str(tmp_path / "snapshot"),
+        "--output", str(tmp_path / "output"),
+    ]))
+    assert calls == [("ordinary-token", "draft-visible-token")]
+
+
+def test_retention_uses_draft_visible_inventory_only_for_release_accounting(tmp_path: Path) -> None:
+    root = _storage_repo(tmp_path)
+    contract_path = root / "governance/evidence-storage.yml"
+    contract = yaml.safe_load(contract_path.read_text())
+    contract["budgets"]["maximum_durable_unique_bytes"] = 1
+    contract_path.write_text(yaml.safe_dump(contract), encoding="utf-8")
+    backing = FakeEvidenceAPI(root)
+    backing.repository_artifacts = lambda repository: ()  # type: ignore[attr-defined]
+    source = tmp_path / "draft.tar.gz"
+    source.write_bytes(b"retained unpublished bytes")
+    digest = hashlib.sha256(source.read_bytes()).hexdigest()
+    tag = f"bcf-evidence-inputs-object-{digest}"
+    draft = backing.create_evidence_draft_release(
+        "owner/project", tag=tag, target_commit=COMMIT, body="pending"
+    )
+    backing.upload_evidence_asset(
+        upload_url=draft["upload_url"], repository="owner/project", release_id=draft["id"],
+        name=f"sha256-{digest}.tar.gz", path=source, maximum_bytes=1024,
+    )
+    reader = ScopedEvidenceAPI(backing, forbidden=frozenset({"evidence_releases"}), drafts_visible=False)
+    writer = ScopedEvidenceAPI(backing, forbidden=frozenset({
+        "repository", "repository_artifacts", "delete_action_artifact",
+        "create_evidence_draft_release", "upload_evidence_asset", "publish_release",
+    }))
+    snapshot = tmp_path / "snapshot.json"
+    snapshot.write_text(json.dumps({
+        "schema_version": "1.0", "kind": "governance.evidence-retention-snapshot.v1",
+        "repository": "owner/project", "repository_id": 42,
+        "observed_at_utc": "2026-09-11T00:00:00Z", "actions_handoffs": [],
+        "durable_references": [], "leases": [],
+    }), encoding="utf-8")
+    plan = plan_retention(
+        root, snapshot, api=reader, publication_api=writer,
+        now=datetime(2026, 9, 11, tzinfo=UTC),
+    )
+    assert plan["usage"]["durable_unique_bytes"] == source.stat().st_size
+    assert plan["usage"]["object_count"] == 1
+    assert plan["within_budget"] is False
+    assert plan["durable_release_review_ids"] == [draft["id"]]
+    result = apply_actions_retention(
+        root, snapshot, api=reader, publication_api=writer,
+        now=datetime(2026, 9, 11, tzinfo=UTC),
+    )
+    assert result["deleted_artifact_ids"] == []
+    assert result["durable_release_deletion_attempted"] is False
+    assert writer.calls == ["evidence_releases", "evidence_releases"]
+    assert draft["draft"] is True
 
 
 def _durable_graph_repo(tmp_path: Path) -> Path:

@@ -169,7 +169,8 @@ Run the release audit generator after editorial behavior is final:
 
 ```bash
 python3 .github/scripts/build_editorial_audit.py \
-  --repo-root . --audit audits/v1.2.0-editorial-review.yml --apply
+  --repo-root . --audit audits/v1.2.0-editorial-review.yml \
+  --base-sha "$(git rev-parse origin/main)" --apply
 python3 .github/scripts/check_editorial_contract.py
 ```
 
@@ -290,7 +291,9 @@ edges. Do not copy App variable names, release IDs, asset IDs, run IDs, or
 digests into workflow YAML. `ci graph lock` projects the contract digest and the
 renderer projects its credential references. Ordinary provider reads use the
 trusted workflow token; the short-lived App token receives only `contents:write`
-and is used only for Release mutation. A separate short-lived credential with
+and owns draft discovery, release-ID reads during publication, draft-inclusive
+budget inventory, and Release mutation. Published-release verification remains
+on the ordinary reader. A separate short-lived credential with
 Administration read proves the repository's immutable-Release setting before
 any publication. The storage contract owns both secret names, and generated CI
 passes them to separate API clients. Candidate jobs may prepare an input but
@@ -302,7 +305,10 @@ asset tampering, unsafe archives, interrupted/concurrent publication, and
 retention leases. Record Actions bytes, durable unique bytes, object count, new
 bytes, transfer volume, and hosted job minutes separately. Actions storage and
 hosted execution time are co-equal release budgets. `retention-plan` is a pure
-plan. `retention-apply-actions` repeats provider authentication and cold
+plan. Both retention commands require `GITHUB_TOKEN` for provider custody and
+`BCF_EVIDENCE_WRITE_TOKEN` for complete draft-visible Release inventory. This
+credential prerequisite applies when adopting the 1.2.0 retention commands.
+`retention-apply-actions` repeats provider authentication and cold
 resolution, deletes only the plan's exact transient Actions artifact IDs, and
 verifies their absence; it accepts no glob or artifact-name selector. Durable
 Release deletion remains a separately reviewed provider action.

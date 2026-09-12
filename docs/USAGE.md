@@ -101,8 +101,9 @@ bcf ci graph render --repo-root . --apply
 ```
 
 Generated CI authenticates ordinary source and provider reads with the trusted
-workflow token, uses the declared App token only for contents-write Release
-operations, and uses a separately declared Administration-read credential only
+workflow token, uses the declared contents-write App token for draft discovery,
+release-ID reads during publication, complete Release inventory, and mutations,
+and uses a separately declared Administration-read credential only
 to prove that immutable Releases are enabled before mutation. The settings
 credential must be provisioned in the protected environment before publication;
 BCF validates all three credentials mechanically and never substitutes one scope
@@ -114,7 +115,9 @@ has completed successfully; it never waits for trusted or local capacity.
 candidate inventory and rederives its repository, run, attempt, artifact,
 release, asset, and digest claims from the provider before computing handoff
 deletion candidates, leases, unreachable durable releases, and budget state.
-The plan is non-mutating. After reviewing it, `bcf evidence-store
+The plan is non-mutating. Both retention commands require `GITHUB_TOKEN` and
+`BCF_EVIDENCE_WRITE_TOKEN`; the latter makes unpublished draft bytes visible to
+budget accounting. After reviewing it, `bcf evidence-store
 retention-apply-actions` repeats the complete authentication and cold retrieval,
 deletes only the admitted transient artifact IDs, and verifies their absence.
 The operation is idempotent and never deletes a durable Release.

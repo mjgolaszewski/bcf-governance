@@ -93,7 +93,8 @@ freshness classes, reachability roots, and budgets, then declare graph-owned
 --apply`, and `bcf ci graph render --apply`; never hand-edit the generated
 transport steps or provider identities. The workflow token authenticates
 ordinary reads; the short-lived App token receives only `contents:write` for
-Release mutation, and a separately declared short-lived Administration-read
+draft discovery, publication reads by release ID, complete Release inventory,
+and Release mutation. A separately declared short-lived Administration-read
 credential proves immutable Releases are enabled before mutation.
 Consumers are allocated only after trusted publication succeeds, then cold-resolve
 and rehash every member before gate execution. Caches are acceleration only, GitHub immutable
@@ -101,7 +102,9 @@ Release assets preserve the bytes, and no NAS fallback is authoritative.
 
 Use `bcf evidence-store retention-plan` to authenticate a candidate retention
 inventory and preview reachability, leases, budgets, and exact transient
-handoff IDs. After review, `bcf evidence-store retention-apply-actions` repeats
+handoff IDs. Both retention commands require `GITHUB_TOKEN` plus
+`BCF_EVIDENCE_WRITE_TOKEN` so budgets include unpublished drafts. After review,
+`bcf evidence-store retention-apply-actions` repeats
 the provider checks and cold resolution, deletes only those exact Actions
 artifact IDs, and verifies their absence. It accepts no names or globs, is
 idempotent, and never deletes a durable Release.
