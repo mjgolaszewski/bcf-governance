@@ -10,8 +10,13 @@ import re
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
+from .ci_github_downloads import (
+    GitHubDownloadKind,
+    build_download_request,
+    open_download,
+)
 from .release_versions import ReleaseVersionError, parse_release_tag
 
 
@@ -63,7 +68,7 @@ class GitHubAPI:
             },
         )
         try:
-            with urlopen(request, timeout=30) as response:  # noqa: S310 - fixed HTTPS origin
+            with open_download(request, timeout=30) as response:
                 raw = response.read()
         except HTTPError as exc:
             raise GitHubAPIError(f"GitHub API {method} {path} returned {exc.code}") from exc
@@ -76,23 +81,26 @@ class GitHubAPI:
         except json.JSONDecodeError as exc:
             raise GitHubAPIError("GitHub API returned invalid JSON") from exc
 
-    def _request_bytes(self, path: str, *, maximum_bytes: int) -> bytes:
+    def _request_bytes(
+        self,
+        path: str,
+        *,
+        kind: GitHubDownloadKind,
+        maximum_bytes: int,
+    ) -> bytes:
         if not path.startswith("/") or "\n" in path or "\r" in path:
             raise GitHubAPIError("GitHub API path is unsafe")
         if maximum_bytes < 1:
             raise GitHubAPIError("GitHub byte response limit must be positive")
-        request = Request(
-            self._api_url + path,
-            method="GET",
-            headers={
-                "Accept": "application/octet-stream",
-                "Authorization": f"Bearer {self._token}",
-                "User-Agent": "bcf-governance-trusted-control",
-                "X-GitHub-Api-Version": "2022-11-28",
-            },
+        request = build_download_request(
+            api_url=self._api_url,
+            path=path,
+            token=self._token,
+            kind=kind,
+            user_agent="bcf-governance-trusted-control",
         )
         try:
-            with urlopen(request, timeout=30) as response:  # noqa: S310 - fixed HTTPS origin
+            with open_download(request, timeout=30) as response:  # noqa: S310
                 raw = response.read(maximum_bytes + 1)
         except HTTPError as exc:
             raise GitHubAPIError(f"GitHub API GET {path} returned {exc.code}") from exc
@@ -120,7 +128,7 @@ class GitHubAPI:
             },
         )
         try:
-            with urlopen(request, timeout=60) as response:  # noqa: S310 - closed HTTPS origin
+            with open_download(request, timeout=60) as response:
                 raw = response.read(1_048_577)
         except HTTPError as exc:
             raise GitHubAPIError(f"GitHub release asset upload returned {exc.code}") from exc
@@ -324,6 +332,7 @@ class GitHubAPI:
         numeric = _positive_id(artifact_id, field="artifact ID")
         return self._request_bytes(
             f"/repos/{self._repository(repository)}/actions/artifacts/{numeric}/zip",
+            kind=GitHubDownloadKind.ACTIONS_ARTIFACT,
             maximum_bytes=maximum_bytes,
         )
 

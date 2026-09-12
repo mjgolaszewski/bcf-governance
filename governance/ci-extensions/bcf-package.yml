@@ -164,8 +164,8 @@ jobs:
   semantic_role: exact-main-package-producer
   resource_class: hosted-python-latest
   trust: candidate
-  needs: [admit]
-  condition: exact-main-admitted
+  needs: []
+  condition: success
   timeout_minutes: 30
   permissions: {contents: read}
   checkout: false

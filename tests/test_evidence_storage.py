@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 import hashlib
+import io
 import json
 from pathlib import Path
 import shutil
@@ -12,6 +13,7 @@ import zipfile
 import pytest
 import yaml
 
+from bcf_governance.tooling import ci_github_api, evidence_storage_github_api
 from bcf_governance.tooling.ci_graph_contracts import CIGraphError, validate_ci_graph
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
 from bcf_governance.tooling.ci_graph_render import render_ci_graph
@@ -29,6 +31,8 @@ from bcf_governance.tooling.evidence_storage_github import (
     provider_storage_usage,
     resolve_input_reference,
 )
+from bcf_governance.tooling.ci_github_downloads import CredentialSafeRedirectHandler
+from bcf_governance.tooling.evidence_storage_github_api import GitHubEvidenceAPI
 from bcf_governance.tooling.evidence_storage_manifests import (
     build_input_bundle,
     verify_input_bundle,
@@ -43,6 +47,24 @@ from bcf_governance.tooling.governance_evidence import _install_durable_inputs
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMMIT = "1" * 40
 TREE = "2" * 40
+
+
+class _DownloadResponse(io.BytesIO):
+    def __enter__(self) -> _DownloadResponse:
+        return self
+
+    def __exit__(self, *_args: object) -> None:
+        self.close()
+
+
+class _RecordingOpener:
+    def __init__(self) -> None:
+        self.requests: list[Any] = []
+
+    def open(self, request: Any, *, timeout: int) -> _DownloadResponse:
+        assert timeout in {30, 300}
+        self.requests.append(request)
+        return _DownloadResponse(b"provider bytes")
 
 
 def _storage_repo(tmp_path: Path) -> Path:
@@ -313,6 +335,142 @@ class ScopedEvidenceAPI:
             return target(*args, **kwargs)
 
         return call
+
+
+def test_github_download_media_types_are_owned_by_endpoint_kind(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    opener = _RecordingOpener()
+
+    def open_download(request: Any, *, timeout: int) -> _DownloadResponse:
+        return opener.open(request, timeout=timeout)
+
+    monkeypatch.setattr(ci_github_api, "open_download", open_download)
+    monkeypatch.setattr(evidence_storage_github_api, "open_download", open_download)
+    api = GitHubEvidenceAPI(token="secret")
+
+    assert api.artifact_bytes("owner/project", 40, maximum_bytes=1024) == b"provider bytes"
+    api.download_action_artifact(
+        "owner/project",
+        41,
+        destination=tmp_path / "action-artifact.zip",
+        maximum_bytes=1024,
+    )
+    api.download_evidence_asset(
+        "owner/project",
+        42,
+        destination=tmp_path / "release-asset.tar.gz",
+        maximum_bytes=1024,
+    )
+
+    assert [request.full_url for request in opener.requests] == [
+        "https://api.github.com/repos/owner/project/actions/artifacts/40/zip",
+        "https://api.github.com/repos/owner/project/actions/artifacts/41/zip",
+        "https://api.github.com/repos/owner/project/releases/assets/42",
+    ]
+    assert [request.get_header("Accept") for request in opener.requests] == [
+        "application/vnd.github+json",
+        "application/vnd.github+json",
+        "application/octet-stream",
+    ]
+    assert all(
+        request.get_header("Authorization") == "Bearer secret"
+        for request in opener.requests
+    )
+
+
+def test_github_download_redirects_confine_credentials_to_the_api_origin() -> None:
+    handler = CredentialSafeRedirectHandler()
+    original = evidence_storage_github_api.Request(
+        "https://api.github.com/repos/owner/project/actions/artifacts/41/zip",
+        method="GET",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "Authorization": "Bearer secret",
+            "Proxy-Authorization": "proxy secret",
+        },
+    )
+
+    same_origin = handler.redirect_request(
+        original,
+        None,
+        302,
+        "Found",
+        {},
+        "https://api.github.com/download/same-origin",
+    )
+    cross_origin = handler.redirect_request(
+        original,
+        None,
+        302,
+        "Found",
+        {},
+        "https://pipelines.actions.githubusercontent.com/signed-download",
+    )
+
+    assert same_origin is not None
+    assert same_origin.get_header("Authorization") == "Bearer secret"
+    assert cross_origin is not None
+    assert cross_origin.get_header("Accept") == "application/vnd.github+json"
+    assert cross_origin.get_header("Authorization") is None
+    assert cross_origin.get_header("Proxy-Authorization") is None
+    with pytest.raises(GitHubAPIError, match="redirect must use HTTPS"):
+        handler.redirect_request(
+            original,
+            None,
+            302,
+            "Found",
+            {},
+            "http://pipelines.actions.githubusercontent.com/downgrade",
+        )
+
+
+def test_every_authenticated_github_request_uses_the_redirect_policy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    requests: list[Any] = []
+
+    def open_download(request: Any, *, timeout: int) -> _DownloadResponse:
+        requests.append((request, timeout))
+        return _DownloadResponse(b'{"id":7,"full_name":"owner/project"}')
+
+    monkeypatch.setattr(ci_github_api, "open_download", open_download)
+    monkeypatch.setattr(evidence_storage_github_api, "open_download", open_download)
+    api = GitHubEvidenceAPI(token="secret")
+
+    assert api.repository("owner/project")["id"] == 7
+    assert api.upload_release_asset(
+        upload_url="https://uploads.github.com/repos/owner/project/releases/8/assets{?name,label}",
+        repository="owner/project",
+        release_id=8,
+        name="release.bin",
+        payload=b"release bytes",
+    )["id"] == 7
+    source = tmp_path / "evidence.bin"
+    source.write_bytes(b"evidence bytes")
+    assert api.upload_evidence_asset(
+        upload_url="https://uploads.github.com/repos/owner/project/releases/9/assets{?name,label}",
+        repository="owner/project",
+        release_id=9,
+        name="evidence.bin",
+        path=source,
+        maximum_bytes=1024,
+    )["id"] == 7
+
+    assert [request.get_method() for request, _timeout in requests] == [
+        "GET",
+        "POST",
+        "POST",
+    ]
+    assert [timeout for _request, timeout in requests] == [30, 60, 300]
+    assert all(
+        request.get_header("Authorization") == "Bearer secret"
+        for request, _timeout in requests
+    )
+    assert "urlopen" not in Path(ci_github_api.__file__).read_text(encoding="utf-8")
+    assert "urlopen" not in Path(evidence_storage_github_api.__file__).read_text(
+        encoding="utf-8"
+    )
 
 
 def test_archives_are_deterministic_and_deduplicate_equal_bytes(tmp_path: Path) -> None:

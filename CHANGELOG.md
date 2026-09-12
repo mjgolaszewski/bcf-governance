@@ -28,6 +28,14 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Gave GitHub Actions-artifact ZIPs and Release assets distinct, typed media
+  types in one transport owner. Every authenticated GitHub JSON, upload, and
+  binary request now uses its credential-safe redirect policy; cross-origin
+  HTTPS redirects lose credentials and redirect downgrades are rejected.
+- Kept the exact-main evidence fanout fail-closed during a controller rotation
+  while allowing only the short read-only package producer needed to build the
+  replacement controller. A pending controller can no longer force either a
+  useless full evidence run or an impossible rotation.
 - Required the selected Python runtime before every Python, installed-controller,
   or ephemeral-controller invocation. Trusted no-checkout durable publishers now
   provision the declared runtime without checking out candidate code, and fresh
@@ -39,9 +47,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Moved an applicable repository editorial-inventory check into canonical cheap
   preflight, before exact test-manifest collection, session allocation, or
   evidence fanout. Stale documentation custody now fails at the front door.
-- Ratcheted BCF's own canonical gate-contract context ceiling from 96 to 97 KiB
-  for the added causal preflight control; installed consumer defaults remain
-  unchanged.
+- Ratcheted BCF's own canonical gate-contract context ceiling from 96 to 99 KiB
+  for the complete causal preflight, download, redirect, and controller-transition
+  controls; installed consumer defaults remain unchanged.
 - Preserved bounded project-owned package metadata classifications across
   upgrades so a newer pack schema does not invalidate an otherwise compatible
   consumer architecture contract.
@@ -73,8 +81,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   dependency edges and completion events defer allocation in GitHub rather than
   occupying a hosted VM.
 - Made BCF's exact-main admission require its mechanically confirmed controller.
-  A pending controller rotation now stops before hosted evidence fanout instead
-  of spending a full exact-main run that cannot authorize release.
+  A pending controller rotation now stops before hosted evidence fanout and runs
+  only the bounded package producer needed for mechanical controller rotation.
 - Projected the 1.2.0 trusted-controller target from the authenticated
   exact-main artifact; provider coordinates and generated workflow bytes remain
   mechanically derived rather than operator-authored.
