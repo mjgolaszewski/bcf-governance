@@ -475,7 +475,11 @@ def build_reference_ci_graph(
             "single_push_authority": True,
             "generated_workflows_only": True,
             "forbid_hosted_waiters": True,
-            "forbidden_hosted_tokens": ["sleep", "poll", "wait-for-runner", "lease-runner"],
+            "hosted_orchestration": "run_and_done",
+            "forbidden_hosted_tokens": [
+                "sleep", "poll", "watch", "wait", "while", "until",
+                "wait-for-runner", "lease-runner",
+            ],
             "minimum_gate_timeout_headroom_seconds": 300,
         },
     }

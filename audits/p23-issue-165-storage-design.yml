@@ -1,0 +1,174 @@
+document: {kind: capability_design_audit, id: bcf-governance-p23-issue-165, version: 1.0.0, status: active, path: audits/p23-issue-165-storage-design.yml}
+issue:
+  provider: github
+  repository: mjgolaszewski/bcf-governance
+  number: 165
+  consumer_tracking_id: racecar-18
+  title: Bound Actions evidence storage with content-addressed inputs and authenticated manifests; no NAS dependency
+  target_release: 1.2.0
+classification:
+  kind: missing_optional_bcf_capability
+  severity: high_operational_cost
+  separate_from_issue_164: true
+  reason: current graph transport correctly binds run-attempt Actions artifacts but has no durable content-addressed input plane or reachability budget
+consumer_baseline:
+  repository: mjgolaszewski/racecar
+  source: 18fddaeb53bee90f512a8d80935f2d3d4c6cbaf8
+  actions_artifacts: 994
+  actions_bytes: 59891376352
+  actions_gib: 55.778
+  preparation_gib: 54.694
+  representative_run: 34640869465
+  representative_total_gib: 1.2950
+  representative_preparation_gib: 1.2569
+  estimated_repeated_input_reduction_percent: 97
+  disposition: read_only_design_and_compatibility_proof_no_consumer_mutation
+authority_model:
+  canonical_contract: governance/evidence-storage.yml
+  graph_owner: governance/ci-graph.yml plus registered extensions
+  input_manifest: governance.evidence-input-manifest.v1
+  provider_reference: governance.evidence-input-reference.v1
+  repository_evidence_admission: governance.evidence-receipt-admission.v1
+  invariants:
+  - a digest identifies bytes but never substitutes for their retained availability
+  - candidate jobs may prepare bytes but cannot publish delete retain or certify durable evidence
+  - trusted publishers inspect and hash candidate bytes but never import install or execute them
+  - a draft is completely populated and independently described before immutable publication
+  - every resolver authenticates repository release asset attestation subject commit producer and manifest identities before materialization
+  - caches accelerate retrieval only and never satisfy availability or evidence requirements
+  - required objects are published before compact references and Actions handoff deletion
+  - current heads certified commits releases unresolved findings and explicit custody roots remain reachable
+  - unavailable storage exceeded budgets expired freshness or failed reconstruction fails closed
+  - trusted workflow tokens authenticate reads while the short-lived contents-write App token performs only Release mutation
+transport_design:
+  durable_backend: immutable_github_release_assets
+  release_namespace: non_product_bcf-evidence-inputs
+  object_identity: canonical_archive_sha256
+  archive: deterministic_safe_tar_gzip_with_member_hashes_modes_and_bounded_expansion
+  per_run_actions_content: [authenticated_reference_manifest, ordinary_results, raw_outputs, receipts, findings]
+  transient_actions_content: [one_candidate_preparation_bundle_until_durable_publication_and_reference_validation]
+  materialization_order: [authenticate_reference, fetch_manifest_and_objects, verify_provider_and_content_identity, validate_freshness, extract_into_isolated_bounded_tree, invoke_existing_receipt_and_truth_validation]
+  compatibility:
+  - receipt schema 2.0 top-level fields remain unchanged
+  - existing Actions-only graph artifacts remain valid and unchanged
+  - content-addressed transport is explicit and opt-in for existing consumers
+  - fresh Standard-v2 includes the disabled-by-default governed storage contract and supported graph vocabulary
+  - product release tags and evidence-input release namespaces remain mechanically disjoint
+retention_design:
+  algorithm: exact_reference_reachability_with_lease_protection
+  protected_roots: [live_runs, active_candidate_heads, certified_commits, immutable_product_releases, unresolved_findings, explicit_historical_custody]
+  budget_dimensions: [Actions_bytes, durable_unique_bytes, object_count, object_age, upload_bytes, download_bytes]
+  deletion_rule: only authenticated unreachable transient Actions artifacts after durable publication independent retrieval and lease expiry
+  failure_rule: report and stop without deleting reachable or unverified bytes or minting success
+  limitation: unique originals retained forever produce unbounded total storage; policy must declare a governing retention basis rather than promise unlimited storage
+hosted_execution:
+  rule: run_and_done
+  publication: trusted local no-checkout job after candidate preparation has completed
+  consumption: hosted jobs actively download verify materialize execute and exit
+  forbidden: [hosted_polling, hosted_sleeping, hosted_capacity_waiting, hosted_local_runner_supervision]
+  provider_edges: needs and completion events defer runner allocation rather than occupying a VM
+implementation_scope:
+  bounded_contexts: [evidence, ci_authority, cleanup, install]
+  layers: [tooling, pack, public]
+  target_modules: [evidence_storage_contracts.py, evidence_storage_archives.py, evidence_storage_github.py, evidence_storage_commands.py, ci_graph_contracts.py, ci_graph_render.py, ci_github_api.py]
+  expected_tests: [contract_validation, deterministic_archives, provider_authentication, cold_materialization, unsafe_archive_rejection, freshness, graph_edges, retention_reachability, budgets, legacy_compatibility, package_parity]
+  forbidden_surfaces: [Racecar_repository, Chrysalis_Identity_repository, receipt_schema_2_top_level, existing_21_gate_ids, existing_PR_exact_main_scheduled_and_product_release_topology, product_release_authority]
+  BCF_qualification_topology: {workflows_added: 2, jobs_added: 3, activation: owner_dispatch_only, hosted_waiters: 0}
+actions_storage_forecast:
+  basis: immutable_1.1.1_train_plus_new_compact_fixtures
+  provider_baseline:
+    observed_at_utc: '2026-09-12T00:44:03Z'
+    live_artifacts: 816
+    live_bytes: 413957092
+    live_mib: 394.78
+  segments_mib:
+    local_validation: 0
+    implementation_pr_and_fail_closed_main: 4.0
+    mechanical_controller_target_pr_and_fail_closed_main: 3.0
+    controller_confirmation_pr_and_green_main: 3.7
+    scheduled_mutant_profiles: 0.01
+    GitHub_native_cold_reconstruction_fixture: 5.0
+    release_build_verifier_and_receipt: 36.8
+    post_release_closeout_pr_and_green_main: 3.7
+  expected_actions_artifact_peak_mib: 56.2
+  authorized_ceiling_with_contingency_mib: 67.5
+  durable_fixture_release_assets_ceiling_mib: 5.0
+  product_release_assets_mib: 2.5
+  accounting_rule: retained Actions bytes and peak incremental Actions bytes are release acceptance criteria rather than informational telemetry
+  controls:
+  - no remote execution before the complete combined local suite passes
+  - no hosted polling sleeping idling lease waiting or local-capacity supervision
+  - publish one compact qualification pack once and reuse it for cold reconstruction
+  - purge superseded transient artifacts only after authenticated consumers complete
+  - authenticate complete provider artifact inventory after every remote phase and stop when either the incremental or repository-wide byte ceiling is exceeded
+actions_minutes_forecast:
+  basis: latest comparable immutable_1.1.1 PR exact-main release-verifier and scheduled-mutant jobs
+  representative_hosted_minutes:
+    pull_request_governance_and_pack: 21.99
+    exact_main: 22.15
+    release_build_and_verifier: 17.04
+    scheduled_mutant_profiles: 5.21
+  expected_train_hosted_minutes: 199
+  authorized_ceiling_with_contingency_minutes: 240
+  accounting_rule: hosted execution time and retained Actions storage are coequal stop conditions
+  controls:
+  - jobs are allocated only after provider dependencies are satisfied
+  - no hosted polling sleeping idling lease waiting or local-runner supervision
+  - a failed remote canary stops the train until the complete defect class passes offline
+  - authenticate job timestamps and runner labels after every remote phase and stop before exceeding the train ceiling
+local_qualification:
+  subject_commit: 2bf9cc112a491b5dfd8aa1b1ae81ca0eaf0960b9
+  subject_tree: d1c050d0498eab4e084da76457ff7a88ef3456be
+  source_tests: {result: pass, nodes: 912, duration_seconds: 696.81, junit: .artifacts/local-validation/source-tests-pinned.xml, junit_authority: non-authoritative_local_ignored_record}
+  exact_test_manifests: {source_nodes: 912, contract_nodes: 389, result: pass}
+  mutation_profiles:
+    full: {result: pass, mutants_killed: 25}
+    semantic_full: {result: pass, mutants_killed: 12}
+  artifact_verification: {wheel: pass, extracted_sdist: pass, sdist_tests_passed: 905, sdist_expected_skips: 5}
+  release_check: {result: expected_fail_closed, reason: installed trusted controller remains pinned to 1.1.1 until the mechanical post-merge controller rotation}
+  local_pr_preflight: {result: pass, subject_commit: 216cb039b463a1886d012df560fda962b5d89542}
+implementation_pr_observation:
+  pull_request: 166
+  head_commit: ecaf1797f952147d8ad6e8c5ea1da204cff7270a
+  governance_run: {id: 34670160515, attempt: 1, result: failed_closed}
+  positive_test_population: {nodes: 912, passed: 912, failed: 0, skipped: 0}
+  defect_class: gate_level_negative_controls_not_executed_by_original_local_acceptance_set
+  failed_controls:
+  - {id: projected-durable-storage-budget-must-fail, cause: mutant zeroed existing durable bytes while its oracle fixture exceeded the budget using new bytes}
+  - {id: durable-publisher-workflow-boundary-must-fail, cause: the same-workflow fixture also violated exact dependency fan-in so a second invariant masked the claimed condition}
+  corrective_rule: every new gate-level behavioral probe must execute from a clean committed tree before successor provider execution and must fail only for a cause-specific diagnostic or node
+  provider_cost:
+    hosted_job_seconds: 1413
+    hosted_job_minutes: 23.55
+    actions_artifact_baseline_bytes: 413957092
+    actions_artifact_after_bytes: 414676941
+    actions_artifact_increment_bytes: 719849
+    actions_artifact_increment_mib: 0.687
+  budget_disposition: within_both_hard_ceilings
+  rerun_requested: false
+offline_failure_class_remediation:
+  scope: every_new_P23_test_gate_control_and_durable_publisher_boundary
+  changes:
+  - projected-byte control now removes projected new bytes rather than already-retained bytes
+  - same-workflow fixture satisfies unrelated dependency and event constraints so only the workflow boundary decides its outcome
+  - all thirteen graph transport adversaries assert cause-specific diagnostics
+  - applicable editorial inventory validation runs in canonical cheap preflight
+  - BCF's self-governed gate-contract ceiling ratchets from 96 to 97 KiB for the added causal control while consumer defaults remain unchanged
+  acceptance_rule: actual local evidence execution including every affected negative control must pass from one clean committed session before another provider attempt
+racecar_read_only_qualification:
+  repository: mjgolaszewski/racecar
+  exact_pr_head: 18fddaeb53bee90f512a8d80935f2d3d4c6cbaf8
+  bcf_wheel_sha256: e9aad59e0cf7cda2bf3ae1d579c4dc091843ac9ac0b60ef7d2fd93232bbe92bf
+  strict_upgrade: pass
+  graph_sha256: 899806254eff8b08f9703988c9c6da31fd0212e93f61fecc77bb08d702a31cef
+  workflow_inventory_sha256: 948cd2af5eac99b0938011a518d45e864fe2f0bab04bc4d09c7f54e9719b41c7
+  graph_preserved: true
+  workflows_preserved: true
+  consumer_workspace_mutated: false
+  consumer_remote_mutated: false
+acceptance:
+  local: passed_except_expected_controller_rotation
+  GitHub_provider_qualification: pending
+  Racecar_dry_run: passed
+  storage_measurement: baseline_passed_remote_segments_pending
+  release: pending

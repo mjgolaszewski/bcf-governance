@@ -242,11 +242,22 @@ def _artifact_runtime_path(
     return str(compiled.graph["artifacts"][artifact]["path"])
 
 
+def _reference_file_path(
+    compiled: CompiledCIGraph, job: dict[str, Any], artifact: str
+) -> str:
+    return (
+        _artifact_runtime_path(compiled, job, artifact)
+        + "/evidence-input-reference.json"
+    )
+
+
 def _download_steps(
     compiled: CompiledCIGraph, workflow: dict[str, Any], job: dict[str, Any]
 ) -> list[dict[str, Any]]:
     steps: list[dict[str, Any]] = []
     for artifact in job["consumes"]:
+        if job["executor"]["kind"] == "durable_publish":
+            continue
         producer_workflow, _ = _artifact_producer(compiled, artifact)
         cross_workflow = producer_workflow["id"] != workflow["id"]
         run_id = (
@@ -286,6 +297,53 @@ def _download_steps(
     return steps
 
 
+def _resolve_durable_steps(
+    compiled: CompiledCIGraph, job: dict[str, Any]
+) -> list[dict[str, Any]]:
+    steps: list[dict[str, Any]] = []
+    for artifact_id in job["consumes"]:
+        artifact = compiled.graph["artifacts"][artifact_id]
+        if artifact["kind"] != "durable-reference":
+            continue
+        steps.append(
+            {
+                "name": f"Resolve authenticated {artifact_id} inputs",
+                "shell": "bash",
+                "env": {
+                    "BCF_PYTHON": SELECTED_PYTHON,
+                    "GITHUB_TOKEN": "${{ github.token }}",
+                },
+                "run": (
+                    "set -euo pipefail\n"
+                    '"$BCF_PYTHON" scripts/evidence_storage.py resolve-github '
+                    f'--repo-root . --reference "{_reference_file_path(compiled, job, artifact_id)}" '
+                    f'--output "{artifact["materialization_root"]}"'
+                ),
+            }
+        )
+    return steps
+
+
+def _prepare_durable_steps(
+    compiled: CompiledCIGraph, job: dict[str, Any]
+) -> list[dict[str, Any]]:
+    return [
+        {
+            "name": f"Prepare content-addressed {artifact_id} handoff",
+            "shell": "bash",
+            "env": {"BCF_PYTHON": SELECTED_PYTHON},
+            "run": (
+                "set -euo pipefail\n"
+                '"$BCF_PYTHON" scripts/evidence_storage.py prepare --repo-root . '
+                f'--artifact {shlex.quote(artifact_id)} '
+                f'--output "{_artifact_runtime_path(compiled, job, artifact_id)}"'
+            ),
+        }
+        for artifact_id in job["produces"]
+        if compiled.graph["artifacts"][artifact_id]["kind"] == "durable-source"
+    ]
+
+
 def _upload_steps(
     compiled: CompiledCIGraph, job: dict[str, Any]
 ) -> list[dict[str, Any]]:
@@ -305,7 +363,11 @@ def _upload_steps(
     ]
 
 
-def _executor_steps(compiled: CompiledCIGraph, job: dict[str, Any]) -> list[dict[str, Any]]:
+def _executor_steps(
+    compiled: CompiledCIGraph,
+    job: dict[str, Any],
+    workflow: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
     executor = job["executor"]
     if executor["kind"] in {"command", "truth"}:
         return [_command_step(compiled, executor["command"], name=job["display_name"])]
@@ -331,6 +393,58 @@ def _executor_steps(compiled: CompiledCIGraph, job: dict[str, Any]) -> list[dict
                     "done"
                 ),
             }
+        ]
+    if executor["kind"] == "durable_publish":
+        if workflow is None:
+            raise AssertionError("durable publisher rendering requires workflow identity")
+        if compiled.evidence_storage is None:
+            raise AssertionError("durable publisher rendering requires evidence storage")
+        provider = compiled.evidence_storage["provider"]
+        source = executor["source"]
+        reference = executor["reference"]
+        producer_workflow, _ = _artifact_producer(compiled, source)
+        cross_workflow = producer_workflow["id"] != workflow["id"]
+        run_id = (
+            "${{ github.event.workflow_run.id }}"
+            if cross_workflow
+            else "${{ github.run_id }}"
+        )
+        run_attempt = (
+            "${{ github.event.workflow_run.run_attempt }}"
+            if cross_workflow
+            else "${{ github.run_attempt }}"
+        )
+        artifact_name = f"bcf-{source}-{run_id}-{run_attempt}"
+        return [
+            {
+                "name": "Mint repository-scoped evidence publication token",
+                "id": "evidence-app-token",
+                "uses": action_pin("create-github-app-token"),
+                "with": {
+                    "app-id": "${{ vars." + provider["app_id_variable"] + " }}",
+                    "private-key": "${{ secrets."
+                    + provider["private_key_secret"]
+                    + " }}",
+                    "permission-contents": "write",
+                },
+            },
+            {
+                "name": job["display_name"],
+                "shell": "bash",
+                "env": {
+                    "GITHUB_TOKEN": "${{ github.token }}",
+                    "BCF_EVIDENCE_WRITE_TOKEN": "${{ steps.evidence-app-token.outputs.token }}",
+                },
+                "run": (
+                    "set -euo pipefail\n"
+                    f"{compiled.trusted_controller_check}\n"
+                    f"{compiled.trusted_controller} evidence-store publish-github "
+                    '--repository "$GITHUB_REPOSITORY" '
+                    f'--run-id "{run_id}" --run-attempt "{run_attempt}" '
+                    f'--artifact-name "{artifact_name}" '
+                    f'--output "{_reference_file_path(compiled, job, reference)}"'
+                ),
+            },
         ]
     if executor["kind"] == "authority":
         operation = executor["operation"]
@@ -426,6 +540,18 @@ def _job(
         }
     if job["environment"]:
         result["env"] = copy.deepcopy(job["environment"])
+    durable_references = [
+        (
+            _reference_file_path(compiled, job, artifact_id),
+            compiled.graph["artifacts"][artifact_id]["materialization_root"],
+        )
+        for artifact_id in job["consumes"]
+        if compiled.graph["artifacts"][artifact_id]["kind"] == "durable-reference"
+    ]
+    if durable_references:
+        result.setdefault("env", {})["BCF_EVIDENCE_INPUT_BINDINGS"] = ";".join(
+            f"{reference}|{root}" for reference, root in durable_references
+        )
     if "protected_environment" in job:
         result["environment"] = job["protected_environment"]
     steps: list[dict[str, Any]] = []
@@ -433,11 +559,14 @@ def _job(
     if required_environment is not None:
         steps.append(required_environment)
     if job["checkout"]:
+        checkout_inputs: dict[str, Any] = {"persist-credentials": False}
+        if any(event["type"] == "workflow_run" for event in workflow["events"]):
+            checkout_inputs["ref"] = "${{ github.event.workflow_run.head_sha }}"
         steps.append(
             {
                 "name": "Check out the exact candidate commit",
                 "uses": action_pin("checkout"),
-                "with": {"persist-credentials": False},
+                "with": checkout_inputs,
             }
         )
     if "python" in job["components"]:
@@ -467,6 +596,7 @@ def _job(
     }
     if not explicit_components:
         steps.extend(_download_steps(compiled, workflow, job))
+        steps.extend(_resolve_durable_steps(compiled, job))
     if "restore-private-modes" in job["components"]:
         steps.append(
             {
@@ -479,8 +609,9 @@ def _job(
                 ),
             }
         )
-    steps.extend(_executor_steps(compiled, job))
+    steps.extend(_executor_steps(compiled, job, workflow))
     if not explicit_components:
+        steps.extend(_prepare_durable_steps(compiled, job))
         steps.extend(_upload_steps(compiled, job))
     if "scoped-cleanup" in job["components"]:
         steps.append(

@@ -43,25 +43,28 @@ def _copy_self_controller_fixture(root: Path) -> dict[str, Any]:
             encoding="utf-8"
         )
     )
-    paths = [
+    graph = yaml.safe_load(
+        (REPO_ROOT / "governance/ci-graph.yml").read_text(encoding="utf-8")
+    )
+    graph_inputs = {
+        str(graph["evidence_storage"]["path"]),
+        *(str(item["path"]) for item in graph["extensions"]),
+        *(str(item["path"]) for item in graph["value_sources"].values()),
+    }
+    paths = sorted(graph_inputs | {
         "governance/self-governance-policy.yml",
         "governance/ci-graph.yml",
         "governance/public-contracts.yml",
-        "governance/automation-producers.yml",
-        "governance/github-protection.yml",
         "schemas/ci-graph.schema.json",
         "schemas/ci-graph-extension.schema.json",
         "schemas/automation-producers.schema.json",
         "schemas/github-protection.schema.json",
-    ]
+        "schemas/evidence-storage.schema.json",
+    })
     for relative in paths:
         destination = root / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(REPO_ROOT / relative, destination)
-    shutil.copytree(
-        REPO_ROOT / "governance/ci-extensions",
-        root / "governance/ci-extensions",
-    )
     shutil.copytree(REPO_ROOT / ".github/workflows", root / ".github/workflows")
     return policy
 

@@ -6,6 +6,86 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-12
+
+### Added
+
+- Added issue #165's opt-in GitHub-native durable evidence-input contract,
+  deterministic bounded archives, compact authenticated run manifests, cold
+  resolver, provider-derived storage budgets, and reachability/lease retention
+  planner. Identical inputs reuse one attested immutable non-product Release
+  asset; required bytes never depend on a NAS or cache.
+- Added graph-owned `durable-source`, `durable-reference`, and trusted
+  `durable_publish` vocabulary plus `bcf evidence-store` validation,
+  preparation, publication, resolution, retention-plan, and exact transient
+  retention-apply operations. Apply repeats provider authentication and cold
+  reconstruction, deletes no durable Release, and verifies each deleted
+  Actions artifact is absent. Fresh installations receive the inactive
+  contract; existing consumers remain unchanged until explicit adoption.
+
+- Made retained Actions bytes and hosted job minutes co-equal governed release
+  budgets with measured baselines, per-train forecasts, and hard stop ceilings.
+
+### Fixed
+
+- Split durable-publisher graph validation into cause-specific mechanical
+  diagnostics and made each new storage negative control isolate the invariant
+  it claims to prove. A masked same-workflow rejection and a non-causal
+  projected-byte mutant can no longer appear to test those controls.
+- Moved an applicable repository editorial-inventory check into canonical cheap
+  preflight, before exact test-manifest collection, session allocation, or
+  evidence fanout. Stale documentation custody now fails at the front door.
+- Ratcheted BCF's own canonical gate-contract context ceiling from 96 to 97 KiB
+  for the added causal preflight control; installed consumer defaults remain
+  unchanged.
+- Preserved bounded project-owned package metadata classifications across
+  upgrades so a newer pack schema does not invalidate an otherwise compatible
+  consumer architecture contract.
+- Fixed issue #164 by resolving direct Python `self.method()` operation edges
+  to the exact method in their declaring lexical class. Writes and authority
+  effects in private helpers can no longer disappear behind an unqualified
+  `self` call.
+- Made receiver rebinding, receiver and bound-method aliases, inheritance or
+  override ambiguity, `super()`, reflective receiver dispatch, and missing
+  same-instance targets fail closed instead of relying on suffix or basename
+  guesses. Decorated classes or methods, metaclasses, dynamic attribute lookup,
+  and method rebinding are likewise rejected when static ownership is not exact.
+
+### Changed
+
+- Added exact class, base, decorator, method-binding, receiver, and method-rebinding
+  facts to the existing source-first Python inventory without adding another AST
+  scan.
+- Preserved pure helper traversal and exact declared helper ports. Component
+  calls require an explicit operation port, while a raw declaration cannot
+  conceal ambiguous same-instance dispatch.
+- Added complete public-operation, source-layout, adversarial dispatch, lexical
+  collision, consumer-method, and cause-verified regression coverage.
+- Preserved receipt schema 2.0, profile and authority contracts, all 21 gate
+  IDs, and the mechanically generated CI topology.
+- Made fresh Standard-v2 and BCF self-graphs declare a mechanically validated
+  run-and-done hosted-execution policy. Hosted command paths reject sleeping,
+  polling, watching, shell wait loops, and local-runner lease coordination;
+  dependency edges and completion events defer allocation in GitHub rather than
+  occupying a hosted VM.
+- Bound durable publication credentials, GitHub App permissions, source commit
+  and tree, workflow bytes, job, run, attempt, provider assets, attestations,
+  freshness, and materialized member bytes mechanically. Concurrent or
+  interrupted publication is idempotent and contradictory provider state fails
+  closed.
+- Split trusted publication credentials by operation: the workflow token owns
+  authenticated Actions, repository, Release, and attestation reads, while the
+  short-lived App token is requested with only `contents:write` and performs
+  only Release mutation.
+- Added an owner-dispatched BCF qualification graph that prepares one bounded
+  input on a hosted worker, publishes it after completion on trusted local
+  control, and allocates the hosted cold resolver only after publication
+  succeeds. No hosted job waits for local capacity.
+- Preserved receipt schema 2.0 and Actions-only artifacts. Large Actions
+  archives are bounded transient handoffs, compact references retain the
+  existing schedule, and every detached evidence worktree re-verifies its
+  declared durable inputs before gate execution.
+
 ## [1.1.1] - 2026-09-11
 
 Published as immutable GitHub release `387251389` from exact certified merge
@@ -926,7 +1006,8 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.4...v1.1.0
 [1.0.4]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.3...v1.0.4

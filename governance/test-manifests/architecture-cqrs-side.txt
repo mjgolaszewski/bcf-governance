@@ -1,1 +1,2 @@
 tests.test_self_governance_contracts::test_cli_application_operations_are_closed_and_effect_safe
+tests.test_semantic_method_effects::test_public_operation_rejects_write_hidden_by_same_instance_method

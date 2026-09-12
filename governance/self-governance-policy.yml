@@ -3,12 +3,12 @@ thin_wrapper_loc_cap: 20
 tooling_contexts:
   ci_authority: [automation_, ci_authority_, ci_adopt_github.py, ci_commands.py, ci_graph_, ci_github.py, ci_github_, ci_self_controller.py, github_protection.py, local_pr.py, trusted_controller_compatibility.py, trusted_inputs.py, truth_workflow_graph.py]
   cleanup: [cleanup_ci_resources.py, cleanup_governance_pack.py, evidence_session_cleanup.py, governance_cleanup/]
-  evidence: [evidence_attestation.py, evidence_execution.py, evidence_gate_contracts.py, evidence_sessions.py, evidence_test_adapters.py, governance_evidence.py, governance_truth.py, governance_truth_support.py, negative_control_execution.py, release_, test_manifests.py, truth_receipts.py, truth_sessions.py]
+  evidence: [evidence_attestation.py, evidence_execution.py, evidence_gate_contracts.py, evidence_sessions.py, evidence_storage_, evidence_test_adapters.py, governance_evidence.py, governance_truth.py, governance_truth_support.py, negative_control_execution.py, release_, test_manifests.py, truth_receipts.py, truth_sessions.py]
   install: [install_governance_pack.py, governance_install/]
   operations: [migrate_contracts.py, migrate_governance_evidence.py, publish_audit.py, scaffold_governance_artifacts.py]
   profiles: [governance_profiles.py, profile_]
   runtime: [runtime_capacity.py]
-  semantic_ownership: [semantic_adoption_diagnostics.py, semantic_authority_, semantic_derivations.py, semantic_locking.py, semantic_operation_, semantic_ownership_, semantic_yaml.py]
+  semantic_ownership: [semantic_adoption_diagnostics.py, semantic_authority_, semantic_derivations.py, semantic_locking.py, semantic_operation_, semantic_ownership_, semantic_python_method_identity.py, semantic_yaml.py]
   validation: [check_governance_exposure.py, doctor_governance_pack.py, interpreter_environment.py, preflight.py, public_contracts.py, self_workflow_contracts.py, validate_governance_yaml.py, yaml_mutations.py, governance_validation/]
 required_dependencies: {PyYAML: '>=6.0,<7', jsonschema: '>=4.21,<5', packaging: '>=24,<27'}
 sbom_format: CycloneDX

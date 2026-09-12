@@ -169,7 +169,7 @@ Run the release audit generator after editorial behavior is final:
 
 ```bash
 python3 .github/scripts/build_editorial_audit.py \
-  --repo-root . --audit audits/v1.1.1-editorial-review.yml --apply
+  --repo-root . --audit audits/v1.2.0-editorial-review.yml --apply
 python3 .github/scripts/check_editorial_contract.py
 ```
 
@@ -282,6 +282,27 @@ all transported manifest copies. Truth similarly runs canonical receipt admissio
 before grouping: copied evidence IDs or execution slots invalidate every collider.
 Changes to either rule require a cause-verified control for the owner and an
 architecture test preventing a second selector or admission path.
+
+Durable evidence inputs follow the same single-owner rule. The canonical
+storage contract owns provider namespace, credentials, freshness, archive
+safety, reachability, and budgets; the CI graph owns source/publisher/reference
+edges. Do not copy App variable names, release IDs, asset IDs, run IDs, or
+digests into workflow YAML. `ci graph lock` projects the contract digest and the
+renderer projects its credential references. Provider reads use the trusted
+workflow token; the short-lived App token receives only `contents:write` and is
+used only for Release mutation. Candidate jobs may prepare an input but cannot publish, retain,
+delete, or certify it.
+
+Qualification must include two runs with identical source bytes, one cold
+resolution with no warm cache, an expired mutable-database input, provider and
+asset tampering, unsafe archives, interrupted/concurrent publication, and
+retention leases. Record Actions bytes, durable unique bytes, object count, new
+bytes, transfer volume, and hosted job minutes separately. Actions storage and
+hosted execution time are co-equal release budgets. `retention-plan` is a pure
+plan. `retention-apply-actions` repeats provider authentication and cold
+resolution, deletes only the plan's exact transient Actions artifact IDs, and
+verifies their absence; it accepts no glob or artifact-name selector. Durable
+Release deletion remains a separately reviewed provider action.
 
 Test-node execution follows the same ownership rule. `test_manifests.py` alone maps
 raw pytest selectors to JUnit-normalized identities, rejects normalization collisions,

@@ -22,7 +22,8 @@ worktree and transferred atomically with rollback.
 7. Use `bcf cleanup --repo-root . --remove-governance-pack` only when intentionally decommissioning BCF governance.
 8. Tune architecture gates to the repo's real layout; do not delete gates to make validation pass.
 9. Review README, docs, runbooks, plans, and phase logs section by section against repo evidence.
-10. Record command outcomes and unresolved constraints in the active phase log.
+10. For durable evidence, retain every reachable immutable object and active lease. Preview exact transient Actions handoffs with `bcf evidence-store retention-plan`; apply only those authenticated IDs with `retention-apply-actions`, which repeats cold resolution and never deletes a durable Release. A digest never substitutes for preserved bytes.
+11. Record command outcomes and unresolved constraints in the active phase log.
 
 ## Deterministic Work
 

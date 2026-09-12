@@ -314,6 +314,37 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
     } == state_before
 
 
+def test_upgrade_preserves_bounded_package_metadata_ownership(tmp_path: Path) -> None:
+    target = tmp_path / "package-metadata-upgrade"
+    _run_installer(target, "--profile", "lite", "--require-strict-validation")
+    architecture_path = target / "architecture-boundaries.yml"
+    architecture_text = architecture_path.read_text(encoding="utf-8")
+    ownership = [
+        {
+            "path": "backend/src/demo/__init__.py",
+            "layer": "infrastructure",
+            "context": "distribution",
+            "exports": ["__version__"],
+        }
+    ]
+    marker = "architecture:\n"
+    assert architecture_text.count(marker) == 1
+    ownership_line = (
+        "architecture:\n"
+        "  package_metadata_ownership: [{path: backend/src/demo/__init__.py, "
+        "layer: infrastructure, context: distribution, exports: [__version__]}]\n"
+    )
+    architecture_path.write_text(
+        architecture_text.replace(marker, ownership_line), encoding="utf-8"
+    )
+
+    result = _run_installer(target, "--upgrade", "--require-strict-validation")
+
+    assert "validation: strict pass" in result.stdout
+    upgraded = yaml.safe_load(architecture_path.read_text(encoding="utf-8"))
+    assert upgraded["architecture"]["package_metadata_ownership"] == ownership
+
+
 def test_upgrade_refreshes_code_without_implicitly_migrating_legacy_state(
     tmp_path: Path,
 ) -> None:

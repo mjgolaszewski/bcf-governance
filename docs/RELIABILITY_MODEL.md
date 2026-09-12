@@ -20,12 +20,16 @@ observation, or self-evaluation deterministic. Relevant failure modes include:
 - competing representations, defaults, normalizers, or state transitions;
 - material semantic families omitted from the declared governance scope;
 - public operations whose mutation or authority effects are unclassified;
+- method-call identities that omit their lexical owner and hide downstream effects;
 - synchronized semantic copies with no reproducible derivation or bounded exception;
 - tests that reproduce the same incorrect assumption as the implementation;
 - gates that exist but are insensitive to the defect they claim to detect;
 - test-population, workflow, or configuration drift;
 - stale evidence presented as current evidence;
 - incorrect run, attempt, session, or artifact association;
+- repeated preparation archives exhausting Actions storage, or a digest being
+  retained after the bytes it identifies have disappeared;
+- stale advisory databases accepted because their content hash did not change;
 - lifecycle or release claims based on incomplete observations;
 - hidden environmental state changing a result; and
 - probabilistic synchronization of duplicated configuration.
@@ -44,7 +48,10 @@ semantic authority. It may use several checks around one claim:
 - causal negative controls challenge a detector;
 - truth recomputes recorded observations;
 - trusted code reconstructs provider state independently of candidate claims;
-- hashes and a separate verifier challenge release artifacts; and
+- hashes and a separate verifier challenge release artifacts;
+- content-addressed input manifests, cold resolution, and freshness policy
+  challenge durable evidence availability without retaining each repeated
+  preparation once per lane and run; and
 - workflow parity challenges rendered bytes against their graph owner.
 
 These observations are useful only if the meaning of the claim has one owner.

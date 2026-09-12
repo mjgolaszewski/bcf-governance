@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 
 _EXPLICIT_EXECUTORS = {"component_sequence", "gate_shard", "terminal_truth"}
 _REPOSITORY_PREFIXES = ("./", ".artifacts/", ".github/", "governance/", "scripts/")
 _ENV_REFERENCE = "${{ env.%s }}"
+_RUN_AND_DONE_FORBIDDEN = frozenset(
+    {"sleep", "poll", "watch", "wait", "while", "until", "wait-for-runner", "lease-runner"}
+)
 
 
 def _strings(value: Any) -> tuple[str, ...]:
@@ -182,3 +186,32 @@ def workflow_input_issues(
                         f"must provide an input fallback for {direct_events}"
                     )
     return tuple(sorted(set(issues)))
+
+
+def hosted_command_issues(graph: dict[str, Any]) -> tuple[str, ...]:
+    """Reject hosted coordination and incomplete run-and-done policy."""
+    configured = {
+        str(value).lower() for value in graph["policy"]["forbidden_hosted_tokens"]
+    }
+    if graph["policy"].get("hosted_orchestration") == "run_and_done":
+        missing = sorted(_RUN_AND_DONE_FORBIDDEN - configured)
+        if missing:
+            return (f"run-and-done hosted policy is missing tokens {missing}",)
+    issues: list[str] = []
+    for workflow in graph["workflows"]:
+        issues.extend(workflow_input_issues(graph, workflow))
+        for job in workflow["jobs"]:
+            resource = graph["resource_classes"][job["resource_class"]]
+            if not resource["hosted"]:
+                continue
+            for command_id in _command_ids(graph, job["executor"]):
+                normalized = " ".join(graph["commands"][command_id]["argv"]).lower()
+                for token in configured:
+                    if re.search(
+                        rf"(?:^|[^a-z0-9]){re.escape(token)}(?:$|[^a-z0-9])",
+                        normalized,
+                    ):
+                        issues.append(
+                            f"hosted waiter token {token!r} is prohibited in job {job['id']}"
+                        )
+    return tuple(issues)

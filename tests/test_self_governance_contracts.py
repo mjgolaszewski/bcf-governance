@@ -133,8 +133,13 @@ def test_cli_application_operations_are_closed_and_effect_safe() -> None:
     observations = validate_application_operations(
         REPO_ROOT, discover_python_source(REPO_ROOT)
     )
+    declared = yaml.safe_load(
+        (REPO_ROOT / "governance/application-operations.yml").read_text(
+            encoding="utf-8"
+        )
+    )["operations"]
 
-    assert len(observations) == 19
+    assert len(observations) == len(declared)
     assert len({row["operation"] for row in observations}) == len(observations)
 
 

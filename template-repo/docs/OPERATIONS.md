@@ -84,6 +84,26 @@ waiting for another job. Nested local automation running inside a provider
 process must pass `--local-producer-id`; this prevents ambient provider
 variables from changing the immutable session and receipt identity.
 
+Fresh repositories also receive an inactive
+`governance/evidence-storage.yml`. Repositories with repeated large preparation
+inputs may explicitly configure its GitHub App, protected environment,
+freshness classes, reachability roots, and budgets, then declare graph-owned
+`durable-source` and `durable-reference` artifacts plus one trusted no-checkout
+`durable_publish` job. Run `bcf evidence-store validate`, `bcf ci graph lock
+--apply`, and `bcf ci graph render --apply`; never hand-edit the generated
+transport steps or provider identities. The workflow token authenticates reads;
+the short-lived App token receives only `contents:write` for Release mutation.
+Consumers are allocated only after trusted publication succeeds, then cold-resolve
+and rehash every member before gate execution. Caches are acceleration only, GitHub immutable
+Release assets preserve the bytes, and no NAS fallback is authoritative.
+
+Use `bcf evidence-store retention-plan` to authenticate a candidate retention
+inventory and preview reachability, leases, budgets, and exact transient
+handoff IDs. After review, `bcf evidence-store retention-apply-actions` repeats
+the provider checks and cold resolution, deletes only those exact Actions
+artifact IDs, and verifies their absence. It accepts no names or globs, is
+idempotent, and never deletes a durable Release.
+
 `README.md`, `LICENSE`, and `CHANGELOG.md` are standard required root
 artifacts. Preserve their application-specific content. Every pull request must
 update `CHANGELOG.md`; governance CI verifies the exact base-to-HEAD diff and

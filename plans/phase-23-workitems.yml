@@ -1,0 +1,94 @@
+document:
+  kind: execution_phase_workitem_ledger
+  name: Phase 23 Workitems
+  id: bcf-governance-phase-23-workitems
+  version: 1.0.0
+  generated_at_utc: '2026-09-11T00:00:00Z'
+  status: active
+  path: plans/phase-23-workitems.yml
+  phase_id: P23
+workitems:
+- id: P23-P0-01
+  priority: P0
+  status: DONE
+  summary: exact same-instance method identity and fail-closed ambiguous dispatch implementation
+  acceptance:
+  - direct same-instance helpers resolve to exact lexical class methods and expose downstream write and authority effects
+  - rebinding aliases inheritance overrides super reflection decorators metaclasses dynamic attribute behavior method replacement and unresolved targets fail closed
+  - pure helpers exact helper ports and explicitly declared component boundaries remain valid
+  acceptance_evidence:
+  - architecture-cqrs-side
+  - test
+  - contract-test
+- id: P23-P0-02
+  priority: P0
+  status: DONE
+  summary: complete public-operation adversarial and causal regression coverage
+  acceptance:
+  - the issue 164 public operation reproducer fails before remediation and passes only after exact helper traversal
+  - each admitted and rejected dispatch class has focused coverage and the causal mutant reopens the original false pass
+  - exact source and contract manifests both include the governed regression nodes
+  acceptance_evidence:
+  - architecture-cqrs-side
+  - test
+  - contract-test
+- id: P23-P0-03
+  priority: P0
+  status: IN_PROGRESS
+  summary: generated-runtime parity read-only Racecar proofs and immutable 1.2.0 release
+  acceptance:
+  - canonical standalone and packaged runtimes remain byte-identical and workflow topology remains graph-rendered
+  - current Racecar PR method edges resolve exactly without product workspace or repository mutation
+  - exact certified main produces one independently verified immutable 1.2.0 release without rebuilding
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P23-P0-04
+  priority: P0
+  status: DONE
+  summary: run-and-done hosted orchestration policy for BCF and fresh Standard-v2 graphs
+  acceptance:
+  - hosted jobs start only after provider-resolved dependencies or completion events and never supervise local capacity
+  - graph validation rejects incomplete waiter-token policy and sleep poll watch wait loop or runner-lease commands
+  - current BCF and fresh Standard-v2 graphs pass exact runner executor dependency and rendered-workflow audits
+  acceptance_evidence:
+  - governance-validate
+  - test
+  - contract-test
+- id: P23-P0-05
+  priority: P0
+  status: IN_PROGRESS
+  summary: GitHub-native content-addressed evidence inputs with authenticated manifests, cold reconstruction, and reachability-based retention
+  acceptance:
+  - canonical manifests bind original bytes subject producer freshness archive metadata and exact GitHub provider identities
+  - deterministic archives and materialization reject missing changed extra expired unsafe or oversized content
+  - legacy schema-2 receipts remain readable and validate only after required durable bytes are reconstructed
+  acceptance_evidence:
+  - governance-validate
+  - test
+  - contract-test
+- id: P23-P0-06
+  priority: P0
+  status: IN_PROGRESS
+  summary: GitHub-native immutable publication resolution and cold reconstruction
+  acceptance:
+  - trusted publication creates a fully populated draft before immutable publication and candidate jobs receive no publication authority
+  - a fresh environment reconstructs required bytes using authenticated GitHub provider state without NAS NFS cache or local archive service
+  - cache miss release deletion attestation absence or provider mismatch fails without minting evidence success
+  acceptance_evidence:
+  - governance-validate
+  - test
+  - contract-test
+- id: P23-P0-07
+  priority: P0
+  status: IN_PROGRESS
+  summary: graph transport migration reachability retention and storage budgets
+  acceptance:
+  - graph-owned producer publisher resolver and consumer edges move one verified input set rather than duplicating preparation payloads per lane
+  - Actions artifacts remain bounded handoff only and caches remain acceleration only
+  - reachability roots leases byte count age telemetry and fail-closed preflight budgets protect all required current and historical evidence
+  - provider-authenticated Actions storage and hosted-minute observations stay within the governed P23 forecast and hard ceilings after every remote phase
+  acceptance_evidence:
+  - governance-validate
+  - test
+  - contract-test

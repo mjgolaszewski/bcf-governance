@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bcf-governance.invalid/schemas/evidence-storage.schema.json",
+  "title": "BCF durable evidence storage contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document", "schema_version", "activation", "provider", "transport", "archive_safety", "freshness_classes", "retention", "budgets"],
+  "properties": {
+    "document": {"$ref": "#/$defs/document"},
+    "schema_version": {"const": "1.0"},
+    "activation": {"enum": ["disabled", "enabled"]},
+    "provider": {"$ref": "#/$defs/provider"},
+    "transport": {"$ref": "#/$defs/transport"},
+    "archive_safety": {"$ref": "#/$defs/archiveSafety"},
+    "freshness_classes": {
+      "type": "object",
+      "propertyNames": {"$ref": "#/$defs/identifier"},
+      "additionalProperties": {"$ref": "#/$defs/freshnessClass"}
+    },
+    "retention": {"$ref": "#/$defs/retention"},
+    "budgets": {"$ref": "#/$defs/budgets"}
+  },
+  "$defs": {
+    "identifier": {"type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "safePath": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"},
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "version", "status", "path"],
+      "properties": {
+        "kind": {"const": "evidence_storage"},
+        "id": {"$ref": "#/$defs/identifier"},
+        "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "status": {"const": "active"},
+        "path": {"const": "governance/evidence-storage.yml"}
+      }
+    },
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "repository", "repository_id", "tag_prefix", "protected_environment", "credential_kind", "app_id_variable", "private_key_secret", "immutable_required", "attestation_required", "max_assets_per_release", "max_asset_bytes"],
+      "properties": {
+        "kind": {"const": "github_release"},
+        "repository": {"oneOf": [{"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"}, {"type": "null"}]},
+        "repository_id": {"oneOf": [{"type": "integer", "minimum": 1}, {"type": "null"}]},
+        "tag_prefix": {"type": "string", "pattern": "^bcf-evidence-[a-z0-9][a-z0-9-]*$"},
+        "protected_environment": {"oneOf": [{"$ref": "#/$defs/identifier"}, {"type": "null"}]},
+        "credential_kind": {"enum": ["github_app", "unconfigured"]},
+        "app_id_variable": {"oneOf": [{"type": "string", "pattern": "^[A-Z_][A-Z0-9_]*$"}, {"type": "null"}]},
+        "private_key_secret": {"oneOf": [{"type": "string", "pattern": "^[A-Z_][A-Z0-9_]*$"}, {"type": "null"}]},
+        "immutable_required": {"const": true},
+        "attestation_required": {"const": true},
+        "max_assets_per_release": {"type": "integer", "minimum": 2, "maximum": 1000},
+        "max_asset_bytes": {"type": "integer", "minimum": 1, "maximum": 2147483647}
+      }
+    },
+    "transport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actions_handoff_retention_days", "reference_retention_days", "cache_role", "publish_before_reference", "legacy_receipts"],
+      "properties": {
+        "actions_handoff_retention_days": {"type": "integer", "minimum": 1, "maximum": 7},
+        "reference_retention_days": {"type": "integer", "minimum": 1, "maximum": 90},
+        "cache_role": {"const": "acceleration_only"},
+        "publish_before_reference": {"const": true},
+        "legacy_receipts": {"const": "readable"}
+      }
+    },
+    "archiveSafety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "allow_symlinks", "allow_special_files", "maximum_members", "maximum_expanded_bytes", "maximum_expansion_ratio"],
+      "properties": {
+        "format": {"const": "tar_gzip_deterministic_v1"},
+        "allow_symlinks": {"const": false},
+        "allow_special_files": {"const": false},
+        "maximum_members": {"type": "integer", "minimum": 1},
+        "maximum_expanded_bytes": {"type": "integer", "minimum": 1},
+        "maximum_expansion_ratio": {"type": "integer", "minimum": 1, "maximum": 1000}
+      }
+    },
+    "freshnessClass": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maximum_age_hours", "required"],
+      "properties": {
+        "maximum_age_hours": {"oneOf": [{"type": "integer", "minimum": 1}, {"type": "null"}]},
+        "required": {"type": "boolean"}
+      }
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "protected_roots", "lease_hours", "unavailable_behavior", "garbage_collection"],
+      "properties": {
+        "algorithm": {"const": "exact_reference_reachability"},
+        "protected_roots": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"enum": ["live_runs", "active_candidate_heads", "certified_commits", "immutable_product_releases", "unresolved_findings", "explicit_historical_custody"]}
+        },
+        "lease_hours": {"type": "integer", "minimum": 1},
+        "unavailable_behavior": {"const": "fail_closed"},
+        "garbage_collection": {"const": "authenticated_unreachable_only"}
+      }
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maximum_actions_bytes", "maximum_durable_unique_bytes", "maximum_objects", "maximum_new_bytes_per_run", "preflight_required"],
+      "properties": {
+        "maximum_actions_bytes": {"type": "integer", "minimum": 1},
+        "maximum_durable_unique_bytes": {"type": "integer", "minimum": 1},
+        "maximum_objects": {"type": "integer", "minimum": 1},
+        "maximum_new_bytes_per_run": {"type": "integer", "minimum": 1},
+        "preflight_required": {"const": true}
+      }
+    }
+  }
+}

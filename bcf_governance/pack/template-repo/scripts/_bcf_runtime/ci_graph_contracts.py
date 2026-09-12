@@ -13,17 +13,20 @@ from typing import Any
 from jsonschema import Draft202012Validator
 
 from .ci_graph_errors import CIGraphError, execution_graph_error
-from .ci_graph_execution import job_execution_issues, workflow_input_issues
+from .ci_graph_execution import hosted_command_issues, job_execution_issues
 from .ci_graph_authority_policy import validate_graph_authority_policy
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 from .ci_graph_values import CIGraphValueError, resolve_graph_values
 from .ci_graph_timeouts import validate_gate_job_timeouts
+from .ci_graph_storage import validate_evidence_storage
 
 
 GRAPH_PATH = Path("governance/ci-graph.yml")
 EXTENSION_ROOT = Path("governance/ci-extensions")
 GRAPH_SCHEMA_PATH = Path("schemas/ci-graph.schema.json")
 EXTENSION_SCHEMA_PATH = Path("schemas/ci-graph-extension.schema.json")
+
+
 @dataclass(frozen=True)
 class CompiledCIGraph:
     graph: dict[str, Any]
@@ -35,6 +38,9 @@ class CompiledCIGraph:
     trusted_controller: str
     trusted_controller_check: str
     trusted_controller_current: bool
+    evidence_storage: dict[str, Any] | None
+
+
 def _schema(repo_root: Path, relative: Path) -> dict[str, Any]:
     path = repo_root / relative
     try:
@@ -646,36 +652,6 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                 raise CIGraphError(f"workflow {workflow['id']} has incomplete evidence fan-in")
 
 
-def _validate_hosted_commands(graph: dict[str, Any]) -> None:
-    forbidden = tuple(value.lower() for value in graph["policy"]["forbidden_hosted_tokens"])
-    for workflow in graph["workflows"]:
-        input_issues = workflow_input_issues(graph, workflow)
-        if input_issues:
-            raise CIGraphError(input_issues[0])
-        for job in workflow["jobs"]:
-            resource = graph["resource_classes"][job["resource_class"]]
-            if not resource["hosted"]:
-                continue
-            executor = job["executor"]
-            command_ids: list[str] = []
-            if executor["kind"] in {"command", "truth", "terminal_truth"}:
-                command_ids.append(executor["command"])
-            if executor["kind"] in {"component_sequence", "gate_shard", "terminal_truth"}:
-                command_ids.extend(
-                    graph["step_components"][component]["command"]
-                    for component in executor["components"]
-                    if graph["step_components"][component]["kind"] == "command"
-                )
-            for command_id in command_ids:
-                argv = graph["commands"][command_id]["argv"]
-                normalized = " ".join(argv).lower()
-                for token in forbidden:
-                    if re.search(rf"(?:^|[^a-z0-9]){re.escape(token)}(?:$|[^a-z0-9])", normalized):
-                        raise CIGraphError(
-                            f"hosted waiter token {token!r} is prohibited in job {job['id']}"
-                        )
-
-
 def _validate_required_gate_ownership(repo_root: Path, graph: dict[str, Any]) -> None:
     profile_path = repo_root / "governance-profile.yml"
     if not profile_path.is_file() or profile_path.is_symlink():
@@ -777,15 +753,18 @@ def validate_ci_graph(
         raise CIGraphError(str(exc)) from exc
     _validate_schema(composed, graph_schema, "composed CI graph")
     _validate_step_components(composed)
+    storage_inputs, storage_contract = validate_evidence_storage(repo_root, composed)
     _validate_workflows(composed)
     validate_gate_job_timeouts(repo_root, composed)
     validate_graph_authority_policy(repo_root, composed)
-    _validate_hosted_commands(composed)
+    hosted_issues = hosted_command_issues(composed)
+    if hosted_issues:
+        raise CIGraphError(hosted_issues[0])
     _validate_required_gate_ownership(repo_root, composed)
     controller, controller_check, controller_current, controller_inputs = _trusted_controller(
         repo_root, composed
     )
-    inputs = tuple(sorted(set(value_inputs + controller_inputs)))
+    inputs = tuple(sorted(set(value_inputs + controller_inputs + storage_inputs)))
     graph_digest = hashlib.sha256(path.read_bytes()).hexdigest()
     return CompiledCIGraph(
         graph=composed,
@@ -797,4 +776,5 @@ def validate_ci_graph(
         trusted_controller=controller,
         trusted_controller_check=controller_check,
         trusted_controller_current=controller_current,
+        evidence_storage=storage_contract,
     )

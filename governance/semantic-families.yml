@@ -55,6 +55,12 @@ families:
   canonical_semantic_ids: [governance.evidence-receipt-admission.v1]
   material_selectors: {source_paths: [bcf_governance/tooling/truth_receipts.py], symbols: [bcf_governance/tooling/truth_receipts.py::ReceiptAdmission]}
   responsibilities: {construction: [_receipt_admission_identity], decoding: [load_receipts], transition: [collision_rejection], projection: []}
+- id: evidence_input_reference
+  significance: authoritative
+  ownership_required: true
+  canonical_semantic_ids: [governance.evidence-input-reference.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/evidence_storage_contracts.py, bcf_governance/tooling/evidence_storage_github.py], symbols: [bcf_governance/tooling/evidence_storage_contracts.py::EvidenceInputReference]}
+  responsibilities: {construction: [build_input_bundle], decoding: [evidence_input_reference_identity], transition: [plan_retention], projection: [resolve_input_reference]}
 - id: docker_resource_ownership
   significance: authoritative
   ownership_required: true

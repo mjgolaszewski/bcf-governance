@@ -39,6 +39,17 @@ generated workflow bytes. Workflow changes occur only through explicit graph
 adoption or rendering. Use `--force-rescaffold` only when the owner intends to
 replace the active BCF layer.
 
+The evidence-storage contract is project-owned. A normal upgrade preserves its
+existing bytes or absence; it never activates durable publication, changes
+retention, or rewrites historical artifacts. Adopt content-addressed inputs
+only after mapping every current preparation producer and consumer, preserving
+original provider digests until cold reconstruction succeeds, and declaring a
+dedicated GitHub App and protected trusted-control environment.
+Treat retained Actions bytes and hosted execution time as co-equal adoption
+budgets. `retention-plan` is non-mutating; `retention-apply-actions` can remove
+only exact authenticated transient IDs after successful cold reconstruction
+and cannot delete durable Releases.
+
 Before deleting or rescaffolding a drifted governance tree, run a dry cleanup plan:
 
 ```bash

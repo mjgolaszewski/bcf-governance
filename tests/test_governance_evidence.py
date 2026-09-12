@@ -990,10 +990,13 @@ def test_governance_validation_controls_preserve_their_declared_failure_causes(
 
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
     controls = receipt["behavioral_probes"]
+    registry = yaml.safe_load(
+        (REPO_ROOT / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    )
+    declared = registry["gates"]["governance-validate"]["negative_controls"]
     assert receipt["result"] == "passed"
     assert {control["id"] for control in controls} == {
-        "authored-verified-state-is-rejected",
-        "unknown-operation-family-is-rejected",
+        control["id"] for control in declared
     }
     assert all(control["oracle_observation"]["satisfied"] for control in controls)
 

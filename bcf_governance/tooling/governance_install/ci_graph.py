@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 from typing import Any
 
@@ -83,6 +84,13 @@ def write_reference_ci_graph(
         candidate_hosted=candidate_hosted,
         trusted_hosted=trusted_hosted,
     )
+    storage_path = target_root / "governance/evidence-storage.yml"
+    if not storage_path.is_file() or storage_path.is_symlink():
+        raise RuntimeError("fresh CI graph requires governance/evidence-storage.yml")
+    graph["evidence_storage"] = {
+        "path": "governance/evidence-storage.yml",
+        "sha256": hashlib.sha256(storage_path.read_bytes()).hexdigest(),
+    }
     graph_path = target_root / "governance/ci-graph.yml"
     graph_path.parent.mkdir(parents=True, exist_ok=True)
     graph_path.write_bytes(render_yaml(graph))

@@ -76,6 +76,25 @@ Dynamic dispatch that the selected adapter cannot resolve fails closed when
 the capability is blocking. Declaring closed populations and precise boundary
 ports adds maintenance, especially for plugin-heavy applications.
 
+For Python instance methods, the source-first inventory records the declaring
+class and receiver binding during its existing AST pass. Direct
+`self.method()` calls resolve only to that class's exact tracked method.
+Rebinding, aliases, inheritance or override ambiguity, `super()`, reflection,
+decorated methods or classes, metaclasses, dynamic attribute lookup, method
+replacement, and missing targets do not fall back to a basename or suffix
+guess. Component calls remain explicit operation ports. This deliberately
+rejects some dynamic designs: BCF cannot prove their effects from a closed
+static inventory, so a blocking profile requires a mechanically visible
+boundary instead.
+
+Hosted graph nodes are run-and-done execution units. Dependency edges are
+provider scheduling constraints and do not allocate the downstream runner;
+cross-workflow control starts from completion events. The graph compiler rejects
+sleep, polling, watch, shell-wait, and runner-lease coordination commands on a
+hosted resource. Product gates may perform bounded readiness checks as part of
+their declared work, but the reference graph does not allocate a hosted VM to
+supervise another job or wait for self-hosted capacity.
+
 ### Representation provenance
 
 Canonical representations remain in
@@ -138,6 +157,33 @@ incidental syntax. BCF favors authoritative, early mutations and exact failure
 nodes to keep that cost bounded.
 
 ## Exact evidence and computed lifecycle
+
+### Content-addressed evidence inputs
+
+Large qualification inputs have a separate transport contract from ordinary
+receipts and outputs. A candidate producer creates deterministic bounded
+archives with exact member hashes and modes. A trusted no-checkout publisher
+authenticates the repository, commit and tree, workflow bytes, job, run,
+attempt, and Actions handoff before publishing each distinct archive under a
+non-product immutable GitHub Release tag. It publishes the compact per-run
+manifest only after every object is available and attested. Consumers resolve
+that reference into an isolated tree and recompute every original member before
+normal gate and truth processing.
+
+Integrity and freshness remain separate: an unchanged vulnerability database
+can still be too old. Caches never establish availability, and a digest without
+retrievable bytes is not evidence. The graph permits this transport only
+through one declared source, trusted publisher, compact reference, and bounded
+materialization root. Existing Actions artifacts and schema-2 receipts remain
+valid, so adoption does not rewrite historical evidence.
+
+The design trades repeated Actions storage for more Release objects, download
+traffic, provider dependence, and retention bookkeeping. Exact reachability
+roots and leases protect live or historically required evidence; automated
+durable deletion is deliberately excluded until authenticated unreachability
+has separate authority. Unique retained inputs can still grow without bound.
+The supported backend is GitHub immutable Release assets; no NAS, mutable URL,
+or user-operated storage server is part of the authority chain.
 
 Schema-2 receipts bind invocation, environment, outputs, raw process material,
 commit, tree, execution tree, cleanliness, and negative-control observations.

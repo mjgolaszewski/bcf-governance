@@ -17,7 +17,7 @@ separates two questions:
 - `bcf truth`: are lifecycle and release claims supported by current evidence
   for the exact Git subject?
 
-Supported package version: `v1.1.1`. Every release is published from certified
+Supported package version: `v1.2.0`. Every release is published from certified
 exact-main bytes through an immutable GitHub Release; the publisher never
 rebuilds the verified wheel or source archive.
 
@@ -47,6 +47,7 @@ Common failure modes have explicit responses:
 | Competing representations | Single-owner invariant principle (SOIP) |
 | Material concept omitted from governance | Declared semantic-family completeness |
 | Public operation has unclear effects | Closed operation inventory and CQRS-side checks |
+| A method call loses its source owner | Exact lexical dispatch or a fail-closed operation result |
 | Synchronized copy has no accountable origin | Reproducible representation provenance |
 | Test agrees with a defective implementation | Causal negative controls |
 | Gate does not detect its claimed defect | Typed failure oracles |
@@ -210,12 +211,35 @@ graphs should first be imported and preservation-checked, then expressed with
 bounded extensions. No migration should proceed merely to change ownership if
 it cannot preserve behavior and meet the repository's performance threshold.
 
+### Durable evidence inputs
+
+Standard-v2 also installs an inactive `governance/evidence-storage.yml`
+contract for repositories whose preparation artifacts are too large to retain
+once per lane and run. When explicitly configured, the graph can publish each
+verified input archive once under a content-addressed, non-product GitHub
+Release tag. A compact authenticated manifest binds the original bytes,
+commit, tree, workflow, job, run, attempt, freshness class, and immutable asset
+identity. Every consuming lane cold-resolves and rehashes the declared members
+before its existing evidence gate runs.
+
+Actions artifacts are bounded handoffs, caches are acceleration only, and
+required bytes do not depend on a NAS or user-operated archive service.
+Reachability roots, leases, and provider-derived byte/count budgets govern
+retention; a missing asset, expired database, budget breach, or unavailable
+backend fails closed. Content addressing reduces repeated storage only when
+bytes are actually identical—it does not make unique evidence free or permit a
+digest to replace the bytes it identifies. Actions storage and hosted execution
+time are co-equal release budgets: both have measured baselines, forecasts, and
+hard stop ceilings. Hosted producers and consumers
+remain run-and-done; publication is a short trusted no-checkout job and no
+hosted runner polls, sleeps, or waits for local capacity.
+
 ## Install
 
-Install the `v1.1.1` wheel from its immutable GitHub Release:
+Install the `v1.2.0` wheel from its immutable GitHub Release:
 
 ```bash
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.1.1/bcf_governance-1.1.1-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.2.0/bcf_governance-1.2.0-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel. Release publication

@@ -69,6 +69,56 @@ evidence and are not pull-request prerequisites. Hosted jobs are rejected when
 their governed command contains polling, sleeping, leasing, or runner-wait
 operations.
 
+### Content-addressed preparation inputs
+
+Fresh installations include `governance/evidence-storage.yml` with the
+capability disabled. Enable it only after declaring the numeric repository
+identity, a dedicated contents-write GitHub App, its protected environment and
+credential references, freshness classes, reachability roots, and byte/count
+budgets. Existing repositories retain their project-owned storage contract (or
+its absence) during normal upgrade.
+
+The graph vocabulary is:
+
+- one `durable-source` artifact with exact source paths, materialization
+  targets, and freshness classes;
+- one trusted, no-checkout `durable_publish` job that exclusively transforms
+  that source into a `durable-reference`;
+- consumers of the compact reference, never of the transient source; and
+- a non-authoritative, ignored `.artifacts/` materialization root that cannot
+  overlap another declared output or durable input.
+
+After editing the contract and graph, lock and render them mechanically. The
+candidate producer derives its handoff from ambient GitHub identity; callers
+do not provide commit, tree, workflow, job, or producer identity:
+
+```bash
+bcf evidence-store validate --repo-root .
+bcf ci graph lock --repo-root . --apply
+bcf ci graph validate --repo-root .
+bcf ci graph render --repo-root . --apply
+```
+
+Generated CI authenticates source and provider reads with the trusted workflow
+token and uses the declared App token only for contents-write Release operations.
+Each consuming job downloads the compact reference and cold-resolves the
+immutable assets. A hosted consumer is allocated only after the trusted publisher
+has completed successfully; it never waits for trusted or local capacity.
+`bcf evidence-store retention-plan` accepts a schema-checked
+candidate inventory and rederives its repository, run, attempt, artifact,
+release, asset, and digest claims from the provider before computing handoff
+deletion candidates, leases, unreachable durable releases, and budget state.
+The plan is non-mutating. After reviewing it, `bcf evidence-store
+retention-apply-actions` repeats the complete authentication and cold retrieval,
+deletes only the admitted transient artifact IDs, and verifies their absence.
+The operation is idempotent and never deletes a durable Release.
+
+The backend is GitHub immutable Releases in a mechanically disjoint
+`bcf-evidence-*` namespace. Product release authority ignores that namespace.
+There is no NAS fallback. A cache miss may cost time but cannot change an
+evidence result. Legacy receipts and Actions-only graph artifacts remain
+readable and are not rewritten.
+
 `audit` is the complete machine-readable authority and duplication view. It
 includes events and dispatch inputs, jobs and matrices, edges, permissions,
 conditions, concurrency, runner mappings, gate invocations and controls,
@@ -172,7 +222,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.1.1/bcf_governance-1.1.1-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.2.0/bcf_governance-1.2.0-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 1.x. Verify the
@@ -668,6 +718,22 @@ must not expose the same module name. BCF rejects missing, symlinked,
 overlapping, or ambiguous roots before ownership evaluation. Omitting the field
 retains the 1.1.0 compatibility behavior of repository root, so existing flat
 consumers do not require a migration.
+
+Python operation-effect analysis resolves a direct `self.method()` call to the
+exact method in its declaring lexical class before walking effects. Receiver
+rebinding, receiver or bound-method aliases, inheritance-sensitive dispatch,
+`super()`, decorators, metaclasses, dynamic attribute lookup, method replacement,
+and reflective dispatch fail closed. Calls through component fields, such as
+`self.store.save()`, are admitted only when the operation declares the exact
+component boundary as a permitted port. Declarations cannot turn an ambiguous
+same-instance helper into an exact source identity.
+
+Fresh Standard-v2 graphs set `policy.hosted_orchestration: run_and_done`.
+Hosted jobs begin only when their GitHub dependency or event is ready, execute
+bounded candidate work, and exit. The compiler rejects sleep, polling, watch,
+shell-wait, and local-runner lease commands on hosted resources. Put trusted
+one-shot control work on an explicitly mapped trusted resource; never create a
+hosted supervisor for local capacity.
 
 Repositories with TypeScript can replace the registry's typed
 `not_applicable_until_declared_by_consumer` value with a compiler contract that

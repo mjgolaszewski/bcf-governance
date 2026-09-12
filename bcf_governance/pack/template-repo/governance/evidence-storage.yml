@@ -1,0 +1,48 @@
+document: {kind: evidence_storage, id: bcf-governance-evidence-storage, version: 1.0.0, status: active, path: governance/evidence-storage.yml}
+schema_version: '1.0'
+activation: disabled
+provider:
+  kind: github_release
+  repository: null
+  repository_id: null
+  tag_prefix: bcf-evidence-inputs
+  protected_environment: null
+  credential_kind: unconfigured
+  app_id_variable: null
+  private_key_secret: null
+  immutable_required: true
+  attestation_required: true
+  max_assets_per_release: 1000
+  max_asset_bytes: 2147483647
+transport:
+  actions_handoff_retention_days: 1
+  reference_retention_days: 30
+  cache_role: acceleration_only
+  publish_before_reference: true
+  legacy_receipts: readable
+archive_safety:
+  format: tar_gzip_deterministic_v1
+  allow_symlinks: false
+  allow_special_files: false
+  maximum_members: 100000
+  maximum_expanded_bytes: 8589934592
+  maximum_expansion_ratio: 100
+freshness_classes:
+  immutable:
+    maximum_age_hours: null
+    required: false
+  advisory_database:
+    maximum_age_hours: 24
+    required: true
+retention:
+  algorithm: exact_reference_reachability
+  protected_roots: [live_runs, active_candidate_heads, certified_commits, immutable_product_releases, unresolved_findings, explicit_historical_custody]
+  lease_hours: 24
+  unavailable_behavior: fail_closed
+  garbage_collection: authenticated_unreachable_only
+budgets:
+  maximum_actions_bytes: 1073741824
+  maximum_durable_unique_bytes: 10737418240
+  maximum_objects: 10000
+  maximum_new_bytes_per_run: 2147483648
+  preflight_required: true

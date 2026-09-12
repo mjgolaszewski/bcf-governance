@@ -24,7 +24,7 @@ from .evidence_sessions import (
     allocate_session,
     local_producer_identity,
 )
-from .governance_validation.runner import validate_repo_root
+from .governance_validation.runner import check_editorial, validate_repo_root
 from .install_governance_pack import _pack_manifest_entries
 from .interpreter_environment import (
     InterpreterEnvironmentError,
@@ -713,6 +713,7 @@ def run_preflight(
     )
     source_locks = step("source-locks", lambda: _vendored_source_locks(repo_root))
     pack_manifest = step("pack-manifest", lambda: _pack_manifest(repo_root))
+    editorial_contract = step("editorial-contract", lambda: check_editorial(repo_root, python))
     test_manifests = step(
         "test-manifests", lambda: check_all(repo_root, python_executable=python)
     )
@@ -742,6 +743,7 @@ def run_preflight(
         "source_entrypoints": source_entrypoints,
         "source_locks": source_locks,
         "pack_manifest": pack_manifest,
+        "editorial_contract": editorial_contract,
         "self_workflows": self_workflows,
         "workflow_authority": workflow_authority,
         "self_controller": self_controller,

@@ -43,6 +43,13 @@ def _locked_graph(repo_root: Path) -> tuple[dict[str, Any], tuple[str, ...]]:
         if source.get("sha256") != digest:
             source["sha256"] = digest
             changed.append(relative)
+    evidence_storage = graph.get("evidence_storage")
+    if isinstance(evidence_storage, dict):
+        relative = str(evidence_storage["path"])
+        digest = hashlib.sha256(_safe_input(repo_root, relative).read_bytes()).hexdigest()
+        if evidence_storage.get("sha256") != digest:
+            evidence_storage["sha256"] = digest
+            changed.append(relative)
     return graph, tuple(sorted(set(changed)))
 
 

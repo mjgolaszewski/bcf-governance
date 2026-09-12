@@ -41,6 +41,7 @@ from .evidence_sessions import (
     select_session,
 )
 from .evidence_sessions import receipt_workflow_identity
+from .evidence_storage_projection import install_durable_inputs as _install_durable_inputs
 from .evidence_test_adapters import (
     recompute_test_artifact_observations,
     test_observations as _test_observations,
@@ -179,6 +180,11 @@ def _project_graph_mutation(worktree: Path, mutation_path: str | None) -> set[st
         for item in graph.get("value_sources", {}).values()
         if isinstance(item, dict)
     }
+    evidence_storage = graph.get("evidence_storage")
+    if isinstance(evidence_storage, dict) and isinstance(
+        evidence_storage.get("path"), str
+    ):
+        registered_inputs.add(evidence_storage["path"])
     if mutation_path != GRAPH_PATH.as_posix() and mutation_path not in registered_inputs:
         return {mutation_path}
     try:
@@ -317,6 +323,7 @@ def _negative_control_results(
             worktree = Path(temp_name) / "repo"
             _git(repo_root, "worktree", "add", "--quiet", "--detach", str(worktree), "HEAD")
             try:
+                _install_durable_inputs(repo_root, worktree)
                 applied, mutation_path = _apply_negative_control(worktree, control)
                 allowed_mutations = (
                     _project_graph_mutation(worktree, mutation_path) if applied else set()
@@ -564,6 +571,9 @@ def capture_gate(
         worktree = Path(temp_name) / "repo"
         _git(repo_root, "worktree", "add", "--quiet", "--detach", str(worktree), "HEAD")
         try:
+            durable_observations, durable_artifacts = _install_durable_inputs(
+                repo_root, worktree, output_dir
+            )
             env, environment_metadata = _execution_env(
                 worktree, contract, selected_python
             )
@@ -574,6 +584,7 @@ def capture_gate(
                 timeout_seconds=contract["execution_timeout_seconds"],
             )
             artifacts = _write_output_artifacts(output_dir, target, result)
+            artifacts.extend(durable_artifacts)
             if session_artifact is not None:
                 artifacts.append(session_artifact)
             observations: dict[str, Any] = {
@@ -581,6 +592,7 @@ def capture_gate(
                 "execution_environment": environment_metadata,
                 "execution_timeout_seconds": contract["execution_timeout_seconds"],
                 "environment_assertions": _environment_observations(contract, env),
+                "durable_evidence_inputs": durable_observations,
             }
             if session is not None:
                 observations["evidence_session"] = {

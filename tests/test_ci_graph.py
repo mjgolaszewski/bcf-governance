@@ -228,7 +228,11 @@ def _graph() -> dict[str, object]:
             "single_push_authority": True,
             "generated_workflows_only": True,
             "forbid_hosted_waiters": True,
-            "forbidden_hosted_tokens": ["sleep", "poll", "wait-for-runner", "lease-runner"],
+            "hosted_orchestration": "run_and_done",
+            "forbidden_hosted_tokens": [
+                "sleep", "poll", "watch", "wait", "while", "until",
+                "wait-for-runner", "lease-runner",
+            ],
         },
     }
 
@@ -448,6 +452,7 @@ def test_graph_validates_and_composes_registered_extension(tmp_path: Path) -> No
         (lambda graph: graph["workflows"][0]["jobs"][0].update({"resource_class": "missing"}), "resource class"),
         (lambda graph: graph["workflows"][2]["events"].append({"type": "push", "branches": ["main"]}), "push authority"),
         (lambda graph: graph["commands"]["preflight"].update({"argv": ["sleep", "60"]}), "hosted waiter"),
+        (lambda graph: graph["commands"]["preflight"].update({"argv": ["gh", "run", "watch"]}), "hosted waiter"),
     ],
 )
 def test_graph_rejects_semantic_defect_classes(tmp_path: Path, mutate, message: str) -> None:
@@ -1056,6 +1061,30 @@ def test_standard_reference_graph_is_rich_single_push_authority(tmp_path: Path) 
         "sleep" not in " ".join(command["argv"])
         for command in compiled.commands.values()
     )
+    assert compiled.graph["policy"]["hosted_orchestration"] == "run_and_done"
+    assert set(compiled.graph["policy"]["forbidden_hosted_tokens"]) >= {
+        "sleep", "poll", "watch", "wait", "while", "until",
+        "wait-for-runner", "lease-runner",
+    }
+
+
+def test_self_graph_run_and_done_policy_is_mechanically_complete() -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    workflows = {workflow["id"]: workflow for workflow in compiled.workflows}
+    source = workflows["evidence-storage-qualification-source"]["jobs"][0]
+    qualification = {
+        job["id"]: job
+        for job in workflows["evidence-storage-qualification"]["jobs"]
+    }
+    publisher = qualification["publish-evidence-input"]
+    consumer = qualification["reconstruct-evidence-input"]
+
+    assert compiled.graph["policy"]["hosted_orchestration"] == "run_and_done"
+    assert compiled.graph["resource_classes"][source["resource_class"]]["hosted"] is True
+    assert compiled.graph["resource_classes"][publisher["resource_class"]]["hosted"] is False
+    assert compiled.graph["resource_classes"][consumer["resource_class"]]["hosted"] is True
+    assert publisher["needs"] == []
+    assert consumer["needs"] == ["publish-evidence-input"]
 
 
 def test_gate_group_uses_the_canonical_session_selector_before_capture() -> None:
@@ -1238,14 +1267,17 @@ jobs:
 
 def test_bcf_ci_authority_audit_reports_the_complete_effective_graph() -> None:
     report = audit_ci_graph(REPO_ROOT)
+    compiled = validate_ci_graph(REPO_ROOT)
+    expected_workflow_count = len(compiled.workflows)
+    expected_job_count = sum(len(workflow["jobs"]) for workflow in compiled.workflows)
 
     assert report["status"] == "pass"
     assert report["repository_state"]["available"] is True
     assert report["repository_state"]["status_sha256"]
-    assert report["inventory"]["workflow_count"] == 18
-    assert report["inventory"]["job_count"] == 29
-    assert report["inventory"]["semantic_role_count"] == 29
-    assert len(report["effective_graph"]) == 18
+    assert report["inventory"]["workflow_count"] == expected_workflow_count
+    assert report["inventory"]["job_count"] == expected_job_count
+    assert report["inventory"]["semantic_role_count"] == expected_job_count
+    assert len(report["effective_graph"]) == expected_workflow_count
     assert len(report["inventory"]["gates"]) == 21
     assert sum(
         item["node_count"] for item in report["inventory"]["test_manifests"]

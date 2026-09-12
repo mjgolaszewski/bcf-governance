@@ -313,6 +313,9 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     )
     monkeypatch.setattr(preflight, "_vendored_source_locks", lambda _: 0)
     monkeypatch.setattr(preflight, "_pack_manifest", lambda _: {"applicable": False})
+    monkeypatch.setattr(
+        preflight, "check_editorial", lambda *_: {"applicable": False}
+    )
     monkeypatch.setattr(preflight, "check_all", lambda *_, **__: {"test": 1})
     monkeypatch.setattr(preflight, "_pr_context", lambda *_: {"applicable": False})
     monkeypatch.setattr(preflight, "_required_gates", lambda _: ["test"])
@@ -348,6 +351,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         "semantic-ownership",
         "source-locks",
         "pack-manifest",
+        "editorial-contract",
         "test-manifests",
         "pr-context",
         "session",
@@ -356,6 +360,20 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     assert report["session_manifest"] == (tmp_path / "session.json").as_posix()
     assert report["workflow_authority"] == 12
     assert report["self_controller"] == 6
+
+
+def test_editorial_contract_rejection_is_a_preflight_failure(tmp_path: Path) -> None:
+    checker = tmp_path / ".github/scripts/check_editorial_contract.py"
+    checker.parent.mkdir(parents=True)
+    checker.write_text(
+        "raise SystemExit('editorial inventory is stale')\n", encoding="utf-8"
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="editorial contract preflight failed: editorial inventory is stale",
+    ):
+        preflight.check_editorial(tmp_path, Path(sys.executable))
 
 
 def test_stale_trusted_controller_is_a_preflight_failure(
