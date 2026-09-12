@@ -22,6 +22,7 @@ summary:
   - P23-HF02 corrects the cold trusted-publisher runtime as one compiler-enforced controller-execution class before storage qualification resumes
   - P23-HF03 corrects the complete GitHub binary-download protocol class and makes pending-controller exact-main execution both fail-closed and rotation-capable
   - P23-HF04 separates immutable-settings read authority from ordinary provider reads and Release writes and prevents missing durable outputs from masking producer failures; its remaining draft discovery, release-ID reads, and inventory scope are reproduced locally before controller installation
+  - P23-HF04 implementation completed from retained source exit 0, 961 passed source nodes and 35 satisfied causal controls; provider bootstrap 34709120753 attempt 1 and probe 34709207747 attempt 1 passed on every declared trusted runner. Storage qualification, immutable publication, and release closeout remain pending.
 workitems:
 - id: P23-P0-01
   status: DONE
@@ -81,6 +82,7 @@ execution_evidence:
   - P23-HF03 passed 921 source nodes 390 contract nodes 225 causal controls both mutation profiles exact package verification and all three protected PRs on their first complete attempts
   - controller bootstrap 34697472883 and probe 34697517410 passed on both trusted runners; confirmation PR 174 merged as 0cca402ff5a8c4fb622107bb44b2548040d8b0c7
   - exact-main 34698441190 rejected the open HF03 record at the 19-second closure front door and allocated no evidence lane; explicit owner authority completes the hotfix from its recorded evidence before another exact-main execution
+  - P23-HF04 implementation completed from retained source exit 0, 961 passed source nodes and 35 satisfied causal controls; provider bootstrap 34709120753 attempt 1 and probe 34709207747 attempt 1 passed on every declared trusted runner. Storage qualification, immutable publication, and release closeout remain pending.
   notes:
   - audits/p23-issue-164-remediation.yml owns the defect-class review consumer proof and release-train storage forecast
   - remote execution starts only after the complete deterministic local acceptance set passes
@@ -117,6 +119,4 @@ closeout_requirements:
 known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts change
 next_work:
-- complete P23-HF04 offline and rotate its controller without speculative provider retries
-- rerun the bounded cold-storage qualification with the complete credential closure
-- build independently verify collect and immutably publish the exact certified 1.2.0 artifacts without rebuilding
+- run exact-main certification and storage qualification, then scheduled controls, immutable publication, and provider-evidenced closeout

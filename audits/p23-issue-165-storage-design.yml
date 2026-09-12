@@ -362,3 +362,180 @@ draft_publication_focused_validation:
   junit_sha256: f71a234bdb75cbc8acac8017553aae59ea4a14de20641db177a54e0e386f8ce2
   log_sha256: 272aeb31c568f301f1d6331e47f14bd998b401768157d7b7903e6a449fc466e8
   remaining: full exact source gate, causal controls, generated parity, package artifact validation, canonical local PR preflight
+P23_HF04_confirmation:
+  implementation_status: completed
+  recorded_at_utc: '2026-09-12T17:46:40Z'
+  prior_provider_failure:
+    recorded_root_cause: immutable-release settings inspection used a workflow token without the endpoint's required Administration-read
+      permission; publication also used published-tag reads for drafts and omitted hidden draft bytes from budgets
+    runs:
+    - id: 34700240111
+      run_attempt: 1
+      head_sha: 229068b788951fb31d86b268ff320aef86ea71dd
+      conclusion: failure
+      html_url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/34700240111
+      jobs:
+      - id: 103570592343
+        name: Publish one authenticated immutable evidence input
+        conclusion: failure
+        runner_id: 25
+        runner_name: bcf-governance-vm-linux-ci-runner-2
+      - id: 103570644014
+        name: Cold-reconstruct and verify the authenticated evidence input
+        conclusion: skipped
+        runner_id: null
+        runner_name: null
+  credential_projection:
+    credential_kind: github_app
+    private_key_secret: BCF_EVIDENCE_APP_PRIVATE_KEY
+    settings_read_token_secret: BCF_EVIDENCE_ADMIN_TOKEN
+    protected_environment: bcf-trusted-evidence
+  installation_proof:
+    bootstrap_run_attempt: '1'
+    bootstrap_run_id: '34709120753'
+    installed_commit_sha: 7719617b00afab1ba82f4226380205a7164c38a4
+    probe_run_attempt: '1'
+    probe_run_id: '34709207747'
+    schema_version: '1.0'
+    subject_commit_sha: fe71ce0610374b90869e8f613f98d0ae3c1440d7
+    subject_tree_sha: 3450f94536db64fbcf2b1e1f18ff50139285c629
+  confirmation_sha256: 315797bfe6da9c31d0da0f95cd56e21ea366d0cf85d6ed494c71e9452df0daaa
+  source_validation:
+    receipt_sha256: f76ac93324caf68109ea936783f58a3a3efc9201679a70f049029ee77967d184
+    subject:
+      binding: exact_tree
+      commit_sha: cd2038ad6c8d1bac824e4f7af27622303e1d66ee
+      execution_tree_sha: c8d26ffb8324287cc8eeb7bee47c1b8003561d43
+      status_porcelain_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      tracked_clean: true
+      tree_sha: c8d26ffb8324287cc8eeb7bee47c1b8003561d43
+      untracked_clean: true
+    invocation:
+    - python3
+    - .github/scripts/run_self_governance_gate.py
+    - test
+    exit_code: 0
+    test_counts:
+      collected: 961
+      errors: 0
+      executed: 961
+      failed: 0
+      passed: 961
+      skipped: 0
+      xfailed: 0
+      xpassed: 0
+    causal_controls: 35
+  local_command_results:
+  - exit_code: 0
+    subject_commit: 3402507d936f5db7b846f62dd9a1d8b542e96218
+    subject_tree: 3450f94536db64fbcf2b1e1f18ff50139285c629
+    stdout_sha256: a15fde8d44c8e70dd032fa51188014a2c8fa095cc48e28edabde32d367ed1e3a
+    stderr_sha256: a15fde8d44c8e70dd032fa51188014a2c8fa095cc48e28edabde32d367ed1e3a
+    argv:
+    - .venv/bin/bcf
+    - ci
+    - local-pr
+    - --repo-root
+    - .
+    - --remote
+    - origin
+    command_result_sha256: 30dc065d319c08f277132b6add8b5483040ca078ea5e489f285cd98f9d5e2b6f
+  historical_local_command_results:
+  - exit_code: 0
+    subject_commit: cd2038ad6c8d1bac824e4f7af27622303e1d66ee
+    subject_tree: c8d26ffb8324287cc8eeb7bee47c1b8003561d43
+    stdout_sha256: 1c76405c4e22e13fe1c1f9b6c635755b24bd1f971bd3b28a96b9a9a0d1270842
+    stderr_sha256: 1c76405c4e22e13fe1c1f9b6c635755b24bd1f971bd3b28a96b9a9a0d1270842
+    repository_relative_argv:
+    - .venv/bin/bcf
+    - evidence
+    - run
+    - --gate
+    - test
+    - --output
+    - .artifacts/bcf/hf04-draft-local/sessions/a60f225a2c984be9078cdfb26348eab4/test # non-authoritative local locator; exact capture hash recorded
+    - --python
+    - .venv/bin/python
+    - --session-manifest
+    - .artifacts/bcf/hf04-draft-local/sessions/a60f225a2c984be9078cdfb26348eab4/evidence-session.json # non-authoritative local locator; exact capture hash recorded
+    command_result_sha256: ff639d711b728737ef076ce743310139aa44cf42c8e333afb234d2b4f84c5e4a
+  - exit_code: 0
+    subject_commit: cd2038ad6c8d1bac824e4f7af27622303e1d66ee
+    subject_tree: c8d26ffb8324287cc8eeb7bee47c1b8003561d43
+    stdout_sha256: 8a2e2606787276fceaf97165d1a9a8e516b72fd5b0fe3def1e9afe5d74ac54d4
+    stderr_sha256: 8a2e2606787276fceaf97165d1a9a8e516b72fd5b0fe3def1e9afe5d74ac54d4
+    argv:
+    - .venv/bin/python
+    - .github/scripts/test_release_artifacts.py
+    - --dist-dir
+    - .artifacts/release-train-resume/draft-dist # non-authoritative local locator; exact capture hash recorded
+    command_result_sha256: 7b44fc45b1f263b30917a8d84643a837b8fc9b6ec26f957e00f5d90d4073df2c
+  - exit_code: 0
+    subject_commit: cd2038ad6c8d1bac824e4f7af27622303e1d66ee
+    subject_tree: c8d26ffb8324287cc8eeb7bee47c1b8003561d43
+    stdout_sha256: 02cad96863c8bdf0e1630d21ea77e187bf416bffc3aa9151027901dae4b574b4
+    stderr_sha256: 02cad96863c8bdf0e1630d21ea77e187bf416bffc3aa9151027901dae4b574b4
+    argv:
+    - .venv/bin/bcf
+    - ci
+    - local-pr
+    - --repo-root
+    - .
+    - --remote
+    - origin
+    command_result_sha256: 8793670727c05259698996401f0a6e515c794057e3a0d61b9549b9ece7c6e2e5
+  provider_runs:
+    bootstrap:
+      id: 34709120753
+      attempt: 1
+      head_sha: fe71ce0610374b90869e8f613f98d0ae3c1440d7
+      conclusion: success
+      jobs:
+      - id: 103594510871
+        name: Install authenticated controller / bcf-trusted-control-1
+        conclusion: success
+        runner_id: 24
+        runner_name: bcf-governance-vm-linux-ci-runner-1
+        started_at: '2026-09-12T17:44:29Z'
+        completed_at: '2026-09-12T17:45:03Z'
+      - id: 103594511042
+        name: Install authenticated controller / bcf-trusted-control-2
+        conclusion: success
+        runner_id: 25
+        runner_name: bcf-governance-vm-linux-ci-runner-2
+        started_at: '2026-09-12T17:44:29Z'
+        completed_at: '2026-09-12T17:45:03Z'
+    probe:
+      id: 34709207747
+      attempt: 1
+      head_sha: fe71ce0610374b90869e8f613f98d0ae3c1440d7
+      conclusion: success
+      jobs:
+      - id: 103594741077
+        name: Verify exact-main controller / bcf-trusted-control-2
+        conclusion: success
+        runner_id: 25
+        runner_name: bcf-governance-vm-linux-ci-runner-2
+        started_at: '2026-09-12T17:46:11Z'
+        completed_at: '2026-09-12T17:46:40Z'
+      - id: 103594741140
+        name: Verify exact-main controller / bcf-trusted-control-1
+        conclusion: success
+        runner_id: 24
+        runner_name: bcf-governance-vm-linux-ci-runner-1
+        started_at: '2026-09-12T17:46:11Z'
+        completed_at: '2026-09-12T17:46:38Z'
+  input_sha256:
+    .artifacts/release-train-resume/provider/confirmation-repository.json: 275275449807604b251c9ae0702cf3af7a04ae13289485cf61b90afe35e29b12 # sha256 of retained input
+    .artifacts/release-train-resume/provider/repaired-bootstrap-run.json: c77e6e44cd2683dad93238de12a30a4175085840f24539164df4c9f88249cbe3 # sha256 of retained input
+    .artifacts/release-train-resume/provider/repaired-probe-run.json: 690bbf6c56525ad860e25c04b83489f88d65c98d4b4cecfb28b6b0ac96319a84 # sha256 of retained input
+    .artifacts/release-train-resume/provider/hf04-failure-run.json: 22826cdede675a47a91f2b0972805c507bf51d15db3cf65054576e1b55137ec2 # sha256 of retained input
+    .artifacts/release-train-resume/provider/repaired-bootstrap-jobs.json: e13d89ff026137135d5ec00a24cbd923df683853fdfd361bbcc49ee62390e063 # sha256 of retained input
+    .artifacts/release-train-resume/provider/repaired-probe-jobs.json: 2ce67b8ceb61994d982bb317bb368403b5bb2a36487f9c0887689ea4abf8a9a5 # sha256 of retained input
+    .artifacts/release-train-resume/provider/hf04-failure-jobs.json: 76de3ec088795e2bbad0dfec3906826ca90975126ebacf5e7d074f79ce8ff485 # sha256 of retained input
+  remaining:
+  - exact-main certification
+  - storage qualification
+  - scheduled controls
+  - immutable publication
+  - release closeout
