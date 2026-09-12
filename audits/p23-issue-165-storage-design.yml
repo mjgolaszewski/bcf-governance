@@ -757,3 +757,4 @@ P23_HF05_upload_framing:
   - scheduled controls
   - immutable release
   - postpublication closeout
+prune_custody_incident: {"finding_id": "P23-CUSTODY-01", "audit": "audits/p23-prune-custody-incident.yml", "disposition": "open", "release_blocked": true}

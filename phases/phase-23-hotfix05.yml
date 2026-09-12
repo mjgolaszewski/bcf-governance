@@ -19,10 +19,11 @@ execution_evidence:
   - .venv/bin/bcf ci graph render --repo-root . --check
   executed_commands: []
   notes:
+  - "P23-CUSTODY-01 is open after an interrupted prune deleted explicitly retained historical certification custody; audits/p23-prune-custody-incident.yml owns actual deletion, recovery limits and corrected storage accounting. Publication remains blocked; no risk acceptance is inferred."
   - P23-HF05 owns the release-blocking streamed upload framing regression. Source run 34711171316 attempt 1 passed; trusted publisher 34711184418 attempt 1 returned HTTP 400, left empty draft 387663446, and the dependent cold resolver had no runner allocation. The exact source ZIP is retained as unresolved failure custody. HF04 remains completed; 1.2.0 publication and closeout remain pending.
   - Assigning a file stream to Request.data removed Content-Length, so urllib sent chunked Release asset uploads; the strict local HTTP reproduction rejects that framing while fixed-length streaming and canonical bytes pass.
   - The captured publisher log reports HTTP 400 only; no provider response body is recorded. The malformed upload framing is independently reproduced with identical valid URL, content type, payload bytes and filename.
-  - The fixed-length streaming repair is present; full local source/control/package evidence and controller confirmation remain pending.
+  - The fixed-length streaming repair passed package verification. Full source validation failed only the promotion context budget; controls did not run. Rationale-only compaction preserves every executable gate contract. Complete source/control evidence and controller confirmation remain pending.
   - Complete the upload-to-publish/resume class locally before the single consolidated repair PR; no provider rerun is authorized by this record.
   - After repair exact-main produces the controller, use a separate mechanically compiled target and provider-confirmed installation PR before qualification resumes.
 closeout_requirements:

@@ -1,11 +1,4 @@
-document:
-  kind: durable_project_memory
-  name: "BCF Governance Working Memory"
-  id: "bcf-governance-memory"
-  version: 1.0.0
-  generated_at_utc: "2026-08-14T00:00:00Z"
-  status: active
-  path: MEMORY.yml
+document: {"kind":"durable_project_memory","name":"BCF Governance Working Memory","id":"bcf-governance-memory","version":"1.0.0","generated_at_utc":"2026-08-14T00:00:00Z","status":"active","path":"MEMORY.yml"}
 regression_shield:
   purpose: keep this file as durable project memory, not as an execution transcript
   invariants:
@@ -75,6 +68,7 @@ environment_facts:
     active_workitem_ledger: plans/phase-23-workitems.yml
     active_phase_log: phases/phase-23-log.yml
 known_constraints:
+  - "P23-CUSTODY-01 is open after an interrupted prune deleted explicitly retained historical certification custody; audits/p23-prune-custody-incident.yml owns actual deletion, recovery limits and corrected storage accounting. Publication remains blocked; no risk acceptance is inferred."
   - schema-2 evidence must be recaptured after every governed tree mutation
   - template runtime and packaged template copies remain byte-identical to canonical sources; receipt invocation remains canonical while selected-interpreter identity is recorded as hashed environment metadata
   - release tags are created only at a merge commit whose source and governance CI passed; release tags are annotated unsigned by current policy

@@ -482,31 +482,29 @@ gates:
     evidence: {kind: gate}
     negative_controls: [{id: typecheck-behavior-must-fail, mutation: {path: bcf_governance/_version.py, search: '__version__ = ', replace: 'VERSION = '}, oracle: {kind: diagnostic, exit_codes: [1], stream: stderr, regex: 'self-governance gate typecheck failed:'}}]
 gate_catalog:
-  governance_validate: {target: governance-validate, status: required, command_policy: governance_validation, rationale: governed
-      YAML passes schema semantic path and placeholder validation}
+  governance_validate: {target: governance-validate, status: required, command_policy: governance_validation, rationale: "YAML schema/semantics/paths/placeholders"}
   governance_exposure_scan: {target: governance-exposure-scan, status: required, command_policy: governance_exposure_scan,
-    rationale: governed artifacts do not expose local paths or private infrastructure markers}
-  architecture_test: {target: architecture-test, status: required, command_policy: architecture_tests, rationale: architecture
-      boundaries are executable}
+    rationale: "no local paths/private infrastructure markers"}
+  architecture_test: {target: architecture-test, status: required, command_policy: architecture_tests, rationale: "executable boundaries"}
   architecture_module_size: {target: architecture-module-size, status: required, command_policy: architecture_module_size,
-    rationale: production modules stay below configured LOC cap}
-  architecture_layer_membership: {target: architecture-layer-membership, status: required, command_policy: architecture_layer_membership, rationale: production modules map to one layer}
-  architecture_context_membership: {target: architecture-context-membership, status: required, command_policy: architecture_context_membership, rationale: production modules map to one bounded context}
+    rationale: "production LOC caps"}
+  architecture_layer_membership: {target: architecture-layer-membership, status: required, command_policy: architecture_layer_membership, rationale: "one layer per production module"}
+  architecture_context_membership: {target: architecture-context-membership, status: required, command_policy: architecture_context_membership, rationale: "one bounded context per production module"}
   architecture_import_boundaries: {target: architecture-import-boundaries, status: required, command_policy: architecture_import_boundaries,
-    rationale: layer import purity prevents drift}
-  architecture_cqrs_side: {target: architecture-cqrs-side, status: required, command_policy: architecture_cqrs_side, rationale: command and query sides stay separate}
+    rationale: "layer import purity"}
+  architecture_cqrs_side: {target: architecture-cqrs-side, status: required, command_policy: architecture_cqrs_side, rationale: "command/query separation"}
   architecture_router_thinness: {target: architecture-router-thinness, status: required, command_policy: architecture_router_thinness,
-    rationale: routers remain transport adapters}
-  architecture_duplication: {target: architecture-duplication, status: required, command_policy: architecture_duplication, rationale: duplication and shared helpers stay explicit}
-  lint: {target: lint, status: required, command_policy: lint, rationale: lint rules are wired before release-check is trusted}
-  typecheck: {target: typecheck, status: required, command_policy: typecheck, rationale: static analysis is wired before release-check is trusted}
-  test: {target: test, status: required, command_policy: automated_tests, rationale: touched behavior has automated tests}
-  contract_test: {target: contract-test, status: required, command_policy: contract_tests, rationale: public contracts and adapters have explicit checks}
-  security_secret_scan: {target: security-secret-scan, status: required, command_policy: security_secret_scan, rationale: pushed code is scanned for secrets}
-  security_dependency_audit: {target: security-dependency-audit, status: required, command_policy: security_dependency_audit, rationale: dependencies have a vulnerability audit lane}
-  security_sbom: {target: security-sbom, status: required, command_policy: security_sbom, rationale: production-bound artifacts produce an SBOM}
-  security_vulnerability_scan: {target: security-vulnerability-scan, status: required, command_policy: security_vulnerability_scan, rationale: source or image vulnerability scan is wired}
-  security_review: {target: security-review, status: required, command_policy: security_review, rationale: canonical review findings and remediation proofs bind to the governed tree}
-  runtime_smoke: {target: runtime-smoke, status: required, command_policy: runtime_smoke, rationale: runtime behavior is proven in a declared environment}
-  semantic_ownership: {target: semantic-ownership, status: required, command_policy: semantic_ownership, rationale: declared canonical representations have one mechanically enforced owner}
+    rationale: "transport adapters"}
+  architecture_duplication: {target: architecture-duplication, status: required, command_policy: architecture_duplication, rationale: "explicit duplication/shared helpers"}
+  lint: {target: lint, status: required, command_policy: lint, rationale: "lint before trusted release-check"}
+  typecheck: {target: typecheck, status: required, command_policy: typecheck, rationale: "static analysis before trusted release-check"}
+  test: {target: test, status: required, command_policy: automated_tests, rationale: "test touched behavior"}
+  contract_test: {target: contract-test, status: required, command_policy: contract_tests, rationale: "public contract/adapter checks"}
+  security_secret_scan: {target: security-secret-scan, status: required, command_policy: security_secret_scan, rationale: "scan pushed code secrets"}
+  security_dependency_audit: {target: security-dependency-audit, status: required, command_policy: security_dependency_audit, rationale: "dependency vulnerability audit"}
+  security_sbom: {target: security-sbom, status: required, command_policy: security_sbom, rationale: "production SBOM"}
+  security_vulnerability_scan: {target: security-vulnerability-scan, status: required, command_policy: security_vulnerability_scan, rationale: "source/image vulnerability scan"}
+  security_review: {target: security-review, status: required, command_policy: security_review, rationale: "tree-bound canonical findings/remediation proofs"}
+  runtime_smoke: {target: runtime-smoke, status: required, command_policy: runtime_smoke, rationale: "prove runtime in declared environment"}
+  semantic_ownership: {target: semantic-ownership, status: required, command_policy: semantic_ownership, rationale: "one enforced owner per declared canonical representation"}
 provenance: {}

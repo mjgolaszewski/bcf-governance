@@ -1,10 +1,36 @@
 document:
   kind: finding_registry
-  name: "BCF Governance Finding Registry"
-  id: "bcf-governance-findings"
+  name: BCF Governance Finding Registry
+  id: bcf-governance-findings
   version: 1.0.0
-  generated_at_utc: "2026-08-14T00:00:00Z"
+  generated_at_utc: '2026-08-14T00:00:00Z'
   status: active
   path: governance/findings.yml
-reviews: []
-findings: []
+reviews:
+- id: P23-PRUNE-CUSTODY-REVIEW
+  source_path: audits/p23-prune-custody-incident.yml
+  source_sha256: 0df5cd605021954bf18367d0401ea5153354043dc94c962c4c58d6bd98ed1e21
+  reviewer: &id001
+    kind: model
+    id: codex/publication_review
+  finding_ids:
+  - P23-CUSTODY-01
+  summary:
+    findings_total: 1
+    open_count: 1
+    severity_counts:
+      high: 1
+    disposition_counts:
+      open: 1
+findings:
+- id: P23-CUSTODY-01
+  review_id: P23-PRUNE-CUSTODY-REVIEW
+  severity: high
+  disposition: open
+  provenance:
+    producers:
+    - kind: model
+      id: codex/root
+    reviewer: *id001
+    remediators: []
+  proofs: []
