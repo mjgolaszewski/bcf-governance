@@ -39,7 +39,7 @@
     "provider": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "repository", "repository_id", "tag_prefix", "protected_environment", "credential_kind", "app_id_variable", "private_key_secret", "immutable_required", "attestation_required", "max_assets_per_release", "max_asset_bytes"],
+      "required": ["kind", "repository", "repository_id", "tag_prefix", "protected_environment", "credential_kind", "app_id_variable", "private_key_secret", "settings_read_token_secret", "immutable_required", "attestation_required", "max_assets_per_release", "max_asset_bytes"],
       "properties": {
         "kind": {"const": "github_release"},
         "repository": {"oneOf": [{"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"}, {"type": "null"}]},
@@ -49,6 +49,7 @@
         "credential_kind": {"enum": ["github_app", "unconfigured"]},
         "app_id_variable": {"oneOf": [{"type": "string", "pattern": "^[A-Z_][A-Z0-9_]*$"}, {"type": "null"}]},
         "private_key_secret": {"oneOf": [{"type": "string", "pattern": "^[A-Z_][A-Z0-9_]*$"}, {"type": "null"}]},
+        "settings_read_token_secret": {"oneOf": [{"type": "string", "pattern": "^[A-Z_][A-Z0-9_]*$"}, {"type": "null"}]},
         "immutable_required": {"const": true},
         "attestation_required": {"const": true},
         "max_assets_per_release": {"type": "integer", "minimum": 2, "maximum": 1000},

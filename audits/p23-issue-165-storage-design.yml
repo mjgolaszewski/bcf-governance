@@ -39,7 +39,7 @@ authority_model:
   - required objects are published before compact references and Actions handoff deletion
   - current heads certified commits releases unresolved findings and explicit custody roots remain reachable
   - unavailable storage exceeded budgets expired freshness or failed reconstruction fails closed
-  - trusted workflow tokens authenticate reads while the short-lived contents-write App token performs only Release mutation
+  - trusted workflow tokens authenticate ordinary reads while distinct short-lived contents-write and Administration-read credentials perform Release mutation and immutable-setting inspection respectively
 transport_design:
   durable_backend: immutable_github_release_assets
   release_namespace: non_product_bcf-evidence-inputs
@@ -67,6 +67,11 @@ hosted_execution:
   consumption: hosted jobs actively download verify materialize execute and exit
   forbidden: [hosted_polling, hosted_sleeping, hosted_capacity_waiting, hosted_local_runner_supervision]
   provider_edges: needs and completion events defer runner allocation rather than occupying a VM
+provider_permission_model:
+  ordinary_read: {credential: workflow_token, permissions: [actions_read, attestations_read, contents_read]}
+  release_mutation: {credential: protected_environment_GitHub_App_token, permissions: [contents_write]}
+  immutable_settings_preflight: {credential: protected_environment_short_lived_token, permissions: [administration_read]}
+  invariant: no credential may be silently substituted for a differently scoped provider operation
 implementation_scope:
   bounded_contexts: [evidence, ci_authority, cleanup, install]
   layers: [tooling, pack, public]

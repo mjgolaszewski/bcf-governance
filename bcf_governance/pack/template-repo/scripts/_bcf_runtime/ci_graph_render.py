@@ -350,7 +350,12 @@ def _upload_steps(
     return [
         {
             "name": f"Upload exact {artifact} evidence",
-            "if": "${{ always() }}",
+            "if": (
+                "${{ success() }}"
+                if compiled.graph["artifacts"][artifact]["kind"]
+                in {"durable-source", "durable-reference"}
+                else "${{ always() }}"
+            ),
             "uses": action_pin("upload-artifact"),
             "with": {
                 "name": f"bcf-{artifact}-${{{{ github.run_id }}}}-${{{{ github.run_attempt }}}}",
@@ -434,6 +439,9 @@ def _executor_steps(
                 "env": {
                     "GITHUB_TOKEN": "${{ github.token }}",
                     "BCF_EVIDENCE_WRITE_TOKEN": "${{ steps.evidence-app-token.outputs.token }}",
+                    "BCF_EVIDENCE_SETTINGS_READ_TOKEN": "${{ secrets."
+                    + provider["settings_read_token_secret"]
+                    + " }}",
                 },
                 "run": (
                     "set -euo pipefail\n"

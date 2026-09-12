@@ -1,0 +1,46 @@
+document:
+  kind: hotfix_execution_log
+  name: P23-HF04 Hotfix Log
+  id: bcf-governance-phase-23-hotfix04
+  version: 1.0.0
+  generated_at_utc: '2026-09-12T00:00:00Z'
+  status: planned
+  path: phases/phase-23-hotfix04.yml
+hotfix:
+  id: P23-HF04
+  mode: full
+  related_phase_id: P23
+  hotfix_number: 4
+  summary: Close durable publication provider permissions and failure outputs
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile full
+  - .venv/bin/python .github/scripts/run_validator_mutants.py --profile semantic-full
+  - .venv/bin/bcf ci graph render --repo-root . --check
+  executed_commands: []
+  notes:
+  - exact-main 34699585412, finalizer 34700173859, status publisher 34700193972,
+    and scheduled mutants 34700223849 and 34700225045 passed
+  - qualification source 34700226050 passed in 11 hosted seconds and terminated
+  - trusted publisher 34700240111 failed before mutation because the workflow
+    token received 403 from the repository immutable-release settings endpoint;
+    the dependent hosted resolver was never allocated
+  - authenticated App inspection proved the declared contents writer has only
+    contents-write and metadata-read permissions, as designed
+  - GitHub's immutable-release settings endpoint requires Administration read,
+    so ordinary reads, settings inspection, and Release mutation require three
+    mechanically distinct credential paths
+  - no remote retry is permitted until the complete credential, prerequisite,
+    required-output, generated-graph, and packaged-runtime class passes locally
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence: [test, contract-test]
+    security_review_complete:
+      required_evidence: [security-review]
+    health_checks_green:
+      required_evidence: [runtime-smoke]
+  reconciliation:
+    required_evidence: [governance-validate, governance-exposure-scan]
+  finding_registry: governance/findings.yml

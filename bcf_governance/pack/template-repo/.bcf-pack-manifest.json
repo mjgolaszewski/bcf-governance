@@ -62,7 +62,7 @@
     },
     "docs/OPERATIONS.md": {
       "operation": "copy",
-      "sha256": "57f7b8da8cf8886a05adab09edd648975c529b9865717b5f446e39b9c277c00e"
+      "sha256": "1dc4fb48968fa40e3df44b98721dd3def4d8d96b7dd5548a2d238a4bad3c055e"
     },
     "governance-profile.yml": {
       "operation": "generate",
@@ -108,7 +108,7 @@
     },
     "governance/evidence-storage.yml": {
       "operation": "copy",
-      "sha256": "1c3f29fb69f7133f129484b5d1279ebe88ba02c002bff0261912ca03b41107e4"
+      "sha256": "3ec9e1912ea8fe749f84461b2a9684b5b4abd229b63a409847219340f7935294"
     },
     "governance/existing-repo-adoption.yml": {
       "operation": "copy",
@@ -256,7 +256,7 @@
     },
     "schemas/evidence-storage.schema.json": {
       "operation": "copy",
-      "sha256": "d7c949e2e47da5f5713394bb9cbdebaeee106ac440ec69cc4b5745646e9553c9"
+      "sha256": "450136bb3ec771556564b103b8eaa03bf1fb906396dd3106ae609367d4c2d120"
     },
     "schemas/findings.schema.json": {
       "operation": "copy",
@@ -532,7 +532,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "597ebc6e08ed18f5ab6c2f2c3a919f19d8fbf947c10c397f8ca4fa1f55ad5d5e"
+      "sha256": "7fe1e2084ba6249452fdc8f96bf7965a07a53dbc7e29ba62d2ac4543dfc495c6"
     },
     "scripts/_bcf_runtime/ci_graph_storage.py": {
       "operation": "copy",
@@ -592,15 +592,15 @@
     },
     "scripts/_bcf_runtime/evidence_storage_commands.py": {
       "operation": "copy",
-      "sha256": "23a97228642d518586a915f049ce9caad68f94ce2172db26e1d1c13bee4d207d"
+      "sha256": "4761ae28dc04fb4bc9ff1c04d5f47e0613d434abf7a1bc0c1abdb01a23078924"
     },
     "scripts/_bcf_runtime/evidence_storage_contracts.py": {
       "operation": "copy",
-      "sha256": "ea29e75515f1566f6d4153989e48ec0683623b17222d3474db70ec0e3fdaf3fb"
+      "sha256": "cd4af280acc29e5871b5c5fb382410b9a9fb42f97dbd7a4690f4aa3905feddb4"
     },
     "scripts/_bcf_runtime/evidence_storage_github.py": {
       "operation": "copy",
-      "sha256": "a9ea36fb198ef3a5362a64243bc1628fed37acec751f1dfe25ae903afca08917"
+      "sha256": "b96e3d91bda3ac6199e1ccf8afe9dfb98a0012b0474948c4c3be1e32ff7bccb8"
     },
     "scripts/_bcf_runtime/evidence_storage_github_api.py": {
       "operation": "copy",

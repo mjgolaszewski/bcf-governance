@@ -4,7 +4,7 @@ provider: github
 profile_contract_version: '2.0'
 default_branch: main
 trusted_controller: {kind: self_governance_policy, policy_path: governance/self-governance-policy.yml}
-evidence_storage: {path: governance/evidence-storage.yml, sha256: b5c1cd2ff1754b7f5ddeee36f28b2c057b763648f113d380d1904ad1b8f4df81}
+evidence_storage: {path: governance/evidence-storage.yml, sha256: a0268276625f253fd3099294989a8ec2cd84ced260858224f9f619f376eddfbc}
 value_sources:
   self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 87297eaf9109df4364d86415701302c7dddf6938775ccdc8fc94f65207c0bf8a}
   release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: 49044714b8a5f1d36fe1d5eda54475af8c0eb4ad976e48239aca003d7a710cbc}

@@ -74,9 +74,10 @@ operations.
 Fresh installations include `governance/evidence-storage.yml` with the
 capability disabled. Enable it only after declaring the numeric repository
 identity, a dedicated contents-write GitHub App, its protected environment and
-credential references, freshness classes, reachability roots, and byte/count
-budgets. Existing repositories retain their project-owned storage contract (or
-its absence) during normal upgrade.
+credential references, a separate Administration-read settings credential,
+freshness classes, reachability roots, and byte/count budgets. Existing
+repositories retain their project-owned storage contract (or its absence)
+during normal upgrade.
 
 The graph vocabulary is:
 
@@ -99,8 +100,13 @@ bcf ci graph validate --repo-root .
 bcf ci graph render --repo-root . --apply
 ```
 
-Generated CI authenticates source and provider reads with the trusted workflow
-token and uses the declared App token only for contents-write Release operations.
+Generated CI authenticates ordinary source and provider reads with the trusted
+workflow token, uses the declared App token only for contents-write Release
+operations, and uses a separately declared Administration-read credential only
+to prove that immutable Releases are enabled before mutation. The settings
+credential must be provisioned in the protected environment before publication;
+BCF validates all three credentials mechanically and never substitutes one scope
+for another.
 Each consuming job downloads the compact reference and cold-resolves the
 immutable assets. A hosted consumer is allocated only after the trusted publisher
 has completed successfully; it never waits for trusted or local capacity.

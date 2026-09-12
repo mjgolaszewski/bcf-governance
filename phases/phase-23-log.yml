@@ -21,6 +21,7 @@ summary:
   - P23 implementation is complete and eligible for exact-main certification, scheduled controls, storage qualification, and immutable 1.2.0 publication
   - P23-HF02 corrects the cold trusted-publisher runtime as one compiler-enforced controller-execution class before storage qualification resumes
   - P23-HF03 corrects the complete GitHub binary-download protocol class and makes pending-controller exact-main execution both fail-closed and rotation-capable
+  - P23-HF04 separates immutable-settings read authority from ordinary provider reads and Release writes and prevents missing durable outputs from masking producer failures
 workitems:
 - id: P23-P0-01
   status: DONE
@@ -116,6 +117,6 @@ closeout_requirements:
 known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts change
 next_work:
-- merge the lifecycle-only P23-HF03 reconciliation after exact local closure preflight
-- certify exact main then run both scheduled control profiles and the bounded cold-storage qualification
+- complete P23-HF04 offline and rotate its controller without speculative provider retries
+- rerun the bounded cold-storage qualification with the complete credential closure
 - build independently verify collect and immutably publish the exact certified 1.2.0 artifacts without rebuilding

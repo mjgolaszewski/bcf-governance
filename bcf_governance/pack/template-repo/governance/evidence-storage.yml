@@ -10,6 +10,7 @@ provider:
   credential_kind: unconfigured
   app_id_variable: null
   private_key_secret: null
+  settings_read_token_secret: null
   immutable_required: true
   attestation_required: true
   max_assets_per_release: 1000
