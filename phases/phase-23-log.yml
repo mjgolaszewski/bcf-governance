@@ -77,6 +77,9 @@ execution_evidence:
   - target exact-main run 34688183780 was cancelled after 358 hosted seconds when it admitted redundant evidence during a pending controller rotation; the canonical graph now makes current-controller confirmation a prerequisite to exact-main admission
   - exact main ea7668c036c7f0e5a2271cc17b0b3f684efcee4c passed certification; qualification source 34691496221 then passed in 13 hosted seconds and trusted publisher 34691509652 failed before allocating the cold resolver because its Actions ZIP request used the Release-asset media type
   - the whole GitHub binary-download class is now owned by typed endpoint semantics with credential-safe redirects, and the exact failing provider artifact was downloaded successfully through both corrected adapters without launching a workflow
+  - P23-HF03 passed 921 source nodes 390 contract nodes 225 causal controls both mutation profiles exact package verification and all three protected PRs on their first complete attempts
+  - controller bootstrap 34697472883 and probe 34697517410 passed on both trusted runners; confirmation PR 174 merged as 0cca402ff5a8c4fb622107bb44b2548040d8b0c7
+  - exact-main 34698441190 rejected the open HF03 record at the 19-second closure front door and allocated no evidence lane; explicit owner authority completes the hotfix from its recorded evidence before another exact-main execution
   notes:
   - audits/p23-issue-164-remediation.yml owns the defect-class review consumer proof and release-train storage forecast
   - remote execution starts only after the complete deterministic local acceptance set passes
@@ -113,6 +116,6 @@ closeout_requirements:
 known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts change
 next_work:
-- complete P23-HF03 offline class validation and mechanically rotate its changed controller through the bounded transition producer
+- merge the lifecycle-only P23-HF03 reconciliation after exact local closure preflight
 - certify exact main then run both scheduled control profiles and the bounded cold-storage qualification
 - build independently verify collect and immutably publish the exact certified 1.2.0 artifacts without rebuilding
