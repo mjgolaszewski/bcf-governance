@@ -1274,7 +1274,7 @@ def test_graph_renders_short_handoff_trusted_publish_and_cold_resolve(
 
 
 @pytest.mark.parametrize(
-    ("mutation", "diagnostic"),
+    "case",
     [
         ("retention", "source prepared-inputs retention differs"),
         ("candidate-publisher", "publish-inputs must be trusted control"),
@@ -1290,10 +1290,12 @@ def test_graph_renders_short_handoff_trusted_publish_and_cold_resolve(
         ("same-workflow-publisher", "must run in a separate trusted workflow"),
         ("manual-publisher", "must authenticate the exact completed source workflow"),
     ],
+    ids=lambda case: case[0],
 )
 def test_graph_rejects_durable_transport_authority_bypasses(
-    tmp_path: Path, mutation: str, diagnostic: str
+    tmp_path: Path, case: tuple[str, str]
 ) -> None:
+    mutation, diagnostic = case
     root = _durable_graph_repo(tmp_path)
     path = root / "governance/ci-graph.yml"
     graph = yaml.safe_load(path.read_text())
