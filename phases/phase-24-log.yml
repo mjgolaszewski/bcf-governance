@@ -10,11 +10,12 @@ phase:
   id: P24
   build_block: consumer-runtime-typescript-authority-and-candidate-routing-1.3.0
 summary:
-  outcome: implementation_complete_checks_pending
+  outcome: implementation_merged_controller_target_pending
   highlights:
-  - All four reported defects and coordinated consumer/toolchain qualification are implemented and independently reviewed locally.
-  - Implementation is authored completed under the existing taxonomy; exact candidate validation and all hosted delivery milestones remain pending.
-  - Issues 184 through 187 remain open until authenticated qualification publication and closeout evidence is verified.
+  - All four coordinated fixes passed full local qualification and protected PR checks on the first implementation push.
+  - The owner approved the complete delivery budget and financial contingency for three total runs; the canonical audit owns the exact grant.
+  - The authenticated implementation-main controller is mechanically projected; installation confirmation and release certification remain pending.
+  - Issues 184 through 187 remain open until acceptance publication final certification and closeout are verified.
 workitems:
 - id: P24-P0-01
   status: DONE
@@ -55,9 +56,9 @@ execution_evidence:
     exit_code: 0
     record: .artifacts/p24-release/release-toolchain-final-result.json
     record_sha256: 12967290a58a537eb9b801333dbebd55e10d77163dd345fd61e12813dfff7f09
-  - command: .venv/bin/python -m pytest -q tests/test_semantic_authority_typescript.py tests/test_semantic_typescript_effects.py tests/test_semantic_typescript_review.py
-      tests/test_semantic_typescript_boundaries.py tests/test_semantic_ownership_typescript.py tests/test_semantic_import_roots.py tests/test_semantic_method_effects.py
-      tests/test_semantic_ownership.py::test_source_discovery_precedes_registry_access --junitxml=.artifacts/p24-release/typescript-final-focused.xml
+  - command: .venv/bin/python -m pytest -q tests/test_semantic_authority_typescript.py tests/test_semantic_typescript_effects.py tests/test_semantic_typescript_review.py tests/test_semantic_typescript_boundaries.py
+      tests/test_semantic_ownership_typescript.py tests/test_semantic_import_roots.py tests/test_semantic_method_effects.py tests/test_semantic_ownership.py::test_source_discovery_precedes_registry_access
+      --junitxml=.artifacts/p24-release/typescript-final-focused.xml
     scope: non-authoritative local development checkpoint; complete exact candidate qualification remains pending
     exit_code: 0
     record: .artifacts/p24-release/typescript-final-focused-result.json
@@ -72,11 +73,23 @@ execution_evidence:
     exit_code: 0
     record: .artifacts/p24-release/release-integration-synchronized.json
     record_sha256: dd62ce7e814309f3f9365533a77c83d3fb3e12e3fea622d2df44ac029d30c706
+  - command: .venv/bin/bcf ci local-pr --repo-root . --remote origin
+    scope: Repository-relative display of successful implementation qualification; the referenced result retains the actual absolute argv.
+    exit_code: 0
+    record: .artifacts/p24-release/pr-local-zzwo5xdn/local-pr-result.json
+    record_sha256: 9070ddaab0cf2609fb40396c28d4b35a6f411c838414a19d57dcdbd2f963f08f
+  - command: .venv/bin/python .artifacts/p24-release/prepare_repaired_controller_target.py
+    scope: non-authoritative local invocation; actual authenticated controller compilation is bound by the referenced result.
+    exit_code: 0
+    record: .artifacts/p24-release/p24-controller-target-compile-result.json
+    record_sha256: 845bc112ce6965b8846b0a5907dce35aa14fd723f73ec7b3c79e166d75ea1004
   notes:
   - P24 scaffold and P23 Git-history retention were generated mechanically; prior phase bytes and historical custody audits remain intact.
   - audits/p24-consumer-integrity.yml records coordinated issue scope and local checkpoints; it does not claim release certification.
-  - The owner requires one consolidated implementation push cycle. Hosted publication and controller steps require the new explicit budget after full local qualification.
-  - The sixth workitem delivers the reviewed execution procedure; actual provider operations remain pending audit milestones, and release_14 remains active.
+  - The owner approved the full delivery budget before the single implementation push and covered necessary diagnosed corrections within three-run financial ceilings.
+  - The sixth workitem delivers the reviewed execution procedure; controller installation qualification publication and closeout remain pending audit milestones, and release_14 remains active.
+  - audits/p24-consumer-integrity.yml binds all 21 local gates and 236 controls; complete collection package and installed-runtime proofs; protected PR 188; and the authenticated pending
+    controller target.
 closeout_requirements:
   claims:
     workitems_closed:
@@ -106,13 +119,14 @@ closeout_requirements:
     - governance-exposure-scan
   finding_registry: governance/findings.yml
 known_constraints:
-- The prior release storage allowance is not a new release budget; a complete forecast and new explicit approval are required before the first push.
+- The effective three-total-run budget is hash-bound in audits/p24-consumer-integrity.yml; one consolidated implementation cycle remains the first-pass target and no expiry or deletion
+  credit is taken.
 - P23-CUSTODY-01 remains accepted historical risk. No further Actions pruning is authorized.
 - Racecar and Chrysalis are outside this implementation.
 - All local, hosted and trusted execution consumes resources; measure actual costs without claiming unmeasured savings.
 next_work:
-- Complete full required local source package and causal-control verification plus canonical local PR validation on the committed candidate.
-- Finalize measured hosted-minute and storage forecast and obtain the new explicit budget before the single implementation push.
-- Land through protected checks; execute mechanical controller target bootstrap probe confirmation and exact-main certification.
-- Complete scheduled and durable qualification independent release verification immutable App publication secret removal token revocation and authenticated closeout.
-- Certify final main account actual resources and close issues only after their acceptance and publication evidence is verified.
+- Full local qualification and protected landing of the mechanically projected controller target.
+- Authenticated bootstrap and probe on both trusted runners followed by mechanical confirmation and protected landing.
+- Successful exact-main certification then scheduled and durable-storage qualification.
+- Independent release verification and immutable App-token publication with immediate secret removal and revocation.
+- Evidence closeout then final-main certification measured accounting and authenticated closure of all four issues.

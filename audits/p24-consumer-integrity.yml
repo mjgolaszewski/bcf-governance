@@ -97,15 +97,14 @@ local_checkpoints:
   exit_code: 0
   scope: local profile regeneration and graph mutation regression; complete exact candidate qualification remains pending
 pending_acceptance:
-- Final complete source and package suites with fresh and upgrade installed consumers and causal controls.
-- Canonical local PR validation on the committed candidate with mechanically pinned workflow definitions.
-- New explicit hosted/storage budget before the single implementation push.
-- Protected landing, controller installation and confirmation, exact-main and scheduled/durable qualification.
-- Independent release verification, immutable App-token publication, token revocation and temporary secret removal.
-- Evidence closeout, final certification, measured accounting and issue closure.
+- Full local qualification and protected landing of the mechanically projected controller target.
+- Authenticated bootstrap and probe on both trusted runners followed by mechanical confirmation and protected landing.
+- Successful exact-main certification then scheduled and durable-storage qualification.
+- Independent release verification and immutable App-token publication with immediate secret removal and revocation.
+- Evidence closeout then final-main certification measured accounting and authenticated closure of all four issues.
 local_execution_incidents:
 - id: P24-LOCAL-QUALIFICATION-01
-  status: corrected_collection_proved_full_rerun_required
+  status: corrected_full_qualification_passed
   failed_candidate_commit: bc6e53871429f8682030f090dbb060c9af4e1b11
   source_gate_result:
     gate: test
@@ -141,6 +140,185 @@ local_execution_incidents:
     sha256: 94e9eb31a8073f9e80d9db7bf3cdeff62a0361da17122e801f7956574bcae015
   actions_artifacts_deleted: false
   prior_release_evidence_modified: false
+  corrected_full_qualification:
+    path: .artifacts/p24-release/final-runtime-acceptance-review-20260913T181638Z.json
+    sha256: a95919d687018f1a8b5e4076ee1fa0536c2e9c36ca7574e3aa5f8707f91b57c6
 controller_handoff_review:
   path: .artifacts/p24-release/controller-transition-protocol-review.json
   sha256: 5a1999c107dec7d32a8094134ab7da441f887cd012d0ba55be24930d37374764
+resource_authorization:
+  path: .artifacts/p24-release/resource-authorization-20260913T183743Z-effective.json
+  sha256: e8377a23382c1ac6ca38fc12e03db2880de60f54ed5797caa9fc8e186de1ccce
+resource_decision:
+  decision_observation:
+    observed_at_utc: '2026-09-13T18:37:43Z'
+    actual_message_timestamp: null
+    source: active_user_turn_parent_transcription
+    semantics: approval_received_by_agent_at_observation_not_user_message_timestamp
+  original_approved_limits:
+    hosted_seconds: 37260
+    trusted_seconds: 1140
+    actions_growth_bytes: 135266304
+    retained_byte_hours: 123000000000
+    product_asset_growth_bytes: 9437184
+    durable_asset_growth_bytes: 131072
+  maximum_three_run_limits:
+    hosted_seconds: 111780
+    trusted_seconds: 3420
+    actions_growth_bytes: 405798912
+    retained_byte_hours: 369000000000
+    product_asset_growth_bytes: 28311552
+    durable_asset_growth_bytes: 393216
+  scope:
+    phase: P24
+    release: 1.3.0
+    planned_implementation_push_cycles: 1
+    planned_additional_repair_prs: 0
+    failure_contingency_coverage:
+    - implementation
+    - provider
+    further_pruning_authorized: false
+    consumer_activation_authorized: false
+  diagnosed_corrections_within_ceiling_require_new_budget_approval: false
+  deletion_or_expiry_credit_bytes: 0
+  pre_push_admission:
+    path: .artifacts/p24-release/prepush-resource-admission-20260913T185114Z.json
+    sha256: d5cafdd09720f64a3a210c4ed90a865148222af20ca526693a1935b4138aabb7
+implementation_qualification:
+  subject:
+    commit_sha: c8bad7a61549912a4db25ffccf1f52fa549b4b94
+    tree_sha: 1799b4105c0e71ea20e4670c2955803428255005
+    image_id: sha256:aaae211ac03fbcf35ec3c4e6919a1e3cd701813224eeec157fc773f92509fe4a
+  review:
+    path: .artifacts/p24-release/final-runtime-acceptance-review-20260913T181638Z.json
+    sha256: a95919d687018f1a8b5e4076ee1fa0536c2e9c36ca7574e3aa5f8707f91b57c6
+  execution:
+    path: .artifacts/p24-release/exact-ci-qualification-corrected/execution.json
+    sha256: a9c760bf3bf427577e867cc085eebcb7d69f118935a0c210bc8e68f30756a10f
+  collection:
+    files: 826
+    file_bytes: 10551812
+    all_file_bytes_modes_and_inventories_match: true
+    owned_container_removed_only_after_verified_collection: true
+  source_gates:
+    passed: 21
+    causal_controls: 236
+    receipt_hashes_match: true
+    source_and_contract_deep_oracle_audits: Completed earlier against the same unchanged receipt hashes; not rerun here.
+  packages:
+    artifact_sha256:
+      bcf_governance-1.3.0-py3-none-any.whl: 940889b33be2d1729dd7175df24349cada1a3c36cdf0669aec1721083bb2d5eb
+      bcf_governance-1.3.0.tar.gz: c0b44d6a8bea84a5d1e9d7d19b6eb495c31fb85ff70d9a2531536cbc997ccc6f
+    artifact_bytes:
+      bcf_governance-1.3.0-py3-none-any.whl: 1070463
+      bcf_governance-1.3.0.tar.gz: 6464189
+    build_actual_exit: 0
+    package_verifier_actual_exit: 0
+    package_verifier_seconds: 1046.7844692150247
+    package_verifier_reported_sdist_counts:
+      passed: 1231
+      failed: 0
+      errors: 0
+      skipped: 5
+      xfailed: 0
+      xpassed: 0
+      collected: 1236
+      executed: 1231
+    sdist_all_tracked_files_equal_source_and_frozen_checkout: 985
+    wheel_tracked_files_equal_source: 417
+    compiler_fixture_absent_from_wheel: true
+  closed_runtime:
+    status: passed
+    seconds: 1027.2175252959714
+    commands_passed: 16
+    raw_evidence_files_verified: 33
+    report_sha256: d9a38455aa6e78f2c1b36cb55951860c1291b0956e26081162a3ac5e5c83fab9
+    environment:
+      platform: linux_x86_64
+      python_version: 3.12.14
+    dependency_wheels: 41
+    sdist_junit:
+      collected: 1236
+      executed: 1231
+      passed: 1231
+      failed: 0
+      errors: 0
+      skipped: 5
+      xfailed: 0
+      xpassed: 0
+    exact_current_manifest_node_set: true
+    duplicate_nodes: 0
+    allowed_custody_skips:
+    - tests.test_governance_evidence::test_governance_validation_controls_preserve_their_declared_failure_causes
+    - tests.test_profile_contract_v2::test_bcf_standard_v2_promotion_fits_declared_context_budgets
+    - tests.test_release_artifacts::test_built_sdist_contains_every_governed_source_file
+    - tests.test_self_governance_contracts::test_required_repository_artifact_contract_is_executable
+    - tests.test_validate_governance_yaml::test_clean_baseline_still_rejects_an_already_satisfied_control
+    installed_fresh_and_upgrade_nodes_passed: 17
+    all_typescript_and_language_matrix_nodes_passed: true
+  local_pr:
+    path: .artifacts/p24-release/pr-local-zzwo5xdn/local-pr-result.json
+    sha256: 9070ddaab0cf2609fb40396c28d4b35a6f411c838414a19d57dcdbd2f963f08f
+  validated_base:
+    path: .artifacts/p24-release/pr-local-zzwo5xdn/validated-base.json
+    sha256: 85c1c2c1358d2144987983926da770d36bc8cee45fff9bcf2ca2a8166347b019
+  scope: Exact implementation-subject local qualification; these archives are not authoritative publication assets.
+implementation_merge:
+  provider_result:
+    path: .artifacts/p24-release/pr-prepare-c05bwac7/merge-success.json
+    sha256: d1922f9b5fe343f83fe68b404103df57b86fdef96a9125a2a15f29c7707dc693
+  merge:
+    headRefOid: c8bad7a61549912a4db25ffccf1f52fa549b4b94
+    mergeCommit:
+      oid: 83950f768908a46117cadc4fdf89bdd2c5d45c40
+    mergedAt: '2026-09-13T19:15:13Z'
+    number: 188
+    state: MERGED
+    url: https://github.com/mjgolaszewski/bcf-governance/pull/188
+  exact_tree_checkout:
+    path: .artifacts/p24-release/implementation-main-checkout/result.json
+    sha256: 91dae3d03e658879098f87d4068b267e50c6f6643dcf027608886989888b3265
+  terminal_pr_review:
+    path: .artifacts/p24-release/implementation-terminal-review-5r4mble5/review.json
+    sha256: 4e57d2b7505131e67a39b70314904cfa1b96674652e0e9829dada6fa2d192e80
+  implementation_pushes: 1
+  workflow_attempts: 1
+controller_target:
+  status: projected_installation_and_confirmation_pending
+  compiler_execution:
+    path: .artifacts/p24-release/p24-controller-target-compile-result.json
+    sha256: 845bc112ce6965b8846b0a5907dce35aa14fd723f73ec7b3c79e166d75ea1004
+  result:
+    path: .artifacts/p24-release/repaired-controller-target-5_46t02s/result.json
+    sha256: 7861b3fcd52270623dcbec6c07f8e3275875f3bb7ce2f50c620569bdace3f414
+  pin:
+    path: .artifacts/p24-release/repaired-controller-target-5_46t02s/pin.json
+    sha256: e21f8be244bda8f5d9dbbe690d5a59f0b1229fafc003be457a9cb4c18a11101a
+  projection:
+    path: .artifacts/p24-release/controller-target-projection/result.json
+    sha256: c6bd21e70e35e076554d7d087304712fd8c4f9a2558c0d3c8bd8410331d717ad
+  observed_artifact:
+    BCF_BOOTSTRAP_ARTIFACT_DIGEST: sha256:75d04fb691d731a64379e8c2b46c41786cbdcc72313d8f6b735e372587a21a4e
+    BCF_BOOTSTRAP_ARTIFACT_ID: '10323253487'
+    BCF_BOOTSTRAP_ARTIFACT_NAME: bcf-trusted-control-83950f768908a46117cadc4fdf89bdd2c5d45c40-1
+    BCF_BOOTSTRAP_COMMIT_SHA: 83950f768908a46117cadc4fdf89bdd2c5d45c40
+    BCF_BOOTSTRAP_REPOSITORY_ID: '1207503211'
+    BCF_BOOTSTRAP_RUN_ATTEMPT: '1'
+    BCF_BOOTSTRAP_RUN_ID: '34777123383'
+    BCF_BOOTSTRAP_TREE_SHA: 1799b4105c0e71ea20e4670c2955803428255005
+    BCF_BOOTSTRAP_WHEEL_SHA256: 621e07a22a7797ad5540eb0e94b0876f926ad5c8a3e0c81427bcd86e6980e183
+  target_branch_qualification: pending_on_its_own_final_committed_subject
+  installed_controller_proof_changed: false
+  main_transition:
+    scope: Expected old-controller closure rejection; not successful exact-main certification.
+    run:
+      path: .artifacts/p24-release/implementation-main-terminal-run.log
+      sha256: a9e4756f8ee69ed3f8a1b29dccd3d4dc82f1187a0006163d4c2108946af10266
+    jobs:
+      path: .artifacts/p24-release/implementation-main-terminal-jobs.log
+      sha256: 4e1fb2bb7c04047d387a7784b05992632e9347daed5d22b67a1d2d2fe1e0aaf1
+    diagnostics:
+      path: .artifacts/p24-release/implementation-main-transition-diagnostics.log
+      sha256: e602d4ff88dd6afa71e270d9268472f13089bf8c8e77745c266c9c4944ece6ee
+    watch_actual_exit: 1
+    evidence_shards_allocated: 0

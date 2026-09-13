@@ -4,7 +4,7 @@ document:
   id: bcf-governance-v1.3.0-editorial-review
   status: completed
   path: audits/v1.3.0-editorial-review.yml
-base_commit: 1cb4b32535ff2b1c09c2a94011fa18cb8fec8f35
+base_commit: 83950f768908a46117cadc4fdf89bdd2c5d45c40
 inventory_policy:
   source_documents: tracked Markdown and root LICENSE from base union current tree
   packaged_mirror_root: bcf_governance/pack/template-repo
@@ -32,8 +32,8 @@ documents:
   audience: adopters and release operators
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
-  before_sha256: 7df460a0459c3e7efba2463ef76ef1955679b0099e207ecf32b9cd54c542fdd9
-  after_sha256: 81d735e0c5d05bc48188f2c68a67fdfcb2bfa9896c03845d81238e50ba151c6e
+  before_sha256: 81d735e0c5d05bc48188f2c68a67fdfcb2bfa9896c03845d81238e50ba151c6e
+  after_sha256: 5ce3a18ddab6487ccb5ff612c03912d8d67bd4bfadafc6de7864c2eb29613e38
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: historical
@@ -59,11 +59,11 @@ documents:
   audience: BCF evaluators and adopters
   canonical_topic_owner: README.md
   topic_role: canonical
-  before_sha256: e793bf80d8c06169528977bf20bc7946b892b93a5b088c8c74a4258b4ed417fb
+  before_sha256: 71b12e5843131557511bef2bdb07a462cb9b943cab59b62ba11f10317c7a6cef
   after_sha256: 71b12e5843131557511bef2bdb07a462cb9b943cab59b62ba11f10317c7a6cef
   findings:
-  - updated the mechanically checked 1.3.0 package example
-  disposition: revised
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
 - path: audits/README.md
   audience: governance reviewers
   canonical_topic_owner: audits/README.md
@@ -77,11 +77,11 @@ documents:
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/ARCHITECTURE.md
   topic_role: canonical
-  before_sha256: e3db5d8bd17e9cafd412bdb3c69639e9fdd9c20bef86322eedfc8a0f4622e3fc
+  before_sha256: c788b71bd469152dbb67ef64cf6e6dd5b7e31cb7b04b68c6a156af137af0c81b
   after_sha256: c788b71bd469152dbb67ef64cf6e6dd5b7e31cb7b04b68c6a156af137af0c81b
   findings:
-  - documented shared language discovery, bounded compiler effects and dependency snapshots, and candidate routing ownership
-  disposition: revised
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
 - path: docs/CI_AUTHORITY.md
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/CI_AUTHORITY.md
@@ -95,29 +95,29 @@ documents:
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/MAINTAINING.md
   topic_role: canonical
-  before_sha256: 96186fd9dec857d26592a97443443e46adc546e9480afad82153af924908517b
+  before_sha256: d73bb208daba523b6722bd95612e0fd59503be93adc7b11bfc949bf44d586b6f
   after_sha256: d73bb208daba523b6722bd95612e0fd59503be93adc7b11bfc949bf44d586b6f
   findings:
-  - documented exact offline compiler provisioning, isolated wheel-consumer qualification, and the current release audit
-  disposition: revised
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
 - path: docs/RELIABILITY_MODEL.md
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/RELIABILITY_MODEL.md
   topic_role: canonical
-  before_sha256: 16b5be0f2d9643082857a9c54b5d28d1ca90ad11b89abc25f0af2970fa57e94a
+  before_sha256: 2337fa7603b181561e5d0bed44f7a0600a43054e0b47213b2dff1357a0aaea97
   after_sha256: 2337fa7603b181561e5d0bed44f7a0600a43054e0b47213b2dff1357a0aaea97
   findings:
-  - documented installed-runtime, compiler-inventory, empty-lock and candidate-routing failure classes
-  disposition: revised
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
 - path: docs/USAGE.md
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
-  before_sha256: 3de1da823a0d82bc440ee42278bda02a209042c97f3a119355c4847a8fde079f
+  before_sha256: 18ac5fe9ddabb5a47faacbf7b46b3eb68c27e7db8fbdd1276791fad84b2304ed
   after_sha256: 18ac5fe9ddabb5a47faacbf7b46b3eb68c27e7db8fbdd1276791fad84b2304ed
   findings:
-  - documented TypeScript adoption and lock compatibility, explicit routing eligibility, fallback, and provider label limits
-  disposition: revised
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
 - path: docs/assets/bcf-governance-pack-hero.jpg
   audience: BCF evaluators and adopters
   canonical_topic_owner: README.md

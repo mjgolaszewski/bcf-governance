@@ -6,9 +6,9 @@ workflow_registry:
   admission:
     workflow_id: '346274480'
     active_path: .github/workflows/bcf-exact-main.yml
-    trusted_workflow_blob_oid: 7cf4db9782bf4198c3f3f4b59aa9b1561a2e640a
-    trusted_workflow_sha256: 8b246702e8ddd017fbd0f83af6047c02ee6725f0ab4f42a133cff40d2842d856
-    trusted_workflow_definition_commit: 9842d9b9cc74634e4376fc360ef7c87a655158f7
+    trusted_workflow_blob_oid: f2c80bf5ee781f96ec5de61486d47f3b0a8adb2b
+    trusted_workflow_sha256: fa7ed7f17fa0afe6aecf02e4d8fe26a1663098f4ce34191a037786b18466f41f
+    trusted_workflow_definition_commit: 6d531c500a1ac933bbc70b2535f1b1625a489347
     allowed_events:
     - push
     job_roles:
@@ -18,27 +18,27 @@ workflow_registry:
   governance:
     workflow_id: '334490532'
     active_path: .github/workflows/governance.yml
-    trusted_workflow_blob_oid: 572c982e95a50994f6bfdd668ec953df7455d4f6
-    trusted_workflow_sha256: 81f48974767d71c6a3e936b5b112b093b9a9ada349cb1815d5a2f1f87c04a70d
-    trusted_workflow_definition_commit: 9842d9b9cc74634e4376fc360ef7c87a655158f7
+    trusted_workflow_blob_oid: 704703faca4c0a9bcac32621ddd48e2e262fb2d6
+    trusted_workflow_sha256: 8d9d6aa304558bfbff841afdc9aa06728110b4d3cb301615bb4730b6566ead88
+    trusted_workflow_definition_commit: 6d531c500a1ac933bbc70b2535f1b1625a489347
     allowed_events:
     - pull_request
     - workflow_call
   governance-pack:
     workflow_id: '265590976'
     active_path: .github/workflows/governance-pack.yml
-    trusted_workflow_blob_oid: e3c3708d897fdd3cc8bdec64595d0f8761999a0d
-    trusted_workflow_sha256: d76e1b642e10bce15cb43a8f146cecd09f0e2bc2ed95e36744a179d1c76efafa
-    trusted_workflow_definition_commit: 9842d9b9cc74634e4376fc360ef7c87a655158f7
+    trusted_workflow_blob_oid: 0bee39efe01132122a96bd0307ad4f35065ac0d8
+    trusted_workflow_sha256: 1470b78b61076f74b50c0e341d19f92c6d96f94e6cf63d0785e7b1bd55b0d6af
+    trusted_workflow_definition_commit: 6d531c500a1ac933bbc70b2535f1b1625a489347
     allowed_events:
     - pull_request
     - workflow_call
   finalizer:
     workflow_id: '346274484'
     active_path: .github/workflows/bcf-trusted-finalizer.yml
-    trusted_workflow_blob_oid: 28138ef1b4f876f8258c39190f711f1cde61d41f
-    trusted_workflow_sha256: 659eb355985ccbcbc143e29e313bcb49b56f4947eb9c0593544dcf99fd36333e
-    trusted_workflow_definition_commit: 9842d9b9cc74634e4376fc360ef7c87a655158f7
+    trusted_workflow_blob_oid: 88938b648026271fef6fbf36c9fc77925d52b4b6
+    trusted_workflow_sha256: 174d175c42008f4dbc27a6d1586b296bab4e28afa95a5d8196d113fb24b4c01a
+    trusted_workflow_definition_commit: 6d531c500a1ac933bbc70b2535f1b1625a489347
     allowed_events:
     - workflow_run
     expected_jobs:
@@ -46,9 +46,9 @@ workflow_registry:
   status-publisher:
     workflow_id: '346274482'
     active_path: .github/workflows/bcf-status-publisher.yml
-    trusted_workflow_blob_oid: af62d76ffed5f89b2de2b3ca6375513b25e914b2
-    trusted_workflow_sha256: f0154435e8139c82448bf0a1bc496b5c41e8d4884ee4626aa79e5672e854a74c
-    trusted_workflow_definition_commit: 9842d9b9cc74634e4376fc360ef7c87a655158f7
+    trusted_workflow_blob_oid: 2b7af8c268426778bb1cf51860231c8d3a7e596b
+    trusted_workflow_sha256: 7cffc905e68fcb31202b94b567612758c327a19397fd0016debbcd0aced94412
+    trusted_workflow_definition_commit: 6d531c500a1ac933bbc70b2535f1b1625a489347
     allowed_events:
     - workflow_run
     expected_jobs:
@@ -56,9 +56,9 @@ workflow_registry:
   bootstrap:
     workflow_id: '346177113'
     active_path: .github/workflows/bcf-trusted-control-bootstrap.yml
-    trusted_workflow_blob_oid: dd341dbac492ca8bab16369366eb29a74e4501da
-    trusted_workflow_sha256: 36b06a8dad0ba8e9d5cedbb866118d2f8af502c98dc0e9bd4c1c538795610c99
-    trusted_workflow_definition_commit: 9842d9b9cc74634e4376fc360ef7c87a655158f7
+    trusted_workflow_blob_oid: 5690fb220db4f9ca73b86dfb00d1ba63191380eb
+    trusted_workflow_sha256: 49d76a5be162ce0f84838690499291f3bf2c66d189403964fcc929c04aac4532
+    trusted_workflow_definition_commit: 6d531c500a1ac933bbc70b2535f1b1625a489347
     allowed_events:
     - workflow_dispatch
     expected_jobs:
@@ -67,9 +67,9 @@ workflow_registry:
   probe:
     workflow_id: '346154319'
     active_path: .github/workflows/bcf-trusted-control-probe.yml
-    trusted_workflow_blob_oid: dc98a41b459b8f0de2ee681918c058c9aebfa948
-    trusted_workflow_sha256: 731f1eeb2c1789266b21d533a92be062ee0e565ede7bc7a8a6816ab6836867d8
-    trusted_workflow_definition_commit: 9842d9b9cc74634e4376fc360ef7c87a655158f7
+    trusted_workflow_blob_oid: 7a737c998680d199f63848b5b4203f102b26733e
+    trusted_workflow_sha256: 33da26aab46ab2e8acddf97a936128edfa84677a73e7339c598252f4469726f6
+    trusted_workflow_definition_commit: 6d531c500a1ac933bbc70b2535f1b1625a489347
     allowed_events:
     - workflow_dispatch
     expected_jobs:
@@ -78,9 +78,9 @@ workflow_registry:
   release:
     workflow_id: '331325235'
     active_path: .github/workflows/release.yml
-    trusted_workflow_blob_oid: 8c7bbaffdf546b04acd6ee482e1c37c9c284fc23
-    trusted_workflow_sha256: 9d827ce0f5c55c12e1e5eade5feefdbf06520a278b3af6165dfd301ea5720d98
-    trusted_workflow_definition_commit: 9842d9b9cc74634e4376fc360ef7c87a655158f7
+    trusted_workflow_blob_oid: 9b9da12d145ddab8c6ababa9aadeaa84c14cf39f
+    trusted_workflow_sha256: 0534d8e60dd7c573af9254fe3d29778bc4ff85243cde1f24dcf1593769071fc8
+    trusted_workflow_definition_commit: 6d531c500a1ac933bbc70b2535f1b1625a489347
     allowed_events:
     - workflow_dispatch
     expected_jobs:
@@ -89,9 +89,9 @@ workflow_registry:
   release-verifier:
     workflow_id: '346919672'
     active_path: .github/workflows/bcf-release-verifier.yml
-    trusted_workflow_blob_oid: 4aece5e9fe7f39e8258475ecfe72b7d1423ee06d
-    trusted_workflow_sha256: 5a5a31265d1d4790544710f1b6cd103a5f396e102b3a1b7a4f55a27698fa74c2
-    trusted_workflow_definition_commit: 9842d9b9cc74634e4376fc360ef7c87a655158f7
+    trusted_workflow_blob_oid: e3a320ae9c4b4d0b57b2601b179506544e4fac7e
+    trusted_workflow_sha256: f5924e529fe7e428fb521c763f20b5816f8e9b3ce1beb3ea1d37f7c08ab74da8
+    trusted_workflow_definition_commit: 6d531c500a1ac933bbc70b2535f1b1625a489347
     allowed_events:
     - workflow_run
     expected_jobs:
@@ -100,9 +100,9 @@ workflow_registry:
   release-collector:
     workflow_id: '346919669'
     active_path: .github/workflows/bcf-release-collector.yml
-    trusted_workflow_blob_oid: 2018a6e46cd6cc96dc37d180a64d7cde7c94fd50
-    trusted_workflow_sha256: b5c28e24de1ca1974be2a59843e49ed976f0dca432cc3017376f0e724cf60e59
-    trusted_workflow_definition_commit: 9842d9b9cc74634e4376fc360ef7c87a655158f7
+    trusted_workflow_blob_oid: 871300736c6c2b7854584a519d6e842486a72642
+    trusted_workflow_sha256: fbc1658f95182ff0f28e9087dc5262350926877ba6ac0388c02b48d1e7275b2a
+    trusted_workflow_definition_commit: 6d531c500a1ac933bbc70b2535f1b1625a489347
     allowed_events:
     - workflow_run
     expected_jobs:
@@ -110,9 +110,9 @@ workflow_registry:
   release-publisher:
     workflow_id: '346919671'
     active_path: .github/workflows/bcf-release-publisher.yml
-    trusted_workflow_blob_oid: 4e8f57dcef0877df557076d0193ffb7d359ea96a
-    trusted_workflow_sha256: 739cfdd9014284ca4bdbc0b979c5cf2990445ea6412d59fbeb6063f9da957960
-    trusted_workflow_definition_commit: 9842d9b9cc74634e4376fc360ef7c87a655158f7
+    trusted_workflow_blob_oid: 851ea9921a8e91f10e7008d4af306320133b124a
+    trusted_workflow_sha256: 131d6d71ab1e884cd29cb60578cb93002433cd26a141130d0ebd9b836562d949
+    trusted_workflow_definition_commit: 6d531c500a1ac933bbc70b2535f1b1625a489347
     allowed_events:
     - workflow_dispatch
     expected_jobs:
@@ -120,9 +120,9 @@ workflow_registry:
   authority-canary:
     workflow_id: '346919667'
     active_path: .github/workflows/bcf-authority-canary.yml
-    trusted_workflow_blob_oid: a082e8e100d6b17d5936add22fbf801bcf2c821a
-    trusted_workflow_sha256: 5f76a09fc8f99213af346c8b2b4cfa204f0934d450e8e3edde8e351146f5d877
-    trusted_workflow_definition_commit: 9842d9b9cc74634e4376fc360ef7c87a655158f7
+    trusted_workflow_blob_oid: 249c89e703f5ab8b6c2388dd41846970767c1348
+    trusted_workflow_sha256: c44d472e03eac233d9a6fbac5ba5bb51d0ae7c88c907a76f9e30ce1f14da2b2d
+    trusted_workflow_definition_commit: 6d531c500a1ac933bbc70b2535f1b1625a489347
     allowed_events:
     - workflow_dispatch
     job_roles:

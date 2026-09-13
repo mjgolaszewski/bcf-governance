@@ -10,6 +10,7 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Project the 1.3.0 controller from authenticated package bytes; keep release operations disabled until bootstrap and probe confirm installation.
 - Resolve installed evidence-storage commands through the vendored runtime, with isolated fresh-install and upgrade execution coverage (#184).
 - Carry real TypeScript compiler facts through semantic authority, operation effects, locking and transactional adoption (#186).
 - Preserve empty semantic-lock projections as arrays and validate candidate bytes before replacing a lock (#187).
