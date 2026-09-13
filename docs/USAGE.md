@@ -231,7 +231,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.2.0/bcf_governance-1.2.0-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.3.0/bcf_governance-1.3.0-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 1.x. Verify the
@@ -751,6 +751,53 @@ contract roots. BCF uses only tracked source and the already-installed
 lock-matching `typescript` package. Missing tools, configuration diagnostics, or
 version drift are infrastructure failures; the analyzer never downloads a
 compiler or falls back to Docker.
+
+In 1.3.0, scanning, locking, and adoption share the same Python and TypeScript
+inventory. Compiler projects declared by operation populations participate even
+when the registry has no TypeScript engine. Export aliases resolve to their
+declarations; imported helpers and methods contribute their actual calls and
+effects. State writes, filesystem, browser, network, and authority effects must
+fit the operation contract. Unresolved calls fail closed, and a declared port
+must be valid and reachable from the operation.
+
+Install each project's locked dependencies before semantic adoption. Adoption
+copies its installed dependency tree into a disposable shadow, preserving only
+links within that tree. Missing dependencies, escaping links, compiler drift,
+or concurrent dependency changes reject the transaction. Adoption runs no
+installation scripts or network operations and promotes only managed governance
+files. TypeScript source and compiler configuration/lockfile inputs enter the
+semantic lock. Python-only lock behavior is preserved. Empty projections use
+`projection_outputs: []` under schema 1.0; `null` remains invalid. A lock candidate
+is decoded, compared, and schema-validated before atomic replacement.
+
+### Optional private candidate runners
+
+Existing graphs keep their literal hosted runner. To opt in, add a closed
+`routing` policy to a candidate resource with `kind: private_local_candidate`,
+the provider-derived `repository_id`, dedicated `local_runner` labels,
+`allowed_refs`, and explicit `local_cases`. Keep `trust: candidate`, `hosted: true`,
+and the existing literal hosted `runner`; hosted execution restrictions still
+apply to every routed job. Obtain the repository identity from the authenticated
+provider response when generating the policy. Do not accept it as a workflow
+input or derive trust from a caller-supplied flag.
+
+The supported cases are `same_repository_pull_request`, `protected_push`,
+`protected_schedule`, and `protected_dispatch`. Every local case requires a
+private repository with the bound identity. PR routing additionally requires
+both head and base repository identities to match and is enabled only when the
+PR case is listed. Push, schedule, and dispatch require an explicitly allowed
+branch ref that GitHub reports as protected. Reusable workflows use the caller's
+native GitHub context. Public, fork, foreign, missing, and unsupported contexts
+select the hosted fallback.
+
+The compiler emits one `runs-on` expression on each existing job before
+allocation. Job identities, dependency fan-in, and required checks remain intact.
+`bcf ci graph audit` shows both execution alternatives and eligibility rules.
+Candidate labels must remain distinct from controller selections. Generated
+routing does not prevent arbitrary workflow replacement or provider-side runner
+mislabeling; operators must maintain those boundaries separately. GitHub defines
+the available [contexts](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts)
+and [reusable workflow context](https://docs.github.com/en/actions/reference/workflows-and-actions/reusing-workflow-configurations).
 
 CI-owned Docker resources use the exact
 `io.bcf-governance.ci-run=<run-id>` label. BCF never infers ownership from names

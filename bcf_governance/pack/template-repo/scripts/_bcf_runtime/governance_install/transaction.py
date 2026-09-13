@@ -126,6 +126,7 @@ def apply_transaction(
     managed_paths: tuple[str, ...],
     mutate_shadow: Callable[[Path], None],
     preserve_git_history: bool = False,
+    validate_promotion: Callable[[], None] | None = None,
 ) -> None:
     """Mutate and validate a shadow, then atomically transfer only managed files."""
     repo_root = repo_root.resolve()
@@ -168,6 +169,8 @@ def apply_transaction(
         }
         applied: list[Path] = []
         try:
+            if validate_promotion is not None:
+                validate_promotion()
             for relative in changed:
                 destination = repo_root / relative
                 _reject_symlink_chain(repo_root, relative)
@@ -177,6 +180,8 @@ def apply_transaction(
                     source = shadow / relative
                     _atomic_write(destination, source.read_bytes(), source.stat().st_mode)
                 applied.append(relative)
+                if validate_promotion is not None:
+                    validate_promotion()
         except BaseException:
             for relative in reversed(applied):
                 destination = repo_root / relative

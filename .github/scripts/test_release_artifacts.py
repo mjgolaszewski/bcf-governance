@@ -228,7 +228,15 @@ def verify_wheel(wheel: Path, temporary: Path, source_root: Path) -> None:
             + ", ".join(generic_scripts)
         )
     python, env = venv_environment(temporary / "wheel-venv")
-    run(str(python), "-m", "pip", "install", str(wheel), env=env)
+    run(str(python), "-m", "pip", "install", f"{wheel}[dev]", env=env)
+    run(
+        str(python), str(source_root / ".github/scripts/bootstrap_test_toolchain.py"),
+        "--repo-root", str(source_root), cwd=temporary, env=env,
+    )
+    run(
+        str(python), str(source_root / ".github/scripts/verify_installed_consumer.py"),
+        "--source-root", str(source_root), cwd=temporary, env=env,
+    )
     run(
         str(python),
         "-m",
@@ -331,6 +339,10 @@ def verify_sdist(sdist: Path, temporary: Path) -> None:
     python, env = venv_environment(temporary / "sdist-venv")
     env[SDIST_PORTABLE_TEST_ENV] = "1"
     run(str(python), "-m", "pip", "install", f"{roots[0]}[dev]", env=env)
+    run(
+        str(python), str(roots[0] / ".github/scripts/bootstrap_test_toolchain.py"),
+        "--repo-root", str(roots[0]), cwd=roots[0], env=env,
+    )
     junit = temporary / "sdist-tests.xml"
     run(
         str(python),

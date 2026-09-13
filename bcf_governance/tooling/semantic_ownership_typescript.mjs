@@ -8,6 +8,7 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 import process from "node:process";
+import { discoverEffects } from "./semantic_typescript_effects.mjs";
 
 let ts;
 
@@ -60,7 +61,9 @@ function parseArguments(argv) {
   if (files.length === 0) {
     throw new Error("at least one TypeScript source file is required");
   }
-  return { repoRoot, tsconfig, files };
+  const packageLock = path.resolve(repoRoot, argv[argv.indexOf("--package-lock") + 1]);
+  const tracked = JSON.parse(argv[argv.indexOf("--tracked-files-json") + 1]).map((value) => path.resolve(repoRoot, value));
+  return { repoRoot, tsconfig, files, packageLock, tracked };
 }
 
 function relative(repoRoot, value) {
@@ -68,33 +71,50 @@ function relative(repoRoot, value) {
 }
 
 function nodeName(node, sourceFile) {
+  if (ts.isConstructorDeclaration(node)) return "constructor";
+  if (node === sourceFile) return "<module>";
   if (node.name && ts.isIdentifier(node.name)) return node.name.text;
   if (ts.isVariableDeclaration(node.parent) && ts.isIdentifier(node.parent.name)) {
     return node.parent.name.text;
   }
-  return `<anonymous@${sourceFile.getLineAndCharacterOfPosition(node.pos).line + 1}>`;
+  return `<anonymous@${sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1}:${node.getStart()}>`;
 }
 
 function functionIdentity(node, repoRoot, sourceFile) {
   const names = [nodeName(node, sourceFile)];
   let current = node.parent;
   while (current && current !== sourceFile) {
-    if (ts.isClassDeclaration(current) && current.name) names.unshift(current.name.text);
+    if ((ts.isClassDeclaration(current) || ts.isInterfaceDeclaration(current) || ts.isModuleDeclaration(current)) && current.name) names.unshift(current.name.text);
+    else if (isFunctionLike(current)) names.unshift(nodeName(current, sourceFile));
+    else if (ts.isObjectLiteralExpression(current) && ts.isVariableDeclaration(current.parent) && ts.isIdentifier(current.parent.name)) names.unshift(current.parent.name.text);
     current = current.parent;
   }
   return `${relative(repoRoot, sourceFile.fileName)}::${names.join(".")}`;
 }
 
-function symbolIdentity(checker, expression, repoRoot, sourceFile) {
+function declarationIdentity(declaration, repoRoot) {
+  if (ts.isVariableDeclaration(declaration) && declaration.initializer && isFunctionLike(declaration.initializer)) declaration = declaration.initializer;
+  return functionIdentity(declaration, repoRoot, declaration.getSourceFile());
+}
+
+function resolvedDeclaration(checker, expression, seen = new Set()) {
   let symbol = checker.getSymbolAtLocation(expression);
-  if (symbol && (symbol.flags & ts.SymbolFlags.Alias)) {
-    symbol = checker.getAliasedSymbol(symbol);
+  if (symbol && (symbol.flags & ts.SymbolFlags.Alias)) symbol = checker.getAliasedSymbol(symbol);
+  const declaration = symbol?.declarations?.find((value) => isFunctionLike(value) && value.body) ?? symbol?.valueDeclaration ?? symbol?.declarations?.[0];
+  if (!declaration || seen.has(declaration)) return declaration;
+  seen.add(declaration);
+  if (ts.isVariableDeclaration(declaration) && declaration.initializer
+      && (declaration.parent.flags & ts.NodeFlags.Const)
+      && (ts.isIdentifier(declaration.initializer) || ts.isPropertyAccessExpression(declaration.initializer))) {
+    return resolvedDeclaration(checker, declaration.initializer, seen) ?? declaration;
   }
-  const declaration = symbol?.valueDeclaration ?? symbol?.declarations?.[0];
-  if (symbol && declaration) {
-    return `${relative(repoRoot, declaration.getSourceFile().fileName)}::${checker.symbolToString(symbol)}`;
-  }
-  return `${relative(repoRoot, sourceFile.fileName)}::${expression.getText(sourceFile)}`;
+  return declaration;
+}
+
+function symbolIdentity(checker, expression, repoRoot, sourceFile) {
+  const declaration = resolvedDeclaration(checker, expression);
+  return declaration ? declarationIdentity(declaration, repoRoot)
+    : `${relative(repoRoot, sourceFile.fileName)}::${expression.getText(sourceFile)}`;
 }
 
 function rootIdentifier(node) {
@@ -128,23 +148,25 @@ function isFunctionLike(node) {
     ts.isArrowFunction(node) ||
     ts.isMethodDeclaration(node) ||
     ts.isGetAccessorDeclaration(node) ||
-    ts.isSetAccessorDeclaration(node)
+    ts.isSetAccessorDeclaration(node) ||
+    ts.isConstructorDeclaration(node)
   );
 }
 
-function discoverFunction(node, checker, repoRoot, sourceFile) {
+function discoverFunction(node, checker, repoRoot, sourceFile, sourceFiles, polymorphicClasses, standardLibraryRoot) {
   const caller = functionIdentity(node, repoRoot, sourceFile);
   const parameters = {};
-  for (const parameter of node.parameters) {
+  for (const parameter of node.parameters ?? []) {
     const name = parameter.name.getText(sourceFile);
     parameters[name] = checker.typeToString(checker.getTypeAtLocation(parameter));
   }
-  const signature = checker.getSignatureFromDeclaration(node);
+  const signature = isFunctionLike(node) ? checker.getSignatureFromDeclaration(node) : null;
   const returnType = signature
     ? checker.typeToString(checker.getReturnTypeOfSignature(signature))
-    : "unresolved";
+    : "void";
   const facts = {
-    symbol: caller,
+    symbol: ts.isClassDeclaration(node) ? `${caller}.constructor` : caller,
+    language: "typescript",
     parameters,
     return_type: returnType,
     owner_shape: Object.values(parameters).every((value) => /^(string|number|boolean|Uint8Array|unknown)$/.test(value))
@@ -250,6 +272,19 @@ function discoverFunction(node, checker, repoRoot, sourceFile) {
     ts.forEachChild(current, visit);
   }
   if (node.body) visit(node.body);
+  const effectFacts = discoverEffects({
+    ts, checker, node, sourceFile, caller: facts.symbol,
+    identity: (value) => declarationIdentity(value, repoRoot),
+    functionLike: isFunctionLike, repoRoot, sourceFiles, polymorphicClasses, standardLibraryRoot,
+    resolveDeclaration: (expression) => resolvedDeclaration(checker, expression),
+  });
+  // Enrich existing ownership call facts with the same dispatch identity used by effects.
+  const ownershipCalls = facts.calls;
+  facts.calls = effectFacts.calls.map((call) => ({
+    ...ownershipCalls.find((row) => row.line === call.line && row.call_name === call.call_name), ...call,
+  }));
+  facts.effects = effectFacts.effects;
+  facts.effect_unresolved = effectFacts.effect_unresolved;
   return facts;
 }
 
@@ -285,32 +320,41 @@ function discoverPublicExports(sourceFile, checker, repoRoot) {
     const resolved = exported.flags & ts.SymbolFlags.Alias
       ? checker.getAliasedSymbol(exported)
       : exported;
-    const declaration = resolved.valueDeclaration ?? resolved.declarations?.[0];
+    const original = resolved.valueDeclaration ?? resolved.declarations?.[0];
+    const declaration = original?.name ? resolvedDeclaration(checker, original.name) : original;
     return {
       name,
+      source: relative(repoRoot, sourceFile.fileName),
+      callable: Boolean(declaration && (ts.isClassDeclaration(declaration) || checker.getTypeOfSymbolAtLocation(resolved, declaration).getCallSignatures().length)),
       symbol: `${relative(repoRoot, sourceFile.fileName)}::${name}`,
       declaration: declaration
-        ? `${relative(repoRoot, declaration.getSourceFile().fileName)}::${resolved.getName()}`
+        ? declarationIdentity(declaration, repoRoot) + (ts.isClassDeclaration(declaration) ? ".constructor" : "")
         : null,
     };
   }).sort((left, right) => left.name.localeCompare(right.name));
 }
 
 function main() {
-  const { repoRoot, tsconfig, files } = parseArguments(process.argv.slice(2));
-  const require = createRequire(path.join(repoRoot, "package.json"));
+  const { repoRoot, tsconfig, files, packageLock, tracked } = parseArguments(process.argv.slice(2));
+  const require = createRequire(path.join(path.dirname(packageLock), "package.json"));
   try {
     ts = require("typescript");
   } catch (error) {
     throw new Error(`typescript compiler API unavailable: ${String(error)}`);
   }
-  const configRead = ts.readConfigFile(tsconfig, ts.sys.readFile);
+  const configInputs = new Set([tsconfig, packageLock, require.resolve("typescript"), path.join(path.dirname(packageLock), "node_modules/typescript/package.json")]);
+  const configHost = { ...ts.sys, readFile: (file) => {
+    const text = ts.sys.readFile(file);
+    if (text !== undefined) configInputs.add(path.resolve(file));
+    return text;
+  } };
+  const configRead = ts.readConfigFile(tsconfig, configHost.readFile);
   if (configRead.error) {
     throw new Error(ts.flattenDiagnosticMessageText(configRead.error.messageText, " "));
   }
   const parsed = ts.parseJsonConfigFileContent(
     configRead.config,
-    ts.sys,
+    configHost,
     path.dirname(tsconfig),
     { noEmit: true },
     tsconfig,
@@ -318,23 +362,58 @@ function main() {
   if (parsed.errors.length > 0) {
     throw new Error(parsed.errors.map((value) => ts.flattenDiagnosticMessageText(value.messageText, " ")).join("; "));
   }
+  const compilerHost = ts.createCompilerHost(parsed.options);
+  const readFile = compilerHost.readFile.bind(compilerHost);
+  compilerHost.readFile = (file) => {
+    const text = readFile(file);
+    if (text !== undefined && file.endsWith(".json")) configInputs.add(path.resolve(file));
+    return text;
+  };
   const program = ts.createProgram({
-    rootNames: files,
+    rootNames: [...new Set([...files, ...parsed.fileNames.filter((file) => tracked.includes(path.resolve(file)))])],
     options: parsed.options,
     projectReferences: parsed.projectReferences,
+    host: compilerHost,
   });
   const checker = program.getTypeChecker();
+  const standardLibraryRoot = path.dirname(ts.getDefaultLibFilePath(parsed.options));
   const functions = [];
+  const types = [];
   const endpointContracts = [];
   const publicExports = [];
-  const selectedFiles = new Set(files.map((value) => path.resolve(value)));
+  const selectedFiles = new Set();
+  for (const file of program.getSourceFiles()) {
+    const absolute = path.resolve(file.fileName);
+    if (absolute.includes(`${path.sep}node_modules${path.sep}`)) { configInputs.add(absolute); continue; }
+    if (!tracked.includes(absolute)) throw new Error(`compiler source is not a tracked repository file: ${relative(repoRoot, absolute)}`);
+    selectedFiles.add(absolute);
+  }
+  const polymorphicClasses = new Set();
   for (const sourceFile of program.getSourceFiles()) {
     if (!selectedFiles.has(path.resolve(sourceFile.fileName))) continue;
     function visit(node) {
-      if (isFunctionLike(node)) functions.push(discoverFunction(node, checker, repoRoot, sourceFile));
+      if (ts.isClassDeclaration(node)) for (const clause of node.heritageClauses ?? []) {
+        if (clause.token !== ts.SyntaxKind.ExtendsKeyword) continue;
+        polymorphicClasses.add(declarationIdentity(node, repoRoot));
+        for (const type of clause.types) {
+          const base = resolvedDeclaration(checker, type.expression);
+          if (base) polymorphicClasses.add(declarationIdentity(base, repoRoot));
+        }
+      }
       ts.forEachChild(node, visit);
     }
     visit(sourceFile);
+  }
+  for (const sourceFile of program.getSourceFiles()) {
+    if (!selectedFiles.has(path.resolve(sourceFile.fileName))) continue;
+    function visit(node) {
+      if (isFunctionLike(node) && node.body) functions.push(discoverFunction(node, checker, repoRoot, sourceFile, selectedFiles, polymorphicClasses, standardLibraryRoot));
+      if ((ts.isClassDeclaration(node) || ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)) && node.name) types.push(declarationIdentity(node, repoRoot));
+      if (ts.isClassDeclaration(node) && !node.members.some(ts.isConstructorDeclaration)) functions.push(discoverFunction(node, checker, repoRoot, sourceFile, selectedFiles, polymorphicClasses, standardLibraryRoot));
+      ts.forEachChild(node, visit);
+    }
+    visit(sourceFile);
+    functions.push(discoverFunction(sourceFile, checker, repoRoot, sourceFile, selectedFiles, polymorphicClasses, standardLibraryRoot));
     endpointContracts.push(...discoverEndpointContracts(sourceFile, checker, repoRoot));
     publicExports.push(...discoverPublicExports(sourceFile, checker, repoRoot));
   }
@@ -353,7 +432,9 @@ function main() {
     language: "typescript",
     node_version: process.version,
     compiler_version: ts.version,
-    files: files.map((value) => relative(repoRoot, value)).sort(),
+    files: [...selectedFiles].map((value) => relative(repoRoot, value)).sort(),
+    compiler_inputs: [...configInputs].map((value) => relative(repoRoot, value)).sort(),
+    types: types.sort(),
     functions,
     constructors: functions.flatMap((value) => value.constructors),
     codecs: functions

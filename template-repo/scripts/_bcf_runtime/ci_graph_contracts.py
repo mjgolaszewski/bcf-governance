@@ -19,6 +19,7 @@ from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 from .ci_graph_values import CIGraphValueError, resolve_graph_values
 from .ci_graph_timeouts import validate_gate_job_timeouts
 from .ci_graph_storage import validate_evidence_storage
+from .ci_graph_routing import validate_candidate_routing
 
 
 GRAPH_PATH = Path("governance/ci-graph.yml")
@@ -754,6 +755,7 @@ def validate_ci_graph(
     _validate_schema(composed, graph_schema, "composed CI graph")
     _validate_step_components(composed)
     storage_inputs, storage_contract = validate_evidence_storage(repo_root, composed)
+    validate_candidate_routing(composed, storage_contract=storage_contract)
     _validate_workflows(composed)
     validate_gate_job_timeouts(repo_root, composed)
     validate_graph_authority_policy(repo_root, composed)

@@ -1,0 +1,9 @@
+{
+  "name": "bcf-semantic-authority-test-toolchain",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@bcf-test/declared-types": "file:declared-types",
+    "typescript": "6.0.3"
+  }
+}

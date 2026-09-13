@@ -113,6 +113,7 @@ def build(output: Path, *, authorization: Path, artifact_name: str) -> list[Path
             str(lock),
         ]
     )
+    _run([sys.executable, ".github/scripts/bootstrap_test_toolchain.py", "--repo-root", "."])
     _run_source_tests(evidence)
     environment = dict(os.environ)
     environment["SOURCE_DATE_EPOCH"] = subprocess.run(

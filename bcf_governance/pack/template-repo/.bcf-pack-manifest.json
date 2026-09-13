@@ -220,7 +220,7 @@
     },
     "schemas/ci-graph.schema.json": {
       "operation": "copy",
-      "sha256": "aa951d2cfa77ac1392b391c01062193af09b36a50ae9e2a7377cfe9203ccbca6"
+      "sha256": "c81a1c5472ec11aaa61339ea2b01d2d4c21e7612c21a303a6aeb71b586569b82"
     },
     "schemas/ci-provider-snapshot.schema.json": {
       "operation": "copy",
@@ -344,7 +344,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "596328409a349998004d1bc19e9dddc8c2fb7dd7f0872c613cfbe5b7cecbe043"
+      "sha256": "5f0ccae4e812aa39288479ad8895e76e76f995cdca134379d12cf08b067adcde"
     },
     "scripts/_bcf_runtime/automation_changelog.py": {
       "operation": "copy",
@@ -404,7 +404,7 @@
     },
     "scripts/_bcf_runtime/ci_github_actions.py": {
       "operation": "copy",
-      "sha256": "7d76fda54183e509b5f4b76c59f704c579891bc0ee3946c69a795a347be0c105"
+      "sha256": "48cb274adb6b7917a1423e46b6d44c77500186237b082e1ee12951265f332ea3"
     },
     "scripts/_bcf_runtime/ci_github_api.py": {
       "operation": "copy",
@@ -492,7 +492,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_audit.py": {
       "operation": "copy",
-      "sha256": "0b1380f04233158278f4d1eed07aeea9c33591127a2ee818ad1ea94d5c77b4bd"
+      "sha256": "e9e2fde10f5b2c6889e8e42e19e792d0ef2c54d24e896c766b0fe11ead281375"
     },
     "scripts/_bcf_runtime/ci_graph_authority_policy.py": {
       "operation": "copy",
@@ -504,7 +504,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",
-      "sha256": "76fae94d7081106f191b675075539f47a4bea637612b5d99eac421f3bb46cae0"
+      "sha256": "f0907ac6f1a271c464ea6a63a86b3a9dec538c8971a8d73bb90465438442565b"
     },
     "scripts/_bcf_runtime/ci_graph_defaults.py": {
       "operation": "copy",
@@ -512,7 +512,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_diagnostics.py": {
       "operation": "copy",
-      "sha256": "fd8562d3b2892aba0e6dc6f58737cc4720f1f917a58219b570d5da27aed09457"
+      "sha256": "bb04671f3ec2c2903488808da7843ea6c2053a68c4c89ea04b36f58fcff2a7cf"
     },
     "scripts/_bcf_runtime/ci_graph_errors.py": {
       "operation": "copy",
@@ -532,7 +532,11 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "7fe1e2084ba6249452fdc8f96bf7965a07a53dbc7e29ba62d2ac4543dfc495c6"
+      "sha256": "32e89c806bb2bef3e48081e1dfa2a713f3370efcb29f65f36f2d4ed520bf2bdf"
+    },
+    "scripts/_bcf_runtime/ci_graph_routing.py": {
+      "operation": "copy",
+      "sha256": "3ef29df2712723aa8ad943d608a5b5956dc612e9ca3ff102895a3097e758595e"
     },
     "scripts/_bcf_runtime/ci_graph_storage.py": {
       "operation": "copy",
@@ -692,7 +696,7 @@
     },
     "scripts/_bcf_runtime/governance_install/transaction.py": {
       "operation": "copy",
-      "sha256": "8b3a9299362a72e04175fb9fc722883679cf78b68c120980613aec55af4352a3"
+      "sha256": "28c3421e230b81ce0bba20f59d682f8cf0fa926462e1b5e3f98a8618e63cf48f"
     },
     "scripts/_bcf_runtime/governance_install/upgrade.py": {
       "operation": "copy",
@@ -808,7 +812,7 @@
     },
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",
-      "sha256": "3d1cc4da7e49b8f6cefed1cf40bf228780e2c2c194ea39e668283d77d6ff271a"
+      "sha256": "4856dc8a10354e6e38c9c7e721a58218d39820f7fee4019b42addc7db4420c33"
     },
     "scripts/_bcf_runtime/public_contracts.py": {
       "operation": "copy",
@@ -832,7 +836,7 @@
     },
     "scripts/_bcf_runtime/release_runtime_verification.py": {
       "operation": "copy",
-      "sha256": "7fd68e93dd1f73c9e9c1251fbf949c529968d91de19ea2dc8914114eeb571fc1"
+      "sha256": "ed06da8acb849e8d8a37f2054267d9c07a7e1a378f570816ac013fd8e43eaa50"
     },
     "scripts/_bcf_runtime/release_source_bindings.py": {
       "operation": "copy",
@@ -854,17 +858,21 @@
       "operation": "copy",
       "sha256": "3103f817d66455b1d0b1c90e8ed3c69c81a9f07e1eda05748f3f2f3206e313b8"
     },
+    "scripts/_bcf_runtime/semantic_adoption_dependencies.py": {
+      "operation": "copy",
+      "sha256": "7ffa776bf6f4a7b809ea6983820da98d32d79d74b5a7ceafe790c2806583cec2"
+    },
     "scripts/_bcf_runtime/semantic_adoption_diagnostics.py": {
       "operation": "copy",
       "sha256": "3742aa705118ea38716755a45883fdb52fb931c191bf08342634d93790d158a1"
     },
     "scripts/_bcf_runtime/semantic_authority_commands.py": {
       "operation": "copy",
-      "sha256": "9085992e85d5a12be96c367dd762d3f9b885a4313aa99c748aaf38de5929a7a3"
+      "sha256": "f6bb77b637ae8af907e05b4028444f11c5eb112220d937ff8e7b78a4ace36a9f"
     },
     "scripts/_bcf_runtime/semantic_authority_contracts.py": {
       "operation": "copy",
-      "sha256": "08e95a19140acb6d088c58e94ab1a2366da5b139a8bc148411ded25ba7c4a5a5"
+      "sha256": "7d8f796c08d39be5f816a4ea04928ffefca438364c548246c0f24355f84abee2"
     },
     "scripts/_bcf_runtime/semantic_authority_migrations.py": {
       "operation": "copy",
@@ -876,15 +884,19 @@
     },
     "scripts/_bcf_runtime/semantic_locking.py": {
       "operation": "copy",
-      "sha256": "cdbf5ed33831aea1ab30751f72a98fc09f019f09955bbaf7dd2f3bbb48d18e18"
+      "sha256": "a247139f0579d4cb25b1303af5d1ad1f76327be44f7e0482d5c2762228c37c41"
     },
     "scripts/_bcf_runtime/semantic_operation_effects.py": {
       "operation": "copy",
-      "sha256": "3f49741c7575c103fab2c3eff4997427a479c04ee1c82d48ea4e1d3450eddc2c"
+      "sha256": "bf70dd7f64c0f270ed46b304864aae86952b31305b2f020bafbc9ef52508653a"
+    },
+    "scripts/_bcf_runtime/semantic_operation_python.py": {
+      "operation": "copy",
+      "sha256": "52f99e58884a923b0c696f7ae2fc5354d5c469b746a3dcd742d75e87c2f0e11f"
     },
     "scripts/_bcf_runtime/semantic_operation_typescript.py": {
       "operation": "copy",
-      "sha256": "070f1f0a40248d2154481c202b038a71d00733fe1c0e88cbec7d0c65090761c1"
+      "sha256": "aa39c75543144fb1efb7cab888ceb941f5ed6cd2c150cb81b186ab69435c9ec8"
     },
     "scripts/_bcf_runtime/semantic_ownership_benchmark.py": {
       "operation": "copy",
@@ -896,7 +908,7 @@
     },
     "scripts/_bcf_runtime/semantic_ownership_inventory.py": {
       "operation": "copy",
-      "sha256": "78bf11c0f554c10cd22515fc568fcbb3f083c54dd1f2257070f011faf84be30a"
+      "sha256": "0e91472f136272c58ed2a5c16835ee0485e0925dd67f340d053543278870b5d2"
     },
     "scripts/_bcf_runtime/semantic_ownership_reference.py": {
       "operation": "copy",
@@ -908,19 +920,27 @@
     },
     "scripts/_bcf_runtime/semantic_ownership_scan.py": {
       "operation": "copy",
-      "sha256": "fda223b1ada38114c1d064a5ac4f55d1b77bb5980aa738ba920acf7e2d607b40"
+      "sha256": "85860eda6c2fef79f2ed9755e7279c547fae48062cdaa5a5f31b2085e71f1c56"
     },
     "scripts/_bcf_runtime/semantic_ownership_typescript.mjs": {
       "operation": "copy",
-      "sha256": "8bb71e386fb8304f27b450e7fb4d389f2c41110a5387fdc77218189de38d29e8"
+      "sha256": "db479c1edc5869c9dd9d8e69b91bfbca5eddd78b5a45fc8de5b48df155cc6510"
     },
     "scripts/_bcf_runtime/semantic_ownership_typescript.py": {
       "operation": "copy",
-      "sha256": "b7c494bd2eed297349b043f1e4f1e2d42e2a24891033e8cd44579d4749ad1e6d"
+      "sha256": "d83e5c9c9bcc7529fbf594c557368fe8fb34b87b6cb5ffbd33abead66fe8931b"
     },
     "scripts/_bcf_runtime/semantic_python_method_identity.py": {
       "operation": "copy",
       "sha256": "a8d0ba49ade34cebf8ccce8df7a75a6db98df25ba243a01720d6ff274c0a2917"
+    },
+    "scripts/_bcf_runtime/semantic_source_discovery.py": {
+      "operation": "copy",
+      "sha256": "f62f6751547c57d06b6c08ed30f6be51c3f10051c93ceeec48ee9071f81214db"
+    },
+    "scripts/_bcf_runtime/semantic_typescript_effects.mjs": {
+      "operation": "copy",
+      "sha256": "31408663183720568c0ae4bb99b0238ef7353a43f869dab6fbfb1b356a397cb7"
     },
     "scripts/_bcf_runtime/semantic_yaml.py": {
       "operation": "copy",
@@ -964,7 +984,7 @@
     },
     "scripts/evidence_storage.py": {
       "operation": "copy",
-      "sha256": "4d605116730d1f5aabd11c3bc2a7509ea39254e75ed4376c21a76dee4c8d77ce"
+      "sha256": "cbc29e810e7c97f4e98116e81b5d7bfca6390fe9050f00418d24a0f4c740df26"
     },
     "scripts/governance_evidence.py": {
       "operation": "copy",

@@ -36,3 +36,7 @@ bcf_governance = [
   "pack/template-repo/**/__pycache__/*",
   "pack/template-repo/**/*.pyc",
 ]
+
+[tool.pytest.ini_options]
+# Release successful disposable fixture directories during compiler-heavy suites.
+tmp_path_retention_policy = "failed"

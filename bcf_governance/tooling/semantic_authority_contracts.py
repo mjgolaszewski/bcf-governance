@@ -15,6 +15,9 @@ from typing import Any, Iterable
 from jsonschema import Draft202012Validator  # type: ignore[import-untyped]
 
 from .semantic_ownership_registry import Registry, load_registry
+from .semantic_operation_python import (
+    _module_aliases, _expression_symbol, _function_for_entrypoint,
+)
 from .semantic_operation_typescript import (
     TypeScriptOperationPopulationError,
     discover_typescript_population,
@@ -333,38 +336,6 @@ def _validate_secondary_coverage(
         )
 
 
-def _module_aliases(repo_root: Path, tree: ast.Module, source: Path) -> dict[str, str]:
-    aliases: dict[str, str] = {}
-    for node in tree.body:
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                candidate = repo_root / (alias.name.replace(".", "/") + ".py")
-                aliases[alias.asname or alias.name.split(".", 1)[0]] = (
-                    candidate.relative_to(repo_root).as_posix() if candidate.is_file() else alias.name
-                )
-        elif isinstance(node, ast.ImportFrom) and node.module:
-            for alias in node.names:
-                candidate = repo_root / node.module.replace(".", "/") / f"{alias.name}.py"
-                if candidate.is_file():
-                    aliases[alias.asname or alias.name] = candidate.relative_to(repo_root).as_posix()
-                else:
-                    aliases[alias.asname or alias.name] = f"{node.module.replace('.', '/')}.py::{alias.name}"
-    aliases.setdefault("__module__", source.relative_to(repo_root).as_posix())
-    return aliases
-
-
-def _expression_symbol(node: ast.AST, aliases: dict[str, str]) -> str:
-    if isinstance(node, ast.Name):
-        target = aliases.get(node.id)
-        return target if target and "::" in target else f"{aliases['__module__']}::{node.id}"
-    if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name):
-        target = aliases.get(node.value.id, aliases["__module__"])
-        if "::" in target:
-            target = target.split("::", 1)[0]
-        return f"{target}::{node.attr}"
-    return "<dynamic>"
-
-
 def _python_mapping_population(repo_root: Path, population: dict[str, Any]) -> dict[str, str]:
     source = _safe_path(repo_root, population["source"], context=f"population {population['id']} source")
     try:
@@ -471,14 +442,16 @@ def _yaml_population(repo_root: Path, population: dict[str, Any]) -> dict[str, s
     raise SemanticAuthorityError(f"population {population['id']} catalog must be a mapping or sequence")
 
 
-def _typescript_population(repo_root: Path, population: dict[str, Any]) -> dict[str, str]:
+def _typescript_population(repo_root: Path, population: dict[str, Any], inventory: dict[str, Any] | None = None) -> dict[str, str]:
     try:
-        return discover_typescript_population(repo_root, population)
+        return discover_typescript_population(repo_root, population, inventory=inventory)
     except TypeScriptOperationPopulationError as exc:
         raise SemanticAuthorityError(str(exc)) from exc
 
 
-def _discover_population(repo_root: Path, population: dict[str, Any]) -> dict[str, str]:
+def _discover_population(repo_root: Path, population: dict[str, Any], inventory: dict[str, Any] | None = None) -> dict[str, str]:
+    if population["adapter"] == "typescript_exports":
+        return _typescript_population(repo_root, population, inventory)
     adapters = {
         "python_mapping": _python_mapping_population,
         "python_decorators": _python_decorator_population,
@@ -514,43 +487,16 @@ def _validate_operation_structure(
     return population_ids
 
 
-def _function_for_entrypoint(
-    repo_root: Path, symbol: str, functions: dict[str, dict[str, Any]]
-) -> dict[str, Any] | None:
-    direct = functions.get(symbol)
-    if direct is not None:
-        return direct
-    raw_path, separator, name = symbol.partition("::")
-    if not separator:
-        return None
-    path = repo_root / raw_path
-    if not path.is_file() or path.is_symlink():
-        return None
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=raw_path)
-    for node in tree.body:
-        if not isinstance(node, ast.ImportFrom) or node.module is None:
-            continue
-        for alias in node.names:
-            if (alias.asname or alias.name) != name:
-                continue
-            module = node.module
-            if node.level:
-                package = raw_path.removesuffix(".py").split("/")[:-1]
-                package = package[: len(package) - node.level + 1]
-                resolved = "/".join([*package, *module.split(".")]) + ".py"
-            else:
-                resolved = module.replace(".", "/") + ".py"
-            return functions.get(f"{resolved}::{alias.name}")
-    return None
-
-
 def _validate_operations(
     repo_root: Path, payload: dict[str, Any], inventory: dict[str, Any]
 ) -> list[dict[str, Any]]:
     _schema(repo_root, "application-operations.schema.json", payload)
     populations = payload["populations"]
     population_ids = _validate_operation_structure(payload)
-    discovered = {str(row["id"]): _discover_population(repo_root, row) for row in populations}
+    discovered = {str(row["id"]): (
+        _discover_population(repo_root, row, inventory) if row["adapter"] == "typescript_exports"
+        else _discover_population(repo_root, row)
+    ) for row in populations}
     classified: dict[tuple[str, str], str] = {}
     functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
     observations: list[dict[str, Any]] = []
@@ -592,7 +538,8 @@ def _validate_operations(
             )
         try:
             write_count, authority_count = validate_operation_effects(
-                operation, str(function["symbol"]), inventory
+                operation, str(function["symbol"]), inventory,
+                source_modules=tuple(str(row["source"]) for row in populations if row["id"] == population_id),
             )
         except SemanticOperationEffectError as exc:
             raise SemanticAuthorityError(str(exc)) from exc
@@ -704,11 +651,14 @@ def build_semantic_lock(
         "application_operations": sha256_bytes((repo_root / OPERATIONS_PATH).read_bytes()),
         "canonical_representations": sha256_bytes((repo_root / REPRESENTATIONS_PATH).read_bytes()),
     }
+    source_rows = dict(_semantic_source_rows(repo_root))
+    for row in inventory.get("typescript_inputs", []):
+        source_rows[str(row["path"])] = str(row["sha256"])
     return {
         "schema_version": "1.0",
         "document": {"kind": "semantic_authority_lock", "version": "1.0.0", "status": "active", "path": LOCK_PATH.as_posix()},
         "contracts": contracts,
-        "source_inventory_sha256": stable_payload_digest(_semantic_source_rows(repo_root)),
+        "source_inventory_sha256": stable_payload_digest(sorted(source_rows.items())),
         "projection_outputs": sorted(projections, key=lambda row: row["path"]),
     }
 

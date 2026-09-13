@@ -1,0 +1,25 @@
+document: {kind: execution_phase_plan, name: Phase 24 Plan, id: bcf-governance-phase-24-plan, version: 1.0.0, generated_at_utc: '2026-09-13T00:00:00Z', status: active, path: plans/phase-24-plan.yml}
+phase:
+  id: P24
+  build_block: consumer-runtime-typescript-authority-and-candidate-routing-1.3.0
+  planner: codex
+  date: '2026-09-13'
+  scope_source: [AGENTS.yml, plans/product-spec.yml, plans/build-plan.yml, plans/phase-ledger.yml, MEMORY.yml]
+delivery_contract:
+  tightly_scoped_deliverables: [installed evidence-storage runtime with isolated fresh-install and upgrade execution, source-first TypeScript semantic authority with real compiler effects and transactional adoption, schema-valid deterministic zero-projection semantic locks, opt-in non-matrix private-local public-hosted candidate routing, combined consumer qualification and complete local source/package failure-class review, reviewed governed controller activation publication and issue-closeout procedure]
+  parallelizable_workstreams:
+  - {id: P24-WS1, name: installed runtime and lock integrity}
+  - {id: P24-WS2, name: TypeScript discovery effects and transactional dependencies}
+  - {id: P24-WS3, name: candidate routing schema compiler and event matrix}
+  - {id: P24-WS4, name: phase governance toolchain packaging and release custody}
+  hard_dependencies: [P23]
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- {order: 1, statement: preserve all 21 gates and mechanically compiled provider authority; no invented provider coordinates}
+- {order: 2, statement: implement all four issues locally before any push and request a new explicit hosted-minute and storage budget after the complete forecast}
+- {order: 3, statement: do not access or modify Racecar or Chrysalis; qualify synthetic installed consumers}
+- {order: 4, statement: retain accepted P23 historical custody gap and disable all further Actions artifact pruning}
+- {order: 5, statement: candidate routing is opt-in with hosted fallback and candidate/controller separation; preserve receipt profile and semantic-lock schemas}
+- {order: 6, statement: record actual exits and raw evidence; authored lifecycle remains planned or completed while verification and closure are computed}
+verification_plan: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests, .venv/bin/bcf ci local-pr --repo-root . --remote origin]

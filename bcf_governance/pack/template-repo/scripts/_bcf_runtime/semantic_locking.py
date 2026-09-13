@@ -9,6 +9,12 @@ from pathlib import Path
 from typing import Any
 
 import yaml  # type: ignore[import-untyped]
+from jsonschema import Draft202012Validator
+from jsonschema.exceptions import SchemaError
+
+
+class SemanticLockError(ValueError):
+    """A proposed semantic lock cannot be persisted as a valid contract."""
 
 
 def stable_payload_digest(payload: Any) -> str:
@@ -29,7 +35,7 @@ def render_lock_yaml(payload: dict[str, Any]) -> bytes:
     rows = payload.get("projection_outputs", [])
     if not isinstance(rows, list):
         raise ValueError("semantic lock projection_outputs must be a list")
-    lines = [rendered, "projection_outputs:\n"]
+    lines = [rendered, "projection_outputs:\n" if rows else "projection_outputs: []\n"]
     for row in rows:
         if not isinstance(row, dict):
             raise ValueError("semantic lock projection output must be an object")
@@ -41,6 +47,29 @@ def render_lock_yaml(payload: dict[str, Any]) -> bytes:
         ).strip()
         lines.append(f"- {flow}\n")
     return "".join(lines).encode("utf-8")
+
+
+def validated_lock_bytes(repo_root: Path, payload: dict[str, Any]) -> bytes:
+    """Render, decode, and validate the exact candidate before any replacement."""
+    try:
+        candidate = render_lock_yaml(payload)
+        decoded = yaml.safe_load(candidate)
+    except (ValueError, TypeError, yaml.YAMLError) as exc:
+        raise SemanticLockError(f"cannot decode semantic lock candidate: {exc}") from exc
+    if decoded != payload:
+        raise SemanticLockError("semantic lock candidate does not preserve its input value")
+    schema_path = repo_root / "schemas/semantic-lock.schema.json"
+    try:
+        if schema_path.is_symlink() or not schema_path.is_file():
+            raise ValueError("schema must be a regular file")
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        Draft202012Validator.check_schema(schema)
+        errors = list(Draft202012Validator(schema).iter_errors(decoded))
+    except (OSError, UnicodeError, ValueError, TypeError, SchemaError) as exc:
+        raise SemanticLockError(f"cannot load semantic lock schema: {exc}") from exc
+    if errors:
+        raise SemanticLockError(f"semantic lock candidate violates schema: {errors[0].message}")
+    return candidate
 
 
 def atomic_write(path: Path, content: bytes) -> None:

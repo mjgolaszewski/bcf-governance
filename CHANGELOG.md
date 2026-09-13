@@ -6,6 +6,19 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-09-13
+
+### Fixed
+
+- Resolve installed evidence-storage commands through the vendored runtime, with isolated fresh-install and upgrade execution coverage (#184).
+- Carry real TypeScript compiler facts through semantic authority, operation effects, locking and transactional adoption (#186).
+- Preserve empty semantic-lock projections as arrays and validate candidate bytes before replacing a lock (#187).
+
+### Added
+
+- Opt-in non-matrix private candidate routing with hosted fallback, explicit event qualification and dedicated candidate labels (#185).
+- Real locked-compiler consumer qualification and offline package-verification fixtures across the combined 1.3.0 paths.
+
 ## [1.2.0] - 2026-09-12
 
 ### Added
@@ -1072,7 +1085,8 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.0.4...v1.1.0

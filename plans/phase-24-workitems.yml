@@ -1,0 +1,108 @@
+document:
+  kind: execution_phase_workitem_ledger
+  name: Phase 24 Workitems
+  id: bcf-governance-phase-24-workitems
+  version: 1.0.0
+  generated_at_utc: '2026-09-13T00:00:00Z'
+  status: completed
+  path: plans/phase-24-workitems.yml
+  phase_id: P24
+workitems:
+- id: P24-P0-01
+  priority: P0
+  status: DONE
+  summary: deliver installed evidence-storage runtime with isolated fresh-install and upgrade execution
+  acceptance:
+  - Fresh and upgrade fixtures execute installed evidence help preparation and cold resolution with no importable bcf_governance package.
+  - Generated commands reconstruct exact bytes and reject missing or tampered inputs with actual failure exit codes.
+  - The canonical installed wrapper uses _bcf_runtime; source wrapper behavior and mechanically generated pack parity are preserved.
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P24-P0-02
+  priority: P0
+  status: DONE
+  summary: deliver source-first TypeScript semantic authority with real compiler effects and transactional adoption
+  acceptance:
+  - Scan lock adoption diagnostics and transactional adoption share Python and compiler-resolved TypeScript inventory including operation-population projects and
+    exported aliases.
+  - Imported helpers methods state writes filesystem browser network and authority effects are enforced; unresolved explicit and implicit dispatch fails closed and
+    declared ports remain reachable.
+  - Real locked TypeScript 6.0.3 tests cover Python-only TypeScript-only mixed and nested consumers; analyzed source compiler configuration and lock inputs bind semantic
+    locks.
+  - Adoption copies complete installed dependency trees offline into disposable shadows preserves safe internal links and rejects compiler dependency or concurrent-state
+    drift without promoting dependencies.
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P24-P0-03
+  priority: P0
+  status: DONE
+  summary: deliver schema-valid deterministic zero-projection semantic locks
+  acceptance:
+  - 'Empty projections serialize as projection_outputs: [] and nonempty lock rendering remains deterministic under semantic-lock schema 1.0.'
+  - Candidate bytes decode to the intended semantic value and pass the existing schema before lock replacement or success; failures preserve transactional bytes and
+    modes.
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P24-P0-04
+  priority: P0
+  status: DONE
+  summary: deliver opt-in non-matrix private-local public-hosted candidate routing
+  acceptance:
+  - Closed optional routing preserves candidate trust hosted restrictions existing jobs receipts required checks and dependency fan-in.
+  - Independent native event cases prove private repository identity PR head and base identity opt-in protected allowed refs reusable caller context and hosted fallback
+    for ineligible or missing contexts.
+  - Malformed arbitrary-expression or overlapping controller selections fail; audit and documentation expose both alternatives and provider label limitations.
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P24-P0-05
+  priority: P0
+  status: DONE
+  summary: deliver combined consumer qualification and complete local source/package failure-class review
+  acceptance:
+  - Source installed-consumer wheel and sdist qualification use the real offline compiler with no required-test skips.
+  - Combined installed acceptance joins TypeScript authority an empty lock and a routed nonmatrix durable producer publisher and cold consumer.
+  - All 21 required gates canonical source/package suites causal defect controls generated surfaces and canonical local PR validation pass before the single implementation
+    push.
+  acceptance_evidence:
+  - architecture-context-membership
+  - architecture-cqrs-side
+  - architecture-duplication
+  - architecture-import-boundaries
+  - architecture-layer-membership
+  - architecture-module-size
+  - architecture-router-thinness
+  - architecture-test
+  - contract-test
+  - governance-exposure-scan
+  - governance-validate
+  - lint
+  - runtime-smoke
+  - security-dependency-audit
+  - security-review
+  - security-sbom
+  - security-secret-scan
+  - security-vulnerability-scan
+  - semantic-ownership
+  - test
+  - typecheck
+- id: P24-P0-06
+  priority: P0
+  status: DONE
+  summary: deliver reviewed governed controller activation publication and issue-closeout procedure
+  acceptance:
+  - The reviewed delivery procedure requires a complete measured forecast and new explicit hosted-minute and storage authorization before the first push; further
+    Actions pruning remains disabled.
+  - The procedure preserves protected implementation landing and workflow-definition then authority-pin commit ordering before mechanical controller target bootstrap
+    probe and confirmation.
+  - The procedure requires exact-main certification four scheduled profiles and durable cold reconstruction before independent verification of authoritative 1.3.0
+    release bytes and immutable App-token publication.
+  - The procedure requires temporary-secret removal and token revocation after publication and evidence closeout final certification actual accounting and verified
+    acceptance before issue closure.
+  - The procedure preserves P23-CUSTODY-01 and immutable 1.2.0 evidence; Racecar Chrysalis and consumer activation remain outside scope.
+  acceptance_evidence:
+  - test
+  - contract-test
