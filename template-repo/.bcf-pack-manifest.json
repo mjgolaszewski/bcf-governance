@@ -812,7 +812,7 @@
     },
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",
-      "sha256": "3d1cc4da7e49b8f6cefed1cf40bf228780e2c2c194ea39e668283d77d6ff271a"
+      "sha256": "4856dc8a10354e6e38c9c7e721a58218d39820f7fee4019b42addc7db4420c33"
     },
     "scripts/_bcf_runtime/public_contracts.py": {
       "operation": "copy",

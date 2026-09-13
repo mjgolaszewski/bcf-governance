@@ -14,7 +14,7 @@ extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-ma
 extensions:
 - {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: e735825595374b594c7f40375a68208f3e8f031329ab9cdce6783db4a20e3d4a}
 - {id: bcf-evidence-storage, path: governance/ci-extensions/bcf-evidence-storage.yml, sha256: 41e40dad457efc53292249a211575505e9d6021d73d3fee2e52c4e9eede68eea}
-- {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 3986d57c585e67d7dfc79df60290545ed64d41bcccd9f464808cced109a2cdc0}
+- {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 8235980296c1e98e4b9305c5442ed494553f6a932954b803218778683b083489}
 - {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: 2534fe8f4c6bd6fe93ad10e1348265961ece6542d3d71a6e566f8ffba4b66397}
 - {id: bcf-package, path: governance/ci-extensions/bcf-package.yml, sha256: 9b207031c08aa424d3b7e4b3e7203a6888d0289d349d425fdd4015e24c7f071e}
 resource_classes:
