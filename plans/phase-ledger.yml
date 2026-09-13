@@ -88,6 +88,6 @@ release_trains:
   release_10: {target_version: 1.0.4, status: completed, focus: [lossless_pytest_selector_mapping, class_based_negative_controls, first_party_audit_code_classification, immutable_patch_release]}
   release_11: {target_version: 1.1.0, status: completed, focus: [semantic_family_completeness, application_operation_inventory, representation_provenance, editorial_custody, immutable_minor_release]}
   release_12: {target_version: 1.1.1, status: completed, focus: [python_import_root_identity, imported_constructor_enforcement, consumer_compatibility, immutable_patch_release]}
-  release_13: {target_version: 1.2.0, status: active, focus: [same_instance_method_identity, fail_closed_dynamic_dispatch, operation_effect_enforcement, hosted_run_and_done_orchestration, content_addressed_evidence_inputs, authenticated_GitHub_transport, reachability_retention, consumer_compatibility, immutable_minor_release]}
+  release_13: {target_version: 1.2.0, status: completed, focus: [same_instance_method_identity, fail_closed_dynamic_dispatch, operation_effect_enforcement, hosted_run_and_done_orchestration, content_addressed_evidence_inputs, authenticated_GitHub_transport, reachability_retention, consumer_compatibility, immutable_minor_release]}
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: ['active phase has a plan, workitem ledger, and log', validation commands are listed before implementation starts]
