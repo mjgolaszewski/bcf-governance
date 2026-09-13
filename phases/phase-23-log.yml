@@ -25,6 +25,7 @@ summary:
   - P23-HF04 implementation completed from retained source exit 0, 961 passed source nodes and 35 satisfied causal controls; provider bootstrap 34709120753 attempt 1 and probe 34709207747 attempt 1 passed on every declared trusted runner. Storage qualification, immutable publication, and release closeout remain pending.
   - P23-HF05 owns the release-blocking streamed upload framing regression. Source run 34711171316 attempt 1 passed; trusted publisher 34711184418 attempt 1 returned HTTP 400, left empty draft 387663446, and the dependent cold resolver had no runner allocation. The exact source ZIP is retained as unresolved failure custody. HF04 remains completed; 1.2.0 publication and closeout remain pending.
   - 'P23-HF05 implementation completed: retained source command exit 0, 963 passed source nodes, 36 satisfied causal controls, build/package verification and both local PR checks passed. Provider bootstrap 34722455893 attempt 1 and probe 34722586088 attempt 1 passed on every declared trusted runner. Failure source ZIP custody remains unresolved until qualification passes; qualification, scheduled controls, publication and closeout remain pending.'
+  - v1.2.0 provider release 387763406 is immutable and non-draft at commit 9c7f880d4b4c5fcf39221b5926c9e793c9b07acb; the annotated unsigned tag, exact receipt assets, signer-scoped attestation commands, four scheduled profiles, storage publication and dependent cold reconstruction passed. Both temporary credential names are absent. audits/v1.2.0-release-custody.yml owns provider custody and measured-as-of accounting. P23 remains authored completed; bcf truth owns terminal state.
 workitems:
 - id: P23-P0-01
   status: DONE
@@ -93,6 +94,7 @@ execution_evidence:
   - PR 166 exposed that the original local acceptance set ran mutation profiles but not the distinct gate-level behavioral probes; the corrected acceptance set requires both before any successor remote execution
   - P23-HF05 owns the release-blocking streamed upload framing regression. Source run 34711171316 attempt 1 passed; trusted publisher 34711184418 attempt 1 returned HTTP 400, left empty draft 387663446, and the dependent cold resolver had no runner allocation. The exact source ZIP is retained as unresolved failure custody. HF04 remains completed; 1.2.0 publication and closeout remain pending.
   - Assigning a file stream to Request.data removed Content-Length, so urllib sent chunked Release asset uploads; the strict local HTTP reproduction rejects that framing while fixed-length streaming and canonical bytes pass.
+  - v1.2.0 provider release 387763406 is immutable and non-draft at commit 9c7f880d4b4c5fcf39221b5926c9e793c9b07acb; the annotated unsigned tag, exact receipt assets, signer-scoped attestation commands, four scheduled profiles, storage publication and dependent cold reconstruction passed. Both temporary credential names are absent. audits/v1.2.0-release-custody.yml owns provider custody and measured-as-of accounting. P23 remains authored completed; bcf truth owns terminal state.
 closeout_requirements:
   claims:
     workitems_closed:
@@ -125,4 +127,4 @@ known_constraints:
 - "The owner explicitly accepted the limited historical custody gap in P23-CUSTODY-01, including the documented residual uncertainty. audits/p23-prune-custody-incident.yml retains the loss and decision. Further pruning stays disabled and complete fresh 1.2.0 certification remains required."
 - update canonical governed artifacts together when behavior or environment contracts change
 next_work:
-- Run exact-main certification and successful storage qualification, then scheduled controls, immutable publication and one postpublication closeout PR.
+- Require the protected closeout PR and exact-main checks; compute exact-tree truth and refresh final provider accounting before closing the issue.

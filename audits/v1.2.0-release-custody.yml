@@ -1,0 +1,697 @@
+document:
+  kind: audit_report
+  name: BCF v1.2.0 Release Custody
+  id: bcf-v1.2.0-release-custody
+  version: 1.0.0
+  status: completed
+  path: audits/v1.2.0-release-custody.yml
+subject:
+  version: 1.2.0
+  tag: v1.2.0
+  tag_kind: annotated
+  tag_object: 2294001d025a354293afcdf938bb92c098255da6
+  tag_signed: false
+  tag_verification_reason: unsigned
+  commit: 9c7f880d4b4c5fcf39221b5926c9e793c9b07acb
+  tree: aa954f49af1d38638e5b9c7bda86c11b8faf5769
+provider_release:
+  id: 387763406
+  immutable: true
+  draft: false
+  prerelease: false
+  published_at: '2026-09-13T01:54:35Z'
+assets:
+- id: 560351111
+  name: bcf_governance-1.2.0-py3-none-any.whl
+  size: 1035045
+  sha256: 5c76c7aa3cd15b8057e362c4a2033c4059faeb4dda915aa8db72ac9c99249067
+- id: 560351230
+  name: bcf_governance-1.2.0.tar.gz
+  size: 1838238
+  sha256: b388dcce4b1a02f33d2169fb1dac7dd976d5a82e22ae6d85e3cd410bfded3573
+- id: 560351098
+  name: SHA256SUMS
+  size: 198
+  sha256: bbdacb7997438f042a9b2125e4bf68833dc08d1d6b0e3dc97287f645216785c3
+attestation_checks:
+- name: SHA256SUMS
+  sha256: bbdacb7997438f042a9b2125e4bf68833dc08d1d6b0e3dc97287f645216785c3
+  exit_code: 0
+  output_sha256: 2a063ab766e6d7176b04ab962953618b0c50683680bdf87047388943dd63dd76
+  provider_response_sha256: 74d1c9f53f0b33ceeffc774fee2751058358e7b78ec34d89b4556067fb213cd9
+- name: bcf_governance-1.2.0-py3-none-any.whl
+  sha256: 5c76c7aa3cd15b8057e362c4a2033c4059faeb4dda915aa8db72ac9c99249067
+  exit_code: 0
+  output_sha256: 2a063ab766e6d7176b04ab962953618b0c50683680bdf87047388943dd63dd76
+  provider_response_sha256: 0ad7ffc836829bd9107bd8967e5816b5ea27ae0c31c5e8f8f366a505a3f42968
+- name: bcf_governance-1.2.0.tar.gz
+  sha256: b388dcce4b1a02f33d2169fb1dac7dd976d5a82e22ae6d85e3cd410bfded3573
+  exit_code: 0
+  output_sha256: 2a063ab766e6d7176b04ab962953618b0c50683680bdf87047388943dd63dd76
+  provider_response_sha256: d09b51367ca342091da85039c72050f1aff3e28d8ad0b88cf6ba52c5c0a6e6c8
+authority:
+  release_receipt:
+    artifact_id: '10307069606'
+    artifact_name: bcf-release-receipt-34726199231-1
+    provider_digest: sha256:c8dc3110a8fdf65f85ea2a6200c0267333c396da05b16984c0d73296b65493cb
+    run_attempt: 1
+    run_id: '34726199231'
+    receipt_sha256: 954cae24480ed270075e95f5df96898c3da66c7565c6f64edb4754ca7cdd815a
+  collector_observations:
+    authority_contract_version: '1.1'
+    ci_computed_state: certified
+    admission_ordinal: '34723921970001001'
+    exact_main_run:
+      run_attempt: 1
+      run_id: '34723921970'
+    release_run:
+      run_attempt: 1
+      run_id: '34725346956'
+    verifier_run:
+      run_attempt: 1
+      run_id: '34725782724'
+      workflow:
+        active_path: .github/workflows/bcf-release-verifier.yml
+        event: workflow_run
+        provider: github
+        repository_id: '1207503211'
+        trusted_workflow_blob_oid: 12d5f990449944a6dbf5f922e23d29ecd4b2c915
+        trusted_workflow_definition_commit: 6410a4715f764bb6a1178df52228deea13c369b3
+        trusted_workflow_sha256: 4124e46bbc7fc2ce898a1aef3ff301ed62f1c87ddcd7dbc378753f76c3b66b28
+        workflow_id: '346919672'
+    provider_artifacts:
+      build:
+        artifact_id: '10307917299'
+        artifact_name: bcf-release-build-9c7f880d4b4c5fcf39221b5926c9e793c9b07acb-1
+        provider_digest: sha256:b64ecd031eb88048b52052e59f92f080d0d5ba4026a8369e3f48f1788239c318
+        run_attempt: 1
+        run_id: '34725346956'
+        workflow:
+          active_path: .github/workflows/release.yml
+          event: workflow_dispatch
+          provider: github
+          repository_id: '1207503211'
+          trusted_workflow_blob_oid: 3b44befb962a9a19d069bdca69509cb48988d517
+          trusted_workflow_definition_commit: 6410a4715f764bb6a1178df52228deea13c369b3
+          trusted_workflow_sha256: 4bf6de4576a7e0e787f73751d18ebd7cd8fd744515a1218aa9a13c177a07e0b5
+          workflow_id: '331325235'
+      certification:
+        artifact_id: '10307765643'
+        artifact_name: bcf-exact-main-certification-34724438031-1
+        provider_digest: sha256:1b5008983878208a7b866dd26a07d91da89cdb098c3dac7a9825e38aea7ac678
+        run_attempt: 1
+        run_id: '34724438031'
+        workflow:
+          active_path: .github/workflows/bcf-trusted-finalizer.yml
+          event: workflow_run
+          provider: github
+          repository_id: '1207503211'
+          trusted_workflow_blob_oid: 75610699135a3d3e943c89289591a17a90a35799
+          trusted_workflow_definition_commit: 6410a4715f764bb6a1178df52228deea13c369b3
+          trusted_workflow_sha256: 6de860393dd3ef7fac9e95ab266ec1df20890fdcac1aa6c78062bb954065ed31
+          workflow_id: '346274484'
+      verification:
+        artifact_id: '10307902842'
+        artifact_name: bcf-release-verification-34725782724-1
+        provider_digest: sha256:f24f34d4be4a1ddeec239a1812e7ccdf046e37ab01d9c8a8d0ac66fba8c6402c
+        run_attempt: 1
+        run_id: '34725782724'
+        workflow:
+          active_path: .github/workflows/bcf-release-verifier.yml
+          event: workflow_run
+          provider: github
+          repository_id: '1207503211'
+          trusted_workflow_blob_oid: 12d5f990449944a6dbf5f922e23d29ecd4b2c915
+          trusted_workflow_definition_commit: 6410a4715f764bb6a1178df52228deea13c369b3
+          trusted_workflow_sha256: 4124e46bbc7fc2ce898a1aef3ff301ed62f1c87ddcd7dbc378753f76c3b66b28
+          workflow_id: '346919672'
+    controller:
+      artifact_id: '10307157105'
+      artifact_name: bcf-trusted-control-9c7f880d4b4c5fcf39221b5926c9e793c9b07acb-1
+      commit_sha: 9c7f880d4b4c5fcf39221b5926c9e793c9b07acb
+      provider_digest: sha256:038c97b4810474de455436aa201afdba43a993efd7c8b17e201774b9499efac5
+      run_attempt: 1
+      run_id: '34723921970'
+      tree_sha: aa954f49af1d38638e5b9c7bda86c11b8faf5769
+      wheel_sha256: 5c76c7aa3cd15b8057e362c4a2033c4059faeb4dda915aa8db72ac9c99249067
+    acyclic_construction:
+      candidate_authored_receipt_accepted: false
+      collector_executed_release_code: false
+      release_receipt_was_truth_input: false
+  installed_control_plane:
+    schema_version: '1.0'
+    installed_commit_sha: 0cc9345c1fea302df622cda67ce6279187a51251
+    subject_commit_sha: e8f405ccbbe033713ba35c06060caaa824c60540
+    subject_tree_sha: f42fd45b85256195266d9d83733543a279f3a0a6
+    bootstrap_run_id: '34722455893'
+    bootstrap_run_attempt: '1'
+    probe_run_id: '34722586088'
+    probe_run_attempt: '1'
+storage_qualification:
+  source_artifact:
+    id: 10306169657
+    name: bcf-evidence-storage-qualification-source-34724617209-1
+    digest: sha256:943220ac2e1c5d8a2d5cda77a1f43827d17ec3bcf7c51d55b8ff34883bd86eb9
+  reference_artifact:
+    id: 10307541354
+    name: bcf-evidence-storage-qualification-reference-34724625699-1
+    digest: sha256:98397c4ace85d433afcbe37268d10a9b9393635cb29b2ac9d7668010e1b4d2e7
+  reference:
+    assets:
+    - id: 560108568
+      name: evidence-input-manifest.json
+      release_id: 387730873
+      sha256: ad2fc541c270d8e4e057e63fccaf68e4647e879181a7fdab8013319b72d27ed6
+      size: 1345
+      tag: bcf-evidence-inputs-manifest-ad2fc541c270d8e4e057e63fccaf68e4647e879181a7fdab8013319b72d27ed6
+      target_commit: 9c7f880d4b4c5fcf39221b5926c9e793c9b07acb
+    - id: 560108506
+      name: sha256-25788f4f19c4ed074587e00f0c3605b1a6f7a3e3acbf88929d03534bc9a5fb16.tar.gz
+      release_id: 387663446
+      sha256: 25788f4f19c4ed074587e00f0c3605b1a6f7a3e3acbf88929d03534bc9a5fb16
+      size: 748
+      tag: bcf-evidence-inputs-object-25788f4f19c4ed074587e00f0c3605b1a6f7a3e3acbf88929d03534bc9a5fb16
+      target_commit: ef5a498e743bfa4e54689dc027eba4b39aee1b1d
+    kind: governance.evidence-input-reference.v1
+    manifest_sha256: ad2fc541c270d8e4e057e63fccaf68e4647e879181a7fdab8013319b72d27ed6
+    producer:
+      job_id: prepare-evidence-input
+      job_name: Prepare one bounded content-addressed evidence input
+      kind: workflow
+      run_attempt: 1
+      run_id: '34724617209'
+      workflow_path: .github/workflows/bcf-evidence-storage-qualification-source.yml
+      workflow_sha256: 53437b8ed50148380f67c8c8743671baf66886253e337908b0c84d995ad7b4cb
+    provider:
+      draft: false
+      immutable: true
+      kind: github_release
+      published_at: '2026-09-12T23:09:04Z'
+      release_id: 387730873
+      repository: mjgolaszewski/bcf-governance
+      repository_id: 1207503211
+      tag: bcf-evidence-inputs-manifest-ad2fc541c270d8e4e057e63fccaf68e4647e879181a7fdab8013319b72d27ed6
+      target_commit: 9c7f880d4b4c5fcf39221b5926c9e793c9b07acb
+    schema_version: '1.0'
+    source_handoff:
+      artifact_id: 10306169657
+      artifact_name: bcf-evidence-storage-qualification-source-34724617209-1
+      provider_digest: sha256:943220ac2e1c5d8a2d5cda77a1f43827d17ec3bcf7c51d55b8ff34883bd86eb9
+      run_attempt: 1
+      run_id: '34724617209'
+    storage_contract_sha256: a0268276625f253fd3099294989a8ec2cd84ced260858224f9f619f376eddfbc
+    subject:
+      commit_sha: 9c7f880d4b4c5fcf39221b5926c9e793c9b07acb
+      repository_id: 1207503211
+      tree_sha: aa954f49af1d38638e5b9c7bda86c11b8faf5769
+  jobs:
+  - id: 103636486038
+    name: Publish one authenticated immutable evidence input
+    run_id: 34724625699
+    run_attempt: 1
+    runner_id: 25
+    labels:
+    - self-hosted
+    - Linux
+    - X64
+    - bcf-governance
+    - vm-linux-ci-runner
+    started_at: '2026-09-12T23:08:40Z'
+    completed_at: '2026-09-12T23:09:11Z'
+    conclusion: success
+  - id: 103636554830
+    name: Cold-reconstruct and verify the authenticated evidence input
+    run_id: 34724625699
+    run_attempt: 1
+    runner_id: 1000005606
+    labels:
+    - ubuntu-24.04
+    started_at: '2026-09-12T23:09:13Z'
+    completed_at: '2026-09-12T23:09:24Z'
+    conclusion: success
+scheduled:
+- profile: semantic-high-value
+  run_id: 34724926417
+  run_attempt: 1
+  artifact_id: 10308055093
+  artifact_digest: sha256:bd94dbd30e5e8b26c6841bf03fa056a1338fee811a826e6f331489ba87083b07
+  summary:
+    expected: 10
+    infrastructure_failures: 0
+    killed: 10
+    survived: 0
+- profile: high-value
+  run_id: 34724926417
+  run_attempt: 1
+  artifact_id: 10308055093
+  artifact_digest: sha256:bd94dbd30e5e8b26c6841bf03fa056a1338fee811a826e6f331489ba87083b07
+  summary:
+    expected: 23
+    infrastructure_failures: 0
+    killed: 23
+    survived: 0
+- profile: semantic-full
+  run_id: 34724976446
+  run_attempt: 1
+  artifact_id: 10306754293
+  artifact_digest: sha256:61b96ce68ab7f3234eb07d1ef946f951662af1684d61d256db3ec1ed48d49ff2
+  summary:
+    expected: 12
+    infrastructure_failures: 0
+    killed: 12
+    survived: 0
+- profile: full
+  run_id: 34724976446
+  run_attempt: 1
+  artifact_id: 10306754293
+  artifact_digest: sha256:61b96ce68ab7f3234eb07d1ef946f951662af1684d61d256db3ec1ed48d49ff2
+  summary:
+    expected: 25
+    infrastructure_failures: 0
+    killed: 25
+    survived: 0
+phase_retention:
+  active_phase: P23
+  mode: git_history
+  phase_triplet:
+  - plans/phase-23-plan.yml
+  - plans/phase-23-workitems.yml
+  - phases/phase-23-log.yml
+  related_hotfix_logs:
+  - id: P23-HF01
+    path: phases/phase-23-hotfix01.yml
+    sha256: c4304f7bbd506e5bf50a0d3b993ad9eeee96a9234ffa3878f6bc5804fbefc275
+  - id: P23-HF02
+    path: phases/phase-23-hotfix02.yml
+    sha256: 8591fcc253ebb3672716af71155663efc2743f9ca1ce782d590c6aaf94aad8e1
+  - id: P23-HF03
+    path: phases/phase-23-hotfix03.yml
+    sha256: f1ad1b6d1f9a198ce6325a6f34bddec0b7161f654534967f69f5666392717bd1
+  - id: P23-HF04
+    path: phases/phase-23-hotfix04.yml
+    sha256: 35b86f46ef83370b98af09fa4adfe652cc1feb59932d2456ad61a9b9a75b8d3a
+  - id: P23-HF05
+    path: phases/phase-23-hotfix05.yml
+    sha256: 6f9b4ebdc1e7691b076065a5e15d1581ee55d4b010c479f885bd550cdcd98b3e
+  related_hotfix_logs_retained_without_edit: true
+storage_authorization:
+  baseline_bytes: 413957092
+  approved_growth_bytes: 83886080
+  effective_total_ceiling_bytes: 497843172
+  measured_retained_bytes: 491457978
+  future_closeout_reserve_bytes: 4053020
+  working_allowance_bytes: 1048576
+  headroom_after_closeout_and_allowance_bytes: 1283598
+  future_deletion_or_expiry_credit_bytes: 0
+  further_pruning_disabled: true
+minute_accounting:
+  historical_expected_minutes: 199
+  historical_ceiling_minutes: 240
+  historical_status: historical_exceeded_and_superseded_by_user_finish_and_recalculate_instruction
+  actual_hosted_minutes: 608.4
+  actual_trusted_minutes: 49.03333333333333
+  actual_overrun_above_historical_ceiling_minutes: 368.4
+  remaining_closeout_hosted_minutes: 45.766666666666666
+  replacement_numeric_minute_ceiling_inferred: false
+accepted_historical_custody:
+  finding_id: P23-CUSTODY-01
+  incident_audit: audits/p23-prune-custody-incident.yml
+  incident_sha256: f17cd6f657b11f944b0bf146a1af27daefc98acb2fffcef4142ce9a11e6db9ed
+  disposition: accepted_risk
+  owner_authority:
+    kind: human
+    id: github:mjgolaszewski
+  acceptance_recorded_at_utc: '2026-09-12T21:20:03.774568+00:00'
+  accepted_historical_scope:
+    count: 112
+    bytes: 5837369
+    producer_run_count: 32
+    direct_artifact_id_reference_count: 1
+    direct_artifact_id_reference_bytes: 6881
+    named_run_only_count: 111
+    named_run_only_bytes: 5830488
+  actual_deleted:
+    count: 481
+    bytes: 22632069
+  deletion_accounting_class: Actual deletion; not validated storage savings or retrospective authorization.
+  further_pruning_disabled: true
+  original_incident_and_raw_proofs_retained_unchanged: true
+  scope_limit: The accepted historical gap remains; fresh exact release certification does not restore lost historical bytes or identities.
+completion_forecast_sha256: 1ab2997a26ceea582bf736229ed328e6a4fbf2fd0a49859a375190d58902e4a9
+security_hygiene:
+  temporary_release_secret:
+    name: BCF_RELEASE_ADMIN_TOKEN
+    present: false
+  temporary_evidence_settings_secret:
+    name: BCF_EVIDENCE_ADMIN_TOKEN
+    environment: bcf-trusted-evidence
+    present: false
+accounting_as_of_snapshot:
+  calculated_at_utc: '2026-09-13T01:56:28.703245Z'
+  snapshot: 20260913T015628Z
+  repository: mjgolaszewski/bcf-governance
+  post_purge_baseline:
+    observed_at_utc: '2026-09-12T00:44:03Z'
+    live_artifacts: 816
+    live_bytes: 413957092
+    live_mib: 394.78
+  actions_storage:
+    inventory_count: 576
+    live_count: 576
+    inventory_bytes: 491457978
+    live_bytes: 491457978
+    live_mib: 468.69085121154785
+    net_live_bytes_since_baseline: 77500886
+    net_live_mib_since_baseline: 73.91060447692871
+    incremental_ceiling_bytes: 83886080
+    effective_total_ceiling_bytes: 497843172
+    remaining_incremental_bytes: 6385194
+    repository_contract_ceiling_bytes: 1073741824
+  execution_since_post_purge_baseline:
+    hosted_seconds: 36504.0
+    trusted_local_seconds: 2942.0
+    unclassified_seconds: 0
+    not_allocated_seconds: 0
+    retained_artifact_count: 241
+    retained_artifact_bytes: 100132955
+    run_count: 248
+  execution_since_first_HF04_PR_run:
+    start_utc: '2026-09-12T15:59:42Z'
+    hosted_seconds: 15431.0
+    trusted_local_seconds: 1283.0
+    unclassified_seconds: 0
+    not_allocated_seconds: 0
+    retained_artifact_count: 101
+    retained_artifact_bytes: 64610582
+    run_count: 107
+  durable_release_assets:
+    release_count: 2
+    asset_count: 2
+    bytes: 2093
+    releases:
+    - id: 387663446
+      tag_name: bcf-evidence-inputs-object-25788f4f19c4ed074587e00f0c3605b1a6f7a3e3acbf88929d03534bc9a5fb16
+      created_at: '2026-09-12T18:14:14Z'
+      published_at: '2026-09-12T23:09:00Z'
+      immutable: true
+      assets:
+      - url: https://api.github.com/repos/mjgolaszewski/bcf-governance/releases/assets/560108506
+        id: 560108506
+        node_id: RA_kwDOR_kJa84hYpPa
+        name: sha256-25788f4f19c4ed074587e00f0c3605b1a6f7a3e3acbf88929d03534bc9a5fb16.tar.gz
+        label: ''
+        uploader:
+          login: mjgolaszewski-bcf-changelog-writer[bot]
+          id: 324223546
+          node_id: BOT_kgDOE1NCOg
+          avatar_url: https://avatars.githubusercontent.com/u/202175348?v=4
+          gravatar_id: ''
+          url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D
+          html_url: https://github.com/apps/mjgolaszewski-bcf-changelog-writer
+          followers_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/followers
+          following_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/following{/other_user}
+          gists_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/gists{/gist_id}
+          starred_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/starred{/owner}{/repo}
+          subscriptions_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/subscriptions
+          organizations_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/orgs
+          repos_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/repos
+          events_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/events{/privacy}
+          received_events_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/received_events
+          type: Bot
+          user_view_type: public
+          site_admin: false
+        content_type: application/octet-stream
+        state: uploaded
+        size: 748
+        digest: sha256:25788f4f19c4ed074587e00f0c3605b1a6f7a3e3acbf88929d03534bc9a5fb16
+        download_count: 1
+        created_at: '2026-09-12T23:08:58Z'
+        updated_at: '2026-09-12T23:08:58Z'
+        browser_download_url: https://github.com/mjgolaszewski/bcf-governance/releases/download/bcf-evidence-inputs-object-25788f4f19c4ed074587e00f0c3605b1a6f7a3e3acbf88929d03534bc9a5fb16/sha256-25788f4f19c4ed074587e00f0c3605b1a6f7a3e3acbf88929d03534bc9a5fb16.tar.gz
+    - id: 387730873
+      tag_name: bcf-evidence-inputs-manifest-ad2fc541c270d8e4e057e63fccaf68e4647e879181a7fdab8013319b72d27ed6
+      created_at: '2026-09-12T22:52:40Z'
+      published_at: '2026-09-12T23:09:04Z'
+      immutable: true
+      assets:
+      - url: https://api.github.com/repos/mjgolaszewski/bcf-governance/releases/assets/560108568
+        id: 560108568
+        node_id: RA_kwDOR_kJa84hYpQY
+        name: evidence-input-manifest.json
+        label: ''
+        uploader:
+          login: mjgolaszewski-bcf-changelog-writer[bot]
+          id: 324223546
+          node_id: BOT_kgDOE1NCOg
+          avatar_url: https://avatars.githubusercontent.com/u/202175348?v=4
+          gravatar_id: ''
+          url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D
+          html_url: https://github.com/apps/mjgolaszewski-bcf-changelog-writer
+          followers_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/followers
+          following_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/following{/other_user}
+          gists_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/gists{/gist_id}
+          starred_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/starred{/owner}{/repo}
+          subscriptions_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/subscriptions
+          organizations_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/orgs
+          repos_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/repos
+          events_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/events{/privacy}
+          received_events_url: https://api.github.com/users/mjgolaszewski-bcf-changelog-writer%5Bbot%5D/received_events
+          type: Bot
+          user_view_type: public
+          site_admin: false
+        content_type: application/octet-stream
+        state: uploaded
+        size: 1345
+        digest: sha256:ad2fc541c270d8e4e057e63fccaf68e4647e879181a7fdab8013319b72d27ed6
+        download_count: 1
+        created_at: '2026-09-12T23:09:03Z'
+        updated_at: '2026-09-12T23:09:03Z'
+        browser_download_url: https://github.com/mjgolaszewski/bcf-governance/releases/download/bcf-evidence-inputs-manifest-ad2fc541c270d8e4e057e63fccaf68e4647e879181a7fdab8013319b72d27ed6/evidence-input-manifest.json
+  product_release_assets:
+    release_count: 25
+    asset_count: 62
+    bytes: 32039459
+  limitations:
+  - Execution seconds are allocated job completed_at minus started_at, not billed minutes or wall-clock train duration.
+  - Hosted and trusted local execution are summed separately; overlapping jobs count individually.
+  - All run attempts exposed by provider jobs filter=all are included; skipped unallocated jobs cost zero runner time.
+  - Nonterminal allocated jobs are listed and omitted until completion; refresh after a remote phase.
+  - Post-purge baseline gives only aggregate bytes/count; post-baseline deleted or expired artifact bytes cannot be reconstructed from the current inventory.
+  - No artifact was deleted by this script; net retained growth does not equal total upload bytes.
+  - Local validation, CPU energy, and AI token costs are not exposed by the GitHub provider.
+  - Baseline purge of 1614 artifacts / 531.1 MiB is historical audit evidence, not remeasured here.
+  - Actions caches and workflow logs are outside the artifact byte inventory.
+  incomplete_runs: []
+accounting_boundary: Subsequent closeout PR and exact-main execution require a final provider refresh; this snapshot cannot include future jobs.
+issue_observation:
+  number: 165
+  state: open
+  state_reason: null
+  closed_at: null
+  html_url: https://github.com/mjgolaszewski/bcf-governance/issues/165
+workflow_runs:
+- id: 34723921970
+  run_attempt: 1
+  path: .github/workflows/bcf-exact-main.yml
+  head_sha: 9c7f880d4b4c5fcf39221b5926c9e793c9b07acb
+  event: push
+  status: completed
+  conclusion: success
+  html_url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/34723921970
+- id: 34725346956
+  run_attempt: 1
+  path: .github/workflows/release.yml
+  head_sha: 9c7f880d4b4c5fcf39221b5926c9e793c9b07acb
+  event: workflow_dispatch
+  status: completed
+  conclusion: success
+  html_url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/34725346956
+- id: 34725782724
+  run_attempt: 1
+  path: .github/workflows/bcf-release-verifier.yml
+  head_sha: 9c7f880d4b4c5fcf39221b5926c9e793c9b07acb
+  event: workflow_run
+  status: completed
+  conclusion: success
+  html_url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/34725782724
+- id: 34726199231
+  run_attempt: 1
+  path: .github/workflows/bcf-release-collector.yml
+  head_sha: 9c7f880d4b4c5fcf39221b5926c9e793c9b07acb
+  event: workflow_run
+  status: completed
+  conclusion: success
+  html_url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/34726199231
+- id: 34731670907
+  run_attempt: 1
+  path: .github/workflows/bcf-release-publisher.yml
+  head_sha: 9c7f880d4b4c5fcf39221b5926c9e793c9b07acb
+  event: workflow_dispatch
+  status: completed
+  conclusion: success
+  html_url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/34731670907
+- id: 34724617209
+  run_attempt: 1
+  path: .github/workflows/bcf-evidence-storage-qualification-source.yml
+  head_sha: 9c7f880d4b4c5fcf39221b5926c9e793c9b07acb
+  event: workflow_dispatch
+  status: completed
+  conclusion: success
+  html_url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/34724617209
+- id: 34724625699
+  run_attempt: 1
+  path: .github/workflows/bcf-evidence-storage-qualification.yml
+  head_sha: 9c7f880d4b4c5fcf39221b5926c9e793c9b07acb
+  event: workflow_run
+  status: completed
+  conclusion: success
+  html_url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/34724625699
+- id: 34724926417
+  run_attempt: 1
+  path: .github/workflows/governance-mutants-nightly.yml
+  head_sha: 9c7f880d4b4c5fcf39221b5926c9e793c9b07acb
+  event: workflow_dispatch
+  status: completed
+  conclusion: success
+  html_url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/34724926417
+- id: 34724976446
+  run_attempt: 1
+  path: .github/workflows/governance-mutants-weekly.yml
+  head_sha: 9c7f880d4b4c5fcf39221b5926c9e793c9b07acb
+  event: workflow_dispatch
+  status: completed
+  conclusion: success
+  html_url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/34724976446
+input_sha256:
+  ".artifacts/release-train-resume/hf05-closeout-inputs.json": 4b0188f6417c0e23a4857e0d5767db24d4a2ddc20486949cc19248a54f973bf6 # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-release-prepared/report.json": ff5de4366c0f55c3759dd0a2f16c4245ccbf34ee97c027b2e9aa5a341045f83c # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-release-prepared/publication-inputs.json": e2f7cc5c21b6e6e12990090e9d99389bbfb1af7c7c66a48bed307e20b2ae5302 # sha256 of retained input
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:governance/evidence-storage.yml: a0268276625f253fd3099294989a8ec2cd84ced260858224f9f619f376eddfbc
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:governance/artifact-manifest.yml: 5174f2450f1e02b87d33076677cc4d39b32f867d5e94bb8e1aacee6876cb1630
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:governance/public-contracts.yml: 49044714b8a5f1d36fe1d5eda54475af8c0eb4ad976e48239aca003d7a710cbc
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:audits/p23-issue-165-storage-design.yml: d94b27848a308463f90cd0829dd06eda2d164fcbbca4c7c85e1314cd9b1d86b9
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:governance/ci-authority.yml: 0415731376a5a9705812892e96b670cbbd72a043805b6dc181bc7e472f0166bc
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:governance/self-governance-policy.yml: 58ef94776247050a5990c5695b80f8e71e82f7b495a7e66355527de18289e786
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:plans/phase-ledger.yml: 81178a2f1aa50b8cca4a2ba611c06421a87b24cab301a27fd5f85f5e654afa42
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/exact-main-run-01.json": b653f65c69bbae29b33ebd1fbd3894d50fe7d60aeb2f36792db9ec4fe7e3ba16 # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/release-run-01.json": 40c12ec26898c1dae75b019a040e01c55a4e87922acc419c51c8a646364a2bf3 # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/verifier-run-01.json": 99048ec2072e18daa5bc34cef07e265a564b4b2f19c7fef1428f4a3cffb536db # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/collector-run-01.json": 48e8d852d820cd8317970743dc5422c60d27828c495ae9b00686934874799c0e # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/publisher-run-01.json": 010c16a51db1b95da9e468b4564072d00bce0e98bbe8c71be0558f80601dacb1 # sha256 of retained input
+  ".artifacts/release-train-resume/qualification-dt8thuaz/source-run-01.json": 806572666fae09ebf518be63c003592d37333371260b7f7da2b67d021e6790d9 # sha256 of retained input
+  ".artifacts/release-train-resume/qualification-dt8thuaz/publisher-run-01.json": 15d7220b3e388c255ec9467534744b9a0e8aa2bab24292719efedd239ca0222b # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-scheduled-captured/nightly/run.json": 232b757a38f2c061c4173b681a0baecc41fecedd9edad6e9ddf25c9930e33b01 # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-scheduled-captured/weekly/run.json": b11732924ee4170119dcd24e48974a88a0e9893691b42e0004fce3fbe1a12e0a # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/publisher-jobs-01.json": 0c67c72fb2324bd00a26f3a220f1ae8cc7209f5de577345d6586149bd36b9c1c # sha256 of retained input
+  ".artifacts/release-train-resume/qualification-dt8thuaz/source-jobs-01.json": 5ed84bc8d8fc2f462640e639dfc6c40d982e66d94732e160983f8ae108e8e8c0 # sha256 of retained input
+  ".artifacts/release-train-resume/qualification-dt8thuaz/publisher-jobs-01.json": c908d55dbe1f67bb03cc9dbb316dbb855f85b8a03f883474b424232a5acf0a0d # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-scheduled-captured/nightly/jobs.json": a94e7812cb517f2564c07fdceb644c94ae85067b581184b448b8231a3d190e3e # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-scheduled-captured/weekly/jobs.json": 7b0cf8a2ff5ceef82fb9904822bc5669af37d46a018fba4941e635673644823b # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-release-prepared/receipt-provider.zip": c8dc3110a8fdf65f85ea2a6200c0267333c396da05b16984c0d73296b65493cb # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-release-prepared/receipt/release-receipt.json": 954cae24480ed270075e95f5df96898c3da66c7565c6f64edb4754ca7cdd815a # sha256 of retained input
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:schemas/evidence-receipt.schema.json: c75601249a88a30a076cd1925adf01b323e71fdffb1161d99353315d77fd9315
+  ".artifacts/release-train-resume/hf05-release-prepared/receipt/assets/SHA256SUMS": bbdacb7997438f042a9b2125e4bf68833dc08d1d6b0e3dc97287f645216785c3 # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-release-prepared/receipt/assets/bcf_governance-1.2.0-py3-none-any.whl": 5c76c7aa3cd15b8057e362c4a2033c4059faeb4dda915aa8db72ac9c99249067 # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-release-prepared/receipt/assets/bcf_governance-1.2.0.tar.gz": b388dcce4b1a02f33d2169fb1dac7dd976d5a82e22ae6d85e3cd410bfded3573 # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/repository-01.json": dedc41b6e1d03b38c380f057ed5be14db902b90fe0a9f41cbba0956bcde60ff5 # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/immutable-setting-01.json": 7b93516a09899c459a9952bc9b86479f9930826d96e672171dfe9059e6e9152f # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/tag-reference-01.json": bb6f3268c67460fa0050494abbe48b89d2e7b74f454d214042b588698fa99698 # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/tag-object-01.json": 7fbdbc2881d4761ed3fa082c323b19a538b3e69ca4c3ffb57c70696c43d60846 # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/release-01.json": 9d99a7f5b7aff673f3333dd7ea4bf002124ac40a576d2c5750318e13506f8a01 # sha256 of retained input
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:.github/workflows/bcf-release-publisher.yml: 4cfc03c3f9130f97dc694df6a59149898c61abd04423d0354d71032a3d246191
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7-inspect-result.json": 6e27087a1aa389f376f85492b295b4d2798a6707f32106e91b6151090748e25d # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7-inspect.log": 83d2bd9e569c0de924da586cc6175a2052433f7bcfe69fc46d6cf67943bc0d3e # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7-asset-0-result.json": 7d1bad255d298a0741b609150f699ce6c3a80b66800ba03d75a4999736819d99 # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7-asset-0.log": 2a063ab766e6d7176b04ab962953618b0c50683680bdf87047388943dd63dd76 # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/asset-0-attestations-01.json": 74d1c9f53f0b33ceeffc774fee2751058358e7b78ec34d89b4556067fb213cd9 # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7-asset-1-result.json": da68a51ed05baa2716fcb37553165abf423abfaf8919ffca47c95c639dcee65b # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7-asset-1.log": 2a063ab766e6d7176b04ab962953618b0c50683680bdf87047388943dd63dd76 # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/asset-1-attestations-01.json": 0ad7ffc836829bd9107bd8967e5816b5ea27ae0c31c5e8f8f366a505a3f42968 # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7-asset-2-result.json": c8c42a106fb5a98e37e798ddd90847a5e321662f447c3727f4a393ab4930edd4 # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7-asset-2.log": 2a063ab766e6d7176b04ab962953618b0c50683680bdf87047388943dd63dd76 # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/asset-2-attestations-01.json": d09b51367ca342091da85039c72050f1aff3e28d8ad0b88cf6ba52c5c0a6e6c8 # sha256 of retained input
+  ".artifacts/release-train-resume/qualification-dt8thuaz/reference-artifact-01.json": 1311fcc7687c3c48c5630b5031a83b5278cb734e243bdfd05cc485fd7091d72a # sha256 of retained input
+  ".artifacts/release-train-resume/qualification-dt8thuaz/reference.zip": 98397c4ace85d433afcbe37268d10a9b9393635cb29b2ac9d7668010e1b4d2e7 # sha256 of retained input
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:schemas/evidence-input-reference.schema.json: 5212b0f87dc32c32b2b270c60f247f4891fbd9a0687871288a65a3f7ea674976
+  ".artifacts/release-train-resume/qualification-dt8thuaz/source-artifact-01.json": 1a949ba951da02537d11ccf158001e994460679edf49e424cf1978747bc811f5 # sha256 of retained input
+  ".artifacts/release-train-resume/qualification-dt8thuaz/source.zip": 943220ac2e1c5d8a2d5cda77a1f43827d17ec3bcf7c51d55b8ff34883bd86eb9 # sha256 of retained input
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:.github/workflows/bcf-evidence-storage-qualification-source.yml: 53437b8ed50148380f67c8c8743671baf66886253e337908b0c84d995ad7b4cb
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:.github/workflows/bcf-evidence-storage-qualification.yml: f1a1d5129f7219ff6301a823782f5a4962cc7f4080a9b2f34a76e883c04d6791
+  ".artifacts/release-train-resume/qualification-dt8thuaz/durable-release-387663446-01.json": 1c18483adb30da7b230167653295195d557cdb219c653524c3f47c7e412fce87 # sha256 of retained input
+  ".artifacts/release-train-resume/qualification-dt8thuaz/durable-release-387730873-01.json": bc84005f3d2a4b58e172d2f93c4edd1c6b5a3d6c9550cd8b12d5bd210e48a39e # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-scheduled-captured/nightly/artifact.json": 7bbddf3f1f4880501d51b9a4145925061556fc2b5e40dbb10637ff06bd6fb80a # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-scheduled-captured/nightly/artifact.zip": bd94dbd30e5e8b26c6841bf03fa056a1338fee811a826e6f331489ba87083b07 # sha256 of retained input
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:.github/workflows/governance-mutants-nightly.yml: 0f35e774a4f811755286e2242a3965cb736227c64f20757a738b2911ac843c3c
+  ".artifacts/release-train-resume/hf05-scheduled-captured/weekly/artifact.json": da2f31fa3b6ab1d1eb8177fea7e3340ab5b114cf74d40a54f9b7b83e27eb9f9b # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-scheduled-captured/weekly/artifact.zip": 61b96ce68ab7f3234eb07d1ef946f951662af1684d61d256db3ec1ed48d49ff2 # sha256 of retained input
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:.github/workflows/governance-mutants-weekly.yml: c8facc80e16101b2e62f53b65ffbcbdf054187e77e08aafc018681b2c7bb87a2
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:governance/ci-extensions/bcf-release.yml: 78245dc6c106cf1c26f9f1dd0f2c87f6e02117d4fa6de6034532023b55b4204f
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/repository-secrets.json": b09f96217e0c2cda408947e271f3b2f45e6a95587f65c8ddaeb4ba653b45370e # sha256 of retained input
+  ".artifacts/release-train-resume/qualification-dt8thuaz/environment-secrets-01.json": a0ce446eb22244d65a48547a010845fc165b0374fba21d7979bec444b3474df4 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/summary-80MiB-postpublication-20260913T015628Z.json": b860ff27f2139dc7a33d6523524b4b72e5c57e3e9d42b105cced8a93090ae201 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/artifacts-20260913T015628Z.json": 691a4654f9329cb931a46986a8d89d0a9627c36ffe7056aa07a49ac7e02859b2 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/calculated-runs-20260913T015628Z.json": 160353a350e333c9ce392e4dc514da9c3b4a9734ba27e11f60fc746c6657f861 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/postpublication-outer-process-exits-20260913T015628Z.json": b92c4598c38ad2c5cd8e25b175fd2fd2dd3509ace1d10646e575d5db7cdea691 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/raw-job-inventory-20260913T015628Z.json": c355ffa3c1b50c3e677ba9f22603f12e4ea4a9b3f7fa9e878dd5e1ff444cf6d6 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/releases-20260913T015628Z.json": 1125a0ff30fa8752ad1adbb3fdfc315cb23137d624e7b959f5576ce77a1e9ade # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/runs-20260913T015628Z.json": 2db9145488bc13e67ab45f05e01d1332f024077c7617c6ec3b1c076117f177b8 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/savings-initial.json": e244d4a4531a9b3dec2672b644a72f21b59d60378ca5c4136960814e5254ad5b # sha256 of retained input
+  ".artifacts/release-train-resume/assemble_actual_closeout_inputs.py": d15651b21ca8d29d8849edad2a5651381ad3381bbeb1fd49dba3271f62e1661e # sha256 of retained input
+  ".artifacts/release-train-resume/assemble_release_closeout.py": 4888310d6f577c049b73918d3929d754bcf2d01ec2f2812c227ba6f0480f9c30 # sha256 of retained input
+  ".artifacts/release-train-resume/assemble_release_closeout_final.py": 3fa6d4af0dd82662083c9fa6dadc989fff9b17d71dd96d5b1e6d47ded681be78 # sha256 of retained input
+  ".artifacts/release-train-resume/closeout-accounting-input-fragment.json": 391208e803eb3f27b9c58e98c0134e5e2009a85adcf55a21615f60b9c7871ba5 # sha256 of retained input
+  ".artifacts/release-train-resume/closeout_accounting.py": 81722765e3f9e4c19235c682fe07a675542da05b28605ea03076457529cd2bc7 # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-qualification-full-capture-result.json": 754b944931e9203d2dcc8d539f057189baab5cc0cab58f0cec76e6105f193ec9 # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-qualification-full-capture.log": 85746b349393a455409c81960e478e3370461135c5b4e49ed4d74dcbf298af72 # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-release-app-holder-tool-result.json": 60e85087a085ee2fffa8e9585dc5b6da6b751c00d519aa238f28de8233ea76d3 # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-release-publication-full-capture-result.json": d1e6655d70aa168cd763b3275ea2afb281657d32f4e3992ec1e8b17ccd3b19b2 # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-release-publication-full-capture.log": 83fed7499d3539761bc353539d4a5ff2c2945468fe9d5231474c92994247f020 # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-release-publisher-watch-remove-result.json": 08c03adc7b9782886b7d3fd0b721a1c4a1f046518dc5442009496cf63c6c2748 # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-release-publisher-watch-remove.log": 1b43971c50a1f65f6b982deab4b975fbc2a393057e5d6acea20775a1bf63fc2b # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-scheduled-captured/capture.json": b2045fd1172d9ca468ccc5adcfcad01c1a28d85bfce66c14e01c9ad2addf2647 # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-scheduled-captured/closeout-fragment.json": 0fd838590f6fde78b172f6344facdbc8acbdfed8690c94e9420fd158e9226146 # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-scheduled-full-capture-result.json": 40e767b99340d6c2c682795afe122f4c48c7ad1506b0f3a69f54376d17cadf3c # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-scheduled-full-capture.log": efaaa47c69c76b89573577e53bb4dc25a82011afa9449dbfd8d96705f60a1ad8 # sha256 of retained input
+  ? ".artifacts/release-train-resume/provider/publisher-watch-remove-9c7f880d4b4c5fcf39221b5926c9e793c9b07acb-_y6v_0ii/delete-release-secret.json" # non-authoritative local locator; retained input hashes recorded
+  : 28acb193623fb6e8ff8db4f1c446744d8c0dfc5c02de1f2baf428a4cfaa2671b
+  ? ".artifacts/release-train-resume/provider/publisher-watch-remove-9c7f880d4b4c5fcf39221b5926c9e793c9b07acb-_y6v_0ii/requests.jsonl" # non-authoritative local locator; retained input hashes recorded
+  : 9c44a4288a8e0eb1a35981a4d09ea35066ad1dfe82dedfda748d322ad85c4139
+  ? ".artifacts/release-train-resume/provider/publisher-watch-remove-9c7f880d4b4c5fcf39221b5926c9e793c9b07acb-_y6v_0ii/success.json" # non-authoritative local locator; retained input hashes recorded
+  : 8f5af9e717c6fe8a4349375080bd92ac17f964ab8615ba654080ad4e1e7cb702
+  ".artifacts/release-train-resume/provider/release-app-provision-dogot1qf/authenticated-app-01.json": eed34abef8f26556850d526eaab7bd881d0a8f0c7747d87114f7e0f7961e4914 # sha256 of retained input
+  ".artifacts/release-train-resume/provider/release-app-provision-dogot1qf/minted-repositories-01.json": 81d6878137d3cbcac62133f906451bbba1218b39b40459ab53e437b5f8724028 # sha256 of retained input
+  ".artifacts/release-train-resume/provider/release-app-provision-dogot1qf/minted-token-metadata.json": 970205919eadfda7826126be8530b873653179d8416920f6428c20a91b1dc56d # sha256 of retained input
+  ".artifacts/release-train-resume/provider/release-app-provision-dogot1qf/provisioned.json": 6018b7ee0357b99895c32be57bba1afaa402b2d25506de2b6a8fd4a22a4d7572 # sha256 of retained input
+  ".artifacts/release-train-resume/provider/release-app-provision-dogot1qf/repository-installation-01.json": aab0f7254c64a92322981033b7c25f95b00a820a10467b92c3df79e5f817dd09 # sha256 of retained input
+  ".artifacts/release-train-resume/provider/release-app-provision-dogot1qf/requests.jsonl": ee9fc8778d4d3b10ba079d14cb1dd0ed7341a8a3eb21fc36adbc3c37b9f3924f # sha256 of retained input
+  ".artifacts/release-train-resume/provider/release-app-provision-dogot1qf/result.json": 7fcf6a5102756a5765f1bfdf35bef1686d8201e1d9c18a708e7c4622c0007e24 # sha256 of retained input
+  ".artifacts/release-train-resume/provider/release-app-provision-dogot1qf/secret-set-intent.json": 16a9c43d0d7b5234f720062cb9c748867da9b7d02ceb693cf2c874de015d3d5f # sha256 of retained input
+  ".artifacts/release-train-resume/provider/release-app-provision-dogot1qf/secret-set-result.json": 8da13087ee332338fac453f39bacfb1669ea37d3861c8ef8d5d6cda4739f524f # sha256 of retained input
+  ".artifacts/release-train-resume/provider/release-app-token-intents/9c7f880d4b4c5fcf39221b5926c9e793c9b07acb.json": a14ed1c732da332d0387e4011bcafeacd721fe96525d72da917ccacdcd99f9b8 # sha256 of retained input
+  ".artifacts/release-train-resume/provision_release_app_token.py": 899b612763a97f63665714a0520eb66a46e38583a3f8bab01afac46605275c37 # sha256 of retained input
+  ".artifacts/release-train-resume/qualification-dt8thuaz/closeout-input-fragment.json": c4ee7463b055347e844f3f73b449f008ac10afe253f59df6d073868f4c7f692f # sha256 of retained input
+  ".artifacts/release-train-resume/qualification-dt8thuaz/result.json": 0ed1e0ffc96ddc2b25487ad7aa2c34c7e29c4f3c60c7b6f4955580ffc2717a70 # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/closeout-input-fragment.json": f30b254a10ded64b8fabc377aa9b65b69f1083d57e9027cffc883bf0c6660a25 # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/result.json": 4251cf54de9e4da421e5076795e9473e4f087c0b7b26766c63d5470143117b73 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/hf05-remaining-80MiB-postpublication-20260913T015628Z.json": 1ab2997a26ceea582bf736229ed328e6a4fbf2fd0a49859a375190d58902e4a9 # sha256 of retained input
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:audits/p23-prune-custody-incident.yml: f17cd6f657b11f944b0bf146a1af27daefc98acb2fffcef4142ce9a11e6db9ed
+  git:9c7f880d4b4c5fcf39221b5926c9e793c9b07acb:governance/findings.yml: e48fbcd19c881addf87d55a7c0a6427a11246879a36aae1e16b5d3f1af049980
+  audits/p23-prune-custody-incident.yml: f17cd6f657b11f944b0bf146a1af27daefc98acb2fffcef4142ce9a11e6db9ed
+  governance/findings.yml: e48fbcd19c881addf87d55a7c0a6427a11246879a36aae1e16b5d3f1af049980
+  ".artifacts/release-train-resume/accounting/independent-prune-incident-accounting.json": 8e1982317386d7d20a0db8328103a6f345d8f4270d0bd8d3caaf7f2730337a36 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/direct-custody-artifact-recovery-search.json": 6b3a3f0704c435a60bcc67ede317692b9ca555d6b85d9d82ecf5c0adc8787962 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/interrupted-prune-custody-reconciliation.json": 0098c66f0112b07c72e890df4e6f072dc8d75ff5eaf1b650b06c503cab9044a9 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/archived-custody-selector-audit.json": 467e13e73ef868304a88adbcf5b0058312ca2ae172d30cadc9d061fc0c31c802 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/artifact-specific-legacy-custody-review.json": b515bc8b3910383f0ddeda971843f7d32c448ae230c6389638f85c8afd64a3a3 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/legacy-prune-journal.jsonl": f573262618b9f734aabc972c47c5638653c5c46f34a9f19444aaae78392b68a5 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/prune-interruption-review.json": bc214a1bee5a8bc4bcffc26bccb89aac44cbb5418ac8d60c4ed23a513a7c9b4b # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/prune-mutation-disabled.json": 08fe35decac75633be4af17a9e68e9d49ed7b41879ac13fcb86df17742ffe9ba # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-full-test-failure-diagnosis.json": 92954b6cd43622e96ee24763150f15d79253835da68442d3e63135ecca0e7e1c # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-catalog-rationale-proposal.json": f68607cc3b1b905d2faf9a2ff5fc05b60cdc3af5cc912c8261fc1ca3d0f27ea2 # sha256 of retained input
+  ".artifacts/release-train-resume/hf05-catalog-rationale-applied.json": 6e5f1eb7cef5791784339e8dacf33f0a7b72de37a5d8a4bbffeb4365fbc8d18f # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/summary-incident-20260912T190435Z.json": 67c4105c58df2076bf06f23d1c597ae7d078ef583f162e50a84d708d210ce6ec # sha256 of retained input
+  ".artifacts/release-train-resume/provider/custody-risk-owner-repository.json": f381f55107b705af8fad5fee08f61ea437d33761cc603d1555a1973577c050af # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/archived-run-linked-artifact-semantic-review.json": 263ba2a8d8c5c61b7acbcfd2b4325e43629f44f6f1cef4f2f5a3422d542820a2 # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/custody-owner-options-assessment-frozen-inputs.json": edd469344028972b187a3bc5e551e927f8d6f047ce7456627bda9f638f605d5d # sha256 of retained input
+  ".artifacts/release-train-resume/accounting/custody-owner-options-input-freeze.json": acfdd395b4a2b5620bfb058b8900603c47e6d75352b429ba41419ecdbdec2476 # sha256 of retained input
+  ".artifacts/release-train-resume/release-publication-capture-6gr6snh7/issue-before-closeout-01.json": 10d629ac548ed90531f8ccad38302c437d92853b10296d8abf2b1ed520ae76f6 # sha256 of retained input

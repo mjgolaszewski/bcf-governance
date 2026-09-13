@@ -10,6 +10,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Added
 
+- Recorded v1.2.0 immutable publication, exact receipt asset custody, durable-input cold reconstruction, scheduled mutant evidence, temporary credential removal, and measured provider costs.
+
 - Added issue #165's opt-in GitHub-native durable evidence-input contract,
   deterministic bounded archives, compact authenticated run manifests, cold
   resolver, provider-derived storage budgets, and reachability/lease retention
