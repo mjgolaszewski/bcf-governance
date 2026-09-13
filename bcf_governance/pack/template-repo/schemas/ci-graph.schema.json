@@ -137,8 +137,21 @@
         "runner": {"oneOf": [{"$ref": "#/$defs/runnerLabel"}, {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/runnerLabel"}}]},
         "trust": {"enum": ["candidate", "trusted"]},
         "hosted": {"type": "boolean"},
+        "routing": {"$ref": "#/$defs/candidateRouting"},
         "python_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+$"},
         "capabilities": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}}
+      }
+    },
+    "candidateRouting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "repository_id", "local_runner", "local_cases", "allowed_refs"],
+      "properties": {
+        "kind": {"const": "private_local_candidate"},
+        "repository_id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+        "local_runner": {"type": "array", "minItems": 2, "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}},
+        "local_cases": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["same_repository_pull_request", "protected_push", "protected_schedule", "protected_dispatch"]}},
+        "allowed_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^refs/heads/[A-Za-z0-9][A-Za-z0-9._/-]*$"}}
       }
     },
     "artifact": {
@@ -215,7 +228,7 @@
             "name": {"type": "string", "minLength": 1},
             "id": {"oneOf": [{"$ref": "#/$defs/identifier"}, {"type": "null"}]},
             "condition": {"oneOf": [{"$ref": "#/$defs/identifier"}, {"type": "null"}]},
-            "action": {"enum": ["checkout", "setup-python", "upload-artifact", "download-artifact", "attest-build-provenance", "create-github-app-token"]},
+            "action": {"enum": ["checkout", "setup-python", "setup-node", "upload-artifact", "download-artifact", "attest-build-provenance", "create-github-app-token"]},
             "with": {"type": "object", "additionalProperties": {"$ref": "#/$defs/scalar"}},
             "environment": {"type": "object", "propertyNames": {"pattern": "^[A-Z_][A-Z0-9_]*$"}, "additionalProperties": {"type": "string"}},
             "produces": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}},

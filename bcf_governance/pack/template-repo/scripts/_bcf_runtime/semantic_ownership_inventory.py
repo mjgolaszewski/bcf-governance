@@ -54,7 +54,7 @@ def _relative(repo_root: Path, path: Path) -> str:
     return path.resolve().relative_to(repo_root.resolve()).as_posix()
 
 
-def tracked_python_files(repo_root: Path) -> list[Path]:
+def tracked_python_files(repo_root: Path, *, allow_empty: bool = False) -> list[Path]:
     """Return every tracked Python source before any registry is available."""
     result = subprocess.run(
         ["git", "ls-files", "-z", "--", "*.py"],
@@ -80,7 +80,7 @@ def tracked_python_files(repo_root: Path) -> list[Path]:
                 f"tracked Python source must be a regular file: {relative.as_posix()}"
             )
         files.append(path)
-    if not files:
+    if not files and not allow_empty:
         raise SemanticInventoryError("tracked Python discovery returned zero files")
     return sorted(files)
 

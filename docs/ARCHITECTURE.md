@@ -121,7 +121,19 @@ than one file. Package exports and aliases resolve through tracked
 Standard v2 blocks declared families; Regulated can require repository-wide
 completeness. Optional
 TypeScript analysis uses the consumer's locked compiler and configuration and
-does not download tools or fall back to Docker.
+does not download tools or fall back to Docker. `semantic_source_discovery.py`
+combines registry and operation-population compiler projects with Python facts
+for scan, lock, diagnostics, and adoption. Compiler declaration identities and
+effects remain in the TypeScript adapter and `semantic_typescript_effects.mjs`;
+Python AST population rules remain in `semantic_operation_python.py`.
+`semantic_adoption_dependencies.py` owns dependency snapshots and concurrency
+checks for disposable transactions. These modules share existing contracts and
+do not expand the managed promotion surface.
+
+`ci_graph_routing.py` owns the closed optional candidate routing policy and its
+pre-allocation expression. Routed resources retain candidate trust and hosted
+restrictions. Routing adds no jobs or control workflows and preserves the
+existing dependency graph and required checks.
 
 Together these contracts can expose omitted declarations, competing owners,
 unclassified effects, stale projections, and unresolved flows. They cannot

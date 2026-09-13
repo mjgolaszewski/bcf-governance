@@ -12,6 +12,7 @@ from typing import Any
 from .ci_graph_contracts import CompiledCIGraph, validate_ci_graph
 from .ci_graph_import import inventory_github_workflows
 from .ci_graph_render import check_ci_graph
+from .ci_graph_routing import routing_audit
 from .ci_graph_timeouts import gate_timeout_contract
 from .ci_graph_yaml import load_yaml_path
 from .evidence_gate_contracts import expected_evidence_kinds
@@ -150,6 +151,7 @@ def _effective_graph(compiled: CompiledCIGraph) -> list[dict[str, Any]]:
                     "timeout_minutes": job["timeout_minutes"],
                     "resource_class": job["resource_class"],
                     "runner": resource["runner"],
+                    **routing_audit(resource),
                     "trust": job["trust"],
                     "permissions": dict(sorted(job["permissions"].items())),
                     "matrix": job.get("strategy", {}).get("matrix", job.get("matrix", {})),

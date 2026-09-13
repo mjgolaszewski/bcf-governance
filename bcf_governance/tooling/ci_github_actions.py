@@ -9,6 +9,7 @@ ACTION_PINS = MappingProxyType(
     {
         "checkout": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
         "setup-python": "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+        "setup-node": "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020",
         "upload-artifact": "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
         "download-artifact": "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
         "attest-build-provenance": "actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8",

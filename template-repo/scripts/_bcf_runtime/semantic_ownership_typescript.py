@@ -14,6 +14,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
+from .semantic_adoption_dependencies import SemanticDependencyError, resolve_dependency_file
+
 
 class TypeScriptDiscoveryError(RuntimeError):
     """Raised when the declared compiler environment cannot produce facts."""
@@ -93,7 +95,7 @@ def contract_from_mapping(payload: object) -> TypeScriptContract:
 def tracked_typescript_files(repo_root: Path) -> list[Path]:
     """Discover the complete tracked TypeScript population before declarations."""
     result = subprocess.run(
-        ["git", "ls-files", "-z", "--", "*.ts", "*.tsx"],
+        ["git", "ls-files", "-z", "--", "*.ts", "*.tsx", "*.mts", "*.cts"],
         cwd=repo_root,
         capture_output=True,
         check=False,
@@ -120,7 +122,7 @@ def tracked_typescript_files(repo_root: Path) -> list[Path]:
 
 
 def _inside(relative: str, roots: tuple[str, ...]) -> bool:
-    return any(relative == root or relative.startswith(root.rstrip("/") + "/") for root in roots)
+    return any(root == "." or relative == root or relative.startswith(root.rstrip("/") + "/") for root in roots)
 
 
 def _json_object(path: Path, *, label: str) -> dict[str, Any]:
@@ -137,8 +139,13 @@ def _json_object(path: Path, *, label: str) -> dict[str, Any]:
 
 def _compiler_version(repo_root: Path, contract: TypeScriptContract) -> str:
     lock = _json_object(repo_root / contract.package_lock, label="TypeScript package lock")
+    modules = (repo_root / contract.package_lock).parent / "node_modules"
+    try:
+        package_path = resolve_dependency_file(repo_root, modules, modules / "typescript/package.json")
+    except SemanticDependencyError as exc:
+        raise TypeScriptDiscoveryError(f"installed TypeScript package is unsafe: {exc}") from exc
     package = _json_object(
-        repo_root / "node_modules/typescript/package.json",
+        package_path,
         label="installed TypeScript package",
     )
     packages = lock.get("packages")
@@ -175,8 +182,9 @@ def discover_typescript_source(
     if tsconfig.is_symlink() or not tsconfig.is_file():
         raise TypeScriptDiscoveryError("declared tsconfig must be a regular file")
     locked_version = _compiler_version(repo_root, contract)
+    tracked = list(discovered_files)
     selected = []
-    for path in discovered_files:
+    for path in tracked:
         resolved = path.resolve()
         try:
             relative = resolved.relative_to(repo_root).as_posix()
@@ -196,6 +204,10 @@ def discover_typescript_source(
                 str(repo_root),
                 "--tsconfig",
                 contract.tsconfig,
+                "--package-lock",
+                contract.package_lock,
+                "--tracked-files-json",
+                json.dumps([path.relative_to(repo_root).as_posix() for path in tracked]),
                 "--files",
                 *(str(path) for path in selected),
             ],
@@ -224,13 +236,30 @@ def discover_typescript_source(
         raise TypeScriptDiscoveryError("TypeScript discovery emitted an invalid inventory")
     if payload.get("compiler_version") != locked_version:
         raise TypeScriptDiscoveryError("TypeScript analyzer did not use the locked compiler")
-    payload["files"] = [
-        {
-            "path": path.relative_to(repo_root).as_posix(),
-            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-        }
-        for path in selected
-    ]
+    analyzed = payload.get("files")
+    if not isinstance(analyzed, list) or not all(isinstance(row, str) for row in analyzed):
+        raise TypeScriptDiscoveryError("TypeScript analyzer omitted its source closure")
+    allowed = {path.relative_to(repo_root).as_posix() for path in tracked}
+    if not set(analyzed) <= allowed:
+        raise TypeScriptDiscoveryError("TypeScript compiler closure contains untracked source")
+    def file_row(relative: str) -> dict[str, str]:
+        path = repo_root / relative
+        parts = Path(relative).parts
+        if "node_modules" in parts:
+            modules = repo_root.joinpath(*parts[:parts.index("node_modules") + 1])
+            try:
+                path = resolve_dependency_file(repo_root, modules, path)
+            except SemanticDependencyError as exc:
+                raise TypeScriptDiscoveryError(f"TypeScript compiler dependency is unsafe: {exc}") from exc
+        if path.is_symlink() or not path.is_file() or not path.resolve().is_relative_to(repo_root):
+            raise TypeScriptDiscoveryError("TypeScript compiler input must be a safe repository file")
+        return {"path": relative, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+    payload["files"] = [file_row(relative) for relative in sorted(set(analyzed))]
+    inputs = set(analyzed) | set(payload.get("compiler_inputs", [])) | {contract.tsconfig, contract.package_lock}
+    package_json = (Path(contract.package_lock).parent / "package.json").as_posix()
+    if (repo_root / package_json).is_file():
+        inputs.add(package_json)
+    payload["typescript_inputs"] = [file_row(relative) for relative in sorted(inputs)]
     payload["toolchain"] = {
         "node_executable_sha256": hashlib.sha256(node_path.read_bytes()).hexdigest(),
         "node_version": payload.get("node_version"),

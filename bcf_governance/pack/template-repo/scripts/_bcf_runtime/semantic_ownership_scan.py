@@ -16,8 +16,6 @@ from typing import Any
 
 from .semantic_ownership_inventory import (
     SemanticInventoryError,
-    discover_python_source,
-    resolve_python_imports,
 )
 from .semantic_ownership_registry import (
     Registry,
@@ -25,11 +23,14 @@ from .semantic_ownership_registry import (
     SemanticOwnershipRegistryError,
     load_registry,
 )
+from .semantic_source_discovery import (
+    discover_source, compiler_contracts,
+    discover_optional_python_source as discover_python_source,
+    resolve_optional_python_imports as resolve_python_imports,
+)
 from .semantic_ownership_cross_language import build_endpoint_traces
 from .semantic_ownership_typescript import (
     TypeScriptDiscoveryError,
-    contract_from_mapping,
-    discover_typescript_source,
     tracked_typescript_files,
 )
 from .semantic_authority_contracts import (
@@ -44,8 +45,8 @@ def _path_in_roots(symbol: str, roots: tuple[str, ...]) -> bool:
     return any(path == root or path.startswith(root + "/") for root in roots)
 
 
-def _authoritative(symbol: str, registry: Registry) -> bool:
-    roots = list(registry.authoritative_python_roots)
+def _authoritative(symbol: str, registry: Registry, project_files: tuple[str, ...] = ()) -> bool:
+    roots = [*registry.authoritative_python_roots, *project_files]
     typescript = registry.raw.get("source_authority", {}).get("typescript_engine")
     if isinstance(typescript, dict) and isinstance(typescript.get("source_roots"), list):
         roots.extend(str(value) for value in typescript["source_roots"])
@@ -110,20 +111,22 @@ def evaluate_discovery(
 ) -> dict[str, Any]:
     """Recompute ownership, normalization, and dynamic-flow claims."""
     inventories = (inventory, typescript_inventory or {})
+    project_files = tuple(str(row["path"]) for row in (typescript_inventory or {}).get("files", []))
     functions = {
         str(value["symbol"]): value
         for source in inventories
         for value in source.get("functions", [])
-        if _authoritative(str(value["symbol"]), registry)
+        if _authoritative(str(value["symbol"]), registry, project_files)
     }
     types = {
-        str(value) for value in inventory["types"] if _authoritative(str(value), registry)
+        str(value) for source in inventories for value in source.get("types", [])
+        if _authoritative(str(value), registry, project_files)
     }
     constructors = [
         value
         for source in inventories
         for value in source.get("constructors", [])
-        if _authoritative(str(value.get("caller", "")), registry)
+        if _authoritative(str(value.get("caller", "")), registry, project_files)
     ]
     violations: list[dict[str, Any]] = []
     coverage: list[dict[str, Any]] = []
@@ -249,7 +252,7 @@ def evaluate_discovery(
         value
         for source in inventories
         for value in source.get("unresolved", [])
-        if _authoritative(str(value.get("symbol", "")), registry)
+        if _authoritative(str(value.get("symbol", "")), registry, project_files)
     ]
     if registry.unresolved_dynamic_policy == "fail_closed":
         for value in unresolved:
@@ -297,33 +300,22 @@ def run_scan(repo_root: Path) -> dict[str, Any]:
     inventory = discover_python_source(repo_root)
     typescript_files = tracked_typescript_files(repo_root)
     registry = load_registry(repo_root)
-    inventory = resolve_python_imports(
-        repo_root, inventory, registry.python_import_roots
+    inventory = resolve_python_imports(repo_root, inventory, registry.python_import_roots)
+    combined, inventory, typescript_inventory, registry = discover_source(
+        repo_root, python_inventory=inventory, typescript_files=typescript_files,
+        registry=registry, resolve_imports=False,
     )
-    typescript_config = registry.raw["source_authority"]["typescript_engine"]
-    typescript_inventory: dict[str, Any] = {
-        "language": "typescript",
-        "files": [],
-        "functions": [],
-        "constructors": [],
-        "normalizations": [],
-        "unresolved": [],
-    }
-    traces: list[dict[str, Any]] = []
-    if isinstance(typescript_config, dict):
-        contract = contract_from_mapping(typescript_config)
-        typescript_inventory = discover_typescript_source(
-            repo_root, contract, typescript_files
-        )
-        traces = build_endpoint_traces(
-            inventory,
-            typescript_inventory,
-            browser_contract_roots=contract.browser_contract_roots,
-        )
+    traces = build_endpoint_traces(
+        inventory, typescript_inventory,
+        browser_contract_roots=tuple(sorted({
+            root for contract in compiler_contracts(repo_root, registry)
+            for root in contract.browser_contract_roots
+        })),
+    )
     evaluation = evaluate_discovery(inventory, registry, typescript_inventory)
     authority = validate_semantic_authority(
         repo_root,
-        inventory,
+        combined,
         registry,
         require_lock=evaluation["verdict"] == "conformant",
     )
@@ -357,6 +349,10 @@ def run_scan(repo_root: Path) -> dict[str, Any]:
             "typescript": {
                 "files": typescript_inventory["files"],
                 "file_count": len(typescript_inventory["files"]),
+                "type_count": len(typescript_inventory["types"]),
+                "function_count": len(typescript_inventory["functions"]),
+                "compiler_inputs_sha256": hashlib.sha256(json.dumps(typescript_inventory["typescript_inputs"], sort_keys=True).encode()).hexdigest(),
+                "projects": [row.get("toolchain") for row in typescript_inventory.get("projects", [])],
                 "compiler_version": typescript_inventory.get("compiler_version"),
                 "constructor_count": len(typescript_inventory["constructors"]),
                 "normalization_count": len(typescript_inventory["normalizations"]),

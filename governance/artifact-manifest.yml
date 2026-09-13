@@ -1,11 +1,4 @@
-document:
-  kind: governance_artifact_manifest
-  name: "BCF Governance Governance Artifact Manifest"
-  id: "bcf-governance-artifact-manifest"
-  version: 1.0.0
-  generated_at_utc: "2026-08-14T00:00:00Z"
-  status: active
-  path: governance/artifact-manifest.yml
+document: {kind: governance_artifact_manifest, name: BCF Governance Governance Artifact Manifest, id: bcf-governance-artifact-manifest, version: 1.0.0, generated_at_utc: '2026-08-14T00:00:00Z', status: active, path: governance/artifact-manifest.yml}
 artifact_roots:
   audits: {path: audits/, status: active, purpose: codebase audit evidence and reports}
   docs: {path: docs/, status: active, purpose: user and operator documentation}
@@ -19,20 +12,23 @@ required_artifacts:
   license: {path: LICENSE, contract: license_text}
   changelog: {path: CHANGELOG.md, contract: keep_a_changelog, pull_request_policy: required_update}
 phase_retention_policy:
-  # Set mode with `bcf cleanup --phase-retention-mode`: git_history or archive.
   mode: git_history
   history_path: plans/phase-history.yml
   active_window: {include_active: true, include_next: true, keep_recent_closed: 0}
-  archive: {root: governance/archive/phase-artifacts/, closed_phase_statuses: [completed], preserve_hotfix_logs: true}
+  archive:
+    root: governance/archive/phase-artifacts/
+    closed_phase_statuses: [completed]
+    preserve_hotfix_logs: true
 nested_governance:
   policy: declared_vendor_only
   declared_vendors:
-    - {path: template-repo/, source_repo: self, refresh_policy: canonical_template_source, ownership: bcf_governance}
-    - {path: bcf_governance/pack/template-repo/, source_repo: self, refresh_policy: generated_exact_copy, ownership: bcf_governance}
-    - {path: tests/fixtures/, source_repo: self, refresh_policy: contract_test_fixture, ownership: bcf_governance_tests}
+  - {path: template-repo/, source_repo: self, refresh_policy: canonical_template_source, ownership: bcf_governance}
+  - {path: bcf_governance/pack/template-repo/, source_repo: self, refresh_policy: generated_exact_copy, ownership: bcf_governance}
+  - {path: tests/fixtures/, source_repo: self, refresh_policy: contract_test_fixture, ownership: bcf_governance_tests}
 vendored_artifacts:
   required_fields: [artifact_path, source_repo, source_commit, artifact_sha256, refresh_policy]
-  artifacts: []
+  artifacts:
+  - {artifact_path: tests/fixtures/typescript-toolchain/typescript-6.0.3.tgz, source_repo: 'git+https://github.com/microsoft/TypeScript.git', source_commit: 050880ce59e30b356b686bd3144efe24f875ebc8, artifact_sha256: 33cd0ee1beaa8c9e9d15a9da836c62ddea4c34a42d7c2d349dbc80d94165d22a, refresh_policy: 'explicit locked test compiler update with npm integrity, real-compiler regression tests and package verification'}
 ephemeral_evidence:
   roots: [artifacts/, .artifacts/]
   durable_reference_required: true

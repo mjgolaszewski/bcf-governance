@@ -13,6 +13,7 @@ from typing import Any
 from .ci_github_actions import action_pin
 from .ci_graph_contracts import CompiledCIGraph, validate_ci_graph
 from .ci_graph_execution import job_required_environment
+from .ci_graph_routing import render_runner
 from .ci_graph_yaml import render_yaml
 from .governance_install.transaction import apply_transaction
 
@@ -528,7 +529,7 @@ def _job(
             result["with"] = executor["inputs"]
         return result
     resource = compiled.graph["resource_classes"][job["resource_class"]]
-    result["runs-on"] = copy.deepcopy(resource["runner"])
+    result["runs-on"] = render_runner(resource)
     result["timeout-minutes"] = job["timeout_minutes"]
     if "strategy" in job:
         strategy = job["strategy"]

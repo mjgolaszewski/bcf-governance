@@ -6,7 +6,7 @@ import argparse
 import json
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import yaml  # type: ignore[import-untyped]
 
@@ -20,10 +20,12 @@ from .semantic_authority_contracts import (
     SemanticAuthorityError,
     atomic_write,
     build_semantic_lock,
-    render_lock_yaml,
     validate_semantic_authority,
 )
-from .semantic_ownership_inventory import discover_python_source, resolve_python_imports
+from .semantic_source_discovery import discover_source, compiler_contracts
+from .semantic_locking import SemanticLockError, validated_lock_bytes
+from .semantic_adoption_dependencies import DependencySnapshot, SemanticDependencyError, snapshot_adoption_dependencies
+from .semantic_ownership_typescript import TypeScriptDiscoveryError
 from .semantic_ownership_registry import load_registry
 
 
@@ -63,14 +65,13 @@ def _contract_bytes(payload: dict[str, Any], key: str) -> bytes:
 
 
 def _lock(repo_root: Path, *, apply: bool) -> dict[str, Any]:
-    inventory = discover_python_source(repo_root)
-    registry = load_registry(repo_root)
-    inventory = resolve_python_imports(repo_root, inventory, registry.python_import_roots)
+    inventory, _, _, registry = discover_source(repo_root)
     evaluation = validate_semantic_authority(repo_root, inventory, registry, require_lock=False)
     expected = build_semantic_lock(repo_root, inventory, evaluation.projection_outputs)
     path = repo_root / LOCK_PATH
+    candidate = validated_lock_bytes(repo_root, expected)
     if apply:
-        atomic_write(path, render_lock_yaml(expected))
+        atomic_write(path, candidate)
     else:
         if not path.is_file() or yaml.safe_load(path.read_text(encoding="utf-8")) != expected:
             raise SemanticAuthorityError(
@@ -95,37 +96,54 @@ def _set_capabilities(repo_root: Path) -> None:
     atomic_write(path, yaml.safe_dump(profile, sort_keys=False, width=120).encode("utf-8"))
 
 
-def _apply_config(repo_root: Path, payload: dict[str, Any]) -> None:
+def _apply_config(
+    repo_root: Path, payload: dict[str, Any], *, source_root: Path | None = None,
+    retain_snapshot: Callable[[DependencySnapshot], None] | None = None,
+) -> None:
     atomic_write(repo_root / FAMILIES_PATH, _contract_bytes(payload, "semantic_families"))
     atomic_write(repo_root / OPERATIONS_PATH, _contract_bytes(payload, "application_operations"))
     atomic_write(repo_root / REPRESENTATIONS_PATH, _contract_bytes(payload, "canonical_representations"))
     _set_capabilities(repo_root)
-    inventory = discover_python_source(repo_root)
     registry = load_registry(repo_root)
-    inventory = resolve_python_imports(repo_root, inventory, registry.python_import_roots)
+    snapshot = snapshot_adoption_dependencies(
+        source_root, repo_root, compiler_contracts(repo_root, registry),
+    ) if source_root is not None else None
+    if snapshot is not None and retain_snapshot is not None:
+        retain_snapshot(snapshot)
+    inventory, _, _, registry = discover_source(repo_root)
     validate_adoption_repository(repo_root, inventory, registry)
-    _lock(repo_root, apply=True)
+    evaluation = validate_semantic_authority(repo_root, inventory, registry, require_lock=False)
+    expected = build_semantic_lock(repo_root, inventory, evaluation.projection_outputs)
+    atomic_write(repo_root / LOCK_PATH, validated_lock_bytes(repo_root, expected))
     validate_semantic_authority(repo_root, inventory, registry)
+    if snapshot is not None:
+        snapshot.validate_unchanged()
 
 
 def _adopt(repo_root: Path, config: Path, *, apply: bool) -> None:
     payload = _load_config(config)
     if apply:
+        snapshots: list[DependencySnapshot] = []
+        def validate_promotion() -> None:
+            if len(snapshots) != 1:
+                raise SemanticDependencyError("semantic adoption requires one dependency snapshot before promotion")
+            snapshots[0].validate_unchanged()
         apply_transaction(
             repo_root,
             managed_paths=MANAGED_PATHS,
-            mutate_shadow=lambda shadow: _apply_config(shadow, payload),
+            mutate_shadow=lambda shadow: _apply_config(shadow, payload, source_root=repo_root, retain_snapshot=snapshots.append),
             preserve_git_history=True,
+            validate_promotion=validate_promotion,
         )
         return
     with tempfile.TemporaryDirectory(prefix="bcf-semantic-adopt-") as temporary:
         shadow = Path(temporary) / "repo"
         copy_repository_shadow(repo_root, shadow, preserve_git_history=True)
-        _apply_config(shadow, payload)
+        _apply_config(shadow, payload, source_root=repo_root)
 
 
 def _scaffold(repo_root: Path, output: Path) -> None:
-    inventory = discover_python_source(repo_root)
+    inventory, _, _, _ = discover_source(repo_root)
     existing: dict[str, Any] = {}
     pairs = (
         ("semantic_families", FAMILIES_PATH),
@@ -192,7 +210,7 @@ def main(argv: list[str] | None = None) -> None:
                 "status": "lock_applied" if args.apply else "lock_check_passed",
                 "projection_outputs": len(lock["projection_outputs"]),
             }
-    except SemanticAuthorityError as exc:
+    except (SemanticAuthorityError, TypeScriptDiscoveryError, SemanticLockError, SemanticDependencyError) as exc:
         print(f"semantic-ownership-{args.command}-failed: {exc}")
         raise SystemExit(1) from exc
     print(json.dumps(result, sort_keys=True))

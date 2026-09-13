@@ -278,6 +278,22 @@ def run_release_runtime_verification(
             )
         )
         sdist_env[SDIST_PORTABLE_TEST_ENV] = "1"
+        commands.append(
+            _run(
+                "sdist-test-toolchain",
+                [str(sdist_python), str(source / ".github/scripts/bootstrap_test_toolchain.py"),
+                 "--repo-root", str(source)],
+                cwd=source, env=sdist_env, output_dir=output_dir,
+            )
+        )
+        commands.append(
+            _run(
+                "wheel-installed-consumer",
+                [str(wheel_python), str(source / ".github/scripts/verify_installed_consumer.py"),
+                 "--source-root", str(source)],
+                cwd=root, env=wheel_env, output_dir=output_dir,
+            )
+        )
         junit = output_dir / "sdist-tests.xml"
         commands.append(
             _run(

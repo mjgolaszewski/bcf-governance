@@ -21,6 +21,10 @@ observation, or self-evaluation deterministic. Relevant failure modes include:
 - material semantic families omitted from the declared governance scope;
 - public operations whose mutation or authority effects are unclassified;
 - method-call identities that omit their lexical owner and hide downstream effects;
+- installed wrappers that depend on an unavailable source package;
+- language discovery that omits compiler-resolved aliases or imported effects;
+- empty locks whose serialized value violates their schema;
+- runner selection that mistakes caller declarations for native provider context;
 - synchronized semantic copies with no reproducible derivation or bounded exception;
 - tests that reproduce the same incorrect assumption as the implementation;
 - gates that exist but are insensitive to the defect they claim to detect;

@@ -169,7 +169,7 @@ Run the release audit generator after editorial behavior is final:
 
 ```bash
 python3 .github/scripts/build_editorial_audit.py \
-  --repo-root . --audit audits/v1.2.0-editorial-review.yml \
+  --repo-root . --audit audits/v1.3.0-editorial-review.yml \
   --base-sha "$(git rev-parse origin/main)" --apply
 python3 .github/scripts/check_editorial_contract.py
 ```
@@ -223,6 +223,7 @@ first step, before checkout or work.
 Run the source and template checks:
 
 ```bash
+python3 .github/scripts/bootstrap_test_toolchain.py --repo-root .
 pytest tests
 python3 scripts/validate_governance_yaml.py \
   --repo-root template-repo \
@@ -230,6 +231,16 @@ python3 scripts/validate_governance_yaml.py \
   --allow-release-gate-placeholders
 python3 scripts/check_governance_exposure.py --repo-root template-repo
 ```
+
+The test toolchain requires Node 22.23.2 and TypeScript 6.0.3. Generated candidate
+and release runtime jobs provision the exact Node version. The offline bootstrap
+verifies the npm lock integrity and extracts the vendored compiler archive;
+`--check` verifies the installed fixture without modifying it. It runs no npm
+commands or installation scripts. The archive belongs to the source test fixture
+and sdist; consumers supply their own declared compiler dependencies. Required
+compiler tests fail when the toolchain is missing. Wheel verification installs
+the wheel's pack into a separate consumer and runs its semantic and evidence
+commands with a dependency-only Python that cannot import `bcf_governance`.
 
 Mutation profiles first run an unmodified baseline. A mutant dies only when
 its explicit killer nodes pass on the baseline and fail behaviorally after the

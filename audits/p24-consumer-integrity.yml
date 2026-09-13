@@ -1,0 +1,101 @@
+document:
+  kind: defect_remediation_audit
+  id: bcf-governance-p24-consumer-integrity
+  version: 1.0.0
+  status: in_progress
+  path: audits/p24-consumer-integrity.yml
+phase: P24
+target_release: 1.3.0
+base_commit: 1cb4b32535ff2b1c09c2a94011fa18cb8fec8f35
+issues:
+- number: 184
+  title: 1.2.0 installed evidence-storage wrapper imports unavailable package instead of vendored runtime
+  url: https://github.com/mjgolaszewski/bcf-governance/issues/184
+  state: OPEN
+- number: 185
+  title: Support non-matrix private-local/public-hosted candidate routing with durable input producers
+  url: https://github.com/mjgolaszewski/bcf-governance/issues/185
+  state: OPEN
+- number: 186
+  title: 1.2.0 blocking semantic authority drops real TypeScript inventory and parses TS operations as Python
+  url: https://github.com/mjgolaszewski/bcf-governance/issues/186
+  state: OPEN
+- number: 187
+  title: 1.2.0 semantic lock --apply writes null for legal empty projection_outputs and reports success
+  url: https://github.com/mjgolaszewski/bcf-governance/issues/187
+  state: OPEN
+provider_inventory:
+  path: .artifacts/p24-release/issue-provider-inventory.json
+  sha256: ff861ac0c32ec891708ee4e70df606964dde76f333c672051d4307b0b36d530d
+  observed_at_utc: '2026-09-13T15:47:03.638800+00:00'
+  repository_id: '1207503211'
+compatibility:
+- All 21 existing gates, receipt and profile contracts, and semantic-lock schema 1.0 remain unchanged.
+- CI graph schema 1.0 adds an optional closed candidate routing policy; existing consumers retain literal hosted selection.
+- Private same-repository PR routing requires explicit opt-in and native head/base repository identity.
+- Python-only semantic lock material retains its prior digest behavior; TypeScript-enabled consumers bind compiler inputs and rebuild stale locks.
+- Adoption promotes only existing managed governance files and executes no dependency installation scripts or network operations.
+required_gates:
+- architecture-context-membership
+- architecture-cqrs-side
+- architecture-duplication
+- architecture-import-boundaries
+- architecture-layer-membership
+- architecture-module-size
+- architecture-router-thinness
+- architecture-test
+- contract-test
+- governance-exposure-scan
+- governance-validate
+- lint
+- runtime-smoke
+- security-dependency-audit
+- security-review
+- security-sbom
+- security-secret-scan
+- security-vulnerability-scan
+- semantic-ownership
+- test
+- typecheck
+custody_continuity:
+  prior_release: audits/v1.2.0-release-custody.yml
+  historical_risk: P23-CUSTODY-01
+  phase_history: plans/phase-history.yml
+  retention_mode: git_history
+  immutable_prior_evidence_modified: false
+  actions_pruning_authorized: false
+excluded_consumers:
+- Racecar
+- Chrysalis
+local_checkpoints:
+- record: .artifacts/p24-release/routing-reviewed-result.json
+  sha256: fcf8b3f74f55e2cd3d634ec58a96d21b38fee534ce48dc6f1a26402c9dab62ed
+  exit_code: 0
+  scope: local development checkpoint; complete exact candidate qualification remains pending
+- record: .artifacts/p24-release/toolchain-reviewed-result.json
+  sha256: b4818a0e8cc97d6b3c4b0c3a96cbd4b664280253956b8e571b5d1eac1a161aa4
+  exit_code: 0
+  scope: local development checkpoint; complete exact candidate qualification remains pending
+- record: .artifacts/p24-release/release-toolchain-final-result.json
+  sha256: 12967290a58a537eb9b801333dbebd55e10d77163dd345fd61e12813dfff7f09
+  exit_code: 0
+  scope: local development checkpoint; complete exact candidate qualification remains pending
+- record: .artifacts/p24-release/typescript-final-focused-result.json
+  sha256: 1427f0d3f5141e35b873e19cf84269836156af46ef67e74d5a7c5a32085e1d19
+  exit_code: 0
+  scope: local development checkpoint; complete exact candidate qualification remains pending
+- record: .artifacts/p24-release/governance-synchronized.json
+  sha256: 843c0f3b6357b30c927dc6e81ac82a9039c9ca8a0b7a2c3b711ed8433c9c7550
+  exit_code: 0
+  scope: local development checkpoint; complete exact candidate qualification remains pending
+- record: .artifacts/p24-release/release-integration-synchronized.json
+  sha256: dd62ce7e814309f3f9365533a77c83d3fb3e12e3fea622d2df44ac029d30c706
+  exit_code: 0
+  scope: local development checkpoint; complete exact candidate qualification remains pending
+pending_acceptance:
+- Final complete source and package suites with fresh and upgrade installed consumers and causal controls.
+- Canonical local PR validation on the committed candidate with mechanically pinned workflow definitions.
+- New explicit hosted/storage budget before the single implementation push.
+- Protected landing, controller installation and confirmation, exact-main and scheduled/durable qualification.
+- Independent release verification, immutable App-token publication, token revocation and temporary secret removal.
+- Evidence closeout, final certification, measured accounting and issue closure.

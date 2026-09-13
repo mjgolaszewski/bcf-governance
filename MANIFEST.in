@@ -3,6 +3,7 @@ recursive-include docs *.md
 recursive-include docs/assets *
 recursive-include template-repo *
 recursive-include tests *
+prune tests/fixtures/typescript-toolchain/node_modules
 recursive-include examples *
 recursive-include scripts *.py
 recursive-include .github *.py *.yml *.yaml

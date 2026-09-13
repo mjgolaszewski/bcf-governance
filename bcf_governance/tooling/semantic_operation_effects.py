@@ -36,6 +36,8 @@ def _resolve_function(
     module, separator, function = symbol.partition("::")
     if not separator:
         return None
+    if not module.endswith(".py"):
+        return None
     module_name = module.removesuffix(".py").rsplit("/", 1)[-1]
     candidates = [
         candidate
@@ -57,6 +59,7 @@ def validate_operation_effects(
     operation: dict[str, Any],
     entrypoint_symbol: str,
     inventory: dict[str, Any],
+    *, source_modules: tuple[str, ...] = (),
 ) -> tuple[int, int]:
     """Trace one entrypoint and require all effects to cross declared ports."""
     functions = {
@@ -83,7 +86,7 @@ def validate_operation_effects(
     reached: set[tuple[str, str]] = set()
     writes: set[str] = set()
     authority: set[str] = set()
-    pending = [entrypoint]
+    pending = [entrypoint, *(path + "::<module>" for path in source_modules if path + "::<module>" in functions)]
     visited: set[str] = set()
     while pending:
         symbol = pending.pop()
@@ -91,6 +94,18 @@ def validate_operation_effects(
             continue
         visited.add(symbol)
         function = functions[symbol]
+        if function.get("language") == "typescript":
+            module = symbol.split("::", 1)[0] + "::<module>"
+            if module in functions and module != symbol:
+                pending.append(module)
+            for effect in function.get("effects", []):
+                target = f"{symbol}:{effect.get('line')}:{effect.get('target')}"
+                if effect.get("kind") == "write":
+                    writes.add(target)
+                elif effect.get("kind") == "authority":
+                    authority.add(target)
+                else:
+                    raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect at {symbol}")
         if function.get("unresolved"):
             raise SemanticOperationEffectError(
                 f"operation {operation['id']} contains an unresolved dynamic call path at {symbol}"
@@ -121,6 +136,14 @@ def validate_operation_effects(
                 raise SemanticOperationEffectError(
                     f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
                 )
+            if call.get("language") == "typescript":
+                if call.get("effect") == "write":
+                    writes.add(raw)
+                if call.get("authority_effect") is True:
+                    authority.add(raw)
+                if callee is not None:
+                    pending.append(callee)
+                continue
             name = str(call.get("call_name", ""))
             receiver = raw.rsplit("::", 1)[-1].rsplit(".replace", 1)[0]
             file_replace = name == "replace" and (

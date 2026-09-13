@@ -33,7 +33,7 @@ def test_source_discovery_precedes_registry_access(
 ) -> None:
     events: list[str] = []
     source = {
-        "files": [],
+        "files": [{"path": "fixture.py", "sha256": "0" * 64}],
         "types": [],
         "functions": [],
         "constructors": [],

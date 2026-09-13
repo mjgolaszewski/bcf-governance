@@ -15,6 +15,7 @@ from .semantic_ownership_typescript import (
     TypeScriptContract,
     TypeScriptDiscoveryError,
     discover_typescript_source,
+    tracked_typescript_files,
 )
 
 
@@ -39,7 +40,7 @@ def _safe_file(repo_root: Path, value: object, *, context: str) -> Path:
 
 
 def discover_typescript_population(
-    repo_root: Path, population: dict[str, Any]
+    repo_root: Path, population: dict[str, Any], *, inventory: dict[str, Any] | None = None
 ) -> dict[str, str]:
     """Use the declared local compiler and exact lock to enumerate exports."""
     source = _safe_file(
@@ -68,22 +69,26 @@ def discover_typescript_population(
         raise TypeScriptOperationPopulationError(
             f"population {population['id']} requires an exact locked TypeScript package"
         )
-    try:
-        inventory = discover_typescript_source(
-            repo_root,
-            TypeScriptContract(
-                node_executable=str(population["node_executable"]),
-                tsconfig=str(population["tsconfig"]),
-                package_lock=str(population["package_lock"]),
-                source_roots=(Path(str(population["source"])).as_posix(),),
-                browser_contract_roots=(),
-            ),
-            [source],
-        )
-    except TypeScriptDiscoveryError as exc:
-        raise TypeScriptOperationPopulationError(
-            f"population {population['id']} TypeScript compiler inventory failed: {exc}"
-        ) from exc
+    if inventory is None:
+        def source_files():
+            yield from tracked_typescript_files(repo_root)
+
+        try:
+            inventory = discover_typescript_source(
+                repo_root,
+                TypeScriptContract(
+                    node_executable=str(population["node_executable"]),
+                    tsconfig=str(population["tsconfig"]),
+                    package_lock=str(population["package_lock"]),
+                    source_roots=(Path(str(population["source"])).as_posix(),),
+                    browser_contract_roots=(),
+                ),
+                source_files(),
+            )
+        except TypeScriptDiscoveryError as exc:
+            raise TypeScriptOperationPopulationError(
+                f"population {population['id']} TypeScript compiler inventory failed: {exc}"
+            ) from exc
     exports = inventory.get("public_exports")
     if not isinstance(exports, list):
         raise TypeScriptOperationPopulationError(
@@ -92,6 +97,10 @@ def discover_typescript_population(
     result: dict[str, str] = {}
     for row in exports:
         if not isinstance(row, dict) or not isinstance(row.get("name"), str) or not isinstance(row.get("symbol"), str):
+            raise TypeScriptOperationPopulationError(f"population {population['id']} contains a malformed public export")
+        if row.get("callable", True) is not True:
+            continue
+        if row.get("source", population["source"]) != population["source"]:
             continue
         name = str(row["name"])
         if population["public_only"] and name.startswith("_"):
@@ -100,5 +109,5 @@ def discover_typescript_population(
             raise TypeScriptOperationPopulationError(
                 f"population {population['id']} duplicates {name}"
             )
-        result[name] = str(row["symbol"])
+        result[name] = str(row.get("declaration") or row["symbol"])
     return result

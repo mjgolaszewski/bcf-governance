@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
+from .ci_graph_routing import runner_remediation
 
 
 _SECRET = re.compile(r"\$\{\{\s*secrets\.([A-Z_][A-Z0-9_]*)\s*\}\}")
@@ -46,7 +47,7 @@ def diagnose_ci_graph(repo_root: Path) -> dict[str, object]:
                 "runner",
                 resource_id,
                 "declared",
-                f"confirm provider runner mapping {resource['runner']!r} before dispatch",
+                runner_remediation(resource),
             )
         )
         for capability in sorted(resource["capabilities"]):
