@@ -10,12 +10,9 @@ phase:
   id: P24
   build_block: consumer-runtime-typescript-authority-and-candidate-routing-1.3.0
 summary:
-  outcome: controller_installation_confirmed_confirmation_landing_pending
+  outcome: immutable_publication_completed_final_acceptance_pending
   highlights:
-  - All four coordinated fixes passed full local qualification and protected PR checks on the first implementation push.
-  - The owner approved the complete delivery budget and financial contingency for three total runs; the canonical audit owns the exact grant.
-  - The qualified target merged through protected checks and both trusted runners passed bootstrap and probe; canonical confirmation is projected locally.
-  - Issues 184 through 187 remain open until acceptance publication final certification and closeout are verified.
+  - v1.3.0 immutable release 388091017 binds exact commit 4f86167238822d5731260b55cb53600f0428f828; receipt assets, signer/source-scoped attestations, all 21 gates, four scheduled profiles and durable cold reconstruction passed. Temporary secrets are absent and the App token was revoked. audits/v1.3.0-release-custody.yml owns actual custody and measured-as-of costs. P24 is authored completed; protected closeout, final exact-main/accounting and all four issue closures remain pending.
 workitems:
 - id: P24-P0-01
   status: DONE
@@ -100,6 +97,7 @@ execution_evidence:
   - The sixth workitem delivers the reviewed execution procedure; controller installation qualification publication and closeout remain pending audit milestones, and release_14 remains active.
   - audits/p24-consumer-integrity.yml binds all 21 local gates and 236 controls; complete collection package and installed-runtime proofs; protected PR 188; and the authenticated pending controller target.
   - The P24 audit binds the target branch full qualification and protected merge plus both authenticated controller proofs. This confirmation branch and all release acceptance remain pending.
+  - v1.3.0 immutable release 388091017 binds exact commit 4f86167238822d5731260b55cb53600f0428f828; receipt assets, signer/source-scoped attestations, all 21 gates, four scheduled profiles and durable cold reconstruction passed. Temporary secrets are absent and the App token was revoked. audits/v1.3.0-release-custody.yml owns actual custody and measured-as-of costs. P24 is authored completed; protected closeout, final exact-main/accounting and all four issue closures remain pending.
 closeout_requirements:
   claims:
     workitems_closed:
@@ -134,7 +132,4 @@ known_constraints:
 - Racecar and Chrysalis are outside this implementation.
 - All local, hosted and trusted execution consumes resources; measure actual costs without claiming unmeasured savings.
 next_work:
-- Full local qualification and protected landing of this mechanically confirmed controller definition.
-- Successful exact-main certification followed by both scheduled workflows all four mutant profiles and durable-storage qualification.
-- Independent release verification and immutable App-token publication with immediate secret removal and revocation.
-- Evidence closeout then final-main certification measured accounting and authenticated closure of all four issues.
+- Require the one protected closeout PR, full final exact-main certification and final measured provider accounting before authenticated closure of all four issues.

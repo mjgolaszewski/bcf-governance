@@ -17,6 +17,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Added
 
+- Recorded v1.3.0 immutable publication, four-issue acceptance custody, exact artifacts and attestations, durable cold reconstruction, scheduled evidence, App credential removal/revocation and measured provider costs.
+
 - Opt-in non-matrix private candidate routing with hosted fallback, explicit event qualification and dedicated candidate labels (#185).
 - Real locked-compiler consumer qualification and offline package-verification fixtures across the combined 1.3.0 paths.
 
