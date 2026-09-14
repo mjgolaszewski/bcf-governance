@@ -15,6 +15,7 @@ import yaml
 from bcf_governance.tooling.release_runtime_verification import (
     is_release_sdist_test_context,
 )
+from bcf_governance.tooling.evidence_planning import plan_verification
 from bcf_governance.tooling.test_manifests import _selector_map_from_nodes
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -978,6 +979,15 @@ def test_governance_validation_controls_preserve_their_declared_failure_causes(
         ["governance-validate"],
         expected_producers=["local"],
         producer_identity=producer,
+        verification_plan=plan_verification(
+            REPO_ROOT,
+            preflight_claims=[
+                "governance-contracts-valid",
+                "governance-exposure-clean",
+                "source-syntax-format",
+                "semantic-ownership-valid",
+            ],
+        ),
     )
 
     receipt_path = capture_gate(

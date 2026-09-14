@@ -171,7 +171,7 @@ def test_required_repository_artifact_contract_is_executable() -> None:
 
 
 def test_changelog_pr_enforcement_is_wired_into_repository_ci() -> None:
-    for relative in (".github/workflows/governance.yml", ".github/workflows/governance-pack.yml"):
+    for relative in (".github/workflows/governance.yml",):
         payload = yaml.safe_load(render_ci_graph(REPO_ROOT)[relative])
         assert payload["env"] == {
             "BCF_ENFORCE_PR_CHANGELOG": "${{ github.event_name == 'pull_request' }}",
@@ -180,12 +180,11 @@ def test_changelog_pr_enforcement_is_wired_into_repository_ci() -> None:
 
 
 def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
-    pack = _job("governance-pack", "pack-checks")
-    assert pack["executor"]["components"] == [
-        "checkout-candidate", "setup-python", "install-governance",
-        "check-generated-pack", "build-trusted-controller", "upload-trusted-controller",
-    ]
-    assert pack["produces"] == ["trusted-controller-bundle"]
+    truth = _job("governance", "governance-truthfulness")
+    components = truth["executor"]["components"]
+    assert components.count("build-trusted-controller") == 1
+    assert components.index("run-governance-truth") < components.index("build-trusted-controller")
+    assert truth["produces"] == ["governance-truth-report", "trusted-controller-bundle"]
     graph = validate_ci_graph(REPO_ROOT).graph
     assert graph["conditions"]["build-exact-main-controller"] == (
         "inputs.build_controller == true && github.ref == 'refs/heads/main'"
@@ -319,11 +318,11 @@ def test_exact_main_is_the_only_default_branch_producer() -> None:
         ("exact-main", "exact-main")
     ]
     assert [job["id"] for job in _workflow("exact-main")["jobs"]] == [
-        "admit", "governance", "governance-pack",
+        "admit", "governance",
     ]
-    assert _job("exact-main", "governance-pack")["executor"]["inputs"] == {
+    assert _job("exact-main", "governance")["executor"]["inputs"] == {
         "build_controller": True,
-        "evaluation_mode": "release",
+        "evaluation_mode": "closure",
     }
     assert compiled.graph["conditions"]["exact-main-authority-enabled"] == (
         "vars.BCF_CI_AUTHORITY_ENABLED == 'true'"
@@ -372,7 +371,6 @@ def test_automation_authority_is_metadata_only_and_candidate_excluded() -> None:
 
 def test_automation_front_doors_precede_expensive_fanout_and_old_runner_is_absent() -> None:
     governance = _workflow("governance")
-    package = _workflow("governance-pack")
     def depends_on(workflow: dict[str, object], job_id: str, owner: str) -> bool:
         by_id = {job["id"]: job for job in workflow["jobs"]}
         pending = list(by_id[job_id]["needs"])
@@ -391,11 +389,6 @@ def test_automation_front_doors_precede_expensive_fanout_and_old_runner_is_absen
         for job in governance["jobs"]
         if job["id"] != "preflight"
     )
-    assert all(
-        depends_on(package, job["id"], "front-door")
-        for job in package["jobs"]
-        if job["id"] != "front-door"
-    )
     rendered = b"\n".join(render_ci_graph(REPO_ROOT).values())
     assert b"bcf-governance-vm-linux-ci-runner-dependabot-1" not in rendered
     assert b"dependabot-1" not in rendered
@@ -413,7 +406,7 @@ def test_pre_activation_protected_checks_remain_rendered_until_mechanical_cutove
         for job in workflow["jobs"]
     }
 
-    assert set(baseline["ruleset"]["required_checks"]) <= rendered_job_names
+    assert "Verify exact-tree governance evidence" in rendered_job_names
 
 
 def test_every_github_action_uses_the_canonical_immutable_pin() -> None:

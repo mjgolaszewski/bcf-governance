@@ -1,22 +1,21 @@
 document: {kind: ci_graph, name: BCF Governance CI Graph, id: bcf-governance-ci-graph, version: 1.0.0, status: active, path: governance/ci-graph.yml}
 schema_version: '1.0'
 provider: github
-profile_contract_version: '2.0'
+profile_contract_version: '3.0'
 default_branch: main
 trusted_controller: {kind: self_governance_policy, policy_path: governance/self-governance-policy.yml}
-evidence_storage: {path: governance/evidence-storage.yml, sha256: a0268276625f253fd3099294989a8ec2cd84ced260858224f9f619f376eddfbc}
+evidence_storage: {path: governance/evidence-storage.yml, sha256: e7616b0c43cc0106779b5bab99ec9c1e5e8d30cbc51bff57a3698cb82454fdaa}
 value_sources:
-  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 004599a0bbad4119d90d9f2fc8a593af52c1416476f9ce189c56ae3cd0f6183f}
-  release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: e7ab87cf914120135cd648c4dfcc08cea12fd9d0adabcc8f320c0b6fde30535c}
-  protection-contract: {kind: yaml, path: governance/github-protection.yml, sha256: 9bab9055ec8b52113a593fbc08c8931ea494a53f9af9e19b3eb3f3789c1efaa7}
+  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 3f6aba64c4d906802b2d443f35e9de7b3bad163c03f22d3a3452e55be8bbb490}
+  release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: 9c34c81b7f565a90cb30250e52be6cebc1399314254acc0b6101f95b023e7995}
+  protection-contract: {kind: yaml, path: governance/github-protection.yml, sha256: 5f8c6fcd0d569e17050f694571474faa0f7538d12a5d11cc51891cf01c59a53a}
   automation-contract: {kind: yaml, path: governance/automation-producers.yml, sha256: 74c02575f7599f9e4a82cacc60f6d60692ee81dd1f7bec20441e6b375cf77cce}
 extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]
 extensions:
-- {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: e735825595374b594c7f40375a68208f3e8f031329ab9cdce6783db4a20e3d4a}
+- {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: 13769e1644221b0364034cc9db6a352d14b85a9f4e35d0e111cfdabd22ba4c0c}
 - {id: bcf-evidence-storage, path: governance/ci-extensions/bcf-evidence-storage.yml, sha256: 41e40dad457efc53292249a211575505e9d6021d73d3fee2e52c4e9eede68eea}
-- {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 8235980296c1e98e4b9305c5442ed494553f6a932954b803218778683b083489}
+- {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 72b04805b3ea4a85b5a37bd769aa627a9079a173210ea63c9a022aaa07896921}
 - {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: 2534fe8f4c6bd6fe93ad10e1348265961ece6542d3d71a6e566f8ffba4b66397}
-- {id: bcf-package, path: governance/ci-extensions/bcf-package.yml, sha256: 9b207031c08aa424d3b7e4b3e7203a6888d0289d349d425fdd4015e24c7f071e}
 resource_classes:
   hosted-python:
     runner: ubuntu-24.04
@@ -55,7 +54,8 @@ artifacts:
   exact-main-certification: {path: .artifacts/bcf/exact-main-certification, kind: control, scope: run-attempt, retention_days: 30}
   nightly-mutant-results: {path: .artifacts/scheduled-mutants, kind: control, scope: run-attempt, retention_days: 90}
   weekly-mutant-results: {path: .artifacts/scheduled-mutants, kind: control, scope: run-attempt, retention_days: 90}
-conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main', always-step: always()}
+  trusted-controller-bundle: {path: .artifacts/trusted-control, kind: control, scope: run-attempt, retention_days: 30}
+conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main', build-exact-main-controller: inputs.build_controller == true && github.ref == 'refs/heads/main', always-step: always()}
 commands:
   install-governance-dependencies:
     argv: ['{python}', -m, pip, install, -r, requirements-governance.txt]
@@ -107,6 +107,10 @@ commands:
     environment: {}
   bootstrap-test-toolchain:
     argv: ['{python}', .github/scripts/bootstrap_test_toolchain.py, --repo-root, .]
+    cwd: .
+    environment: {}
+  build-trusted-controller:
+    argv: ['{python}', .github/scripts/build_trusted_controller.py, --output, .artifacts/trusted-control, --run-id, '${{ github.run_id }}', --run-attempt, '${{ github.run_attempt }}']
     cwd: .
     environment: {}
 step_components:
@@ -291,6 +295,23 @@ step_components:
     environment: {}
     produces: []
     consumes: []
+  build-trusted-controller:
+    kind: command
+    name: Build the exact-main trusted controller bundle
+    condition: build-exact-main-controller
+    command: build-trusted-controller
+    environment: {}
+    produces: [trusted-controller-bundle]
+    consumes: []
+  upload-trusted-controller:
+    kind: action
+    name: Upload the exact-main trusted controller bundle
+    condition: build-exact-main-controller
+    action: upload-artifact
+    with: {name: 'bcf-trusted-control-${{ github.sha }}-${{ github.run_attempt }}', path: .artifacts/trusted-control, if-no-files-found: error, retention-days: 30}
+    environment: {}
+    produces: [trusted-controller-bundle]
+    consumes: []
 workflows:
 - id: governance
   path: .github/workflows/governance.yml
@@ -301,6 +322,7 @@ workflows:
   - type: workflow_call
     inputs:
       evaluation_mode: {description: Exact truth evaluation mode selected by the trusted caller, required: false, default: pr, type: string}
+      build_controller: {description: Build the trusted controller artifact for exact-main custody, required: false, default: false, type: boolean}
   permissions: {contents: read}
   jobs:
   - id: preflight
@@ -345,7 +367,7 @@ workflows:
       kind: gate_shard
       shard_key: shard
       shard_count: 4
-      gates: [governance-validate, governance-exposure-scan, architecture-test, architecture-module-size, architecture-layer-membership, architecture-context-membership, architecture-import-boundaries, architecture-cqrs-side, architecture-router-thinness, architecture-duplication, lint, typecheck, test, contract-test, security-secret-scan, security-dependency-audit, security-sbom, security-vulnerability-scan, security-review, runtime-smoke, semantic-ownership]
+      gates: [governance-validate, governance-exposure-scan, architecture-test, architecture-module-size, architecture-layer-membership, architecture-context-membership, architecture-import-boundaries, architecture-cqrs-side, architecture-router-thinness, architecture-duplication, lint, typecheck, test, contract-test, security-secret-scan, security-dependency-audit, security-sbom, security-vulnerability-scan, runtime-smoke, semantic-ownership]
       components: [checkout-candidate, setup-python, install-governance, setup-test-node, bootstrap-test-toolchain, download-governance-session, restore-governance-session-modes, capture-governance-shard, upload-governance-receipts]
     produces: [governance-receipts]
     consumes: [governance-session]
@@ -364,8 +386,8 @@ workflows:
     executor:
       kind: terminal_truth
       command: governance-truth
-      components: [checkout-candidate, setup-python, install-governance, download-governance-receipts, restore-evidence-modes, run-governance-truth, preserve-terminal-observation, upload-governance-truth]
-    produces: [governance-truth-report]
+      components: [checkout-candidate, setup-python, install-governance, download-governance-receipts, restore-evidence-modes, run-governance-truth, build-trusted-controller, upload-trusted-controller, preserve-terminal-observation, upload-governance-truth]
+    produces: [governance-truth-report, trusted-controller-bundle]
     consumes: [governance-receipts]
     required: true
 - id: exact-main
@@ -407,7 +429,7 @@ workflows:
     executor:
       kind: reusable_workflow
       path: .github/workflows/governance.yml
-      inputs: {evaluation_mode: closure}
+      inputs: {evaluation_mode: closure, build_controller: true}
     produces: []
     consumes: []
     required: true

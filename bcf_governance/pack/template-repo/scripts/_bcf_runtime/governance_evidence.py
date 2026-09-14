@@ -34,6 +34,12 @@ from .evidence_gate_contracts import (
     expected_evidence_kinds,
     expected_invocations,
 )
+from .evidence_claims import (
+    capture_subject_preflight,
+    claim_capture,
+    claim_receipt_fields,
+    legacy_gates_requiring_qualification,
+)
 from .evidence_sessions import (
     allocate_session,
     bind_session,
@@ -495,49 +501,6 @@ def _required_output_observations(
     return observations, artifacts
 
 
-def _capture_preflight(repo_root: Path, output_dir: Path) -> dict[str, Any]:
-    status = _git(
-        repo_root,
-        "status",
-        "--porcelain=v1",
-        "--untracked-files=all",
-        "--ignored=no",
-    )
-    if status:
-        raise EvidenceError(
-            "exact-tree evidence requires no staged, unstaged, or non-ignored untracked files:\n"
-            + status
-        )
-    root = repo_root.resolve()
-    resolved_output = output_dir.resolve()
-    if resolved_output == root:
-        raise EvidenceError("evidence output cannot be the governed repository root")
-    if resolved_output.is_relative_to(root):
-        relative = resolved_output.relative_to(root).as_posix()
-        ignored = subprocess.run(
-            ["git", "check-ignore", "--no-index", "--quiet", relative],
-            cwd=repo_root,
-            check=False,
-        )
-        if ignored.returncode != 0:
-            raise EvidenceError("in-repository evidence output must be ignored by Git")
-    for line in _git(repo_root, "ls-files", "-s").splitlines():
-        fields = line.split(maxsplit=3)
-        if len(fields) != 4 or fields[0] != "120000":
-            continue
-        relative = Path(fields[3])
-        link = repo_root / relative
-        target = Path(os.readlink(link))
-        resolved = target if target.is_absolute() else (link.parent / target).resolve()
-        if target.is_absolute() or not resolved.is_relative_to(root):
-            raise EvidenceError(f"tracked symlink escapes governed tree: {relative.as_posix()}")
-    return {
-        "tracked_clean": True,
-        "untracked_clean": True,
-        "status_porcelain_sha256": hashlib.sha256(status.encode("utf-8")).hexdigest(),
-    }
-
-
 def capture_gate(
     repo_root: Path,
     gate_id: str,
@@ -547,7 +510,7 @@ def capture_gate(
     session_manifest: Path | None = None,
 ) -> Path:
     repo_root = repo_root.resolve()
-    caller_state = _capture_preflight(repo_root, output_dir)
+    caller_state = capture_subject_preflight(repo_root, output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     contract = _gate_contract(repo_root, gate_id)
     target = str(contract["target"])
@@ -558,7 +521,10 @@ def capture_gate(
         target,
         output_dir,
         session_manifest,
-        required=contract_version == "2.0",
+        required=contract_version in {"2.0", "3.0"},
+    )
+    claim_ids, qualification_refs = claim_capture(
+        repo_root, target, contract_version, session
     )
     workflow_identity = receipt_workflow_identity(session, target)
     command = _command(contract)
@@ -625,16 +591,33 @@ def capture_gate(
             _git(repo_root, "worktree", "remove", "--force", str(worktree), check=False)
     probes: list[dict[str, Any]] = []
     if result.returncode == 0 and observations["execution_tree_clean"]:
-        probes, probe_artifacts = _negative_control_results(
-            repo_root,
-            contract,
-            runtime_command,
-            output_dir,
-            observations,
-            selected_python,
-        )
-        artifacts.extend(probe_artifacts)
+        control_contracts = [contract]
+        if contract_version == "3.0":
+            control_contracts = [
+                _gate_contract(repo_root, legacy_gate)
+                for legacy_gate in legacy_gates_requiring_qualification(
+                    repo_root, claim_ids, qualification_refs
+                )
+            ]
+        for control_contract in control_contracts:
+            control_command = _runtime_command(
+                _command(control_contract), selected_python
+            )
+            captured, probe_artifacts = _negative_control_results(
+                repo_root,
+                control_contract,
+                control_command,
+                output_dir,
+                observations,
+                selected_python,
+            )
+            probes.extend(captured)
+            artifacts.extend(probe_artifacts)
     completed = datetime.now(UTC)
+    v3_fields = (
+        claim_receipt_fields(repo_root, claim_ids, qualification_refs, probes)
+        if contract_version == "3.0" else {}
+    )
     session_kind = session.payload["producer"]["kind"] if session else None
     default_producer_kind = (
         "workflow"
@@ -648,10 +631,15 @@ def capture_gate(
     if producer_kind not in {"human", "model", "service", "workflow"}:
         raise EvidenceError("BCF_EVIDENCE_PRODUCER_KIND must be human, model, service, or workflow")
     receipt = {
-        "schema_version": "2.0",
+        "schema_version": "3.0" if contract_version == "3.0" else "2.0",
         "kind": contract["evidence_kind"],
         "evidence_id": f"{target}-{head[:12]}",
         "gate_id": target,
+        **(
+            v3_fields
+            if contract_version == "3.0"
+            else {}
+        ),
         "producer": {
             "kind": producer_kind,
             "id": os.environ.get("BCF_EVIDENCE_PRODUCER_ID")

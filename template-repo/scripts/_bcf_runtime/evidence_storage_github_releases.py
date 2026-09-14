@@ -65,31 +65,31 @@ def durable_release_records(
             tag_digest = suffix.removeprefix("manifest-")
             expected_name = MANIFEST_NAME
         else:
-            raise EvidenceStorageError("storage budget found an unknown evidence release role")
+            raise EvidenceStorageError("evidence inventory found an unknown release role")
         if not re.fullmatch(r"[a-f0-9]{64}", tag_digest):
-            raise EvidenceStorageError("storage budget found a malformed evidence release tag")
+            raise EvidenceStorageError("evidence inventory found a malformed release tag")
         draft = release.get("draft")
         immutable = release.get("immutable")
         if draft is True:
             if immutable is not False:
-                raise EvidenceStorageError("storage budget found a malformed evidence draft")
+                raise EvidenceStorageError("evidence inventory found a malformed draft")
         elif draft is not False or immutable is not True:
-            raise EvidenceStorageError("storage budget found mutable published evidence")
+            raise EvidenceStorageError("evidence inventory found mutable published evidence")
         assets = asset_inventory(release)
         if len(assets) > 1 or (draft is False and len(assets) != 1):
-            raise EvidenceStorageError("storage budget found ambiguous evidence object")
+            raise EvidenceStorageError("evidence inventory found an ambiguous object")
         release_id = release.get("id")
         if (
             not isinstance(release_id, int)
             or release_id < 1
             or release_id in release_ids
         ):
-            raise EvidenceStorageError("storage budget found ambiguous evidence release IDs")
+            raise EvidenceStorageError("evidence inventory found ambiguous release IDs")
         size = 0
         if assets:
             if set(assets) != {expected_name}:
                 raise EvidenceStorageError(
-                    f"storage budget found a noncanonical {role} asset"
+                    f"evidence inventory found a noncanonical {role} asset"
                 )
             asset = assets[expected_name]
             digest = provider_digest(asset.get("digest")).removeprefix("sha256:")
@@ -99,10 +99,10 @@ def durable_release_records(
                 or not isinstance(size_value, int)
                 or size_value < 1
             ):
-                raise EvidenceStorageError("storage budget found malformed evidence bytes")
+                raise EvidenceStorageError("evidence inventory found malformed evidence bytes")
             size = size_value
         if tag in durable_releases:
-            raise EvidenceStorageError("storage budget found duplicate evidence tags")
+            raise EvidenceStorageError("evidence inventory found duplicate evidence tags")
         release_ids.add(release_id)
         durable_releases[tag] = (release_id, size)
     return durable_releases

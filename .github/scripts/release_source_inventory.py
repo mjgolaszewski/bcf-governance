@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path, PurePosixPath
 import subprocess
 import tarfile
+import hashlib
 
 
 def tracked_source_inventory(repo_root: Path) -> frozenset[str]:
@@ -53,8 +54,24 @@ def sdist_source_inventory(sdist: Path) -> frozenset[str]:
 
 
 def validate_sdist_source_inventory(repo_root: Path, sdist: Path) -> None:
-    """Reject an sdist that omits any Git-owned source file."""
+    """Reject an sdist that omits or changes any Git-owned source byte."""
 
-    missing = sorted(tracked_source_inventory(repo_root) - sdist_source_inventory(sdist))
+    tracked = tracked_source_inventory(repo_root)
+    missing = sorted(tracked - sdist_source_inventory(sdist))
     if missing:
         raise ValueError("source archive omits tracked source: " + ", ".join(missing))
+    with tarfile.open(sdist, "r:gz") as archive:
+        members = {PurePosixPath(member.name).parts[1:]: member for member in archive.getmembers() if member.isfile()}
+        changed: list[str] = []
+        for relative in sorted(tracked):
+            member = members.get(tuple(PurePosixPath(relative).parts))
+            stream = archive.extractfile(member) if member is not None else None
+            if stream is None:
+                changed.append(relative)
+                continue
+            archived = hashlib.sha256(stream.read()).digest()
+            source = hashlib.sha256((repo_root / relative).read_bytes()).digest()
+            if archived != source:
+                changed.append(relative)
+    if changed:
+        raise ValueError("source archive changes tracked source: " + ", ".join(changed))

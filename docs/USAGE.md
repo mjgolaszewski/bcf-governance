@@ -75,7 +75,7 @@ Fresh installations include `governance/evidence-storage.yml` with the
 capability disabled. Enable it only after declaring the numeric repository
 identity, a dedicated contents-write GitHub App, its protected environment and
 credential references, a separate Administration-read settings credential,
-freshness classes, reachability roots, and byte/count budgets. Existing
+freshness classes, reachability roots, and provider hard capability limits. Existing
 repositories retain their project-owned storage contract (or its absence)
 during normal upgrade.
 
@@ -114,10 +114,10 @@ has completed successfully; it never waits for trusted or local capacity.
 `bcf evidence-store retention-plan` accepts a schema-checked
 candidate inventory and rederives its repository, run, attempt, artifact,
 release, asset, and digest claims from the provider before computing handoff
-deletion candidates, leases, unreachable durable releases, and budget state.
+deletion candidates, leases, and unreachable durable releases.
 The plan is non-mutating. Both retention commands require `GITHUB_TOKEN` and
-`BCF_EVIDENCE_WRITE_TOKEN`; the latter makes unpublished draft bytes visible to
-budget accounting. After reviewing it, `bcf evidence-store
+`BCF_EVIDENCE_WRITE_TOKEN`; the latter makes unpublished draft bytes visible for
+reachability decisions. After reviewing it, `bcf evidence-store
 retention-apply-actions` repeats the complete authentication and cold retrieval,
 deletes only the admitted transient artifact IDs, and verifies their absence.
 The operation is idempotent and never deletes a durable Release.
@@ -231,7 +231,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.3.0/bcf_governance-1.3.0-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.0.0/bcf_governance-2.0.0-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 1.x. Verify the
@@ -587,7 +587,7 @@ bcf truth --evidence-dir .artifacts/bcf --format json
 
 Truth defaults to closure evaluation: an incomplete phase or hotfix fails and
 cannot produce a release receipt. Protected pull-request CI may use
-`--evaluation-mode pr` to compute merge eligibility from exact-tree gates while
+`--evaluation-mode pr` to compute merge eligibility from applicable claim evidence while
 the phase train remains in progress. That mode preserves the lifecycle as
 planned or completed rather than closed, and release-receipt output is
 mechanically prohibited.
@@ -599,9 +599,23 @@ Receipts contain raw stdout/stderr and declared outputs with hashes; their
 reported result is not trusted. Truth recomputes observations, test counts,
 node IDs, environment assertions, artifact hashes, and behavioral oracles.
 
-Evidence is exact-tree by default. A different commit, tree, or tracked working
-tree makes it stale. Security-impacting changes always require a new security
-review. Evidence and truth schema 2.0 is required; 0.5 bundles are invalid.
+Receipt v3 evidence is applicable when its complete claim dependency manifest,
+qualification, freshness, environment, and trust inputs still match. Commit SHA
+remains provenance but does not invalidate unrelated claims by itself. Whole-tree
+claims remain exact-tree. Receipt v2 and session v1 evidence stays readable only
+for its exact original subject and is never inferred into cross-commit evidence.
+
+Prior evidence is never discovered implicitly. To offer a closed bundle to the
+planner, pass both `--prior-evidence-dir PATH` and
+`--prior-evidence-digest SHA256` to `bcf preflight`. The digest is the SHA-256 of
+canonical JSON for the sorted list of `[relative_path, file_sha256]` pairs for
+every regular, non-symlink file below `PATH`. The digest must arrive through an
+independent trusted channel. Omitting both options executes the required claims;
+supplying only one option, a symlink root, a digest mismatch, malformed receipt,
+or receipt whose schema, invocation, artifacts, or raw observations do not
+validate fails closed. Authenticated receipts that are merely stale or whose
+dependencies changed are admitted only so the planner can mark their claims
+invalidated and schedule their producers.
 
 Profile-v2 `release-check` first runs the cheap preflight and allocates one
 private immutable evidence session. All positive gates bind receipts to that

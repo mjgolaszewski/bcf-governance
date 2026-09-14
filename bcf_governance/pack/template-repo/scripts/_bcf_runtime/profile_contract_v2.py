@@ -35,7 +35,7 @@ from .semantic_ownership_registry import (
 )
 
 
-CONTRACT_ORDER = {"1.0": 1, "2.0": 2}
+CONTRACT_ORDER = {"1.0": 1, "2.0": 2, "3.0": 3}
 
 
 class ProfileV2Error(ValueError):
@@ -66,7 +66,7 @@ def current_contract_version(repo_root: Path) -> str:
         raise ProfileV2Error("governance-profile.yml must contain a mapping")
     value = str(payload.get("profile_contract_version", "1.0"))
     if value not in CONTRACT_ORDER:
-        raise ProfileV2Error("profile_contract_version must be 1.0 or 2.0")
+        raise ProfileV2Error("profile_contract_version must be 1.0, 2.0, or 3.0")
     return value
 
 
@@ -91,7 +91,7 @@ def resolve_install_contract_version(
     """Fresh Standard/Regulated use v2; upgrades preserve version and normally profile."""
 
     if requested is not None and requested not in CONTRACT_ORDER:
-        raise ProfileV2Error("profile contract version must be 1.0 or 2.0")
+        raise ProfileV2Error("profile contract version must be 1.0, 2.0, or 3.0")
     if not upgrade:
         selected = profile or "standard"
         return selected, requested or ("1.0" if selected == "lite" else "2.0")
@@ -146,7 +146,7 @@ def _trigger_is_active(repo_root: Path, trigger: dict[str, Any]) -> bool:
 
 def assert_monotonic_contract_change(current: str, target: str) -> None:
     if current not in CONTRACT_ORDER or target not in CONTRACT_ORDER:
-        raise ProfileV2Error("profile contract version must be 1.0 or 2.0")
+        raise ProfileV2Error("profile contract version must be 1.0, 2.0, or 3.0")
     if CONTRACT_ORDER[target] < CONTRACT_ORDER[current]:
         raise ProfileV2Error("profile contract version cannot be downgraded")
 

@@ -166,11 +166,11 @@ workflows:
   path: .github/workflows/bcf-pr-finalizer.yml
   display_name: bcf/pr-finalizer
   role: trusted-control
-  events: [{type: workflow_run, workflows: [governance, governance-pack], types: [completed]}]
+  events: [{type: workflow_run, workflows: [governance], types: [completed]}]
   permissions: {actions: read, contents: read, pull-requests: read}
   jobs:
   - id: finalize
-    display_name: Aggregate exact-head governance and package results
+    display_name: Authenticate the exact-head governance result
     semantic_role: pr-certification-finalizer
     resource_class: trusted-control
     trust: trusted

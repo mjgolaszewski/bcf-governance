@@ -15,14 +15,12 @@ artifacts:
   release-authorization: {path: .artifacts/release-authorization, kind: control, scope: run-attempt, retention_days: 30}
   release-build-bundle: {path: .artifacts/release-build, kind: release, scope: run-attempt, retention_days: 30}
   release-runtime-evidence: {path: .artifacts/release-runtime, kind: lane-input, scope: run-attempt, retention_days: 30}
-  release-verifier-bundle: {path: .artifacts/release-verifier, kind: lane-input, scope: run-attempt, retention_days: 30}
   release-receipt-bundle: {path: .artifacts/release-receipt, kind: release, scope: run-attempt, retention_days: 90}
 conditions:
   release-owner-main: github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main'
   release-authorized: needs.authorize.result == 'success'
   release-trigger-success: github.event.workflow_run.event == 'workflow_dispatch' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
   release-runtime-green: needs.runtime.result == 'success'
-  verifier-trigger-success: github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
 commands:
   resolve-release-inputs:
     argv: ['{controller}', ci-github, release, resolve, --repository, '${{ github.repository }}', --output, '${{ runner.temp }}/bcf-release/release-inputs.json']
@@ -41,7 +39,7 @@ commands:
     cwd: .
     environment: {GITHUB_TOKEN: '', ACTIONS_ID_TOKEN_REQUEST_TOKEN: '', ACTIONS_RUNTIME_TOKEN: ''}
   authenticate-release-verification:
-    argv: ['{ephemeral_controller}', ci-github, release, verify-evidence, --repository, '${{ github.repository }}', --authorization, '${{ runner.temp }}/bcf-release-build/release-input/release-authorization.json', --build-manifest, '${{ runner.temp }}/bcf-release-build/release-build-manifest.json', --wheelhouse-manifest, '${{ runner.temp }}/bcf-release-build/release/wheelhouse-manifest.yml', --lock, '${{ runner.temp }}/bcf-release-build/release/requirements-cp312-linux-x86_64.lock', --wheelhouse, '${{ runner.temp }}/bcf-release-build/wheelhouse', --release-artifact-dir, '${{ runner.temp }}/bcf-release-build/assets', --runtime-report, '${{ runner.temp }}/bcf-release-runtime/runtime-verification.json', --runtime-evidence-dir, '${{ runner.temp }}/bcf-release-runtime', --output, '${{ runner.temp }}/bcf-release-verification/release-verification.json', --bundle-output, '${{ runner.temp }}/bcf-release-verifier-bundle']
+    argv: ['{ephemeral_controller}', ci-github, release, verify-evidence, --repository, '${{ github.repository }}', --authorization, '${{ runner.temp }}/bcf-release-build/release-input/release-authorization.json', --build-manifest, '${{ runner.temp }}/bcf-release-build/release-build-manifest.json', --wheelhouse-manifest, '${{ runner.temp }}/bcf-release-build/release/wheelhouse-manifest.yml', --lock, '${{ runner.temp }}/bcf-release-build/release/requirements-cp312-linux-x86_64.lock', --wheelhouse, '${{ runner.temp }}/bcf-release-build/wheelhouse', --release-artifact-dir, '${{ runner.temp }}/bcf-release-build/assets', --runtime-report, '${{ runner.temp }}/bcf-release-runtime/runtime-verification.json', --runtime-evidence-dir, '${{ runner.temp }}/bcf-release-runtime', --output, '${{ runner.temp }}/bcf-release-verification/release-verification.json', --bundle-output, '${{ runner.temp }}/bcf-release-collection']
     cwd: .
     environment: {}
   collect-release:
@@ -193,24 +191,8 @@ step_components:
     name: Authenticate provider state and recompute evidence hashes only
     command: authenticate-release-verification
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
-    produces: [release-verifier-bundle]
-    consumes: []
-  upload-release-verifier:
-    kind: action
-    name: Upload the authenticated verifier bundle
-    action: upload-artifact
-    with: {name: 'bcf-release-verification-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-release-verifier-bundle', if-no-files-found: error, retention-days: 30}
-    environment: {}
-    produces: [release-verifier-bundle]
-    consumes: []
-  download-release-verifier:
-    kind: action
-    name: Download only the triggering verifier artifact
-    action: download-artifact
-    with: {name: 'bcf-release-verification-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ github.event.workflow_run.id }}', path: '${{ runner.temp }}/bcf-release-collection', digest-mismatch: error}
-    environment: {}
     produces: []
-    consumes: [release-verifier-bundle]
+    consumes: []
   collect-release:
     kind: command
     name: Recompute provider, Git, dependency, runtime, and asset custody
@@ -276,15 +258,7 @@ workflows:
   permissions: {}
   jobs:
   - {id: runtime, display_name: Execute token-free offline wheel and sdist verification, semantic_role: release-runtime-verifier, resource_class: hosted-release, trust: candidate, needs: [], condition: release-trigger-success, timeout_minutes: 30, permissions: {actions: read, contents: read}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-release-python, setup-test-node, download-triggering-release-authorization, install-triggering-release-controller, download-triggering-release-build, verify-release-runtime, upload-release-runtime]}, produces: [release-runtime-evidence], consumes: [release-authorization, release-build-bundle], required: true}
-  - {id: authenticate, display_name: Authenticate provider custody without executing candidate code, semantic_role: release-provider-verifier, resource_class: hosted-release, trust: candidate, needs: [runtime], condition: release-runtime-green, timeout_minutes: 10, permissions: {actions: read, contents: read}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-release-python, download-triggering-release-authorization, install-triggering-release-controller, download-triggering-release-build, download-release-runtime, setup-verification-directories, authenticate-release-verification, upload-release-verifier]}, produces: [release-verifier-bundle], consumes: [release-authorization, release-build-bundle, release-runtime-evidence], required: true}
-- id: release-collector
-  path: .github/workflows/bcf-release-collector.yml
-  display_name: bcf/trusted-release-collector
-  role: release
-  events: [{type: workflow_run, workflows: [bcf/release-byte-verifier], types: [completed]}]
-  permissions: {actions: read, contents: read}
-  jobs:
-  - {id: collect, display_name: Recompute authenticated release evidence and emit the sole receipt, semantic_role: release-trusted-collector, resource_class: trusted-control, trust: trusted, needs: [], condition: verifier-trigger-success, controller_requirement: current, timeout_minutes: 10, permissions: {actions: read, contents: read}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-python, download-release-verifier, collect-release, upload-release-receipt]}, produces: [release-receipt-bundle], consumes: [release-verifier-bundle], required: true}
+  - {id: collect, display_name: Authenticate runtime and emit the sole trusted receipt, semantic_role: release-trusted-collector, resource_class: trusted-control, trust: trusted, needs: [runtime], condition: release-runtime-green, controller_requirement: current, timeout_minutes: 10, permissions: {actions: read, contents: read}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-release-python, download-triggering-release-authorization, install-triggering-release-controller, download-triggering-release-build, download-release-runtime, setup-verification-directories, authenticate-release-verification, collect-release, upload-release-receipt]}, produces: [release-receipt-bundle], consumes: [release-authorization, release-build-bundle, release-runtime-evidence], required: true}
 - id: release-publisher
   path: .github/workflows/bcf-release-publisher.yml
   display_name: bcf/immutable-release-publisher

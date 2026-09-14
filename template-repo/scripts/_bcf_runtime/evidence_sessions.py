@@ -1,4 +1,4 @@
-"""Allocate and bind immutable evidence sessions without changing receipt schema 2.0."""
+"""Allocate and bind immutable evidence sessions and verification plans."""
 
 from __future__ import annotations
 
@@ -104,8 +104,8 @@ def _profile(repo_root: Path) -> tuple[str, str]:
     if selected not in {"lite", "standard", "regulated"}:
         raise EvidenceError("governance-profile.yml must select a known profile")
     contract_version = payload.get("profile_contract_version", "1.0")
-    if contract_version not in {"1.0", "2.0"}:
-        raise EvidenceError("profile_contract_version must be 1.0 or 2.0")
+    if contract_version not in {"1.0", "2.0", "3.0"}:
+        raise EvidenceError("profile_contract_version must be 1.0, 2.0, or 3.0")
     return str(selected), str(contract_version)
 
 
@@ -161,9 +161,11 @@ def _producer_identity(
     return identity
 
 
-def _closed_inventory(values: Iterable[str], *, field: str) -> list[str]:
+def _closed_inventory(
+    values: Iterable[str], *, field: str, allow_empty: bool = False
+) -> list[str]:
     inventory = sorted({str(value) for value in values if str(value)})
-    if not inventory:
+    if not inventory and not allow_empty:
         raise EvidenceError(f"evidence session {field} cannot be empty")
     return inventory
 
@@ -190,10 +192,11 @@ def _manifest_payload(
     root_kind: str,
     producer: Mapping[str, str],
     producer_inventory: list[str],
+    verification_plan: Mapping[str, Any] | None,
 ) -> dict[str, Any]:
     profile, contract_version = _profile(repo_root)
-    return {
-        "schema_version": "1.0",
+    payload = {
+        "schema_version": "2.0" if contract_version == "3.0" else "1.0",
         "session_id": session_id,
         "subject": {
             "commit_sha": _git(repo_root, "rev-parse", "HEAD"),
@@ -203,7 +206,9 @@ def _manifest_payload(
         "profile_contract_version": contract_version,
         "producer": producer,
         "expected_gate_inventory": _closed_inventory(
-            expected_gates, field="gate inventory"
+            expected_gates,
+            field="gate inventory",
+            allow_empty=contract_version == "3.0",
         ),
         "expected_producer_inventory": producer_inventory,
         "created_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
@@ -213,6 +218,29 @@ def _manifest_payload(
             "immutable_manifest": True,
         },
     }
+    if contract_version == "3.0":
+        if verification_plan is None:
+            raise EvidenceError("profile contract 3.0 requires a verification plan")
+        expected = {
+            "current_subject",
+            "prior_subject",
+            "changed_paths",
+            "changed_domains",
+            "required_claims",
+            "preflight_satisfied_claims",
+            "reused_evidence",
+            "invalidated_evidence",
+            "execution_dag",
+            "decision_explanations",
+        }
+        if not expected.issubset(verification_plan):
+            raise EvidenceError("verification plan is incomplete")
+        if verification_plan["current_subject"] != payload["subject"]:
+            raise EvidenceError("verification plan subject differs from session subject")
+        payload.update(
+            {key: verification_plan[key] for key in expected if key != "current_subject"}
+        )
+    return payload
 
 
 def allocate_session(
@@ -222,6 +250,7 @@ def allocate_session(
     *,
     expected_producers: Iterable[str] | None = None,
     producer_identity: Mapping[str, str] | None = None,
+    verification_plan: Mapping[str, Any] | None = None,
 ) -> EvidenceSession:
     """Create one fresh private session and atomically publish its manifest."""
     repo_root = _absolute_lexical(repo_root)
@@ -259,6 +288,7 @@ def allocate_session(
             root_kind=root_kind,
             producer=producer,
             producer_inventory=producer_inventory,
+            verification_plan=verification_plan,
         )
         encoded = (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8")
         temporary = session_root / f".{SESSION_FILENAME}.{secrets.token_hex(8)}.tmp"
@@ -341,8 +371,8 @@ def load_session(manifest_path: Path) -> EvidenceSession:
         payload = json.loads(encoded)
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise EvidenceError(f"evidence session manifest is invalid: {exc}") from exc
-    if not isinstance(payload, dict) or payload.get("schema_version") != "1.0":
-        raise EvidenceError("evidence session manifest schema_version must be 1.0")
+    if not isinstance(payload, dict) or payload.get("schema_version") not in {"1.0", "2.0"}:
+        raise EvidenceError("evidence session manifest schema_version must be 1.0 or 2.0")
     session_id = payload.get("session_id")
     if (
         not isinstance(session_id, str)

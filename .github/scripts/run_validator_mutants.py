@@ -19,7 +19,7 @@ TRUTH_TARGETS = {
     "scripts/governance_truth_support.py",
     "scripts/truth_receipts.py",
 }
-EVIDENCE_TARGETS = {"scripts/governance_evidence.py"}
+EVIDENCE_TARGETS = {"scripts/governance_evidence.py", "scripts/evidence_claims.py"}
 SEMANTIC_TARGETS = {
     "scripts/semantic_authority_contracts.py",
     "scripts/semantic_derivations.py",
@@ -265,10 +265,10 @@ TRUTH_MUTANTS = (
     Mutant(
         mutant_id="evidence-untracked-preflight",
         description="non-ignored untracked helpers must block evidence capture",
-        search="    if status:\n        raise EvidenceError(\n",
-        replace="    if False and status:\n        raise EvidenceError(\n",
+        search="    if result.returncode or status:\n        raise EvidenceError(\n",
+        replace="    if False and (result.returncode or status):\n        raise EvidenceError(\n",
         profiles=("semantic-high-value", "semantic-full"),
-        target_path="scripts/governance_evidence.py",
+        target_path="scripts/evidence_claims.py",
     ),
     Mutant(
         mutant_id="evidence-isolated-positive",
@@ -367,8 +367,8 @@ TRUTH_MUTANTS = (
     Mutant(
         mutant_id="truth-authored-verified",
         description="verified remains computed and absent from authored state taxonomy",
-        search='AUTHORED_STATES = {"planned", "completed"}\n',
-        replace='AUTHORED_STATES = {"planned", "completed", "verified"}\n',
+        search='AUTHORED_STATES = {"planned", "active", "blocked", "paused", "completed"}\n',
+        replace='AUTHORED_STATES = {"planned", "active", "blocked", "paused", "completed", "verified"}\n',
         profiles=("semantic-full",),
         target_path="scripts/governance_truth.py",
     ),

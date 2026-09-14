@@ -4,7 +4,8 @@
   "additionalProperties": false,
   "required": ["document", "profile", "release_gate_profile", "ci_profile", "drift_guardrails"],
   "properties": {
-    "profile_contract_version": {"type": "string", "enum": ["1.0", "2.0"]},
+    "profile_contract_version": {"type": "string", "enum": ["1.0", "2.0", "3.0"]},
+    "assurance_scope": {"type": "string", "enum": ["normal", "regulated", "self"]},
     "semantic_capabilities": {
       "type": "object",
       "additionalProperties": false,

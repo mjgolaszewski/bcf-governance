@@ -43,7 +43,7 @@ def _render_in_shadow(
     apply_profile_contract(shadow, contract, write_workflow=False)
     if semantic_config is not None:
         _apply_config(shadow, semantic_config)
-    elif contract["profile_contract_version"] == "2.0" and target in {"standard", "regulated"}:
+    elif contract["profile_contract_version"] in {"2.0", "3.0"} and target in {"standard", "regulated"}:
         if any(value != "blocking" for value in capability_states(shadow).values()):
             raise ValueError(
                 "--semantic-config is required before Standard-v2 or Regulated-v2 semantic adoption"
@@ -100,7 +100,7 @@ def main(argv: list[str] | None = None) -> None:
         type=Path,
         help="Optional replacement gate config; otherwise promote canonical existing contracts.",
     )
-    parser.add_argument("--contract-version", choices=("1.0", "2.0"))
+    parser.add_argument("--contract-version", choices=("1.0", "2.0", "3.0"))
     parser.add_argument(
         "--semantic-config",
         type=Path,
@@ -138,7 +138,7 @@ def main(argv: list[str] | None = None) -> None:
             apply_profile_contract(shadow, contract, write_workflow=False)
             if semantic_config is not None:
                 _apply_config(shadow, semantic_config)
-            elif contract["profile_contract_version"] == "2.0" and args.to in {"standard", "regulated"}:
+            elif contract["profile_contract_version"] in {"2.0", "3.0"} and args.to in {"standard", "regulated"}:
                 if any(value != "blocking" for value in capability_states(shadow).values()):
                     raise ValueError(
                         "--semantic-config is required before Standard-v2 or Regulated-v2 semantic adoption"
