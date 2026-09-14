@@ -1,0 +1,52 @@
+document:
+  kind: execution_phase_workitem_ledger
+  name: Phase 25 Workitems
+  id: project-phase-25-workitems
+  version: 1.0.0
+  generated_at_utc: '2026-09-14T00:00:00Z'
+  status: active
+  path: plans/phase-25-workitems.yml
+  phase_id: P25
+workitems:
+- id: P25-P0-01
+  priority: P0
+  status: DONE
+  summary: deliver profile-v3 claim and dependency-scoped evidence contracts with
+    explicit migration
+  acceptance:
+  - profile-v3 claim and dependency-scoped evidence contracts with explicit migration_is_complete
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P25-P0-02
+  priority: P0
+  status: DONE
+  summary: deliver dynamic execution planning with authenticated prior evidence reuse
+    and detector qualification
+  acceptance:
+  - dynamic execution planning with authenticated prior evidence reuse and detector
+    qualification_is_complete
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P25-P0-03
+  priority: P0
+  status: DONE
+  summary: deliver consolidated candidate verification and bounded exact-artifact
+    release checks
+  acceptance:
+  - consolidated candidate verification and bounded exact-artifact release checks_is_complete
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P25-P0-04
+  priority: P0
+  status: DONE
+  summary: deliver derived lifecycle closure, failure envelopes, observability, documentation,
+    and complete acceptance proof
+  acceptance:
+  - derived lifecycle closure, failure envelopes, observability, documentation, and
+    complete acceptance proof_is_complete
+  acceptance_evidence:
+  - test
+  - contract-test

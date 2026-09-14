@@ -4,10 +4,10 @@
   "title": "BCF durable evidence storage contract",
   "type": "object",
   "additionalProperties": false,
-  "required": ["document", "schema_version", "activation", "provider", "transport", "archive_safety", "freshness_classes", "retention", "budgets"],
+  "required": ["document", "schema_version", "activation", "provider", "transport", "archive_safety", "freshness_classes", "retention"],
   "properties": {
     "document": {"$ref": "#/$defs/document"},
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"const": "2.0"},
     "activation": {"enum": ["disabled", "enabled"]},
     "provider": {"$ref": "#/$defs/provider"},
     "transport": {"$ref": "#/$defs/transport"},
@@ -17,8 +17,7 @@
       "propertyNames": {"$ref": "#/$defs/identifier"},
       "additionalProperties": {"$ref": "#/$defs/freshnessClass"}
     },
-    "retention": {"$ref": "#/$defs/retention"},
-    "budgets": {"$ref": "#/$defs/budgets"}
+    "retention": {"$ref": "#/$defs/retention"}
   },
   "$defs": {
     "identifier": {"type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$"},
@@ -105,18 +104,6 @@
         "lease_hours": {"type": "integer", "minimum": 1},
         "unavailable_behavior": {"const": "fail_closed"},
         "garbage_collection": {"const": "authenticated_unreachable_only"}
-      }
-    },
-    "budgets": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["maximum_actions_bytes", "maximum_durable_unique_bytes", "maximum_objects", "maximum_new_bytes_per_run", "preflight_required"],
-      "properties": {
-        "maximum_actions_bytes": {"type": "integer", "minimum": 1},
-        "maximum_durable_unique_bytes": {"type": "integer", "minimum": 1},
-        "maximum_objects": {"type": "integer", "minimum": 1},
-        "maximum_new_bytes_per_run": {"type": "integer", "minimum": 1},
-        "preflight_required": {"const": true}
       }
     }
   }

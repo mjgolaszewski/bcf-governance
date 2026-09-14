@@ -14,21 +14,11 @@ workflow_registry:
     job_roles:
       admit: admission
       governance: producer
-      governance-pack: producer
   governance:
     workflow_id: '334490532'
     active_path: .github/workflows/governance.yml
     trusted_workflow_blob_oid: 86e587364f0fdbb5abfa7b886b93428831f848a9
     trusted_workflow_sha256: 41603bd0303822fc3927287d011ed2250a472eb27abd3412d581f30dfb89a790
-    trusted_workflow_definition_commit: 2796cabfa7e4db98513736b6aa0d28411b04f02a
-    allowed_events:
-    - pull_request
-    - workflow_call
-  governance-pack:
-    workflow_id: '265590976'
-    active_path: .github/workflows/governance-pack.yml
-    trusted_workflow_blob_oid: d66b784a03c6529280e9c10893a7577509db0281
-    trusted_workflow_sha256: fca548a9c75d404afe25c2838b41b62e242757b16a6d717ebd7cf04a0c11080a
     trusted_workflow_definition_commit: 2796cabfa7e4db98513736b6aa0d28411b04f02a
     allowed_events:
     - pull_request
@@ -96,17 +86,7 @@ workflow_registry:
     - workflow_run
     expected_jobs:
     - job_id: Execute token-free offline wheel and sdist verification
-    - job_id: Authenticate provider custody without executing candidate code
-  release-collector:
-    workflow_id: '346919669'
-    active_path: .github/workflows/bcf-release-collector.yml
-    trusted_workflow_blob_oid: 0d501ea1a329685173f1afdaa712026b1021cb2d
-    trusted_workflow_sha256: f39a9dde9fd60064816578c586fb79e60bbbf39a9e11ec8272ab5c5e5ff30615
-    trusted_workflow_definition_commit: 2796cabfa7e4db98513736b6aa0d28411b04f02a
-    allowed_events:
-    - workflow_run
-    expected_jobs:
-    - job_id: Recompute authenticated release evidence and emit the sole receipt
+    - job_id: Authenticate runtime and emit the sole trusted receipt
   release-publisher:
     workflow_id: '346919671'
     active_path: .github/workflows/bcf-release-publisher.yml
@@ -143,7 +123,6 @@ roles:
   admission: admission
   reusable_producers:
   - governance
-  - governance-pack
   finalizer: finalizer
   status_publisher: status-publisher
   bootstrap: bootstrap
@@ -151,7 +130,7 @@ roles:
   release_authorizer: release
   release_build: release
   release_verifier: release-verifier
-  release_collector: release-collector
+  release_collector: release-verifier
   release_publisher: release-publisher
   authority_canary: authority-canary
 admission_jobs:
@@ -166,10 +145,4 @@ producers:
   - job_id: Run exact-main governance evidence / Evidence / Duplication, routers, governance, and ownership
   - job_id: Run exact-main governance evidence / Evidence / Full tests, lint, import boundaries, and SBOM
   - job_id: Run exact-main governance evidence / Verify exact-tree governance evidence
-- producer_id: governance-pack
-  workflow_ref: governance-pack
-  expected_jobs:
-  - job_id: Verify exact-main package and templates / Validate package workflow front door
-  - job_id: Verify exact-main package and templates / Test package, templates, and release tooling
-  - job_id: Verify exact-main package and templates / Verify template architecture boundaries
 trusted_external_inputs: []

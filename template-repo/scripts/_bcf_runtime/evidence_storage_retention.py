@@ -13,7 +13,6 @@ from jsonschema import Draft202012Validator
 
 from .evidence_storage_contracts import (
     EvidenceStorageError,
-    StorageUsage,
     load_input_reference,
     load_storage_contract,
     parse_utc,
@@ -53,25 +52,6 @@ def _load_snapshot(repo_root: Path, path: Path) -> dict[str, Any]:
             f"evidence retention snapshot schema violation at {location}: {error.message}"
         )
     return cast(dict[str, Any], payload)
-
-
-def _budget(contract: dict[str, Any], usage: StorageUsage) -> tuple[bool, list[str]]:
-    policy = contract["budgets"]
-    values = {
-        "actions_bytes": (usage.actions_bytes, policy["maximum_actions_bytes"]),
-        "durable_unique_bytes": (
-            usage.durable_unique_bytes,
-            policy["maximum_durable_unique_bytes"],
-        ),
-        "object_count": (usage.object_count, policy["maximum_objects"]),
-        "new_bytes": (usage.new_bytes, policy["maximum_new_bytes_per_run"]),
-    }
-    exceeded = [
-        f"{name}:{actual}>{maximum}"
-        for name, (actual, maximum) in values.items()
-        if actual > maximum
-    ]
-    return not exceeded, exceeded
 
 
 def plan_retention(
@@ -234,15 +214,6 @@ def plan_retention(
         publication_api or api, contract=contract, repository=repository
     )
     unreachable = set(durable_releases) - protected_release_ids
-    usage = StorageUsage(
-        actions_bytes=sum(
-            int(item.get("size_in_bytes", 0)) for item in provider_artifacts.values()
-        ),
-        durable_unique_bytes=sum(durable_releases.values()),
-        object_count=len(durable_releases),
-        new_bytes=0,
-    )
-    within_budget, exceeded = _budget(contract, usage)
     return {
         "schema_version": "1.0",
         "kind": "governance.evidence-retention-plan.v1",
@@ -254,9 +225,6 @@ def plan_retention(
         "durable_release_review_ids": sorted(unreachable),
         "automatic_durable_deletion": False,
         "active_lease_manifests": sorted(active_leases),
-        "usage": usage.as_dict(),
-        "within_budget": within_budget,
-        "budget_exceeded": exceeded,
     }
 
 

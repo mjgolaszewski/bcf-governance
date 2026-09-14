@@ -183,7 +183,7 @@ def scaffold_phase_artifacts(
                 },
                 "architecture_gates_green": {"required_evidence": ["architecture-test"]},
                 "health_checks_green": {"required_evidence": ["runtime-smoke"]},
-                "security_review_complete": {"required_evidence": ["security-review"]},
+                "security_review_complete": {"required_evidence": ["governance-validate"]},
                 "findings_resolved": {
                     "required_evidence": ["security-vulnerability-scan"]
                 },
@@ -247,7 +247,7 @@ def scaffold_hotfix_log(
         "closeout_requirements": {
             "claims": {
                 "required_suites_green": {"required_evidence": ["test", "contract-test"]},
-                "security_review_complete": {"required_evidence": ["security-review"]},
+                "security_review_complete": {"required_evidence": ["governance-validate"]},
                 "health_checks_green": {"required_evidence": ["runtime-smoke"]},
             },
             "reconciliation": {

@@ -992,21 +992,13 @@ def test_bcf_exact_main_rotation_blocks_evidence_but_builds_controller() -> None
     )
     admission = next(job for job in exact_main["jobs"] if job["id"] == "admit")
     governance = next(job for job in exact_main["jobs"] if job["id"] == "governance")
-    package_extension = yaml.safe_load(
-        (REPO_ROOT / "governance/ci-extensions/bcf-package.yml").read_text()
-    )
-    package = next(
-        job
-        for job in package_extension["jobs"]
-        if job["workflow"] == "exact-main" and job["id"] == "governance-pack"
-    )
 
     assert admission["controller_requirement"] == "current"
     assert governance["needs"] == ["admit"]
     assert governance["condition"] == "exact-main-admitted"
-    assert package["needs"] == []
-    assert package["condition"] == "success"
-    assert package["executor"]["inputs"]["build_controller"] is True
+    assert governance["executor"]["inputs"] == {
+        "evaluation_mode": "closure", "build_controller": True
+    }
 
 
 def test_pull_request_gate_ownership_exactly_matches_profile(tmp_path: Path) -> None:
@@ -1358,7 +1350,7 @@ def test_bcf_ci_authority_audit_reports_the_complete_effective_graph() -> None:
     assert report["inventory"]["job_count"] == expected_job_count
     assert report["inventory"]["semantic_role_count"] == expected_job_count
     assert len(report["effective_graph"]) == expected_workflow_count
-    assert len(report["inventory"]["gates"]) == 21
+    assert len(report["inventory"]["gates"]) == 20
     assert sum(
         item["node_count"] for item in report["inventory"]["test_manifests"]
     ) >= 1
@@ -1366,7 +1358,7 @@ def test_bcf_ci_authority_audit_reports_the_complete_effective_graph() -> None:
     assert report["inventory"]["receipt_schemas"][0]["sha256"]
     assert "release_ready" in report["inventory"]["truth_claim_dependencies"]
     assert not report["mechanical_findings"]
-    assert report["inventory"]["gate_count"] == 21
+    assert report["inventory"]["gate_count"] == 20
     assert report["inventory"]["required_status_checks"] == [
         {"context": "bcf/pr-certification", "integration_id": 15368}
     ]

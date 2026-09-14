@@ -135,17 +135,17 @@ def resolve_self_controller_artifact(
         authority=authority,
         admission_run_id=run_id,
         admission_run_attempt=attempt,
-        producer_ids=("governance-pack",),
+        producer_ids=("governance",),
         require_complete_admission_inventory=False,
     )
-    package = [value for value in producers if value["producer_id"] == "governance-pack"]
+    package = [value for value in producers if value["producer_id"] == "governance"]
     if len(package) != 1:
-        raise GitHubControllerError("latest exact-main package producer is not unique")
+        raise GitHubControllerError("latest exact-main governance producer is not unique")
     package_attempt = package[0]["attempts"][0]
     if package_attempt["status"] != "completed" or (
         package_attempt["conclusion"] != "success"
     ):
-        raise GitHubControllerError("latest exact-main package producer is not successful")
+            raise GitHubControllerError("latest exact-main governance producer is not successful")
     name = f"bcf-trusted-control-{main.checkout_sha}-{attempt}"
     artifact = resolve_role_artifact(
         api,

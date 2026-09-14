@@ -1,4 +1,4 @@
-"""Decode durable evidence contracts and enforce closed storage budgets."""
+"""Decode durable evidence contracts and enforce storage safety."""
 
 from __future__ import annotations
 
@@ -37,22 +37,6 @@ class EvidenceInputReference:
     producer_run_id: str
     producer_run_attempt: int
     release_id: int
-
-
-@dataclass(frozen=True)
-class StorageUsage:
-    actions_bytes: int
-    durable_unique_bytes: int
-    object_count: int
-    new_bytes: int
-
-    def as_dict(self) -> dict[str, int]:
-        return {
-            "actions_bytes": self.actions_bytes,
-            "durable_unique_bytes": self.durable_unique_bytes,
-            "object_count": self.object_count,
-            "new_bytes": self.new_bytes,
-        }
 
 
 def _mapping(path: Path, *, label: str) -> dict[str, Any]:
@@ -133,6 +117,10 @@ def load_storage_contract(repo_root: Path) -> dict[str, Any]:
 
 def load_storage_contract_path(schema_root: Path, path: Path) -> dict[str, Any]:
     payload = _mapping(path, label=CONTRACT_PATH.as_posix())
+    if "budgets" in payload:
+        raise EvidenceStorageError(
+            "economic_governance_retired: remove the retired budgets section"
+        )
     _validate(
         payload,
         _schema(schema_root.resolve(), CONTRACT_SCHEMA),
@@ -379,25 +367,3 @@ def validate_freshness(
                 raise EvidenceStorageError(
                     f"evidence input {item['id']} freshness has expired"
                 )
-
-
-def validate_storage_budget(
-    contract: dict[str, Any], usage: StorageUsage
-) -> None:
-    budgets = contract["budgets"]
-    comparisons = {
-        "Actions bytes": (usage.actions_bytes, budgets["maximum_actions_bytes"]),
-        "durable unique bytes": (
-            usage.durable_unique_bytes,
-            budgets["maximum_durable_unique_bytes"],
-        ),
-        "durable object count": (usage.object_count, budgets["maximum_objects"]),
-        "new bytes for run": (usage.new_bytes, budgets["maximum_new_bytes_per_run"]),
-    }
-    exceeded = [
-        f"{label} {actual}>{maximum}"
-        for label, (actual, maximum) in comparisons.items()
-        if actual > maximum
-    ]
-    if exceeded:
-        raise EvidenceStorageError("evidence storage budget exceeded: " + ", ".join(exceeded))

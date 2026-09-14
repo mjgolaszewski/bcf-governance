@@ -47,6 +47,7 @@ def _fixture(tmp_path: Path) -> tuple[Path, tuple[Path, ...], Path, Path]:
                 },
                 "release_artifacts": {wheel.name: _sha(wheel), sdist.name: _sha(sdist)},
                 "evidence": {path.name: _sha(path) for path in evidence},
+                "source_mapping": {"status": "exact", "mapped_files": 1},
             },
             sort_keys=True,
         )
@@ -65,6 +66,16 @@ def test_runtime_evidence_binds_exact_release_bytes_and_raw_results(
 
     assert result["status"] == "passed"
     assert result["environment"]["python_version"] == "3.12.14"
+
+
+def test_runtime_evidence_requires_exact_wheel_source_mapping(tmp_path: Path) -> None:
+    report, evidence, wheel, sdist = _fixture(tmp_path)
+    payload = json.loads(report.read_text(encoding="utf-8"))
+    payload.pop("source_mapping")
+    report.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(GitHubControllerError, match="source mapping is not exact"):
+        verify_runtime_evidence(report, evidence, wheel=wheel, sdist=sdist)
 
 
 def test_runtime_evidence_directory_is_selected_from_the_report(tmp_path: Path) -> None:

@@ -62,13 +62,8 @@ producer_workflows:
   display_name: Run exact-main governance evidence
   path: .github/workflows/governance.yml
   inputs:
-    evaluation_mode: closure
-- job_id: governance-pack
-  display_name: Verify exact-main package and templates
-  path: .github/workflows/governance-pack.yml
-  inputs:
     build_controller: true
-    evaluation_mode: release
+    evaluation_mode: closure
 activation_variable: BCF_CI_AUTHORITY_ENABLED
 controller_commit: 49272182790342a52ef7ddbcfd6a540ca7df6baf
 dispatch_exact_ref: false

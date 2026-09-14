@@ -14,7 +14,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from bcf_governance.tooling.evidence_sessions import select_session
+from bcf_governance.tooling.evidence_sessions import load_session, select_session
 
 
 SHARD_DISPLAY_NAMES = (
@@ -57,13 +57,18 @@ def required_gate_targets(repo_root: Path) -> list[str]:
 
 
 def partition_required_gates(
-    repo_root: Path, *, shard_index: int, shard_count: int
+    repo_root: Path, *, shard_index: int, shard_count: int,
+    planned_targets: list[str] | None = None,
 ) -> list[str]:
     if shard_count < 1 or shard_index < 0 or shard_index >= shard_count:
         raise ValueError("shard index must be within the positive shard count")
     return [
         gate
-        for index, gate in enumerate(required_gate_targets(repo_root))
+        for index, gate in enumerate(
+            planned_targets
+            if planned_targets is not None
+            else required_gate_targets(repo_root)
+        )
         if index % shard_count == shard_index
     ]
 
@@ -101,11 +106,22 @@ def main() -> None:
         session = select_session(args.session_root)
         session_manifest = session.manifest_path
         output_root = session.root
+    session = load_session(session_manifest) if explicit and session_manifest.is_file() else (
+        None if explicit else session
+    )
+    planned = (
+        [str(value) for value in session.payload.get("expected_gate_inventory", [])]
+        if session is not None and session.payload.get("schema_version") == "2.0"
+        else None
+    )
     gates = partition_required_gates(
-        REPO_ROOT, shard_index=args.shard_index, shard_count=args.shard_count
+        REPO_ROOT,
+        shard_index=args.shard_index,
+        shard_count=args.shard_count,
+        planned_targets=planned,
     )
     if not gates:
-        raise SystemExit("evidence shard selects zero required gates")
+        return
     for gate in gates:
         result = subprocess.run(
             [

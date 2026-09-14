@@ -662,7 +662,7 @@ def _validate_required_gate_ownership(repo_root: Path, graph: dict[str, Any]) ->
     except GraphYAMLError as exc:
         raise CIGraphError(str(exc)) from exc
     profile_contract_version = str(profile.get("profile_contract_version", "1.0"))
-    if profile_contract_version != "2.0":
+    if profile_contract_version not in {"2.0", "3.0"}:
         return
     if str(graph.get("profile_contract_version", "1.0")) != profile_contract_version:
         # Profile promotion and workflow adoption are separate transactions.

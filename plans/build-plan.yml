@@ -4,7 +4,7 @@ planning_contract:
   mandatory_properties: [tightly_scoped_deliverables, parallelizable_workstreams, hard_dependency_ordering, docker_first_local_runtime, ast_architecture_tests, strict_boundaries, observability_reference_model, completeness_standard]
   completeness_standard: full_completeness_for_declared_scope
 planning_inputs:
-  date: '2026-09-13'
+  date: '2026-09-14'
   planner: codex
   primary_source_of_truth: plans/product-spec.yml
   governance_references: [AGENTS.yml, MEMORY.yml, plans/phase-ledger.yml]
@@ -18,12 +18,12 @@ global_gates:
   name: safe_execution_substrate
   applies_before: P10
   required_completion_criteria: [trusted control-plane VM executes no candidate code, every code-executing job receives a fresh disposable VM and ephemeral runner identity, no GitHub-hosted fallback is configured]
-phase_history: {path: plans/phase-history.yml, through_phase: P23}
+phase_history: {path: plans/phase-history.yml, through_phase: P24}
 phase_sequence:
-- phase_id: P24
-  build_block: consumer-runtime-typescript-authority-and-candidate-routing-1.3.0
-  objective: resolve issues 184 through 187 with isolated installed runtime execution, complete TypeScript authority, valid empty locks and explicit candidate routing
-  hard_dependencies: [P23]
-  tightly_scoped_deliverables: [installed evidence-storage runtime with isolated fresh-install and upgrade execution, source-first TypeScript semantic authority with real compiler effects and transactional adoption, schema-valid deterministic zero-projection semantic locks, opt-in non-matrix private-local public-hosted candidate routing, combined consumer qualification and complete local source/package failure-class review, reviewed governed controller activation publication and issue-closeout procedure]
-  parallelizable_workstreams: [installed runtime and lock integrity, TypeScript discovery effects and transactional dependencies, candidate routing schema compiler and event matrix, phase governance toolchain packaging and release custody]
-  verification_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests, .venv/bin/bcf ci local-pr --repo-root . --remote origin]
+- phase_id: P25
+  build_block: dependency-scoped-correction-2.0.0
+  objective: replace economic governance with dependency-scoped truth, consolidated execution, and bounded release verification while preserving fail-closed safety
+  hard_dependencies: [P24]
+  tightly_scoped_deliverables: [profile-v3 claim and dependency-scoped evidence contracts with explicit migration, dynamic execution planning with authenticated prior evidence reuse and detector qualification, consolidated candidate verification and bounded exact-artifact release checks, derived lifecycle closure failure envelopes observability documentation and complete acceptance proof]
+  parallelizable_workstreams: [contract and migration boundary, planner qualification and truth derivation, CI and release topology simplification, validation documentation and closeout]
+  verification_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests]

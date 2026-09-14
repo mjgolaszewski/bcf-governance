@@ -6,6 +6,14 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+Release target: `2.0.0`
+
+### Changed
+
+- Introduce profile/receipt v3 and evidence-session v2 with dependency-scoped claim reuse, grouped execution, reusable detector qualification, and derived lifecycle truth.
+- Retire active CI-economic governance while retaining provider, archive, cleanup, timeout, and trust-boundary safety limits.
+- Consolidate package verification into the planned governance producer and compose releases from authenticated development evidence plus independent artifact checks.
+
 ## [1.3.0] - 2026-09-13
 
 ### Fixed

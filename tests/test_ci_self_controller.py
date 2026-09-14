@@ -153,7 +153,7 @@ def _provider(monkeypatch: pytest.MonkeyPatch, *, conclusion: str = "success") -
         "collect_same_run_producers",
         lambda *args, **kwargs: (
             {
-                "producer_id": "governance-pack",
+                "producer_id": "governance",
                 "attempts": [
                     {"status": "completed", "conclusion": conclusion, "jobs": []}
                 ],
@@ -190,11 +190,11 @@ def test_controller_pin_is_compiled_from_latest_provider_and_downloaded_bytes(
     }
 
 
-def test_controller_pin_rejects_failed_package_producer(
+def test_controller_pin_rejects_failed_governance_producer(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _provider(monkeypatch, conclusion="failure")
-    with pytest.raises(GitHubControllerError, match="package producer"):
+    with pytest.raises(GitHubControllerError, match="governance producer"):
         controller.resolve_self_controller_artifact(
             SimpleNamespace(), repository="owner/repo"  # type: ignore[arg-type]
         )
