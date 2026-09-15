@@ -380,10 +380,6 @@ def test_wrong_candidate_commit_tree_or_pr_is_rejected(field: str, value: object
 
 def test_wrong_current_or_successor_topology_and_retired_producer_are_rejected() -> None:
     api = TransitionAPI()
-    api.current_files["governance/ci-graph.yml"] = b"wrong current"
-    with pytest.raises(GitHubControllerError, match="current PR topology"):
-        _applicable(api)
-    api = TransitionAPI()
     api.successor_files["governance/ci-graph.yml"] = b"wrong successor"
     assert transition_is_applicable(
         api, repository=REPOSITORY, main=_main(), protection=load_protection(ROOT),
@@ -394,6 +390,44 @@ def test_wrong_current_or_successor_topology_and_retired_producer_are_rejected()
     api.contract["activation"]["retired_producer"]["id"] = "other"
     with pytest.raises(GitHubControllerError, match="producer topology"):
         _applicable(api)
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "governance/ci-graph.yml",
+        "governance/github-protection.yml",
+        ".github/workflows/governance-pack.yml",
+    ],
+)
+def test_each_wrong_current_topology_anchor_is_rejected(path: str) -> None:
+    api = TransitionAPI()
+    api.current_files[path] += b"\nwrong current topology\n"
+    with pytest.raises(GitHubControllerError, match="current PR topology"):
+        _applicable(api)
+
+
+def test_post_rotation_current_anchors_are_exact_and_stale_snapshot_is_rejected() -> None:
+    contract = yaml.safe_load((ROOT / "governance/pr-transition.yml").read_text())
+    current = contract["activation"]["current_topology"]
+    for expected in current.values():
+        assert hashlib.sha256((ROOT / expected["path"]).read_bytes()).hexdigest() == expected["sha256"]
+
+    api = TransitionAPI()
+    api.contract["activation"]["current_topology"]["ci_graph"]["sha256"] = (
+        "5789ea9ba07452457ab5f2531fde563bfb73a5813f676fd8b6d77c88ff1423ef"
+    )
+    with pytest.raises(GitHubControllerError, match="current PR topology"):
+        _applicable(api)
+
+
+def test_missing_current_topology_anchor_is_rejected() -> None:
+    value = yaml.safe_load((ROOT / "governance/pr-transition.yml").read_text())
+    value["activation"]["current_topology"].pop("package_workflow")
+    with pytest.raises(GitHubControllerError, match="schema violation"):
+        load_transition_bytes(
+            yaml.safe_dump(value).encode(), schema_path=ROOT / "schemas/pr-transition.schema.json"
+        )
 
 
 def test_incomplete_mapping_and_failed_mapped_claim_are_rejected() -> None:

@@ -1,0 +1,73 @@
+document:
+  kind: defect_remediation_audit
+  id: bcf-2-transition-anchor-refresh
+  version: 1.0.0
+  status: in_progress
+  path: audits/bcf-2-transition-anchor-refresh.yml
+scope:
+  purpose: Refresh only the exact current-topology anchors invalidated by the certified carrier-controller rotation.
+  successor_change_authorized: false
+  equivalence_change_authorized: false
+  protection_change_authorized: false
+  publisher_change_authorized: false
+  controller_change_authorized: false
+authoritative_main:
+  commit_sha: 554f1fb6a6c48342e9330794c8451e727e294e83
+  tree_sha: 8272da87197086c66c40f03544a5180636add888
+  topology: [governance, package]
+  controller_commit_sha: f493677c416c0f9811c0de1f635ba2e53c6237f0
+carrier_snapshot:
+  commit_sha: f493677c416c0f9811c0de1f635ba2e53c6237f0
+  current_topology:
+    ci_graph_sha256: 5789ea9ba07452457ab5f2531fde563bfb73a5813f676fd8b6d77c88ff1423ef
+    protection_sha256: 9bab9055ec8b52113a593fbc08c8931ea494a53f9af9e19b3eb3f3789c1efaa7
+    package_workflow_sha256: dfce9d01bc1cfc7d8cb8cca9afa656202deab963e9f190115691a788e7b2ae2b
+post_rotation_snapshot:
+  current_topology:
+    ci_graph_sha256: 5115e6448bf4df12aabd9f4d95b2bf0142ac17c5583f6ededb62ce8cca030ecc
+    protection_sha256: 9bab9055ec8b52113a593fbc08c8931ea494a53f9af9e19b3eb3f3789c1efaa7
+    package_workflow_sha256: 9ace4a4789fa9c0a3d643e52f79d9fbb24ac429d602f3cffba40bb1a331001e8
+delta_classification:
+  ci_graph:
+    classification: MECHANICAL ROTATION CONSEQUENCE
+    cause: The governed self-policy value-source digest changed to the promoted controller authority.
+  package_workflow:
+    classification: MECHANICAL ROTATION CONSEQUENCE
+    cause: Generated graph and self-policy digest headers followed the governed graph projection.
+  protection:
+    classification: unchanged
+    cause: Exact bytes and digest are identical before and after rotation.
+semantic_identity:
+  compared_commits: f493677c416c0f9811c0de1f635ba2e53c6237f0..554f1fb6a6c48342e9330794c8451e727e294e83
+  ordinary_producers: [governance, package]
+  certification_context: bcf/pr-certification
+  publisher_boundary_changed: false
+  protection_changed: false
+  successor_topology_changed: false
+  retired_producer_changed: false
+  assurance_mapping_changed: false
+  transition_controller_changed: false
+  successor_topology_active: false
+  ordinary_missing_package_behavior: fail_closed
+  candidate_self_assertion_sufficient: false
+  replay_allowed: false
+refresh:
+  generator: none_available
+  method: Exact SHA-256 values computed from authoritative main bytes and substituted only in activation.current_topology.
+  changed_anchors: [ci_graph, package_workflow]
+  unchanged_anchor: protection
+  workflow_definition_changed: false
+  authority_pin_required: false
+validation:
+  focused:
+    passed: 42
+    failed: 0
+    duration_seconds: 11.04
+  full_suite: pending
+pull_request:
+  number: null
+  head_sha: null
+  certification: pending
+remaining_risks:
+- Hosted certification and merge remain outstanding.
+- Post-merge exact-main certification is not eligible until normal protected merge.

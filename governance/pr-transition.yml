@@ -4,9 +4,9 @@ repository: {full_name: mjgolaszewski/bcf-governance, numeric_id: 1207503211, ba
 activation:
   successor_head_branch: release/2.0.0-activation
   current_topology:
-    ci_graph: {path: governance/ci-graph.yml, sha256: 5789ea9ba07452457ab5f2531fde563bfb73a5813f676fd8b6d77c88ff1423ef}
+    ci_graph: {path: governance/ci-graph.yml, sha256: 5115e6448bf4df12aabd9f4d95b2bf0142ac17c5583f6ededb62ce8cca030ecc}
     protection: {path: governance/github-protection.yml, sha256: 9bab9055ec8b52113a593fbc08c8931ea494a53f9af9e19b3eb3f3789c1efaa7}
-    package_workflow: {path: .github/workflows/governance-pack.yml, sha256: dfce9d01bc1cfc7d8cb8cca9afa656202deab963e9f190115691a788e7b2ae2b}
+    package_workflow: {path: .github/workflows/governance-pack.yml, sha256: 9ace4a4789fa9c0a3d643e52f79d9fbb24ac429d602f3cffba40bb1a331001e8}
   successor_topology:
     ci_graph: {path: governance/ci-graph.yml, sha256: 180667259dd349c4b49d6ae6114caec95d6da2a659e5b7923ae6d1999259fbe2}
     protection: {path: governance/github-protection.yml, sha256: 5f8c6fcd0d569e17050f694571474faa0f7538d12a5d11cc51891cf01c59a53a}
