@@ -60,7 +60,13 @@ validation:
     passed: 123
     failed: 0
     duration_seconds: 18.62
-  full_suite: pending
+  focused_pin_self_authority_workflow_graph:
+    passed: 12
+    failed: 0
+    duration_seconds: 3.74
+  full_suite:
+    expected_nodes: 1270
+    expected_failed: 0
 controller_rotation:
   required: true
   existing_governed_lane: partial_exact_main_package_controller
