@@ -235,11 +235,10 @@ def test_admission_roles_are_derived_from_exact_producer_source_keys() -> None:
     assert payload["workflow_registry"]["admission"]["job_roles"] == {
         "admit": "admission",
         "governance": "producer",
-        "governance-pack": "producer",
     }
     assert payload["admission_jobs"] == [
         {"job_id": "Authenticate exact-main admission and publish pending authority"}
     ]
     assert [value["producer_id"] for value in payload["producers"]] == [
-        "governance", "governance-pack"
+        "governance"
     ]

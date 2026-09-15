@@ -45,30 +45,6 @@ def _run(
         raise subprocess.CalledProcessError(result.returncode, argv)
 
 
-def _source_test_environment() -> dict[str, str]:
-    """Bind subprocess imports to the exact checked-out source under test."""
-
-    environment = dict(os.environ)
-    environment["PYTHONPATH"] = str(REPO_ROOT)
-    return environment
-
-
-def _run_source_tests(evidence: Path) -> None:
-    _run(
-        [
-            sys.executable,
-            "-m",
-            "pytest",
-            "-q",
-            "tests",
-            f"--junitxml={evidence / 'source-tests.xml'}",
-        ],
-        stdout=evidence / "source-tests.stdout",
-        stderr=evidence / "source-tests.stderr",
-        environment=_source_test_environment(),
-    )
-
-
 def build(output: Path, *, authorization: Path, artifact_name: str) -> list[Path]:
     root = output if output.is_absolute() else REPO_ROOT / output
     if root.is_symlink() or not root.resolve().is_relative_to(REPO_ROOT):
@@ -113,8 +89,6 @@ def build(output: Path, *, authorization: Path, artifact_name: str) -> list[Path
             str(lock),
         ]
     )
-    _run([sys.executable, ".github/scripts/bootstrap_test_toolchain.py", "--repo-root", "."])
-    _run_source_tests(evidence)
     environment = dict(os.environ)
     environment["SOURCE_DATE_EPOCH"] = subprocess.run(
         ["git", "show", "-s", "--format=%ct", "HEAD"],

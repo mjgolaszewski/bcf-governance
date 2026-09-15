@@ -69,11 +69,11 @@ def _gate_contract(repo_root: Path, gate_id: str) -> dict[str, Any]:
     executable = registry_gates[str(gate["target"])]
     if not isinstance(executable, dict) or not isinstance(executable.get("invocation"), dict):
         raise EvidenceError(f"gate {gate_id!r} invocation contract is invalid")
-    contract_v2 = str(profile.get("profile_contract_version", "1.0")) == "2.0"
+    contract_owned = str(profile.get("profile_contract_version", "1.0")) in {"2.0", "3.0"}
     evidence = executable.get("evidence", {})
     if not isinstance(evidence, dict):
         raise EvidenceError(f"gate {gate_id!r} evidence contract is invalid")
-    if contract_v2 and override:
+    if contract_owned and override:
         raise EvidenceError(
             "profile-v2 evidence semantics must be owned only by governance/gate-contracts.yml"
         )
@@ -87,7 +87,7 @@ def _gate_contract(repo_root: Path, gate_id: str) -> dict[str, Any]:
         if command_policy == "runtime_smoke"
         else "gate"
     )
-    if contract_v2:
+    if contract_owned:
         kind = str(evidence.get("kind") or default_kind)
         controls = executable.get("negative_controls", [])
         test_contract = evidence.get("test_contract", {})

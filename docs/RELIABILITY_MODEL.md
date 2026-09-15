@@ -1,6 +1,6 @@
 # Reliability Model
 
-This guide owns BCF's engineering failure model, verification economics,
+This guide owns BCF's engineering failure model, verification scope,
 common objections, and the measurements that could support or falsify its
 central thesis. The [README](../README.md) provides the overview,
 [Architecture](ARCHITECTURE.md) owns detailed design positions,
@@ -73,7 +73,7 @@ The analogy to checksums or error-correcting systems is limited but useful:
 additional structured observations can expose disagreement. They do not prove
 that the original specification describes the right product.
 
-## Compute and attention
+## Minimum sufficient verification
 
 BCF deliberately spends compute on structural validation, behavioral tests,
 causal controls, isolated worktrees, exact manifests, evidence sessions,
@@ -81,7 +81,7 @@ provider-state reconstruction, truth computation, artifact verification, and
 scheduled controls. It also adds authoring and maintenance work for the
 contracts that define those checks.
 
-The framework attempts to control that cost:
+The framework limits repeated execution through deterministic applicability:
 
 - cheap deterministic preflight precedes expensive fanout;
 - causal controls target declared invariants and exact failure oracles rather
@@ -89,15 +89,13 @@ The framework attempts to control that cost:
 - exact manifests reject empty or silently reduced test runs;
 - independent lanes may fan out when the resource map permits it;
 - expensive controls may remain scheduled instead of extending every PR;
-- one evidence session prevents completed work from becoming ambiguous input;
+- one verification plan reuses applicable receipts and schedules only unresolved claims;
   and
 - graph changes may optimize setup and ordering while preserving controls.
 
-The intended economic question is not whether verification is free. It is
-whether its marginal cost is justified by lower expected defect, remediation,
-audit, and human-reconstruction cost. Individual validation latency and
-sustainable delivery throughput are different measures: BCF may increase the
-former without necessarily improving the latter.
+BCF does not make spending thresholds part of truth, admission, lifecycle,
+retention, or release authority. Resource measurements may be operational
+telemetry, but they cannot change correctness decisions.
 
 ## Common objections
 

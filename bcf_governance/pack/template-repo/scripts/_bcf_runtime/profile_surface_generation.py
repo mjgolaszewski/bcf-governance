@@ -13,7 +13,7 @@ from .ci_github_actions import action_pin
 
 def write_makefile(repo_root: Path, contract: dict[str, Any]) -> None:
     """Render the profile-owned Makefile fragment."""
-    if contract.get("profile_contract_version") == "2.0":
+    if contract.get("profile_contract_version") in {"2.0", "3.0"}:
         from .profile_v2_surfaces import render_v2_makefile
 
         (repo_root / "Makefile.fragment").write_text(
@@ -63,7 +63,7 @@ def write_workflow(repo_root: Path, contract: dict[str, Any]) -> None:
         (repo_root / "governance-profile.yml").read_text(encoding="utf-8")
     )
     labels = profile.get("ci_profile", {}).get("runner_labels", ["ubuntu-latest"])
-    if contract.get("profile_contract_version") == "2.0":
+    if contract.get("profile_contract_version") in {"2.0", "3.0"}:
         from .profile_v2_surfaces import render_v2_workflow
 
         path = repo_root / ".github/workflows/governance.yml"

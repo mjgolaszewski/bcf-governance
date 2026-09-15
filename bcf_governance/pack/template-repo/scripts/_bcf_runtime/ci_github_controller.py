@@ -330,7 +330,7 @@ def finalize(
         "session_id": secrets.token_hex(16),
         "subject": {"commit_sha": main.checkout_sha, "tree_sha": main.tree_sha},
         "profile": "standard",
-        "profile_contract_version": "2.0",
+        "profile_contract_version": "3.0",
         "producer": {
             "kind": "workflow",
             "provider": "github",

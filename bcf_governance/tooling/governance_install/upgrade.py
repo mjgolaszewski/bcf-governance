@@ -332,21 +332,11 @@ def _upgrade_governance_profile(template_root: Path, target_root: Path) -> None:
     template_release = template.get("release_gate_profile")
     if isinstance(template_release, dict) and isinstance(template_release.get("gates"), dict):
         gates.setdefault("governance_exposure_scan", template_release["gates"].get("governance_exposure_scan"))
-        security_review = template_release["gates"].get("security_review")
-        if isinstance(security_review, dict) and "security_review" not in gates:
-            security_review = dict(security_review)
-            selected = payload.get("profile")
-            if isinstance(selected, dict) and selected.get("selected") == "lite":
-                security_review["status"] = "deferred"
-            gates["security_review"] = security_review
 
     ci_profile = _ensure_mapping(payload, "ci_profile", template.get("ci_profile"))
     template_ci = template.get("ci_profile")
     if isinstance(template_ci, dict):
         _ensure_list_items(ci_profile, "required_push_jobs", ["governance-exposure-scan"])
-        selected = payload.get("profile")
-        if not (isinstance(selected, dict) and selected.get("selected") == "lite"):
-            _ensure_list_items(ci_profile, "required_push_jobs", ["security-review"])
     _write_yaml_mapping(path, payload)
 
 

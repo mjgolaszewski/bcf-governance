@@ -3,6 +3,12 @@
   "type": "object",
   "additionalProperties": false,
   "required": ["document", "schema_version", "target_profile", "gates", "gate_catalog", "provenance"],
+  "allOf": [
+    {
+      "if": {"properties": {"profile_contract_version": {"const": "3.0"}}, "required": ["profile_contract_version"]},
+      "then": {"required": ["claim_model"]}
+    }
+  ],
   "properties": {
     "document": {
       "type": "object",
@@ -10,12 +16,12 @@
       "required": ["kind", "version", "path"],
       "properties": {
         "kind": {"const": "gate_contract_registry"},
-        "version": {"const": "1.0"},
+        "version": {"enum": ["1.0", "2.0"]},
         "path": {"const": "governance/gate-contracts.yml"}
       }
     },
-    "schema_version": {"const": "1.0"},
-    "profile_contract_version": {"enum": ["1.0", "2.0"]},
+    "schema_version": {"enum": ["1.0", "2.0"]},
+    "profile_contract_version": {"enum": ["1.0", "2.0", "3.0"]},
     "target_profile": {"enum": ["lite", "standard", "regulated"]},
     "interpreter_contract": {
       "type": "object",
@@ -37,6 +43,7 @@
         "default_timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 21600}
       }
     },
+    "claim_model": {"$ref": "#/$defs/claimModel"},
     "gates": {
       "type": "object",
       "minProperties": 1,
@@ -46,6 +53,62 @@
     "provenance": {"type": "object"}
   },
   "$defs": {
+    "pathPattern": {"type": "string", "minLength": 1},
+    "claimModel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "dependency_sets", "execution_groups", "claims"],
+      "properties": {
+        "version": {"const": "1.0"},
+        "dependency_sets": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "array", "minItems": 1, "uniqueItems": true,
+            "items": {"$ref": "#/$defs/pathPattern"}
+          }
+        },
+        "execution_groups": {
+          "type": "object", "minProperties": 1,
+          "additionalProperties": {
+            "type": "object", "additionalProperties": false,
+            "required": ["producer", "claims"],
+            "properties": {
+              "producer": {"type": "string", "minLength": 1},
+              "claims": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+              "captured_by_preflight": {"type": "boolean"}
+            }
+          }
+        },
+        "claims": {
+          "type": "object", "minProperties": 1,
+          "additionalProperties": {
+            "type": "object", "additionalProperties": false,
+            "required": ["truth", "execution_group", "dependencies", "qualification_scope", "profiles"],
+            "properties": {
+              "truth": {"type": "string", "minLength": 1},
+              "execution_group": {"type": "string", "minLength": 1},
+              "legacy_gate": {"type": "string", "minLength": 1},
+              "dependencies": {
+                "type": "object", "additionalProperties": false,
+                "required": ["subject", "detector", "test_population", "toolchain", "trust"],
+                "properties": {
+                  "subject": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+                  "detector": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+                  "test_population": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+                  "toolchain": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+                  "trust": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+                }
+              },
+              "qualification_scope": {"enum": ["detector", "subject", "none"]},
+              "profiles": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["normal", "regulated", "self"]}},
+              "freshness_limit_seconds": {"type": "integer", "minimum": 1},
+              "whole_tree": {"type": "boolean"}
+            }
+          }
+        }
+      }
+    },
     "gate": {
       "type": "object",
       "additionalProperties": false,
@@ -66,7 +129,7 @@
         "evidence": {"type": "object"},
         "negative_controls": {
           "type": "array",
-          "minItems": 1,
+          "minItems": 0,
           "items": {
             "type": "object",
             "additionalProperties": false,

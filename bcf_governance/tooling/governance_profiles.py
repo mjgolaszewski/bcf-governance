@@ -331,8 +331,8 @@ def required_targets(
     gates = payload.get("release_gate_profile", {}).get("gates", {})
     if not isinstance(gates, dict):
         raise ProfileContractError("governance-profile.yml gates are missing")
-    if contract_version not in {"1.0", "2.0"}:
-        raise ProfileContractError("profile contract version must be 1.0 or 2.0")
+    if contract_version not in {"1.0", "2.0", "3.0"}:
+        raise ProfileContractError("profile contract version must be 1.0, 2.0, or 3.0")
     if profile == "lite":
         return set(BUILTIN_TARGETS)
     targets = {
@@ -400,7 +400,7 @@ def load_contract(
         raise ProfileContractError(f"--profile-config is required for {profile}")
     merged = {
         **_builtin_contracts(),
-        **(_v2_builtin_contracts() if contract_version == "2.0" else {}),
+        **(_v2_builtin_contracts() if contract_version in {"2.0", "3.0"} else {}),
         **raw_gates,
     }
     missing = sorted(targets - set(merged))
@@ -453,11 +453,18 @@ def load_contract(
     gate_catalog = profile_payload.get("release_gate_profile", {}).get("gates")
     if not isinstance(gate_catalog, dict):
         raise ProfileContractError("governance profile gate catalog is missing")
+    persisted_claim_model = None
+    if contract_version == "3.0":
+        persisted = _load_yaml(repo_root / "governance/gate-contracts.yml")
+        persisted_claim_model = persisted.get("claim_model")
+        if not isinstance(persisted_claim_model, dict):
+            raise ProfileContractError("profile contract 3.0 requires claim_model")
     return {
-        "schema_version": "1.0",
+        "schema_version": "2.0" if contract_version == "3.0" else "1.0",
         "profile_contract_version": contract_version,
         "target_profile": profile,
         "execution_policy": {"default_timeout_seconds": 1800},
+        **({"claim_model": persisted_claim_model} if persisted_claim_model else {}),
         "gates": gates,
         "gate_catalog": gate_catalog,
         "provenance": provenance,
@@ -565,9 +572,12 @@ def apply_profile_contract(
     active_targets = set(contract["gates"])
     profile = _load_yaml(repo_root / "governance-profile.yml")
     contract_version = str(contract.get("profile_contract_version", "1.0"))
-    if contract_version not in {"1.0", "2.0"}:
-        raise ProfileContractError("profile contract version must be 1.0 or 2.0")
+    if contract_version not in {"1.0", "2.0", "3.0"}:
+        raise ProfileContractError("profile contract version must be 1.0, 2.0, or 3.0")
     profile["profile_contract_version"] = contract_version
+    profile["assurance_scope"] = (
+        "regulated" if profile_name == "regulated" else profile.get("assurance_scope", "normal")
+    )
     profile["profile"]["selected"] = profile_name
     profile.setdefault(
         "semantic_capabilities",
@@ -589,7 +599,7 @@ def apply_profile_contract(
     persisted = {
         "document": {
             "kind": "gate_contract_registry",
-            "version": "1.0",
+            "version": "2.0" if contract_version == "3.0" else "1.0",
             "path": "governance/gate-contracts.yml",
         },
         **contract,
@@ -660,19 +670,19 @@ def promote(
     target_version = contract_version or current_version
     if current not in PROFILE_ORDER or target_profile not in PROFILE_ORDER:
         raise ProfileContractError("current and target profiles must be lite, standard, or regulated")
-    if current_version not in {"1.0", "2.0"} or target_version not in {"1.0", "2.0"}:
-        raise ProfileContractError("profile contract version must be 1.0 or 2.0")
+    if current_version not in {"1.0", "2.0", "3.0"} or target_version not in {"1.0", "2.0", "3.0"}:
+        raise ProfileContractError("profile contract version must be 1.0, 2.0, or 3.0")
     profile_advances = PROFILE_ORDER[target_profile] > PROFILE_ORDER[str(current)]
-    contract_advances = current_version == "1.0" and target_version == "2.0"
+    contract_advances = {"1.0": 1, "2.0": 2, "3.0": 3}[target_version] > {"1.0": 1, "2.0": 2, "3.0": 3}[current_version]
     if PROFILE_ORDER[target_profile] < PROFILE_ORDER[str(current)] or (
-        current_version == "2.0" and target_version == "1.0"
+        {"1.0": 1, "2.0": 2, "3.0": 3}[target_version] < {"1.0": 1, "2.0": 2, "3.0": 3}[current_version]
     ):
         raise ProfileContractError("profile and contract promotion must be monotonic")
     if not profile_advances and not contract_advances:
         raise ProfileContractError(
             f"profile promotion must advance beyond {current} contract {current_version}"
         )
-    if target_version == "2.0":
+    if target_version in {"2.0", "3.0"}:
         from .profile_contract_v2 import validate_profile_v2_readiness
 
         validate_profile_v2_readiness(repo_root, profile=target_profile)

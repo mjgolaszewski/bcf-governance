@@ -113,12 +113,11 @@ def build_input_bundle(
                 int(item["expanded_size"]) for item in objects
             ),
         }
-        if payload["total_archive_bytes"] > min(
-            int(contract["budgets"]["maximum_new_bytes_per_run"]),
-            int(contract["budgets"]["maximum_actions_bytes"]),
+        if payload["total_archive_bytes"] > int(
+            contract["provider"]["max_asset_bytes"]
         ):
             raise EvidenceStorageError(
-                "evidence input bundle exceeds the preflight storage budget"
+                "evidence input bundle exceeds the provider handoff safety limit"
             )
         temporary.mkdir(parents=True, exist_ok=True)
         (temporary / CONTRACT_NAME).write_bytes((root / CONTRACT_PATH).read_bytes())

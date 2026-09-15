@@ -1,0 +1,47 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 25 Plan
+  id: project-phase-25-plan
+  version: 1.0.0
+  generated_at_utc: '2026-09-14T00:00:00Z'
+  status: active
+  path: plans/phase-25-plan.yml
+phase:
+  id: P25
+  build_block: dependency-scoped-correction-2.0.0
+  planner: codex
+  date: '2026-09-14'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - profile-v3 claim and dependency-scoped evidence contracts with explicit migration
+  - dynamic execution planning with authenticated prior evidence reuse and detector
+    qualification
+  - consolidated candidate verification and bounded exact-artifact release checks
+  - derived lifecycle closure, failure envelopes, observability, documentation, and
+    complete acceptance proof
+  parallelizable_workstreams:
+  - id: P25-WS1
+    name: 'P25-WS1: contract and migration boundary'
+  - id: P25-WS2
+    name: 'P25-WS2: planner, qualification, and truth derivation'
+  - id: P25-WS3
+    name: 'P25-WS3: CI and release topology simplification'
+  - id: P25-WS4
+    name: 'P25-WS4: validation, documentation, and closeout'
+  hard_dependencies:
+  - P24
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: keep the phase narrowly scoped to declared deliverables and update canonical
+    governed artifacts in the same change
+verification_plan:
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest -q tests

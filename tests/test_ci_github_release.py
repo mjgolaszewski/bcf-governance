@@ -243,6 +243,7 @@ def _release_inputs(tmp_path: Path) -> dict[str, object]:
             },
             "release_artifacts": {wheel.name: _sha(wheel), sdist.name: _sha(sdist)},
             "evidence": {path.name: _sha(path) for path in runtime_evidence},
+            "source_mapping": {"status": "exact", "mapped_files": 1},
         },
     )
     build = _json(

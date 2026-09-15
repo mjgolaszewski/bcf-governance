@@ -596,7 +596,7 @@ def test_pr_evaluation_allows_progress_without_claiming_phase_closure(
     assert pr_report["effective_state"] == "planned"
     assert pr_report["release_readiness"]["effective_state"] == "completed"
     assert closure_report["status"] == "fail"
-    assert "phase_not_completed" in closure_report["issues"]
+    assert "phase_effective_state_planned" in closure_report["issues"]
     assert any(issue.startswith("hotfix_HF-001_") for issue in closure_report["issues"])
     release_attempt = subprocess.run(
         [

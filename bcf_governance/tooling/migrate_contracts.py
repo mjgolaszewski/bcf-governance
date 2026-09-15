@@ -56,8 +56,8 @@ def _git_root(repo_root: Path) -> None:
 
 def _migration_contract(repo_root: Path, profile: str) -> dict[str, Any]:
     if profile == "lite":
-        return load_contract(repo_root, "lite", None, contract_version="2.0")
-    return promote(repo_root, profile, None, contract_version="2.0")
+        return load_contract(repo_root, "lite", None, contract_version="3.0")
+    return promote(repo_root, profile, None, contract_version="3.0")
 
 
 def plan_contract_migration(repo_root: Path) -> tuple[ContractMigrationPlan, dict[str, Any] | None]:
@@ -70,7 +70,7 @@ def plan_contract_migration(repo_root: Path) -> tuple[ContractMigrationPlan, dic
     if selected not in {"lite", "standard", "regulated"}:
         raise ContractMigrationError("governance profile must be lite, standard, or regulated")
     source_version = str(profile_payload.get("profile_contract_version", "1.0"))
-    if source_version not in {"1.0", "2.0"}:
+    if source_version not in {"1.0", "2.0", "3.0"}:
         raise ContractMigrationError("profile contract version is not readable")
 
     blockers: list[str] = []
@@ -83,14 +83,21 @@ def plan_contract_migration(repo_root: Path) -> tuple[ContractMigrationPlan, dic
                 "CI authority 1.0 needs mechanically pinned 1.1 workflow identities before migration"
             )
     graph_path = repo_root / "governance/ci-graph.yml"
-    if graph_path.exists() and str(_yaml(graph_path).get("profile_contract_version", "1.0")) != "2.0":
+    if graph_path.exists() and str(_yaml(graph_path).get("profile_contract_version", "1.0")) != "3.0":
         blockers.append(
-            "CI graph must be explicitly upgraded to profile contract 2.0 and rendered before migration"
+            "CI graph must be explicitly upgraded to profile contract 3.0 and rendered before migration"
         )
-    if source_version == "2.0":
+    storage_path = repo_root / "governance/evidence-storage.yml"
+    storage_requires_migration = False
+    if storage_path.is_file():
+        storage = _yaml(storage_path)
+        storage_requires_migration = "budgets" in storage or str(
+            storage.get("schema_version", "1.0")
+        ) != "2.0"
+    if source_version == "3.0" and not storage_requires_migration:
         status = "current" if not blockers else "blocked"
         return (
-            ContractMigrationPlan(status, source_version, "2.0", authority_version, (), tuple(blockers)),
+            ContractMigrationPlan(status, source_version, "3.0", authority_version, (), tuple(blockers)),
             None,
         )
     contract: dict[str, Any] | None = None
@@ -104,9 +111,10 @@ def plan_contract_migration(repo_root: Path) -> tuple[ContractMigrationPlan, dic
         ContractMigrationPlan(
             status,
             source_version,
-            "2.0",
+            "3.0",
             authority_version,
-            tuple(MANAGED_PROFILE_PATHS) if not blockers else (),
+            tuple((*MANAGED_PROFILE_PATHS, "governance/evidence-storage.yml"))
+            if not blockers else (),
             tuple(blockers),
         ),
         contract,
@@ -124,6 +132,17 @@ def apply_contract_migration(repo_root: Path) -> ContractMigrationPlan:
 
     def mutate(shadow: Path) -> None:
         apply_profile_contract(shadow, contract, write_workflow=False)
+        storage_path = shadow / "governance/evidence-storage.yml"
+        if storage_path.is_file():
+            storage = _yaml(storage_path)
+            storage.pop("budgets", None)
+            storage["schema_version"] = "2.0"
+            document = storage.get("document")
+            if isinstance(document, dict):
+                document["version"] = "2.0.0"
+            storage_path.write_text(
+                yaml.safe_dump(storage, sort_keys=False), encoding="utf-8"
+            )
         validation = subprocess.run(
             [
                 sys.executable,
@@ -146,15 +165,15 @@ def apply_contract_migration(repo_root: Path) -> ContractMigrationPlan:
 
     apply_transaction(
         repo_root.resolve(),
-        managed_paths=MANAGED_PROFILE_PATHS,
+        managed_paths=(*MANAGED_PROFILE_PATHS, "governance/evidence-storage.yml"),
         mutate_shadow=mutate,
         preserve_git_history=True,
     )
     applied, _ = plan_contract_migration(repo_root)
     if applied.status != "current":
-        raise ContractMigrationError("migration did not produce active profile contract 2.0")
+        raise ContractMigrationError("migration did not produce active profile contract 3.0")
     return ContractMigrationPlan(
-        "applied", "1.0", "2.0", applied.authority_version, plan.changed_paths, ()
+        "applied", plan.source_version, "3.0", applied.authority_version, plan.changed_paths, ()
     )
 
 

@@ -30,11 +30,12 @@ def _repo(tmp_path: Path, *, profile_version: str) -> Path:
     return repo
 
 
-def test_current_contract_needs_no_probabilistic_migration(tmp_path: Path) -> None:
+def test_v2_contract_without_v3_claim_model_fails_closed(tmp_path: Path) -> None:
     plan, contract = plan_contract_migration(_repo(tmp_path, profile_version="2.0"))
-    assert plan.status == "current"
+    assert plan.status == "blocked"
     assert plan.changed_paths == ()
     assert contract is None
+    assert plan.blockers
 
 
 def test_legacy_authority_and_graph_are_reported_together(tmp_path: Path) -> None:

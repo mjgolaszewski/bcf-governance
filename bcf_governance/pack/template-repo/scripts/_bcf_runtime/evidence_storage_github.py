@@ -13,19 +13,15 @@ from .evidence_storage_archives import materialize_bundle
 from .evidence_storage_contracts import (
     CONTRACT_PATH,
     EvidenceStorageError,
-    StorageUsage,
     load_input_manifest,
     load_input_reference,
     load_storage_contract,
     load_storage_contract_path,
     validate_freshness,
-    validate_storage_budget,
     write_canonical_json,
 )
 from .evidence_storage_github_api import GitHubEvidenceAPI
 from .evidence_storage_github_releases import (
-    durable_release_inventory,
-    durable_release_records,
     provider_digest,
     publish_release_assets,
     verify_release,
@@ -53,45 +49,6 @@ def _expected_assets(bundle_dir: Path, manifest: dict[str, Any]) -> dict[str, Pa
         name = str(item["asset_name"])
         paths[name] = bundle_dir / "objects" / name
     return dict(sorted(paths.items()))
-
-
-def provider_storage_usage(
-    api: GitHubEvidenceAPI,
-    *,
-    publication_api: GitHubEvidenceAPI | None = None,
-    contract: dict[str, Any],
-    repository: str,
-    run_id: str,
-    artifact_name: str,
-) -> StorageUsage:
-    """Count Actions with api and releases with a draft-visible publication API."""
-
-    repository_artifacts = api.repository_artifacts(repository)
-    matches = [
-        item
-        for item in repository_artifacts
-        if item.get("name") == artifact_name
-        and isinstance(item.get("workflow_run"), dict)
-        and str(item["workflow_run"].get("id")) == str(run_id)
-        and item.get("expired") is not True
-    ]
-    if len(matches) != 1 or not isinstance(matches[0].get("size_in_bytes"), int):
-        raise EvidenceStorageError("storage budget cannot identify the exact handoff")
-    durable_releases = durable_release_inventory(
-        publication_api or api, contract=contract, repository=repository
-    )
-    usage = StorageUsage(
-        actions_bytes=sum(
-            int(item.get("size_in_bytes", 0))
-            for item in repository_artifacts
-            if item.get("expired") is not True
-        ),
-        durable_unique_bytes=sum(durable_releases.values()),
-        object_count=len(durable_releases),
-        new_bytes=int(matches[0]["size_in_bytes"]),
-    )
-    validate_storage_budget(contract, usage)
-    return usage
 
 
 def _authenticate_source(
@@ -240,32 +197,6 @@ def _publish_input_bundle(
     digest = manifest_digest(manifest)
     manifest_tag = f"{provider['tag_prefix']}-manifest-{digest}"
     paths = _expected_assets(bundle_dir, manifest)
-    expected_release_bytes = {
-        (
-            manifest_tag
-            if name == MANIFEST_NAME
-            else f"{provider['tag_prefix']}-object-{_file_sha256(path)}"
-        ): path.stat().st_size
-        for name, path in paths.items()
-    }
-    existing_releases = durable_release_records(
-        publication_api or api, contract=contract, repository=repository
-    )
-    new_bytes = sum(
-        max(size - existing_releases.get(tag, (0, 0))[1], 0)
-        for tag, size in expected_release_bytes.items()
-    )
-    validate_storage_budget(
-        contract,
-        StorageUsage(
-            actions_bytes=0,
-            durable_unique_bytes=sum(size for _, size in existing_releases.values())
-            + new_bytes,
-            object_count=len(existing_releases)
-            + len(set(expected_release_bytes) - set(existing_releases)),
-            new_bytes=new_bytes,
-        ),
-    )
     published_assets: list[dict[str, Any]] = []
     for name, path in sorted(paths.items()):
         if name == MANIFEST_NAME:
@@ -586,19 +517,8 @@ def publish_action_handoff(
         provider = contract["provider"]
         if provider["repository"] != repository:
             raise EvidenceStorageError("evidence handoff contract uses the wrong repository")
-        provider_storage_usage(
-            api,
-            publication_api=publication_api,
-            contract=contract,
-            repository=repository,
-            run_id=str(run_id),
-            artifact_name=artifact_name,
-        )
         archive = temporary / "handoff.zip"
-        maximum = min(
-            int(provider["max_asset_bytes"]),
-            int(contract["budgets"]["maximum_new_bytes_per_run"]),
-        )
+        maximum = int(provider["max_asset_bytes"])
         api.download_action_artifact(
             repository,
             artifact.get("id"),
@@ -613,7 +533,7 @@ def publish_action_handoff(
             bundle,
             maximum_members=int(contract["archive_safety"]["maximum_members"]) + 3,
             maximum_bytes=int(contract["archive_safety"]["maximum_expanded_bytes"])
-            + int(contract["budgets"]["maximum_new_bytes_per_run"]),
+            + int(provider["max_asset_bytes"]),
             maximum_expansion_ratio=int(
                 contract["archive_safety"]["maximum_expansion_ratio"]
             ),
