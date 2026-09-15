@@ -99,7 +99,7 @@ class TransitionAPI:
         for expected in self.contract["activation"]["successor_topology"].values():
             expected["sha256"] = hashlib.sha256(self.successor_files[expected["path"]]).hexdigest()
         self.head = HEAD
-        self.branch = "release/2.0.0-activation"
+        self.branch = "release/2.0.0-final-activation"
         self.run_record = {
             "id": 30,
             "run_attempt": 1,
@@ -356,14 +356,16 @@ def test_successor_equivalence_is_trusted_reconstructed_and_exact() -> None:
     result = _verify(TransitionAPI())
     assert result["state"] == "successful"
     assert result["reason"] == "authenticated_bcf2_transition_equivalence"
-    assert result["transition"]["subject"] == {"commit_sha": HEAD, "tree_sha": HEAD_TREE, "branch": "release/2.0.0-activation"}
+    assert result["transition"]["subject"] == {"commit_sha": HEAD, "tree_sha": HEAD_TREE, "branch": "release/2.0.0-final-activation"}
 
 
 def test_ordinary_missing_package_and_carrier_self_use_remain_pending(tmp_path: Path) -> None:
     for branch in (
         "ordinary/change",
+        "release/2.0.0-activation",
         "release/2.0.0-transition-carrier",
         "transition/2.0-successor-snapshot-refresh",
+        "transition/2.0-successor-branch-refresh",
     ):
         api = TransitionAPI()
         api.branch = branch
@@ -375,6 +377,33 @@ def test_ordinary_missing_package_and_carrier_self_use_remain_pending(tmp_path: 
         )
         assert result["computed_state"] == "pending"
         assert result["producers"][1] == {"id": "package", "state": "pending", "reason": "not_started"}
+
+
+@pytest.mark.parametrize(
+    "branch",
+    [
+        "release/2.0.0-activation",
+        "release/2.0.0-",
+        "release/2.0.0-final",
+        "release/2.0.0-final-activation-extra",
+        "Release/2.0.0-final-activation",
+        "release/2.0.0-FINAL-activation",
+        "arbitrary/change",
+    ],
+)
+def test_only_exact_final_successor_branch_is_authorized(branch: str) -> None:
+    api = TransitionAPI()
+    api.branch = branch
+    assert transition_is_applicable(
+        api,
+        repository=REPOSITORY,
+        main=_main(),
+        protection=load_protection(ROOT),
+        head_sha=HEAD,
+        head_branch=branch,
+        package_state={"id": "package", "state": "pending", "reason": "not_started"},
+        schema_root=ROOT,
+    ) is None
 
 
 @pytest.mark.parametrize(

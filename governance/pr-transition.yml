@@ -2,7 +2,7 @@ document: {kind: pr_transition, name: BCF 2.0 One-Shot PR Transition, id: bcf-2-
 schema_version: '1.0'
 repository: {full_name: mjgolaszewski/bcf-governance, numeric_id: 1207503211, base_branch: main}
 activation:
-  successor_head_branch: release/2.0.0-activation
+  successor_head_branch: release/2.0.0-final-activation
   current_topology:
     ci_graph: {path: governance/ci-graph.yml, sha256: 757a7bdc5e72e50d643391a0d9add599214a232ce4ad17edc811277eedeed648}
     protection: {path: governance/github-protection.yml, sha256: 9bab9055ec8b52113a593fbc08c8931ea494a53f9af9e19b3eb3f3789c1efaa7}
