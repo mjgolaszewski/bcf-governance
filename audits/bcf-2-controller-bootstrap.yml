@@ -135,6 +135,13 @@ local_validation:
   confirmation_projection_focused:
     passed: 30
     failed: 0
+  confirmation_authority_focused:
+    passed: 42
+    failed: 0
+  confirmation_full_suite:
+    passed: 1246
+    failed: 0
+    duration_seconds: 1142.74
 remaining_risks:
 - The provider-confirmed installation does not become workflow authority until the protected confirmation PR certifies and merges.
 - Transition recognition is not a complete trust fact until a fresh full exact-main cycle succeeds after confirmation merge.
