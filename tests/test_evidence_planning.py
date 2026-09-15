@@ -20,6 +20,9 @@ from bcf_governance.tooling.evidence_planning import (
 from bcf_governance.tooling.evidence_execution import EvidenceError
 
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
 def _write(path: Path, value: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(value, encoding="utf-8")
@@ -163,6 +166,26 @@ def _registry_change(root: Path, mutate) -> None:
     payload = yaml.safe_load(path.read_text(encoding="utf-8"))
     mutate(payload)
     _commit(root, "governance/gate-contracts.yml", yaml.safe_dump(payload, sort_keys=False))
+
+
+def test_source_syntax_format_covers_template_scripts_and_tests() -> None:
+    manifest = build_dependency_manifest(REPO_ROOT, ["source-syntax-format"])
+    subject = next(
+        item
+        for item in manifest["claim_dependencies"]["source-syntax-format"]
+        if item["class"] == "subject"
+    )
+    covered = set(subject["paths"])
+    tracked = subprocess.check_output(
+        ["git", "ls-files", "--", "template-repo/scripts", "tests"],
+        cwd=REPO_ROOT,
+        text=True,
+    ).splitlines()
+    required = {path for path in tracked if path.endswith(".py")}
+    assert required
+    assert any(path.startswith("template-repo/scripts/") for path in required)
+    assert any(path.startswith("tests/") for path in required)
+    assert required <= covered
 
 
 def test_documentation_only_change_reuses_unrelated_claims(tmp_path: Path) -> None:
