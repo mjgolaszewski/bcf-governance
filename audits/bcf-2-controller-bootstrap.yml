@@ -80,6 +80,19 @@ milestones:
   probe: pending
   confirmation_projection: pending
   fresh_exact_main_certification: pending
+local_validation:
+  full_suite:
+    passed: 1244
+    failed: 2
+    duration_seconds: 1151.90
+    disposition: Both failures were the expected stale editorial inventory after adding this governed audit and changing the changelog.
+  editorial_inventory_refresh:
+    generator: .github/scripts/build_editorial_audit.py
+    result: success
+  failed_checks_focused_rerun:
+    passed: 4
+    failed: 0
+  governance_yaml: success
 remaining_risks:
 - The target projection is not authoritative until its protected PR is certified and merged.
 - The old controller remains the installed controller until authenticated bootstrap and probe complete on both declared trusted runners.
