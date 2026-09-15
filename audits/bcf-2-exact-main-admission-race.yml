@@ -12,8 +12,8 @@ scope:
   publisher_change_authorized: false
   polling_or_retry_authorized: false
 authoritative_subject:
-  commit_sha: 1e2670edf24cc07671787ab368a482b6432c065a
-  tree_sha: 6cf392b68002b6e39950da43b035e2394b89f3d8
+  commit_sha: 78f12c6d4acc6e389c6deef41c4933f3a46ceb36
+  tree_sha: 0309bc6462d281132963547a6bc24a6f8e4e6915
 failure:
   admission_run_id: '34974854182'
   admission_run_attempt: '1'
@@ -67,14 +67,54 @@ validation:
   full_suite:
     expected_nodes: 1270
     expected_failed: 0
+    passed: 1270
+    failed: 0
+    duration_seconds: 1150.29
+post_merge_pre_rotation:
+  admission_run_id: '34988666903'
+  admission_run_attempt: '1'
+  admission_result: failure
+  governance_result: stale trusted controller target for changed runtime files
+  package_jobs_complete_and_successful: true
+  controller_artifact_emitted: true
+  finalizer_run_id: '34988777510'
+  finalizer_run_attempt: '1'
+  installed_controller_invoked: f493677c416c0f9811c0de1f635ba2e53c6237f0
+  finalizer_result: failure
+  finalizer_rejection: installed controller does not recognize new locator-only arguments before rotation
+  publisher_run_id: '34988805827'
+  publisher_result: success
 controller_rotation:
   required: true
   existing_governed_lane: partial_exact_main_package_controller
-  status: awaiting_repair_pr_merge
+  status: target_projection_in_progress
+  target:
+    commit_sha: 78f12c6d4acc6e389c6deef41c4933f3a46ceb36
+    tree_sha: 0309bc6462d281132963547a6bc24a6f8e4e6915
+    producer_run_id: '34988666903'
+    producer_run_attempt: '1'
+    artifact_id: '10403843658'
+    artifact_name: bcf-trusted-control-78f12c6d4acc6e389c6deef41c4933f3a46ceb36-1
+    provider_digest: sha256:66970660031362d96cc0b76dfb0df009adb203dba7b4c8da64b852e2b415b9f7
+    wheel_sha256: e3b473c32baf629efffb41d2e714b42e1f70ac3ef6ee598efd32faa0ee3a9487
+  target_projection_first_validation:
+    governance_run_id: '34989673177'
+    governance_run_attempt: '1'
+    package_run_id: '34989673084'
+    package_run_attempt: '1'
+    package_jobs_complete_and_successful: true
+    governance_full_test_result: one failed and 1269 passed
+    failure: mechanically stale transition current-topology graph anchor
+  current_topology_anchors:
+    ci_graph_sha256: 4c0d086b449d6f586cd2f2674735f44907b04ac81f05661541507e6954768bc7
+    package_workflow_sha256: 0a982a745a0558c774bc8ec6fdebeddf97a0e95e1f9b408cf1c25a72c7e450bc
+    protection_sha256: 9bab9055ec8b52113a593fbc08c8931ea494a53f9af9e19b3eb3f3789c1efaa7
 pull_request:
-  number: null
-  head_sha: null
-  certification: pending
+  number: 197
+  head_sha: fe6576e2aef3a962ae850732058d4331fcf00404
+  merge_commit_sha: 78f12c6d4acc6e389c6deef41c4933f3a46ceb36
+  certification: success
+  merge_state: merged
 remaining_risks:
-- The repaired code cannot affect trusted finalization until a normally certified repair merge is followed by the existing governed controller rotation and confirmation sequence.
+- The repaired code cannot affect trusted finalization until the existing governed controller target, bootstrap, probe, and confirmation sequence completes.
 - Fresh post-rotation exact-main success remains mandatory before BCF 2.0 successor work resumes.
