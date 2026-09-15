@@ -26,6 +26,7 @@ from .ci_github_identity import (
     positive_int,
     resolve_main,
 )
+from .ci_pr_transition import transition_is_applicable, verify_transition_equivalence
 from .github_protection import PROTECTION_PATH, load_protection_bytes
 
 
@@ -242,6 +243,34 @@ def finalize_pr(
         )
         for contract in protection["pr_certification"]["producer_workflows"]
     ]
+    by_id = {item["id"]: item for item in producers}
+    package = by_id.get("package")
+    governance = by_id.get("governance")
+    if isinstance(package, dict) and isinstance(governance, dict):
+        transition = transition_is_applicable(
+            api,
+            repository=repository,
+            main=main,
+            protection=protection,
+            head_sha=head_sha,
+            head_branch=head_branch,
+            package_state=package,
+            schema_root=packaged_repo_root(),
+        )
+        if transition is not None:
+            transition_contract, _successor_protection = transition
+            equivalent = verify_transition_equivalence(
+                api,
+                repository=repository,
+                main=main,
+                contract=transition_contract,
+                pr_number=pr_number,
+                head_sha=head_sha,
+                head_tree=head_tree,
+                head_branch=head_branch,
+                governance_state=governance,
+            )
+            producers = [equivalent if item["id"] == "package" else item for item in producers]
     states = {item["state"] for item in producers}
     computed = "failed" if "failed" in states else "pending" if "pending" in states else "successful"
     observation = {

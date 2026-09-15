@@ -310,6 +310,10 @@
       "operation": "copy",
       "sha256": "073f15d70ffc16b379dcdadafa96a6eb32eabebbdf83b3845317efa3dcca5add"
     },
+    "schemas/pr-transition.schema.json": {
+      "operation": "copy",
+      "sha256": "bc151292652720ab656f29cf5dba6bc42bcb2f9c2ac1ff07de6ecab7d67fa51d"
+    },
     "schemas/product-spec.schema.json": {
       "operation": "copy",
       "sha256": "354a2404471958e066bbab7e36194e31101ac3dd67a0d8bb4013ada734aae4db"
@@ -472,7 +476,7 @@
     },
     "scripts/_bcf_runtime/ci_github_pr.py": {
       "operation": "copy",
-      "sha256": "0d56a8954968463baa0a66f68eaa4615322c4e56476410403c02015700231359"
+      "sha256": "0fe9c2a6d4684b1d019104ee85049fa997e7f8dd45c03c7c2ac1a7031e20a39a"
     },
     "scripts/_bcf_runtime/ci_github_release.py": {
       "operation": "copy",
@@ -553,6 +557,10 @@
     "scripts/_bcf_runtime/ci_graph_yaml.py": {
       "operation": "copy",
       "sha256": "f5bfbea710319a5b505d1707b180d4e966856ad9bdde10190cf7cb335f59b564"
+    },
+    "scripts/_bcf_runtime/ci_pr_transition.py": {
+      "operation": "copy",
+      "sha256": "317ca35eb96b79ac5d28c7f0f7a01068f4f841b70fb848cb9f3395b4804e88ce"
     },
     "scripts/_bcf_runtime/ci_self_controller.py": {
       "operation": "copy",
