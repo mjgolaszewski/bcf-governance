@@ -17,6 +17,16 @@ authoritative_main:
   carrier_head_sha: 06e3702d2be092d3c7efe788795dcc30669352d5
   carrier_contract_present: true
   topology: [governance, governance-pack]
+target_projection_merge:
+  pull_request: 194
+  certified_head_sha: 78668cd5d51b3a6081a07d247e6cc325240190a1
+  certification_run_id: '34921739077'
+  certification_run_attempt: '1'
+  certification_check_run_id: '104231275976'
+  certification_app_id: '15368'
+  merge_commit_sha: 381aa7d347d16f8c3c1f5778b32cc993f3dd4933
+  merge_tree_sha: fcd538b798698cffc49a41fd18ff9b9b8237c436
+  merged_at_utc: '2026-09-15T03:01:13Z'
 exact_main_certification:
   repository_id: '1207503211'
   workflow_id: '346274480'
@@ -49,15 +59,44 @@ rotation:
   target_controller_commit_sha: f493677c416c0f9811c0de1f635ba2e53c6237f0
   target_projection_definition_commit: ce862e153d1c6d27a1953ec9a1cf1a3423f6a403
   workflow_authority_definition_commit: ce862e153d1c6d27a1953ec9a1cf1a3423f6a403
-  target_projection_status: protected_pr_open
+  target_projection_status: certified_and_merged
   target_projection_pr: 194
-  bootstrap_run_id: null
-  bootstrap_run_attempt: null
-  probe_run_id: null
-  probe_run_attempt: null
-  installation_status: old_controller_active
+  bootstrap_run_id: '34923516086'
+  bootstrap_run_attempt: '1'
+  probe_run_id: '34923607199'
+  probe_run_attempt: '1'
+  installation_status: provider_confirmed_target_installed
   confirmation_pr: null
   confirmation_exact_main_run_id: null
+bootstrap:
+  workflow_id: '346177113'
+  workflow_definition_commit: ce862e153d1c6d27a1953ec9a1cf1a3423f6a403
+  subject_commit_sha: 381aa7d347d16f8c3c1f5778b32cc993f3dd4933
+  subject_tree_sha: fcd538b798698cffc49a41fd18ff9b9b8237c436
+  run_id: '34923516086'
+  run_attempt: '1'
+  result: success
+  trusted_runners:
+  - {label: bcf-trusted-control-1, runner_id: '24', runner_name: bcf-governance-vm-linux-ci-runner-1, job_id: '104236550171', result: success}
+  - {label: bcf-trusted-control-2, runner_id: '25', runner_name: bcf-governance-vm-linux-ci-runner-2, job_id: '104236550352', result: success}
+probe:
+  workflow_id: '346154319'
+  workflow_definition_commit: ce862e153d1c6d27a1953ec9a1cf1a3423f6a403
+  subject_commit_sha: 381aa7d347d16f8c3c1f5778b32cc993f3dd4933
+  subject_tree_sha: fcd538b798698cffc49a41fd18ff9b9b8237c436
+  run_id: '34923607199'
+  run_attempt: '1'
+  result: success
+  trusted_runners:
+  - {label: bcf-trusted-control-1, runner_id: '24', runner_name: bcf-governance-vm-linux-ci-runner-1, job_id: '104236823275', result: success}
+  - {label: bcf-trusted-control-2, runner_id: '25', runner_name: bcf-governance-vm-linux-ci-runner-2, job_id: '104236823381', result: success}
+provider_confirmation:
+  schema_version: '1.0'
+  sha256: 32a534da67f60541cc35ae69a2e775737569daacaa0106ad97e7c30b9b7717df
+  installed_commit_sha: f493677c416c0f9811c0de1f635ba2e53c6237f0
+  subject_commit_sha: 381aa7d347d16f8c3c1f5778b32cc993f3dd4933
+  subject_tree_sha: fcd538b798698cffc49a41fd18ff9b9b8237c436
+  installed_equals_target: true
 trust_invariants:
   ordinary_topology: governance_plus_governance_pack
   bounded_successor_equivalence_only: true
@@ -75,10 +114,10 @@ pull_request_192:
   merged: false
   head_sha: 09ef6021931032bf7c3efeb21f17dc0e6b36aeeb
 milestones:
-  target_projection: in_progress
-  bootstrap: pending
-  probe: pending
-  confirmation_projection: pending
+  target_projection: completed
+  bootstrap: completed
+  probe: completed
+  confirmation_projection: in_progress
   fresh_exact_main_certification: pending
 local_validation:
   full_suite:
@@ -93,7 +132,9 @@ local_validation:
     passed: 4
     failed: 0
   governance_yaml: success
+  confirmation_projection_focused:
+    passed: 30
+    failed: 0
 remaining_risks:
-- The target projection is not authoritative until its protected PR is certified and merged.
-- The old controller remains the installed controller until authenticated bootstrap and probe complete on both declared trusted runners.
-- Transition recognition is source-covered but is not an installed-controller trust fact until rotation confirmation and fresh exact-main certification complete.
+- The provider-confirmed installation does not become workflow authority until the protected confirmation PR certifies and merges.
+- Transition recognition is not a complete trust fact until a fresh full exact-main cycle succeeds after confirmation merge.

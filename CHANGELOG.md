@@ -8,6 +8,7 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Confirm the carrier-backed exact-main controller installation from authenticated bootstrap and probe runs on both trusted runners.
 - Project the carrier-backed exact-main controller target from authenticated package evidence while keeping the prior installation active until governed bootstrap and probe confirmation.
 - Add a one-shot, fail-closed authority carrier that lets trusted current-main reconstruction authenticate the exact BCF 2.0 successor evidence for the retired package producer without changing the old topology.
 
