@@ -1,0 +1,33 @@
+document: {kind: pr_transition, name: BCF 2.0 One-Shot PR Transition, id: bcf-2-transition, version: 1.0.0, status: active, path: governance/pr-transition.yml}
+schema_version: '1.0'
+repository: {full_name: mjgolaszewski/bcf-governance, numeric_id: 1207503211, base_branch: main}
+activation:
+  successor_head_branch: release/2.0.0-activation
+  current_topology:
+    ci_graph: {path: governance/ci-graph.yml, sha256: 5789ea9ba07452457ab5f2531fde563bfb73a5813f676fd8b6d77c88ff1423ef}
+    protection: {path: governance/github-protection.yml, sha256: 9bab9055ec8b52113a593fbc08c8931ea494a53f9af9e19b3eb3f3789c1efaa7}
+    package_workflow: {path: .github/workflows/governance-pack.yml, sha256: dfce9d01bc1cfc7d8cb8cca9afa656202deab963e9f190115691a788e7b2ae2b}
+  successor_topology:
+    ci_graph: {path: governance/ci-graph.yml, sha256: 180667259dd349c4b49d6ae6114caec95d6da2a659e5b7923ae6d1999259fbe2}
+    protection: {path: governance/github-protection.yml, sha256: 5f8c6fcd0d569e17050f694571474faa0f7538d12a5d11cc51891cf01c59a53a}
+    github_topology: {path: governance/github-ci-topology.yml, sha256: 4a87476cb36055a8820182b2def7b41ffa7ba572defc63727aac7f7031ca3cb8}
+    governance_workflow: {path: .github/workflows/governance.yml, sha256: b769e135061b7bc0ec06fb298923269c46191979855776c09cc574e6b864dca9}
+  retired_producer:
+    id: package
+    path: .github/workflows/governance-pack.yml
+    required_job_names: ['Test package, templates, and release tooling', Verify template architecture boundaries]
+  successor_producer:
+    id: governance
+    path: .github/workflows/governance.yml
+    required_job_names: [Validate governance front door, 'Evidence / Boundaries, contracts, runtime, types, and secrets', 'Evidence / CQRS, module size, exposure, and dependency risk', 'Evidence / Duplication, routers, governance, and ownership', 'Evidence / Full tests, lint, import boundaries, and SBOM', Verify exact-tree governance evidence]
+    artifact_shards: 4
+    required_gate_inventory: [runtime-smoke, security-dependency-audit, security-sbom, security-secret-scan, security-vulnerability-scan, test, typecheck]
+    profile: standard
+    profile_contract_version: '3.0'
+    session_schema_version: '2.0'
+    truth_schema_version: '3.0'
+assurance_mapping:
+- {old_fact: governed-yaml-front-door-validity, disposition: successor_claim, claim: governance-contracts-valid, evidence: preflight_satisfied_claims}
+- {old_fact: canonical-package-projection-and-schema-parity, disposition: successor_test, claim: test, evidence: 'tests.test_pack_sync::test_complete_pack_manifest_check'}
+- {old_fact: python-syntax-across-governed-roots, disposition: successor_claim, claim: source-syntax-format, evidence: preflight_satisfied_claims}
+- {old_fact: exact-main-controller-bundle-construction, disposition: trusted_main_rotation, claim: null, evidence: governance-pack exact-main build_controller path}

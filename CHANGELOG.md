@@ -6,6 +6,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Add a one-shot, fail-closed authority carrier that lets trusted current-main reconstruction authenticate the exact BCF 2.0 successor evidence for the retired package producer without changing the old topology.
+
 ## [1.3.0] - 2026-09-13
 
 ### Fixed
