@@ -97,6 +97,18 @@ controller_rotation:
     artifact_name: bcf-trusted-control-78f12c6d4acc6e389c6deef41c4933f3a46ceb36-1
     provider_digest: sha256:66970660031362d96cc0b76dfb0df009adb203dba7b4c8da64b852e2b415b9f7
     wheel_sha256: e3b473c32baf629efffb41d2e714b42e1f70ac3ef6ee598efd32faa0ee3a9487
+  target_projection_first_validation:
+    governance_run_id: '34989673177'
+    governance_run_attempt: '1'
+    package_run_id: '34989673084'
+    package_run_attempt: '1'
+    package_jobs_complete_and_successful: true
+    governance_full_test_result: one failed and 1269 passed
+    failure: mechanically stale transition current-topology graph anchor
+  current_topology_anchors:
+    ci_graph_sha256: 4c0d086b449d6f586cd2f2674735f44907b04ac81f05661541507e6954768bc7
+    package_workflow_sha256: 0a982a745a0558c774bc8ec6fdebeddf97a0e95e1f9b408cf1c25a72c7e450bc
+    protection_sha256: 9bab9055ec8b52113a593fbc08c8931ea494a53f9af9e19b3eb3f3789c1efaa7
 pull_request:
   number: 197
   head_sha: fe6576e2aef3a962ae850732058d4331fcf00404
