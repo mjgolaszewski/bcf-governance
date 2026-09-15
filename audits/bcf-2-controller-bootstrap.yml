@@ -47,6 +47,8 @@ rotation:
   old_artifact_name: bcf-trusted-control-83950f768908a46117cadc4fdf89bdd2c5d45c40-1
   old_artifact_digest: sha256:75d04fb691d731a64379e8c2b46c41786cbdcc72313d8f6b735e372587a21a4e
   target_controller_commit_sha: f493677c416c0f9811c0de1f635ba2e53c6237f0
+  target_projection_definition_commit: ce862e153d1c6d27a1953ec9a1cf1a3423f6a403
+  workflow_authority_definition_commit: ce862e153d1c6d27a1953ec9a1cf1a3423f6a403
   target_projection_status: locally_projected
   target_projection_pr: null
   bootstrap_run_id: null
