@@ -137,6 +137,8 @@ def finalize_exact_main(
     repository: str,
     collector_run_id: object,
     collector_run_attempt: object,
+    trigger_run_id: object | None = None,
+    trigger_run_attempt: object | None = None,
     output_dir: Path,
 ) -> ExactMainResult:
     """Reconstruct the newest admission and produce one exact-attempt terminal bundle."""
@@ -154,7 +156,12 @@ def finalize_exact_main(
         require_success=False,
     )
     admission_run_id, admission_attempt = select_latest_admission(
-        api, repository=repository, main=main, authority=authority
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        trigger_run_id=trigger_run_id,
+        trigger_run_attempt=trigger_run_attempt,
     )
     producer_runs = collect_same_run_producers(
         api,
