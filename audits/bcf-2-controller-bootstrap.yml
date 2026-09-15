@@ -1,0 +1,84 @@
+document:
+  kind: defect_remediation_audit
+  id: bcf-2-controller-bootstrap
+  version: 1.0.0
+  status: in_progress
+  path: audits/bcf-2-controller-bootstrap.yml
+scope:
+  purpose: Rotate the trusted exact-main controller to the carrier-backed authoritative main before any BCF 2.0 successor PR exists.
+  successor_pr_authorized: false
+  protection_change_authorized: false
+  publisher_change_authorized: false
+  controller_code_change_authorized: false
+authoritative_main:
+  commit_sha: f493677c416c0f9811c0de1f635ba2e53c6237f0
+  tree_sha: cf0a0ed141bcc2f72638f3da6940ddc9dc7eccf1
+  carrier_pr: 193
+  carrier_head_sha: 06e3702d2be092d3c7efe788795dcc30669352d5
+  carrier_contract_present: true
+  topology: [governance, governance-pack]
+exact_main_certification:
+  repository_id: '1207503211'
+  workflow_id: '346274480'
+  workflow_path: .github/workflows/bcf-exact-main.yml
+  workflow_blob_oid: 4021d1069e38dda936a1923f4a52e873a7c8a11f
+  workflow_sha256: 34a00e1efb399341f1214cb2c90dc9e0225d34fc599b093356127da39c4532c9
+  workflow_definition_commit: 365046528d61302fcc88d65197be2946bb59225f
+  event: push
+  run_id: '34916790760'
+  run_attempt: '1'
+  admission_result: success
+  governance_result: failure
+  governance_pack_result: success
+  disposition: Partial exact-main admission is the governed rotation lane; package evidence is complete and authenticated while stale-controller governance remains fail-closed.
+controller_source:
+  artifact_id: '10376059004'
+  artifact_name: bcf-trusted-control-f493677c416c0f9811c0de1f635ba2e53c6237f0-1
+  provider_artifact_digest: sha256:93660f6015b4e5cb8e14c480883057e6a36fd9050eabb36ec7eff896fb717674
+  wheel_sha256: af1754dd4aa5b561597d9fdb20391e74f22493e08c0dce28a2e7bbda1f9e16d7
+  metadata_sha256: 0c159b96c86d845c628ab385a39444b32c2e94a5c7a6a9a2d7d2ef4594992e56
+  manifest_sha256: 9c248a8fcca3e16a7cb12f05630bac2d1802eeaae913cbf124643136ef79a772
+  compiled_pin_sha256: 834b955d5666bafea17fcff5f6c0054b768ab8becc24feb329f140654ff5e84d
+  resolver: existing governed exact-main partial-admission resolver
+  resolved_at_utc: '2026-09-15T01:52:01Z'
+rotation:
+  old_controller_commit_sha: 83950f768908a46117cadc4fdf89bdd2c5d45c40
+  old_artifact_id: '10323253487'
+  old_artifact_name: bcf-trusted-control-83950f768908a46117cadc4fdf89bdd2c5d45c40-1
+  old_artifact_digest: sha256:75d04fb691d731a64379e8c2b46c41786cbdcc72313d8f6b735e372587a21a4e
+  target_controller_commit_sha: f493677c416c0f9811c0de1f635ba2e53c6237f0
+  target_projection_status: locally_projected
+  target_projection_pr: null
+  bootstrap_run_id: null
+  bootstrap_run_attempt: null
+  probe_run_id: null
+  probe_run_attempt: null
+  installation_status: old_controller_active
+  confirmation_pr: null
+  confirmation_exact_main_run_id: null
+trust_invariants:
+  ordinary_topology: governance_plus_governance_pack
+  bounded_successor_equivalence_only: true
+  exact_successor_identity_required: true
+  complete_authenticated_mapped_evidence_required: true
+  candidate_self_assertion_sufficient: false
+  replay_allowed: false
+  publisher_boundary_changed: false
+  pr_certification_context: bcf/pr-certification
+  pr_certification_context_changed: false
+  successor_topology_activated: false
+  ordinary_missing_package_behavior: fail_closed
+pull_request_192:
+  state: OPEN
+  merged: false
+  head_sha: 09ef6021931032bf7c3efeb21f17dc0e6b36aeeb
+milestones:
+  target_projection: in_progress
+  bootstrap: pending
+  probe: pending
+  confirmation_projection: pending
+  fresh_exact_main_certification: pending
+remaining_risks:
+- The target projection is not authoritative until its protected PR is certified and merged.
+- The old controller remains the installed controller until authenticated bootstrap and probe complete on both declared trusted runners.
+- Transition recognition is source-covered but is not an installed-controller trust fact until rotation confirmation and fresh exact-main certification complete.
