@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -85,6 +87,50 @@ def test_packaged_template_resource_stays_in_sync() -> None:
         != (REPO_ROOT / "bcf_governance/pack/template-repo" / relative_path).read_bytes()
     ]
     assert not mismatches, "packaged template resources drifted:\n" + "\n".join(mismatches)
+
+
+def test_complete_pack_manifest_check() -> None:
+    result = subprocess.run(
+        [sys.executable, ".github/scripts/build_pack_manifest.py", "--check"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+    canonical_schemas = {
+        path.relative_to(REPO_ROOT / "schemas"): path.read_bytes()
+        for path in (REPO_ROOT / "schemas").rglob("*.json")
+    }
+    template_schemas = {
+        path.relative_to(REPO_ROOT / "template-repo/schemas"): path.read_bytes()
+        for path in (REPO_ROOT / "template-repo/schemas").rglob("*.json")
+    }
+    assert template_schemas == canonical_schemas
+
+    for root in (
+        REPO_ROOT / "template-repo",
+        REPO_ROOT / "bcf_governance/pack/template-repo",
+    ):
+        payload = json.loads(
+            (root / ".bcf-pack-manifest.json").read_text(encoding="utf-8")
+        )
+        expected = {
+            path: entry["sha256"] for path, entry in payload["files"].items()
+        }
+        actual = {
+            path.relative_to(root).as_posix(): hashlib.sha256(
+                path.read_bytes()
+            ).hexdigest()
+            for path in root.rglob("*")
+            if path.is_file()
+            and not path.is_symlink()
+            and path.name != ".bcf-pack-manifest.json"
+            and "__pycache__" not in path.parts
+            and path.suffix != ".pyc"
+        }
+        assert actual == expected
 
 
 def test_generated_version_surfaces_match_authoritative_version() -> None:

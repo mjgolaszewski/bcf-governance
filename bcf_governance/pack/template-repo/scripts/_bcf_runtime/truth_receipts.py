@@ -16,6 +16,7 @@ import yaml  # type: ignore[import-untyped]
 from jsonschema import Draft202012Validator
 
 from .evidence_test_adapters import recompute_test_artifact_observations
+from .evidence_planning import load_claim_model, qualification_applicability, receipt_applicability
 from .governance_truth_support import artifact_issues
 from .truth_sessions import apply_session_validation
 
@@ -137,6 +138,27 @@ def _subject_issues(
     subject = receipt.get("subject")
     if not isinstance(subject, dict):
         return ["subject_missing"], {"paths": [], "categories": []}
+    if receipt.get("schema_version") == "3.0":
+        claims = receipt.get("claims")
+        if not isinstance(claims, list) or not claims:
+            return ["dependency_closure_ambiguous"], {
+                "paths": [],
+                "categories": [],
+                "reasons": ["dependency_closure_ambiguous"],
+            }
+        reasons: set[str] = set()
+        for claim_id in claims:
+            applicable, claim_reasons = receipt_applicability(
+                repo_root, receipt, str(claim_id)
+            )
+            if not applicable:
+                reasons.update(claim_reasons)
+        paths = _changed_paths(repo_root, subject.get("commit_sha"))
+        return sorted(reasons), {
+            "paths": paths,
+            "categories": _change_categories(paths),
+            "reasons": sorted(reasons),
+        }
     binding = subject.get("binding")
     kind = receipt.get("kind")
     forbidden_independent = kind in {
@@ -292,6 +314,103 @@ def _test_issues(receipt_path: Path, receipt: dict[str, Any]) -> list[str]:
     return issues
 
 
+def _multi_claim_test_issues(
+    repo_root: Path, receipt: dict[str, Any]
+) -> list[str]:
+    if receipt.get("schema_version") != "3.0" or receipt.get("kind") != "test_suite":
+        return []
+    observations = receipt.get("observations")
+    observed = {
+        str(value)
+        for value in (
+            observations.get("test_node_ids", [])
+            if isinstance(observations, dict)
+            else []
+        )
+    }
+    try:
+        model = load_claim_model(repo_root)
+        registry = yaml.safe_load(
+            (repo_root / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+        )
+    except (OSError, yaml.YAMLError, ValueError):
+        return ["claim_contract_unreadable"]
+    gates = registry.get("gates") if isinstance(registry, dict) else None
+    issues: list[str] = []
+    for claim_id in receipt.get("claims", []):
+        claim = model["claims"].get(claim_id)
+        if not isinstance(claim, dict):
+            issues.append(f"claim_{claim_id}_not_declared")
+            continue
+        legacy_gate = claim.get("legacy_gate") if isinstance(claim, dict) else None
+        gate = gates.get(legacy_gate) if isinstance(gates, dict) else None
+        evidence = gate.get("evidence") if isinstance(gate, dict) else None
+        test_contract = evidence.get("test_contract") if isinstance(evidence, dict) else None
+        manifest_value = (
+            test_contract.get("expected_node_manifest")
+            if isinstance(test_contract, dict)
+            else None
+        )
+        if not isinstance(manifest_value, str):
+            if isinstance(evidence, dict) and evidence.get("kind") == "test_suite":
+                issues.append(f"claim_{claim_id}_test_manifest_undeclared")
+            continue
+        manifest = repo_root / manifest_value
+        if not manifest.is_file() or manifest.is_symlink():
+            issues.append(f"claim_{claim_id}_test_manifest_missing")
+            continue
+        expected = {
+            line.strip()
+            for line in manifest.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        }
+        if not expected.issubset(observed):
+            issues.append(f"claim_{claim_id}_expected_test_nodes_missing")
+    return issues
+
+
+def _qualification_issues(repo_root: Path, receipt: dict[str, Any]) -> list[str]:
+    if receipt.get("schema_version") != "3.0":
+        return []
+    qualification = receipt.get("qualification")
+    references = receipt.get("qualification_refs")
+    referenced_claims = {
+        str(value.get("claim_id"))
+        for value in references
+        if isinstance(value, dict) and isinstance(value.get("claim_id"), str)
+    } if isinstance(references, list) else set()
+    if isinstance(qualification, dict) and qualification.get("satisfied") is True:
+        try:
+            model = load_claim_model(repo_root)
+            registry = yaml.safe_load(
+                (repo_root / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+            )
+            gates = registry.get("gates") if isinstance(registry, dict) else {}
+            expected = {
+                str(control.get("id"))
+                for claim_id in receipt.get("claims", [])
+                if claim_id not in referenced_claims
+                if isinstance(model["claims"].get(claim_id), dict)
+                for gate in [gates.get(model["claims"][claim_id].get("legacy_gate"))]
+                if isinstance(gate, dict)
+                for control in gate.get("negative_controls", [])
+                if isinstance(control, dict) and isinstance(control.get("id"), str)
+            }
+        except (OSError, yaml.YAMLError, ValueError, KeyError, TypeError):
+            return ["qualification_contract_unreadable"]
+        actual = qualification.get("control_ids")
+        if not isinstance(actual, list) or set(actual) != expected:
+            return ["qualification_control_inventory_incomplete"]
+        return []
+    if (
+        isinstance(references, list)
+        and references
+        and referenced_claims == set(receipt.get("claims", []))
+    ):
+        return []
+    return ["qualification_missing"]
+
+
 def _environment_issues(receipt: dict[str, Any]) -> list[str]:
     observations = receipt.get("observations")
     if not isinstance(observations, dict):
@@ -333,7 +452,10 @@ def _freshness_issues(receipt: dict[str, Any]) -> list[str]:
         return ["timestamp_invalid"]
     if captured.tzinfo is None:
         return ["timestamp_timezone_missing"]
-    return ["evidence_freshness_expired"] if (datetime.now(UTC) - captured).total_seconds() > limit else []
+    age = (datetime.now(UTC) - captured).total_seconds()
+    if age < 0:
+        return ["timestamp_in_future"]
+    return ["evidence_freshness_expired"] if age > limit else []
 
 
 def _receipt_result(
@@ -353,7 +475,7 @@ def _receipt_result(
         "subject", "artifacts", "observations", "behavioral_probes", "result", "timestamp",
     }
     issues = [f"missing_{field}" for field in sorted(required_fields - set(receipt))]
-    if receipt.get("schema_version") != "2.0":
+    if receipt.get("schema_version") not in {"2.0", "3.0"}:
         issues.append("unsupported_schema_version")
     schema_errors = sorted(
         Draft202012Validator(receipt_schema).iter_errors(receipt),
@@ -385,8 +507,16 @@ def _receipt_result(
         repo_root, receipt, current, tree_independent_allowlist
     )
     issues.extend(subject_issues)
-    issues.extend(_probe_issues(receipt_path, receipt, required=require_negative_control))
+    issues.extend(
+        _probe_issues(
+            receipt_path,
+            receipt,
+            required=require_negative_control and receipt.get("schema_version") == "2.0",
+        )
+    )
     issues.extend(_test_issues(receipt_path, receipt))
+    issues.extend(_multi_claim_test_issues(repo_root, receipt))
+    issues.extend(_qualification_issues(repo_root, receipt))
     issues.extend(_environment_issues(receipt))
     issues.extend(_output_requirement_issues(receipt))
     issues.extend(_freshness_issues(receipt))
@@ -561,6 +691,64 @@ def _apply_receipt_identity_validation(results: list[dict[str, Any]]) -> None:
             result["result"] = "invalid"
 
 
+def _apply_qualification_reference_validation(
+    repo_root: Path, results: list[dict[str, Any]]
+) -> None:
+    indexed = {
+        (str(result.get("evidence_id")), str(result.get("artifact_sha256"))): result
+        for result in results
+    }
+    applicability_issues = {
+        "subject_dependency_changed",
+        "detector_dependency_changed",
+        "test_population_changed",
+        "toolchain_changed",
+        "environment_contract_changed",
+        "trust_input_changed",
+        "artifact_identity_changed",
+        "freshness_expired",
+        "qualification_missing",
+        "dependency_closure_ambiguous",
+        "legacy_evidence_exact_subject_only",
+    }
+    for result in results:
+        receipt = result.get("receipt")
+        references = (
+            receipt.get("qualification_refs") if isinstance(receipt, dict) else None
+        )
+        if not isinstance(references, list) or not references:
+            continue
+        reference_issues: list[str] = []
+        for reference in references:
+            if not isinstance(reference, dict):
+                reference_issues.append("qualification_reference_invalid")
+                continue
+            selected = indexed.get(
+                (
+                    str(reference.get("evidence_id")),
+                    str(reference.get("artifact_sha256")),
+                )
+            )
+            claim_id = str(reference.get("claim_id", ""))
+            if selected is None or not qualification_applicability(
+                repo_root, selected.get("receipt", {}), claim_id
+            ):
+                reference_issues.append(
+                    f"qualification_reference_{claim_id or 'unknown'}_not_applicable"
+                )
+                continue
+            unsafe = set(selected.get("issues", [])) - applicability_issues
+            if unsafe:
+                reference_issues.append(
+                    f"qualification_reference_{claim_id}_invalid"
+                )
+        if reference_issues:
+            result["issues"] = sorted(
+                set([*result.get("issues", []), *reference_issues])
+            )
+            result["result"] = "invalid"
+
+
 def load_receipts(
     repo_root: Path,
     evidence_dir: Path,
@@ -599,14 +787,11 @@ def load_receipts(
         )
         results.append(result)
     _apply_receipt_identity_validation(results)
+    _apply_qualification_reference_validation(repo_root, results)
     if require_session:
         apply_session_validation(
-            repo_root,
-            results,
-            current=current,
-            selected_profile=selected_profile,
-            contract_version=contract_version,
-            expected_gates=set(expected_kinds),
+            repo_root, results, current=current, selected_profile=selected_profile,
+            contract_version=contract_version, expected_gates=set(expected_kinds),
         )
     by_gate: dict[str, list[dict[str, Any]]] = {}
     for result in results:

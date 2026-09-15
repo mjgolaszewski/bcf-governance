@@ -1,9 +1,9 @@
-document: {kind: evidence_integrity_policy, name: BCF Governance Evidence Integrity Policy, id: bcf-governance-evidence-policy, version: 1.0.0, generated_at_utc: '2026-08-14T00:00:00Z',
+document: {kind: evidence_integrity_policy, name: BCF Governance Evidence Integrity Policy, id: bcf-governance-evidence-policy, version: 2.0.0, generated_at_utc: '2026-09-14T00:00:00Z',
   status: active, path: governance/evidence-policy.yml}
 settings:
   authored_terminal_states: []
   computed_states: [verified, closed]
-  default_binding: exact_tree
+  default_binding: dependency_scoped
   tree_independent_allowlist: []
   require_negative_control_for_required_gates: true
   required_test_defaults: {min_collected: 1, min_executed: 1, max_skipped: 0}

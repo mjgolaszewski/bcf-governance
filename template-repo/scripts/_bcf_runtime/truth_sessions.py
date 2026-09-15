@@ -97,17 +97,38 @@ def _manifest_issues(
             issues.append("evidence_session_id_mismatch")
         if session_observation.get("manifest_sha256") != digest:
             issues.append("evidence_session_observed_digest_mismatch")
-    if manifest.get("subject") != {
+    expected_subject = {
         "commit_sha": current.get("commit_sha"),
         "tree_sha": current.get("tree_sha"),
-    }:
+    }
+    if manifest.get("schema_version") == "2.0":
+        receipt_subject = receipt.get("subject")
+        if isinstance(receipt_subject, dict):
+            expected_subject = {
+                "commit_sha": receipt_subject.get("commit_sha"),
+                "tree_sha": receipt_subject.get("tree_sha"),
+            }
+    if manifest.get("subject") != expected_subject:
         issues.append("evidence_session_subject_mismatch")
     if manifest.get("profile") != selected_profile:
         issues.append("evidence_session_profile_mismatch")
     if manifest.get("profile_contract_version") != contract_version:
         issues.append("evidence_session_contract_version_mismatch")
     gate_inventory = manifest.get("expected_gate_inventory")
-    if not isinstance(gate_inventory, list) or set(gate_inventory) != expected_gates:
+    if manifest.get("schema_version") == "2.0":
+        dag = manifest.get("execution_dag")
+        nodes = dag.get("nodes") if isinstance(dag, dict) else None
+        planned = {
+            str(node.get("producer"))
+            for node in nodes
+            if isinstance(node, dict) and isinstance(node.get("producer"), str)
+        } if isinstance(nodes, list) else set()
+        if not isinstance(gate_inventory, list) or set(gate_inventory) != planned:
+            issues.append("evidence_session_gate_inventory_mismatch")
+        required_claims = manifest.get("required_claims")
+        if not isinstance(required_claims, list) or not required_claims:
+            issues.append("evidence_session_required_claims_missing")
+    elif not isinstance(gate_inventory, list) or set(gate_inventory) != expected_gates:
         issues.append("evidence_session_gate_inventory_mismatch")
     gate_id = receipt.get("gate_id")
     if not isinstance(gate_inventory, list) or gate_id not in gate_inventory:
@@ -174,9 +195,14 @@ def apply_session_validation(
         if isinstance(manifest, dict) and isinstance(manifest.get("producer"), dict)
     }
     bundle_issues: list[str] = []
-    if len(identities) > 1:
+    legacy_material = [
+        manifest
+        for _, manifest, _ in material
+        if isinstance(manifest, dict) and manifest.get("schema_version") == "1.0"
+    ]
+    if legacy_material and len(identities) > 1:
         bundle_issues.append("evidence_session_mixed_bundle")
-    if len(run_attempts) > 1:
+    if legacy_material and len(run_attempts) > 1:
         bundle_issues.append("evidence_session_mixed_run_attempt")
     for result, _, _ in material:
         result["issues"] = sorted(set([*result.get("issues", []), *bundle_issues]))

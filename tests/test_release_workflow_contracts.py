@@ -77,26 +77,20 @@ def test_release_builder_uses_exact_subject_closed_runtime_and_no_credentials() 
     assert command[:3] == ["{python}", ".github/scripts/build_release_bundle.py", "--output"]
 
 
-def test_release_source_tests_receive_exact_import_authority(
-    monkeypatch, tmp_path: Path
-) -> None:
+def test_release_builder_does_not_replay_source_tests() -> None:
     module = _release_builder_module()
-    monkeypatch.setenv("PYTHONPATH", "/untrusted/caller/path")
-    calls = []
-    monkeypatch.setattr(
-        module,
-        "_run",
-        lambda argv, **kwargs: calls.append((argv, kwargs)),
+    source = Path(module.__file__).read_text(encoding="utf-8")
+    assert "_run_source_tests" not in source
+    assert '"pytest"' not in source
+
+
+def test_release_runtime_defaults_to_artifact_specific_checks() -> None:
+    source = (REPO_ROOT / "bcf_governance/tooling/release_runtime_verification.py").read_text(
+        encoding="utf-8"
     )
-
-    module._run_source_tests(tmp_path)
-
-    assert len(calls) == 1
-    argv, options = calls[0]
-    assert argv[:4] == [sys.executable, "-m", "pytest", "-q"]
-    environment = options["environment"]
-    assert environment["PYTHONPATH"] == str(REPO_ROOT)
-    assert os.environ["PYTHONPATH"] == "/untrusted/caller/path"
+    assert '"sdist-tests"' not in source
+    assert '"sdist-smoke"' in source
+    assert '"wheel-installed-consumer"' in source
 
 
 def test_release_builder_preserves_and_surfaces_failed_command_evidence(
@@ -144,11 +138,11 @@ def test_release_builder_uploads_partial_attempt_evidence_on_failure() -> None:
 def test_verifier_separates_token_free_runtime_from_provider_authentication() -> None:
     compiled = validate_ci_graph(REPO_ROOT)
     workflow = _workflow("release-verifier")
-    assert [job["id"] for job in workflow["jobs"]] == ["runtime", "authenticate"]
+    assert [job["id"] for job in workflow["jobs"]] == ["runtime", "collect"]
     runtime = _job("release-verifier", "runtime")
-    authenticate = _job("release-verifier", "authenticate")
+    authenticate = _job("release-verifier", "collect")
     assert authenticate["needs"] == ["runtime"]
-    assert runtime["trust"] == authenticate["trust"] == "candidate"
+    assert runtime["trust"] == "candidate" and authenticate["trust"] == "trusted"
     assert runtime["checkout"] is authenticate["checkout"] is False
     assert compiled.commands["verify-release-runtime"]["environment"] == {
         "GITHUB_TOKEN": "",
@@ -188,7 +182,7 @@ def test_verifier_controller_is_bound_to_the_triggering_authorization_attempt() 
     assert install["artifact_dir"].endswith("/bcf-release-authorization/controller")
     assert install["wheel_sha256_file"].endswith("/release-authorization.json")
     assert install["wheel_sha256_keys"] == ["controller", "wheel_sha256"]
-    for job_id in ("runtime", "authenticate"):
+    for job_id in ("runtime", "collect"):
         components = _job("release-verifier", job_id)["executor"]["components"]
         assert components.index("download-triggering-release-authorization") < (
             components.index("install-triggering-release-controller")
@@ -232,13 +226,13 @@ def test_release_file_selection_and_attempt_fan_in_are_controller_owned() -> Non
     )
     attest = compiled.graph["step_components"]["attest-release-assets"]
     assert attest["with"]["subject-path"].endswith("/receipt/assets/*")
-    assert _job("release-collector", "collect")["consumes"] == [
-        "release-verifier-bundle"
+    assert _job("release-verifier", "collect")["consumes"] == [
+        "release-authorization", "release-build-bundle", "release-runtime-evidence"
     ]
 
 
 def test_collector_is_no_checkout_trusted_recomputation_and_sole_receipt_owner() -> None:
-    collect = _job("release-collector", "collect")
+    collect = _job("release-verifier", "collect")
     assert collect["trust"] == "trusted" and collect["checkout"] is False
     assert collect["produces"] == ["release-receipt-bundle"]
     producers = [
@@ -247,4 +241,4 @@ def test_collector_is_no_checkout_trusted_recomputation_and_sole_receipt_owner()
         for job in workflow["jobs"]
         if "release-receipt-bundle" in job["produces"]
     ]
-    assert producers == [("release-collector", "collect")]
+    assert producers == [("release-verifier", "collect")]

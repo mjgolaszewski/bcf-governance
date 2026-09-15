@@ -86,7 +86,7 @@ def _set_capabilities(repo_root: Path) -> None:
     if not isinstance(profile, dict):
         raise SemanticAuthorityError("governance-profile.yml must contain a mapping")
     selected = profile.get("profile", {}).get("selected")
-    if selected not in {"standard", "regulated"} or profile.get("profile_contract_version") != "2.0":
+    if selected not in {"standard", "regulated"} or profile.get("profile_contract_version") not in {"2.0", "3.0"}:
         raise SemanticAuthorityError("semantic adoption requires Standard-v2 or Regulated-v2")
     profile["semantic_capabilities"] = {
         "semantic_family_completeness": "blocking",

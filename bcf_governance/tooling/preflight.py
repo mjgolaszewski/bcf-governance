@@ -15,6 +15,7 @@ from typing import Any, Callable, Mapping
 import yaml  # type: ignore[import-untyped]
 
 from .evidence_execution import _selected_python
+from .evidence_planning import load_prior_receipts, verification_plan as build_verification_plan
 from .ci_authority_pins import CIAuthorityPinError, verify_workflow_authority
 from .ci_github_identity import GitHubControllerError
 from .ci_self_controller import verify_self_controller_projection
@@ -113,50 +114,6 @@ def _git_state(repo_root: Path) -> dict[str, Any]:
         "commit_sha": commit,
         "tree_sha": tree,
         "status_porcelain_sha256": hashlib.sha256(status_value.encode()).hexdigest(),
-    }
-
-
-def _closure_authoring(repo_root: Path) -> dict[str, Any]:
-    """Reject every authored lifecycle blocker before exact-main evidence fanout."""
-
-    ledger = yaml.safe_load(
-        (repo_root / "plans/phase-ledger.yml").read_text(encoding="utf-8")
-    )
-    active = ledger.get("active_phase") if isinstance(ledger, dict) else None
-    hotfix_lane = ledger.get("hotfix_lane") if isinstance(ledger, dict) else None
-    if not isinstance(active, dict) or not isinstance(hotfix_lane, dict):
-        raise PreflightError("closure preflight requires the canonical phase ledger")
-    phase_id = str(active.get("id", "unknown"))
-    lifecycle_status = str(active.get("lifecycle_status", "missing"))
-    log_value = active.get("log")
-    log_status = "missing"
-    if isinstance(log_value, str):
-        phase_log = yaml.safe_load(
-            (repo_root / log_value).read_text(encoding="utf-8")
-        )
-        document = phase_log.get("document") if isinstance(phase_log, dict) else None
-        if isinstance(document, dict):
-            log_status = str(document.get("status", "missing"))
-    open_records = hotfix_lane.get("open_records")
-    open_ids = sorted(
-        str(record.get("id", "unknown"))
-        for record in open_records
-        if isinstance(record, dict)
-    ) if isinstance(open_records, list) else ["invalid-inventory"]
-    issues: list[str] = []
-    if lifecycle_status != "completed":
-        issues.append(f"active phase {phase_id} is {lifecycle_status}")
-    if log_status != "completed":
-        issues.append(f"active phase log is {log_status}")
-    if open_ids:
-        issues.append("open hotfixes: " + ", ".join(open_ids))
-    if issues:
-        raise PreflightError("closure preflight failed: " + "; ".join(issues))
-    return {
-        "phase_id": phase_id,
-        "lifecycle_status": lifecycle_status,
-        "log_status": log_status,
-        "open_hotfix_count": 0,
     }
 
 
@@ -664,6 +621,7 @@ def run_preflight(
     expected_producers: list[str] | None = None,
     producer_identity: Mapping[str, str] | None = None,
     evaluation_mode: str | None = None,
+    prior_receipts: list[Mapping[str, Any]] | None = None,
     trace: Callable[[str], None] | None = None,
 ) -> dict[str, Any]:
     """Validate deterministic state, then optionally seed one fresh session."""
@@ -692,11 +650,11 @@ def run_preflight(
         "source-entrypoints", lambda: _source_entrypoint_authority(repo_root)
     )
     step("governance", lambda: validate_repo_root(repo_root))
-    closure_authoring = (
-        step("closure-authoring", lambda: _closure_authoring(repo_root))
-        if closure_requested
-        else None
-    )
+    closure_authoring = {
+        "requested": closure_requested,
+        "execution_trigger": False,
+        "state": "derived_from_authenticated_truth",
+    }
     self_workflows = step("self-workflows", lambda: _self_workflows(repo_root))
     workflow_authority = step(
         "workflow-authority", lambda: _workflow_authority(repo_root)
@@ -718,19 +676,28 @@ def run_preflight(
         "test-manifests", lambda: check_all(repo_root, python_executable=python)
     )
     pr_context = step("pr-context", lambda: _pr_context(repo_root, mode))
+    verification_plan = step(
+        "verification-plan",
+        lambda: build_verification_plan(repo_root, subject, prior_receipts or []),
+    )
     session: EvidenceSession | None = None
     if artifact_root is not None:
+        planned_producers = [
+            str(node["producer"])
+            for node in verification_plan["execution_dag"]["nodes"]
+        ]
         session = step(
             "session",
             lambda: allocate_session(
                 repo_root,
                 artifact_root,
-                _required_gates(repo_root),
+                planned_producers,
                 expected_producers=(
                     expected_producers
                     or [os.environ.get("GITHUB_JOB", "local")]
                 ),
                 producer_identity=producer_identity,
+                verification_plan=verification_plan,
             ),
         )
     return {
@@ -753,6 +720,7 @@ def run_preflight(
         "selected_interpreter": {"name": python.name},
         "semantic_ownership": semantic_ownership,
         "closure_authoring": closure_authoring,
+        "verification_plan": verification_plan,
         "session_manifest": (
             session.manifest_path.relative_to(repo_root).as_posix()
             if session and session.manifest_path.is_relative_to(repo_root)
@@ -770,9 +738,14 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--artifact-root", type=Path)
     parser.add_argument("--expected-producer", action="append")
     parser.add_argument("--local-producer-id")
+    parser.add_argument("--prior-evidence-dir", type=Path)
+    parser.add_argument("--prior-evidence-digest")
     parser.add_argument("--format", choices=("text", "json"), default="text")
     args = parser.parse_args(argv)
     try:
+        prior_receipts = load_prior_receipts(
+            args.repo_root, args.prior_evidence_dir, args.prior_evidence_digest
+        )
         report = run_preflight(
             args.repo_root,
             mode=args.mode,
@@ -785,6 +758,7 @@ def main(argv: list[str] | None = None) -> None:
                 if args.local_producer_id
                 else None
             ),
+            prior_receipts=prior_receipts,
         )
     except (OSError, subprocess.SubprocessError, ValueError) as exc:
         raise SystemExit(str(exc)) from exc

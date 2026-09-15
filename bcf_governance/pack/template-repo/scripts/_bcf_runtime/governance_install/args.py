@@ -23,8 +23,8 @@ def build_parser(
     )
     parser.add_argument(
         "--profile-contract-version",
-        choices=("1.0", "2.0"),
-        help="Fresh Standard/Regulated default to 2.0; upgrades preserve the installed version.",
+        choices=("1.0", "2.0", "3.0"),
+        help="Fresh Standard/Regulated default to 3.0; upgrades preserve the installed version.",
     )
     parser.add_argument(
         "--adoption-mode",

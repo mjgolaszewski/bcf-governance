@@ -8,10 +8,10 @@ activation:
     protection: {path: governance/github-protection.yml, sha256: 9bab9055ec8b52113a593fbc08c8931ea494a53f9af9e19b3eb3f3789c1efaa7}
     package_workflow: {path: .github/workflows/governance-pack.yml, sha256: a5f646db849180510c69489b238cffd5fe1df11f078a23167b76794096a86121}
   successor_topology:
-    ci_graph: {path: governance/ci-graph.yml, sha256: 180667259dd349c4b49d6ae6114caec95d6da2a659e5b7923ae6d1999259fbe2}
+    ci_graph: {path: governance/ci-graph.yml, sha256: f7ea355ebff41ecfd010ac7e9e213972ea6ec176418d1d4931640bf0bdea4483}
     protection: {path: governance/github-protection.yml, sha256: 5f8c6fcd0d569e17050f694571474faa0f7538d12a5d11cc51891cf01c59a53a}
     github_topology: {path: governance/github-ci-topology.yml, sha256: 4a87476cb36055a8820182b2def7b41ffa7ba572defc63727aac7f7031ca3cb8}
-    governance_workflow: {path: .github/workflows/governance.yml, sha256: b769e135061b7bc0ec06fb298923269c46191979855776c09cc574e6b864dca9}
+    governance_workflow: {path: .github/workflows/governance.yml, sha256: 0769cb712f23e9887de30b433d3c2fe814224bc6f319fd1d5eec9acd99d5b885}
   retired_producer:
     id: package
     path: .github/workflows/governance-pack.yml

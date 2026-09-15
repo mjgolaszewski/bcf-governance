@@ -321,7 +321,7 @@ def test_bcf_standard_v2_promotion_fits_declared_context_budgets(tmp_path: Path)
     for relative in ("governance-profile.yml", "governance/gate-contracts.yml"):
         path = repo / relative
         current = path.read_text(encoding="utf-8")
-        field = "profile_contract_version: '2.0'\n"
+        field = "profile_contract_version: '3.0'\n"
         assert current.count(field) == 1
         path.write_text(current.replace(field, ""), encoding="utf-8")
     shutil.rmtree(repo / "governance/capability-na", ignore_errors=True)
@@ -337,7 +337,7 @@ def test_bcf_standard_v2_promotion_fits_declared_context_budgets(tmp_path: Path)
         "--to",
         "standard",
         "--contract-version",
-        "2.0",
+        "3.0",
     ]
     result = subprocess.run(
         [*command, "--check"],
