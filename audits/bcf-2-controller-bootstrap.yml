@@ -66,7 +66,7 @@ rotation:
   probe_run_id: '34923607199'
   probe_run_attempt: '1'
   installation_status: provider_confirmed_target_installed
-  confirmation_pr: null
+  confirmation_pr: 195
   confirmation_exact_main_run_id: null
 bootstrap:
   workflow_id: '346177113'
@@ -117,7 +117,7 @@ milestones:
   target_projection: completed
   bootstrap: completed
   probe: completed
-  confirmation_projection: in_progress
+  confirmation_projection: protected_pr_open
   fresh_exact_main_certification: pending
 local_validation:
   full_suite:
