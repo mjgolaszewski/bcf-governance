@@ -1,0 +1,53 @@
+document:
+  kind: defect_remediation_audit
+  id: bcf-2-successor-branch-refresh
+  version: 1.0.0
+  status: in_progress
+  path: audits/bcf-2-successor-branch-refresh.yml
+scope:
+  purpose: Replace the exact authorized BCF 2.0 successor branch after frozen PR 200 occupied the prior name.
+  successor_topology_change_authorized: false
+  equivalence_mapping_change_authorized: false
+  protection_change_authorized: false
+  publisher_change_authorized: false
+  controller_change_authorized: false
+authoritative_main:
+  commit_sha: cce2ef29045567d607e077c2997de1a5946f3555
+  tree_sha: 03885c8c0efa69cc9339d3a1b70c597b39dc162e
+  topology: [governance, package]
+  controller_commit_sha: 78f12c6d4acc6e389c6deef41c4933f3a46ceb36
+branch_scope:
+  prior_authorized_branch: release/2.0.0-activation
+  replacement_authorized_branch: release/2.0.0-final-activation
+  prior_branch_remains_authorized: false
+  aliases_allowed: false
+  prefix_matching_allowed: false
+  candidate_override_allowed: false
+successor_anchors:
+  ci_graph_sha256: f7ea355ebff41ecfd010ac7e9e213972ea6ec176418d1d4931640bf0bdea4483
+  governance_workflow_sha256: 0769cb712f23e9887de30b433d3c2fe814224bc6f319fd1d5eec9acd99d5b885
+  protection_sha256: 5f8c6fcd0d569e17050f694571474faa0f7538d12a5d11cc51891cf01c59a53a
+  github_topology_sha256: 4a87476cb36055a8820182b2def7b41ffa7ba572defc63727aac7f7031ca3cb8
+semantic_identity:
+  changed_transition_fields: [activation.successor_head_branch]
+  current_topology_anchors_changed: false
+  successor_topology_anchors_changed: false
+  retired_producer_changed: false
+  assurance_mapping_changed: false
+  candidate_self_assertion_sufficient: false
+  replay_allowed: false
+  provider_identity_requirements_changed: false
+  protection_changed: false
+  publisher_changed: false
+  controller_changed: false
+  successor_active: false
+validation:
+  focused: {passed: 247, failed: 0, duration_seconds: 10.11}
+  full_suite: pending
+pull_request:
+  number: null
+  head_sha: null
+  certification: pending
+remaining_risks:
+- Protected certification and user-directed merge remain outstanding.
+- Final successor activation remains ineligible until this refresh merges and exact-main certifies.
