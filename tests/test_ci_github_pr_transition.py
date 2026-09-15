@@ -33,6 +33,14 @@ MERGE = "f" * 40
 BLOB = "e" * 40
 SESSION_ID = "1" * 32
 WORKFLOW = b"name: trusted\n"
+ORIGINAL_SUCCESSOR_GRAPH = "180667259dd349c4b49d6ae6114caec95d6da2a659e5b7923ae6d1999259fbe2"
+ORIGINAL_SUCCESSOR_WORKFLOW = "b769e135061b7bc0ec06fb298923269c46191979855776c09cc574e6b864dca9"
+FROZEN_SUCCESSOR = {
+    "ci_graph": "f7ea355ebff41ecfd010ac7e9e213972ea6ec176418d1d4931640bf0bdea4483",
+    "protection": "5f8c6fcd0d569e17050f694571474faa0f7538d12a5d11cc51891cf01c59a53a",
+    "github_topology": "4a87476cb36055a8820182b2def7b41ffa7ba572defc63727aac7f7031ca3cb8",
+    "governance_workflow": "0769cb712f23e9887de30b433d3c2fe814224bc6f319fd1d5eec9acd99d5b885",
+}
 JOBS = [
     "Validate governance front door",
     "Evidence / Boundaries, contracts, runtime, types, and secrets",
@@ -352,7 +360,11 @@ def test_successor_equivalence_is_trusted_reconstructed_and_exact() -> None:
 
 
 def test_ordinary_missing_package_and_carrier_self_use_remain_pending(tmp_path: Path) -> None:
-    for branch in ("ordinary/change", "release/2.0.0-transition-carrier"):
+    for branch in (
+        "ordinary/change",
+        "release/2.0.0-transition-carrier",
+        "transition/2.0-successor-snapshot-refresh",
+    ):
         api = TransitionAPI()
         api.branch = branch
         result = finalize_pr(
@@ -397,6 +409,30 @@ def test_wrong_current_or_successor_topology_and_retired_producer_are_rejected()
     [
         "governance/ci-graph.yml",
         "governance/github-protection.yml",
+        "governance/github-ci-topology.yml",
+        ".github/workflows/governance.yml",
+    ],
+)
+def test_each_wrong_successor_topology_anchor_is_rejected(path: str) -> None:
+    api = TransitionAPI()
+    api.successor_files[path] += b"\nwrong successor topology\n"
+    assert transition_is_applicable(
+        api,
+        repository=REPOSITORY,
+        main=_main(),
+        protection=load_protection(ROOT),
+        head_sha=HEAD,
+        head_branch=api.branch,
+        package_state={"id": "package", "state": "pending", "reason": "not_started"},
+        schema_root=ROOT,
+    ) is None
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "governance/ci-graph.yml",
+        "governance/github-protection.yml",
         ".github/workflows/governance-pack.yml",
     ],
 )
@@ -428,6 +464,58 @@ def test_missing_current_topology_anchor_is_rejected() -> None:
         load_transition_bytes(
             yaml.safe_dump(value).encode(), schema_path=ROOT / "schemas/pr-transition.schema.json"
         )
+
+
+def test_missing_successor_topology_anchor_is_rejected() -> None:
+    value = yaml.safe_load((ROOT / "governance/pr-transition.yml").read_text())
+    value["activation"]["successor_topology"].pop("governance_workflow")
+    with pytest.raises(GitHubControllerError, match="schema violation"):
+        load_transition_bytes(
+            yaml.safe_dump(value).encode(), schema_path=ROOT / "schemas/pr-transition.schema.json"
+        )
+
+
+def test_authoritative_successor_snapshot_is_exact_and_candidate_cannot_replace_it() -> None:
+    contract = yaml.safe_load((ROOT / "governance/pr-transition.yml").read_text())
+    successor = contract["activation"]["successor_topology"]
+    assert {key: value["sha256"] for key, value in successor.items()} == FROZEN_SUCCESSOR
+    assert successor["ci_graph"]["sha256"] != ORIGINAL_SUCCESSOR_GRAPH
+    assert successor["governance_workflow"]["sha256"] != ORIGINAL_SUCCESSOR_WORKFLOW
+
+    api = TransitionAPI()
+    api.successor_files["governance/pr-transition.yml"] = yaml.safe_dump(
+        {"candidate": "self-asserted authority"}
+    ).encode()
+    assert _verify(api)["state"] == "successful"
+    api.contract["activation"]["successor_topology"]["ci_graph"]["sha256"] = (
+        ORIGINAL_SUCCESSOR_GRAPH
+    )
+    assert transition_is_applicable(
+        api,
+        repository=REPOSITORY,
+        main=_main(),
+        protection=load_protection(ROOT),
+        head_sha=HEAD,
+        head_branch=api.branch,
+        package_state={"id": "package", "state": "pending", "reason": "not_started"},
+        schema_root=ROOT,
+    ) is None
+
+
+def test_repaired_controller_and_race_safe_admission_remain_authoritative() -> None:
+    policy = yaml.safe_load((ROOT / "governance/self-governance-policy.yml").read_text())
+    runner = policy["runner_security"]
+    assert runner["trusted_controller_artifact"]["BCF_BOOTSTRAP_COMMIT_SHA"] == (
+        "78f12c6d4acc6e389c6deef41c4933f3a46ceb36"
+    )
+    assert runner["trusted_controller_installation"]["installed_commit_sha"] == (
+        "78f12c6d4acc6e389c6deef41c4933f3a46ceb36"
+    )
+    exact_main = (ROOT / "bcf_governance/tooling/ci_github_exact_main.py").read_text()
+    membership = (ROOT / "bcf_governance/tooling/ci_github_membership.py").read_text()
+    assert "trigger_run_id" in exact_main
+    assert "trigger_run_attempt" in exact_main
+    assert "trigger_run_id" in membership
 
 
 def test_incomplete_mapping_and_failed_mapped_claim_are_rejected() -> None:

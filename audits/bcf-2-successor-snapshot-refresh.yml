@@ -1,0 +1,114 @@
+document:
+  kind: defect_remediation_audit
+  id: bcf-2-successor-snapshot-refresh
+  version: 1.0.0
+  status: in_progress
+  path: audits/bcf-2-successor-snapshot-refresh.yml
+scope:
+  purpose: Refresh only the authoritative BCF 2.0 successor snapshot to frozen PR 200.
+  successor_implementation_change_authorized: false
+  equivalence_change_authorized: false
+  protection_change_authorized: false
+  publisher_change_authorized: false
+  controller_change_authorized: false
+authoritative_main:
+  commit_sha: 7f557be1e8beb303c5682b27a96b4787fa80b09e
+  tree_sha: 90a1c519b2a0c29450fed7ffffda22418846fa57
+  topology: [governance, package]
+  controller_commit_sha: 78f12c6d4acc6e389c6deef41c4933f3a46ceb36
+  exact_main_run: {run_id: '35001504239', run_attempt: '1'}
+  finalizer_run: {run_id: '35003055121', run_attempt: '1'}
+  publisher_run: {run_id: '35003104831', run_attempt: '1', app_id: 15368}
+frozen_successor:
+  pull_request: 200
+  head_commit_sha: 4195f7a8a3e6d63e5d628a894d3c207987eb7b80
+  head_tree_sha: 91fc4e08fc0050f23b81684e3e3bdaf1cdffd560
+  candidate_commit_sha: c182cd92ab13635aa95fb0390ad8fa3cbc27a974
+  candidate_tree_sha: 211aef52621b6a0b1071934ad45f4070b16175ae
+  branch: release/2.0.0-activation
+originally_authorized_successor:
+  reviewed_commit_sha: fd079fdad8f2f395a7aeaf04b8c6970f8c70c627
+  base_commit_sha: 554f1fb6a6c48342e9330794c8451e727e294e83
+  anchors:
+    ci_graph_sha256: 180667259dd349c4b49d6ae6114caec95d6da2a659e5b7923ae6d1999259fbe2
+    governance_workflow_sha256: b769e135061b7bc0ec06fb298923269c46191979855776c09cc574e6b864dca9
+    protection_sha256: 5f8c6fcd0d569e17050f694571474faa0f7538d12a5d11cc51891cf01c59a53a
+    github_topology_sha256: 4a87476cb36055a8820182b2def7b41ffa7ba572defc63727aac7f7031ca3cb8
+refreshed_successor:
+  derivation: SHA-256 computed from exact frozen PR 200 bytes; no candidate transition contract was trusted.
+  anchors:
+    ci_graph_sha256: f7ea355ebff41ecfd010ac7e9e213972ea6ec176418d1d4931640bf0bdea4483
+    governance_workflow_sha256: 0769cb712f23e9887de30b433d3c2fe814224bc6f319fd1d5eec9acd99d5b885
+    protection_sha256: 5f8c6fcd0d569e17050f694571474faa0f7538d12a5d11cc51891cf01c59a53a
+    github_topology_sha256: 4a87476cb36055a8820182b2def7b41ffa7ba572defc63727aac7f7031ca3cb8
+delta_classification:
+  current_topology_anchor_refresh:
+    classification: GOVERNED AUTHORITY EVOLUTION
+    source: protected PR 196
+    required: true
+  race_safe_admission_reconstruction:
+    classification: GOVERNED AUTHORITY EVOLUTION
+    source: protected PRs 197 through 199
+    required: true
+  controller_artifact_and_installation:
+    classification: GOVERNED AUTHORITY EVOLUTION
+    source: protected PRs 197 through 199 and their exact-main confirmation
+    required: true
+  ci_graph_self_policy_digest:
+    classification: MECHANICAL PROJECTION
+    source: governance/self-governance-policy.yml controller identity
+    required: true
+  governance_workflow_headers:
+    classification: MECHANICAL PROJECTION
+    source: canonical CI graph renderer
+    required: true
+  protection:
+    classification: REVIEWED BCF 2.0 SUCCESSOR CHANGE
+    source: reviewed successor commit fd079fdad8f2f395a7aeaf04b8c6970f8c70c627
+    required: true
+  github_topology:
+    classification: REVIEWED BCF 2.0 SUCCESSOR CHANGE
+    source: reviewed successor commit fd079fdad8f2f395a7aeaf04b8c6970f8c70c627
+    required: true
+  package_equivalence_coverage:
+    classification: REVIEWED BCF 2.0 SUCCESSOR CHANGE
+    source: required successor coverage corrections in candidate c182cd92ab13635aa95fb0390ad8fa3cbc27a974
+    required: true
+semantic_identity:
+  retired_producer: package
+  assurance_mapping_changed: false
+  transition_controller_changed: false
+  candidate_self_assertion_sufficient: false
+  replay_allowed: false
+  provider_identity_requirements_changed: false
+  repository_identity_requirements_changed: false
+  workflow_run_attempt_requirements_changed: false
+  publisher_boundary_changed: false
+  protection_contract_changed_on_main: false
+  reviewed_successor_producer_topology_changed: false
+  ar_01_02_03_behavior_changed: false
+  successor_economics_gate_present: false
+  successor_package_producer_present: false
+  repaired_controller_preserved: true
+  race_safe_admission_preserved: true
+  package_equivalence_coverage:
+  - tests.test_pack_sync::test_complete_pack_manifest_check
+  - tests.test_evidence_planning::test_source_syntax_format_covers_template_scripts_and_tests
+refresh:
+  canonical_generator_available: false
+  changed_successor_anchors: [ci_graph, governance_workflow]
+  unchanged_successor_anchors: [protection, github_topology]
+  current_topology_anchors_changed: false
+  workflow_definition_changed: false
+  authority_pin_required: false
+  activates_successor: false
+validation:
+  focused: {passed: 240, failed: 0, duration_seconds: 9.70}
+  full_suite: pending
+pull_request:
+  number: null
+  head_sha: null
+  certification: pending
+remaining_risks:
+- Protected certification and user-directed merge remain outstanding.
+- Frozen PR 200 cannot retry successor admission until this refresh is merged and exact-main certified.
