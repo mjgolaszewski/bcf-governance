@@ -38,18 +38,106 @@ def _require_v11(authority: dict[str, Any]) -> None:
         )
 
 
+def _authenticate_admission_candidate(
+    api: GitHubAPI,
+    *,
+    repository: str,
+    main: MainIdentity,
+    workflow: dict[str, Any],
+    candidate: dict[str, Any],
+):
+    """Authenticate one provider candidate through the canonical admission path."""
+
+    if str(candidate.get("head_branch")) != main.default_branch:
+        raise GitHubControllerError("admission run branch is not current default main")
+    head_repository = candidate.get("head_repository")
+    if not isinstance(head_repository, dict) or str(
+        head_repository.get("id")
+    ) != main.repository_id:
+        raise GitHubControllerError(
+            "admission run head repository identity does not match authority"
+        )
+    event = str(candidate.get("event"))
+    if event not in workflow["allowed_events"]:
+        raise GitHubControllerError("admission run event is not admitted by authority")
+    run_id = str(positive_int(candidate.get("id"), field="admission run ID"))
+    attempt = positive_int(
+        candidate.get("run_attempt"), field="admission run attempt"
+    )
+    return authenticate_trusted_run(
+        api,
+        repository=repository,
+        main=main,
+        run_id=run_id,
+        run_attempt=attempt,
+        workflow_path=str(workflow["active_path"]),
+        expected_event=event,
+        require_success=False,
+        expected_workflow_id=workflow["workflow_id"],
+        expected_workflow_sha256=str(workflow["trusted_workflow_sha256"]),
+        expected_workflow_blob_oid=workflow["trusted_workflow_blob_oid"],
+        expected_workflow_definition_commit=workflow[
+            "trusted_workflow_definition_commit"
+        ],
+    )
+
+
 def select_latest_admission(
     api: GitHubAPI,
     *,
     repository: str,
     main: MainIdentity,
     authority: dict[str, Any],
+    trigger_run_id: object | None = None,
+    trigger_run_attempt: object | None = None,
 ) -> tuple[str, int]:
-    """Select the newest authenticated exact-main admission without success fallback."""
+    """Select the newest authenticated exact-main admission without success fallback.
+
+    A workflow-run callback may provide an exact run/attempt only as locator data.  The
+    provider-fetched run must independently pass the same authentication as a listed
+    candidate before it participates in deterministic newest-admission selection.
+    """
 
     _require_v11(authority)
     workflow = authority_role_workflow(authority, "admission")
     candidates: list[dict[str, Any]] = []
+    if (trigger_run_id is None) != (trigger_run_attempt is None):
+        raise GitHubControllerError(
+            "admission trigger run ID and attempt must be supplied together"
+        )
+    trigger_identity: tuple[str, int] | None = None
+    if trigger_run_id is not None:
+        expected_run_id = str(
+            positive_int(trigger_run_id, field="trigger admission run ID")
+        )
+        expected_attempt = positive_int(
+            trigger_run_attempt, field="trigger admission run attempt"
+        )
+        trigger = api.run(repository, expected_run_id)
+        if (
+            str(positive_int(trigger.get("id"), field="admission run ID"))
+            != expected_run_id
+            or positive_int(
+                trigger.get("run_attempt"), field="admission run attempt"
+            )
+            != expected_attempt
+        ):
+            raise GitHubControllerError(
+                "provider admission run does not match trigger locator"
+            )
+        authenticated = _authenticate_admission_candidate(
+            api,
+            repository=repository,
+            main=main,
+            workflow=workflow,
+            candidate=trigger,
+        )
+        if authenticated.run_id != expected_run_id:
+            raise GitHubControllerError(
+                "provider admission run does not match trigger locator"
+            )
+        trigger_identity = (authenticated.run_id, authenticated.run_attempt)
+        candidates.append(trigger)
     for event in workflow["allowed_events"]:
         candidates.extend(
             api.workflow_runs(
@@ -59,14 +147,21 @@ def select_latest_admission(
                 event=str(event),
             )
         )
-    exact = [
-        value
-        for value in candidates
-        if str(value.get("head_sha")) == main.checkout_sha
-        and str(value.get("workflow_id")) == str(workflow["workflow_id"])
-        and str(value.get("repository", {}).get("id")) == main.repository_id
-        and str(value.get("event")) in workflow["allowed_events"]
-    ]
+    exact_by_identity: dict[tuple[str, int], dict[str, Any]] = {}
+    for value in candidates:
+        if not (
+            str(value.get("head_sha")) == main.checkout_sha
+            and str(value.get("workflow_id")) == str(workflow["workflow_id"])
+            and str(value.get("repository", {}).get("id")) == main.repository_id
+            and str(value.get("event")) in workflow["allowed_events"]
+        ):
+            continue
+        identity = (
+            str(positive_int(value.get("id"), field="admission run ID")),
+            positive_int(value.get("run_attempt"), field="admission run attempt"),
+        )
+        exact_by_identity.setdefault(identity, value)
+    exact = list(exact_by_identity.values())
     if not exact:
         raise GitHubControllerError("no authenticated exact-main admission exists")
     selected = max(
@@ -76,25 +171,19 @@ def select_latest_admission(
             positive_int(value.get("run_attempt"), field="admission run attempt"),
         ),
     )
-    run_id = str(positive_int(selected["id"], field="admission run ID"))
-    attempt = positive_int(selected["run_attempt"], field="admission run attempt")
-    authenticate_trusted_run(
-        api,
-        repository=repository,
-        main=main,
-        run_id=run_id,
-        run_attempt=attempt,
-        workflow_path=str(workflow["active_path"]),
-        expected_event=str(selected["event"]),
-        require_success=False,
-        expected_workflow_id=workflow["workflow_id"],
-        expected_workflow_sha256=str(workflow["trusted_workflow_sha256"]),
-        expected_workflow_blob_oid=workflow["trusted_workflow_blob_oid"],
-        expected_workflow_definition_commit=workflow[
-            "trusted_workflow_definition_commit"
-        ],
+    selected_identity = (
+        str(positive_int(selected["id"], field="admission run ID")),
+        positive_int(selected["run_attempt"], field="admission run attempt"),
     )
-    return run_id, attempt
+    if selected_identity != trigger_identity:
+        _authenticate_admission_candidate(
+            api,
+            repository=repository,
+            main=main,
+            workflow=workflow,
+            candidate=selected,
+        )
+    return selected_identity
 
 
 def _reference_map(

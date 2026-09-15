@@ -1,0 +1,80 @@
+document:
+  kind: defect_remediation_audit
+  id: bcf-2-exact-main-admission-race
+  version: 1.0.0
+  status: in_progress
+  path: audits/bcf-2-exact-main-admission-race.yml
+scope:
+  purpose: Repair exact-main admission discovery when the triggering run is directly retrievable but temporarily absent from the provider list endpoint.
+  successor_change_authorized: false
+  transition_change_authorized: false
+  protection_change_authorized: false
+  publisher_change_authorized: false
+  polling_or_retry_authorized: false
+authoritative_subject:
+  commit_sha: 1e2670edf24cc07671787ab368a482b6432c065a
+  tree_sha: 6cf392b68002b6e39950da43b035e2394b89f3d8
+failure:
+  admission_run_id: '34974854182'
+  admission_run_attempt: '1'
+  finalizer_run_id: '34976805104'
+  finalizer_run_attempt: '1'
+  finalizer_result: failure
+  rejection: no authenticated exact-main admission exists
+  publisher_run_id: '34976838716'
+  publisher_app_id: '15368'
+  published_state: failure
+root_cause:
+  classification: FINALIZER_RECONSTRUCTION_DEFECT
+  severity: high
+  first_failed_stage: admission_discovery
+  cause: The finalizer depended on an immediately consistent workflow-runs list and had no provider-authenticated direct candidate from its triggering workflow-run identity.
+repair:
+  callback_authority: false
+  locator_fields: [run_id, run_attempt]
+  direct_provider_fetch_required: true
+  canonical_admission_authentication_reused: true
+  combined_with_list_candidates: true
+  canonical_identity_deduplication: true
+  deterministic_newest_selection_preserved: true
+  fallback_to_older_success_allowed: false
+  polling_sleep_or_retry_added: false
+trust_invariants:
+  current_main_exact: true
+  repository_and_head_repository_exact: true
+  workflow_id_path_definition_and_digest_exact: true
+  event_branch_commit_and_attempt_exact: true
+  provider_status_authoritative: true
+  exact_producer_inventory_required: true
+  exact_job_inventory_required: true
+  artifact_authentication_changed: false
+  publisher_boundary_changed: false
+  protection_changed: false
+  successor_topology_activated: false
+validation:
+  focused_controller_authority_certification:
+    passed: 77
+    failed: 0
+    duration_seconds: 1.70
+  focused_graph_workflow:
+    passed: 123
+    failed: 0
+    duration_seconds: 18.62
+  focused_pin_self_authority_workflow_graph:
+    passed: 12
+    failed: 0
+    duration_seconds: 3.74
+  full_suite:
+    expected_nodes: 1270
+    expected_failed: 0
+controller_rotation:
+  required: true
+  existing_governed_lane: partial_exact_main_package_controller
+  status: awaiting_repair_pr_merge
+pull_request:
+  number: null
+  head_sha: null
+  certification: pending
+remaining_risks:
+- The repaired code cannot affect trusted finalization until a normally certified repair merge is followed by the existing governed controller rotation and confirmation sequence.
+- Fresh post-rotation exact-main success remains mandatory before BCF 2.0 successor work resumes.

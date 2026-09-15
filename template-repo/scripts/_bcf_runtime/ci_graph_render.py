@@ -474,6 +474,8 @@ def _executor_steps(
             ),
             "finalize": (
                 'exact-main finalize --repository "$GITHUB_REPOSITORY" '
+                '--trigger-run-id "${{ github.event.workflow_run.id }}" '
+                '--trigger-run-attempt "${{ github.event.workflow_run.run_attempt }}" '
                 f'--output "{produced_path}"'
             ),
             "publish": (

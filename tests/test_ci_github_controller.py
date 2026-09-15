@@ -84,7 +84,9 @@ def _refresh_bundle_inventory(root: Path) -> None:
 class FakeAPI:
     def __init__(self) -> None:
         self.main = SHA_A
+        self.tree = TREE
         self.dispatches: list[tuple[str, dict[str, object]]] = []
+        self.run_calls: list[str] = []
         self.published_statuses: list[dict[str, str]] = []
         self.existing_statuses: list[dict[str, str]] = []
         self.authority = {
@@ -110,6 +112,8 @@ class FakeAPI:
                 "run_attempt": 1,
                 "workflow_id": 99,
                 "repository": {"id": 42},
+                "head_repository": {"id": 42},
+                "head_branch": "main",
                 "event": "push",
                 "head_sha": SHA_A,
                 "status": "completed",
@@ -120,6 +124,8 @@ class FakeAPI:
                 "run_attempt": 1,
                 "workflow_id": 98,
                 "repository": {"id": 42},
+                "head_repository": {"id": 42},
+                "head_branch": "main",
                 "event": "workflow_run",
                 "head_sha": SHA_A,
                 "status": "in_progress",
@@ -133,6 +139,13 @@ class FakeAPI:
         self.run_job_statuses: dict[str, str] = {}
         self.missing_workflows: set[str] = set()
         self.workflow_versions: dict[str, tuple[str, bytes]] = {}
+        self.workflow_paths = {
+            "10": ".github/workflows/governance.yml",
+            "11": ".github/workflows/pack.yml",
+            "99": ".github/workflows/control.yml",
+            "98": ".github/workflows/finalizer.yml",
+            "97": ".github/workflows/status.yml",
+        }
 
     @staticmethod
     def _producer_run(run_id: int, workflow_id: int) -> dict[str, object]:
@@ -141,6 +154,8 @@ class FakeAPI:
             "run_attempt": 1,
             "workflow_id": workflow_id,
             "repository": {"id": 42},
+            "head_repository": {"id": 42},
+            "head_branch": "main",
             "event": "push",
             "head_sha": SHA_A,
             "status": "completed",
@@ -157,24 +172,18 @@ class FakeAPI:
 
     def commit(self, repository: str, sha: str) -> dict[str, object]:
         assert repository == "owner/repo" and sha in {self.main, SHA_A}
-        return {"sha": sha, "tree": {"sha": TREE}}
+        return {"sha": sha, "tree": {"sha": self.tree}}
 
     def run(self, repository: str, run_id: str | int) -> dict[str, object]:
         assert repository == "owner/repo"
+        self.run_calls.append(str(run_id))
         return dict(self.runs[str(run_id)])
 
     def workflow(self, repository: str, workflow_id: str | int) -> dict[str, object]:
         assert repository == "owner/repo"
-        paths = {
-            "10": ".github/workflows/governance.yml",
-            "11": ".github/workflows/pack.yml",
-            "99": ".github/workflows/control.yml",
-            "98": ".github/workflows/finalizer.yml",
-            "97": ".github/workflows/status.yml",
-        }
         return {
             "id": int(workflow_id),
-            "path": paths[str(workflow_id)],
+            "path": self.workflow_paths[str(workflow_id)],
         }
 
     def content(self, repository: str, path: str, *, ref: str) -> GitHubContent:
@@ -392,6 +401,177 @@ def test_v11_collects_all_producers_from_one_exact_admission_attempt() -> None:
     assert {value["same_run_membership"]["producer_id"] for value in observed} == {
         "governance", "pack"
     }
+
+
+def test_v11_direct_trigger_survives_temporary_list_absence() -> None:
+    api = FakeAPI()
+    authority = _prepare_v11_run(api)
+    api.missing_workflows.add("99")
+    main = resolve_main(api, "owner/repo")  # type: ignore[arg-type]
+
+    assert select_latest_admission(
+        api,
+        repository="owner/repo",
+        main=main,
+        authority=authority,
+        trigger_run_id=100,
+        trigger_run_attempt=1,
+    ) == ("100", 1)
+
+
+def test_v11_direct_trigger_is_deduplicated_when_listed() -> None:
+    api = FakeAPI()
+    authority = _prepare_v11_run(api)
+    main = resolve_main(api, "owner/repo")  # type: ignore[arg-type]
+
+    assert select_latest_admission(
+        api,
+        repository="owner/repo",
+        main=main,
+        authority=authority,
+        trigger_run_id=100,
+        trigger_run_attempt=1,
+    ) == ("100", 1)
+    assert api.run_calls.count("100") == 2
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "workflow-id",
+        "workflow-path",
+        "workflow-blob",
+        "workflow-digest",
+        "workflow-definition",
+        "repository",
+        "head-repository",
+        "event",
+        "branch",
+        "commit",
+        "run-id",
+        "attempt",
+    ],
+)
+def test_v11_direct_trigger_locator_cannot_confer_authority(mutation: str) -> None:
+    api = FakeAPI()
+    authority = _prepare_v11_run(api)
+    expected_attempt = 1
+    if mutation == "workflow-id":
+        api.runs["100"]["workflow_id"] = 98
+    elif mutation == "workflow-path":
+        api.workflow_paths["99"] = ".github/workflows/other.yml"
+    elif mutation == "workflow-blob":
+        authority["workflow_registry"]["admission"]["trusted_workflow_blob_oid"] = SHA_B  # type: ignore[index]
+    elif mutation == "workflow-digest":
+        authority["workflow_registry"]["admission"]["trusted_workflow_sha256"] = "0" * 64  # type: ignore[index]
+    elif mutation == "workflow-definition":
+        authority["workflow_registry"]["admission"]["trusted_workflow_definition_commit"] = SHA_B  # type: ignore[index]
+        api.workflow_versions[SHA_B] = (SHA_B, b"changed workflow\n")
+    elif mutation == "repository":
+        api.runs["100"]["repository"] = {"id": 41}
+    elif mutation == "head-repository":
+        api.runs["100"]["head_repository"] = {"id": 41}
+    elif mutation == "event":
+        api.runs["100"]["event"] = "workflow_run"
+    elif mutation == "branch":
+        api.runs["100"]["head_branch"] = "other"
+    elif mutation == "commit":
+        api.runs["100"]["head_sha"] = SHA_B
+    elif mutation == "run-id":
+        api.runs["100"]["id"] = 101
+    else:
+        expected_attempt = 2
+    main = resolve_main(api, "owner/repo")  # type: ignore[arg-type]
+
+    with pytest.raises(GitHubControllerError):
+        select_latest_admission(
+            api,
+            repository="owner/repo",
+            main=main,
+            authority=authority,
+            trigger_run_id=100,
+            trigger_run_attempt=expected_attempt,
+        )
+
+
+def test_v11_newer_provider_admission_wins_without_success_fallback() -> None:
+    api = FakeAPI()
+    authority = _prepare_v11_run(api)
+    api.runs["101"] = {
+        **api.runs["100"],
+        "id": 101,
+        "conclusion": "failure",
+    }
+    main = resolve_main(api, "owner/repo")  # type: ignore[arg-type]
+
+    assert select_latest_admission(
+        api,
+        repository="owner/repo",
+        main=main,
+        authority=authority,
+        trigger_run_id=100,
+        trigger_run_attempt=1,
+    ) == ("101", 1)
+
+
+def test_v11_invalid_direct_trigger_cannot_fall_back_to_older_green() -> None:
+    api = FakeAPI()
+    authority = _prepare_v11_run(api)
+    api.runs["101"] = {
+        **api.runs["100"],
+        "id": 101,
+        "head_repository": {"id": 41},
+    }
+    main = resolve_main(api, "owner/repo")  # type: ignore[arg-type]
+
+    with pytest.raises(GitHubControllerError, match="head repository"):
+        select_latest_admission(
+            api,
+            repository="owner/repo",
+            main=main,
+            authority=authority,
+            trigger_run_id=101,
+            trigger_run_attempt=1,
+        )
+
+
+def test_v11_moved_main_rejects_stale_direct_trigger() -> None:
+    api = FakeAPI()
+    authority = _prepare_v11_run(api)
+    api.main = SHA_B
+    main = resolve_main(api, "owner/repo")  # type: ignore[arg-type]
+
+    with pytest.raises(GitHubControllerError, match="current exact main"):
+        select_latest_admission(
+            api,
+            repository="owner/repo",
+            main=main,
+            authority=authority,
+            trigger_run_id=100,
+            trigger_run_attempt=1,
+        )
+
+
+def test_v11_direct_trigger_uses_provider_status_and_commit_tree(tmp_path: Path) -> None:
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    api.tree = SHA_B
+    api.runs["100"]["conclusion"] = "failure"
+    result = finalize_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        trigger_run_id=100,
+        trigger_run_attempt=1,
+        output_dir=tmp_path / "bundle",
+    )
+
+    assert result.computed_state == "failed"
+    report = json.loads(
+        (Path(result.bundle_dir) / "ci-certification.json").read_text()
+    )
+    assert report["subject"]["tree_sha"] == SHA_B
 
 
 def test_v11_bootstrap_selects_one_complete_producer_from_partial_admission() -> None:

@@ -71,6 +71,8 @@ def _exact_main_parser() -> argparse.ArgumentParser:
     admit.add_argument("--target-url", required=True)
     finalize_parser = operations.add_parser("finalize")
     finalize_parser.add_argument("--repository", required=True)
+    finalize_parser.add_argument("--trigger-run-id", required=True)
+    finalize_parser.add_argument("--trigger-run-attempt", type=int, required=True)
     finalize_parser.add_argument("--output", type=Path, required=True)
     publish_parser = operations.add_parser("publish")
     publish_parser.add_argument("--repository", required=True)
@@ -138,6 +140,8 @@ def _exact_main(argv: list[str]) -> None:
                 repository=args.repository,
                 collector_run_id=_required_environment("GITHUB_RUN_ID"),
                 collector_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
+                trigger_run_id=args.trigger_run_id,
+                trigger_run_attempt=args.trigger_run_attempt,
                 output_dir=args.output,
             )
         )

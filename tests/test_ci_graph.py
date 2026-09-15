@@ -1076,6 +1076,24 @@ def test_renderer_is_deterministic_and_parity_owned(tmp_path: Path) -> None:
     assert report.changed_paths == (".github/workflows/governance.yml",)
 
 
+def test_exact_main_finalizer_uses_callback_identity_only_as_provider_locator() -> None:
+    rendered = yaml.safe_load(
+        render_ci_graph(REPO_ROOT)[
+            ".github/workflows/bcf-trusted-finalizer.yml"
+        ]
+    )
+    command = rendered["jobs"]["finalize"]["steps"][1]["run"]
+
+    assert '--trigger-run-id "${{ github.event.workflow_run.id }}"' in command
+    assert (
+        '--trigger-run-attempt "${{ github.event.workflow_run.run_attempt }}"'
+        in command
+    )
+    assert "github.event.workflow_run.head_sha" not in command
+    assert "github.event.workflow_run.conclusion" not in command
+    assert all(token not in command for token in ("sleep ", "poll ", "retry "))
+
+
 def test_standard_reference_graph_is_rich_single_push_authority(tmp_path: Path) -> None:
     gates = [
         "governance-validate",
