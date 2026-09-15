@@ -8,6 +8,7 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Refresh the trusted BCF 2.0 successor snapshot to the frozen reviewed representation that preserves the repaired controller, without changing transition semantics or activating the successor topology.
 - Confirm the race-safe exact-main controller installation from authenticated bootstrap and probe runs on both trusted runners, including mechanically current transition anchors.
 - Project the authenticated race-safe exact-main controller target and its mechanically current transition anchors while retaining the prior installed controller until governed bootstrap and probe confirmation.
 - Make trusted exact-main finalization race-safe by authenticating its directly fetched workflow-run trigger as locator-only provider evidence before deterministic newest-admission selection.
