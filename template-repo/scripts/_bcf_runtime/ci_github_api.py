@@ -161,6 +161,24 @@ class GitHubAPI:
             raise GitHubAPIError("repository response must be an object")
         return value
 
+    def installation(self) -> dict[str, Any]:
+        value = self._request("GET", "/installation")
+        if not isinstance(value, dict):
+            raise GitHubAPIError("installation response must be an object")
+        return value
+
+    def collaborator_permission(
+        self, repository: str, login: str
+    ) -> dict[str, Any]:
+        self.user(login)
+        value = self._request(
+            "GET",
+            f"/repos/{self._repository(repository)}/collaborators/{quote(login)}/permission",
+        )
+        if not isinstance(value, dict):
+            raise GitHubAPIError("collaborator permission response must be an object")
+        return value
+
     def user(self, login: str) -> dict[str, Any]:
         if not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9\[\]-]{0,37}[A-Za-z0-9\]])?", login):
             raise GitHubAPIError("GitHub actor login is unsafe")
@@ -320,6 +338,26 @@ class GitHubAPI:
             raise GitHubAPIError("artifact response must contain an object list")
         if int(value.get("total_count", len(artifacts))) != len(artifacts):
             raise GitHubAPIError("artifact inventory exceeds one authenticated page")
+        return tuple(artifacts)
+
+    def repository_artifacts(
+        self, repository: str, *, name: str | None = None
+    ) -> tuple[dict[str, Any], ...]:
+        query = "?per_page=100"
+        if name is not None:
+            if not re.fullmatch(r"[A-Za-z0-9_.-]+", name):
+                raise GitHubAPIError("artifact name filter is unsafe")
+            query += "&" + urlencode({"name": name})
+        value = self._request(
+            "GET", f"/repos/{self._repository(repository)}/actions/artifacts{query}"
+        )
+        artifacts = value.get("artifacts") if isinstance(value, dict) else None
+        if not isinstance(artifacts, list) or any(
+            not isinstance(item, dict) for item in artifacts
+        ):
+            raise GitHubAPIError("repository artifact response must contain an object list")
+        if int(value.get("total_count", len(artifacts))) != len(artifacts):
+            raise GitHubAPIError("repository artifact inventory exceeds one authenticated page")
         return tuple(artifacts)
 
     def artifact_bytes(

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document", "schema_version", "repository", "authority", "permissions", "operation", "builder", "installer", "probe", "runners", "receipt", "prohibitions"],
+  "properties": {
+    "document": {"type": "object"},
+    "schema_version": {"const": "1.0"},
+    "repository": {"type": "object", "required": ["provider", "repository_id", "name", "default_branch"], "properties": {"provider": {"const": "github"}, "repository_id": {"pattern": "^[0-9]+$"}, "name": {"pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"}, "default_branch": {"const": "main"}}, "additionalProperties": false},
+    "authority": {"type": "object", "required": ["app_name", "app_id_variable", "installation_id_variable", "private_key_secret", "workflow_id_variable", "workflow_path", "protected_environment", "event", "required_actor_permission", "reason_codes"], "properties": {"app_name": {"const": "BCF Break Glass"}, "app_id_variable": {"const": "BCF_BREAK_GLASS_APP_ID"}, "installation_id_variable": {"const": "BCF_BREAK_GLASS_INSTALLATION_ID"}, "private_key_secret": {"const": "BCF_BREAK_GLASS_APP_PRIVATE_KEY"}, "workflow_id_variable": {"const": "BCF_BREAK_GLASS_WORKFLOW_ID"}, "workflow_path": {"const": ".github/workflows/bcf-break-glass-recovery.yml"}, "protected_environment": {"const": "bcf-break-glass-recovery"}, "event": {"const": "workflow_dispatch"}, "required_actor_permission": {"const": "admin"}, "reason_codes": {"const": ["ordinary_control_plane_bootstrap_deadlock"]}}, "additionalProperties": false},
+    "permissions": {"type": "object", "required": ["required", "forbidden"], "properties": {"required": {"const": ["metadata:read", "contents:read", "actions:read"]}, "forbidden": {"type": "array", "contains": {"const": "contents:write"}}}, "additionalProperties": false},
+    "operation": {"type": "object", "required": ["stages", "operation_id_pattern", "singleton", "artifact_prefix", "forensic_artifact_ids"], "properties": {"stages": {"const": ["build", "install", "probe"]}, "operation_id_pattern": {"type": "string"}, "singleton": {"const": true}, "artifact_prefix": {"type": "string"}, "forensic_artifact_ids": {"contains": {"const": "10425078154"}}}, "additionalProperties": false},
+    "builder": {"type": "object"}, "installer": {"type": "object"}, "probe": {"type": "object"},
+    "runners": {"type": "array", "minItems": 2, "uniqueItems": true, "items": {"type": "object", "required": ["slot", "runner_name"], "additionalProperties": false, "properties": {"slot": {"pattern": "^bcf-trusted-control-[0-9]+$"}, "runner_name": {"type": "string", "minLength": 1}}}},
+    "receipt": {"type": "object", "required": ["schema", "recovery_only", "governance_certified"], "properties": {"schema": {"const": "schemas/break-glass-recovery-receipt.schema.json"}, "recovery_only": {"const": true}, "governance_certified": {"const": false}}, "additionalProperties": false},
+    "prohibitions": {"type": "array", "contains": {"const": "ordinary-certification"}}
+  }
+}

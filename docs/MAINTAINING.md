@@ -134,6 +134,86 @@ v2 workflows must allocate one session before evidence, execute positive gates
 once, use exact run/attempt artifact namespaces, and contain no polling,
 sleeping, or capacity-wait jobs.
 
+## Break-glass controller recovery
+
+The `BCF Break Glass` GitHub App is an administrative root above BCF. It may
+recover installed-controller state after ordinary admission fails closed, but it
+cannot certify a PR or exact main, publish status, release, merge, or change
+protection. App 15368 remains the separate ordinary status publisher.
+
+| Permission | Access | Exact reason |
+| --- | --- | --- |
+| Metadata | Read | Authenticate repository ID, default branch, installation, and invoking administrator. |
+| Contents | Read | Resolve the exact current-main commit/tree and check out only those bytes. |
+| Actions | Read | Authenticate workflow, run, job, and immutable artifact identities. |
+
+Administration, Contents write, Pull requests write, Checks write, Commit
+statuses write, Deployments write, and Releases write are unnecessary and must
+remain disabled. Webhooks, callback URLs, user authorization, and setup URLs are
+also unnecessary.
+
+Create the App under **Settings → Developer settings → GitHub Apps → New GitHub
+App** with the name `BCF Break Glass`, any non-secret informational homepage,
+webhooks disabled, and only the three read permissions above. Install it for
+**Only select repositories**, selecting only `mjgolaszewski/bcf-governance`.
+Generate one private key and store it directly—never in chat—as the protected
+environment secret `BCF_BREAK_GLASS_APP_PRIVATE_KEY`.
+
+Create the protected environment `bcf-break-glass-recovery`, require the
+repository owner (or the deliberately authorized repository administrator) as
+reviewer, and restrict deployment branches to `main`. Do not enable
+prevent-self-review when the dispatching owner is the only authorized reviewer;
+enable it only when a second authorized administrator is intentionally part of
+the recovery ceremony. Set repository variables
+`BCF_BREAK_GLASS_APP_ID`, `BCF_BREAK_GLASS_INSTALLATION_ID`, and
+`BCF_BREAK_GLASS_WORKFLOW_ID` to their provider numeric identities. The App
+private key belongs only in the protected environment; it is not an ordinary
+repository secret and must not be shared with App 15368.
+
+Recovery is one manual workflow entry point with three separately approved
+stages. Generate a fresh 32-character lowercase hexadecimal operation ID, then
+dispatch `bcf/break-glass-recovery` from `main` three times with the same ID and
+reason `ordinary_control_plane_bootstrap_deadlock`: first `build`, then
+`install`, then `probe`. Never rerun a failed stage as a different operation or
+select an arbitrary artifact. Success emits an immutable recovery-only receipt
+and means only `RECOVERY INSTALLED — NORMAL CERTIFICATION REQUIRED`.
+
+Installation deliberately does not retarget ordinary workflow authority. After
+the receipt is downloaded from its uniquely named Actions artifact, create a
+branch at the receipt's exact subject commit and run:
+
+```bash
+python3 .github/scripts/break_glass_recovery.py project-installation \
+  --repo-root . --receipt /trusted/path/receipt.json
+```
+
+The command rejects a moved `HEAD` or tree and projects only the proven
+`trusted_controller_installation`; the ordinary controller artifact pin remains
+unchanged. Commit that projection, mechanically pin the changed workflow bytes
+in a following commit, and submit the branch as a normal protected PR. This
+temporary target/installed mismatch disables release authorization but makes
+trusted finalizers invoke the recovery-proven installation after the PR merges.
+It does not certify the controller.
+
+The resulting fresh exact-main cycle must admit the expanded authority, run the
+normal `trusted-controller-build`, complete governance and trusted finalization,
+and receive App 15368's `bcf/exact-main-certification=success`. Then select that
+normal builder artifact through the ordinary controller-pin and bootstrap/probe
+procedure. The recovery artifact is never valid `controller-pin resolve`
+evidence and must never become the steady-state artifact pin.
+
+Rotate the private key after use or immediately on suspected exposure. To make
+recovery dormant, delete the environment secret or uninstall the App. To remove
+the authority completely, uninstall the App from the repository and revoke all
+private keys; ordinary BCF remains unaffected.
+
+Controller evolution follows an N/N+1 rule: controller N must understand the
+explicit expand-only schema shape needed to install N+1 before N+1-only
+semantics become authoritative. The normal sequence is `expand parser/schema →
+rotate compatible controller → activate N+1 authority → optionally contract`.
+Unknown fields remain rejected; break-glass is used only when that ordering was
+missed and ordinary authority cannot bootstrap itself.
+
 ## Change contract
 
 Every pull request:

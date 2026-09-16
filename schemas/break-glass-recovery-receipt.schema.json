@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "positive": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+    "jobs": {
+      "type": "object", "minProperties": 2,
+      "additionalProperties": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "runner_name"],
+        "properties": {"id": {"$ref": "#/$defs/positive"}, "runner_name": {"type": "string", "minLength": 1}}
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "operation_id", "reason_code", "repository", "actor", "pre_recovery_controller", "subject", "builder", "artifact", "install", "probe", "controller_confirmation", "resulting_installed_controller", "provider_timestamps", "recovery_only", "governance_certified", "created_at"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "operation_id": {"type": "string", "pattern": "^[a-f0-9]{32}$"},
+    "reason_code": {"const": "ordinary_control_plane_bootstrap_deadlock"},
+    "repository": {
+      "type": "object", "additionalProperties": false, "required": ["id", "name", "branch"],
+      "properties": {"id": {"$ref": "#/$defs/positive"}, "name": {"const": "mjgolaszewski/bcf-governance"}, "branch": {"const": "main"}}
+    },
+    "actor": {
+      "type": "object", "additionalProperties": false,
+      "required": ["login", "id", "permission", "app_id", "installation_id", "workflow_id", "run_id", "run_attempt"],
+      "properties": {
+        "login": {"type": "string", "minLength": 1}, "id": {"$ref": "#/$defs/positive"}, "permission": {"const": "admin"},
+        "app_id": {"$ref": "#/$defs/positive"}, "installation_id": {"$ref": "#/$defs/positive"}, "workflow_id": {"$ref": "#/$defs/positive"},
+        "run_id": {"$ref": "#/$defs/positive"}, "run_attempt": {"$ref": "#/$defs/positive"}
+      }
+    },
+    "pre_recovery_controller": {"$ref": "#/$defs/sha"},
+    "subject": {"type": "object", "required": ["commit", "tree"], "properties": {"commit": {"$ref": "#/$defs/sha"}, "tree": {"$ref": "#/$defs/sha"}}, "additionalProperties": false},
+    "builder": {
+      "type": "object", "additionalProperties": false, "required": ["workflow", "job", "job_id", "run_id", "run_attempt"],
+      "properties": {"workflow": {"const": ".github/workflows/bcf-break-glass-recovery.yml"}, "job": {"const": "Build exact-main recovery controller"}, "job_id": {"$ref": "#/$defs/positive"}, "run_id": {"$ref": "#/$defs/positive"}, "run_attempt": {"$ref": "#/$defs/positive"}}
+    },
+    "artifact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "name", "provider_digest", "wheel_sha256", "checksum_inventory", "checksum_inventory_sha256", "control_metadata"],
+      "properties": {
+        "id": {"$ref": "#/$defs/positive"}, "name": {"type": "string", "pattern": "^bcf-break-glass-recovery-build-[a-f0-9]{32}$"},
+        "provider_digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}, "wheel_sha256": {"$ref": "#/$defs/sha256"},
+        "checksum_inventory": {"type": "object", "minProperties": 2, "propertyNames": {"pattern": "^[A-Za-z0-9_.+-]+$"}, "additionalProperties": {"$ref": "#/$defs/sha256"}},
+        "checksum_inventory_sha256": {"$ref": "#/$defs/sha256"}, "control_metadata": {"type": "object", "minProperties": 10, "additionalProperties": {"type": "string"}}
+      }
+    },
+    "install": {"type": "object", "additionalProperties": false, "required": ["run_id", "run_attempt", "jobs"], "properties": {"run_id": {"$ref": "#/$defs/positive"}, "run_attempt": {"$ref": "#/$defs/positive"}, "jobs": {"$ref": "#/$defs/jobs"}}},
+    "probe": {"type": "object", "additionalProperties": false, "required": ["run_id", "run_attempt", "jobs"], "properties": {"run_id": {"$ref": "#/$defs/positive"}, "run_attempt": {"$ref": "#/$defs/positive"}, "jobs": {"$ref": "#/$defs/jobs"}}},
+    "controller_confirmation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "installed_commit_sha", "subject_commit_sha", "subject_tree_sha", "bootstrap_run_id", "bootstrap_run_attempt", "probe_run_id", "probe_run_attempt"],
+      "properties": {
+        "schema_version": {"const": "1.0"}, "installed_commit_sha": {"$ref": "#/$defs/sha"}, "subject_commit_sha": {"$ref": "#/$defs/sha"}, "subject_tree_sha": {"$ref": "#/$defs/sha"},
+        "bootstrap_run_id": {"$ref": "#/$defs/positive"}, "bootstrap_run_attempt": {"$ref": "#/$defs/positive"}, "probe_run_id": {"$ref": "#/$defs/positive"}, "probe_run_attempt": {"$ref": "#/$defs/positive"}
+      }
+    },
+    "resulting_installed_controller": {"$ref": "#/$defs/sha"},
+    "provider_timestamps": {"type": "object", "additionalProperties": false, "required": ["builder_created_at", "install_created_at", "probe_created_at"], "properties": {"builder_created_at": {"type": "string", "format": "date-time"}, "install_created_at": {"type": "string", "format": "date-time"}, "probe_created_at": {"type": "string", "format": "date-time"}}},
+    "recovery_only": {"const": true}, "governance_certified": {"const": false}, "created_at": {"type": "string", "format": "date-time"}
+  }
+}

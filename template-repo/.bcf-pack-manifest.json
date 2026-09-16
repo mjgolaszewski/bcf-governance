@@ -194,6 +194,14 @@
       "operation": "copy",
       "sha256": "e6b583eb991edd1ed4403d8c77f17baed23221ec65be639bcd28ba474cfa5d27"
     },
+    "schemas/break-glass-recovery-policy.schema.json": {
+      "operation": "copy",
+      "sha256": "3818b878dd8e72b690473635a3bef8042271a8f0f2b446080df0aa7fadbff06d"
+    },
+    "schemas/break-glass-recovery-receipt.schema.json": {
+      "operation": "copy",
+      "sha256": "8bee9623787b9ba1c463f329f02fdc282756dca2542f6876f52768a0713be323"
+    },
     "schemas/build-plan.schema.json": {
       "operation": "copy",
       "sha256": "88908d8fb214c5b594056ed2abfc6524163a77ab62a4cf88fb27b4b415aaa42d"
@@ -370,6 +378,10 @@
       "operation": "copy",
       "sha256": "28e460928d0c991403a9261762c0e454b40307efdd762f9a6267ddeb1f02082c"
     },
+    "scripts/_bcf_runtime/break_glass_recovery.py": {
+      "operation": "copy",
+      "sha256": "8057d7b54c0fd55620dffdfc359ba8c747ce333f14967a7143216c504d8f41d0"
+    },
     "scripts/_bcf_runtime/check_governance_exposure.py": {
       "operation": "copy",
       "sha256": "1cb6a99dfe62dee3defd3d08b87a9f2e0485d63c0bea5573cd58e7a4ebcc2168"
@@ -412,7 +424,7 @@
     },
     "scripts/_bcf_runtime/ci_github_api.py": {
       "operation": "copy",
-      "sha256": "66e3194e31ee64bb4d9899b8ad21285396b778b47b71a2aadea61e34c20fea0c"
+      "sha256": "f523db77a695bcd5939ef3c99744b6a7658c3ea6094ce8fa0236c37c5776a566"
     },
     "scripts/_bcf_runtime/ci_github_artifacts.py": {
       "operation": "copy",

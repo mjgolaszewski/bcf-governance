@@ -1,0 +1,6 @@
+document: {kind: audit, name: BCF 2.0 break-glass recovery authority, id: bcf-2-break-glass-recovery, version: 1.0.0, status: active, path: audits/bcf-2-break-glass-recovery.yml}
+incident: {main: 917160ac366d071eb692d72fa227aba3b62ace00, tree: 1bdd5f96332d57912a1385ab41b569f956339efa, exact_main_run: '35050380849', attempt: '1', admission_job: '104649244214', installed_controller: 78f12c6d4acc6e389c6deef41c4933f3a46ceb36, failure: controller N rejected explicit N+1 controller_builder_jobs authority}
+decision: {authority: separate GitHub App, reason: isolate recovery read authority from App 15368 and ordinary BCF, trigger: owner-approved workflow_dispatch only, certification_authority: false}
+scope: {builder: canonical, installer: canonical, probe: exact installed custody, receipt: recovery_only, package_restored: false, schema_validation_weakened: false}
+validation: {focused_security_tests: 25_passed, governance_yaml: pending_final_authority_pin, graph_validation: 19_workflows_32_jobs_5_extensions, full_suite: pending_final_authority_pin}
+result: code_ready_owner_installation_required

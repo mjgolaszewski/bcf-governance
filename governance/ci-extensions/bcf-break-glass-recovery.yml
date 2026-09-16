@@ -1,0 +1,94 @@
+document: {kind: ci_graph_extension, name: BCF break-glass controller recovery extension, id: bcf-break-glass-recovery-ci-extension, version: 1.0.0, status: active, path: governance/ci-extensions/bcf-break-glass-recovery.yml}
+schema_version: '1.0'
+extension:
+  id: bcf-break-glass-recovery
+  owner: bcf-governance
+  rationale: owner-approved recovery of installed controller state without ordinary certification authority
+  attachment_point: trusted-control
+  applicability: [workflow_dispatch]
+  required_controls: {positive: [break-glass-positive], negative: [break-glass-adversarial], topology: [break-glass-topology], cleanup: [break-glass-receipt]}
+artifacts: {}
+conditions:
+  break-glass-build: github.ref == 'refs/heads/main' && inputs.stage == 'build'
+  break-glass-install: github.ref == 'refs/heads/main' && inputs.stage == 'install'
+  break-glass-probe: github.ref == 'refs/heads/main' && inputs.stage == 'probe'
+  break-glass-install-one: github.ref == 'refs/heads/main' && inputs.stage == 'install' && matrix.trusted_runner == 'bcf-trusted-control-1'
+commands:
+  recovery-authorize-build: {argv: ['{python}', .github/scripts/break_glass_recovery.py, authorize-build, --repo-root, ., --repository, '${{ github.repository }}', --operation-id, '${{ inputs.operation_id }}', --reason-code, '${{ inputs.reason_code }}', --output, .artifacts/break-glass-build/recovery-authorization.json], cwd: ., environment: {BCF_BREAK_GLASS_APP_TOKEN: '${{ steps.recovery-app-token.outputs.token }}'}}
+  recovery-build-controller: {argv: ['{python}', .github/scripts/build_trusted_controller.py, --output, .artifacts/break-glass-build/controller, --run-id, '${{ github.run_id }}', --run-attempt, '${{ github.run_attempt }}'], cwd: ., environment: {}}
+  recovery-bind-build: {argv: ['{python}', .github/scripts/break_glass_recovery.py, bind-build, --repo-root, ., --artifact-root, .artifacts/break-glass-build, --authorization, .artifacts/break-glass-build/recovery-authorization.json], cwd: ., environment: {}}
+  recovery-resolve-build: {argv: ['{python}', .github/scripts/break_glass_recovery.py, resolve-build, --repo-root, ., --repository, '${{ github.repository }}', --operation-id, '${{ inputs.operation_id }}', --reason-code, '${{ inputs.reason_code }}', --stage, '${{ inputs.stage }}'], cwd: ., environment: {BCF_BREAK_GLASS_APP_TOKEN: '${{ steps.recovery-app-token.outputs.token }}'}}
+  recovery-install: {argv: ['{python}', .github/scripts/break_glass_recovery.py, install, --repo-root, ., --repository, '${{ github.repository }}', --operation-id, '${{ inputs.operation_id }}', --reason-code, '${{ inputs.reason_code }}', --artifact-root, '${{ runner.temp }}/bcf-break-glass-build', --slot, '${{ matrix.trusted_runner }}', --output, '${{ runner.temp }}/bcf-break-glass-install/receipt.json'], cwd: ., environment: {BCF_BREAK_GLASS_APP_TOKEN: '${{ steps.recovery-app-token.outputs.token }}', BCF_PYTHON: '${{ env.pythonLocation }}/bin/python', RUNNER_NAME: '${{ runner.name }}'}}
+  recovery-probe: {argv: ['{python}', .github/scripts/break_glass_recovery.py, probe, --repo-root, ., --repository, '${{ github.repository }}', --operation-id, '${{ inputs.operation_id }}', --reason-code, '${{ inputs.reason_code }}', --slot, '${{ matrix.trusted_runner }}', --output, '${{ runner.temp }}/bcf-break-glass-probe/receipt.json'], cwd: ., environment: {BCF_BREAK_GLASS_APP_TOKEN: '${{ steps.recovery-app-token.outputs.token }}', RUNNER_NAME: '${{ runner.name }}'}}
+  recovery-finalize: {argv: ['{python}', .github/scripts/break_glass_recovery.py, finalize, --repo-root, ., --repository, '${{ github.repository }}', --operation-id, '${{ inputs.operation_id }}', --reason-code, '${{ inputs.reason_code }}', --output, .artifacts/break-glass-receipt/receipt.json], cwd: ., environment: {BCF_BREAK_GLASS_APP_TOKEN: '${{ steps.recovery-app-token.outputs.token }}', BCF_PRE_RECOVERY_CONTROLLER: '{source:self-policy:runner_security.trusted_controller_installation.installed_commit_sha}'}}
+step_components:
+  create-recovery-app-token:
+    kind: action
+    name: Mint the repository-scoped break-glass App token
+    id: recovery-app-token
+    action: create-github-app-token
+    with: {app-id: '${{ vars.BCF_BREAK_GLASS_APP_ID }}', private-key: '${{ secrets.BCF_BREAK_GLASS_APP_PRIVATE_KEY }}', owner: '${{ github.repository_owner }}', repositories: '${{ github.event.repository.name }}', permission-actions: read, permission-contents: read}
+    environment: {}
+    produces: []
+    consumes: []
+  recovery-authorize-build: {kind: command, name: Authenticate owner and exact current main, command: recovery-authorize-build, environment: {}, produces: [], consumes: []}
+  recovery-build-controller: {kind: command, name: Build the canonical recovery-only controller bundle, command: recovery-build-controller, environment: {}, produces: [], consumes: []}
+  recovery-bind-build: {kind: command, name: Bind recovery authorization to exact controller bytes, command: recovery-bind-build, environment: {}, produces: [], consumes: []}
+  upload-recovery-build: {kind: action, name: Upload the uniquely derived recovery controller, action: upload-artifact, with: {name: 'bcf-break-glass-recovery-build-${{ inputs.operation_id }}', path: .artifacts/break-glass-build, if-no-files-found: error, retention-days: 90}, environment: {}, produces: [], consumes: []}
+  recovery-resolve-build: {kind: command, name: Resolve exact recovery build from provider state, id: resolve-build, command: recovery-resolve-build, environment: {}, produces: [], consumes: []}
+  download-recovery-build: {kind: action, name: Download only the provider-resolved recovery build, action: download-artifact, with: {artifact-ids: '${{ steps.resolve-build.outputs.artifact_id }}', github-token: '${{ steps.recovery-app-token.outputs.token }}', repository: '${{ github.repository }}', run-id: '${{ steps.resolve-build.outputs.build_run_id }}', path: '${{ runner.temp }}/bcf-break-glass-build', digest-mismatch: error}, environment: {}, produces: [], consumes: []}
+  recovery-install: {kind: command, name: Authenticate and install on the exact trusted runner, command: recovery-install, environment: {}, produces: [], consumes: []}
+  upload-recovery-install: {kind: action, name: Upload the installation-stage marker, condition: break-glass-install-one, action: upload-artifact, with: {name: 'bcf-break-glass-recovery-install-${{ inputs.operation_id }}', path: '${{ runner.temp }}/bcf-break-glass-install', if-no-files-found: error, retention-days: 90}, environment: {}, produces: [], consumes: []}
+  recovery-probe: {kind: command, name: Probe the exact recovered controller installation, command: recovery-probe, environment: {}, produces: [], consumes: []}
+  recovery-finalize: {kind: command, name: Authenticate complete recovery and emit non-certifying receipt, command: recovery-finalize, environment: {}, produces: [], consumes: []}
+  upload-recovery-receipt: {kind: action, name: Upload the immutable break-glass recovery receipt, action: upload-artifact, with: {name: 'bcf-break-glass-recovery-receipt-${{ inputs.operation_id }}', path: .artifacts/break-glass-receipt, if-no-files-found: error, retention-days: 90}, environment: {}, produces: [], consumes: []}
+workflows:
+- id: break-glass-recovery
+  path: .github/workflows/bcf-break-glass-recovery.yml
+  display_name: bcf/break-glass-recovery
+  role: trusted-control
+  events:
+  - type: workflow_dispatch
+    inputs:
+      stage: {description: Explicit recovery stage, required: true, default: build, type: choice, options: [build, install, probe]}
+      operation_id: {description: Exact 32-character lowercase hexadecimal operation nonce, required: true, default: replace-with-32-lowercase-hex, type: string}
+      reason_code: {description: Bounded incident reason, required: true, default: ordinary_control_plane_bootstrap_deadlock, type: choice, options: [ordinary_control_plane_bootstrap_deadlock]}
+  permissions: {actions: read, contents: read}
+  jobs:
+  - {id: build, display_name: Build exact-main recovery controller, semantic_role: break-glass-builder, resource_class: hosted-python, trust: candidate, needs: [], condition: break-glass-build, timeout_minutes: 15, permissions: {actions: read, contents: read}, checkout: true, protected_environment: bcf-break-glass-recovery, components: [], executor: {kind: component_sequence, components: [setup-python, install-governance, create-recovery-app-token, recovery-authorize-build, recovery-build-controller, recovery-bind-build, upload-recovery-build]}, produces: [], consumes: [], required: true}
+  - id: install
+    display_name: Install recovered controller / ${{ matrix.trusted_runner }}
+    semantic_role: break-glass-installer
+    resource_class: recovery-control-instance
+    trust: candidate
+    needs: []
+    condition: break-glass-install
+    timeout_minutes: 15
+    permissions: {actions: read, contents: read}
+    checkout: true
+    protected_environment: bcf-break-glass-recovery
+    components: []
+    strategy: {fail_fast: false, max_parallel: 2, matrix: {trusted_runner: [bcf-trusted-control-1, bcf-trusted-control-2]}}
+    executor: {kind: component_sequence, components: [setup-python, install-governance, create-recovery-app-token, recovery-resolve-build, download-recovery-build, recovery-install, upload-recovery-install]}
+    produces: []
+    consumes: []
+    required: true
+  - id: probe
+    display_name: Probe recovered controller / ${{ matrix.trusted_runner }}
+    semantic_role: break-glass-probe
+    resource_class: recovery-control-instance
+    trust: candidate
+    needs: []
+    condition: break-glass-probe
+    timeout_minutes: 10
+    permissions: {actions: read, contents: read}
+    checkout: true
+    protected_environment: bcf-break-glass-recovery
+    components: []
+    strategy: {fail_fast: false, max_parallel: 2, matrix: {trusted_runner: [bcf-trusted-control-1, bcf-trusted-control-2]}}
+    executor: {kind: component_sequence, components: [setup-python, install-governance, create-recovery-app-token, recovery-probe]}
+    produces: []
+    consumes: []
+    required: true
+  - {id: receipt, display_name: Emit immutable non-certifying recovery receipt, semantic_role: break-glass-receipt, resource_class: hosted-python, trust: candidate, needs: [probe], condition: break-glass-probe, timeout_minutes: 5, permissions: {actions: read, contents: read}, checkout: true, protected_environment: bcf-break-glass-recovery, components: [], executor: {kind: component_sequence, components: [setup-python, install-governance, create-recovery-app-token, recovery-finalize, upload-recovery-receipt]}, produces: [], consumes: [], required: true}
+jobs: []
