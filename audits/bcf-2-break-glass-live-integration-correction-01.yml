@@ -4,5 +4,5 @@ classification: 5.4R-01-recovery-app-token-class-authentication-defect
 correction: {token_class: installation_access_token, repository_scope_endpoint: 'GET /installation/repositories?per_page=100', exact_scope: {repository_id: '1207503211', full_name: mjgolaszewski/bcf-governance}, collaborator_permission: retained_metadata_read, app_jwt: false, permission_change: false}
 identity_semantics: {app_id: configured_token_mint_binding, installation_id: configured_expected_not_token_observed, workflow_id: provider_run_authenticated, actor: policy_and_provider_run_and_collaborator_permission}
 operation_custody: {failed_nonce_retired: true, controller_built: false, artifact_uploaded: false, trusted_runner_modified: false, install_or_probe_run: false}
-validation: {focused: 42_passed, governance: passed, graph: 19_workflows_32_jobs_5_extensions, test_manifest_nodes: 1375, contract_test_manifest_nodes: 701, full_suite: pending}
-result: correction_in_progress
+validation: {focused: 42_passed, governance: passed, graph: 19_workflows_32_jobs_5_extensions, test_manifest_nodes: 1375, contract_test_manifest_nodes: 701, full_suite: 1371_passed_4_preexisting_environment_failures, environment_failures: [isolated_source_wrapper_missing_jsonschema, selected_interpreter_missing_pytest_distribution_metadata, local_setuptools_rejects_existing_spdx_license_form, isolated_semantic_wrapper_missing_jsonschema]}
+result: correction_ready_for_protected_pr
