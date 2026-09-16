@@ -564,7 +564,7 @@
     },
     "scripts/_bcf_runtime/ci_self_controller.py": {
       "operation": "copy",
-      "sha256": "716490c20c6b3fbab7b1f23f9b092dcd4df577590bf1d2e333041ca125de6ffb"
+      "sha256": "c2306e76d0f393ddfcf4f5b559c9a9467716cb0a3371dcf6364e140e7b24af7e"
     },
     "scripts/_bcf_runtime/cleanup_ci_resources.py": {
       "operation": "copy",

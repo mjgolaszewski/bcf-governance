@@ -128,7 +128,11 @@ def resolve_self_controller_artifact(
     run_id, attempt = select_latest_admission(
         api, repository=repository, main=main, authority=authority
     )
-    builders = authority.get("controller_builder_jobs")
+    builders = (
+        authority["controller_builder_jobs"]
+        if "controller_builder_jobs" in authority
+        else None
+    )
     if builders is None:
         producers = collect_same_run_producers(
             api,
@@ -175,29 +179,29 @@ def resolve_self_controller_artifact(
             require_success=False,
         )
         run = api.run(repository, run_id)
-        if run.get("status") != "completed" or positive_int(
-            run.get("run_attempt"), field="admission run attempt"
+        if run["status"] != "completed" or positive_int(
+            run["run_attempt"], field="admission run attempt"
         ) != attempt:
             raise GitHubControllerError(
                 "latest exact-main admission is not terminal for controller resolution"
             )
         jobs = api.jobs(repository, run_id, attempt=attempt)
-        names = [str(value.get("name", "")) for value in jobs]
+        names = [str(value["name"]) for value in jobs]
         if not names or not all(names) or len(names) != len(set(names)):
             raise GitHubControllerError(
                 "exact-main job inventory is empty or duplicated"
             )
         expected_builder = str(builders[0]["job_id"])
-        selected = [value for value in jobs if value.get("name") == expected_builder]
+        selected = [value for value in jobs if value["name"] == expected_builder]
         if len(selected) != 1:
             raise GitHubControllerError(
                 "independent controller builder job identity is not exact"
             )
         builder = selected[0]
-        positive_int(builder.get("id"), field="controller builder job ID")
+        positive_int(builder["id"], field="controller builder job ID")
         if (
-            builder.get("status") != "completed"
-            or builder.get("conclusion") != "success"
+            builder["status"] != "completed"
+            or builder["conclusion"] != "success"
         ):
             raise GitHubControllerError(
                 "independent controller builder job is not successful"

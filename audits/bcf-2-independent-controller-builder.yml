@@ -72,7 +72,16 @@ validation:
     passed: 237
     failed: 0
     duration_seconds: 87.20
-  full_suite: pending
+  full_suite:
+    nodes: 1335
+    initial_passed: 1328
+    initial_failed: 7
+    duration_seconds: 1165.08
+    repository_failures_corrected: 3
+    environment_failures_reproduced_in_declared_environment: false
+    exact_failed_node_recheck_passed: 7
+    exact_failed_node_recheck_failed: 0
+    exact_failed_node_recheck_duration_seconds: 101.62
 recovery:
   repair_merge_expected_exact_main_state: governance_may_fail_builder_must_succeed
   next_step: Existing governed controller target, bootstrap, probe, and confirmation sequence.

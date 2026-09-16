@@ -168,8 +168,8 @@ def test_self_workflow_authority_is_mechanically_compiled() -> None:
         for reference in privileged
     }
     admission = payload["roles"]["admission"]
-    expected_admission_roles = payload["workflow_registry"][admission].pop(
-        "job_roles"
+    expected_admission_roles = dict(
+        payload["workflow_registry"][admission]["job_roles"]
     )
     payload.pop("admission_jobs")
     expected_controller_builders = payload.pop("controller_builder_jobs")
