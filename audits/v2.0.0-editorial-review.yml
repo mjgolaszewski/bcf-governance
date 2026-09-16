@@ -32,8 +32,8 @@ documents:
   audience: adopters and release operators
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
-  before_sha256: 1ae16cae07334ed6151065df2de5c24f15cba6ce8fdf7cb33b0d7c3b0bef2ce8
-  after_sha256: e2fe4b1d739f61977bdc71c062b3083ebb862e5b653635519edc3007c41ae172
+  before_sha256: e2fe4b1d739f61977bdc71c062b3083ebb862e5b653635519edc3007c41ae172
+  after_sha256: fcb9d4607a4ae2a1070d792b5fcc684cb33c10cc8bebb354014dd9279f612c38
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: historical

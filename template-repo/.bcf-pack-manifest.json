@@ -228,7 +228,7 @@
     },
     "schemas/ci-graph.schema.json": {
       "operation": "copy",
-      "sha256": "9f0cf20c85c66e4c7686e6da1e328685e78dec37e573cc9f611cc1fed6cf89c3"
+      "sha256": "4174b2ea51a38d4f7d279c694ae3734f1851e3b345f324dc2fd6c62d44e51227"
     },
     "schemas/ci-provider-snapshot.schema.json": {
       "operation": "copy",
@@ -330,6 +330,10 @@
       "operation": "copy",
       "sha256": "9d4ba185bbb2fb21442c810a8351762d6ab0fb55fd9db6c3a937827763acb3b7"
     },
+    "schemas/recovery-reentry-authorization.schema.json": {
+      "operation": "copy",
+      "sha256": "a4f3699ed4cb9dfb5f5b48246cfcc823313051cc228f951c1efa14bfa6bea4be"
+    },
     "schemas/repo-cleanup-contract.schema.json": {
       "operation": "copy",
       "sha256": "311cb3b6965f4a8ee83e76da2f88056b260554618fcf3bf4ec0a63eb1891c045"
@@ -380,7 +384,7 @@
     },
     "scripts/_bcf_runtime/break_glass_recovery.py": {
       "operation": "copy",
-      "sha256": "3acd164665510f649c0ad19c89fa807b2acf1c7f0d742f2000e3fccc39a24eae"
+      "sha256": "73138d4076a23f69c76101a28c78064e5fc6e0fa47fc94ec9627e07dd9613d0c"
     },
     "scripts/_bcf_runtime/check_governance_exposure.py": {
       "operation": "copy",
@@ -520,7 +524,11 @@
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",
-      "sha256": "028fbf8827dce1a6f8766801cc1df781c6ab3f4155fb594f0504724c7123876e"
+      "sha256": "7d66311f887eac2ea4bff93f904bd37737e7871137ce3e528f45bb7ca968fa2d"
+    },
+    "scripts/_bcf_runtime/ci_graph_controller_lifecycle.py": {
+      "operation": "copy",
+      "sha256": "1e4485e8f838ecc55e758f814b3d4caffab4cf901d291925d1ec78c0c47140d8"
     },
     "scripts/_bcf_runtime/ci_graph_defaults.py": {
       "operation": "copy",
@@ -548,7 +556,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "4c1dbb8c3c33b79a2e3d76bcfb7788044835716d3a91530ce4980fa2a1b28659"
+      "sha256": "7491508fff6dae1bf1a48b48b481fbd25d70b7c8885ea91429d0d092758f6b19"
     },
     "scripts/_bcf_runtime/ci_graph_routing.py": {
       "operation": "copy",
@@ -576,7 +584,7 @@
     },
     "scripts/_bcf_runtime/ci_self_controller.py": {
       "operation": "copy",
-      "sha256": "c2306e76d0f393ddfcf4f5b559c9a9467716cb0a3371dcf6364e140e7b24af7e"
+      "sha256": "fd9169453b79253759ef9a059f543c8af53d53e3b8674a21ebfcc865588f9705"
     },
     "scripts/_bcf_runtime/cleanup_ci_resources.py": {
       "operation": "copy",

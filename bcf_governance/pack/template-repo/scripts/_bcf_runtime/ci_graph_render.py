@@ -12,6 +12,7 @@ from typing import Any
 
 from .ci_github_actions import action_pin
 from .ci_graph_contracts import CompiledCIGraph, validate_ci_graph
+from .ci_graph_controller_lifecycle import controller_requirement_condition
 from .ci_graph_execution import job_required_environment
 from .ci_graph_routing import render_runner
 from .ci_graph_yaml import render_yaml
@@ -514,11 +515,15 @@ def _job(
     if job["needs"]:
         result["needs"] = job["needs"]
     condition = _condition(compiled, job["condition"])
-    if (
-        job["controller_requirement"] == "current"
-        and not compiled.trusted_controller_current
-    ):
-        condition = "${{ false }}"
+    controller_condition = controller_requirement_condition(
+        compiled.trusted_controller_lifecycle, job["controller_requirement"]
+    )
+    if controller_condition == "${{ false }}":
+        condition = controller_condition
+    elif controller_condition is not None:
+        base = "true" if condition is None else condition.removeprefix("${{ ").removesuffix(" }}")
+        guard = controller_condition.removeprefix("${{ ").removesuffix(" }}")
+        condition = f"${{{{ ({base}) && ({guard}) }}}}"
     if condition is not None:
         result["if"] = condition
     if job["permissions"]:
