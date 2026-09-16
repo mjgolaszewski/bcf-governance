@@ -559,8 +559,13 @@ def test_repaired_controller_and_race_safe_admission_remain_authoritative() -> N
         "78f12c6d4acc6e389c6deef41c4933f3a46ceb36"
     )
     assert runner["trusted_controller_installation"]["installed_commit_sha"] == (
-        "78f12c6d4acc6e389c6deef41c4933f3a46ceb36"
+        "c5568106f99b53f19b1a54f8abbfa9c21dfec35a"
     )
+    assert runner["trusted_controller_installation"]["subject_tree_sha"] == (
+        "68284a9d32939c538ba3113c255842c9975c470c"
+    )
+    assert runner["trusted_controller_installation"]["bootstrap_run_id"] == "35133834999"
+    assert runner["trusted_controller_installation"]["probe_run_id"] == "35134079764"
     exact_main = (ROOT / "bcf_governance/tooling/ci_github_exact_main.py").read_text()
     membership = (ROOT / "bcf_governance/tooling/ci_github_membership.py").read_text()
     assert "trigger_run_id" in exact_main
