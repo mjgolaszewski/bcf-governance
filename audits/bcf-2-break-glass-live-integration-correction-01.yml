@@ -1,0 +1,8 @@
+document: {kind: audit, name: BCF 2.0 break-glass live integration correction 01, id: bcf-2-break-glass-live-integration-correction-01, version: 1.0.0, status: active, path: audits/bcf-2-break-glass-live-integration-correction-01.yml}
+incident: {main: 806080959bbd39962b808c90d38257c966c87a3a, tree: 94dc54ca52de78d6793eecd0678a7f136917a727, workflow_id: '359360291', run_id: '35114877758', run_attempt: '1', job_id: '104857641347', operation_id: 4aa49c3ab6a100df627619d23c1df483, first_failure: 'GitHub API GET /installation returned 404'}
+classification: 5.4R-01-recovery-app-token-class-authentication-defect
+correction: {token_class: installation_access_token, repository_scope_endpoint: 'GET /installation/repositories?per_page=100', exact_scope: {repository_id: '1207503211', full_name: mjgolaszewski/bcf-governance}, collaborator_permission: retained_metadata_read, app_jwt: false, permission_change: false}
+identity_semantics: {app_id: configured_token_mint_binding, installation_id: configured_expected_not_token_observed, workflow_id: provider_run_authenticated, actor: policy_and_provider_run_and_collaborator_permission}
+operation_custody: {failed_nonce_retired: true, controller_built: false, artifact_uploaded: false, trusted_runner_modified: false, install_or_probe_run: false}
+validation: {focused: 42_passed, governance: passed, graph: 19_workflows_32_jobs_5_extensions, test_manifest_nodes: 1375, contract_test_manifest_nodes: 701, full_suite: pending}
+result: correction_in_progress

@@ -93,6 +93,8 @@ def _authorize(
     authority = policy["authority"]
     if not re.fullmatch(operation["operation_id_pattern"], operation_id):
         raise GitHubControllerError("recovery operation ID is not an exact nonce")
+    if operation_id in operation["retired_operation_ids"]:
+        raise GitHubControllerError("recovery operation ID is retired failed evidence")
     if reason_code not in authority["reason_codes"] or stage not in operation["stages"]:
         raise GitHubControllerError("recovery reason or stage is not authorized")
     if (
@@ -108,20 +110,31 @@ def _authorize(
         or main.checkout_sha != _required("GITHUB_SHA")
     ):
         raise GitHubControllerError("recovery subject is not exact current main")
-    installation = api.installation()
     expected_app = _required(authority["app_id_variable"])
     expected_installation = _required(authority["installation_id_variable"])
     if (
-        str(installation.get("app_id")) != expected_app
-        or str(installation.get("id")) != expected_installation
-        or installation.get("repository_selection") != "selected"
+        expected_app != authority["app_id"]
+        or expected_installation != authority["installation_id"]
     ):
-        raise GitHubControllerError("recovery App installation identity is not exact")
+        raise GitHubControllerError("configured recovery App identity is not exact")
+    accessible = api.installation_repositories()
+    if len(accessible) != 1 or {
+        "id": str(accessible[0].get("id")),
+        "full_name": str(accessible[0].get("full_name")),
+    } != {
+        "id": policy["repository"]["repository_id"],
+        "full_name": policy["repository"]["name"],
+    }:
+        raise GitHubControllerError(
+            "recovery installation token repository scope is not exact"
+        )
     run_id = _required("GITHUB_RUN_ID")
     attempt = _required("GITHUB_RUN_ATTEMPT")
     actor = _required("GITHUB_ACTOR")
     run = api.run(repository, run_id)
     workflow_id = _required(authority["workflow_id_variable"])
+    if workflow_id != authority["workflow_id"]:
+        raise GitHubControllerError("configured recovery workflow identity is not exact")
     if {
         "id": str(run.get("id")),
         "attempt": str(run.get("run_attempt")),
@@ -142,8 +155,19 @@ def _authorize(
         "actor": actor,
     }:
         raise GitHubControllerError("recovery workflow/run/actor identity is not exact")
+    authorized = {
+        (str(value["login"]), str(value["user_id"]))
+        for value in authority["authorized_actors"]
+    }
+    provider_actor = (
+        str(run.get("actor", {}).get("login")),
+        str(run.get("actor", {}).get("id")),
+    )
     permission = api.collaborator_permission(repository, actor)
-    if permission.get("permission") != authority["required_actor_permission"]:
+    if (
+        provider_actor not in authorized
+        or permission.get("permission") != authority["required_actor_permission"]
+    ):
         raise GitHubControllerError("recovery actor is not a repository administrator")
     active = [
         value
@@ -178,6 +202,11 @@ def _authorize(
         "permission": permission["permission"],
         "app_id": expected_app,
         "installation_id": expected_installation,
+        "identity_semantics": {
+            "app_id": authority["app_id_semantics"],
+            "installation_id": authority["installation_id_semantics"],
+            "repository_scope": authority["repository_scope_authentication"],
+        },
         "workflow_id": workflow_id,
         "run_id": run_id,
         "run_attempt": attempt,

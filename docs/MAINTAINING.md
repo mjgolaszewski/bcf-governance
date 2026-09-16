@@ -143,7 +143,7 @@ protection. App 15368 remains the separate ordinary status publisher.
 
 | Permission | Access | Exact reason |
 | --- | --- | --- |
-| Metadata | Read | Authenticate repository ID, default branch, installation, and invoking administrator. |
+| Metadata | Read | Authenticate exact installation-token repository scope and invoking administrator. |
 | Contents | Read | Resolve the exact current-main commit/tree and check out only those bytes. |
 | Actions | Read | Authenticate workflow, run, job, and immutable artifact identities. |
 
@@ -170,6 +170,15 @@ the recovery ceremony. Set repository variables
 private key belongs only in the protected environment; it is not an ordinary
 repository secret and must not be shared with App 15368.
 
+The workflow uses the App ID to mint the installation token and binds the
+configured installation ID in policy and receipts. GitHub installation tokens
+do not self-report their installation ID through `GET /installation`; recovery
+therefore authenticates the token's exact one-repository scope through
+`GET /installation/repositories`. The configured installation ID is an expected
+administrative identity, not a falsely claimed token-observed fact. Metadata
+read also authorizes the independent collaborator-permission lookup used with
+the exact provider run actor and the policy's authorized owner identity.
+
 Recovery is one manual workflow entry point with three separately approved
 stages. Generate a fresh 32-character lowercase hexadecimal operation ID, then
 dispatch `bcf/break-glass-recovery` from `main` three times with the same ID and
@@ -177,6 +186,8 @@ reason `ordinary_control_plane_bootstrap_deadlock`: first `build`, then
 `install`, then `probe`. Never rerun a failed stage as a different operation or
 select an arbitrary artifact. Success emits an immutable recovery-only receipt
 and means only `RECOVERY INSTALLED — NORMAL CERTIFICATION REQUIRED`.
+The failed live-integration nonce `4aa49c3ab6a100df627619d23c1df483`
+is permanently retired and must not be reused.
 
 Installation deliberately does not retarget ordinary workflow authority. After
 the receipt is downloaded from its uniquely named Actions artifact, create a
