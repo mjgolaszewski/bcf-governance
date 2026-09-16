@@ -16,6 +16,7 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Restore independent exact-main trusted-controller construction after the 2.0 package retirement, while keeping governance certification, publication, protection, stale-controller enforcement, and the existing governed rotation boundary unchanged.
 - Replace the one-shot BCF 2.0 successor branch authorization with the exact final activation branch, without broadening scope or changing topology and assurance anchors.
 - Refresh the trusted BCF 2.0 successor snapshot to the frozen reviewed representation that preserves the repaired controller, without changing transition semantics or activating the successor topology.
 - Confirm the race-safe exact-main controller installation from authenticated bootstrap and probe runs on both trusted runners, including mechanically current transition anchors.

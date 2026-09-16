@@ -140,6 +140,24 @@ def _validate_enriched_job_authority(
             raise CIAuthorityContractError(
                 "authority admission source producer jobs must match producer IDs"
             )
+        source_builders = {
+            str(job_id)
+            for job_id, role in admission_roles.items()
+            if role == "controller-builder"
+        }
+        controller_builders = payload.get("controller_builder_jobs")
+        if source_builders or controller_builders is not None:
+            if len(source_builders) != 1 or not isinstance(controller_builders, list) or (
+                len(controller_builders) != 1
+            ):
+                raise CIAuthorityContractError(
+                    "authority requires exactly one independent controller builder"
+                )
+            builder = controller_builders[0]
+            if not isinstance(builder, dict) or set(builder) != {"job_id"}:
+                raise CIAuthorityContractError(
+                    "authority controller builder inventory must contain one exact job"
+                )
     separately_owned = {
         str(roles["admission"]),
         *(str(value) for value in roles["reusable_producers"]),

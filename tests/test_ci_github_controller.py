@@ -717,6 +717,60 @@ def test_v11_failed_finalizer_publishes_failure_without_an_artifact(
     assert api.published_statuses[-1]["state"] == "failure"
 
 
+def test_independent_builder_success_does_not_certify_failed_governance(
+    tmp_path: Path,
+) -> None:
+    api = FakeAPI()
+    authority = _prepare_v11_run(api)
+    authority["workflow_registry"]["admission"]["job_roles"] = {  # type: ignore[index]
+        "admit": "admission",
+        "governance": "producer",
+        "trusted-controller-build": "controller-builder",
+    }
+    authority["roles"]["reusable_producers"] = ["governance"]  # type: ignore[index]
+    authority["producers"] = [authority["producers"][0]]  # type: ignore[index]
+    authority["controller_builder_jobs"] = [
+        {"job_id": "Build independent exact-main trusted controller"}
+    ]
+    api.runs["100"]["conclusion"] = "failure"
+    api.runs["100"]["referenced_workflows"] = [
+        {"path": ".github/workflows/governance.yml", "sha": SHA_A}
+    ]
+
+    def jobs(
+        _repository: str, run_id: str | int, *, attempt: int
+    ) -> tuple[dict[str, object], ...]:
+        if str(run_id) != "100":
+            return FakeAPI.jobs(api, _repository, run_id, attempt=attempt)
+        return (
+            {"name": "Admit exact main", "status": "completed", "conclusion": "success"},
+            {"name": "Governance truth", "status": "completed", "conclusion": "failure"},
+            {
+                "name": "Build independent exact-main trusted controller",
+                "status": "completed",
+                "conclusion": "success",
+            },
+        )
+
+    api.jobs = jobs  # type: ignore[method-assign]
+    result = finalize_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        output_dir=tmp_path / "bundle",
+    )
+
+    assert result.status == "terminal"
+    assert result.computed_state == "failed"
+    report = json.loads(
+        (Path(result.bundle_dir) / "ci-certification.json").read_text(encoding="utf-8")
+    )
+    assert [
+        value["producer_id"] for value in report["admission"]["producer_runs"]
+    ] == ["governance"]
+
+
 @pytest.mark.parametrize("mutation", ["mixed-run", "mixed-attempt", "wrong-ref", "extra-job"])
 def test_v11_common_admission_mutants_fail_closed(mutation: str) -> None:
     api = FakeAPI()

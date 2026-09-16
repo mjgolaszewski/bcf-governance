@@ -168,10 +168,11 @@ def test_self_workflow_authority_is_mechanically_compiled() -> None:
         for reference in privileged
     }
     admission = payload["roles"]["admission"]
-    expected_admission_roles = payload["workflow_registry"][admission].pop(
-        "job_roles"
+    expected_admission_roles = dict(
+        payload["workflow_registry"][admission]["job_roles"]
     )
     payload.pop("admission_jobs")
+    expected_controller_builders = payload.pop("controller_builder_jobs")
     for producer in payload["producers"]:
         producer.pop("expected_jobs")
     workflow_bytes = {
@@ -184,6 +185,7 @@ def test_self_workflow_authority_is_mechanically_compiled() -> None:
     assert payload["workflow_registry"][admission]["job_roles"] == (
         expected_admission_roles
     )
+    assert payload["controller_builder_jobs"] == expected_controller_builders
     assert all(
         payload["workflow_registry"][reference]["expected_jobs"] == expected[reference]
         for reference in privileged
@@ -193,6 +195,36 @@ def test_self_workflow_authority_is_mechanically_compiled() -> None:
         "producer-a": "producer",
         "producer-b": "producer",
         "observe": "observer",
+    }
+
+
+def test_historical_two_role_admission_roles_are_inferred_from_exact_producer_keys() -> None:
+    payload = {
+        "workflow_registry": {
+            "admission": {},
+            "governance": {},
+        },
+        "roles": {"admission": "admission"},
+        "producers": [
+            {"producer_id": "governance", "workflow_ref": "governance"}
+        ],
+    }
+    workflows = {
+        "admission": (
+            b"jobs:\n"
+            b"  governance:\n"
+            b"    name: Run governance\n"
+            b"  admit:\n"
+            b"    name: Authenticate admission\n"
+        ),
+        "governance": b"jobs:\n  evidence:\n    name: Verify evidence\n",
+    }
+
+    _compile_inventories(payload, workflows)
+
+    assert payload["workflow_registry"]["admission"]["job_roles"] == {
+        "governance": "producer",
+        "admit": "admission",
     }
 
 
@@ -235,9 +267,13 @@ def test_admission_roles_are_derived_from_exact_producer_source_keys() -> None:
     assert payload["workflow_registry"]["admission"]["job_roles"] == {
         "admit": "admission",
         "governance": "producer",
+        "trusted-controller-build": "controller-builder",
     }
     assert payload["admission_jobs"] == [
         {"job_id": "Authenticate exact-main admission and publish pending authority"}
+    ]
+    assert payload["controller_builder_jobs"] == [
+        {"job_id": "Build independent exact-main trusted controller"}
     ]
     assert [value["producer_id"] for value in payload["producers"]] == [
         "governance"

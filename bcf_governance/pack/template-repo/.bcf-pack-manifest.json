@@ -208,7 +208,7 @@
     },
     "schemas/ci-authority.schema.json": {
       "operation": "copy",
-      "sha256": "20be9a64a23bf96a279de73ff803ce2f00466074854564315496551a95a5325a"
+      "sha256": "6325de0f0476e6af7105c39c81682093b51cb5297c83de994f8c086cc6883600"
     },
     "schemas/ci-certification.schema.json": {
       "operation": "copy",
@@ -268,7 +268,7 @@
     },
     "schemas/github-ci-topology.schema.json": {
       "operation": "copy",
-      "sha256": "64f8137ad88a691fca4b05450e8b505cdefdaf0d63587bb7756e4d3f9de36067"
+      "sha256": "76abd98e4d6d1388e2e78f6852bdd7932466f83a16755a84c4d54e04a41082fd"
     },
     "schemas/github-protection.schema.json": {
       "operation": "copy",
@@ -384,7 +384,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_contracts.py": {
       "operation": "copy",
-      "sha256": "41ddc5c9ee21a68649e730f78fad3400d8b928e66b3580a958412273aa915fe2"
+      "sha256": "ff2ddea2198484eab4836fc48d99344355af80369b2aa356f808ddbaae8b5487"
     },
     "scripts/_bcf_runtime/ci_authority_decisions.py": {
       "operation": "copy",
@@ -392,7 +392,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_pins.py": {
       "operation": "copy",
-      "sha256": "546e8a73d47ba8561039f689e86b19b45f3ecce73ee2aeabe14e02869ab93842"
+      "sha256": "16f6190ffdbd440220f6920eb73addb96ed0e548eab013f0324f397263627d3d"
     },
     "scripts/_bcf_runtime/ci_authority_state.py": {
       "operation": "copy",
@@ -472,7 +472,7 @@
     },
     "scripts/_bcf_runtime/ci_github_membership.py": {
       "operation": "copy",
-      "sha256": "b593aebf1063fede19a609ce2a83f6879bdb62ab15a2267c93f4dfb221f4e26c"
+      "sha256": "1018767df815d00b810c4b01845911a67f93784f6f52884c16faa4e82a04cbd7"
     },
     "scripts/_bcf_runtime/ci_github_pr.py": {
       "operation": "copy",
@@ -564,7 +564,7 @@
     },
     "scripts/_bcf_runtime/ci_self_controller.py": {
       "operation": "copy",
-      "sha256": "21062c7f968542e90a1924280e4dfb31314155b748bbfed6777d57cc1235d463"
+      "sha256": "c2306e76d0f393ddfcf4f5b559c9a9467716cb0a3371dcf6364e140e7b24af7e"
     },
     "scripts/_bcf_runtime/cleanup_ci_resources.py": {
       "operation": "copy",

@@ -137,14 +137,28 @@ def _artifact_dir(root: Path) -> tuple[Path, str]:
     return root, hashlib.sha256(wheel.read_bytes()).hexdigest()
 
 
-def _provider(monkeypatch: pytest.MonkeyPatch, *, conclusion: str = "success") -> None:
+def _provider(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    conclusion: str = "success",
+    builder_conclusion: str = "success",
+    legacy: bool = False,
+    artifact: ProviderArtifact | None = None,
+) -> SimpleNamespace:
     main = MainIdentity("101", "main", COMMIT, TREE)
-    artifact = ProviderArtifact(
+    selected_artifact = artifact or ProviderArtifact(
         "100", 2, "300", f"bcf-trusted-control-{COMMIT}-2",
         f"sha256:{'c' * 64}", {},
     )
     monkeypatch.setattr(controller, "resolve_main", lambda *args: main)
-    monkeypatch.setattr(controller, "load_authority", lambda *args, **kwargs: {})
+    authority = {} if legacy else {
+        "controller_builder_jobs": [
+            {"job_id": "Build independent exact-main trusted controller"}
+        ]
+    }
+    monkeypatch.setattr(
+        controller, "load_authority", lambda *args, **kwargs: authority
+    )
     monkeypatch.setattr(
         controller, "select_latest_admission", lambda *args, **kwargs: ("100", 2)
     )
@@ -160,19 +174,34 @@ def _provider(monkeypatch: pytest.MonkeyPatch, *, conclusion: str = "success") -
             },
         ),
     )
+    monkeypatch.setattr(controller, "authenticate_role_run", lambda *args, **kwargs: None)
     monkeypatch.setattr(
-        controller, "resolve_role_artifact", lambda *args, **kwargs: artifact
+        controller, "resolve_role_artifact", lambda *args, **kwargs: selected_artifact
+    )
+    return SimpleNamespace(
+        run=lambda *_args, **_kwargs: {
+            "status": "completed",
+            "run_attempt": 2,
+        },
+        jobs=lambda *_args, **_kwargs: (
+            {
+                "id": 400,
+                "name": "Build independent exact-main trusted controller",
+                "status": "completed",
+                "conclusion": builder_conclusion,
+            },
+        ),
     )
 
 
-def test_controller_pin_is_compiled_from_latest_provider_and_downloaded_bytes(
+def test_controller_pin_uses_independent_builder_when_governance_failed(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    _provider(monkeypatch)
+    api = _provider(monkeypatch, conclusion="failure")
     artifact_dir, wheel_digest = _artifact_dir(tmp_path / "artifact")
 
     pin = controller.compile_self_controller_pin(
-        SimpleNamespace(),  # type: ignore[arg-type]
+        api,  # type: ignore[arg-type]
         repository="owner/repo",
         artifact_dir=artifact_dir,
     )
@@ -193,10 +222,114 @@ def test_controller_pin_is_compiled_from_latest_provider_and_downloaded_bytes(
 def test_controller_pin_rejects_failed_governance_producer(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    _provider(monkeypatch, conclusion="failure")
+    api = _provider(monkeypatch, conclusion="failure", legacy=True)
     with pytest.raises(GitHubControllerError, match="governance producer"):
         controller.resolve_self_controller_artifact(
-            SimpleNamespace(), repository="owner/repo"  # type: ignore[arg-type]
+            api, repository="owner/repo"  # type: ignore[arg-type]
+        )
+
+
+def test_controller_pin_requires_successful_independent_builder(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    api = _provider(monkeypatch, builder_conclusion="failure")
+
+    with pytest.raises(GitHubControllerError, match="builder job is not successful"):
+        controller.resolve_self_controller_artifact(
+            api, repository="owner/repo"  # type: ignore[arg-type]
+        )
+
+
+@pytest.mark.parametrize(
+    ("jobs", "message"),
+    [
+        ((), "job inventory is empty or duplicated"),
+        (
+            (
+                {
+                    "id": 400,
+                    "name": "some other job",
+                    "status": "completed",
+                    "conclusion": "success",
+                },
+            ),
+            "builder job identity is not exact",
+        ),
+        (
+            (
+                {
+                    "id": 400,
+                    "name": "Build independent exact-main trusted controller",
+                    "status": "completed",
+                    "conclusion": "success",
+                },
+                {
+                    "id": 401,
+                    "name": "Build independent exact-main trusted controller",
+                    "status": "completed",
+                    "conclusion": "success",
+                },
+            ),
+            "job inventory is empty or duplicated",
+        ),
+        (
+            (
+                {
+                    "id": 400,
+                    "name": "Build independent exact-main trusted controller",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                },
+            ),
+            "builder job is not successful",
+        ),
+    ],
+)
+def test_controller_pin_rejects_missing_wrong_duplicate_or_skipped_builder(
+    monkeypatch: pytest.MonkeyPatch,
+    jobs: tuple[dict[str, object], ...],
+    message: str,
+) -> None:
+    api = _provider(monkeypatch)
+    api.jobs = lambda *_args, **_kwargs: jobs
+
+    with pytest.raises(GitHubControllerError, match=message):
+        controller.resolve_self_controller_artifact(
+            api, repository="owner/repo"  # type: ignore[arg-type]
+        )
+
+
+def test_controller_pin_requires_terminal_exact_admission_attempt(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    api = _provider(monkeypatch)
+    api.run = lambda *_args, **_kwargs: {
+        "status": "in_progress",
+        "run_attempt": 2,
+    }
+
+    with pytest.raises(GitHubControllerError, match="not terminal"):
+        controller.resolve_self_controller_artifact(
+            api, repository="owner/repo"  # type: ignore[arg-type]
+        )
+
+
+def test_controller_pin_rejects_forensic_failed_governance_artifact(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    forensic = ProviderArtifact(
+        "35041092138",
+        1,
+        "10425078154",
+        "bcf-trusted-control-2fc02544a238a049fe72e37f030598602f098f6d-1",
+        "sha256:587e6a19e35d2f310fa8aeafc96435ee18bac29945c63c2f805bdb931e5335f0",
+        {},
+    )
+    api = _provider(monkeypatch, artifact=forensic)
+
+    with pytest.raises(GitHubControllerError, match="not bound to its builder admission"):
+        controller.resolve_self_controller_artifact(
+            api, repository="owner/repo"  # type: ignore[arg-type]
         )
 
 

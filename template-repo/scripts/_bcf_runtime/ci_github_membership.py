@@ -264,6 +264,14 @@ def collect_same_run_producers(
     if not all(actual_jobs) or len(set(actual_jobs)) != len(actual_jobs):
         raise GitHubControllerError("admission job inventory is empty or duplicated")
     expected_admission = [str(value["job_id"]) for value in authority["admission_jobs"]]
+    expected_controller_builders = [
+        str(value["job_id"])
+        for value in authority.get("controller_builder_jobs", [])
+    ]
+    if len(set(expected_controller_builders)) != len(expected_controller_builders):
+        raise GitHubControllerError(
+            "authority controller builder job inventory is duplicated"
+        )
     producer_expected = {
         str(producer["producer_id"]): [
             str(value["job_id"]) for value in producer["expected_jobs"]
@@ -281,7 +289,7 @@ def collect_same_run_producers(
         or set(selected_ids) - set(producer_expected)
     ):
         raise GitHubControllerError("selected admission producer inventory is invalid")
-    expected_all = expected_admission + [
+    expected_all = expected_admission + expected_controller_builders + [
         name for values in producer_expected.values() for name in values
     ]
     if len(set(expected_all)) != len(expected_all):

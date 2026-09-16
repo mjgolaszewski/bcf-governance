@@ -62,8 +62,12 @@ producer_workflows:
   display_name: Run exact-main governance evidence
   path: .github/workflows/governance.yml
   inputs:
-    build_controller: true
     evaluation_mode: closure
+authority_evolution_jobs:
+- job_id: trusted-controller-build
+  display_name: Build independent exact-main trusted controller
+  workflow_path: .github/workflows/bcf-exact-main.yml
+  authority: controller-artifact-eligibility-only
 activation_variable: BCF_CI_AUTHORITY_ENABLED
 controller_commit: 49272182790342a52ef7ddbcfd6a540ca7df6baf
 dispatch_exact_ref: false
