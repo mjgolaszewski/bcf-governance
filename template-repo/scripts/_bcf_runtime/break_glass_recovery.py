@@ -417,8 +417,8 @@ def bind_build(root: Path, bundle: Path, authorization: Path) -> dict[str, Any]:
     return value
 
 
-def resolve_build(api: GitHubAPI, **kwargs: Any) -> dict[str, Any]:
-    policy, main, _ = _authorize(api, stage=kwargs["stage"], **kwargs)
+def resolve_build(api: GitHubAPI, *, stage: str, **kwargs: Any) -> dict[str, Any]:
+    policy, main, _ = _authorize(api, stage=stage, **kwargs)
     artifact, run, _ = _build_bundle(api, kwargs["repository"], policy, kwargs["operation_id"])
     if str(run.get("head_sha")) != main.checkout_sha:
         raise GitHubControllerError("recovery build is not bound to current main")
@@ -617,7 +617,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--repository")
     parser.add_argument("--operation-id")
     parser.add_argument("--reason-code")
-    parser.add_argument("--stage", choices=["install", "probe"])
+    parser.add_argument("--stage", choices=["build", "install", "probe"])
     parser.add_argument("--output", type=Path)
     parser.add_argument("--artifact-root", type=Path)
     parser.add_argument("--authorization", type=Path)
@@ -632,11 +632,26 @@ def main(argv: list[str] | None = None) -> None:
     else:
         api = GitHubAPI(token=_required("BCF_BREAK_GLASS_APP_TOKEN"))
         common = {"root": root, "repository": args.repository, "operation_id": args.operation_id, "reason_code": args.reason_code, "output": args.output}
-        if args.operation == "authorize-build": result = authorize_build(api, **common)
-        elif args.operation == "resolve-build": result = resolve_build(api, stage=args.stage, **common)
-        elif args.operation == "install": result = install(api, artifact_root=args.artifact_root, slot=args.slot, **common)
-        elif args.operation == "probe": result = probe(api, slot=args.slot, **common)
-        else: result = finalize(api, **common)
+        if args.operation == "authorize-build":
+            if args.stage not in {None, "build"}:
+                parser.error("authorize-build stage must be build")
+            result = authorize_build(api, **common)
+        elif args.operation == "resolve-build":
+            if args.stage not in {"install", "probe"}:
+                parser.error("resolve-build requires install or probe stage")
+            result = resolve_build(api, stage=args.stage, **common)
+        elif args.operation == "install":
+            if args.stage is not None:
+                parser.error("install owns its stage")
+            result = install(api, artifact_root=args.artifact_root, slot=args.slot, **common)
+        elif args.operation == "probe":
+            if args.stage is not None:
+                parser.error("probe owns its stage")
+            result = probe(api, slot=args.slot, **common)
+        else:
+            if args.stage is not None:
+                parser.error("finalize owns the probe stage")
+            result = finalize(api, **common)
     print(json.dumps(result, sort_keys=True))
 
 
