@@ -198,6 +198,36 @@ def test_self_workflow_authority_is_mechanically_compiled() -> None:
     }
 
 
+def test_historical_two_role_admission_roles_are_inferred_from_exact_producer_keys() -> None:
+    payload = {
+        "workflow_registry": {
+            "admission": {},
+            "governance": {},
+        },
+        "roles": {"admission": "admission"},
+        "producers": [
+            {"producer_id": "governance", "workflow_ref": "governance"}
+        ],
+    }
+    workflows = {
+        "admission": (
+            b"jobs:\n"
+            b"  governance:\n"
+            b"    name: Run governance\n"
+            b"  admit:\n"
+            b"    name: Authenticate admission\n"
+        ),
+        "governance": b"jobs:\n  evidence:\n    name: Verify evidence\n",
+    }
+
+    _compile_inventories(payload, workflows)
+
+    assert payload["workflow_registry"]["admission"]["job_roles"] == {
+        "governance": "producer",
+        "admit": "admission",
+    }
+
+
 def test_packaged_workflow_authority_uses_exact_bytes_without_claiming_history(
     tmp_path: Path,
 ) -> None:
