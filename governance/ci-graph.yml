@@ -12,7 +12,7 @@ value_sources:
   automation-contract: {kind: yaml, path: governance/automation-producers.yml, sha256: 74c02575f7599f9e4a82cacc60f6d60692ee81dd1f7bec20441e6b375cf77cce}
 extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]
 extensions:
-- {id: bcf-break-glass-recovery, path: governance/ci-extensions/bcf-break-glass-recovery.yml, sha256: 453141709a5eb6060ffe84046960a474feeafe556dc6337dfdfdd321019a800c}
+- {id: bcf-break-glass-recovery, path: governance/ci-extensions/bcf-break-glass-recovery.yml, sha256: 831341d3ee3167c559aa83fd2eec5aea8adf94e6a5149c13b7c11c39ee3da874}
 - {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: 13769e1644221b0364034cc9db6a352d14b85a9f4e35d0e111cfdabd22ba4c0c}
 - {id: bcf-evidence-storage, path: governance/ci-extensions/bcf-evidence-storage.yml, sha256: 41e40dad457efc53292249a211575505e9d6021d73d3fee2e52c4e9eede68eea}
 - {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 72b04805b3ea4a85b5a37bd769aa627a9079a173210ea63c9a022aaa07896921}

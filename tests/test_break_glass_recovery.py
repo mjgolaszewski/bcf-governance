@@ -226,6 +226,19 @@ def test_policy_and_workflow_have_no_ordinary_authority() -> None:
     assert "bcf/pr-certification" not in rendered
     assert "bcf/exact-main-certification" not in rendered
     assert "release" not in workflow["permissions"]
+    recovery_steps = [
+        step
+        for job in workflow["jobs"].values()
+        for step in job["steps"]
+        if "break_glass_recovery.py" in str(step.get("run", ""))
+        and "bind-build" not in str(step.get("run", ""))
+    ]
+    identity_keys = {
+        "BCF_BREAK_GLASS_APP_ID", "BCF_BREAK_GLASS_INSTALLATION_ID",
+        "BCF_BREAK_GLASS_WORKFLOW_ID",
+    }
+    assert len(recovery_steps) == 5
+    assert all(identity_keys.issubset(step["env"]) for step in recovery_steps)
 
 
 def test_schema_expansion_is_explicit_and_unknown_fields_still_reject() -> None:
