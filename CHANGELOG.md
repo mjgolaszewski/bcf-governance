@@ -20,6 +20,7 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Project the authenticated break-glass controller installation into ordinary repository authority through the canonical installation mechanism, while preserving recovery-only, non-certifying semantics.
 - Restore independent exact-main trusted-controller construction after the 2.0 package retirement, while keeping governance certification, publication, protection, stale-controller enforcement, and the existing governed rotation boundary unchanged.
 - Replace the one-shot BCF 2.0 successor branch authorization with the exact final activation branch, without broadening scope or changing topology and assurance anchors.
 - Refresh the trusted BCF 2.0 successor snapshot to the frozen reviewed representation that preserves the repaired controller, without changing transition semantics or activating the successor topology.
