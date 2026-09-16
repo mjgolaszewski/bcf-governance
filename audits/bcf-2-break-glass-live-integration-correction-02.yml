@@ -5,5 +5,5 @@ failed_install_custody: {artifact_downloaded: false, canonical_installer_invoked
 argument_ownership: {authorize_build: build, resolve_build: explicit_install_or_probe, install: install, probe: probe, finalize_receipt: probe, project_installation: receipt_only, duplicate_stage_siblings: none}
 main_movement: {build_subject: 8b4023448d3b243873f06724d0da513f9bea012a, build_must_equal_current_main: true, correction_merge_makes_original_operation_eligible: false, recovery_after_merge: fresh_nonce_and_build_required, protection_weakened: false}
 authority: {app_id: '4966894', installation_id: '162228881', workflow_id: '359360291', permission_change: false, workflow_change: false, ordinary_certification_change: false, installation_semantics_change: false}
-validation: {focused: 53_passed, governance: passed, graph: 19_workflows_32_jobs_5_extensions, pack_sync: passed, editorial: passed, test_manifest_nodes: 1389, contract_test_manifest_nodes: 701, full_suite: pending}
-result: correction_candidate_ready_for_full_validation
+validation: {focused: 53_passed, governance: passed, graph: 19_workflows_32_jobs_5_extensions, pack_sync: passed, editorial: passed, test_manifest_nodes: 1389, contract_test_manifest_nodes: 701, full_suite: 1385_passed_4_preexisting_environment_failures, environment_failures: [isolated_source_wrapper_missing_jsonschema, selected_interpreter_missing_pytest_distribution_metadata, local_setuptools_rejects_existing_spdx_license_form, isolated_semantic_wrapper_missing_jsonschema]}
+result: correction_ready_for_protected_pr
