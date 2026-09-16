@@ -384,7 +384,11 @@
     },
     "scripts/_bcf_runtime/break_glass_recovery.py": {
       "operation": "copy",
-      "sha256": "73138d4076a23f69c76101a28c78064e5fc6e0fa47fc94ec9627e07dd9613d0c"
+      "sha256": "fa5d02f716c8c1f61db8e6d43938bddd08f0c75a8708e94b509d243891d01b4b"
+    },
+    "scripts/_bcf_runtime/break_glass_reentry.py": {
+      "operation": "copy",
+      "sha256": "e20c22b403ed8859f4afa8b27a3d801537a93ecc453d36b8c76344efe9e7e431"
     },
     "scripts/_bcf_runtime/check_governance_exposure.py": {
       "operation": "copy",

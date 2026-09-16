@@ -12,6 +12,7 @@ import pytest
 import yaml
 
 from bcf_governance.tooling import break_glass_recovery as recovery
+from bcf_governance.tooling import break_glass_reentry as reentry
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError, MainIdentity
 
 
@@ -177,6 +178,9 @@ def environment(monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv(key, value)
     monkeypatch.setattr(
         recovery, "resolve_main", lambda *_args: MainIdentity("1207503211", "main", COMMIT, TREE)
+    )
+    monkeypatch.setattr(
+        reentry, "resolve_main", lambda *_args: MainIdentity("1207503211", "main", COMMIT, TREE)
     )
 
 
@@ -722,15 +726,15 @@ def test_recovery_projection_changes_only_proven_installation(
     receipt_path.write_text(json.dumps(recovery_receipt()))
     answers = iter((COMMIT, TREE))
     monkeypatch.setattr(
-        recovery.subprocess, "run",
+        reentry.subprocess, "run",
         lambda *_args, **_kwargs: SimpleNamespace(stdout=next(answers) + "\n"),
     )
     monkeypatch.setattr(
-        recovery, "apply_ci_graph_locks",
+        reentry, "apply_ci_graph_locks",
         lambda _root: SimpleNamespace(changed_inputs=("governance/self-governance-policy.yml",)),
     )
     monkeypatch.setattr(
-        recovery, "apply_ci_graph",
+        reentry, "apply_ci_graph",
         lambda _root: SimpleNamespace(changed_paths=(".github/workflows/bcf-trusted-finalizer.yml",)),
     )
     artifact = {
@@ -777,7 +781,7 @@ def test_old_main_receipt_cannot_project_after_main_moves(
     receipt_path.write_text(json.dumps(recovery_receipt()))
     answers = iter(("9" * 40, TREE))
     monkeypatch.setattr(
-        recovery.subprocess, "run",
+        reentry.subprocess, "run",
         lambda *_args, **_kwargs: SimpleNamespace(stdout=next(answers) + "\n"),
     )
     main = SimpleNamespace(
