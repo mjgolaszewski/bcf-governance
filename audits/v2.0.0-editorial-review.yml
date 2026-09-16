@@ -32,8 +32,8 @@ documents:
   audience: adopters and release operators
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
-  before_sha256: 69b2de345c8d57206e038818b1eadd818ceab21ccdce06a86f978b1de288408a
-  after_sha256: 1ae16cae07334ed6151065df2de5c24f15cba6ce8fdf7cb33b0d7c3b0bef2ce8
+  before_sha256: 1ae16cae07334ed6151065df2de5c24f15cba6ce8fdf7cb33b0d7c3b0bef2ce8
+  after_sha256: e2fe4b1d739f61977bdc71c062b3083ebb862e5b653635519edc3007c41ae172
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: historical
@@ -95,11 +95,11 @@ documents:
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/MAINTAINING.md
   topic_role: canonical
-  before_sha256: cccfc13adb4dfc76c68fd868a2301967003158e2325661fe7bb1048c07510de1
+  before_sha256: f430ff67b85b1b1ea5b2524061894e94207772f633717359b222cea5418ea8ed
   after_sha256: f430ff67b85b1b1ea5b2524061894e94207772f633717359b222cea5418ea8ed
   findings:
-  - documented exact offline compiler provisioning, isolated wheel-consumer qualification, and the current release audit
-  disposition: revised
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
 - path: docs/RELIABILITY_MODEL.md
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/RELIABILITY_MODEL.md
