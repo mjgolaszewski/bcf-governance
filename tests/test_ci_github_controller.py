@@ -1527,8 +1527,8 @@ def test_break_glass_api_reads_are_exact_and_repository_scoped() -> None:
 
         def _request(self, method: str, path: str, *, payload=None):  # type: ignore[no-untyped-def]
             self.paths.append(path)
-            if path == "/installation":
-                return {"id": 20, "app_id": 10}
+            if path == "/installation/repositories?per_page=100":
+                return {"total_count": 1, "repositories": [{"id": 40}]}
             if path == "/users/owner":
                 return {"id": 30, "login": "owner"}
             if path.endswith("/collaborators/owner/permission"):
@@ -1536,14 +1536,44 @@ def test_break_glass_api_reads_are_exact_and_repository_scoped() -> None:
             return {"total_count": 1, "artifacts": [{"id": 40}]}
 
     api = RecordingAPI()
-    assert api.installation()["id"] == 20
+    assert api.installation_repositories()[0]["id"] == 40
     assert api.collaborator_permission("owner/repo", "owner")["permission"] == "admin"
     assert api.repository_artifacts("owner/repo", name="recovery-build-abc")[0]["id"] == 40
     assert api.paths == [
-        "/installation",
+        "/installation/repositories?per_page=100",
         "/users/owner",
         "/repos/owner/repo/collaborators/owner/permission",
         "/repos/owner/repo/actions/artifacts?per_page=100&name=recovery-build-abc",
     ]
     with pytest.raises(GitHubAPIError, match="artifact name filter is unsafe"):
         api.repository_artifacts("owner/repo", name="../artifact")
+
+
+@pytest.mark.parametrize(
+    "response",
+    [
+        None,
+        {},
+        {"total_count": "1", "repositories": []},
+        {"total_count": 1, "repositories": "invalid"},
+        {"total_count": 1, "repositories": ["invalid"]},
+    ],
+)
+def test_installation_repository_inventory_rejects_malformed_provider_response(
+    response: object,
+) -> None:
+    class MalformedAPI(GitHubAPI):
+        def _request(self, method: str, path: str, *, payload=None):  # type: ignore[no-untyped-def]
+            return response
+
+    with pytest.raises(GitHubAPIError, match="exact object list"):
+        MalformedAPI(token="test").installation_repositories()
+
+
+def test_installation_repository_inventory_rejects_unhandled_pagination() -> None:
+    class PaginatedAPI(GitHubAPI):
+        def _request(self, method: str, path: str, *, payload=None):  # type: ignore[no-untyped-def]
+            return {"total_count": 2, "repositories": [{"id": 1}]}
+
+    with pytest.raises(GitHubAPIError, match="exceeds one authenticated page"):
+        PaginatedAPI(token="test").installation_repositories()

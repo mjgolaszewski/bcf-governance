@@ -18,6 +18,11 @@ ROOT = Path(__file__).resolve().parents[1]
 OPERATION = "1" * 32
 COMMIT = "a" * 40
 TREE = "b" * 40
+APP_ID = "4966894"
+INSTALLATION_ID = "162228881"
+WORKFLOW_ID = "359360291"
+OWNER = "mjgolaszewski"
+OWNER_ID = "202175348"
 
 
 def recovery_receipt() -> dict[str, object]:
@@ -35,7 +40,7 @@ def recovery_receipt() -> dict[str, object]:
         "schema_version": "1.0", "operation_id": OPERATION,
         "reason_code": "ordinary_control_plane_bootstrap_deadlock",
         "repository": {"id": "1207503211", "name": "mjgolaszewski/bcf-governance", "branch": "main"},
-        "actor": {"login": "owner", "id": "404", "permission": "admin", "app_id": "101", "installation_id": "202", "workflow_id": "303", "run_id": "30", "run_attempt": "1"},
+        "actor": {"login": OWNER, "id": OWNER_ID, "permission": "admin", "app_id": APP_ID, "installation_id": INSTALLATION_ID, "identity_semantics": {"app_id": "configured-token-mint-binding", "installation_id": "configured-expected-not-token-observed", "repository_scope": "provider-installation-token-repository-inventory"}, "workflow_id": WORKFLOW_ID, "run_id": "30", "run_attempt": "1"},
         "pre_recovery_controller": "c" * 40,
         "subject": {"commit": COMMIT, "tree": TREE},
         "builder": {"workflow": ".github/workflows/bcf-break-glass-recovery.yml", "job": "Build exact-main recovery controller", "job_id": "10", "run_id": "10", "run_attempt": "1"},
@@ -51,24 +56,36 @@ def recovery_receipt() -> dict[str, object]:
 
 
 class Provider:
-    def __init__(self, *, permission: str = "admin", active: int = 1, receipt: bool = False):
+    def __init__(
+        self, *, permission: str = "admin", active: int = 1,
+        receipt: bool = False, repositories: tuple[dict[str, object], ...] | None = None,
+        actor: str = OWNER, actor_id: str = OWNER_ID,
+    ):
         self.permission = permission
         self.active = active
         self.receipt = receipt
+        self.repositories = repositories if repositories is not None else (
+            {"id": 1207503211, "full_name": "mjgolaszewski/bcf-governance"},
+        )
+        self.actor = actor
+        self.actor_id = actor_id
 
     def installation(self):
-        return {"app_id": "101", "id": "202", "repository_selection": "selected"}
+        raise AssertionError("installation access tokens must not call GET /installation")
+
+    def installation_repositories(self):
+        return self.repositories
 
     def run(self, _repository, run_id):
         return {
             "id": int(run_id), "run_attempt": 1, "event": "workflow_dispatch",
-            "head_sha": COMMIT, "head_branch": "main", "workflow_id": 303,
+            "head_sha": COMMIT, "head_branch": "main", "workflow_id": int(WORKFLOW_ID),
             "path": ".github/workflows/bcf-break-glass-recovery.yml",
-            "actor": {"login": "owner", "id": 404},
+            "actor": {"login": self.actor, "id": int(self.actor_id)},
         }
 
     def user(self, login):
-        return {"login": login, "id": 404}
+        return {"login": login, "id": int(self.actor_id)}
 
     def collaborator_permission(self, _repository, _login):
         return {"permission": self.permission}
@@ -85,10 +102,10 @@ class Provider:
 @pytest.fixture(autouse=True)
 def environment(monkeypatch: pytest.MonkeyPatch) -> None:
     values = {
-        "BCF_BREAK_GLASS_APP_ID": "101",
-        "BCF_BREAK_GLASS_INSTALLATION_ID": "202",
-        "BCF_BREAK_GLASS_WORKFLOW_ID": "303",
-        "GITHUB_ACTOR": "owner",
+        "BCF_BREAK_GLASS_APP_ID": APP_ID,
+        "BCF_BREAK_GLASS_INSTALLATION_ID": INSTALLATION_ID,
+        "BCF_BREAK_GLASS_WORKFLOW_ID": WORKFLOW_ID,
+        "GITHUB_ACTOR": OWNER,
         "GITHUB_EVENT_NAME": "workflow_dispatch",
         "GITHUB_REF": "refs/heads/main",
         "GITHUB_RUN_ID": "505",
@@ -110,11 +127,62 @@ def authorize(provider: Provider, tmp_path: Path):
     )
 
 
-def test_owner_admin_can_authorize_only_exact_current_main(tmp_path: Path) -> None:
+def test_live_installation_token_shape_authorizes_exact_repository_and_owner(
+    tmp_path: Path,
+) -> None:
     result = authorize(Provider(), tmp_path)
     assert result["status"] == "recovery_build_authorized"
     assert result["subject"] == {"commit": COMMIT, "tree": TREE}
     assert result["actor"]["permission"] == "admin"
+    assert result["actor"]["identity_semantics"]["installation_id"] == (
+        "configured-expected-not-token-observed"
+    )
+
+
+@pytest.mark.parametrize(
+    "repositories",
+    [
+        (),
+        ({"id": 9, "full_name": "mjgolaszewski/bcf-governance"},),
+        ({"id": 1207503211, "full_name": "other/repo"},),
+        (
+            {"id": 1207503211, "full_name": "mjgolaszewski/bcf-governance"},
+            {"id": 9, "full_name": "other/repo"},
+        ),
+    ],
+)
+def test_installation_token_repository_scope_must_be_exact(
+    repositories: tuple[dict[str, object], ...], tmp_path: Path
+) -> None:
+    provider = Provider(repositories=repositories)
+    provider.repositories = repositories
+    with pytest.raises(GitHubControllerError, match="repository scope is not exact"):
+        authorize(provider, tmp_path)
+
+
+def test_policy_and_provider_actor_must_both_match(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setenv("GITHUB_ACTOR", "other-admin")
+    with pytest.raises(GitHubControllerError, match="repository administrator"):
+        authorize(
+            Provider(actor="other-admin", actor_id="999", permission="admin"), tmp_path
+        )
+
+
+def test_wrong_provider_run_actor_rejects_before_authority(tmp_path: Path) -> None:
+    with pytest.raises(GitHubControllerError, match="workflow/run/actor"):
+        authorize(Provider(actor="other-admin", actor_id="999"), tmp_path)
+
+
+def test_historical_failed_operation_nonce_is_retired(tmp_path: Path) -> None:
+    with pytest.raises(GitHubControllerError, match="retired failed evidence"):
+        recovery.authorize_build(
+            Provider(), root=ROOT, repository="mjgolaszewski/bcf-governance",
+            operation_id="4aa49c3ab6a100df627619d23c1df483",
+            reason_code="ordinary_control_plane_bootstrap_deadlock",
+            output=tmp_path / "authorization.json",
+        )
 
 
 @pytest.mark.parametrize(
@@ -126,9 +194,10 @@ def test_owner_admin_can_authorize_only_exact_current_main(tmp_path: Path) -> No
         ("GITHUB_EVENT_NAME", "schedule", "owner-dispatched"),
         ("GITHUB_REF", "refs/pull/1/merge", "owner-dispatched"),
         ("GITHUB_SHA", "c" * 40, "current main"),
-        ("BCF_BREAK_GLASS_APP_ID", "999", "App installation"),
-        ("BCF_BREAK_GLASS_INSTALLATION_ID", "999", "App installation"),
-        ("BCF_BREAK_GLASS_WORKFLOW_ID", "999", "workflow/run/actor"),
+        ("GITHUB_ACTOR", "caller-supplied", "workflow/run/actor"),
+        ("BCF_BREAK_GLASS_APP_ID", "999", "configured recovery App"),
+        ("BCF_BREAK_GLASS_INSTALLATION_ID", "999", "configured recovery App"),
+        ("BCF_BREAK_GLASS_WORKFLOW_ID", "999", "configured recovery workflow"),
         ("GITHUB_RUN_ATTEMPT", "2", "workflow/run/actor"),
     ],
 )
@@ -218,6 +287,10 @@ def test_policy_and_workflow_have_no_ordinary_authority() -> None:
     assert workflow["permissions"] == {"actions": "read", "contents": "read"}
     assert all(job["environment"] == "bcf-break-glass-recovery" for job in workflow["jobs"].values())
     assert policy["permissions"]["required"] == ["metadata:read", "contents:read", "actions:read"]
+    assert policy["authority"]["authorized_actors"] == [
+        {"login": OWNER, "user_id": OWNER_ID}
+    ]
+    assert policy["operation"]["stages"] == ["build", "install", "probe"]
     assert {"contents:write", "statuses:write", "administration:write"}.issubset(
         set(policy["permissions"]["forbidden"])
     )
@@ -239,6 +312,17 @@ def test_policy_and_workflow_have_no_ordinary_authority() -> None:
     }
     assert len(recovery_steps) == 5
     assert all(identity_keys.issubset(step["env"]) for step in recovery_steps)
+    build_steps = workflow["jobs"]["build"]["steps"]
+    authorize_index = next(
+        index for index, step in enumerate(build_steps)
+        if "authorize-build" in str(step.get("run", ""))
+    )
+    builder_index = next(
+        index for index, step in enumerate(build_steps)
+        if "build_trusted_controller.py" in str(step.get("run", ""))
+    )
+    assert authorize_index < builder_index
+    assert "continue-on-error" not in build_steps[authorize_index]
 
 
 def test_schema_expansion_is_explicit_and_unknown_fields_still_reject() -> None:

@@ -3,14 +3,21 @@ schema_version: '1.0'
 repository: {provider: github, repository_id: '1207503211', name: mjgolaszewski/bcf-governance, default_branch: main}
 authority:
   app_name: BCF Break Glass
+  app_id: '4966894'
   app_id_variable: BCF_BREAK_GLASS_APP_ID
+  app_id_semantics: configured-token-mint-binding
+  installation_id: '162228881'
   installation_id_variable: BCF_BREAK_GLASS_INSTALLATION_ID
+  installation_id_semantics: configured-expected-not-token-observed
   private_key_secret: BCF_BREAK_GLASS_APP_PRIVATE_KEY
   workflow_id_variable: BCF_BREAK_GLASS_WORKFLOW_ID
+  workflow_id: '359360291'
   workflow_path: .github/workflows/bcf-break-glass-recovery.yml
   protected_environment: bcf-break-glass-recovery
   event: workflow_dispatch
   required_actor_permission: admin
+  authorized_actors: [{login: mjgolaszewski, user_id: '202175348'}]
+  repository_scope_authentication: provider-installation-token-repository-inventory
   reason_codes: [ordinary_control_plane_bootstrap_deadlock]
 permissions:
   required: [metadata:read, contents:read, actions:read]
@@ -21,6 +28,7 @@ operation:
   singleton: true
   artifact_prefix: bcf-break-glass-recovery
   forensic_artifact_ids: ['10425078154']
+  retired_operation_ids: [4aa49c3ab6a100df627619d23c1df483]
 builder: {script: .github/scripts/build_trusted_controller.py, job_name: Build exact-main recovery controller}
 installer: {primitive: bcf_governance.tooling.ci_github_bootstrap.install_controller}
 probe: {semantics: exact-installed-controller-custody}

@@ -1,6 +1,7 @@
 # Changelog
 
 - Add a least-privilege, owner-approved break-glass App lane for exact-main controller bootstrap deadlocks, with recovery-only receipts and no certification authority.
+- Authenticate break-glass installation tokens through their exact repository inventory, bind the authorized owner explicitly, and retire the first failed live-operation nonce.
 
 All notable changes to BCF Governance are recorded here. This file follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses

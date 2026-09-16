@@ -161,11 +161,25 @@ class GitHubAPI:
             raise GitHubAPIError("repository response must be an object")
         return value
 
-    def installation(self) -> dict[str, Any]:
-        value = self._request("GET", "/installation")
-        if not isinstance(value, dict):
-            raise GitHubAPIError("installation response must be an object")
-        return value
+    def installation_repositories(self) -> tuple[dict[str, Any], ...]:
+        value = self._request("GET", "/installation/repositories?per_page=100")
+        repositories = value.get("repositories") if isinstance(value, dict) else None
+        total = value.get("total_count") if isinstance(value, dict) else None
+        if (
+            not isinstance(total, int)
+            or isinstance(total, bool)
+            or total < 0
+            or not isinstance(repositories, list)
+            or any(not isinstance(item, dict) for item in repositories)
+        ):
+            raise GitHubAPIError(
+                "installation repository response must contain an exact object list"
+            )
+        if total != len(repositories):
+            raise GitHubAPIError(
+                "installation repository inventory exceeds one authenticated page"
+            )
+        return tuple(repositories)
 
     def collaborator_permission(
         self, repository: str, login: str

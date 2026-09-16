@@ -26,10 +26,12 @@
     },
     "actor": {
       "type": "object", "additionalProperties": false,
-      "required": ["login", "id", "permission", "app_id", "installation_id", "workflow_id", "run_id", "run_attempt"],
+      "required": ["login", "id", "permission", "app_id", "installation_id", "identity_semantics", "workflow_id", "run_id", "run_attempt"],
       "properties": {
         "login": {"type": "string", "minLength": 1}, "id": {"$ref": "#/$defs/positive"}, "permission": {"const": "admin"},
-        "app_id": {"$ref": "#/$defs/positive"}, "installation_id": {"$ref": "#/$defs/positive"}, "workflow_id": {"$ref": "#/$defs/positive"},
+        "app_id": {"const": "4966894"}, "installation_id": {"const": "162228881"},
+        "identity_semantics": {"type": "object", "additionalProperties": false, "required": ["app_id", "installation_id", "repository_scope"], "properties": {"app_id": {"const": "configured-token-mint-binding"}, "installation_id": {"const": "configured-expected-not-token-observed"}, "repository_scope": {"const": "provider-installation-token-repository-inventory"}}},
+        "workflow_id": {"const": "359360291"},
         "run_id": {"$ref": "#/$defs/positive"}, "run_attempt": {"$ref": "#/$defs/positive"}
       }
     },
