@@ -189,6 +189,15 @@ and means only `RECOVERY INSTALLED — NORMAL CERTIFICATION REQUIRED`.
 The failed live-integration nonce `4aa49c3ab6a100df627619d23c1df483`
 is permanently retired and must not be reused.
 
+Each recovery entry point owns its semantic stage exactly once. Build
+authorization owns `build`; build resolution accepts exactly `install` or
+`probe`; installation owns `install`; and probing plus receipt finalization own
+`probe`. A successful build remains eligible only while its authenticated run
+and bundle subject equal exact current main. If a correction merge moves main
+after a successful build but before installation, that historical operation is
+preserved as evidence but a fresh nonce and build are required; main identity
+must never be weakened to reuse the old artifact.
+
 Installation deliberately does not retarget ordinary workflow authority. After
 the receipt is downloaded from its uniquely named Actions artifact, create a
 branch at the receipt's exact subject commit and run:

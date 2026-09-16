@@ -380,7 +380,7 @@
     },
     "scripts/_bcf_runtime/break_glass_recovery.py": {
       "operation": "copy",
-      "sha256": "b801a8090471277f4725f80fb266fc27ed99461bf69c58c85c4de213ae5f694b"
+      "sha256": "3acd164665510f649c0ad19c89fa807b2acf1c7f0d742f2000e3fccc39a24eae"
     },
     "scripts/_bcf_runtime/check_governance_exposure.py": {
       "operation": "copy",

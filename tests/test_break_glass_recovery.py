@@ -23,6 +23,13 @@ INSTALLATION_ID = "162228881"
 WORKFLOW_ID = "359360291"
 OWNER = "mjgolaszewski"
 OWNER_ID = "202175348"
+LIVE_OPERATION = "91e5e24100bad92c68f53428dbfcd586"
+LIVE_MAIN = "8b4023448d3b243873f06724d0da513f9bea012a"
+LIVE_TREE = "6a386c6a8374973dd077aa0bace40d80ddf0e289"
+LIVE_BUILD_RUN = "35123826709"
+LIVE_INSTALL_RUN = "35124127441"
+LIVE_ARTIFACT = "10458328400"
+LIVE_PROVIDER_DIGEST = "sha256:c96f2b0c79ca45805424fa94d7c1b58d7b82dd68f670feefac49fcd8425927c4"
 
 
 def recovery_receipt() -> dict[str, object]:
@@ -99,6 +106,59 @@ class Provider:
         return ()
 
 
+class LiveResolveProvider(Provider):
+    """Provider shape from the successful build and failed install invocation."""
+
+    def __init__(self, *, stage: str = "install", current_sha: str = LIVE_MAIN):
+        super().__init__()
+        self.stage = stage
+        self.current_sha = current_sha
+
+    def run(self, _repository, run_id):
+        if str(run_id) == LIVE_BUILD_RUN:
+            return {
+                "id": int(LIVE_BUILD_RUN), "run_attempt": 1,
+                "status": "completed", "conclusion": "success",
+                "event": "workflow_dispatch", "head_sha": LIVE_MAIN,
+                "head_branch": "main", "workflow_id": int(WORKFLOW_ID),
+                "path": ".github/workflows/bcf-break-glass-recovery.yml",
+                "actor": {"login": OWNER, "id": int(OWNER_ID)},
+                "repository": {"id": 1207503211},
+                "head_repository": {"id": 1207503211},
+            }
+        return {
+            "id": int(run_id), "run_attempt": 1, "event": "workflow_dispatch",
+            "head_sha": self.current_sha, "head_branch": "main",
+            "workflow_id": int(WORKFLOW_ID),
+            "path": ".github/workflows/bcf-break-glass-recovery.yml",
+            "actor": {"login": OWNER, "id": int(OWNER_ID)},
+        }
+
+    def workflow_runs(self, *_args, **_kwargs):
+        return ({"id": int(LIVE_INSTALL_RUN), "status": "in_progress"},)
+
+    def repository_artifacts(self, _repository, *, name=None):
+        build_name = f"bcf-break-glass-recovery-build-{LIVE_OPERATION}"
+        install_name = f"bcf-break-glass-recovery-install-{LIVE_OPERATION}"
+        if name == build_name:
+            return ({
+                "id": int(LIVE_ARTIFACT), "name": build_name, "expired": False,
+                "digest": LIVE_PROVIDER_DIGEST,
+                "workflow_run": {"id": int(LIVE_BUILD_RUN)},
+            },)
+        if self.stage == "probe" and name == install_name:
+            return ({"id": 10458328401, "name": install_name, "expired": False},)
+        return ()
+
+    def jobs(self, _repository, run_id, *, attempt):
+        assert str(run_id) == LIVE_BUILD_RUN
+        assert attempt == 1
+        return ({
+            "id": 104887000000, "name": "Build exact-main recovery controller",
+            "status": "completed", "conclusion": "success",
+        },)
+
+
 @pytest.fixture(autouse=True)
 def environment(monkeypatch: pytest.MonkeyPatch) -> None:
     values = {
@@ -125,6 +185,196 @@ def authorize(provider: Provider, tmp_path: Path):
         operation_id=OPERATION, reason_code="ordinary_control_plane_bootstrap_deadlock",
         output=tmp_path / "authorization.json",
     )
+
+
+def _common_cli(operation: str, *, output: Path) -> list[str]:
+    return [
+        operation, "--repo-root", str(ROOT),
+        "--repository", "mjgolaszewski/bcf-governance",
+        "--operation-id", LIVE_OPERATION,
+        "--reason-code", "ordinary_control_plane_bootstrap_deadlock",
+        "--output", str(output),
+    ]
+
+
+def test_authorize_build_cli_owns_build_stage_once(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    provider = Provider()
+    calls: list[str] = []
+    original = recovery._authorize
+
+    def tracked(*args, **kwargs):
+        calls.append(kwargs["stage"])
+        return original(*args, **kwargs)
+
+    monkeypatch.setenv("BCF_BREAK_GLASS_APP_TOKEN", "installation-token")
+    monkeypatch.setattr(recovery, "GitHubAPI", lambda **_kwargs: provider)
+    monkeypatch.setattr(recovery, "_authorize", tracked)
+    recovery.main([
+        *_common_cli("authorize-build", output=tmp_path / "authorization.json"),
+        "--stage", "build",
+    ])
+    assert calls == ["build"]
+
+
+@pytest.mark.parametrize("stage", ["install", "probe"])
+def test_resolve_build_cli_propagates_each_stage_once_with_live_build(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, stage: str,
+) -> None:
+    provider = LiveResolveProvider(stage=stage)
+    calls: list[str] = []
+    original = recovery._authorize
+
+    def tracked(*args, **kwargs):
+        calls.append(kwargs["stage"])
+        return original(*args, **kwargs)
+
+    github_output = tmp_path / "github-output"
+    monkeypatch.setenv("BCF_BREAK_GLASS_APP_TOKEN", "installation-token")
+    monkeypatch.setenv("GITHUB_OUTPUT", str(github_output))
+    monkeypatch.setenv("GITHUB_RUN_ID", LIVE_INSTALL_RUN)
+    monkeypatch.setenv("GITHUB_SHA", LIVE_MAIN)
+    monkeypatch.setattr(
+        recovery, "resolve_main",
+        lambda *_args: MainIdentity("1207503211", "main", LIVE_MAIN, LIVE_TREE),
+    )
+    monkeypatch.setattr(recovery, "GitHubAPI", lambda **_kwargs: provider)
+    monkeypatch.setattr(recovery, "_authorize", tracked)
+    recovery.main([
+        *_common_cli("resolve-build", output=tmp_path / "unused.json"),
+        "--stage", stage,
+    ])
+    assert calls == [stage]
+    assert f"artifact_id={LIVE_ARTIFACT}" in github_output.read_text()
+
+
+def test_historical_build_rejects_after_current_main_moves(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    moved_main = "c" * 40
+    provider = LiveResolveProvider(current_sha=moved_main)
+    monkeypatch.setenv("BCF_BREAK_GLASS_APP_TOKEN", "installation-token")
+    monkeypatch.setenv("GITHUB_OUTPUT", str(tmp_path / "github-output"))
+    monkeypatch.setenv("GITHUB_RUN_ID", LIVE_INSTALL_RUN)
+    monkeypatch.setenv("GITHUB_SHA", moved_main)
+    monkeypatch.setattr(
+        recovery, "resolve_main",
+        lambda *_args: MainIdentity("1207503211", "main", moved_main, "d" * 40),
+    )
+    monkeypatch.setattr(recovery, "GitHubAPI", lambda **_kwargs: provider)
+    with pytest.raises(GitHubControllerError, match="builder run identity"):
+        recovery.main([
+            *_common_cli("resolve-build", output=tmp_path / "unused.json"),
+            "--stage", "install",
+        ])
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["resolve-build"],
+        ["resolve-build", "--stage", "invalid"],
+        ["authorize-build", "--stage", "install"],
+        ["install", "--stage", "probe"],
+        ["probe", "--stage", "install"],
+        ["finalize", "--stage", "build"],
+    ],
+)
+def test_cli_rejects_missing_or_cross_operation_stage_override(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, argv: list[str],
+) -> None:
+    monkeypatch.setenv("BCF_BREAK_GLASS_APP_TOKEN", "installation-token")
+    monkeypatch.setattr(recovery, "GitHubAPI", lambda **_kwargs: Provider())
+    operation, *stage = argv
+    with pytest.raises(SystemExit, match="2"):
+        recovery.main([*_common_cli(operation, output=tmp_path / "unused.json"), *stage])
+
+
+def test_finalize_cli_owns_probe_stage_and_emits_receipt(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    policy = yaml.safe_load((ROOT / recovery.POLICY).read_text())
+    actor = recovery_receipt()["actor"]
+    calls: list[str] = []
+    probe_jobs = {
+        f"Probe recovered controller / {runner['slot']}": {
+            "id": 31 + index, "name": f"Probe recovered controller / {runner['slot']}",
+            "runner_name": runner["runner_name"], "labels": [runner["slot"]],
+            "status": "completed", "conclusion": "success",
+        }
+        for index, runner in enumerate(policy["runners"])
+    }
+    install_jobs = {
+        f"Install recovered controller / {runner['slot']}": {
+            "id": 21 + index, "runner_name": runner["runner_name"],
+        }
+        for index, runner in enumerate(policy["runners"])
+    }
+
+    class ReceiptProvider:
+        def jobs(self, *_args, **_kwargs):
+            return tuple(probe_jobs.values())
+
+        def run(self, *_args, **_kwargs):
+            return {"created_at": "2026-09-16T00:02:00Z"}
+
+    def tracked(_api, **kwargs):
+        calls.append(kwargs["stage"])
+        return policy, MainIdentity("1207503211", "main", COMMIT, TREE), actor
+
+    build_artifact = {
+        "id": 99, "name": f"bcf-break-glass-recovery-build-{OPERATION}",
+        "digest": f"sha256:{'d' * 64}",
+    }
+    build_run = {
+        "id": 10, "run_attempt": 1, "created_at": "2026-09-16T00:00:00Z",
+        "actor": {"login": OWNER},
+    }
+    custody = {
+        "wheel_sha256": "e" * 64,
+        "checksum_inventory": {"CONTROL-METADATA.json": "f" * 64, "bcf_governance.whl": "1" * 64},
+        "checksum_inventory_sha256": "2" * 64,
+        "control_metadata": {str(index): "value" for index in range(10)},
+    }
+    install_run = {
+        "id": 20, "run_attempt": 1, "created_at": "2026-09-16T00:01:00Z",
+        "actor": {"login": OWNER},
+    }
+    output = tmp_path / "receipt.json"
+    monkeypatch.setenv("BCF_BREAK_GLASS_APP_TOKEN", "installation-token")
+    monkeypatch.setenv("BCF_PRE_RECOVERY_CONTROLLER", "c" * 40)
+    monkeypatch.setattr(recovery, "GitHubAPI", lambda **_kwargs: ReceiptProvider())
+    monkeypatch.setattr(recovery, "_authorize", tracked)
+    monkeypatch.setattr(
+        recovery, "_authenticated_build",
+        lambda *_args, **_kwargs: (build_artifact, build_run, {"id": 10}, custody),
+    )
+    monkeypatch.setattr(
+        recovery, "_install_run",
+        lambda *_args, **_kwargs: ({}, install_run, install_jobs),
+    )
+    recovery.main(_common_cli("finalize", output=output))
+    assert calls == ["probe"]
+    assert json.loads(output.read_text())["governance_certified"] is False
+
+
+def test_project_installation_cli_forwards_only_receipt_input(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    receipt = tmp_path / "receipt.json"
+    receipt.write_text(json.dumps(recovery_receipt()))
+    observed: list[tuple[Path, Path]] = []
+
+    def project(*, root: Path, receipt_path: Path):
+        observed.append((root, receipt_path))
+        return {"status": "projected"}
+
+    monkeypatch.setattr(recovery, "project_installation", project)
+    recovery.main([
+        "project-installation", "--repo-root", str(ROOT), "--receipt", str(receipt)
+    ])
+    assert observed == [(ROOT.resolve(), receipt)]
 
 
 def test_live_installation_token_shape_authorizes_exact_repository_and_owner(
@@ -258,6 +508,64 @@ def test_artifact_selection_rejects_missing_expired_duplicate_forensic_and_calle
         recovery._one_artifact(
             provider, "mjgolaszewski/bcf-governance", policy, "build", OPERATION
         )
+
+
+def test_build_resolution_rejects_other_operation_and_failed_builder_run(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    policy = yaml.safe_load((ROOT / recovery.POLICY).read_text())
+    expected_name = recovery._artifact_name(policy, "build", OPERATION)
+    other_name = recovery._artifact_name(policy, "build", "2" * 32)
+    other_operation = SimpleNamespace(
+        repository_artifacts=lambda *_args, **_kwargs: ({
+            "id": 99, "name": other_name, "expired": False,
+            "digest": f"sha256:{'d' * 64}",
+        },)
+    )
+    with pytest.raises(GitHubControllerError, match="not unique"):
+        recovery._one_artifact(
+            other_operation, "mjgolaszewski/bcf-governance", policy, "build", OPERATION
+        )
+
+    class FailedBuild:
+        def repository_artifacts(self, *_args, **_kwargs):
+            return ({
+                "id": 99, "name": expected_name, "expired": False,
+                "digest": f"sha256:{'d' * 64}", "workflow_run": {"id": 10},
+            },)
+
+        def run(self, *_args, **_kwargs):
+            return {
+                "id": 10, "run_attempt": 1, "conclusion": "failure",
+                "event": "workflow_dispatch", "head_sha": COMMIT,
+                "head_branch": "main", "workflow_id": int(WORKFLOW_ID),
+                "path": ".github/workflows/bcf-break-glass-recovery.yml",
+                "repository": {"id": 1207503211},
+                "head_repository": {"id": 1207503211},
+            }
+
+    monkeypatch.setenv("GITHUB_SHA", COMMIT)
+    with pytest.raises(GitHubControllerError, match="builder run identity"):
+        recovery._build_bundle(
+            FailedBuild(), "mjgolaszewski/bcf-governance", policy, OPERATION
+        )
+
+
+def test_probe_and_receipt_cannot_treat_failed_install_as_evidence(
+    tmp_path: Path,
+) -> None:
+    with pytest.raises(GitHubControllerError, match="duplicated or out of order"):
+        recovery._authorize(
+            Provider(), stage="probe", root=ROOT,
+            repository="mjgolaszewski/bcf-governance", operation_id=OPERATION,
+            reason_code="ordinary_control_plane_bootstrap_deadlock",
+            output=tmp_path / "unused.json",
+        )
+    policy = yaml.safe_load((ROOT / recovery.POLICY).read_text())
+    receipt_name = recovery._artifact_name(policy, "receipt", OPERATION)
+    assert Provider().repository_artifacts(
+        "mjgolaszewski/bcf-governance", name=receipt_name
+    ) == ()
 
 
 def test_invalid_operation_reason_and_repository_reject(tmp_path: Path) -> None:
