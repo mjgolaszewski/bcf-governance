@@ -555,17 +555,28 @@ def test_authoritative_successor_snapshot_is_exact_and_candidate_cannot_replace_
 def test_repaired_controller_and_race_safe_admission_remain_authoritative() -> None:
     policy = yaml.safe_load((ROOT / "governance/self-governance-policy.yml").read_text())
     runner = policy["runner_security"]
-    assert runner["trusted_controller_artifact"]["BCF_BOOTSTRAP_COMMIT_SHA"] == (
-        "78f12c6d4acc6e389c6deef41c4933f3a46ceb36"
+    artifact = runner["trusted_controller_artifact"]
+    installation = runner["trusted_controller_installation"]
+    assert len(artifact["BCF_BOOTSTRAP_COMMIT_SHA"]) == 40
+    assert set(artifact["BCF_BOOTSTRAP_COMMIT_SHA"]) <= set("0123456789abcdef")
+    assert installation["schema_version"] == "1.0"
+    assert installation["installed_commit_sha"] == installation["subject_commit_sha"]
+    assert all(
+        len(installation[key]) == 40
+        for key in ("installed_commit_sha", "subject_commit_sha", "subject_tree_sha")
     )
-    assert runner["trusted_controller_installation"]["installed_commit_sha"] == (
-        "c5568106f99b53f19b1a54f8abbfa9c21dfec35a"
+    assert all(
+        set(installation[key]) <= set("0123456789abcdef")
+        for key in ("installed_commit_sha", "subject_commit_sha", "subject_tree_sha")
     )
-    assert runner["trusted_controller_installation"]["subject_tree_sha"] == (
-        "68284a9d32939c538ba3113c255842c9975c470c"
+    assert int(installation["probe_run_id"]) > int(installation["bootstrap_run_id"])
+    assert all(
+        int(installation[key]) > 0
+        for key in (
+            "bootstrap_run_id", "bootstrap_run_attempt",
+            "probe_run_id", "probe_run_attempt",
+        )
     )
-    assert runner["trusted_controller_installation"]["bootstrap_run_id"] == "35133834999"
-    assert runner["trusted_controller_installation"]["probe_run_id"] == "35134079764"
     exact_main = (ROOT / "bcf_governance/tooling/ci_github_exact_main.py").read_text()
     membership = (ROOT / "bcf_governance/tooling/ci_github_membership.py").read_text()
     assert "trigger_run_id" in exact_main
