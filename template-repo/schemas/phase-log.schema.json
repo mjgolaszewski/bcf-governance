@@ -25,7 +25,7 @@
         "generated_at_utc": { "type": "string", "minLength": 1 },
         "status": {
           "type": "string",
-          "enum": ["planned", "completed"]
+          "enum": ["planned", "active", "blocked", "paused", "completed"]
         },
         "path": { "type": "string", "minLength": 1 }
       }

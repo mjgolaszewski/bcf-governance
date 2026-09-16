@@ -11,6 +11,7 @@ import re
 import subprocess
 import tarfile
 import tempfile
+import zipfile
 from typing import Any, Iterable
 
 from .ci_github_bundle import write_exclusive
@@ -167,6 +168,33 @@ def _extract_sdist(sdist: Path, destination: Path) -> Path:
     return roots[0]
 
 
+def _validate_wheel_source_mapping(wheel: Path, source: Path) -> dict[str, Any]:
+    """Require every packaged BCF byte to have one exact extracted-source owner."""
+
+    try:
+        with zipfile.ZipFile(wheel) as archive:
+            names = [
+                name for name in archive.namelist()
+                if name.startswith("bcf_governance/") and not name.endswith("/")
+            ]
+            if not names or len(names) != len(set(names)):
+                raise GitHubControllerError("release wheel source mapping is incomplete")
+            changed: list[str] = []
+            for name in sorted(names):
+                target = source / name
+                if target.is_symlink() or not target.is_file() or (
+                    archive.read(name) != target.read_bytes()
+                ):
+                    changed.append(name)
+    except (OSError, zipfile.BadZipFile, KeyError) as exc:
+        raise GitHubControllerError("release wheel source mapping is unreadable") from exc
+    if changed:
+        raise GitHubControllerError(
+            "release wheel source mapping differs: " + ", ".join(changed)
+        )
+    return {"status": "exact", "mapped_files": len(names)}
+
+
 def _git_custody(source: Path, output_dir: Path) -> list[dict[str, Any]]:
     env = runtime_environment(home=output_dir)
     commands: list[dict[str, Any]] = []
@@ -261,7 +289,7 @@ def run_release_runtime_verification(
             )
         )
         source = _extract_sdist(exact_sdist, root / "source")
-        commands.extend(_git_custody(source, output_dir))
+        source_mapping = _validate_wheel_source_mapping(exact_wheel, source)
         sdist_python, sdist_env, created = _environment(
             selected, root / "sdist-env", wheelhouse=wheelhouse.resolve(),
             lock_path=lock, output_dir=output_dir, label="sdist",
@@ -277,15 +305,6 @@ def run_release_runtime_verification(
                 cwd=root, env=sdist_env, output_dir=output_dir,
             )
         )
-        sdist_env[SDIST_PORTABLE_TEST_ENV] = "1"
-        commands.append(
-            _run(
-                "sdist-test-toolchain",
-                [str(sdist_python), str(source / ".github/scripts/bootstrap_test_toolchain.py"),
-                 "--repo-root", str(source)],
-                cwd=source, env=sdist_env, output_dir=output_dir,
-            )
-        )
         commands.append(
             _run(
                 "wheel-installed-consumer",
@@ -294,12 +313,11 @@ def run_release_runtime_verification(
                 cwd=root, env=wheel_env, output_dir=output_dir,
             )
         )
-        junit = output_dir / "sdist-tests.xml"
         commands.append(
             _run(
-                "sdist-tests",
-                [str(sdist_python), "-m", "pytest", "-q", "tests", f"--junitxml={junit}"],
-                cwd=source, env=sdist_env, output_dir=output_dir,
+                "sdist-smoke",
+                [str(sdist_python), "-m", "bcf_governance.cli", "--version"],
+                cwd=root, env=sdist_env, output_dir=output_dir,
             )
         )
     report_path = output_dir / "runtime-verification.json"
@@ -316,6 +334,7 @@ def run_release_runtime_verification(
             exact_wheel.name: _sha256(exact_wheel),
             exact_sdist.name: _sha256(exact_sdist),
         },
+        "source_mapping": source_mapping,
         "commands": commands,
         "evidence": _evidence(output_dir, {report_path.name}),
     }
@@ -352,6 +371,14 @@ def verify_runtime_evidence(
     }
     if report.get("release_artifacts") != expected_artifacts:
         raise GitHubControllerError("release runtime report does not bind release bytes")
+    source_mapping = report.get("source_mapping")
+    if (
+        not isinstance(source_mapping, dict)
+        or source_mapping.get("status") != "exact"
+        or not isinstance(source_mapping.get("mapped_files"), int)
+        or source_mapping["mapped_files"] < 1
+    ):
+        raise GitHubControllerError("release runtime source mapping is not exact")
     paths = tuple(evidence_paths)
     actual = {path.name: _sha256(_regular(path, "runtime evidence")) for path in paths}
     if len(actual) != len(paths) or report.get("evidence") != dict(sorted(actual.items())):

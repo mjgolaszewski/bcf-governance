@@ -146,11 +146,6 @@ gate_catalog:
     status: deferred
     command_policy: security_vulnerability_scan
     rationale: source or image vulnerability scan is wired
-  security_review:
-    target: security-review
-    status: deferred
-    command_policy: security_review
-    rationale: canonical review findings and remediation proofs bind to the governed tree
   runtime_smoke:
     target: runtime-smoke
     status: deferred

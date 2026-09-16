@@ -35,7 +35,6 @@ from bcf_governance.tooling.evidence_storage_github import (
     extract_handoff_zip,
     publish_action_handoff,
     publish_input_bundle,
-    provider_storage_usage,
     resolve_input_reference,
 )
 from bcf_governance.tooling.ci_github_downloads import CredentialSafeRedirectHandler
@@ -190,6 +189,19 @@ def test_enabled_storage_separates_settings_token_from_app_private_key() -> None
         contract["provider"]["settings_read_token_secret"]
         != contract["provider"]["private_key_secret"]
     )
+
+
+def test_active_storage_rejects_retired_economic_governance(tmp_path: Path) -> None:
+    root = _storage_repo(tmp_path)
+    contract_path = root / "governance/evidence-storage.yml"
+    contract = yaml.safe_load(contract_path.read_text())
+    contract["budgets"] = {"maximum_actions_bytes": 1}
+    contract_path.write_text(
+        yaml.safe_dump(contract, sort_keys=False), encoding="utf-8"
+    )
+
+    with pytest.raises(EvidenceStorageError, match="economic_governance_retired"):
+        load_storage_contract(root)
 
 
 @pytest.mark.parametrize(
@@ -1338,132 +1350,6 @@ def test_retention_requires_retrieval_before_deleting_handoff(tmp_path: Path) ->
     assert repeated["already_absent_artifact_ids"] == [501]
 
 
-def test_provider_budget_is_derived_from_complete_authenticated_inventory(
-    tmp_path: Path,
-) -> None:
-    root = _storage_repo(tmp_path)
-    contract = yaml.safe_load((root / "governance/evidence-storage.yml").read_text())
-    api = FakeEvidenceAPI(root)
-    api.repository_artifacts = lambda repository: (  # type: ignore[attr-defined]
-        {
-            "id": 501,
-            "name": "bcf-source-1-1",
-            "size_in_bytes": 128,
-            "expired": False,
-            "workflow_run": {"id": 1},
-        },
-        {
-            "id": 502,
-            "name": "ordinary-receipts",
-            "size_in_bytes": 256,
-            "expired": False,
-            "workflow_run": {"id": 1},
-        },
-    )
-    api.evidence_releases = lambda repository: ()  # type: ignore[attr-defined]
-
-    usage = provider_storage_usage(  # type: ignore[arg-type]
-        api,
-        contract=contract,
-        repository="owner/project",
-        run_id="1",
-        artifact_name="bcf-source-1-1",
-    )
-    assert usage.actions_bytes == 384
-    assert usage.new_bytes == 128
-
-    contract["budgets"]["maximum_actions_bytes"] = 383
-    with pytest.raises(EvidenceStorageError, match="budget exceeded"):
-        provider_storage_usage(  # type: ignore[arg-type]
-            api,
-            contract=contract,
-            repository="owner/project",
-            run_id="1",
-            artifact_name="bcf-source-1-1",
-        )
-
-
-def test_provider_budget_counts_manifests_objects_and_resumable_drafts(
-    tmp_path: Path,
-) -> None:
-    root = _storage_repo(tmp_path)
-    api, _, _ = _published_reference(root, tmp_path)
-    contract = yaml.safe_load((root / "governance/evidence-storage.yml").read_text())
-    api.repository_artifacts = lambda repository: (  # type: ignore[attr-defined]
-        {
-            "id": 501,
-            "name": "bcf-source-1-1",
-            "size_in_bytes": 128,
-            "expired": False,
-            "workflow_run": {"id": 1},
-        },
-    )
-    expected_bytes = sum(
-        int(asset["size"])
-        for release in api.releases.values()
-        for asset in release["assets"]
-    )
-    pending = tmp_path / "pending.tar.gz"
-    pending.write_bytes(b"unpublished durable bytes")
-    pending_digest = hashlib.sha256(pending.read_bytes()).hexdigest()
-    interrupted_tag = f"bcf-evidence-inputs-object-{pending_digest}"
-    draft = api.create_evidence_draft_release(
-        "owner/project",
-        tag=interrupted_tag,
-        target_commit=COMMIT,
-        body="interrupted",
-    )
-    api.upload_evidence_asset(
-        upload_url=draft["upload_url"], repository="owner/project", release_id=draft["id"],
-        name=f"sha256-{pending_digest}.tar.gz", path=pending, maximum_bytes=1024,
-    )
-    reader = ScopedEvidenceAPI(api, forbidden=frozenset({"evidence_releases"}), drafts_visible=False)
-    writer = ScopedEvidenceAPI(api, forbidden=frozenset({"repository_artifacts"}))
-
-    usage = provider_storage_usage(  # type: ignore[arg-type]
-        reader,
-        publication_api=writer,
-        contract=contract,
-        repository="owner/project",
-        run_id="1",
-        artifact_name="bcf-source-1-1",
-    )
-
-    assert usage.durable_unique_bytes == expected_bytes + pending.stat().st_size
-    assert usage.object_count == 3
-    assert writer.calls == ["evidence_releases"]
-
-
-def test_projected_durable_budget_fails_before_publication(tmp_path: Path) -> None:
-    root = _storage_repo(tmp_path)
-    contract_path = root / "governance/evidence-storage.yml"
-    contract = yaml.safe_load(contract_path.read_text())
-    contract["budgets"]["maximum_durable_unique_bytes"] = 1
-    contract_path.write_text(yaml.safe_dump(contract, sort_keys=False), encoding="utf-8")
-    prepared = root / "prepared"
-    prepared.mkdir()
-    prepared.joinpath("scanner.bin").write_bytes(b"new bytes")
-    prepared.joinpath("scanner-copy.bin").write_bytes(b"new bytes")
-    api = FakeEvidenceAPI(root)
-    manifest_path = _bundle(root, tmp_path / "bundle", 1)
-
-    with pytest.raises(EvidenceStorageError, match="durable unique bytes"):
-        publish_input_bundle(
-            api,  # type: ignore[arg-type]
-            schema_root=root,
-            bundle_dir=manifest_path.parent,
-            handoff={
-                "artifact_id": 501,
-                "artifact_name": "bcf-source-1-1",
-                "provider_digest": "sha256:" + "0" * 64,
-                "run_id": "1",
-                "run_attempt": 1,
-            },
-            output_path=root / ".artifacts/budget-reference.json",
-        )
-    assert api.releases == {}
-
-
 @pytest.mark.parametrize("response_case", ["exact", "wrong-id", "wrong-tag", "bool-id", "non-object"])
 def test_evidence_release_id_read_binds_safe_requested_identity(
     monkeypatch: pytest.MonkeyPatch, response_case: str
@@ -1755,12 +1641,8 @@ def test_retention_commands_route_distinct_inventory_authority(
     assert calls == [("ordinary-token", "draft-visible-token")]
 
 
-def test_retention_uses_draft_visible_inventory_only_for_release_accounting(tmp_path: Path) -> None:
+def test_retention_uses_draft_visible_inventory_for_exact_reachability(tmp_path: Path) -> None:
     root = _storage_repo(tmp_path)
-    contract_path = root / "governance/evidence-storage.yml"
-    contract = yaml.safe_load(contract_path.read_text())
-    contract["budgets"]["maximum_durable_unique_bytes"] = 1
-    contract_path.write_text(yaml.safe_dump(contract), encoding="utf-8")
     backing = FakeEvidenceAPI(root)
     backing.repository_artifacts = lambda repository: ()  # type: ignore[attr-defined]
     source = tmp_path / "draft.tar.gz"
@@ -1790,9 +1672,6 @@ def test_retention_uses_draft_visible_inventory_only_for_release_accounting(tmp_
         root, snapshot, api=reader, publication_api=writer,
         now=datetime(2026, 9, 11, tzinfo=UTC),
     )
-    assert plan["usage"]["durable_unique_bytes"] == source.stat().st_size
-    assert plan["usage"]["object_count"] == 1
-    assert plan["within_budget"] is False
     assert plan["durable_release_review_ids"] == [draft["id"]]
     result = apply_actions_retention(
         root, snapshot, api=reader, publication_api=writer,

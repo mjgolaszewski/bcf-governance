@@ -171,7 +171,7 @@ jobs:
 def apply_profile_v2_artifact_defaults(
     profile: dict[str, Any], *, selected_profile: str, contract_version: str
 ) -> None:
-    if contract_version != "2.0" or selected_profile not in {"standard", "regulated"}:
+    if contract_version not in {"2.0", "3.0"} or selected_profile not in {"standard", "regulated"}:
         return
     selected = next(
         item

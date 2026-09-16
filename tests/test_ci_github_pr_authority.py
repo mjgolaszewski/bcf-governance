@@ -116,7 +116,7 @@ class FakePRAuthorityAPI:
         assert repository == REPOSITORY and head_sha == self.head and event == "pull_request"
         selected = self.runs["30" if str(workflow_id) == "governance.yml" else "40"]
         value = copy.deepcopy(selected)
-        if str(workflow_id) == "governance-pack.yml":
+        if str(workflow_id) == "governance.yml":
             value["conclusion"] = self.pack_conclusion
         return (value,)
 
@@ -200,8 +200,7 @@ def test_latest_failed_producer_revokes_without_borrowing(tmp_path: Path) -> Non
     )
     assert result["computed_state"] == "failed"
     assert {item["id"]: item["state"] for item in result["producers"]} == {
-        "governance": "successful",
-        "package": "failed",
+        "governance": "failed",
     }
 
 

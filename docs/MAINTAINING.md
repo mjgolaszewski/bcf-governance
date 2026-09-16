@@ -15,7 +15,7 @@ in [CI authority](CI_AUTHORITY.md).
 - `scripts/` contains non-packaged thin wrappers for a source checkout.
 - `template-repo/scripts/_bcf_runtime/` is the private standalone runtime copy.
 - `tests/` owns behavioral and contract coverage.
-- `docs/RELIABILITY_MODEL.md` owns the failure model, verification economics,
+- `docs/RELIABILITY_MODEL.md` owns the failure model, verification scope,
   objections, limits, and empirical measures.
 - `governance/ci-graph.yml` owns BCF's common CI graph.
 - `governance/ci-extensions/*.yml` own bounded BCF-specific additions.
@@ -297,13 +297,13 @@ architecture test preventing a second selector or admission path.
 
 Durable evidence inputs follow the same single-owner rule. The canonical
 storage contract owns provider namespace, credentials, freshness, archive
-safety, reachability, and budgets; the CI graph owns source/publisher/reference
+safety, and reachability; the CI graph owns source/publisher/reference
 edges. Do not copy App variable names, release IDs, asset IDs, run IDs, or
 digests into workflow YAML. `ci graph lock` projects the contract digest and the
 renderer projects its credential references. Ordinary provider reads use the
 trusted workflow token; the short-lived App token receives only `contents:write`
-and owns draft discovery, release-ID reads during publication, draft-inclusive
-budget inventory, and Release mutation. Published-release verification remains
+and owns draft discovery, release-ID reads during publication, complete
+reachability inventory, and Release mutation. Published-release verification remains
 on the ordinary reader. A separate short-lived credential with
 Administration read proves the repository's immutable-Release setting before
 any publication. The storage contract owns both secret names, and generated CI
@@ -313,9 +313,7 @@ cannot publish, retain, delete, or certify it.
 Qualification must include two runs with identical source bytes, one cold
 resolution with no warm cache, an expired mutable-database input, provider and
 asset tampering, unsafe archives, interrupted/concurrent publication, and
-retention leases. Record Actions bytes, durable unique bytes, object count, new
-bytes, transfer volume, and hosted job minutes separately. Actions storage and
-hosted execution time are co-equal release budgets. `retention-plan` is a pure
+retention leases. `retention-plan` is a pure
 plan. Both retention commands require `GITHUB_TOKEN` for provider custody and
 `BCF_EVIDENCE_WRITE_TOKEN` for complete draft-visible Release inventory. This
 credential prerequisite applies when adopting the 1.2.0 retention commands.

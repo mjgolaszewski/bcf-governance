@@ -1,0 +1,52 @@
+document:
+  kind: activation_measurement
+  id: bcf-2-pass-5a-final-successor
+  version: 1.0.0
+  status: in_progress
+  path: audits/bcf-2-pass-5a-final-successor.yml
+subject:
+  branch: release/2.0.0-final-activation
+  base_commit_sha: 314672290142d7bc23e4b6eab9a1ec685d4c4e51
+  base_tree_sha: 3eecc40c80b0b2547843cecfd1dafc594beb44cc
+  prior_attempts:
+  - {pull_request: 192, disposition: closed_unmerged_activation_deadlock}
+  - {pull_request: 200, disposition: frozen_stale_successor_authorization}
+prior_evidence_mode:
+  producers: [governance, package]
+  transition_missing_producer: package
+  ordinary_missing_producer_behavior: fail_closed
+candidate_evidence_mode:
+  producers: [governance]
+  grouped_claim_execution: true
+  profile_contract_version: '3.0'
+  session_schema_version: '2.0'
+  receipt_schema_version: '3.0'
+  transition_equivalence_required: true
+local_measurement:
+  reconstruction_model_interventions: 1
+  reconstruction_conflicts:
+  - governance/test-manifests/test.txt
+  conflict_classification: governed inventory regenerated from the reconstructed test tree
+  token_telemetry: unavailable
+provider_measurement:
+  pull_request: null
+  candidate_commit_sha: pending
+  candidate_tree_sha: pending
+  required_claims: pending
+  preflight_claims: pending
+  reused_claims: pending
+  theoretically_reusable_claims: pending
+  invalidated_claims: pending
+  actual_producer_groups: pending
+  transition_overhead_seconds: pending
+  positive_executions: pending
+  negative_control_qualification_reuse: pending
+  shard_occupancy: pending
+  finalizer_latency_seconds: pending
+  publisher_latency_seconds: pending
+  assurance_result: pending
+scope_guards:
+  ar_01_changed: false
+  ar_02_changed: false
+  ar_03_changed: false
+  measurement_changes_behavior: false

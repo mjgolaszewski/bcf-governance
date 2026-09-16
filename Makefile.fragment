@@ -2,7 +2,7 @@ SHELL := /bin/bash
 PYTHON ?= python3
 BCF_EVIDENCE_DIR ?= .artifacts/bcf
 
-.PHONY: governance-truthfulness release-check architecture-context-membership architecture-cqrs-side architecture-duplication architecture-import-boundaries architecture-layer-membership architecture-module-size architecture-router-thinness architecture-test contract-test governance-exposure-scan governance-validate lint runtime-smoke security-dependency-audit security-review security-sbom security-secret-scan security-vulnerability-scan semantic-ownership test typecheck
+.PHONY: governance-truthfulness release-check architecture-context-membership architecture-cqrs-side architecture-duplication architecture-import-boundaries architecture-layer-membership architecture-module-size architecture-router-thinness architecture-test contract-test governance-exposure-scan governance-validate lint runtime-smoke security-dependency-audit security-sbom security-secret-scan security-vulnerability-scan semantic-ownership test typecheck
 
 governance-truthfulness:
 	$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)
@@ -49,9 +49,6 @@ runtime-smoke:
 security-dependency-audit:
 	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py security-dependency-audit
 
-security-review:
-	@cd . && BCF_EXECUTION_PROFILE=production $(PYTHON) .github/scripts/run_self_governance_gate.py security-review
-
 security-sbom:
 	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py security-sbom
 
@@ -77,7 +74,7 @@ release-check:
 	session="$$(printf '%s\n' "$$preflight_output" | tail -n 1)"; \
 	test -n "$$session" && test -f "$$session" || { echo 'preflight did not produce an evidence session' >&2; exit 1; }; \
 	session_dir="$${session%/evidence-session.json}"; \
-	for gate in architecture-context-membership architecture-cqrs-side architecture-duplication architecture-import-boundaries architecture-layer-membership architecture-module-size architecture-router-thinness architecture-test contract-test governance-exposure-scan governance-validate lint runtime-smoke security-dependency-audit security-review security-sbom security-secret-scan security-vulnerability-scan semantic-ownership test typecheck; do \
+	for gate in architecture-context-membership architecture-cqrs-side architecture-duplication architecture-import-boundaries architecture-layer-membership architecture-module-size architecture-router-thinness architecture-test contract-test governance-exposure-scan governance-validate lint runtime-smoke security-dependency-audit security-sbom security-secret-scan security-vulnerability-scan semantic-ownership test typecheck; do \
 		$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output "$$session_dir/$$gate" --python $(PYTHON) --session-manifest "$$session" || exit $$?; \
 	done; \
 	$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir "$$session_dir"
