@@ -490,16 +490,21 @@ def test_each_wrong_current_topology_anchor_is_rejected(path: str) -> None:
         _applicable(api)
 
 
-def test_successor_anchors_are_exact_and_current_anchors_are_historical() -> None:
+def test_activation_snapshot_is_historical_after_successor_authority() -> None:
     contract = yaml.safe_load((ROOT / "governance/pr-transition.yml").read_text())
     activation = contract["activation"]
-    for expected in activation["successor_topology"].values():
-        assert hashlib.sha256((ROOT / expected["path"]).read_bytes()).hexdigest() == expected["sha256"]
+    assert {
+        key: value["sha256"]
+        for key, value in activation["successor_topology"].items()
+    } == FROZEN_SUCCESSOR
     assert not (ROOT / activation["current_topology"]["package_workflow"]["path"]).exists()
     assert (
         activation["current_topology"]["ci_graph"]["sha256"]
         != activation["successor_topology"]["ci_graph"]["sha256"]
     )
+    assert hashlib.sha256(
+        (ROOT / activation["successor_topology"]["protection"]["path"]).read_bytes()
+    ).hexdigest() == activation["successor_topology"]["protection"]["sha256"]
 
 
 def test_missing_current_topology_anchor_is_rejected() -> None:
@@ -626,8 +631,22 @@ def test_failed_pack_node_and_job_block_transition() -> None:
 
 def test_successor_topology_and_canonical_publisher_context_are_exact() -> None:
     protection = load_protection(ROOT)
+    topology = yaml.safe_load(
+        (ROOT / "governance/github-ci-topology.yml").read_text(encoding="utf-8")
+    )
     assert [item["id"] for item in protection["pr_certification"]["producer_workflows"]] == ["governance"]
     assert protection["pr_certification"]["context"] == "bcf/pr-certification"
+    assert [value["job_id"] for value in topology["producer_workflows"]] == [
+        "governance"
+    ]
+    assert topology["authority_evolution_jobs"] == [
+        {
+            "job_id": "trusted-controller-build",
+            "display_name": "Build independent exact-main trusted controller",
+            "workflow_path": ".github/workflows/bcf-exact-main.yml",
+            "authority": "controller-artifact-eligibility-only",
+        }
+    ]
     assert not (ROOT / ".github/workflows/governance-pack.yml").exists()
     publisher = (ROOT / "bcf_governance/tooling/ci_github_pr.py").read_text()
     assert "require_success=True" in publisher

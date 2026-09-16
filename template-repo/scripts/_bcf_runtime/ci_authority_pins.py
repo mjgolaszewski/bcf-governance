@@ -232,6 +232,21 @@ def _compile_inventories(
     if len(admission_jobs) != 1:
         raise CIAuthorityPinError("admission workflow must compile exactly one admission job")
     payload["admission_jobs"] = admission_jobs
+    controller_builders = [
+        dict(value)
+        for _, value in caller_jobs
+        if value.get("role") == "controller-builder"
+    ]
+    for value in controller_builders:
+        value.pop("role", None)
+    if controller_builders:
+        if len(controller_builders) != 1:
+            raise CIAuthorityPinError(
+                "admission workflow must compile exactly one controller builder job"
+            )
+        payload["controller_builder_jobs"] = controller_builders
+    else:
+        payload.pop("controller_builder_jobs", None)
     caller_producers = {
         source: value
         for source, value in caller_jobs

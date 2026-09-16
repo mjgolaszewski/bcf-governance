@@ -40,6 +40,23 @@
         ]
       }
     },
+    "authority_evolution_jobs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["job_id", "display_name", "workflow_path", "authority"],
+        "properties": {
+          "job_id": {"const": "trusted-controller-build"},
+          "display_name": {"type": "string", "minLength": 1},
+          "workflow_path": {"const": ".github/workflows/bcf-exact-main.yml"},
+          "authority": {"const": "controller-artifact-eligibility-only"}
+        }
+      }
+    },
     "activation_variable": {"const": "BCF_CI_AUTHORITY_ENABLED"},
     "dispatch_exact_ref": {"type": "boolean"},
     "controller_commit": {"type": "string", "pattern": "^[a-f0-9]{40}$"},

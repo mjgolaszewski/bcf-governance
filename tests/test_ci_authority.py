@@ -328,6 +328,48 @@ def test_authority_v11_accepts_one_registry_and_closed_role_references() -> None
     validate_ci_contract(REPO_ROOT, "authority", _authority_v11_payload())
 
 
+def test_authority_v11_controller_builder_is_not_a_claim_producer() -> None:
+    payload = _authority_v11_payload()
+    payload["workflow_registry"]["admission"]["job_roles"][  # type: ignore[index]
+        "trusted-controller-build"
+    ] = "controller-builder"
+    payload["controller_builder_jobs"] = [
+        {"job_id": "Build independent exact-main trusted controller"}
+    ]
+
+    validate_ci_contract(REPO_ROOT, "authority", payload)
+
+    assert [value["producer_id"] for value in payload["producers"]] == ["unit"]  # type: ignore[index]
+    assert payload["workflow_registry"]["admission"]["job_roles"][  # type: ignore[index]
+        "trusted-controller-build"
+    ] == "controller-builder"
+
+
+@pytest.mark.parametrize("mutation", ["missing-inventory", "missing-source-role"])
+def test_authority_v11_rejects_incomplete_controller_builder_authority(
+    mutation: str,
+) -> None:
+    payload = _authority_v11_payload()
+    payload["workflow_registry"]["admission"]["job_roles"][  # type: ignore[index]
+        "trusted-controller-build"
+    ] = "controller-builder"
+    payload["controller_builder_jobs"] = [
+        {"job_id": "Build independent exact-main trusted controller"}
+    ]
+    if mutation == "missing-inventory":
+        del payload["controller_builder_jobs"]
+    else:
+        del payload["workflow_registry"]["admission"]["job_roles"][  # type: ignore[index]
+            "trusted-controller-build"
+        ]
+
+    with pytest.raises(
+        CIAuthorityContractError,
+        match="exactly one independent controller builder",
+    ):
+        validate_ci_contract(REPO_ROOT, "authority", payload)
+
+
 def test_authority_v11_bridge_remains_readable_but_cannot_claim_privileged_jobs() -> None:
     payload = _authority_v11_payload()
     for workflow in payload["workflow_registry"].values():  # type: ignore[union-attr]

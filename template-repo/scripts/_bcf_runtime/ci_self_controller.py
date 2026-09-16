@@ -21,7 +21,7 @@ from .ci_github_bootstrap import (
     verify_controller_inventory,
     verify_controller_subject_metadata,
 )
-from .ci_github_identity import GitHubControllerError, resolve_main
+from .ci_github_identity import GitHubControllerError, positive_int, resolve_main
 from .ci_github_membership import collect_same_run_producers, select_latest_admission
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
 from .ci_graph_locks import apply_ci_graph_locks, check_ci_graph_locks
@@ -128,24 +128,80 @@ def resolve_self_controller_artifact(
     run_id, attempt = select_latest_admission(
         api, repository=repository, main=main, authority=authority
     )
-    producers = collect_same_run_producers(
-        api,
-        repository=repository,
-        main=main,
-        authority=authority,
-        admission_run_id=run_id,
-        admission_run_attempt=attempt,
-        producer_ids=("governance",),
-        require_complete_admission_inventory=False,
-    )
-    package = [value for value in producers if value["producer_id"] == "governance"]
-    if len(package) != 1:
-        raise GitHubControllerError("latest exact-main governance producer is not unique")
-    package_attempt = package[0]["attempts"][0]
-    if package_attempt["status"] != "completed" or (
-        package_attempt["conclusion"] != "success"
-    ):
-            raise GitHubControllerError("latest exact-main governance producer is not successful")
+    builders = authority.get("controller_builder_jobs")
+    if builders is None:
+        producers = collect_same_run_producers(
+            api,
+            repository=repository,
+            main=main,
+            authority=authority,
+            admission_run_id=run_id,
+            admission_run_attempt=attempt,
+            producer_ids=("governance",),
+            require_complete_admission_inventory=False,
+        )
+        governance = [
+            value for value in producers if value["producer_id"] == "governance"
+        ]
+        if len(governance) != 1:
+            raise GitHubControllerError(
+                "latest exact-main governance producer is not unique"
+            )
+        governance_attempt = governance[0]["attempts"][0]
+        if governance_attempt["status"] != "completed" or (
+            governance_attempt["conclusion"] != "success"
+        ):
+            raise GitHubControllerError(
+                "latest exact-main governance producer is not successful"
+            )
+    else:
+        if (
+            not isinstance(builders, list)
+            or len(builders) != 1
+            or not isinstance(builders[0], dict)
+            or set(builders[0]) != {"job_id"}
+        ):
+            raise GitHubControllerError(
+                "independent controller builder authority is not exact"
+            )
+        authenticate_role_run(
+            api,
+            repository=repository,
+            main=main,
+            authority=authority,
+            role="admission",
+            run_id=run_id,
+            run_attempt=attempt,
+            require_success=False,
+        )
+        run = api.run(repository, run_id)
+        if run.get("status") != "completed" or positive_int(
+            run.get("run_attempt"), field="admission run attempt"
+        ) != attempt:
+            raise GitHubControllerError(
+                "latest exact-main admission is not terminal for controller resolution"
+            )
+        jobs = api.jobs(repository, run_id, attempt=attempt)
+        names = [str(value.get("name", "")) for value in jobs]
+        if not names or not all(names) or len(names) != len(set(names)):
+            raise GitHubControllerError(
+                "exact-main job inventory is empty or duplicated"
+            )
+        expected_builder = str(builders[0]["job_id"])
+        selected = [value for value in jobs if value.get("name") == expected_builder]
+        if len(selected) != 1:
+            raise GitHubControllerError(
+                "independent controller builder job identity is not exact"
+            )
+        builder = selected[0]
+        positive_int(builder.get("id"), field="controller builder job ID")
+        if (
+            builder.get("status") != "completed"
+            or builder.get("conclusion") != "success"
+        ):
+            raise GitHubControllerError(
+                "independent controller builder job is not successful"
+            )
     name = f"bcf-trusted-control-{main.checkout_sha}-{attempt}"
     artifact = resolve_role_artifact(
         api,
@@ -158,6 +214,14 @@ def resolve_self_controller_artifact(
         artifact_name=name,
         require_success=False,
     )
+    if (
+        artifact.run_id != run_id
+        or artifact.run_attempt != attempt
+        or artifact.artifact_name != name
+    ):
+        raise GitHubControllerError(
+            "independent controller artifact is not bound to its builder admission"
+        )
     return {
         "repository_id": main.repository_id,
         "commit_sha": main.checkout_sha,

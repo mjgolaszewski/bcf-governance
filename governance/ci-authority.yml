@@ -14,6 +14,7 @@ workflow_registry:
     job_roles:
       admit: admission
       governance: producer
+      trusted-controller-build: controller-builder
   governance:
     workflow_id: '334490532'
     active_path: .github/workflows/governance.yml
@@ -135,6 +136,8 @@ roles:
   authority_canary: authority-canary
 admission_jobs:
 - job_id: Authenticate exact-main admission and publish pending authority
+controller_builder_jobs:
+- job_id: Build independent exact-main trusted controller
 producers:
 - producer_id: governance
   workflow_ref: governance

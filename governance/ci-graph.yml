@@ -55,7 +55,7 @@ artifacts:
   nightly-mutant-results: {path: .artifacts/scheduled-mutants, kind: control, scope: run-attempt, retention_days: 90}
   weekly-mutant-results: {path: .artifacts/scheduled-mutants, kind: control, scope: run-attempt, retention_days: 90}
   trusted-controller-bundle: {path: .artifacts/trusted-control, kind: control, scope: run-attempt, retention_days: 30}
-conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main', build-exact-main-controller: inputs.build_controller == true && github.ref == 'refs/heads/main', always-step: always()}
+conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main', always-step: always()}
 commands:
   install-governance-dependencies:
     argv: ['{python}', -m, pip, install, -r, requirements-governance.txt]
@@ -298,7 +298,6 @@ step_components:
   build-trusted-controller:
     kind: command
     name: Build the exact-main trusted controller bundle
-    condition: build-exact-main-controller
     command: build-trusted-controller
     environment: {}
     produces: [trusted-controller-bundle]
@@ -306,7 +305,6 @@ step_components:
   upload-trusted-controller:
     kind: action
     name: Upload the exact-main trusted controller bundle
-    condition: build-exact-main-controller
     action: upload-artifact
     with: {name: 'bcf-trusted-control-${{ github.sha }}-${{ github.run_attempt }}', path: .artifacts/trusted-control, if-no-files-found: error, retention-days: 30}
     environment: {}
@@ -322,7 +320,6 @@ workflows:
   - type: workflow_call
     inputs:
       evaluation_mode: {description: Exact truth evaluation mode selected by the trusted caller, required: false, default: pr, type: string}
-      build_controller: {description: Build the trusted controller artifact for exact-main custody, required: false, default: false, type: boolean}
   permissions: {contents: read}
   jobs:
   - id: preflight
@@ -386,8 +383,8 @@ workflows:
     executor:
       kind: terminal_truth
       command: governance-truth
-      components: [checkout-candidate, setup-python, install-governance, download-governance-receipts, restore-evidence-modes, run-governance-truth, build-trusted-controller, upload-trusted-controller, preserve-terminal-observation, upload-governance-truth]
-    produces: [governance-truth-report, trusted-controller-bundle]
+      components: [checkout-candidate, setup-python, install-governance, download-governance-receipts, restore-evidence-modes, run-governance-truth, preserve-terminal-observation, upload-governance-truth]
+    produces: [governance-truth-report]
     consumes: [governance-receipts]
     required: true
 - id: exact-main
@@ -429,8 +426,25 @@ workflows:
     executor:
       kind: reusable_workflow
       path: .github/workflows/governance.yml
-      inputs: {evaluation_mode: closure, build_controller: true}
+      inputs: {evaluation_mode: closure}
     produces: []
+    consumes: []
+    required: true
+  - id: trusted-controller-build
+    display_name: Build independent exact-main trusted controller
+    semantic_role: exact-main-controller-builder
+    resource_class: hosted-python-latest
+    trust: candidate
+    needs: [admit]
+    condition: exact-main-admitted
+    timeout_minutes: 15
+    permissions: {contents: read}
+    checkout: false
+    components: []
+    executor:
+      kind: component_sequence
+      components: [checkout-candidate, setup-python, install-governance, build-trusted-controller, upload-trusted-controller]
+    produces: [trusted-controller-bundle]
     consumes: []
     required: true
 - id: exact-main-finalizer

@@ -1,0 +1,87 @@
+document:
+  kind: defect_remediation_audit
+  id: bcf-2-independent-controller-builder
+  version: 1.0.0
+  status: in_progress
+  path: audits/bcf-2-independent-controller-builder.yml
+scope:
+  purpose: Restore independent exact-main trusted-controller construction after BCF 2.0 retired the package producer.
+  branch: fix/2.0-independent-controller-builder
+  package_reintroduction_authorized: false
+  stale_controller_weakening_authorized: false
+  protection_change_authorized: false
+  publisher_change_authorized: false
+  bootstrap_change_authorized: false
+  transition_cleanup_authorized: false
+authoritative_base:
+  commit_sha: 2fc02544a238a049fe72e37f030598602f098f6d
+  tree_sha: d7978586013dd3c0e2c494eb7023ae0cff79dc6e
+  topology: [governance]
+  installed_controller_commit_sha: 78f12c6d4acc6e389c6deef41c4933f3a46ceb36
+confirmed_failure:
+  exact_main_run_id: '35041092138'
+  exact_main_run_attempt: 1
+  admission: success
+  first_failure: trusted controller target is stale for runtime files
+  assurance_evidence_executed: false
+root_cause:
+  classification: migration_configuration_defect
+  finding: Independent controller construction was incorrectly coupled to governance success when the old package producer was retired.
+  lost_property: Independent trusted-controller construction from authenticated exact-main.
+forensic_artifact:
+  authority: forbidden
+  artifact_id: '10425078154'
+  name: bcf-trusted-control-2fc02544a238a049fe72e37f030598602f098f6d-1
+  provider_digest: sha256:587e6a19e35d2f310fa8aeafc96435ee18bac29945c63c2f805bdb931e5335f0
+  wheel_sha256: 7471a10714a4f2777fcae4eef8c8f7f53e698a021d2d4563f47234cbd01a84d7
+  rationale: The artifact came from the failed governance producer rather than the independent builder contract.
+design:
+  admission_dependency: authenticated exact-main admission
+  builder_job_id: trusted-controller-build
+  builder_classification: controller-artifact-eligibility-only
+  governance_dependency: none
+  canonical_bundle_builder_reused: true
+  exact_artifact_name_required: true
+  existing_rotation_process_required: true
+authority_effects:
+  governance_claim_satisfaction: false
+  exact_main_certification: false
+  pr_certification: false
+  lifecycle_closure: false
+  release_authorization: false
+  publisher_authority: false
+  transition_equivalence: false
+resolver:
+  latest_current_main_only: true
+  exact_admission_required: true
+  exact_successful_builder_required: true
+  exact_artifact_binding_required: true
+  older_green_fallback_allowed: false
+  candidate_selected_name_allowed: false
+  legacy_contract_preserved: true
+invariants:
+  package_absent: true
+  protection_unchanged: true
+  publisher_boundary_unchanged: true
+  stale_controller_guard_unchanged: true
+  builder_is_assurance_producer: false
+  builder_can_make_certification_green: false
+  polling_or_retry_added: false
+validation:
+  focused:
+    passed: 237
+    failed: 0
+    duration_seconds: 87.20
+  full_suite: pending
+recovery:
+  repair_merge_expected_exact_main_state: governance_may_fail_builder_must_succeed
+  next_step: Existing governed controller target, bootstrap, probe, and confirmation sequence.
+measurements:
+  builder_duration_seconds: provider_pending
+  artifact_size_bytes: provider_pending
+  execution_frequency: once_per_exact_main_admission
+  model_interventions: 1
+  recovery_cycles: provider_pending
+remaining_risks:
+- Protected PR certification and user-controlled merge remain outstanding.
+- The repair does not itself rotate the stale installed controller.

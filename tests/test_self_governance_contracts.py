@@ -181,14 +181,20 @@ def test_changelog_pr_enforcement_is_wired_into_repository_ci() -> None:
 
 def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
     truth = _job("governance", "governance-truthfulness")
-    components = truth["executor"]["components"]
-    assert components.count("build-trusted-controller") == 1
-    assert components.index("run-governance-truth") < components.index("build-trusted-controller")
-    assert truth["produces"] == ["governance-truth-report", "trusted-controller-bundle"]
-    graph = validate_ci_graph(REPO_ROOT).graph
-    assert graph["conditions"]["build-exact-main-controller"] == (
-        "inputs.build_controller == true && github.ref == 'refs/heads/main'"
-    )
+    assert "build-trusted-controller" not in truth["executor"]["components"]
+    assert truth["produces"] == ["governance-truth-report"]
+    builder = _job("exact-main", "trusted-controller-build")
+    assert builder["needs"] == ["admit"]
+    assert builder["condition"] == "exact-main-admitted"
+    assert builder["semantic_role"] == "exact-main-controller-builder"
+    assert builder["executor"]["components"] == [
+        "checkout-candidate",
+        "setup-python",
+        "install-governance",
+        "build-trusted-controller",
+        "upload-trusted-controller",
+    ]
+    assert builder["produces"] == ["trusted-controller-bundle"]
 
 
 def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
@@ -318,10 +324,9 @@ def test_exact_main_is_the_only_default_branch_producer() -> None:
         ("exact-main", "exact-main")
     ]
     assert [job["id"] for job in _workflow("exact-main")["jobs"]] == [
-        "admit", "governance",
+        "admit", "governance", "trusted-controller-build",
     ]
     assert _job("exact-main", "governance")["executor"]["inputs"] == {
-        "build_controller": True,
         "evaluation_mode": "closure",
     }
     assert compiled.graph["conditions"]["exact-main-authority-enabled"] == (

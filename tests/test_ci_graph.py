@@ -992,13 +992,21 @@ def test_bcf_exact_main_rotation_blocks_evidence_but_builds_controller() -> None
     )
     admission = next(job for job in exact_main["jobs"] if job["id"] == "admit")
     governance = next(job for job in exact_main["jobs"] if job["id"] == "governance")
+    builder = next(
+        job for job in exact_main["jobs"]
+        if job["id"] == "trusted-controller-build"
+    )
 
     assert admission["controller_requirement"] == "current"
     assert governance["needs"] == ["admit"]
     assert governance["condition"] == "exact-main-admitted"
-    assert governance["executor"]["inputs"] == {
-        "evaluation_mode": "closure", "build_controller": True
-    }
+    assert governance["executor"]["inputs"] == {"evaluation_mode": "closure"}
+    assert builder["needs"] == ["admit"]
+    assert builder["condition"] == "exact-main-admitted"
+    assert builder["semantic_role"] == "exact-main-controller-builder"
+    assert builder["produces"] == ["trusted-controller-bundle"]
+    assert "build-trusted-controller" in builder["executor"]["components"]
+    assert "upload-trusted-controller" in builder["executor"]["components"]
 
 
 def test_pull_request_gate_ownership_exactly_matches_profile(tmp_path: Path) -> None:
