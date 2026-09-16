@@ -20,9 +20,9 @@ ADDITIONAL_HUMAN_FACING_SOURCES = {
 }
 SPECIFIC_FINDINGS = {
     "AGENTS.yml": "reviewed canonical repository-agent guidance for current profile, lifecycle, and authority boundaries",
-    "README.md": "updated the mechanically checked 1.3.0 package example",
+    "README.md": "updated the mechanically checked 2.0.0 correction-release package example",
     "docs/ARCHITECTURE.md": "documented shared language discovery, bounded compiler effects and dependency snapshots, and candidate routing ownership",
-    "docs/RELIABILITY_MODEL.md": "documented installed-runtime, compiler-inventory, empty-lock and candidate-routing failure classes",
+    "docs/RELIABILITY_MODEL.md": "documented minimum sufficient verification, dependency-scoped reuse, and non-authoritative observability",
     "docs/USAGE.md": "documented TypeScript adoption and lock compatibility, explicit routing eligibility, fallback, and provider label limits",
     "docs/MAINTAINING.md": "documented exact offline compiler provisioning, isolated wheel-consumer qualification, and the current release audit",
     "examples/lifecycle-walkthrough/README.md": "replaced obsolete 0.6 and hand-built gate loop with 1.1 preflight and session mechanics",

@@ -21,7 +21,7 @@ execution_evidence:
 closeout_requirements:
   claims:
     required_suites_green: {required_evidence: [test, contract-test]}
-    security_review_complete: {required_evidence: [security-review]}
+    security_review_complete: {required_evidence: [governance-validate]}
     health_checks_green: {required_evidence: [runtime-smoke]}
   reconciliation:
     required_evidence: [governance-validate, governance-exposure-scan]

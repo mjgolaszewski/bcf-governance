@@ -17,7 +17,7 @@ separates two questions:
 - `bcf truth`: are lifecycle and release claims supported by current evidence
   for the exact Git subject?
 
-Supported package version: `v1.3.0`. Every release is published from certified
+Supported package version: `v2.0.0` (correction-release candidate). Every release is published from certified
 exact-main bytes through an immutable GitHub Release; the publisher never
 rebuilds the verified wheel or source archive.
 
@@ -53,7 +53,7 @@ Common failure modes have explicit responses:
 | Gate does not detect its claimed defect | Typed failure oracles |
 | Test population silently changes | Exact test manifests |
 | CI topology drifts | Canonical compiled CI graph |
-| Stale evidence appears current | Exact-tree binding and invalidation |
+| Stale evidence appears current | Dependency-scoped fingerprints and fail-closed invalidation |
 | A rerun borrows an earlier success | Exact run, attempt, and session custody |
 | Producer declares terminal success | Computed lifecycle state |
 | Candidate certifies itself | Independent truth and trusted authority |
@@ -138,7 +138,7 @@ not universal laws. Profiles and typed not-applicable records make scope
 explicit, while selected security boundaries and release claims fail closed.
 See [Architecture](docs/ARCHITECTURE.md) for the detailed design and limits.
 
-## Verification cost and scope
+## Verification scope
 
 BCF may perform more computation than conventional CI: structural checks,
 behavioral tests, causal controls, isolated worktrees, exact-manifest checks,
@@ -163,12 +163,13 @@ operational costs, and measurements in more detail.
 
 ## Lifecycle and evidence
 
-Phase authors may report `planned` or `completed`. They cannot author
-`verified`, `closed`, release readiness, suite health, security-review
+Phase authors may report `planned`, `active`, `blocked`, `paused`, or work completion. They cannot author
+`verified`, `closed`, release readiness, suite health, or governance-validation
 completion, or finding closure.
 
-`verified` is computed when every required claim has valid schema-2 evidence
-from the governed commit and tree. `closed` additionally requires current
+`verified` is computed when every required claim has authentic applicable evidence.
+Profile v3 receipts bind each claim to explicit dependency fingerprints; commit SHA
+remains provenance rather than a universal applicability key. `closed` additionally requires current
 reconciliation, `findings_resolved` evidence, and no profile-blocking finding.
 A relevant source, test, workflow, audit, or governance change makes affected
 evidence stale.
@@ -229,22 +230,19 @@ publication.
 
 Actions artifacts are bounded handoffs, caches are acceleration only, and
 required bytes do not depend on a NAS or user-operated archive service.
-Reachability roots, leases, and provider-derived byte/count budgets govern
-retention; a missing asset, expired database, budget breach, or unavailable
-backend fails closed. Content addressing reduces repeated storage only when
+Reachability roots and leases govern retention; a missing asset, expired database,
+ambiguous dependency closure, or unavailable backend fails closed. Content addressing reduces repeated storage only when
 bytes are actually identical—it does not make unique evidence free or permit a
-digest to replace the bytes it identifies. Actions storage and hosted execution
-time are co-equal release budgets: both have measured baselines, forecasts, and
-hard stop ceilings. Hosted producers and consumers
+digest to replace the bytes it identifies. Hosted producers and consumers
 remain run-and-done; publication is a short trusted no-checkout job and no
 hosted runner polls, sleeps, or waits for local capacity.
 
 ## Install
 
-Install the `v1.3.0` wheel from its immutable GitHub Release:
+Install the `v2.0.0` wheel from its immutable GitHub Release after publication:
 
 ```bash
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v1.3.0/bcf_governance-1.3.0-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.0.0/bcf_governance-2.0.0-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel. Release publication
@@ -352,7 +350,7 @@ copies byte-identical.
 
 | Document | Canonical responsibility |
 |---|---|
-| [Reliability model](docs/RELIABILITY_MODEL.md) | Failure model, verification economics, objections, limits, and empirical measures |
+| [Reliability model](docs/RELIABILITY_MODEL.md) | Failure model, verification scope, objections, limits, and empirical measures |
 | [Architecture](docs/ARCHITECTURE.md) | Design positions, boundaries, costs, and limitations |
 | [CI authority](docs/CI_AUTHORITY.md) | State flow, trust boundary, admission, and GitHub reference topology |
 | [Using BCF](docs/USAGE.md) | Operator commands, profiles, adoption, evidence, cleanup, and safety |

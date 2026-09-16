@@ -9,7 +9,7 @@
     "document": {"$ref": "#/$defs/document"},
     "schema_version": {"const": "1.0"},
     "provider": {"const": "github"},
-    "profile_contract_version": {"enum": ["1.0", "2.0"]},
+    "profile_contract_version": {"enum": ["1.0", "2.0", "3.0"]},
     "default_branch": {"$ref": "#/$defs/identifier"},
     "trusted_controller": {"$ref": "#/$defs/trustedController"},
     "evidence_storage": {"$ref": "#/$defs/evidenceStorageReference"},

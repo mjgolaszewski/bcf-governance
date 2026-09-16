@@ -57,19 +57,12 @@ def test_fresh_worktree_fixture_seeds_exact_compiler_once_without_checkout_node_
     assert module.bootstrap_compiler.cache_info().hits == 1
 
 
-def test_release_builder_cannot_run_source_tests_after_failed_compiler_bootstrap(tmp_path: Path, monkeypatch) -> None:
+def test_release_builder_has_no_source_test_replay_or_compiler_bootstrap() -> None:
     module = _module(ROOT / ".github/scripts/build_release_bundle.py")
-    monkeypatch.setattr(module, "REPO_ROOT", tmp_path)
-    calls = []
-    def run(argv, **kwargs):
-        calls.append(argv)
-        if ".github/scripts/bootstrap_test_toolchain.py" in argv:
-            raise subprocess.CalledProcessError(1, argv)
-    monkeypatch.setattr(module, "_run", run)
-    monkeypatch.setattr(module, "_run_source_tests", lambda *_: pytest.fail("source tests ran without required compiler"))
-    with pytest.raises(subprocess.CalledProcessError):
-        module.build(tmp_path / "output", authorization=tmp_path / "authorization.json", artifact_name="fixture")
-    assert calls[-1] == [sys.executable, ".github/scripts/bootstrap_test_toolchain.py", "--repo-root", "."]
+    assert not hasattr(module, "_run_source_tests")
+    source = (ROOT / ".github/scripts/build_release_bundle.py").read_text(encoding="utf-8")
+    assert "bootstrap_test_toolchain.py" not in source
+    assert "pytest" not in source
 
 
 @pytest.mark.parametrize("kind", ["wheel", "sdist"])
@@ -114,6 +107,7 @@ def test_closed_runtime_binds_installed_consumer_stdout_and_preserves_bootstrap_
     monkeypatch.setattr(runtime.platform, "machine", lambda: "x86_64")
     monkeypatch.setattr(runtime.subprocess, "run", lambda argv, **kwargs: subprocess.CompletedProcess(argv, 0, runtime.EXPECTED_PYTHON + "\n", ""))
     monkeypatch.setattr(runtime, "_extract_sdist", lambda *_: source)
+    monkeypatch.setattr(runtime, "_validate_wheel_source_mapping", lambda *_: {"status": "exact", "mapped_files": 1})
     monkeypatch.setattr(runtime, "_git_custody", lambda *_: [])
     environments = {}
     def environment(selected, root, **kwargs):
@@ -134,7 +128,10 @@ def test_closed_runtime_binds_installed_consumer_stdout_and_preserves_bootstrap_
         manifest_path=files["manifest.yml"], lock_path=files["closure.lock"], wheelhouse=tmp_path,
         wheel=files["fixture.whl"], sdist=files["fixture.tar.gz"], output_dir=output)
     labels = [label for label, _, _ in calls]
-    assert labels.index("sdist-test-toolchain") < labels.index("wheel-installed-consumer") < labels.index("sdist-tests")
+    assert "sdist-test-toolchain" not in labels
+    assert "sdist-tests" not in labels
+    assert labels.index("wheel-install") < labels.index("wheel-installed-consumer")
+    assert labels.index("sdist-install") < labels.index("sdist-smoke")
     consumer = next(row for row in calls if row[0] == "wheel-installed-consumer")
     assert consumer[1][1:] == [str(source / ".github/scripts/verify_installed_consumer.py"), "--source-root", str(source)]
     assert consumer[1][0].endswith("wheel-env/bin/python") and consumer[2]["cwd"] != source

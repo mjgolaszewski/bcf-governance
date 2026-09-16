@@ -33,7 +33,7 @@ def _validate_gate_contract_registry(
     *,
     check_mutation_state: bool = True,
 ) -> None:
-    if str(profile.get("profile_contract_version", "1.0")) == "2.0" and policy.get("gate_overrides"):
+    if str(profile.get("profile_contract_version", "1.0")) in {"2.0", "3.0"} and policy.get("gate_overrides"):
         raise GovernanceValidationError(
             "profile-v2 evidence semantics must be owned only by governance/gate-contracts.yml"
         )

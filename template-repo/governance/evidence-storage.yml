@@ -1,5 +1,5 @@
-document: {kind: evidence_storage, id: bcf-governance-evidence-storage, version: 1.0.0, status: active, path: governance/evidence-storage.yml}
-schema_version: '1.0'
+document: {kind: evidence_storage, id: bcf-governance-evidence-storage, version: 2.0.0, status: active, path: governance/evidence-storage.yml}
+schema_version: '2.0'
 activation: disabled
 provider:
   kind: github_release
@@ -41,9 +41,3 @@ retention:
   lease_hours: 24
   unavailable_behavior: fail_closed
   garbage_collection: authenticated_unreachable_only
-budgets:
-  maximum_actions_bytes: 1073741824
-  maximum_durable_unique_bytes: 10737418240
-  maximum_objects: 10000
-  maximum_new_bytes_per_run: 2147483648
-  preflight_required: true

@@ -28,6 +28,16 @@ from .governance_truth_support import (
     workitem_observation,
 )
 from .truth_receipts import ReceiptError, load_receipts
+from .evidence_planning import load_claim_model
+from .truth_reporting import (
+    REQUIRED_DIRECT_CLAIMS,
+    active_log_path,
+    current_subject,
+    current_session_plan,
+    failure_envelope,
+    profile_closeout_requirements,
+    verified_candidate,
+)
 from .truth_workflow_graph import graph_workflow_gate_issues
 from .release_receipts import (
     ReleaseReceiptError,
@@ -40,50 +50,7 @@ class TruthfulnessError(ValueError):
     """Raised when a truth report cannot be evaluated."""
 
 
-AUTHORED_STATES = {"planned", "completed"}
-REQUIRED_DIRECT_CLAIMS = {
-    "workitems_closed", "required_suites_green", "architecture_gates_green",
-    "health_checks_green", "security_review_complete", "findings_resolved",
-}
-def _profile_closeout_requirements(
-    repo_root: Path, profile_payload: dict[str, Any]
-) -> dict[str, Any]:
-    """Derive non-authorable claim applicability from canonical gate contracts."""
-    registry = _load_yaml(repo_root / "governance/gate-contracts.yml")
-    contract_gates = registry.get("gates")
-    if not isinstance(contract_gates, dict):
-        raise TruthfulnessError("governance/gate-contracts.yml gates must be a mapping")
-    configured = profile_payload.get("release_gate_profile", {}).get("gates", {})
-    configured = configured if isinstance(configured, dict) else {}
-    policies = {
-        str(value.get("target")): str(value.get("command_policy", ""))
-        for value in configured.values()
-        if isinstance(value, dict) and isinstance(value.get("target"), str)
-    }
-    claims: dict[str, list[str]] = {claim: [] for claim in REQUIRED_DIRECT_CLAIMS}
-    for target in sorted(str(value) for value in contract_gates):
-        command_policy = policies.get(target, "")
-        if target == "governance-validate":
-            claims["workitems_closed"].append(target)
-        if command_policy.startswith("architecture_") or command_policy == "architecture_tests":
-            claims["architecture_gates_green"].append(target)
-        elif command_policy in {"automated_tests", "contract_tests", "lint", "typecheck"}:
-            claims["required_suites_green"].append(target)
-        if command_policy == "runtime_smoke":
-            claims["health_checks_green"].append(target)
-        if command_policy == "security_review":
-            claims["security_review_complete"].append(target)
-            claims["findings_resolved"].append(target)
-        if command_policy == "security_vulnerability_scan":
-            claims["findings_resolved"].append(target)
-    if not claims["findings_resolved"] and "governance-validate" in contract_gates:
-        claims["findings_resolved"].append("governance-validate")
-    return {
-        "claims": claims,
-        "reconciliation": sorted(
-            {"governance-validate", "governance-exposure-scan"}.intersection(contract_gates)
-        ),
-    }
+AUTHORED_STATES = {"planned", "active", "blocked", "paused", "completed"}
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -102,30 +69,6 @@ def _git(repo_root: Path, *args: str, check: bool = True) -> str:
     if check and result.returncode != 0:
         raise TruthfulnessError(result.stderr.strip() or f"git {' '.join(args)} failed")
     return result.stdout.strip()
-
-
-def _active_log_path(repo_root: Path) -> Path:
-    ledger = _load_yaml(repo_root / "plans/phase-ledger.yml")
-    active = ledger.get("active_phase")
-    if not isinstance(active, dict) or not isinstance(active.get("log"), str):
-        raise TruthfulnessError("plans/phase-ledger.yml active_phase.log is required")
-    return repo_root / str(active["log"])
-
-
-def _current_subject(repo_root: Path) -> dict[str, Any]:
-    status = _git(
-        repo_root,
-        "status",
-        "--porcelain=v1",
-        "--untracked-files=all",
-        "--ignored=no",
-    )
-    return {
-        "commit_sha": _git(repo_root, "rev-parse", "HEAD"),
-        "tree_sha": _git(repo_root, "rev-parse", "HEAD^{tree}"),
-        "tracked_clean": not bool(status),
-        "untracked_clean": not bool(status),
-    }
 
 
 def _safe_contract_file(repo_root: Path, value: str) -> bool:
@@ -304,7 +247,7 @@ def derive_truth(
         raise TruthfulnessError("truth evaluation mode must be closure or pr")
     repo_root = repo_root.resolve()
     evidence_dir = evidence_dir.resolve()
-    current = _current_subject(repo_root)
+    current = current_subject(repo_root)
     policy = _load_yaml(repo_root / "governance/evidence-policy.yml")
     profile_payload = _load_yaml(repo_root / "governance-profile.yml")
     profile_block = profile_payload.get("profile")
@@ -326,13 +269,24 @@ def derive_truth(
             tree_independent_allowlist=tree_independent_allowlist,
             expected_kinds=expected_evidence_kinds(repo_root),
             invocations=expected_invocations(repo_root),
-            require_session=contract_version == "2.0",
+            require_session=contract_version in {"2.0", "3.0"},
             selected_profile=selected_profile,
             contract_version=contract_version,
         )
     except ReceiptError as exc:
         raise TruthfulnessError(str(exc)) from exc
-    phase_log = _load_yaml(_active_log_path(repo_root))
+    claim_model = load_claim_model(repo_root) if contract_version == "3.0" else None
+    session_plan = (
+        current_session_plan(evidence_dir, current)
+        if contract_version == "3.0"
+        else {}
+    )
+    preflight_claims = {
+        str(value)
+        for value in session_plan.get("preflight_satisfied_claims", [])
+        if isinstance(value, str)
+    }
+    phase_log = _load_yaml(active_log_path(repo_root))
     ledger_payload = _load_yaml(repo_root / "plans/phase-ledger.yml")
     active_phase = ledger_payload.get("active_phase")
     ledger_state = (
@@ -354,7 +308,7 @@ def derive_truth(
     closeout = closeout if isinstance(closeout, dict) else {}
     raw_claims = closeout.get("claims")
     raw_claims = raw_claims if isinstance(raw_claims, dict) else {}
-    profile_requirements = _profile_closeout_requirements(repo_root, profile_payload)
+    profile_requirements = profile_closeout_requirements(repo_root, profile_payload)
     missing_claim_declarations = sorted(REQUIRED_DIRECT_CLAIMS - set(raw_claims))
     claims: dict[str, Any] = {}
     direct_verified = not missing_claim_declarations
@@ -378,15 +332,19 @@ def derive_truth(
         missing: list[str] = []
         for gate_id in gate_ids:
             candidates = receipts.get(gate_id, [])
-            verified = next(
-                (
-                    candidate
-                    for candidate in candidates
-                    if candidate["result"] == "verified"
-                    and (candidate.get("receipt", {}).get("subject", {})).get("binding")
-                    == "exact_tree"
-                ),
-                None,
+            verified = (
+                verified_candidate(receipts, claim_model, gate_id, preflight_claims)
+                if claim_model is not None
+                else next(
+                    (
+                        candidate
+                        for candidate in candidates
+                        if candidate["result"] == "verified"
+                        and (candidate.get("receipt", {}).get("subject", {})).get("binding")
+                        == "exact_tree"
+                    ),
+                    None,
+                )
             )
             if verified is None:
                 missing.append(gate_id)
@@ -434,11 +392,16 @@ def derive_truth(
     )
     required_gate_ids.update(reconciliation_gates)
     reconciliation_verified = bool(reconciliation_gates) and all(
-        any(
-            candidate["result"] == "verified"
-            and (candidate.get("receipt", {}).get("subject", {})).get("binding")
-            == "exact_tree"
-            for candidate in receipts.get(gate_id, [])
+        (
+            verified_candidate(receipts, claim_model, gate_id, preflight_claims)
+            is not None
+            if claim_model is not None
+            else any(
+                candidate["result"] == "verified"
+                and (candidate.get("receipt", {}).get("subject", {})).get("binding")
+                == "exact_tree"
+                for candidate in receipts.get(gate_id, [])
+            )
         )
         for gate_id in reconciliation_gates
     )
@@ -510,11 +473,16 @@ def derive_truth(
     missing_release_gates = sorted(
         gate_id
         for gate_id in release_gate_ids
-        if not any(
-            candidate["result"] == "verified"
-            and (candidate.get("receipt", {}).get("subject", {})).get("binding")
-            == "exact_tree"
-            for candidate in receipts.get(gate_id, [])
+        if (
+            verified_candidate(receipts, claim_model, gate_id, preflight_claims)
+            is None
+            if claim_model is not None
+            else not any(
+                candidate["result"] == "verified"
+                and (candidate.get("receipt", {}).get("subject", {})).get("binding")
+                == "exact_tree"
+                for candidate in receipts.get(gate_id, [])
+            )
         )
     )
     workflow_issues = _workflow_gate_issues(
@@ -523,13 +491,12 @@ def derive_truth(
     attestation = verify_attestation(repo_root, evidence_dir, policy, current)
     signature_required = selected_profile == "regulated"
     provenance_ok = not signature_required or bool(attestation["valid_attestations"])
-    lifecycle_consistent = (authored_state == "completed") == (ledger_state == "completed")
-    if authored_state == "completed" and ledger_state == "completed" and direct_verified:
+    lifecycle_consistent = authored_state == ledger_state
+    effective_state = authored_state
+    if direct_verified:
         effective_state = "verified"
         if reconciliation_verified and findings["open_count"] == 0 and not findings["issues"] and provenance_ok:
             effective_state = "closed"
-    else:
-        effective_state = authored_state
     attestation_names = {path.name for path in evidence_dir.rglob("*.attestation.json")}
     actual_bundle_digest = bundle_digest(
         evidence_dir, exclude_names=attestation_names | {"truth-report.json"}
@@ -590,13 +557,17 @@ def derive_truth(
         f"required_claim_{claim_id}_not_declared"
         for claim_id in missing_claim_declarations
     )
-    if not lifecycle_consistent:
+    if not lifecycle_consistent and evaluation_mode == "closure":
         truth_issues.append("ledger_log_lifecycle_mismatch")
-    if ledger_state in {"blocked", "paused", "abandoned"}:
+    if ledger_state in {"blocked", "paused", "abandoned"} and evaluation_mode == "closure":
         truth_issues.append(f"ledger_state_{ledger_state}_cannot_verify")
     all_receipts = [candidate for values in receipts.values() for candidate in values]
     for candidate in all_receipts:
-        if candidate["result"] != "verified":
+        identity_failure = any(
+            "identity" in issue or "duplicate" in issue
+            for issue in candidate.get("issues", [])
+        )
+        if candidate["result"] != "verified" and identity_failure:
             truth_issues.append(
                 f"evidence_receipt_invalid:{candidate.get('gate_id')}:{candidate.get('evidence_id')}"
             )
@@ -609,10 +580,8 @@ def derive_truth(
         truth_issues.append("trusted_bundle_digest_mismatch")
     if signature_required and not provenance_ok:
         truth_issues.append("regulated_attestation_required")
-    if authored_state == "completed" and effective_state != "closed":
-        truth_issues.append(f"completed_phase_effective_state_{effective_state}")
-    elif authored_state != "completed" and evaluation_mode == "closure":
-        truth_issues.append("phase_not_completed")
+    if evaluation_mode == "closure" and effective_state != "closed":
+        truth_issues.append(f"phase_effective_state_{effective_state}")
     release_state = (
         "closed"
         if effective_state == "closed"
@@ -621,8 +590,28 @@ def derive_truth(
         and not truth_issues
         else "completed"
     )
+    final_issues = sorted(set(truth_issues))
+    envelope = failure_envelope(
+        evidence_dir, current, session_plan, final_issues, all_receipts
+    )
+    required_count = len(session_plan.get("required_claims", []))
+    reused_count = len(session_plan.get("reused_evidence", []))
+    invalidated_count = len(session_plan.get("invalidated_evidence", []))
+    execution_nodes = session_plan.get("execution_dag", {}).get("nodes", [])
+    advisory_metrics = {
+        "required_claims": required_count,
+        "reused_claims": reused_count,
+        "invalidated_claims": invalidated_count,
+        "newly_executed_claims": sum(
+            len(node.get("claims", [])) for node in execution_nodes
+            if isinstance(node, dict)
+        ),
+        "execution_nodes_avoided": reused_count,
+        "unique_causal_roots": len(envelope["root_causes"]),
+        "raw_failure_count": len(envelope["raw_failures"]),
+    }
     return {
-        "schema_version": "2.0",
+        "schema_version": "3.0" if contract_version == "3.0" else "2.0",
         "evaluation_mode": evaluation_mode,
         "merge_eligibility": (
             "eligible"
@@ -692,7 +681,9 @@ def derive_truth(
             else {"kind": "service", "id": "bcf truth"}
         ),
         "warnings": findings["warnings"],
-        "issues": sorted(set(truth_issues)),
+        "issues": final_issues,
+        "failure_envelope": envelope,
+        "advisory_metrics": advisory_metrics,
     }
 
 

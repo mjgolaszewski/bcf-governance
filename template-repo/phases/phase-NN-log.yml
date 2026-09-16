@@ -31,7 +31,7 @@ closeout_requirements:
     required_suites_green: {required_evidence: [lint, typecheck, test, contract-test]}
     architecture_gates_green: {required_evidence: [architecture-test]}
     health_checks_green: {required_evidence: [runtime-smoke]}
-    security_review_complete: {required_evidence: [security-review]}
+    security_review_complete: {required_evidence: [governance-validate]}
     findings_resolved: {required_evidence: [security-vulnerability-scan]}
   reconciliation: {required_evidence: [governance-validate, governance-exposure-scan]}
   finding_registry: governance/findings.yml

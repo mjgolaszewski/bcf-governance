@@ -186,7 +186,7 @@ def doctor_repo(repo_root: Path) -> dict[str, Any]:
 
     profile_v2: dict[str, Any] | None = None
     profile = _load_profile(repo_root)
-    if isinstance(profile, dict) and str(profile.get("profile_contract_version", "1.0")) == "2.0":
+    if isinstance(profile, dict) and str(profile.get("profile_contract_version", "1.0")) in {"2.0", "3.0"}:
         from .profile_contract_v2 import ProfileV2Error, validate_profile_v2_readiness
 
         selected = profile.get("profile", {}).get("selected")

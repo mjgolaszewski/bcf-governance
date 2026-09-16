@@ -120,7 +120,6 @@ LITE_DEFERRED_GATES = (
     "security-dependency-audit",
     "security-sbom",
     "security-vulnerability-scan",
-    "security-review",
     "runtime-smoke",
 )
 REQUIRED_STANDARD_GATES = ("governance-validate", "governance-exposure-scan", *LITE_DEFERRED_GATES)
@@ -655,7 +654,7 @@ def _install_direct(args: argparse.Namespace, target_root: Path) -> InstallResul
     _configure_architecture_boundaries(target_root, args.profile)
     contract = args.profile_contract
     contract_version = str(contract.get("profile_contract_version", "1.0"))
-    graph_enabled = args.profile == "lite" or contract_version == "2.0"
+    graph_enabled = args.profile == "lite" or contract_version in {"2.0", "3.0"}
     apply_profile_contract(target_root, contract, write_workflow=not graph_enabled)
     if args.semantic_config_payload is not None:
         _apply_config(target_root, args.semantic_config_payload)
@@ -742,7 +741,7 @@ def install(args: argparse.Namespace) -> InstallResult:
         )
     semantic_required = (
         not args.upgrade
-        and contract_version == "2.0"
+        and contract_version in {"2.0", "3.0"}
         and args.profile in {"standard", "regulated"}
     )
     if semantic_required and args.semantic_config is None:

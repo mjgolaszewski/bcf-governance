@@ -74,11 +74,14 @@ def _json(value: dict[str, object]) -> bytes:
 
 class TransitionAPI:
     def __init__(self) -> None:
-        current_protection = (ROOT / "governance/github-protection.yml").read_bytes()
-        successor_protection_value = yaml.safe_load(current_protection)
-        successor_protection_value["pr_certification"]["producer_workflows"] = [
-            successor_protection_value["pr_certification"]["producer_workflows"][0]
-        ]
+        successor_protection_value = load_protection(ROOT)
+        current_protection_value = copy.deepcopy(successor_protection_value)
+        current_protection_value["pr_certification"]["producer_workflows"].append(
+            yaml.safe_load((ROOT / "governance/pr-transition.yml").read_text())["activation"][
+                "retired_producer"
+            ]
+        )
+        current_protection = yaml.safe_dump(current_protection_value, sort_keys=False).encode()
         successor_protection = yaml.safe_dump(successor_protection_value, sort_keys=False).encode()
         self.current_files = {
             "governance/ci-graph.yml": b"current graph",
@@ -322,12 +325,22 @@ def _governance_state() -> dict[str, object]:
     return {"id": "governance", "state": "successful", "run_id": "30", "run_attempt": 1}
 
 
+def _old_protection() -> dict[str, object]:
+    protection = load_protection(ROOT)
+    protection["pr_certification"]["producer_workflows"].append(
+        yaml.safe_load((ROOT / "governance/pr-transition.yml").read_text())["activation"][
+            "retired_producer"
+        ]
+    )
+    return protection
+
+
 def _applicable(api: TransitionAPI) -> dict[str, object]:
     result = transition_is_applicable(
         api,
         repository=REPOSITORY,
         main=_main(),
-        protection=load_protection(ROOT),
+        protection=_old_protection(),
         head_sha=HEAD,
         head_branch=api.branch,
         package_state={"id": "package", "state": "pending", "reason": "not_started"},
@@ -359,7 +372,7 @@ def test_successor_equivalence_is_trusted_reconstructed_and_exact() -> None:
     assert result["transition"]["subject"] == {"commit_sha": HEAD, "tree_sha": HEAD_TREE, "branch": "release/2.0.0-final-activation"}
 
 
-def test_ordinary_missing_package_and_carrier_self_use_remain_pending(tmp_path: Path) -> None:
+def test_successor_steady_state_does_not_invoke_transition_compatibility(tmp_path: Path) -> None:
     for branch in (
         "ordinary/change",
         "release/2.0.0-activation",
@@ -369,14 +382,19 @@ def test_ordinary_missing_package_and_carrier_self_use_remain_pending(tmp_path: 
     ):
         api = TransitionAPI()
         api.branch = branch
+        api.current_files["governance/github-protection.yml"] = api.successor_files[
+            "governance/github-protection.yml"
+        ]
         result = finalize_pr(
             api, repository=REPOSITORY,
             event={"workflow_run": {"id": 30, "run_attempt": 1}},
             finalizer_run_id=50, finalizer_run_attempt=1,
             output_root=tmp_path / branch.replace("/", "-"),
         )
-        assert result["computed_state"] == "pending"
-        assert result["producers"][1] == {"id": "package", "state": "pending", "reason": "not_started"}
+        assert result["computed_state"] == "successful"
+        assert len(result["producers"]) == 1
+        assert result["producers"][0]["id"] == "governance"
+        assert result["producers"][0]["state"] == "successful"
 
 
 @pytest.mark.parametrize(
@@ -423,7 +441,7 @@ def test_wrong_current_or_successor_topology_and_retired_producer_are_rejected()
     api = TransitionAPI()
     api.successor_files["governance/ci-graph.yml"] = b"wrong successor"
     assert transition_is_applicable(
-        api, repository=REPOSITORY, main=_main(), protection=load_protection(ROOT),
+        api, repository=REPOSITORY, main=_main(), protection=_old_protection(),
         head_sha=HEAD, head_branch=api.branch,
         package_state={"id": "package", "state": "pending", "reason": "not_started"}, schema_root=ROOT,
     ) is None
@@ -449,7 +467,7 @@ def test_each_wrong_successor_topology_anchor_is_rejected(path: str) -> None:
         api,
         repository=REPOSITORY,
         main=_main(),
-        protection=load_protection(ROOT),
+        protection=_old_protection(),
         head_sha=HEAD,
         head_branch=api.branch,
         package_state={"id": "package", "state": "pending", "reason": "not_started"},
@@ -472,18 +490,16 @@ def test_each_wrong_current_topology_anchor_is_rejected(path: str) -> None:
         _applicable(api)
 
 
-def test_post_rotation_current_anchors_are_exact_and_stale_snapshot_is_rejected() -> None:
+def test_successor_anchors_are_exact_and_current_anchors_are_historical() -> None:
     contract = yaml.safe_load((ROOT / "governance/pr-transition.yml").read_text())
-    current = contract["activation"]["current_topology"]
-    for expected in current.values():
+    activation = contract["activation"]
+    for expected in activation["successor_topology"].values():
         assert hashlib.sha256((ROOT / expected["path"]).read_bytes()).hexdigest() == expected["sha256"]
-
-    api = TransitionAPI()
-    api.contract["activation"]["current_topology"]["ci_graph"]["sha256"] = (
-        "5789ea9ba07452457ab5f2531fde563bfb73a5813f676fd8b6d77c88ff1423ef"
+    assert not (ROOT / activation["current_topology"]["package_workflow"]["path"]).exists()
+    assert (
+        activation["current_topology"]["ci_graph"]["sha256"]
+        != activation["successor_topology"]["ci_graph"]["sha256"]
     )
-    with pytest.raises(GitHubControllerError, match="current PR topology"):
-        _applicable(api)
 
 
 def test_missing_current_topology_anchor_is_rejected() -> None:
@@ -523,7 +539,7 @@ def test_authoritative_successor_snapshot_is_exact_and_candidate_cannot_replace_
         api,
         repository=REPOSITORY,
         main=_main(),
-        protection=load_protection(ROOT),
+        protection=_old_protection(),
         head_sha=HEAD,
         head_branch=api.branch,
         package_state={"id": "package", "state": "pending", "reason": "not_started"},
@@ -608,10 +624,10 @@ def test_failed_pack_node_and_job_block_transition() -> None:
         _verify(api)
 
 
-def test_old_topology_and_canonical_publisher_context_are_unchanged() -> None:
+def test_successor_topology_and_canonical_publisher_context_are_exact() -> None:
     protection = load_protection(ROOT)
-    assert [item["id"] for item in protection["pr_certification"]["producer_workflows"]] == ["governance", "package"]
+    assert [item["id"] for item in protection["pr_certification"]["producer_workflows"]] == ["governance"]
     assert protection["pr_certification"]["context"] == "bcf/pr-certification"
-    assert (ROOT / ".github/workflows/governance-pack.yml").is_file()
+    assert not (ROOT / ".github/workflows/governance-pack.yml").exists()
     publisher = (ROOT / "bcf_governance/tooling/ci_github_pr.py").read_text()
     assert "require_success=True" in publisher
