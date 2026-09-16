@@ -4,7 +4,7 @@ document:
   id: bcf-governance-v2.0.0-editorial-review
   status: completed
   path: audits/v2.0.0-editorial-review.yml
-base_commit: 2fc02544a238a049fe72e37f030598602f098f6d
+base_commit: 917160ac366d071eb692d72fa227aba3b62ace00
 inventory_policy:
   source_documents: tracked Markdown and root LICENSE from base union current tree
   packaged_mirror_root: bcf_governance/pack/template-repo
@@ -32,8 +32,8 @@ documents:
   audience: adopters and release operators
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
-  before_sha256: 779556e2a1afc26dfa45b3ada828f5f24398a7b4e05723e1a515011d4d1ff665
-  after_sha256: 32ef21936ffc96420588b87ded33b37b7f646e548f05314ac1fe72ff3a30c4d2
+  before_sha256: 32ef21936ffc96420588b87ded33b37b7f646e548f05314ac1fe72ff3a30c4d2
+  after_sha256: adbaa7338fbd9eeea69fd17a4f84ebb64d8bdeef64d2ab62fff6b5c82f40cd30
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: historical
@@ -96,10 +96,10 @@ documents:
   canonical_topic_owner: docs/MAINTAINING.md
   topic_role: canonical
   before_sha256: a0f3f76cd1958cfad7a7a57e5710cb1fc7af9dda24e23baf6a9b2594e6b29d88
-  after_sha256: a0f3f76cd1958cfad7a7a57e5710cb1fc7af9dda24e23baf6a9b2594e6b29d88
+  after_sha256: e4ec638de8166d8fa98df198a9d825d325162a4a85f1f45657902ba9f6a5bc6e
   findings:
-  - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  - documented exact offline compiler provisioning, isolated wheel-consumer qualification, and the current release audit
+  disposition: revised
 - path: docs/RELIABILITY_MODEL.md
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/RELIABILITY_MODEL.md

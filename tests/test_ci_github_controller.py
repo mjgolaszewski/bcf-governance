@@ -1517,3 +1517,33 @@ def test_api_rejects_truncated_workflow_run_inventory() -> None:
     api = TruncatedAPI(token="test")
     with pytest.raises(GitHubAPIError, match="exceeds one authenticated page"):
         api.workflow_runs("owner/repo", 10, head_sha=SHA_A, event="push")
+
+
+def test_break_glass_api_reads_are_exact_and_repository_scoped() -> None:
+    class RecordingAPI(GitHubAPI):
+        def __init__(self) -> None:
+            super().__init__(token="test")
+            self.paths: list[str] = []
+
+        def _request(self, method: str, path: str, *, payload=None):  # type: ignore[no-untyped-def]
+            self.paths.append(path)
+            if path == "/installation":
+                return {"id": 20, "app_id": 10}
+            if path == "/users/owner":
+                return {"id": 30, "login": "owner"}
+            if path.endswith("/collaborators/owner/permission"):
+                return {"permission": "admin"}
+            return {"total_count": 1, "artifacts": [{"id": 40}]}
+
+    api = RecordingAPI()
+    assert api.installation()["id"] == 20
+    assert api.collaborator_permission("owner/repo", "owner")["permission"] == "admin"
+    assert api.repository_artifacts("owner/repo", name="recovery-build-abc")[0]["id"] == 40
+    assert api.paths == [
+        "/installation",
+        "/users/owner",
+        "/repos/owner/repo/collaborators/owner/permission",
+        "/repos/owner/repo/actions/artifacts?per_page=100&name=recovery-build-abc",
+    ]
+    with pytest.raises(GitHubAPIError, match="artifact name filter is unsafe"):
+        api.repository_artifacts("owner/repo", name="../artifact")
