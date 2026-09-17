@@ -492,6 +492,17 @@ def test_recovery_reentry_allows_ordinary_target_then_expires_on_confirmation(
     policy_path.write_bytes(
         (REPO_ROOT / "governance/self-governance-policy.yml").read_bytes()
     )
+    lines = policy_path.read_text(encoding="utf-8").splitlines()
+    installation_index = next(
+        index
+        for index, line in enumerate(lines)
+        if line.startswith("  trusted_controller_installation:")
+    )
+    lines.insert(
+        installation_index + 1,
+        "  trusted_controller_recovery_reentry: {state: authenticated-recovery-reentry}",
+    )
+    policy_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     policy = yaml.safe_load(policy_path.read_text())
     current_pin = policy["runner_security"]["trusted_controller_artifact"]
     installed = policy["runner_security"]["trusted_controller_installation"]

@@ -1010,16 +1010,9 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert "upload-trusted-controller" in builder["executor"]["components"]
 
     compiled = validate_ci_graph(REPO_ROOT)
-    assert (
-        compiled.trusted_controller_lifecycle.state
-        is ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY
-    )
     policy = yaml.safe_load(
         (REPO_ROOT / "governance/self-governance-policy.yml").read_text()
     )
-    source = policy["runner_security"]["trusted_controller_recovery_reentry"][
-        "authorized_source"
-    ]
     rendered = {
         path: yaml.safe_load(raw)
         for path, raw in render_ci_graph(REPO_ROOT).items()
@@ -1027,14 +1020,31 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     exact_condition = rendered[".github/workflows/bcf-exact-main.yml"]["jobs"][
         "admit"
     ]["if"]
-    assert source["commit"] in exact_condition
-    assert "github.repository_id" in exact_condition
-    for path, job_id in (
-        (".github/workflows/release.yml", "authorize"),
-        (".github/workflows/bcf-release-verifier.yml", "collect"),
-        (".github/workflows/bcf-release-publisher.yml", "publish"),
+    if (
+        compiled.trusted_controller_lifecycle.state
+        is ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY
     ):
-        assert rendered[path]["jobs"][job_id]["if"] == "${{ false }}"
+        source = policy["runner_security"]["trusted_controller_recovery_reentry"][
+            "authorized_source"
+        ]
+        assert source["commit"] in exact_condition
+        assert "github.repository_id" in exact_condition
+        for path, job_id in (
+            (".github/workflows/release.yml", "authorize"),
+            (".github/workflows/bcf-release-verifier.yml", "collect"),
+            (".github/workflows/bcf-release-publisher.yml", "publish"),
+        ):
+            assert rendered[path]["jobs"][job_id]["if"] == "${{ false }}"
+    else:
+        assert (
+            compiled.trusted_controller_lifecycle.state
+            is ControllerLifecycleState.ORDINARY_CURRENT
+        )
+        assert "trusted_controller_recovery_reentry" not in policy["runner_security"]
+        assert exact_condition == "${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}"
+        assert rendered[".github/workflows/release.yml"]["jobs"]["authorize"][
+            "if"
+        ] != "${{ false }}"
 
 
 def test_pull_request_gate_ownership_exactly_matches_profile(tmp_path: Path) -> None:
