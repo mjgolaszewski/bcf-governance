@@ -748,11 +748,11 @@
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
-      "sha256": "34f60217104a6d54cacc7baa44f7d8b4bfcff4a76f978bd04d9f273fbedcf787"
+      "sha256": "f0ef00a330f5cff962bbaebe20bd1fc6046f3f6f855a04552cdfb0e81364d10a"
     },
     "scripts/_bcf_runtime/governance_truth_support.py": {
       "operation": "copy",
-      "sha256": "a7b97d146009701db2a68ce6892e0c600297e6764b4476046608453b79673f3a"
+      "sha256": "e5d2260fc15625bb9df704866425dcad1b358e7229039354b5ffd6a4aa79d84f"
     },
     "scripts/_bcf_runtime/governance_validation/__init__.py": {
       "operation": "copy",
@@ -1004,7 +1004,7 @@
     },
     "scripts/_bcf_runtime/truth_reporting.py": {
       "operation": "copy",
-      "sha256": "f73eab9204ff78c904bbcd573553d2659b61173a09271fcee5e35ff594bee221"
+      "sha256": "52a72b284a8be9aee12781f847869c04855cbabe7a17352d5072a2e32218ac24"
     },
     "scripts/_bcf_runtime/truth_sessions.py": {
       "operation": "copy",

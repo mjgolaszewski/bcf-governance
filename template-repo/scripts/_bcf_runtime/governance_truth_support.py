@@ -14,6 +14,7 @@ from typing import Any
 import yaml  # type: ignore[import-untyped]
 
 from .governance_evidence import bundle_digest
+from .truth_reporting import eligible_receipts
 
 
 BLOCKING_FINDING_DISPOSITIONS = {"open", "remediation_completed", "deferred", "accepted_risk"}
@@ -48,7 +49,8 @@ def artifact_issues(receipt_path: Path, receipt: dict[str, Any]) -> list[str]:
 
 
 def workitem_observation(
-    repo_root: Path, receipts: dict[str, list[dict[str, Any]]]
+    repo_root: Path, receipts: dict[str, list[dict[str, Any]]],
+    claim_model: dict[str, Any], preflight_claims: set[str],
 ) -> dict[str, Any]:
     ledger = yaml.safe_load((repo_root / "plans/phase-ledger.yml").read_text(encoding="utf-8"))
     active = ledger.get("active_phase") if isinstance(ledger, dict) else None
@@ -76,12 +78,10 @@ def workitem_observation(
     missing_acceptance_evidence = sorted(
         gate_id
         for gate_id in acceptance_evidence
-        if not any(
-            candidate["result"] == "verified"
-            and (candidate.get("receipt", {}).get("subject", {})).get("binding")
-            == "exact_tree"
-            for candidate in receipts.get(gate_id, [])
-        )
+        if next(
+            eligible_receipts(receipts, claim_model, gate_id, preflight_claims),
+            None,
+        ) is None
     )
     return {
         "satisfied": not open_ids and not missing_acceptance_evidence,
@@ -99,6 +99,8 @@ def compute_hotfix_reports(
     receipts: dict[str, list[dict[str, Any]]],
     *,
     findings_clear: bool,
+    claim_model: dict[str, Any],
+    preflight_claims: set[str],
 ) -> tuple[list[dict[str, Any]], set[str], list[str]]:
     """Compute current-tree hotfix verification and closure for the active phase."""
     reports: list[dict[str, Any]] = []
@@ -130,12 +132,12 @@ def compute_hotfix_reports(
             missing = [
                 gate_id
                 for gate_id in gate_ids
-                if not any(
-                    candidate["result"] == "verified"
-                    and (candidate.get("receipt", {}).get("subject", {})).get("binding")
-                    == "exact_tree"
-                    for candidate in receipts.get(gate_id, [])
-                )
+                if next(
+                    eligible_receipts(
+                        receipts, claim_model, gate_id, preflight_claims
+                    ),
+                    None,
+                ) is None
             ]
             verified = bool(gate_ids) and not missing
             claims_verified = claims_verified and verified
@@ -153,12 +155,12 @@ def compute_hotfix_reports(
         ]
         required_gates.update(reconciliation_gates)
         reconciliation_verified = bool(reconciliation_gates) and all(
-            any(
-                candidate["result"] == "verified"
-                and (candidate.get("receipt", {}).get("subject", {})).get("binding")
-                == "exact_tree"
-                for candidate in receipts.get(gate_id, [])
-            )
+            next(
+                eligible_receipts(
+                    receipts, claim_model, gate_id, preflight_claims
+                ),
+                None,
+            ) is not None
             for gate_id in reconciliation_gates
         )
         effective_state = authored_state
@@ -204,6 +206,8 @@ def finding_report(
     receipts: dict[str, list[dict[str, Any]]],
     profile: str,
     policy: dict[str, Any],
+    claim_model: dict[str, Any],
+    preflight_claims: set[str],
 ) -> dict[str, Any]:
     raw_findings = registry.get("findings", [])
     findings = raw_findings if isinstance(raw_findings, list) else []
@@ -277,9 +281,13 @@ def finding_report(
                 gate_id = proof.get("gate_id")
                 node_id = proof.get("node_id")
                 control_id = proof.get("negative_control_id")
-                for candidate in receipts.get(str(gate_id), []):
-                    if candidate["result"] != "verified":
-                        continue
+                for candidate in eligible_receipts(
+                    receipts,
+                    claim_model,
+                    str(gate_id),
+                    preflight_claims,
+                    include_preflight=False,
+                ):
                     receipt = candidate.get("receipt", {})
                     observations = receipt.get("observations", {}) if isinstance(receipt, dict) else {}
                     nodes = observations.get("test_node_ids", []) if isinstance(observations, dict) else []

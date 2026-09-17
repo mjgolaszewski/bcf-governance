@@ -15,6 +15,7 @@ import pytest
 import yaml
 
 from scripts.governance_evidence import attest_bundle
+from bcf_governance.tooling.evidence_planning import build_dependency_manifest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TRUTH_MODULE_PATH = Path(
@@ -498,6 +499,373 @@ def _enable_v2_session(repo: Path) -> Path:
             json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
     return evidence_dir
+
+
+def _enable_v3_grouped_session(
+    repo: Path, *, second_test_receipt: bool = False, hotfix: bool = False,
+    open_workitem: bool = False,
+) -> Path:
+    profile_path = repo / "governance-profile.yml"
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    profile["profile_contract_version"] = "3.0"
+    profile["release_gate_profile"]["gates"]["contract_test"] = {
+        "target": "contract-test",
+        "status": "required",
+        "command_policy": "contract_tests",
+    }
+    _write_yaml(profile_path, profile)
+
+    contracts_path = repo / "governance/gate-contracts.yml"
+    contracts = yaml.safe_load(contracts_path.read_text(encoding="utf-8"))
+    contracts["gates"]["contract-test"] = {
+        "invocation": {
+            "argv": ["python3", "gate.py", "contract-test"],
+            "cwd": ".",
+            "env": {},
+            "required_env": [],
+        },
+        "evidence": {},
+        "negative_controls": [],
+    }
+    claims = {
+        "test-claim": ("test", "python-tests"),
+        "contract-test-claim": ("contract-test", "python-tests"),
+        "security-claim": ("security-review", "security"),
+        "reconcile-claim": ("reconcile", "reconcile"),
+    }
+    contracts["claim_model"] = {
+        "version": "1.0",
+        "dependency_sets": {"whole": ["**"]},
+        "execution_groups": {
+            "python-tests": {
+                "producer": "test",
+                "claims": ["test-claim", "contract-test-claim"],
+            },
+            "security": {"producer": "security-review", "claims": ["security-claim"]},
+            "reconcile": {"producer": "reconcile", "claims": ["reconcile-claim"]},
+        },
+        "claims": {
+            claim_id: {
+                "truth": f"{claim_id} passes",
+                "execution_group": group,
+                "legacy_gate": gate,
+                "dependencies": {
+                    "subject": ["whole"],
+                    "detector": ["whole"],
+                    "test_population": ["whole"],
+                    "toolchain": ["whole"],
+                    "trust": ["whole"],
+                },
+                "qualification_scope": "subject",
+                "profiles": ["normal"],
+            }
+            for claim_id, (gate, group) in claims.items()
+        },
+    }
+    _write_yaml(contracts_path, contracts)
+
+    workflow = repo / ".github/workflows/governance.yml"
+    workflow.write_text(
+        workflow.read_text(encoding="utf-8").replace(
+            "[test, security-review, reconcile]",
+            "[test, contract-test, security-review, reconcile]",
+        ),
+        encoding="utf-8",
+    )
+    workitems_path = repo / "plans/phase-01-workitems.yml"
+    _write_yaml(
+        workitems_path,
+        {
+            "workitems": [
+                {
+                    "id": f"P01-W0{index}",
+                    "status": "TODO" if open_workitem and index == 1 else "DONE",
+                    "acceptance_evidence": ["test", "contract-test"],
+                }
+                for index in range(1, 5)
+            ]
+        },
+    )
+    if hotfix:
+        _write_yaml(
+            repo / "phases/phase-01-hotfix01.yml",
+            {
+                "document": {"status": "completed"},
+                "hotfix": {"id": "HF-001", "related_phase_id": "P01"},
+                "closeout_requirements": {
+                    "claims": {
+                        "required_suites_green": {
+                            "required_evidence": ["contract-test"]
+                        }
+                    },
+                    "reconciliation": {"required_evidence": ["contract-test"]},
+                },
+            },
+        )
+    _commit(repo, "enable grouped v3 evidence")
+
+    evidence_dir = _write_complete_bundle(repo)
+    test_path = evidence_dir / "test.evidence.json"
+    receipt_paths = [test_path, evidence_dir / "security-review.evidence.json", evidence_dir / "reconcile.evidence.json"]
+    if second_test_receipt:
+        second = evidence_dir / "test-second.evidence.json"
+        shutil.copy2(test_path, second)
+        _rewrite_receipt(
+            test_path,
+            lambda value: (
+                value["observations"].update(
+                    {
+                        "test_node_ids": ["tests/test_other.py::test_other"],
+                        "expected_test_node_ids": ["tests/test_other.py::test_other"],
+                    }
+                ),
+                value.update({"behavioral_probes": []}),
+            ),
+        )
+        _rewrite_receipt(
+            second,
+            lambda value: (
+                value.update({"evidence_id": "test-evidence-second"}),
+                value["invocation"]["workflow"].update({"job": "evidence-2"}),
+            ),
+        )
+        receipt_paths.append(second)
+
+    claim_sets = {
+        "test": ["test-claim", "contract-test-claim"],
+        "security-review": ["security-claim"],
+        "reconcile": ["reconcile-claim"],
+    }
+    for receipt_path in receipt_paths:
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        receipt_claims = claim_sets[receipt["gate_id"]]
+        receipt.update(
+            {
+                "schema_version": "3.0",
+                "claims": receipt_claims,
+                "dependency_manifest": build_dependency_manifest(repo, receipt_claims),
+                "qualification": {
+                    "scope": "subject",
+                    "satisfied": True,
+                    "fingerprint": "a" * 64,
+                    "control_ids": [],
+                },
+                "qualification_refs": [],
+            }
+        )
+        receipt_path.write_text(
+            json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+
+    session_id = "b" * 32
+    manifest = {
+        "schema_version": "2.0",
+        "session_id": session_id,
+        "subject": {
+            "commit_sha": _git(repo, "rev-parse", "HEAD"),
+            "tree_sha": _git(repo, "rev-parse", "HEAD^{tree}"),
+        },
+        "profile": "standard",
+        "profile_contract_version": "3.0",
+        "producer": {
+            "kind": "workflow",
+            "provider": "test",
+            "repository": "example/repo",
+            "repository_id": "42",
+            "run_id": "1",
+            "run_attempt": "1",
+            "producer_id": "evidence",
+        },
+        "expected_gate_inventory": ["reconcile", "security-review", "test"],
+        "expected_producer_inventory": [
+            "evidence",
+            *(["evidence-2"] if second_test_receipt else []),
+        ],
+        "prior_subject": None,
+        "changed_paths": [],
+        "changed_domains": [],
+        "required_claims": sorted(claims),
+        "preflight_satisfied_claims": [],
+        "reused_evidence": [],
+        "invalidated_evidence": [],
+        "execution_dag": {
+            "nodes": [
+                {"id": gate, "producer": gate}
+                for gate in ("reconcile", "security-review", "test")
+            ],
+            "edges": [],
+        },
+        "decision_explanations": ["focused grouped-v3 fixture"],
+        "created_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        "session_root_policy": {
+            "mode": "0700",
+            "root_kind": "ignored_repository",
+            "immutable_manifest": True,
+        },
+    }
+    manifest_path = evidence_dir / "evidence-session.json"
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    digest = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    for receipt_path in receipt_paths:
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        receipt["artifacts"].append(
+            {
+                "path": manifest_path.name,
+                "media_type": "application/vnd.bcf.evidence-session+json",
+                "sha256": digest,
+            }
+        )
+        receipt["observations"]["evidence_session"] = {
+            "session_id": session_id,
+            "manifest_sha256": digest,
+        }
+        receipt_path.write_text(
+            json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+    return evidence_dir
+
+
+def test_grouped_v3_receipt_closes_claims_workitems_and_hotfix(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+    report = derive_truth(
+        repo,
+        _enable_v3_grouped_session(repo, hotfix=True),
+        evaluation_mode="closure",
+    )
+
+    assert report["status"] == "pass", report["issues"]
+    assert report["effective_state"] == "closed"
+    observation = report["claims"]["workitems_closed"]["repository_observation"]
+    assert observation["missing_acceptance_evidence"] == []
+    assert report["claims"]["required_suites_green"]["missing_or_invalid"] == []
+    assert report["hotfixes"][0]["effective_state"] == "closed"
+
+
+def test_grouped_v3_finding_uses_one_later_eligible_receipt_for_proof(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path, finding_disposition="remediation_completed")
+    report = derive_truth(
+        repo,
+        _enable_v3_grouped_session(repo, second_test_receipt=True),
+        evaluation_mode="closure",
+    )
+
+    assert report["status"] == "pass", report["issues"]
+    assert report["findings"]["issues"] == []
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_missing"),
+    [
+        ("absent-claim", "contract-test"),
+        ("invalid-receipt", "test"),
+        ("missing-evidence", "test"),
+        ("wrong-subject", "test"),
+        ("wrong-session", "test"),
+        ("changed-dependency", "contract-test"),
+    ],
+)
+def test_grouped_v3_closure_rejects_ineligible_evidence(
+    tmp_path: Path, mutation: str, expected_missing: str
+) -> None:
+    repo = _make_repo(tmp_path)
+    evidence = _enable_v3_grouped_session(repo)
+    receipt_path = evidence / "test.evidence.json"
+    if mutation == "absent-claim":
+        def remove_claim(receipt: dict[str, Any]) -> None:
+            receipt["claims"] = ["test-claim"]
+            receipt["dependency_manifest"] = build_dependency_manifest(
+                repo, receipt["claims"]
+            )
+        _rewrite_receipt(receipt_path, remove_claim)
+    elif mutation == "invalid-receipt":
+        _rewrite_receipt(receipt_path, lambda receipt: receipt.update({"result": "failed"}))
+    elif mutation == "missing-evidence":
+        receipt_path.unlink()
+    elif mutation == "wrong-subject":
+        _rewrite_receipt(
+            receipt_path,
+            lambda receipt: receipt["subject"].update({"commit_sha": "d" * 40}),
+        )
+    elif mutation == "wrong-session":
+        _rewrite_receipt(
+            receipt_path,
+            lambda receipt: receipt["observations"]["evidence_session"].update(
+                {"session_id": "c" * 32}
+            ),
+        )
+    else:
+        _rewrite_receipt(
+            receipt_path,
+            lambda receipt: receipt["dependency_manifest"]["claim_dependencies"][
+                "contract-test-claim"
+            ][0].update({"fingerprint": "0" * 64}),
+        )
+
+    report = derive_truth(repo, evidence, evaluation_mode="closure")
+
+    assert report["status"] == "fail"
+    observation = report["claims"]["workitems_closed"]["repository_observation"]
+    assert expected_missing in (
+        observation["missing_acceptance_evidence"]
+        + report["claims"]["required_suites_green"]["missing_or_invalid"]
+    )
+
+
+def test_grouped_v3_open_workitem_still_blocks_closure(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+    report = derive_truth(
+        repo,
+        _enable_v3_grouped_session(repo, open_workitem=True),
+        evaluation_mode="closure",
+    )
+
+    assert report["status"] == "fail"
+    observation = report["claims"]["workitems_closed"]["repository_observation"]
+    assert observation["open_ids"] == ["P01-W01"]
+
+
+def test_grouped_v3_finding_does_not_union_split_proof_fragments(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path, finding_disposition="remediation_completed")
+    evidence = _enable_v3_grouped_session(repo, second_test_receipt=True)
+    first = evidence / "test.evidence.json"
+    second = evidence / "test-second.evidence.json"
+
+    def node_only(receipt: dict[str, Any]) -> None:
+        receipt["observations"].update(
+            {
+                "test_node_ids": ["tests/test_security.py::test_auth"],
+                "expected_test_node_ids": ["tests/test_security.py::test_auth"],
+            }
+        )
+        receipt["behavioral_probes"] = []
+
+    def control_only(receipt: dict[str, Any]) -> None:
+        receipt["observations"].update(
+            {
+                "test_node_ids": ["tests/test_other.py::test_other"],
+                "expected_test_node_ids": ["tests/test_other.py::test_other"],
+            }
+        )
+        probe = receipt["behavioral_probes"][0]
+        probe["oracle"] = {
+            "kind": "diagnostic",
+            "exit_codes": [1],
+            "stream": "stdout",
+            "regex": "expected mutation failure",
+        }
+
+    _rewrite_receipt(first, node_only)
+    _rewrite_receipt(second, control_only)
+    report = derive_truth(repo, evidence, evaluation_mode="closure")
+
+    assert report["status"] == "fail"
+    assert "finding_SEC-001_behavioral_proof_missing" in report["findings"]["issues"]
 
 
 def _rewrite_session_bundle(evidence_dir: Path, transform: Any) -> None:
