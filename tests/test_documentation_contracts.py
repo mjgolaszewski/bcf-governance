@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CHECKER_PATH = REPO_ROOT / ".github/scripts/check_editorial_contract.py"
@@ -32,6 +34,43 @@ def test_editorial_contract_command_runs_from_outside_repository(tmp_path: Path)
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert result.stdout.strip() == "editorial-contract-ok"
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "README.md").write_text("# Fixture\n", encoding="utf-8")
+    for args in (
+        ("init",),
+        ("config", "user.email", "editorial@example.test"),
+        ("config", "user.name", "Editorial Test"),
+        ("add", "."),
+        ("commit", "-m", "fixture"),
+    ):
+        subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True)
+    audit = repo / "audit.yml"
+    command = [
+        sys.executable,
+        str(REPO_ROOT / ".github/scripts/build_editorial_audit.py"),
+        "--repo-root",
+        str(repo),
+        "--audit",
+        str(audit),
+    ]
+    subprocess.run(command + ["--base-sha", "HEAD", "--apply"], check=True)
+    value = yaml.safe_load(audit.read_text(encoding="utf-8"))
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    assert value["base_commit"] == head
+
+    value["base_commit"] = "HEAD"
+    audit.write_text(yaml.safe_dump(value, sort_keys=False), encoding="utf-8")
+    rejected = subprocess.run(command + ["--check"], capture_output=True, text=True)
+    assert rejected.returncode != 0
+    assert "base_commit must be an immutable commit SHA" in rejected.stderr
 
 
 def test_editorial_tone_and_topic_owner_mutants_are_rejected(tmp_path: Path) -> None:

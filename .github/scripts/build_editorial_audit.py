@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import re
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -38,6 +39,9 @@ SPECIFIC_FINDINGS = {
 
 class EditorialAuditError(ValueError):
     """Raised when editorial coverage does not match the exact repository tree."""
+
+
+COMMIT_SHA = re.compile(r"[0-9a-f]{40}")
 
 
 def _git(repo_root: Path, *args: str) -> bytes:
@@ -269,7 +273,10 @@ def main() -> None:
     if args.apply:
         if not args.base_sha:
             raise SystemExit("--apply requires --base-sha")
-        payload = build_audit(root, args.base_sha, audit_path)
+        base_sha = _git(
+            root, "rev-parse", "--verify", f"{args.base_sha}^{{commit}}"
+        ).decode().strip()
+        payload = build_audit(root, base_sha, audit_path)
         audit_path.parent.mkdir(parents=True, exist_ok=True)
         audit_path.write_text(yaml.safe_dump(payload, sort_keys=False, width=140), encoding="utf-8")
         print(f"editorial-audit-written:{len(payload['documents'])}")
@@ -280,6 +287,8 @@ def main() -> None:
     base_sha = str(actual.get("base_commit", "")) if isinstance(actual, dict) else ""
     if not isinstance(actual, dict):
         raise SystemExit("editorial audit must contain a mapping")
+    if COMMIT_SHA.fullmatch(base_sha) is None:
+        raise SystemExit("editorial audit base_commit must be an immutable commit SHA")
     if _base_is_available(root, base_sha):
         expected = build_audit(root, base_sha, audit_path)
         if actual != expected:
