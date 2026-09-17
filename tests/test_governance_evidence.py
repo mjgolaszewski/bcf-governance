@@ -181,18 +181,27 @@ def test_registered_graph_mutant_refreshes_locks_and_generated_bytes(tmp_path: P
     _git(repo, "init")
     _git(repo, "config", "user.email", "evidence@example.test")
     _git(repo, "config", "user.name", "Evidence Test")
+    policy = yaml.safe_load(
+        (repo / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
+    )
+    authorized_source = policy["runner_security"][
+        "trusted_controller_recovery_reentry"
+    ]["authorized_source"]["commit"]
+    _git(repo, "fetch", "--no-tags", str(REPO_ROOT), authorized_source)
+    _git(repo, "reset", "--mixed", "FETCH_HEAD")
     _git(repo, "add", ".")
     _git(repo, "commit", "-m", "graph baseline")
     extension = repo / "governance/ci-extensions/bcf-release.yml"
-    source = extension.read_text(encoding="utf-8")
-    extension.write_text(
-        source.replace(
-                "condition: release-owner-main, controller_requirement: current, timeout_minutes: 5",
-                "condition: success, controller_requirement: current, timeout_minutes: 5",
-            1,
-        ),
-        encoding="utf-8",
+    extension_contract = yaml.safe_load(extension.read_text(encoding="utf-8"))
+    mutated_workflow = extension_contract["workflows"][0]
+    generated_path = mutated_workflow["path"]
+    component_id = next(
+        component
+        for component in mutated_workflow["jobs"][0]["executor"]["components"]
+        if component in extension_contract["step_components"]
     )
+    extension_contract["step_components"][component_id]["name"] += " mutant"
+    extension.write_text(yaml.safe_dump(extension_contract, sort_keys=False), encoding="utf-8")
 
     allowed = project_graph_mutation(
         repo, "governance/ci-extensions/bcf-release.yml"
@@ -200,7 +209,7 @@ def test_registered_graph_mutant_refreshes_locks_and_generated_bytes(tmp_path: P
 
     assert "governance/ci-extensions/bcf-release.yml" in allowed
     assert "governance/ci-graph.yml" in allowed
-    assert ".github/workflows/release.yml" in allowed
+    assert generated_path in allowed
     assert EVIDENCE_MODULE._unexpected_worktree_changes(repo, allowed) == []
 
 

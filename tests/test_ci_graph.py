@@ -12,6 +12,7 @@ import pytest
 import yaml
 
 from bcf_governance.tooling.ci_graph_contracts import CIGraphError, validate_ci_graph
+from bcf_governance.tooling.ci_graph_controller_lifecycle import ControllerLifecycleState
 from bcf_governance.tooling.ci_graph_audit import audit_ci_graph
 from bcf_governance.tooling.ci_graph_execution import (
     job_execution_issues,
@@ -985,7 +986,7 @@ def test_release_controller_jobs_activate_only_after_mechanical_confirmation(
     assert "if" not in release["jobs"]["authorize"]
 
 
-def test_bcf_exact_main_rotation_blocks_evidence_but_builds_controller() -> None:
+def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() -> None:
     graph = yaml.safe_load((REPO_ROOT / "governance/ci-graph.yml").read_text())
     exact_main = next(
         workflow for workflow in graph["workflows"] if workflow["id"] == "exact-main"
@@ -997,7 +998,7 @@ def test_bcf_exact_main_rotation_blocks_evidence_but_builds_controller() -> None
         if job["id"] == "trusted-controller-build"
     )
 
-    assert admission["controller_requirement"] == "current"
+    assert admission["controller_requirement"] == "current-or-recovery-reentry"
     assert governance["needs"] == ["admit"]
     assert governance["condition"] == "exact-main-admitted"
     assert governance["executor"]["inputs"] == {"evaluation_mode": "closure"}
@@ -1007,6 +1008,33 @@ def test_bcf_exact_main_rotation_blocks_evidence_but_builds_controller() -> None
     assert builder["produces"] == ["trusted-controller-bundle"]
     assert "build-trusted-controller" in builder["executor"]["components"]
     assert "upload-trusted-controller" in builder["executor"]["components"]
+
+    compiled = validate_ci_graph(REPO_ROOT)
+    assert (
+        compiled.trusted_controller_lifecycle.state
+        is ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY
+    )
+    policy = yaml.safe_load(
+        (REPO_ROOT / "governance/self-governance-policy.yml").read_text()
+    )
+    source = policy["runner_security"]["trusted_controller_recovery_reentry"][
+        "authorized_source"
+    ]
+    rendered = {
+        path: yaml.safe_load(raw)
+        for path, raw in render_ci_graph(REPO_ROOT).items()
+    }
+    exact_condition = rendered[".github/workflows/bcf-exact-main.yml"]["jobs"][
+        "admit"
+    ]["if"]
+    assert source["commit"] in exact_condition
+    assert "github.repository_id" in exact_condition
+    for path, job_id in (
+        (".github/workflows/release.yml", "authorize"),
+        (".github/workflows/bcf-release-verifier.yml", "collect"),
+        (".github/workflows/bcf-release-publisher.yml", "publish"),
+    ):
+        assert rendered[path]["jobs"][job_id]["if"] == "${{ false }}"
 
 
 def test_pull_request_gate_ownership_exactly_matches_profile(tmp_path: Path) -> None:

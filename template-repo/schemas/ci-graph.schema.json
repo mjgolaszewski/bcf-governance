@@ -364,7 +364,7 @@
         "environment": {"type": "object", "propertyNames": {"pattern": "^[A-Z_][A-Z0-9_]*$"}, "additionalProperties": {"type": "string"}},
         "protected_environment": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
         "outputs": {"type": "object", "propertyNames": {"$ref": "#/$defs/identifier"}, "additionalProperties": {"type": "string", "pattern": "^\\$\\{\\{ steps\\.[A-Za-z0-9_.-]+\\.outputs\\.[A-Za-z0-9_.-]+ \\}\\}$"}},
-        "controller_requirement": {"enum": ["current", null]},
+        "controller_requirement": {"enum": ["current", "current-or-recovery-reentry", null]},
         "required": {"type": "boolean"}
       }
     },

@@ -25,13 +25,12 @@ from .ci_github_bootstrap import (
     verify_controller_subject_metadata,
 )
 from .ci_github_identity import GitHubControllerError, resolve_main
-from .ci_graph_locks import apply_ci_graph_locks
-from .ci_graph_render import apply_ci_graph
 
 
 POLICY = Path("governance/break-glass-recovery.yml")
 POLICY_SCHEMA = Path("schemas/break-glass-recovery-policy.schema.json")
 RECEIPT_SCHEMA = Path("schemas/break-glass-recovery-receipt.schema.json")
+REENTRY_SCHEMA = Path("schemas/recovery-reentry-authorization.schema.json")
 
 
 def _load(root: Path) -> dict[str, Any]:
@@ -559,55 +558,16 @@ def finalize(api: GitHubAPI, **kwargs: Any) -> dict[str, Any]:
     return receipt
 
 
-def project_installation(*, root: Path, receipt_path: Path) -> dict[str, Any]:
-    """Project only recovery-proven installed state for a protected follow-up PR."""
+def _projection_receipt(*args: Any, **kwargs: Any) -> tuple[dict[str, Any], dict[str, Any], Any]:
+    from .break_glass_reentry import authenticate_projection_receipt
 
-    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-    schema = json.loads((root / RECEIPT_SCHEMA).read_text(encoding="utf-8"))
-    Draft202012Validator(schema, format_checker=Draft202012Validator.FORMAT_CHECKER).validate(receipt)
-    subject = receipt["subject"]
-    head = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True
-    ).stdout.strip()
-    tree = subprocess.run(
-        ["git", "rev-parse", "HEAD^{tree}"], cwd=root, check=True, capture_output=True, text=True
-    ).stdout.strip()
-    if (
-        {"commit": head, "tree": tree} != subject
-        or receipt["resulting_installed_controller"] != head
-        or receipt["controller_confirmation"]["installed_commit_sha"] != head
-    ):
-        raise GitHubControllerError("recovery receipt is not for exact local main")
-    policy_path = root / "governance/self-governance-policy.yml"
-    raw = policy_path.read_bytes()
-    policy = yaml.safe_load(raw)
-    runner = policy.get("runner_security", {})
-    pin = runner.get("trusted_controller_artifact", {})
-    current = runner.get("trusted_controller_installation", {})
-    if current.get("installed_commit_sha") != pin.get("BCF_BOOTSTRAP_COMMIT_SHA"):
-        raise GitHubControllerError("ordinary controller rotation is already pending")
-    confirmation = yaml.safe_dump(
-        receipt["controller_confirmation"], sort_keys=False,
-        default_flow_style=True, width=1000,
-    ).strip()
-    pattern = re.compile(rb"(?m)^  trusted_controller_installation: \{[^\r\n]*\}$")
-    if len(pattern.findall(raw)) != 1:
-        raise GitHubControllerError("canonical installed-controller proof is not unique")
-    projected = pattern.sub(
-        f"  trusted_controller_installation: {confirmation}".encode(), raw
-    )
-    if projected == raw:
-        raise GitHubControllerError("recovery installation is already projected")
-    _write_atomic(policy_path, projected)
-    lock = apply_ci_graph_locks(root)
-    render = apply_ci_graph(root)
-    return {
-        "status": "recovery_installation_projected_for_protected_pr",
-        "installed_commit_sha": head,
-        "changed_paths": sorted(
-            {"governance/self-governance-policy.yml", *lock.changed_inputs, *render.changed_paths}
-        ),
-    }
+    return authenticate_projection_receipt(*args, **kwargs)
+
+
+def project_installation(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from .break_glass_reentry import project_installation as project
+
+    return project(*args, **kwargs)
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -626,7 +586,21 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     root = args.repo_root.resolve()
     if args.operation == "project-installation":
-        result = project_installation(root=root, receipt_path=args.receipt)
+        api = GitHubAPI(token=_required("GITHUB_TOKEN"))
+        receipt, artifact, main = _projection_receipt(
+            api,
+            root=root,
+            repository=args.repository,
+            receipt_path=args.receipt,
+        )
+        if receipt["repository"]["name"] != args.repository:
+            raise GitHubControllerError("projection receipt repository changed")
+        result = project_installation(
+            root=root,
+            receipt_path=args.receipt,
+            receipt_artifact=artifact,
+            provider_main=main,
+        )
     elif args.operation == "bind-build":
         result = bind_build(args.artifact_root, args.artifact_root / "controller", args.authorization)
     else:

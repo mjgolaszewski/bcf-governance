@@ -20,6 +20,7 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Add a receipt-bound, one-main-transition recovery re-entry state that permits only exact-main admission while ordinary controller custody is mismatched; release remains fail-closed and normalization removes the temporary authority.
 - Project the authenticated break-glass controller installation into ordinary repository authority through the canonical installation mechanism, while preserving recovery-only, non-certifying semantics.
 - Restore independent exact-main trusted-controller construction after the 2.0 package retirement, while keeping governance certification, publication, protection, stale-controller enforcement, and the existing governed rotation boundary unchanged.
 - Replace the one-shot BCF 2.0 successor branch authorization with the exact final activation branch, without broadening scope or changing topology and assurance anchors.

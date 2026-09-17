@@ -15,6 +15,11 @@ from jsonschema import Draft202012Validator
 from .ci_graph_errors import CIGraphError, execution_graph_error
 from .ci_graph_execution import hosted_command_issues, job_execution_issues
 from .ci_graph_authority_policy import validate_graph_authority_policy
+from .ci_graph_controller_lifecycle import (
+    ControllerLifecycle,
+    ControllerLifecycleState,
+    resolve_controller_lifecycle,
+)
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 from .ci_graph_values import CIGraphValueError, resolve_graph_values
 from .ci_graph_timeouts import validate_gate_job_timeouts
@@ -38,6 +43,7 @@ class CompiledCIGraph:
     input_sha256: tuple[tuple[str, str], ...]
     trusted_controller: str
     trusted_controller_check: str
+    trusted_controller_lifecycle: ControllerLifecycle
     trusted_controller_current: bool
     evidence_storage: dict[str, Any] | None
 
@@ -567,9 +573,9 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                     raise CIGraphError(
                         f"release controller job {job['id']} must require the current controller"
                     )
-                if job["controller_requirement"] == "current" and not controller_commands:
+                if job["controller_requirement"] is not None and not controller_commands:
                     raise CIGraphError(
-                        f"CI graph job {job['id']} requires the current controller without invoking it"
+                        f"CI graph job {job['id']} requires a trusted controller without invoking it"
                     )
                 ephemeral_commands = [
                     graph["step_components"][component_id]["command"]
@@ -703,11 +709,14 @@ def _validate_required_gate_ownership(repo_root: Path, graph: dict[str, Any]) ->
 
 def _trusted_controller(
     repo_root: Path, graph: dict[str, Any]
-) -> tuple[str, str, bool, tuple[tuple[str, str], ...]]:
+) -> tuple[str, str, ControllerLifecycle, tuple[tuple[str, str], ...]]:
     contract = graph["trusted_controller"]
     if contract["kind"] == "executable":
         executable = str(contract["executable"])
-        return executable, f"command -v -- {executable} >/dev/null", True, ()
+        lifecycle = ControllerLifecycle(
+            ControllerLifecycleState.ORDINARY_CURRENT, executable, executable
+        )
+        return executable, f"command -v -- {executable} >/dev/null", lifecycle, ()
     relative = str(contract["policy_path"])
     path = repo_root / relative
     try:
@@ -717,21 +726,12 @@ def _trusted_controller(
     runner_security = payload.get("runner_security")
     if not isinstance(runner_security, dict):
         raise CIGraphError("self-governance policy lacks runner_security")
-    pin = runner_security.get("trusted_controller_artifact")
-    installation = runner_security.get("trusted_controller_installation")
-    if not isinstance(pin, dict) or not isinstance(installation, dict):
-        raise CIGraphError("self-governance policy lacks compiled controller custody")
-    target = str(pin.get("BCF_BOOTSTRAP_COMMIT_SHA", ""))
-    installed = str(installation.get("installed_commit_sha", ""))
-    if re.fullmatch(r"[a-f0-9]{40}", target) is None or re.fullmatch(
-        r"[a-f0-9]{40}", installed
-    ) is None:
-        raise CIGraphError("self-governance controller custody is not exact")
+    lifecycle = resolve_controller_lifecycle(repo_root, runner_security)
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
-    control_root = f'"$RUNNER_TOOL_CACHE"/bcf-governance/{installed}'
+    control_root = f'"$RUNNER_TOOL_CACHE"/bcf-governance/{lifecycle.installed_commit}'
     executable = f"{control_root}/bin/bcf"
     check = f"test -d {control_root}\ntest ! -L {control_root}\ntest -x {executable}"
-    return executable, check, target == installed, ((relative, digest),)
+    return executable, check, lifecycle, ((relative, digest),)
 
 
 def validate_ci_graph(
@@ -763,7 +763,7 @@ def validate_ci_graph(
     if hosted_issues:
         raise CIGraphError(hosted_issues[0])
     _validate_required_gate_ownership(repo_root, composed)
-    controller, controller_check, controller_current, controller_inputs = _trusted_controller(
+    controller, controller_check, controller_lifecycle, controller_inputs = _trusted_controller(
         repo_root, composed
     )
     inputs = tuple(sorted(set(value_inputs + controller_inputs + storage_inputs)))
@@ -777,6 +777,7 @@ def validate_ci_graph(
         input_sha256=inputs,
         trusted_controller=controller,
         trusted_controller_check=controller_check,
-        trusted_controller_current=controller_current,
+        trusted_controller_lifecycle=controller_lifecycle,
+        trusted_controller_current=controller_lifecycle.current,
         evidence_storage=storage_contract,
     )

@@ -17,6 +17,9 @@ from bcf_governance.tooling.ci_github_identity import (
     GitHubControllerError,
     MainIdentity,
 )
+from bcf_governance.tooling.ci_graph_locks import apply_ci_graph_locks
+from bcf_governance.tooling.ci_graph_render import apply_ci_graph
+from bcf_governance.tooling.ci_graph_controller_lifecycle import ControllerLifecycleState
 from tests._wheel_fixture import write_wheel
 
 
@@ -65,7 +68,20 @@ def _copy_self_controller_fixture(root: Path) -> dict[str, Any]:
         destination = root / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(REPO_ROOT / relative, destination)
+    policy["runner_security"].pop("trusted_controller_recovery_reentry", None)
+    policy_path = root / "governance/self-governance-policy.yml"
+    policy_path.write_text(
+        "\n".join(
+            line
+            for line in policy_path.read_text(encoding="utf-8").splitlines()
+            if not line.startswith("  trusted_controller_recovery_reentry:")
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     shutil.copytree(REPO_ROOT / ".github/workflows", root / ".github/workflows")
+    apply_ci_graph_locks(root)
+    apply_ci_graph(root)
     return policy
 
 
@@ -466,6 +482,54 @@ def test_controller_bootstrap_is_cold_start_safe_and_interpreter_owned(
         invoke["run"]
     )
     assert "/bcf-governance/" not in str(invoke["run"]).split(" ci-github bootstrap", 1)[0]
+
+
+def test_recovery_reentry_allows_ordinary_target_then_expires_on_confirmation(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    (tmp_path / "governance").mkdir()
+    policy_path = tmp_path / "governance/self-governance-policy.yml"
+    policy_path.write_bytes(
+        (REPO_ROOT / "governance/self-governance-policy.yml").read_bytes()
+    )
+    policy = yaml.safe_load(policy_path.read_text())
+    current_pin = policy["runner_security"]["trusted_controller_artifact"]
+    installed = policy["runner_security"]["trusted_controller_installation"]
+    next_pin = dict(current_pin)
+    next_pin["BCF_BOOTSTRAP_COMMIT_SHA"] = "e" * 40
+    next_pin["BCF_BOOTSTRAP_TREE_SHA"] = "f" * 40
+    next_pin["BCF_BOOTSTRAP_ARTIFACT_NAME"] = (
+        "bcf-trusted-control-" + next_pin["BCF_BOOTSTRAP_COMMIT_SHA"] + "-"
+        + str(next_pin["BCF_BOOTSTRAP_RUN_ATTEMPT"])
+    )
+    monkeypatch.setattr(
+        controller,
+        "resolve_controller_lifecycle",
+        lambda *_args: SimpleNamespace(
+            state=ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY
+        ),
+    )
+    unchanged = SimpleNamespace(changed_inputs=(), changed_paths=())
+    monkeypatch.setattr(controller, "apply_ci_graph_locks", lambda _root: unchanged)
+    monkeypatch.setattr(controller, "apply_ci_graph", lambda _root: unchanged)
+
+    controller.project_self_controller_pin(
+        tmp_path, pin=next_pin, confirmation=None, apply=True
+    )
+    pending = yaml.safe_load(policy_path.read_text())["runner_security"]
+    assert pending["trusted_controller_artifact"] == next_pin
+    assert "trusted_controller_recovery_reentry" in pending
+
+    confirmation = dict(installed)
+    confirmation["installed_commit_sha"] = next_pin["BCF_BOOTSTRAP_COMMIT_SHA"]
+    confirmation["subject_commit_sha"] = next_pin["BCF_BOOTSTRAP_COMMIT_SHA"]
+    confirmation["subject_tree_sha"] = next_pin["BCF_BOOTSTRAP_TREE_SHA"]
+    controller.project_self_controller_pin(
+        tmp_path, pin=next_pin, confirmation=confirmation, apply=True
+    )
+    normalized = yaml.safe_load(policy_path.read_text())["runner_security"]
+    assert normalized["trusted_controller_installation"] == confirmation
+    assert "trusted_controller_recovery_reentry" not in normalized
 
 
 def test_controller_installation_confirmation_is_provider_compiled(

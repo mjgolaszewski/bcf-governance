@@ -24,6 +24,10 @@ from .ci_github_bootstrap import (
 from .ci_github_identity import GitHubControllerError, positive_int, resolve_main
 from .ci_github_membership import collect_same_run_producers, select_latest_admission
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
+from .ci_graph_controller_lifecycle import (
+    ControllerLifecycleState,
+    resolve_controller_lifecycle,
+)
 from .ci_graph_locks import apply_ci_graph_locks, check_ci_graph_locks
 from .ci_graph_render import apply_ci_graph, check_ci_graph
 
@@ -441,14 +445,19 @@ def project_self_controller_pin(
     current_installation = _installation(
         runner_security.get("trusted_controller_installation")
     )
-    if (
-        exact != current_pin
-        and current_installation["installed_commit_sha"]
+    pending = (
+        current_installation["installed_commit_sha"]
         != current_pin["BCF_BOOTSTRAP_COMMIT_SHA"]
-    ):
-        raise GitHubControllerError(
-            "a controller rotation is already pending independent confirmation"
-        )
+    )
+    if exact != current_pin and pending:
+        lifecycle = resolve_controller_lifecycle(root, runner_security)
+        if (
+            lifecycle.state
+            is not ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY
+        ):
+            raise GitHubControllerError(
+                "a controller rotation is already pending independent confirmation"
+            )
     installation = (
         current_installation if confirmation is None else _installation(confirmation)
     )
@@ -477,6 +486,11 @@ def project_self_controller_pin(
         f"  trusted_controller_installation: {installation_flow}".encode(),
         projected_policy,
     )
+    reentry_pattern = re.compile(
+        rb"(?m)^  trusted_controller_recovery_reentry: \{[^\r\n]*\}\r?\n?"
+    )
+    if installation["installed_commit_sha"] == exact["BCF_BOOTSTRAP_COMMIT_SHA"]:
+        projected_policy = reentry_pattern.sub(b"", projected_policy)
     changed: set[str] = set()
     if policy_raw != projected_policy:
         changed.add("governance/self-governance-policy.yml")

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+    "digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "positive": {"type": "string", "pattern": "^[1-9][0-9]*$"}
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "state", "repository_id", "operation_id", "reason_code", "receipt_artifact", "installed_controller_commit", "recovery_subject", "authorized_source", "provenance", "permitted_authority_class", "recovery_only", "governance_certified", "binding_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "state": {"const": "authenticated-recovery-reentry"},
+    "repository_id": {"$ref": "#/$defs/positive"},
+    "operation_id": {"type": "string", "pattern": "^[a-f0-9]{32}$"},
+    "reason_code": {"const": "ordinary_control_plane_bootstrap_deadlock"},
+    "receipt_artifact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "name", "provider_digest", "payload_sha256"],
+      "properties": {
+        "id": {"$ref": "#/$defs/positive"},
+        "name": {"type": "string", "pattern": "^bcf-break-glass-recovery-receipt-[a-f0-9]{32}$"},
+        "provider_digest": {"$ref": "#/$defs/digest"},
+        "payload_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "installed_controller_commit": {"$ref": "#/$defs/sha"},
+    "recovery_subject": {
+      "type": "object", "additionalProperties": false,
+      "required": ["commit", "tree"],
+      "properties": {"commit": {"$ref": "#/$defs/sha"}, "tree": {"$ref": "#/$defs/sha"}}
+    },
+    "authorized_source": {
+      "type": "object", "additionalProperties": false,
+      "required": ["commit", "tree"],
+      "properties": {"commit": {"$ref": "#/$defs/sha"}, "tree": {"$ref": "#/$defs/sha"}}
+    },
+    "provenance": {
+      "type": "object", "additionalProperties": false,
+      "required": ["build_run_id", "build_run_attempt", "build_artifact_id", "build_artifact_digest", "install_run_id", "install_run_attempt", "probe_run_id", "probe_run_attempt"],
+      "properties": {
+        "build_run_id": {"$ref": "#/$defs/positive"}, "build_run_attempt": {"$ref": "#/$defs/positive"},
+        "build_artifact_id": {"$ref": "#/$defs/positive"}, "build_artifact_digest": {"$ref": "#/$defs/digest"},
+        "install_run_id": {"$ref": "#/$defs/positive"}, "install_run_attempt": {"$ref": "#/$defs/positive"},
+        "probe_run_id": {"$ref": "#/$defs/positive"}, "probe_run_attempt": {"$ref": "#/$defs/positive"}
+      }
+    },
+    "permitted_authority_class": {"const": "exact-main-admission"},
+    "recovery_only": {"const": true},
+    "governance_certified": {"const": false},
+    "binding_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

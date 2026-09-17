@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import io
+import hashlib
 from pathlib import Path
 from types import SimpleNamespace
 import zipfile
@@ -11,6 +12,7 @@ import pytest
 import yaml
 
 from bcf_governance.tooling import break_glass_recovery as recovery
+from bcf_governance.tooling import break_glass_reentry as reentry
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError, MainIdentity
 
 
@@ -176,6 +178,9 @@ def environment(monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv(key, value)
     monkeypatch.setattr(
         recovery, "resolve_main", lambda *_args: MainIdentity("1207503211", "main", COMMIT, TREE)
+    )
+    monkeypatch.setattr(
+        reentry, "resolve_main", lambda *_args: MainIdentity("1207503211", "main", COMMIT, TREE)
     )
 
 
@@ -359,22 +364,74 @@ def test_finalize_cli_owns_probe_stage_and_emits_receipt(
     assert json.loads(output.read_text())["governance_certified"] is False
 
 
-def test_project_installation_cli_forwards_only_receipt_input(
+def test_project_installation_cli_authenticates_provider_receipt_input(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:
     receipt = tmp_path / "receipt.json"
     receipt.write_text(json.dumps(recovery_receipt()))
-    observed: list[tuple[Path, Path]] = []
+    artifact = {"id": "44", "name": "receipt", "digest": "sha256:" + "a" * 64}
+    main = SimpleNamespace(checkout_sha=COMMIT, tree_sha=TREE)
+    observed: list[tuple[Path, Path, dict[str, object], object]] = []
 
-    def project(*, root: Path, receipt_path: Path):
-        observed.append((root, receipt_path))
+    def project(*, root: Path, receipt_path: Path, receipt_artifact, provider_main):
+        observed.append((root, receipt_path, receipt_artifact, provider_main))
         return {"status": "projected"}
 
+    monkeypatch.setenv("GITHUB_TOKEN", "token")
+    monkeypatch.setattr(
+        recovery,
+        "_projection_receipt",
+        lambda *_args, **_kwargs: (recovery_receipt(), artifact, main),
+    )
     monkeypatch.setattr(recovery, "project_installation", project)
     recovery.main([
-        "project-installation", "--repo-root", str(ROOT), "--receipt", str(receipt)
+        "project-installation", "--repo-root", str(ROOT),
+        "--repository", "mjgolaszewski/bcf-governance", "--receipt", str(receipt)
     ])
-    assert observed == [(ROOT.resolve(), receipt)]
+    assert observed == [(ROOT.resolve(), receipt, artifact, main)]
+
+
+def test_projection_receipt_authenticates_exact_provider_archive(
+    tmp_path: Path,
+) -> None:
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text(json.dumps(recovery_receipt(), sort_keys=True))
+    archive = io.BytesIO()
+    with zipfile.ZipFile(archive, "w") as value:
+        value.writestr("receipt.json", receipt_path.read_bytes())
+    raw = archive.getvalue()
+
+    class ProjectionProvider:
+        def repository_artifacts(self, _repository, *, name=None):
+            return ({
+                "id": 606,
+                "name": name,
+                "expired": False,
+                "digest": "sha256:" + hashlib.sha256(raw).hexdigest(),
+                "workflow_run": {"id": 30},
+            },)
+
+        def artifact_bytes(self, _repository, _artifact_id):
+            return raw
+
+        def run(self, _repository, _run_id):
+            return {
+                "run_attempt": 1,
+                "conclusion": "success",
+                "head_sha": COMMIT,
+                "workflow_id": int(WORKFLOW_ID),
+                "repository": {"id": 1207503211},
+            }
+
+    receipt, artifact, main = recovery._projection_receipt(
+        ProjectionProvider(),
+        root=ROOT,
+        repository="mjgolaszewski/bcf-governance",
+        receipt_path=receipt_path,
+    )
+    assert receipt == recovery_receipt()
+    assert str(artifact["id"]) == "606"
+    assert main == MainIdentity("1207503211", "main", COMMIT, TREE)
 
 
 def test_live_installation_token_shape_authorizes_exact_repository_and_owner(
@@ -657,6 +714,7 @@ def test_recovery_projection_changes_only_proven_installation(
     (tmp_path / "schemas").mkdir()
     (tmp_path / "governance").mkdir()
     (tmp_path / recovery.RECEIPT_SCHEMA).write_bytes((ROOT / recovery.RECEIPT_SCHEMA).read_bytes())
+    (tmp_path / recovery.REENTRY_SCHEMA).write_bytes((ROOT / recovery.REENTRY_SCHEMA).read_bytes())
     old = "c" * 40
     policy_path = tmp_path / "governance/self-governance-policy.yml"
     policy_path.write_text(
@@ -668,21 +726,41 @@ def test_recovery_projection_changes_only_proven_installation(
     receipt_path.write_text(json.dumps(recovery_receipt()))
     answers = iter((COMMIT, TREE))
     monkeypatch.setattr(
-        recovery.subprocess, "run",
+        reentry.subprocess, "run",
         lambda *_args, **_kwargs: SimpleNamespace(stdout=next(answers) + "\n"),
     )
     monkeypatch.setattr(
-        recovery, "apply_ci_graph_locks",
+        reentry, "apply_ci_graph_locks",
         lambda _root: SimpleNamespace(changed_inputs=("governance/self-governance-policy.yml",)),
     )
     monkeypatch.setattr(
-        recovery, "apply_ci_graph",
+        reentry, "apply_ci_graph",
         lambda _root: SimpleNamespace(changed_paths=(".github/workflows/bcf-trusted-finalizer.yml",)),
     )
-    result = recovery.project_installation(root=tmp_path, receipt_path=receipt_path)
+    artifact = {
+        "id": "10462136837",
+        "name": f"bcf-break-glass-recovery-receipt-{OPERATION}",
+        "digest": "sha256:" + "e" * 64,
+    }
+    main = SimpleNamespace(
+        checkout_sha=COMMIT,
+        tree_sha=TREE,
+        repository_id=recovery_receipt()["repository"]["id"],
+        default_branch="main",
+    )
+    result = recovery.project_installation(
+        root=tmp_path,
+        receipt_path=receipt_path,
+        receipt_artifact=artifact,
+        provider_main=main,
+    )
     projected = yaml.safe_load(policy_path.read_text())["runner_security"]
     assert projected["trusted_controller_artifact"]["BCF_BOOTSTRAP_COMMIT_SHA"] == old
     assert projected["trusted_controller_installation"] == recovery_receipt()["controller_confirmation"]
+    assert projected["trusted_controller_recovery_reentry"]["authorized_source"] == {
+        "commit": COMMIT,
+        "tree": TREE,
+    }
     assert result["installed_commit_sha"] == COMMIT
 
 
@@ -690,13 +768,37 @@ def test_old_main_receipt_cannot_project_after_main_moves(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     (tmp_path / "schemas").mkdir()
+    (tmp_path / "governance").mkdir()
     (tmp_path / recovery.RECEIPT_SCHEMA).write_bytes((ROOT / recovery.RECEIPT_SCHEMA).read_bytes())
+    (tmp_path / recovery.REENTRY_SCHEMA).write_bytes((ROOT / recovery.REENTRY_SCHEMA).read_bytes())
+    old = "c" * 40
+    (tmp_path / "governance/self-governance-policy.yml").write_text(
+        "runner_security:\n"
+        f"  trusted_controller_artifact: {{BCF_BOOTSTRAP_COMMIT_SHA: {old}}}\n"
+        f"  trusted_controller_installation: {{schema_version: '1.0', installed_commit_sha: {old}, subject_commit_sha: {old}, subject_tree_sha: {'d' * 40}, bootstrap_run_id: '1', bootstrap_run_attempt: '1', probe_run_id: '2', probe_run_attempt: '1'}}\n"
+    )
     receipt_path = tmp_path / "receipt.json"
     receipt_path.write_text(json.dumps(recovery_receipt()))
     answers = iter(("9" * 40, TREE))
     monkeypatch.setattr(
-        recovery.subprocess, "run",
+        reentry.subprocess, "run",
         lambda *_args, **_kwargs: SimpleNamespace(stdout=next(answers) + "\n"),
     )
-    with pytest.raises(GitHubControllerError, match="exact local main"):
-        recovery.project_installation(root=tmp_path, receipt_path=receipt_path)
+    main = SimpleNamespace(
+        checkout_sha="9" * 40,
+        tree_sha=TREE,
+        repository_id=recovery_receipt()["repository"]["id"],
+        default_branch="main",
+    )
+    artifact = {
+        "id": "10462136837",
+        "name": f"bcf-break-glass-recovery-receipt-{OPERATION}",
+        "digest": "sha256:" + "e" * 64,
+    }
+    with pytest.raises(GitHubControllerError, match="not exact receipt subject"):
+        recovery.project_installation(
+            root=tmp_path,
+            receipt_path=receipt_path,
+            receipt_artifact=artifact,
+            provider_main=main,
+        )
