@@ -20,6 +20,7 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Bind editorial-audit bases to immutable commit SHAs so PR and post-merge freshness validation agree.
 - Confirm the recovered controller installation from authenticated bootstrap and probe inventories, restoring ordinary target/installation equality and mechanically retiring recovery re-entry authority.
 - Project the recovered exact-main controller artifact as the next ordinary controller target while retaining the authenticated recovery re-entry authorization until bootstrap and probe confirmation.
 - Add a receipt-bound, one-main-transition recovery re-entry state that permits only exact-main admission while ordinary controller custody is mismatched; release remains fail-closed and normalization removes the temporary authority.
