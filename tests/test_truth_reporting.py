@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bcf_governance.tooling.truth_reporting import failure_envelope
+from bcf_governance.tooling.truth_reporting import eligible_receipts, failure_envelope
 
 
 def _plan() -> dict:
@@ -14,6 +14,51 @@ def _plan() -> dict:
         "invalidated_evidence": [{"claim_id": "app-valid", "reasons": ["subject_dependency_changed"]}],
         "execution_dag": {"nodes": [{"id": "app-tests", "claims": ["app-valid"]}], "edges": []},
     }
+
+
+def test_eligible_receipts_are_version_aware_and_preflight_is_optional() -> None:
+    model = {
+        "claims": {
+            "contract-claim": {"legacy_gate": "contract-test"},
+        }
+    }
+    grouped = {
+        "test": [
+            {
+                "gate_id": "test",
+                "result": "verified",
+                "receipt": {
+                    "schema_version": "3.0",
+                    "claims": ["contract-claim"],
+                },
+            }
+        ]
+    }
+    assert list(eligible_receipts(grouped, model, "contract-test", set())) == grouped["test"]
+    grouped["test"][0]["receipt"].pop("claims")
+    assert list(eligible_receipts(grouped, model, "contract-test", set())) == []
+
+    legacy = {
+        "contract-test": [
+            {
+                "gate_id": "contract-test",
+                "result": "verified",
+                "receipt": {
+                    "schema_version": "2.0",
+                    "subject": {"binding": "exact_tree"},
+                },
+            }
+        ]
+    }
+    assert list(eligible_receipts(legacy, model, "contract-test", set())) == legacy["contract-test"]
+    assert list(
+        eligible_receipts({}, model, "contract-test", {"contract-claim"})
+    )[0]["source"] == "evidence-session-v2"
+    assert list(
+        eligible_receipts(
+            {}, model, "contract-test", {"contract-claim"}, include_preflight=False
+        )
+    ) == []
 
 
 def test_failure_envelope_groups_roots_and_keeps_raw_result_references(tmp_path: Path) -> None:

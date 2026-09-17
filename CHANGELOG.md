@@ -20,6 +20,7 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Resolve grouped v3 claims consistently across closure, workitem, hotfix, reconciliation, and finding-proof consumers.
 - Bind editorial-audit bases to immutable commit SHAs so PR and post-merge freshness validation agree.
 - Confirm the recovered controller installation from authenticated bootstrap and probe inventories, restoring ordinary target/installation equality and mechanically retiring recovery re-entry authority.
 - Project the recovered exact-main controller artifact as the next ordinary controller target while retaining the authenticated recovery re-entry authorization until bootstrap and probe confirmation.

@@ -312,7 +312,9 @@ def derive_truth(
     missing_claim_declarations = sorted(REQUIRED_DIRECT_CLAIMS - set(raw_claims))
     claims: dict[str, Any] = {}
     direct_verified = not missing_claim_declarations
-    workitems = workitem_observation(repo_root, receipts)
+    workitems = workitem_observation(
+        repo_root, receipts, claim_model or {"claims": {}}, preflight_claims
+    )
     required_gate_ids: set[str] = set()
     for claim_id, raw in raw_claims.items():
         requirement = raw if isinstance(raw, dict) else {}
@@ -432,6 +434,8 @@ def derive_truth(
         receipts,
         selected_profile,
         policy,
+        claim_model or {"claims": {}},
+        preflight_claims,
     )
     findings_claim = claims.get("findings_resolved")
     if isinstance(findings_claim, dict):
@@ -457,6 +461,8 @@ def derive_truth(
         phase_id,
         receipts,
         findings_clear=findings["open_count"] == 0 and not findings["issues"],
+        claim_model=claim_model or {"claims": {}},
+        preflight_claims=preflight_claims,
     )
     required_gate_ids.update(hotfix_gate_ids)
     release_profile = profile_payload.get("release_gate_profile")
