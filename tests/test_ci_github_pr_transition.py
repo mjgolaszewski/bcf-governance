@@ -5,6 +5,7 @@ import hashlib
 from io import BytesIO
 import json
 from pathlib import Path
+import subprocess
 import zipfile
 
 import pytest
@@ -560,7 +561,15 @@ def test_repaired_controller_and_race_safe_admission_remain_authoritative() -> N
     assert len(artifact["BCF_BOOTSTRAP_COMMIT_SHA"]) == 40
     assert set(artifact["BCF_BOOTSTRAP_COMMIT_SHA"]) <= set("0123456789abcdef")
     assert installation["schema_version"] == "1.0"
-    assert installation["installed_commit_sha"] == installation["subject_commit_sha"]
+    assert installation["installed_commit_sha"] == artifact["BCF_BOOTSTRAP_COMMIT_SHA"]
+    subject_tree = subprocess.run(
+        ["git", "rev-parse", f'{installation["subject_commit_sha"]}^{{tree}}'],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    assert installation["subject_tree_sha"] == subject_tree
     assert all(
         len(installation[key]) == 40
         for key in ("installed_commit_sha", "subject_commit_sha", "subject_tree_sha")

@@ -184,11 +184,13 @@ def test_registered_graph_mutant_refreshes_locks_and_generated_bytes(tmp_path: P
     policy = yaml.safe_load(
         (repo / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
     )
-    authorized_source = policy["runner_security"][
+    recovery_reentry = policy["runner_security"].get(
         "trusted_controller_recovery_reentry"
-    ]["authorized_source"]["commit"]
-    _git(repo, "fetch", "--no-tags", str(REPO_ROOT), authorized_source)
-    _git(repo, "reset", "--mixed", "FETCH_HEAD")
+    )
+    if recovery_reentry is not None:
+        authorized_source = recovery_reentry["authorized_source"]["commit"]
+        _git(repo, "fetch", "--no-tags", str(REPO_ROOT), authorized_source)
+        _git(repo, "reset", "--mixed", "FETCH_HEAD")
     _git(repo, "add", ".")
     _git(repo, "commit", "-m", "graph baseline")
     extension = repo / "governance/ci-extensions/bcf-release.yml"
