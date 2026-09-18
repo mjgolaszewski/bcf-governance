@@ -3,7 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bcf_governance.tooling.truth_reporting import eligible_receipts, failure_envelope
+from bcf_governance.tooling.truth_reporting import (
+    eligible_claim_receipts,
+    eligible_receipts,
+    failure_envelope,
+)
 
 
 def _plan() -> dict:
@@ -19,8 +23,14 @@ def _plan() -> dict:
 def test_eligible_receipts_are_version_aware_and_preflight_is_optional() -> None:
     model = {
         "claims": {
-            "contract-claim": {"legacy_gate": "contract-test"},
-        }
+            "contract-claim": {
+                "legacy_gate": "contract-test",
+                "execution_group": "python-tests",
+            },
+        },
+        "execution_groups": {
+            "python-tests": {"producer": "test", "claims": ["contract-claim"]}
+        },
     }
     grouped = {
         "test": [
@@ -61,6 +71,36 @@ def test_eligible_receipts_are_version_aware_and_preflight_is_optional() -> None
     ) == []
 
 
+def test_grouped_claim_resolver_rejects_unrelated_producer_laundering() -> None:
+    model = {
+        "claims": {
+            "test-claim": {"legacy_gate": "test", "execution_group": "tests"},
+            "security-claim": {
+                "legacy_gate": "security-review",
+                "execution_group": "security",
+            },
+        },
+        "execution_groups": {
+            "tests": {"producer": "test", "claims": ["test-claim"]},
+            "security": {
+                "producer": "security-review",
+                "claims": ["security-claim"],
+            },
+        },
+    }
+    receipt = {
+        "gate_id": "test",
+        "result": "verified",
+        "receipt": {"schema_version": "3.0", "claims": ["security-claim"]},
+    }
+
+    assert list(
+        eligible_claim_receipts(
+            {"test": [receipt]}, model, "security-claim", set()
+        )
+    ) == []
+
+
 def test_failure_envelope_groups_roots_and_keeps_raw_result_references(tmp_path: Path) -> None:
     result = failure_envelope(
         tmp_path,
@@ -82,6 +122,33 @@ def test_failure_envelope_groups_roots_and_keeps_raw_result_references(tmp_path:
     }
     assert roots["evidence_receipt_invalid:test:evidence-1"]["raw_result_refs"][0]["artifact_sha256"] == "c" * 64
     assert result["required_next_action"]["nodes"][0]["id"] == "app-tests"
+
+
+def test_failure_envelope_removes_successfully_resolved_grouped_claims(
+    tmp_path: Path,
+) -> None:
+    plan = _plan()
+    plan["required_claims"].append("security-valid")
+    plan["invalidated_evidence"].append(
+        {"claim_id": "security-valid", "reasons": ["dependency_closure_ambiguous"]}
+    )
+    plan["execution_dag"] = {
+        "nodes": [
+            {"id": "grouped", "claims": ["app-valid", "security-valid"]}
+        ],
+        "edges": [],
+    }
+
+    result = failure_envelope(
+        tmp_path,
+        {"commit_sha": "a" * 40, "tree_sha": "b" * 40},
+        plan,
+        ["phase_effective_state_active"],
+        resolved_claims={"app-valid", "security-valid"},
+    )
+
+    assert result["required_next_action"] == {"nodes": [], "edges": []}
+    assert result["invalidated_evidence"] == []
 
 
 def test_identical_causal_result_reports_no_new_information(tmp_path: Path) -> None:

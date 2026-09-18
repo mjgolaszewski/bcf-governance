@@ -34,6 +34,7 @@ from .truth_reporting import (
     active_log_path,
     current_subject,
     current_session_plan,
+    eligible_claim_receipts,
     failure_envelope,
     profile_closeout_requirements,
     verified_candidate,
@@ -598,7 +599,24 @@ def derive_truth(
     )
     final_issues = sorted(set(truth_issues))
     envelope = failure_envelope(
-        evidence_dir, current, session_plan, final_issues, all_receipts
+        evidence_dir,
+        current,
+        session_plan,
+        final_issues,
+        all_receipts,
+        resolved_claims={
+            claim_id
+            for claim_id in session_plan.get("required_claims", [])
+            if claim_model is not None
+            and isinstance(claim_id, str)
+            and next(
+                eligible_claim_receipts(
+                    receipts, claim_model, claim_id, preflight_claims
+                ),
+                None,
+            )
+            is not None
+        },
     )
     required_count = len(session_plan.get("required_claims", []))
     reused_count = len(session_plan.get("reused_evidence", []))

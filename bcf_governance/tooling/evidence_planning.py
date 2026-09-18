@@ -69,6 +69,7 @@ def load_claim_model(repo_root: Path) -> dict[str, Any]:
     if not all(isinstance(value, dict) and value for value in (sets, groups, claims)):
         raise EvidenceError("claim model sets, groups, and claims must be nonempty")
     claim_ids = set(claims)
+    legacy_owners: dict[str, str] = {}
     grouped: set[str] = set()
     membership: dict[str, int] = {claim_id: 0 for claim_id in claim_ids}
     for group_id, raw in groups.items():
@@ -102,6 +103,19 @@ def load_claim_model(repo_root: Path) -> dict[str, Any]:
         group = raw.get("execution_group")
         if group not in groups or claim_id not in groups[group].get("claims", []):
             raise EvidenceError(f"claim {claim_id} execution group is inconsistent")
+        legacy_gate = raw.get("legacy_gate")
+        if not isinstance(legacy_gate, str) or not legacy_gate:
+            raise EvidenceError(f"claim {claim_id} legacy gate is invalid")
+        if (
+            groups[group].get("captured_by_preflight") is not True
+            and (not isinstance(gates, dict) or legacy_gate not in gates)
+        ):
+            raise EvidenceError(f"claim {claim_id} legacy gate is not executable")
+        if legacy_gate in legacy_owners:
+            raise EvidenceError(
+                f"claims {legacy_owners[legacy_gate]} and {claim_id} duplicate legacy gate {legacy_gate}"
+            )
+        legacy_owners[legacy_gate] = str(claim_id)
         dependencies = raw.get("dependencies")
         if not isinstance(dependencies, dict) or set(dependencies) != set(DEPENDENCY_CLASSES):
             raise EvidenceError(f"claim {claim_id} dependency classes are incomplete")
@@ -280,6 +294,14 @@ def receipt_applicability(
     ):
         return False, ["dependency_closure_ambiguous"]
     model = load_claim_model(repo_root)
+    claim = model["claims"].get(claim_id)
+    group = (
+        model["execution_groups"].get(claim.get("execution_group"))
+        if isinstance(claim, dict)
+        else None
+    )
+    if not isinstance(group, dict) or group.get("producer") != receipt.get("gate_id"):
+        return False, ["claim_producer_mismatch"]
     if manifest.get("claim_model_sha256") != _canonical_sha256(model):
         return False, ["detector_dependency_changed"]
     claim_dependencies = manifest.get("claim_dependencies")

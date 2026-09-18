@@ -765,6 +765,8 @@ def test_grouped_v3_finding_uses_one_later_eligible_receipt_for_proof(
         ("missing-evidence", "test"),
         ("wrong-subject", "test"),
         ("wrong-session", "test"),
+        ("wrong-producer", "test"),
+        ("unrelated-claim", "contract-test"),
         ("changed-dependency", "contract-test"),
     ],
 )
@@ -797,6 +799,20 @@ def test_grouped_v3_closure_rejects_ineligible_evidence(
                 {"session_id": "c" * 32}
             ),
         )
+    elif mutation == "wrong-producer":
+        _rewrite_receipt(
+            receipt_path,
+            lambda receipt: receipt["invocation"]["workflow"].update(
+                {"job": "different-producer"}
+            ),
+        )
+    elif mutation == "unrelated-claim":
+        def replace_with_unrelated_claim(receipt: dict[str, Any]) -> None:
+            receipt["claims"] = ["security-claim"]
+            receipt["dependency_manifest"] = build_dependency_manifest(
+                repo, receipt["claims"]
+            )
+        _rewrite_receipt(receipt_path, replace_with_unrelated_claim)
     else:
         _rewrite_receipt(
             receipt_path,

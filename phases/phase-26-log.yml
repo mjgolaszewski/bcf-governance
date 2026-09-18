@@ -21,6 +21,9 @@ summary:
     immutable reuse-attestation contract without duplicating claim or dependency registries
   - the exact-main foundation failure exposed packaged-presence versus active-requirement
     conflation; the corrective insertion restores governed expand-rotate-activate ordering
+  - post-merge fan-in verified all produced grouped claims but retained the initial
+    seven-group execution plan in terminal diagnostics; canonical claim resolution now
+    removes satisfied groups and rejects cross-producer claim laundering
 workitems:
 - id: P26-P0-01
   status: DONE
@@ -63,6 +66,11 @@ execution_evidence:
     at both target and current subjects
   - P26-02 remains blocked until this correction merges, the trusted runtime rotates
     through ordinary governed custody, and fresh exact-main truth succeeds
+  - exact-main 35391756266/1 passed admission, independent build, preflight, and all
+    four evidence shards; its receipts verified, while its terminal failure envelope
+    exposed a stale pre-execution next-action projection
+  - three planned P26 workitems remain open and are preserved as the truthful lifecycle
+    boundary; this correction does not claim phase closure or begin P26-02
 closeout_requirements:
   claims:
     workitems_closed:
