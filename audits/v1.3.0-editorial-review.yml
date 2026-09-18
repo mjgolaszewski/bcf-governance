@@ -4,7 +4,7 @@ document:
   id: bcf-governance-v1.3.0-editorial-review
   status: completed
   path: audits/v1.3.0-editorial-review.yml
-base_commit: 95c4bd67115aef05a36b546b9bac8248f052a747
+base_commit: cce2ef29045567d607e077c2997de1a5946f3555
 inventory_policy:
   source_documents: tracked Markdown and root LICENSE from base union current tree
   packaged_mirror_root: bcf_governance/pack/template-repo
@@ -23,17 +23,17 @@ documents:
   audience: repository agents
   canonical_topic_owner: AGENTS.yml
   topic_role: canonical
-  before_sha256: 8668100e9aab45eafb4a508819280c83d722d558e9c2c40885331a2fefea08c7
-  after_sha256: 21deb14e0b2a2c829ea6e8bce05d82d10ffa464d9f44ff1898d7336f59cd3bca
+  before_sha256: 949e185d1865727dd9836f8988f11ddc59faee6467538e1c860375ca22f552ed
+  after_sha256: 949e185d1865727dd9836f8988f11ddc59faee6467538e1c860375ca22f552ed
   findings:
-  - reviewed canonical repository-agent guidance for current profile, lifecycle, and authority boundaries
-  disposition: revised
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
 - path: CHANGELOG.md
   audience: adopters and release operators
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
-  before_sha256: ed6a85266ac17acb43f24b7b7b06006b8a0ed795eb57b178238e2341f9625b20
-  after_sha256: 109d6aa4d26a870244686026f882dc8fa5a3a1fd2f3ea252fa338505954ec17d
+  before_sha256: f42b27ae5740e0a5efd824aa079d9692b94f9c6d7d96e9f3264580772e366b3c
+  after_sha256: 609782bf5cf4fce55b7b861da961e2825c75a2e5ddeb3eaad274a12cdb9affb8
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: historical
@@ -59,8 +59,8 @@ documents:
   audience: BCF evaluators and adopters
   canonical_topic_owner: README.md
   topic_role: canonical
-  before_sha256: 2f4035d39d1eb68c0f1ac528f90efa274cec256e3a0cf7ae66f361b23e094831
-  after_sha256: 2f4035d39d1eb68c0f1ac528f90efa274cec256e3a0cf7ae66f361b23e094831
+  before_sha256: 71b12e5843131557511bef2bdb07a462cb9b943cab59b62ba11f10317c7a6cef
+  after_sha256: 71b12e5843131557511bef2bdb07a462cb9b943cab59b62ba11f10317c7a6cef
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: retained
@@ -95,8 +95,8 @@ documents:
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/MAINTAINING.md
   topic_role: canonical
-  before_sha256: f430ff67b85b1b1ea5b2524061894e94207772f633717359b222cea5418ea8ed
-  after_sha256: f430ff67b85b1b1ea5b2524061894e94207772f633717359b222cea5418ea8ed
+  before_sha256: d73bb208daba523b6722bd95612e0fd59503be93adc7b11bfc949bf44d586b6f
+  after_sha256: d73bb208daba523b6722bd95612e0fd59503be93adc7b11bfc949bf44d586b6f
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: retained
@@ -104,8 +104,8 @@ documents:
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/RELIABILITY_MODEL.md
   topic_role: canonical
-  before_sha256: 4565108c3f3645550ee971ce250571829e527916ea5808d2bafa3b07b178f2f1
-  after_sha256: 4565108c3f3645550ee971ce250571829e527916ea5808d2bafa3b07b178f2f1
+  before_sha256: 2337fa7603b181561e5d0bed44f7a0600a43054e0b47213b2dff1357a0aaea97
+  after_sha256: 2337fa7603b181561e5d0bed44f7a0600a43054e0b47213b2dff1357a0aaea97
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: retained
@@ -113,8 +113,8 @@ documents:
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
-  before_sha256: d803cd6698d5012b014271ffdd8f357d2ab88e9833025a96b0b256d1f7223356
-  after_sha256: d803cd6698d5012b014271ffdd8f357d2ab88e9833025a96b0b256d1f7223356
+  before_sha256: 18ac5fe9ddabb5a47faacbf7b46b3eb68c27e7db8fbdd1276791fad84b2304ed
+  after_sha256: 18ac5fe9ddabb5a47faacbf7b46b3eb68c27e7db8fbdd1276791fad84b2304ed
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: retained
