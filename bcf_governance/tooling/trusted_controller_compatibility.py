@@ -9,6 +9,8 @@ import re
 import subprocess
 from typing import Iterable
 
+import yaml
+
 
 TRUSTED_ENTRYPOINT = PurePosixPath(
     "bcf_governance/tooling/ci_github_commands.py"
@@ -21,6 +23,7 @@ DIRECT_RUNTIME_FILES = (
 PACKAGED_SCHEMA_ROOT = PurePosixPath(
     "bcf_governance/pack/template-repo/schemas"
 )
+SCHEMA_REQUIREMENTS_FILE = PurePosixPath("AGENTS.yml")
 VERSION_METADATA_FILE = PurePosixPath("bcf_governance/_version.py")
 VERSION_METADATA_PATTERN = re.compile(
     r'\A"""Single authoritative BCF release version\."""\n\n'
@@ -99,8 +102,67 @@ def _imported_modules(path: PurePosixPath, tree: ast.Module) -> Iterable[str]:
             yield node.module
 
 
-def trusted_runtime_source_files(repo_root: Path) -> tuple[str, ...]:
-    """Derive the trusted CLI's Python import closure and packaged schemas."""
+def _required_packaged_schemas(
+    repo_root: Path, *, ref: str | None
+) -> set[PurePosixPath]:
+    source = (
+        _git(repo_root, "show", f"{ref}:{SCHEMA_REQUIREMENTS_FILE.as_posix()}")
+        if ref is not None
+        else (repo_root / SCHEMA_REQUIREMENTS_FILE).read_text(encoding="utf-8")
+    )
+    try:
+        payload = yaml.safe_load(source)
+        required = payload["governance"]["structural_schema_contract"][
+            "required_schemas"
+        ]
+    except (KeyError, TypeError, yaml.YAMLError) as exc:
+        raise TrustedControllerCompatibilityError(
+            "trusted controller schema requirements are invalid"
+        ) from exc
+    if not isinstance(required, list) or not required:
+        raise TrustedControllerCompatibilityError(
+            "trusted controller schema requirements are invalid"
+        )
+    canonical: set[PurePosixPath] = set()
+    for value in required:
+        path = PurePosixPath(value) if isinstance(value, str) else PurePosixPath(".")
+        if (
+            not isinstance(value, str)
+            or path.is_absolute()
+            or len(path.parts) < 2
+            or path.parts[0] != "schemas"
+            or ".." in path.parts
+            or path.suffix != ".json"
+        ):
+            raise TrustedControllerCompatibilityError(
+                "trusted controller schema requirements are invalid"
+            )
+        canonical.add(PACKAGED_SCHEMA_ROOT / path.relative_to("schemas"))
+    if len(canonical) != len(required):
+        raise TrustedControllerCompatibilityError(
+            "trusted controller schema requirements are invalid"
+        )
+    return canonical
+
+
+def _require_packaged_schemas(
+    repo_root: Path, paths: set[PurePosixPath], *, ref: str | None
+) -> None:
+    for path in paths:
+        if ref is not None:
+            _git(repo_root, "cat-file", "-e", f"{ref}:{path.as_posix()}")
+            continue
+        source = repo_root / path
+        if not source.is_file() or source.is_symlink():
+            raise TrustedControllerCompatibilityError(
+                f"required trusted controller schema is absent or unsafe: {path}"
+            )
+
+
+def trusted_runtime_source_files(
+    repo_root: Path, *, target_commit: str | None = None
+) -> tuple[str, ...]:
+    """Derive the trusted CLI closure and active packaged schema requirements."""
 
     root = repo_root.resolve()
     pending = [TRUSTED_ENTRYPOINT]
@@ -125,16 +187,13 @@ def trusted_runtime_source_files(repo_root: Path) -> tuple[str, ...]:
             imported = _module_file(root, module)
             if imported is not None and imported not in observed:
                 pending.append(imported)
-    schema_root = root / PACKAGED_SCHEMA_ROOT
-    if not schema_root.is_dir() or schema_root.is_symlink():
-        raise TrustedControllerCompatibilityError(
-            "trusted controller packaged schema root is absent or unsafe"
-        )
-    observed.update(
-        path.relative_to(root)
-        for path in schema_root.glob("*.json")
-        if path.is_file() and not path.is_symlink()
-    )
+    current_schemas = _required_packaged_schemas(root, ref=None)
+    _require_packaged_schemas(root, current_schemas, ref=None)
+    observed.update(current_schemas)
+    if target_commit is not None:
+        target_schemas = _required_packaged_schemas(root, ref=target_commit)
+        _require_packaged_schemas(root, target_schemas, ref=target_commit)
+        observed.update(target_schemas)
     return tuple(sorted(path.as_posix() for path in observed))
 
 
@@ -169,7 +228,7 @@ def verify_trusted_controller_compatibility(
         raise TrustedControllerCompatibilityError(
             "trusted controller target is not an ancestor of committed HEAD"
         )
-    paths = trusted_runtime_source_files(root)
+    paths = trusted_runtime_source_files(root, target_commit=target_commit)
     changed = _git(root, "diff", "--name-only", target_commit, "HEAD", "--", *paths)
     incompatible = changed.splitlines()
     if changed:

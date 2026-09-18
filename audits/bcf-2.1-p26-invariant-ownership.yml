@@ -31,3 +31,32 @@ foundation_invariants:
 - rejected or ambiguous reuse requires canonical execution and at least one closed rejection reason
 - provider custody binds repository, PR, candidate, merge, main, workflow, run, attempt, artifact, controller, and protection identities
 - preflight observations are not evidence receipts and cannot satisfy behavioral proof
+corrective_insertion:
+  exact_main_failure:
+    run: 35387324770
+    attempt: 1
+    main_commit: 95c4bd67115aef05a36b546b9bac8248f052a747
+    main_tree: 8d500bf684c77e5a46226ed874021cb7cb6545ab
+    first_causal_invariant: trusted controller target is stale for runtime files
+    rejected_path: bcf_governance/pack/template-repo/schemas/reuse-attestation.schema.json
+  defect_class: packaged_schema_presence_was_conflated_with_active_runtime_requirement
+  canonical_activation_primitive: AGENTS.yml#governance.structural_schema_contract.required_schemas
+  correction:
+  - derive trusted packaged schema compatibility from active requirements at both
+    controller target and current subject
+  - retain target-active requirements in the comparison so mutation or removal
+    remains fail-closed
+  - package reuse-attestation.schema.json while leaving it dormant until a compatible
+    controller is installed
+  sibling_review:
+  - pack manifest and schema-parity inventories intentionally govern every present
+    file and do not confer runtime activation
+  - controller and exact-main schema scans validate captured artifacts and do not
+    decide controller compatibility
+  regression_proof:
+  - dormant successor schema with controller N is compatible
+  - activation with incompatible controller N is rejected
+  - activation with controller N+1 that already carries the schema is compatible
+  - active schema mutation and removal are rejected
+  boundary: P26-02 remains blocked until protected merge, ordinary governed controller
+    rotation, and fresh exact-main certification close P26-01 truth
