@@ -1,0 +1,61 @@
+document:
+  kind: execution_phase_workitem_ledger
+  name: Phase 27 Workitems
+  id: project-phase-27-workitems
+  version: 1.0.0
+  generated_at_utc: '2026-09-18T00:00:00Z'
+  status: planned
+  path: plans/phase-27-workitems.yml
+  phase_id: P27
+workitems:
+- id: P27-P0-01
+  priority: P0
+  status: TODO
+  summary: deliver selective execution planner with qualification-preserving negative-control
+    reuse
+  acceptance:
+  - selective execution planner with qualification-preserving negative-control reuse_is_complete
+  - phase-specific selective invalidation results are recorded in the phase log
+  acceptance_evidence:
+  - test
+  - contract-test
+  - governance-validate
+  - runtime-smoke
+- id: P27-P0-02
+  priority: P0
+  status: TODO
+  summary: deliver measured constrained critical-path DAG and duration-aware mechanical
+    assignment
+  acceptance:
+  - measured constrained critical-path DAG and duration-aware mechanical assignment_is_complete
+  - phase-specific critical-path measurements are recorded in the phase log
+  acceptance_evidence:
+  - test
+  - contract-test
+  - governance-validate
+  - runtime-smoke
+- id: P27-P0-03
+  priority: P0
+  status: TODO
+  summary: deliver canonical convergent bcf reconcile fixed-point generation
+  acceptance:
+  - canonical convergent bcf reconcile fixed-point generation_is_complete
+  - phase-specific fixed-point convergence results are recorded in the phase log
+  acceptance_evidence:
+  - test
+  - contract-test
+  - governance-validate
+  - runtime-smoke
+- id: P27-P0-04
+  priority: P0
+  status: TODO
+  summary: deliver schema-validated timing telemetry empirical benchmarks and certified
+    closeout
+  acceptance:
+  - schema-validated timing telemetry empirical benchmarks and certified closeout_is_complete
+  - phase-specific timing and decision benchmarks are recorded in the phase log
+  acceptance_evidence:
+  - test
+  - contract-test
+  - governance-validate
+  - runtime-smoke

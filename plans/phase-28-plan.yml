@@ -1,0 +1,45 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 28 Plan
+  id: project-phase-28-plan
+  version: 1.0.0
+  generated_at_utc: '2026-09-18T00:00:00Z'
+  status: planned
+  path: plans/phase-28-plan.yml
+phase:
+  id: P28
+  build_block: canonical-projection-parity-certification-2.1.0
+  planner: codex
+  date: '2026-09-18'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - normal install and adopt projection of P26 and P27 semantics
+  - typed narrow self-authority overlays with enforced non-leakage
+  - representative adopter parity and adversarial proof
+  - empirical SLO immutable 2.1.0 publication custody and certified closeout
+  parallelizable_workstreams:
+  - id: P28-WS1
+    name: canonical installation and adoption projection
+  - id: P28-WS2
+    name: typed self-authority overlays
+  - id: P28-WS3
+    name: self-adopter parity and attacks
+  - id: P28-WS4
+    name: empirical certification release and custody closeout
+  hard_dependencies:
+  - P27
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: keep the phase narrowly scoped to declared deliverables and update canonical
+    governed artifacts in the same change
+verification_plan:
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest -q tests

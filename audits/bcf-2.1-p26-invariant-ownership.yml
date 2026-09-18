@@ -1,0 +1,33 @@
+document:
+  kind: invariant_ownership_inventory
+  id: bcf-2.1-p26-invariant-ownership
+  version: 1.0.0
+  status: active
+  path: audits/bcf-2.1-p26-invariant-ownership.yml
+phase: P26
+issue: 214
+construction_order: [invariant, primitive, composition, projection, optimization]
+registry_rule: canonical claim and dependency declarations remain solely in governance/gate-contracts.yml
+primitives:
+- {id: SubjectIdentity, canonical_owner: schemas/evidence-receipt.schema.json#properties/subject, executable_owner: 'bcf_governance/tooling/truth_receipts.py::load_receipts', p26_action: reuse_by_reference}
+- {id: TreeIdentity, canonical_owner: schemas/evidence-receipt.schema.json#properties/subject/properties/tree_sha, executable_owner: 'bcf_governance/tooling/truth_receipts.py::load_receipts', p26_action: reuse_by_reference}
+- {id: ClaimIdentity, canonical_owner: governance/gate-contracts.yml#claim_model/claims, executable_owner: 'bcf_governance/tooling/evidence_planning.py::load_claim_model', p26_action: reuse_by_reference}
+- {id: ExecutionGroupIdentity, canonical_owner: governance/gate-contracts.yml#claim_model/execution_groups, executable_owner: 'bcf_governance/tooling/evidence_planning.py::load_claim_model', p26_action: reuse_by_reference}
+- {id: ExecutionProvenance, canonical_owner: schemas/reuse-attestation.schema.json#/$defs/executionProvenance, executable_owner: 'bcf_governance/tooling/ci_authority_certification.py', p26_action: compose_existing_provider_identity}
+- {id: AuthorityIdentity, canonical_owner: schemas/reuse-attestation.schema.json#/$defs/authorityIdentity, executable_owner: 'bcf_governance/tooling/ci_authority_contracts.py', p26_action: compose_existing_controller_identity}
+- {id: DependencyClosure, canonical_owner: schemas/evidence-receipt.schema.json#/$defs/dependencyManifest, executable_owner: 'bcf_governance/tooling/evidence_planning.py::build_dependency_manifest', p26_action: reuse_by_digest}
+- {id: Qualification, canonical_owner: schemas/evidence-receipt.schema.json#/$defs/qualification, executable_owner: 'bcf_governance/tooling/evidence_claims.py::claim_receipt_fields', p26_action: reuse_by_digest}
+- {id: EvidenceReceipt, canonical_owner: schemas/evidence-receipt.schema.json, executable_owner: 'bcf_governance/tooling/truth_receipts.py::load_receipts', p26_action: preserve_bytes}
+- {id: EvidenceReference, canonical_owner: schemas/reuse-attestation.schema.json#/$defs/evidenceReference, executable_owner: 'bcf_governance/tooling/evidence_planning.py::load_prior_receipts', p26_action: bind_immutable_digest}
+- {id: ApplicabilityDecision, canonical_owner: schemas/reuse-attestation.schema.json#properties/decision, executable_owner: planned_p26_admission_constructor, p26_action: add_closed_contract}
+- {id: InvalidationReason, canonical_owner: schemas/reuse-attestation.schema.json#/$defs/invalidationReason, executable_owner: planned_p26_admission_constructor, p26_action: add_closed_contract}
+- {id: ReuseAttestation, canonical_owner: schemas/reuse-attestation.schema.json, executable_owner: planned_p26_admission_constructor, p26_action: add_separate_main_side_record}
+- {id: LifecycleState, canonical_owner: schemas/phase-ledger.schema.json#properties/active_phase/properties/lifecycle_status, executable_owner: 'bcf_governance/tooling/governance_truth.py', p26_action: reuse_by_reference}
+- {id: RecoveryAuthority, canonical_owner: schemas/recovery-reentry-authorization.schema.json, executable_owner: 'bcf_governance/tooling/ci_graph_controller_lifecycle.py', p26_action: reuse_without_broadening}
+foundation_invariants:
+- source receipts remain byte-for-byte immutable and are referenced only by digest and immutable provider identity
+- reuse admission binds exact claim and execution-group identity without creating a parallel registry
+- admitted reuse requires equivalent dependency-closure and qualification digests
+- rejected or ambiguous reuse requires canonical execution and at least one closed rejection reason
+- provider custody binds repository, PR, candidate, merge, main, workflow, run, attempt, artifact, controller, and protection identities
+- preflight observations are not evidence receipts and cannot satisfy behavioral proof

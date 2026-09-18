@@ -1,0 +1,45 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 27 Plan
+  id: project-phase-27-plan
+  version: 1.0.0
+  generated_at_utc: '2026-09-18T00:00:00Z'
+  status: planned
+  path: plans/phase-27-plan.yml
+phase:
+  id: P27
+  build_block: minimum-time-proof-composition-2.1.0
+  planner: codex
+  date: '2026-09-18'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - selective execution planner with qualification-preserving negative-control reuse
+  - measured constrained critical-path DAG and duration-aware mechanical assignment
+  - canonical convergent bcf reconcile fixed-point generation
+  - schema-validated timing telemetry empirical benchmarks and certified closeout
+  parallelizable_workstreams:
+  - id: P27-WS1
+    name: selective execution planning
+  - id: P27-WS2
+    name: critical-path composition and assignment
+  - id: P27-WS3
+    name: fixed-point generation
+  - id: P27-WS4
+    name: telemetry benchmarking and closeout
+  hard_dependencies:
+  - P26
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: keep the phase narrowly scoped to declared deliverables and update canonical
+    governed artifacts in the same change
+verification_plan:
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest -q tests

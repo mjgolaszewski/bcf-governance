@@ -4,11 +4,11 @@ build_plan_mandate:
   required_fields: [tightly_scoped_deliverables, parallelizable_workstreams, hard_dependencies, docker_first_local_runtime, completeness_standard]
   completeness_standard: full_completeness_for_declared_scope
 active_phase:
-  id: P25
-  build_block: dependency-scoped-correction-2.0.0
-  plan: plans/phase-25-plan.yml
-  workitems: plans/phase-25-workitems.yml
-  log: phases/phase-25-log.yml
+  id: P26
+  build_block: invariant-closure-proof-transport-2.1.0
+  plan: plans/phase-26-plan.yml
+  workitems: plans/phase-26-workitems.yml
+  log: phases/phase-26-log.yml
   memory: MEMORY.yml
   spec: plans/product-spec.yml
   build_plan: plans/build-plan.yml
@@ -47,6 +47,7 @@ release_trains:
   release_12: {target_version: 1.1.1, status: completed, focus: [historical_release]}
   release_13: {target_version: 1.2.0, status: completed, focus: [historical_release]}
   release_14: {target_version: 1.3.0, status: completed, focus: [historical_release]}
-  release_15: {target_version: 2.0.0, status: active, focus: [dependency_scoped_truth, minimum_execution, evidence_composed_release]}
+  release_15: {target_version: 2.0.0, status: abandoned, focus: [dependency_scoped_truth, minimum_execution, evidence_composed_release, superseded_without_publication]}
+  release_16: {target_version: 2.1.0, status: active, focus: [invariant_closure, proof_transport, minimum_time_composition, canonical_projection, parity, empirical_certification]}
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: [active phase has a plan workitem ledger and log, validation commands are listed before implementation starts]

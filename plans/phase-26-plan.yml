@@ -1,0 +1,48 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 26 Plan
+  id: project-phase-26-plan
+  version: 1.0.0
+  generated_at_utc: '2026-09-18T00:00:00Z'
+  status: active
+  path: plans/phase-26-plan.yml
+phase:
+  id: P26
+  build_block: invariant-closure-proof-transport-2.1.0
+  planner: codex
+  date: '2026-09-18'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - canonical primitive ownership and immutable reuse-attestation contracts
+  - provider-authenticated prior-evidence transport with immutable source receipts
+  - main-side closure qualification partial reuse and grouped-claim consumer reconciliation
+  - adversarial proof empirical equivalent-tree acceptance and certified closeout
+  parallelizable_workstreams:
+  - id: P26-WS1
+    name: canonical primitives and invariant ownership
+  - id: P26-WS2
+    name: provider transport and custody authentication
+  - id: P26-WS3
+    name: reuse admission and grouped-claim consumers
+  - id: P26-WS4
+    name: adversarial validation and closeout
+  hard_dependencies:
+  - P25
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: keep the phase narrowly scoped to declared deliverables and update canonical
+    governed artifacts in the same change
+- order: 2
+  statement: issue 214 owns P26 and P27 cannot activate until P26 is protected-merged,
+    exact-main certified, and closed by bcf truth
+verification_plan:
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest -q tests

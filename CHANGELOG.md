@@ -10,9 +10,18 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `2.0.0`
+Release target: `2.1.0`
+
+### Added
+
+- Open the governed three-phase BCF 2.1 release train for invariant closure and
+  proof transport, minimum-time proof composition, and canonical self/adopter
+  projection with empirical certification.
 
 ### Changed
+
+- Preserve the certified BCF 2.0 implementation as the release baseline while
+  superseding v2.0.0 publication without creating a tag or immutable release.
 
 - Introduce profile/receipt v3 and evidence-session v2 with dependency-scoped claim reuse, grouped execution, reusable detector qualification, and derived lifecycle truth.
 - Retire active CI-economic governance while retaining provider, archive, cleanup, timeout, and trust-boundary safety limits.
