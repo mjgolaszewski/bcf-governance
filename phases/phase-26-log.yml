@@ -71,6 +71,11 @@ execution_evidence:
     exposed a stale pre-execution next-action projection
   - three planned P26 workitems remain open and are preserved as the truthful lifecycle
     boundary; this correction does not claim phase closure or begin P26-02
+  - >-
+    PR 219 run 35395179226/1 exposed four bounded test failures: the grouped-claim
+    resolver exceeded the governed module cap and receipt-local checks depended on the
+    full repository claim model; the resolver now has an evidence-context owner and
+    receipt checks retain specific fail-closed diagnostics through a minimal projection
 closeout_requirements:
   claims:
     workitems_closed:

@@ -7,9 +7,11 @@ import json
 from pathlib import Path
 import re
 import subprocess
-from typing import Any, Iterator
+from typing import Any
 
 import yaml  # type: ignore[import-untyped]
+
+from .evidence_claim_resolution import eligible_claim_receipts, eligible_receipts, verified_candidate
 
 
 REQUIRED_DIRECT_CLAIMS = {
@@ -35,84 +37,6 @@ def active_log_path(repo_root: Path) -> Path:
     if not isinstance(active, dict) or not isinstance(active.get("log"), str):
         raise ValueError("plans/phase-ledger.yml active_phase.log is required")
     return repo_root / active["log"]
-
-
-def eligible_claim_receipts(
-    receipts: dict[str, list[dict[str, Any]]], model: dict[str, Any], claim_id: str,
-    preflight_claims: set[str], *, include_preflight: bool = True,
-) -> Iterator[dict[str, Any]]:
-    """Yield validated evidence from the canonical producer for one exact claim."""
-    claim = model.get("claims", {}).get(claim_id)
-    if not isinstance(claim, dict):
-        return
-    group = model.get("execution_groups", {}).get(claim.get("execution_group"))
-    if not isinstance(group, dict) or not isinstance(group.get("producer"), str):
-        return
-    producer = group["producer"]
-    gate_id = str(claim.get("legacy_gate", claim_id))
-    if include_preflight and claim_id in preflight_claims:
-        yield {"evidence_id": f"preflight:{claim_id}", "gate_id": gate_id, "kind": "gate",
-               "result": "verified", "issues": [], "source": "evidence-session-v2"}
-    for values in receipts.values():
-        for candidate in values:
-            receipt = candidate.get("receipt")
-            if not isinstance(receipt, dict) or candidate.get("result") != "verified":
-                continue
-            if receipt.get("schema_version") == "3.0":
-                claims = receipt.get("claims")
-                if (
-                    candidate.get("gate_id") == producer
-                    and isinstance(claims, list)
-                    and claim_id in claims
-                ):
-                    yield candidate
-                continue
-            subject = receipt.get("subject")
-            if (
-                candidate.get("gate_id") == gate_id
-                and isinstance(subject, dict)
-                and subject.get("binding") == "exact_tree"
-            ):
-                yield candidate
-
-
-def eligible_receipts(
-    receipts: dict[str, list[dict[str, Any]]], model: dict[str, Any], gate_id: str,
-    preflight_claims: set[str], *, include_preflight: bool = True,
-) -> Iterator[dict[str, Any]]:
-    """Resolve one legacy gate through its unique canonical claim identity."""
-    claim_ids = [
-        str(claim_id)
-        for claim_id, raw in model.get("claims", {}).items()
-        if isinstance(raw, dict) and raw.get("legacy_gate") == gate_id
-    ]
-    if not claim_ids and not model.get("claims"):
-        for candidate in receipts.get(gate_id, []):
-            receipt = candidate.get("receipt")
-            subject = receipt.get("subject") if isinstance(receipt, dict) else None
-            if (
-                candidate.get("result") == "verified"
-                and isinstance(subject, dict)
-                and subject.get("binding") == "exact_tree"
-            ):
-                yield candidate
-        return
-    if len(claim_ids) != 1:
-        return
-    yield from eligible_claim_receipts(
-        receipts,
-        model,
-        claim_ids[0],
-        preflight_claims,
-        include_preflight=include_preflight,
-    )
-
-
-def verified_candidate(
-    receipts: dict[str, list[dict[str, Any]]], model: dict[str, Any], gate_id: str,
-    preflight_claims: set[str],
-) -> dict[str, Any] | None:
-    return next(eligible_receipts(receipts, model, gate_id, preflight_claims), None)
 
 
 def current_session_plan(evidence_dir: Path, current: dict[str, Any]) -> dict[str, Any]:

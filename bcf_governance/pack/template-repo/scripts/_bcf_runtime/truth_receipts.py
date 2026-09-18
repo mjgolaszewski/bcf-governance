@@ -16,7 +16,8 @@ import yaml  # type: ignore[import-untyped]
 from jsonschema import Draft202012Validator
 
 from .evidence_test_adapters import recompute_test_artifact_observations
-from .evidence_planning import load_claim_model, qualification_applicability, receipt_applicability
+from .evidence_claim_resolution import load_claim_gate_projection
+from .evidence_planning import qualification_applicability, receipt_applicability
 from .governance_truth_support import artifact_issues
 from .truth_sessions import apply_session_validation
 
@@ -329,21 +330,16 @@ def _multi_claim_test_issues(
         )
     }
     try:
-        model = load_claim_model(repo_root)
-        registry = yaml.safe_load(
-            (repo_root / "governance/gate-contracts.yml").read_text(encoding="utf-8")
-        )
+        projection = load_claim_gate_projection(repo_root, receipt.get("claims", []))
     except (OSError, yaml.YAMLError, ValueError):
         return ["claim_contract_unreadable"]
-    gates = registry.get("gates") if isinstance(registry, dict) else None
     issues: list[str] = []
     for claim_id in receipt.get("claims", []):
-        claim = model["claims"].get(claim_id)
-        if not isinstance(claim, dict):
+        claim_contract = projection.get(str(claim_id))
+        if not isinstance(claim_contract, dict):
             issues.append(f"claim_{claim_id}_not_declared")
             continue
-        legacy_gate = claim.get("legacy_gate") if isinstance(claim, dict) else None
-        gate = gates.get(legacy_gate) if isinstance(gates, dict) else None
+        gate = claim_contract["gate"]
         evidence = gate.get("evidence") if isinstance(gate, dict) else None
         test_contract = evidence.get("test_contract") if isinstance(evidence, dict) else None
         manifest_value = (
@@ -381,17 +377,12 @@ def _qualification_issues(repo_root: Path, receipt: dict[str, Any]) -> list[str]
     } if isinstance(references, list) else set()
     if isinstance(qualification, dict) and qualification.get("satisfied") is True:
         try:
-            model = load_claim_model(repo_root)
-            registry = yaml.safe_load(
-                (repo_root / "governance/gate-contracts.yml").read_text(encoding="utf-8")
-            )
-            gates = registry.get("gates") if isinstance(registry, dict) else {}
+            projection = load_claim_gate_projection(repo_root, receipt.get("claims", []))
             expected = {
                 str(control.get("id"))
                 for claim_id in receipt.get("claims", [])
                 if claim_id not in referenced_claims
-                if isinstance(model["claims"].get(claim_id), dict)
-                for gate in [gates.get(model["claims"][claim_id].get("legacy_gate"))]
+                for gate in [projection.get(str(claim_id), {}).get("gate")]
                 if isinstance(gate, dict)
                 for control in gate.get("negative_controls", [])
                 if isinstance(control, dict) and isinstance(control.get("id"), str)

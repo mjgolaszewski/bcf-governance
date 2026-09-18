@@ -34,11 +34,11 @@ from .truth_reporting import (
     active_log_path,
     current_subject,
     current_session_plan,
-    eligible_claim_receipts,
     failure_envelope,
     profile_closeout_requirements,
     verified_candidate,
 )
+from .evidence_claim_resolution import resolved_session_claims
 from .truth_workflow_graph import graph_workflow_gate_issues
 from .release_receipts import (
     ReleaseReceiptError,
@@ -604,19 +604,12 @@ def derive_truth(
         session_plan,
         final_issues,
         all_receipts,
-        resolved_claims={
-            claim_id
-            for claim_id in session_plan.get("required_claims", [])
-            if claim_model is not None
-            and isinstance(claim_id, str)
-            and next(
-                eligible_claim_receipts(
-                    receipts, claim_model, claim_id, preflight_claims
-                ),
-                None,
-            )
-            is not None
-        },
+        resolved_claims=resolved_session_claims(
+            receipts,
+            claim_model,
+            preflight_claims,
+            session_plan.get("required_claims", []),
+        ),
     )
     required_count = len(session_plan.get("required_claims", []))
     reused_count = len(session_plan.get("reused_evidence", []))
