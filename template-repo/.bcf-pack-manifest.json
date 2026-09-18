@@ -338,6 +338,10 @@
       "operation": "copy",
       "sha256": "311cb3b6965f4a8ee83e76da2f88056b260554618fcf3bf4ec0a63eb1891c045"
     },
+    "schemas/reuse-attestation.schema.json": {
+      "operation": "copy",
+      "sha256": "3f383ac9df34bb3f5db2ca2c79700dab8d145d9cd288c1d43e2047aad1a60985"
+    },
     "schemas/runtime-capacity.schema.json": {
       "operation": "copy",
       "sha256": "e1b5b1076fc671c7422731281246bf9f70260f0343140099a8089b82735aedbc"

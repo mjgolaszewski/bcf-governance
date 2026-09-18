@@ -12,6 +12,7 @@ cli:
 contracts:
   profile: {path: schemas/governance-profile.schema.json, version_field: profile_contract_version, readable_versions: ['1.0', '2.0', '3.0'], active_version: '3.0', migration_only_versions: ['1.0', '2.0']}
   receipt: {path: schemas/evidence-receipt.schema.json, version_field: schema_version, readable_versions: ['2.0', '3.0'], active_version: '3.0', migration_only_versions: ['2.0']}
+  reuse_attestation: {path: schemas/reuse-attestation.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
   evidence_session: {path: schemas/evidence-session.schema.json, version_field: schema_version, readable_versions: ['1.0', '2.0'], active_version: '2.0', migration_only_versions: ['1.0']}
   evidence_storage: {path: schemas/evidence-storage.schema.json, version_field: schema_version, readable_versions: ['2.0'], active_version: '2.0', migration_only_versions: []}
   evidence_input_manifest: {path: schemas/evidence-input-manifest.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}

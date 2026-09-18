@@ -4,7 +4,7 @@ document:
   id: bcf-governance-v2.0.0-editorial-review
   status: completed
   path: audits/v2.0.0-editorial-review.yml
-base_commit: aac520a81423904eee89a14e8449bb5786648f74
+base_commit: 163e3187baae68b992558c31bbdbaeb41af2fb45
 inventory_policy:
   source_documents: tracked Markdown and root LICENSE from base union current tree
   packaged_mirror_root: bcf_governance/pack/template-repo
@@ -24,16 +24,16 @@ documents:
   canonical_topic_owner: AGENTS.yml
   topic_role: canonical
   before_sha256: 949e185d1865727dd9836f8988f11ddc59faee6467538e1c860375ca22f552ed
-  after_sha256: 949e185d1865727dd9836f8988f11ddc59faee6467538e1c860375ca22f552ed
+  after_sha256: 8668100e9aab45eafb4a508819280c83d722d558e9c2c40885331a2fefea08c7
   findings:
-  - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  - reviewed canonical repository-agent guidance for current profile, lifecycle, and authority boundaries
+  disposition: revised
 - path: CHANGELOG.md
   audience: adopters and release operators
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
-  before_sha256: a736e27d86dbe9bbfbcbedb4722a56c0f0a058bbd666fe960b5c3dfedc1c64f8
-  after_sha256: 0980d04d4aa2dfd0931c0de06bcfb5adbc29f73a65e4695324d07dac3f7f70ea
+  before_sha256: 0980d04d4aa2dfd0931c0de06bcfb5adbc29f73a65e4695324d07dac3f7f70ea
+  after_sha256: ed6a85266ac17acb43f24b7b7b06006b8a0ed795eb57b178238e2341f9625b20
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: historical
