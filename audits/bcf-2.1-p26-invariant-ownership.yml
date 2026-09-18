@@ -60,3 +60,59 @@ corrective_insertion:
   - active schema mutation and removal are rejected
   boundary: P26-02 remains blocked until protected merge, ordinary governed controller
     rotation, and fresh exact-main certification close P26-01 truth
+post_merge_claim_resolution_correction:
+  exact_main:
+    run: 35391756266
+    attempt: 1
+    main_commit: 10582b78943d3dc9ea06484fc901e14913e612d4
+    main_tree: 0c0cca378b32d1010a4774178d2f7fb174dc18a7
+  producer_result:
+    admission: success
+    independent_controller_build: success
+    closure_preflight: success
+    evidence_shards: {expected: 4, successful: 4}
+  causal_trace:
+  - required claim identities mapped to their canonical execution groups and producers
+  - all emitted grouped receipts bound the exact main subject and authenticated session
+  - receipt validation and closeout consumers verified every applicable produced claim
+  - the terminal failure envelope incorrectly copied the pre-execution DAG after fan-in,
+    retaining seven satisfied producer groups as required next actions
+  - the actual remaining closure cause was the three intentionally open P26 workitems
+  common_correction:
+  - resolve exact claims only through their canonical execution-group producer
+  - reconcile the terminal DAG and invalidation list against authenticated resolved claims
+  - reject duplicate legacy claim mappings during claim-model preflight
+  sibling_consumers:
+  - closeout, workitem, hotfix, release, and finding consumers already use the canonical
+    eligible-receipt resolver and required no semantic change
+  fail_closed_proof:
+  - invalid, missing, wrong-subject, wrong-session, wrong-producer, and wrong-claim
+    evidence remains ineligible
+  - a valid grouped receipt cannot confer an unrelated producer's claim
+  boundary: P26-02 remains blocked until protected merge, fresh exact-main success,
+    and bounded P26-01 truth closure
+pr_219_ci_correction:
+  provider_evidence:
+    run: 35395179226
+    attempt: 1
+    artifact: 10568231376
+    tests: {collected: 1438, passed: 1434, failed: 4}
+  loc_boundary:
+    cause: grouped-claim resolution remained embedded in governance_truth.py and its runtime mirror
+    correction: extracted canonical claim ownership and authenticated evidence resolution into
+      bcf_governance/tooling/evidence_claim_resolution.py and mechanically projected it
+    resulting_governance_truth_loc: 797
+  claim_contract_boundary:
+    cause: receipt-local claim population checks loaded the full repository dependency-closure model
+    correction: receipt population and qualification consumers load only the canonical claim,
+      execution-group producer, and gate projection they require
+    strict_boundary: full repository claim-model validation remains mandatory at planning,
+      preflight, applicability, and exact-tree truth boundaries
+    sibling_review: qualification control inventory was the only genuine sibling consumer
+  invariants:
+  - duplicate legacy mappings remain rejected by full claim-model preflight
+  - wrong-producer grouped receipts cannot confer another producer's claim
+  - malformed required claim, execution-group, producer, or gate contracts fail closed
+  - minimal valid claim contracts retain specific claim-population diagnostics
+  boundary: P26-02 remains blocked pending protected merge, fresh exact-main success,
+    and P26-01 truth closure

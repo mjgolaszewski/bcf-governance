@@ -7,9 +7,11 @@ import json
 from pathlib import Path
 import re
 import subprocess
-from typing import Any, Iterator
+from typing import Any
 
 import yaml  # type: ignore[import-untyped]
+
+from .evidence_claim_resolution import eligible_claim_receipts, eligible_receipts, verified_candidate
 
 
 REQUIRED_DIRECT_CLAIMS = {
@@ -35,42 +37,6 @@ def active_log_path(repo_root: Path) -> Path:
     if not isinstance(active, dict) or not isinstance(active.get("log"), str):
         raise ValueError("plans/phase-ledger.yml active_phase.log is required")
     return repo_root / active["log"]
-
-
-def eligible_receipts(
-    receipts: dict[str, list[dict[str, Any]]], model: dict[str, Any], gate_id: str,
-    preflight_claims: set[str], *, include_preflight: bool = True,
-) -> Iterator[dict[str, Any]]:
-    """Yield validated evidence that explicitly admits the requested claim."""
-    claim_id = next((str(claim_id) for claim_id, raw in model["claims"].items()
-                     if isinstance(raw, dict) and raw.get("legacy_gate") == gate_id), gate_id)
-    if include_preflight and claim_id in preflight_claims:
-        yield {"evidence_id": f"preflight:{claim_id}", "gate_id": gate_id, "kind": "gate",
-               "result": "verified", "issues": [], "source": "evidence-session-v2"}
-    for values in receipts.values():
-        for candidate in values:
-            receipt = candidate.get("receipt")
-            if not isinstance(receipt, dict) or candidate.get("result") != "verified":
-                continue
-            if receipt.get("schema_version") == "3.0":
-                claims = receipt.get("claims")
-                if isinstance(claims, list) and claim_id in claims:
-                    yield candidate
-                continue
-            subject = receipt.get("subject")
-            if (
-                candidate.get("gate_id") == gate_id
-                and isinstance(subject, dict)
-                and subject.get("binding") == "exact_tree"
-            ):
-                yield candidate
-
-
-def verified_candidate(
-    receipts: dict[str, list[dict[str, Any]]], model: dict[str, Any], gate_id: str,
-    preflight_claims: set[str],
-) -> dict[str, Any] | None:
-    return next(eligible_receipts(receipts, model, gate_id, preflight_claims), None)
 
 
 def current_session_plan(evidence_dir: Path, current: dict[str, Any]) -> dict[str, Any]:
@@ -143,6 +109,7 @@ def failure_envelope(
     session_plan: dict[str, Any],
     issues: list[str],
     raw_results: list[dict[str, Any]] | None = None,
+    resolved_claims: set[str] | None = None,
 ) -> dict[str, Any]:
     roots: dict[str, dict[str, Any]] = {}
     for issue in sorted(set(issues)):
@@ -200,12 +167,47 @@ def failure_envelope(
             ).get("causal_result_fingerprint")
         except (OSError, UnicodeDecodeError, json.JSONDecodeError, AttributeError):
             pass
+    resolved = resolved_claims or set()
+    raw_dag = session_plan.get("execution_dag", {"nodes": [], "edges": []})
+    raw_dag = raw_dag if isinstance(raw_dag, dict) else {"nodes": [], "edges": []}
+    nodes = []
+    for raw in raw_dag.get("nodes", []):
+        if not isinstance(raw, dict):
+            continue
+        claims = [
+            str(value)
+            for value in raw.get("claims", [])
+            if isinstance(value, str) and value not in resolved
+        ]
+        if claims:
+            nodes.append({**raw, "claims": claims})
+    node_ids = {str(node.get("id")) for node in nodes}
+    for node in nodes:
+        if isinstance(node.get("depends_on"), list):
+            node["depends_on"] = [
+                value for value in node["depends_on"] if str(value) in node_ids
+            ]
+    edges = [
+        edge
+        for edge in raw_dag.get("edges", [])
+        if not isinstance(edge, dict)
+        or all(
+            str(edge[key]) in node_ids
+            for key in ("from", "to")
+            if key in edge
+        )
+    ]
+    remaining_invalidated = [
+        value
+        for value in session_plan.get("invalidated_evidence", [])
+        if not isinstance(value, dict) or value.get("claim_id") not in resolved
+    ]
     return {"current_subject": current, "plan_identity": plan_identity,
             "prior_subject": session_plan.get("prior_subject"),
             "reused_evidence": session_plan.get("reused_evidence", []),
-            "invalidated_evidence": session_plan.get("invalidated_evidence", []),
+            "invalidated_evidence": remaining_invalidated,
             "root_causes": sorted(roots.values(), key=lambda value: value["root_cause_id"]),
             "raw_failures": sorted(issues),
-            "required_next_action": session_plan.get("execution_dag", {"nodes": [], "edges": []}),
+            "required_next_action": {"nodes": nodes, "edges": edges},
             "causal_result_fingerprint": causal,
             "no_new_information": prior_fingerprint == causal}

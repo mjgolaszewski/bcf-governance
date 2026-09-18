@@ -122,10 +122,14 @@ def _repo(tmp_path: Path, *, scope: str = "normal") -> Path:
 def _receipt(root: Path, claims: list[str], *, freshness: int | None = None) -> dict:
     commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
     tree = subprocess.check_output(["git", "rev-parse", "HEAD^{tree}"], cwd=root, text=True).strip()
+    model = load_claim_model(root)
+    first_claim = model["claims"][claims[0]]
+    producer = model["execution_groups"][first_claim["execution_group"]]["producer"]
     receipt = {
         "schema_version": "3.0",
         "evidence_id": "evidence-" + "-".join(claims),
         "claims": claims,
+        "gate_id": producer,
         "dependency_manifest": build_dependency_manifest(root, claims),
         "subject": {"commit_sha": commit, "tree_sha": tree},
         "result": "passed",
@@ -271,14 +275,31 @@ def test_detector_qualification_reused_for_subject_remediation(tmp_path: Path) -
     }]
 
 
-def test_multi_claim_receipt_uses_each_claim_dependency_closure(tmp_path: Path) -> None:
+def test_multi_claim_receipt_cannot_launder_claim_from_another_producer(
+    tmp_path: Path,
+) -> None:
     root = _repo(tmp_path)
     receipt = _receipt(root, ["app-valid", "other-valid"])
     _commit(root, "app.py", "VALUE = 2\n")
     app_ok, app_reasons = receipt_applicability(root, receipt, "app-valid")
     other_ok, other_reasons = receipt_applicability(root, receipt, "other-valid")
     assert not app_ok and app_reasons == ["subject_dependency_changed"]
-    assert other_ok and other_reasons == []
+    assert not other_ok and other_reasons == ["claim_producer_mismatch"]
+
+
+def test_claim_model_rejects_duplicate_legacy_gate_during_preflight(
+    tmp_path: Path,
+) -> None:
+    root = _repo(tmp_path)
+    _registry_change(
+        root,
+        lambda registry: registry["claim_model"]["claims"]["other-valid"].update(
+            {"legacy_gate": "test"}
+        ),
+    )
+
+    with pytest.raises(EvidenceError, match="duplicate legacy gate test"):
+        load_claim_model(root)
 
 
 def test_remediation_preserves_unrelated_success(tmp_path: Path) -> None:

@@ -29,6 +29,8 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Reconcile exact-tree terminal actions through canonical grouped-claim resolution,
+  rejecting cross-producer claim laundering and removing already satisfied groups.
 - Separate packaged successor schemas from active trusted-runtime requirements,
   preserving fail-closed N/N+1 controller rotation before schema activation.
 - Resolve grouped v3 claims consistently across closure, workitem, hotfix, reconciliation, and finding-proof consumers.

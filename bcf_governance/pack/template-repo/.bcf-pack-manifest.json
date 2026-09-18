@@ -610,6 +610,10 @@
       "operation": "copy",
       "sha256": "3666d17ccd9953d6a3d2f907942caf4477301f7a5fb7b1930b440825bfc0bf31"
     },
+    "scripts/_bcf_runtime/evidence_claim_resolution.py": {
+      "operation": "copy",
+      "sha256": "924f254a5fabf52b830210297c916280a6ffd5e148efe3f950eae4117b6d315f"
+    },
     "scripts/_bcf_runtime/evidence_claims.py": {
       "operation": "copy",
       "sha256": "378feddaa0d20b4a8833b86bc0c3fece057340e70fe5df6c2294e37e2d78a58d"
@@ -624,7 +628,7 @@
     },
     "scripts/_bcf_runtime/evidence_planning.py": {
       "operation": "copy",
-      "sha256": "be3db146595b5c600be355981c06086c343b4f045c44e0c34d3e6a27c5a5a06b"
+      "sha256": "e88ad9376068f4a7f6bd545ab414515b1f29bd5445e29586b032872a1bb5155e"
     },
     "scripts/_bcf_runtime/evidence_session_cleanup.py": {
       "operation": "copy",
@@ -752,7 +756,7 @@
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
-      "sha256": "f0ef00a330f5cff962bbaebe20bd1fc6046f3f6f855a04552cdfb0e81364d10a"
+      "sha256": "7a9e52476a0fa7fafa760495d92ec08278e2b2b45494b21a836a189423b23307"
     },
     "scripts/_bcf_runtime/governance_truth_support.py": {
       "operation": "copy",
@@ -1004,11 +1008,11 @@
     },
     "scripts/_bcf_runtime/truth_receipts.py": {
       "operation": "copy",
-      "sha256": "dd976211df0fddaeccff4cb1bd3f2f5ebaaaadc61210d28517cfbbaa2656de2e"
+      "sha256": "921ca23ba4a68435194f793daba5f8d45c5fe5e448e47b560a69c0b3a3654749"
     },
     "scripts/_bcf_runtime/truth_reporting.py": {
       "operation": "copy",
-      "sha256": "52a72b284a8be9aee12781f847869c04855cbabe7a17352d5072a2e32218ac24"
+      "sha256": "ac2c8870cab08ba189e8db04179f84563dd4f4ed71b4026fb631fe72ff63f9b3"
     },
     "scripts/_bcf_runtime/truth_sessions.py": {
       "operation": "copy",

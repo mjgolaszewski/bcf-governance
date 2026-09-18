@@ -78,3 +78,19 @@ def test_test_claim_without_population_manifest_fails_closed(tmp_path: Path) -> 
     assert _multi_claim_test_issues(root, receipt) == [
         "claim_subset_test_manifest_undeclared"
     ]
+
+
+def test_malformed_required_claim_gate_contract_fails_closed(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    path = root / "governance/gate-contracts.yml"
+    registry = yaml.safe_load(path.read_text(encoding="utf-8"))
+    del registry["claim_model"]["execution_groups"]["python-tests"]
+    path.write_text(yaml.safe_dump(registry, sort_keys=False), encoding="utf-8")
+    receipt = {
+        "schema_version": "3.0",
+        "kind": "test_suite",
+        "claims": ["subset"],
+        "observations": {"test_node_ids": ["tests.test_subset::test_required"]},
+    }
+
+    assert _multi_claim_test_issues(root, receipt) == ["claim_contract_unreadable"]
