@@ -10,7 +10,7 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `2.1.0`
+Release target: `2.0.0`
 
 ### Added
 
