@@ -29,6 +29,8 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Separate packaged successor schemas from active trusted-runtime requirements,
+  preserving fail-closed N/N+1 controller rotation before schema activation.
 - Resolve grouped v3 claims consistently across closure, workitem, hotfix, reconciliation, and finding-proof consumers.
 - Bind editorial-audit bases to immutable commit SHAs so PR and post-merge freshness validation agree.
 - Confirm the recovered controller installation from authenticated bootstrap and probe inventories, restoring ordinary target/installation equality and mechanically retiring recovery re-entry authority.

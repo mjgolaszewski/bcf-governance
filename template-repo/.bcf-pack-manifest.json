@@ -996,7 +996,7 @@
     },
     "scripts/_bcf_runtime/trusted_controller_compatibility.py": {
       "operation": "copy",
-      "sha256": "f929f88ca031658e747223f911ce2651c70d8d8dd6fc57d2ef16821365a52404"
+      "sha256": "04204ee39d4b1100a1ec0bc66868c95acd53b26fe7a1c7bfbece0e6474105907"
     },
     "scripts/_bcf_runtime/trusted_inputs.py": {
       "operation": "copy",

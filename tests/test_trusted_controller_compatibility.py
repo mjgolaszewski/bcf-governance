@@ -45,6 +45,12 @@ def _write_runtime(root: Path) -> None:
         "class GitHubAPI: pass\n", encoding="utf-8"
     )
     (schemas / "ci-authority.schema.json").write_text("{}\n", encoding="utf-8")
+    (root / "AGENTS.yml").write_text(
+        "governance:\n"
+        "  structural_schema_contract:\n"
+        "    required_schemas: [schemas/ci-authority.schema.json]\n",
+        encoding="utf-8",
+    )
 
 
 def _repository(tmp_path: Path) -> tuple[Path, str]:
@@ -152,3 +158,90 @@ def test_target_must_be_in_current_history(tmp_path: Path) -> None:
 
     with pytest.raises(TrustedControllerCompatibilityError):
         verify_trusted_controller_compatibility(root, target_commit="f" * 40)
+
+
+def _add_successor_schema(root: Path, *, activate: bool) -> None:
+    schema = root / "bcf_governance/pack/template-repo/schemas/reuse.schema.json"
+    schema.write_text('{"type": "object"}\n', encoding="utf-8")
+    if activate:
+        (root / "AGENTS.yml").write_text(
+            "governance:\n"
+            "  structural_schema_contract:\n"
+            "    required_schemas: [schemas/ci-authority.schema.json, schemas/reuse.schema.json]\n",
+            encoding="utf-8",
+        )
+    _git(root, "add", ".")
+    _git(root, "commit", "-q", "-m", "add successor schema")
+
+
+def test_dormant_successor_schema_is_compatible_with_controller_n(
+    tmp_path: Path,
+) -> None:
+    root, controller_n = _repository(tmp_path)
+    _add_successor_schema(root, activate=False)
+
+    report = verify_trusted_controller_compatibility(
+        root, target_commit=controller_n
+    )
+
+    assert not any("reuse.schema.json" in path for path in report.source_files)
+
+
+def test_schema_activation_is_rejected_by_incompatible_controller_n(
+    tmp_path: Path,
+) -> None:
+    root, controller_n = _repository(tmp_path)
+    _add_successor_schema(root, activate=True)
+
+    with pytest.raises(
+        TrustedControllerCompatibilityError,
+        match="target is stale.*reuse.schema.json",
+    ):
+        verify_trusted_controller_compatibility(root, target_commit=controller_n)
+
+
+def test_schema_activation_is_compatible_with_controller_n_plus_one(
+    tmp_path: Path,
+) -> None:
+    root, _ = _repository(tmp_path)
+    _add_successor_schema(root, activate=False)
+    controller_n_plus_one = _git(root, "rev-parse", "HEAD")
+    agents = root / "AGENTS.yml"
+    agents.write_text(
+        "governance:\n"
+        "  structural_schema_contract:\n"
+        "    required_schemas: [schemas/ci-authority.schema.json, schemas/reuse.schema.json]\n",
+        encoding="utf-8",
+    )
+    _git(root, "add", "AGENTS.yml")
+    _git(root, "commit", "-q", "-m", "activate successor schema")
+
+    report = verify_trusted_controller_compatibility(
+        root, target_commit=controller_n_plus_one
+    )
+
+    assert any("reuse.schema.json" in path for path in report.source_files)
+
+
+@pytest.mark.parametrize("change", ["mutate", "remove"])
+def test_active_schema_mutation_or_removal_is_rejected(
+    tmp_path: Path, change: str
+) -> None:
+    root, _ = _repository(tmp_path)
+    _add_successor_schema(root, activate=True)
+    controller_n_plus_one = _git(root, "rev-parse", "HEAD")
+    schema = root / "bcf_governance/pack/template-repo/schemas/reuse.schema.json"
+    if change == "mutate":
+        schema.write_text('{"type": "string"}\n', encoding="utf-8")
+    else:
+        schema.unlink()
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", f"{change} active schema")
+
+    with pytest.raises(
+        TrustedControllerCompatibilityError,
+        match="reuse.schema.json",
+    ):
+        verify_trusted_controller_compatibility(
+            root, target_commit=controller_n_plus_one
+        )

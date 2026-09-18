@@ -19,6 +19,8 @@ summary:
     protected merge, exact-main certification, and terminal truth closure
   - P26 foundation inventories each required primitive owner and adds one closed
     immutable reuse-attestation contract without duplicating claim or dependency registries
+  - the exact-main foundation failure exposed packaged-presence versus active-requirement
+    conflation; the corrective insertion restores governed expand-rotate-activate ordering
 workitems:
 - id: P26-P0-01
   status: DONE
@@ -56,6 +58,11 @@ execution_evidence:
   - the first full suite exposed only mandatory schema-pack projection and an early
     CHANGELOG version-target change; canonical pack generation projected the schema
     and the version target remains 2.0.0 until P28 release preparation
+  - exact-main run 35387324770/1 rejected the newly packaged dormant schema under
+    controller N; compatibility now derives active schema requirements from AGENTS.yml
+    at both target and current subjects
+  - P26-02 remains blocked until this correction merges, the trusted runtime rotates
+    through ordinary governed custody, and fresh exact-main truth succeeds
 closeout_requirements:
   claims:
     workitems_closed:
@@ -88,5 +95,6 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- protected-merge p26-01-foundation, certify exact main, close the bounded PR truth,
-  then begin provider-authenticated transport in p26-02
+- protected-merge the P26-01 corrective insertion, rotate its compatible controller
+  through ordinary governed bootstrap and confirmation, certify exact main, close the
+  bounded P26-01 truth, then begin provider-authenticated transport in P26-02
