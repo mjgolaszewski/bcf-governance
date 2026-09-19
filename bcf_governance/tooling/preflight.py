@@ -738,10 +738,20 @@ def run_preflight(
     }
 
 
+def preflight_mode_for_evaluation(evaluation_mode: str | None) -> str:
+    """Derive the preflight authority boundary from one effective intent."""
+
+    try:
+        intent = EvaluationIntent(evaluation_mode or "pr")
+    except ValueError as exc:
+        raise PreflightError("evaluation mode must be pr, workitem, or closure")
+    return "pr" if intent is EvaluationIntent.PR_PROGRESS else "release"
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Run cheap governance preflight.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--mode", choices=("release", "pr"), required=True)
+    parser.add_argument("--mode", choices=("release", "pr"))
     parser.add_argument("--evaluation-mode", choices=("pr", "workitem", "closure"))
     parser.add_argument("--evaluation-target")
     parser.add_argument("--python", type=Path)
@@ -758,7 +768,7 @@ def main(argv: list[str] | None = None) -> None:
         )
         report = run_preflight(
             args.repo_root,
-            mode=args.mode,
+            mode=args.mode or preflight_mode_for_evaluation(args.evaluation_mode),
             python_executable=args.python,
             artifact_root=args.artifact_root,
             expected_producers=args.expected_producer,

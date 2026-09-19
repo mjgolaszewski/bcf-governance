@@ -365,6 +365,16 @@ def test_stale_trusted_controller_is_a_preflight_failure(
         "release_authority": False,
     }
 
+    assert preflight.preflight_mode_for_evaluation(None) == "pr"
+    assert preflight.preflight_mode_for_evaluation("pr") == "pr"
+    for evaluation_mode in ("workitem", "closure"):
+        assert preflight.preflight_mode_for_evaluation(evaluation_mode) == "release"
+        with pytest.raises(
+            preflight.PreflightError,
+            match="self-controller preflight failed: stale runtime closure",
+        ):
+            preflight._self_controller(tmp_path, allow_stale_runtime=False)
+
 
 def test_stale_pack_manifest_fails_before_evidence(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch

@@ -15,6 +15,10 @@ _RUN_AND_DONE_FORBIDDEN = frozenset(
 _SELECTED_PYTHON_EXECUTABLES = frozenset(
     {"{python}", "{controller}", "{ephemeral_controller}"}
 )
+_INPUT_REFERENCE = re.compile(r"inputs\.([A-Za-z_][A-Za-z0-9_-]*)")
+_LITERAL_INPUT_FALLBACK = re.compile(
+    r"inputs\.([A-Za-z_][A-Za-z0-9_-]*)\s*\|\|\s*(['\"])(.*?)\2"
+)
 
 
 def _strings(value: Any) -> tuple[str, ...]:
@@ -183,6 +187,12 @@ def workflow_input_issues(
     )
     if not direct_events:
         return ()
+    declared_inputs = {
+        str(name): contract
+        for event in workflow["events"]
+        if event["type"] == "workflow_call"
+        for name, contract in event.get("inputs", {}).items()
+    }
     issues: list[str] = []
     for job in workflow["jobs"]:
         surfaces: list[tuple[str, Any]] = [("job outputs", job.get("outputs", {}))]
@@ -198,11 +208,30 @@ def workflow_input_issues(
             surfaces.append(("reusable-workflow inputs", executor["inputs"]))
         for surface, payload in surfaces:
             for value in _strings(payload):
-                if "inputs." in value and "||" not in value:
+                references = set(_INPUT_REFERENCE.findall(value))
+                if references and "||" not in value:
                     issues.append(
                         f"direct-event workflow {workflow['id']} {surface} "
                         f"must provide an input fallback for {direct_events}"
                     )
+                    continue
+                fallbacks = {
+                    name: literal
+                    for name, _, literal in _LITERAL_INPUT_FALLBACK.findall(value)
+                }
+                for name in sorted(references):
+                    contract = declared_inputs.get(name)
+                    expected = contract.get("default") if isinstance(contract, dict) else None
+                    expected_literal = (
+                        str(expected).lower()
+                        if isinstance(expected, bool)
+                        else "" if expected is None else str(expected)
+                    )
+                    if fallbacks.get(name) != expected_literal:
+                        issues.append(
+                            f"direct-event workflow {workflow['id']} {surface} input {name} "
+                            "fallback must equal its declared workflow_call default"
+                        )
     return tuple(sorted(set(issues)))
 
 

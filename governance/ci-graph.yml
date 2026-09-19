@@ -69,7 +69,7 @@ commands:
     cwd: .
     environment: {}
   governance-preflight:
-    argv: ['{python}', scripts/preflight_governance.py, --repo-root, ., --mode, '${{ inputs.evaluation_mode == ''pr'' && ''pr'' || ''release'' }}', --evaluation-mode, '${{ inputs.evaluation_mode || ''pr'' }}', --evaluation-target, '${{ inputs.evaluation_target || '''' }}', --python, '{python}', --artifact-root, .artifacts/bcf, --expected-producer, evidence, --format, text]
+    argv: ['{python}', scripts/preflight_governance.py, --repo-root, ., --evaluation-mode, '${{ inputs.evaluation_mode || ''pr'' }}', --evaluation-target, '${{ inputs.evaluation_target || '''' }}', --python, '{python}', --artifact-root, .artifacts/bcf, --expected-producer, evidence, --format, text]
     cwd: .
     environment: {}
   capture-governance-shard:
