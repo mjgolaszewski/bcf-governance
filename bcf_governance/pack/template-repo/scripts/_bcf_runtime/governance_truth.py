@@ -25,8 +25,8 @@ from .governance_truth_support import (
     compute_hotfix_reports,
     finding_report,
     verify_attestation,
-    workitem_observation,
 )
+from .evidence_workitem_lifecycle import workitem_observation
 from .truth_receipts import ReceiptError, load_receipts
 from .evidence_planning import load_claim_model
 from .truth_reporting import (
@@ -314,7 +314,7 @@ def derive_truth(
     claims: dict[str, Any] = {}
     direct_verified = not missing_claim_declarations
     workitems = workitem_observation(
-        repo_root, receipts, claim_model or {"claims": {}}, preflight_claims
+        repo_root, receipts, claim_model or {"claims": {}}, preflight_claims, current
     )
     required_gate_ids: set[str] = set()
     for claim_id, raw in raw_claims.items():

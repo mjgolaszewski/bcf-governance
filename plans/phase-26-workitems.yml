@@ -28,6 +28,7 @@ workitems:
   acceptance:
   - provider-authenticated prior-evidence transport with immutable source receipts_is_complete
   - phase-specific provider transport custody is recorded in the phase log
+  - requires-workitem-closure:P26-P0-01
   acceptance_evidence:
   - test
   - contract-test

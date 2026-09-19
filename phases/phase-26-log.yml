@@ -24,6 +24,8 @@ summary:
   - post-merge fan-in verified all produced grouped claims but retained the initial
     seven-group execution plan in terminal diagnostics; canonical claim resolution now
     removes satisfied groups and rejects cross-producer claim laundering
+  - ordinary workitems now derive bounded exact-subject closure independently of their
+    active parent phase; P26-P0-02 eligibility requires authenticated closure of P26-P0-01
 workitems:
 - id: P26-P0-01
   status: DONE
@@ -76,6 +78,9 @@ execution_evidence:
     resolver exceeded the governed module cap and receipt-local checks depended on the
     full repository claim model; the resolver now has an evidence-context owner and
     receipt checks retain specific fail-closed diagnostics through a minimal projection
+  - exact-main 35401727217/1 verified every producer and terminal condition except the
+    active parent lifecycle; ordinary workitem closure now uses the existing canonical
+    claim resolver without repurposing hotfixes or conferring parent authority
 closeout_requirements:
   claims:
     workitems_closed:

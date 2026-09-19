@@ -48,51 +48,6 @@ def artifact_issues(receipt_path: Path, receipt: dict[str, Any]) -> list[str]:
     return issues
 
 
-def workitem_observation(
-    repo_root: Path, receipts: dict[str, list[dict[str, Any]]],
-    claim_model: dict[str, Any], preflight_claims: set[str],
-) -> dict[str, Any]:
-    ledger = yaml.safe_load((repo_root / "plans/phase-ledger.yml").read_text(encoding="utf-8"))
-    active = ledger.get("active_phase") if isinstance(ledger, dict) else None
-    workitems_path = active.get("workitems") if isinstance(active, dict) else None
-    if not isinstance(workitems_path, str):
-        return {"satisfied": False, "issue": "active_workitem_ledger_missing"}
-    payload = yaml.safe_load((repo_root / workitems_path).read_text(encoding="utf-8"))
-    entries = payload.get("workitems") if isinstance(payload, dict) else None
-    if not isinstance(entries, list) or not entries:
-        return {"satisfied": False, "issue": "workitems_missing"}
-    open_ids = sorted(
-        str(entry.get("id", "unknown"))
-        for entry in entries
-        if not isinstance(entry, dict) or entry.get("status") != "DONE"
-    )
-    acceptance_evidence = sorted(
-        {
-            str(gate_id)
-            for entry in entries
-            if isinstance(entry, dict)
-            for gate_id in entry.get("acceptance_evidence", [])
-            if isinstance(gate_id, str)
-        }
-    )
-    missing_acceptance_evidence = sorted(
-        gate_id
-        for gate_id in acceptance_evidence
-        if next(
-            eligible_receipts(receipts, claim_model, gate_id, preflight_claims),
-            None,
-        ) is None
-    )
-    return {
-        "satisfied": not open_ids and not missing_acceptance_evidence,
-        "workitems_path": workitems_path,
-        "total": len(entries),
-        "open_ids": open_ids,
-        "acceptance_evidence": acceptance_evidence,
-        "missing_acceptance_evidence": missing_acceptance_evidence,
-    }
-
-
 def compute_hotfix_reports(
     repo_root: Path,
     phase_id: str,

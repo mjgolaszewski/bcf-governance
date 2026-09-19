@@ -29,6 +29,8 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Derive bounded ordinary-workitem closure from exact-subject authenticated evidence,
+  while preserving active parent-phase authority and fail-closed predecessor eligibility.
 - Reconcile exact-tree terminal actions through canonical grouped-claim resolution,
   rejecting cross-producer claim laundering and removing already satisfied groups.
 - Separate packaged successor schemas from active trusted-runtime requirements,
