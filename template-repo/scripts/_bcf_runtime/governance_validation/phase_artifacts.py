@@ -4,6 +4,10 @@
 from __future__ import annotations
 
 from .common import *  # noqa: F403,F405
+from ..evidence_workitem_lifecycle import (
+    WorkitemContractError,
+    validate_workitem_dependencies,
+)
 
 def _document_status(payload: dict[str, Any], *, context: str) -> str:
     document = _require_mapping(payload.get("document"), context=f"{context}.document")
@@ -106,6 +110,15 @@ def _validate_phase_workitem_consistency(
     workitem_entries = _require_sequence(
         workitems.get("workitems"), context=f"{workitems_path} workitems"
     )
+    try:
+        validate_workitem_dependencies(
+            [
+                _require_mapping(item, context=f"{workitems_path} workitems[{index}]")
+                for index, item in enumerate(workitem_entries, start=1)
+            ]
+        )
+    except WorkitemContractError as exc:
+        raise GovernanceValidationError(f"{workitems_path} {exc}") from exc
     log_workitem_entries = _require_sequence(log.get("workitems"), context=f"{log_path} workitems")
 
     workitem_text = "\n".join(

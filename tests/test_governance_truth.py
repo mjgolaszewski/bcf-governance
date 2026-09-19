@@ -16,6 +16,10 @@ import yaml
 
 from scripts.governance_evidence import attest_bundle
 from bcf_governance.tooling.evidence_planning import build_dependency_manifest
+from bcf_governance.tooling.evidence_workitem_lifecycle import (
+    WorkitemContractError,
+    validate_workitem_dependencies,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TRUTH_MODULE_PATH = Path(
@@ -197,7 +201,16 @@ jobs:
     )
     _write_yaml(
         repo / "plans/phase-01-workitems.yml",
-        {"workitems": [{"id": "P01-W01", "status": "DONE"}]},
+        {
+            "workitems": [
+                {
+                    "id": "P01-W01",
+                    "status": "DONE",
+                    "acceptance": ["foundation_is_complete"],
+                    "acceptance_evidence": ["test"],
+                }
+            ]
+        },
     )
     claims = {
         "workitems_closed": {"required_evidence": ["test"]},
@@ -503,7 +516,7 @@ def _enable_v2_session(repo: Path) -> Path:
 
 def _enable_v3_grouped_session(
     repo: Path, *, second_test_receipt: bool = False, hotfix: bool = False,
-    open_workitem: bool = False,
+    open_workitem: bool = False, bounded_workitems: bool = False,
 ) -> Path:
     profile_path = repo / "governance-profile.yml"
     profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
@@ -573,19 +586,30 @@ def _enable_v3_grouped_session(
         encoding="utf-8",
     )
     workitems_path = repo / "plans/phase-01-workitems.yml"
-    _write_yaml(
-        workitems_path,
+    entries = [
         {
-            "workitems": [
-                {
-                    "id": f"P01-W0{index}",
-                    "status": "TODO" if open_workitem and index == 1 else "DONE",
-                    "acceptance_evidence": ["test", "contract-test"],
-                }
-                for index in range(1, 5)
-            ]
-        },
-    )
+            "id": f"P01-W0{index}",
+            "status": (
+                "TODO"
+                if (open_workitem and index == 1) or (bounded_workitems and index > 1)
+                else "DONE"
+            ),
+            "acceptance": [f"workitem_{index}_is_complete"],
+            "acceptance_evidence": ["test", "contract-test"],
+        }
+        for index in range(1, 5)
+    ]
+    if bounded_workitems:
+        entries[1]["acceptance"].append("requires-workitem-closure:P01-W01")
+        ledger_path = repo / "plans/phase-ledger.yml"
+        ledger = yaml.safe_load(ledger_path.read_text(encoding="utf-8"))
+        ledger["active_phase"]["lifecycle_status"] = "active"
+        _write_yaml(ledger_path, ledger)
+        log_path = repo / "phases/phase-01-log.yml"
+        log = yaml.safe_load(log_path.read_text(encoding="utf-8"))
+        log["document"]["status"] = "active"
+        _write_yaml(log_path, log)
+    _write_yaml(workitems_path, {"workitems": entries})
     if hotfix:
         _write_yaml(
             repo / "phases/phase-01-hotfix01.yml",
@@ -741,6 +765,123 @@ def test_grouped_v3_receipt_closes_claims_workitems_and_hotfix(tmp_path: Path) -
     assert observation["missing_acceptance_evidence"] == []
     assert report["claims"]["required_suites_green"]["missing_or_invalid"] == []
     assert report["hotfixes"][0]["effective_state"] == "closed"
+
+
+def test_bounded_workitem_closes_while_parent_remains_active(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+    report = derive_truth(
+        repo,
+        _enable_v3_grouped_session(repo, bounded_workitems=True),
+        evaluation_mode="closure",
+    )
+
+    observation = report["claims"]["workitems_closed"]["repository_observation"]
+    by_id = {item["id"]: item for item in observation["items"]}
+    assert by_id["P01-W01"]["effective_state"] == "closed"
+    assert by_id["P01-W01"]["verification_state"] == "verified"
+    assert by_id["P01-W02"]["eligible"] is True
+    assert by_id["P01-W02"]["effective_state"] == "planned"
+    assert report["effective_state"] == "active"
+    assert report["release_readiness"]["effective_state"] == "completed"
+    assert "phase_effective_state_active" in report["issues"]
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "missing",
+        "preflight-only",
+        "invalid",
+        "wrong-subject",
+        "wrong-session",
+        "wrong-claim",
+    ],
+)
+def test_bounded_workitem_and_successor_fail_closed_without_applicable_evidence(
+    tmp_path: Path, mutation: str
+) -> None:
+    repo = _make_repo(tmp_path)
+    evidence = _enable_v3_grouped_session(repo, bounded_workitems=True)
+    receipt_path = evidence / "test.evidence.json"
+    if mutation in {"missing", "preflight-only"}:
+        receipt_path.unlink()
+        if mutation == "preflight-only":
+            _rewrite_session_bundle(
+                evidence,
+                lambda value: value.update(
+                    {
+                        "preflight_satisfied_claims": [
+                            "test-claim",
+                            "contract-test-claim",
+                        ]
+                    }
+                ),
+            )
+    elif mutation == "invalid":
+        _rewrite_receipt(receipt_path, lambda value: value.update({"result": "failed"}))
+    elif mutation == "wrong-subject":
+        _rewrite_receipt(
+            receipt_path,
+            lambda value: value["subject"].update({"tree_sha": "d" * 40}),
+        )
+    elif mutation == "wrong-session":
+        _rewrite_receipt(
+            receipt_path,
+            lambda value: value["observations"]["evidence_session"].update(
+                {"session_id": "c" * 32}
+            ),
+        )
+    else:
+        def replace_claim(value: dict[str, Any]) -> None:
+            value["claims"] = ["security-claim"]
+            value["dependency_manifest"] = build_dependency_manifest(
+                repo, value["claims"]
+            )
+        _rewrite_receipt(receipt_path, replace_claim)
+
+    report = derive_truth(repo, evidence, evaluation_mode="closure")
+    observation = report["claims"]["workitems_closed"]["repository_observation"]
+    by_id = {item["id"]: item for item in observation["items"]}
+    assert by_id["P01-W01"]["effective_state"] == "completed"
+    assert by_id["P01-W02"]["eligible"] is False
+    assert "test" in by_id["P01-W01"]["missing_or_invalid"] or (
+        "contract-test" in by_id["P01-W01"]["missing_or_invalid"]
+    )
+
+
+@pytest.mark.parametrize(
+    ("entries", "diagnostic"),
+    [
+        (
+            [
+                {"id": "W1", "acceptance": ["done"]},
+                {"id": "W1", "acceptance": ["done"]},
+            ],
+            "duplicate workitem ids",
+        ),
+        (
+            [
+                {
+                    "id": "W1",
+                    "acceptance": ["requires-workitem-closure:absent"],
+                }
+            ],
+            "unknown predecessor",
+        ),
+        (
+            [
+                {"id": "W1", "acceptance": ["requires-workitem-closure:W2"]},
+                {"id": "W2", "acceptance": ["requires-workitem-closure:W1"]},
+            ],
+            "forward or cyclic",
+        ),
+    ],
+)
+def test_workitem_dependency_ambiguity_fails_closed(
+    entries: list[dict[str, Any]], diagnostic: str
+) -> None:
+    with pytest.raises(WorkitemContractError, match=diagnostic):
+        validate_workitem_dependencies(entries)
 
 
 def test_grouped_v3_finding_uses_one_later_eligible_receipt_for_proof(

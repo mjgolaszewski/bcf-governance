@@ -116,3 +116,32 @@ pr_219_ci_correction:
   - minimal valid claim contracts retain specific claim-population diagnostics
   boundary: P26-02 remains blocked pending protected merge, fresh exact-main success,
     and P26-01 truth closure
+post_merge_workitem_lifecycle_correction:
+  exact_main:
+    run: 35401727217
+    attempt: 1
+    main_commit: 83c8fe52e6d6e4f8aafc4ba1f88d65d69742cd81
+    main_tree: af227004ab8c326ff05f5f4b2203deed0fa4c713
+  verified_boundary:
+    admission: success
+    independent_controller_build: success
+    closure_preflight: success
+    evidence_shards: {expected: 4, successful: 4}
+    remaining_issue: phase_effective_state_active
+  primitive_gap: ordinary acceptance was aggregated only at whole-phase scope, so a
+    completed child could not represent evidence-derived closure while its parent remained active
+  correction:
+  - derive each ordinary workitem's verified closure from authored DONE, its existing
+    acceptance contract, exact-subject eligible receipts, and closed predecessors
+  - encode predecessor requirements through the existing deterministic acceptance predicate
+    requires-workitem-closure:<id>, avoiding an active schema mutation
+  - expose bounded workitem closure as workitem-only authority; phase, release, and publication
+    remain governed by their existing aggregate terminal conditions
+  fail_closed_proof:
+  - missing, invalid, wrong-subject, wrong-session, wrong-claim, or preflight-only evidence
+    cannot close a workitem
+  - duplicate, unknown, forward, or cyclic predecessor declarations reject mechanically
+  - authored DONE without verified acceptance or predecessor closure remains completed, not closed
+  hotfix_boundary: corrective hotfix lifecycle and authority remain unchanged
+  boundary: P26 remains active and P26-02 implementation remains blocked pending protected
+    merge, fresh exact-main success, and authoritative P26-P0-01 bounded closure

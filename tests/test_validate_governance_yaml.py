@@ -1171,6 +1171,21 @@ def test_validate_repo_root_rejects_log_workitem_status_drift(tmp_path: Path) ->
     assert "workitem statuses must match" in str(excinfo.value)
 
 
+def test_validate_repo_root_rejects_unknown_workitem_predecessor(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    workitems_path = repo_root / "plans/phase-01-workitems.yml"
+    payload = yaml.safe_load(workitems_path.read_text(encoding="utf-8"))
+    payload["workitems"][0]["acceptance"].append(
+        "requires-workitem-closure:P01-absent"
+    )
+    workitems_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError, match="unknown predecessor"):
+        validate_repo_root(repo_root)
+
+
 def test_validate_repo_root_rejects_authored_terminal_state_and_booleans(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
     log_path = repo_root / "phases/phase-01-log.yml"
