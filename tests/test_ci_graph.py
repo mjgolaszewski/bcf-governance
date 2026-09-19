@@ -1056,6 +1056,18 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
             (".github/workflows/bcf-release-publisher.yml", "publish"),
         ):
             assert rendered[path]["jobs"][job_id]["if"] == "${{ false }}"
+    elif (
+        compiled.trusted_controller_lifecycle.state
+        is ControllerLifecycleState.ORDINARY_PENDING_ROTATION
+    ):
+        assert "trusted_controller_recovery_reentry" not in policy["runner_security"]
+        for path, job_id in (
+            (".github/workflows/bcf-exact-main.yml", "admit"),
+            (".github/workflows/release.yml", "authorize"),
+            (".github/workflows/bcf-release-verifier.yml", "collect"),
+            (".github/workflows/bcf-release-publisher.yml", "publish"),
+        ):
+            assert rendered[path]["jobs"][job_id]["if"] == "${{ false }}"
     else:
         assert (
             compiled.trusted_controller_lifecycle.state

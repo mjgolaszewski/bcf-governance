@@ -14,6 +14,10 @@ import yaml
 from bcf_governance.tooling.ci_github_api import GitHubContent
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError, MainIdentity
 from bcf_governance.tooling.ci_github_pr import finalize_pr
+from bcf_governance.tooling.ci_graph_controller_lifecycle import (
+    ControllerLifecycleState,
+    resolve_controller_lifecycle,
+)
 from bcf_governance.tooling.ci_pr_transition import (
     TransitionRejected,
     load_transition_bytes,
@@ -561,7 +565,16 @@ def test_repaired_controller_and_race_safe_admission_remain_authoritative() -> N
     assert len(artifact["BCF_BOOTSTRAP_COMMIT_SHA"]) == 40
     assert set(artifact["BCF_BOOTSTRAP_COMMIT_SHA"]) <= set("0123456789abcdef")
     assert installation["schema_version"] == "1.0"
-    assert installation["installed_commit_sha"] == artifact["BCF_BOOTSTRAP_COMMIT_SHA"]
+    lifecycle = resolve_controller_lifecycle(ROOT, runner)
+    assert lifecycle.state in {
+        ControllerLifecycleState.ORDINARY_CURRENT,
+        ControllerLifecycleState.ORDINARY_PENDING_ROTATION,
+    }
+    assert lifecycle.target_commit == artifact["BCF_BOOTSTRAP_COMMIT_SHA"]
+    assert lifecycle.installed_commit == installation["installed_commit_sha"]
+    assert (
+        lifecycle.target_commit == lifecycle.installed_commit
+    ) is (lifecycle.state is ControllerLifecycleState.ORDINARY_CURRENT)
     subject_tree = subprocess.run(
         ["git", "rev-parse", f'{installation["subject_commit_sha"]}^{{tree}}'],
         cwd=ROOT,
