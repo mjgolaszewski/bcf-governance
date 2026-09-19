@@ -33,6 +33,8 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Confirm the P26 scoped controller on both trusted runners and restore ordinary
+  current-controller exact-main routing mechanically.
 - Keep pending-rotation exact-main execution non-certifying while preserving its
   independent controller artifact producer for ordinary bootstrap.
 - Derive bounded ordinary-workitem closure only from receipt-producing, exact-subject
