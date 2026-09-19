@@ -490,6 +490,10 @@ def _executor_steps(
             "collect-release": "release collect --repository \"$GITHUB_REPOSITORY\"",
             "publish-release": "release publish --repository \"$GITHUB_REPOSITORY\"",
         }[operation]
+        if operation == "admit" and executor.get("evaluation_mode"):
+            arguments += f' --evaluation-mode "{executor["evaluation_mode"]}"'
+            if executor.get("evaluation_target"):
+                arguments += f' --evaluation-target "{executor["evaluation_target"]}"'
         return [
             {
                 "name": job["display_name"],

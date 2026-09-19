@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import hashlib
+from io import BytesIO
 import json
 from pathlib import Path
+import zipfile
 
 import pytest
 import yaml
@@ -26,6 +28,7 @@ from bcf_governance.tooling.ci_github_membership import (
     select_latest_admission,
 )
 from bcf_governance.tooling.ci_github_exact_main import (
+    admit_exact_main,
     finalize_exact_main,
     publish_exact_main,
 )
@@ -146,6 +149,7 @@ class FakeAPI:
             "98": ".github/workflows/finalizer.yml",
             "97": ".github/workflows/status.yml",
         }
+        self.truth_artifact_override: dict[str, object] | None = None
 
     @staticmethod
     def _producer_run(run_id: int, workflow_id: int) -> dict[str, object]:
@@ -249,6 +253,62 @@ class FakeAPI:
     def commit_statuses(self, repository: str, *, sha: str) -> tuple[dict[str, str], ...]:
         assert repository == "owner/repo" and sha == SHA_A
         return tuple(self.existing_statuses)
+
+    def _truth_archive(self) -> bytes:
+        conclusion = str(self.runs["100"].get("conclusion"))
+        report: dict[str, object] = self.truth_artifact_override or {
+            "status": "pass" if conclusion == "success" else "fail",
+            "subject": {
+                "commit_sha": self.main,
+                "tree_sha": self.tree,
+            },
+            "evaluation_scope": {
+                "intent": "closure",
+                "target": {"kind": "phase", "id": "P01"},
+            },
+            "certified_proposition": {
+                "predicate": "phase_closed",
+                "target": {"kind": "phase", "id": "P01"},
+                "subject": {"commit_sha": self.main, "tree_sha": self.tree},
+                "conclusion": "success" if conclusion == "success" else "failure",
+                "authorizes": [],
+                "eligible_successors": [],
+            },
+            "durable_ref": (
+                "github-actions://owner/repo/runs/100/attempts/1/"
+                "bcf-governance-truth"
+            ),
+        }
+        stream = BytesIO()
+        with zipfile.ZipFile(stream, "w") as archive:
+            info = zipfile.ZipInfo("truth-report.json", (2026, 1, 1, 0, 0, 0))
+            archive.writestr(info, json.dumps(report, sort_keys=True) + "\n")
+        return stream.getvalue()
+
+    def artifacts(self, repository: str, run_id: str | int) -> tuple[dict[str, object], ...]:
+        assert repository == "owner/repo" and str(run_id) == "100"
+        raw = self._truth_archive()
+        return ({
+            "id": 700,
+            "name": "bcf-governance-truth-100-1",
+            "expired": False,
+            "digest": f"sha256:{hashlib.sha256(raw).hexdigest()}",
+            "workflow_run": {
+                "id": 100,
+                "repository_id": 42,
+                "head_repository_id": 42,
+                "head_branch": "main",
+                "head_sha": self.main,
+            },
+        },)
+
+    def artifact_bytes(
+        self, repository: str, artifact_id: str | int, *, maximum_bytes: int
+    ) -> bytes:
+        assert repository == "owner/repo" and str(artifact_id) == "700"
+        raw = self._truth_archive()
+        assert len(raw) <= maximum_bytes
+        return raw
 
 
 def test_admission_ordinal_preserves_total_github_order() -> None:
@@ -401,6 +461,23 @@ def test_v11_collects_all_producers_from_one_exact_admission_attempt() -> None:
     assert {value["same_run_membership"]["producer_id"] for value in observed} == {
         "governance", "pack"
     }
+
+
+def test_v11_bounded_admission_publishes_only_bounded_pending_context() -> None:
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    admit_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        expected_sha=SHA_A,
+        run_id="100",
+        run_attempt="1",
+        target_url="https://github.example/runs/100",
+        evaluation_mode="workitem",
+        evaluation_target="P26-P0-01",
+    )
+    assert api.published_statuses[-1]["context"] == "bcf/workitem-certification"
+    assert "P26-P0-01" in api.published_statuses[-1]["description"]
 
 
 def test_v11_direct_trigger_survives_temporary_list_absence() -> None:
@@ -643,6 +720,103 @@ def test_v11_finalizer_builds_certification_only_from_common_run(
         (value["selected_attempt"]["run_id"], value["same_run_membership"]["admission_run_id"])
         for value in report["admission"]["producer_runs"]
     } == {("100", "100")}
+
+
+def test_v11_finalizer_preserves_bounded_workitem_proposition(tmp_path: Path) -> None:
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    api.truth_artifact_override = {
+        "status": "pass",
+        "subject": {"commit_sha": SHA_A, "tree_sha": TREE},
+        "evaluation_scope": {
+            "intent": "workitem",
+            "target": {"kind": "workitem", "id": "P26-P0-01"},
+        },
+        "certified_proposition": {
+            "predicate": "workitem_closed",
+            "target": {"kind": "workitem", "id": "P26-P0-01"},
+            "subject": {"commit_sha": SHA_A, "tree_sha": TREE},
+            "conclusion": "success",
+            "authorizes": ["declared_successor_workitem_eligibility"],
+            "eligible_successors": ["P26-P0-02"],
+        },
+        "durable_ref": (
+            "github-actions://owner/repo/runs/100/attempts/1/"
+            "bcf-governance-truth"
+        ),
+    }
+    result = finalize_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        output_dir=tmp_path / "bundle",
+    )
+    report = json.loads(
+        (Path(result.bundle_dir) / "ci-certification.json").read_text()
+    )
+    assert report["evaluation_scope"] == api.truth_artifact_override["evaluation_scope"]
+    assert report["certified_proposition"] == api.truth_artifact_override["certified_proposition"]
+    api.runs["400"].update(status="completed", conclusion="success")
+    api.runs["401"] = {
+        **api.runs["400"],
+        "id": 401,
+        "workflow_id": 97,
+        "status": "in_progress",
+        "conclusion": None,
+    }
+    publish_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        bundle_dir=Path(result.bundle_dir),
+        target_url="https://github.example/runs/400",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        publisher_run_id=401,
+        publisher_run_attempt=1,
+    )
+    assert api.published_statuses[-1]["context"] == "bcf/workitem-certification"
+
+
+@pytest.mark.parametrize("mutation", ["subject", "target", "run-attempt"])
+def test_v11_finalizer_rejects_mismatched_bounded_truth(
+    tmp_path: Path, mutation: str
+) -> None:
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    scope = {"intent": "workitem", "target": {"kind": "workitem", "id": "P26-P0-01"}}
+    proposition = {
+        "predicate": "workitem_closed",
+        "target": dict(scope["target"]),
+        "subject": {"commit_sha": SHA_A, "tree_sha": TREE},
+        "conclusion": "success",
+        "authorizes": ["declared_successor_workitem_eligibility"],
+        "eligible_successors": ["P26-P0-02"],
+    }
+    if mutation == "subject":
+        proposition["subject"] = {"commit_sha": SHA_B, "tree_sha": TREE}
+    elif mutation == "target":
+        proposition["target"] = {"kind": "workitem", "id": "P26-P0-02"}
+    api.truth_artifact_override = {
+        "status": "pass",
+        "subject": {"commit_sha": SHA_A, "tree_sha": TREE},
+        "evaluation_scope": scope,
+        "certified_proposition": proposition,
+        "durable_ref": (
+            "github-actions://owner/repo/runs/100/attempts/2/"
+            "bcf-governance-truth"
+            if mutation == "run-attempt"
+            else "github-actions://owner/repo/runs/100/attempts/1/bcf-governance-truth"
+        ),
+    }
+    with pytest.raises(GitHubControllerError):
+        finalize_exact_main(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            collector_run_id=400,
+            collector_run_attempt=1,
+            output_dir=tmp_path / "bundle",
+        )
 
 
 def test_v11_pending_observation_is_published_without_borrowing_older_runs(

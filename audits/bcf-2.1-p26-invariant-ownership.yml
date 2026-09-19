@@ -160,3 +160,37 @@ post_merge_workitem_lifecycle_correction:
   hotfix_boundary: corrective hotfix lifecycle and authority remain unchanged
   boundary: P26 remains active and P26-02 implementation remains blocked pending protected
     merge, fresh exact-main success, and authoritative P26-P0-01 bounded closure
+final_orchestration_correction:
+  exact_main: {run: 35426823669, attempt: 1, main_commit: 98d467345efe7056066a460a62aab7a7a795b412, main_tree: 7aba86d6b15a6eb1a52f92e0c4298948c067e7a9}
+  proven_state:
+    target: {id: P26-P0-01, effective_state: closed, missing_evidence: []}
+    successor: {id: P26-P0-02, eligible: true}
+    phase: {id: P26, effective_state: active}
+  first_causal_invariant: terminal phase closure was requested for a bounded workitem proposition
+  prospective_consumer_matrix:
+    must_change:
+    - truth intent, target, failure reporting, and terminal observation
+    - exact-main artifact authentication, trusted finalization, certification verification,
+      scoped status publication, and release rejection
+    - reusable governance inputs and the generic authority executor contract
+    generated_consequence:
+    - canonical graph workflows, pack runtime and schema mirrors, manifests, locks,
+      editorial inventory, and mechanically compiled workflow authority
+    test_only:
+    - bounded lifecycle, finalizer tamper, status-scope, release exclusion, graph,
+      preflight, compatibility, phase closure, PR progress, and hotfix regressions
+    inspected_no_impact:
+    - PR certification context, protection requirements, release publication roles,
+      controller installation custody, successor lifecycle derivation, and hotfix semantics
+  scope_contract:
+  - bind exact commit, tree, evaluation intent, typed target, proposition, provider artifact,
+    run, attempt, and immutable report digest through truth and certification
+  - workitem success authorizes only declared successor-workitem eligibility
+  - bounded success uses a separate provider status context and cannot authorize release
+  - phase closure and PR progress remain distinct explicit evaluations
+  compatibility_boundary:
+    sequence: [expand_inert_contract, merge, build_and_rotate_compatible_controller, activate_bounded_target]
+    reason: activating before rotation would permit the old finalizer to erase target scope
+    current_exact_main_invocation: phase_closure
+  boundary: P26-02 remains blocked; this insertion must merge and rotate normally before
+    a separate activation can request bounded P26-P0-01 certification

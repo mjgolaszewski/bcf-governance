@@ -28,6 +28,9 @@
     "evidence_session": {"$ref": "#/$defs/evidenceSession"},
     "state": {"enum": ["pending", "failed", "obsolete", "successful", "active"]},
     "evaluation": {"$ref": "#/$defs/evaluation"},
+    "governance_truth": {"$ref": "#/$defs/governanceTruth"},
+    "evaluation_scope": {"$ref": "#/$defs/evaluationScope"},
+    "certified_proposition": {"$ref": "#/$defs/certifiedProposition"},
     "generated_at": {"type": "string", "format": "date-time"}
   },
   "allOf": [
@@ -42,6 +45,14 @@
           }
         }
       }
+    },
+    {
+      "if": {"required": ["governance_truth"]},
+      "then": {"required": ["evaluation_scope"]}
+    },
+    {
+      "if": {"required": ["certified_proposition"]},
+      "then": {"required": ["governance_truth", "evaluation_scope"]}
     }
   ],
   "$defs": {
@@ -214,6 +225,65 @@
           "uniqueItems": true,
           "items": {"type": "string", "minLength": 1}
         }
+      }
+    },
+    "artifactReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "run_attempt", "artifact_id", "artifact_name", "provider_digest"],
+      "properties": {
+        "run_id": {"$ref": "#/$defs/providerId"},
+        "run_attempt": {"type": "integer", "minimum": 1},
+        "artifact_id": {"$ref": "#/$defs/providerId"},
+        "artifact_name": {"$ref": "#/$defs/providerId"},
+        "provider_digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}
+      }
+    },
+    "governanceTruth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact", "artifact_sha256", "report_path", "report_sha256"],
+      "properties": {
+        "artifact": {"$ref": "#/$defs/artifactReference"},
+        "artifact_sha256": {"$ref": "#/$defs/sha256"},
+        "report_path": {"const": "governance-truth.json"},
+        "report_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "evaluationTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {"enum": ["pull_request_progress", "workitem", "phase"]},
+        "id": {"type": "string", "minLength": 1}
+      }
+    },
+    "evaluationScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intent", "target"],
+      "properties": {
+        "intent": {"enum": ["pr", "workitem", "closure"]},
+        "target": {"$ref": "#/$defs/evaluationTarget"}
+      }
+    },
+    "certifiedProposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["predicate", "target", "subject", "conclusion", "authorizes", "eligible_successors"],
+      "properties": {
+        "predicate": {"enum": ["pull_request_progress_valid", "workitem_closed", "phase_closed"]},
+        "target": {"$ref": "#/$defs/evaluationTarget"},
+        "subject": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["commit_sha", "tree_sha"],
+          "properties": {"commit_sha": {"$ref": "#/$defs/sha"}, "tree_sha": {"$ref": "#/$defs/sha"}}
+        },
+        "conclusion": {"enum": ["success", "failure"]},
+        "authorizes": {"type": "array", "uniqueItems": true, "items": {"const": "declared_successor_workitem_eligibility"}},
+        "eligible_successors": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
       }
     }
   }

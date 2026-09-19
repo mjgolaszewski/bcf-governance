@@ -1,5 +1,7 @@
 # Changelog
 
+- Expand exact-main truth and certification with typed, target-preserving bounded-workitem scope while keeping activation behind ordinary controller rotation.
+
 - Add a least-privilege, owner-approved break-glass App lane for exact-main controller bootstrap deadlocks, with recovery-only receipts and no certification authority.
 - Authenticate break-glass installation tokens through their exact repository inventory, bind the authorized owner explicitly, and retire the first failed live-operation nonce.
 - Make break-glass build resolution own its stage argument exactly once, preserving fail-closed exact-main artifact binding across build, install, and probe.

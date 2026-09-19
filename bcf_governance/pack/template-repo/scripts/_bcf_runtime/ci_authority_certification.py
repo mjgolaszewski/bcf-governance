@@ -33,6 +33,7 @@ from .ci_authority_state import (
     WorkflowIdentity,
     evaluate_authority,
 )
+from .evaluation_scope import EvaluationScopeError, validate_certified_proposition
 
 
 class CICertificationError(ValueError):
@@ -51,6 +52,8 @@ class CertificationVerification:
     certification_sha256: str
     session_manifest_sha256: str
     raw_snapshot_sha256: tuple[tuple[str, str], ...]
+    evaluation_scope: dict[str, Any] | None = None
+    certified_proposition: dict[str, Any] | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -65,6 +68,8 @@ class CertificationVerification:
             "certification_sha256": self.certification_sha256,
             "session_manifest_sha256": self.session_manifest_sha256,
             "raw_snapshot_sha256": dict(self.raw_snapshot_sha256),
+            "evaluation_scope": self.evaluation_scope,
+            "certified_proposition": self.certified_proposition,
         }
 
 
@@ -360,6 +365,9 @@ def normalize_ci_certification(
     raw_snapshot_descriptors: list[dict[str, Any]],
     evidence_session: dict[str, Any],
     generated_at: str | None = None,
+    governance_truth: dict[str, Any] | None = None,
+    evaluation_scope: dict[str, Any] | None = None,
+    certified_proposition: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Construct a deterministic non-certified report from authenticated snapshots."""
 
@@ -422,6 +430,14 @@ def normalize_ci_certification(
                 raw_admission["producer_run"]["same_run_membership"]
             )
         report_runs.append(report_run)
+    provider_success = exact_jobs and all(
+        value["selected_attempt"]["conclusion"] == "success"
+        for value in report_runs
+    )
+    if certified_proposition is not None and provider_success != (
+        certified_proposition.get("conclusion") == "success"
+    ):
+        raise CICertificationError("provider state and certified proposition disagree")
     candidate = {
         "checkout_sha": selected.candidate.checkout_sha,
         "tree_sha": selected.candidate.tree_sha,
@@ -461,6 +477,14 @@ def normalize_ci_certification(
         "generated_at": generated_at
         or datetime.now(UTC).isoformat().replace("+00:00", "Z"),
     }
+    scoped = (governance_truth, evaluation_scope)
+    if any(value is not None for value in scoped):
+        if not all(value is not None for value in scoped):
+            raise CICertificationError("certification scope inputs are incomplete")
+        report["governance_truth"] = governance_truth
+        report["evaluation_scope"] = evaluation_scope
+        if certified_proposition is not None:
+            report["certified_proposition"] = certified_proposition
     try:
         validate_ci_contract(repo_root, "certification", report)
     except CIAuthorityContractError as exc:
@@ -563,6 +587,36 @@ def verify_ci_certification(
         raise CICertificationError(str(exc)) from exc
     snapshots = load_authenticated_snapshots(repo_root, certification_path, certification)
     _verify_session(repo_root, session_manifest_path, certification)
+    truth_descriptor = certification.get("governance_truth")
+    evaluation_scope = certification.get("evaluation_scope")
+    certified = certification.get("certified_proposition")
+    if (truth_descriptor is None) != (evaluation_scope is None):
+        raise CICertificationError("certification scope is incomplete")
+    if truth_descriptor is not None:
+        if not isinstance(truth_descriptor, dict) or not isinstance(evaluation_scope, dict):
+            raise CICertificationError("certification scope is invalid")
+        truth_path = _safe_snapshot_path(
+            certification_path.resolve().parent,
+            str(truth_descriptor.get("report_path", "")),
+        )
+        if _sha256(truth_path) != truth_descriptor.get("report_sha256"):
+            raise CICertificationError("governance truth report digest mismatch")
+        truth_report = _load_json(truth_path, label="governance truth report")
+        if truth_report.get("evaluation_scope", truth_report.get("evaluation_request")) != evaluation_scope:
+            raise CICertificationError("governance truth evaluation scope mismatch")
+        if truth_report.get("certified_proposition") != certified:
+            raise CICertificationError("governance truth proposition mismatch")
+        if certified is not None:
+            try:
+                validate_certified_proposition(
+                    truth_report,
+                    subject={
+                        "commit_sha": str(certification["subject"]["checkout_sha"]),
+                        "tree_sha": str(certification["subject"]["tree_sha"]),
+                    },
+                )
+            except EvaluationScopeError as exc:
+                raise CICertificationError(str(exc)) from exc
     expected = normalize_ci_certification(
         repo_root,
         authority=authority,
@@ -570,6 +624,9 @@ def verify_ci_certification(
         raw_snapshot_descriptors=list(certification["raw_snapshots"]),
         evidence_session=dict(certification["evidence_session"]),
         generated_at=str(certification["generated_at"]),
+        governance_truth=truth_descriptor,
+        evaluation_scope=evaluation_scope,
+        certified_proposition=certified,
     )
     if _canonical_bytes(expected) != _canonical_bytes(certification):
         raise CICertificationError(
@@ -602,4 +659,6 @@ def verify_ci_certification(
                 for value in certification["raw_snapshots"]
             )
         ),
+        evaluation_scope=evaluation_scope,
+        certified_proposition=certified,
     )

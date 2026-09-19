@@ -174,6 +174,7 @@ def publish(
     collector_workflow_path: str,
     collector_workflow_id: object | None = None,
     collector_workflow_sha256: str | None = None,
+    require_evaluation_scope: bool = False,
 ) -> dict[str, Any]:
     """Reverify one authenticated finalizer bundle before status publication."""
 
@@ -311,6 +312,20 @@ def publish(
         if verification.status == "pass"
         else StatusConclusion.FAILURE
     )
+    scope = verification.evaluation_scope
+    if require_evaluation_scope and (scope is None or scope.get("intent") == "pr"):
+        raise GitHubControllerError("exact-main certification lacks terminal evaluation scope")
+    status_context = (
+        StatusContext.BOUNDED_WORKITEM
+        if scope is not None and scope.get("intent") == "workitem"
+        else StatusContext.EXACT_MAIN
+    )
+    target = scope.get("target", {}) if scope is not None else {}
+    description = (
+        f"BCF {scope['intent']} {target.get('id', 'unknown')} {verification.computed_state}"
+        if scope is not None
+        else f"BCF exact-main {verification.computed_state}"
+    )
     result = publish_observation(
         api,
         repository=repository,
@@ -319,8 +334,9 @@ def publish(
         admission_ordinal=int(report["admission"]["admission_ordinal"]),
         control_plane_attempt=int(report["admission"]["control_plane_run_attempt"]),
         conclusion=conclusion,
-        description=f"BCF exact-main {verification.computed_state}",
+        description=description[:140],
         target_url=target_url,
+        status_context=status_context,
     )
     return {
         **result,

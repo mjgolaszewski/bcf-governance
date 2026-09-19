@@ -55,6 +55,21 @@ COMMIT = "a" * 40
 TREE = "b" * 40
 
 
+def _terminal_scope() -> dict[str, object]:
+    target = {"kind": "phase", "id": "P01"}
+    return {
+        "evaluation_scope": {"intent": "closure", "target": target},
+        "certified_proposition": {
+            "predicate": "phase_closed",
+            "target": target,
+            "subject": {"commit_sha": COMMIT, "tree_sha": TREE},
+            "conclusion": "success",
+            "authorizes": [],
+            "eligible_successors": [],
+        },
+    }
+
+
 def _public_contract(
     version: str = "1.0.0rc1",
     *,
@@ -418,6 +433,7 @@ def test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles(
     values = _release_inputs(tmp_path)
     certification = {
         "authority_contract_version": "1.1",
+        **_terminal_scope(),
         "subject": {"checkout_sha": COMMIT, "tree_sha": TREE},
         "admission": {
             "admission_ordinal": "100001001",
@@ -493,6 +509,7 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
     bundle.mkdir()
     certification = {
         "authority_contract_version": "1.1",
+        **_terminal_scope(),
         "subject": {"checkout_sha": COMMIT, "tree_sha": TREE},
         "admission": {
             "admission_ordinal": "100001001",
@@ -631,6 +648,51 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
             controller=controller,
             controller_wheel_path=controller_wheel,
             output_path=tmp_path / "rejected-authorization.json",
+        )
+
+
+def test_release_authorizer_rejects_bounded_workitem_certification(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    bounded = _terminal_scope()
+    bounded["evaluation_scope"] = {
+        "intent": "workitem",
+        "target": {"kind": "workitem", "id": "P26-P0-01"},
+    }
+    bounded["certified_proposition"] = {
+        "predicate": "workitem_closed",
+        "target": {"kind": "workitem", "id": "P26-P0-01"},
+        "subject": {"commit_sha": COMMIT, "tree_sha": TREE},
+        "conclusion": "success",
+        "authorizes": ["declared_successor_workitem_eligibility"],
+        "eligible_successors": ["P26-P0-02"],
+    }
+    _json(bundle / "ci-certification.json", {
+        "authority_contract_version": "1.1",
+        "subject": {"checkout_sha": COMMIT, "tree_sha": TREE},
+        **bounded,
+    })
+    _json(bundle / "evidence-session.json", {})
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.verify_bundle", lambda _: {}
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.verify_ci_certification",
+        lambda *args, **kwargs: SimpleNamespace(status="pass", computed_state="certified"),
+    )
+    with pytest.raises(GitHubControllerError, match="terminal phase closure"):
+        authorize_release(
+            SimpleNamespace(),  # type: ignore[arg-type]
+            repository="owner/repo",
+            bundle_dir=bundle,
+            run_id="1",
+            run_attempt="1",
+            certification_artifact={},
+            controller={},
+            controller_wheel_path=tmp_path / "absent.whl",
+            output_path=tmp_path / "authorization.json",
         )
 
 
