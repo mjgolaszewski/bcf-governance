@@ -14,6 +14,7 @@ from bcf_governance.tooling.evidence_planning import (
     load_claim_model,
     plan_verification,
     qualification_applicability,
+    receipt_producing_legacy_gates,
     receipt_applicability,
     load_prior_receipts,
 )
@@ -21,6 +22,15 @@ from bcf_governance.tooling.evidence_execution import EvidenceError
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_preflight_claims_are_not_receipt_producing_workitem_evidence() -> None:
+    model = load_claim_model(REPO_ROOT)
+    receipt_gates = receipt_producing_legacy_gates(model)
+
+    assert "governance-validate" not in receipt_gates
+    assert model["execution_groups"]["preflight-structural"]["captured_by_preflight"] is True
+    assert {"test", "contract-test", "runtime-smoke"}.issubset(receipt_gates)
 
 
 def _write(path: Path, value: str) -> None:

@@ -526,6 +526,12 @@ def _enable_v3_grouped_session(
         "status": "required",
         "command_policy": "contract_tests",
     }
+    if bounded_workitems:
+        profile["release_gate_profile"]["gates"]["runtime_smoke"] = {
+            "target": "runtime-smoke",
+            "status": "required",
+            "command_policy": "runtime_health",
+        }
     _write_yaml(profile_path, profile)
 
     contracts_path = repo / "governance/gate-contracts.yml"
@@ -540,11 +546,27 @@ def _enable_v3_grouped_session(
         "evidence": {},
         "negative_controls": [],
     }
+    if bounded_workitems:
+        contracts["gates"]["runtime-smoke"] = {
+            "invocation": {
+                "argv": ["python3", "gate.py", "runtime-smoke"],
+                "cwd": ".",
+                "env": {},
+                "required_env": [],
+            },
+            "evidence": {},
+            "negative_controls": [],
+        }
     claims = {
         "test-claim": ("test", "python-tests"),
         "contract-test-claim": ("contract-test", "python-tests"),
         "security-claim": ("security-review", "security"),
         "reconcile-claim": ("reconcile", "reconcile"),
+        **(
+            {"runtime-smoke-claim": ("runtime-smoke", "runtime-smoke")}
+            if bounded_workitems
+            else {}
+        ),
     }
     contracts["claim_model"] = {
         "version": "1.0",
@@ -556,6 +578,16 @@ def _enable_v3_grouped_session(
             },
             "security": {"producer": "security-review", "claims": ["security-claim"]},
             "reconcile": {"producer": "reconcile", "claims": ["reconcile-claim"]},
+            **(
+                {
+                    "runtime-smoke": {
+                        "producer": "runtime-smoke",
+                        "claims": ["runtime-smoke-claim"],
+                    }
+                }
+                if bounded_workitems
+                else {}
+            ),
         },
         "claims": {
             claim_id: {
@@ -581,7 +613,11 @@ def _enable_v3_grouped_session(
     workflow.write_text(
         workflow.read_text(encoding="utf-8").replace(
             "[test, security-review, reconcile]",
-            "[test, contract-test, security-review, reconcile]",
+            (
+                "[test, contract-test, security-review, reconcile, runtime-smoke]"
+                if bounded_workitems
+                else "[test, contract-test, security-review, reconcile]"
+            ),
         ),
         encoding="utf-8",
     )
@@ -595,7 +631,11 @@ def _enable_v3_grouped_session(
                 else "DONE"
             ),
             "acceptance": [f"workitem_{index}_is_complete"],
-            "acceptance_evidence": ["test", "contract-test"],
+            "acceptance_evidence": [
+                "test",
+                "contract-test",
+                *(["runtime-smoke"] if bounded_workitems else []),
+            ],
         }
         for index in range(1, 5)
     ]
@@ -629,8 +669,15 @@ def _enable_v3_grouped_session(
     _commit(repo, "enable grouped v3 evidence")
 
     evidence_dir = _write_complete_bundle(repo)
+    if bounded_workitems:
+        _write_receipt(repo, "runtime-smoke")
     test_path = evidence_dir / "test.evidence.json"
-    receipt_paths = [test_path, evidence_dir / "security-review.evidence.json", evidence_dir / "reconcile.evidence.json"]
+    receipt_paths = [
+        test_path,
+        evidence_dir / "security-review.evidence.json",
+        evidence_dir / "reconcile.evidence.json",
+        *([evidence_dir / "runtime-smoke.evidence.json"] if bounded_workitems else []),
+    ]
     if second_test_receipt:
         second = evidence_dir / "test-second.evidence.json"
         shutil.copy2(test_path, second)
@@ -659,6 +706,7 @@ def _enable_v3_grouped_session(
         "test": ["test-claim", "contract-test-claim"],
         "security-review": ["security-claim"],
         "reconcile": ["reconcile-claim"],
+        **({"runtime-smoke": ["runtime-smoke-claim"]} if bounded_workitems else {}),
     }
     for receipt_path in receipt_paths:
         receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
@@ -700,7 +748,12 @@ def _enable_v3_grouped_session(
             "run_attempt": "1",
             "producer_id": "evidence",
         },
-        "expected_gate_inventory": ["reconcile", "security-review", "test"],
+        "expected_gate_inventory": [
+            "reconcile",
+            "security-review",
+            "test",
+            *(["runtime-smoke"] if bounded_workitems else []),
+        ],
         "expected_producer_inventory": [
             "evidence",
             *(["evidence-2"] if second_test_receipt else []),
@@ -715,7 +768,12 @@ def _enable_v3_grouped_session(
         "execution_dag": {
             "nodes": [
                 {"id": gate, "producer": gate}
-                for gate in ("reconcile", "security-review", "test")
+                for gate in (
+                    "reconcile",
+                    "security-review",
+                    "test",
+                    *(["runtime-smoke"] if bounded_workitems else []),
+                )
             ],
             "edges": [],
         },
@@ -779,6 +837,19 @@ def test_bounded_workitem_closes_while_parent_remains_active(tmp_path: Path) -> 
     by_id = {item["id"]: item for item in observation["items"]}
     assert by_id["P01-W01"]["effective_state"] == "closed"
     assert by_id["P01-W01"]["verification_state"] == "verified"
+    assert by_id["P01-W01"]["required_evidence"] == [
+        "contract-test",
+        "runtime-smoke",
+        "test",
+    ]
+    assert by_id["P01-W01"]["missing_or_invalid"] == []
+    assert len(by_id["P01-W01"]["evidence_refs"]) == 3
+    assert all(
+        reference["result"] == "verified"
+        and not str(reference["evidence_id"]).startswith("preflight:")
+        for reference in by_id["P01-W01"]["evidence_refs"]
+    )
+    assert by_id["P01-W01"]["subject"] == report["subject"]
     assert by_id["P01-W02"]["eligible"] is True
     assert by_id["P01-W02"]["effective_state"] == "planned"
     assert report["effective_state"] == "active"
