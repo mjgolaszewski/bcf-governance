@@ -443,8 +443,8 @@ workflows:
     semantic_role: exact-main-controller-builder
     resource_class: hosted-python-latest
     trust: candidate
-    needs: [admit]
-    condition: exact-main-admitted
+    needs: []
+    condition: exact-main-authority-enabled
     timeout_minutes: 15
     permissions: {contents: read}
     checkout: false
@@ -470,6 +470,7 @@ workflows:
     semantic_role: exact-main-trusted-finalizer
     resource_class: trusted-control
     trust: trusted
+    controller_requirement: current
     needs: []
     condition: exact-main-finalizer-admitted
     timeout_minutes: 5
@@ -495,6 +496,7 @@ workflows:
     semantic_role: exact-main-status-publisher
     resource_class: trusted-control
     trust: trusted
+    controller_requirement: current
     needs: []
     condition: exact-main-publisher-admitted
     timeout_minutes: 5

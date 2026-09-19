@@ -1023,8 +1023,8 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert governance["needs"] == ["admit"]
     assert governance["condition"] == "exact-main-admitted"
     assert governance["executor"]["inputs"] == {"evaluation_mode": "closure"}
-    assert builder["needs"] == ["admit"]
-    assert builder["condition"] == "exact-main-admitted"
+    assert builder["needs"] == []
+    assert builder["condition"] == "exact-main-authority-enabled"
     assert builder["semantic_role"] == "exact-main-controller-builder"
     assert builder["produces"] == ["trusted-controller-bundle"]
     assert "build-trusted-controller" in builder["executor"]["components"]
@@ -1041,6 +1041,17 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     exact_condition = rendered[".github/workflows/bcf-exact-main.yml"]["jobs"][
         "admit"
     ]["if"]
+    builder_projection = rendered[".github/workflows/bcf-exact-main.yml"]["jobs"][
+        "trusted-controller-build"
+    ]
+    assert "needs" not in builder_projection
+    assert builder_projection["if"] == "${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}"
+    finalizer = rendered[".github/workflows/bcf-trusted-finalizer.yml"]["jobs"][
+        "finalize"
+    ]
+    publisher = rendered[".github/workflows/bcf-status-publisher.yml"]["jobs"][
+        "publish"
+    ]
     if (
         compiled.trusted_controller_lifecycle.state
         is ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY
@@ -1051,6 +1062,8 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         assert source["commit"] in exact_condition
         assert "github.repository_id" in exact_condition
         for path, job_id in (
+            (".github/workflows/bcf-trusted-finalizer.yml", "finalize"),
+            (".github/workflows/bcf-status-publisher.yml", "publish"),
             (".github/workflows/release.yml", "authorize"),
             (".github/workflows/bcf-release-verifier.yml", "collect"),
             (".github/workflows/bcf-release-publisher.yml", "publish"),
@@ -1063,6 +1076,8 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         assert "trusted_controller_recovery_reentry" not in policy["runner_security"]
         for path, job_id in (
             (".github/workflows/bcf-exact-main.yml", "admit"),
+            (".github/workflows/bcf-trusted-finalizer.yml", "finalize"),
+            (".github/workflows/bcf-status-publisher.yml", "publish"),
             (".github/workflows/release.yml", "authorize"),
             (".github/workflows/bcf-release-verifier.yml", "collect"),
             (".github/workflows/bcf-release-publisher.yml", "publish"),
@@ -1075,6 +1090,8 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         )
         assert "trusted_controller_recovery_reentry" not in policy["runner_security"]
         assert exact_condition == "${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}"
+        assert finalizer["if"] != "${{ false }}"
+        assert publisher["if"] != "${{ false }}"
         assert rendered[".github/workflows/release.yml"]["jobs"]["authorize"][
             "if"
         ] != "${{ false }}"

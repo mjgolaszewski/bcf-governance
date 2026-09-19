@@ -184,8 +184,8 @@ def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
     assert "build-trusted-controller" not in truth["executor"]["components"]
     assert truth["produces"] == ["governance-truth-report"]
     builder = _job("exact-main", "trusted-controller-build")
-    assert builder["needs"] == ["admit"]
-    assert builder["condition"] == "exact-main-admitted"
+    assert builder["needs"] == []
+    assert builder["condition"] == "exact-main-authority-enabled"
     assert builder["semantic_role"] == "exact-main-controller-builder"
     assert builder["executor"]["components"] == [
         "checkout-candidate",
