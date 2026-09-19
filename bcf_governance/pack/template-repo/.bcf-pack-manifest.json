@@ -628,7 +628,7 @@
     },
     "scripts/_bcf_runtime/evidence_planning.py": {
       "operation": "copy",
-      "sha256": "e88ad9376068f4a7f6bd545ab414515b1f29bd5445e29586b032872a1bb5155e"
+      "sha256": "fe47e359b475dd224c93d22393f7ffacc069091ce0e12d280afa5b165a751e16"
     },
     "scripts/_bcf_runtime/evidence_session_cleanup.py": {
       "operation": "copy",
@@ -800,7 +800,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/phase_catalog.py": {
       "operation": "copy",
-      "sha256": "e9eaad41fa5d3164f2da9ee17a29fce37110424567972d1f36fa60fab873a60e"
+      "sha256": "a4300f9fc4d3b7ac350c8ffc75a37647dc190d9f3ca0b8ef722d0ffed4c4f3dd"
     },
     "scripts/_bcf_runtime/governance_validation/release_gates.py": {
       "operation": "copy",

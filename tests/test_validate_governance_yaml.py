@@ -18,6 +18,7 @@ from bcf_governance.tooling import preflight
 from bcf_governance.tooling.release_runtime_verification import (
     is_release_sdist_test_context,
 )
+from bcf_governance.tooling.governance_validation import phase_catalog
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -1184,6 +1185,74 @@ def test_validate_repo_root_rejects_unknown_workitem_predecessor(
 
     with pytest.raises(GovernanceValidationError, match="unknown predecessor"):
         validate_repo_root(repo_root)
+
+
+def test_active_workitem_rejects_preflight_only_acceptance_evidence(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "phases").mkdir()
+    _write_yaml(
+        tmp_path / "plans/workitems.yml",
+        {
+            "workitems": [
+                {
+                    "id": "P01-W01",
+                    "acceptance_evidence": ["governance-validate"],
+                }
+            ]
+        },
+    )
+    _write_yaml(
+        tmp_path / "phases/log.yml",
+        {
+            "closeout_requirements": {
+                "claims": {},
+                "reconciliation": {"required_evidence": []},
+            }
+        },
+    )
+    model = {
+        "execution_groups": {
+            "preflight": {
+                "producer": "preflight",
+                "captured_by_preflight": True,
+                "claims": ["governance-contracts-valid"],
+            }
+        },
+        "claims": {
+            "governance-contracts-valid": {
+                "execution_group": "preflight",
+                "legacy_gate": "governance-validate",
+            }
+        },
+    }
+    monkeypatch.setattr(phase_catalog, "load_claim_model", lambda _root: model)
+
+    with pytest.raises(
+        GovernanceValidationError, match="preflight-only observations are ineligible"
+    ):
+        phase_catalog._validate_active_closeout_evidence_ownership(
+            tmp_path,
+            {
+                "active_phase": {
+                    "workitems": "plans/workitems.yml",
+                    "log": "phases/log.yml",
+                    "lifecycle_status": "active",
+                }
+            },
+            {
+                "profile_contract_version": "3.0",
+                "release_gate_profile": {
+                    "gates": {
+                        "governance_validate": {
+                            "target": "governance-validate",
+                            "status": "required",
+                        }
+                    }
+                },
+            },
+        )
 
 
 def test_validate_repo_root_rejects_authored_terminal_state_and_booleans(tmp_path: Path) -> None:

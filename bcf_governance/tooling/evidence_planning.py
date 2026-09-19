@@ -151,6 +151,19 @@ def required_claims(repo_root: Path) -> list[str]:
     )
 
 
+def receipt_producing_legacy_gates(model: Mapping[str, Any]) -> set[str]:
+    """Return legacy gates whose canonical execution groups emit receipts."""
+    groups = model.get("execution_groups", {})
+    return {
+        str(claim["legacy_gate"])
+        for claim in model.get("claims", {}).values()
+        if isinstance(claim, dict)
+        and isinstance(claim.get("legacy_gate"), str)
+        and isinstance(groups.get(claim.get("execution_group")), dict)
+        and groups[claim["execution_group"]].get("captured_by_preflight") is not True
+    }
+
+
 def claims_for_legacy_gate(repo_root: Path, gate_id: str) -> list[str]:
     model = load_claim_model(repo_root)
     direct = [

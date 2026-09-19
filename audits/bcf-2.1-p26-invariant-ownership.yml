@@ -142,6 +142,21 @@ post_merge_workitem_lifecycle_correction:
     cannot close a workitem
   - duplicate, unknown, forward, or cyclic predecessor declarations reject mechanically
   - authored DONE without verified acceptance or predecessor closure remains completed, not closed
+  governance_validate_trace:
+    claim: governance-contracts-valid
+    execution_group: preflight-structural
+    classification: {captured_by_preflight: true, receipt_producer: false}
+    planner_projection: preflight_satisfied_claims
+    execution_dag_projection: omitted
+    session_gate_inventory: omitted
+    receipt_emission: none
+    bounded_resolver: ineligible because include_preflight is false
+  acceptance_correction:
+  - remove governance-validate from active P26 ordinary-workitem acceptance evidence
+  - retain test, contract-test, and runtime-smoke because their canonical groups emit
+    authenticated receipts
+  - retain governance-validate unchanged in phase-wide closeout and canonical preflight
+  - reject preflight-only evidence in profile-v3 ordinary workitem contracts during validation
   hotfix_boundary: corrective hotfix lifecycle and authority remain unchanged
   boundary: P26 remains active and P26-02 implementation remains blocked pending protected
     merge, fresh exact-main success, and authoritative P26-P0-01 bounded closure

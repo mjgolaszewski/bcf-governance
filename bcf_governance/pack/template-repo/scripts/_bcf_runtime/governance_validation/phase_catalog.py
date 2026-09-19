@@ -15,6 +15,7 @@ from .artifact_policy import (
     _strict_phase_retention_enabled,
     _validate_phase_history_entries,
 )
+from ..evidence_planning import load_claim_model, receipt_producing_legacy_gates
 
 
 def _declared_phase_ids_are_contiguous(phase_ids: set[str]) -> tuple[bool, list[str]]:
@@ -703,6 +704,7 @@ def _validate_active_closeout_evidence_ownership(
         for gate_id, raw in configured.items()
     }
     references: list[tuple[str, str]] = []
+    workitem_references: list[tuple[str, str]] = []
     workitems_path = _require_path(
         repo_root,
         _require_string(active_phase.get("workitems"), context="active_phase.workitems"),
@@ -717,14 +719,16 @@ def _validate_active_closeout_evidence_ownership(
         item_id = _require_string(
             item.get("id"), context=f"{workitems_path} workitems[{index}].id"
         )
-        references.extend(
+        item_references = [
             (f"workitem {item_id}", target)
             for target in _require_string_sequence(
                 item.get("acceptance_evidence"),
                 context=f"{workitems_path} workitems[{index}].acceptance_evidence",
                 min_items=1,
             )
-        )
+        ]
+        references.extend(item_references)
+        workitem_references.extend(item_references)
     log_path = _require_path(
         repo_root,
         _require_string(active_phase.get("log"), context="active_phase.log"),
@@ -764,6 +768,19 @@ def _validate_active_closeout_evidence_ownership(
             "active closeout evidence must reference configured release-gate targets: "
             + ", ".join(unknown)
         )
+    if str(governance_profile.get("profile_contract_version", "1.0")) == "3.0":
+        receipt_gates = receipt_producing_legacy_gates(load_claim_model(repo_root))
+        preflight_only = sorted(
+            f"{owner}: {target}"
+            for owner, target in workitem_references
+            if target not in receipt_gates
+        )
+        if preflight_only:
+            raise GovernanceValidationError(
+                "ordinary workitem closure requires receipt-producing evidence; "
+                "preflight-only observations are ineligible: "
+                + ", ".join(preflight_only)
+            )
     if active_phase.get("lifecycle_status") == "completed":
         inactive = sorted(
             f"{owner}: {target} ({status_by_target[target]})"
