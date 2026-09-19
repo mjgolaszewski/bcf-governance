@@ -218,3 +218,10 @@ rotation_finalizer_correction:
   - authenticated recovery re-entry remains non-certifying and release-ineligible
   boundary: P26-02 remains blocked pending protected merge, ordinary bootstrap/probe/confirmation,
     normalized installation, and fresh exact-main certification
+rotation_confirmation:
+  authoritative_subject: {commit: a272bfbfaf44e712fc322cc6503c48ee02c8c8ff, tree: 398d20d65b0b44f0c03ffdab5f51dbd9e66bc4fd}
+  controller: {commit: 3a2cb4a5c10f52cc749783d4779dec0fcbebd220, artifact_id: 10588758981, artifact_digest: 'sha256:de65225ea4556a243244d67ca3652f7cfa61e0b3003854a43c5d2d3efbe1930b'}
+  bootstrap: {run: 35471628720, attempt: 1, trusted_runner_1: success, trusted_runner_2: success}
+  probe: {run: 35471690506, attempt: 1, trusted_runner_1: success, trusted_runner_2: success}
+  projection: {target_equals_installed: true, recovery_reentry: absent, mechanism: canonical_self_controller_confirmation}
+  boundary: protected confirmation merge and fresh ordinary exact-main certification remain required; P26-02 remains blocked
