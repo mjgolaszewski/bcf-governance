@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import argparse
 import json
-import os
 import re
 import subprocess
 from pathlib import Path
@@ -39,12 +37,13 @@ from .truth_reporting import (
     verified_candidate,
 )
 from .evidence_claim_resolution import resolved_session_claims
-from .truth_workflow_graph import graph_workflow_gate_issues
-from .release_receipts import (
-    ReleaseReceiptError,
-    build_release_receipt,
-    emit_release_receipt,
+from .evaluation_scope import (
+    EvaluationIntent,
+    EvaluationScopeError,
+    certified_proposition,
+    evaluation_scope,
 )
+from .truth_workflow_graph import graph_workflow_gate_issues
 
 
 class TruthfulnessError(ValueError):
@@ -239,13 +238,12 @@ def derive_truth(
     evidence_dir: Path,
     *,
     evaluation_mode: str = "closure",
+    evaluation_target: str | None = None,
     trusted_digest: str | None = None,
     ci_authority_path: Path | None = None,
     ci_certification_path: Path | None = None,
     ci_session_manifest_path: Path | None = None,
 ) -> dict[str, Any]:
-    if evaluation_mode not in {"closure", "pr"}:
-        raise TruthfulnessError("truth evaluation mode must be closure or pr")
     repo_root = repo_root.resolve()
     evidence_dir = evidence_dir.resolve()
     current = current_subject(repo_root)
@@ -301,6 +299,15 @@ def derive_truth(
     phase_id = str(phase.get("id", "")) if isinstance(phase, dict) else ""
     if not phase_id:
         raise TruthfulnessError("active phase log does not declare phase.id")
+    try:
+        scope = evaluation_scope(
+            evaluation_mode,
+            target=evaluation_target,
+            phase_id=phase_id,
+            subject_commit=str(current["commit_sha"]),
+        )
+    except EvaluationScopeError as exc:
+        raise TruthfulnessError(str(exc)) from exc
     if authored_state not in AUTHORED_STATES:
         raise TruthfulnessError(
             f"phase authored status {authored_state!r} is invalid; verified and closed are computed"
@@ -515,7 +522,7 @@ def derive_truth(
         + list(attestation["issues"])
         + hotfix_issues
     )
-    if evaluation_mode == "pr":
+    if scope.intent is EvaluationIntent.PR_PROGRESS:
         truth_issues = [
             issue
             for issue in truth_issues
@@ -564,9 +571,9 @@ def derive_truth(
         f"required_claim_{claim_id}_not_declared"
         for claim_id in missing_claim_declarations
     )
-    if not lifecycle_consistent and evaluation_mode == "closure":
+    if not lifecycle_consistent and scope.intent is EvaluationIntent.PHASE_CLOSURE:
         truth_issues.append("ledger_log_lifecycle_mismatch")
-    if ledger_state in {"blocked", "paused", "abandoned"} and evaluation_mode == "closure":
+    if ledger_state in {"blocked", "paused", "abandoned"} and scope.intent is EvaluationIntent.PHASE_CLOSURE:
         truth_issues.append(f"ledger_state_{ledger_state}_cannot_verify")
     all_receipts = [candidate for values in receipts.values() for candidate in values]
     for candidate in all_receipts:
@@ -587,8 +594,15 @@ def derive_truth(
         truth_issues.append("trusted_bundle_digest_mismatch")
     if signature_required and not provenance_ok:
         truth_issues.append("regulated_attestation_required")
-    if evaluation_mode == "closure" and effective_state != "closed":
+    if scope.intent is EvaluationIntent.PHASE_CLOSURE and effective_state != "closed":
         truth_issues.append(f"phase_effective_state_{effective_state}")
+    if scope.intent is EvaluationIntent.WORKITEM_CERTIFICATION:
+        target = next(
+            (item for item in workitems.get("items", []) if item.get("id") == scope.target_id),
+            None,
+        )
+        if not isinstance(target, dict) or target.get("effective_state") != "closed":
+            truth_issues.append("bounded_workitem_target_not_closed")
     release_state = (
         "closed"
         if effective_state == "closed"
@@ -627,18 +641,24 @@ def derive_truth(
         "unique_causal_roots": len(envelope["root_causes"]),
         "raw_failure_count": len(envelope["raw_failures"]),
     }
+    status = "pass" if not truth_issues else "fail"
+    proposition = certified_proposition(
+        scope, subject=current, status=status, workitems=workitems
+    )
     return {
         "schema_version": "3.0" if contract_version == "3.0" else "2.0",
         "evaluation_mode": evaluation_mode,
+        "evaluation_scope": scope.as_dict(),
+        "certified_proposition": proposition,
         "merge_eligibility": (
             "eligible"
-            if evaluation_mode == "pr" and not truth_issues
+            if scope.intent is EvaluationIntent.PR_PROGRESS and not truth_issues
             else "not_evaluated"
-            if evaluation_mode == "closure"
+            if scope.intent is not EvaluationIntent.PR_PROGRESS
             else "ineligible"
         ),
         "phase_id": phase_id,
-        "status": "pass" if not truth_issues else "fail",
+        "status": status,
         "failure_class": None if not truth_issues else "truthfulness",
         "engine": "evidence_truthfulness",
         "checks": {
@@ -705,92 +725,9 @@ def derive_truth(
 
 
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Derive governance truth from evidence.")
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--evidence-dir", type=Path, required=True)
-    parser.add_argument(
-        "--evaluation-mode", choices=("closure", "pr"), default="closure"
-    )
-    parser.add_argument("--trusted-digest")
-    parser.add_argument("--ci-authority", type=Path)
-    parser.add_argument("--ci-certification", type=Path)
-    parser.add_argument("--ci-session-manifest", type=Path)
-    parser.add_argument("--release-receipt-output", type=Path)
-    parser.add_argument("--release-artifact", type=Path, action="append", default=[])
-    parser.add_argument("--durable-ref")
-    parser.add_argument("--output", type=Path)
-    parser.add_argument("--format", choices=("text", "json"), default="text")
-    parser.add_argument("--compact", action="store_true")
-    args = parser.parse_args(argv)
-    try:
-        report = derive_truth(
-            args.repo_root,
-            args.evidence_dir,
-            evaluation_mode=args.evaluation_mode,
-            trusted_digest=args.trusted_digest,
-            ci_authority_path=args.ci_authority,
-            ci_certification_path=args.ci_certification,
-            ci_session_manifest_path=args.ci_session_manifest,
-        )
-    except TruthfulnessError as exc:
-        print(str(exc), file=os.sys.stderr)
-        raise SystemExit(1)
-    if args.durable_ref:
-        report["durable_ref"] = args.durable_ref
-    rendered = json.dumps(
-        report,
-        indent=None if args.compact else 2,
-        separators=(",", ":") if args.compact else None,
-        sort_keys=True,
-    )
-    if args.output:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(rendered + "\n", encoding="utf-8")
-    if args.release_receipt_output and args.evaluation_mode != "closure":
-        print("release receipts require closure truth evaluation", file=os.sys.stderr)
-        raise SystemExit(1)
-    if args.release_receipt_output and report["status"] == "pass":
-        if not all(
-            (
-                args.output,
-                args.ci_certification,
-                args.ci_session_manifest,
-                args.release_artifact,
-            )
-        ):
-            print(
-                "release receipt requires truth output, CI certification, session manifest, and release artifacts",
-                file=os.sys.stderr,
-            )
-            raise SystemExit(1)
-        try:
-            certification = json.loads(
-                args.ci_certification.read_text(encoding="utf-8")
-            )
-            receipt = build_release_receipt(
-                args.repo_root.resolve(),
-                truth_report=report,
-                truth_report_path=args.output,
-                certification=certification,
-                certification_path=args.ci_certification,
-                certification_verification=report["ci_certification"],
-                session_manifest_path=args.ci_session_manifest,
-                evidence_dir=args.evidence_dir,
-                release_artifacts=args.release_artifact,
-                output_path=args.release_receipt_output,
-            )
-            emit_release_receipt(args.release_receipt_output, receipt)
-        except (OSError, json.JSONDecodeError, ReleaseReceiptError) as exc:
-            print(str(exc), file=os.sys.stderr)
-            raise SystemExit(1)
-    if args.format == "json":
-        print(rendered)
-    else:
-        print(f"governance-truth-{report['status']} state={report['effective_state']}")
-        for issue in report["issues"]:
-            print(f"- {issue}")
-    if report["status"] != "pass":
-        raise SystemExit(1)
+    from .governance_truth_cli import main as cli_main
+
+    cli_main(argv)
 
 
 if __name__ == "__main__":

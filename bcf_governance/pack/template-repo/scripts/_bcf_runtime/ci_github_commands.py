@@ -69,6 +69,8 @@ def _exact_main_parser() -> argparse.ArgumentParser:
     admit.add_argument("--repository", required=True)
     admit.add_argument("--sha", required=True)
     admit.add_argument("--target-url", required=True)
+    admit.add_argument("--evaluation-mode", choices=("workitem", "closure"), default="closure")
+    admit.add_argument("--evaluation-target")
     finalize_parser = operations.add_parser("finalize")
     finalize_parser.add_argument("--repository", required=True)
     finalize_parser.add_argument("--trigger-run-id", required=True)
@@ -132,6 +134,8 @@ def _exact_main(argv: list[str]) -> None:
             run_id=_required_environment("GITHUB_RUN_ID"),
             run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
             target_url=args.target_url,
+            evaluation_mode=args.evaluation_mode,
+            evaluation_target=args.evaluation_target,
         )
     elif args.operation == "finalize":
         result = asdict(

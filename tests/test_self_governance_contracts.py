@@ -500,11 +500,15 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
     assert graph["artifacts"]["governance-receipts"]["scope"] == "run-attempt"
     assert graph["artifacts"]["governance-truth-report"]["kind"] == "terminal"
     assert graph["commands"]["governance-preflight"]["argv"][5] == (
-        "${{ inputs.evaluation_mode == 'closure' && 'release' || 'pr' }}"
+        "${{ inputs.evaluation_mode == 'pr' && 'pr' || 'release' }}"
     )
     assert graph["commands"]["governance-preflight"]["argv"][6:8] == [
         "--evaluation-mode",
         "${{ inputs.evaluation_mode || 'pr' }}",
+    ]
+    assert graph["commands"]["governance-preflight"]["argv"][8:10] == [
+        "--evaluation-target",
+        "${{ inputs.evaluation_target || '' }}",
     ]
     assert graph["step_components"]["run-governance-truth"]["condition"] == (
         "evidence-prerequisites-green"

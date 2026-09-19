@@ -20,6 +20,11 @@ from bcf_governance.tooling.evidence_workitem_lifecycle import (
     WorkitemContractError,
     validate_workitem_dependencies,
 )
+from bcf_governance.tooling.evaluation_scope import (
+    EvaluationIntent,
+    EvaluationScope,
+    certified_proposition,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TRUTH_MODULE_PATH = Path(
@@ -855,6 +860,61 @@ def test_bounded_workitem_closes_while_parent_remains_active(tmp_path: Path) -> 
     assert report["effective_state"] == "active"
     assert report["release_readiness"]["effective_state"] == "completed"
     assert "phase_effective_state_active" in report["issues"]
+
+
+def test_bounded_workitem_certification_does_not_claim_parent_closure(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path)
+    report = derive_truth(
+        repo,
+        _enable_v3_grouped_session(repo, bounded_workitems=True),
+        evaluation_mode="workitem",
+        evaluation_target="P01-W01",
+    )
+
+    assert report["status"] == "pass", report["issues"]
+    assert report["effective_state"] == "active"
+    assert report["evaluation_scope"] == {
+        "intent": "workitem",
+        "target": {"kind": "workitem", "id": "P01-W01"},
+    }
+    assert report["certified_proposition"]["predicate"] == "workitem_closed"
+    assert report["certified_proposition"]["authorizes"] == [
+        "declared_successor_workitem_eligibility"
+    ]
+    assert report["certified_proposition"]["eligible_successors"] == ["P01-W02"]
+    assert report["release_readiness"]["effective_state"] == "completed"
+
+
+@pytest.mark.parametrize("target", [None, "P01-W99"])
+def test_bounded_workitem_certification_requires_exact_closed_target(
+    tmp_path: Path, target: str | None
+) -> None:
+    repo = _make_repo(tmp_path)
+    evidence = _enable_v3_grouped_session(repo, bounded_workitems=True)
+    if target is None:
+        with pytest.raises(ValueError, match="requires one exact target"):
+            derive_truth(repo, evidence, evaluation_mode="workitem")
+        return
+    report = derive_truth(
+        repo, evidence, evaluation_mode="workitem", evaluation_target=target
+    )
+    assert report["status"] == "fail"
+    assert "bounded_workitem_target_not_closed" in report["issues"]
+
+
+def test_bounded_proposition_requires_closed_target() -> None:
+    proposition = certified_proposition(
+        scope=EvaluationScope(EvaluationIntent.WORKITEM_CERTIFICATION, "workitem", "P01-W99"),
+        subject={"commit_sha": "a" * 40, "tree_sha": "b" * 40},
+        status="pass",
+        workitems={"items": [{"id": "P01-W99", "effective_state": "active"}]},
+    )
+
+    assert proposition["conclusion"] == "failure"
+    assert proposition["authorizes"] == []
+    assert proposition["eligible_successors"] == []
 
 
 @pytest.mark.parametrize(

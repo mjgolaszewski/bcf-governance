@@ -16,6 +16,7 @@ import yaml  # type: ignore[import-untyped]
 
 from .evidence_execution import _selected_python
 from .evidence_planning import load_prior_receipts, verification_plan as build_verification_plan
+from .evaluation_scope import EvaluationIntent, evaluation_scope
 from .ci_authority_pins import CIAuthorityPinError, verify_workflow_authority
 from .ci_github_identity import GitHubControllerError
 from .ci_self_controller import verify_self_controller_projection
@@ -621,17 +622,16 @@ def run_preflight(
     expected_producers: list[str] | None = None,
     producer_identity: Mapping[str, str] | None = None,
     evaluation_mode: str | None = None,
+    evaluation_target: str | None = None,
     prior_receipts: list[Mapping[str, Any]] | None = None,
     trace: Callable[[str], None] | None = None,
 ) -> dict[str, Any]:
     """Validate deterministic state, then optionally seed one fresh session."""
     if mode not in {"release", "pr"}:
         raise PreflightError("preflight mode must be release or pr")
-    if evaluation_mode not in {None, "pr", "closure"}:
-        raise PreflightError("preflight evaluation mode must be pr or closure")
-    closure_requested = evaluation_mode == "closure"
-    if closure_requested and mode != "release":
-        raise PreflightError("closure evaluation requires release preflight mode")
+    selected_mode = evaluation_mode or "pr"
+    if selected_mode in {"workitem", "closure"} and mode != "release":
+        raise PreflightError("main evaluation requires release preflight mode")
     repo_root = repo_root.resolve()
     python = _selected_python(python_executable)
 
@@ -641,6 +641,15 @@ def run_preflight(
         return operation()
 
     subject = step("git-state", lambda: _git_state(repo_root))
+    try:
+        scope = evaluation_scope(
+            selected_mode,
+            target=evaluation_target or None,
+            phase_id="PREFLIGHT",
+            subject_commit="PREFLIGHT",
+        )
+    except ValueError as exc:
+        raise PreflightError(str(exc)) from exc
     syntax = step("syntax", lambda: _syntax_checks(repo_root))
     exposure = step("exposure", lambda: _exposure_scan(repo_root))
     interpreter = step(
@@ -651,7 +660,7 @@ def run_preflight(
     )
     step("governance", lambda: validate_repo_root(repo_root))
     closure_authoring = {
-        "requested": closure_requested,
+        "requested": scope.intent is EvaluationIntent.PHASE_CLOSURE,
         "execution_trigger": False,
         "state": "derived_from_authenticated_truth",
     }
@@ -733,7 +742,8 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Run cheap governance preflight.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--mode", choices=("release", "pr"), required=True)
-    parser.add_argument("--evaluation-mode", choices=("pr", "closure"))
+    parser.add_argument("--evaluation-mode", choices=("pr", "workitem", "closure"))
+    parser.add_argument("--evaluation-target")
     parser.add_argument("--python", type=Path)
     parser.add_argument("--artifact-root", type=Path)
     parser.add_argument("--expected-producer", action="append")
@@ -753,6 +763,7 @@ def main(argv: list[str] | None = None) -> None:
             artifact_root=args.artifact_root,
             expected_producers=args.expected_producer,
             evaluation_mode=args.evaluation_mode,
+            evaluation_target=args.evaluation_target,
             producer_identity=(
                 local_producer_identity(args.repo_root, args.local_producer_id)
                 if args.local_producer_id

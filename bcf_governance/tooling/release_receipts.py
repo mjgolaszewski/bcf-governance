@@ -11,10 +11,16 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from jsonschema import Draft202012Validator
+from .evaluation_scope import is_terminal_phase_certification
 
 
 class ReleaseReceiptError(ValueError):
     """Raised when release inputs are invalid or construction would be cyclic."""
+
+
+def _require_terminal_certification(certification: dict[str, Any]) -> None:
+    if not is_terminal_phase_certification(certification):
+        raise ReleaseReceiptError("release requires terminal phase-closure certification")
 
 
 @dataclass(frozen=True)
@@ -84,6 +90,8 @@ def build_release_receipt(
     output_path: Path,
 ) -> ReleaseReceipt:
     """Build but do not publish a receipt from already-verified input artifacts."""
+
+    _require_terminal_certification(certification)
 
     if not _outside(output_path, evidence_dir):
         raise ReleaseReceiptError("release receipt output must be outside truth input evidence")
@@ -233,6 +241,8 @@ def build_trusted_release_receipt(
     verification_provider_artifact: dict[str, Any],
 ) -> ReleaseReceipt:
     """Build the sole v1.1 release receipt from verified, acyclic role outputs."""
+
+    _require_terminal_certification(certification)
 
     if certification_verification.get("status") != "pass" or (
         certification_verification.get("computed_state") != "certified"

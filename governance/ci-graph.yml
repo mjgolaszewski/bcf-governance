@@ -6,7 +6,7 @@ default_branch: main
 trusted_controller: {kind: self_governance_policy, policy_path: governance/self-governance-policy.yml}
 evidence_storage: {path: governance/evidence-storage.yml, sha256: e7616b0c43cc0106779b5bab99ec9c1e5e8d30cbc51bff57a3698cb82454fdaa}
 value_sources:
-  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 764a8d3080728ba4daf218c0b7f4a24fa88262be5444f6b0e1d340c1fb7a009e}
+  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 0463d0841349063754ceab10b0ac6939f3e995a61fa2cf17b11d274cf64facf9}
   release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: 573400f8b12918fdb1129a00f20a0c42a5d7b2f5fbd606fd080b9178c1ac3ef2}
   protection-contract: {kind: yaml, path: governance/github-protection.yml, sha256: 5f8c6fcd0d569e17050f694571474faa0f7538d12a5d11cc51891cf01c59a53a}
   automation-contract: {kind: yaml, path: governance/automation-producers.yml, sha256: 74c02575f7599f9e4a82cacc60f6d60692ee81dd1f7bec20441e6b375cf77cce}
@@ -69,7 +69,7 @@ commands:
     cwd: .
     environment: {}
   governance-preflight:
-    argv: ['{python}', scripts/preflight_governance.py, --repo-root, ., --mode, '${{ inputs.evaluation_mode == ''closure'' && ''release'' || ''pr'' }}', --evaluation-mode, '${{ inputs.evaluation_mode || ''pr'' }}', --python, '{python}', --artifact-root, .artifacts/bcf, --expected-producer, evidence, --format, text]
+    argv: ['{python}', scripts/preflight_governance.py, --repo-root, ., --mode, '${{ inputs.evaluation_mode == ''pr'' && ''pr'' || ''release'' }}', --evaluation-mode, '${{ inputs.evaluation_mode || ''pr'' }}', --evaluation-target, '${{ inputs.evaluation_target || '''' }}', --python, '{python}', --artifact-root, .artifacts/bcf, --expected-producer, evidence, --format, text]
     cwd: .
     environment: {}
   capture-governance-shard:
@@ -85,11 +85,11 @@ commands:
     cwd: .
     environment: {}
   governance-truth:
-    argv: ['{python}', scripts/governance_truth.py, --repo-root, ., --evidence-dir, .artifacts/bcf/fan-in, --evaluation-mode, '${{ inputs.evaluation_mode || ''pr'' }}', --format, json, --durable-ref, 'github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth', --output, .artifacts/bcf/truth-report.json]
+    argv: ['{python}', scripts/governance_truth.py, --repo-root, ., --evidence-dir, .artifacts/bcf/fan-in, --evaluation-mode, '${{ inputs.evaluation_mode || ''pr'' }}', --evaluation-target, '${{ inputs.evaluation_target || '''' }}', --format, json, --durable-ref, 'github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth', --output, .artifacts/bcf/truth-report.json]
     cwd: .
     environment: {}
   governance-terminal-observation:
-    argv: ['{python}', .github/scripts/governance_terminal_observation.py, --repo-root, ., --output, .artifacts/bcf/truth-report.json, --preflight-result, '${{ needs.preflight.result }}', --evidence-result, '${{ needs.evidence.result }}', --repository, '${{ github.repository }}', --commit-sha, '${{ github.sha }}', --run-id, '${{ github.run_id }}', --run-attempt, '${{ github.run_attempt }}']
+    argv: ['{python}', .github/scripts/governance_terminal_observation.py, --repo-root, ., --output, .artifacts/bcf/truth-report.json, --preflight-result, '${{ needs.preflight.result }}', --evidence-result, '${{ needs.evidence.result }}', --repository, '${{ github.repository }}', --commit-sha, '${{ github.sha }}', --run-id, '${{ github.run_id }}', --run-attempt, '${{ github.run_attempt }}', --evaluation-mode, '${{ inputs.evaluation_mode || ''pr'' }}', --evaluation-target, '${{ inputs.evaluation_target || '''' }}']
     cwd: .
     environment: {}
   scheduled-preflight:
@@ -327,6 +327,7 @@ workflows:
   - type: workflow_call
     inputs:
       evaluation_mode: {description: Exact truth evaluation mode selected by the trusted caller, required: false, default: pr, type: string}
+      evaluation_target: {description: Exact typed target required only for bounded workitem certification, required: false, default: '', type: string}
   permissions: {contents: read}
   jobs:
   - id: preflight

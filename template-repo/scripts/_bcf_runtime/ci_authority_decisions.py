@@ -19,6 +19,7 @@ class ExecutionStatus(StrEnum):
 class StatusContext(StrEnum):
     PULL_REQUEST = "bcf/pr-certification"
     EXACT_MAIN = "bcf/exact-main-certification"
+    BOUNDED_WORKITEM = "bcf/workitem-certification"
     AUTHORITY_CANARY = "bcf/authority-canary"
 
 
@@ -107,7 +108,11 @@ def decide_status_publication(
     if proposed.admission_ordinal < 1 or proposed.control_plane_attempt < 1:
         raise CIDecisionError("status authority ordinal and attempt must be positive")
     if (
-        proposed.context in {StatusContext.EXACT_MAIN, StatusContext.AUTHORITY_CANARY}
+        proposed.context in {
+            StatusContext.EXACT_MAIN,
+            StatusContext.BOUNDED_WORKITEM,
+            StatusContext.AUTHORITY_CANARY,
+        }
         and proposed.subject_sha != current_default_main_sha
     ):
         obsolete = StatusObservation(
