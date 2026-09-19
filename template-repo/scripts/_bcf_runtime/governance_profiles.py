@@ -608,10 +608,10 @@ def apply_profile_contract(
     contract_path.parent.mkdir(parents=True, exist_ok=True)
     # Keep the mechanically rendered contract within the same governed context
     # budget as a hand-compacted canonical contract. Negative-control mappings
-    # remain one semantic record; a wider deterministic wrap avoids turning
-    # added controls into artificial line-budget failures during promotion.
+    # remain one semantic record; the canonical wide render avoids turning
+    # added controls into artificial byte or line failures during promotion.
     contract_path.write_text(
-        render_profile_surface(persisted, width=240), encoding="utf-8"
+        render_profile_surface(persisted, width=4096), encoding="utf-8"
     )
 
     evidence_policy = _load_yaml(repo_root / "governance/evidence-policy.yml")

@@ -37,6 +37,8 @@ def ensure_terminal_observation(
     commit_sha: str,
     run_id: str,
     run_attempt: str,
+    evaluation_mode: str = "pr",
+    evaluation_target: str | None = None,
 ) -> bool:
     """Preserve truth output or atomically record why it could not be produced."""
 
@@ -59,6 +61,10 @@ def ensure_terminal_observation(
             "version": "1.0",
         },
         "computed_state": "failed",
+        "evaluation_request": {
+            "intent": evaluation_mode,
+            "target": evaluation_target,
+        },
         "reasons": reasons,
         "subject": {
             "commit_sha": commit_sha,
@@ -94,6 +100,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--commit-sha", required=True)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--run-attempt", required=True)
+    parser.add_argument("--evaluation-mode", choices=("pr", "workitem", "closure"), required=True)
+    parser.add_argument("--evaluation-target")
     args = parser.parse_args(argv)
     ready = ensure_terminal_observation(
         args.repo_root,
@@ -104,6 +112,8 @@ def main(argv: list[str] | None = None) -> None:
         commit_sha=args.commit_sha,
         run_id=args.run_id,
         run_attempt=args.run_attempt,
+        evaluation_mode=args.evaluation_mode,
+        evaluation_target=args.evaluation_target or None,
     )
     if not ready:
         raise SystemExit("governance truth could not run; terminal observation recorded")

@@ -170,7 +170,20 @@ def _graph() -> dict[str, object]:
                 "path": ".github/workflows/governance.yml",
                 "display_name": "Governance pull-request evidence",
                 "role": "pull-request",
-                "events": [{"type": "pull_request"}, {"type": "workflow_call"}],
+                "events": [
+                    {"type": "pull_request"},
+                    {
+                        "type": "workflow_call",
+                        "inputs": {
+                            "evaluation_mode": {
+                                "description": "Evaluation mode",
+                                "required": False,
+                                "default": "pr",
+                                "type": "string",
+                            }
+                        },
+                    },
+                ],
                 "permissions": {"contents": "read"},
                 "jobs": [
                     _job("preflight", "cheap-preflight", produces=["session"]),
@@ -286,6 +299,14 @@ def test_direct_event_command_inputs_require_mechanical_fallback() -> None:
         "${{ inputs.evaluation_mode || 'pr' }}"
     )
     assert workflow_input_issues(graph, workflow) == ()
+
+    graph["commands"][command_id]["argv"][-1] = (
+        "${{ inputs.evaluation_mode == 'pr' && 'pr' || 'release' }}"
+    )
+    assert workflow_input_issues(graph, workflow) == (
+        "direct-event workflow governance command preflight input "
+        "evaluation_mode fallback must equal its declared workflow_call default",
+    )
 
 
 def _write_graph(repo: Path, payload: dict[str, object] | None = None) -> Path:

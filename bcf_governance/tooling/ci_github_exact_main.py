@@ -13,7 +13,7 @@ from .ci_authority_certification import (
     normalize_ci_certification,
     verify_ci_certification,
 )
-from .ci_authority_decisions import StatusConclusion
+from .ci_authority_decisions import StatusConclusion, StatusContext
 from .ci_authority_contracts import authority_role_workflow
 from .ci_github_api import GitHubAPI
 from .ci_github_authority import (
@@ -22,6 +22,7 @@ from .ci_github_authority import (
     packaged_repo_root,
 )
 from .ci_github_bundle import canonical_json, prepare_output, write_exclusive
+from .ci_exact_main_truth import authenticated_exact_main_truth
 from .ci_github_identity import GitHubControllerError, resolve_main
 from .ci_github_membership import (
     admission_ordinal,
@@ -30,6 +31,7 @@ from .ci_github_membership import (
 )
 from .ci_github_status import publish as publish_bundle
 from .ci_github_status import publish_observation
+from .evaluation_scope import EvaluationIntent, evaluation_scope
 
 
 @dataclass(frozen=True)
@@ -94,6 +96,8 @@ def admit_exact_main(
     run_id: object,
     run_attempt: object,
     target_url: str,
+    evaluation_mode: str = "closure",
+    evaluation_target: str | None = None,
 ) -> dict[str, Any]:
     """Authenticate current main and publish its higher-ordinal pending status."""
 
@@ -112,6 +116,19 @@ def admit_exact_main(
         require_success=False,
     )
     ordinal = admission_ordinal(identity.run_id, identity.run_attempt, 1)
+    scope = evaluation_scope(
+        evaluation_mode,
+        target=evaluation_target,
+        phase_id="PENDING",
+        subject_commit=main.checkout_sha,
+    )
+    if scope.intent is EvaluationIntent.PR_PROGRESS:
+        raise GitHubControllerError("exact-main admission cannot certify PR progress")
+    context = (
+        StatusContext.BOUNDED_WORKITEM
+        if scope.intent is EvaluationIntent.WORKITEM_CERTIFICATION
+        else StatusContext.EXACT_MAIN
+    )
     status = publish_observation(
         api,
         repository=repository,
@@ -120,8 +137,9 @@ def admit_exact_main(
         admission_ordinal=ordinal,
         control_plane_attempt=identity.run_attempt,
         conclusion=StatusConclusion.PENDING,
-        description="BCF exact-main admission pending",
+        description=f"BCF {scope.intent.value} {scope.target_id} pending"[:140],
         target_url=target_url,
+        status_context=context,
     )
     return {
         **status,
@@ -228,6 +246,17 @@ def finalize_exact_main(
         for value in producer_runs
     ]
     root = prepare_output(output_dir)
+    truth_report, truth_descriptor, truth_bytes = authenticated_exact_main_truth(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        run_id=admission_run_id,
+        run_attempt=admission_attempt,
+    )
+    scoped_truth = bool(truth_report.get("certified_proposition"))
+    if scoped_truth:
+        (root / "governance-truth.json").write_bytes(truth_bytes)
     authority_path = root / "ci-authority.json"
     write_exclusive(authority_path, authority)
     raw_dir = root / "raw"
@@ -284,6 +313,13 @@ def finalize_exact_main(
             "run_attempt": collector.run_attempt,
         },
         generated_at=captured_at,
+        governance_truth=truth_descriptor if scoped_truth else None,
+        evaluation_scope=(
+            dict(truth_report["evaluation_scope"]) if scoped_truth else None
+        ),
+        certified_proposition=(
+            dict(truth_report["certified_proposition"]) if scoped_truth else None
+        ),
     )
     report_path = root / "ci-certification.json"
     write_exclusive(report_path, report)
@@ -380,4 +416,5 @@ def publish_exact_main(
         collector_workflow_path=str(finalizer["active_path"]),
         collector_workflow_id=finalizer["workflow_id"],
         collector_workflow_sha256=str(finalizer["trusted_workflow_sha256"]),
+        require_evaluation_scope=True,
     )

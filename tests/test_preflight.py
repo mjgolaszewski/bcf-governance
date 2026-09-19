@@ -7,6 +7,9 @@ from pathlib import Path
 import pytest
 
 from bcf_governance.tooling import preflight
+from bcf_governance.tooling.governance_validation.common import (
+    GovernanceValidationError,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -305,6 +308,55 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     assert report["self_controller"] == 6
 
 
+def test_context_budget_failure_precedes_evidence_session_allocation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[str] = []
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    monkeypatch.setattr(
+        preflight,
+        "_git_state",
+        lambda _: {"commit_sha": "a" * 40, "tree_sha": "b" * 40},
+    )
+    monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
+    monkeypatch.setattr(preflight, "_exposure_scan", lambda _: {})
+    monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {})
+    monkeypatch.setattr(preflight, "_source_entrypoint_authority", lambda _: {})
+    monkeypatch.setattr(
+        preflight,
+        "validate_repo_root",
+        lambda _: (_ for _ in ()).throw(
+            GovernanceValidationError(
+                "agent-required governance files exceeded context budgets"
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "allocate_session",
+        lambda *_, **__: pytest.fail("evidence session allocated after budget failure"),
+    )
+
+    with pytest.raises(GovernanceValidationError, match="context budgets"):
+        preflight.run_preflight(
+            repo,
+            mode="pr",
+            python_executable=sys.executable,
+            artifact_root=tmp_path / "evidence",
+            trace=calls.append,
+        )
+
+    assert calls == [
+        "git-state",
+        "syntax",
+        "exposure",
+        "interpreter",
+        "source-entrypoints",
+        "governance",
+    ]
+
+
 def test_editorial_contract_rejection_is_a_preflight_failure(tmp_path: Path) -> None:
     checker = tmp_path / ".github/scripts/check_editorial_contract.py"
     checker.parent.mkdir(parents=True)
@@ -364,6 +416,16 @@ def test_stale_trusted_controller_is_a_preflight_failure(
         "projection_count": 6,
         "release_authority": False,
     }
+
+    assert preflight.preflight_mode_for_evaluation(None) == "pr"
+    assert preflight.preflight_mode_for_evaluation("pr") == "pr"
+    for evaluation_mode in ("workitem", "closure"):
+        assert preflight.preflight_mode_for_evaluation(evaluation_mode) == "release"
+        with pytest.raises(
+            preflight.PreflightError,
+            match="self-controller preflight failed: stale runtime closure",
+        ):
+            preflight._self_controller(tmp_path, allow_stale_runtime=False)
 
 
 def test_stale_pack_manifest_fails_before_evidence(

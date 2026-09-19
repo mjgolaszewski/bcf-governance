@@ -1,5 +1,4 @@
 """Authority-v1.1 release authorization, verification, collection, and inspection."""
-
 from __future__ import annotations
 
 from dataclasses import asdict
@@ -41,7 +40,7 @@ from .release_source_bindings import (
     release_source_bindings,
     verify_release_source_bindings,
 )
-
+from .evaluation_scope import is_terminal_phase_certification
 
 def _now() -> str:
     return datetime.now(UTC).isoformat().replace("+00:00", "Z")
@@ -96,6 +95,8 @@ def authorize_release(
     )
     if verification.status != "pass" or verification.computed_state != "certified":
         raise GitHubControllerError("release authorization requires certified exact main")
+    if not is_terminal_phase_certification(certification):
+        raise GitHubControllerError("release authorization requires terminal phase closure")
     if certification.get("authority_contract_version") != "1.1":
         raise GitHubControllerError("release authorization requires authority version 1.1")
     main = resolve_main(api, repository)

@@ -54,6 +54,18 @@ def _inputs(tmp_path: Path) -> dict[str, object]:
             "control_plane_run_attempt": 2,
         },
         "generated_at": "2026-08-30T00:00:00Z",
+        "evaluation_scope": {
+            "intent": "closure",
+            "target": {"kind": "phase", "id": "P01"},
+        },
+        "certified_proposition": {
+            "predicate": "phase_closed",
+            "target": {"kind": "phase", "id": "P01"},
+            "subject": {"commit_sha": SHA, "tree_sha": TREE},
+            "conclusion": "success",
+            "authorizes": [],
+            "eligible_successors": [],
+        },
     }
     return {
         "evidence_dir": evidence_dir,
@@ -121,6 +133,25 @@ def test_failed_truth_or_uncertified_ci_cannot_emit_release(tmp_path: Path) -> N
     values = _inputs(tmp_path / "second")
     values["verification"] = {"status": "pass", "computed_state": "failed"}
     with pytest.raises(ReleaseReceiptError, match="independently certified"):
+        _build(values)
+
+
+def test_bounded_workitem_certification_cannot_authorize_release(tmp_path: Path) -> None:
+    values = _inputs(tmp_path)
+    certification = values["certification"]
+    certification["evaluation_scope"] = {  # type: ignore[index]
+        "intent": "workitem",
+        "target": {"kind": "workitem", "id": "P26-P0-01"},
+    }
+    certification["certified_proposition"] = {  # type: ignore[index]
+        "predicate": "workitem_closed",
+        "target": {"kind": "workitem", "id": "P26-P0-01"},
+        "subject": {"commit_sha": SHA, "tree_sha": TREE},
+        "conclusion": "success",
+        "authorizes": ["declared_successor_workitem_eligibility"],
+        "eligible_successors": ["P26-P0-02"],
+    }
+    with pytest.raises(ReleaseReceiptError, match="terminal phase-closure"):
         _build(values)
 
 
