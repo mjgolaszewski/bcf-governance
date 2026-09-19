@@ -33,6 +33,8 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Keep pending-rotation exact-main execution non-certifying while preserving its
+  independent controller artifact producer for ordinary bootstrap.
 - Derive bounded ordinary-workitem closure only from receipt-producing, exact-subject
   authenticated evidence while preserving active parent-phase authority and fail-closed
   predecessor eligibility.

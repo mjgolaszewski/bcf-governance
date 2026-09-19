@@ -194,3 +194,27 @@ final_orchestration_correction:
     current_exact_main_invocation: phase_closure
   boundary: P26-02 remains blocked; this insertion must merge and rotate normally before
     a separate activation can request bounded P26-P0-01 certification
+rotation_finalizer_correction:
+  provider_failure:
+    main_commit: 7fbed1a9cc9a26a90393b245f84ec2805ef177e6
+    finalizer_run: {id: 35467777749, attempt: 1}
+    installed_controller: ea638478932a726782f6b10cd749044337e6878a
+    first_causal_invariant: admission exact job inventory does not match authority
+  classification: pending_rotation_callback_applicability_defect
+  canonical_correction:
+  - keep the independent read-only controller builder free of the disabled admission dependency
+  - require installed-current controller custody for exact-main finalization and status publication
+  - retain complete admission inventory enforcement for every certification attempt
+  - retain partial-admission selection only for the exact controller artifact resolver
+  sibling_workflow_run_review:
+  - PR finalization and automation callbacks consume different complete producer topologies
+  - evidence-storage qualification is an explicit bounded publication lane
+  - release collection already requires installed-current controller custody
+  proof:
+  - pending rotation runs only the independent controller builder and cannot emit certification
+  - current custody restores admission, evidence, finalization, and publication mechanically
+  - release and bounded-workitem certification remain unavailable during pending rotation
+  - bootstrap, probe, confirmation, and installation retain exact artifact and subject binding
+  - authenticated recovery re-entry remains non-certifying and release-ineligible
+  boundary: P26-02 remains blocked pending protected merge, ordinary bootstrap/probe/confirmation,
+    normalized installation, and fresh exact-main certification
