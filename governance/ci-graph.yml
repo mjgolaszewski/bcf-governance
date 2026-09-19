@@ -416,7 +416,7 @@ workflows:
     permissions: {actions: read, contents: read, statuses: write}
     checkout: false
     components: [python]
-    executor: {kind: authority, operation: admit}
+    executor: {kind: authority, operation: admit, evaluation_mode: workitem, evaluation_target: P26-P0-01}
     produces: []
     consumes: []
     required: true
@@ -434,7 +434,7 @@ workflows:
     executor:
       kind: reusable_workflow
       path: .github/workflows/governance.yml
-      inputs: {evaluation_mode: closure}
+      inputs: {evaluation_mode: workitem, evaluation_target: P26-P0-01}
     produces: []
     consumes: []
     required: true

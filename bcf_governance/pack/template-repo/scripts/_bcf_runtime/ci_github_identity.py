@@ -86,6 +86,54 @@ def resolve_main(api: GitHubAPI, repository: str) -> MainIdentity:
     )
 
 
+def resolve_run_subject(
+    api: GitHubAPI,
+    repository: str,
+    *,
+    run_id: object,
+    run_attempt: object,
+) -> MainIdentity:
+    """Resolve one provider run's immutable default-branch subject.
+
+    The returned identity is only a subject locator.  Callers must still load the
+    authority at that commit and authenticate the run against its governed role.
+    """
+
+    repo = api.repository(repository)
+    repository_id = str(positive_int(repo.get("id"), field="repository ID"))
+    branch = repo.get("default_branch")
+    if not isinstance(branch, str) or not re.fullmatch(r"[A-Za-z0-9._/-]+", branch):
+        raise GitHubControllerError("default branch is missing or unsafe")
+    numeric_run = str(positive_int(run_id, field="trusted run ID"))
+    attempt = positive_int(run_attempt, field="trusted run attempt")
+    run = api.run(repository, numeric_run)
+    if (
+        str(positive_int(run.get("id"), field="trusted run ID")) != numeric_run
+        or positive_int(run.get("run_attempt"), field="trusted run attempt")
+        != attempt
+    ):
+        raise GitHubControllerError("provider run does not match its exact locator")
+    if str(run.get("head_branch")) != branch:
+        raise GitHubControllerError("trusted run branch is not the default branch")
+    for field in ("repository", "head_repository"):
+        value = run.get(field)
+        if not isinstance(value, dict) or str(value.get("id")) != repository_id:
+            raise GitHubControllerError(
+                f"trusted run {field.replace('_', ' ')} identity does not match repository"
+            )
+    subject = exact_sha(run.get("head_sha"), field="trusted run subject SHA")
+    commit = api.commit(repository, subject)
+    tree = commit.get("tree")
+    if not isinstance(tree, dict):
+        raise GitHubControllerError("trusted run subject commit tree is missing")
+    return MainIdentity(
+        repository_id=repository_id,
+        default_branch=branch,
+        checkout_sha=subject,
+        tree_sha=exact_sha(tree.get("sha"), field="trusted run subject tree SHA"),
+    )
+
+
 def _trusted_workflow_source(
     api: GitHubAPI,
     *,

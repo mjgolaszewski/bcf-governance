@@ -259,7 +259,7 @@ class FakeAPI:
         report: dict[str, object] = self.truth_artifact_override or {
             "status": "pass" if conclusion == "success" else "fail",
             "subject": {
-                "commit_sha": self.main,
+                "commit_sha": str(self.runs["100"]["head_sha"]),
                 "tree_sha": self.tree,
             },
             "evaluation_scope": {
@@ -269,7 +269,10 @@ class FakeAPI:
             "certified_proposition": {
                 "predicate": "phase_closed",
                 "target": {"kind": "phase", "id": "P01"},
-                "subject": {"commit_sha": self.main, "tree_sha": self.tree},
+                "subject": {
+                    "commit_sha": str(self.runs["100"]["head_sha"]),
+                    "tree_sha": self.tree,
+                },
                 "conclusion": "success" if conclusion == "success" else "failure",
                 "authorizes": [],
                 "eligible_successors": [],
@@ -298,7 +301,7 @@ class FakeAPI:
                 "repository_id": 42,
                 "head_repository_id": 42,
                 "head_branch": "main",
-                "head_sha": self.main,
+                "head_sha": str(self.runs["100"]["head_sha"]),
             },
         },)
 
@@ -571,7 +574,7 @@ def test_v11_direct_trigger_locator_cannot_confer_authority(mutation: str) -> No
         )
 
 
-def test_v11_newer_provider_admission_wins_without_success_fallback() -> None:
+def test_v11_direct_trigger_remains_bound_to_its_exact_admission() -> None:
     api = FakeAPI()
     authority = _prepare_v11_run(api)
     api.runs["101"] = {
@@ -588,6 +591,21 @@ def test_v11_newer_provider_admission_wins_without_success_fallback() -> None:
         authority=authority,
         trigger_run_id=100,
         trigger_run_attempt=1,
+    ) == ("100", 1)
+
+
+def test_v11_untriggered_selection_uses_newest_without_success_fallback() -> None:
+    api = FakeAPI()
+    authority = _prepare_v11_run(api)
+    api.runs["101"] = {
+        **api.runs["100"],
+        "id": 101,
+        "conclusion": "failure",
+    }
+    main = resolve_main(api, "owner/repo")  # type: ignore[arg-type]
+
+    assert select_latest_admission(
+        api, repository="owner/repo", main=main, authority=authority  # type: ignore[arg-type]
     ) == ("101", 1)
 
 
@@ -612,21 +630,85 @@ def test_v11_invalid_direct_trigger_cannot_fall_back_to_older_green() -> None:
         )
 
 
-def test_v11_moved_main_rejects_stale_direct_trigger() -> None:
+def test_v11_finalizer_preserves_admitted_subject_after_main_moves(
+    tmp_path: Path,
+) -> None:
     api = FakeAPI()
-    authority = _prepare_v11_run(api)
+    _prepare_v11_run(api)
     api.main = SHA_B
-    main = resolve_main(api, "owner/repo")  # type: ignore[arg-type]
+    result = finalize_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        trigger_run_id=100,
+        trigger_run_attempt=1,
+        output_dir=tmp_path / "bundle",
+    )
+    report = json.loads(
+        (Path(result.bundle_dir) / "ci-certification.json").read_text()
+    )
+    assert report["subject"]["checkout_sha"] == SHA_A
+    assert report["subject"]["tree_sha"] == TREE
 
-    with pytest.raises(GitHubControllerError, match="current exact main"):
-        select_latest_admission(
-            api,
+    api.runs["400"].update(status="completed", conclusion="success")
+    api.runs["401"] = {
+        **api.runs["400"],
+        "id": 401,
+        "workflow_id": 97,
+        "status": "in_progress",
+        "conclusion": None,
+    }
+    published = publish_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        bundle_dir=Path(result.bundle_dir),
+        target_url="https://github.example/runs/400",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        publisher_run_id=401,
+        publisher_run_attempt=1,
+    )
+    assert published["status"] == "suppressed"
+    assert published["reason"] == "default_main_moved"
+    assert api.published_statuses == []
+
+
+def test_v11_publisher_rejects_run_for_different_subject(tmp_path: Path) -> None:
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    result = finalize_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        trigger_run_id=100,
+        trigger_run_attempt=1,
+        output_dir=tmp_path / "bundle",
+    )
+    api.main = SHA_B
+    api.runs["400"].update(status="completed", conclusion="success")
+    api.runs["401"] = {
+        **api.runs["400"],
+        "id": 401,
+        "workflow_id": 97,
+        "head_sha": SHA_B,
+        "status": "in_progress",
+        "conclusion": None,
+    }
+
+    with pytest.raises(GitHubControllerError, match="certification subject"):
+        publish_exact_main(
+            api,  # type: ignore[arg-type]
             repository="owner/repo",
-            main=main,
-            authority=authority,
-            trigger_run_id=100,
-            trigger_run_attempt=1,
+            bundle_dir=Path(result.bundle_dir),
+            target_url="https://github.example/runs/400",
+            collector_run_id=400,
+            collector_run_attempt=1,
+            publisher_run_id=401,
+            publisher_run_attempt=1,
         )
+    assert api.published_statuses == []
 
 
 def test_v11_direct_trigger_uses_provider_status_and_commit_tree(tmp_path: Path) -> None:

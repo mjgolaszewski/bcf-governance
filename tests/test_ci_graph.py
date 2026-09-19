@@ -1030,7 +1030,16 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert admission["controller_requirement"] == "current-or-recovery-reentry"
     assert governance["needs"] == ["admit"]
     assert governance["condition"] == "exact-main-admitted"
-    assert governance["executor"]["inputs"] == {"evaluation_mode": "closure"}
+    assert admission["executor"] == {
+        "kind": "authority",
+        "operation": "admit",
+        "evaluation_mode": "workitem",
+        "evaluation_target": "P26-P0-01",
+    }
+    assert governance["executor"]["inputs"] == {
+        "evaluation_mode": "workitem",
+        "evaluation_target": "P26-P0-01",
+    }
     assert builder["needs"] == []
     assert builder["condition"] == "exact-main-authority-enabled"
     assert builder["semantic_role"] == "exact-main-controller-builder"
@@ -1051,6 +1060,14 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     exact_condition = rendered[".github/workflows/bcf-exact-main.yml"]["jobs"][
         "admit"
     ]["if"]
+    exact_jobs = rendered[".github/workflows/bcf-exact-main.yml"]["jobs"]
+    admission_command = exact_jobs["admit"]["steps"][-1]["run"]
+    assert '--evaluation-mode "workitem"' in admission_command
+    assert '--evaluation-target "P26-P0-01"' in admission_command
+    assert exact_jobs["governance"]["with"] == {
+        "evaluation_mode": "workitem",
+        "evaluation_target": "P26-P0-01",
+    }
     builder_projection = rendered[".github/workflows/bcf-exact-main.yml"]["jobs"][
         "trusted-controller-build"
     ]
