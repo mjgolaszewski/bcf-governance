@@ -7,6 +7,9 @@ from pathlib import Path
 import pytest
 
 from bcf_governance.tooling import preflight
+from bcf_governance.tooling.governance_validation.common import (
+    GovernanceValidationError,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -303,6 +306,55 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     assert report["session_manifest"] == (tmp_path / "session.json").as_posix()
     assert report["workflow_authority"] == 12
     assert report["self_controller"] == 6
+
+
+def test_context_budget_failure_precedes_evidence_session_allocation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[str] = []
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    monkeypatch.setattr(
+        preflight,
+        "_git_state",
+        lambda _: {"commit_sha": "a" * 40, "tree_sha": "b" * 40},
+    )
+    monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
+    monkeypatch.setattr(preflight, "_exposure_scan", lambda _: {})
+    monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {})
+    monkeypatch.setattr(preflight, "_source_entrypoint_authority", lambda _: {})
+    monkeypatch.setattr(
+        preflight,
+        "validate_repo_root",
+        lambda _: (_ for _ in ()).throw(
+            GovernanceValidationError(
+                "agent-required governance files exceeded context budgets"
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "allocate_session",
+        lambda *_, **__: pytest.fail("evidence session allocated after budget failure"),
+    )
+
+    with pytest.raises(GovernanceValidationError, match="context budgets"):
+        preflight.run_preflight(
+            repo,
+            mode="pr",
+            python_executable=sys.executable,
+            artifact_root=tmp_path / "evidence",
+            trace=calls.append,
+        )
+
+    assert calls == [
+        "git-state",
+        "syntax",
+        "exposure",
+        "interpreter",
+        "source-entrypoints",
+        "governance",
+    ]
 
 
 def test_editorial_contract_rejection_is_a_preflight_failure(tmp_path: Path) -> None:

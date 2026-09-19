@@ -764,7 +764,7 @@
     },
     "scripts/_bcf_runtime/governance_profiles.py": {
       "operation": "copy",
-      "sha256": "42b8d0ea621dbcc26213e95331c0c340309f47765ba69e39b630b7e70d91559c"
+      "sha256": "f67a8e1d468039db937dc1a9382e473d8d3b17ec5054318da9a77ffcb51a4771"
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
