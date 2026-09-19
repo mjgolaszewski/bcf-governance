@@ -1018,6 +1018,14 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         job for job in exact_main["jobs"]
         if job["id"] == "trusted-controller-build"
     )
+    finalizer_contract = next(
+        workflow for workflow in graph["workflows"]
+        if workflow["id"] == "exact-main-finalizer"
+    )["jobs"][0]
+    publisher_contract = next(
+        workflow for workflow in graph["workflows"]
+        if workflow["id"] == "exact-main-publisher"
+    )["jobs"][0]
 
     assert admission["controller_requirement"] == "current-or-recovery-reentry"
     assert governance["needs"] == ["admit"]
@@ -1029,6 +1037,8 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert builder["produces"] == ["trusted-controller-bundle"]
     assert "build-trusted-controller" in builder["executor"]["components"]
     assert "upload-trusted-controller" in builder["executor"]["components"]
+    assert finalizer_contract["controller_requirement"] == "current"
+    assert publisher_contract["controller_requirement"] == "current"
 
     compiled = validate_ci_graph(REPO_ROOT)
     policy = yaml.safe_load(
