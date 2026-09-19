@@ -20,6 +20,11 @@ from bcf_governance.tooling.evidence_workitem_lifecycle import (
     WorkitemContractError,
     validate_workitem_dependencies,
 )
+from bcf_governance.tooling.evaluation_scope import (
+    EvaluationIntent,
+    EvaluationScope,
+    certified_proposition,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TRUTH_MODULE_PATH = Path(
@@ -897,6 +902,19 @@ def test_bounded_workitem_certification_requires_exact_closed_target(
     )
     assert report["status"] == "fail"
     assert "bounded_workitem_target_not_closed" in report["issues"]
+
+
+def test_bounded_proposition_requires_closed_target() -> None:
+    proposition = certified_proposition(
+        scope=EvaluationScope(EvaluationIntent.WORKITEM_CERTIFICATION, "workitem", "P01-W99"),
+        subject={"commit_sha": "a" * 40, "tree_sha": "b" * 40},
+        status="pass",
+        workitems={"items": [{"id": "P01-W99", "effective_state": "active"}]},
+    )
+
+    assert proposition["conclusion"] == "failure"
+    assert proposition["authorizes"] == []
+    assert proposition["eligible_successors"] == []
 
 
 @pytest.mark.parametrize(
