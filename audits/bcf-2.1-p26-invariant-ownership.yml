@@ -294,3 +294,10 @@ rotation_confirmation:
   probe: {run: 35471690506, attempt: 1, trusted_runner_1: success, trusted_runner_2: success}
   projection: {target_equals_installed: true, recovery_reentry: absent, mechanism: canonical_self_controller_confirmation}
   boundary: protected confirmation merge and fresh ordinary exact-main certification remain required; P26-02 remains blocked
+final_runtime_rotation_confirmation:
+  authoritative_subject: {commit: 1cf593566500284e38d5c2d1f40c1142ff45761a, tree: fbd1163fade11b4b1b47456c29c49df5e153a107}
+  controller: {commit: 4e6fb97d2a7e85549af1027b0e394cad996eed40, artifact_id: 10600545244, artifact_digest: 'sha256:0774926179a50f3b3b40aa32fb737394433bb0c4dc0fbdff866ba73503e2be00'}
+  bootstrap: {run: 35517626990, attempt: 1, trusted_runner_1: success, trusted_runner_2: success}
+  probe: {run: 35517698186, attempt: 1, trusted_runner_1: success, trusted_runner_2: success}
+  projection: {target_equals_installed: true, recovery_reentry: absent, mechanism: canonical_self_controller_confirmation}
+  boundary: protected confirmation merge and fresh bounded P26-P0-01 exact-main certification remain required; P26-02 remains blocked

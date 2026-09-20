@@ -35,6 +35,8 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Confirm the final P26 trusted-runtime controller on both trusted runners and
+  restore bounded workitem exact-main routing mechanically.
 - Classify authenticated partial exact-main topologies as noncertifying before
   strict collection, preserving immutable subjects and scoped release exclusion.
 - Select bounded P26 foundation certification explicitly and keep asynchronous
