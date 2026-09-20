@@ -27,6 +27,8 @@ Release target: `2.0.0`
 - Open the governed three-phase BCF 2.1 release train for invariant closure and
   proof transport, minimum-time proof composition, and canonical self/adopter
   projection with empirical certification.
+- Add dormant, provider-authenticated merged-PR evidence transport that preserves
+  exact source receipts and custody without making a reuse decision.
 
 ### Changed
 

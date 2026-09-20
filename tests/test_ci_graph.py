@@ -1124,6 +1124,36 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         ] != "${{ false }}"
 
 
+def test_prior_evidence_admission_requires_one_exact_control_artifact(
+    tmp_path: Path,
+) -> None:
+    graph = _graph()
+    graph["artifacts"]["prior-evidence"] = {
+        "path": ".artifacts/bcf/prior-evidence", "kind": "control",
+        "scope": "run-attempt", "retention_days": 30,
+    }
+    exact = next(value for value in graph["workflows"] if value["id"] == "exact-main")
+    admission = exact["jobs"][0]
+    admission["executor"]["operation"] = "admit-with-prior-evidence"
+    admission["produces"] = ["prior-evidence"]
+    admission["permissions"]["actions"] = "write"
+    _write_graph(tmp_path, graph)
+    validate_ci_graph(tmp_path)
+    steps = yaml.safe_load(render_ci_graph(tmp_path)[
+        ".github/workflows/bcf-exact-main.yml"
+    ])["jobs"]["admit"]["steps"]
+    assert sum(
+        step["name"] == "Authenticate and preserve prior merged-PR evidence"
+        for step in steps
+    ) == 1
+    assert sum("prior-evidence" in step["name"] and "Upload" in step["name"] for step in steps) == 1
+
+    admission["produces"] = []
+    _write_graph(tmp_path, graph)
+    with pytest.raises(CIGraphError, match="one trusted exact-main control artifact"):
+        validate_ci_graph(tmp_path)
+
+
 def test_pull_request_gate_ownership_exactly_matches_profile(tmp_path: Path) -> None:
     graph = _graph()
     _write_graph(tmp_path, graph)

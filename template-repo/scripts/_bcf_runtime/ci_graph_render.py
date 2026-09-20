@@ -77,6 +77,10 @@ def _condition(compiled: CompiledCIGraph, value: str) -> str | None:
     return "${{ " + expression + " }}"
 
 
+def _github_token_environment() -> dict[str, str]:
+    return {"GITHUB_TOKEN": "${{ github.token }}"}
+
+
 def _command_step(
     compiled: CompiledCIGraph, command_id: str, *, name: str
 ) -> dict[str, Any]:
@@ -473,6 +477,10 @@ def _executor_steps(
                 'exact-main admit --repository "$GITHUB_REPOSITORY" --sha "$GITHUB_SHA" '
                 '--target-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"'
             ),
+            "admit-with-prior-evidence": (
+                'exact-main admit --repository "$GITHUB_REPOSITORY" --sha "$GITHUB_SHA" '
+                '--target-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"'
+            ),
             "finalize": (
                 'exact-main finalize --repository "$GITHUB_REPOSITORY" '
                 '--trigger-run-id "${{ github.event.workflow_run.id }}" '
@@ -490,11 +498,11 @@ def _executor_steps(
             "collect-release": "release collect --repository \"$GITHUB_REPOSITORY\"",
             "publish-release": "release publish --repository \"$GITHUB_REPOSITORY\"",
         }[operation]
-        if operation == "admit" and "evaluation_mode" in executor:
+        if operation in {"admit", "admit-with-prior-evidence"} and "evaluation_mode" in executor:
             arguments += f' --evaluation-mode "{executor["evaluation_mode"]}"'
             if "evaluation_target" in executor:
                 arguments += f' --evaluation-target "{executor["evaluation_target"]}"'
-        return [
+        steps = [
             {
                 "name": job["display_name"],
                 "shell": "bash",
@@ -506,6 +514,22 @@ def _executor_steps(
                 ),
             }
         ]
+        if operation == "admit-with-prior-evidence":
+            steps.append(
+                {
+                    "name": "Authenticate and preserve prior merged-PR evidence",
+                    "shell": "bash",
+                    "env": _github_token_environment(),
+                    "run": (
+                        "set -euo pipefail\n"
+                        f"{compiled.trusted_controller_check}\n"
+                        f"{compiled.trusted_controller} ci-github prior-evidence transport "
+                        '--repository "$GITHUB_REPOSITORY" --main-sha "$GITHUB_SHA" '
+                        f'--output "{produced_path}"'
+                    ),
+                }
+            )
+        return steps
     if executor["kind"] in {"component_sequence", "gate_shard", "terminal_truth"}:
         return _component_steps(compiled, executor["components"])
     raise AssertionError(f"unsupported executor {executor['kind']}")

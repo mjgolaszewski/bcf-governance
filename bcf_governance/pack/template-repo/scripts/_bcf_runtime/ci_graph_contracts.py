@@ -508,6 +508,19 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                 )
             if executor["kind"] == "authority" and job["trust"] != "trusted":
                 raise CIGraphError(f"authority job {job['id']} is not trusted")
+            if executor["kind"] == "authority" and executor["operation"] == "admit-with-prior-evidence":
+                outputs = job["produces"]
+                if (
+                    workflow["role"] != "exact-main"
+                    or job["semantic_role"] != "exact-main-admission"
+                    or len(outputs) != 1
+                    or graph["artifacts"].get(outputs[0], {}).get("kind") != "control"
+                    or job["consumes"]
+                    or job["permissions"].get("actions") != "write"
+                ):
+                    raise CIGraphError(
+                        "prior-evidence admission requires one trusted exact-main control artifact"
+                    )
             if executor["kind"] in {"command", "truth", "terminal_truth"} and executor["command"] not in graph["commands"]:
                 raise CIGraphError(f"CI graph job {job['id']} references unknown command")
             if executor["kind"] in {"gate_group", "gate_shard"}:

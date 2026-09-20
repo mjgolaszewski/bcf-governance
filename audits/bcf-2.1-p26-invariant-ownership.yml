@@ -31,6 +31,26 @@ foundation_invariants:
 - rejected or ambiguous reuse requires canonical execution and at least one closed rejection reason
 - provider custody binds repository, PR, candidate, merge, main, workflow, run, attempt, artifact, controller, and protection identities
 - preflight observations are not evidence receipts and cannot satisfy behavioral proof
+provider_transport_expansion:
+  workitem: P26-P0-02
+  status: dormant_pending_ordinary_controller_rotation
+  canonical_owner: bcf_governance/tooling/prior_evidence_transport.py
+  contract: schemas/prior-evidence-transport.schema.json
+  authenticated_chain:
+  - current repository and exact main commit/tree
+  - unique merged pull request and candidate/base/merge relationship
+  - App 15368 successful bcf/pr-certification and its exact finalizer run/attempt
+  - exact governance workflow, run/attempt, graph-derived job inventory, and artifacts
+  - source session, truth, receipt subjects, raw-result digests, controller, and protection
+  byte_custody:
+  - preserve provider ZIP bytes and every expanded source member
+  - bind every source receipt to its provider artifact and immutable run/attempt reference
+  - digest the complete non-manifest path-to-digest inventory canonically
+  excluded_semantics:
+  - no dependency-closure or qualification comparison
+  - no reuse applicability decision
+  - no planner, truth, finalizer, publisher, release, or successor authority
+  lifecycle: [expand_dormant, rotate_compatible_controller, activate_transport]
 corrective_insertion:
   exact_main_failure:
     run: 35387324770
