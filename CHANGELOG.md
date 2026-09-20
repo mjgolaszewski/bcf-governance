@@ -1,5 +1,7 @@
 # Changelog
 
+- Project the exact provider-built controller containing the P26 finalizer subject-identity correction as the ordinary rotation target.
+
 - Rotate the ordinary trusted controller to the final provider-built P26 trusted-runtime-closure artifact.
 
 - Rotate the ordinary trusted controller target to the exact provider-built P26 scoped-certification artifact.
