@@ -1,5 +1,7 @@
 # Changelog
 
+- Confirm the P26 finalizer subject-identity controller on both trusted runners and restore ordinary-current custody.
+
 - Project the exact provider-built controller containing the P26 finalizer subject-identity correction as the ordinary rotation target.
 
 - Rotate the ordinary trusted controller to the final provider-built P26 trusted-runtime-closure artifact.
