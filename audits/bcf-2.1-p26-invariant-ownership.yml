@@ -218,6 +218,35 @@ rotation_finalizer_correction:
   - authenticated recovery re-entry remains non-certifying and release-ineligible
   boundary: P26-02 remains blocked pending protected merge, ordinary bootstrap/probe/confirmation,
     normalized installation, and fresh exact-main certification
+final_activation_correction:
+  provider_evidence:
+    exact_main: {run: 35473402563, attempt: 1, main_commit: 7ca8ab08e5766eb1d5380079a0dcfdfb8bf1055a}
+    finalizer: {run: 35474522046, attempt: 1, controller: 3a2cb4a5c10f52cc749783d4779dec0fcbebd220}
+  proven_state:
+    target: {id: P26-P0-01, effective_state: closed, missing_or_invalid: []}
+    successor: {id: P26-P0-02, eligible: true}
+    phase: {id: P26, effective_state: active}
+  orchestration_correction:
+  - declare workitem intent and P26-P0-01 target at the canonical exact-main graph boundary
+  - preserve explicit phase-closure failure while P26 remains active
+  immutable_subject_correction:
+  - derive the callback subject from the exact provider run before loading authority
+  - authenticate finalizer, admission, producers, truth, and publisher against that subject
+  - bind triggered finalization to its exact admission instead of a later admission listing
+  - suppress historical status publication as default_main_moved while preserving the bundle
+  sibling_review:
+  - canonical status publication already separates immutable bundle authentication from
+    mutable-head freshness
+  - release authorization intentionally requires current exact main and rejects bounded scope
+  - PR and storage callbacks authenticate different subject topologies and require no change
+  prospective_consumer_matrix:
+    must_change: [exact-main graph target, exact-main finalizer, exact-main publisher]
+    generated_consequence: [rendered workflows, runtime mirrors, pack manifests, authority pins]
+    test_only: [graph projection, trigger selection, moved-main finalization, publisher subject]
+    inspected_no_impact: [truth strength, certification scope, release authority, successor eligibility,
+      hotfix lifecycle, protection]
+  boundary: P26-02 remains blocked pending protected merge, ordinary controller rotation if
+    required, and fresh bounded exact-main certification
 rotation_confirmation:
   authoritative_subject: {commit: a272bfbfaf44e712fc322cc6503c48ee02c8c8ff, tree: 398d20d65b0b44f0c03ffdab5f51dbd9e66bc4fd}
   controller: {commit: 3a2cb4a5c10f52cc749783d4779dec0fcbebd220, artifact_id: 10588758981, artifact_digest: 'sha256:de65225ea4556a243244d67ca3652f7cfa61e0b3003854a43c5d2d3efbe1930b'}

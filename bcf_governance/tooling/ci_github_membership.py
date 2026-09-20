@@ -91,11 +91,10 @@ def select_latest_admission(
     trigger_run_id: object | None = None,
     trigger_run_attempt: object | None = None,
 ) -> tuple[str, int]:
-    """Select the newest authenticated exact-main admission without success fallback.
+    """Select an authenticated admission without success fallback.
 
-    A workflow-run callback may provide an exact run/attempt only as locator data.  The
-    provider-fetched run must independently pass the same authentication as a listed
-    candidate before it participates in deterministic newest-admission selection.
+    A workflow-run callback selects its exact triggering admission.  Without a trigger,
+    the newest admission for the supplied immutable subject is selected.
     """
 
     _require_v11(authority)
@@ -105,7 +104,6 @@ def select_latest_admission(
         raise GitHubControllerError(
             "admission trigger run ID and attempt must be supplied together"
         )
-    trigger_identity: tuple[str, int] | None = None
     if trigger_run_id is not None:
         expected_run_id = str(
             positive_int(trigger_run_id, field="trigger admission run ID")
@@ -136,8 +134,7 @@ def select_latest_admission(
             raise GitHubControllerError(
                 "provider admission run does not match trigger locator"
             )
-        trigger_identity = (authenticated.run_id, authenticated.run_attempt)
-        candidates.append(trigger)
+        return authenticated.run_id, authenticated.run_attempt
     for event in workflow["allowed_events"]:
         candidates.extend(
             api.workflow_runs(
@@ -175,14 +172,13 @@ def select_latest_admission(
         str(positive_int(selected["id"], field="admission run ID")),
         positive_int(selected["run_attempt"], field="admission run attempt"),
     )
-    if selected_identity != trigger_identity:
-        _authenticate_admission_candidate(
-            api,
-            repository=repository,
-            main=main,
-            workflow=workflow,
-            candidate=selected,
-        )
+    _authenticate_admission_candidate(
+        api,
+        repository=repository,
+        main=main,
+        workflow=workflow,
+        candidate=selected,
+    )
     return selected_identity
 
 

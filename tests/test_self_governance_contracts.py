@@ -327,7 +327,8 @@ def test_exact_main_is_the_only_default_branch_producer() -> None:
         "admit", "governance", "trusted-controller-build",
     ]
     assert _job("exact-main", "governance")["executor"]["inputs"] == {
-        "evaluation_mode": "closure",
+        "evaluation_mode": "workitem",
+        "evaluation_target": "P26-P0-01",
     }
     assert compiled.graph["conditions"]["exact-main-authority-enabled"] == (
         "vars.BCF_CI_AUTHORITY_ENABLED == 'true'"

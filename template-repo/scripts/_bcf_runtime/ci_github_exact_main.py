@@ -21,9 +21,18 @@ from .ci_github_authority import (
     load_authority,
     packaged_repo_root,
 )
-from .ci_github_bundle import canonical_json, prepare_output, write_exclusive
+from .ci_github_bundle import (
+    canonical_json,
+    prepare_output,
+    verify_bundle,
+    write_exclusive,
+)
 from .ci_exact_main_truth import authenticated_exact_main_truth
-from .ci_github_identity import GitHubControllerError, resolve_main
+from .ci_github_identity import (
+    GitHubControllerError,
+    resolve_main,
+    resolve_run_subject,
+)
 from .ci_github_membership import (
     admission_ordinal,
     collect_same_run_producers,
@@ -159,9 +168,22 @@ def finalize_exact_main(
     trigger_run_attempt: object | None = None,
     output_dir: Path,
 ) -> ExactMainResult:
-    """Reconstruct the newest admission and produce one exact-attempt terminal bundle."""
+    """Reconstruct one admitted immutable subject and its terminal bundle."""
 
-    main = resolve_main(api, repository)
+    if (trigger_run_id is None) != (trigger_run_attempt is None):
+        raise GitHubControllerError(
+            "admission trigger run ID and attempt must be supplied together"
+        )
+    main = (
+        resolve_main(api, repository)
+        if trigger_run_id is None
+        else resolve_run_subject(
+            api,
+            repository,
+            run_id=trigger_run_id,
+            run_attempt=trigger_run_attempt,
+        )
+    )
     authority = load_authority(api, repository, main, required_version="1.1")
     collector = authenticate_role_run(
         api,
@@ -367,12 +389,20 @@ def publish_exact_main(
 ) -> dict[str, Any]:
     """Authenticate the v1.1 publisher and delegate canonical status publication."""
 
-    main = resolve_main(api, repository)
-    authority = load_authority(api, repository, main, required_version="1.1")
+    current_main = resolve_main(api, repository)
+    publisher_main = resolve_run_subject(
+        api,
+        repository,
+        run_id=publisher_run_id,
+        run_attempt=publisher_run_attempt,
+    )
+    authority = load_authority(
+        api, repository, publisher_main, required_version="1.1"
+    )
     authenticate_role_run(
         api,
         repository=repository,
-        main=main,
+        main=publisher_main,
         authority=authority,
         role="status_publisher",
         run_id=publisher_run_id,
@@ -384,7 +414,7 @@ def publish_exact_main(
         collector = authenticate_role_run(
             api,
             repository=repository,
-            main=main,
+            main=publisher_main,
             authority=authority,
             role="finalizer",
             run_id=collector_run_id,
@@ -392,19 +422,29 @@ def publish_exact_main(
             require_success=False,
         )
         admission_run_id, admission_attempt = select_latest_admission(
-            api, repository=repository, main=main, authority=authority
+            api, repository=repository, main=publisher_main, authority=authority
         )
         ordinal = admission_ordinal(admission_run_id, admission_attempt, 1)
         return publish_observation(
             api,
             repository=repository,
-            subject_sha=main.checkout_sha,
-            current_default_main_sha=main.checkout_sha,
+            subject_sha=publisher_main.checkout_sha,
+            current_default_main_sha=current_main.checkout_sha,
             admission_ordinal=ordinal,
             control_plane_attempt=admission_attempt,
             conclusion=StatusConclusion.FAILURE,
             description=f"BCF exact-main finalizer {collector.run_id} failed",
             target_url=target_url,
+        )
+    if bundle_dir.is_symlink():
+        raise GitHubControllerError("certification bundle cannot be a symlink")
+    manifest = verify_bundle(bundle_dir.resolve())
+    if manifest.get("subject") != {
+        "commit_sha": publisher_main.checkout_sha,
+        "tree_sha": publisher_main.tree_sha,
+    }:
+        raise GitHubControllerError(
+            "status publisher run is not bound to certification subject"
         )
     return publish_bundle(
         api,
