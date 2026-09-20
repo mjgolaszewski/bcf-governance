@@ -15,6 +15,7 @@ from .ci_github_controller import environment_api
 from .ci_github_identity import GitHubControllerError
 from .ci_github_pr import finalize_pr, publish_pr
 from .github_protection import apply_protection, inspect_protection
+from .prior_evidence_transport import transport_prior_evidence
 
 
 def _event() -> dict[str, object]:
@@ -102,6 +103,28 @@ def _protection(argv: list[str]) -> dict[str, object]:
     ).as_dict()
 
 
+def _prior_evidence(argv: list[str]) -> dict[str, object]:
+    parser = argparse.ArgumentParser(description="Authenticate prior PR evidence.")
+    operations = parser.add_subparsers(dest="operation", required=True)
+    transport = operations.add_parser("transport")
+    transport.add_argument("--repository", required=True)
+    transport.add_argument("--main-sha", required=True)
+    transport.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args(argv)
+    result = transport_prior_evidence(
+        environment_api(), repository=args.repository,
+        expected_main_sha=args.main_sha, output_root=args.output,
+    )
+    return {
+        "main_commit_sha": result["main"]["commit_sha"],
+        "main_tree_sha": result["main"]["tree_sha"],
+        "pull_request": result["pull_request"],
+        "bundle_sha256": result["bundle_sha256"],
+        "receipt_count": len(result["receipts"]),
+        "output": str(args.output),
+    }
+
+
 def run_extension_command(argv: list[str]) -> None:
     """Dispatch additive trusted commands without expanding the legacy parser."""
 
@@ -112,6 +135,9 @@ def run_extension_command(argv: list[str]) -> None:
             output = github_output_path()
         elif operation == "pr":
             result = _pr(remaining)
+            output = github_output_path()
+        elif operation == "prior-evidence":
+            result = _prior_evidence(remaining)
             output = github_output_path()
         else:
             result = _protection(remaining)

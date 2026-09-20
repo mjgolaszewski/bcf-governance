@@ -630,7 +630,7 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> None:
     raw = list(sys.argv[1:] if argv is None else argv)
     try:
-        if raw and raw[0] in {"automation", "pr", "protection"}:
+        if raw and raw[0] in {"automation", "pr", "prior-evidence", "protection"}:
             run_extension_command(raw)
             return
         if raw and raw[0] == "bootstrap":

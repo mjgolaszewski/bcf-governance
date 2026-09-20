@@ -239,6 +239,28 @@ class GitHubAPI:
             raise GitHubAPIError("pull request file inventory exceeds one authenticated page")
         return tuple(value)
 
+    def commit_pull_requests(
+        self, repository: str, *, sha: str
+    ) -> tuple[dict[str, Any], ...]:
+        """Return the provider's exact PR associations for one immutable commit."""
+
+        value = self._request(
+            "GET",
+            f"/repos/{self._repository(repository)}/commits/"
+            f"{_sha(sha, field='commit SHA')}/pulls?per_page=100",
+        )
+        if not isinstance(value, list) or any(
+            not isinstance(item, dict) for item in value
+        ):
+            raise GitHubAPIError(
+                "commit pull-request response must contain an object list"
+            )
+        if len(value) == 100:
+            raise GitHubAPIError(
+                "commit pull-request inventory exceeds one authenticated page"
+            )
+        return tuple(value)
+
     def run(self, repository: str, run_id: str | int) -> dict[str, Any]:
         numeric = _positive_id(run_id, field="run ID")
         value = self._request(

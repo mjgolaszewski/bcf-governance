@@ -28,6 +28,9 @@ summary:
     active parent phase; P26-P0-02 eligibility requires authenticated closure of P26-P0-01
   - governance-validate remains a phase-wide preflight observation and is excluded from
     ordinary-workitem closure, which requires test, contract-test, and runtime-smoke receipts
+  - P26 provider transport expansion authenticates current-main merge custody, trusted
+    PR certification, exact producer jobs and artifacts, controller/protection authority,
+    and byte-preserved source receipts while reuse remains inactive
 workitems:
 - id: P26-P0-01
   status: DONE
@@ -86,6 +89,8 @@ execution_evidence:
   - canonical tracing confirmed governance-contracts-valid is captured by preflight and
     never enters the execution DAG or receipt inventory; active P26 workitem acceptance
     now names only receipt-producing evidence while phase-wide governance remains strict
+  - P26-P0-02 uses expand, ordinary controller rotation, then activation; the expansion
+    tree packages transport and its closed contract without changing exact-main execution
 closeout_requirements:
   claims:
     workitems_closed:
@@ -118,6 +123,6 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- protected-merge the P26-01 corrective insertion, rotate its compatible controller
-  through ordinary governed bootstrap and confirmation, certify exact main, close the
-  bounded P26-01 truth, then begin provider-authenticated transport in P26-02
+- protected-merge the dormant P26-02 provider-transport expansion, rotate its compatible
+  controller through ordinary governed bootstrap and confirmation, then activate exact-main
+  transport and bounded P26-P0-02 truth in a separate protected change

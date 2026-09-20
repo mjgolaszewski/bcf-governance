@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Authenticated, immutable transport of one merged PR producer's exact source evidence. Semantic applicability and reuse admission are deliberately outside this contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "repository", "pull_request", "candidate", "main", "merge", "producer", "certification", "authority", "protection", "artifacts", "receipts", "bundle_sha256", "authenticated_at"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "prior_evidence_transport"},
+    "repository": {
+      "type": "object", "additionalProperties": false,
+      "required": ["provider", "full_name", "repository_id"],
+      "properties": {
+        "provider": {"const": "github"},
+        "full_name": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "repository_id": {"type": "string", "pattern": "^[1-9][0-9]*$"}
+      }
+    },
+    "pull_request": {"type": "integer", "minimum": 1},
+    "candidate": {"$ref": "reuse-attestation.schema.json#/$defs/subjectIdentity"},
+    "main": {"$ref": "reuse-attestation.schema.json#/$defs/subjectIdentity"},
+    "merge": {
+      "type": "object", "additionalProperties": false,
+      "required": ["commit_sha", "base_branch", "merged_at", "merged_by", "candidate_tree_equals_main_tree"],
+      "properties": {
+        "commit_sha": {"$ref": "reuse-attestation.schema.json#/$defs/gitObject"},
+        "base_branch": {"type": "string", "minLength": 1},
+        "merged_at": {"type": "string", "format": "date-time"},
+        "merged_by": {"type": ["string", "null"], "minLength": 1},
+        "candidate_tree_equals_main_tree": {"type": "boolean"}
+      }
+    },
+    "producer": {"$ref": "reuse-attestation.schema.json#/$defs/executionProvenance"},
+    "certification": {
+      "type": "object", "additionalProperties": false,
+      "required": ["context", "app_id", "check_run_id", "finalizer_run_id", "finalizer_run_attempt", "completed_at"],
+      "properties": {
+        "context": {"const": "bcf/pr-certification"},
+        "app_id": {"const": 15368},
+        "check_run_id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+        "finalizer_run_id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+        "finalizer_run_attempt": {"type": "integer", "minimum": 1},
+        "completed_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "authority": {"$ref": "reuse-attestation.schema.json#/$defs/authorityIdentity"},
+    "protection": {
+      "type": "object", "additionalProperties": false,
+      "required": ["declaration_sha256", "ruleset_id", "provider_state", "required_context", "publisher_app_id", "bypass_actors"],
+      "properties": {
+        "declaration_sha256": {"$ref": "reuse-attestation.schema.json#/$defs/sha256"},
+        "ruleset_id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+        "provider_state": {"const": "clean"},
+        "required_context": {"const": "bcf/pr-certification"},
+        "publisher_app_id": {"const": 15368},
+        "bypass_actors": {"type": "array", "maxItems": 0}
+      }
+    },
+    "artifacts": {
+      "type": "array", "minItems": 3, "uniqueItems": true,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["artifact_id", "name", "role", "provider_digest", "archive_sha256", "files"],
+        "properties": {
+          "artifact_id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+          "name": {"type": "string", "minLength": 1},
+          "role": {"enum": ["certification", "session", "evidence", "truth"]},
+          "provider_digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+          "archive_sha256": {"$ref": "reuse-attestation.schema.json#/$defs/sha256"},
+          "files": {
+            "type": "array", "minItems": 1,
+            "items": {
+              "type": "object", "additionalProperties": false,
+              "required": ["path", "sha256", "size"],
+              "properties": {
+                "path": {"type": "string", "minLength": 1},
+                "sha256": {"$ref": "reuse-attestation.schema.json#/$defs/sha256"},
+                "size": {"type": "integer", "minimum": 0}
+              }
+            }
+          }
+        }
+      }
+    },
+    "receipts": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["evidence_id", "artifact_id", "artifact_name", "path", "receipt_sha256", "immutable_reference"],
+        "properties": {
+          "evidence_id": {"type": "string", "minLength": 1},
+          "artifact_id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+          "artifact_name": {"type": "string", "minLength": 1},
+          "path": {"type": "string", "minLength": 1},
+          "receipt_sha256": {"$ref": "reuse-attestation.schema.json#/$defs/sha256"},
+          "immutable_reference": {"type": "string", "pattern": "^github-actions://"}
+        }
+      }
+    },
+    "bundle_sha256": {
+      "$comment": "SHA-256 of canonical JSON mapping every preserved non-manifest relative path to its SHA-256 digest.",
+      "$ref": "reuse-attestation.schema.json#/$defs/sha256"
+    },
+    "authenticated_at": {"type": "string", "format": "date-time"}
+  }
+}

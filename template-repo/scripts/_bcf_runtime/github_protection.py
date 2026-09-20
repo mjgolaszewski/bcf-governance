@@ -209,6 +209,16 @@ def inspect_protection(
     api: GitHubAPI, *, repo_root: Path, repository: str
 ) -> ProtectionResult:
     declaration = load_protection(repo_root)
+    return inspect_protection_declaration(
+        api, repository=repository, declaration=declaration
+    )
+
+
+def inspect_protection_declaration(
+    api: GitHubAPI, *, repository: str, declaration: dict[str, Any]
+) -> ProtectionResult:
+    """Inspect provider protection against an already authenticated declaration."""
+
     expected_repo = declaration["repository"]
     provider_repo = api.repository(repository)
     if repository != expected_repo["full_name"] or positive_int(
