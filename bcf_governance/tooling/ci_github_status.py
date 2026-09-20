@@ -199,7 +199,7 @@ def publish(
             "pending": StatusConclusion.PENDING,
             "failed": StatusConclusion.FAILURE,
         }
-        if state not in conclusions:
+        if state not in {*conclusions, "noncertifying"}:
             raise GitHubControllerError("authority observation state is unsupported")
         subject_record = observation["subject"]
         main = resolve_main(api, repository)
@@ -233,6 +233,13 @@ def publish(
             "workflow": asdict(collector.workflow),
         }:
             raise GitHubControllerError("authority observation collector is not exact")
+        if state == "noncertifying":
+            return {
+                "status": "suppressed",
+                "reason": "certification_inapplicable",
+                "subject_sha": subject,
+                "computed_state": state,
+            }
         admission = observation["admission"]
         result = publish_observation(
             api,

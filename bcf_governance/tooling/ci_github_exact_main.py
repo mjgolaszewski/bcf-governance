@@ -34,7 +34,10 @@ from .ci_github_identity import (
     resolve_run_subject,
 )
 from .ci_github_membership import (
+    AdmissionTopologyState,
     admission_ordinal,
+    certification_producer_ids,
+    classify_admission_topology,
     collect_same_run_producers,
     select_latest_admission,
 )
@@ -62,6 +65,7 @@ def _write_observation_bundle(
     admission_attempt: int,
     ordinal: int,
     computed_state: str,
+    reason: str | None = None,
 ) -> Path:
     """Write one exact authenticated non-certification observation bundle."""
 
@@ -82,6 +86,8 @@ def _write_observation_bundle(
         },
         "computed_state": computed_state,
     }
+    if reason is not None:
+        observation["reason"] = reason
     digest = write_exclusive(root / "authority-observation.json", observation)
     manifest = {
         "schema_version": "1.1",
@@ -203,7 +209,8 @@ def finalize_exact_main(
         trigger_run_id=trigger_run_id,
         trigger_run_attempt=trigger_run_attempt,
     )
-    producer_runs = collect_same_run_producers(
+    ordinal = admission_ordinal(admission_run_id, admission_attempt, 1)
+    topology = classify_admission_topology(
         api,
         repository=repository,
         main=main,
@@ -211,7 +218,48 @@ def finalize_exact_main(
         admission_run_id=admission_run_id,
         admission_run_attempt=admission_attempt,
     )
-    ordinal = admission_ordinal(admission_run_id, admission_attempt, 1)
+    if topology.state is AdmissionTopologyState.NONCERTIFYING:
+        root = _write_observation_bundle(
+            output_dir,
+            main=main,
+            collector=collector,
+            admission_run_id=admission_run_id,
+            admission_attempt=admission_attempt,
+            ordinal=ordinal,
+            computed_state="noncertifying",
+            reason=topology.reason,
+        )
+        return ExactMainResult(
+            "noncertifying",
+            "noncertifying",
+            admission_run_id,
+            admission_attempt,
+            ordinal,
+            str(root),
+        )
+    truth_report, truth_descriptor, truth_bytes = authenticated_exact_main_truth(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        run_id=admission_run_id,
+        run_attempt=admission_attempt,
+    )
+    raw_scope = truth_report.get("evaluation_scope")
+    if not isinstance(raw_scope, dict):
+        raise GitHubControllerError(
+            "certifiable exact-main truth lacks typed evaluation scope"
+        )
+    required_producers = certification_producer_ids(authority, raw_scope)
+    producer_runs = collect_same_run_producers(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        admission_run_id=admission_run_id,
+        admission_run_attempt=admission_attempt,
+        producer_ids=required_producers,
+    )
     if any(
         value["attempts"][0]["status"] != "completed" for value in producer_runs
     ):
@@ -268,14 +316,6 @@ def finalize_exact_main(
         for value in producer_runs
     ]
     root = prepare_output(output_dir)
-    truth_report, truth_descriptor, truth_bytes = authenticated_exact_main_truth(
-        api,
-        repository=repository,
-        main=main,
-        authority=authority,
-        run_id=admission_run_id,
-        run_attempt=admission_attempt,
-    )
     scoped_truth = bool(truth_report.get("certified_proposition"))
     if scoped_truth:
         (root / "governance-truth.json").write_bytes(truth_bytes)
@@ -389,7 +429,6 @@ def publish_exact_main(
 ) -> dict[str, Any]:
     """Authenticate the v1.1 publisher and delegate canonical status publication."""
 
-    current_main = resolve_main(api, repository)
     publisher_main = resolve_run_subject(
         api,
         repository,
@@ -421,21 +460,12 @@ def publish_exact_main(
             run_attempt=collector_run_attempt,
             require_success=False,
         )
-        admission_run_id, admission_attempt = select_latest_admission(
-            api, repository=repository, main=publisher_main, authority=authority
-        )
-        ordinal = admission_ordinal(admission_run_id, admission_attempt, 1)
-        return publish_observation(
-            api,
-            repository=repository,
-            subject_sha=publisher_main.checkout_sha,
-            current_default_main_sha=current_main.checkout_sha,
-            admission_ordinal=ordinal,
-            control_plane_attempt=admission_attempt,
-            conclusion=StatusConclusion.FAILURE,
-            description=f"BCF exact-main finalizer {collector.run_id} failed",
-            target_url=target_url,
-        )
+        return {
+            "status": "suppressed",
+            "reason": "certification_applicability_unproven",
+            "subject_sha": publisher_main.checkout_sha,
+            "collector_run_id": collector.run_id,
+        }
     if bundle_dir.is_symlink():
         raise GitHubControllerError("certification bundle cannot be a symlink")
     manifest = verify_bundle(bundle_dir.resolve())
