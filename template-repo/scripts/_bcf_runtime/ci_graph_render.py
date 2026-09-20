@@ -515,34 +515,19 @@ def _executor_steps(
             }
         ]
         if operation == "admit-with-prior-evidence":
-            steps.extend(
-                [
-                    {
-                        "name": "Authenticate and preserve prior merged-PR evidence",
-                        "shell": "bash",
-                        "env": _github_token_environment(),
-                        "run": (
-                            "set -euo pipefail\n"
-                            f"{compiled.trusted_controller_check}\n"
-                            f"{compiled.trusted_controller} ci-github prior-evidence transport "
-                            '--repository "$GITHUB_REPOSITORY" --main-sha "$GITHUB_SHA" '
-                            f'--output "{produced_path}"'
-                        ),
-                    },
-                    {
-                        "name": "Upload exact authenticated prior-evidence transport",
-                        "uses": action_pin("upload-artifact"),
-                        "with": {
-                            "name": (
-                                "bcf-prior-evidence-${{ github.run_id }}-"
-                                "${{ github.run_attempt }}"
-                            ),
-                            "path": produced_path,
-                            "if-no-files-found": "error",
-                            "retention-days": 30,
-                        },
-                    },
-                ]
+            steps.append(
+                {
+                    "name": "Authenticate and preserve prior merged-PR evidence",
+                    "shell": "bash",
+                    "env": _github_token_environment(),
+                    "run": (
+                        "set -euo pipefail\n"
+                        f"{compiled.trusted_controller_check}\n"
+                        f"{compiled.trusted_controller} ci-github prior-evidence transport "
+                        '--repository "$GITHUB_REPOSITORY" --main-sha "$GITHUB_SHA" '
+                        f'--output "{produced_path}"'
+                    ),
+                }
             )
         return steps
     if executor["kind"] in {"component_sequence", "gate_shard", "terminal_truth"}:

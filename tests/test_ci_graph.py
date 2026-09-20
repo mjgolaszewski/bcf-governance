@@ -1139,6 +1139,14 @@ def test_prior_evidence_admission_requires_one_exact_control_artifact(
     admission["permissions"]["actions"] = "write"
     _write_graph(tmp_path, graph)
     validate_ci_graph(tmp_path)
+    steps = yaml.safe_load(render_ci_graph(tmp_path)[
+        ".github/workflows/bcf-exact-main.yml"
+    ])["jobs"]["admit"]["steps"]
+    assert sum(
+        step["name"] == "Authenticate and preserve prior merged-PR evidence"
+        for step in steps
+    ) == 1
+    assert sum("prior-evidence" in step["name"] and "Upload" in step["name"] for step in steps) == 1
 
     admission["produces"] = []
     _write_graph(tmp_path, graph)
