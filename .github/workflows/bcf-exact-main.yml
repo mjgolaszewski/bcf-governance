@@ -26,7 +26,7 @@ jobs:
         test -d "$RUNNER_TOOL_CACHE"/bcf-governance/3a2cb4a5c10f52cc749783d4779dec0fcbebd220
         test ! -L "$RUNNER_TOOL_CACHE"/bcf-governance/3a2cb4a5c10f52cc749783d4779dec0fcbebd220
         test -x "$RUNNER_TOOL_CACHE"/bcf-governance/3a2cb4a5c10f52cc749783d4779dec0fcbebd220/bin/bcf
-        "$RUNNER_TOOL_CACHE"/bcf-governance/3a2cb4a5c10f52cc749783d4779dec0fcbebd220/bin/bcf ci-github exact-main admit --repository "$GITHUB_REPOSITORY" --sha "$GITHUB_SHA" --target-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+        "$RUNNER_TOOL_CACHE"/bcf-governance/3a2cb4a5c10f52cc749783d4779dec0fcbebd220/bin/bcf ci-github exact-main admit --repository "$GITHUB_REPOSITORY" --sha "$GITHUB_SHA" --target-url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --evaluation-mode "workitem" --evaluation-target "P26-P0-01"
   governance:
     name: Run exact-main governance evidence
     needs: [admit]

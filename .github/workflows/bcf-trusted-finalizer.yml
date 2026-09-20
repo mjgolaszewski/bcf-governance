@@ -27,7 +27,7 @@ jobs:
         test -d "$RUNNER_TOOL_CACHE"/bcf-governance/3a2cb4a5c10f52cc749783d4779dec0fcbebd220
         test ! -L "$RUNNER_TOOL_CACHE"/bcf-governance/3a2cb4a5c10f52cc749783d4779dec0fcbebd220
         test -x "$RUNNER_TOOL_CACHE"/bcf-governance/3a2cb4a5c10f52cc749783d4779dec0fcbebd220/bin/bcf
-        "$RUNNER_TOOL_CACHE"/bcf-governance/3a2cb4a5c10f52cc749783d4779dec0fcbebd220/bin/bcf ci-github exact-main finalize --repository "$GITHUB_REPOSITORY" --output "${{ runner.temp }}/bcf-exact-main-certification-${{ github.run_id }}-${{ github.run_attempt }}"
+        "$RUNNER_TOOL_CACHE"/bcf-governance/3a2cb4a5c10f52cc749783d4779dec0fcbebd220/bin/bcf ci-github exact-main finalize --repository "$GITHUB_REPOSITORY" --trigger-run-id "${{ github.event.workflow_run.id }}" --trigger-run-attempt "${{ github.event.workflow_run.run_attempt }}" --output "${{ runner.temp }}/bcf-exact-main-certification-${{ github.run_id }}-${{ github.run_attempt }}"
     - name: Upload exact exact-main-certification evidence
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
