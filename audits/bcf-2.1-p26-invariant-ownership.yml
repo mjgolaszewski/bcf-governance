@@ -312,3 +312,16 @@ finalizer_subject_identity_correction:
   - preserve terminal-phase-only release authorization and release receipt construction
   prior_truth_applicability: exact-subject only; the 35519651538/1 truth cannot certify any later corrective commit or tree
   boundary: P26-02 remains blocked until corrected controller rotation and fresh bounded certification publish authenticated success
+finalizer_subject_identity_rotation_target:
+  source_exact_main:
+    commit: c19103d093c9e262cddf07fa5057c9b8fd9c0807
+    tree: bd998ff4836b22096950d35bd66ae2f3a0477324
+    run: {id: 35525983593, attempt: 1}
+    controller_artifact: {id: 10609622031, digest: 'sha256:560f2015c72e6c78d46ecbf62b6504a48632c976bb35a1e96d14c988f49edece'}
+  projection:
+    mechanism: canonical_self_controller_target
+    target: c19103d093c9e262cddf07fa5057c9b8fd9c0807
+    installed: 4e6fb97d2a7e85549af1027b0e394cad996eed40
+    lifecycle: ordinary_pending_rotation
+    release_authority: false
+  boundary: P26-02 remains blocked pending protected merge, bootstrap and probe on both trusted runners, canonical confirmation, and fresh bounded certification
