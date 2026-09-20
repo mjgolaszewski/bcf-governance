@@ -1,5 +1,7 @@
 # Changelog
 
+- Rotate the ordinary trusted controller to the final provider-built P26 trusted-runtime-closure artifact.
+
 - Rotate the ordinary trusted controller target to the exact provider-built P26 scoped-certification artifact.
 
 - Expand exact-main truth and certification with typed, target-preserving bounded-workitem scope while keeping activation behind ordinary controller rotation.
