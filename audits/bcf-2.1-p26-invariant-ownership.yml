@@ -325,3 +325,10 @@ finalizer_subject_identity_rotation_target:
     lifecycle: ordinary_pending_rotation
     release_authority: false
   boundary: P26-02 remains blocked pending protected merge, bootstrap and probe on both trusted runners, canonical confirmation, and fresh bounded certification
+finalizer_subject_identity_rotation_confirmation:
+  authoritative_subject: {commit: df2daa8e6350de12d759b516e965b90806a44a5b, tree: c1baaa3098eac1c6fb5026f5555836cb31e1d0ef}
+  controller: {commit: c19103d093c9e262cddf07fa5057c9b8fd9c0807, artifact_id: 10609622031, artifact_digest: 'sha256:560f2015c72e6c78d46ecbf62b6504a48632c976bb35a1e96d14c988f49edece'}
+  bootstrap: {run: 35528008550, attempt: 1, trusted_runner_1: success, trusted_runner_2: success}
+  probe: {run: 35528111399, attempt: 1, trusted_runner_1: success, trusted_runner_2: success}
+  projection: {target_equals_installed: true, recovery_reentry: absent, mechanism: canonical_self_controller_confirmation}
+  boundary: protected confirmation merge and fresh authenticated P26-P0-01 bounded certification remain required; P26-02 remains blocked
