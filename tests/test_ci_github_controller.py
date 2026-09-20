@@ -833,7 +833,12 @@ def test_v11_post_install_chain_preserves_only_bounded_workitem_authority(
     assert lifecycle.state is ControllerLifecycleState.ORDINARY_CURRENT
     api.truth_artifact_override = {
         "status": "pass",
-        "subject": {"commit_sha": SHA_A, "tree_sha": TREE},
+        "subject": {
+            "commit_sha": SHA_A,
+            "tree_sha": TREE,
+            "tracked_clean": True,
+            "untracked_clean": True,
+        },
         "evaluation_scope": {
             "intent": "workitem",
             "target": {"kind": "workitem", "id": "P26-P0-01"},
@@ -883,6 +888,107 @@ def test_v11_post_install_chain_preserves_only_bounded_workitem_authority(
         publisher_run_attempt=1,
     )
     assert api.published_statuses[-1]["context"] == "bcf/workitem-certification"
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        {"tracked_clean": True, "untracked_clean": True},
+        {"canonical_metadata": {"schema_version": "future"}},
+    ],
+)
+def test_v11_finalizer_projects_identity_from_richer_truth_subject(
+    tmp_path: Path, metadata: dict[str, object]
+) -> None:
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    api.truth_artifact_override = {
+        "status": "pass",
+        "subject": {"commit_sha": SHA_A, "tree_sha": TREE, **metadata},
+        "evaluation_scope": {
+            "intent": "workitem",
+            "target": {"kind": "workitem", "id": "P26-P0-01"},
+        },
+        "certified_proposition": {
+            "predicate": "workitem_closed",
+            "target": {"kind": "workitem", "id": "P26-P0-01"},
+            "subject": {"commit_sha": SHA_A, "tree_sha": TREE},
+            "conclusion": "success",
+            "authorizes": ["declared_successor_workitem_eligibility"],
+            "eligible_successors": ["P26-P0-02"],
+        },
+        "durable_ref": (
+            "github-actions://owner/repo/runs/100/attempts/1/"
+            "bcf-governance-truth"
+        ),
+    }
+
+    result = finalize_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        output_dir=tmp_path / "bundle",
+    )
+
+    assert result.computed_state == "certified"
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("commit_sha", None),
+        ("commit_sha", SHA_B),
+        ("commit_sha", "malformed"),
+        ("tree_sha", None),
+        ("tree_sha", SHA_B),
+        ("tree_sha", "malformed"),
+    ],
+)
+def test_v11_finalizer_rejects_invalid_projected_truth_identity(
+    tmp_path: Path, field: str, value: object
+) -> None:
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    truth_subject: dict[str, object] = {
+        "commit_sha": SHA_A,
+        "tree_sha": TREE,
+        "tracked_clean": True,
+        "untracked_clean": True,
+    }
+    if value is None:
+        truth_subject.pop(field)
+    else:
+        truth_subject[field] = value
+    api.truth_artifact_override = {
+        "status": "pass",
+        "subject": truth_subject,
+        "evaluation_scope": {
+            "intent": "workitem",
+            "target": {"kind": "workitem", "id": "P26-P0-01"},
+        },
+        "certified_proposition": {
+            "predicate": "workitem_closed",
+            "target": {"kind": "workitem", "id": "P26-P0-01"},
+            "subject": {"commit_sha": SHA_A, "tree_sha": TREE},
+            "conclusion": "success",
+            "authorizes": ["declared_successor_workitem_eligibility"],
+            "eligible_successors": ["P26-P0-02"],
+        },
+        "durable_ref": (
+            "github-actions://owner/repo/runs/100/attempts/1/"
+            "bcf-governance-truth"
+        ),
+    }
+
+    with pytest.raises(GitHubControllerError, match="governance truth subject"):
+        finalize_exact_main(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            collector_run_id=400,
+            collector_run_attempt=1,
+            output_dir=tmp_path / "bundle",
+        )
 
 
 @pytest.mark.parametrize("mutation", ["subject", "target", "run-attempt"])

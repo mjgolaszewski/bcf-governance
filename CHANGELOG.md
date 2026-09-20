@@ -35,6 +35,8 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Project exact commit/tree identity from canonical truth subjects while permitting
+  additive producer-owned subject metadata during trusted finalization.
 - Confirm the final P26 trusted-runtime controller on both trusted runners and
   restore bounded workitem exact-main routing mechanically.
 - Classify authenticated partial exact-main topologies as noncertifying before

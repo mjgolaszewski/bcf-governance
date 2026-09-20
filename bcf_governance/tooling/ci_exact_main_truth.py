@@ -10,7 +10,7 @@ from typing import Any
 import zipfile
 
 from .ci_github_artifacts import provider_artifact_reference, resolve_role_artifact
-from .ci_github_identity import GitHubControllerError, MainIdentity
+from .ci_github_identity import GitHubControllerError, MainIdentity, exact_sha
 from .evaluation_scope import EvaluationScopeError, validate_certified_proposition
 
 
@@ -71,7 +71,20 @@ def authenticated_exact_main_truth(
     subject = {"commit_sha": main.checkout_sha, "tree_sha": main.tree_sha}
     proposition: dict[str, Any] = {}
     if "certified_proposition" in report:
-        if report.get("subject") != subject:
+        report_subject = report.get("subject")
+        if not isinstance(report_subject, dict):
+            raise GitHubControllerError("governance truth subject is invalid")
+        report_identity = {
+            "commit_sha": exact_sha(
+                report_subject.get("commit_sha"),
+                field="governance truth subject commit SHA",
+            ),
+            "tree_sha": exact_sha(
+                report_subject.get("tree_sha"),
+                field="governance truth subject tree SHA",
+            ),
+        }
+        if report_identity != subject:
             raise GitHubControllerError("governance truth subject is not exact main")
         try:
             proposition = validate_certified_proposition(report, subject=subject)
