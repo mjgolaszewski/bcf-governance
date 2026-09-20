@@ -428,7 +428,7 @@
     },
     "scripts/_bcf_runtime/ci_exact_main_truth.py": {
       "operation": "copy",
-      "sha256": "c755fe2565569c3c5e64f03220225661dfb79ed89864f1251389589a8d4f870e"
+      "sha256": "961e9645c7cfb68ad6b15bf148c7df6d108bc0af40cc158ab284258270d8c275"
     },
     "scripts/_bcf_runtime/ci_github.py": {
       "operation": "copy",

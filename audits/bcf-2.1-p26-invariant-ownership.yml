@@ -301,3 +301,14 @@ final_runtime_rotation_confirmation:
   probe: {run: 35517698186, attempt: 1, trusted_runner_1: success, trusted_runner_2: success}
   projection: {target_equals_installed: true, recovery_reentry: absent, mechanism: canonical_self_controller_confirmation}
   boundary: protected confirmation merge and fresh bounded P26-P0-01 exact-main certification remain required; P26-02 remains blocked
+finalizer_subject_identity_correction:
+  provider_failure: {exact_main: 35519651538, attempt: 1, finalizer: 35520880880, controller: 4e6fb97d2a7e85549af1027b0e394cad996eed40}
+  semantic_truth: {subject_commit: 1d84e0b19a4f74f2f291c6cddd8283fa52f32db6, subject_tree: 3ef6e8430690094f967090b73018d6a16631821f, target: P26-P0-01, target_state: closed, successor: P26-P0-02, successor_eligible: true, phase_state: active}
+  cause: trusted finalizer compared a richer canonical truth subject by whole-object equality against its commit/tree identity projection
+  correction:
+  - validate and project exact 40-character commit and tree identities through canonical GitHub identity validation
+  - permit additive truth-producer metadata without treating it as finalizer-owned identity
+  - preserve complete clean-subject equality at the PR-transition boundary
+  - preserve terminal-phase-only release authorization and release receipt construction
+  prior_truth_applicability: exact-subject only; the 35519651538/1 truth cannot certify any later corrective commit or tree
+  boundary: P26-02 remains blocked until corrected controller rotation and fresh bounded certification publish authenticated success
