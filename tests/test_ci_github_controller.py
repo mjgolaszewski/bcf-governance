@@ -24,6 +24,7 @@ from bcf_governance.tooling.ci_github_controller import (
 )
 from bcf_governance.tooling.ci_github_identity import resolve_main, resolve_trusted_run
 from bcf_governance.tooling.ci_github_membership import (
+    certification_producer_ids,
     collect_same_run_producers,
     select_latest_admission,
 )
@@ -32,6 +33,11 @@ from bcf_governance.tooling.ci_github_exact_main import (
     finalize_exact_main,
     publish_exact_main,
 )
+from bcf_governance.tooling.ci_graph_controller_lifecycle import (
+    ControllerLifecycleState,
+    resolve_controller_lifecycle,
+)
+from bcf_governance.tooling.evaluation_scope import is_terminal_phase_certification
 
 
 SHA_A = "a" * 40
@@ -140,6 +146,7 @@ class FakeAPI:
         self.job_names = {"200": "truth", "300": "pack"}
         self.run_job_names: dict[str, tuple[str, ...]] = {}
         self.run_job_statuses: dict[str, str] = {}
+        self.run_job_conclusions: dict[str, dict[str, object]] = {}
         self.missing_workflows: set[str] = set()
         self.workflow_versions: dict[str, tuple[str, bytes]] = {}
         self.workflow_paths = {
@@ -234,7 +241,9 @@ class FakeAPI:
                 "name": name,
                 "status": self.run_job_statuses.get(str(run_id), "completed"),
                 "conclusion": (
-                    self.runs[str(run_id)].get("conclusion")
+                    self.run_job_conclusions.get(str(run_id), {}).get(
+                        name, self.runs[str(run_id)].get("conclusion")
+                    )
                     if self.run_job_statuses.get(str(run_id), "completed") == "completed"
                     else None
                 ),
@@ -716,6 +725,7 @@ def test_v11_direct_trigger_uses_provider_status_and_commit_tree(tmp_path: Path)
     _prepare_v11_run(api)
     api.tree = SHA_B
     api.runs["100"]["conclusion"] = "failure"
+    api.run_job_conclusions["100"] = {"Admit exact main": "success"}
     result = finalize_exact_main(
         api,  # type: ignore[arg-type]
         repository="owner/repo",
@@ -804,9 +814,23 @@ def test_v11_finalizer_builds_certification_only_from_common_run(
     } == {("100", "100")}
 
 
-def test_v11_finalizer_preserves_bounded_workitem_proposition(tmp_path: Path) -> None:
+def test_v11_post_install_chain_preserves_only_bounded_workitem_authority(
+    tmp_path: Path,
+) -> None:
     api = FakeAPI()
     _prepare_v11_run(api)
+    lifecycle = resolve_controller_lifecycle(
+        Path(__file__).resolve().parents[1],
+        {
+            "trusted_controller_artifact": {
+                "BCF_BOOTSTRAP_COMMIT_SHA": SHA_A,
+            },
+            "trusted_controller_installation": {
+                "installed_commit_sha": SHA_A,
+            },
+        },
+    )
+    assert lifecycle.state is ControllerLifecycleState.ORDINARY_CURRENT
     api.truth_artifact_override = {
         "status": "pass",
         "subject": {"commit_sha": SHA_A, "tree_sha": TREE},
@@ -839,6 +863,7 @@ def test_v11_finalizer_preserves_bounded_workitem_proposition(tmp_path: Path) ->
     )
     assert report["evaluation_scope"] == api.truth_artifact_override["evaluation_scope"]
     assert report["certified_proposition"] == api.truth_artifact_override["certified_proposition"]
+    assert is_terminal_phase_certification(report) is False
     api.runs["400"].update(status="completed", conclusion="success")
     api.runs["401"] = {
         **api.runs["400"],
@@ -901,7 +926,7 @@ def test_v11_finalizer_rejects_mismatched_bounded_truth(
         )
 
 
-def test_v11_pending_observation_is_published_without_borrowing_older_runs(
+def test_v11_incomplete_observation_is_noncertifying_without_borrowing_older_runs(
     tmp_path: Path,
 ) -> None:
     api = FakeAPI()
@@ -914,7 +939,7 @@ def test_v11_pending_observation_is_published_without_borrowing_older_runs(
         collector_run_attempt=1,
         output_dir=tmp_path / "bundle",
     )
-    assert result.status == "pending"
+    assert result.status == "noncertifying"
     assert result.bundle_dir is not None
     manifest = json.loads(
         (Path(result.bundle_dir) / "bundle-manifest.json").read_text()
@@ -940,11 +965,90 @@ def test_v11_pending_observation_is_published_without_borrowing_older_runs(
         publisher_run_attempt=1,
     )
 
-    assert published["computed_state"] == "pending"
-    assert api.published_statuses[-1]["state"] == "pending"
+    assert published["computed_state"] == "noncertifying"
+    assert published["reason"] == "certification_inapplicable"
+    assert api.published_statuses == []
 
 
-def test_v11_failed_finalizer_publishes_failure_without_an_artifact(
+@pytest.mark.parametrize(
+    "shape",
+    ["missing-producer", "preflight-truncated", "admission-skipped"],
+)
+def test_v11_partial_topology_shapes_are_noncertifying(
+    tmp_path: Path, shape: str
+) -> None:
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    if shape == "missing-producer":
+        api.run_job_names["100"] = ("Admit exact main", "Governance truth")
+    elif shape == "preflight-truncated":
+        placeholder = "Governance evidence / ${{ matrix.display_name }}"
+        api.run_job_names["100"] = (
+            "Admit exact main",
+            "Governance truth",
+            placeholder,
+        )
+        api.run_job_conclusions["100"] = {placeholder: "skipped"}
+    else:
+        api.run_job_conclusions["100"] = {"Admit exact main": "skipped"}
+
+    result = finalize_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        trigger_run_id=100,
+        trigger_run_attempt=1,
+        output_dir=tmp_path / shape,
+    )
+
+    assert result.status == "noncertifying"
+    assert result.computed_state == "noncertifying"
+    assert not (Path(result.bundle_dir) / "ci-certification.json").exists()
+
+
+@pytest.mark.parametrize("shape", ["active-extra", "duplicate"])
+def test_v11_malformed_topology_cannot_be_reclassified_as_noncertifying(
+    tmp_path: Path, shape: str
+) -> None:
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    if shape == "active-extra":
+        api.run_job_names["100"] += ("Unadmitted job",)
+    else:
+        api.run_job_names["100"] += ("Governance truth",)
+
+    with pytest.raises(GitHubControllerError, match="job inventory"):
+        finalize_exact_main(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            collector_run_id=400,
+            collector_run_attempt=1,
+            trigger_run_id=100,
+            trigger_run_attempt=1,
+            output_dir=tmp_path / shape,
+        )
+
+
+def test_v11_certification_producer_completeness_is_scope_aware() -> None:
+    authority = _v11_authority()
+    expected = ("governance", "pack")
+    assert certification_producer_ids(
+        authority,
+        {"intent": "workitem", "target": {"kind": "workitem", "id": "P26-P0-01"}},
+    ) == expected
+    assert certification_producer_ids(
+        authority,
+        {"intent": "closure", "target": {"kind": "phase", "id": "P26"}},
+    ) == expected
+    with pytest.raises(GitHubControllerError, match="scope is unsupported"):
+        certification_producer_ids(
+            authority,
+            {"intent": "pr", "target": {"kind": "pull_request_progress", "id": SHA_A}},
+        )
+
+
+def test_v11_missing_finalizer_bundle_cannot_manufacture_certification_failure(
     tmp_path: Path,
 ) -> None:
     api = FakeAPI()
@@ -969,8 +1073,9 @@ def test_v11_failed_finalizer_publishes_failure_without_an_artifact(
         publisher_run_attempt=1,
     )
 
-    assert published["status"] == "published"
-    assert api.published_statuses[-1]["state"] == "failure"
+    assert published["status"] == "suppressed"
+    assert published["reason"] == "certification_applicability_unproven"
+    assert api.published_statuses == []
 
 
 def test_independent_builder_success_does_not_certify_failed_governance(

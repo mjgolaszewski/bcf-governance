@@ -247,6 +247,46 @@ final_activation_correction:
       hotfix lifecycle, protection]
   boundary: P26-02 remains blocked pending protected merge, ordinary controller rotation if
     required, and fresh bounded exact-main certification
+trusted_runtime_closure:
+  source_exact_main:
+    commit: 344450e314df91786c9803965ae599d356448e21
+    tree: 2f7856a097eaba7cb05d86402a5403ff56fb64dc
+    run: {id: 35482517963, attempt: 1}
+    controller_artifact: {id: 10596645478, digest: f367788db734cd091e27d4ece8a7bd07adeb0acb6d12a1f1ad963d7f2c75b696}
+  prospective_consumer_matrix:
+    must_change:
+    - exact-main topology applicability before strict same-run collection
+    - noncertifying finalizer observations and missing-bundle publication decisions
+    generated_consequence:
+    - runtime mirrors, pack manifests, semantic lock, test manifests, editorial inventory,
+      generated workflows, and workflow authority pins
+    test_only:
+    - complete post-install bounded chain, partial topology shapes, malformed topology,
+      missing-bundle publication, scope-aware producer completeness, and main advancement
+    inspected_no_impact:
+    - certification normalization and verification remain exact and complete
+    - truth artifact subject, tree, run, attempt, scope, target, and digest authentication
+    - release authorization retains current-main terminal-phase-only admission
+    - self-controller bootstrap, probe, promotion, and installation custody
+    - graph controller lifecycle, execution, routing, protection, and successor derivation
+    - PR, automation, storage, and release callbacks use distinct authenticated topologies
+  applicability:
+  - complete authenticated admission and producer inventory is certifiable
+  - missing or skipped admission and producer shapes are noncertifying
+  - skipped matrix placeholders from preflight truncation are noncertifying
+  - active extra or duplicate jobs remain malformed and fail closed
+  - certification still invokes the strict complete same-admission collector
+  publication:
+  - noncertifying observations publish no success or failure status
+  - missing bundles cannot manufacture a certification failure without proven applicability
+  - historical valid bundles remain immutable and are suppressed after default-main movement
+  bounded_authority:
+  - workitem success retains only declared successor eligibility
+  - explicit active-phase closure and release authorization remain rejected
+  controller_boundary: the 344450e3 artifact is superseded because this closure changes trusted
+    runtime; rebuild once from the final correction before ordinary bootstrap and probe
+  boundary: P26-02 remains blocked pending protected merge, one final ordinary controller rotation,
+    and fresh bounded exact-main certification
 rotation_confirmation:
   authoritative_subject: {commit: a272bfbfaf44e712fc322cc6503c48ee02c8c8ff, tree: 398d20d65b0b44f0c03ffdab5f51dbd9e66bc4fd}
   controller: {commit: 3a2cb4a5c10f52cc749783d4779dec0fcbebd220, artifact_id: 10588758981, artifact_digest: 'sha256:de65225ea4556a243244d67ca3652f7cfa61e0b3003854a43c5d2d3efbe1930b'}

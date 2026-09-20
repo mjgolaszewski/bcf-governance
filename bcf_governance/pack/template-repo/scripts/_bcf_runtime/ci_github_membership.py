@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from enum import StrEnum
 from typing import Any
 
 from .ci_authority_contracts import (
@@ -36,6 +38,143 @@ def _require_v11(authority: dict[str, Any]) -> None:
         raise GitHubControllerError(
             "exact-main common-admission authority requires contract version 1.1"
         )
+
+
+class AdmissionTopologyState(StrEnum):
+    CERTIFIABLE = "certifiable"
+    NONCERTIFYING = "noncertifying"
+
+
+@dataclass(frozen=True)
+class AdmissionTopology:
+    state: AdmissionTopologyState
+    reason: str
+
+
+def _authority_job_inventory(
+    authority: dict[str, Any],
+) -> tuple[list[str], list[str], dict[str, list[str]]]:
+    admission = [str(value["job_id"]) for value in authority["admission_jobs"]]
+    builders = [
+        str(value["job_id"])
+        for value in authority.get("controller_builder_jobs", [])
+    ]
+    producers = {
+        str(producer["producer_id"]): [
+            str(value["job_id"]) for value in producer["expected_jobs"]
+        ]
+        for producer in authority["producers"]
+    }
+    complete = admission + builders + [
+        name for values in producers.values() for name in values
+    ]
+    if len(set(complete)) != len(complete):
+        raise GitHubControllerError("authority admission job inventory is duplicated")
+    return admission, builders, producers
+
+
+def classify_admission_topology(
+    api: GitHubAPI,
+    *,
+    repository: str,
+    main: MainIdentity,
+    authority: dict[str, Any],
+    admission_run_id: object,
+    admission_run_attempt: object,
+) -> AdmissionTopology:
+    """Classify exact provider topology before strict certification collection."""
+
+    _require_v11(authority)
+    run_id = str(positive_int(admission_run_id, field="admission run ID"))
+    attempt = positive_int(admission_run_attempt, field="admission run attempt")
+    run = api.run(repository, run_id)
+    if positive_int(run.get("run_attempt"), field="admission run attempt") != attempt:
+        raise GitHubControllerError("admission run attempt is no longer authoritative")
+    admission_workflow = authority_role_workflow(authority, "admission")
+    authenticate_trusted_run(
+        api,
+        repository=repository,
+        main=main,
+        run_id=run_id,
+        run_attempt=attempt,
+        workflow_path=str(admission_workflow["active_path"]),
+        expected_event=str(run.get("event")),
+        require_success=False,
+        expected_workflow_id=admission_workflow["workflow_id"],
+        expected_workflow_sha256=str(
+            admission_workflow["trusted_workflow_sha256"]
+        ),
+        expected_workflow_blob_oid=admission_workflow["trusted_workflow_blob_oid"],
+        expected_workflow_definition_commit=admission_workflow[
+            "trusted_workflow_definition_commit"
+        ],
+    )
+    references = _reference_map(run, repository, main.checkout_sha)
+    _validate_reference_inventory(authority, references)
+    jobs = api.jobs(repository, run_id, attempt=attempt)
+    names = [str(value.get("name", "")) for value in jobs]
+    if not names or not all(names):
+        raise GitHubControllerError("admission job inventory is empty")
+    if len(set(names)) != len(names):
+        raise GitHubControllerError("admission job inventory is duplicated")
+    admission_jobs, builder_jobs, producer_jobs = _authority_job_inventory(authority)
+    complete = set(admission_jobs + builder_jobs)
+    complete.update(name for values in producer_jobs.values() for name in values)
+    actual = set(names)
+    unknown = actual - complete
+    job_map = {str(value["name"]): value for value in jobs}
+    if unknown and any(
+        str(job_map[name].get("status")) != "completed"
+        or str(job_map[name].get("conclusion")) != "skipped"
+        for name in unknown
+    ):
+        raise GitHubControllerError("admission job inventory contains an active extra job")
+    if not set(admission_jobs).issubset(actual) or any(
+        str(job_map[name].get("status")) != "completed"
+        or str(job_map[name].get("conclusion")) != "success"
+        for name in admission_jobs
+        if name in job_map
+    ):
+        return AdmissionTopology(
+            AdmissionTopologyState.NONCERTIFYING,
+            "admission_not_successful",
+        )
+    expected_producers = {
+        name for values in producer_jobs.values() for name in values
+    }
+    if actual != complete or any(
+        str(job_map[name].get("status")) != "completed"
+        or str(job_map[name].get("conclusion")) == "skipped"
+        for name in expected_producers
+        if name in job_map
+    ):
+        return AdmissionTopology(
+            AdmissionTopologyState.NONCERTIFYING,
+            "producer_topology_incomplete",
+        )
+    return AdmissionTopology(AdmissionTopologyState.CERTIFIABLE, "complete")
+
+
+def certification_producer_ids(
+    authority: dict[str, Any], evaluation_scope: dict[str, Any]
+) -> tuple[str, ...]:
+    """Return the exact producer set admitted for one terminal evaluation intent."""
+
+    intent = evaluation_scope.get("intent")
+    target = evaluation_scope.get("target")
+    expected_kind = {"workitem": "workitem", "closure": "phase"}.get(str(intent))
+    if expected_kind is None or not isinstance(target, dict):
+        raise GitHubControllerError(
+            "exact-main certification evaluation scope is unsupported"
+        )
+    if target.get("kind") != expected_kind or not isinstance(target.get("id"), str):
+        raise GitHubControllerError(
+            "exact-main certification evaluation target is invalid"
+        )
+    producer_ids = tuple(str(value["producer_id"]) for value in authority["producers"])
+    if not producer_ids or len(set(producer_ids)) != len(producer_ids):
+        raise GitHubControllerError("certification producer inventory is invalid")
+    return producer_ids
 
 
 def _authenticate_admission_candidate(
@@ -210,6 +349,19 @@ def _reference_map(
     return resolved
 
 
+def _validate_reference_inventory(
+    authority: dict[str, Any], references: dict[str, str]
+) -> None:
+    expected_paths = {
+        str(producer_workflow(authority, value)["active_path"])
+        for value in authority["producers"]
+    }
+    if set(references) != expected_paths:
+        raise GitHubControllerError(
+            "referenced workflow inventory does not match admitted producers"
+        )
+
+
 def collect_same_run_producers(
     api: GitHubAPI,
     *,
@@ -259,21 +411,9 @@ def collect_same_run_producers(
     actual_jobs = [str(value.get("name", "")) for value in jobs]
     if not all(actual_jobs) or len(set(actual_jobs)) != len(actual_jobs):
         raise GitHubControllerError("admission job inventory is empty or duplicated")
-    expected_admission = [str(value["job_id"]) for value in authority["admission_jobs"]]
-    expected_controller_builders = [
-        str(value["job_id"])
-        for value in authority.get("controller_builder_jobs", [])
-    ]
-    if len(set(expected_controller_builders)) != len(expected_controller_builders):
-        raise GitHubControllerError(
-            "authority controller builder job inventory is duplicated"
-        )
-    producer_expected = {
-        str(producer["producer_id"]): [
-            str(value["job_id"]) for value in producer["expected_jobs"]
-        ]
-        for producer in authority["producers"]
-    }
+    expected_admission, expected_controller_builders, producer_expected = (
+        _authority_job_inventory(authority)
+    )
     selected_ids = (
         tuple(producer_expected)
         if producer_ids is None
@@ -288,8 +428,6 @@ def collect_same_run_producers(
     expected_all = expected_admission + expected_controller_builders + [
         name for values in producer_expected.values() for name in values
     ]
-    if len(set(expected_all)) != len(expected_all):
-        raise GitHubControllerError("authority admission job inventory is duplicated")
     expected_selected = set(expected_admission)
     for producer_id in selected_ids:
         expected_selected.update(producer_expected[producer_id])
@@ -302,14 +440,7 @@ def collect_same_run_producers(
         )
     job_map = {str(value["name"]): value for value in jobs}
     ordinal = admission_ordinal(run_id, attempt, sequence)
-    expected_paths = {
-        str(producer_workflow(authority, value)["active_path"])
-        for value in authority["producers"]
-    }
-    if set(references) != expected_paths:
-        raise GitHubControllerError(
-            "referenced workflow inventory does not match admitted producers"
-        )
+    _validate_reference_inventory(authority, references)
     observations: list[dict[str, Any]] = []
     for producer in authority["producers"]:
         producer_id = str(producer["producer_id"])

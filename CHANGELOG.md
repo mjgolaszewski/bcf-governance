@@ -33,6 +33,8 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Classify authenticated partial exact-main topologies as noncertifying before
+  strict collection, preserving immutable subjects and scoped release exclusion.
 - Select bounded P26 foundation certification explicitly and keep asynchronous
   exact-main finalization bound to its admitted immutable subject.
 - Confirm the P26 scoped controller on both trusted runners and restore ordinary
