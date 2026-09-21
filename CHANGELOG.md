@@ -41,6 +41,8 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Project the exact provider-built controller containing the authenticated App
+  job-projection correction as the ordinary rotation target.
 - Confirm the corrected P26 prior-evidence transport controller on both trusted
   runners and restore ordinary-current custody before contract activation.
 - Project the exact provider-built controller containing the corrected
