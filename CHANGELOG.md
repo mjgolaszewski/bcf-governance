@@ -44,6 +44,7 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Project the exact provider-built protection-inspection controller as the ordinary rotation target before activating the dormant inspection path.
 - Confirm the active P26 transport controller on both trusted runners and
   restore ordinary-current custody before bounded certification.
 - Project the exact provider-built controller for active P26 prior-evidence
