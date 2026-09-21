@@ -326,10 +326,15 @@ def test_exact_main_is_the_only_default_branch_producer() -> None:
     assert [job["id"] for job in _workflow("exact-main")["jobs"]] == [
         "admit", "governance", "trusted-controller-build",
     ]
-    assert _job("exact-main", "governance")["executor"]["inputs"] == {
-        "evaluation_mode": "workitem",
-        "evaluation_target": "P26-P0-01",
+    admission = _job("exact-main", "admit")["executor"]
+    evaluation = {
+        "evaluation_mode": admission["evaluation_mode"],
+        "evaluation_target": admission["evaluation_target"],
     }
+    assert evaluation["evaluation_mode"] == "workitem"
+    assert isinstance(evaluation["evaluation_target"], str)
+    assert evaluation["evaluation_target"]
+    assert _job("exact-main", "governance")["executor"]["inputs"] == evaluation
     assert compiled.graph["conditions"]["exact-main-authority-enabled"] == (
         "vars.BCF_CI_AUTHORITY_ENABLED == 'true'"
     )
