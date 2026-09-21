@@ -484,3 +484,18 @@ provider_transport_app_job_projection_rotation_confirmation:
   projection: {target_equals_installed: true, recovery_reentry: absent, mechanism: canonical_self_controller_confirmation}
   boundary: protected confirmation merge and fresh ordinary-current exact-main remain
     required before P26-P0-02 activation
+provider_transport_activation_rotation_target:
+  source_exact_main:
+    commit: 3784220babf359b755f545647d82b78caaca801b
+    tree: 5486a82078bd492312c640946ebc962621ce4180
+    run: {id: 35640181197, attempt: 1}
+    controller_artifact: {id: 10657823488, digest: 'sha256:07f14db82c9fcf3e2b8112930c22af2726571877171ff56526fc2f06bfab956b'}
+    wheel_sha256: 94061e8d7240a7e657a5bfd36865344776522e3b2d8e03d48c3f3b32e66b8886
+  projection:
+    mechanism: canonical_self_controller_target
+    target: 3784220babf359b755f545647d82b78caaca801b
+    installed: c14a138d05ce962f0d1735e18b757c8158a55eca
+    lifecycle: ordinary_pending_rotation
+    release_authority: false
+  boundary: protected target merge, bootstrap and probe on both trusted runners,
+    canonical confirmation, normalization, and fresh bounded certification remain required
