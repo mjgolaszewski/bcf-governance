@@ -1032,13 +1032,15 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert governance["condition"] == "exact-main-admitted"
     assert admission["executor"] == {
         "kind": "authority",
-        "operation": "admit",
+        "operation": "admit-with-prior-evidence",
         "evaluation_mode": "workitem",
-        "evaluation_target": "P26-P0-01",
+        "evaluation_target": "P26-P0-02",
     }
+    assert admission["produces"] == ["prior-evidence-transport"]
+    assert admission["permissions"]["actions"] == "write"
     assert governance["executor"]["inputs"] == {
         "evaluation_mode": "workitem",
-        "evaluation_target": "P26-P0-01",
+        "evaluation_target": "P26-P0-02",
     }
     assert builder["needs"] == []
     assert builder["condition"] == "exact-main-authority-enabled"
@@ -1061,12 +1063,29 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         "admit"
     ]["if"]
     exact_jobs = rendered[".github/workflows/bcf-exact-main.yml"]["jobs"]
-    admission_command = exact_jobs["admit"]["steps"][-1]["run"]
+    steps = exact_jobs["admit"]["steps"]
+    admission_command = next(
+        step["run"] for step in steps
+        if step["name"] == "Authenticate exact-main admission and publish pending authority"
+    )
     assert '--evaluation-mode "workitem"' in admission_command
-    assert '--evaluation-target "P26-P0-01"' in admission_command
+    assert '--evaluation-target "P26-P0-02"' in admission_command
+    transport = next(
+        step for step in steps
+        if step["name"] == "Authenticate and preserve prior merged-PR evidence"
+    )
+    upload = next(
+        step for step in steps
+        if step["name"] == "Upload exact prior-evidence-transport evidence"
+    )
+    assert "prior-evidence transport" in transport["run"]
+    assert '--main-sha "$GITHUB_SHA"' in transport["run"]
+    assert transport["env"] == {"GITHUB_TOKEN": "${{ github.token }}"}
+    assert upload["with"]["path"].startswith("${{ runner.temp }}/bcf-prior-evidence-")
+    assert f'--output "{upload["with"]["path"]}"' in transport["run"]
     assert exact_jobs["governance"]["with"] == {
         "evaluation_mode": "workitem",
-        "evaluation_target": "P26-P0-01",
+        "evaluation_target": "P26-P0-02",
     }
     builder_projection = rendered[".github/workflows/bcf-exact-main.yml"]["jobs"][
         "trusted-controller-build"

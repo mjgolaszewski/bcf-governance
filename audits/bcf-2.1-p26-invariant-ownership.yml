@@ -51,6 +51,39 @@ provider_transport_expansion:
   - no reuse applicability decision
   - no planner, truth, finalizer, publisher, release, or successor authority
   lifecycle: [expand_dormant, rotate_compatible_controller, activate_transport]
+provider_transport_activation:
+  workitem: P26-P0-02
+  evaluation: {intent: workitem, target: P26-P0-02}
+  provider_precondition:
+    authoritative_main: {commit: da05d9b722798dea25d433742b1416ae479fdc7d, tree: a47db09483512e649606b42695b1d89a6f288896}
+    exact_main: {run: 35627743279, attempt: 1, conclusion: success}
+    finalizer: {run: 35630388220, attempt: 1, conclusion: success}
+    publisher: {run: 35630439169, attempt: 1, context: bcf/workitem-certification, status_id: 54600429871, conclusion: success}
+    certified_predecessor: {id: P26-P0-01, state: closed, eligible_successor: P26-P0-02}
+    installed_controller: c14a138d05ce962f0d1735e18b757c8158a55eca
+    controller_lifecycle: ordinary-current
+  trusted_execution:
+  - exact-main admission must succeed before provider transport executes
+  - transport executes under the installed current controller without candidate checkout
+  - admission remains non-successful if authentication or immutable materialization fails
+  - the exact transport directory is uploaded as a run-attempt control artifact
+  downstream_matrix:
+    preflight: active transport schema and graph must be exact and current
+    controller_compatibility: activation requires the already-installed expansion controller
+    pr_evidence: candidate governance retains the exact seven-job and six-artifact producer shape
+    certification: bcf/pr-certification remains the sole protected PR context
+    merge: ordinary protected merge only
+    exact_main: admission transports current merge evidence before governance fan-out
+    controller_lifecycle: ordinary-current required; pending or recovery custody cannot certify
+    bounded_truth: P26-P0-02 may close only from exact authenticated test, contract-test, and runtime-smoke evidence
+    finalizer: exact same-admission producer and P26-P0-02 proposition remain mandatory
+    publisher: only bcf/workitem-certification may publish bounded success
+    successor_eligibility: only authenticated P26-P0-02 closure makes P26-P0-03 eligible
+  non_escalation:
+  - P26 remains active
+  - release authority remains absent
+  - transport does not feed reuse planning or claim applicability in P26-P0-02
+  - P26-P0-03 implementation remains absent
 corrective_insertion:
   exact_main_failure:
     run: 35387324770
