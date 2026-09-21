@@ -412,3 +412,19 @@ provider_transport_inventory_rotation_confirmation:
   projection: {target_equals_installed: true, recovery_reentry: absent, mechanism: canonical_self_controller_confirmation}
   boundary: protected confirmation merge and fresh ordinary-current exact-main remain
     required before P26-P0-02 activation
+provider_transport_app_job_projection_correction:
+  prospective_failure:
+    authoritative_main: {commit: 927e9e0df7d66b9bd9f9c4daecd4fe2e77154940, tree: 30d5746e7d5381cb878e9da6e0e12cc547e66263}
+    pull_request: 238
+    producer: {run: 35560782245, attempt: 1, graph_jobs: 6, provider_jobs: 7}
+    certification: {check_run: 106217276566, app_id: 15368, context: bcf/pr-certification}
+    first_causal_invariant: GitHub projected the authenticated App check into the
+      Actions jobs endpoint as a runnerless pseudo-job
+  classification: exact_app_check_projection_is_not_a_workflow_job
+  correction:
+  - remove only the exact already-authenticated check-run identity from the workflow-job view
+  - validate its producer run, attempt, candidate, branch, runnerless shape, and successful result
+  - keep the remaining workflow jobs exact against the canonical graph
+  - reject duplicate, malformed, substituted, or unrelated extra provider jobs
+  boundary: trusted-runtime correction requires another ordinary N/N+1 rotation;
+    P26-P0-02 activation remains blocked until normalization

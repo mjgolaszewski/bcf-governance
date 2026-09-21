@@ -864,7 +864,7 @@
     },
     "scripts/_bcf_runtime/prior_evidence_transport.py": {
       "operation": "copy",
-      "sha256": "c7040ddce041289ab65963d96b0ee3f207b385d77df9196d0ccce356128e7822"
+      "sha256": "a6cd1622d69e5b27a6444bf51453cfdc0a122cea05b1c3e45a87cbd65d6b8322"
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",
