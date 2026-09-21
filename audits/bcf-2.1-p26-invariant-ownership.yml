@@ -374,3 +374,19 @@ provider_transport_rotation_confirmation:
   projection: {target_equals_installed: true, recovery_reentry: absent, mechanism: canonical_self_controller_confirmation}
   boundary: protected confirmation merge and fresh ordinary-current exact-main remain
     required before P26-P0-02 activation
+provider_transport_inventory_correction:
+  prospective_failure:
+    authoritative_main: {commit: fa9938cf3c8e06de37bf428d0f72f689fd3c59e1, tree: f65cc3a944a2c232ebdbffac28bbf0d78bc2dd4e}
+    pull_request: 235
+    producer: {run: 35549599792, attempt: 1, exact_graph_jobs: 6}
+    certification: {check_run: 106185405659, app_id: 15368, context: bcf/pr-certification}
+    first_causal_invariant: protected App certification was incorrectly counted as a producer workflow job
+  classification: provider_check_suite_grouping_is_not_workflow_job_authority
+  correction:
+  - derive the producer inventory only from canonical graph jobs and require it exact and green
+  - authenticate the protected context independently by exact candidate, App 15368, conclusion,
+    completion-before-merge, and finalizer run/attempt
+  - accept no extra protected-context pseudo-job in the producer inventory
+  sibling_review: no other canonical consumer combines protected status context with workflow job inventory
+  live_proof: {main: fa9938cf3c8e06de37bf428d0f72f689fd3c59e1, pull_request: 235, receipts: 7, bundle_sha256: b446cb813c0382fce4400501be3fbcf9adda6d698494ac3bd9acff534f719eef}
+  boundary: trusted-runtime correction requires ordinary N/N+1 rotation before P26-P0-02 activation

@@ -41,6 +41,8 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Keep App-published PR certification separate from the graph-derived producer
+  job inventory when authenticating prior evidence.
 - Confirm the P26 prior-evidence transport controller on both trusted runners
   and restore ordinary-current custody before contract activation.
 - Project the exact provider-built P26 prior-evidence transport controller as

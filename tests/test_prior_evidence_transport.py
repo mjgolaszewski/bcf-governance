@@ -73,6 +73,14 @@ class Provider:
         self.protection = yaml.safe_load(
             (ROOT / "governance/github-protection.yml").read_text(encoding="utf-8")
         )
+        self.job_names = [
+            "Validate governance front door",
+            "Verify exact-tree governance evidence",
+            "Evidence / Boundaries, contracts, runtime, types, and secrets",
+            "Evidence / CQRS, module size, exposure, and dependency risk",
+            "Evidence / Duplication, routers, governance, and ownership",
+            "Evidence / Full tests, lint, import boundaries, and SBOM",
+        ]
         session = {
             "schema_version": "2.0", "session_id": SESSION,
             "subject": {"commit_sha": EXECUTION, "tree_sha": TREE},
@@ -231,17 +239,9 @@ class Provider:
         return self.archives[str(record["name"])]
 
     def jobs(self, repository: str, run_id: object, *, attempt: int):
-        names = [
-            "Validate governance front door", "bcf/pr-certification",
-            "Verify exact-tree governance evidence",
-            "Evidence / Boundaries, contracts, runtime, types, and secrets",
-            "Evidence / CQRS, module size, exposure, and dependency risk",
-            "Evidence / Duplication, routers, governance, and ownership",
-            "Evidence / Full tests, lint, import boundaries, and SBOM",
-        ]
         return tuple(
             {"name": name, "status": "completed", "conclusion": "success"}
-            for name in names
+            for name in self.job_names
         )
 
     def content(self, repository: str, path: str, *, ref: str):
@@ -315,6 +315,28 @@ def test_transport_authenticates_and_preserves_exact_source_bytes(
     )
     Draft202012Validator(schema, resolver=resolver).validate(manifest)
     assert not ({"decision", "qualification", "dependency_closure"} & set(manifest))
+
+
+def test_protected_app_check_is_not_a_producer_job(
+    provider: Provider, tmp_path: Path,
+) -> None:
+    provider.job_names.append("bcf/pr-certification")
+    with pytest.raises(GitHubControllerError, match="producer job inventory"):
+        transport_prior_evidence(
+            provider, repository=REPOSITORY, expected_main_sha=MAIN,
+            output_root=tmp_path / "transport",
+        )
+
+
+def test_protected_context_remains_independently_exact(
+    provider: Provider, tmp_path: Path,
+) -> None:
+    provider.protection["pr_certification"]["context"] = "other/context"
+    with pytest.raises(GitHubControllerError, match="protection schema violation"):
+        transport_prior_evidence(
+            provider, repository=REPOSITORY, expected_main_sha=MAIN,
+            output_root=tmp_path / "transport",
+        )
 
 
 @pytest.mark.parametrize(

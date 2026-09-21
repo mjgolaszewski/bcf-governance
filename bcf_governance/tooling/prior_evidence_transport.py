@@ -234,7 +234,7 @@ def _one_artifact(
 
 
 def _graph_jobs(
-    api: GitHubAPI, repository: str, *, ref: str, protected_context: str
+    api: GitHubAPI, repository: str, *, ref: str
 ) -> tuple[str, ...]:
     graph = _mapping(
         api.content(repository, GRAPH_PATH, ref=ref).content, label="CI graph"
@@ -266,7 +266,6 @@ def _graph_jobs(
             jobs.extend(name.replace(display, value["display_name"]) for value in includes)
         else:
             jobs.append(name)
-    jobs.append(protected_context)
     if not jobs or len(set(jobs)) != len(jobs):
         raise GitHubControllerError("CI graph governance job inventory is ambiguous")
     return tuple(jobs)
@@ -537,10 +536,8 @@ def transport_prior_evidence(
         protection_raw,
         schema_path=packaged_repo_root() / "schemas/github-protection.schema.json",
     )
-    protected_context = str(declaration["pr_certification"]["context"])
     expected_jobs = set(_graph_jobs(
         api, repository, ref=source_main.checkout_sha,
-        protected_context=protected_context,
     ))
     jobs = api.jobs(repository, producer_run, attempt=producer_attempt)
     if (
