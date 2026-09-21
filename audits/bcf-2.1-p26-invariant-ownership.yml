@@ -428,3 +428,18 @@ provider_transport_app_job_projection_correction:
   - reject duplicate, malformed, substituted, or unrelated extra provider jobs
   boundary: trusted-runtime correction requires another ordinary N/N+1 rotation;
     P26-P0-02 activation remains blocked until normalization
+provider_transport_app_job_projection_rotation_target:
+  source_exact_main:
+    commit: c14a138d05ce962f0d1735e18b757c8158a55eca
+    tree: 3c19881252a4a5dfc11191263c3e23fb8d7c6380
+    run: {id: 35613159262, attempt: 1}
+    controller_artifact: {id: 10645182627, digest: 'sha256:8793e4e746c19b3721bcdd2945be2898164c225ee40387bb567acea78a687f1c'}
+    wheel_sha256: aff148701e4d3b2cc27a275359e5969b8a4e4acecd6907f6b34cc252d33c36ae
+  projection:
+    mechanism: canonical_self_controller_target
+    target: c14a138d05ce962f0d1735e18b757c8158a55eca
+    installed: acbf0af4a32470046894913de9ec37da17edaa45
+    lifecycle: ordinary_pending_rotation
+    release_authority: false
+  boundary: P26-P0-02 activation remains blocked pending protected merge, bootstrap
+    and probe on both trusted runners, canonical confirmation, and normalization
