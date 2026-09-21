@@ -443,3 +443,11 @@ provider_transport_app_job_projection_rotation_target:
     release_authority: false
   boundary: P26-P0-02 activation remains blocked pending protected merge, bootstrap
     and probe on both trusted runners, canonical confirmation, and normalization
+provider_transport_app_job_projection_rotation_confirmation:
+  authoritative_subject: {commit: 09d0d7ca67c6393d92c4e8ea21011cd11abca3e8, tree: ba6c4e8ad638c4e1827cb7e711a5771d843d66e1}
+  controller: {commit: c14a138d05ce962f0d1735e18b757c8158a55eca, artifact_id: 10645182627, artifact_digest: 'sha256:8793e4e746c19b3721bcdd2945be2898164c225ee40387bb567acea78a687f1c'}
+  bootstrap: {run: 35624280658, attempt: 1, trusted_runner_1: success, trusted_runner_2: success}
+  probe: {run: 35624398715, attempt: 1, trusted_runner_1: success, trusted_runner_2: success}
+  projection: {target_equals_installed: true, recovery_reentry: absent, mechanism: canonical_self_controller_confirmation}
+  boundary: protected confirmation merge and fresh ordinary-current exact-main remain
+    required before P26-P0-02 activation
