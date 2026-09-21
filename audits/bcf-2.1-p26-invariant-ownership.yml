@@ -404,3 +404,11 @@ provider_transport_inventory_rotation_target:
     release_authority: false
   boundary: activation remains blocked pending protected merge, bootstrap and probe
     on both trusted runners, canonical confirmation, and normalization
+provider_transport_inventory_rotation_confirmation:
+  authoritative_subject: {commit: 7b8074309d8f9cf1405720216a7ef4756fbbeb73, tree: 833601bcbf4ae5049da5287784e9b9f3cffe2b7c}
+  controller: {commit: acbf0af4a32470046894913de9ec37da17edaa45, artifact_id: 10620485301, artifact_digest: 'sha256:3b77952c60ac668ec03fa277efa8e5865838a62e62ffa086b77bc5194b007b19'}
+  bootstrap: {run: 35560223181, attempt: 1, trusted_runner_1: success, trusted_runner_2: success}
+  probe: {run: 35560313442, attempt: 1, trusted_runner_1: success, trusted_runner_2: success}
+  projection: {target_equals_installed: true, recovery_reentry: absent, mechanism: canonical_self_controller_confirmation}
+  boundary: protected confirmation merge and fresh ordinary-current exact-main remain
+    required before P26-P0-02 activation
