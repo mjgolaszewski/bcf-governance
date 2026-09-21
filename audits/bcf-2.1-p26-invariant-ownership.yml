@@ -499,3 +499,11 @@ provider_transport_activation_rotation_target:
     release_authority: false
   boundary: protected target merge, bootstrap and probe on both trusted runners,
     canonical confirmation, normalization, and fresh bounded certification remain required
+provider_transport_activation_rotation_confirmation:
+  authoritative_subject: {commit: 0b9c4a1826fe7f3c029205965d9949a8c6ae36de, tree: 5f2262a262415e927a2f5938564c7a1a1ab7a543}
+  controller: {commit: 3784220babf359b755f545647d82b78caaca801b, artifact_id: 10657823488, artifact_digest: 'sha256:07f14db82c9fcf3e2b8112930c22af2726571877171ff56526fc2f06bfab956b'}
+  bootstrap: {run: 35645790185, attempt: 1, trusted_runner_1: success, trusted_runner_2: success}
+  probe: {run: 35645880103, attempt: 1, trusted_runner_1: success, trusted_runner_2: success}
+  projection: {target_equals_installed: true, recovery_reentry: absent, mechanism: canonical_self_controller_confirmation}
+  boundary: protected confirmation merge and fresh ordinary-current P26-P0-02
+    bounded certification remain required
