@@ -28,6 +28,7 @@ from bcf_governance.tooling.ci_graph_locks import (
 )
 from bcf_governance.tooling.ci_graph_render import (
     _executor_steps,
+    _job as render_job,
     apply_ci_graph,
     check_ci_graph,
     render_ci_graph,
@@ -1375,6 +1376,34 @@ def test_protection_inspection_activation_is_credential_isolated_and_environment
     )
     assert steps[-1]["env"]["BCF_PROTECTION_INSPECT_REQUIRED"] == "true"
     assert "BCF_PROTECTION_INSPECT_APP_TOKEN" not in steps[0]["env"]
+
+
+def test_protection_inspection_activation_compiles_complete_exact_main_job(
+    tmp_path: Path,
+) -> None:
+    graph = yaml.safe_load((REPO_ROOT / "governance/ci-graph.yml").read_text())
+    workflow = next(value for value in graph["workflows"] if value["id"] == "exact-main")
+    admission = next(value for value in workflow["jobs"] if value["id"] == "admit")
+    admission["executor"]["protection_inspection"] = True
+    proposed = tmp_path / "proposed-graph.yml"
+    proposed.write_text(yaml.safe_dump(graph, sort_keys=False), encoding="utf-8")
+    with pytest.raises(CIGraphError, match="protected trusted exact-main admission"):
+        validate_ci_graph(REPO_ROOT, graph_path=proposed)
+
+    admission["protected_environment"] = "bcf-trusted-protection-inspection"
+    proposed.write_text(yaml.safe_dump(graph, sort_keys=False), encoding="utf-8")
+
+    compiled = validate_ci_graph(REPO_ROOT, graph_path=proposed)
+    compiled_workflow = next(
+        value for value in compiled.workflows if value["id"] == "exact-main"
+    )
+    compiled_job = next(
+        value for value in compiled_workflow["jobs"] if value["id"] == "admit"
+    )
+    rendered = render_job(compiled, compiled_workflow, compiled_job)
+    assert rendered["environment"] == "bcf-trusted-protection-inspection"
+    assert rendered["steps"][-3]["id"] == "protection-inspector-token"
+    assert rendered["steps"][-2]["env"]["BCF_PROTECTION_INSPECT_REQUIRED"] == "true"
 
 
 def test_gate_group_uses_the_canonical_session_selector_before_capture() -> None:
