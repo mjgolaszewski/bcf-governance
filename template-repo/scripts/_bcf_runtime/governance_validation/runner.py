@@ -33,6 +33,35 @@ from .release_gates import _validate_ci_profile, _validate_release_gate_targets,
 from .repo_cleanup import _load_repo_cleanup_contract
 
 
+def validate_tooling_context_membership(repo_root: Path) -> None:
+    """Fail early when a self-governed tooling module has no unique context."""
+    policy_path = repo_root / "governance/self-governance-policy.yml"
+    if not policy_path.is_file():
+        return  # Adopter repositories do not own the self-governance policy.
+    contexts = _load_yaml(policy_path).get("tooling_contexts")
+    if not isinstance(contexts, dict) or not contexts:
+        raise GovernanceValidationError("self-governance tooling_contexts are missing")
+    tooling_root = repo_root / "bcf_governance/tooling"
+    for path in sorted(tooling_root.rglob("*.py")):
+        relative = path.relative_to(tooling_root).as_posix()
+        if relative == "__init__.py" or relative.endswith("/__init__.py"):
+            continue
+        matches = [
+            name
+            for name, prefixes in contexts.items()
+            if isinstance(prefixes, list)
+            and any(
+                isinstance(prefix, str)
+                and (relative == prefix or relative.startswith(prefix))
+                for prefix in prefixes
+            )
+        ]
+        if len(matches) != 1:
+            raise GovernanceValidationError(
+                f"tooling context membership: {relative} maps to {matches}"
+            )
+
+
 def _validate_test_tombstones(repo_root: Path, schema_cache: dict[str, dict[str, Any]]) -> Path | None:
     path = repo_root / "governance" / "test-tombstones.yml"
     if not path.exists():
@@ -151,6 +180,7 @@ def validate_repo_root(
     _validate_document_path(repo_root, ledger, phase_ledger_path, context=str(phase_ledger_path))
 
     _validate_agents(repo_root, agents)
+    validate_tooling_context_membership(repo_root)
     required_artifact_paths = _validate_artifact_manifest(repo_root, artifact_manifest, agents)
     observability_contract_paths = _validate_observability_contracts(repo_root, schema_cache)
     declared_phase_paths = _validate_declared_phase_catalog(

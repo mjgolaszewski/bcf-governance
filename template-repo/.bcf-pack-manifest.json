@@ -832,7 +832,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/runner.py": {
       "operation": "copy",
-      "sha256": "9ccf90309ee985ee88dae377a6ef263976e15ed3c897175bb8239cd7092a1455"
+      "sha256": "a52207bc252052f0a4bd842e412a8366ac312a9c0321514dc4101a20bf925b10"
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
