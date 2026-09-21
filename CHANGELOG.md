@@ -41,6 +41,8 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Confirm the P26 prior-evidence transport controller on both trusted runners
+  and restore ordinary-current custody before contract activation.
 - Project the exact provider-built P26 prior-evidence transport controller as
   the ordinary rotation target before activating its dormant contract.
 - Project exact commit/tree identity from canonical truth subjects while permitting
