@@ -540,12 +540,31 @@ def transport_prior_evidence(
         api, repository, ref=source_main.checkout_sha,
     ))
     jobs = api.jobs(repository, producer_run, attempt=producer_attempt)
+    check_id = positive_int(check.get("id"), field="check run ID")
+    check_jobs = [value for value in jobs if value.get("id") == check_id]
+    if len(check_jobs) > 1 or any(
+        value.get("name") != CHECK_CONTEXT
+        or value.get("status") != "completed"
+        or value.get("conclusion") != "success"
+        or str(value.get("run_id")) != producer_run
+        or positive_int(value.get("run_attempt"), field="check job run attempt")
+        != producer_attempt
+        or value.get("head_sha") != candidate.checkout_sha
+        or value.get("head_branch") != head_branch
+        or value.get("runner_id") is not None
+        or value.get("runner_name") is not None
+        or value.get("labels") != []
+        or value.get("steps") != []
+        for value in check_jobs
+    ):
+        raise GitHubControllerError("protected App check job projection is not exact")
+    workflow_jobs = tuple(value for value in jobs if value.get("id") != check_id)
     if (
-        len(jobs) != len(expected_jobs)
-        or {str(value.get("name")) for value in jobs} != expected_jobs
+        len(workflow_jobs) != len(expected_jobs)
+        or {str(value.get("name")) for value in workflow_jobs} != expected_jobs
         or any(
             value.get("status") != "completed" or value.get("conclusion") != "success"
-            for value in jobs
+            for value in workflow_jobs
         )
     ):
         raise GitHubControllerError("PR producer job inventory is not exact and green")

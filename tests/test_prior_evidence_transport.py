@@ -240,8 +240,16 @@ class Provider:
 
     def jobs(self, repository: str, run_id: object, *, attempt: int):
         return tuple(
-            {"name": name, "status": "completed", "conclusion": "success"}
-            for name in self.job_names
+            {
+                "id": 80 if name == "bcf/pr-certification" else 100 + index,
+                "name": name, "status": "completed", "conclusion": "success",
+                **({
+                    "run_id": 30, "run_attempt": 1, "head_sha": HEAD,
+                    "head_branch": "feature", "runner_id": None,
+                    "runner_name": None, "labels": [], "steps": [],
+                } if name == "bcf/pr-certification" else {}),
+            }
+            for index, name in enumerate(self.job_names)
         )
 
     def content(self, repository: str, path: str, *, ref: str):
@@ -321,10 +329,17 @@ def test_protected_app_check_is_not_a_producer_job(
     provider: Provider, tmp_path: Path,
 ) -> None:
     provider.job_names.append("bcf/pr-certification")
-    with pytest.raises(GitHubControllerError, match="producer job inventory"):
+    manifest = transport_prior_evidence(
+        provider, repository=REPOSITORY, expected_main_sha=MAIN,
+        output_root=tmp_path / "transport",
+    )
+    assert len(manifest["receipts"]) == 1
+
+    provider.job_names.append("bcf/pr-certification")
+    with pytest.raises(GitHubControllerError, match="App check job projection"):
         transport_prior_evidence(
             provider, repository=REPOSITORY, expected_main_sha=MAIN,
-            output_root=tmp_path / "transport",
+            output_root=tmp_path / "duplicate",
         )
 
 
