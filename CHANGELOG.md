@@ -41,6 +41,8 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Project the exact provider-built controller containing the corrected
+  prior-evidence producer inventory as the ordinary rotation target.
 - Keep App-published PR certification separate from the graph-derived producer
   job inventory when authenticating prior evidence.
 - Confirm the P26 prior-evidence transport controller on both trusted runners
