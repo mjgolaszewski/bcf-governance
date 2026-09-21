@@ -29,6 +29,8 @@ Release target: `2.0.0`
   projection with empirical certification.
 - Add dormant, provider-authenticated merged-PR evidence transport that preserves
   exact source receipts and custody without making a reuse decision.
+- Activate the authenticated transport under the confirmed compatible controller
+  and bind P26-P0-02 to bounded workitem certification.
 
 ### Changed
 

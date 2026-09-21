@@ -36,7 +36,7 @@ workitems:
   status: DONE
   summary: deliver canonical primitive ownership and immutable reuse-attestation contracts
 - id: P26-P0-02
-  status: TODO
+  status: DONE
   summary: deliver provider-authenticated prior-evidence transport with immutable
     source receipts
 - id: P26-P0-03
@@ -91,6 +91,8 @@ execution_evidence:
     now names only receipt-producing evidence while phase-wide governance remains strict
   - P26-P0-02 uses expand, ordinary controller rotation, then activation; the expansion
     tree packages transport and its closed contract without changing exact-main execution
+  - activation makes transport an atomic post-admission trusted step, targets bounded
+    P26-P0-02 truth, and leaves P26 active with only P26-P0-03 successor eligibility
 closeout_requirements:
   claims:
     workitems_closed:
