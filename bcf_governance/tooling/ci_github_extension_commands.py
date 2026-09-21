@@ -111,9 +111,18 @@ def _prior_evidence(argv: list[str]) -> dict[str, object]:
     transport.add_argument("--main-sha", required=True)
     transport.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
+    credential = None
+    if os.environ.get("BCF_PROTECTION_INSPECT_REQUIRED") == "true":
+        credential = (
+            required_environment("BCF_PROTECTION_INSPECT_APP_TOKEN"),
+            required_environment("BCF_PROTECTION_INSPECT_INSTALLATION_ID"),
+            required_environment("BCF_PROTECTION_INSPECT_OBSERVED_INSTALLATION_ID"),
+            os.environ.get("GITHUB_API_URL", "https://api.github.com"),
+        )
     result = transport_prior_evidence(
         environment_api(), repository=args.repository,
         expected_main_sha=args.main_sha, output_root=args.output,
+        protection_credential=credential,
     )
     return {
         "main_commit_sha": result["main"]["commit_sha"],

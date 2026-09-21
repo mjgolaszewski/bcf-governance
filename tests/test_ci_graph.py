@@ -1349,6 +1349,34 @@ def test_self_graph_run_and_done_policy_is_mechanically_complete() -> None:
     assert consumer["needs"] == ["publish-evidence-input"]
 
 
+def test_protection_inspection_activation_is_credential_isolated_and_environment_bound() -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    workflow = next(value for value in compiled.workflows if value["id"] == "exact-main")
+    original = next(value for value in workflow["jobs"] if value["id"] == "admit")
+    assert "protection_inspection" not in original["executor"]
+    job = copy.deepcopy(original)
+    job["executor"]["protection_inspection"] = True
+    assert any(
+        "protected trusted exact-main admission" in issue
+        for issue in job_execution_issues(compiled.graph, job, job["executor"], workflow)
+    )
+    job["protected_environment"] = "bcf-trusted-protection-inspection"
+    assert job_execution_issues(compiled.graph, job, job["executor"], workflow) == ()
+    steps = _executor_steps(compiled, job, workflow)
+    assert steps[-2]["id"] == "protection-inspector-token"
+    assert set(steps[-2]["with"]) == {
+        "app-id", "private-key", "owner", "repositories", "permission-administration",
+    }
+    assert steps[-2]["with"]["permission-administration"] == "write"
+    assert steps[-2]["with"]["repositories"] == "${{ github.event.repository.name }}"
+    assert steps[-1]["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
+    assert steps[-1]["env"]["BCF_PROTECTION_INSPECT_APP_TOKEN"] == (
+        "${{ steps.protection-inspector-token.outputs.token }}"
+    )
+    assert steps[-1]["env"]["BCF_PROTECTION_INSPECT_REQUIRED"] == "true"
+    assert "BCF_PROTECTION_INSPECT_APP_TOKEN" not in steps[0]["env"]
+
+
 def test_gate_group_uses_the_canonical_session_selector_before_capture() -> None:
     step = _executor_steps(
         None,

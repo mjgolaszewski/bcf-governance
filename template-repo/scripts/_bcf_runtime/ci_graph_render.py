@@ -515,11 +515,35 @@ def _executor_steps(
             }
         ]
         if operation == "admit-with-prior-evidence":
+            if "protection_inspection" in executor:
+                steps.append(
+                    {
+                        "name": "Mint repository-scoped protection inspection token",
+                        "id": "protection-inspector-token",
+                        "uses": action_pin("create-github-app-token"),
+                        "with": {
+                            "app-id": "${{ vars.BCF_PROTECTION_INSPECT_APP_ID }}",
+                            "private-key": "${{ secrets.BCF_PROTECTION_INSPECT_APP_PRIVATE_KEY }}",
+                            "owner": "${{ github.repository_owner }}",
+                            "repositories": "${{ github.event.repository.name }}",
+                            "permission-administration": "write",
+                        },
+                    }
+                )
+            transport_environment = {
+                **_github_token_environment(),
+                **({
+                    "BCF_PROTECTION_INSPECT_REQUIRED": "true",
+                    "BCF_PROTECTION_INSPECT_APP_TOKEN": "${{ steps.protection-inspector-token.outputs.token }}",
+                    "BCF_PROTECTION_INSPECT_INSTALLATION_ID": "${{ vars.BCF_PROTECTION_INSPECT_INSTALLATION_ID }}",
+                    "BCF_PROTECTION_INSPECT_OBSERVED_INSTALLATION_ID": "${{ steps.protection-inspector-token.outputs.installation-id }}",
+                } if "protection_inspection" in executor else {}),
+            }
             steps.append(
                 {
                     "name": "Authenticate and preserve prior merged-PR evidence",
                     "shell": "bash",
-                    "env": _github_token_environment(),
+                    "env": transport_environment,
                     "run": (
                         "set -euo pipefail\n"
                         f"{compiled.trusted_controller_check}\n"
