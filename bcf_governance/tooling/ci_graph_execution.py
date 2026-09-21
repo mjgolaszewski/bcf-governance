@@ -114,6 +114,17 @@ def job_execution_issues(
     """Return deterministic interpreter and trusted-input contract violations."""
 
     issues: list[str] = []
+    if executor.get("protection_inspection"):
+        if (
+            executor.get("kind") != "authority"
+            or executor.get("operation") != "admit-with-prior-evidence"
+            or job.get("protected_environment") != "bcf-trusted-protection-inspection"
+            or job.get("trust") != "trusted"
+            or job.get("checkout") is not False
+        ):
+            issues.append(
+                "protection inspection requires the protected trusted exact-main admission job"
+            )
     if workflow is not None:
         _, environment_issues = job_required_environment(
             graph, workflow, job, executor

@@ -35,6 +35,7 @@ from .github_protection import (
     inspect_protection_declaration,
     load_protection_bytes,
 )
+from .protection_inspection_client import ProtectionInspectionClient
 
 
 FINALIZER_WORKFLOW = ".github/workflows/bcf-pr-finalizer.yml"
@@ -457,7 +458,8 @@ def _write_materialized(
 
 
 def transport_prior_evidence(
-    api: GitHubAPI, *, repository: str, expected_main_sha: str, output_root: Path
+    api: GitHubAPI, *, repository: str, expected_main_sha: str, output_root: Path,
+    protection_credential: tuple[str, str, str, str] | None = None,
 ) -> dict[str, Any]:
     """Authenticate current main's merged-PR evidence and preserve exact bytes."""
 
@@ -536,6 +538,16 @@ def transport_prior_evidence(
         protection_raw,
         schema_path=packaged_repo_root() / "schemas/github-protection.schema.json",
     )
+    protection_inspector = None
+    if protection_credential is not None:
+        token, installation_id, observed_installation_id, api_url = protection_credential
+        protection_inspector = ProtectionInspectionClient(
+            token=token, repository=repository,
+            repository_id=declaration["repository"]["numeric_id"],
+            installation_id=installation_id,
+            observed_installation_id=observed_installation_id,
+            api_url=api_url,
+        )
     expected_jobs = set(_graph_jobs(
         api, repository, ref=source_main.checkout_sha,
     ))
@@ -606,8 +618,11 @@ def transport_prior_evidence(
         api, evidence_archives, candidate=candidate, repository=repository,
         run_id=producer_run, run_attempt=producer_attempt,
     )
+    if protection_inspector is not None:
+        protection_inspector.verify_installation()
     protection = inspect_protection_declaration(
-        api, repository=repository, declaration=declaration
+        protection_inspector if protection_inspector is not None else api,
+        repository=repository, declaration=declaration,
     )
     if protection.status != "clean" or protection.ruleset_id is None:
         raise GitHubControllerError("provider protection does not match source authority")

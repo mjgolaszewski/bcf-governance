@@ -16,7 +16,11 @@ from bcf_governance.tooling.ci_github_actions import ACTION_PINS
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
 from bcf_governance.tooling.ci_graph_execution import job_required_environment
 from bcf_governance.tooling.ci_graph_render import check_ci_graph, render_ci_graph
-from bcf_governance.tooling.governance_validation.runner import validate_repo_root
+from bcf_governance.tooling.governance_validation.runner import (
+    GovernanceValidationError,
+    validate_repo_root,
+    validate_tooling_context_membership,
+)
 from bcf_governance.tooling.profile_v2_surfaces import render_v2_makefile
 from bcf_governance.tooling.release_runtime_verification import (
     is_release_sdist_test_context,
@@ -103,18 +107,22 @@ def test_production_modules_respect_self_governance_loc_cap() -> None:
     assert not violations, "module LOC cap exceeded: " + ", ".join(violations)
 
 
-def test_tooling_modules_map_to_exactly_one_context() -> None:
-    contexts = _policy()["tooling_contexts"]
-    for path in _python_files(REPO_ROOT / "bcf_governance/tooling"):
-        relative = path.relative_to(REPO_ROOT / "bcf_governance/tooling").as_posix()
-        if relative == "__init__.py" or relative.endswith("/__init__.py"):
-            continue
-        matches = [
-            name
-            for name, prefixes in contexts.items()
-            if any(relative == prefix or relative.startswith(prefix) for prefix in prefixes)
-        ]
-        assert len(matches) == 1, f"{relative} maps to {matches}"
+def test_tooling_modules_map_to_exactly_one_context(tmp_path: Path) -> None:
+    validate_tooling_context_membership(REPO_ROOT)
+    policy_path = tmp_path / "governance/self-governance-policy.yml"
+    policy_path.parent.mkdir(parents=True)
+    tooling_path = tmp_path / "bcf_governance/tooling/new_module.py"
+    tooling_path.parent.mkdir(parents=True)
+    tooling_path.write_text("pass\n", encoding="utf-8")
+    policy_path.write_text("tooling_contexts: {ci_authority: [other.py]}\n", encoding="utf-8")
+    with pytest.raises(GovernanceValidationError, match="new_module.py maps to \\[\\]"):
+        validate_tooling_context_membership(tmp_path)
+    policy_path.write_text(
+        "tooling_contexts: {ci_authority: [new_module.py], validation: [new_module.py]}\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(GovernanceValidationError, match="new_module.py maps to"):
+        validate_tooling_context_membership(tmp_path)
 
 
 def test_packaged_code_does_not_import_public_wrapper_package() -> None:

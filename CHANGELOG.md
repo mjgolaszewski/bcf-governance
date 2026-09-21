@@ -24,6 +24,7 @@ Release target: `2.0.0`
 
 ### Added
 
+- Add a dormant, repository-bound GET-only protection-inspection capability for a dedicated GitHub App; activation remains behind ordinary trusted-controller rotation.
 - Open the governed three-phase BCF 2.1 release train for invariant closure and
   proof transport, minimum-time proof composition, and canonical self/adopter
   projection with empirical certification.

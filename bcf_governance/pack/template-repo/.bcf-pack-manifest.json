@@ -228,7 +228,7 @@
     },
     "schemas/ci-graph.schema.json": {
       "operation": "copy",
-      "sha256": "568a3b1a8b3d179dc9402962c6168368f04fe983c8d0f8f7de5d8cdd37975fae"
+      "sha256": "63f82ca90718e7e0399d51be4b96cf88f6c609c2779ebee579650cd205a3e8f1"
     },
     "schemas/ci-provider-snapshot.schema.json": {
       "operation": "copy",
@@ -496,7 +496,7 @@
     },
     "scripts/_bcf_runtime/ci_github_extension_commands.py": {
       "operation": "copy",
-      "sha256": "d5cb3cbe355bb207ca09713b74edd4d4badb804e5326bc0577582186a0f6990a"
+      "sha256": "dad1459f7cf74f75dc26e0ac46a27a8b293917543f0520656a26ab23b7a87525"
     },
     "scripts/_bcf_runtime/ci_github_identity.py": {
       "operation": "copy",
@@ -560,7 +560,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_execution.py": {
       "operation": "copy",
-      "sha256": "32d3c8981c0ebdd2fe421303195603baa7902d2c6d59045b075dd1a0909cec71"
+      "sha256": "3b7d9a38047e5f4fc62a23c6faddf2afff29e26d99efc41cc2f344785fec3bbc"
     },
     "scripts/_bcf_runtime/ci_graph_import.py": {
       "operation": "copy",
@@ -572,7 +572,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "954932f6bfdd2db3847c9f1f75f151ad153cdb815efa8683fd69a9f85698cb50"
+      "sha256": "ebda8a8b5597e5ccd952011035569f763aa05b242207062955a03bd98cfcf14d"
     },
     "scripts/_bcf_runtime/ci_graph_routing.py": {
       "operation": "copy",
@@ -832,7 +832,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/runner.py": {
       "operation": "copy",
-      "sha256": "9ccf90309ee985ee88dae377a6ef263976e15ed3c897175bb8239cd7092a1455"
+      "sha256": "a52207bc252052f0a4bd842e412a8366ac312a9c0321514dc4101a20bf925b10"
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
@@ -864,7 +864,7 @@
     },
     "scripts/_bcf_runtime/prior_evidence_transport.py": {
       "operation": "copy",
-      "sha256": "a6cd1622d69e5b27a6444bf51453cfdc0a122cea05b1c3e45a87cbd65d6b8322"
+      "sha256": "32e89b9c63736e437a5b1115caa39151162682f4822ddf3988ab5dc78ffb3a0b"
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",
@@ -885,6 +885,10 @@
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",
       "sha256": "4856dc8a10354e6e38c9c7e721a58218d39820f7fee4019b42addc7db4420c33"
+    },
+    "scripts/_bcf_runtime/protection_inspection_client.py": {
+      "operation": "copy",
+      "sha256": "cf494b7d1ffbc69f3c279ae1139fa555f40652777db2b601a835c54dcd06225e"
     },
     "scripts/_bcf_runtime/public_contracts.py": {
       "operation": "copy",

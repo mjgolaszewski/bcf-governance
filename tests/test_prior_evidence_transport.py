@@ -325,6 +325,39 @@ def test_transport_authenticates_and_preserves_exact_source_bytes(
     assert not ({"decision", "qualification", "dependency_closure"} & set(manifest))
 
 
+def test_transport_uses_only_scoped_inspector_for_privileged_protection(
+    provider: Provider, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class Inspector:
+        def __init__(self, **kwargs):
+            assert kwargs["repository"] == REPOSITORY
+            assert str(kwargs["repository_id"]) == REPOSITORY_ID
+            assert kwargs["installation_id"] == kwargs["observed_installation_id"] == "123"
+
+        def verify_installation(self):
+            pass
+
+        def repository(self, repository):
+            return provider.repository(repository)
+
+        def repository_rulesets(self, repository):
+            return provider.repository_rulesets(repository)
+
+        def ruleset(self, repository, ruleset_id):
+            return provider.ruleset(repository, ruleset_id)
+
+    monkeypatch.setattr(
+        "bcf_governance.tooling.prior_evidence_transport.ProtectionInspectionClient",
+        Inspector,
+    )
+    result = transport_prior_evidence(
+        provider, repository=REPOSITORY, expected_main_sha=MAIN,
+        output_root=tmp_path / "transport",
+        protection_credential=("fake-token", "123", "123", "https://api.github.com"),
+    )
+    assert result["protection"]["provider_state"] == "clean"
+
+
 def test_protected_app_check_is_not_a_producer_job(
     provider: Provider, tmp_path: Path,
 ) -> None:
