@@ -43,6 +43,8 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Confirm the active P26 transport controller on both trusted runners and
+  restore ordinary-current custody before bounded certification.
 - Project the exact provider-built controller for active P26 prior-evidence
   transport as the ordinary rotation target before bounded certification.
 - Confirm the App job-projection controller on both trusted runners and restore
