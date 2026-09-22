@@ -47,7 +47,7 @@ workitems:
   - runtime-smoke
 - id: P26-P0-04
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver adversarial proof empirical equivalent-tree acceptance and certified
     closeout
   acceptance:
