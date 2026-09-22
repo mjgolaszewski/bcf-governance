@@ -6,15 +6,98 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
-from typing import Any
+from typing import Any, Iterable, Mapping
 
 from .evidence_execution import EvidenceError
 from .evidence_planning import (
     build_dependency_manifest,
     claims_for_legacy_gate,
     load_claim_model,
+    parse_claim_model,
 )
+from .evidence_claim_resolution import claim_gate_projection, load_claim_gate_projection
+
+
+def _qualification_digest(material: Any) -> str:
+    return hashlib.sha256(json.dumps(
+        material, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")).hexdigest()
+
+
+def qualification_equivalence(
+    repo_root: Path, receipt: dict[str, Any], claim_id: str,
+    *, contract_payload: Mapping[str, Any] | None = None,
+    tree_entries: Iterable[tuple[str, str]] | None = None,
+) -> dict[str, Any]:
+    """Recompute one claim's qualified detector proof on current main bytes.
+
+    Source proof remains a separate provider-custody question.  A reference to
+    another receipt is not admitted here without authenticating that chain.
+    """
+    model = (load_claim_model(repo_root) if contract_payload is None
+             else parse_claim_model(contract_payload))
+    claim = model["claims"].get(claim_id)
+    if not isinstance(claim, dict):
+        raise EvidenceError(f"unknown claim {claim_id}")
+    scope = claim.get("qualification_scope")
+    if scope == "none":
+        digest = _qualification_digest({"scope": "none"})
+        return {"source_sha256": digest, "main_sha256": digest, "equivalent": True}
+    qualified = receipt.get("qualifications")
+    source = qualified.get(claim_id) if isinstance(qualified, dict) else receipt.get("qualification")
+    controls = source.get("control_ids") if isinstance(source, dict) else None
+    valid_controls = (
+        isinstance(controls, list)
+        and all(isinstance(value, str) and value for value in controls)
+        and controls == sorted(set(controls))
+    )
+    selected_controls = controls if valid_controls else []
+    dependencies = build_dependency_manifest(
+        repo_root, [claim_id], model=model, tree_entries=tree_entries,
+    )["claim_dependencies"][claim_id]
+    classes = ({"detector", "test_population", "subject"} if scope == "subject"
+               else {"detector", "test_population", "toolchain", "trust"})
+    main_digest = _qualification_digest({
+        "scope": scope, "controls": selected_controls,
+        "dependencies": [value for value in dependencies if value["class"] in classes],
+    })
+    source_digest = source.get("fingerprint") if isinstance(source, dict) else None
+    if not isinstance(source_digest, str) or re.fullmatch(r"[a-f0-9]{64}", source_digest) is None:
+        source_digest = _qualification_digest(source)
+    references = receipt.get("qualification_refs")
+    referenced = {
+        value.get("claim_id") for value in references if isinstance(value, dict)
+    } if isinstance(references, list) else set()
+    expected_controls: set[str] = set()
+    contract_valid = True
+    try:
+        projection = (
+            load_claim_gate_projection(repo_root, receipt.get("claims", []))
+            if contract_payload is None else
+            claim_gate_projection(contract_payload, receipt.get("claims", []))
+        )
+        for receipt_claim in receipt.get("claims", []):
+            if receipt_claim in referenced:
+                continue
+            for control in projection[receipt_claim]["gate"].get("negative_controls", []):
+                if not isinstance(control, dict) or not isinstance(control.get("id"), str):
+                    contract_valid = False
+                    continue
+                expected_controls.add(control["id"])
+    except (OSError, ValueError, KeyError, TypeError):
+        contract_valid = False
+    equivalent = (
+        claim_id not in referenced and contract_valid and valid_controls
+        and selected_controls == sorted(expected_controls)
+        and isinstance(source, dict) and source.get("scope") == scope
+        and source.get("satisfied") is True and source_digest == main_digest
+    )
+    return {
+        "source_sha256": source_digest, "main_sha256": main_digest,
+        "equivalent": equivalent,
+    }
 
 
 def capture_subject_preflight(repo_root: Path, output_dir: Path) -> dict[str, Any]:

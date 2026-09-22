@@ -32,6 +32,8 @@ Release target: `2.0.0`
   exact source receipts and custody without making a reuse decision.
 - Activate the authenticated transport under the confirmed compatible controller
   and bind P26-P0-02 to bounded workitem certification.
+- Expand dormant P26 main-side reuse qualification and exact provider-tree closure,
+  with same-admission trusted finalizer verification before any reuse activation.
 
 ### Changed
 

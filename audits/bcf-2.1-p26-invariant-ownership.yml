@@ -19,9 +19,9 @@ primitives:
 - {id: Qualification, canonical_owner: schemas/evidence-receipt.schema.json#/$defs/qualification, executable_owner: 'bcf_governance/tooling/evidence_claims.py::claim_receipt_fields', p26_action: reuse_by_digest}
 - {id: EvidenceReceipt, canonical_owner: schemas/evidence-receipt.schema.json, executable_owner: 'bcf_governance/tooling/truth_receipts.py::load_receipts', p26_action: preserve_bytes}
 - {id: EvidenceReference, canonical_owner: schemas/reuse-attestation.schema.json#/$defs/evidenceReference, executable_owner: 'bcf_governance/tooling/evidence_planning.py::load_prior_receipts', p26_action: bind_immutable_digest}
-- {id: ApplicabilityDecision, canonical_owner: schemas/reuse-attestation.schema.json#properties/decision, executable_owner: planned_p26_admission_constructor, p26_action: add_closed_contract}
-- {id: InvalidationReason, canonical_owner: schemas/reuse-attestation.schema.json#/$defs/invalidationReason, executable_owner: planned_p26_admission_constructor, p26_action: add_closed_contract}
-- {id: ReuseAttestation, canonical_owner: schemas/reuse-attestation.schema.json, executable_owner: planned_p26_admission_constructor, p26_action: add_separate_main_side_record}
+- {id: ApplicabilityDecision, canonical_owner: schemas/reuse-attestation.schema.json#properties/decision, executable_owner: 'bcf_governance/tooling/evidence_reuse_attestations.py::compose_reuse_attestations', p26_action: compose_dormant_decisions}
+- {id: InvalidationReason, canonical_owner: schemas/reuse-attestation.schema.json#/$defs/invalidationReason, executable_owner: 'bcf_governance/tooling/evidence_reuse_attestations.py::_rejection_reasons', p26_action: fail_closed_fallback}
+- {id: ReuseAttestation, canonical_owner: schemas/reuse-attestation.schema.json, executable_owner: 'bcf_governance/tooling/evidence_reuse_attestations.py::compose_reuse_attestations', p26_action: compose_separate_main_side_record}
 - {id: LifecycleState, canonical_owner: schemas/phase-ledger.schema.json#properties/active_phase/properties/lifecycle_status, executable_owner: 'bcf_governance/tooling/governance_truth.py', p26_action: reuse_by_reference}
 - {id: RecoveryAuthority, canonical_owner: schemas/recovery-reentry-authorization.schema.json, executable_owner: 'bcf_governance/tooling/ci_graph_controller_lifecycle.py', p26_action: reuse_without_broadening}
 foundation_invariants:
@@ -83,7 +83,38 @@ provider_transport_activation:
   - P26 remains active
   - release authority remains absent
   - transport does not feed reuse planning or claim applicability in P26-P0-02
-  - P26-P0-03 implementation remains absent
+  - P26-P0-03 reuse activation remains absent
+p26_p0_03_dormant_expansion:
+  workitem: P26-P0-03
+  baseline_main: {commit_sha: 8cd1b6627bd4e0cf3e54d0eca5d0e5639de3f059, tree_sha: 4984e0a09a87d9011bfacb2b8e3ad288dd3df703}
+  causal_boundary:
+  - the trusted transport payload digest excludes its manifest; prior receipt loading must also close the manifest bytes
+  - authentic source execution commits may be absent from a local clone; exact Git tree OIDs permit conservative path comparison without admitting authority
+  - current truth resolves current-run receipts only; reuse decisions remain dormant until attestation-aware truth and finalizer agree
+  canonical_owners:
+    transport_bytes: bcf_governance/tooling/prior_evidence_receipts.py
+    claim_model_and_dependency_closure: bcf_governance/tooling/evidence_planning.py
+    qualification: bcf_governance/tooling/evidence_claims.py
+    grouped_claim_resolution: bcf_governance/tooling/evidence_claim_resolution.py
+    provider_main_tree: bcf_governance/tooling/provider_reuse_closure.py
+    reuse_decision: bcf_governance/tooling/evidence_reuse_attestations.py
+    finalizer_authority: bcf_governance/tooling/ci_reuse_attestation_verifier.py
+  prospective_chain:
+    preflight: no transport consumption or skipped producer is activated by this expansion
+    controller_compatibility: changed trusted runtime requires ordinary pending rotation and an exact provider-built N+1
+    pr_evidence: ordinary PR execution and bcf/pr-certification remain unchanged
+    certification: dormant verifier rejects claimed reuse without exact attestation and otherwise preserves old truth
+    merge: normal protected merge; no bypass or candidate self-authorization
+    exact_main: old installed controller suppresses evidence while building N+1 under pending rotation
+    controller_lifecycle: bootstrap, probe, confirm, promote, and normalize by canonical ordinary custody
+    bounded_truth: after rotation, P26-P0-02 remains the target and P26 stays active
+    finalizer: no-reuse truth is unchanged; future reuse requires same-admission provider transport and main closure recomputation
+    publisher: bounded workitem status only; no release status substitution
+    successor_eligibility: only P26-P0-03 remains eligible until its own later authenticated closure
+  non_escalation:
+  - no evidence producer is skipped by this expansion
+  - no candidate-attested reuse reaches certification without trusted recomputation
+  - release authority and P26 parent closure remain absent
 corrective_insertion:
   exact_main_failure:
     run: 35387324770
