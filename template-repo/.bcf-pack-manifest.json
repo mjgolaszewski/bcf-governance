@@ -604,7 +604,7 @@
     },
     "scripts/_bcf_runtime/ci_reuse_attestation_verifier.py": {
       "operation": "copy",
-      "sha256": "84c4b6701415a7e743c92335341d4a6f50481b6bcbebf2580dc0b7588400a1eb"
+      "sha256": "f3f2bcbc386fb74490fad5a703a5c538c6a05923fcf9a5725f61a5ada0a77ad7"
     },
     "scripts/_bcf_runtime/ci_self_controller.py": {
       "operation": "copy",
