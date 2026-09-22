@@ -50,6 +50,8 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Project the exact provider-built P26 reuse controller as the ordinary rotation
+  target while keeping the prior installed controller active until confirmation.
 - Reject undeclared trusted-runtime imports in cheap preflight using the same
   deterministic dependency check as package validation.
 - Bind P26 successor-workitem eligibility to authenticated closure of its declared predecessor.
