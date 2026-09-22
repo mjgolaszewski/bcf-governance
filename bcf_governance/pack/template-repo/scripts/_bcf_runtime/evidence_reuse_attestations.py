@@ -94,7 +94,12 @@ def compose_reuse_attestations(
     }
     for reference in manifest["receipts"]:
         raw = transport.files[f"expanded/{reference['artifact_id']}/{reference['path']}"]
-        receipt = json.loads(raw)
+        try:
+            receipt = json.loads(raw)
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise EvidenceError("source receipt cannot support reuse") from exc
+        if not isinstance(receipt, dict):
+            raise EvidenceError("source receipt cannot support reuse")
         for claim_id in receipt.get("claims", []):
             if claim_id in candidates:
                 candidates[claim_id].append((receipt, reference))
@@ -114,6 +119,7 @@ def compose_reuse_attestations(
         group_id = str(claim["execution_group"])
         producer_exact = (
             model["execution_groups"][group_id]["producer"] == receipt.get("gate_id")
+            and receipt.get("result") == "passed"
         )
         applicable, applicability = receipt_applicability(
             repo_root, receipt, claim_id, current_subject=main_subject,

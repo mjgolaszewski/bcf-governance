@@ -95,6 +95,21 @@ def test_reuse_attestation_rejects_wrong_producer(tmp_path: Path) -> None:
     assert "authority_ambiguous" in decisions[0]["rejection_reasons"]
 
 
+def test_failed_source_receipt_requires_canonical_execution(tmp_path: Path) -> None:
+    root, transport, main, contract, entries = _fixture(tmp_path)
+    raw_path = "expanded/901/test/app.evidence.json"
+    receipt = json.loads(transport.files[raw_path])
+    receipt["result"] = "failed"
+    transport.files[raw_path] = json.dumps(receipt).encode()
+    decisions, fallback = compose_reuse_attestations(
+        root, transport, main, contract, entries, ["app-valid"],
+        emitted_at="2026-09-22T00:01:00Z",
+    )
+    assert fallback == ["app-valid"]
+    assert decisions[0]["decision"] == "canonical_execution_required"
+    assert "authority_ambiguous" in decisions[0]["rejection_reasons"]
+
+
 def test_reuse_attestation_rejects_changed_main_dependency(tmp_path: Path) -> None:
     root, transport, main, contract, _ = _fixture(tmp_path)
     _commit(root, "app.py", "VALUE = 2\n")
