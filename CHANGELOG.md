@@ -52,6 +52,9 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Close the implemented P26 main-side reuse workitem in governed lifecycle state so
+  bounded exact-main truth can certify it without implying parent-phase closure,
+  and require the graph target to be completed before successor eligibility is derived.
 - Confirm the P26 reuse controller on both trusted runners and restore
   ordinary-current custody before activating reusable evidence.
 - Project the exact provider-built P26 reuse controller as the ordinary rotation

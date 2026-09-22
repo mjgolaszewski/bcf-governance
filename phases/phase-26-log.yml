@@ -31,6 +31,9 @@ summary:
   - P26 provider transport expansion authenticates current-main merge custody, trusted
     PR certification, exact producer jobs and artifacts, controller/protection authority,
     and byte-preserved source receipts while reuse remains inactive
+  - P26 main-side reuse now qualifies immutable same-tree source receipts, records
+    claim-scoped reuse decisions, and reconciles grouped-claim consumers without
+    treating provisional reuse as finalizer authority
 workitems:
 - id: P26-P0-01
   status: DONE
@@ -40,7 +43,7 @@ workitems:
   summary: deliver provider-authenticated prior-evidence transport with immutable
     source receipts
 - id: P26-P0-03
-  status: TODO
+  status: DONE
   summary: deliver main-side closure qualification partial reuse and grouped-claim
     consumer reconciliation
 - id: P26-P0-04
@@ -108,6 +111,16 @@ execution_evidence:
     current main Git tree and claim contract, qualification controls, and same-run
     admission are recomputed independently before any future reuse certification.
     No exact-main producer topology or bounded workitem target is activated here.
+  - >-
+    PR 254 activated the already-installed reuse path without changing trusted-runtime
+    bytes. Exact-main 35770458228/1 authenticated admission and provider transport,
+    all four producer shards succeeded, and every applicable grouped claim resolved
+    through an admitted reuse attestation. Terminal truth correctly rejected only the
+    stale authored TODO state for P26-P0-03 as bounded_workitem_target_not_closed.
+    This closeout records the implemented workitem as DONE; P26 remains active,
+    P26-P0-04 remains TODO, and release authority remains absent. The graph contract
+    now distinguishes the completed bounded target from its eligible TODO successor,
+    so this stale authored-state class fails during PR evidence before merge.
 closeout_requirements:
   claims:
     workitems_closed:
@@ -140,6 +153,5 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify the dormant P26-P0-03 compatibility expansion, rotate its provider-built
-  controller through ordinary custody, then activate only after exact-main confirms
-  P26-P0-02 closure and P26-P0-03 eligibility under that controller
+- certify bounded P26-P0-03 closure under the installed ordinary-current controller;
+  only its authenticated closure may make P26-P0-04 eligible
