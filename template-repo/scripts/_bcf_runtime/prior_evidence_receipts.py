@@ -94,7 +94,21 @@ def load_provisional_transport(
     _transport_schema(manifest, repo_root / "schemas")
     validate_transport_material(files, manifest, current_subject)
     identities: set[str] = set()
+    artifacts = {value["artifact_id"]: value for value in manifest["artifacts"]}
+    if len(artifacts) != len(manifest["artifacts"]):
+        raise EvidenceError("prior evidence artifact identities are ambiguous")
     for reference in manifest["receipts"]:
+        artifact = artifacts.get(reference["artifact_id"])
+        expected_reference = (
+            f"github-actions://{manifest['repository']['full_name']}/runs/"
+            f"{manifest['producer']['run_id']}/attempts/"
+            f"{manifest['producer']['run_attempt']}/artifacts/"
+            f"{reference['artifact_id']}/{reference['path']}"
+        )
+        if (artifact is None or artifact["name"] != reference["artifact_name"]
+            or artifact["provider_digest"] != "sha256:" + artifact["archive_sha256"]
+            or reference["immutable_reference"] != expected_reference):
+            raise EvidenceError("prior evidence source reference is not immutable")
         raw = files[f"expanded/{reference['artifact_id']}/{reference['path']}"]
         try:
             receipt = json.loads(raw)
@@ -107,6 +121,23 @@ def load_provisional_transport(
             raise EvidenceError("prior evidence source receipt identity is ambiguous")
         identities.add(evidence_id)
     return ProvisionalPriorTransport(manifest, files, observed_digest)
+
+
+def provisional_receipts(material: ProvisionalPriorTransport) -> list[dict[str, Any]]:
+    """Expose source bytes to a conservative planner, without authority."""
+    archives = {
+        value["artifact_id"]: value["archive_sha256"]
+        for value in material.manifest["artifacts"]
+    }
+    receipts: list[dict[str, Any]] = []
+    for reference in material.manifest["receipts"]:
+        raw = material.files[f"expanded/{reference['artifact_id']}/{reference['path']}"]
+        receipt = json.loads(raw)
+        receipts.append({
+            **receipt,
+            "artifact_sha256": archives[reference["artifact_id"]],
+        })
+    return receipts
 
 
 def validate_transport_material(

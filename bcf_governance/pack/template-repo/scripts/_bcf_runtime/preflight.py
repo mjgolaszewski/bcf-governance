@@ -33,6 +33,7 @@ from .interpreter_environment import (
     derive_interpreter_environment,
     verify_interpreter_environment_projection,
 )
+from .prior_evidence_receipts import load_provisional_transport, provisional_receipts
 from .semantic_ownership_scan import run_scan as run_semantic_ownership_scan
 from .self_workflow_contracts import (
     SelfWorkflowContractError,
@@ -624,6 +625,7 @@ def run_preflight(
     evaluation_mode: str | None = None,
     evaluation_target: str | None = None,
     prior_receipts: list[Mapping[str, Any]] | None = None,
+    prior_transport_dir: Path | None = None,
     trace: Callable[[str], None] | None = None,
 ) -> dict[str, Any]:
     """Validate deterministic state, then optionally seed one fresh session."""
@@ -641,6 +643,16 @@ def run_preflight(
         return operation()
 
     subject = step("git-state", lambda: _git_state(repo_root))
+    if prior_transport_dir is not None:
+        if prior_receipts:
+            raise PreflightError("prior transport and legacy receipt inputs are ambiguous")
+        material = step(
+            "prior-transport",
+            lambda: load_provisional_transport(
+                repo_root, prior_transport_dir, current_subject=subject,
+            ),
+        )
+        prior_receipts = provisional_receipts(material)
     try:
         scope = evaluation_scope(
             selected_mode,
@@ -763,8 +775,10 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--format", choices=("text", "json"), default="text")
     args = parser.parse_args(argv)
     try:
-        prior_receipts = load_prior_receipts(
-            args.repo_root, args.prior_evidence_dir, args.prior_evidence_digest
+        prior_receipts = (
+            load_prior_receipts(
+                args.repo_root, args.prior_evidence_dir, args.prior_evidence_digest
+            ) if args.prior_evidence_digest else []
         )
         report = run_preflight(
             args.repo_root,
@@ -780,6 +794,9 @@ def main(argv: list[str] | None = None) -> None:
                 else None
             ),
             prior_receipts=prior_receipts,
+            prior_transport_dir=(
+                args.prior_evidence_dir if args.prior_evidence_digest is None else None
+            ),
         )
     except (OSError, subprocess.SubprocessError, ValueError) as exc:
         raise SystemExit(str(exc)) from exc

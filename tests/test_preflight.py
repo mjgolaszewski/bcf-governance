@@ -614,6 +614,33 @@ def test_broken_project_virtualenv_fails_before_evidence(tmp_path: Path) -> None
         preflight._interpreter_identity(python)
 
 
+def test_wrong_prior_transport_subject_stops_before_evidence_fanout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from tests.test_prior_evidence_receipts import _downloaded
+
+    transport_dir, manifest = _downloaded(tmp_path / "transport")
+    calls: list[str] = []
+    monkeypatch.setattr(
+        preflight, "_git_state",
+        lambda _: {
+            "commit_sha": manifest["main"]["commit_sha"],
+            "tree_sha": "0" * 40,
+        },
+    )
+    monkeypatch.setattr(
+        preflight, "allocate_session",
+        lambda *_, **__: calls.append("allocated"),
+    )
+    with pytest.raises(ValueError, match="main subject is not current"):
+        preflight.run_preflight(
+            REPO_ROOT, mode="pr", python_executable=sys.executable,
+            prior_transport_dir=transport_dir,
+            artifact_root=tmp_path / "evidence", trace=calls.append,
+        )
+    assert calls == ["git-state", "prior-transport"]
+
+
 def test_interpreter_failure_prevents_session_allocation(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -10,7 +10,10 @@ import zipfile
 import pytest
 
 from bcf_governance.tooling.evidence_execution import EvidenceError
-from bcf_governance.tooling.prior_evidence_receipts import load_provisional_transport
+from bcf_governance.tooling.prior_evidence_receipts import (
+    load_provisional_transport,
+    provisional_receipts,
+)
 from tests.test_ci_prior_evidence_auth import _transport
 
 
@@ -36,6 +39,10 @@ def test_observed_transport_is_closed_but_not_authenticated(tmp_path: Path) -> N
     assert len(material.manifest["receipts"]) == 1
     assert len(material.observed_digest) == 64
     assert not hasattr(material, "artifact")
+    receipts = provisional_receipts(material)
+    assert len(receipts) == 1
+    assert receipts[0]["evidence_id"] == "source"
+    assert receipts[0]["artifact_sha256"] == manifest["artifacts"][0]["archive_sha256"]
     with pytest.raises(EvidenceError, match="bundle digest mismatch"):
         load_provisional_transport(
             REPO_ROOT, root, current_subject=manifest["main"],

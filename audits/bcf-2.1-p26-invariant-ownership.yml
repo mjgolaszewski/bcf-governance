@@ -118,9 +118,9 @@ p26_p0_03_dormant_expansion:
 p26_p0_03_activation_prospective:
   status: pre_install_design_gate_not_yet_implemented
   current_gaps:
-  - canonical governance preflight does not consume the same-attempt transport artifact;
-    exact-main creates it, but the governance workflow does not download it;
-    locally observed bytes remain provisional until finalizer provider custody
+  - canonical preflight can consume locally closed transport when explicitly
+    supplied, but the governance workflow does not yet download the same-attempt
+    artifact; locally observed bytes remain provisional until finalizer custody
   - the current prior-receipt loader couples byte/identity validation to the
     current gate contract; an authentic but no-longer-applicable source must
     fall back to execution rather than fail the entire preflight
