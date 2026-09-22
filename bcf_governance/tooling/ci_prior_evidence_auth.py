@@ -7,8 +7,7 @@ import hashlib
 import json
 from typing import Any
 
-from jsonschema import Draft202012Validator, ValidationError
-from referencing import Registry, Resource
+from jsonschema import Draft202012Validator, RefResolver, ValidationError
 
 from .ci_github_artifacts import ProviderArtifact, resolve_role_artifact
 from .ci_github_authority import packaged_repo_root
@@ -34,12 +33,12 @@ def _validate_transport_schema(manifest: dict[str, Any]) -> None:
         reuse = json.loads(reuse_path.read_text(encoding="utf-8"))
         transport["$id"] = transport_path.resolve().as_uri()
         reuse["$id"] = reuse_path.resolve().as_uri()
-        registry = (
-            Registry()
-            .with_resource(transport["$id"], Resource.from_contents(transport))
-            .with_resource(reuse["$id"], Resource.from_contents(reuse))
+        resolver = RefResolver(
+            base_uri=transport["$id"],
+            referrer=transport,
+            store={reuse["$id"]: reuse},
         )
-        Draft202012Validator(transport, registry=registry).validate(manifest)
+        Draft202012Validator(transport, resolver=resolver).validate(manifest)
     except (OSError, ValueError, ValidationError) as exc:
         raise GitHubControllerError("prior transport schema is not exact") from exc
 

@@ -600,7 +600,7 @@
     },
     "scripts/_bcf_runtime/ci_prior_evidence_auth.py": {
       "operation": "copy",
-      "sha256": "1a1be9bdf0398c8873f1e6aef80927310a24d7ae4f1bce8090a1ce8ff8e580c8"
+      "sha256": "5fe5f54592f5ec701b759d8a8da755d29b41a0518f790903ac3e370a1138b29f"
     },
     "scripts/_bcf_runtime/ci_reuse_attestation_verifier.py": {
       "operation": "copy",
