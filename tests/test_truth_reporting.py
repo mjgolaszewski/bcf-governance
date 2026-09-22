@@ -94,6 +94,45 @@ def test_eligible_receipts_are_version_aware_and_preflight_is_optional() -> None
     ) == []
 
 
+def test_provisional_reuse_resolves_only_its_exact_claim() -> None:
+    model = {
+        "claims": {
+            "contract-claim": {
+                "legacy_gate": "contract-test", "execution_group": "python-tests",
+            },
+            "other-claim": {
+                "legacy_gate": "other-test", "execution_group": "other-tests",
+            },
+        },
+        "execution_groups": {
+            "python-tests": {"producer": "test", "claims": ["contract-claim"]},
+            "other-tests": {"producer": "other-test", "claims": ["other-claim"]},
+        },
+    }
+    attestation = {
+        "claim": {
+            "claim_id": "contract-claim", "execution_group_id": "python-tests",
+        },
+        "source_receipt": {"evidence_id": "source-1"},
+        "attestation_id": "a" * 64,
+        "decision": "reuse_admitted",
+    }
+    attestations = {"contract-claim": attestation}
+    selected = list(eligible_receipts(
+        {}, model, "contract-test", set(), reuse_attestations=attestations,
+    ))
+    assert len(selected) == 1
+    assert selected[0]["source"] == "provisional_reuse_v1"
+    assert selected[0]["claim_id"] == "contract-claim"
+    assert list(eligible_receipts(
+        {}, model, "other-test", set(), reuse_attestations=attestations,
+    )) == []
+    attestation["claim"]["execution_group_id"] = "other-tests"
+    assert list(eligible_receipts(
+        {}, model, "contract-test", set(), reuse_attestations=attestations,
+    )) == []
+
+
 def test_grouped_claim_resolver_rejects_unrelated_producer_laundering() -> None:
     model = {
         "claims": {

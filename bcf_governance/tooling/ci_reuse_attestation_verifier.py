@@ -15,7 +15,7 @@ from .ci_github_artifacts import resolve_role_artifact
 from .ci_github_authority import packaged_repo_root
 from .ci_github_identity import GitHubControllerError, MainIdentity
 from .ci_prior_evidence_auth import authenticate_prior_transport
-from .evidence_reuse_attestations import compose_reuse_attestations
+from .evidence_reuse_attestations import compose_reuse_attestations, planned_reuse
 from .evidence_execution import EvidenceError
 from .prior_evidence_transport import _archive_files
 from .provider_reuse_closure import trusted_main_claim_context
@@ -88,31 +88,6 @@ def _same_admission_plan(
     return plan, hashlib.sha256(encoded).hexdigest()
 
 
-def _planned_reuse(plan: dict[str, Any]) -> dict[str, str]:
-    required = plan.get("required_claims")
-    preflight = plan.get("preflight_satisfied_claims")
-    entries = plan.get("reused_evidence")
-    if (not isinstance(required, list) or not isinstance(preflight, list)
-        or not isinstance(entries, list)):
-        raise GitHubControllerError("reuse session claim inventories are invalid")
-    planned: dict[str, str] = {}
-    for entry in entries:
-        if (not isinstance(entry, dict)
-            or set(entry) != {"claim_id", "evidence_id", "artifact_sha256", "reason"}
-            or not isinstance(entry.get("claim_id"), str)
-            or not isinstance(entry.get("evidence_id"), str)
-            or not entry["evidence_id"]
-            or entry.get("reason") != "dependency fingerprints remain applicable"
-            or entry["claim_id"] in planned
-            or entry["claim_id"] not in required
-            or entry["claim_id"] in preflight):
-            raise GitHubControllerError("reuse session skipped-claim inventory is invalid")
-        planned[entry["claim_id"]] = entry["evidence_id"]
-    if list(planned) != sorted(planned):
-        raise GitHubControllerError("reuse session skipped-claim inventory is ambiguous")
-    return planned
-
-
 def verify_same_admission_reuse(
     api: Any, *, repository: str, main: MainIdentity,
     authority: dict[str, Any], run_id: str, run_attempt: int,
@@ -177,7 +152,10 @@ def verify_same_admission_reuse(
         "session_id": session["session_id"], "manifest_sha256": manifest_sha256,
     }:
         raise GitHubControllerError("reuse truth does not bind its exact evidence session")
-    planned = _planned_reuse(session)
+    try:
+        planned = planned_reuse(session)
+    except EvidenceError as exc:
+        raise GitHubControllerError(str(exc)) from exc
     if planned != {
         value["claim"]["claim_id"]: value["source_receipt"]["evidence_id"]
         for value in expected if value["decision"] == "reuse_admitted"

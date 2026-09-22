@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Protocol
 
 from jsonschema import Draft202012Validator, ValidationError
+import yaml  # type: ignore[import-untyped]
 
 from .ci_github_bundle import canonical_json
 from .ci_github_authority import packaged_repo_root
@@ -20,8 +21,9 @@ from .ci_github_identity import MainIdentity
 from .evidence_claims import qualification_equivalence
 from .evidence_execution import EvidenceError
 from .evidence_planning import (
-    build_dependency_manifest, parse_claim_model, receipt_applicability,
+    _tree_entries, build_dependency_manifest, parse_claim_model, receipt_applicability,
 )
+from .prior_evidence_receipts import load_provisional_transport
 
 
 class PriorTransportMaterial(Protocol):
@@ -29,6 +31,32 @@ class PriorTransportMaterial(Protocol):
 
     manifest: dict[str, Any]
     files: dict[str, bytes]
+
+
+def planned_reuse(plan: Mapping[str, Any]) -> dict[str, str]:
+    """Decode one exact, non-preflight skipped-claim inventory."""
+    required = plan.get("required_claims")
+    preflight = plan.get("preflight_satisfied_claims")
+    entries = plan.get("reused_evidence")
+    if (not isinstance(required, list) or not isinstance(preflight, list)
+        or not isinstance(entries, list)):
+        raise EvidenceError("reuse session claim inventories are invalid")
+    planned: dict[str, str] = {}
+    for entry in entries:
+        if (not isinstance(entry, dict)
+            or set(entry) != {"claim_id", "evidence_id", "artifact_sha256", "reason"}
+            or not isinstance(entry.get("claim_id"), str)
+            or not isinstance(entry.get("evidence_id"), str)
+            or not entry["evidence_id"]
+            or entry.get("reason") != "dependency fingerprints remain applicable"
+            or entry["claim_id"] in planned
+            or entry["claim_id"] not in required
+            or entry["claim_id"] in preflight):
+            raise EvidenceError("reuse session skipped-claim inventory is invalid")
+        planned[entry["claim_id"]] = entry["evidence_id"]
+    if list(planned) != sorted(planned):
+        raise EvidenceError("reuse session skipped-claim inventory is ambiguous")
+    return planned
 
 
 def _sha(value: Any) -> str:
@@ -192,3 +220,39 @@ def compose_reuse_attestations(
         if reasons:
             fallback.append(claim_id)
     return attestations, sorted(fallback)
+
+
+def compose_local_reuse(
+    repo_root: Path, transport_dir: Path, session_plan: Mapping[str, Any],
+    current_subject: Mapping[str, Any], *, emitted_at: str,
+) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
+    """Produce provisional truth material; trusted provider recomputation is mandatory."""
+    planned = planned_reuse(session_plan)
+    if not planned:
+        return [], {}
+    material = load_provisional_transport(
+        repo_root, transport_dir, current_subject=current_subject,
+    )
+    main = MainIdentity(
+        repository_id=material.manifest["repository"]["repository_id"],
+        default_branch=material.manifest["merge"]["base_branch"],
+        checkout_sha=str(current_subject["commit_sha"]),
+        tree_sha=str(current_subject["tree_sha"]),
+    )
+    try:
+        contract = yaml.safe_load(
+            (repo_root / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+        )
+        decisions, fallback = compose_reuse_attestations(
+            repo_root, material, main, contract, _tree_entries(repo_root),
+            planned, emitted_at=emitted_at,
+        )
+    except (OSError, ValueError, KeyError, TypeError, yaml.YAMLError) as exc:
+        raise EvidenceError("provisional reuse recomputation failed") from exc
+    admitted = {
+        value["claim"]["claim_id"]: value["source_receipt"]["evidence_id"]
+        for value in decisions if value["decision"] == "reuse_admitted"
+    }
+    if fallback or admitted != planned:
+        raise EvidenceError("planned reuse lacks complete applicable attestations")
+    return decisions, {value["claim"]["claim_id"]: value for value in decisions}

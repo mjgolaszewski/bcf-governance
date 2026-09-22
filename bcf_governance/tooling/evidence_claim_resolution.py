@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Iterable, Iterator
+from typing import Any, Iterable, Iterator, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
@@ -65,6 +65,7 @@ def claim_gate_projection(
 def eligible_claim_receipts(
     receipts: dict[str, list[dict[str, Any]]], model: dict[str, Any], claim_id: str,
     preflight_claims: set[str], *, include_preflight: bool = True,
+    reuse_attestations: Mapping[str, dict[str, Any]] | None = None,
 ) -> Iterator[dict[str, Any]]:
     """Yield validated evidence from the canonical producer for one exact claim."""
     claim = model.get("claims", {}).get(claim_id)
@@ -91,11 +92,31 @@ def eligible_claim_receipts(
             subject = receipt.get("subject")
             if candidate.get("gate_id") == gate_id and isinstance(subject, dict) and subject.get("binding") == "exact_tree":
                 yield candidate
+    attestation = (reuse_attestations or {}).get(claim_id)
+    identity = attestation.get("claim") if isinstance(attestation, dict) else None
+    source = attestation.get("source_receipt") if isinstance(attestation, dict) else None
+    if (
+        isinstance(identity, dict) and isinstance(source, dict)
+        and identity == {
+            "claim_id": claim_id, "execution_group_id": claim["execution_group"],
+        }
+        and attestation.get("decision") == "reuse_admitted"
+        and isinstance(attestation.get("attestation_id"), str)
+        and isinstance(source.get("evidence_id"), str)
+    ):
+        yield {
+            "kind": "reuse_attestation", "source": "provisional_reuse_v1",
+            "gate_id": gate_id, "claim_id": claim_id,
+            "evidence_id": source["evidence_id"],
+            "attestation_id": attestation["attestation_id"],
+            "result": "provisional", "issues": [],
+        }
 
 
 def eligible_receipts(
     receipts: dict[str, list[dict[str, Any]]], model: dict[str, Any], gate_id: str,
     preflight_claims: set[str], *, include_preflight: bool = True,
+    reuse_attestations: Mapping[str, dict[str, Any]] | None = None,
 ) -> Iterator[dict[str, Any]]:
     """Resolve one legacy gate through its unique canonical claim identity."""
     claim_ids = [str(claim_id) for claim_id, raw in model.get("claims", {}).items()
@@ -111,24 +132,33 @@ def eligible_receipts(
         yield from eligible_claim_receipts(
             receipts, model, claim_ids[0], preflight_claims,
             include_preflight=include_preflight,
+            reuse_attestations=reuse_attestations,
         )
 
 
 def verified_candidate(
     receipts: dict[str, list[dict[str, Any]]], model: dict[str, Any], gate_id: str,
     preflight_claims: set[str],
+    reuse_attestations: Mapping[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any] | None:
-    return next(eligible_receipts(receipts, model, gate_id, preflight_claims), None)
+    return next(eligible_receipts(
+        receipts, model, gate_id, preflight_claims,
+        reuse_attestations=reuse_attestations,
+    ), None)
 
 
 def resolved_session_claims(
     receipts: dict[str, list[dict[str, Any]]], model: dict[str, Any] | None,
     preflight_claims: set[str], required_claims: Iterable[object],
+    reuse_attestations: Mapping[str, dict[str, Any]] | None = None,
 ) -> set[str]:
     if model is None:
         return set()
     return {
         claim_id for claim_id in required_claims if isinstance(claim_id, str)
-        and next(eligible_claim_receipts(receipts, model, claim_id, preflight_claims), None)
+        and next(eligible_claim_receipts(
+            receipts, model, claim_id, preflight_claims,
+            reuse_attestations=reuse_attestations,
+        ), None)
         is not None
     }
