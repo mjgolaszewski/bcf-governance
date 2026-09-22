@@ -686,6 +686,36 @@ def test_interpreter_failure_prevents_session_allocation(
     assert calls == ["git-state", "syntax", "exposure", "interpreter"]
 
 
+def test_undeclared_runtime_import_stops_full_preflight_before_evidence(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[str] = []
+    repo = tmp_path / "repo"
+    tooling = repo / "bcf_governance/tooling"
+    tooling.mkdir(parents=True)
+    (tooling / "owner.py").write_text("import referencing\n", encoding="utf-8")
+    (repo / "pyproject.toml").write_text(
+        "[project]\nname='fixture'\nversion='1.0.0'\ndependencies=[]\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(preflight, "_git_state", lambda _: {})
+    monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
+    monkeypatch.setattr(preflight, "_exposure_scan", lambda _: {})
+    monkeypatch.setattr(
+        preflight, "allocate_session", lambda *_, **__: calls.append("allocated")
+    )
+
+    with pytest.raises(preflight.PreflightError, match="undeclared.*referencing"):
+        preflight.run_preflight(
+            repo,
+            mode="pr",
+            python_executable=sys.executable,
+            artifact_root=tmp_path / "evidence",
+            trace=calls.append,
+        )
+    assert calls == ["git-state", "syntax", "exposure", "interpreter"]
+
+
 def test_deterministic_failure_prevents_session_allocation(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
