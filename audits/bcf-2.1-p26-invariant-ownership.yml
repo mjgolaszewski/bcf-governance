@@ -115,6 +115,47 @@ p26_p0_03_dormant_expansion:
   - no evidence producer is skipped by this expansion
   - no candidate-attested reuse reaches certification without trusted recomputation
   - release authority and P26 parent closure remain absent
+p26_p0_03_activation_prospective:
+  status: pre_install_design_gate_not_yet_implemented
+  current_gaps:
+  - canonical governance preflight does not consume the same-attempt transport artifact;
+    exact-main creates it, but the governance workflow does not download it
+  - current truth resolves required claims through current-session receipts only;
+    a legitimately skipped producer therefore cannot close its reused claims
+  - the dormant trusted verifier recomputes claims listed in the truth report but
+    does not yet prove that list equals the session plan's exact reused-claim set
+  required_sequence:
+  - merge the dormant transport expansion without activating reuse
+  - expand every remaining trusted runtime consumer while reuse remains dormant;
+    do not rotate the incomplete expansion as the final activation controller
+  - prospectively prove the complete final runtime closure, then rotate that
+    exact provider-built controller by ordinary bootstrap, probe, and confirmation
+  - activate transport download, selective execution, typed truth, and the
+    P26-P0-03 bounded target only after compatible installation
+  pre_push_chain:
+    preflight: authenticate exact transport bytes and admission subject before
+      planning; missing, stale, or ambiguous material cannot suppress a producer
+    controller_compatibility: dormant expansion is pending rotation under N;
+      activation requires ordinary-current N+1 with the complete runtime closure
+    pr_evidence: direct PRs continue complete ordinary execution and certification
+    certification: provisional candidate reuse cannot publish status without
+      trusted same-admission recomputation of the exact skipped-claim inventory
+    merge: protection and bcf/pr-certification remain unchanged
+    exact_main: admission produces exact transport; only applicable claim groups
+      may be skipped and every unresolved group executes canonically
+    controller_lifecycle: no activation before exact artifact bootstrap, two-runner
+      probe, confirmation, projection, and ordinary-current normalization
+    bounded_truth: current receipts and authenticated reused-claim attestations
+      resolve through one claim-aware owner; unrelated claims cannot be laundered
+    finalizer: independently compare subject, run, attempt, producer, transport,
+      main closure, and the session plan's complete reused-claim set
+    publisher: publish only authenticated workitem-scoped success or revocation
+    successor_eligibility: only authenticated P26-P0-03 closure may make P26-P0-04
+      eligible; P26 remains active and release authority remains absent
+  partial_group_rule: if any claim in a group is unresolved, its canonical producer
+    executes; current receipts and reuse decisions must not double-credit claims
+  fast_fail_rule: structurally missing transport wiring, non-exhaustive reused
+    inventories, and impossible producer plans reject before evidence fan-out
 corrective_insertion:
   exact_main_failure:
     run: 35387324770
