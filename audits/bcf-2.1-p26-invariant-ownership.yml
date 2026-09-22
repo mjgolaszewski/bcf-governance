@@ -122,8 +122,8 @@ p26_p0_03_activation_prospective:
     exact-main creates it, but the governance workflow does not download it
   - current truth resolves required claims through current-session receipts only;
     a legitimately skipped producer therefore cannot close its reused claims
-  - truth does not yet emit an exact session binding, so the local dormant
-    verifier's provider-session and complete skipped-claim checks are not live
+  - truth binds raw session bytes when reuse is planned, but does not yet emit
+    attestations or resolve their typed claims, so reuse remains inactive
   required_sequence:
   - merge the dormant transport expansion without activating reuse
   - expand every remaining trusted runtime consumer while reuse remains dormant;

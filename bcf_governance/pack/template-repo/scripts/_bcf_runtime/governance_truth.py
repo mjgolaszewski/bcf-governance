@@ -32,6 +32,7 @@ from .truth_reporting import (
     active_log_path,
     current_subject,
     current_session_plan,
+    exact_session_binding,
     failure_envelope,
     profile_closeout_requirements,
     verified_candidate,
@@ -279,6 +280,10 @@ def derive_truth(
         current_session_plan(evidence_dir, current)
         if contract_version == "3.0"
         else {}
+    )
+    reuse_session_binding = (
+        exact_session_binding(evidence_dir, current, session_plan)
+        if session_plan.get("reused_evidence") else None
     )
     preflight_claims = {
         str(value)
@@ -721,6 +726,8 @@ def derive_truth(
         "issues": final_issues,
         "failure_envelope": envelope,
         "advisory_metrics": advisory_metrics,
+        **({"reuse_session_binding": reuse_session_binding}
+           if reuse_session_binding is not None else {}),
     }
 
 

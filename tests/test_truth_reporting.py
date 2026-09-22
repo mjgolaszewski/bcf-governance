@@ -1,13 +1,36 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 
+import pytest
+
 from bcf_governance.tooling.truth_reporting import (
+    exact_session_binding,
     eligible_claim_receipts,
     eligible_receipts,
     failure_envelope,
 )
+
+
+def test_reuse_truth_binds_exact_consumed_session_bytes(tmp_path: Path) -> None:
+    subject = {"commit_sha": "a" * 40, "tree_sha": "b" * 40}
+    plan = {"session_id": "c" * 32, "subject": subject, "reused_evidence": []}
+    encoded = (json.dumps(plan, sort_keys=True) + "\n").encode()
+    for name in ("first", "same-copy"):
+        directory = tmp_path / name
+        directory.mkdir()
+        (directory / "evidence-session.json").write_bytes(encoded)
+    assert exact_session_binding(tmp_path, subject, plan) == {
+        "session_id": "c" * 32,
+        "manifest_sha256": hashlib.sha256(encoded).hexdigest(),
+    }
+    (tmp_path / "same-copy/evidence-session.json").write_bytes(
+        json.dumps(plan, indent=2).encode()
+    )
+    with pytest.raises(ValueError, match="ambiguous evidence-session bytes"):
+        exact_session_binding(tmp_path, subject, plan)
 
 
 def _plan() -> dict:
