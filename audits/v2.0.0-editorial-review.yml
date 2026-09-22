@@ -4,7 +4,7 @@ document:
   id: bcf-governance-v2.0.0-editorial-review
   status: completed
   path: audits/v2.0.0-editorial-review.yml
-base_commit: ae80b0606b6d92f48c9c7f4f69919810d1ee286e
+base_commit: e2339f2623edcdd1b0faf7ff1f74c1029dc14c12
 inventory_policy:
   source_documents: tracked Markdown and root LICENSE from base union current tree
   packaged_mirror_root: bcf_governance/pack/template-repo
