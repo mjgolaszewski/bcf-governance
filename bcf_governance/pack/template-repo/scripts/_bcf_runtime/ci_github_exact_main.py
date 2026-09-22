@@ -28,6 +28,7 @@ from .ci_github_bundle import (
     write_exclusive,
 )
 from .ci_exact_main_truth import authenticated_exact_main_truth
+from .ci_reuse_attestation_verifier import verify_same_admission_reuse
 from .ci_github_identity import (
     GitHubControllerError,
     resolve_main,
@@ -244,6 +245,11 @@ def finalize_exact_main(
         authority=authority,
         run_id=admission_run_id,
         run_attempt=admission_attempt,
+    )
+    verify_same_admission_reuse(
+        api, repository=repository, main=main, authority=authority,
+        run_id=admission_run_id, run_attempt=admission_attempt,
+        truth_report=truth_report, repo_root=packaged_repo_root(),
     )
     raw_scope = truth_report.get("evaluation_scope")
     if not isinstance(raw_scope, dict):

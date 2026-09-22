@@ -59,6 +59,11 @@ def _canonical_sha256(value: object) -> str:
 def load_claim_model(repo_root: Path) -> dict[str, Any]:
     path = repo_root / "governance/gate-contracts.yml"
     payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    return parse_claim_model(payload)
+
+
+def parse_claim_model(payload: object) -> dict[str, Any]:
+    """Validate one canonical claim declaration, including provider-read bytes."""
     model = payload.get("claim_model") if isinstance(payload, dict) else None
     gates = payload.get("gates") if isinstance(payload, dict) else None
     if not isinstance(model, dict) or model.get("version") != "1.0":
@@ -217,23 +222,28 @@ def _matches(path: str, pattern: str) -> bool:
 
 
 def dependency_fingerprint(
-    repo_root: Path, patterns: Iterable[str], *, ref: str = "HEAD"
+    repo_root: Path, patterns: Iterable[str], *, ref: str = "HEAD",
+    tree_entries: Iterable[tuple[str, str]] | None = None,
 ) -> tuple[str, list[str]]:
     selected = sorted(
         (path, object_id)
-        for path, object_id in _tree_entries(repo_root, ref)
+        for path, object_id in (
+            _tree_entries(repo_root, ref) if tree_entries is None else tree_entries
+        )
         if any(_matches(path, pattern) for pattern in patterns)
     )
     return _canonical_sha256(selected), [path for path, _ in selected]
 
 
 def build_dependency_manifest(
-    repo_root: Path, claim_ids: Iterable[str]
+    repo_root: Path, claim_ids: Iterable[str], *,
+    model: Mapping[str, Any] | None = None,
+    tree_entries: Iterable[tuple[str, str]] | None = None,
 ) -> dict[str, Any]:
     selected_claims = sorted(set(str(value) for value in claim_ids))
     if not selected_claims:
         raise EvidenceError("dependency manifest requires at least one claim")
-    model = load_claim_model(repo_root)
+    model = load_claim_model(repo_root) if model is None else model
     patterns = _patterns_for_claims(model, selected_claims)
     claim_dependencies: dict[str, list[dict[str, Any]]] = {}
     for claim_id in selected_claims:
@@ -241,7 +251,7 @@ def build_dependency_manifest(
         claim_dependencies[claim_id] = []
         for dependency_class in DEPENDENCY_CLASSES:
             digest, paths = dependency_fingerprint(
-                repo_root, claim_patterns[dependency_class]
+                repo_root, claim_patterns[dependency_class], tree_entries=tree_entries
             )
             claim_dependencies[claim_id].append(
                 {
@@ -254,7 +264,7 @@ def build_dependency_manifest(
     classes: list[dict[str, Any]] = []
     for dependency_class in DEPENDENCY_CLASSES:
         digest, paths = dependency_fingerprint(
-            repo_root, patterns[dependency_class]
+            repo_root, patterns[dependency_class], tree_entries=tree_entries
         )
         classes.append(
             {
@@ -276,14 +286,28 @@ def build_dependency_manifest(
 
 
 def receipt_applicability(
-    repo_root: Path, receipt: Mapping[str, Any], claim_id: str
+    repo_root: Path, receipt: Mapping[str, Any], claim_id: str, *,
+    current_subject: Mapping[str, str] | None = None,
+    model: Mapping[str, Any] | None = None,
+    tree_entries: Iterable[tuple[str, str]] | None = None,
 ) -> tuple[bool, list[str]]:
-    current_commit = _git(repo_root, "rev-parse", "HEAD")
-    current_tree = _git(repo_root, "rev-parse", "HEAD^{tree}")
+    provider_context = any(value is not None for value in (current_subject, model, tree_entries))
+    if provider_context and any(value is None for value in (current_subject, model, tree_entries)):
+        raise EvidenceError("provider claim applicability context must be complete")
+    current_commit = (
+        str(current_subject["commit_sha"]) if current_subject is not None
+        else _git(repo_root, "rev-parse", "HEAD")
+    )
+    current_tree = (
+        str(current_subject["tree_sha"]) if current_subject is not None
+        else _git(repo_root, "rev-parse", "HEAD^{tree}")
+    )
     subject = receipt.get("subject")
     if not isinstance(subject, dict):
         return False, ["dependency_closure_ambiguous"]
     if receipt.get("schema_version") == "2.0":
+        if provider_context:
+            return False, ["legacy_evidence_exact_subject_only"]
         mapped_claims = claims_for_legacy_gate(repo_root, str(receipt.get("gate_id", "")))
         if (
             receipt.get("result") == "passed"
@@ -306,7 +330,7 @@ def receipt_applicability(
         or sorted(manifest.get("claims", [])) != sorted(claims)
     ):
         return False, ["dependency_closure_ambiguous"]
-    model = load_claim_model(repo_root)
+    model = load_claim_model(repo_root) if model is None else model
     claim = model["claims"].get(claim_id)
     group = (
         model["execution_groups"].get(claim.get("execution_group"))
@@ -338,7 +362,9 @@ def receipt_applicability(
         if raw["patterns"] != declared_patterns[dependency_class]:
             reasons.append("dependency_closure_ambiguous")
             continue
-        expected, paths = dependency_fingerprint(repo_root, raw["patterns"])
+        expected, paths = dependency_fingerprint(
+            repo_root, raw["patterns"], tree_entries=tree_entries,
+        )
         if raw.get("paths") != paths:
             reasons.extend(INVALIDATION_BY_CLASS[dependency_class])
         elif raw.get("fingerprint") != expected:
@@ -447,11 +473,36 @@ def qualification_applicability(
     return True
 
 
-def _changed_paths(repo_root: Path, prior_commit: str | None) -> list[str] | None:
+def _changed_paths(
+    repo_root: Path, prior_commit: str | None, prior_tree: str | None = None,
+) -> list[str] | None:
     if not prior_commit:
         return []
+    if prior_tree is not None and re.fullmatch(r"[a-f0-9]{40,64}", prior_tree) is None:
+        return None
+    source = prior_commit
+    commit_tree = subprocess.run(
+        ["git", "rev-parse", f"{prior_commit}^{{tree}}"], cwd=repo_root,
+        capture_output=True, text=True, check=False,
+    )
+    if commit_tree.returncode == 0:
+        if prior_tree is not None and commit_tree.stdout.strip() != prior_tree:
+            return None
+    else:
+        if prior_tree is None:
+            return None
+        tree_type = subprocess.run(
+            ["git", "cat-file", "-t", prior_tree], cwd=repo_root,
+            capture_output=True, text=True, check=False,
+        )
+        if tree_type.returncode or tree_type.stdout.strip() != "tree":
+            return None
+        # A transported receipt can name an execution commit absent from this
+        # clone.  Git tree identity still permits an exact path diff; this
+        # planning fact alone never certifies reuse or provider custody.
+        source = prior_tree
     result = subprocess.run(
-        ["git", "diff", "--name-only", prior_commit, "HEAD"],
+        ["git", "diff", "--name-only", source, "HEAD"],
         cwd=repo_root,
         capture_output=True,
         text=True,
@@ -475,18 +526,23 @@ def plan_verification(
         "tree_sha": _git(repo_root, "rev-parse", "HEAD^{tree}"),
     }
     receipts = [dict(value) for value in prior_receipts]
-    prior_commits = sorted(
-        {
-            str(subject["commit_sha"])
-            for receipt in receipts
-            if isinstance((subject := receipt.get("subject")), dict)
-            and isinstance(subject.get("commit_sha"), str)
-        }
-    )
+    prior_subjects = {
+        (str(subject["commit_sha"]), subject.get("tree_sha") if isinstance(subject.get("tree_sha"), str) else None)
+        for receipt in receipts
+        if isinstance((subject := receipt.get("subject")), dict)
+        and isinstance(subject.get("commit_sha"), str)
+    }
+    prior_commits = sorted({commit for commit, _ in prior_subjects})
     prior_subject = {"commit_sha": prior_commits[0]} if len(prior_commits) == 1 else None
-    change_sets = [_changed_paths(repo_root, commit) for commit in prior_commits]
+    change_sets = [
+        _changed_paths(repo_root, commit, tree)
+        for commit, tree in sorted(prior_subjects, key=lambda value: (value[0], value[1] or ""))
+    ]
     changed = sorted({path for values in change_sets if values for path in values})
-    change_ambiguity = any(values is None for values in change_sets)
+    change_ambiguity = (
+        len(prior_subjects) != len(prior_commits)
+        or any(values is None for values in change_sets)
+    )
     routable_claims = [
         claim_id for claim_id in required
         if model["execution_groups"][model["claims"][claim_id]["execution_group"]].get(
@@ -643,101 +699,18 @@ def plan_verification(
 def load_prior_receipts(
     repo_root: Path, evidence_dir: Path | None, expected_digest: str | None
 ) -> list[Mapping[str, Any]]:
-    """Load only a caller-authenticated, closed prior-evidence directory."""
-    if evidence_dir is None:
-        if expected_digest is not None:
-            raise EvidenceError("prior evidence digest requires --prior-evidence-dir")
-        return []
-    if not re.fullmatch(r"[a-f0-9]{64}", expected_digest or ""):
-        raise EvidenceError("prior evidence requires an authenticated SHA-256 digest")
-    if evidence_dir.is_symlink() or not evidence_dir.is_dir():
-        raise EvidenceError("prior evidence directory is unsafe")
-    root = evidence_dir.resolve()
-    files = sorted(path for path in root.rglob("*") if path.is_file() and not path.is_symlink())
-    material = [
-        (path.relative_to(root).as_posix(), hashlib.sha256(path.read_bytes()).hexdigest())
-        for path in files
-    ]
-    observed = _canonical_sha256(material)
-    if observed != expected_digest:
-        raise EvidenceError("prior evidence bundle digest mismatch")
-    receipt_files = [path for path in files if path.name.endswith(".evidence.json")]
-    if not receipt_files:
-        return []
-    for path in receipt_files:
-        try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-            raise EvidenceError(f"prior evidence receipt is invalid: {path.name}") from exc
-        if not isinstance(payload, dict):
-            raise EvidenceError(f"prior evidence receipt is not an object: {path.name}")
-    from .truth_receipts import ReceiptError, load_receipts
+    """Decode caller-authenticated prior evidence without owning its format."""
+    from .prior_evidence_receipts import load_prior_receipts as decode
 
-    repo_root = repo_root.resolve()
-    contract = yaml.safe_load(
-        (repo_root / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    return decode(
+        repo_root, evidence_dir, expected_digest,
+        current_subject={
+            "commit_sha": _git(repo_root, "rev-parse", "HEAD"),
+            "tree_sha": _git(repo_root, "rev-parse", "HEAD^{tree}"),
+            "tracked_clean": True,
+            "untracked_clean": True,
+        } if evidence_dir is not None else None,
     )
-    gates = contract.get("gates") if isinstance(contract, dict) else None
-    if not isinstance(gates, dict):
-        raise EvidenceError("prior evidence cannot resolve gate contracts")
-    expected_kinds = {
-        gate_id: str(gate.get("evidence", {}).get("kind", "gate"))
-        for gate_id, gate in gates.items()
-        if isinstance(gate, dict)
-    }
-    invocations = {
-        gate_id: gate["invocation"]
-        for gate_id, gate in gates.items()
-        if isinstance(gate, dict) and isinstance(gate.get("invocation"), dict)
-    }
-    current = {
-        "commit_sha": _git(repo_root, "rev-parse", "HEAD"),
-        "tree_sha": _git(repo_root, "rev-parse", "HEAD^{tree}"),
-        "tracked_clean": True,
-        "untracked_clean": True,
-    }
-    try:
-        validated = load_receipts(
-            repo_root,
-            root,
-            current,
-            require_negative_control=False,
-            tree_independent_allowlist=set(),
-            expected_kinds=expected_kinds,
-            invocations=invocations,
-            contract_version="3.0",
-        )
-    except (ReceiptError, OSError, ValueError) as exc:
-        raise EvidenceError("prior evidence receipt validation failed") from exc
-    results = [result for values in validated.values() for result in values]
-    invalid = [result for result in results if result.get("result") != "verified"]
-    structural_issues: set[str] = set()
-    for result in invalid:
-        issues = set(result.get("issues", []))
-        invalidation = result.get("invalidation")
-        applicability = set(
-            invalidation.get("reasons", [])
-            if isinstance(invalidation, dict)
-            else []
-        )
-        if "freshness_expired" in applicability:
-            applicability.add("evidence_freshness_expired")
-        if (result.get("receipt") or {}).get("schema_version") == "2.0":
-            applicability.update(
-                {"commit_sha_not_current_head", "tree_sha_not_current_tree"}
-            )
-        structural_issues.update(issues - applicability)
-    if structural_issues:
-        raise EvidenceError(
-            "prior evidence receipt validation failed: "
-            + ", ".join(sorted(structural_issues))
-        )
-    receipts: list[Mapping[str, Any]] = []
-    for result in results:
-        payload = dict(result["receipt"])
-        payload["artifact_sha256"] = result["artifact_sha256"]
-        receipts.append(payload)
-    return receipts
 
 
 def verification_plan(

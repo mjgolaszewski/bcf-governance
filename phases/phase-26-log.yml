@@ -102,6 +102,12 @@ execution_evidence:
     both later TODO workitems were independently eligible. The authored workitem
     ledger now binds P26-P0-03 to P26-P0-02 and P26-P0-04 to P26-P0-03 without
     changing lifecycle or certification semantics.
+  - >-
+    P26-P0-03 expands a dormant, canonical main-side reuse decision and trusted
+    finalizer verifier. The provider transport's exact manifest and source bytes,
+    current main Git tree and claim contract, qualification controls, and same-run
+    admission are recomputed independently before any future reuse certification.
+    No exact-main producer topology or bounded workitem target is activated here.
 closeout_requirements:
   claims:
     workitems_closed:
@@ -134,5 +140,6 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- protect and certify the successor-dependency ledger correction; require fresh exact-main
-  bounded P26-P0-02 truth to authorize only P26-P0-03 eligibility before P26-03 work
+- certify the dormant P26-P0-03 compatibility expansion, rotate its provider-built
+  controller through ordinary custody, then activate only after exact-main confirms
+  P26-P0-02 closure and P26-P0-03 eligibility under that controller

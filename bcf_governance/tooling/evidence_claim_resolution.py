@@ -15,6 +15,13 @@ def load_claim_gate_projection(
     payload = yaml.safe_load(
         (repo_root / "governance/gate-contracts.yml").read_text(encoding="utf-8")
     )
+    return claim_gate_projection(payload, claim_ids)
+
+
+def claim_gate_projection(
+    payload: object, claim_ids: Iterable[str],
+) -> dict[str, dict[str, Any]]:
+    """Project the same owner from exact provider-read contract bytes."""
     model = payload.get("claim_model") if isinstance(payload, dict) else None
     gates = payload.get("gates") if isinstance(payload, dict) else None
     claims = model.get("claims") if isinstance(model, dict) else None

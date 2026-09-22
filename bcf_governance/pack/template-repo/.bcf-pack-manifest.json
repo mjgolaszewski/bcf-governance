@@ -444,7 +444,7 @@
     },
     "scripts/_bcf_runtime/ci_github_api.py": {
       "operation": "copy",
-      "sha256": "44ecaa6f43a661723221227c05114ad1bb25f0b5385444c6c57a5f282c03d642"
+      "sha256": "987e23b72ef970d201b538321ff8a0b5fdce02cfdba93fa450b74760f341fa35"
     },
     "scripts/_bcf_runtime/ci_github_artifacts.py": {
       "operation": "copy",
@@ -492,7 +492,7 @@
     },
     "scripts/_bcf_runtime/ci_github_exact_main.py": {
       "operation": "copy",
-      "sha256": "99c19b3231a0f8312cbdf4780f5954a1c43c7e4426f8fcb04cb727a9cc430247"
+      "sha256": "9d60019444d10fb709b05ff3e9a163e0064b5b812ca9612f1f4690fd0333956f"
     },
     "scripts/_bcf_runtime/ci_github_extension_commands.py": {
       "operation": "copy",
@@ -598,6 +598,14 @@
       "operation": "copy",
       "sha256": "317ca35eb96b79ac5d28c7f0f7a01068f4f841b70fb848cb9f3395b4804e88ce"
     },
+    "scripts/_bcf_runtime/ci_prior_evidence_auth.py": {
+      "operation": "copy",
+      "sha256": "1a1be9bdf0398c8873f1e6aef80927310a24d7ae4f1bce8090a1ce8ff8e580c8"
+    },
+    "scripts/_bcf_runtime/ci_reuse_attestation_verifier.py": {
+      "operation": "copy",
+      "sha256": "84c4b6701415a7e743c92335341d4a6f50481b6bcbebf2580dc0b7588400a1eb"
+    },
     "scripts/_bcf_runtime/ci_self_controller.py": {
       "operation": "copy",
       "sha256": "fd9169453b79253759ef9a059f543c8af53d53e3b8674a21ebfcc865588f9705"
@@ -624,11 +632,11 @@
     },
     "scripts/_bcf_runtime/evidence_claim_resolution.py": {
       "operation": "copy",
-      "sha256": "924f254a5fabf52b830210297c916280a6ffd5e148efe3f950eae4117b6d315f"
+      "sha256": "baef9daf13477b6eefb8a2cecbe2b1d1c82687da17928be01918fb1b1c91d11d"
     },
     "scripts/_bcf_runtime/evidence_claims.py": {
       "operation": "copy",
-      "sha256": "378feddaa0d20b4a8833b86bc0c3fece057340e70fe5df6c2294e37e2d78a58d"
+      "sha256": "d2b67028262f96bde9b6f154c746ef2f1ec9f24c3815a6db14457e2ca4d086bb"
     },
     "scripts/_bcf_runtime/evidence_execution.py": {
       "operation": "copy",
@@ -640,7 +648,11 @@
     },
     "scripts/_bcf_runtime/evidence_planning.py": {
       "operation": "copy",
-      "sha256": "fe47e359b475dd224c93d22393f7ffacc069091ce0e12d280afa5b165a751e16"
+      "sha256": "c228b9dc134267f8a9b8149e3638de42168eec885e77b6ea6051f4e8cb2b196b"
+    },
+    "scripts/_bcf_runtime/evidence_reuse_attestations.py": {
+      "operation": "copy",
+      "sha256": "1bf0959baf09eda0cc30cfddd87180a88e31cf0b81d5deeffa90bc5ac3573b0e"
     },
     "scripts/_bcf_runtime/evidence_session_cleanup.py": {
       "operation": "copy",
@@ -862,6 +874,10 @@
       "operation": "copy",
       "sha256": "bc97acd743e9c3466ee922032840cf65e86edcf2fafeb1c33f942be92bccfe3c"
     },
+    "scripts/_bcf_runtime/prior_evidence_receipts.py": {
+      "operation": "copy",
+      "sha256": "1bd463f4af54c4ca60e5b2f368741e4df483739d45c06605f559f52d3da5cfda"
+    },
     "scripts/_bcf_runtime/prior_evidence_transport.py": {
       "operation": "copy",
       "sha256": "32e89b9c63736e437a5b1115caa39151162682f4822ddf3988ab5dc78ffb3a0b"
@@ -889,6 +905,10 @@
     "scripts/_bcf_runtime/protection_inspection_client.py": {
       "operation": "copy",
       "sha256": "cf494b7d1ffbc69f3c279ae1139fa555f40652777db2b601a835c54dcd06225e"
+    },
+    "scripts/_bcf_runtime/provider_reuse_closure.py": {
+      "operation": "copy",
+      "sha256": "97bfa742d9363089e89a1a77d42d629a490e7cba24b73210a690a5f5df06bb6f"
     },
     "scripts/_bcf_runtime/public_contracts.py": {
       "operation": "copy",

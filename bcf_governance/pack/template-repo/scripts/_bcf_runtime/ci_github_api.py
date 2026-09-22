@@ -288,6 +288,30 @@ class GitHubAPI:
             raise GitHubAPIError("commit response must be an object")
         return value
 
+    def complete_tree(self, repository: str, tree_sha: str) -> tuple[tuple[str, str], ...]:
+        """Read exact provider blob OIDs, rejecting truncated or ambiguous trees."""
+        exact = _sha(tree_sha, field="tree SHA")
+        value = self._request(
+            "GET", f"/repos/{self._repository(repository)}/git/trees/{exact}?recursive=1"
+        )
+        if (not isinstance(value, dict) or value.get("sha") != exact
+            or value.get("truncated") is not False or not isinstance(value.get("tree"), list)):
+            raise GitHubAPIError("provider Git tree is incomplete or mismatched")
+        blobs: dict[str, str] = {}
+        for entry in value["tree"]:
+            if not isinstance(entry, dict) or entry.get("type") not in {"blob", "tree"}:
+                raise GitHubAPIError("provider Git tree entry is invalid")
+            if entry["type"] != "blob":
+                continue
+            path = entry.get("path")
+            if (not isinstance(path, str) or not path or path.startswith("/")
+                or ".." in path.split("/") or path in blobs):
+                raise GitHubAPIError("provider Git tree blob path is unsafe or duplicated")
+            blobs[path] = _sha(entry.get("sha"), field="tree blob SHA")
+        if not blobs:
+            raise GitHubAPIError("provider Git tree has no blobs")
+        return tuple(sorted(blobs.items()))
+
     def reference(self, repository: str, ref: str) -> dict[str, Any]:
         if not ref or ".." in ref or not re.fullmatch(r"[A-Za-z0-9._/-]+", ref):
             raise GitHubAPIError("Git reference is unsafe")
