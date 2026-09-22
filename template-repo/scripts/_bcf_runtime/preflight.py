@@ -35,7 +35,7 @@ from .interpreter_environment import (
     verify_interpreter_environment_projection,
 )
 from .prior_evidence_receipts import load_provisional_transport, provisional_receipts
-from .preflight_negative_controls import (
+from .governance_validation.preflight_negative_controls import (
     NegativeControlPreflightError,
     inspect_negative_control_targets,
 )

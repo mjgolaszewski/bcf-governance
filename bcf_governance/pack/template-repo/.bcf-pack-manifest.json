@@ -830,6 +830,10 @@
       "operation": "copy",
       "sha256": "a4300f9fc4d3b7ac350c8ffc75a37647dc190d9f3ca0b8ef722d0ffed4c4f3dd"
     },
+    "scripts/_bcf_runtime/governance_validation/preflight_negative_controls.py": {
+      "operation": "copy",
+      "sha256": "ecab4420507629ea95148b53e7094fe25ea1c9ba6bc2847ea0087092e028a16a"
+    },
     "scripts/_bcf_runtime/governance_validation/release_gates.py": {
       "operation": "copy",
       "sha256": "80e29a2d5c08b35c98730ad9fd03e464c9f68e598ee178688913b4406795c630"
@@ -872,11 +876,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "cbb8db0923e8693f16efcb4fc775ee0a539bca6c219a9e511d040bdadd19b07b"
-    },
-    "scripts/_bcf_runtime/preflight_negative_controls.py": {
-      "operation": "copy",
-      "sha256": "25b5a7349819d62de3514852ffbecd26204521247c064a44088c05c9e3b21707"
+      "sha256": "53cb1b647e496f3685860db830adb40c283a8c7c3dd4ec2d3d0c46cd03350fce"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",

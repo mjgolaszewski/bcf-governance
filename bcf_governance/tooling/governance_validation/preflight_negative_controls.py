@@ -7,7 +7,7 @@ from typing import Any, Callable
 
 import yaml  # type: ignore[import-untyped]
 
-from .yaml_mutations import YAMLMutationPathError, resolve_yaml_target, typed_mutation_value
+from ..yaml_mutations import YAMLMutationPathError, resolve_yaml_target, typed_mutation_value
 
 
 class NegativeControlPreflightError(ValueError):
