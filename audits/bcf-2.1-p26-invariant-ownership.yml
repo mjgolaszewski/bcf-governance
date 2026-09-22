@@ -119,7 +119,11 @@ p26_p0_03_activation_prospective:
   status: pre_install_design_gate_not_yet_implemented
   current_gaps:
   - canonical governance preflight does not consume the same-attempt transport artifact;
-    exact-main creates it, but the governance workflow does not download it
+    exact-main creates it, but the governance workflow does not download it or
+    carry an independently checked outer byte digest into planning
+  - the current prior-receipt loader couples byte/identity validation to the
+    current gate contract; an authentic but no-longer-applicable source must
+    fall back to execution rather than fail the entire preflight
   - current truth resolves required claims through current-session receipts only;
     a legitimately skipped producer therefore cannot close its reused claims
   - truth binds raw session bytes when reuse is planned, but does not yet emit
@@ -133,8 +137,9 @@ p26_p0_03_activation_prospective:
   - activate transport download, selective execution, typed truth, and the
     P26-P0-03 bounded target only after compatible installation
   pre_push_chain:
-    preflight: authenticate exact transport bytes and admission subject before
-      planning; missing, stale, or ambiguous material cannot suppress a producer
+    preflight: close exact transport bytes and admission subject before planning;
+      untrusted local custody is provisional, and missing, stale, or ambiguous
+      material cannot suppress a producer
     controller_compatibility: dormant expansion is pending rotation under N;
       activation requires ordinary-current N+1 with the complete runtime closure
     pr_evidence: direct PRs continue complete ordinary execution and certification

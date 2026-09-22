@@ -10,19 +10,25 @@ from datetime import datetime
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Protocol
 
 from jsonschema import Draft202012Validator, ValidationError
 
 from .ci_github_bundle import canonical_json
 from .ci_github_authority import packaged_repo_root
 from .ci_github_identity import MainIdentity
-from .ci_prior_evidence_auth import AuthenticatedPriorTransport
 from .evidence_claims import qualification_equivalence
 from .evidence_execution import EvidenceError
 from .evidence_planning import (
     build_dependency_manifest, parse_claim_model, receipt_applicability,
 )
+
+
+class PriorTransportMaterial(Protocol):
+    """Byte material only; implementing this shape does not confer custody."""
+
+    manifest: dict[str, Any]
+    files: dict[str, bytes]
 
 
 def _sha(value: Any) -> str:
@@ -53,7 +59,7 @@ def _rejection_reasons(
 
 
 def compose_reuse_attestations(
-    repo_root: Path, transport: AuthenticatedPriorTransport, main: MainIdentity,
+    repo_root: Path, transport: PriorTransportMaterial, main: MainIdentity,
     contract_payload: Mapping[str, Any], tree_entries: Iterable[tuple[str, str]],
     claim_ids: Iterable[str], *, emitted_at: str,
 ) -> tuple[list[dict[str, Any]], list[str]]:

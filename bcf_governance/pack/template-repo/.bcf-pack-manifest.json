@@ -652,7 +652,7 @@
     },
     "scripts/_bcf_runtime/evidence_reuse_attestations.py": {
       "operation": "copy",
-      "sha256": "1bf0959baf09eda0cc30cfddd87180a88e31cf0b81d5deeffa90bc5ac3573b0e"
+      "sha256": "980d86512c0c95bb1447567bf1e8c74bd62e66b543af05e255954b184f322bf7"
     },
     "scripts/_bcf_runtime/evidence_session_cleanup.py": {
       "operation": "copy",
