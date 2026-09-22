@@ -600,7 +600,7 @@
     },
     "scripts/_bcf_runtime/ci_prior_evidence_auth.py": {
       "operation": "copy",
-      "sha256": "5fe5f54592f5ec701b759d8a8da755d29b41a0518f790903ac3e370a1138b29f"
+      "sha256": "1ff5e3eaf49a68f9c7ec26092570ee4e0839488e928760b42787339383311bce"
     },
     "scripts/_bcf_runtime/ci_reuse_attestation_verifier.py": {
       "operation": "copy",
@@ -876,7 +876,7 @@
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",
-      "sha256": "1bd463f4af54c4ca60e5b2f368741e4df483739d45c06605f559f52d3da5cfda"
+      "sha256": "75d6c0d309e47a17fc91ad3b900d0e4c519e10c8d6139c55d2d6cde5ea66d8aa"
     },
     "scripts/_bcf_runtime/prior_evidence_transport.py": {
       "operation": "copy",

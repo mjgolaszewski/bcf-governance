@@ -7,13 +7,11 @@ import hashlib
 import json
 from typing import Any
 
-from jsonschema import Draft202012Validator, RefResolver, ValidationError
-
 from .ci_github_artifacts import ProviderArtifact, resolve_role_artifact
 from .ci_github_authority import packaged_repo_root
 from .ci_github_identity import GitHubControllerError, MainIdentity
 from .evidence_execution import EvidenceError
-from .prior_evidence_receipts import validate_transport_material
+from .prior_evidence_receipts import _transport_schema, validate_transport_material
 from .prior_evidence_transport import _archive_files
 
 
@@ -25,21 +23,9 @@ class AuthenticatedPriorTransport:
 
 
 def _validate_transport_schema(manifest: dict[str, Any]) -> None:
-    root = packaged_repo_root() / "schemas"
-    transport_path = root / "prior-evidence-transport.schema.json"
-    reuse_path = root / "reuse-attestation.schema.json"
     try:
-        transport = json.loads(transport_path.read_text(encoding="utf-8"))
-        reuse = json.loads(reuse_path.read_text(encoding="utf-8"))
-        transport["$id"] = transport_path.resolve().as_uri()
-        reuse["$id"] = reuse_path.resolve().as_uri()
-        resolver = RefResolver(
-            base_uri=transport["$id"],
-            referrer=transport,
-            store={reuse["$id"]: reuse},
-        )
-        Draft202012Validator(transport, resolver=resolver).validate(manifest)
-    except (OSError, ValueError, ValidationError) as exc:
+        _transport_schema(manifest, packaged_repo_root() / "schemas")
+    except EvidenceError as exc:
         raise GitHubControllerError("prior transport schema is not exact") from exc
 
 
