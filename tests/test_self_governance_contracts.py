@@ -513,9 +513,23 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
     graph = validate_ci_graph(REPO_ROOT).graph
     evidence = _job("governance", "evidence")
     truth = _job("governance", "governance-truthfulness")
+    governance_path = next(
+        workflow["path"]
+        for workflow in graph["workflows"]
+        if workflow["id"] == "governance"
+    )
+    caller_bound = sorted({
+        artifact
+        for workflow in graph["workflows"]
+        for job in workflow["jobs"]
+        if job.get("executor", {}).get("kind") == "reusable_workflow"
+        and job["executor"].get("path") == governance_path
+        for artifact in job["executor"].get("artifact_bindings", {})
+    })
     assert evidence["needs"] == ["preflight"]
     assert truth["needs"] == ["preflight", "evidence"]
-    assert truth["consumes"] == evidence["produces"] == ["governance-receipts"]
+    assert evidence["produces"] == ["governance-receipts"]
+    assert truth["consumes"] == [*evidence["produces"], *caller_bound]
     assert graph["artifacts"]["governance-receipts"]["scope"] == "run-attempt"
     assert graph["artifacts"]["governance-truth-report"]["kind"] == "terminal"
     assert "--mode" not in graph["commands"]["governance-preflight"]["argv"]
@@ -528,8 +542,11 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
         "${{ inputs.evaluation_target || '' }}",
     ]
     assert graph["step_components"]["run-governance-truth"]["condition"] == (
-        "evidence-prerequisites-green"
+        "evidence-prerequisites-without-prior"
     )
+    assert graph["step_components"]["run-governance-truth-with-prior"][
+        "condition"
+    ] == "evidence-prerequisites-with-prior"
 
 
 def test_governance_artifact_transport_restores_private_modes_before_capture(
