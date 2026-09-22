@@ -228,7 +228,7 @@
     },
     "schemas/ci-graph.schema.json": {
       "operation": "copy",
-      "sha256": "63f82ca90718e7e0399d51be4b96cf88f6c609c2779ebee579650cd205a3e8f1"
+      "sha256": "ed1caccadfed0bd3845d89f7de3f5a52d784c96d171a6c7d1f5c6f6b65088654"
     },
     "schemas/ci-provider-snapshot.schema.json": {
       "operation": "copy",
@@ -526,6 +526,10 @@
       "operation": "copy",
       "sha256": "4dab4e637805c7e4e5a8d764010a1533d1ba1c4bf78d788e5558d7765bfaebab"
     },
+    "scripts/_bcf_runtime/ci_graph_artifact_steps.py": {
+      "operation": "copy",
+      "sha256": "e99f269f45c6bd7574f87ac6089c9cc713bda972765fa0a510ab8220730737de"
+    },
     "scripts/_bcf_runtime/ci_graph_audit.py": {
       "operation": "copy",
       "sha256": "e9e2fde10f5b2c6889e8e42e19e792d0ef2c54d24e896c766b0fe11ead281375"
@@ -540,11 +544,15 @@
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",
-      "sha256": "14d56a6c3776ff20685c523e0424f0596dcfd2da961580902534a114df406b04"
+      "sha256": "16f773217421f1ac254be395360ecc4b646dfbba640b803818404ffab1565329"
     },
     "scripts/_bcf_runtime/ci_graph_controller_lifecycle.py": {
       "operation": "copy",
       "sha256": "1e4485e8f838ecc55e758f814b3d4caffab4cf901d291925d1ec78c0c47140d8"
+    },
+    "scripts/_bcf_runtime/ci_graph_dag.py": {
+      "operation": "copy",
+      "sha256": "7787c46c447d661ac3304ec35f139a4bd69023cccb84c2893e31cfc35c348c05"
     },
     "scripts/_bcf_runtime/ci_graph_defaults.py": {
       "operation": "copy",
@@ -572,7 +580,11 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "ebda8a8b5597e5ccd952011035569f763aa05b242207062955a03bd98cfcf14d"
+      "sha256": "0b4ac73e4da12faf21592f1486dc282348aaa2f2aa17ab9683a640b5d72c342b"
+    },
+    "scripts/_bcf_runtime/ci_graph_reusable_artifacts.py": {
+      "operation": "copy",
+      "sha256": "39276498572e12d99d6402c546e1d8945b7e5f4a80cbe26dd4b76d481177ded2"
     },
     "scripts/_bcf_runtime/ci_graph_routing.py": {
       "operation": "copy",

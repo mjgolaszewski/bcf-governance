@@ -97,6 +97,13 @@ p26_p0_03_dormant_expansion:
   - canonical suite found the 800-LOC cap exceeded in preflight; negative-control
     target applicability was extracted intact to preflight_negative_controls,
     with the cap and fail-closed diagnostics preserved
+  - prospective graph trace found reusable workflow calls could not consume a
+    declared artifact produced by an exact caller predecessor; generic optional
+    artifact_bindings now compile a same-run/attempt guarded download only for
+    a false-default boolean workflow_call input, and reject wrong caller,
+    producer, dependency, input, or duplicate component custody
+  - this graph capability remains dormant until a later protected activation;
+    current workflows, topology, and installed controller are unchanged
   causal_boundary:
   - the trusted transport payload digest excludes its manifest; prior receipt loading must also close the manifest bytes
   - authentic source execution commits may be absent from a local clone; exact Git tree OIDs permit conservative path comparison without admitting authority

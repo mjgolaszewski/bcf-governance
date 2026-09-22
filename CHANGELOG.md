@@ -36,6 +36,8 @@ Release target: `2.0.0`
   with same-admission trusted finalizer verification before any reuse activation.
 - Expand dormant exact-claim reuse truth composition and session binding while
   retaining canonical execution until compatible-controller activation.
+- Add a dormant, typed reusable-workflow artifact binding that preserves exact
+  same-run transport custody and false-default direct-PR behavior.
 
 ### Changed
 

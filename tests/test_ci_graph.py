@@ -320,6 +320,119 @@ def _write_graph(repo: Path, payload: dict[str, object] | None = None) -> Path:
     return path
 
 
+def _reusable_artifact_graph() -> dict[str, object]:
+    graph = _graph()
+    graph["artifacts"]["prior"] = {
+        "path": ".artifacts/bcf/prior", "kind": "control",
+        "scope": "run-attempt", "retention_days": 30,
+    }
+    called = graph["workflows"][0]
+    called["events"][1]["inputs"]["use_prior"] = {
+        "description": "Consume exact same-run prior artifact",
+        "required": False, "default": False, "type": "boolean",
+    }
+    called["jobs"][0]["consumes"].append("prior")
+    caller = graph["workflows"][1]
+    caller["jobs"][0]["produces"].append("prior")
+    caller["jobs"].append(_job(
+        "call-governance", "exact-main-governance-producer",
+        needs=["admit"], consumes=["prior"],
+        executor={
+            "kind": "reusable_workflow", "path": called["path"],
+            "inputs": {"use_prior": True},
+            "artifact_bindings": {"prior": "use_prior"},
+        },
+    ))
+    return graph
+
+
+def test_reusable_artifact_binding_renders_exact_same_run_guard(tmp_path: Path) -> None:
+    graph = _reusable_artifact_graph()
+    _write_graph(tmp_path, graph)
+
+    validate_ci_graph(tmp_path)
+    rendered = yaml.safe_load(render_ci_graph(tmp_path)[".github/workflows/governance.yml"])
+    downloads = [
+        step for step in rendered["jobs"]["preflight"]["steps"]
+        if step.get("name") == "Download exact prior evidence"
+    ]
+    assert len(downloads) == 1
+    assert downloads[0]["if"] == "${{ inputs.use_prior == true }}"
+    assert downloads[0]["with"]["name"] == (
+        "bcf-prior-${{ github.run_id }}-${{ github.run_attempt }}"
+    )
+    assert "run-id" not in downloads[0]["with"]
+
+
+def test_reusable_artifact_binding_covers_explicit_preflight_components(tmp_path: Path) -> None:
+    graph = _reusable_artifact_graph()
+    graph["step_components"] = {
+        "python": {
+            "kind": "action", "name": "Provision Python", "action": "setup-python",
+            "with": {"python-version": "3.12"}, "environment": {},
+            "produces": [], "consumes": [],
+        },
+        "preflight": {
+            "kind": "command", "name": "Preflight", "command": "preflight",
+            "environment": {}, "produces": ["session"], "consumes": [],
+        },
+    }
+    graph["workflows"][0]["jobs"][0]["executor"] = {
+        "kind": "component_sequence", "components": ["python", "preflight"],
+    }
+    _write_graph(tmp_path, graph)
+
+    validate_ci_graph(tmp_path)
+    rendered = yaml.safe_load(render_ci_graph(tmp_path)[".github/workflows/governance.yml"])
+    steps = rendered["jobs"]["preflight"]["steps"]
+    assert [step["name"] for step in steps if "name" in step].count(
+        "Download exact prior evidence"
+    ) == 1
+
+
+@pytest.mark.parametrize("mutation", [
+    "missing_binding", "unbound_input", "wrong_producer", "missing_need",
+    "unconsumed_caller", "default_true", "wrong_input_type",
+    "unused_binding", "wrong_scope", "unsafe_input",
+])
+def test_reusable_artifact_binding_rejects_unbound_or_stale_custody(
+    tmp_path: Path, mutation: str,
+) -> None:
+    graph = _reusable_artifact_graph()
+    called = graph["workflows"][0]
+    caller = graph["workflows"][1]
+    call_job = caller["jobs"][1]
+    if mutation == "missing_binding":
+        call_job["executor"]["artifact_bindings"] = {}
+    elif mutation == "unbound_input":
+        call_job["executor"]["inputs"]["use_prior"] = False
+    elif mutation == "wrong_producer":
+        caller["jobs"][0]["produces"] = []
+        graph["workflows"][2]["jobs"][0]["produces"].append("prior")
+    elif mutation == "missing_need":
+        call_job["needs"] = []
+    elif mutation == "unconsumed_caller":
+        call_job["consumes"] = []
+    elif mutation == "default_true":
+        called["events"][1]["inputs"]["use_prior"]["default"] = True
+    elif mutation == "unused_binding":
+        called["jobs"][0]["consumes"] = []
+    elif mutation == "wrong_scope":
+        graph["artifacts"]["prior"]["scope"] = "workflow"
+    elif mutation == "unsafe_input":
+        called["events"][1]["inputs"]["use-prior"] = (
+            called["events"][1]["inputs"].pop("use_prior")
+        )
+        call_job["executor"]["inputs"] = {"use-prior": True}
+        call_job["executor"]["artifact_bindings"] = {"prior": "use-prior"}
+    else:
+        called["events"][1]["inputs"]["use_prior"]["type"] = "string"
+    _write_graph(tmp_path, graph)
+
+    with pytest.raises(CIGraphError):
+        validate_ci_graph(tmp_path)
+
+
 def _write_required_gates(repo: Path, *targets: str) -> None:
     (repo / "governance-profile.yml").write_text(
         yaml.safe_dump(
