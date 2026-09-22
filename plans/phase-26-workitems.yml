@@ -40,6 +40,7 @@ workitems:
   acceptance:
   - main-side closure qualification partial reuse and grouped-claim consumer reconciliation_is_complete
   - phase-specific group reuse decisions are recorded in the phase log
+  - requires-workitem-closure:P26-P0-02
   acceptance_evidence:
   - test
   - contract-test
@@ -52,6 +53,7 @@ workitems:
   acceptance:
   - adversarial proof empirical equivalent-tree acceptance and certified closeout_is_complete
   - phase-specific equivalent-tree and attack results are recorded in the phase log
+  - requires-workitem-closure:P26-P0-03
   acceptance_evidence:
   - test
   - contract-test
