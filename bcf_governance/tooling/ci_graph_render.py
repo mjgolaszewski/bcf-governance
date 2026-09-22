@@ -630,7 +630,8 @@ def _job(
     if bound_downloads:
         checkout_positions = [
             index for index, component_id in enumerate(executor["components"])
-            if compiled.graph["step_components"][component_id].get("action") == "checkout"
+            if compiled.graph["step_components"][component_id]["kind"] == "action"
+            and compiled.graph["step_components"][component_id]["action"] == "checkout"
         ]
         insertion = checkout_positions[-1] + 1 if checkout_positions else 0
         executor_steps[insertion:insertion] = bound_downloads

@@ -580,7 +580,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "0b98625e896971b56310b6e38341fe79ec7151743914026eb61b3879783402e5"
+      "sha256": "82460543a589cc0b41eb0d2d13d9eaa0be61263ae317c188b8ccd2413bc0260a"
     },
     "scripts/_bcf_runtime/ci_graph_reusable_artifacts.py": {
       "operation": "copy",
