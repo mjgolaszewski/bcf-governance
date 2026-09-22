@@ -1149,6 +1149,22 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         if workflow["id"] == "exact-main-publisher"
     )["jobs"][0]
 
+    ledger = yaml.safe_load((REPO_ROOT / "plans/phase-ledger.yml").read_text())
+    workitems = yaml.safe_load(
+        (REPO_ROOT / ledger["active_phase"]["workitems"]).read_text()
+    )["workitems"]
+    closed = {item["id"] for item in workitems if item["status"] == "DONE"}
+    eligible = [
+        item["id"] for item in workitems
+        if item["status"] == "TODO"
+        and all(
+            value.removeprefix("requires-workitem-closure:") in closed
+            for value in item["acceptance"]
+            if value.startswith("requires-workitem-closure:")
+        )
+    ]
+    assert len(eligible) == 1
+    bounded_target = eligible[0]
     assert admission["controller_requirement"] == "current-or-recovery-reentry"
     assert governance["needs"] == ["admit"]
     assert governance["condition"] == "exact-main-admitted"
@@ -1157,7 +1173,7 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         "kind": "authority",
         "operation": "admit-with-prior-evidence",
         "evaluation_mode": "workitem",
-        "evaluation_target": "P26-P0-02",
+        "evaluation_target": bounded_target,
     }
     assert {
         key: value
@@ -1168,7 +1184,11 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert admission["permissions"]["actions"] == "write"
     assert governance["executor"]["inputs"] == {
         "evaluation_mode": "workitem",
-        "evaluation_target": "P26-P0-02",
+        "evaluation_target": bounded_target,
+        "use_prior_evidence": True,
+    }
+    assert governance["executor"]["artifact_bindings"] == {
+        "prior-evidence-transport": "use_prior_evidence"
     }
     assert builder["needs"] == []
     assert builder["condition"] == "exact-main-authority-enabled"
@@ -1197,7 +1217,7 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         if step["name"] == "Authenticate exact-main admission and publish pending authority"
     )
     assert '--evaluation-mode "workitem"' in admission_command
-    assert '--evaluation-target "P26-P0-02"' in admission_command
+    assert f'--evaluation-target "{bounded_target}"' in admission_command
     transport = next(
         step for step in steps
         if step["name"] == "Authenticate and preserve prior merged-PR evidence"
@@ -1229,7 +1249,8 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert f'--output "{upload["with"]["path"]}"' in transport["run"]
     assert exact_jobs["governance"]["with"] == {
         "evaluation_mode": "workitem",
-        "evaluation_target": "P26-P0-02",
+        "evaluation_target": bounded_target,
+        "use_prior_evidence": True,
     }
     builder_projection = rendered[".github/workflows/bcf-exact-main.yml"]["jobs"][
         "trusted-controller-build"

@@ -342,7 +342,12 @@ def test_exact_main_is_the_only_default_branch_producer() -> None:
     assert evaluation["evaluation_mode"] == "workitem"
     assert isinstance(evaluation["evaluation_target"], str)
     assert evaluation["evaluation_target"]
-    assert _job("exact-main", "governance")["executor"]["inputs"] == evaluation
+    called = _job("exact-main", "governance")["executor"]
+    inputs = called["inputs"]
+    assert {key: inputs[key] for key in evaluation} == evaluation
+    bound_inputs = set(called.get("artifact_bindings", {}).values())
+    assert set(inputs) - set(evaluation) == bound_inputs
+    assert all(inputs[name] is True for name in bound_inputs)
     assert compiled.graph["conditions"]["exact-main-authority-enabled"] == (
         "vars.BCF_CI_AUTHORITY_ENABLED == 'true'"
     )

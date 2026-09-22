@@ -38,6 +38,8 @@ Release target: `2.0.0`
   retaining canonical execution until compatible-controller activation.
 - Add a dormant, typed reusable-workflow artifact binding that preserves exact
   same-run transport custody and false-default direct-PR behavior.
+- Activate exact prior-evidence transport and claim-aware bounded P26 workitem
+  truth only after ordinary compatible-controller installation.
 
 ### Changed
 
