@@ -44,6 +44,7 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Activate repository-scoped trusted protection inspection for exact-main evidence transport after controller installation confirmation.
 - Confirm the protection-inspection controller on both trusted runners and restore ordinary-current custody before activating its dormant inspection path.
 - Project the exact provider-built protection-inspection controller as the ordinary rotation target before activating the dormant inspection path.
 - Confirm the active P26 transport controller on both trusted runners and
