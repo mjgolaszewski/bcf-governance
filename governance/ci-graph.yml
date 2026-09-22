@@ -417,7 +417,8 @@ workflows:
     permissions: {actions: write, contents: read, statuses: write}
     checkout: false
     components: [python]
-    executor: {kind: authority, operation: admit-with-prior-evidence, evaluation_mode: workitem, evaluation_target: P26-P0-02}
+    protected_environment: bcf-trusted-protection-inspection
+    executor: {kind: authority, operation: admit-with-prior-evidence, evaluation_mode: workitem, evaluation_target: P26-P0-02, protection_inspection: true}
     produces: [prior-evidence-transport]
     consumes: []
     required: true
