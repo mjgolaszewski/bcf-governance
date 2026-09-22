@@ -34,6 +34,8 @@ Release target: `2.0.0`
   and bind P26-P0-02 to bounded workitem certification.
 - Expand dormant P26 main-side reuse qualification and exact provider-tree closure,
   with same-admission trusted finalizer verification before any reuse activation.
+- Expand dormant exact-claim reuse truth composition and session binding while
+  retaining canonical execution until compatible-controller activation.
 
 ### Changed
 

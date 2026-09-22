@@ -87,6 +87,13 @@ provider_transport_activation:
 p26_p0_03_dormant_expansion:
   workitem: P26-P0-03
   baseline_main: {commit_sha: 8cd1b6627bd4e0cf3e54d0eca5d0e5639de3f059, tree_sha: 4984e0a09a87d9011bfacb2b8e3ad288dd3df703}
+  first_expansion_merge: {commit_sha: 15fa671c1bd8b48321e2091a1c034aecc5b474b8, tree_sha: 5efc1f1e8bcf33693adf10bbdc59204a300af43e, exact_main_run: '35690773063/1', admission: success, controller_builder: success, governance: stale_installed_controller_fail_closed, evidence: suppressed}
+  second_expansion_prospective:
+  - provisional local transport may produce typed truth observations but cannot confer certification authority
+  - trusted finalizer independently authenticates same-admission transport, session, subject, run, attempt, skipped-claim inventory, and main closure
+  - missing or ambiguous transport cannot suppress canonical producer execution
+  - no graph activation or P26-P0-03 target change occurs in the dormant expansion
+  - ordinary PR preflight reports pending_rotation and release_authority false
   causal_boundary:
   - the trusted transport payload digest excludes its manifest; prior receipt loading must also close the manifest bytes
   - authentic source execution commits may be absent from a local clone; exact Git tree OIDs permit conservative path comparison without admitting authority
