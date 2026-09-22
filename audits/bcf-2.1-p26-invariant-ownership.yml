@@ -678,3 +678,36 @@ p26_p0_04_adversarial_closeout:
     release_authority: false
     controller: {target: 1c711eb5198a8985bbc84e3e9b7644bfe3e14bf7, installed: 1c711eb5198a8985bbc84e3e9b7644bfe3e14bf7, state: ordinary_current}
   boundary: bounded P26-P0-04 certification precedes terminal P26 closure; P27 remains blocked
+terminal_p26_closure_projection:
+  bounded_precondition:
+    subject: {commit: a539cf30ef669e792850562e4cb5d8efe0e96982, tree: f484e3b449763716b663b45a342ef17472785586}
+    exact_main: {run: 35794552653, attempt: 1, truth_job: 106971367456, conclusion: success}
+    truth_artifact: {id: 10723411690, digest: 'sha256:129546c781c9988437fe7cd26869118d3fda31c586add15af4013e9362a1464d'}
+    finalizer: {run: 35794798744, attempt: 1, job: 106971480495, conclusion: success}
+    certification_artifact: {id: 10723767137, digest: 'sha256:6a2c9aea3899b1dba721bd80f5e1fe43252980600d96229b599892fca2961d9f'}
+    publisher: {run: 35794847229, attempt: 1, job: 106971637496, conclusion: success}
+    status: {id: 54711592727, context: bcf/workitem-certification, state: success}
+    proposition: {predicate: workitem_closed, target: P26-P0-04, eligible_successors: [], release_authority: false}
+  projection:
+    evaluation_mode: closure
+    evaluation_target: absent
+    parent_phase: P26
+    authored_phase_state: active
+    workitems: {total: 4, done: 4}
+  prospective_chain:
+    preflight: require every P26 workitem DONE and reject a closure target
+    controller_compatibility: ordinary-current controller remains compatible; no trusted-runtime byte changes
+    pr_evidence: ordinary complete PR evidence and bcf/pr-certification remain required
+    certification: PR certification cannot substitute for terminal exact-main closure
+    merge: normal protected merge with no bypass or candidate self-authorization
+    exact_main: authenticate prior PR evidence, recompute main applicability, and evaluate P26 closure
+    controller_lifecycle: target and installed remain equal with no pending or recovery state
+    bounded_truth: the prior workitem proposition remains bounded and cannot confer phase closure
+    finalizer: authenticate the exact closure subject, producer inventory, jobs, run, attempt, and truth artifact
+    publisher: publish terminal exact-main status only after authenticated closure certification
+    successor_eligibility: P27 remains blocked until terminal P26 closure succeeds on authoritative main
+  non_escalation:
+  - bounded P26-P0-04 certification authorizes no release, publication, controller, or phase-closure authority
+  - terminal closure has no evaluation target and cannot be represented as another workitem certification
+  - release authority, protection, controller authority, and recovery semantics remain unchanged
+  boundary: protected merge and fresh terminal P26 exact-main certification remain required; P27 remains blocked

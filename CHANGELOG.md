@@ -43,6 +43,9 @@ Release target: `2.0.0`
 
 ### Changed
 
+- Project exact-main from certified terminal P26 workitem closure to parent-phase
+  closure without granting bounded workitem certification any terminal authority.
+
 - Record the authenticated P26 equivalent-tree result and adversarial proof matrix,
   and advance bounded exact-main evaluation to the completed P26-P0-04 closeout.
 

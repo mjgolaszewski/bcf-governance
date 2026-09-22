@@ -1154,38 +1154,47 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         (REPO_ROOT / ledger["active_phase"]["workitems"]).read_text()
     )["workitems"]
     closed = {item["id"] for item in workitems if item["status"] == "DONE"}
-    bounded_target = admission["executor"]["evaluation_target"]
-    target = next(item for item in workitems if item["id"] == bounded_target)
-    assert target["status"] == "DONE"
-    assert all(
-        value.removeprefix("requires-workitem-closure:") in closed
-        for value in target["acceptance"]
-        if value.startswith("requires-workitem-closure:")
-    )
-    declared_successors = [
-        item for item in workitems
-        if f"requires-workitem-closure:{bounded_target}" in item["acceptance"]
-    ]
-    assert len(declared_successors) <= 1
-    if declared_successors:
-        successor = declared_successors[0]
-        assert successor["status"] == "TODO"
+    evaluation_mode = admission["executor"]["evaluation_mode"]
+    evaluation_target = admission["executor"].get("evaluation_target")
+    if evaluation_mode == "workitem":
+        assert isinstance(evaluation_target, str) and evaluation_target
+        target = next(item for item in workitems if item["id"] == evaluation_target)
+        assert target["status"] == "DONE"
         assert all(
             value.removeprefix("requires-workitem-closure:") in closed
-            for value in successor["acceptance"]
+            for value in target["acceptance"]
             if value.startswith("requires-workitem-closure:")
         )
+        declared_successors = [
+            item for item in workitems
+            if f"requires-workitem-closure:{evaluation_target}" in item["acceptance"]
+        ]
+        assert len(declared_successors) <= 1
+        if declared_successors:
+            successor = declared_successors[0]
+            assert successor["status"] == "TODO"
+            assert all(
+                value.removeprefix("requires-workitem-closure:") in closed
+                for value in successor["acceptance"]
+                if value.startswith("requires-workitem-closure:")
+            )
+        else:
+            assert all(item["status"] == "DONE" for item in workitems)
     else:
+        assert evaluation_mode == "closure"
+        assert evaluation_target is None
         assert all(item["status"] == "DONE" for item in workitems)
     assert admission["controller_requirement"] == "current-or-recovery-reentry"
     assert governance["needs"] == ["admit"]
     assert governance["condition"] == "exact-main-admitted"
-    core_keys = ("kind", "operation", "evaluation_mode", "evaluation_target")
+    evaluation = {"evaluation_mode": evaluation_mode}
+    if evaluation_target is not None:
+        evaluation["evaluation_target"] = evaluation_target
+    core_keys = ("kind", "operation", *evaluation)
     assert {key: admission["executor"][key] for key in core_keys} == {
         "kind": "authority",
         "operation": "admit-with-prior-evidence",
-        "evaluation_mode": "workitem",
-        "evaluation_target": bounded_target,
+        **evaluation,
     }
     assert {
         key: value
@@ -1195,9 +1204,7 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert admission["produces"] == ["prior-evidence-transport"]
     assert admission["permissions"]["actions"] == "write"
     assert governance["executor"]["inputs"] == {
-        "evaluation_mode": "workitem",
-        "evaluation_target": bounded_target,
-        "use_prior_evidence": True,
+        **evaluation, "use_prior_evidence": True,
     }
     assert governance["executor"]["artifact_bindings"] == {
         "prior-evidence-transport": "use_prior_evidence"
@@ -1228,8 +1235,11 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         step["run"] for step in steps
         if step["name"] == "Authenticate exact-main admission and publish pending authority"
     )
-    assert '--evaluation-mode "workitem"' in admission_command
-    assert f'--evaluation-target "{bounded_target}"' in admission_command
+    assert f'--evaluation-mode "{evaluation_mode}"' in admission_command
+    if evaluation_target is None:
+        assert "--evaluation-target" not in admission_command
+    else:
+        assert f'--evaluation-target "{evaluation_target}"' in admission_command
     transport = next(
         step for step in steps
         if step["name"] == "Authenticate and preserve prior merged-PR evidence"
@@ -1260,9 +1270,7 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert upload["with"]["path"].startswith("${{ runner.temp }}/bcf-prior-evidence-")
     assert f'--output "{upload["with"]["path"]}"' in transport["run"]
     assert exact_jobs["governance"]["with"] == {
-        "evaluation_mode": "workitem",
-        "evaluation_target": bounded_target,
-        "use_prior_evidence": True,
+        **evaluation, "use_prior_evidence": True,
     }
     builder_projection = rendered[".github/workflows/bcf-exact-main.yml"]["jobs"][
         "trusted-controller-build"
