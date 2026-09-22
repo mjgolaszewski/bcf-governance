@@ -38,6 +38,7 @@ from .prior_evidence_receipts import load_provisional_transport, provisional_rec
 from .governance_validation.preflight_negative_controls import (
     NegativeControlPreflightError,
     inspect_negative_control_targets,
+    stale_negative_control_oracles,
 )
 from .semantic_ownership_scan import run_scan as run_semantic_ownership_scan
 from .self_workflow_contracts import (
@@ -481,6 +482,11 @@ def _required_gates(repo_root: Path) -> list[str]:
 def _negative_control_targets(repo_root: Path) -> int:
     """Fail cheaply when a declared control no longer targets canonical source."""
     try:
+        stale_oracles = stale_negative_control_oracles(repo_root)
+        if stale_oracles:
+            raise PreflightError(
+                "negative control oracle nodes are stale: " + ", ".join(stale_oracles)
+            )
         return inspect_negative_control_targets(repo_root, git=_git)
     except NegativeControlPreflightError as exc:
         raise PreflightError(str(exc)) from exc

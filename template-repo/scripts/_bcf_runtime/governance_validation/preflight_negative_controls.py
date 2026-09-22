@@ -14,10 +14,8 @@ class NegativeControlPreflightError(ValueError):
     """A declared mutation or oracle no longer targets canonical source."""
 
 
-def inspect_negative_control_targets(
-    repo_root: Path, *, git: Callable[..., str],
-) -> int:
-    """Reject stale mutation targets and undeclared oracle nodes before evidence."""
+def stale_negative_control_oracles(repo_root: Path) -> list[str]:
+    """Find test-node oracles absent from their governed node manifests."""
     registry = yaml.safe_load(
         (repo_root / "governance/gate-contracts.yml").read_text(encoding="utf-8")
     )
@@ -47,10 +45,19 @@ def inspect_negative_control_targets(
                 not isinstance(nodes, list) or not nodes or any(node not in governed_nodes for node in nodes)
             ):
                 stale_oracles.append(str(control.get("id", gate_id)))
-    if stale_oracles:
-        raise NegativeControlPreflightError(
-            "negative control oracle nodes are stale: " + ", ".join(sorted(stale_oracles))
-        )
+    return sorted(stale_oracles)
+
+
+def inspect_negative_control_targets(
+    repo_root: Path, *, git: Callable[..., str],
+) -> int:
+    """Reject stale mutation targets before evidence execution."""
+    registry = yaml.safe_load(
+        (repo_root / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    )
+    gates = registry.get("gates") if isinstance(registry, dict) else None
+    if not isinstance(gates, dict):
+        raise NegativeControlPreflightError("gate contract registry has no gate mappings")
     ledger: dict[str, Any] | None = None
     checked = 0
     root = repo_root.resolve()
