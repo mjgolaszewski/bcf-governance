@@ -50,6 +50,8 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Confirm the P26 reuse controller on both trusted runners and restore
+  ordinary-current custody before activating reusable evidence.
 - Project the exact provider-built P26 reuse controller as the ordinary rotation
   target while keeping the prior installed controller active until confirmation.
 - Reject undeclared trusted-runtime imports in cheap preflight using the same
