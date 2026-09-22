@@ -93,6 +93,15 @@ execution_evidence:
     tree packages transport and its closed contract without changing exact-main execution
   - activation makes transport an atomic post-admission trusted step, targets bounded
     P26-P0-02 truth, and leaves P26 active with only P26-P0-03 successor eligibility
+  - >-
+    Exact-main 35677778678/1 on ab79109d8ba5e45e4b168f3c83414e00d5ebdc86
+    certified P26-P0-02 closed with no missing evidence; finalizer 35679018488/1
+    preserved its bounded proposition and publisher 35679045680/1 published
+    bcf/workitem-certification=success through App 15368. The proposition listed
+    no declared successor because P26-P0-03 lacked the predecessor predicate;
+    both later TODO workitems were independently eligible. The authored workitem
+    ledger now binds P26-P0-03 to P26-P0-02 and P26-P0-04 to P26-P0-03 without
+    changing lifecycle or certification semantics.
 closeout_requirements:
   claims:
     workitems_closed:
@@ -125,6 +134,5 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- protected-merge the dormant P26-02 provider-transport expansion, rotate its compatible
-  controller through ordinary governed bootstrap and confirmation, then activate exact-main
-  transport and bounded P26-P0-02 truth in a separate protected change
+- protect and certify the successor-dependency ledger correction; require fresh exact-main
+  bounded P26-P0-02 truth to authorize only P26-P0-03 eligibility before P26-03 work
