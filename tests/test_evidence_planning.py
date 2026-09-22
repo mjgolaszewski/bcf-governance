@@ -401,6 +401,17 @@ def test_detector_qualification_reused_for_subject_remediation(tmp_path: Path) -
     }]
 
 
+def test_failed_source_cannot_supply_reuse_or_qualification(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    receipt = _receipt(root, ["other-valid"])
+    receipt["result"] = "failed"
+    _commit(root, "other.py", "OTHER = 2\n")
+    plan = plan_verification(root, [receipt], preflight_claims=["governance-valid"])
+    node = next(value for value in plan["execution_dag"]["nodes"] if value["id"] == "other-tests")
+    assert node["qualification_refs"] == []
+    assert "other-valid" not in {value["claim_id"] for value in plan["reused_evidence"]}
+
+
 def test_multi_claim_receipt_cannot_launder_claim_from_another_producer(
     tmp_path: Path,
 ) -> None:

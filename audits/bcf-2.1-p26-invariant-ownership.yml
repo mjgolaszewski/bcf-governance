@@ -159,6 +159,8 @@ p26_p0_03_activation_prospective:
       eligible; P26 remains active and release authority remains absent
   partial_group_rule: if any claim in a group is unresolved, its canonical producer
     executes; current receipts and reuse decisions must not double-credit claims
+  failed_source_rule: a source receipt with failed behavior cannot supply either
+    a reused claim or a reusable detector qualification
   fast_fail_rule: structurally missing transport wiring, non-exhaustive reused
     inventories, and impossible producer plans reject before evidence fan-out
 corrective_insertion:
