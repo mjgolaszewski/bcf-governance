@@ -63,7 +63,7 @@ artifacts:
   weekly-mutant-results: {path: .artifacts/scheduled-mutants, kind: control, scope: run-attempt, retention_days: 90}
   trusted-controller-bundle: {path: .artifacts/trusted-control, kind: control, scope: run-attempt, retention_days: 30}
   prior-evidence-transport: {path: .artifacts/bcf/prior-evidence, kind: control, scope: run-attempt, retention_days: 30}
-conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main', always-step: always()}
+conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', prior-evidence-enabled: inputs.use_prior_evidence == true, prior-evidence-disabled: inputs.use_prior_evidence != true, evidence-prerequisites-with-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence == true, evidence-prerequisites-without-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence != true, exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main', always-step: always()}
 commands:
   install-governance-dependencies:
     argv: ['{python}', -m, pip, install, -r, requirements-governance.txt]
@@ -71,6 +71,10 @@ commands:
     environment: {}
   governance-preflight:
     argv: ['{python}', scripts/preflight_governance.py, --repo-root, ., --evaluation-mode, '${{ inputs.evaluation_mode || ''pr'' }}', --evaluation-target, '${{ inputs.evaluation_target || '''' }}', --python, '{python}', --artifact-root, .artifacts/bcf, --expected-producer, evidence, --format, text]
+    cwd: .
+    environment: {}
+  governance-preflight-with-prior:
+    argv: ['{python}', scripts/preflight_governance.py, --repo-root, ., --evaluation-mode, '${{ inputs.evaluation_mode || ''pr'' }}', --evaluation-target, '${{ inputs.evaluation_target || '''' }}', --python, '{python}', --artifact-root, .artifacts/bcf, --expected-producer, evidence, --prior-evidence-dir, .artifacts/bcf/prior-evidence, --format, text]
     cwd: .
     environment: {}
   capture-governance-shard:
@@ -87,6 +91,10 @@ commands:
     environment: {}
   governance-truth:
     argv: ['{python}', scripts/governance_truth.py, --repo-root, ., --evidence-dir, .artifacts/bcf/fan-in, --evaluation-mode, '${{ inputs.evaluation_mode || ''pr'' }}', --evaluation-target, '${{ inputs.evaluation_target || '''' }}', --format, json, --durable-ref, 'github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth', --output, .artifacts/bcf/truth-report.json]
+    cwd: .
+    environment: {}
+  governance-truth-with-prior:
+    argv: ['{python}', scripts/governance_truth.py, --repo-root, ., --evidence-dir, .artifacts/bcf/fan-in, --prior-evidence-dir, .artifacts/bcf/prior-evidence, --evaluation-mode, '${{ inputs.evaluation_mode || ''pr'' }}', --evaluation-target, '${{ inputs.evaluation_target || '''' }}', --format, json, --durable-ref, 'github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth', --output, .artifacts/bcf/truth-report.json]
     cwd: .
     environment: {}
   governance-terminal-observation:
@@ -148,7 +156,16 @@ step_components:
   run-governance-preflight:
     kind: command
     name: Run canonical cheap preflight and allocate one evidence session
+    condition: prior-evidence-disabled
     command: governance-preflight
+    environment: {}
+    produces: []
+    consumes: []
+  run-governance-preflight-with-prior:
+    kind: command
+    name: Run canonical cheap preflight with exact prior evidence
+    condition: prior-evidence-enabled
+    command: governance-preflight-with-prior
     environment: {}
     produces: []
     consumes: []
@@ -213,8 +230,16 @@ step_components:
   run-governance-truth:
     kind: command
     name: Verify exact-tree governance evidence
-    condition: evidence-prerequisites-green
+    condition: evidence-prerequisites-without-prior
     command: governance-truth
+    environment: {}
+    produces: [governance-truth-report]
+    consumes: []
+  run-governance-truth-with-prior:
+    kind: command
+    name: Verify exact-tree governance evidence with prior transport
+    condition: evidence-prerequisites-with-prior
+    command: governance-truth-with-prior
     environment: {}
     produces: [governance-truth-report]
     consumes: []
@@ -329,6 +354,7 @@ workflows:
     inputs:
       evaluation_mode: {description: Exact truth evaluation mode selected by the trusted caller, required: false, default: pr, type: string}
       evaluation_target: {description: Exact typed target required only for bounded workitem certification, required: false, default: '', type: string}
+      use_prior_evidence: {description: Consume exact caller-bound prior evidence when present, required: false, default: false, type: boolean}
   permissions: {contents: read}
   jobs:
   - id: preflight
@@ -344,9 +370,9 @@ workflows:
     components: []
     executor:
       kind: component_sequence
-      components: [checkout-candidate, setup-python, install-governance, run-governance-preflight, upload-governance-session]
+      components: [checkout-candidate, setup-python, install-governance, run-governance-preflight, run-governance-preflight-with-prior, upload-governance-session]
     produces: [governance-session]
-    consumes: []
+    consumes: [prior-evidence-transport]
     required: true
   - id: evidence
     display_name: Evidence / ${{ matrix.display_name }}
@@ -392,9 +418,9 @@ workflows:
     executor:
       kind: terminal_truth
       command: governance-truth
-      components: [checkout-candidate, setup-python, install-governance, download-governance-receipts, restore-evidence-modes, run-governance-truth, preserve-terminal-observation, upload-governance-truth]
+      components: [checkout-candidate, setup-python, install-governance, download-governance-receipts, restore-evidence-modes, run-governance-truth, run-governance-truth-with-prior, preserve-terminal-observation, upload-governance-truth]
     produces: [governance-truth-report]
-    consumes: [governance-receipts]
+    consumes: [governance-receipts, prior-evidence-transport]
     required: true
 - id: exact-main
   path: .github/workflows/bcf-exact-main.yml
@@ -418,7 +444,7 @@ workflows:
     checkout: false
     components: [python]
     protected_environment: bcf-trusted-protection-inspection
-    executor: {kind: authority, operation: admit-with-prior-evidence, evaluation_mode: workitem, evaluation_target: P26-P0-02, protection_inspection: true}
+    executor: {kind: authority, operation: admit-with-prior-evidence, evaluation_mode: workitem, evaluation_target: P26-P0-03, protection_inspection: true}
     produces: [prior-evidence-transport]
     consumes: []
     required: true
@@ -436,9 +462,10 @@ workflows:
     executor:
       kind: reusable_workflow
       path: .github/workflows/governance.yml
-      inputs: {evaluation_mode: workitem, evaluation_target: P26-P0-02}
+      inputs: {evaluation_mode: workitem, evaluation_target: P26-P0-03, use_prior_evidence: true}
+      artifact_bindings: {prior-evidence-transport: use_prior_evidence}
     produces: []
-    consumes: []
+    consumes: [prior-evidence-transport]
     required: true
   - id: trusted-controller-build
     display_name: Build independent exact-main trusted controller
