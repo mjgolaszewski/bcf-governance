@@ -367,6 +367,11 @@ def test_reusable_artifact_binding_renders_exact_same_run_guard(tmp_path: Path) 
 def test_reusable_artifact_binding_covers_explicit_preflight_components(tmp_path: Path) -> None:
     graph = _reusable_artifact_graph()
     graph["step_components"] = {
+        "checkout": {
+            "kind": "action", "name": "Check out source", "action": "checkout",
+            "with": {"fetch-depth": 0}, "environment": {},
+            "produces": [], "consumes": [],
+        },
         "python": {
             "kind": "action", "name": "Provision Python", "action": "setup-python",
             "with": {"python-version": "3.12"}, "environment": {},
@@ -377,17 +382,20 @@ def test_reusable_artifact_binding_covers_explicit_preflight_components(tmp_path
             "environment": {}, "produces": ["session"], "consumes": [],
         },
     }
+    graph["workflows"][0]["jobs"][0]["checkout"] = False
     graph["workflows"][0]["jobs"][0]["executor"] = {
-        "kind": "component_sequence", "components": ["python", "preflight"],
+        "kind": "component_sequence", "components": ["checkout", "python", "preflight"],
     }
     _write_graph(tmp_path, graph)
 
     validate_ci_graph(tmp_path)
     rendered = yaml.safe_load(render_ci_graph(tmp_path)[".github/workflows/governance.yml"])
     steps = rendered["jobs"]["preflight"]["steps"]
-    assert [step["name"] for step in steps if "name" in step].count(
+    names = [step["name"] for step in steps if "name" in step]
+    assert names.count("Download exact prior evidence") == 1
+    assert names.index("Check out source") < names.index(
         "Download exact prior evidence"
-    ) == 1
+    ) < names.index("Preflight")
 
 
 @pytest.mark.parametrize("mutation", [

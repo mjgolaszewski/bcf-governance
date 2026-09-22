@@ -27,8 +27,11 @@ def reusable_artifact_binding(
     if not bound:
         return None
     contract = graph["artifacts"].get(artifact)
-    if not isinstance(contract, dict) or contract.get("scope") != "run-attempt":
-        raise CIGraphError(f"CI graph reusable artifact {artifact} is not run-attempt scoped")
+    if (not isinstance(contract, dict) or contract.get("scope") != "run-attempt"
+        or contract.get("kind") != "control"):
+        raise CIGraphError(
+            f"CI graph reusable artifact {artifact} is not a run-attempt control artifact"
+        )
     inputs = {name for _, _, name in bound}
     if len(inputs) != 1:
         raise CIGraphError(f"CI graph reusable artifact {artifact} has ambiguous input bindings")

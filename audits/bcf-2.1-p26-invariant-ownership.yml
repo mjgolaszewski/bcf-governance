@@ -102,6 +102,9 @@ p26_p0_03_dormant_expansion:
     artifact_bindings now compile a same-run/attempt guarded download only for
     a false-default boolean workflow_call input, and reject wrong caller,
     producer, dependency, input, or duplicate component custody
+  - rendered activation fixture caught checkout deleting a pre-checkout
+    download; canonical renderer now places bound control downloads after
+    component checkout and before the consuming preflight/truth command
   - this graph capability remains dormant until a later protected activation;
     current workflows, topology, and installed controller are unchanged
   causal_boundary:

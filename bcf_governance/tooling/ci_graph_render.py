@@ -604,6 +604,7 @@ def _job(
         "gate_shard",
         "terminal_truth",
     }
+    bound_downloads: list[dict[str, Any]] = []
     if not explicit_components:
         steps.extend(_download_steps(compiled, workflow, job))
         steps.extend(_resolve_durable_steps(compiled, job))
@@ -612,7 +613,7 @@ def _job(
             artifact for artifact in job["consumes"]
             if reusable_artifact_binding(compiled.graph, workflow, artifact) is not None
         ]
-        steps.extend(_download_steps(compiled, workflow, job, bound_artifacts))
+        bound_downloads = _download_steps(compiled, workflow, job, bound_artifacts)
     if "restore-private-modes" in job["components"]:
         steps.append(
             {
@@ -625,7 +626,15 @@ def _job(
                 ),
             }
         )
-    steps.extend(_executor_steps(compiled, job, workflow))
+    executor_steps = _executor_steps(compiled, job, workflow)
+    if bound_downloads:
+        checkout_positions = [
+            index for index, component_id in enumerate(executor["components"])
+            if compiled.graph["step_components"][component_id].get("action") == "checkout"
+        ]
+        insertion = checkout_positions[-1] + 1 if checkout_positions else 0
+        executor_steps[insertion:insertion] = bound_downloads
+    steps.extend(executor_steps)
     if not explicit_components:
         steps.extend(_prepare_durable_steps(compiled, job))
         steps.extend(_upload_steps(compiled, job))
