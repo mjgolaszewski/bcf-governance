@@ -1031,12 +1031,18 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert admission["controller_requirement"] == "current-or-recovery-reentry"
     assert governance["needs"] == ["admit"]
     assert governance["condition"] == "exact-main-admitted"
-    assert admission["executor"] == {
+    core_keys = ("kind", "operation", "evaluation_mode", "evaluation_target")
+    assert {key: admission["executor"][key] for key in core_keys} == {
         "kind": "authority",
         "operation": "admit-with-prior-evidence",
         "evaluation_mode": "workitem",
         "evaluation_target": "P26-P0-02",
     }
+    assert {
+        key: value
+        for key, value in admission["executor"].items()
+        if key not in core_keys
+    } in ({}, {"protection_inspection": True})
     assert admission["produces"] == ["prior-evidence-transport"]
     assert admission["permissions"]["actions"] == "write"
     assert governance["executor"]["inputs"] == {
@@ -1081,7 +1087,23 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     )
     assert "prior-evidence transport" in transport["run"]
     assert '--main-sha "$GITHUB_SHA"' in transport["run"]
-    assert transport["env"] == {"GITHUB_TOKEN": "${{ github.token }}"}
+    expected_transport_env = {"GITHUB_TOKEN": "${{ github.token }}"}
+    if admission["executor"].get("protection_inspection"):
+        expected_transport_env.update({
+            "BCF_PROTECTION_INSPECT_REQUIRED": "true",
+            "BCF_PROTECTION_INSPECT_APP_TOKEN": (
+                "${{ steps.protection-inspector-token.outputs.token }}"
+            ),
+            "BCF_PROTECTION_INSPECT_INSTALLATION_ID": (
+                "${{ vars.BCF_PROTECTION_INSPECT_INSTALLATION_ID }}"
+            ),
+            "BCF_PROTECTION_INSPECT_OBSERVED_INSTALLATION_ID": (
+                "${{ steps.protection-inspector-token.outputs.installation-id }}"
+            ),
+        })
+        mint = next(step for step in steps if step.get("id") == "protection-inspector-token")
+        assert steps.index(mint) < steps.index(transport)
+    assert transport["env"] == expected_transport_env
     assert upload["with"]["path"].startswith("${{ runner.temp }}/bcf-prior-evidence-")
     assert f'--output "{upload["with"]["path"]}"' in transport["run"]
     assert exact_jobs["governance"]["with"] == {
@@ -1354,9 +1376,9 @@ def test_protection_inspection_activation_is_credential_isolated_and_environment
     compiled = validate_ci_graph(REPO_ROOT)
     workflow = next(value for value in compiled.workflows if value["id"] == "exact-main")
     original = next(value for value in workflow["jobs"] if value["id"] == "admit")
-    assert "protection_inspection" not in original["executor"]
     job = copy.deepcopy(original)
     job["executor"]["protection_inspection"] = True
+    job.pop("protected_environment", None)
     assert any(
         "protected trusted exact-main admission" in issue
         for issue in job_execution_issues(compiled.graph, job, job["executor"], workflow)
@@ -1385,6 +1407,7 @@ def test_protection_inspection_activation_compiles_complete_exact_main_job(
     workflow = next(value for value in graph["workflows"] if value["id"] == "exact-main")
     admission = next(value for value in workflow["jobs"] if value["id"] == "admit")
     admission["executor"]["protection_inspection"] = True
+    admission.pop("protected_environment", None)
     proposed = tmp_path / "proposed-graph.yml"
     proposed.write_text(yaml.safe_dump(graph, sort_keys=False), encoding="utf-8")
     with pytest.raises(CIGraphError, match="protected trusted exact-main admission"):
