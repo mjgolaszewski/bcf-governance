@@ -1162,17 +1162,21 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         for value in target["acceptance"]
         if value.startswith("requires-workitem-closure:")
     )
-    eligible_successors = [
-        item["id"] for item in workitems
-        if item["status"] == "TODO"
-        and f"requires-workitem-closure:{bounded_target}" in item["acceptance"]
-        and all(
+    declared_successors = [
+        item for item in workitems
+        if f"requires-workitem-closure:{bounded_target}" in item["acceptance"]
+    ]
+    assert len(declared_successors) <= 1
+    if declared_successors:
+        successor = declared_successors[0]
+        assert successor["status"] == "TODO"
+        assert all(
             value.removeprefix("requires-workitem-closure:") in closed
-            for value in item["acceptance"]
+            for value in successor["acceptance"]
             if value.startswith("requires-workitem-closure:")
         )
-    ]
-    assert len(eligible_successors) == 1
+    else:
+        assert all(item["status"] == "DONE" for item in workitems)
     assert admission["controller_requirement"] == "current-or-recovery-reentry"
     assert governance["needs"] == ["admit"]
     assert governance["condition"] == "exact-main-admitted"

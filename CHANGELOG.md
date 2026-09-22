@@ -43,6 +43,9 @@ Release target: `2.0.0`
 
 ### Changed
 
+- Record the authenticated P26 equivalent-tree result and adversarial proof matrix,
+  and advance bounded exact-main evaluation to the completed P26-P0-04 closeout.
+
 - Preserve the certified BCF 2.0 implementation as the release baseline while
   superseding v2.0.0 publication without creating a tag or immutable release.
 

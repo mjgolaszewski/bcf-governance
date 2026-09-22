@@ -633,3 +633,48 @@ reuse_activation_lifecycle_closeout:
   - preserve provisional reuse, trusted finalizer authentication, and release exclusion
   controller_lifecycle: {state: ordinary_current, rotation_required: false}
   boundary: protected closeout merge and fresh bounded P26-P0-03 certification remain required
+p26_p0_04_adversarial_closeout:
+  predecessor_certification:
+    subject: {commit: 06bb393b3b110b631c0521656e6e3affde701ecf, tree: ebbf5c73645b1d239adb7f9243a3714fdb697ea9}
+    exact_main: {run: 35782762953, attempt: 1, truth_job: 106933001116, conclusion: success}
+    truth_artifact: {id: 10719375082, digest: 'sha256:b8ee193fd282ebd2da7b5e972ae2991fb9382533f6e1a99f6ae60d10b3428e61'}
+    finalizer: {run: 35783099394, attempt: 1, job: 106933186882, conclusion: success}
+    certification_artifact: {id: 10718742564, digest: 'sha256:9849f89ef555b8b421eb458b00fada19bf76e609f3ac2a200eee73141d7e665f'}
+    publisher: {run: 35783163236, attempt: 1, job: 106933399807, conclusion: success}
+    status: {id: 54703627722, context: bcf/workitem-certification, state: success}
+    proposition: {predicate: workitem_closed, target: P26-P0-03, eligible_successor: P26-P0-04, release_authority: false}
+  equivalent_tree_fixture:
+    pattern: issue_213_terminal_equivalent_tree
+    source_pr: {number: 255, head: 498ebf2937ab631b1010ab6cb79624494e060e79, governance_run: 35774717897, attempt: 1}
+    source_execution: {commit: d2fd44c02270ade92b9233cdf7753b36f82cb692, tree: ebbf5c73645b1d239adb7f9243a3714fdb697ea9}
+    merged_main: {commit: 06bb393b3b110b631c0521656e6e3affde701ecf, tree: ebbf5c73645b1d239adb7f9243a3714fdb697ea9}
+    result: {eligible_execution_groups: 7, reusable_claims: 16, admitted_claims: 16, newly_executed_claims: 0, invalidated_claims: 0, execution_nodes_avoided: 16}
+    custody:
+    - candidate and merged-main trees are byte-identical
+    - source receipts retain their exact provider artifact and member digests
+    - every attestation binds source receipt, source and main subjects, dependency
+      closure, qualification, provider custody, controller, protection, and decision
+    - trusted finalization independently authenticates the complete skipped-claim plan
+  adversarial_matrix:
+  - invariant: artifact substitution and provider digest mismatch reject
+    nodes: [tests.test_prior_evidence_transport::test_transport_rejects_substituted_artifact_or_authority, tests.test_ci_prior_evidence_auth::test_trusted_transport_rejects_provider_digest_substitution]
+  - invariant: wrong repository installation or protection authority rejects
+    nodes: [tests.test_protection_inspection_client::test_inspector_rejects_wrong_installation_and_repository, tests.test_protection_inspection_client::test_inspector_rejects_multi_repository_installation, tests.test_protection_inspection_client::test_inspector_rejects_redacted_or_unexpected_bypass_actors]
+  - invariant: wrong PR candidate merge main run attempt commit or tree rejects
+    nodes: [tests.test_prior_evidence_transport::test_transport_rejects_replay_after_main_advances, tests.test_prior_evidence_transport::test_transport_rejects_unrelated_receipt_subject, tests.test_ci_reuse_attestation_verifier::test_trusted_session_plan_is_exact_provider_attempt_and_inventory, tests.test_provider_reuse_closure::test_provider_read_claim_closure_rejects_mismatched_main_bytes]
+  - invariant: replay stale freshness and unrelated main movement reject
+    nodes: [tests.test_prior_evidence_transport::test_transport_rejects_replay_after_main_advances, tests.test_evidence_planning::test_freshness_expiry_forces_only_fresh_claim, tests.test_evidence_planning::test_future_timestamp_cannot_extend_freshness, tests.test_evidence_reuse_attestations::test_reuse_attestation_rejects_changed_main_dependency]
+  - invariant: untrusted workflow controller or candidate assertion cannot confer reuse
+    nodes: [tests.test_prior_evidence_transport::test_transport_rejects_substituted_artifact_or_authority, tests.test_ci_reuse_attestation_verifier::test_trusted_verifier_rejects_candidate_substitution, tests.test_ci_reuse_attestation_verifier::test_dormant_finalizer_does_not_fetch_transport_without_reuse]
+  - invariant: closure or qualification mismatch falls back to canonical execution
+    nodes: [tests.test_evidence_reuse_attestations::test_reuse_attestation_rejects_changed_main_dependency, tests.test_evidence_planning::test_main_side_qualification_recomputes_digest_and_control_inventory, tests.test_evidence_planning::test_ambiguous_dependency_manifest_fails_closed]
+  - invariant: ambiguous duplicate or unrelated claims cannot be laundered
+    nodes: [tests.test_evidence_planning::test_duplicate_evidence_identity_cannot_win_by_input_order, tests.test_evidence_planning::test_multi_claim_receipt_cannot_launder_claim_from_another_producer, tests.test_ci_reuse_attestation_verifier::test_trusted_verifier_rejects_plan_count_laundering, tests.test_ci_reuse_attestation_verifier::test_trusted_verifier_rejects_skipped_claim_not_in_attestations]
+  - invariant: lifecycle and recovery authority remain noncertifying outside ordinary-current
+    nodes: [tests.test_ci_reuse_attestation_verifier::test_dormant_finalizer_does_not_fetch_transport_without_reuse, tests.test_ci_graph::test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance, tests.test_ci_github_controller::test_v11_partial_topology_shapes_are_noncertifying]
+  lifecycle:
+    bounded_target: P26-P0-04
+    parent_phase: {id: P26, status: active}
+    release_authority: false
+    controller: {target: 1c711eb5198a8985bbc84e3e9b7644bfe3e14bf7, installed: 1c711eb5198a8985bbc84e3e9b7644bfe3e14bf7, state: ordinary_current}
+  boundary: bounded P26-P0-04 certification precedes terminal P26 closure; P27 remains blocked

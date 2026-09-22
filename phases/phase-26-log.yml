@@ -34,6 +34,9 @@ summary:
   - P26 main-side reuse now qualifies immutable same-tree source receipts, records
     claim-scoped reuse decisions, and reconciles grouped-claim consumers without
     treating provisional reuse as finalizer authority
+  - the empirical equivalent-tree transition admits all 16 executable semantic
+    claims through authenticated reuse, executes none, preserves exact source
+    receipts, and retains ordinary controller, protection, and release boundaries
 workitems:
 - id: P26-P0-01
   status: DONE
@@ -47,7 +50,7 @@ workitems:
   summary: deliver main-side closure qualification partial reuse and grouped-claim
     consumer reconciliation
 - id: P26-P0-04
-  status: TODO
+  status: DONE
   summary: deliver adversarial proof empirical equivalent-tree acceptance and certified
     closeout
 execution_evidence:
@@ -121,6 +124,15 @@ execution_evidence:
     P26-P0-04 remains TODO, and release authority remains absent. The graph contract
     now distinguishes the completed bounded target from its eligible TODO successor,
     so this stale authored-state class fails during PR evidence before merge.
+  - >-
+    PR 255 and authoritative merge 06bb393b3b110b631c0521656e6e3affde701ecf
+    share exact tree ebbf5c73645b1d239adb7f9243a3714fdb697ea9. Exact-main
+    35782762953/1 authenticated the merge and 16 claim-scoped reuse attestations,
+    executed zero semantic claims, and closed P26-P0-03. Finalizer 35783099394/1
+    preserved the exact workitem proposition and publisher 35783163236/1 published
+    bcf/workitem-certification success, making P26-P0-04 eligible without release
+    authority. The governed attack matrix for substitution, replay, stale identity,
+    authority, lifecycle, closure, qualification, and claim laundering is green.
 closeout_requirements:
   claims:
     workitems_closed:
@@ -153,5 +165,5 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify bounded P26-P0-03 closure under the installed ordinary-current controller;
-  only its authenticated closure may make P26-P0-04 eligible
+- certify bounded P26-P0-04 closure under the installed ordinary-current controller,
+  then perform terminal P26 closure before beginning P27
