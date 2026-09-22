@@ -604,7 +604,7 @@
     },
     "scripts/_bcf_runtime/ci_reuse_attestation_verifier.py": {
       "operation": "copy",
-      "sha256": "f3f2bcbc386fb74490fad5a703a5c538c6a05923fcf9a5725f61a5ada0a77ad7"
+      "sha256": "3a458a6d58c6751f6fe83f3f35f55e768b99deeba0aabb34cebcf5272486d5b9"
     },
     "scripts/_bcf_runtime/ci_self_controller.py": {
       "operation": "copy",
@@ -632,7 +632,7 @@
     },
     "scripts/_bcf_runtime/evidence_claim_resolution.py": {
       "operation": "copy",
-      "sha256": "baef9daf13477b6eefb8a2cecbe2b1d1c82687da17928be01918fb1b1c91d11d"
+      "sha256": "ba891b0176f672edbaf73bd4108e313387dfb78cdfb63c333a7c89caed49c838"
     },
     "scripts/_bcf_runtime/evidence_claims.py": {
       "operation": "copy",
@@ -652,7 +652,7 @@
     },
     "scripts/_bcf_runtime/evidence_reuse_attestations.py": {
       "operation": "copy",
-      "sha256": "16b9879b087d2e8050aae4f6573aea058b1d98c64b0dc7f90bf29e63e5395f03"
+      "sha256": "835f02f502b8d08ce2ed23a72c8cb1acacc34ed19bfb37c62c739ac526027509"
     },
     "scripts/_bcf_runtime/evidence_session_cleanup.py": {
       "operation": "copy",
@@ -712,7 +712,7 @@
     },
     "scripts/_bcf_runtime/evidence_workitem_lifecycle.py": {
       "operation": "copy",
-      "sha256": "97bfe1388aefbde6b9fc17dc2e805dc4dbe849aeacdc89a65652676a70e6cf1c"
+      "sha256": "9b7e26c9547600e14d5ea9c17ad7fa153347d3e55fe88a6c82c7aef904e924ad"
     },
     "scripts/_bcf_runtime/github_protection.py": {
       "operation": "copy",
@@ -784,11 +784,11 @@
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
-      "sha256": "ed26305f75a2c2189c62d018b884b2fe793e6a3b90c7b215ba452bbe6a239423"
+      "sha256": "d2586a5f5d10afb54c875ae363c482a255f5e461cd3f87127f710fc5737c9e46"
     },
     "scripts/_bcf_runtime/governance_truth_cli.py": {
       "operation": "copy",
-      "sha256": "6afc7d754ce7684f8b13955d623a0a937d4ea12c9b52992a3c008590954b95a6"
+      "sha256": "0a1234f73418f64b88dab9b4ffba5ecbc9b4c5f1bdb208cf5e411065d311d224"
     },
     "scripts/_bcf_runtime/governance_truth_support.py": {
       "operation": "copy",
