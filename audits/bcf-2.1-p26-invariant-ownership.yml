@@ -606,3 +606,30 @@ provider_transport_activation_rotation_confirmation:
   projection: {target_equals_installed: true, recovery_reentry: absent, mechanism: canonical_self_controller_confirmation}
   boundary: protected confirmation merge and fresh ordinary-current P26-P0-02
     bounded certification remain required
+reuse_activation_lifecycle_closeout:
+  authoritative_subject:
+    commit: a6f70644ce9890e510cd4ec3adc5e44134057bfd
+    tree: 29f4f3465fe027c98f2fa6f623e47788b8d2be35
+  exact_main:
+    run: {id: 35770458228, attempt: 1}
+    admission: success
+    controller_build: success
+    governance_front_door: success
+    evidence_shards: {expected: 4, successful: 4}
+    truth_job: 106891453962
+    truth_artifact: {id: 10713922354, digest: 'sha256:aa43df56f586fb3c97c9b07bff498bc38d76efd8e7149b69bdb66ffc72708348'}
+  authenticated_reuse:
+    controller: {commit: 1c711eb5198a8985bbc84e3e9b7644bfe3e14bf7, wheel_sha256: ebc722d39e395134a26badc42f5b2667d12fb556f001da6f1b3db9b1183133e5}
+    source_pr: {number: 254, run: 35767705876, attempt: 1, candidate: 941fab9e2e4cb8f2f6e0cbdb52f1d77c87765528}
+    exact_tree_equivalence: true
+    rejected_attestations: 0
+    claim_missing_or_invalid: []
+  first_causal_invariant: bounded_workitem_target_not_closed
+  classification: implemented_workitem_retained_stale_authored_todo_state
+  correction:
+  - record P26-P0-03 as DONE in the canonical workitem ledger and phase log
+  - require the exact-main graph target to be DONE before deriving its one eligible TODO successor
+  - preserve P26 as active and P26-P0-04 as TODO until authenticated predecessor closure
+  - preserve provisional reuse, trusted finalizer authentication, and release exclusion
+  controller_lifecycle: {state: ordinary_current, rotation_required: false}
+  boundary: protected closeout merge and fresh bounded P26-P0-03 certification remain required

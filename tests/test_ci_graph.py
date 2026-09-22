@@ -1154,17 +1154,25 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         (REPO_ROOT / ledger["active_phase"]["workitems"]).read_text()
     )["workitems"]
     closed = {item["id"] for item in workitems if item["status"] == "DONE"}
-    eligible = [
+    bounded_target = admission["executor"]["evaluation_target"]
+    target = next(item for item in workitems if item["id"] == bounded_target)
+    assert target["status"] == "DONE"
+    assert all(
+        value.removeprefix("requires-workitem-closure:") in closed
+        for value in target["acceptance"]
+        if value.startswith("requires-workitem-closure:")
+    )
+    eligible_successors = [
         item["id"] for item in workitems
         if item["status"] == "TODO"
+        and f"requires-workitem-closure:{bounded_target}" in item["acceptance"]
         and all(
             value.removeprefix("requires-workitem-closure:") in closed
             for value in item["acceptance"]
             if value.startswith("requires-workitem-closure:")
         )
     ]
-    assert len(eligible) == 1
-    bounded_target = eligible[0]
+    assert len(eligible_successors) == 1
     assert admission["controller_requirement"] == "current-or-recovery-reentry"
     assert governance["needs"] == ["admit"]
     assert governance["condition"] == "exact-main-admitted"
