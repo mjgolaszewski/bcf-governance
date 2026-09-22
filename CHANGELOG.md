@@ -46,6 +46,8 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Reject undeclared trusted-runtime imports in cheap preflight using the same
+  deterministic dependency check as package validation.
 - Bind P26 successor-workitem eligibility to authenticated closure of its declared predecessor.
 - Activate repository-scoped trusted protection inspection for exact-main evidence transport after controller installation confirmation.
 - Confirm the protection-inspection controller on both trusted runners and restore ordinary-current custody before activating its dormant inspection path.

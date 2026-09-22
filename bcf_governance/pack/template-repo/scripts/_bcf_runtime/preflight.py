@@ -31,6 +31,7 @@ from .install_governance_pack import _pack_manifest_entries
 from .interpreter_environment import (
     InterpreterEnvironmentError,
     derive_interpreter_environment,
+    validate_runtime_import_dependencies,
     verify_interpreter_environment_projection,
 )
 from .prior_evidence_receipts import load_provisional_transport, provisional_receipts
@@ -313,6 +314,7 @@ def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, Any]:
     """Verify selected environment identity and versions before evidence."""
 
     try:
+        validate_runtime_import_dependencies(repo_root)
         plan = derive_interpreter_environment(repo_root)
         if plan is not None:
             verify_interpreter_environment_projection(plan)

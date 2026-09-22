@@ -532,6 +532,19 @@ def test_missing_interpreter_distribution_fails_before_evidence(tmp_path: Path) 
         preflight._interpreter_requirements(repo, Path(sys.executable))
 
 
+def test_undeclared_runtime_import_fails_before_interpreter_probe(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    tooling = repo / "bcf_governance/tooling"
+    tooling.mkdir(parents=True)
+    (tooling / "owner.py").write_text("import referencing\n", encoding="utf-8")
+    (repo / "pyproject.toml").write_text(
+        "[project]\nname='fixture'\nversion='1.0.0'\ndependencies=[]\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(preflight.PreflightError, match="undeclared.*referencing"):
+        preflight._interpreter_requirements(repo, Path(sys.executable))
+
+
 def test_missing_build_backend_requirement_fails_before_evidence(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "governance").mkdir(parents=True)
