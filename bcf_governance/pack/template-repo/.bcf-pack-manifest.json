@@ -872,7 +872,11 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "0f2151c08ff39c1a47ac50e976eea6d553a3c326d90dd2bbfefa182010be52a4"
+      "sha256": "cbb8db0923e8693f16efcb4fc775ee0a539bca6c219a9e511d040bdadd19b07b"
+    },
+    "scripts/_bcf_runtime/preflight_negative_controls.py": {
+      "operation": "copy",
+      "sha256": "25b5a7349819d62de3514852ffbecd26204521247c064a44088c05c9e3b21707"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",

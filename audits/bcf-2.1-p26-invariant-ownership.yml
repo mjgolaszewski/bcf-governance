@@ -94,6 +94,9 @@ p26_p0_03_dormant_expansion:
   - missing or ambiguous transport cannot suppress canonical producer execution
   - no graph activation or P26-P0-03 target change occurs in the dormant expansion
   - ordinary PR preflight reports pending_rotation and release_authority false
+  - canonical suite found the 800-LOC cap exceeded in preflight; negative-control
+    target applicability was extracted intact to preflight_negative_controls,
+    with the cap and fail-closed diagnostics preserved
   causal_boundary:
   - the trusted transport payload digest excludes its manifest; prior receipt loading must also close the manifest bytes
   - authentic source execution commits may be absent from a local clone; exact Git tree OIDs permit conservative path comparison without admitting authority
