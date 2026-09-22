@@ -5,12 +5,14 @@ This boundary verifies transported bytes; it never grants reuse or authority.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import re
 from typing import Any, Mapping
 
+from jsonschema import Draft202012Validator, RefResolver, ValidationError
 import yaml  # type: ignore[import-untyped]
 
 from .ci_github_bundle import canonical_json
@@ -19,6 +21,123 @@ from .evidence_execution import EvidenceError
 
 def _digest(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
+
+
+@dataclass(frozen=True)
+class ProvisionalPriorTransport:
+    """Locally observed bytes, never a provider-authenticated reuse decision."""
+
+    manifest: dict[str, Any]
+    files: dict[str, bytes]
+    observed_digest: str
+
+
+def _read_transport_files(evidence_dir: Path) -> dict[str, bytes]:
+    if evidence_dir.is_symlink() or not evidence_dir.is_dir():
+        raise EvidenceError("prior evidence directory is unsafe")
+    root = evidence_dir.resolve()
+    entries = list(root.rglob("*"))
+    if len(entries) > 10_000 or any(path.is_symlink() for path in entries):
+        raise EvidenceError("prior evidence directory is unsafe or oversized")
+    files = {
+        path.relative_to(root).as_posix(): path.read_bytes()
+        for path in entries if path.is_file()
+    }
+    if sum(len(raw) for raw in files.values()) > 268_435_456:
+        raise EvidenceError("prior evidence directory is oversized")
+    return files
+
+
+def _outer_digest(files: Mapping[str, bytes]) -> str:
+    material = sorted((name, _digest(raw)) for name, raw in files.items())
+    return _digest(json.dumps(material, sort_keys=True, separators=(",", ":")).encode())
+
+
+def _transport_schema(manifest: Mapping[str, Any], schema_root: Path) -> None:
+    try:
+        transport_path = schema_root / "prior-evidence-transport.schema.json"
+        reuse_path = schema_root / "reuse-attestation.schema.json"
+        transport = json.loads(transport_path.read_text(encoding="utf-8"))
+        reuse = json.loads(reuse_path.read_text(encoding="utf-8"))
+        transport["$id"] = transport_path.resolve().as_uri()
+        reuse["$id"] = reuse_path.resolve().as_uri()
+        resolver = RefResolver(
+            base_uri=transport["$id"], referrer=transport,
+            store={reuse["$id"]: reuse},
+        )
+        Draft202012Validator(transport, resolver=resolver).validate(manifest)
+    except (OSError, ValueError, ValidationError) as exc:
+        raise EvidenceError("prior evidence transport schema is invalid") from exc
+
+
+def load_provisional_transport(
+    repo_root: Path, evidence_dir: Path, *, current_subject: Mapping[str, Any],
+    expected_digest: str | None = None,
+) -> ProvisionalPriorTransport:
+    """Close downloaded bytes locally; the trusted finalizer grants authority."""
+    files = _read_transport_files(evidence_dir)
+    observed_digest = _outer_digest(files)
+    if expected_digest is not None and (
+        not re.fullmatch(r"[a-f0-9]{64}", expected_digest)
+        or observed_digest != expected_digest
+    ):
+        raise EvidenceError("prior evidence bundle digest mismatch")
+    encoded = files.get("prior-evidence-transport.json")
+    if encoded is None:
+        raise EvidenceError("prior evidence transport manifest is missing")
+    try:
+        manifest = json.loads(encoded)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise EvidenceError("prior evidence transport manifest is invalid") from exc
+    if not isinstance(manifest, dict):
+        raise EvidenceError("prior evidence transport manifest is invalid")
+    _transport_schema(manifest, repo_root / "schemas")
+    validate_transport_material(files, manifest, current_subject)
+    identities: set[str] = set()
+    artifacts = {value["artifact_id"]: value for value in manifest["artifacts"]}
+    if len(artifacts) != len(manifest["artifacts"]):
+        raise EvidenceError("prior evidence artifact identities are ambiguous")
+    for reference in manifest["receipts"]:
+        artifact = artifacts.get(reference["artifact_id"])
+        expected_reference = (
+            f"github-actions://{manifest['repository']['full_name']}/runs/"
+            f"{manifest['producer']['run_id']}/attempts/"
+            f"{manifest['producer']['run_attempt']}/artifacts/"
+            f"{reference['artifact_id']}/{reference['path']}"
+        )
+        if (artifact is None or artifact["name"] != reference["artifact_name"]
+            or artifact["provider_digest"] != "sha256:" + artifact["archive_sha256"]
+            or reference["immutable_reference"] != expected_reference):
+            raise EvidenceError("prior evidence source reference is not immutable")
+        raw = files[f"expanded/{reference['artifact_id']}/{reference['path']}"]
+        try:
+            receipt = json.loads(raw)
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise EvidenceError("prior evidence source receipt is invalid") from exc
+        evidence_id = reference["evidence_id"]
+        if (not isinstance(receipt, dict)
+            or receipt.get("evidence_id") != evidence_id
+            or evidence_id in identities):
+            raise EvidenceError("prior evidence source receipt identity is ambiguous")
+        identities.add(evidence_id)
+    return ProvisionalPriorTransport(manifest, files, observed_digest)
+
+
+def provisional_receipts(material: ProvisionalPriorTransport) -> list[dict[str, Any]]:
+    """Expose source bytes to a conservative planner, without authority."""
+    archives = {
+        value["artifact_id"]: value["archive_sha256"]
+        for value in material.manifest["artifacts"]
+    }
+    receipts: list[dict[str, Any]] = []
+    for reference in material.manifest["receipts"]:
+        raw = material.files[f"expanded/{reference['artifact_id']}/{reference['path']}"]
+        receipt = json.loads(raw)
+        receipts.append({
+            **receipt,
+            "artifact_sha256": archives[reference["artifact_id"]],
+        })
+    return receipts
 
 
 def validate_transport_material(
@@ -96,18 +215,12 @@ def load_prior_receipts(
         return []
     if not re.fullmatch(r"[a-f0-9]{64}", expected_digest or ""):
         raise EvidenceError("prior evidence requires an authenticated SHA-256 digest")
-    if evidence_dir.is_symlink() or not evidence_dir.is_dir():
-        raise EvidenceError("prior evidence directory is unsafe")
+    raw_files = _read_transport_files(evidence_dir)
     root = evidence_dir.resolve()
-    entries = list(root.rglob("*"))
-    if any(path.is_symlink() for path in entries):
-        raise EvidenceError("prior evidence directory is unsafe")
-    files = {path.relative_to(root).as_posix(): path for path in entries if path.is_file()}
-    raw_files = {name: path.read_bytes() for name, path in files.items()}
+    files = {name: root / name for name in raw_files}
     # The caller-authenticated digest closes the manifest as well as its payload.
     # The transport's internal bundle digest closes payload bytes only.
-    material = sorted((name, _digest(raw)) for name, raw in raw_files.items())
-    if _digest(json.dumps(material, sort_keys=True, separators=(",", ":")).encode()) != expected_digest:
+    if _outer_digest(raw_files) != expected_digest:
         raise EvidenceError("prior evidence bundle digest mismatch")
     manifest_path = files.get("prior-evidence-transport.json")
     if manifest_path is not None:

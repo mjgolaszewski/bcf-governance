@@ -9,6 +9,7 @@ from bcf_governance.tooling.interpreter_environment import (
     apply_interpreter_environment_projection,
     derive_interpreter_environment,
     main,
+    validate_runtime_import_dependencies,
     verify_interpreter_environment_projection,
 )
 
@@ -53,6 +54,21 @@ def test_repository_bootstrap_requirements_are_a_mechanical_projection() -> None
         "setuptools",
         "wheel",
     }
+
+
+def test_runtime_imports_must_be_declared_before_evidence(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    tooling = tmp_path / "bcf_governance/tooling"
+    tooling.mkdir(parents=True)
+    (tooling / "owner.py").write_text("import yaml\n", encoding="utf-8")
+    validate_runtime_import_dependencies(tmp_path)
+
+    (tooling / "owner.py").write_text("import referencing\n", encoding="utf-8")
+    with pytest.raises(
+        InterpreterEnvironmentError,
+        match="runtime imports undeclared package dependencies: referencing",
+    ):
+        validate_runtime_import_dependencies(tmp_path)
 
 
 def test_environment_cli_checks_the_governed_projection(capsys: pytest.CaptureFixture[str]) -> None:

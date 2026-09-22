@@ -11,9 +11,15 @@ from pathlib import Path
 from typing import Any
 
 from .ci_github_actions import action_pin
+from .ci_graph_artifact_steps import (
+    artifact_producer as _artifact_producer,
+    artifact_runtime_path as _artifact_runtime_path,
+    download_steps as _download_steps,
+)
 from .ci_graph_contracts import CompiledCIGraph, validate_ci_graph
 from .ci_graph_controller_lifecycle import controller_requirement_condition
 from .ci_graph_execution import job_required_environment
+from .ci_graph_reusable_artifacts import reusable_artifact_binding
 from .ci_graph_routing import render_runner
 from .ci_graph_yaml import render_yaml
 from .governance_install.transaction import apply_transaction
@@ -230,24 +236,6 @@ def _component_steps(
     return steps
 
 
-def _artifact_producer(
-    compiled: CompiledCIGraph, artifact: str
-) -> tuple[dict[str, Any], dict[str, Any]]:
-    for workflow in compiled.workflows:
-        for job in workflow["jobs"]:
-            if artifact in job["produces"]:
-                return workflow, job
-    raise AssertionError(f"artifact {artifact} has no producer")
-
-
-def _artifact_runtime_path(
-    compiled: CompiledCIGraph, job: dict[str, Any], artifact: str
-) -> str:
-    if job["trust"] == "trusted" and job["checkout"] is False:
-        return f"${{{{ runner.temp }}}}/bcf-{artifact}"
-    return str(compiled.graph["artifacts"][artifact]["path"])
-
-
 def _reference_file_path(
     compiled: CompiledCIGraph, job: dict[str, Any], artifact: str
 ) -> str:
@@ -255,52 +243,6 @@ def _reference_file_path(
         _artifact_runtime_path(compiled, job, artifact)
         + "/evidence-input-reference.json"
     )
-
-
-def _download_steps(
-    compiled: CompiledCIGraph, workflow: dict[str, Any], job: dict[str, Any]
-) -> list[dict[str, Any]]:
-    steps: list[dict[str, Any]] = []
-    for artifact in job["consumes"]:
-        if job["executor"]["kind"] == "durable_publish":
-            continue
-        producer_workflow, _ = _artifact_producer(compiled, artifact)
-        cross_workflow = producer_workflow["id"] != workflow["id"]
-        run_id = (
-            "${{ github.event.workflow_run.id }}"
-            if cross_workflow
-            else "${{ github.run_id }}"
-        )
-        run_attempt = (
-            "${{ github.event.workflow_run.run_attempt }}"
-            if cross_workflow
-            else "${{ github.run_attempt }}"
-        )
-        artifact_contract = compiled.graph["artifacts"][artifact]
-        with_values: dict[str, Any] = {
-            "name": f"bcf-{artifact}-{run_id}-{run_attempt}",
-            "path": _artifact_runtime_path(compiled, job, artifact),
-        }
-        if cross_workflow:
-            with_values.update(
-                {
-                    "github-token": "${{ github.token }}",
-                    "repository": "${{ github.repository }}",
-                    "run-id": run_id,
-                }
-            )
-        step: dict[str, Any] = {
-            "name": f"Download exact {artifact} evidence",
-            "uses": action_pin("download-artifact"),
-            "with": with_values,
-        }
-        if (
-            job["executor"]["kind"] == "authority"
-            and job["executor"]["operation"] == "publish"
-        ):
-            step["continue-on-error"] = True
-        steps.append(step)
-    return steps
 
 
 def _resolve_durable_steps(
@@ -662,9 +604,16 @@ def _job(
         "gate_shard",
         "terminal_truth",
     }
+    bound_downloads: list[dict[str, Any]] = []
     if not explicit_components:
         steps.extend(_download_steps(compiled, workflow, job))
         steps.extend(_resolve_durable_steps(compiled, job))
+    else:
+        bound_artifacts = [
+            artifact for artifact in job["consumes"]
+            if reusable_artifact_binding(compiled.graph, workflow, artifact) is not None
+        ]
+        bound_downloads = _download_steps(compiled, workflow, job, bound_artifacts)
     if "restore-private-modes" in job["components"]:
         steps.append(
             {
@@ -677,7 +626,16 @@ def _job(
                 ),
             }
         )
-    steps.extend(_executor_steps(compiled, job, workflow))
+    executor_steps = _executor_steps(compiled, job, workflow)
+    if bound_downloads:
+        checkout_positions = [
+            index for index, component_id in enumerate(executor["components"])
+            if compiled.graph["step_components"][component_id]["kind"] == "action"
+            and compiled.graph["step_components"][component_id]["action"] == "checkout"
+        ]
+        insertion = checkout_positions[-1] + 1 if checkout_positions else 0
+        executor_steps[insertion:insertion] = bound_downloads
+    steps.extend(executor_steps)
     if not explicit_components:
         steps.extend(_prepare_durable_steps(compiled, job))
         steps.extend(_upload_steps(compiled, job))

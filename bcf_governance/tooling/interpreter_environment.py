@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import re
+import sys
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,6 +16,48 @@ import yaml  # type: ignore[import-untyped]
 
 class InterpreterEnvironmentError(ValueError):
     """Raised when the governed interpreter environment cannot be compiled."""
+
+
+def validate_runtime_import_dependencies(repo_root: Path) -> None:
+    """Fail before evidence if self runtime imports undeclared distributions."""
+
+    tooling_root = repo_root / "bcf_governance/tooling"
+    if not tooling_root.is_dir():
+        return  # An adopter owns the installed pack, not BCF's source package.
+    try:
+        project = tomllib.loads((repo_root / "pyproject.toml").read_text(encoding="utf-8"))
+        declared = {
+            _normalized_name(requirement)
+            for requirement in project["project"]["dependencies"]
+        }
+    except (OSError, UnicodeError, tomllib.TOMLDecodeError, KeyError, TypeError) as exc:
+        raise InterpreterEnvironmentError("runtime package dependencies are invalid") from exc
+    paths = sorted(tooling_root.rglob("*.py"))
+    internal = {path.stem for path in paths if path.name != "__init__.py"}
+    internal.update(path.name for path in tooling_root.iterdir() if path.is_dir())
+    imported: set[str] = set()
+    for path in paths:
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        except (OSError, UnicodeError, SyntaxError) as exc:
+            raise InterpreterEnvironmentError("runtime source import inventory is invalid") from exc
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imported.update(alias.name.split(".", 1)[0] for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+                imported.add(node.module.split(".", 1)[0])
+    aliases = {"yaml": "pyyaml"}
+    missing = sorted({
+        aliases.get(name, name)
+        for name in imported
+        if name not in sys.stdlib_module_names
+        and name != "bcf_governance"
+        and name not in internal
+    } - declared)
+    if missing:
+        raise InterpreterEnvironmentError(
+            "runtime imports undeclared package dependencies: " + ", ".join(missing)
+        )
 
 
 @dataclass(frozen=True)

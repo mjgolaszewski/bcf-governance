@@ -15,6 +15,9 @@ from bcf_governance.tooling.ci_github_identity import MainIdentity
 from bcf_governance.tooling.ci_prior_evidence_auth import AuthenticatedPriorTransport
 from bcf_governance.tooling.evidence_claims import qualification_equivalence
 from bcf_governance.tooling.evidence_reuse_attestations import compose_reuse_attestations
+from bcf_governance.tooling.evidence_reuse_attestations import compose_local_reuse
+from bcf_governance.tooling import evidence_reuse_attestations as reuse_module
+from bcf_governance.tooling.evidence_execution import EvidenceError
 from tests.test_evidence_planning import _commit, _receipt, _repo
 
 
@@ -80,11 +83,65 @@ def test_reuse_attestations_admit_only_exact_applicable_claim(tmp_path: Path) ->
     }
 
 
+def test_local_truth_requires_every_planned_reuse_claim_to_recompute(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root, transport, main, _contract, _entries = _fixture(tmp_path)
+    transport.manifest["merge"]["base_branch"] = "main"
+    monkeypatch.setattr(
+        reuse_module, "load_provisional_transport",
+        lambda *_args, **_kwargs: transport,
+    )
+    evidence_id = transport.manifest["receipts"][0]["evidence_id"]
+    plan = {
+        "required_claims": ["app-valid", "other-valid"],
+        "preflight_satisfied_claims": [],
+        "reused_evidence": [{
+            "claim_id": "app-valid", "evidence_id": evidence_id,
+            "artifact_sha256": "d" * 64,
+            "reason": "dependency fingerprints remain applicable",
+        }],
+    }
+    decisions, indexed = compose_local_reuse(
+        root, Path("/unused"), plan,
+        {"commit_sha": main.checkout_sha, "tree_sha": main.tree_sha},
+        emitted_at="2026-09-22T00:01:00Z",
+    )
+    assert len(decisions) == 1
+    assert list(indexed) == ["app-valid"]
+    plan["reused_evidence"].append({
+        "claim_id": "other-valid", "evidence_id": "missing",
+        "artifact_sha256": "d" * 64,
+        "reason": "dependency fingerprints remain applicable",
+    })
+    with pytest.raises(EvidenceError, match="complete applicable attestations"):
+        compose_local_reuse(
+            root, Path("/unused"), plan,
+            {"commit_sha": main.checkout_sha, "tree_sha": main.tree_sha},
+            emitted_at="2026-09-22T00:01:00Z",
+        )
+
+
 def test_reuse_attestation_rejects_wrong_producer(tmp_path: Path) -> None:
     root, transport, main, contract, entries = _fixture(tmp_path)
     raw_path = "expanded/901/test/app.evidence.json"
     receipt = json.loads(transport.files[raw_path])
     receipt["gate_id"] = "other-test"
+    transport.files[raw_path] = json.dumps(receipt).encode()
+    decisions, fallback = compose_reuse_attestations(
+        root, transport, main, contract, entries, ["app-valid"],
+        emitted_at="2026-09-22T00:01:00Z",
+    )
+    assert fallback == ["app-valid"]
+    assert decisions[0]["decision"] == "canonical_execution_required"
+    assert "authority_ambiguous" in decisions[0]["rejection_reasons"]
+
+
+def test_failed_source_receipt_requires_canonical_execution(tmp_path: Path) -> None:
+    root, transport, main, contract, entries = _fixture(tmp_path)
+    raw_path = "expanded/901/test/app.evidence.json"
+    receipt = json.loads(transport.files[raw_path])
+    receipt["result"] = "failed"
     transport.files[raw_path] = json.dumps(receipt).encode()
     decisions, fallback = compose_reuse_attestations(
         root, transport, main, contract, entries, ["app-valid"],

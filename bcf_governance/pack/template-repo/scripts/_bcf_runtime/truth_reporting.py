@@ -59,6 +59,32 @@ def current_session_plan(evidence_dir: Path, current: dict[str, Any]) -> dict[st
     return matches[0] if matches else {}
 
 
+def exact_session_binding(
+    evidence_dir: Path, current: dict[str, Any], session_plan: dict[str, Any]
+) -> dict[str, str]:
+    """Bind truth to the raw manifest bytes actually found at fan-in."""
+    if not session_plan or not isinstance(session_plan.get("session_id"), str):
+        raise ValueError("reused claims lack an exact evidence session")
+    expected_subject = {
+        "commit_sha": current["commit_sha"], "tree_sha": current["tree_sha"],
+    }
+    digests: set[str] = set()
+    for path in evidence_dir.rglob("evidence-session.json"):
+        try:
+            encoded = path.read_bytes()
+            payload = json.loads(encoded)
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        if payload == session_plan and payload.get("subject") == expected_subject:
+            digests.add(hashlib.sha256(encoded).hexdigest())
+    if len(digests) != 1:
+        raise ValueError("reused claims have ambiguous evidence-session bytes")
+    return {
+        "session_id": session_plan["session_id"],
+        "manifest_sha256": next(iter(digests)),
+    }
+
+
 def profile_closeout_requirements(repo_root: Path, profile_payload: dict[str, Any]) -> dict[str, Any]:
     registry = yaml.safe_load(
         (repo_root / "governance/gate-contracts.yml").read_text(encoding="utf-8")

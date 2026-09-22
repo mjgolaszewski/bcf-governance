@@ -1,13 +1,36 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 
+import pytest
+
 from bcf_governance.tooling.truth_reporting import (
+    exact_session_binding,
     eligible_claim_receipts,
     eligible_receipts,
     failure_envelope,
 )
+
+
+def test_reuse_truth_binds_exact_consumed_session_bytes(tmp_path: Path) -> None:
+    subject = {"commit_sha": "a" * 40, "tree_sha": "b" * 40}
+    plan = {"session_id": "c" * 32, "subject": subject, "reused_evidence": []}
+    encoded = (json.dumps(plan, sort_keys=True) + "\n").encode()
+    for name in ("first", "same-copy"):
+        directory = tmp_path / name
+        directory.mkdir()
+        (directory / "evidence-session.json").write_bytes(encoded)
+    assert exact_session_binding(tmp_path, subject, plan) == {
+        "session_id": "c" * 32,
+        "manifest_sha256": hashlib.sha256(encoded).hexdigest(),
+    }
+    (tmp_path / "same-copy/evidence-session.json").write_bytes(
+        json.dumps(plan, indent=2).encode()
+    )
+    with pytest.raises(ValueError, match="ambiguous evidence-session bytes"):
+        exact_session_binding(tmp_path, subject, plan)
 
 
 def _plan() -> dict:
@@ -69,6 +92,45 @@ def test_eligible_receipts_are_version_aware_and_preflight_is_optional() -> None
             {}, model, "contract-test", {"contract-claim"}, include_preflight=False
         )
     ) == []
+
+
+def test_provisional_reuse_resolves_only_its_exact_claim() -> None:
+    model = {
+        "claims": {
+            "contract-claim": {
+                "legacy_gate": "contract-test", "execution_group": "python-tests",
+            },
+            "other-claim": {
+                "legacy_gate": "other-test", "execution_group": "other-tests",
+            },
+        },
+        "execution_groups": {
+            "python-tests": {"producer": "test", "claims": ["contract-claim"]},
+            "other-tests": {"producer": "other-test", "claims": ["other-claim"]},
+        },
+    }
+    attestation = {
+        "claim": {
+            "claim_id": "contract-claim", "execution_group_id": "python-tests",
+        },
+        "source_receipt": {"evidence_id": "source-1"},
+        "attestation_id": "a" * 64,
+        "decision": "reuse_admitted",
+    }
+    attestations = {"contract-claim": attestation}
+    selected = list(eligible_receipts(
+        {}, model, "contract-test", set(), reuse_attestations=attestations,
+    ))
+    assert len(selected) == 1
+    assert selected[0]["source"] == "provisional_reuse_v1"
+    assert selected[0]["claim_id"] == "contract-claim"
+    assert list(eligible_receipts(
+        {}, model, "other-test", set(), reuse_attestations=attestations,
+    )) == []
+    attestation["claim"]["execution_group_id"] = "other-tests"
+    assert list(eligible_receipts(
+        {}, model, "contract-test", set(), reuse_attestations=attestations,
+    )) == []
 
 
 def test_grouped_claim_resolver_rejects_unrelated_producer_laundering() -> None:

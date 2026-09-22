@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +26,8 @@ from .governance_truth_support import (
     verify_attestation,
 )
 from .evidence_workitem_lifecycle import workitem_observation
+from .evidence_execution import EvidenceError
+from .evidence_reuse_attestations import compose_local_reuse
 from .truth_receipts import ReceiptError, load_receipts
 from .evidence_planning import load_claim_model
 from .truth_reporting import (
@@ -32,6 +35,7 @@ from .truth_reporting import (
     active_log_path,
     current_subject,
     current_session_plan,
+    exact_session_binding,
     failure_envelope,
     profile_closeout_requirements,
     verified_candidate,
@@ -243,6 +247,7 @@ def derive_truth(
     ci_authority_path: Path | None = None,
     ci_certification_path: Path | None = None,
     ci_session_manifest_path: Path | None = None,
+    prior_transport_dir: Path | None = None,
 ) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     evidence_dir = evidence_dir.resolve()
@@ -280,11 +285,27 @@ def derive_truth(
         if contract_version == "3.0"
         else {}
     )
+    reuse_session_binding = (
+        exact_session_binding(evidence_dir, current, session_plan)
+        if session_plan.get("reused_evidence") else None
+    )
     preflight_claims = {
         str(value)
         for value in session_plan.get("preflight_satisfied_claims", [])
         if isinstance(value, str)
     }
+    reuse_decisions: list[dict[str, Any]] = []
+    reuse_index: dict[str, dict[str, Any]] = {}
+    if session_plan.get("reused_evidence"):
+        if prior_transport_dir is None:
+            raise TruthfulnessError("planned reuse lacks its prior transport bytes")
+        try:
+            reuse_decisions, reuse_index = compose_local_reuse(
+                repo_root, prior_transport_dir, session_plan, current,
+                emitted_at=datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            )
+        except (EvidenceError, OSError, ValueError) as exc:
+            raise TruthfulnessError("planned reuse lacks complete applicable attestations") from exc
     phase_log = _load_yaml(active_log_path(repo_root))
     ledger_payload = _load_yaml(repo_root / "plans/phase-ledger.yml")
     active_phase = ledger_payload.get("active_phase")
@@ -321,7 +342,8 @@ def derive_truth(
     claims: dict[str, Any] = {}
     direct_verified = not missing_claim_declarations
     workitems = workitem_observation(
-        repo_root, receipts, claim_model or {"claims": {}}, preflight_claims, current
+        repo_root, receipts, claim_model or {"claims": {}}, preflight_claims, current,
+        reuse_attestations=reuse_index,
     )
     required_gate_ids: set[str] = set()
     for claim_id, raw in raw_claims.items():
@@ -343,7 +365,8 @@ def derive_truth(
         for gate_id in gate_ids:
             candidates = receipts.get(gate_id, [])
             verified = (
-                verified_candidate(receipts, claim_model, gate_id, preflight_claims)
+                verified_candidate(receipts, claim_model, gate_id, preflight_claims,
+                                   reuse_index)
                 if claim_model is not None
                 else next(
                     (
@@ -403,7 +426,8 @@ def derive_truth(
     required_gate_ids.update(reconciliation_gates)
     reconciliation_verified = bool(reconciliation_gates) and all(
         (
-            verified_candidate(receipts, claim_model, gate_id, preflight_claims)
+            verified_candidate(receipts, claim_model, gate_id, preflight_claims,
+                               reuse_index)
             is not None
             if claim_model is not None
             else any(
@@ -488,7 +512,8 @@ def derive_truth(
         gate_id
         for gate_id in release_gate_ids
         if (
-            verified_candidate(receipts, claim_model, gate_id, preflight_claims)
+            verified_candidate(receipts, claim_model, gate_id, preflight_claims,
+                               reuse_index)
             is None
             if claim_model is not None
             else not any(
@@ -623,6 +648,7 @@ def derive_truth(
             claim_model,
             preflight_claims,
             session_plan.get("required_claims", []),
+            reuse_index,
         ),
     )
     required_count = len(session_plan.get("required_claims", []))
@@ -721,6 +747,9 @@ def derive_truth(
         "issues": final_issues,
         "failure_envelope": envelope,
         "advisory_metrics": advisory_metrics,
+        **({"reuse_attestations": reuse_decisions} if reuse_decisions else {}),
+        **({"reuse_session_binding": reuse_session_binding}
+           if reuse_session_binding is not None else {}),
     }
 
 

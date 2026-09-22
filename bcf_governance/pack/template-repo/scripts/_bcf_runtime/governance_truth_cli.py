@@ -22,6 +22,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--ci-authority", type=Path)
     parser.add_argument("--ci-certification", type=Path)
     parser.add_argument("--ci-session-manifest", type=Path)
+    parser.add_argument("--prior-evidence-dir", type=Path)
     parser.add_argument("--release-receipt-output", type=Path)
     parser.add_argument("--release-artifact", type=Path, action="append", default=[])
     parser.add_argument("--durable-ref")
@@ -39,6 +40,7 @@ def main(argv: list[str] | None = None) -> None:
             ci_authority_path=args.ci_authority,
             ci_certification_path=args.ci_certification,
             ci_session_manifest_path=args.ci_session_manifest,
+            prior_transport_dir=args.prior_evidence_dir,
         )
     except TruthfulnessError as exc:
         print(str(exc), file=os.sys.stderr)

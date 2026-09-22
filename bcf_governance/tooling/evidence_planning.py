@@ -426,7 +426,8 @@ def qualification_applicability(
     )
     manifest = receipt.get("dependency_manifest")
     if (
-        not isinstance(claim, dict)
+        receipt.get("result") != "passed"
+        or not isinstance(claim, dict)
         or claim.get("qualification_scope") != "detector"
         or not isinstance(receipt.get("claims"), list)
         or claim_id not in receipt["claims"]

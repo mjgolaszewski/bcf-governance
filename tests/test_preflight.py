@@ -532,6 +532,19 @@ def test_missing_interpreter_distribution_fails_before_evidence(tmp_path: Path) 
         preflight._interpreter_requirements(repo, Path(sys.executable))
 
 
+def test_undeclared_runtime_import_fails_before_interpreter_probe(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    tooling = repo / "bcf_governance/tooling"
+    tooling.mkdir(parents=True)
+    (tooling / "owner.py").write_text("import referencing\n", encoding="utf-8")
+    (repo / "pyproject.toml").write_text(
+        "[project]\nname='fixture'\nversion='1.0.0'\ndependencies=[]\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(preflight.PreflightError, match="undeclared.*referencing"):
+        preflight._interpreter_requirements(repo, Path(sys.executable))
+
+
 def test_missing_build_backend_requirement_fails_before_evidence(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "governance").mkdir(parents=True)
@@ -614,6 +627,33 @@ def test_broken_project_virtualenv_fails_before_evidence(tmp_path: Path) -> None
         preflight._interpreter_identity(python)
 
 
+def test_wrong_prior_transport_subject_stops_before_evidence_fanout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from tests.test_prior_evidence_receipts import _downloaded
+
+    transport_dir, manifest = _downloaded(tmp_path / "transport")
+    calls: list[str] = []
+    monkeypatch.setattr(
+        preflight, "_git_state",
+        lambda _: {
+            "commit_sha": manifest["main"]["commit_sha"],
+            "tree_sha": "0" * 40,
+        },
+    )
+    monkeypatch.setattr(
+        preflight, "allocate_session",
+        lambda *_, **__: calls.append("allocated"),
+    )
+    with pytest.raises(ValueError, match="main subject is not current"):
+        preflight.run_preflight(
+            REPO_ROOT, mode="pr", python_executable=sys.executable,
+            prior_transport_dir=transport_dir,
+            artifact_root=tmp_path / "evidence", trace=calls.append,
+        )
+    assert calls == ["git-state", "prior-transport"]
+
+
 def test_interpreter_failure_prevents_session_allocation(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -643,6 +683,36 @@ def test_interpreter_failure_prevents_session_allocation(
             trace=calls.append,
         )
 
+    assert calls == ["git-state", "syntax", "exposure", "interpreter"]
+
+
+def test_undeclared_runtime_import_stops_full_preflight_before_evidence(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[str] = []
+    repo = tmp_path / "repo"
+    tooling = repo / "bcf_governance/tooling"
+    tooling.mkdir(parents=True)
+    (tooling / "owner.py").write_text("import referencing\n", encoding="utf-8")
+    (repo / "pyproject.toml").write_text(
+        "[project]\nname='fixture'\nversion='1.0.0'\ndependencies=[]\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(preflight, "_git_state", lambda _: {})
+    monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
+    monkeypatch.setattr(preflight, "_exposure_scan", lambda _: {})
+    monkeypatch.setattr(
+        preflight, "allocate_session", lambda *_, **__: calls.append("allocated")
+    )
+
+    with pytest.raises(preflight.PreflightError, match="undeclared.*referencing"):
+        preflight.run_preflight(
+            repo,
+            mode="pr",
+            python_executable=sys.executable,
+            artifact_root=tmp_path / "evidence",
+            trace=calls.append,
+        )
     assert calls == ["git-state", "syntax", "exposure", "interpreter"]
 
 

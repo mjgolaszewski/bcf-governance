@@ -13,6 +13,10 @@ from typing import Any
 from jsonschema import Draft202012Validator
 
 from .ci_graph_errors import CIGraphError, execution_graph_error
+from .ci_graph_dag import ancestors as _ancestors, job_graph as _job_graph
+from .ci_graph_reusable_artifacts import (
+    reusable_artifact_binding, validate_reusable_binding_declarations,
+)
 from .ci_graph_execution import hosted_command_issues, job_execution_issues
 from .ci_graph_authority_policy import validate_graph_authority_policy
 from .ci_graph_controller_lifecycle import (
@@ -394,43 +398,6 @@ def _validate_condition_scope(
         )
 
 
-def _job_graph(workflow: dict[str, Any]) -> tuple[dict[str, dict[str, Any]], dict[str, set[str]]]:
-    jobs = workflow["jobs"]
-    by_id: dict[str, dict[str, Any]] = {}
-    dependencies: dict[str, set[str]] = {}
-    for job in jobs:
-        job_id = job["id"]
-        if job_id in by_id:
-            raise CIGraphError(f"workflow {workflow['id']} duplicates job ID {job_id}")
-        by_id[job_id] = job
-        dependencies[job_id] = set(job["needs"])
-    for job_id, needs in dependencies.items():
-        missing = sorted(needs - set(by_id))
-        if missing:
-            raise CIGraphError(f"workflow {workflow['id']} job {job_id} needs missing jobs {missing}")
-    return by_id, dependencies
-
-
-def _ancestors(job_id: str, dependencies: dict[str, set[str]]) -> set[str]:
-    visited: set[str] = set()
-    active: set[str] = set()
-
-    def visit(current: str) -> None:
-        if current in active:
-            raise CIGraphError(f"CI graph cycle includes job {current}")
-        if current in visited:
-            return
-        active.add(current)
-        for dependency in dependencies[current]:
-            visit(dependency)
-        active.remove(current)
-        visited.add(current)
-
-    visit(job_id)
-    visited.remove(job_id)
-    return visited
-
-
 def _validate_workflows(graph: dict[str, Any]) -> None:
     workflows = graph["workflows"]
     workflow_ids = [item["id"] for item in workflows]
@@ -501,6 +468,7 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                     identifier=job["id"],
                 )
             executor = job["executor"]
+            validate_reusable_binding_declarations(graph, job)
             condition = job["condition"]
             if condition not in {"success", "always", "failure", "cancelled"} and condition not in graph["conditions"]:
                 raise CIGraphError(
@@ -559,7 +527,15 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                     raise CIGraphError(
                         f"CI graph job {job['id']} component-produced artifacts do not match its contract"
                     )
-                if component_consumes != set(job["consumes"]):
+                reusable_consumes = {
+                    artifact for artifact in job["consumes"]
+                    if reusable_artifact_binding(graph, workflow, artifact) is not None
+                }
+                if component_consumes & reusable_consumes:
+                    raise CIGraphError(
+                        f"CI graph job {job['id']} downloads a reusable artifact twice"
+                    )
+                if component_consumes | reusable_consumes != set(job["consumes"]):
                     raise CIGraphError(
                         f"CI graph job {job['id']} component-consumed artifacts do not match its contract"
                     )
@@ -648,6 +624,20 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                 if producer_workflow == workflow["id"]:
                     if producer_job not in ancestor_map[job["id"]]:
                         raise CIGraphError(f"CI graph artifact {artifact} is outside exact dependency fan-in")
+                    continue
+                binding = reusable_artifact_binding(graph, workflow, artifact)
+                if binding is not None:
+                    _, calls = binding
+                    for caller_workflow, caller_job in calls:
+                        _, caller_dependencies = _job_graph(caller_workflow)
+                        if (
+                            caller_workflow["id"] != producer_workflow
+                            or artifact not in caller_job["consumes"]
+                            or producer_job not in _ancestors(caller_job["id"], caller_dependencies)
+                        ):
+                            raise CIGraphError(
+                                f"CI graph reusable artifact {artifact} is outside exact caller dependency fan-in"
+                            )
                     continue
                 producer = workflows_by_id[producer_workflow]
                 trigger_names = {

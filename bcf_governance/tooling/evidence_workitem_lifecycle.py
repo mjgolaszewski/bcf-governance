@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
@@ -78,6 +78,7 @@ def workitem_observation(
     claim_model: dict[str, Any],
     preflight_claims: set[str],
     subject: dict[str, Any],
+    reuse_attestations: Mapping[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Compute bounded workitem closure without conferring parent authority."""
     ledger = yaml.safe_load(
@@ -125,6 +126,7 @@ def workitem_observation(
                     gate_id,
                     preflight_claims,
                     include_preflight=False,
+                    reuse_attestations=reuse_attestations,
                 ),
                 None,
             )
