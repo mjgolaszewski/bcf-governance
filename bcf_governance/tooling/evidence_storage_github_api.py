@@ -60,32 +60,6 @@ class GitHubEvidenceAPI(GitHubAPI):
             raise GitHubAPIError("GitHub evidence release identity mismatch")
         return value
 
-    def repository_artifacts(self, repository: str) -> tuple[dict[str, Any], ...]:
-        """Read the complete current artifact inventory without caller pagination."""
-
-        first = self._request(
-            "GET", f"/repos/{self._repository(repository)}/actions/artifacts?per_page=100&page=1"
-        )
-        if not isinstance(first, dict) or not isinstance(first.get("artifacts"), list):
-            raise GitHubAPIError("repository artifact inventory is malformed")
-        total = first.get("total_count")
-        if not isinstance(total, int) or total < 0 or total > 100_000:
-            raise GitHubAPIError("repository artifact total is unsafe")
-        result = list(first["artifacts"])
-        pages = (total + 99) // 100
-        for page in range(2, pages + 1):
-            value = self._request(
-                "GET",
-                f"/repos/{self._repository(repository)}/actions/artifacts?per_page=100&page={page}",
-            )
-            items = value.get("artifacts") if isinstance(value, dict) else None
-            if not isinstance(items, list):
-                raise GitHubAPIError("repository artifact page is malformed")
-            result.extend(items)
-        if len(result) != total or any(not isinstance(item, dict) for item in result):
-            raise GitHubAPIError("repository artifact inventory is incomplete")
-        return tuple(result)
-
     def delete_action_artifact(self, repository: str, artifact_id: object) -> None:
         """Delete one exact Actions artifact; no name or glob selection is allowed."""
 

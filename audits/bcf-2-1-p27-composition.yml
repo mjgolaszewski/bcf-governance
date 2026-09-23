@@ -171,3 +171,10 @@ p27_p0_02_migration_expansion:
     protection_mutation: false
     break_glass: false
     successor: P27-P0-03 remains blocked until P27-P0-02 closes through provider-visible bounded certification
+    post_merge_pagination_correction:
+      exact_main: 35906510184/1
+      automation: 35906558489/1
+      first_causal_invariant: repository artifact inventory exceeded one authenticated page
+      canonical_owner: bcf_governance/tooling/ci_github_artifact_inventory.py
+      correction: bounded complete stable provider pagination with exact total and unique artifact identity
+      fast_fail: provider-shape capability is regression-tested before push; live inventory remains an authenticated provider fact

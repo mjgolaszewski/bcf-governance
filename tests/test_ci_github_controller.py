@@ -2032,10 +2032,57 @@ def test_break_glass_api_reads_are_exact_and_repository_scoped() -> None:
         "/installation/repositories?per_page=100",
         "/users/owner",
         "/repos/owner/repo/collaborators/owner/permission",
-        "/repos/owner/repo/actions/artifacts?per_page=100&name=recovery-build-abc",
+        "/repos/owner/repo/actions/artifacts?per_page=100&page=1&name=recovery-build-abc",
     ]
     with pytest.raises(GitHubAPIError, match="artifact name filter is unsafe"):
         api.repository_artifacts("owner/repo", name="../artifact")
+
+
+def test_repository_artifact_inventory_is_complete_across_authenticated_pages() -> None:
+    class PaginatedAPI(GitHubAPI):
+        def __init__(self) -> None:
+            super().__init__(token="test")
+            self.paths: list[str] = []
+
+        def _request(self, method: str, path: str, *, payload=None):  # type: ignore[no-untyped-def]
+            self.paths.append(path)
+            page = 2 if "page=2" in path else 1
+            start = 101 if page == 2 else 1
+            stop = 102 if page == 2 else 101
+            return {
+                "total_count": 101,
+                "artifacts": [{"id": value} for value in range(start, stop)],
+            }
+
+    api = PaginatedAPI()
+    artifacts = api.repository_artifacts("owner/repo")
+
+    assert [artifact["id"] for artifact in artifacts] == list(range(1, 102))
+    assert api.paths == [
+        "/repos/owner/repo/actions/artifacts?per_page=100&page=1",
+        "/repos/owner/repo/actions/artifacts?per_page=100&page=2",
+    ]
+
+
+@pytest.mark.parametrize("failure", ["changed-total", "missing", "duplicate"])
+def test_repository_artifact_pagination_fails_closed_on_inexact_inventory(
+    failure: str,
+) -> None:
+    class InexactAPI(GitHubAPI):
+        def _request(self, method: str, path: str, *, payload=None):  # type: ignore[no-untyped-def]
+            if "page=2" not in path:
+                return {
+                    "total_count": 101,
+                    "artifacts": [{"id": value} for value in range(1, 101)],
+                }
+            if failure == "changed-total":
+                return {"total_count": 102, "artifacts": [{"id": 101}]}
+            if failure == "missing":
+                return {"total_count": 101, "artifacts": []}
+            return {"total_count": 101, "artifacts": [{"id": 100}]}
+
+    with pytest.raises(GitHubAPIError, match="changed|incomplete|ambiguous"):
+        InexactAPI(token="test").repository_artifacts("owner/repo")
 
 
 @pytest.mark.parametrize(
