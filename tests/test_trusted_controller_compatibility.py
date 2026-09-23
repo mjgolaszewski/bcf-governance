@@ -6,8 +6,10 @@ import subprocess
 import pytest
 
 from bcf_governance.tooling.trusted_controller_compatibility import (
+    TrustedControllerBootstrapIncompatibleError,
     TrustedControllerCompatibilityError,
     trusted_runtime_source_files,
+    verify_pr_bootstrap_compatibility,
     verify_trusted_controller_compatibility,
 )
 
@@ -49,6 +51,20 @@ def _write_runtime(root: Path) -> None:
         "governance:\n"
         "  structural_schema_contract:\n"
         "    required_schemas: [schemas/ci-authority.schema.json]\n",
+        encoding="utf-8",
+    )
+    workflows = root / ".github/workflows"
+    workflows.mkdir(parents=True)
+    (workflows / "governance.yml").write_text(
+        "name: governance\n"
+        "jobs:\n"
+        "  evidence:\n"
+        "    name: Evidence / ${{ matrix.display_name }}\n"
+        "    strategy:\n"
+        "      matrix:\n"
+        "        include: [{display_name: legacy}]\n"
+        "    runs-on: ubuntu-latest\n"
+        "    steps: []\n",
         encoding="utf-8",
     )
 
@@ -158,6 +174,77 @@ def test_target_must_be_in_current_history(tmp_path: Path) -> None:
 
     with pytest.raises(TrustedControllerCompatibilityError):
         verify_trusted_controller_compatibility(root, target_commit="f" * 40)
+
+
+def _change_governance_job_inventory(root: Path, value: str) -> None:
+    workflow = root / ".github/workflows/governance.yml"
+    workflow.write_text(workflow.read_text().replace("legacy", value), encoding="utf-8")
+    _git(root, "add", workflow.relative_to(root).as_posix())
+    _git(root, "commit", "-q", "-m", "change provider job inventory")
+
+
+def _install_inventory_capability(root: Path) -> str:
+    tooling = root / "bcf_governance/tooling"
+    (tooling / "prior_evidence_transport.py").write_text(
+        "from .provider_job_inventory import candidate_governance_job_inventory\n",
+        encoding="utf-8",
+    )
+    (tooling / "provider_job_inventory.py").write_text(
+        "def candidate_governance_job_inventory(): return ()\n", encoding="utf-8"
+    )
+    _git(root, "add", ".")
+    _git(root, "commit", "-q", "-m", "install candidate inventory capability")
+    return _git(root, "rev-parse", "HEAD")
+
+
+def test_pr_job_inventory_transition_rejects_controller_without_capability(
+    tmp_path: Path,
+) -> None:
+    root, controller_n = _repository(tmp_path)
+    base = controller_n
+    _change_governance_job_inventory(root, "successor")
+
+    with pytest.raises(
+        TrustedControllerBootstrapIncompatibleError,
+        match="changed before installed controller support.*provider_job_inventory.py",
+    ):
+        verify_pr_bootstrap_compatibility(
+            root, base_commit=base, target_commit=controller_n
+        )
+
+
+def test_pr_bootstrap_allows_capability_expansion_without_topology_activation(
+    tmp_path: Path,
+) -> None:
+    root, controller_n = _repository(tmp_path)
+    base = controller_n
+    _install_inventory_capability(root)
+
+    verify_pr_bootstrap_compatibility(
+        root, base_commit=base, target_commit=controller_n
+    )
+
+
+def test_pr_job_inventory_transition_accepts_installed_capability_and_rejects_drift(
+    tmp_path: Path,
+) -> None:
+    root, _ = _repository(tmp_path)
+    controller_n_plus_one = _install_inventory_capability(root)
+    base = controller_n_plus_one
+    _change_governance_job_inventory(root, "successor")
+
+    verify_pr_bootstrap_compatibility(
+        root, base_commit=base, target_commit=controller_n_plus_one
+    )
+
+    capability = root / "bcf_governance/tooling/provider_job_inventory.py"
+    capability.write_text("def candidate_governance_job_inventory(): return None\n")
+    _git(root, "add", capability.relative_to(root).as_posix())
+    _git(root, "commit", "-q", "-m", "mutate inventory capability")
+    with pytest.raises(TrustedControllerBootstrapIncompatibleError):
+        verify_pr_bootstrap_compatibility(
+            root, base_commit=base, target_commit=controller_n_plus_one
+        )
 
 
 def _add_successor_schema(root: Path, *, activate: bool) -> None:

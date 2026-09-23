@@ -291,6 +291,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         "governance",
         "self-workflows",
         "workflow-authority",
+        "pr-context",
         "self-controller",
         "negative-controls",
         "semantic-ownership",
@@ -298,9 +299,8 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         "pack-manifest",
         "editorial-contract",
         "test-manifests",
-            "pr-context",
-            "verification-plan",
-            "session",
+        "verification-plan",
+        "session",
         "allocated",
     ]
     assert report["session_manifest"] == (tmp_path / "session.json").as_posix()
@@ -384,6 +384,14 @@ def test_stale_trusted_controller_is_a_preflight_failure(
         encoding="utf-8",
     )
     monkeypatch.setattr(preflight, "verify_self_controller_projection", lambda _: 6)
+    bootstrap: list[tuple[str, str]] = []
+    monkeypatch.setattr(
+        preflight,
+        "verify_pr_bootstrap_compatibility",
+        lambda _root, *, base_commit, target_commit: bootstrap.append(
+            (base_commit, target_commit)
+        ),
+    )
 
     def reject(*_: object, **__: object) -> None:
         raise preflight.TrustedControllerCompatibilityError("stale runtime closure")
@@ -410,12 +418,13 @@ def test_stale_trusted_controller_is_a_preflight_failure(
         preflight._self_controller(tmp_path, allow_stale_runtime=False)
 
     assert preflight._self_controller(
-        tmp_path, allow_stale_runtime=True
+        tmp_path, allow_stale_runtime=True, pr_base_sha="b" * 40
     ) == {
         "status": "pending_rotation",
         "projection_count": 6,
         "release_authority": False,
     }
+    assert bootstrap == [("b" * 40, target)]
 
     assert preflight.preflight_mode_for_evaluation(None) == "pr"
     assert preflight.preflight_mode_for_evaluation("pr") == "pr"
@@ -426,6 +435,41 @@ def test_stale_trusted_controller_is_a_preflight_failure(
             match="self-controller preflight failed: stale runtime closure",
         ):
             preflight._self_controller(tmp_path, allow_stale_runtime=False)
+
+
+def test_pr_bootstrap_fails_early(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    target = "a" * 40
+    policy = tmp_path / "governance/self-governance-policy.yml"
+    policy.parent.mkdir(parents=True)
+    policy.write_text(
+        "runner_security:\n"
+        "  trusted_controller_artifact:\n"
+        f"    BCF_BOOTSTRAP_COMMIT_SHA: {target}\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(preflight, "verify_self_controller_projection", lambda _: 6)
+    monkeypatch.setattr(
+        preflight,
+        "verify_pr_bootstrap_compatibility",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            preflight.TrustedControllerCompatibilityError(
+                "PR producer job inventory changed before installed controller support"
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        preflight, "verify_trusted_controller_compatibility", lambda *_args, **_kwargs: None
+    )
+
+    with pytest.raises(
+        preflight.PreflightError,
+        match="job inventory changed before installed controller support",
+    ):
+        preflight._self_controller(
+            tmp_path, allow_stale_runtime=True, pr_base_sha="b" * 40
+        )
 
 
 def test_stale_pack_manifest_fails_before_evidence(

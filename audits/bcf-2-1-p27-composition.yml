@@ -132,3 +132,11 @@ p27_p0_02_migration_expansion:
     failure: six prior-evidence transport tests retained pre-migration evidence shard display names
     correction: provider fixture derives the exact producer job inventory through the canonical graph projection
     production_semantics_changed: false
+  post_merge_transport_correction:
+    main: 278677bc2fa15778b006aa6664e14df36f3075eb
+    exact_main: 35821187749/1
+    first_causal_job: 107053171865
+    failure: installed controller projected the merged PR producer inventory from source-main graph bytes rather than exact candidate workflow bytes
+    canonical_owner: bcf_governance/tooling/provider_job_inventory.py
+    fast_fail: cheap PR preflight rejects a changed provider job inventory unless the installed controller contains the exact candidate-inventory transport capability
+    assurance: source-main protection and controller authority remain unchanged; candidate bytes determine only the exact inventory they emitted

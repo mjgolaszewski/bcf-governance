@@ -157,6 +157,15 @@ def _compiled_workflow_jobs(
     return inventory
 
 
+def compiled_workflow_job_names(raw: bytes) -> tuple[str, ...]:
+    """Compile the exact provider-visible job inventory from workflow bytes."""
+
+    return tuple(
+        str(value["job_id"])
+        for _, value in _compiled_workflow_jobs(raw, roles=None)
+    )
+
+
 def _compile_inventories(
     payload: dict[str, Any], committed_workflows: dict[str, bytes]
 ) -> None:

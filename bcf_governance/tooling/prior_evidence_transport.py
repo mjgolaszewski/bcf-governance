@@ -36,10 +36,10 @@ from .github_protection import (
     load_protection_bytes,
 )
 from .protection_inspection_client import ProtectionInspectionClient
+from .provider_job_inventory import candidate_governance_job_inventory
 
 
 FINALIZER_WORKFLOW = ".github/workflows/bcf-pr-finalizer.yml"
-GRAPH_PATH = "governance/ci-graph.yml"
 POLICY_PATH = "governance/self-governance-policy.yml"
 CHECK_CONTEXT = "bcf/pr-certification"
 CHECK_APP_ID = 15368
@@ -232,44 +232,6 @@ def _one_artifact(
     if f"sha256:{_sha256(raw)}" != provider_digest:
         raise GitHubControllerError("artifact bytes do not match provider digest")
     return matches[0], artifact_id, provider_digest, raw, _archive_files(raw)
-
-
-def _graph_jobs(
-    api: GitHubAPI, repository: str, *, ref: str
-) -> tuple[str, ...]:
-    graph = _mapping(
-        api.content(repository, GRAPH_PATH, ref=ref).content, label="CI graph"
-    )
-    workflows = graph.get("workflows")
-    selected = [
-        value for value in workflows if isinstance(value, dict)
-        and value.get("id") == "governance"
-    ] if isinstance(workflows, list) else []
-    if len(selected) != 1 or not isinstance(selected[0].get("jobs"), list):
-        raise GitHubControllerError("CI graph lacks one governance workflow")
-    jobs: list[str] = []
-    for job in selected[0]["jobs"]:
-        if not isinstance(job, dict) or not isinstance(job.get("display_name"), str):
-            raise GitHubControllerError("CI graph governance job inventory is invalid")
-        name = job["display_name"]
-        matrix = job.get("strategy", {}).get("matrix") if isinstance(
-            job.get("strategy"), dict
-        ) else None
-        includes = matrix.get("include") if isinstance(matrix, dict) else None
-        if isinstance(includes, list):
-            display = "${{ matrix.display_name }}"
-            if display not in name or any(
-                not isinstance(value, dict)
-                or not isinstance(value.get("display_name"), str)
-                for value in includes
-            ):
-                raise GitHubControllerError("CI graph job matrix cannot be projected")
-            jobs.extend(name.replace(display, value["display_name"]) for value in includes)
-        else:
-            jobs.append(name)
-    if not jobs or len(set(jobs)) != len(jobs):
-        raise GitHubControllerError("CI graph governance job inventory is ambiguous")
-    return tuple(jobs)
 
 
 def _verify_receipts(
@@ -548,8 +510,9 @@ def transport_prior_evidence(
             observed_installation_id=observed_installation_id,
             api_url=api_url,
         )
-    expected_jobs = set(_graph_jobs(
-        api, repository, ref=source_main.checkout_sha,
+    inventory_subject_sha = candidate.checkout_sha
+    expected_jobs = set(candidate_governance_job_inventory(
+        api, repository=repository, candidate_sha=inventory_subject_sha,
     ))
     jobs = api.jobs(repository, producer_run, attempt=producer_attempt)
     check_id = positive_int(check.get("id"), field="check run ID")

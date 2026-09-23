@@ -424,7 +424,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_pins.py": {
       "operation": "copy",
-      "sha256": "16f6190ffdbd440220f6920eb73addb96ed0e548eab013f0324f397263627d3d"
+      "sha256": "70884fa0126838864510c41586cbc8f75727a675e8604485b188e0bae1eea65f"
     },
     "scripts/_bcf_runtime/ci_authority_state.py": {
       "operation": "copy",
@@ -896,7 +896,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "131410109fa4c24e89c61245c5fa754b41bec99728d2e2cad4cb6019fb290495"
+      "sha256": "7e57b43a82e03f277b4ca61af3b19cce71d1f611c4961655aa35f2b633070b1f"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",
@@ -904,7 +904,7 @@
     },
     "scripts/_bcf_runtime/prior_evidence_transport.py": {
       "operation": "copy",
-      "sha256": "32e89b9c63736e437a5b1115caa39151162682f4822ddf3988ab5dc78ffb3a0b"
+      "sha256": "a1a287be5efd5a3e9248f0a3a09614cfe2b909ce3e0868b3d05e0759b9c1a797"
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",
@@ -924,11 +924,15 @@
     },
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",
-      "sha256": "4856dc8a10354e6e38c9c7e721a58218d39820f7fee4019b42addc7db4420c33"
+      "sha256": "de42f792cf713eefd420e854850ff598977be1ebaf0f4d6aa69f2e9649fad1f0"
     },
     "scripts/_bcf_runtime/protection_inspection_client.py": {
       "operation": "copy",
       "sha256": "cf494b7d1ffbc69f3c279ae1139fa555f40652777db2b601a835c54dcd06225e"
+    },
+    "scripts/_bcf_runtime/provider_job_inventory.py": {
+      "operation": "copy",
+      "sha256": "31fdbc3b4b2eb9f3e7b29f50e08556add621c41ff01aef9d7cbcc3a86f62286e"
     },
     "scripts/_bcf_runtime/provider_reuse_closure.py": {
       "operation": "copy",
@@ -1076,7 +1080,7 @@
     },
     "scripts/_bcf_runtime/trusted_controller_compatibility.py": {
       "operation": "copy",
-      "sha256": "04204ee39d4b1100a1ec0bc66868c95acd53b26fe7a1c7bfbece0e6474105907"
+      "sha256": "e6c7b272458c7138374340340ae6084d974bba5ab68831b96de4c1b0d7b6eb48"
     },
     "scripts/_bcf_runtime/trusted_inputs.py": {
       "operation": "copy",
