@@ -464,6 +464,32 @@ def test_governance_evidence_shards_derive_every_required_gate_once() -> None:
     assert evidence["strategy"]["matrix"] == module.workflow_shard_matrix()
 
 
+def test_governance_evidence_shards_follow_the_duration_aware_plan() -> None:
+    module = _load_github_script("capture_governance_shard.py")
+    targets = ["test", "contract-test", "runtime-smoke"]
+    dag = {
+        "nodes": [
+            {"id": "tests", "producer": "test", "assigned_shard": 2},
+            {"id": "contracts", "producer": "contract-test", "assigned_shard": 0},
+            {"id": "runtime", "producer": "runtime-smoke", "assigned_shard": 2},
+        ],
+        "edges": [],
+    }
+    assert module.partition_required_gates(
+        REPO_ROOT, shard_index=0, shard_count=4,
+        planned_targets=targets, execution_dag=dag,
+    ) == ["contract-test"]
+    assert module.partition_required_gates(
+        REPO_ROOT, shard_index=2, shard_count=4,
+        planned_targets=targets, execution_dag=dag,
+    ) == ["runtime-smoke", "test"]
+    with pytest.raises(ValueError, match="differs from gate inventory"):
+        module.partition_required_gates(
+            REPO_ROOT, shard_index=0, shard_count=4,
+            planned_targets=[*targets, "lint"], execution_dag=dag,
+        )
+
+
 def test_governance_shard_forwards_the_preflight_session(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:

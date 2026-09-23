@@ -1,5 +1,7 @@
 # Changelog
 
+- Begin P27 critical-path composition with receipt-derived duration-aware shard assignment and the dormant, fail-closed transition contract for the one-time migration to one-PR routine controller rotation.
+
 - Activate P27 with planner-owned selective execution, qualification-preserving negative-control reuse, and exact P26 closure custody while integrating the one-PR controller-rotation and controlled-demolition acceptance mandates.
 
 - Confirm the P26 finalizer subject-identity controller on both trusted runners and restore ordinary-current custody.

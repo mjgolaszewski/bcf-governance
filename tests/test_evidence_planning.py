@@ -146,6 +146,7 @@ def _receipt(root: Path, claims: list[str], *, freshness: int | None = None) -> 
         "dependency_manifest": build_dependency_manifest(root, claims),
         "subject": {"commit_sha": commit, "tree_sha": tree},
         "result": "passed",
+        "started_at": (datetime.now(UTC) - timedelta(seconds=1)).isoformat().replace("+00:00", "Z"),
         "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "qualification": {
             "scope": "subject" if "app-valid" in claims else "detector",
@@ -278,6 +279,24 @@ def test_test_population_change_executes_only_dependent_groups(tmp_path: Path) -
         for invalidation in plan["invalidated_evidence"]
         if invalidation["claim_id"] in {"app-valid", "other-valid"}
     )
+
+
+def test_execution_dag_balances_groups_from_observed_receipt_durations(tmp_path: Path) -> None:
+    root = _repo(tmp_path, scope="regulated")
+    app = _receipt(root, ["app-valid"])
+    other = _receipt(root, ["other-valid"])
+    custody = _receipt(root, ["regulated-custody"])
+    now = datetime.now(UTC)
+    for receipt, seconds in ((app, 40), (other, 20), (custody, 5)):
+        receipt["started_at"] = (now - timedelta(seconds=seconds)).isoformat().replace("+00:00", "Z")
+        receipt["timestamp"] = now.isoformat().replace("+00:00", "Z")
+    _commit(root, "tests/test_app.py", "def test_app(): assert True\n# population\n")
+    plan = plan_verification(root, [app, other, custody], preflight_claims=["governance-valid"])
+    nodes = {node["id"]: node for node in plan["execution_dag"]["nodes"]}
+    assert nodes["app-tests"]["estimated_duration_ms"] == 40_000
+    assert nodes["other-tests"]["estimated_duration_ms"] == 20_000
+    assert nodes["app-tests"]["assigned_shard"] != nodes["other-tests"]["assigned_shard"]
+    assert all(node["duration_source"] == "observed_receipt" for node in nodes.values())
 
 
 def test_unavailable_source_commit_uses_exact_local_tree_for_planning_only(tmp_path: Path) -> None:

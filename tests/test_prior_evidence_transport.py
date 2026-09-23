@@ -17,7 +17,10 @@ from bcf_governance.tooling.ci_github import GithubRunIdentity
 from bcf_governance.tooling.ci_github_api import GitHubAPI
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError
 from bcf_governance.tooling.github_protection import desired_ruleset
-from bcf_governance.tooling.prior_evidence_transport import transport_prior_evidence
+from bcf_governance.tooling.prior_evidence_transport import (
+    _graph_jobs,
+    transport_prior_evidence,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -73,14 +76,7 @@ class Provider:
         self.protection = yaml.safe_load(
             (ROOT / "governance/github-protection.yml").read_text(encoding="utf-8")
         )
-        self.job_names = [
-            "Validate governance front door",
-            "Verify exact-tree governance evidence",
-            "Evidence / Boundaries, contracts, runtime, types, and secrets",
-            "Evidence / CQRS, module size, exposure, and dependency risk",
-            "Evidence / Duplication, routers, governance, and ownership",
-            "Evidence / Full tests, lint, import boundaries, and SBOM",
-        ]
+        self.job_names = list(_graph_jobs(self, REPOSITORY, ref=BASE))
         session = {
             "schema_version": "2.0", "session_id": SESSION,
             "subject": {"commit_sha": EXECUTION, "tree_sha": TREE},

@@ -18,6 +18,7 @@ from typing import Any, Iterable, Mapping
 import yaml  # type: ignore[import-untyped]
 
 from .evidence_execution import EvidenceError
+from .evidence_scheduling import assign_duration_aware_shards, duration_estimates
 
 
 DEPENDENCY_CLASSES = (
@@ -654,6 +655,9 @@ def plan_verification(
             "reason": "required claims lack applicable authenticated evidence",
             "qualification_refs": qualification_refs,
         })
+    nodes = assign_duration_aware_shards(
+        nodes, duration_estimates(receipts, model)
+    )
     return {
         "current_subject": current,
         "prior_subject": prior_subject,

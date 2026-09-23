@@ -64,10 +64,10 @@ prospective_authority_chain:
 - {boundary: controller_compatibility, deterministic_next_rejection: trusted runtime target differs from installed controller, disposition: require ordinary-current compatibility before push}
 - {boundary: pr_evidence, deterministic_next_rejection: exact required producer or job inventory incomplete, disposition: validate canonical plan session and graph inventories locally}
 - {boundary: certification, deterministic_next_rejection: finalizer subject scope or inventory mismatch, disposition: exercise canonical bounded certification fixtures}
-- {boundary: merge, deterministic_next_rejection: exact-main evaluation target is not authored DONE or predecessor closure is absent, disposition: validate P27-P0-01 authored closure and exact P26 history}
+- {boundary: merge, deterministic_next_rejection: exact-main evaluation target is not authored DONE or predecessor closure is absent, disposition: validate authenticated P27-P0-01 closure and target P27-P0-02}
 - {boundary: exact_main, deterministic_next_rejection: prior evidence inapplicable or producer inventory does not match plan, disposition: retain provider-authenticated applicability and execute only unresolved groups}
 - {boundary: controller_lifecycle, deterministic_next_rejection: proposed tree requires a controller absent from trusted runners, disposition: prove no trusted runtime byte change and ordinary-current compatibility}
-- {boundary: bounded_truth, deterministic_next_rejection: target remains active missing evidence or has wrong predecessor, disposition: target exact DONE P27-P0-01 and preserve P27 active}
+- {boundary: bounded_truth, deterministic_next_rejection: target remains active missing evidence or has wrong predecessor, disposition: keep P27-P0-02 active until the full migration and runtime proof are complete}
 - {boundary: finalizer, deterministic_next_rejection: proposition subject target run or attempt differs, disposition: exercise exact scoped-certification normalization and verification}
 - {boundary: publisher, deterministic_next_rejection: bounded status is broadened or wrong context selected, disposition: preserve bcf/workitem-certification only}
 - {boundary: successor_release, deterministic_next_rejection: bounded certification used as phase or release authority, disposition: require P27-P0-02 eligibility only and explicit release rejection}
@@ -88,3 +88,47 @@ security_boundaries:
   bounded_to_release_escalation: prohibited
   break_glass_routine_use: prohibited
   controller_rotation_acceptance: one protected implementation PR and zero bookkeeping-only follow-up commits or pull requests
+p27_p0_01_closure:
+  commit_sha: e7597bac16b2090ecc7167d873311066e352a864
+  tree_sha: 36b8e4e71f01d67eeb088c4dea3f58c751ecf0e0
+  exact_main: 35812576708/1
+  finalizer: 35812785752/1
+  publisher: 35812826645/1
+  status_context: bcf/workitem-certification
+  proposition: {predicate: workitem_closed, target: P27-P0-01, eligible_successor: P27-P0-02}
+  phase_effective_state: active
+p27_p0_02_migration_expansion:
+  state: dormant_until_compatible_controller_installation
+  bounded_context: ci_authority_and_evidence_composition
+  canonical_changes:
+  - {path: bcf_governance/tooling/evidence_planning.py, responsibility: derive observed group duration and deterministic longest-processing-time shard assignment}
+  - {path: .github/scripts/capture_governance_shard.py, responsibility: execute the exact planned shard inventory with neutral truthful labels}
+  - {path: bcf_governance/tooling/routine_controller_rotation.py, responsibility: closed transition identity validation replay rejection and authority separation}
+  - {path: schemas/controller-transition.schema.json, responsibility: dormant immutable routine-transition receipt contract}
+  one_time_migration:
+  - merge this expansion under installed controller N
+  - use the existing ordinary Git-mediated rotation exactly once to install compatible controller N+1
+  - activate provider-backed transition routing in a protected migration change
+  - prove the next routine runtime upgrade completes from its implementation PR without target confirmation pin or activation repository mutations
+  prospective_chain:
+  - {boundary: preflight, proof: graph pack manifest schema editorial and neutral-shard parity}
+  - {boundary: controller_compatibility, proof: changed trusted runtime predicts ordinary pending rotation without release authority}
+  - {boundary: pr_evidence, proof: duration assignment changes placement only and preserves exact producer and claim inventories}
+  - {boundary: certification, proof: bounded PR certification remains independent of controller activation}
+  - {boundary: merge, proof: protected merge remains the only source authorization event}
+  - {boundary: exact_main, proof: independent builder emits exact N+1 while incompatible evidence remains suppressed}
+  - {boundary: controller_lifecycle, proof: dormant protocol cannot activate before legacy migration installs compatible N+1}
+  - {boundary: bounded_truth, proof: P27-P0-02 remains active until its exact authenticated evidence closes}
+  - {boundary: finalizer_publisher, proof: workitem scope remains exact and non-release}
+  - {boundary: successor_release, proof: bounded certification cannot authorize phase closure or release}
+  forbidden_surfaces_inspected_no_impact:
+  - governance/github-protection.yml
+  - bcf_governance/tooling/ci_github_release.py
+  - bcf_governance/tooling/release_receipts.py
+  - governance/ci-extensions/bcf-break-glass-recovery.yml
+  provider_correction:
+    run: 35815853154/1
+    first_causal_job: 107037303541
+    failure: six prior-evidence transport tests retained pre-migration evidence shard display names
+    correction: provider fixture derives the exact producer job inventory through the canonical graph projection
+    production_semantics_changed: false
