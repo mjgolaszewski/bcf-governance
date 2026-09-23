@@ -1976,6 +1976,28 @@ def test_api_rejects_unsafe_identity_before_network() -> None:
         api.workflow("owner/repo", "../control.yml")
 
 
+def test_commit_comparison_is_exact_and_read_only() -> None:
+    class RecordingAPI(GitHubAPI):
+        def __init__(self) -> None:
+            super().__init__(token="test")
+            self.request: tuple[str, str] | None = None
+
+        def _request(self, method: str, path: str, *, payload=None):  # type: ignore[no-untyped-def]
+            self.request = (method, path)
+            return {"status": "ahead"}
+
+    api = RecordingAPI()
+    assert api.compare_commits("owner/repo", base=SHA_A, head=SHA_B) == {
+        "status": "ahead"
+    }
+    assert api.request == (
+        "GET",
+        f"/repos/owner/repo/compare/{SHA_A}...{SHA_B}",
+    )
+    with pytest.raises(GitHubAPIError, match="SHA"):
+        api.compare_commits("owner/repo", base="main", head=SHA_B)
+
+
 def test_api_rejects_truncated_workflow_run_inventory() -> None:
     class TruncatedAPI(GitHubAPI):
         def _request(self, method: str, path: str, *, payload=None):  # type: ignore[no-untyped-def]

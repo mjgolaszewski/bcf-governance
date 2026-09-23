@@ -120,7 +120,9 @@
         "release_verifier": {"$ref": "#/$defs/providerId"},
         "release_collector": {"$ref": "#/$defs/providerId"},
         "release_publisher": {"$ref": "#/$defs/providerId"},
-        "authority_canary": {"$ref": "#/$defs/providerId"}
+        "authority_canary": {"$ref": "#/$defs/providerId"},
+        "controller_rotation": {"$ref": "#/$defs/providerId"},
+        "controller_rotation_callback": {"$ref": "#/$defs/providerId"}
       }
     },
     "scalar": {"type": ["string", "number", "boolean"]},

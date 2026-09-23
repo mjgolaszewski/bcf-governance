@@ -288,6 +288,21 @@ class GitHubAPI:
             raise GitHubAPIError("commit response must be an object")
         return value
 
+    def compare_commits(
+        self, repository: str, *, base: str, head: str
+    ) -> dict[str, Any]:
+        """Read one exact ancestry comparison without accepting caller URLs."""
+
+        value = self._request(
+            "GET",
+            f"/repos/{self._repository(repository)}/compare/"
+            f"{_sha(base, field='base commit SHA')}..."
+            f"{_sha(head, field='head commit SHA')}",
+        )
+        if not isinstance(value, dict):
+            raise GitHubAPIError("commit comparison response must be an object")
+        return value
+
     def complete_tree(self, repository: str, tree_sha: str) -> tuple[tuple[str, str], ...]:
         """Read exact provider blob OIDs, rejecting truncated or ambiguous trees."""
         exact = _sha(tree_sha, field="tree SHA")

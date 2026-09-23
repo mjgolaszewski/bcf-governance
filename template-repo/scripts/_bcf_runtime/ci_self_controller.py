@@ -122,15 +122,36 @@ def _installation(value: Any) -> dict[str, str]:
     return proof
 
 
+def validate_controller_pin(value: Any) -> dict[str, str]:
+    """Expose the closed canonical controller-pin validator to trusted consumers."""
+
+    return _pin(value)
+
+
+def validate_controller_installation(value: Any) -> dict[str, str]:
+    """Expose the closed installed-controller proof validator."""
+
+    return _installation(value)
+
+
 def resolve_self_controller_artifact(
-    api: GitHubAPI, *, repository: str
+    api: GitHubAPI,
+    *,
+    repository: str,
+    trigger_run_id: object | None = None,
+    trigger_run_attempt: object | None = None,
 ) -> tuple[dict[str, str], ProviderArtifact]:
     """Select the latest exact-main controller without a caller-supplied run or name."""
 
     main = resolve_main(api, repository)
     authority = load_authority(api, repository, main, required_version="1.1")
     run_id, attempt = select_latest_admission(
-        api, repository=repository, main=main, authority=authority
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        trigger_run_id=trigger_run_id,
+        trigger_run_attempt=trigger_run_attempt,
     )
     builders = (
         authority["controller_builder_jobs"]
@@ -238,11 +259,21 @@ def resolve_self_controller_artifact(
 
 
 def compile_self_controller_pin(
-    api: GitHubAPI, *, repository: str, artifact_dir: Path
+    api: GitHubAPI,
+    *,
+    repository: str,
+    artifact_dir: Path,
+    trigger_run_id: object | None = None,
+    trigger_run_attempt: object | None = None,
 ) -> dict[str, str]:
     """Compile one canonical pin from provider state and downloaded exact bytes."""
 
-    subject, artifact = resolve_self_controller_artifact(api, repository=repository)
+    subject, artifact = resolve_self_controller_artifact(
+        api,
+        repository=repository,
+        trigger_run_id=trigger_run_id,
+        trigger_run_attempt=trigger_run_attempt,
+    )
     root = artifact_dir.resolve()
     wheel, _ = verify_controller_inventory(root)
     verify_controller_subject_metadata(

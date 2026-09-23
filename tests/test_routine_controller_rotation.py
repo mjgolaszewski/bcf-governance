@@ -7,7 +7,10 @@ import pytest
 
 from bcf_governance.tooling.routine_controller_rotation import (
     RoutineRotationError,
+    advance_transition,
+    effective_controller_pin,
     select_active_transition,
+    select_controller_chain,
     transition_id,
     validate_transition,
 )
@@ -37,7 +40,9 @@ def _receipt(*, state: str = "active") -> dict:
         "authority": {"installed_controller_commit": OLD, "admission_run_id": "10", "admission_run_attempt": "1", "implementation_pr": "300", "policy_before_sha256": POLICY, "policy_after_sha256": POLICY},
         "artifact": {"id": "20", "name": f"bcf-trusted-control-{NEW}-1", "provider_digest": DIGEST, "wheel_sha256": "6" * 64, "run_id": "10", "run_attempt": "1", "commit_sha": NEW, "tree_sha": TREE},
         "required_runners": ["bcf-trusted-control-1", "bcf-trusted-control-2"],
-        "bootstrap": proofs("30"), "probe": proofs("40"), "promotion": proofs("50"),
+        "bootstrap": proofs("30") if state in {"installing", "probed", "active", "superseded"} else [],
+        "probe": proofs("40") if state in {"probed", "active", "superseded"} else [],
+        "promotion": proofs("50") if state in {"active", "superseded"} else [],
     }
     if state == "active":
         value["activation"] = {"transition_id": identity, "authorizing_controller_commit": OLD, "run_id": "60", "run_attempt": "1"}
@@ -92,4 +97,102 @@ def test_artifact_substitution_and_ambiguous_activation_fail_closed() -> None:
         select_active_transition(
             ROOT, [receipt, copy.deepcopy(receipt)], repository_id="1207503211",
             installed_commit=OLD, current_main_commit=NEW,
+        )
+
+
+def test_transition_advances_only_through_authenticated_states() -> None:
+    authorized = _receipt(state="authorized")
+    installing = advance_transition(
+        ROOT, authorized, state="installing", proofs=_receipt()["bootstrap"]
+    )
+    probed = advance_transition(
+        ROOT, installing, state="probed", proofs=_receipt()["probe"]
+    )
+    active = advance_transition(
+        ROOT,
+        probed,
+        state="active",
+        proofs=_receipt()["promotion"],
+        activation=_receipt()["activation"],
+    )
+    assert active == _receipt()
+    with pytest.raises(RoutineRotationError, match="not canonical"):
+        advance_transition(ROOT, authorized, state="active")
+
+
+def test_linear_transition_chain_projects_effective_controller() -> None:
+    first = _receipt()
+    second = copy.deepcopy(first)
+    second["authority"]["installed_controller_commit"] = NEW
+    second["subject"] = {"commit_sha": "7" * 40, "tree_sha": "8" * 40}
+    second["artifact"].update(
+        {
+            "id": "21",
+            "name": f"bcf-trusted-control-{'7' * 40}-1",
+            "commit_sha": "7" * 40,
+            "tree_sha": "8" * 40,
+            "provider_digest": "sha256:" + "9" * 64,
+            "wheel_sha256": "a" * 64,
+        }
+    )
+    second["transition_id"] = transition_id(
+        repository_id="1207503211",
+        installed_commit=NEW,
+        subject_commit="7" * 40,
+        subject_tree="8" * 40,
+        artifact_digest="sha256:" + "9" * 64,
+    )
+    for stage in ("bootstrap", "probe", "promotion"):
+        for proof in second[stage]:
+            proof["controller_commit"] = "7" * 40
+    second["activation"].update(
+        {
+            "transition_id": second["transition_id"],
+            "authorizing_controller_commit": NEW,
+        }
+    )
+    chain = select_controller_chain(
+        ROOT,
+        [first, second],
+        repository_id="1207503211",
+        baseline_installed_commit=OLD,
+        ancestor_commits=[NEW, "7" * 40],
+    )
+    pin = effective_controller_pin({"legacy": "ignored"}, chain)
+    assert [value["artifact"]["commit_sha"] for value in chain] == [NEW, "7" * 40]
+    assert pin["BCF_BOOTSTRAP_COMMIT_SHA"] == "7" * 40
+
+
+def test_chain_replay_fork_and_disconnected_receipts_fail_closed() -> None:
+    receipt = _receipt()
+    with pytest.raises(RoutineRotationError, match="replay"):
+        select_controller_chain(
+            ROOT,
+            [receipt, copy.deepcopy(receipt)],
+            repository_id="1207503211",
+            baseline_installed_commit=OLD,
+            ancestor_commits=[NEW],
+        )
+    fork = copy.deepcopy(receipt)
+    fork["subject"] = {"commit_sha": "7" * 40, "tree_sha": "8" * 40}
+    fork["artifact"]["commit_sha"] = "7" * 40
+    fork["artifact"]["tree_sha"] = "8" * 40
+    fork["artifact"]["name"] = f"bcf-trusted-control-{'7' * 40}-1"
+    fork["artifact"]["provider_digest"] = "sha256:" + "9" * 64
+    fork["transition_id"] = transition_id(
+        repository_id="1207503211", installed_commit=OLD,
+        subject_commit="7" * 40, subject_tree="8" * 40,
+        artifact_digest="sha256:" + "9" * 64,
+    )
+    for stage in ("bootstrap", "probe", "promotion"):
+        for proof in fork[stage]:
+            proof["controller_commit"] = "7" * 40
+    fork["activation"]["transition_id"] = fork["transition_id"]
+    with pytest.raises(RoutineRotationError, match="ambiguous"):
+        select_controller_chain(
+            ROOT,
+            [receipt, fork],
+            repository_id="1207503211",
+            baseline_installed_commit=OLD,
+            ancestor_commits=[NEW, "7" * 40],
         )

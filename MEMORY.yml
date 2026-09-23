@@ -26,6 +26,7 @@ environment_facts:
   active_artifacts: {spec: plans/product-spec.yml, build_plan: plans/build-plan.yml, active_phase_ledger: plans/phase-ledger.yml, phase_history: plans/phase-history.yml, active_phase_plan: plans/phase-27-plan.yml, active_workitem_ledger: plans/phase-27-workitems.yml, active_phase_log: phases/phase-27-log.yml}
 known_constraints:
 - candidate code runs only on disposable workers; trusted workers reconstruct provider state and never check out candidate code
+- routine controller rotation becomes active only after its dormant provider compiler is installed through the one-time ordinary N/N+1 migration; provider evidence never grants release authority
 - legacy receipt v2 and session v1 evidence remains readable only for its exact original subject
 - unknown dependency applicability fails closed to a declared conservative workload
 - provider single-object limits archive expansion limits free-space requirements timeouts bounded parallelism and exact owned-resource cleanup remain safety controls

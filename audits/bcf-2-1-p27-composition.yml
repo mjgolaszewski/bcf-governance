@@ -140,3 +140,13 @@ p27_p0_02_migration_expansion:
     canonical_owner: bcf_governance/tooling/provider_job_inventory.py
     fast_fail: cheap PR preflight rejects a changed provider job inventory unless the installed controller contains the exact candidate-inventory transport capability
     assurance: source-main protection and controller authority remain unchanged; candidate bytes determine only the exact inventory they emitted
+  provider_compiler_expansion:
+    state: dormant_roles_absent_routing_inactive
+    canonical_owners:
+    - {path: bcf_governance/tooling/routine_controller_provider.py, responsibility: authenticate protected merge builder transition artifacts ancestry stage inventories and activation callback}
+    - {path: bcf_governance/tooling/routine_controller_commands.py, responsibility: expose the closed provider compiler without adding workflow-local semantics}
+    - {path: bcf_governance/tooling/routine_controller_rotation.py, responsibility: validate canonical state advances linear chains replay rejection and effective pin projection}
+    - {path: schemas/ci-authority.schema.json, responsibility: permit dormant rotation roles that remain strict when later activated}
+    exact_bindings: [repository, merge_commit_and_tree, implementation_pr, pr_certification, admission_run_and_attempt, controller_artifact_bytes, transition_artifact_bytes, runner_inventory, rotation_run_and_attempt, activation_callback]
+    fail_closed: [policy_change, candidate_self_selection, replay, fork, disconnected_chain, expired_or_mutated_artifact, wrong_repository, wrong_subject, wrong_run_or_attempt, partial_runner_inventory, superseded_main]
+    non_authorities: [release, bounded_truth, publication, protection_mutation, break_glass]

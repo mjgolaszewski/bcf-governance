@@ -42,6 +42,7 @@ execution_evidence:
   - audits/bcf-2-1-p27-composition.yml records the prospective downstream and simplification-owner matrix
   - P27-P0-01 closed on e7597bac16b2090ecc7167d873311066e352a864 with provider-visible bounded certification; P27-P0-02 became eligible while P27 remained active
   - P27-P0-02 migration expansion derives shard placement from authenticated receipt durations and introduces the dormant exact transition contract before the legacy one-time compatible-controller rotation
+  - P27-P0-02 provider expansion compiles protected-merge authorization, exact builder and transition artifact custody, linear ancestry, exact bootstrap/probe/promotion inventories, and an N-authorized activation callback while authority roles remain absent and routing stays dormant
 closeout_requirements:
   claims:
     workitems_closed:

@@ -7,7 +7,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Sequence
 
 from jsonschema import Draft202012Validator
 
@@ -91,9 +91,18 @@ def validate_transition(repo_root: Path, payload: object) -> dict[str, Any]:
     if value["authority"]["policy_before_sha256"] != value["authority"]["policy_after_sha256"]:
         raise RoutineRotationError("routine transition cannot change authorization policy")
     runners = value["required_runners"]
+    completed_stages = {
+        "authorized": (),
+        "installing": ("bootstrap",),
+        "probed": ("bootstrap", "probe"),
+        "active": ("bootstrap", "probe", "promotion"),
+        "superseded": ("bootstrap", "probe", "promotion"),
+        "failed": (),
+    }[value["state"]]
     for stage in ("bootstrap", "probe", "promotion"):
         proofs = value[stage]
-        if sorted(item["runner"] for item in proofs) != runners:
+        expected = runners if stage in completed_stages else []
+        if sorted(item["runner"] for item in proofs) != expected:
             raise RoutineRotationError(f"{stage} runner inventory is not exact")
         if any(item["controller_commit"] != artifact["commit_sha"] for item in proofs):
             raise RoutineRotationError(f"{stage} controller identity is not exact")
@@ -106,6 +115,109 @@ def validate_transition(repo_root: Path, payload: object) -> dict[str, Any]:
         if activation["transition_id"] != value["transition_id"]:
             raise RoutineRotationError("activation decision is bound to another transition")
     return value
+
+
+def advance_transition(
+    repo_root: Path,
+    payload: Mapping[str, Any],
+    *,
+    state: str,
+    proofs: Sequence[Mapping[str, Any]] = (),
+    activation: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Advance one immutable transition by exactly one canonical state."""
+
+    current = validate_transition(repo_root, dict(payload))
+    expected = {
+        "authorized": ("installing", "bootstrap"),
+        "installing": ("probed", "probe"),
+        "probed": ("active", "promotion"),
+    }.get(current["state"])
+    if expected is None or state != expected[0]:
+        raise RoutineRotationError("controller transition state advance is not canonical")
+    result = json.loads(json.dumps(current))
+    result["state"] = state
+    result[expected[1]] = [dict(value) for value in proofs]
+    if state == "active":
+        if activation is None:
+            raise RoutineRotationError("active transition lacks activation decision")
+        result["activation"] = dict(activation)
+    elif activation is not None:
+        raise RoutineRotationError("non-active transition cannot carry activation")
+    return validate_transition(repo_root, result)
+
+
+def select_controller_chain(
+    repo_root: Path,
+    receipts: Iterable[Mapping[str, Any]],
+    *,
+    repository_id: str,
+    baseline_installed_commit: str,
+    ancestor_commits: Iterable[str],
+) -> tuple[dict[str, Any], ...]:
+    """Select one linear, unreplayed active controller chain or fail closed."""
+
+    baseline = _exact_sha(
+        baseline_installed_commit, field="baseline installed controller"
+    )
+    ancestors = {
+        _exact_sha(value, field="controller transition ancestor")
+        for value in ancestor_commits
+    }
+    admitted: list[dict[str, Any]] = []
+    identities: set[str] = set()
+    for raw in receipts:
+        value = validate_transition(repo_root, dict(raw))
+        if value["transition_id"] in identities:
+            raise RoutineRotationError("controller transition replay is ambiguous")
+        identities.add(value["transition_id"])
+        if value["state"] != "active":
+            continue
+        if value["repository"]["id"] != repository_id:
+            continue
+        if value["subject"]["commit_sha"] not in ancestors:
+            continue
+        admitted.append(value)
+    chain: list[dict[str, Any]] = []
+    current = baseline
+    while True:
+        candidates = [
+            value for value in admitted
+            if value["authority"]["installed_controller_commit"] == current
+        ]
+        if not candidates:
+            break
+        if len(candidates) != 1:
+            raise RoutineRotationError("active controller transition is ambiguous")
+        selected = candidates[0]
+        chain.append(selected)
+        admitted.remove(selected)
+        current = selected["artifact"]["commit_sha"]
+    if admitted:
+        raise RoutineRotationError("active controller transition chain is disconnected")
+    return tuple(chain)
+
+
+def effective_controller_pin(
+    baseline_pin: Mapping[str, Any], chain: Sequence[Mapping[str, Any]]
+) -> dict[str, str]:
+    """Project the effective controller pin without mutating source policy."""
+
+    if not chain:
+        return {str(key): str(value) for key, value in baseline_pin.items()}
+    artifact = chain[-1]["artifact"]
+    repository = chain[-1]["repository"]
+    return {
+        "BCF_BOOTSTRAP_ARTIFACT_ID": str(artifact["id"]),
+        "BCF_BOOTSTRAP_ARTIFACT_NAME": str(artifact["name"]),
+        "BCF_BOOTSTRAP_ARTIFACT_DIGEST": str(artifact["provider_digest"]),
+        "BCF_BOOTSTRAP_RUN_ID": str(artifact["run_id"]),
+        "BCF_BOOTSTRAP_RUN_ATTEMPT": str(artifact["run_attempt"]),
+        "BCF_BOOTSTRAP_COMMIT_SHA": str(artifact["commit_sha"]),
+        "BCF_BOOTSTRAP_TREE_SHA": str(artifact["tree_sha"]),
+        "BCF_BOOTSTRAP_REPOSITORY_ID": str(repository["id"]),
+        "BCF_BOOTSTRAP_WHEEL_SHA256": str(artifact["wheel_sha256"]),
+    }
 
 
 def select_active_transition(
