@@ -1,5 +1,8 @@
 # Changelog
 
+- Confirm the P27 prior-evidence controller on both trusted runners and restore
+  ordinary-current custody.
+
 - Project the exact provider-built P27 prior-evidence controller as the ordinary
   rotation target while keeping the prior installed controller active until confirmation.
 
