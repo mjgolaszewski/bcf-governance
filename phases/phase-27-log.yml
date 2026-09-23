@@ -47,6 +47,7 @@ execution_evidence:
   - both trusted runners bootstrapped and probed the exact provider-built P27 routine controller through 35887679751/1 and 35887934342/1; canonical confirmation restores ordinary-current custody
   - provider-backed routine rotation is activated for P27-P0-02 through protected-merge authorization, exact builder custody, two-runner staged proofs, immutable transition receipts, and a bounded fresh-certification callback; release authority remains absent
   - the pagination correction target is the exact provider-built controller from exact-main 35920146560/1 on d9daaaa7b319180dc405f28575c71ec5c4b4a1f8; installed N remains authoritative until bootstrap probe and confirmation
+  - both trusted runners bootstrapped and probed the exact pagination-corrected controller through 35924384446/1 and 35924513385/1; canonical confirmation restores ordinary-current custody
 closeout_requirements:
   claims:
     workitems_closed:
