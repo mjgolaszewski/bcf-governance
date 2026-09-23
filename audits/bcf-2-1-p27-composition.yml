@@ -178,3 +178,8 @@ p27_p0_02_migration_expansion:
       canonical_owner: bcf_governance/tooling/ci_github_artifact_inventory.py
       correction: bounded complete stable provider pagination with exact total and unique artifact identity
       fast_fail: provider-shape capability is regression-tested before push; live inventory remains an authenticated provider fact
+      rotation_target:
+        subject: {commit_sha: d9daaaa7b319180dc405f28575c71ec5c4b4a1f8, tree_sha: cdd5a97799ce47df79d6e7853f5f6de95f2d7fa6}
+        exact_main: 35920146560/1
+        artifact: {id: '10777050832', name: bcf-trusted-control-d9daaaa7b319180dc405f28575c71ec5c4b4a1f8-1, provider_digest: 'sha256:373856551898f7c86888dbcb717d7756a7b8f3b2c8e4adea3569e22eb6fa1df1', wheel_sha256: a2a3628aaf1b1c74b5998bb09b86e0362931174f53da6ac544458448345f243c}
+        custody: ordinary_pending_rotation
