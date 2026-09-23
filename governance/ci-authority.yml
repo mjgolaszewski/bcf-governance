@@ -26,8 +26,8 @@ workflow_registry:
     - pull_request
     - workflow_call
   controller-rotation:
-    workflow_id: '900000001'
-    active_path: .github/workflows/bcf-routine-controller-rotation.yml
+    workflow_id: '348690108'
+    active_path: .github/workflows/bcf-automation-reconcile.yml
     trusted_workflow_blob_oid: b828ae4852c628a52ba706daddfd8ca91adf77ae
     trusted_workflow_sha256: 1b93fef488dd397c2cb51a7a36b7c1d07da023fd519b83bbe414102b10f38029
     trusted_workflow_definition_commit: 1697bd66549b005bb5c3ecc2bf7c8519866827d4
@@ -44,16 +44,6 @@ workflow_registry:
     - job_id: Promote routine controller / bcf-trusted-control-1
     - job_id: Promote routine controller / bcf-trusted-control-2
     - job_id: Activate authenticated routine controller transition
-  controller-rotation-callback:
-    workflow_id: '900000002'
-    active_path: .github/workflows/bcf-routine-controller-callback.yml
-    trusted_workflow_blob_oid: 7a3d32322cceeb28cbfe1511434a58b682fee39c
-    trusted_workflow_sha256: 12d005e067d497b271bb034f599c40c9ed88328e10a7a9dfe330ec387ef10688
-    trusted_workflow_definition_commit: 1697bd66549b005bb5c3ecc2bf7c8519866827d4
-    allowed_events:
-    - workflow_run
-    expected_jobs:
-    - job_id: Dispatch post-rotation exact-main certification
   finalizer:
     workflow_id: '346274484'
     active_path: .github/workflows/bcf-trusted-finalizer.yml
@@ -165,7 +155,7 @@ roles:
   release_publisher: release-publisher
   authority_canary: authority-canary
   controller_rotation: controller-rotation
-  controller_rotation_callback: controller-rotation-callback
+  controller_rotation_callback: status-publisher
 admission_jobs:
 - job_id: Authenticate exact-main admission and publish pending authority
 controller_builder_jobs:

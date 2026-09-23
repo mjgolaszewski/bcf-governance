@@ -13,10 +13,10 @@ value_sources:
 extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]
 extensions:
 - {id: bcf-break-glass-recovery, path: governance/ci-extensions/bcf-break-glass-recovery.yml, sha256: 831341d3ee3167c559aa83fd2eec5aea8adf94e6a5149c13b7c11c39ee3da874}
-- {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: 13769e1644221b0364034cc9db6a352d14b85a9f4e35d0e111cfdabd22ba4c0c}
+- {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: adde42bee237d4da4a67a72d6d5e8600e63ed010486cea4084391f940b9d1bb0}
 - {id: bcf-evidence-storage, path: governance/ci-extensions/bcf-evidence-storage.yml, sha256: 41e40dad457efc53292249a211575505e9d6021d73d3fee2e52c4e9eede68eea}
 - {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 72b04805b3ea4a85b5a37bd769aa627a9079a173210ea63c9a022aaa07896921}
-- {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: 5fbe9ec4ee7fde8785b4354f2aac2897e9614c111285d8ea7740e9366740f8d6}
+- {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: af8f17a53c02389a3c5f3e1e306406035bbfae18b87aefdfa5669c61192f966c}
 resource_classes:
   hosted-python:
     runner: ubuntu-24.04
@@ -63,8 +63,8 @@ artifacts:
   weekly-mutant-results: {path: .artifacts/scheduled-mutants, kind: control, scope: run-attempt, retention_days: 90}
   trusted-controller-bundle: {path: .artifacts/trusted-control, kind: control, scope: run-attempt, retention_days: 30}
   prior-evidence-transport: {path: .artifacts/bcf/prior-evidence, kind: control, scope: run-attempt, retention_days: 30}
-conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', prior-evidence-enabled: inputs.use_prior_evidence == true, prior-evidence-disabled: inputs.use_prior_evidence != true, evidence-prerequisites-with-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence == true, evidence-prerequisites-without-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence != true, exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.event != 'workflow_dispatch', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch
-    == 'main', always-step: always()}
+conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', prior-evidence-enabled: inputs.use_prior_evidence == true, prior-evidence-disabled: inputs.use_prior_evidence != true, evidence-prerequisites-with-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence == true, evidence-prerequisites-without-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence != true, exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.event != 'workflow_dispatch', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.name == 'bcf/trusted-evidence-finalizer' && github.event.workflow_run.event
+    == 'workflow_run' && github.event.workflow_run.head_branch == 'main', always-step: always()}
 commands:
   install-governance-dependencies:
     argv: ['{python}', -m, pip, install, -r, requirements-governance.txt]
@@ -600,9 +600,9 @@ workflows:
   role: trusted-control
   events:
   - type: workflow_run
-    workflows: [bcf/trusted-evidence-finalizer]
+    workflows: [bcf/trusted-evidence-finalizer, bcf/automation-changelog-reconciler]
     types: [completed]
-  permissions: {actions: read, contents: read, statuses: write}
+  permissions: {actions: read, contents: write, statuses: write}
   jobs:
   - id: publish
     display_name: Publish newest authenticated exact-main status or revocation
@@ -621,6 +621,24 @@ workflows:
       components: [setup-python, download-exact-main-certification-effective, resolve-effective-controller, exact-main-publish-effective]
     produces: []
     consumes: [exact-main-certification]
+    required: true
+  - id: rotation-callback
+    display_name: Dispatch post-rotation exact-main certification
+    semantic_role: routine-controller-certification-callback
+    resource_class: trusted-control
+    trust: trusted
+    controller_requirement: current
+    needs: []
+    condition: routine-callback-applicable
+    timeout_minutes: 5
+    permissions: {actions: read, contents: write}
+    checkout: false
+    components: []
+    executor:
+      kind: component_sequence
+      components: [setup-python, resolve-effective-controller, dispatch-routine-certification]
+    produces: []
+    consumes: []
     required: true
 - id: scheduled-nightly-mutants
   path: .github/workflows/governance-mutants-nightly.yml

@@ -28,7 +28,7 @@ conditions:
   owner-main-observer: always() && github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main' && needs.admit.result == 'success'
   routine-rotation-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'failure'
   routine-stage-ready: success()
-  routine-callback-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
+  routine-callback-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.name == 'bcf/automation-changelog-reconciler' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
 commands:
   bootstrap-controller:
     argv: ['{ephemeral_controller}', ci-github, bootstrap, --repository, '${{ github.repository }}', --artifact-dir, '${{ runner.temp }}/bcf-trusted-control-bootstrap', --artifact-id, '{env:BCF_BOOTSTRAP_ARTIFACT_ID}', --artifact-name, '{env:BCF_BOOTSTRAP_ARTIFACT_NAME}', --provider-digest, '{env:BCF_BOOTSTRAP_ARTIFACT_DIGEST}', --producer-run-id, '{env:BCF_BOOTSTRAP_RUN_ID}', --producer-run-attempt, '{env:BCF_BOOTSTRAP_RUN_ATTEMPT}', --repository-id, '{env:BCF_BOOTSTRAP_REPOSITORY_ID}', --commit, '{env:BCF_BOOTSTRAP_COMMIT_SHA}', --tree, '{env:BCF_BOOTSTRAP_TREE_SHA}', --wheel-sha256, '{env:BCF_BOOTSTRAP_WHEEL_SHA256}', --python, '{python}', --tool-cache, '${{ runner.tool_cache }}']
@@ -296,19 +296,35 @@ step_components:
     produces: []
     consumes: []
 workflows:
-- id: routine-controller-rotation
-  path: .github/workflows/bcf-routine-controller-rotation.yml
-  display_name: bcf/routine-controller-rotation
+- id: automation-reconcile
+  path: .github/workflows/bcf-automation-reconcile.yml
+  display_name: bcf/automation-changelog-reconciler
   role: trusted-control
   events:
   - type: workflow_run
-    workflows: [bcf/exact-main-admission]
+    workflows: [bcf/exact-main-admission, bcf/automation-admission]
     types: [completed]
   permissions: {actions: read, checks: read, contents: read, pull-requests: read, statuses: read}
   environment:
     BCF_REPOSITORY_ID: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_REPOSITORY_ID}'
   concurrency: {group: bcf-routine-controller-rotation, cancel_in_progress: false}
   jobs:
+  - id: reconcile
+    display_name: Commit the deterministic automation changelog entry
+    semantic_role: automation-changelog-reconciler
+    resource_class: trusted-control
+    trust: trusted
+    needs: []
+    condition: automation-admission-success
+    timeout_minutes: 5
+    permissions: {actions: read, contents: read, pull-requests: read}
+    checkout: false
+    protected_environment: bcf-trusted-automation
+    components: []
+    executor: {kind: component_sequence, components: [setup-python, create-automation-app-token, automation-reconcile]}
+    produces: []
+    consumes: []
+    required: true
   - id: authorize
     display_name: Authorize protected routine controller transition
     semantic_role: routine-controller-authorization
@@ -433,32 +449,6 @@ workflows:
     executor: {kind: component_sequence, components: [setup-python, download-routine-probed, resolve-effective-controller, activate-routine-transition, upload-routine-active]}
     produces: [controller-transition-active]
     consumes: [controller-transition-probed]
-    required: true
-- id: routine-controller-callback
-  path: .github/workflows/bcf-routine-controller-callback.yml
-  display_name: bcf/routine-controller-callback
-  role: trusted-control
-  events:
-  - type: workflow_run
-    workflows: [bcf/routine-controller-rotation]
-    types: [completed]
-  permissions: {actions: read, contents: write}
-  jobs:
-  - id: dispatch
-    display_name: Dispatch post-rotation exact-main certification
-    semantic_role: routine-controller-certification-callback
-    resource_class: trusted-control
-    trust: trusted
-    controller_requirement: current
-    needs: []
-    condition: routine-callback-applicable
-    timeout_minutes: 5
-    permissions: {actions: read, contents: write}
-    checkout: false
-    components: []
-    executor: {kind: component_sequence, components: [setup-python, resolve-effective-controller, dispatch-routine-certification]}
-    produces: []
-    consumes: []
     required: true
 - id: trusted-controller-bootstrap
   path: .github/workflows/bcf-trusted-control-bootstrap.yml
