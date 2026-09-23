@@ -25,7 +25,7 @@ artifacts:
     retention_days: 30
 conditions:
   automation-dependabot-actor: github.event.pull_request.user.id == {source:automation-contract:producers.0.actor_id}
-  automation-admission-success: github.event.workflow_run.conclusion == 'success'
+  automation-admission-success: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.name == 'bcf/automation-admission'
   pr-producer-completed: github.event.workflow_run.event == 'pull_request'
   pr-finalizer-success: github.event.workflow_run.conclusion == 'success'
 commands:
@@ -136,29 +136,6 @@ workflows:
     checkout: false
     components: []
     executor: {kind: component_sequence, components: [setup-python, automation-admit]}
-    produces: []
-    consumes: []
-    required: true
-- id: automation-reconcile
-  path: .github/workflows/bcf-automation-reconcile.yml
-  display_name: bcf/automation-changelog-reconciler
-  role: trusted-control
-  events: [{type: workflow_run, workflows: [bcf/automation-admission], types: [completed]}]
-  permissions: {actions: read, contents: read, pull-requests: read}
-  jobs:
-  - id: reconcile
-    display_name: Commit the deterministic automation changelog entry
-    semantic_role: automation-changelog-reconciler
-    resource_class: trusted-control
-    trust: trusted
-    needs: []
-    condition: automation-admission-success
-    timeout_minutes: 5
-    permissions: {actions: read, contents: read, pull-requests: read}
-    checkout: false
-    protected_environment: bcf-trusted-automation
-    components: []
-    executor: {kind: component_sequence, components: [setup-python, create-automation-app-token, automation-reconcile]}
     produces: []
     consumes: []
     required: true

@@ -45,6 +45,7 @@ execution_evidence:
   - P27-P0-02 provider expansion compiles protected-merge authorization, exact builder and transition artifact custody, linear ancestry, exact bootstrap/probe/promotion inventories, and an N-authorized activation callback while authority roles remain absent and routing stays dormant
   - the one-time ordinary migration target is the exact provider-built controller from exact-main 35882935280/1 on f652538d6e5d9f509dda1b7c5d2001f8014b9a42; installed N remains authoritative until bootstrap probe and confirmation
   - both trusted runners bootstrapped and probed the exact provider-built P27 routine controller through 35887679751/1 and 35887934342/1; canonical confirmation restores ordinary-current custody
+  - provider-backed routine rotation is activated for P27-P0-02 through protected-merge authorization, exact builder custody, two-runner staged proofs, immutable transition receipts, and a bounded fresh-certification callback; release authority remains absent
 closeout_requirements:
   claims:
     workitems_closed:

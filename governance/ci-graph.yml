@@ -13,10 +13,10 @@ value_sources:
 extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]
 extensions:
 - {id: bcf-break-glass-recovery, path: governance/ci-extensions/bcf-break-glass-recovery.yml, sha256: 831341d3ee3167c559aa83fd2eec5aea8adf94e6a5149c13b7c11c39ee3da874}
-- {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: 13769e1644221b0364034cc9db6a352d14b85a9f4e35d0e111cfdabd22ba4c0c}
+- {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: adde42bee237d4da4a67a72d6d5e8600e63ed010486cea4084391f940b9d1bb0}
 - {id: bcf-evidence-storage, path: governance/ci-extensions/bcf-evidence-storage.yml, sha256: 41e40dad457efc53292249a211575505e9d6021d73d3fee2e52c4e9eede68eea}
 - {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 72b04805b3ea4a85b5a37bd769aa627a9079a173210ea63c9a022aaa07896921}
-- {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: 2534fe8f4c6bd6fe93ad10e1348265961ece6542d3d71a6e566f8ffba4b66397}
+- {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: af8f17a53c02389a3c5f3e1e306406035bbfae18b87aefdfa5669c61192f966c}
 resource_classes:
   hosted-python:
     runner: ubuntu-24.04
@@ -63,8 +63,8 @@ artifacts:
   weekly-mutant-results: {path: .artifacts/scheduled-mutants, kind: control, scope: run-attempt, retention_days: 90}
   trusted-controller-bundle: {path: .artifacts/trusted-control, kind: control, scope: run-attempt, retention_days: 30}
   prior-evidence-transport: {path: .artifacts/bcf/prior-evidence, kind: control, scope: run-attempt, retention_days: 30}
-conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', prior-evidence-enabled: inputs.use_prior_evidence == true, prior-evidence-disabled: inputs.use_prior_evidence != true, evidence-prerequisites-with-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence == true, evidence-prerequisites-without-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence != true, exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main',
-  always-step: always()}
+conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', prior-evidence-enabled: inputs.use_prior_evidence == true, prior-evidence-disabled: inputs.use_prior_evidence != true, evidence-prerequisites-with-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence == true, evidence-prerequisites-without-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence != true, exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' || vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'repository_dispatch' && github.event.workflow_run.head_branch == 'main', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.name == 'bcf/trusted-evidence-finalizer' && github.event.workflow_run.event
+    == 'workflow_run' && github.event.workflow_run.head_branch == 'main', always-step: always()}
 commands:
   install-governance-dependencies:
     argv: ['{python}', -m, pip, install, -r, requirements-governance.txt]
@@ -130,6 +130,22 @@ commands:
     argv: ['{python}', .github/scripts/build_trusted_controller.py, --output, .artifacts/trusted-control, --run-id, '${{ github.run_id }}', --run-attempt, '${{ github.run_attempt }}']
     cwd: .
     environment: {}
+  exact-main-admit-effective:
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, exact-main, admit, --repository, '${{ github.repository }}', --sha, '${{ github.sha }}', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}', --evaluation-mode, workitem, --evaluation-target, P27-P0-02]
+    cwd: .
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+  prior-evidence-effective:
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, prior-evidence, transport, --repository, '${{ github.repository }}', --main-sha, '${{ github.sha }}', --output, '${{ runner.temp }}/bcf-prior-evidence']
+    cwd: .
+    environment: {GITHUB_TOKEN: '${{ github.token }}', BCF_PROTECTION_INSPECT_REQUIRED: 'true', BCF_PROTECTION_INSPECT_APP_TOKEN: '${{ steps.protection-inspector-token.outputs.token }}', BCF_PROTECTION_INSPECT_INSTALLATION_ID: '${{ vars.BCF_PROTECTION_INSPECT_INSTALLATION_ID }}', BCF_PROTECTION_INSPECT_OBSERVED_INSTALLATION_ID: '${{ steps.protection-inspector-token.outputs.installation-id }}'}
+  exact-main-finalize-effective:
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, exact-main, finalize, --repository, '${{ github.repository }}', --trigger-run-id, '${{ github.event.workflow_run.id }}', --trigger-run-attempt, '${{ github.event.workflow_run.run_attempt }}', --output, '${{ runner.temp }}/bcf-exact-main-certification']
+    cwd: .
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+  exact-main-publish-effective:
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, exact-main, publish, --repository, '${{ github.repository }}', --bundle, '${{ runner.temp }}/bcf-exact-main-certification', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}', --collector-run-id, '${{ github.event.workflow_run.id }}', --collector-run-attempt, '${{ github.event.workflow_run.run_attempt }}']
+    cwd: .
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
 step_components:
   checkout-candidate:
     kind: action
@@ -261,6 +277,67 @@ step_components:
     environment: {}
     produces: [governance-truth-report]
     consumes: []
+  exact-main-admit-effective:
+    kind: command
+    name: Authenticate exact-main admission with the effective controller
+    command: exact-main-admit-effective
+    environment: {}
+    produces: []
+    consumes: []
+  protection-inspector-token:
+    kind: action
+    name: Mint repository-scoped protection inspection token
+    id: protection-inspector-token
+    action: create-github-app-token
+    with: {app-id: '${{ vars.BCF_PROTECTION_INSPECT_APP_ID }}', private-key: '${{ secrets.BCF_PROTECTION_INSPECT_APP_PRIVATE_KEY }}', owner: '${{ github.repository_owner }}', repositories: '${{ github.event.repository.name }}', permission-administration: write}
+    environment: {}
+    produces: []
+    consumes: []
+  prior-evidence-effective:
+    kind: command
+    name: Authenticate and preserve prior merged-PR evidence
+    command: prior-evidence-effective
+    environment: {}
+    produces: [prior-evidence-transport]
+    consumes: []
+  upload-prior-evidence-effective:
+    kind: action
+    name: Upload exact prior evidence transport
+    action: upload-artifact
+    with: {name: 'bcf-prior-evidence-transport-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-prior-evidence', if-no-files-found: error, retention-days: 30}
+    environment: {}
+    produces: [prior-evidence-transport]
+    consumes: []
+  exact-main-finalize-effective:
+    kind: command
+    name: Reconstruct exact-main evidence with the effective controller
+    command: exact-main-finalize-effective
+    environment: {}
+    produces: [exact-main-certification]
+    consumes: []
+  upload-exact-main-certification-effective:
+    kind: action
+    name: Upload exact-main certification bundle
+    action: upload-artifact
+    with: {name: 'bcf-exact-main-certification-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-exact-main-certification', if-no-files-found: error, retention-days: 30}
+    environment: {}
+    produces: [exact-main-certification]
+    consumes: []
+  download-exact-main-certification-effective:
+    kind: action
+    name: Download exact finalizer certification bundle
+    action: download-artifact
+    with: {name: 'bcf-exact-main-certification-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ github.event.workflow_run.id }}', path: '${{ runner.temp }}/bcf-exact-main-certification'}
+    environment: {}
+    produces: []
+    consumes: [exact-main-certification]
+  exact-main-publish-effective:
+    kind: command
+    name: Publish authenticated exact-main status with the effective controller
+    command: exact-main-publish-effective
+    environment: {}
+    produces: []
+    consumes: [exact-main-certification]
   scheduled-preflight:
     kind: command
     name: Validate selected interpreter and governance before mutants
@@ -430,6 +507,8 @@ workflows:
   events:
   - type: push
     branches: [main]
+  - type: repository_dispatch
+    types: [bcf-controller-rotation-certified]
   permissions: {contents: read}
   jobs:
   - id: admit
@@ -443,9 +522,14 @@ workflows:
     timeout_minutes: 5
     permissions: {actions: write, contents: read, statuses: write}
     checkout: false
-    components: [python]
+    components: []
     protected_environment: bcf-trusted-protection-inspection
-    executor: {kind: authority, operation: admit-with-prior-evidence, evaluation_mode: workitem, evaluation_target: P27-P0-01, protection_inspection: true}
+    executor:
+      kind: component_sequence
+      components: [setup-python, resolve-effective-controller, exact-main-admit-effective, protection-inspector-token, prior-evidence-effective, upload-prior-evidence-effective]
+      evaluation_mode: workitem
+      evaluation_target: P27-P0-02
+      protection_inspection: true
     produces: [prior-evidence-transport]
     consumes: []
     required: true
@@ -463,7 +547,7 @@ workflows:
     executor:
       kind: reusable_workflow
       path: .github/workflows/governance.yml
-      inputs: {evaluation_mode: workitem, evaluation_target: P27-P0-01, use_prior_evidence: true}
+      inputs: {evaluation_mode: workitem, evaluation_target: P27-P0-02, use_prior_evidence: true}
       artifact_bindings: {prior-evidence-transport: use_prior_evidence}
     produces: []
     consumes: [prior-evidence-transport]
@@ -506,8 +590,10 @@ workflows:
     timeout_minutes: 5
     permissions: {actions: read, contents: read}
     checkout: false
-    components: [python]
-    executor: {kind: authority, operation: finalize}
+    components: []
+    executor:
+      kind: component_sequence
+      components: [setup-python, resolve-effective-controller, exact-main-finalize-effective, upload-exact-main-certification-effective]
     produces: [exact-main-certification]
     consumes: []
     required: true
@@ -517,9 +603,9 @@ workflows:
   role: trusted-control
   events:
   - type: workflow_run
-    workflows: [bcf/trusted-evidence-finalizer]
+    workflows: [bcf/trusted-evidence-finalizer, bcf/automation-changelog-reconciler]
     types: [completed]
-  permissions: {actions: read, contents: read, statuses: write}
+  permissions: {actions: read, contents: write, statuses: write}
   jobs:
   - id: publish
     display_name: Publish newest authenticated exact-main status or revocation
@@ -532,10 +618,30 @@ workflows:
     timeout_minutes: 5
     permissions: {actions: read, contents: read, statuses: write}
     checkout: false
-    components: [python]
-    executor: {kind: authority, operation: publish}
+    components: []
+    executor:
+      kind: component_sequence
+      components: [setup-python, download-exact-main-certification-effective, resolve-effective-controller, exact-main-publish-effective]
     produces: []
     consumes: [exact-main-certification]
+    required: true
+  - id: rotation-callback
+    display_name: Dispatch post-rotation exact-main certification
+    semantic_role: routine-controller-certification-callback
+    resource_class: trusted-control
+    trust: trusted
+    controller_requirement: current
+    needs: []
+    condition: routine-callback-applicable
+    timeout_minutes: 5
+    permissions: {actions: read, contents: write}
+    checkout: false
+    components: []
+    executor:
+      kind: component_sequence
+      components: [setup-python, resolve-effective-controller, dispatch-routine-certification]
+    produces: []
+    consumes: []
     required: true
 - id: scheduled-nightly-mutants
   path: .github/workflows/governance-mutants-nightly.yml

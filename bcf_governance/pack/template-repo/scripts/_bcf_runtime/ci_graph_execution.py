@@ -116,8 +116,11 @@ def job_execution_issues(
     issues: list[str] = []
     if executor.get("protection_inspection"):
         if (
-            executor.get("kind") != "authority"
-            or executor.get("operation") != "admit-with-prior-evidence"
+            executor.get("kind") not in {"authority", "component_sequence"}
+            or (
+                executor.get("kind") == "authority"
+                and executor.get("operation") != "admit-with-prior-evidence"
+            )
             or job.get("protected_environment") != "bcf-trusted-protection-inspection"
             or job.get("trust") != "trusted"
             or job.get("checkout") is not False
@@ -125,6 +128,11 @@ def job_execution_issues(
             issues.append(
                 "protection inspection requires the protected trusted exact-main admission job"
             )
+        if executor.get("kind") == "component_sequence" and not {
+            "protection-inspector-token",
+            "prior-evidence-effective",
+        }.issubset(set(executor.get("components", []))):
+            issues.append("protection inspection component sequence is incomplete")
     if workflow is not None:
         _, environment_issues = job_required_environment(
             graph, workflow, job, executor

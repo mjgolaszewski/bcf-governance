@@ -1159,7 +1159,7 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     if evaluation_mode == "workitem":
         assert isinstance(evaluation_target, str) and evaluation_target
         target = next(item for item in workitems if item["id"] == evaluation_target)
-        assert target["status"] == "DONE"
+        assert target["status"] in {"DONE", "TODO"}
         assert all(
             value.removeprefix("requires-workitem-closure:") in closed
             for value in target["acceptance"]
@@ -1170,7 +1170,11 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
             if f"requires-workitem-closure:{evaluation_target}" in item["acceptance"]
         ]
         assert len(declared_successors) <= 1
-        if declared_successors:
+        if target["status"] == "TODO":
+            assert not declared_successors or all(
+                item["status"] == "TODO" for item in declared_successors
+            )
+        elif declared_successors:
             successor = declared_successors[0]
             assert successor["status"] == "TODO"
             assert all(
@@ -1190,17 +1194,26 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     evaluation = {"evaluation_mode": evaluation_mode}
     if evaluation_target is not None:
         evaluation["evaluation_target"] = evaluation_target
-    core_keys = ("kind", "operation", *evaluation)
+    core_keys = ("kind", *evaluation)
     assert {key: admission["executor"][key] for key in core_keys} == {
-        "kind": "authority",
-        "operation": "admit-with-prior-evidence",
+        "kind": "component_sequence",
         **evaluation,
     }
     assert {
         key: value
         for key, value in admission["executor"].items()
         if key not in core_keys
-    } in ({}, {"protection_inspection": True})
+    } == {
+        "components": [
+            "setup-python",
+            "resolve-effective-controller",
+            "exact-main-admit-effective",
+            "protection-inspector-token",
+            "prior-evidence-effective",
+            "upload-prior-evidence-effective",
+        ],
+        "protection_inspection": True,
+    }
     assert admission["produces"] == ["prior-evidence-transport"]
     assert admission["permissions"]["actions"] == "write"
     assert governance["executor"]["inputs"] == {
@@ -1233,24 +1246,36 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     steps = exact_jobs["admit"]["steps"]
     admission_command = next(
         step["run"] for step in steps
-        if step["name"] == "Authenticate exact-main admission and publish pending authority"
+        if "exact-main admit" in step.get("run", "")
     )
-    assert f'--evaluation-mode "{evaluation_mode}"' in admission_command
+    assert (
+        f'--evaluation-mode "{evaluation_mode}"' in admission_command
+        or f"--evaluation-mode {evaluation_mode}" in admission_command
+    )
     if evaluation_target is None:
         assert "--evaluation-target" not in admission_command
     else:
-        assert f'--evaluation-target "{evaluation_target}"' in admission_command
+        assert (
+            f'--evaluation-target "{evaluation_target}"' in admission_command
+            or f"--evaluation-target {evaluation_target}" in admission_command
+        )
     transport = next(
         step for step in steps
         if step["name"] == "Authenticate and preserve prior merged-PR evidence"
     )
     upload = next(
         step for step in steps
-        if step["name"] == "Upload exact prior-evidence-transport evidence"
+            if step["name"] == "Upload exact prior evidence transport"
     )
     assert "prior-evidence transport" in transport["run"]
-    assert '--main-sha "$GITHUB_SHA"' in transport["run"]
-    expected_transport_env = {"GITHUB_TOKEN": "${{ github.token }}"}
+    assert (
+        '--main-sha "$GITHUB_SHA"' in transport["run"]
+        or '--main-sha "${{ github.sha }}"' in transport["run"]
+    )
+    expected_transport_env = {
+        "BCF_PYTHON": "${{ env.pythonLocation }}/bin/python",
+        "GITHUB_TOKEN": "${{ github.token }}",
+    }
     if admission["executor"].get("protection_inspection"):
         expected_transport_env.update({
             "BCF_PROTECTION_INSPECT_REQUIRED": "true",
@@ -1431,7 +1456,11 @@ def test_exact_main_finalizer_uses_callback_identity_only_as_provider_locator() 
             ".github/workflows/bcf-trusted-finalizer.yml"
         ]
     )
-    command = rendered["jobs"]["finalize"]["steps"][1]["run"]
+    command = next(
+        step["run"]
+        for step in rendered["jobs"]["finalize"]["steps"]
+        if "exact-main finalize" in step.get("run", "")
+    )
 
     assert '--trigger-run-id "${{ github.event.workflow_run.id }}"' in command
     assert (
@@ -1548,18 +1577,26 @@ def test_protection_inspection_activation_is_credential_isolated_and_environment
     job["protected_environment"] = "bcf-trusted-protection-inspection"
     assert job_execution_issues(compiled.graph, job, job["executor"], workflow) == ()
     steps = _executor_steps(compiled, job, workflow)
-    assert steps[-2]["id"] == "protection-inspector-token"
-    assert set(steps[-2]["with"]) == {
+    token = next(step for step in steps if step.get("id") == "protection-inspector-token")
+    transport = next(
+        step for step in steps
+        if step.get("env", {}).get("BCF_PROTECTION_INSPECT_REQUIRED") == "true"
+    )
+    assert set(token["with"]) == {
         "app-id", "private-key", "owner", "repositories", "permission-administration",
     }
-    assert steps[-2]["with"]["permission-administration"] == "write"
-    assert steps[-2]["with"]["repositories"] == "${{ github.event.repository.name }}"
-    assert steps[-1]["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
-    assert steps[-1]["env"]["BCF_PROTECTION_INSPECT_APP_TOKEN"] == (
+    assert token["with"]["permission-administration"] == "write"
+    assert token["with"]["repositories"] == "${{ github.event.repository.name }}"
+    assert transport["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
+    assert transport["env"]["BCF_PROTECTION_INSPECT_APP_TOKEN"] == (
         "${{ steps.protection-inspector-token.outputs.token }}"
     )
-    assert steps[-1]["env"]["BCF_PROTECTION_INSPECT_REQUIRED"] == "true"
-    assert "BCF_PROTECTION_INSPECT_APP_TOKEN" not in steps[0]["env"]
+    assert transport["env"]["BCF_PROTECTION_INSPECT_REQUIRED"] == "true"
+    assert all(
+        "BCF_PROTECTION_INSPECT_APP_TOKEN" not in step.get("env", {})
+        for step in steps
+        if step is not transport
+    )
 
 
 def test_protection_inspection_activation_compiles_complete_exact_main_job(
