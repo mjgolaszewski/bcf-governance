@@ -288,6 +288,7 @@ def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> N
     assert "workflow_run.conclusion" not in conditions["exact-main-publisher-admitted"]
     assert conditions["exact-main-publisher-admitted"] == (
         "vars.BCF_CI_AUTHORITY_ENABLED == 'true' && "
+        "github.event.workflow_run.name == 'bcf/trusted-evidence-finalizer' && "
         "github.event.workflow_run.event == 'workflow_run' && "
         "github.event.workflow_run.head_branch == 'main'"
     )
