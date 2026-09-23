@@ -133,6 +133,15 @@ execution_evidence:
     bcf/workitem-certification success, making P26-P0-04 eligible without release
     authority. The governed attack matrix for substitution, replay, stale identity,
     authority, lifecycle, closure, qualification, and claim laundering is green.
+  - >-
+    PR 256 merged as a539cf30ef669e792850562e4cb5d8efe0e96982 with tree
+    f484e3b449763716b663b45a342ef17472785586. Exact-main 35794552653/1
+    closed P26-P0-04 with exact producer and job inventories and no eligible
+    successor. Finalizer 35794798744/1 preserved the exact bounded proposition;
+    publisher 35794847229/1 published bcf/workitem-certification success. The
+    proposition grants no release or parent-phase authority. All four P26
+    workitems are now DONE, so the next exact-main projection requests terminal
+    P26 closure without an evaluation target while P27 remains blocked.
 closeout_requirements:
   claims:
     workitems_closed:
@@ -165,5 +174,5 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify bounded P26-P0-04 closure under the installed ordinary-current controller,
-  then perform terminal P26 closure before beginning P27
+- perform terminal P26 closure under the installed ordinary-current controller,
+  then close issue 214 before beginning P27

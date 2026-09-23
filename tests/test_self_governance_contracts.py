@@ -335,13 +335,14 @@ def test_exact_main_is_the_only_default_branch_producer() -> None:
         "admit", "governance", "trusted-controller-build",
     ]
     admission = _job("exact-main", "admit")["executor"]
-    evaluation = {
-        "evaluation_mode": admission["evaluation_mode"],
-        "evaluation_target": admission["evaluation_target"],
-    }
-    assert evaluation["evaluation_mode"] == "workitem"
-    assert isinstance(evaluation["evaluation_target"], str)
-    assert evaluation["evaluation_target"]
+    evaluation = {"evaluation_mode": admission["evaluation_mode"]}
+    if admission["evaluation_mode"] == "workitem":
+        target = admission.get("evaluation_target")
+        assert isinstance(target, str) and target
+        evaluation["evaluation_target"] = target
+    else:
+        assert admission["evaluation_mode"] == "closure"
+        assert "evaluation_target" not in admission
     called = _job("exact-main", "governance")["executor"]
     inputs = called["inputs"]
     assert {key: inputs[key] for key in evaluation} == evaluation
