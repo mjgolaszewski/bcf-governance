@@ -255,6 +255,31 @@ def test_lifecycle_only_change_reuses_behavior_claims(tmp_path: Path) -> None:
     assert plan["execution_dag"]["nodes"] == []
 
 
+def test_test_population_change_executes_only_dependent_groups(tmp_path: Path) -> None:
+    root = _repo(tmp_path, scope="regulated")
+    receipts = [
+        _receipt(root, ["app-valid"]),
+        _receipt(root, ["other-valid"]),
+        _receipt(root, ["regulated-custody"]),
+    ]
+    _commit(root, "tests/test_app.py", "def test_app(): assert 2 + 2 == 4\n")
+
+    plan = plan_verification(root, receipts, preflight_claims=["governance-valid"])
+
+    assert {node["id"] for node in plan["execution_dag"]["nodes"]} == {
+        "app-tests",
+        "other-tests",
+    }
+    assert {value["claim_id"] for value in plan["reused_evidence"]} == {
+        "regulated-custody"
+    }
+    assert all(
+        "test_population_changed" in invalidation["reasons"]
+        for invalidation in plan["invalidated_evidence"]
+        if invalidation["claim_id"] in {"app-valid", "other-valid"}
+    )
+
+
 def test_unavailable_source_commit_uses_exact_local_tree_for_planning_only(tmp_path: Path) -> None:
     root = _repo(tmp_path)
     receipt = _receipt(root, ["app-valid"])

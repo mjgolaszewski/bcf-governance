@@ -1,5 +1,7 @@
 # Changelog
 
+- Activate P27 with planner-owned selective execution, qualification-preserving negative-control reuse, and exact P26 closure custody while integrating the one-PR controller-rotation and controlled-demolition acceptance mandates.
+
 - Confirm the P26 finalizer subject-identity controller on both trusted runners and restore ordinary-current custody.
 
 - Project the exact provider-built controller containing the P26 finalizer subject-identity correction as the ordinary rotation target.

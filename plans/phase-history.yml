@@ -1,6 +1,32 @@
 document: {"kind":"phase_history","name":"BCF Governance Phase History","id":"bcf-governance-phase-history","version":"1.0.0","generated_at_utc":"2026-08-14T00:00:00Z","status":"active","path":"plans/phase-history.yml"}
 retention_policy: {"source":"governance/artifact-manifest.yml","purpose":"compact machine-readable history for removed or archived closed phase artifacts"}
 entries:
+- phase_id: P26
+  build_block: invariant-closure-proof-transport-2.1.0
+  release_train: release_16
+  retention_source: git_history
+  retention_ref: b638f611363b14ac645e06218b8c8cb4b1906732
+  status: completed
+  derived_state_at_capture: closed
+  verification_snapshot:
+    commit_sha: b638f611363b14ac645e06218b8c8cb4b1906732
+    tree_sha: 00799b5d725d28bb7d5fb48d2ea614e848ed71af
+    truth_report_sha256: 1656ac3d0d5775e980323eef024942c1cb43b6a267265108706e4ffc89f47725
+    evidence_bundle_sha256: abacf2ed63965024da3eee39de9ee1ce44ce3770f0caee39ec08790600daa50b
+    durable_ref: github-actions://mjgolaszewski/bcf-governance/runs/35801370043/attempts/1/bcf-governance-truth
+    verifier: {kind: workflow, id: 'exact-main 35801370043/1; finalizer 35801557782/1; publisher 35801605862/1'}
+  outcome: certified_phase_closure
+  summary:
+  - P26 delivered immutable provider-authenticated proof transport, exact main-side applicability, qualification-preserving reuse, and adversarial closure.
+  - Terminal exact-main truth certified phase_closed for P26 without release authority and App 15368 published bcf/exact-main-certification success.
+  validation:
+  - exact-main admission and truth 35801370043/1 succeeded
+  - trusted finalizer 35801557782/1 certified the exact commit tree and phase proposition
+  - App 15368 publisher 35801605862/1 published bcf/exact-main-certification success
+  archived_artifacts:
+  - {path: plans/phase-26-plan.yml, sha256: cca1f38b83673d5b3346b1bd4f69d7c2a7f703fdcefd5d14fa05ea11b01572dd, git_commit: b638f611363b14ac645e06218b8c8cb4b1906732}
+  - {path: plans/phase-26-workitems.yml, sha256: cf91395700b2206341b97548883e0e8af2bef7e5290a1bafee533957a8081702, git_commit: b638f611363b14ac645e06218b8c8cb4b1906732}
+  - {path: phases/phase-26-log.yml, sha256: adc960fbb9f87b608aad977656172788674e768c969c086b72a0fec0aed5e497, git_commit: b638f611363b14ac645e06218b8c8cb4b1906732}
 - phase_id: P25
   build_block: dependency-scoped-correction-2.0.0
   release_train: release_15
