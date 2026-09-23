@@ -904,7 +904,7 @@
     },
     "scripts/_bcf_runtime/prior_evidence_transport.py": {
       "operation": "copy",
-      "sha256": "77b4881ddbb6c6ffb78a688bf2f3983cfcb68d13850e30d459bf79c58afe2219"
+      "sha256": "a1a287be5efd5a3e9248f0a3a09614cfe2b909ce3e0868b3d05e0759b9c1a797"
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",
@@ -924,7 +924,7 @@
     },
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",
-      "sha256": "4856dc8a10354e6e38c9c7e721a58218d39820f7fee4019b42addc7db4420c33"
+      "sha256": "de42f792cf713eefd420e854850ff598977be1ebaf0f4d6aa69f2e9649fad1f0"
     },
     "scripts/_bcf_runtime/protection_inspection_client.py": {
       "operation": "copy",
@@ -1080,7 +1080,7 @@
     },
     "scripts/_bcf_runtime/trusted_controller_compatibility.py": {
       "operation": "copy",
-      "sha256": "86a629c55132880659f10f72c7f1d2c099a1c8a81201c0e91e17988f30bab37f"
+      "sha256": "e6c7b272458c7138374340340ae6084d974bba5ab68831b96de4c1b0d7b6eb48"
     },
     "scripts/_bcf_runtime/trusted_inputs.py": {
       "operation": "copy",

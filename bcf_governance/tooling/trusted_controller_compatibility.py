@@ -268,11 +268,11 @@ def verify_pr_bootstrap_compatibility(
         "--",
         *(path.as_posix() for path in PR_EVIDENCE_INVENTORY_CAPABILITY_FILES),
     ).splitlines()
-    incompatible = sorted(set(unavailable + changed))
-    if incompatible:
+    bootstrap_incompatible = sorted(set(unavailable + changed))
+    if bootstrap_incompatible:
         raise TrustedControllerBootstrapIncompatibleError(
             "PR producer job inventory changed before installed controller support: "
-            + ", ".join(incompatible)
+            + ", ".join(bootstrap_incompatible)
         )
 
 

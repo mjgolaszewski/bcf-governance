@@ -35,7 +35,7 @@ _ProfileSurfaceDumper.add_representer(_SharedScalar, yaml.SafeDumper.represent_s
 
 
 def _compact_control_mappings(value: Any, scalars: dict[str, _SharedScalar]) -> Any:
-    if isinstance(value, str) and len(value) >= 16:
+    if isinstance(value, str) and len(value) >= 8:
         return scalars.setdefault(value, _SharedScalar(value))
     if isinstance(value, dict):
         result = {}

@@ -510,8 +510,9 @@ def transport_prior_evidence(
             observed_installation_id=observed_installation_id,
             api_url=api_url,
         )
+    inventory_subject_sha = candidate.checkout_sha
     expected_jobs = set(candidate_governance_job_inventory(
-        api, repository=repository, candidate_sha=candidate.checkout_sha,
+        api, repository=repository, candidate_sha=inventory_subject_sha,
     ))
     jobs = api.jobs(repository, producer_run, attempt=producer_attempt)
     check_id = positive_int(check.get("id"), field="check run ID")

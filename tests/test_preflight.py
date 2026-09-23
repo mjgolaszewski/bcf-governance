@@ -437,7 +437,7 @@ def test_stale_trusted_controller_is_a_preflight_failure(
             preflight._self_controller(tmp_path, allow_stale_runtime=False)
 
 
-def test_pr_topology_bootstrap_incompatibility_is_a_preflight_failure(
+def test_pr_bootstrap_fails_early(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     target = "a" * 40

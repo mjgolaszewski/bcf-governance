@@ -337,7 +337,7 @@ def test_transport_authenticates_and_preserves_exact_source_bytes(
     assert not ({"decision", "qualification", "dependency_closure"} & set(manifest))
 
 
-def test_transport_projects_job_inventory_from_exact_candidate_workflow(
+def test_transport_uses_candidate_inventory(
     provider: Provider, tmp_path: Path,
 ) -> None:
     source_names = compiled_workflow_job_names(
