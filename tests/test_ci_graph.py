@@ -1272,7 +1272,10 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         '--main-sha "$GITHUB_SHA"' in transport["run"]
         or '--main-sha "${{ github.sha }}"' in transport["run"]
     )
-    expected_transport_env = {"GITHUB_TOKEN": "${{ github.token }}"}
+    expected_transport_env = {
+        "BCF_PYTHON": "${{ env.pythonLocation }}/bin/python",
+        "GITHUB_TOKEN": "${{ github.token }}",
+    }
     if admission["executor"].get("protection_inspection"):
         expected_transport_env.update({
             "BCF_PROTECTION_INSPECT_REQUIRED": "true",
