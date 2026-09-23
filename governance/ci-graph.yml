@@ -444,7 +444,7 @@ workflows:
     checkout: false
     components: [python]
     protected_environment: bcf-trusted-protection-inspection
-    executor: {kind: authority, operation: admit-with-prior-evidence, evaluation_mode: closure, protection_inspection: true}
+    executor: {kind: authority, operation: admit-with-prior-evidence, evaluation_mode: workitem, evaluation_target: 'workitem:P27-P0-01', protection_inspection: true}
     produces: [prior-evidence-transport]
     consumes: []
     required: true
@@ -462,7 +462,7 @@ workflows:
     executor:
       kind: reusable_workflow
       path: .github/workflows/governance.yml
-      inputs: {evaluation_mode: closure, use_prior_evidence: true}
+      inputs: {evaluation_mode: workitem, evaluation_target: 'workitem:P27-P0-01', use_prior_evidence: true}
       artifact_bindings: {prior-evidence-transport: use_prior_evidence}
     produces: []
     consumes: [prior-evidence-transport]

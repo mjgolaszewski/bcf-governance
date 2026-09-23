@@ -1,0 +1,90 @@
+document:
+  kind: p27_composition_audit
+  name: BCF 2.1 P27 Selective Composition and Prospective Authority Audit
+  id: bcf-2-1-p27-composition
+  version: 1.0.0
+  status: active
+  path: audits/bcf-2-1-p27-composition.yml
+phase:
+  id: P27
+  issue: 215
+  release_train: release_16
+p26_dependency:
+  commit_sha: b638f611363b14ac645e06218b8c8cb4b1906732
+  tree_sha: 00799b5d725d28bb7d5fb48d2ea614e848ed71af
+  exact_main: 35801370043/1
+  truth_report_sha256: 1656ac3d0d5775e980323eef024942c1cb43b6a267265108706e4ffc89f47725
+  effective_state: closed
+p27_p0_01:
+  proposition: execute only absent invalidated or reuse-ineligible claim groups while preserving applicable negative-control qualification
+  canonical_owners:
+  - {path: governance/gate-contracts.yml, responsibility: claim dependencies execution groups and producer ownership}
+  - {path: bcf_governance/tooling/evidence_planning.py, responsibility: applicability invalidation reuse decisions and execution DAG}
+  - {path: bcf_governance/tooling/evidence_claims.py, responsibility: claim capture and qualification-reference projection}
+  - {path: bcf_governance/tooling/evidence_sessions.py, responsibility: immutable planned producer inventory}
+  - {path: .github/scripts/capture_governance_shard.py, responsibility: execute only the admitted producer inventory}
+  - {path: bcf_governance/tooling/governance_truth.py, responsibility: exact authenticated receipt and reuse resolution}
+  composition_result:
+    duplicate_semantic_registry_added: false
+    trusted_runtime_bytes_changed: false
+    workflow_semantics_changed: false
+    tests_added:
+    - all changed test-population claims schedule their owning group and no reusable group
+    - workflow shards execute exactly the evidence-session planned producer inventory
+surface_classification:
+  must_change:
+  - plans/phase-ledger.yml
+  - plans/phase-history.yml
+  - plans/phase-27-plan.yml
+  - plans/phase-27-workitems.yml
+  - phases/phase-27-log.yml
+  - MEMORY.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - governance/ci-graph.yml
+  - tests/test_evidence_planning.py
+  - tests/test_self_governance_contracts.py
+  generated_consequence:
+  - .github/workflows/*.yml
+  - governance/test-manifests/test.txt
+  - audits/v2.0.0-editorial-review.yml
+  - governance/ci-authority.yml
+  - governance/self-governance-policy.yml
+  inspected_no_impact:
+  - bcf_governance/tooling/evidence_planning.py
+  - bcf_governance/tooling/evidence_claims.py
+  - bcf_governance/tooling/evidence_sessions.py
+  - bcf_governance/tooling/governance_truth.py
+  - bcf_governance/tooling/ci_exact_main_truth.py
+  - bcf_governance/tooling/ci_github_status_publisher.py
+  - bcf_governance/tooling/ci_github_release.py
+  - bcf_governance/tooling/release_receipts.py
+prospective_authority_chain:
+- {boundary: preflight, deterministic_next_rejection: governed artifact editorial manifest and graph parity, disposition: validate before push}
+- {boundary: controller_compatibility, deterministic_next_rejection: trusted runtime target differs from installed controller, disposition: require ordinary-current compatibility before push}
+- {boundary: pr_evidence, deterministic_next_rejection: exact required producer or job inventory incomplete, disposition: validate canonical plan session and graph inventories locally}
+- {boundary: certification, deterministic_next_rejection: finalizer subject scope or inventory mismatch, disposition: exercise canonical bounded certification fixtures}
+- {boundary: merge, deterministic_next_rejection: exact-main evaluation target is not authored DONE or predecessor closure is absent, disposition: validate P27-P0-01 authored closure and exact P26 history}
+- {boundary: exact_main, deterministic_next_rejection: prior evidence inapplicable or producer inventory does not match plan, disposition: retain provider-authenticated applicability and execute only unresolved groups}
+- {boundary: controller_lifecycle, deterministic_next_rejection: proposed tree requires a controller absent from trusted runners, disposition: prove no trusted runtime byte change and ordinary-current compatibility}
+- {boundary: bounded_truth, deterministic_next_rejection: target remains active missing evidence or has wrong predecessor, disposition: target exact DONE P27-P0-01 and preserve P27 active}
+- {boundary: finalizer, deterministic_next_rejection: proposition subject target run or attempt differs, disposition: exercise exact scoped-certification normalization and verification}
+- {boundary: publisher, deterministic_next_rejection: bounded status is broadened or wrong context selected, disposition: preserve bcf/workitem-certification only}
+- {boundary: successor_release, deterministic_next_rejection: bounded certification used as phase or release authority, disposition: require P27-P0-02 eligibility only and explicit release rejection}
+simplification_baseline:
+  graph_inventory: {workflows: 19, jobs: 32, extensions: 5}
+  agent_facing_canonical_interfaces:
+  - {interface: preflight_governance, unique_proposition: candidate structural prerequisites and execution plan are deterministic and closed}
+  - {interface: governance_evidence, unique_proposition: independently executed producer observations bind exact subject session and controls}
+  - {interface: governance_truth, unique_proposition: authenticated evidence closes the requested bounded or terminal proposition}
+  - {interface: ci_graph, unique_proposition: provider topology and authority projection derive from one canonical graph}
+  mandatory_future_reductions:
+  - replace routine target confirmation pin and activation repository mutations with authenticated transition evidence under existing protected policy
+  - collapse derivable fixed-point bookkeeping behind one canonical reconcile operation
+  - remove or consolidate every surviving mechanism that cannot name a unique assurance or authorization proposition
+security_boundaries:
+  candidate_self_authorization: prohibited
+  source_receipt_mutation: prohibited
+  bounded_to_release_escalation: prohibited
+  break_glass_routine_use: prohibited
+  controller_rotation_acceptance: one protected implementation PR and zero bookkeeping-only follow-up commits or pull requests

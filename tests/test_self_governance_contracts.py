@@ -7,6 +7,7 @@ from pathlib import Path
 import stat
 import subprocess
 import sys
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -481,6 +482,47 @@ def test_governance_shard_forwards_the_preflight_session(
     )
     module.main()
     assert commands[0][commands[0].index("--session-manifest") + 1] == str(manifest)
+
+
+def test_governance_shards_execute_only_the_planned_producer_inventory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _load_github_script("capture_governance_shard.py")
+    commands: list[list[str]] = []
+    session = SimpleNamespace(
+        manifest_path=tmp_path / "evidence-session.json",
+        root=tmp_path / "session",
+        payload={
+            "schema_version": "2.0",
+            "expected_gate_inventory": ["runtime-smoke"],
+        },
+    )
+    monkeypatch.setattr(module, "select_session", lambda _: session)
+    monkeypatch.setattr(
+        module.subprocess,
+        "run",
+        lambda command, **_: commands.append(command)
+        or subprocess.CompletedProcess(command, 0),
+    )
+
+    for shard in range(4):
+        monkeypatch.setattr(
+            module.sys,
+            "argv",
+            [
+                "capture_governance_shard.py",
+                "--shard-index",
+                str(shard),
+                "--shard-count",
+                "4",
+                "--session-root",
+                str(tmp_path / "sessions"),
+            ],
+        )
+        module.main()
+
+    assert len(commands) == 1
+    assert commands[0][commands[0].index("--gate") + 1] == "runtime-smoke"
 
 
 def test_self_gate_runner_bootstraps_an_uninstalled_source_checkout() -> None:
