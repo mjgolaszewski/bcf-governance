@@ -238,6 +238,10 @@
       "operation": "copy",
       "sha256": "1b5ed6eff718997dc40e1cf396196fa483996eb9c186fac230b6603d7aa2103b"
     },
+    "schemas/controller-transition.schema.json": {
+      "operation": "copy",
+      "sha256": "e529711d2c38e9673c2d9a3b712965b773ffdca65e96a0d742462aa405fe44b5"
+    },
     "schemas/evidence-input-manifest.schema.json": {
       "operation": "copy",
       "sha256": "ab2829fc0154cef9f8f9318def829ebbeee149b32f2eb3858db14aa0e55b7a53"
@@ -480,7 +484,7 @@
     },
     "scripts/_bcf_runtime/ci_github_commands.py": {
       "operation": "copy",
-      "sha256": "ae355183ec37dc31e5e72580f398290de5f19345aa8e755d1329934fc08f6bc1"
+      "sha256": "24f678c0d573c7df35611604fa638e1c5a39ec703f99d147741f217575981f68"
     },
     "scripts/_bcf_runtime/ci_github_controller.py": {
       "operation": "copy",
@@ -660,11 +664,15 @@
     },
     "scripts/_bcf_runtime/evidence_planning.py": {
       "operation": "copy",
-      "sha256": "a1d517d0cbbd84fb7f6e8abd62d2fee16f1c7f16cfc834438c00ccdda4830988"
+      "sha256": "e805af2ef376d9275a859bb17047ee9749a2d32cf34b83c238ae44e0b773039e"
     },
     "scripts/_bcf_runtime/evidence_reuse_attestations.py": {
       "operation": "copy",
       "sha256": "835f02f502b8d08ce2ed23a72c8cb1acacc34ed19bfb37c62c739ac526027509"
+    },
+    "scripts/_bcf_runtime/evidence_scheduling.py": {
+      "operation": "copy",
+      "sha256": "81ed691a970e0eeffc4701f43b2d912ac7a03474f60802323ea25da7e29b7318"
     },
     "scripts/_bcf_runtime/evidence_session_cleanup.py": {
       "operation": "copy",
@@ -957,6 +965,10 @@
     "scripts/_bcf_runtime/release_versions.py": {
       "operation": "copy",
       "sha256": "cd6857fd20d31fcbf81b61713270337b1b35084e7ff6690fc470ddb2e03df5e9"
+    },
+    "scripts/_bcf_runtime/routine_controller_rotation.py": {
+      "operation": "copy",
+      "sha256": "b65903c081e64bccaba6473a7ac0295489c11785318c6c5d5cd6cee2d464cd03"
     },
     "scripts/_bcf_runtime/runtime_capacity.py": {
       "operation": "copy",

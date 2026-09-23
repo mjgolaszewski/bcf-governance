@@ -1,7 +1,7 @@
 schema_version: '1.0'
 thin_wrapper_loc_cap: 20
 tooling_contexts:
-  ci_authority: [automation_, break_glass_recovery.py, break_glass_reentry.py, ci_authority_, ci_adopt_github.py, ci_commands.py, ci_exact_, ci_graph_, ci_github.py, ci_github_, ci_prior_evidence_auth.py, ci_pr_transition.py, ci_reuse_attestation_verifier.py, ci_self_controller.py, github_protection.py, local_pr.py, prior_evidence_transport.py, protection_inspection_client.py, provider_reuse_closure.py, trusted_controller_compatibility.py, trusted_inputs.py, truth_workflow_graph.py]
+  ci_authority: [automation_, break_glass_recovery.py, break_glass_reentry.py, ci_authority_, ci_adopt_github.py, ci_commands.py, ci_exact_, ci_graph_, ci_github.py, ci_github_, ci_prior_evidence_auth.py, ci_pr_transition.py, ci_reuse_attestation_verifier.py, ci_self_controller.py, github_protection.py, local_pr.py, prior_evidence_transport.py, protection_inspection_client.py, provider_reuse_closure.py, routine_controller_rotation.py, trusted_controller_compatibility.py, trusted_inputs.py, truth_workflow_graph.py]
   cleanup: [cleanup_ci_resources.py, cleanup_governance_pack.py, governance_cleanup/]
   evidence: [evaluation_scope.py, evidence_, governance_evidence.py, governance_truth.py, governance_truth_cli.py, governance_truth_support.py, negative_control_execution.py, prior_evidence_receipts.py, release_, test_manifests.py, truth_receipts.py, truth_reporting.py, truth_sessions.py]
   install: [install_governance_pack.py, governance_install/]

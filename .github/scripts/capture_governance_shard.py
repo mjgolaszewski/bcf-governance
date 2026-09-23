@@ -18,10 +18,10 @@ from bcf_governance.tooling.evidence_sessions import load_session, select_sessio
 
 
 SHARD_DISPLAY_NAMES = (
-    "Boundaries, contracts, runtime, types, and secrets",
-    "CQRS, module size, exposure, and dependency risk",
-    "Duplication, routers, governance, and ownership",
-    "Full tests, lint, import boundaries, and SBOM",
+    "Evidence shard 0",
+    "Evidence shard 1",
+    "Evidence shard 2",
+    "Evidence shard 3",
 )
 
 
@@ -59,9 +59,38 @@ def required_gate_targets(repo_root: Path) -> list[str]:
 def partition_required_gates(
     repo_root: Path, *, shard_index: int, shard_count: int,
     planned_targets: list[str] | None = None,
+    execution_dag: dict[str, Any] | None = None,
 ) -> list[str]:
     if shard_count < 1 or shard_index < 0 or shard_index >= shard_count:
         raise ValueError("shard index must be within the positive shard count")
+    if execution_dag is not None:
+        nodes = execution_dag.get("nodes")
+        if not isinstance(nodes, list):
+            raise ValueError("planned execution DAG must contain nodes")
+        assignments: dict[str, int] = {}
+        for node in nodes:
+            if not isinstance(node, dict):
+                raise ValueError("planned execution DAG node must be an object")
+            producer = node.get("producer")
+            assigned = node.get("assigned_shard")
+            if (
+                not isinstance(producer, str)
+                or not producer
+                or isinstance(assigned, bool)
+                or not isinstance(assigned, int)
+                or assigned < 0
+                or assigned >= shard_count
+                or producer in assignments
+            ):
+                raise ValueError("planned shard assignment is incomplete or ambiguous")
+            assignments[producer] = assigned
+        targets = planned_targets or []
+        if set(assignments) != set(targets):
+            raise ValueError("planned shard assignment differs from gate inventory")
+        return sorted(
+            producer for producer, assigned in assignments.items()
+            if assigned == shard_index
+        )
     return [
         gate
         for index, gate in enumerate(
@@ -119,6 +148,11 @@ def main() -> None:
         shard_index=args.shard_index,
         shard_count=args.shard_count,
         planned_targets=planned,
+        execution_dag=(
+            session.payload.get("execution_dag")
+            if session is not None and session.payload.get("schema_version") == "2.0"
+            else None
+        ),
     )
     if not gates:
         return

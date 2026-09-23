@@ -61,6 +61,7 @@ from .release_runtime_verification import (
     run_release_runtime_verification,
     runtime_evidence_paths,
 )
+from .routine_controller_rotation import run_rotation_command
 
 def _exact_main_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="BCF authority-v1.1 exact-main control.")
@@ -644,6 +645,9 @@ def main(argv: list[str] | None = None) -> None:
             return
         if raw and raw[0] == "controller-pin":
             _controller_pin(raw[1:])
+            return
+        if raw and raw[0] == "controller-rotation":
+            run_rotation_command(raw[1:])
             return
         if raw and raw[0] == "release":
             _release(raw[1:])

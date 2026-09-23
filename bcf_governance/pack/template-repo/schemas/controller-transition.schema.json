@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Dormant N+1 contract until the ordinary migration activates provider-backed routine rotation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "transition_id", "state", "repository", "subject", "authority", "artifact", "required_runners", "bootstrap", "probe", "promotion"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "transition_id": {"$ref": "#/$defs/digest"},
+    "state": {"enum": ["authorized", "installing", "probed", "active", "superseded", "failed"]},
+    "repository": {
+      "type": "object", "additionalProperties": false, "required": ["id", "full_name"],
+      "properties": {"id": {"type": "string", "pattern": "^[1-9][0-9]*$"}, "full_name": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"}}
+    },
+    "subject": {"$ref": "#/$defs/subject"},
+    "authority": {
+      "type": "object", "additionalProperties": false,
+      "required": ["installed_controller_commit", "admission_run_id", "admission_run_attempt", "implementation_pr", "policy_before_sha256", "policy_after_sha256"],
+      "properties": {
+        "installed_controller_commit": {"$ref": "#/$defs/git"},
+        "admission_run_id": {"$ref": "#/$defs/id"},
+        "admission_run_attempt": {"$ref": "#/$defs/id"},
+        "implementation_pr": {"$ref": "#/$defs/id"},
+        "policy_before_sha256": {"$ref": "#/$defs/digest"},
+        "policy_after_sha256": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "artifact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "name", "provider_digest", "wheel_sha256", "run_id", "run_attempt", "commit_sha", "tree_sha"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"}, "name": {"type": "string", "minLength": 1},
+        "provider_digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+        "wheel_sha256": {"$ref": "#/$defs/digest"}, "run_id": {"$ref": "#/$defs/id"},
+        "run_attempt": {"$ref": "#/$defs/id"}, "commit_sha": {"$ref": "#/$defs/git"},
+        "tree_sha": {"$ref": "#/$defs/git"}
+      }
+    },
+    "required_runners": {"type": "array", "minItems": 2, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "bootstrap": {"$ref": "#/$defs/proofs"},
+    "probe": {"$ref": "#/$defs/proofs"},
+    "promotion": {"$ref": "#/$defs/proofs"},
+    "activation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["transition_id", "authorizing_controller_commit", "run_id", "run_attempt"],
+      "properties": {"transition_id": {"$ref": "#/$defs/digest"}, "authorizing_controller_commit": {"$ref": "#/$defs/git"}, "run_id": {"$ref": "#/$defs/id"}, "run_attempt": {"$ref": "#/$defs/id"}}
+    }
+  },
+  "$defs": {
+    "git": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+    "digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+    "subject": {"type": "object", "additionalProperties": false, "required": ["commit_sha", "tree_sha"], "properties": {"commit_sha": {"$ref": "#/$defs/git"}, "tree_sha": {"$ref": "#/$defs/git"}}},
+    "proofs": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["runner", "controller_commit", "run_id", "run_attempt", "job_id"], "properties": {"runner": {"type": "string", "minLength": 1}, "controller_commit": {"$ref": "#/$defs/git"}, "run_id": {"$ref": "#/$defs/id"}, "run_attempt": {"$ref": "#/$defs/id"}, "job_id": {"$ref": "#/$defs/id"}}}}
+  },
+  "allOf": [{"if": {"properties": {"state": {"const": "active"}}}, "then": {"required": ["activation"]}}]
+}
