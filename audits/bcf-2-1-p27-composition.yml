@@ -183,3 +183,10 @@ p27_p0_02_migration_expansion:
         exact_main: 35920146560/1
         artifact: {id: '10777050832', name: bcf-trusted-control-d9daaaa7b319180dc405f28575c71ec5c4b4a1f8-1, provider_digest: 'sha256:373856551898f7c86888dbcb717d7756a7b8f3b2c8e4adea3569e22eb6fa1df1', wheel_sha256: a2a3628aaf1b1c74b5998bb09b86e0362931174f53da6ac544458448345f243c}
         custody: ordinary_pending_rotation
+      rotation_confirmation:
+        subject: {commit_sha: 118fe22b0848e73c6a49aa08261cdf6f355e1aac, tree_sha: bb39a11f620ebbfd428f5da36d45cdae1291dd3b}
+        bootstrap: 35924384446/1
+        probe: 35924513385/1
+        runner_inventory: [bcf-trusted-control-1, bcf-trusted-control-2]
+        installed_controller: d9daaaa7b319180dc405f28575c71ec5c4b4a1f8
+        custody: ordinary_current
