@@ -1,5 +1,7 @@
 # Changelog
 
+- Confirm the provider-built P27 routine-rotation controller on both trusted runners and restore ordinary-current custody.
+
 - Project the exact provider-built P27 routine-rotation compiler as the ordinary controller target while retaining the installed N controller until confirmation.
 
 - Expand the dormant P27 routine-rotation runtime with provider-authenticated protected-merge authorization, exact artifact custody, linear replay-safe controller resolution, and N-authorized two-runner activation.
