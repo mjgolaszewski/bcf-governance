@@ -140,7 +140,7 @@ def _main_at(api: GitHubAPI, repository: str, *, sha: str, branch: str,
     )
 
 
-def _merged_pull(
+def authenticate_merged_pull(
     api: GitHubAPI, repository: str, *, main: MainIdentity
 ) -> tuple[dict[str, Any], CandidateIdentity, MainIdentity, str]:
     associated = api.commit_pull_requests(repository, sha=main.checkout_sha)
@@ -187,7 +187,7 @@ def _merged_pull(
     return pull, candidate, source_main, branch
 
 
-def _successful_check(
+def authenticate_pr_certification(
     api: GitHubAPI, repository: str, *, candidate_sha: str, merged_at: str
 ) -> tuple[dict[str, Any], str, int]:
     matches = [
@@ -428,11 +428,11 @@ def transport_prior_evidence(
     main = resolve_main(api, repository)
     if main.checkout_sha != exact_sha(expected_main_sha, field="expected main SHA"):
         raise GitHubControllerError("provider main moved from the requested transport subject")
-    pull, candidate, source_main, head_branch = _merged_pull(
+    pull, candidate, source_main, head_branch = authenticate_merged_pull(
         api, repository, main=main
     )
     merged_at = str(pull.get("merged_at", ""))
-    check, finalizer_run, finalizer_attempt = _successful_check(
+    check, finalizer_run, finalizer_attempt = authenticate_pr_certification(
         api, repository, candidate_sha=candidate.checkout_sha, merged_at=merged_at
     )
     finalizer = authenticate_trusted_run(

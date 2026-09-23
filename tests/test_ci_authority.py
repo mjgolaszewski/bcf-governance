@@ -328,6 +328,24 @@ def test_authority_v11_accepts_one_registry_and_closed_role_references() -> None
     validate_ci_contract(REPO_ROOT, "authority", _authority_v11_payload())
 
 
+def test_authority_v11_rotation_roles_are_dormant_and_closed_when_activated() -> None:
+    dormant = _authority_v11_payload()
+    validate_ci_contract(REPO_ROOT, "authority", dormant)
+    active = _authority_v11_payload()
+    active["workflow_registry"]["rotation"] = dict(  # type: ignore[index]
+        active["workflow_registry"]["bootstrap"]  # type: ignore[index]
+    )
+    active["workflow_registry"]["rotation"]["workflow_id"] = "30"  # type: ignore[index]
+    active["workflow_registry"]["rotation"]["active_path"] = (  # type: ignore[index]
+        ".github/workflows/bcf-controller-rotation.yml"
+    )
+    active["roles"]["controller_rotation"] = "rotation"  # type: ignore[index]
+    validate_ci_contract(REPO_ROOT, "authority", active)
+    active["roles"]["controller_rotation"] = "missing"  # type: ignore[index]
+    with pytest.raises(CIAuthorityContractError):
+        validate_ci_contract(REPO_ROOT, "authority", active)
+
+
 def test_authority_v11_controller_builder_is_not_a_claim_producer() -> None:
     payload = _authority_v11_payload()
     payload["workflow_registry"]["admission"]["job_roles"][  # type: ignore[index]
