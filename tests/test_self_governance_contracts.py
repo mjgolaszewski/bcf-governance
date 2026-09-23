@@ -296,6 +296,13 @@ def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> N
 
 def test_self_control_plane_is_an_exact_v11_generator_product() -> None:
     assert check_ci_graph(REPO_ROOT).status == "clean"
+    rendered = render_ci_graph(REPO_ROOT)
+    exact_main = yaml.safe_load(rendered[".github/workflows/bcf-exact-main.yml"])
+    admission_steps = exact_main["jobs"]["admit"]["steps"]
+    admission = next(
+        step for step in admission_steps if "exact-main admit" in step.get("run", "")
+    )
+    assert admission["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
 
 
 def test_trusted_no_checkout_artifacts_are_job_scoped() -> None:
