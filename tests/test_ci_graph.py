@@ -1265,10 +1265,13 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     )
     upload = next(
         step for step in steps
-        if step["name"] == "Upload exact prior-evidence-transport evidence"
+            if step["name"] == "Upload exact prior evidence transport"
     )
     assert "prior-evidence transport" in transport["run"]
-    assert '--main-sha "$GITHUB_SHA"' in transport["run"]
+    assert (
+        '--main-sha "$GITHUB_SHA"' in transport["run"]
+        or '--main-sha "${{ github.sha }}"' in transport["run"]
+    )
     expected_transport_env = {"GITHUB_TOKEN": "${{ github.token }}"}
     if admission["executor"].get("protection_inspection"):
         expected_transport_env.update({
