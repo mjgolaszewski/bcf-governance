@@ -1,5 +1,8 @@
 # Changelog
 
+- Project the exact provider-built P27 prior-evidence controller as the ordinary
+  rotation target while keeping the prior installed controller active until confirmation.
+
 - Authenticate transported PR producer inventories from exact candidate workflow bytes and reject unsupported job-topology transitions during cheap preflight.
 
 - Begin P27 critical-path composition with receipt-derived duration-aware shard assignment and the dormant, fail-closed transition contract for the one-time migration to one-PR routine controller rotation.
