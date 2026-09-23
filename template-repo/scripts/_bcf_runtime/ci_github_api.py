@@ -12,6 +12,10 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request
 
+from .ci_github_artifact_inventory import (
+    ArtifactInventoryError,
+    complete_repository_artifacts,
+)
 from .ci_github_downloads import (
     GitHubDownloadKind,
     build_download_request,
@@ -418,22 +422,13 @@ class GitHubAPI:
     def repository_artifacts(
         self, repository: str, *, name: str | None = None
     ) -> tuple[dict[str, Any], ...]:
-        query = "?per_page=100"
-        if name is not None:
-            if not re.fullmatch(r"[A-Za-z0-9_.-]+", name):
-                raise GitHubAPIError("artifact name filter is unsafe")
-            query += "&" + urlencode({"name": name})
-        value = self._request(
-            "GET", f"/repos/{self._repository(repository)}/actions/artifacts{query}"
-        )
-        artifacts = value.get("artifacts") if isinstance(value, dict) else None
-        if not isinstance(artifacts, list) or any(
-            not isinstance(item, dict) for item in artifacts
-        ):
-            raise GitHubAPIError("repository artifact response must contain an object list")
-        if int(value.get("total_count", len(artifacts))) != len(artifacts):
-            raise GitHubAPIError("repository artifact inventory exceeds one authenticated page")
-        return tuple(artifacts)
+        endpoint = f"/repos/{self._repository(repository)}/actions/artifacts"
+        try:
+            return complete_repository_artifacts(
+                self._request, endpoint=endpoint, name=name
+            )
+        except ArtifactInventoryError as exc:
+            raise GitHubAPIError(str(exc)) from exc
 
     def artifact_bytes(
         self,

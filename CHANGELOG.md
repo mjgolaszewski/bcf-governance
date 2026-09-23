@@ -78,6 +78,7 @@ Release target: `2.0.0`
 
 ### Fixed
 
+- Authenticate complete bounded repository artifact inventories across provider pages so routine controller resolution remains fail-closed after artifact count growth.
 - Close the implemented P26 main-side reuse workitem in governed lifecycle state so
   bounded exact-main truth can certify it without implying parent-phase closure,
   and require the graph target to be completed before successor eligibility is derived.
