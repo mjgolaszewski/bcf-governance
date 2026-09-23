@@ -126,3 +126,9 @@ p27_p0_02_migration_expansion:
   - bcf_governance/tooling/ci_github_release.py
   - bcf_governance/tooling/release_receipts.py
   - governance/ci-extensions/bcf-break-glass-recovery.yml
+  provider_correction:
+    run: 35815853154/1
+    first_causal_job: 107037303541
+    failure: six prior-evidence transport tests retained pre-migration evidence shard display names
+    correction: provider fixture derives the exact producer job inventory through the canonical graph projection
+    production_semantics_changed: false
