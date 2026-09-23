@@ -11,17 +11,24 @@ extension:
   owner: bcf-governance
   rationale: preserve bootstrap, probe, and isolated revocation canary roles without copying custody values
   attachment_point: trusted-control
-  applicability: [workflow_dispatch]
+  applicability: [workflow_dispatch, workflow_run]
   required_controls:
     positive: [bcf-trusted-control-positive]
     negative: [bcf-trusted-control-custody-negative]
     topology: [bcf-trusted-control-topology]
     cleanup: [bcf-trusted-control-workspace-cleanup]
-artifacts: {}
+artifacts:
+  controller-transition-authorized: {path: .artifacts/controller-transition/authorized, kind: control, scope: run-attempt, retention_days: 30}
+  controller-transition-installing: {path: .artifacts/controller-transition/installing, kind: control, scope: run-attempt, retention_days: 30}
+  controller-transition-probed: {path: .artifacts/controller-transition/probed, kind: control, scope: run-attempt, retention_days: 30}
+  controller-transition-active: {path: .artifacts/controller-transition/active, kind: control, scope: run-attempt, retention_days: 30}
 conditions:
   owner-main-dispatch: github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main'
   owner-main-after-admission: needs.admit.result == 'success'
   owner-main-observer: always() && github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main' && needs.admit.result == 'success'
+  routine-rotation-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'failure'
+  routine-stage-ready: success()
+  routine-callback-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
 commands:
   bootstrap-controller:
     argv: ['{ephemeral_controller}', ci-github, bootstrap, --repository, '${{ github.repository }}', --artifact-dir, '${{ runner.temp }}/bcf-trusted-control-bootstrap', --artifact-id, '{env:BCF_BOOTSTRAP_ARTIFACT_ID}', --artifact-name, '{env:BCF_BOOTSTRAP_ARTIFACT_NAME}', --provider-digest, '{env:BCF_BOOTSTRAP_ARTIFACT_DIGEST}', --producer-run-id, '{env:BCF_BOOTSTRAP_RUN_ID}', --producer-run-attempt, '{env:BCF_BOOTSTRAP_RUN_ATTEMPT}', --repository-id, '{env:BCF_BOOTSTRAP_REPOSITORY_ID}', --commit, '{env:BCF_BOOTSTRAP_COMMIT_SHA}', --tree, '{env:BCF_BOOTSTRAP_TREE_SHA}', --wheel-sha256, '{env:BCF_BOOTSTRAP_WHEEL_SHA256}', --python, '{python}', --tool-cache, '${{ runner.tool_cache }}']
@@ -44,6 +51,35 @@ commands:
     argv: ['{controller}', ci-github, canary, observe, --repository, '${{ github.repository }}', --sha, '${{ github.sha }}', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}']
     cwd: .
     environment: {}
+  resolve-effective-controller:
+    argv: ['{controller}', ci-github, controller-rotation, resolve, --repository, '${{ github.repository }}']
+    cwd: .
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+  authorize-routine-transition:
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, controller-rotation, authorize, --repository, '${{ github.repository }}', --admission-run-id, '${{ github.event.workflow_run.id }}', --admission-run-attempt, '${{ github.event.workflow_run.run_attempt }}', --artifact-dir, '${{ runner.temp }}/bcf-trusted-control', --output, '${{ runner.temp }}/bcf-controller-transition/authorized/controller-transition.json']
+    cwd: .
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+  install-routine-controller:
+    argv: ['{ephemeral_controller}', ci-github, bootstrap, --repository, '${{ github.repository }}', --artifact-dir, '${{ runner.temp }}/bcf-trusted-control', --artifact-id, '${{ needs.authorize.outputs.target_id }}', --artifact-name, '${{ needs.authorize.outputs.target_name }}', --provider-digest, '${{ needs.authorize.outputs.target_provider_digest }}', --producer-run-id, '${{ needs.authorize.outputs.target_run_id }}', --producer-run-attempt, '${{ needs.authorize.outputs.target_run_attempt }}', --repository-id, '{env:BCF_REPOSITORY_ID}', --commit, '${{ needs.authorize.outputs.target_commit_sha }}', --tree, '${{ needs.authorize.outputs.target_tree_sha }}', --wheel-sha256, '${{ needs.authorize.outputs.target_wheel_sha256 }}', --python, '{python}', --tool-cache, '${{ runner.tool_cache }}']
+    cwd: .
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+    required_environment: [BCF_REPOSITORY_ID]
+  advance-routine-bootstrap:
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, controller-rotation, advance, --repository, '${{ github.repository }}', --receipt, '${{ runner.temp }}/bcf-controller-transition/authorized/controller-transition.json', --stage, bootstrap, --rotation-run-id, '${{ github.run_id }}', --rotation-run-attempt, '${{ github.run_attempt }}', --output, '${{ runner.temp }}/bcf-controller-transition/installing/controller-transition.json']
+    cwd: .
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+  advance-routine-probe:
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, controller-rotation, advance, --repository, '${{ github.repository }}', --receipt, '${{ runner.temp }}/bcf-controller-transition/installing/controller-transition.json', --stage, probe, --rotation-run-id, '${{ github.run_id }}', --rotation-run-attempt, '${{ github.run_attempt }}', --output, '${{ runner.temp }}/bcf-controller-transition/probed/controller-transition.json']
+    cwd: .
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+  activate-routine-transition:
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, controller-rotation, advance, --repository, '${{ github.repository }}', --receipt, '${{ runner.temp }}/bcf-controller-transition/probed/controller-transition.json', --stage, promotion, --rotation-run-id, '${{ github.run_id }}', --rotation-run-attempt, '${{ github.run_attempt }}', --output, '${{ runner.temp }}/bcf-controller-transition/active/controller-transition.json']
+    cwd: .
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+  dispatch-routine-certification:
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, controller-rotation, dispatch-certification, --repository, '${{ github.repository }}', --rotation-run-id, '${{ github.event.workflow_run.id }}', --rotation-run-attempt, '${{ github.event.workflow_run.run_attempt }}']
+    cwd: .
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
 step_components:
   download-bootstrap-controller:
     kind: action
@@ -102,7 +138,328 @@ step_components:
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
     produces: []
     consumes: []
+  resolve-effective-controller:
+    kind: command
+    name: Resolve the provider-authenticated effective controller
+    id: effective-controller
+    command: resolve-effective-controller
+    environment: {}
+    produces: []
+    consumes: []
+  download-routine-controller:
+    kind: action
+    name: Download the exact provider-built routine controller
+    action: download-artifact
+    with: {name: 'bcf-trusted-control-${{ github.event.workflow_run.head_sha }}-${{ github.event.workflow_run.run_attempt }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ github.event.workflow_run.id }}', path: '${{ runner.temp }}/bcf-trusted-control'}
+    environment: {}
+    produces: []
+    consumes: [trusted-controller-bundle]
+  authorize-routine-transition:
+    kind: command
+    name: Authorize the exact protected-merge controller transition
+    id: authorize-transition
+    command: authorize-routine-transition
+    environment: {}
+    produces: [controller-transition-authorized]
+    consumes: [trusted-controller-bundle]
+  upload-routine-authorized:
+    kind: action
+    name: Upload the authorized routine transition
+    action: upload-artifact
+    with: {name: 'bcf-controller-transition-authorized-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-controller-transition/authorized', if-no-files-found: error, retention-days: 30}
+    environment: {}
+    produces: [controller-transition-authorized]
+    consumes: []
+  download-routine-authorized:
+    kind: action
+    name: Download the authorized routine transition
+    action: download-artifact
+    with: {name: 'bcf-controller-transition-authorized-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-controller-transition/authorized'}
+    environment: {}
+    produces: []
+    consumes: [controller-transition-authorized]
+  stage-routine-controller:
+    kind: controller_install
+    name: Stage the transition-bound routine controller
+    artifact_dir: '${{ runner.temp }}/bcf-trusted-control'
+    install_root: '${{ runner.temp }}/bcf-controller'
+    wheel_sha256_file: '${{ runner.temp }}/bcf-controller-transition/authorized/controller-transition.json'
+    wheel_sha256_keys: [artifact, wheel_sha256]
+    produces: []
+    consumes: [trusted-controller-bundle, controller-transition-authorized]
+  install-probed-routine-controller:
+    kind: command
+    name: Authenticate and probe the routine controller
+    command: install-routine-controller
+    environment: {}
+    produces: []
+    consumes: [trusted-controller-bundle, controller-transition-installing]
+  install-promoted-routine-controller:
+    kind: command
+    name: Authenticate and promote the routine controller
+    command: install-routine-controller
+    environment: {}
+    produces: []
+    consumes: [trusted-controller-bundle, controller-transition-probed]
+  install-routine-controller:
+    kind: command
+    name: Authenticate and install the routine controller
+    command: install-routine-controller
+    environment: {}
+    produces: []
+    consumes: [trusted-controller-bundle, controller-transition-authorized]
+  advance-routine-bootstrap:
+    kind: command
+    name: Authenticate the complete bootstrap runner inventory
+    command: advance-routine-bootstrap
+    environment: {}
+    produces: [controller-transition-installing]
+    consumes: [controller-transition-authorized]
+  upload-routine-installing:
+    kind: action
+    name: Upload the bootstrap-authenticated transition
+    action: upload-artifact
+    with: {name: 'bcf-controller-transition-installing-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-controller-transition/installing', if-no-files-found: error, retention-days: 30}
+    environment: {}
+    produces: [controller-transition-installing]
+    consumes: []
+  download-routine-installing:
+    kind: action
+    name: Download the bootstrap-authenticated transition
+    action: download-artifact
+    with: {name: 'bcf-controller-transition-installing-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-controller-transition/installing'}
+    environment: {}
+    produces: []
+    consumes: [controller-transition-installing]
+  stage-probed-routine-controller:
+    kind: controller_install
+    name: Stage the bootstrap-authenticated routine controller
+    artifact_dir: '${{ runner.temp }}/bcf-trusted-control'
+    install_root: '${{ runner.temp }}/bcf-controller'
+    wheel_sha256_file: '${{ runner.temp }}/bcf-controller-transition/installing/controller-transition.json'
+    wheel_sha256_keys: [artifact, wheel_sha256]
+    produces: []
+    consumes: [trusted-controller-bundle, controller-transition-installing]
+  advance-routine-probe:
+    kind: command
+    name: Authenticate the complete probe runner inventory
+    command: advance-routine-probe
+    environment: {}
+    produces: [controller-transition-probed]
+    consumes: [controller-transition-installing]
+  upload-routine-probed:
+    kind: action
+    name: Upload the probe-authenticated transition
+    action: upload-artifact
+    with: {name: 'bcf-controller-transition-probed-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-controller-transition/probed', if-no-files-found: error, retention-days: 30}
+    environment: {}
+    produces: [controller-transition-probed]
+    consumes: []
+  download-routine-probed:
+    kind: action
+    name: Download the probe-authenticated transition
+    action: download-artifact
+    with: {name: 'bcf-controller-transition-probed-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-controller-transition/probed'}
+    environment: {}
+    produces: []
+    consumes: [controller-transition-probed]
+  stage-promoted-routine-controller:
+    kind: controller_install
+    name: Stage the probe-authenticated routine controller
+    artifact_dir: '${{ runner.temp }}/bcf-trusted-control'
+    install_root: '${{ runner.temp }}/bcf-controller'
+    wheel_sha256_file: '${{ runner.temp }}/bcf-controller-transition/probed/controller-transition.json'
+    wheel_sha256_keys: [artifact, wheel_sha256]
+    produces: []
+    consumes: [trusted-controller-bundle, controller-transition-probed]
+  activate-routine-transition:
+    kind: command
+    name: Authenticate promotion and activate the routine transition
+    id: activate-transition
+    command: activate-routine-transition
+    environment: {}
+    produces: [controller-transition-active]
+    consumes: [controller-transition-probed]
+  upload-routine-active:
+    kind: action
+    name: Publish the immutable active controller transition
+    action: upload-artifact
+    with: {name: 'bcf-controller-transition-${{ steps.activate-transition.outputs.transition_id }}', path: '${{ runner.temp }}/bcf-controller-transition/active', if-no-files-found: error, retention-days: 30}
+    environment: {}
+    produces: [controller-transition-active]
+    consumes: []
+  dispatch-routine-certification:
+    kind: command
+    name: Authenticate activation and request fresh exact-main certification
+    command: dispatch-routine-certification
+    environment: {}
+    produces: []
+    consumes: []
 workflows:
+- id: routine-controller-rotation
+  path: .github/workflows/bcf-routine-controller-rotation.yml
+  display_name: bcf/routine-controller-rotation
+  role: trusted-control
+  events:
+  - type: workflow_run
+    workflows: [bcf/exact-main-admission]
+    types: [completed]
+  permissions: {actions: read, checks: read, contents: read, pull-requests: read, statuses: read}
+  environment:
+    BCF_REPOSITORY_ID: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_REPOSITORY_ID}'
+  concurrency: {group: bcf-routine-controller-rotation, cancel_in_progress: false}
+  jobs:
+  - id: authorize
+    display_name: Authorize protected routine controller transition
+    semantic_role: routine-controller-authorization
+    resource_class: trusted-control
+    trust: trusted
+    controller_requirement: current
+    needs: []
+    condition: routine-rotation-applicable
+    timeout_minutes: 10
+    permissions: {actions: read, checks: read, contents: read, pull-requests: read, statuses: read}
+    checkout: false
+    components: []
+    outputs:
+      transition_id: '${{ steps.authorize-transition.outputs.transition_id }}'
+      target_id: '${{ steps.authorize-transition.outputs.target_id }}'
+      target_name: '${{ steps.authorize-transition.outputs.target_name }}'
+      target_provider_digest: '${{ steps.authorize-transition.outputs.target_provider_digest }}'
+      target_run_id: '${{ steps.authorize-transition.outputs.target_run_id }}'
+      target_run_attempt: '${{ steps.authorize-transition.outputs.target_run_attempt }}'
+      target_commit_sha: '${{ steps.authorize-transition.outputs.target_commit_sha }}'
+      target_tree_sha: '${{ steps.authorize-transition.outputs.target_tree_sha }}'
+      target_wheel_sha256: '${{ steps.authorize-transition.outputs.target_wheel_sha256 }}'
+    executor: {kind: component_sequence, components: [setup-python, download-routine-controller, resolve-effective-controller, authorize-routine-transition, upload-routine-authorized]}
+    produces: [controller-transition-authorized]
+    consumes: [trusted-controller-bundle]
+    required: true
+  - id: bootstrap
+    display_name: Bootstrap routine controller / ${{ matrix.trusted_runner }}
+    semantic_role: routine-controller-bootstrap
+    resource_class: trusted-control-instance
+    trust: trusted
+    controller_requirement: null
+    needs: [authorize]
+    condition: routine-stage-ready
+    timeout_minutes: 10
+    permissions: {actions: read, contents: read}
+    checkout: false
+    components: []
+    strategy: {fail_fast: false, max_parallel: 2, matrix: {trusted_runner: [bcf-trusted-control-1, bcf-trusted-control-2]}}
+    executor: {kind: component_sequence, components: [setup-python, download-routine-controller, download-routine-authorized, stage-routine-controller, install-routine-controller]}
+    produces: []
+    consumes: [trusted-controller-bundle, controller-transition-authorized]
+    required: true
+  - id: advance-bootstrap
+    display_name: Authenticate routine bootstrap inventory
+    semantic_role: routine-controller-bootstrap-authentication
+    resource_class: trusted-control
+    trust: trusted
+    controller_requirement: current
+    needs: [bootstrap]
+    condition: routine-stage-ready
+    timeout_minutes: 5
+    permissions: {actions: read, contents: read}
+    checkout: false
+    components: []
+    executor: {kind: component_sequence, components: [setup-python, download-routine-authorized, resolve-effective-controller, advance-routine-bootstrap, upload-routine-installing]}
+    produces: [controller-transition-installing]
+    consumes: [controller-transition-authorized]
+    required: true
+  - id: probe
+    display_name: Probe routine controller / ${{ matrix.trusted_runner }}
+    semantic_role: routine-controller-probe
+    resource_class: trusted-control-instance
+    trust: trusted
+    controller_requirement: null
+    needs: [authorize, advance-bootstrap]
+    condition: routine-stage-ready
+    timeout_minutes: 10
+    permissions: {actions: read, contents: read}
+    checkout: false
+    components: []
+    strategy: {fail_fast: false, max_parallel: 2, matrix: {trusted_runner: [bcf-trusted-control-1, bcf-trusted-control-2]}}
+    executor: {kind: component_sequence, components: [setup-python, download-routine-controller, download-routine-installing, stage-probed-routine-controller, install-probed-routine-controller]}
+    produces: []
+    consumes: [trusted-controller-bundle, controller-transition-installing]
+    required: true
+  - id: advance-probe
+    display_name: Authenticate routine probe inventory
+    semantic_role: routine-controller-probe-authentication
+    resource_class: trusted-control
+    trust: trusted
+    controller_requirement: current
+    needs: [probe]
+    condition: routine-stage-ready
+    timeout_minutes: 5
+    permissions: {actions: read, contents: read}
+    checkout: false
+    components: []
+    executor: {kind: component_sequence, components: [setup-python, download-routine-installing, resolve-effective-controller, advance-routine-probe, upload-routine-probed]}
+    produces: [controller-transition-probed]
+    consumes: [controller-transition-installing]
+    required: true
+  - id: promote
+    display_name: Promote routine controller / ${{ matrix.trusted_runner }}
+    semantic_role: routine-controller-promotion
+    resource_class: trusted-control-instance
+    trust: trusted
+    controller_requirement: null
+    needs: [authorize, advance-probe]
+    condition: routine-stage-ready
+    timeout_minutes: 10
+    permissions: {actions: read, contents: read}
+    checkout: false
+    components: []
+    strategy: {fail_fast: false, max_parallel: 2, matrix: {trusted_runner: [bcf-trusted-control-1, bcf-trusted-control-2]}}
+    executor: {kind: component_sequence, components: [setup-python, download-routine-controller, download-routine-probed, stage-promoted-routine-controller, install-promoted-routine-controller]}
+    produces: []
+    consumes: [trusted-controller-bundle, controller-transition-probed]
+    required: true
+  - id: activate
+    display_name: Activate authenticated routine controller transition
+    semantic_role: routine-controller-activation
+    resource_class: trusted-control
+    trust: trusted
+    controller_requirement: current
+    needs: [promote]
+    condition: routine-stage-ready
+    timeout_minutes: 5
+    permissions: {actions: read, contents: read}
+    checkout: false
+    components: []
+    executor: {kind: component_sequence, components: [setup-python, download-routine-probed, resolve-effective-controller, activate-routine-transition, upload-routine-active]}
+    produces: [controller-transition-active]
+    consumes: [controller-transition-probed]
+    required: true
+- id: routine-controller-callback
+  path: .github/workflows/bcf-routine-controller-callback.yml
+  display_name: bcf/routine-controller-callback
+  role: trusted-control
+  events:
+  - type: workflow_run
+    workflows: [bcf/routine-controller-rotation]
+    types: [completed]
+  permissions: {actions: read, contents: write}
+  jobs:
+  - id: dispatch
+    display_name: Dispatch post-rotation exact-main certification
+    semantic_role: routine-controller-certification-callback
+    resource_class: trusted-control
+    trust: trusted
+    controller_requirement: current
+    needs: []
+    condition: routine-callback-applicable
+    timeout_minutes: 5
+    permissions: {actions: read, contents: write}
+    checkout: false
+    components: []
+    executor: {kind: component_sequence, components: [setup-python, resolve-effective-controller, dispatch-routine-certification]}
+    produces: []
+    consumes: []
+    required: true
 - id: trusted-controller-bootstrap
   path: .github/workflows/bcf-trusted-control-bootstrap.yml
   display_name: bcf/trusted-control-bootstrap

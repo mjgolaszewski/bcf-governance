@@ -162,3 +162,12 @@ p27_p0_02_migration_expansion:
       runner_inventory: [bcf-trusted-control-1, bcf-trusted-control-2]
       installed_controller: f652538d6e5d9f509dda1b7c5d2001f8014b9a42
       custody: ordinary_current
+  provider_rotation_activation:
+    bounded_target: P27-P0-02
+    topology: [protected_merge, exact_main_builder, installed_controller_authorization, two_runner_bootstrap, two_runner_probe, two_runner_promotion, immutable_active_receipt, authenticated_callback, fresh_exact_main]
+    controller_resolution: authenticated_linear_provider_transition_chain
+    certification_scope: workitem_only
+    release_authority: absent
+    protection_mutation: false
+    break_glass: false
+    successor: P27-P0-03 remains blocked until P27-P0-02 closes through provider-visible bounded certification

@@ -1,5 +1,7 @@
 # Changelog
 
+- Activate the provider-authenticated one-PR controller rotation, effective-controller resolution, and bounded P27-P0-02 exact-main target without granting release authority.
+
 - Confirm the provider-built P27 routine-rotation controller on both trusted runners and restore ordinary-current custody.
 
 - Project the exact provider-built P27 routine-rotation compiler as the ordinary controller target while retaining the installed N controller until confirmation.

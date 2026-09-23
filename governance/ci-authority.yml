@@ -11,6 +11,7 @@ workflow_registry:
     trusted_workflow_definition_commit: d570fa7d715a8bbc6f3d424d2884f96513cd76f6
     allowed_events:
     - push
+    - repository_dispatch
     job_roles:
       admit: admission
       governance: producer
@@ -24,6 +25,20 @@ workflow_registry:
     allowed_events:
     - pull_request
     - workflow_call
+  controller-rotation:
+    workflow_id: '900000001'
+    active_path: .github/workflows/bcf-routine-controller-rotation.yml
+    trusted_workflow_blob_oid: pending
+    trusted_workflow_sha256: pending
+    trusted_workflow_definition_commit: pending
+    allowed_events: [workflow_run]
+  controller-rotation-callback:
+    workflow_id: '900000002'
+    active_path: .github/workflows/bcf-routine-controller-callback.yml
+    trusted_workflow_blob_oid: pending
+    trusted_workflow_sha256: pending
+    trusted_workflow_definition_commit: pending
+    allowed_events: [workflow_run]
   finalizer:
     workflow_id: '346274484'
     active_path: .github/workflows/bcf-trusted-finalizer.yml
@@ -134,6 +149,8 @@ roles:
   release_collector: release-verifier
   release_publisher: release-publisher
   authority_canary: authority-canary
+  controller_rotation: controller-rotation
+  controller_rotation_callback: controller-rotation-callback
 admission_jobs:
 - job_id: Authenticate exact-main admission and publish pending authority
 controller_builder_jobs:
