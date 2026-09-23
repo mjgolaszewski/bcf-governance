@@ -13,14 +13,12 @@ import pytest
 import yaml
 
 from bcf_governance.tooling.ci_authority_state import CandidateIdentity, WorkflowIdentity
+from bcf_governance.tooling.ci_authority_pins import compiled_workflow_job_names
 from bcf_governance.tooling.ci_github import GithubRunIdentity
 from bcf_governance.tooling.ci_github_api import GitHubAPI
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError
 from bcf_governance.tooling.github_protection import desired_ruleset
-from bcf_governance.tooling.prior_evidence_transport import (
-    _graph_jobs,
-    transport_prior_evidence,
-)
+from bcf_governance.tooling.prior_evidence_transport import transport_prior_evidence
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,6 +32,12 @@ TREE = "e" * 40
 BASE_TREE = "f" * 40
 SESSION = "1" * 40
 DIGEST = "2" * 64
+SOURCE_SHARD_NAMES = (
+    "Boundaries, contracts, runtime, types, and secrets",
+    "CQRS, module size, exposure, and dependency risk",
+    "Duplication, routers, governance, and ownership",
+    "Full tests, lint, import boundaries, and SBOM",
+)
 
 
 def _json(value: object) -> bytes:
@@ -76,7 +80,19 @@ class Provider:
         self.protection = yaml.safe_load(
             (ROOT / "governance/github-protection.yml").read_text(encoding="utf-8")
         )
-        self.job_names = list(_graph_jobs(self, REPOSITORY, ref=BASE))
+        candidate_workflow = yaml.safe_load(
+            (ROOT / ".github/workflows/governance.yml").read_text(encoding="utf-8")
+        )
+        source_workflow = copy.deepcopy(candidate_workflow)
+        evidence = source_workflow["jobs"]["evidence"]
+        for entry, name in zip(
+            evidence["strategy"]["matrix"]["include"], SOURCE_SHARD_NAMES, strict=True
+        ):
+            entry["display_name"] = name
+        self.workflows = {BASE: source_workflow, HEAD: candidate_workflow}
+        self.job_names = list(compiled_workflow_job_names(
+            yaml.safe_dump(candidate_workflow, sort_keys=False).encode()
+        ))
         session = {
             "schema_version": "2.0", "session_id": SESSION,
             "subject": {"commit_sha": EXECUTION, "tree_sha": TREE},
@@ -251,8 +267,8 @@ class Provider:
     def content(self, repository: str, path: str, *, ref: str):
         from bcf_governance.tooling.ci_github_api import GitHubContent
 
-        if path == "governance/ci-graph.yml":
-            raw = (ROOT / path).read_bytes()
+        if path == ".github/workflows/governance.yml":
+            raw = yaml.safe_dump(self.workflows[ref], sort_keys=False).encode()
         elif path == "governance/github-protection.yml":
             raw = yaml.safe_dump(self.protection, sort_keys=False).encode()
         elif path == "governance/self-governance-policy.yml":
@@ -319,6 +335,26 @@ def test_transport_authenticates_and_preserves_exact_source_bytes(
     )
     Draft202012Validator(schema, resolver=resolver).validate(manifest)
     assert not ({"decision", "qualification", "dependency_closure"} & set(manifest))
+
+
+def test_transport_projects_job_inventory_from_exact_candidate_workflow(
+    provider: Provider, tmp_path: Path,
+) -> None:
+    source_names = compiled_workflow_job_names(
+        yaml.safe_dump(provider.workflows[BASE], sort_keys=False).encode()
+    )
+    assert set(source_names) != set(provider.job_names)
+    transport_prior_evidence(
+        provider, repository=REPOSITORY, expected_main_sha=MAIN,
+        output_root=tmp_path / "candidate-workflow",
+    )
+
+    provider.workflows[HEAD] = copy.deepcopy(provider.workflows[BASE])
+    with pytest.raises(GitHubControllerError, match="job inventory"):
+        transport_prior_evidence(
+            provider, repository=REPOSITORY, expected_main_sha=MAIN,
+            output_root=tmp_path / "wrong-candidate-workflow",
+        )
 
 
 def test_transport_uses_only_scoped_inspector_for_privileged_protection(

@@ -424,7 +424,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_pins.py": {
       "operation": "copy",
-      "sha256": "16f6190ffdbd440220f6920eb73addb96ed0e548eab013f0324f397263627d3d"
+      "sha256": "70884fa0126838864510c41586cbc8f75727a675e8604485b188e0bae1eea65f"
     },
     "scripts/_bcf_runtime/ci_authority_state.py": {
       "operation": "copy",
@@ -896,7 +896,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "131410109fa4c24e89c61245c5fa754b41bec99728d2e2cad4cb6019fb290495"
+      "sha256": "7e57b43a82e03f277b4ca61af3b19cce71d1f611c4961655aa35f2b633070b1f"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",
@@ -904,7 +904,7 @@
     },
     "scripts/_bcf_runtime/prior_evidence_transport.py": {
       "operation": "copy",
-      "sha256": "32e89b9c63736e437a5b1115caa39151162682f4822ddf3988ab5dc78ffb3a0b"
+      "sha256": "77b4881ddbb6c6ffb78a688bf2f3983cfcb68d13850e30d459bf79c58afe2219"
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",
@@ -929,6 +929,10 @@
     "scripts/_bcf_runtime/protection_inspection_client.py": {
       "operation": "copy",
       "sha256": "cf494b7d1ffbc69f3c279ae1139fa555f40652777db2b601a835c54dcd06225e"
+    },
+    "scripts/_bcf_runtime/provider_job_inventory.py": {
+      "operation": "copy",
+      "sha256": "31fdbc3b4b2eb9f3e7b29f50e08556add621c41ff01aef9d7cbcc3a86f62286e"
     },
     "scripts/_bcf_runtime/provider_reuse_closure.py": {
       "operation": "copy",
@@ -1076,7 +1080,7 @@
     },
     "scripts/_bcf_runtime/trusted_controller_compatibility.py": {
       "operation": "copy",
-      "sha256": "04204ee39d4b1100a1ec0bc66868c95acd53b26fe7a1c7bfbece0e6474105907"
+      "sha256": "86a629c55132880659f10f72c7f1d2c099a1c8a81201c0e91e17988f30bab37f"
     },
     "scripts/_bcf_runtime/trusted_inputs.py": {
       "operation": "copy",

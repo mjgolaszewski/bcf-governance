@@ -49,6 +49,7 @@ from .test_manifests import check_all
 from .trusted_controller_compatibility import (
     TrustedControllerCompatibilityError,
     TrustedControllerRuntimeStaleError,
+    verify_pr_bootstrap_compatibility,
     verify_trusted_controller_compatibility,
 )
 
@@ -419,7 +420,8 @@ def _workflow_authority(repo_root: Path) -> int:
 
 
 def _self_controller(
-    repo_root: Path, *, allow_stale_runtime: bool = False
+    repo_root: Path, *, allow_stale_runtime: bool = False,
+    pr_base_sha: str | None = None,
 ) -> int | dict[str, Any]:
     policy = repo_root / "governance/self-governance-policy.yml"
     if not policy.is_file():
@@ -433,6 +435,10 @@ def _self_controller(
         target = str(
             runner["trusted_controller_artifact"]["BCF_BOOTSTRAP_COMMIT_SHA"]
         )
+        if pr_base_sha is not None:
+            verify_pr_bootstrap_compatibility(
+                repo_root, base_commit=pr_base_sha, target_commit=target
+            )
         try:
             verify_trusted_controller_compatibility(
                 repo_root, target_commit=target
@@ -607,9 +613,18 @@ def run_preflight(
     workflow_authority = step(
         "workflow-authority", lambda: _workflow_authority(repo_root)
     )
+    pr_context = step("pr-context", lambda: _pr_context(repo_root, mode))
     self_controller = step(
         "self-controller",
-        lambda: _self_controller(repo_root, allow_stale_runtime=mode == "pr"),
+        lambda: _self_controller(
+            repo_root,
+            allow_stale_runtime=mode == "pr",
+            pr_base_sha=(
+                str(pr_context["base_sha"])
+                if pr_context.get("applicable") is True
+                else None
+            ),
+        ),
     )
     negative_controls = step(
         "negative-controls", lambda: _negative_control_targets(repo_root)
@@ -623,7 +638,6 @@ def run_preflight(
     test_manifests = step(
         "test-manifests", lambda: check_all(repo_root, python_executable=python)
     )
-    pr_context = step("pr-context", lambda: _pr_context(repo_root, mode))
     verification_plan = step(
         "verification-plan",
         lambda: build_verification_plan(repo_root, subject, prior_receipts or []),

@@ -11,6 +11,11 @@ from typing import Iterable
 
 import yaml
 
+from .ci_authority_pins import (
+    CIAuthorityPinError,
+    compiled_workflow_job_names,
+)
+
 
 TRUSTED_ENTRYPOINT = PurePosixPath(
     "bcf_governance/tooling/ci_github_commands.py"
@@ -29,6 +34,11 @@ VERSION_METADATA_PATTERN = re.compile(
     r'\A"""Single authoritative BCF release version\."""\n\n'
     r'__version__ = "(?P<version>[0-9]+\.[0-9]+\.[0-9]+(?:(?:a|b|rc)[0-9]+)?)"\n\Z'
 )
+GOVERNANCE_WORKFLOW = PurePosixPath(".github/workflows/governance.yml")
+PR_EVIDENCE_INVENTORY_CAPABILITY_FILES = (
+    PurePosixPath("bcf_governance/tooling/prior_evidence_transport.py"),
+    PurePosixPath("bcf_governance/tooling/provider_job_inventory.py"),
+)
 
 
 class TrustedControllerCompatibilityError(ValueError):
@@ -37,6 +47,10 @@ class TrustedControllerCompatibilityError(ValueError):
 
 class TrustedControllerRuntimeStaleError(TrustedControllerCompatibilityError):
     """Raised only when an otherwise valid ancestor target has stale runtime bytes."""
+
+
+class TrustedControllerBootstrapIncompatibleError(TrustedControllerCompatibilityError):
+    """Raised when controller N cannot authenticate a changed PR producer topology."""
 
 
 @dataclass(frozen=True)
@@ -208,6 +222,58 @@ def _version_metadata_only(
         VERSION_METADATA_PATTERN.fullmatch(current) is not None
         and VERSION_METADATA_PATTERN.fullmatch(target) is not None
     )
+
+
+def _workflow_job_inventory(repo_root: Path, *, ref: str | None) -> tuple[str, ...]:
+    try:
+        raw = (
+            _git(repo_root, "show", f"{ref}:{GOVERNANCE_WORKFLOW.as_posix()}").encode()
+            if ref is not None
+            else (repo_root / GOVERNANCE_WORKFLOW).read_bytes()
+        )
+        return compiled_workflow_job_names(raw)
+    except (CIAuthorityPinError, OSError) as exc:
+        raise TrustedControllerBootstrapIncompatibleError(
+            "governance workflow job inventory cannot be projected"
+        ) from exc
+
+
+def verify_pr_bootstrap_compatibility(
+    repo_root: Path, *, base_commit: str, target_commit: str
+) -> None:
+    """Reject a PR topology change that installed controller N cannot transport."""
+
+    root = repo_root.resolve()
+    before = _workflow_job_inventory(root, ref=base_commit)
+    after = _workflow_job_inventory(root, ref=None)
+    if before == after:
+        return
+    unavailable: list[str] = []
+    for path in PR_EVIDENCE_INVENTORY_CAPABILITY_FILES:
+        target = subprocess.run(
+            ["git", "cat-file", "-e", f"{target_commit}:{path.as_posix()}"],
+            cwd=root,
+            capture_output=True,
+            check=False,
+        )
+        current = root / path
+        if target.returncode != 0 or not current.is_file() or current.is_symlink():
+            unavailable.append(path.as_posix())
+    changed = _git(
+        root,
+        "diff",
+        "--name-only",
+        target_commit,
+        "HEAD",
+        "--",
+        *(path.as_posix() for path in PR_EVIDENCE_INVENTORY_CAPABILITY_FILES),
+    ).splitlines()
+    incompatible = sorted(set(unavailable + changed))
+    if incompatible:
+        raise TrustedControllerBootstrapIncompatibleError(
+            "PR producer job inventory changed before installed controller support: "
+            + ", ".join(incompatible)
+        )
 
 
 def verify_trusted_controller_compatibility(
