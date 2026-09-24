@@ -58,6 +58,8 @@ execution_evidence:
   - PR 274 run 35977702565 exposed the stale exact-main target P27-P0-02 after P27-P0-03 became DONE; the canonical graph now targets P27-P0-03 so bounded truth can close it and make P27-P0-04 eligible
   - the same run reported three adopter governance-validation failures that passed in isolated candidate editable and built-wheel environments; the final canonical test gate remains the required deterministic acceptance proof
   - the repository-selected final canonical test gate passed all 1629 nodes on the corrected tree, including the three adopter flows; reconcile check reported zero stale rounds
+  - PR 274 run 35986416000 reproduced three installed-profile governance-validation failures; the canonical reconcile owner had imported the outer package from its standalone runtime projection instead of the projected relative version primitive
+  - the no-package provider-equivalent sandbox now imports the projected reconcile owner and passes lite standard and regulated profile flows while exact execution-state retirement remains verified
 closeout_requirements:
   claims:
     workitems_closed:

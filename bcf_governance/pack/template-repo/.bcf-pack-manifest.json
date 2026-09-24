@@ -996,7 +996,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "36770c2ff997f20c89ace6a02614031764bb2a404423c69c4e753e07a94609ca"
+      "sha256": "edaf4137947d6ce325958f3da55d2d634a2d8ac0f923efd664e68b5acdb8f67e"
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",
