@@ -65,6 +65,7 @@ execution_evidence:
   - exact-main 36004029461/1 failed closed when its admission resolver observed its concurrent controller builder mutate repository artifact pagination; canonical graph ordering now completes builder upload before admission resolves the same inventory
   - exact-main 36010879352/1 admitted through the active provider-transition controller but preflight retained the ordinary source-policy baseline; same-admission transport now binds provider-effective controller custody for compatibility without granting candidate authority
   - 'post-merge 11f5ccdeb99d08433bd60f036ce04d40d6a7af41 exposed an N/N+1 contraction error: installed 1511b09b rejected absent bootstrap/probe roles before provider-chain resolution; compatibility expansion temporarily restores the legacy lane while making those roles optional to N+1 before demolition resumes'
+  - exact-main 36062907622/1 produced the exact N+1 artifact under successful builder-only pending topology; routine applicability now derives from authenticated job inventory rather than treating workflow failure as a rotation signal, and unrelated failures cannot allocate installation work
 closeout_requirements:
   claims:
     workitems_closed:

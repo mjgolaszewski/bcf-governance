@@ -362,3 +362,14 @@ p27_p0_02_migration_expansion:
       regression: a current subject newer than the pinned finalizer definition succeeds only when trusted bytes and canonical role identity remain exact; wrong identity still fails closed
       lifecycle: trusted runtime change requires ordinary N/N+1 rotation before fresh bounded P27-P0-03 certification
       release_authority: absent
+    routine_rotation_applicability_correction:
+      failed_main: {subject: 502c8b985e6f113f6f1568ffb4277df659df5197, exact_main: 36062907622/1}
+      deterministic_escape: routine authorization was keyed to workflow failure even though canonical pending-rotation exact-main is a successful builder-only topology
+      canonical_owner: ci_github_membership classifies exact authenticated admission builder and producer inventories before routine authorization selects an artifact
+      routing:
+      - exact builder success with exact skipped admission and producers is pending_rotation and may authorize N+1
+      - complete certifiable topology is inapplicable and allocates no installation work
+      - failed workflow topology never enters routine authorization; authenticated non-pending successful topology allocates no installation work
+      migration_bridge: installed N may omit the new applicability output for this separately bounded expansion only; N+1 emits exact true or false and the bridge must contract after installation
+      deterministic_front_door: graph validation binds the exact workflow event and all downstream stages to the authorization applicability result before provider execution
+      release_authority: absent

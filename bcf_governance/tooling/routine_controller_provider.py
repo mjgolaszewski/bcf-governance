@@ -26,6 +26,10 @@ from .ci_github_identity import (
     resolve_main,
     resolve_run_subject,
 )
+from .ci_github_membership import (
+    AdmissionTopologyState,
+    classify_admission_topology,
+)
 from .ci_self_controller import (
     compile_self_controller_pin,
     validate_controller_installation,
@@ -284,6 +288,30 @@ def authorize_transition(
         run_attempt=admission_run_attempt,
         require_success=False,
     )
+    topology = classify_admission_topology(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        admission_run_id=admission_run_id,
+        admission_run_attempt=admission_run_attempt,
+    )
+    if topology.state is not AdmissionTopologyState.PENDING_ROTATION:
+        return {
+            "schema_version": "1.0",
+            "applicable": False,
+            "reason": topology.reason,
+            "subject": {
+                "commit_sha": main.checkout_sha,
+                "tree_sha": main.tree_sha,
+            },
+            "admission": {
+                "run_id": str(positive_int(admission_run_id, field="admission run ID")),
+                "run_attempt": str(
+                    positive_int(admission_run_attempt, field="admission run attempt")
+                ),
+            },
+        }
     current = resolve_effective_controller(api, repository=repository)
     target = compile_self_controller_pin(
         api,
@@ -343,7 +371,12 @@ def authorize_transition(
         "probe": [],
         "promotion": [],
     }
-    return validate_transition(packaged_repo_root(), receipt)
+    return {
+        "schema_version": "1.0",
+        "applicable": True,
+        "reason": "pending_controller_rotation",
+        "transition": validate_transition(packaged_repo_root(), receipt),
+    }
 
 
 def _stage_proofs(

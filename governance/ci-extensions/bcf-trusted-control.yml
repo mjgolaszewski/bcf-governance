@@ -26,8 +26,9 @@ conditions:
   owner-main-dispatch: github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main'
   owner-main-after-admission: needs.admit.result == 'success'
   owner-main-observer: always() && github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main' && needs.admit.result == 'success'
-  routine-rotation-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'failure'
-  routine-stage-ready: success()
+  routine-rotation-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.name == 'bcf/exact-main-admission' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
+  routine-stage-ready: success() && needs.authorize.outputs.applicable != 'false'
+  routine-transition-artifact-applicable: steps.authorize-transition.outputs.applicable != 'false'
   routine-callback-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.name == 'bcf/automation-changelog-reconciler' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
 commands:
   bootstrap-controller:
@@ -189,6 +190,7 @@ step_components:
   upload-routine-authorized:
     kind: action
     name: Upload the authorized routine transition
+    condition: routine-transition-artifact-applicable
     action: upload-artifact
     with: {name: 'bcf-controller-transition-authorized-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-controller-transition/authorized', if-no-files-found: error, retention-days: 30}
     environment: {}
@@ -362,6 +364,8 @@ workflows:
     checkout: false
     components: []
     outputs:
+      applicable: '${{ steps.authorize-transition.outputs.applicable }}'
+      reason: '${{ steps.authorize-transition.outputs.reason }}'
       transition_id: '${{ steps.authorize-transition.outputs.transition_id }}'
       target_id: '${{ steps.authorize-transition.outputs.target_id }}'
       target_name: '${{ steps.authorize-transition.outputs.target_name }}'
@@ -398,7 +402,7 @@ workflows:
     resource_class: trusted-control
     trust: trusted
     controller_requirement: current
-    needs: [bootstrap]
+    needs: [authorize, bootstrap]
     condition: routine-stage-ready
     timeout_minutes: 5
     permissions: {actions: read, contents: read}
@@ -431,7 +435,7 @@ workflows:
     resource_class: trusted-control
     trust: trusted
     controller_requirement: current
-    needs: [probe]
+    needs: [authorize, probe]
     condition: routine-stage-ready
     timeout_minutes: 5
     permissions: {actions: read, contents: read}
@@ -464,7 +468,7 @@ workflows:
     resource_class: trusted-control
     trust: trusted
     controller_requirement: current
-    needs: [promote]
+    needs: [authorize, promote]
     condition: routine-stage-ready
     timeout_minutes: 5
     permissions: {actions: read, contents: read}

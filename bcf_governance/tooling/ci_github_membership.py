@@ -42,6 +42,7 @@ def _require_v11(authority: dict[str, Any]) -> None:
 
 class AdmissionTopologyState(StrEnum):
     CERTIFIABLE = "certifiable"
+    PENDING_ROTATION = "pending_rotation"
     NONCERTIFYING = "noncertifying"
 
 
@@ -129,6 +130,30 @@ def classify_admission_topology(
         for name in unknown
     ):
         raise GitHubControllerError("admission job inventory contains an active extra job")
+    if (
+        builder_jobs
+        and actual == complete
+        and all(
+            str(job_map[name].get("status")) == "completed"
+            and str(job_map[name].get("conclusion")) == "success"
+            for name in builder_jobs
+        )
+        and all(
+            str(job_map[name].get("status")) == "completed"
+            and str(job_map[name].get("conclusion")) == "skipped"
+            for name in admission_jobs
+        )
+        and all(
+            str(job_map[name].get("status")) == "completed"
+            and str(job_map[name].get("conclusion")) == "skipped"
+            for values in producer_jobs.values()
+            for name in values
+        )
+    ):
+        return AdmissionTopology(
+            AdmissionTopologyState.PENDING_ROTATION,
+            "pending_controller_rotation",
+        )
     if not set(admission_jobs).issubset(actual) or any(
         str(job_map[name].get("status")) != "completed"
         or str(job_map[name].get("conclusion")) != "success"

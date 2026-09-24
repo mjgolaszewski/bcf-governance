@@ -127,6 +127,14 @@ def test_authorization_binds_protected_merge_policy_and_exact_artifact(
     monkeypatch.setattr(provider, "authenticate_role_run", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
         provider,
+        "classify_admission_topology",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            state=provider.AdmissionTopologyState.PENDING_ROTATION,
+            reason="pending_controller_rotation",
+        ),
+    )
+    monkeypatch.setattr(
+        provider,
         "resolve_effective_controller",
         lambda *_args, **_kwargs: {"pin": _pin(OLD)},
     )
@@ -163,7 +171,54 @@ def test_authorization_binds_protected_merge_policy_and_exact_artifact(
         admission_run_attempt="1",
         artifact_dir=tmp_path,
     )
-    assert receipt == _authorized()
+    assert receipt == {
+        "schema_version": "1.0",
+        "applicable": True,
+        "reason": "pending_controller_rotation",
+        "transition": _authorized(),
+    }
+
+
+def test_authorization_is_inapplicable_outside_pending_rotation(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
+    monkeypatch.setattr(
+        provider, "resolve_run_subject", lambda *_args, **_kwargs: MAIN
+    )
+    monkeypatch.setattr(provider, "load_authority", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(provider, "authenticate_role_run", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        provider,
+        "classify_admission_topology",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            state=provider.AdmissionTopologyState.CERTIFIABLE,
+            reason="complete",
+        ),
+    )
+    monkeypatch.setattr(
+        provider,
+        "compile_self_controller_pin",
+        lambda *_args, **_kwargs: pytest.fail(
+            "an inapplicable topology must not select a controller artifact"
+        ),
+    )
+
+    result = provider.authorize_transition(
+        object(),
+        repository="mjgolaszewski/bcf-governance",
+        admission_run_id="10",
+        admission_run_attempt="1",
+        artifact_dir=tmp_path,
+    )
+
+    assert result == {
+        "schema_version": "1.0",
+        "applicable": False,
+        "reason": "complete",
+        "subject": {"commit_sha": NEW, "tree_sha": TREE},
+        "admission": {"run_id": "10", "run_attempt": "1"},
+    }
 
 
 def test_authorization_rejects_policy_change_and_self_selection(
@@ -175,6 +230,14 @@ def test_authorization_rejects_policy_change_and_self_selection(
     )
     monkeypatch.setattr(provider, "load_authority", lambda *_args, **_kwargs: {})
     monkeypatch.setattr(provider, "authenticate_role_run", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        provider,
+        "classify_admission_topology",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            state=provider.AdmissionTopologyState.PENDING_ROTATION,
+            reason="pending_controller_rotation",
+        ),
+    )
     monkeypatch.setattr(
         provider,
         "resolve_effective_controller",

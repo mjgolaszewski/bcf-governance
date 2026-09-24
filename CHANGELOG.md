@@ -1,5 +1,7 @@
 # Changelog
 
+- Authenticate routine controller-rotation applicability from the exact admission topology so successful builder-only pending rotations proceed while certifiable or unrelated failed topologies cannot allocate installation work.
+
 - Reauthenticate exact-main finalizer publication with the canonical workflow blob and definition pins so additive current-main metadata cannot rewrite trusted collector identity.
 
 - Fail first on canonical context-byte and production-module LOC limits before reconciliation, candidate evidence planning, or behavioral gates.
