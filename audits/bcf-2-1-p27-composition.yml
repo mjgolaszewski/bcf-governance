@@ -350,4 +350,8 @@ p27_p0_02_migration_expansion:
       - provider-effective current, pending_rotation, and installed-N bootstrap-incompatible states are distinct
       - builder-only pending topology produces no certification and no published status
       - fresh current topology retains bounded truth, finalizer, publisher, successor eligibility, and independent release rejection
+      deterministic_front_door:
+        first_check: canonical context-byte and production-module LOC limits run before reconciliation projections and before preflight evidence planning
+        remaining_contracts: mandatory CHANGELOG delta, generated parity, manifests, locks, editorial freshness, governance syntax/schema, and controller consumability remain canonical preflight prerequisites to session allocation
+        invariant: behavioral gates cannot receive a canonical evidence session for a final tree that fails any deterministic candidate contract
       release_authority: absent

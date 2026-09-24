@@ -28,6 +28,7 @@ from .evidence_sessions import (
     local_producer_identity,
 )
 from .governance_validation.runner import check_editorial, validate_repo_root
+from .governance_validation.structural_limits import validate_structural_limits
 from .install_governance_pack import _pack_manifest_entries
 from .interpreter_environment import (
     InterpreterEnvironmentError,
@@ -601,6 +602,9 @@ def run_preflight(
         return operation()
 
     subject = step("git-state", lambda: _git_state(repo_root))
+    structural_limits = step(
+        "structural-limits", lambda: validate_structural_limits(repo_root)
+    )
     transported_authority: Mapping[str, Any] | None = None
     if prior_transport_dir is not None:
         if prior_receipts:
@@ -694,6 +698,7 @@ def run_preflight(
         "status": "pass",
         "mode": mode,
         "subject": subject,
+        "structural_limits": structural_limits,
         "syntax": syntax,
         "exposure": exposure,
         "interpreter": interpreter,

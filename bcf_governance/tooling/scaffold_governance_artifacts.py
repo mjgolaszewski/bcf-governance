@@ -20,6 +20,7 @@ except ModuleNotFoundError:  # Standalone template runtime owns a relative proje
     from ._version import __version__
 
 from .test_manifests import declared_test_gates
+from .governance_validation.structural_limits import validate_structural_limits
 
 HOTFIX_MODES = {"lite", "full"}
 
@@ -325,6 +326,11 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
 
     cli = [str(python), "-m", "bcf_governance.cli"]
     steps: list[ReconcileStep] = [
+        ReconcileStep(
+            "structural-limits",
+            lambda: validate_structural_limits(repo_root),
+            lambda: validate_structural_limits(repo_root),
+        ),
         ReconcileStep(
             "semantic-lock",
             _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--check"]),
