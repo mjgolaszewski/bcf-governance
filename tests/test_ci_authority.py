@@ -165,7 +165,7 @@ def _authority_payload() -> dict[str, object]:
 
 def _authority_v11_payload() -> dict[str, object]:
     workflow_names = (
-        "admission", "governance", "finalizer", "status", "bootstrap", "probe",
+        "admission", "governance", "finalizer", "status",
         "release-authorizer", "release-build", "release-verifier",
         "release-collector", "release-publisher", "canary",
     )
@@ -208,8 +208,6 @@ def _authority_v11_payload() -> dict[str, object]:
             "reusable_producers": ["governance"],
             "finalizer": "finalizer",
             "status_publisher": "status",
-            "bootstrap": "bootstrap",
-            "probe": "probe",
             "release_authorizer": "release-authorizer",
             "release_build": "release-build",
             "release_verifier": "release-verifier",
@@ -333,7 +331,7 @@ def test_authority_v11_rotation_roles_are_dormant_and_closed_when_activated() ->
     validate_ci_contract(REPO_ROOT, "authority", dormant)
     active = _authority_v11_payload()
     active["workflow_registry"]["rotation"] = dict(  # type: ignore[index]
-        active["workflow_registry"]["bootstrap"]  # type: ignore[index]
+        active["workflow_registry"]["finalizer"]  # type: ignore[index]
     )
     active["workflow_registry"]["rotation"]["workflow_id"] = "30"  # type: ignore[index]
     active["workflow_registry"]["rotation"]["active_path"] = (  # type: ignore[index]
@@ -439,8 +437,8 @@ def test_authority_v11_rejects_incomplete_or_duplicated_semantic_ownership(
     elif mutation == "unknown-role-ref":
         payload["roles"]["release_verifier"] = "missing"  # type: ignore[index]
     elif mutation == "duplicate-workflow":
-        payload["workflow_registry"]["probe"] = dict(  # type: ignore[index]
-            payload["workflow_registry"]["bootstrap"]  # type: ignore[index]
+        payload["workflow_registry"]["duplicate"] = dict(  # type: ignore[index]
+            payload["workflow_registry"]["finalizer"]  # type: ignore[index]
         )
     elif mutation == "inline-producer":
         producer = payload["producers"][0]  # type: ignore[index]

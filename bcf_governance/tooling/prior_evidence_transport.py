@@ -12,7 +12,7 @@ from io import BytesIO
 import json
 from pathlib import Path, PurePosixPath
 import re
-from typing import Any
+from typing import Any, Mapping
 import zipfile
 
 from jsonschema import Draft202012Validator
@@ -369,8 +369,22 @@ def _verify_session_and_truth(
 
 
 def _controller_authority(
-    api: GitHubAPI, repository: str, *, main: MainIdentity
+    api: GitHubAPI, repository: str, *, main: MainIdentity,
+    effective: Mapping[str, str] | None = None,
 ) -> dict[str, str]:
+    if effective is not None:
+        commit = exact_sha(
+            effective.get("controller_commit_sha"), field="effective controller"
+        )
+        wheel = str(effective.get("controller_bundle_sha256", ""))
+        if set(effective) != {
+            "controller_commit_sha", "controller_bundle_sha256"
+        } or not re.fullmatch(r"[a-f0-9]{64}", wheel):
+            raise GitHubControllerError("effective controller authority is invalid")
+        return {
+            "controller_commit_sha": commit,
+            "controller_bundle_sha256": wheel,
+        }
     policy = _mapping(
         api.content(repository, POLICY_PATH, ref=main.checkout_sha).content,
         label="self-governance policy",
@@ -422,6 +436,7 @@ def _write_materialized(
 def transport_prior_evidence(
     api: GitHubAPI, *, repository: str, expected_main_sha: str, output_root: Path,
     protection_credential: tuple[str, str, str, str] | None = None,
+    controller_authority: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     """Authenticate current main's merged-PR evidence and preserve exact bytes."""
 
@@ -642,7 +657,9 @@ def transport_prior_evidence(
             "finalizer_run_attempt": finalizer_attempt,
             "completed_at": check["completed_at"],
         },
-        "authority": _controller_authority(api, repository, main=main),
+        "authority": _controller_authority(
+            api, repository, main=main, effective=controller_authority
+        ),
         "protection": {
             "declaration_sha256": _sha256(protection_raw),
             "ruleset_id": protection.ruleset_id, "provider_state": "clean",

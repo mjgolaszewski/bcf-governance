@@ -1,5 +1,9 @@
 # Changelog
 
+- Remove the redundant source-mutating routine controller target, dispatch, confirmation, and normalization lane; provider-authenticated one-PR rotation is now the only ordinary upgrade path.
+
+- Bind exact-main preflight controller compatibility to the provider-authenticated effective controller carried by same-admission prior evidence.
+
 - Order exact-main controller build/upload before provider artifact resolution so strict pagination cannot race its own producer.
 
 - Preserve the active provider-authenticated P27 reconcile controller transition as the sole effective N+1 custody source, removing a duplicate legacy target projection.

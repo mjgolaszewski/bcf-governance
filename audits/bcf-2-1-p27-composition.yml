@@ -277,6 +277,18 @@ p27_p0_02_migration_expansion:
       pr_preflight: {status: pass, controller: pending_rotation, release_authority: false}
     controlled_demolition:
       collapsed_agent_steps: [semantic_lock_apply, per_gate_manifest_update, graph_lock_apply, graph_render_apply, pack_manifest_builder, editorial_audit_builder]
+      controller_rotation_reconciliation:
+        empirical_trigger: {routine_rotation: 35994196357/1, duplicate_target_pr: 275, normalization_pr: 276, failed_duplicate_bootstrap: 36000475188/1}
+        removed_redundancy:
+        - {surface: bcf ci-github controller-pin resolve|compile|confirm, reason: provider rotation already selects authenticates and advances the exact artifact and runner proofs}
+        - {surface: bcf ci sync-self-controller, reason: provider transition state already derives effective custody without a source mutation}
+        - {surface: bcf/trusted-control-bootstrap and bcf/trusted-control-probe, reason: routine rotation already performs independently inventoried two-runner bootstrap and probe}
+        - {surface: bootstrap and probe authority roles, reason: their only consumers were the removed bookkeeping workflows}
+        retained_unique_propositions:
+        - {surface: committed controller artifact and installation, proposition: immutable genesis anchor for provider transition-chain validation and separately governed recovery}
+        - {surface: provider-backed routine rotation, proposition: installed N authorizes exact N+1 artifact two-runner bootstrap probe promotion and atomic activation}
+        - {surface: Break Glass recovery, proposition: repository-scoped recovery when normal trusted authority cannot certify; never routine or certifying}
+        result: no ordinary target confirmation normalization command workflow or authority role survives
       surviving_agent_commands:
       - {command: bcf reconcile, proposition: deterministically converge all mechanically derived repository bytes}
       - {command: bcf ci local-pr, proposition: bind local validation to exact remote PR base and candidate identity}
@@ -318,3 +330,10 @@ p27_p0_02_migration_expansion:
       invariant: strict provider inventory pagination remains fail closed
       correction: the canonical exact-main DAG completes and uploads its controller artifact before admission resolves provider transition custody
       authority_effect: generated exact-main workflow bytes require mechanical authority pinning; controller runtime and release authority are unchanged
+    effective_controller_transport_correction:
+      run: 36010879352/1
+      first_causal_job: '107671718242'
+      failure: exact-main governance preflight compared runtime only with the ordinary source-policy baseline after trusted admission selected a provider-transition controller
+      correction: trusted prior-evidence transport independently resolves provider-effective custody and binds its controller commit and bundle digest; preflight verifies compatibility against that transported authority
+      fail_closed: malformed transport authority rejects; source-policy compatibility remains the fallback without authenticated transport; finalizer remains the authority boundary
+      lifecycle: runtime expansion is installed through the active routine N/N+1 lane before its fresh callback can exercise the new binding

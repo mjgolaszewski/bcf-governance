@@ -3,9 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-import shutil
 from types import SimpleNamespace
-from typing import Any
 
 import pytest
 import yaml
@@ -17,110 +15,12 @@ from bcf_governance.tooling.ci_github_identity import (
     GitHubControllerError,
     MainIdentity,
 )
-from bcf_governance.tooling.ci_graph_locks import apply_ci_graph_locks
-from bcf_governance.tooling.ci_graph_render import apply_ci_graph
-from bcf_governance.tooling.ci_graph_controller_lifecycle import ControllerLifecycleState
 from tests._wheel_fixture import write_wheel
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMMIT = "a" * 40
 TREE = "b" * 40
-
-
-def _job_step(workflow: dict[str, object], job_id: str, name: str) -> dict[str, object]:
-    jobs = workflow["jobs"]
-    assert isinstance(jobs, dict)
-    job = jobs[job_id]
-    assert isinstance(job, dict)
-    steps = job["steps"]
-    assert isinstance(steps, list)
-    matches = [step for step in steps if isinstance(step, dict) and step.get("name") == name]
-    assert len(matches) == 1, name
-    return matches[0]
-
-
-def _copy_self_controller_fixture(root: Path) -> dict[str, Any]:
-    policy = yaml.safe_load(
-        (REPO_ROOT / "governance/self-governance-policy.yml").read_text(
-            encoding="utf-8"
-        )
-    )
-    graph = yaml.safe_load(
-        (REPO_ROOT / "governance/ci-graph.yml").read_text(encoding="utf-8")
-    )
-    graph_inputs = {
-        str(graph["evidence_storage"]["path"]),
-        *(str(item["path"]) for item in graph["extensions"]),
-        *(str(item["path"]) for item in graph["value_sources"].values()),
-    }
-    paths = sorted(graph_inputs | {
-        "governance/self-governance-policy.yml",
-        "governance/ci-graph.yml",
-        "governance/public-contracts.yml",
-        "schemas/ci-graph.schema.json",
-        "schemas/ci-graph-extension.schema.json",
-        "schemas/automation-producers.schema.json",
-        "schemas/github-protection.schema.json",
-        "schemas/evidence-storage.schema.json",
-    })
-    for relative in paths:
-        destination = root / relative
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(REPO_ROOT / relative, destination)
-    policy["runner_security"].pop("trusted_controller_recovery_reentry", None)
-    policy_path = root / "governance/self-governance-policy.yml"
-    policy_path.write_text(
-        "\n".join(
-            line
-            for line in policy_path.read_text(encoding="utf-8").splitlines()
-            if not line.startswith("  trusted_controller_recovery_reentry:")
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    shutil.copytree(REPO_ROOT / ".github/workflows", root / ".github/workflows")
-    apply_ci_graph_locks(root)
-    apply_ci_graph(root)
-    return policy
-
-
-class ConfirmationAPI:
-    def __init__(self, policy: dict[str, object]) -> None:
-        self.policy = policy
-
-    def content(self, _: str, path: str, *, ref: str) -> SimpleNamespace:
-        assert ref == COMMIT
-        if path == "governance/self-governance-policy.yml":
-            raw = yaml.safe_dump(self.policy).encode()
-        else:
-            role = "bootstrap" if "bootstrap" in path else "probe"
-            raw = yaml.safe_dump({
-                "jobs": {
-                    role: {
-                        "name": f"{role.title()} controller / ${{{{ matrix.trusted_runner }}}}",
-                        "strategy": {"matrix": {"trusted_runner": ["one", "two"]}},
-                    }
-                }
-            }).encode()
-        return SimpleNamespace(content=raw)
-
-    def workflow_runs(self, *_: object, **__: object) -> tuple[dict[str, object], ...]:
-        return ({
-            "id": 200 if len(getattr(self, "seen", ())) == 0 else 201,
-            "run_attempt": 1,
-            "head_sha": COMMIT,
-            "event": "workflow_dispatch",
-            "repository": {"id": 101},
-        },)
-
-    def jobs(self, _: str, run_id: object, *, attempt: int) -> tuple[dict[str, str], ...]:
-        assert attempt == 1
-        role = "Bootstrap" if str(run_id) == "200" else "Probe"
-        return tuple(
-            {"name": f"{role} controller / {label}", "status": "completed", "conclusion": "success"}
-            for label in ("one", "two")
-        )
 
 
 def _artifact_dir(root: Path) -> tuple[Path, str]:
@@ -356,273 +256,24 @@ def test_controller_pin_rejects_non_derived_artifact_name() -> None:
     pin = dict(policy["runner_security"]["trusted_controller_artifact"])
     pin["BCF_BOOTSTRAP_ARTIFACT_NAME"] = "operator-copied-name"
     with pytest.raises(GitHubControllerError, match="name is not derived"):
-        controller.project_self_controller_pin(REPO_ROOT, pin=pin, apply=False)
+        controller.validate_controller_pin(pin)
 
 
-def test_self_controller_projection_has_one_canonical_pin_owner(
-    tmp_path: Path,
-) -> None:
-    policy = _copy_self_controller_fixture(tmp_path)
-    pin = dict(policy["runner_security"]["trusted_controller_artifact"])
-    baseline_proof = dict(
-        policy["runner_security"]["trusted_controller_installation"]
-    )
-    baseline_proof["installed_commit_sha"] = pin["BCF_BOOTSTRAP_COMMIT_SHA"]
-    controller.project_self_controller_pin(
-        tmp_path, pin=pin, confirmation=baseline_proof, apply=True
-    )
-    assert controller.project_self_controller_pin(
-        tmp_path, pin=pin, apply=False
-    ).status == "clean"
-    pin.update(
-        {
-            "BCF_BOOTSTRAP_ARTIFACT_ID": "400",
-            "BCF_BOOTSTRAP_ARTIFACT_NAME": f"bcf-trusted-control-{COMMIT}-2",
-            "BCF_BOOTSTRAP_ARTIFACT_DIGEST": f"sha256:{'d' * 64}",
-            "BCF_BOOTSTRAP_RUN_ID": "500",
-            "BCF_BOOTSTRAP_RUN_ATTEMPT": "2",
-            "BCF_BOOTSTRAP_COMMIT_SHA": COMMIT,
-            "BCF_BOOTSTRAP_TREE_SHA": TREE,
-            "BCF_BOOTSTRAP_REPOSITORY_ID": "101",
-            "BCF_BOOTSTRAP_WHEEL_SHA256": "e" * 64,
-        }
-    )
-    started = controller.project_self_controller_pin(tmp_path, pin=pin, apply=True)
-    assert started.status == "changed"
-    bootstrap = yaml.safe_load(
-        (tmp_path / controller.BOOTSTRAP_WORKFLOW).read_text(encoding="utf-8")
-    )
-    assert {key: str(bootstrap["env"][key]) for key in controller.PIN_KEYS} == pin
-    install = _job_step(
-        bootstrap,
-        "bootstrap",
-        "Authenticate provider custody and install offline through the controller",
-    )
-    assert "/bcf-controller-${{ github.run_id }}-${{ github.run_attempt }}/bin/bcf" in str(
-        install["run"]
-    )
-    assert baseline_proof["installed_commit_sha"] not in str(install["run"])
-    second_target = dict(pin)
-    second_target["BCF_BOOTSTRAP_ARTIFACT_ID"] = "401"
-    with pytest.raises(GitHubControllerError, match="rotation is already pending"):
-        controller.project_self_controller_pin(
-            tmp_path, pin=second_target, apply=True
-        )
-
-    proof = dict(policy["runner_security"]["trusted_controller_installation"])
-    proof["installed_commit_sha"] = COMMIT
-    changed = controller.project_self_controller_pin(
-        tmp_path, pin=pin, confirmation=proof, apply=True
-    )
-
-    assert changed.status == "changed"
-    projected = yaml.safe_load(
-        (tmp_path / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
-    )["runner_security"]["trusted_controller_artifact"]
-    assert {key: str(value) for key, value in projected.items()} == pin
-    bootstrap = yaml.safe_load(
-        (tmp_path / controller.BOOTSTRAP_WORKFLOW).read_text(encoding="utf-8")
-    )
-    install = _job_step(
-        bootstrap,
-        "bootstrap",
-        "Authenticate provider custody and install offline through the controller",
-    )
-    assert "/bcf-controller-${{ github.run_id }}-${{ github.run_attempt }}/bin/bcf" in str(
-        install["run"]
-    )
-    probe = yaml.safe_load(
-        (tmp_path / controller.PROBE_WORKFLOW).read_text(encoding="utf-8")
-    )
-    assert {key: str(probe["env"][key]) for key in controller.PIN_KEYS} == pin
-    download = _job_step(
-        probe, "probe", "Download only the mechanically pinned controller artifact"
-    )
-    assert str(download["uses"]).startswith("actions/download-artifact@")
-    install = _job_step(
-        probe,
-        "probe",
-        "Authenticate provider custody and install offline through the controller",
-    )
-    assert "ci-github bootstrap" in str(install["run"])
-    assert ".github/" not in str(install["run"])
-    assert controller.project_self_controller_pin(
-        tmp_path, pin=pin, apply=False
-    ).status == "clean"
+def test_legacy_rotation_surfaces_are_absent() -> None:
+    assert not hasattr(commands, "_controller_pin")
+    assert not hasattr(controller, "compile_self_controller_confirmation")
+    assert not hasattr(controller, "project_self_controller_pin")
+    assert not (REPO_ROOT / ".github/workflows/bcf-trusted-control-bootstrap.yml").exists()
+    assert not (REPO_ROOT / ".github/workflows/bcf-trusted-control-probe.yml").exists()
 
 
-def test_controller_bootstrap_is_cold_start_safe_and_interpreter_owned(
-    tmp_path: Path,
-) -> None:
-    """A restored runner must not need an already-installed controller to bootstrap."""
-
-    policy = _copy_self_controller_fixture(tmp_path)
-    pin = dict(policy["runner_security"]["trusted_controller_artifact"])
-    result = controller.project_self_controller_pin(
-        tmp_path, pin=pin, confirmation=None, apply=True
+def test_source_controller_is_an_immutable_transition_genesis() -> None:
+    policy = yaml.safe_load(
+        (REPO_ROOT / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
+    )["runner_security"]
+    pin = controller.validate_controller_pin(policy["trusted_controller_artifact"])
+    installation = controller.validate_controller_installation(
+        policy["trusted_controller_installation"]
     )
-    assert result.status == "clean"
-    workflow = yaml.safe_load(
-        (tmp_path / controller.BOOTSTRAP_WORKFLOW).read_text(encoding="utf-8")
-    )
-    steps = workflow["jobs"]["bootstrap"]["steps"]
-    names = [step["name"] for step in steps]
-    stage_index = names.index(
-        "Stage the checksum-admitted controller in an isolated temporary environment"
-    )
-    invoke_index = names.index(
-        "Authenticate provider custody and install offline through the controller"
-    )
-    assert stage_index < invoke_index
-    stage = steps[stage_index]
-    invoke = steps[invoke_index]
-    assert stage["env"]["BCF_PYTHON"] == "${{ env.pythonLocation }}/bin/python"
-    assert str(stage["run"]).startswith('set -euo pipefail\n"$BCF_PYTHON" -I -c ')
-    assert "/bcf-controller-${{ github.run_id }}-${{ github.run_attempt }}/bin/bcf" in str(
-        invoke["run"]
-    )
-    assert "/bcf-governance/" not in str(invoke["run"]).split(" ci-github bootstrap", 1)[0]
-
-
-def test_recovery_reentry_allows_ordinary_target_then_expires_on_confirmation(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
-) -> None:
-    (tmp_path / "governance").mkdir()
-    policy_path = tmp_path / "governance/self-governance-policy.yml"
-    policy_path.write_bytes(
-        (REPO_ROOT / "governance/self-governance-policy.yml").read_bytes()
-    )
-    lines = policy_path.read_text(encoding="utf-8").splitlines()
-    installation_index = next(
-        index
-        for index, line in enumerate(lines)
-        if line.startswith("  trusted_controller_installation:")
-    )
-    lines.insert(
-        installation_index + 1,
-        "  trusted_controller_recovery_reentry: {state: authenticated-recovery-reentry}",
-    )
-    policy_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    policy = yaml.safe_load(policy_path.read_text())
-    current_pin = policy["runner_security"]["trusted_controller_artifact"]
-    installed = policy["runner_security"]["trusted_controller_installation"]
-    next_pin = dict(current_pin)
-    next_pin["BCF_BOOTSTRAP_COMMIT_SHA"] = "e" * 40
-    next_pin["BCF_BOOTSTRAP_TREE_SHA"] = "f" * 40
-    next_pin["BCF_BOOTSTRAP_ARTIFACT_NAME"] = (
-        "bcf-trusted-control-" + next_pin["BCF_BOOTSTRAP_COMMIT_SHA"] + "-"
-        + str(next_pin["BCF_BOOTSTRAP_RUN_ATTEMPT"])
-    )
-    monkeypatch.setattr(
-        controller,
-        "resolve_controller_lifecycle",
-        lambda *_args: SimpleNamespace(
-            state=ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY
-        ),
-    )
-    unchanged = SimpleNamespace(changed_inputs=(), changed_paths=())
-    monkeypatch.setattr(controller, "apply_ci_graph_locks", lambda _root: unchanged)
-    monkeypatch.setattr(controller, "apply_ci_graph", lambda _root: unchanged)
-
-    controller.project_self_controller_pin(
-        tmp_path, pin=next_pin, confirmation=None, apply=True
-    )
-    pending = yaml.safe_load(policy_path.read_text())["runner_security"]
-    assert pending["trusted_controller_artifact"] == next_pin
-    assert "trusted_controller_recovery_reentry" in pending
-
-    confirmation = dict(installed)
-    confirmation["installed_commit_sha"] = next_pin["BCF_BOOTSTRAP_COMMIT_SHA"]
-    confirmation["subject_commit_sha"] = next_pin["BCF_BOOTSTRAP_COMMIT_SHA"]
-    confirmation["subject_tree_sha"] = next_pin["BCF_BOOTSTRAP_TREE_SHA"]
-    controller.project_self_controller_pin(
-        tmp_path, pin=next_pin, confirmation=confirmation, apply=True
-    )
-    normalized = yaml.safe_load(policy_path.read_text())["runner_security"]
-    assert normalized["trusted_controller_installation"] == confirmation
-    assert "trusted_controller_recovery_reentry" not in normalized
-
-
-def test_controller_installation_confirmation_is_provider_compiled(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    policy = {
-        "runner_security": {
-            "trusted_controller_artifact": {
-                "BCF_BOOTSTRAP_ARTIFACT_ID": "300",
-                "BCF_BOOTSTRAP_ARTIFACT_NAME": f"bcf-trusted-control-{COMMIT}-2",
-                "BCF_BOOTSTRAP_ARTIFACT_DIGEST": f"sha256:{'c' * 64}",
-                "BCF_BOOTSTRAP_RUN_ID": "100",
-                "BCF_BOOTSTRAP_RUN_ATTEMPT": "2",
-                "BCF_BOOTSTRAP_COMMIT_SHA": COMMIT,
-                "BCF_BOOTSTRAP_TREE_SHA": TREE,
-                "BCF_BOOTSTRAP_REPOSITORY_ID": "101",
-                "BCF_BOOTSTRAP_WHEEL_SHA256": "e" * 64,
-            },
-            "trusted_instance_labels": ["one", "two"],
-        }
-    }
-    api = ConfirmationAPI(policy)
-    main = SimpleNamespace(
-        repository_id="101", checkout_sha=COMMIT, tree_sha=TREE
-    )
-    authority = {
-        "schema_version": "1.1",
-        "roles": {"bootstrap": "bootstrap", "probe": "probe"},
-        "workflow_registry": {
-            "bootstrap": {
-                "workflow_id": "10",
-                "active_path": controller.BOOTSTRAP_WORKFLOW,
-            },
-            "probe": {
-                "workflow_id": "11",
-                "active_path": controller.PROBE_WORKFLOW,
-            },
-        },
-    }
-    monkeypatch.setattr(controller, "resolve_main", lambda *_: main)
-    monkeypatch.setattr(controller, "load_authority", lambda *_, **__: authority)
-    calls = iter(("200", "201"))
-    monkeypatch.setattr(
-        controller,
-        "authenticate_role_run",
-        lambda *_, **__: SimpleNamespace(run_id=next(calls), run_attempt=1),
-    )
-
-    proof = controller.compile_self_controller_confirmation(
-        api, repository="owner/repo"  # type: ignore[arg-type]
-    )
-
-    assert proof["installed_commit_sha"] == COMMIT
-    assert proof["bootstrap_run_id"] == "200"
-    assert proof["probe_run_id"] == "201"
-
-
-@pytest.mark.parametrize("output_channel", [None, "missing"])
-def test_controller_confirmation_preflights_output_before_provider_or_authority(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    output_channel: str | None,
-) -> None:
-    authority_output = tmp_path / "controller-confirmation.json"
-    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
-    if output_channel == "missing":
-        monkeypatch.setenv("GITHUB_OUTPUT", str(tmp_path / "missing-output-channel"))
-
-    def forbidden_provider() -> object:
-        raise AssertionError("provider access preceded output-channel preflight")
-
-    monkeypatch.setattr(commands, "environment_api", forbidden_provider)
-
-    with pytest.raises(GitHubControllerError, match="GITHUB_OUTPUT"):
-        commands._controller_pin(
-            [
-                "confirm",
-                "--repository",
-                "owner/repo",
-                "--output",
-                str(authority_output),
-            ]
-        )
-
-    assert not authority_output.exists()
+    assert pin["BCF_BOOTSTRAP_COMMIT_SHA"] == installation["installed_commit_sha"]
+    assert controller.verify_self_controller_projection(REPO_ROOT) > 0

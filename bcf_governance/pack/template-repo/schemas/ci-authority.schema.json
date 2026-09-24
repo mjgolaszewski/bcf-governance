@@ -104,7 +104,7 @@
       "additionalProperties": false,
       "required": [
         "admission", "reusable_producers", "finalizer", "status_publisher",
-        "bootstrap", "probe", "release_authorizer", "release_build",
+        "release_authorizer", "release_build",
         "release_verifier", "release_collector", "release_publisher",
         "authority_canary"
       ],
@@ -113,8 +113,6 @@
         "reusable_producers": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/providerId"}},
         "finalizer": {"$ref": "#/$defs/providerId"},
         "status_publisher": {"$ref": "#/$defs/providerId"},
-        "bootstrap": {"$ref": "#/$defs/providerId"},
-        "probe": {"$ref": "#/$defs/providerId"},
         "release_authorizer": {"$ref": "#/$defs/providerId"},
         "release_build": {"$ref": "#/$defs/providerId"},
         "release_verifier": {"$ref": "#/$defs/providerId"},

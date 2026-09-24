@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: 25ca1178de8f16ed356f2498eb62cb0ee7430f7a7a619fdeebdcb8c0564aef71
-  after_sha256: 69e4e5af1ed591ae4ce626969f0136ae6b7e6c06136a793799dce1f73dd145ac
+  after_sha256: e9ff0f34617e7b770dbba2e4c6c1e2cf3634fe9f427cec627059eb95bf3c2ed4
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: historical
@@ -96,7 +96,7 @@ documents:
   canonical_topic_owner: docs/MAINTAINING.md
   topic_role: canonical
   before_sha256: f430ff67b85b1b1ea5b2524061894e94207772f633717359b222cea5418ea8ed
-  after_sha256: d68f4aa7fdf95d10e7dfdc5c228bc5378b1001f9edbc01dc9a21dcbe104a0fbc
+  after_sha256: 2fdfe510f3e0188549ee52f3f79f2c53eaeba6b1fb4158289355943d44051a2f
   findings:
   - documented exact offline compiler provisioning, isolated wheel-consumer qualification, and the current release audit
   disposition: revised
@@ -114,7 +114,7 @@ documents:
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
   before_sha256: d803cd6698d5012b014271ffdd8f357d2ab88e9833025a96b0b256d1f7223356
-  after_sha256: 194e855349cf75d2e66f8399e0c16be25444410f6dee14ab9247948ad4f2eb4e
+  after_sha256: 3c7f407f1b1b5851b086186c987da93f6478c16e11beba5557a922b019c21cad
   findings:
   - documented TypeScript adoption and lock compatibility, explicit routing eligibility, fallback, and provider label limits
   disposition: revised

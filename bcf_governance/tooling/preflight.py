@@ -423,6 +423,7 @@ def _workflow_authority(repo_root: Path) -> int:
 def _self_controller(
     repo_root: Path, *, allow_stale_runtime: bool = False,
     pr_base_sha: str | None = None,
+    transported_authority: Mapping[str, Any] | None = None,
 ) -> int | dict[str, Any]:
     policy = repo_root / "governance/self-governance-policy.yml"
     if not policy.is_file():
@@ -433,9 +434,23 @@ def _self_controller(
         return 0
     try:
         count = verify_self_controller_projection(repo_root)
-        target = str(
-            runner["trusted_controller_artifact"]["BCF_BOOTSTRAP_COMMIT_SHA"]
-        )
+        target = str(runner["trusted_controller_artifact"]["BCF_BOOTSTRAP_COMMIT_SHA"])
+        if transported_authority is not None:
+            transported_commit = transported_authority.get("controller_commit_sha")
+            transported_bundle = transported_authority.get("controller_bundle_sha256")
+            if (
+                set(transported_authority) != {
+                    "controller_commit_sha", "controller_bundle_sha256"
+                }
+                or not isinstance(transported_commit, str)
+                or not re.fullmatch(r"[a-f0-9]{40}", transported_commit)
+                or not isinstance(transported_bundle, str)
+                or not re.fullmatch(r"[a-f0-9]{64}", transported_bundle)
+            ):
+                raise TrustedControllerCompatibilityError(
+                    "transported controller authority is invalid"
+                )
+            target = transported_commit
         if pr_base_sha is not None:
             verify_pr_bootstrap_compatibility(
                 repo_root, base_commit=pr_base_sha, target_commit=target
@@ -586,6 +601,7 @@ def run_preflight(
         return operation()
 
     subject = step("git-state", lambda: _git_state(repo_root))
+    transported_authority: Mapping[str, Any] | None = None
     if prior_transport_dir is not None:
         if prior_receipts:
             raise PreflightError("prior transport and legacy receipt inputs are ambiguous")
@@ -596,6 +612,7 @@ def run_preflight(
             ),
         )
         prior_receipts = provisional_receipts(material)
+        transported_authority = material.manifest["authority"]
     try:
         scope = evaluation_scope(
             selected_mode,
@@ -634,6 +651,7 @@ def run_preflight(
                 if pr_context.get("applicable") is True
                 else None
             ),
+            transported_authority=transported_authority,
         ),
     )
     negative_controls = step(

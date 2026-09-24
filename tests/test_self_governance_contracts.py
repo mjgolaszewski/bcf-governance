@@ -208,23 +208,16 @@ def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
     assert builder["produces"] == ["trusted-controller-bundle"]
 
 
-def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
-    workflow = _workflow("trusted-controller-bootstrap")
-    job = _job("trusted-controller-bootstrap", "bootstrap")
-    assert workflow["events"] == [{"type": "workflow_dispatch"}]
-    assert job["trust"] == "trusted" and job["checkout"] is False
-    assert job["resource_class"] == "trusted-control-instance"
-    assert job["executor"]["components"] == [
-        "setup-python",
-        "download-bootstrap-controller",
-        "stage-bootstrap-controller",
-        "bootstrap-controller",
-    ]
-    command = validate_ci_graph(REPO_ROOT).commands["bootstrap-controller"]
-    assert command["argv"][:3] == ["{ephemeral_controller}", "ci-github", "bootstrap"]
-    assert set(command["required_environment"]) == set(
-        _policy()["runner_security"]["trusted_controller_artifact"]
-    )
+def test_routine_rotation_is_the_only_ordinary_controller_installation_path() -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    workflow_ids = {str(workflow["id"]) for workflow in compiled.workflows}
+    assert "trusted-controller-bootstrap" not in workflow_ids
+    assert "trusted-controller-probe" not in workflow_ids
+    assert not (REPO_ROOT / ".github/workflows/bcf-trusted-control-bootstrap.yml").exists()
+    assert not (REPO_ROOT / ".github/workflows/bcf-trusted-control-probe.yml").exists()
+    routine = _workflow("automation-reconcile")
+    job_ids = {str(job["id"]) for job in routine["jobs"]}
+    assert {"authorize", "bootstrap", "probe", "promote", "activate"} <= job_ids
 
 
 def test_every_required_environment_is_validated_once_before_generated_work() -> None:
