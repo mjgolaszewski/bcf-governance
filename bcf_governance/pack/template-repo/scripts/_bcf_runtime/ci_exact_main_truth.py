@@ -18,6 +18,37 @@ _MAX_ARCHIVE = 2_000_000
 _REPORT_NAME = "truth-report.json"
 
 
+def validate_exact_main_truth_payload(
+    report: dict[str, Any], *, subject: dict[str, str]
+) -> dict[str, Any]:
+    """Decode the finalizer-owned truth identity and bounded proposition.
+
+    Provider artifact custody is authenticated by ``authenticated_exact_main_truth``.
+    This pure boundary deliberately projects only the exact commit/tree identity owned
+    by the finalizer, while permitting additive canonical subject metadata.
+    """
+
+    report_subject = report.get("subject")
+    if not isinstance(report_subject, dict):
+        raise GitHubControllerError("governance truth subject is invalid")
+    report_identity = {
+        "commit_sha": exact_sha(
+            report_subject.get("commit_sha"),
+            field="governance truth subject commit SHA",
+        ),
+        "tree_sha": exact_sha(
+            report_subject.get("tree_sha"),
+            field="governance truth subject tree SHA",
+        ),
+    }
+    if report_identity != subject:
+        raise GitHubControllerError("governance truth subject is not exact main")
+    try:
+        return validate_certified_proposition(report, subject=subject)
+    except EvaluationScopeError as exc:
+        raise GitHubControllerError(str(exc)) from exc
+
+
 def authenticated_exact_main_truth(
     api: Any,
     *,
@@ -71,25 +102,7 @@ def authenticated_exact_main_truth(
     subject = {"commit_sha": main.checkout_sha, "tree_sha": main.tree_sha}
     proposition: dict[str, Any] = {}
     if "certified_proposition" in report:
-        report_subject = report.get("subject")
-        if not isinstance(report_subject, dict):
-            raise GitHubControllerError("governance truth subject is invalid")
-        report_identity = {
-            "commit_sha": exact_sha(
-                report_subject.get("commit_sha"),
-                field="governance truth subject commit SHA",
-            ),
-            "tree_sha": exact_sha(
-                report_subject.get("tree_sha"),
-                field="governance truth subject tree SHA",
-            ),
-        }
-        if report_identity != subject:
-            raise GitHubControllerError("governance truth subject is not exact main")
-        try:
-            proposition = validate_certified_proposition(report, subject=subject)
-        except EvaluationScopeError as exc:
-            raise GitHubControllerError(str(exc)) from exc
+        proposition = validate_exact_main_truth_payload(report, subject=subject)
         expected_ref = (
             f"github-actions://{repository}/runs/{run_id}/attempts/"
             f"{run_attempt}/bcf-governance-truth"

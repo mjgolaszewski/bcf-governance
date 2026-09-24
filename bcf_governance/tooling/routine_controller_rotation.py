@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+from enum import StrEnum
 from pathlib import Path
 import re
 from typing import Any, Callable, Iterable, Mapping, Sequence
@@ -15,8 +16,26 @@ from jsonschema import Draft202012Validator
 SCHEMA = Path("schemas/controller-transition.schema.json")
 _SHA = re.compile(r"^[a-f0-9]{40}$")
 _DIGEST = re.compile(r"^sha256:[a-f0-9]{64}$")
+ROTATION_POLICY_PATHS = (
+    "governance/github-protection.yml",
+    "governance/self-governance-policy.yml",
+    "governance/ci-extensions/bcf-trusted-control.yml",
+    "schemas/controller-transition.schema.json",
+)
 
 
+class GovernedControllerLane(StrEnum):
+    ORDINARY_PROTECTED_N_N_PLUS_1 = "ordinary_protected_n_n_plus_1"
+
+
+ALTERNATE_POLICY_LANE_SEQUENCE = (
+    "project_exact_provider_target",
+    "bootstrap_required_runners",
+    "probe_required_runners",
+    "provider_compile_confirmation",
+    "protected_confirmation_merge",
+    "normalize_ordinary_current",
+)
 class RoutineRotationError(ValueError):
     """Raised when routine rotation evidence is incomplete or contradictory."""
 
@@ -38,6 +57,29 @@ def transition_follows_normalization(
     raise RoutineRotationError(
         "controller transition is not ordered with source normalization"
     )
+
+
+def alternate_policy_lane_contract() -> dict[str, Any]:
+    """Return the sole governed route for a protected rotation-policy change."""
+
+    return {
+        "id": GovernedControllerLane.ORDINARY_PROTECTED_N_N_PLUS_1.value,
+        "required_sequence": list(ALTERNATE_POLICY_LANE_SEQUENCE),
+        "required_initial_state": "ordinary-pending-rotation",
+        "required_terminal_state": "ordinary-current",
+    }
+
+
+def controller_policy_digest(read_content: Callable[[str], bytes]) -> str:
+    """Bind the exact closed rotation-policy byte inventory."""
+
+    digest = hashlib.sha256()
+    for path in ROTATION_POLICY_PATHS:
+        content = read_content(path)
+        if not isinstance(content, bytes):
+            raise RoutineRotationError("controller policy content must be exact bytes")
+        digest.update(path.encode("utf-8") + b"\0" + content + b"\0")
+    return digest.hexdigest()
 
 
 def _canonical(value: object) -> bytes:

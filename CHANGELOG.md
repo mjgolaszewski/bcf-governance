@@ -22,6 +22,8 @@
 - Project the exact provider-built P27 applicability controller as the protected
   N/N+1 target while keeping the installed controller active until confirmation.
 
+- Add one canonical exact-tree prospective PR command that checks fixed-point freshness before preflight, binds exact before/after controller-policy identities and the closed alternate lane, mechanically carries one evidence session through PR and post-merge semantic truth, validates the real finalizer-owned subject/proposition projection, and marks provider-only certification, merge, finalization, and publication facts without substituting local authority; order pack projection before semantic locking so the same fixed point can reconcile changed canonical runtime bytes.
+
 - Expand routine controller authorization with closed exact-topology decisions and exact subject/policy/target binding to the protected N/N+1 lane, leaving workflow activation behind compatible-controller installation.
 
 - Reauthenticate exact-main finalizer publication with the canonical workflow blob and definition pins so additive current-main metadata cannot rewrite trusted collector identity.

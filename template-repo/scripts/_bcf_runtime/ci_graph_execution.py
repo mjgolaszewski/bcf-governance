@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import re
 from typing import Any
+
+from .ci_graph_errors import CIGraphError
 
 
 _EXPLICIT_EXECUTORS = {"component_sequence", "gate_shard", "terminal_truth"}
@@ -19,6 +22,47 @@ _INPUT_REFERENCE = re.compile(r"inputs\.([A-Za-z_][A-Za-z0-9_-]*)")
 _LITERAL_INPUT_FALLBACK = re.compile(
     r"inputs\.([A-Za-z_][A-Za-z0-9_-]*)\s*\|\|\s*(['\"])(.*?)\2"
 )
+
+
+@dataclass(frozen=True)
+class ExactMainEvaluation:
+    """Canonical post-merge truth intent projected by the exact-main graph."""
+
+    mode: str
+    target: str | None
+
+    def as_dict(self) -> dict[str, str | None]:
+        return {"mode": self.mode, "target": self.target}
+
+
+def exact_main_evaluation(
+    workflows: tuple[dict[str, Any], ...],
+) -> ExactMainEvaluation:
+    """Resolve one exact admission/governance evaluation contract."""
+
+    selected = [item for item in workflows if item["id"] == "exact-main"]
+    if len(selected) != 1:
+        raise CIGraphError("canonical graph must contain one exact-main workflow")
+    jobs = {str(item["id"]): item for item in selected[0]["jobs"]}
+    try:
+        admit = jobs["admit"]["executor"]
+        governance = jobs["governance"]["executor"]
+        mode = str(admit["evaluation_mode"])
+        target = admit["evaluation_target"] if "evaluation_target" in admit else None
+        inputs = governance["inputs"]
+    except (KeyError, TypeError) as exc:
+        raise CIGraphError("exact-main evaluation intent is incomplete") from exc
+    if mode not in {"workitem", "closure"}:
+        raise CIGraphError("exact-main evaluation intent is not terminally typed")
+    input_mode = inputs["evaluation_mode"] if "evaluation_mode" in inputs else None
+    input_target = inputs["evaluation_target"] if "evaluation_target" in inputs else None
+    if input_mode != mode or input_target != target:
+        raise CIGraphError("exact-main admission and governance evaluation intents differ")
+    if mode == "workitem" and not isinstance(target, str):
+        raise CIGraphError("bounded exact-main target is missing")
+    if mode == "closure" and target is not None:
+        raise CIGraphError("phase closure cannot carry a workitem target")
+    return ExactMainEvaluation(mode, target)
 
 
 def _strings(value: Any) -> tuple[str, ...]:

@@ -14,6 +14,7 @@ from .ci_authority_decisions import (
     StatusContext,
     StatusObservation,
     decide_status_publication,
+    status_context_for_evaluation,
 )
 from .ci_github_api import GitHubAPI
 from .ci_github_authority import packaged_repo_root
@@ -330,10 +331,8 @@ def publish(
     scope = verification.evaluation_scope
     if require_evaluation_scope and (scope is None or scope.get("intent") == "pr"):
         raise GitHubControllerError("exact-main certification lacks terminal evaluation scope")
-    status_context = (
-        StatusContext.BOUNDED_WORKITEM
-        if scope is not None and scope.get("intent") == "workitem"
-        else StatusContext.EXACT_MAIN
+    status_context = status_context_for_evaluation(
+        scope.get("intent") if scope is not None else "closure"
     )
     target = scope.get("target", {}) if scope is not None else {}
     description = (

@@ -23,6 +23,16 @@ class StatusContext(StrEnum):
     AUTHORITY_CANARY = "bcf/authority-canary"
 
 
+def status_context_for_evaluation(intent: object) -> StatusContext:
+    """Map one closed terminal evaluation intent to its sole status context."""
+
+    if str(intent) == "workitem":
+        return StatusContext.BOUNDED_WORKITEM
+    if str(intent) == "closure":
+        return StatusContext.EXACT_MAIN
+    raise CIDecisionError("terminal status requires workitem or closure evaluation")
+
+
 class StatusConclusion(StrEnum):
     PENDING = "pending"
     SUCCESS = "success"

@@ -3,12 +3,34 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+import hashlib
 import json
 import os
 from pathlib import Path
 import subprocess
 import tempfile
-from typing import Callable
+from typing import Any, Callable, Iterator, Mapping
+from contextlib import contextmanager
+
+from .ci_graph_contracts import CIGraphError, validate_ci_graph
+from .ci_graph_execution import exact_main_evaluation
+from .ci_authority_decisions import status_context_for_evaluation
+from .ci_exact_main_truth import validate_exact_main_truth_payload
+from .ci_github_identity import GitHubControllerError
+from .evaluation_scope import (
+    is_terminal_phase_certification,
+)
+from .evidence_execution import EvidenceError
+from .evidence_sessions import local_producer_identity, select_session
+from .governance_evidence import capture_gate
+from .governance_truth import TruthfulnessError, derive_truth
+from .preflight import PreflightError, run_preflight
+from .routine_controller_rotation import (
+    ROTATION_POLICY_PATHS,
+    alternate_policy_lane_contract,
+    controller_policy_digest,
+)
+from .scaffold_governance_artifacts import ReconcileError, reconcile_steps
 
 
 class LocalPRError(ValueError):
@@ -18,6 +40,25 @@ class LocalPRError(ValueError):
 Runner = Callable[..., subprocess.CompletedProcess[str]]
 
 
+BOUNDARY_CHAIN = (
+    "preflight",
+    "controller_compatibility",
+    "pr_evidence",
+    "certification",
+    "merge",
+    "exact_main",
+    "controller_lifecycle",
+    "bounded_or_phase_truth",
+    "finalizer",
+    "publisher",
+    "successor_or_release_eligibility",
+)
+
+
+class ProspectiveValidationError(ValueError):
+    """The exact candidate has a mechanically knowable downstream rejection."""
+
+
 @dataclass(frozen=True)
 class LocalPRContext:
     remote: str
@@ -25,6 +66,16 @@ class LocalPRContext:
     base_sha: str
     head_sha: str
     head_ref: str
+
+    def as_dict(self) -> dict[str, str]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class CandidateIdentity:
+    commit_sha: str
+    tree_sha: str
+    base_sha: str
 
     def as_dict(self) -> dict[str, str]:
         return asdict(self)
@@ -100,6 +151,22 @@ def resolve_local_pr_context(
     )
 
 
+def _pr_environment_values(
+    context: LocalPRContext, *, event_path: str | None = None
+) -> dict[str, str]:
+    values = {
+        "BCF_ENFORCE_PR_CHANGELOG": "true",
+        "BCF_PR_BASE_SHA": context.base_sha,
+        "GITHUB_BASE_REF": context.default_branch,
+        "GITHUB_EVENT_NAME": "pull_request",
+        "GITHUB_HEAD_REF": context.head_ref,
+        "GITHUB_SHA": context.head_sha,
+    }
+    if event_path is not None:
+        values["GITHUB_EVENT_PATH"] = event_path
+    return values
+
+
 def run_local_pr_validation(
     repo_root: Path,
     *,
@@ -123,15 +190,416 @@ def run_local_pr_validation(
         event_path = Path(temporary) / "event.json"
         event_path.write_text(json.dumps(event, sort_keys=True) + "\n", encoding="utf-8")
         environment = os.environ.copy()
-        environment.update(
+        environment.update(_pr_environment_values(context, event_path=str(event_path)))
+        return runner(list(command), cwd=repo_root.resolve(), env=environment)
+
+
+def _candidate_identity(
+    repo_root: Path, context: LocalPRContext, *, runner: Runner
+) -> CandidateIdentity:
+    head = _checked(runner, ["git", "rev-parse", "--verify", "HEAD"], cwd=repo_root)
+    tree = _checked(runner, ["git", "rev-parse", "--verify", "HEAD^{tree}"], cwd=repo_root)
+    status = _checked(
+        runner,
+        ["git", "status", "--porcelain=v1", "--untracked-files=all", "--ignored=no"],
+        cwd=repo_root,
+    )
+    if status:
+        raise ProspectiveValidationError("prospective validation requires a clean committed tree")
+    if head != context.head_sha:
+        raise ProspectiveValidationError("local PR context does not bind current HEAD")
+    return CandidateIdentity(head, tree, context.base_sha)
+
+
+@contextmanager
+def _pr_environment(context: LocalPRContext) -> Iterator[None]:
+    values = _pr_environment_values(context)
+    previous = {key: os.environ.get(key) for key in values}
+    os.environ.update(values)
+    try:
+        yield
+    finally:
+        for key, value in previous.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+
+
+def _changed_paths(
+    repo_root: Path, identity: CandidateIdentity, *, runner: Runner
+) -> tuple[str, ...]:
+    output = _checked(
+        runner,
+        ["git", "diff", "--name-only", identity.base_sha, identity.commit_sha],
+        cwd=repo_root,
+    )
+    return tuple(sorted(value for value in output.splitlines() if value))
+
+
+def _git_blob(repo_root: Path, *, ref: str, path: str) -> bytes:
+    result = subprocess.run(
+        ["git", "show", f"{ref}:{path}"],
+        cwd=repo_root,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        detail = result.stderr.decode("utf-8", errors="replace").strip()
+        raise ProspectiveValidationError(
+            f"cannot resolve controller policy {path} at {ref}: {detail or 'git show failed'}"
+        )
+    return result.stdout
+
+
+def _controller_policy_identity(
+    repo_root: Path, identity: CandidateIdentity, *, runner: Runner
+) -> dict[str, Any]:
+    source_tree = _checked(
+        runner,
+        ["git", "rev-parse", "--verify", f"{identity.base_sha}^{{tree}}"],
+        cwd=repo_root,
+    )
+    source_digest = controller_policy_digest(
+        lambda path: _git_blob(repo_root, ref=identity.base_sha, path=path)
+    )
+    candidate_digest = controller_policy_digest(
+        lambda path: _git_blob(repo_root, ref=identity.commit_sha, path=path)
+    )
+    return {
+        "source": {
+            "commit_sha": identity.base_sha,
+            "tree_sha": source_tree,
+            "policy_sha256": source_digest,
+        },
+        "candidate": {
+            "commit_sha": identity.commit_sha,
+            "tree_sha": identity.tree_sha,
+            "policy_sha256": candidate_digest,
+        },
+    }
+
+
+def _confirm_unchanged(
+    repo_root: Path,
+    *,
+    initial_context: LocalPRContext,
+    initial_identity: CandidateIdentity,
+    remote: str,
+    runner: Runner,
+) -> None:
+    current_context = resolve_local_pr_context(repo_root, remote=remote, runner=runner)
+    if current_context != initial_context:
+        raise ProspectiveValidationError(
+            "remote PR base or local branch identity changed during validation"
+        )
+    current_identity = _candidate_identity(repo_root, current_context, runner=runner)
+    if current_identity != initial_identity:
+        raise ProspectiveValidationError(
+            "candidate commit or tree changed during validation"
+        )
+
+
+def _capture_planned_evidence(
+    repo_root: Path,
+    *,
+    python_executable: Path,
+    session_manifest: Path,
+    session_root: Path,
+    producers: tuple[str, ...],
+) -> None:
+    for producer in producers:
+        receipt = capture_gate(
+            repo_root,
+            producer,
+            session_root / producer,
+            python_executable=python_executable,
+            session_manifest=session_manifest,
+        )
+        if not receipt.is_file():
+            raise ProspectiveValidationError(
+                f"local evidence producer {producer} emitted no receipt"
+            )
+
+
+def _require_truth(report: Mapping[str, Any], *, boundary: str) -> dict[str, Any]:
+    if report.get("status") != "pass":
+        detail = ", ".join(str(value) for value in report.get("issues") or ())
+        raise ProspectiveValidationError(
+            f"{boundary} rejected candidate: {detail or 'truth failed'}"
+        )
+    return dict(report)
+
+
+def _run_prospective_validation(
+    repo_root: Path,
+    *,
+    remote: str = "origin",
+    python_executable: Path,
+    execute_evidence: bool = True,
+    runner: Runner = _run,
+) -> dict[str, Any]:
+    """Walk every knowable boundary while preserving provider-required authority."""
+
+    root = repo_root.resolve()
+    context = resolve_local_pr_context(root, remote=remote, runner=runner)
+    identity = _candidate_identity(root, context, runner=runner)
+    try:
+        for step in reconcile_steps(root, python_executable.resolve()):
+            step.check()
+        evaluation = exact_main_evaluation(validate_ci_graph(root).workflows)
+        post_merge_mode, post_merge_target = evaluation.mode, evaluation.target
+    except (
+        CIGraphError,
+        ReconcileError,
+        PreflightError,
+        TruthfulnessError,
+        EvidenceError,
+    ) as exc:
+        raise ProspectiveValidationError(str(exc)) from exc
+    changed_paths = _changed_paths(root, identity, runner=runner)
+    transition_class = (
+        "protected_policy_change"
+        if set(changed_paths).intersection(ROTATION_POLICY_PATHS)
+        else "runtime_only"
+    )
+    policy_identity = _controller_policy_identity(root, identity, runner=runner)
+    if (
+        transition_class == "protected_policy_change"
+        and policy_identity["source"]["policy_sha256"]
+        == policy_identity["candidate"]["policy_sha256"]
+    ):
+        raise ProspectiveValidationError(
+            "protected controller-policy paths changed without a policy identity change"
+        )
+    boundaries: list[dict[str, Any]] = []
+
+    with tempfile.TemporaryDirectory(prefix="bcf-prospective-") as temporary:
+        artifact_root = Path(temporary) / "evidence"
+        with _pr_environment(context):
+            try:
+                preflight = run_preflight(
+                    root,
+                    mode="pr",
+                    python_executable=python_executable,
+                    artifact_root=(artifact_root if execute_evidence else None),
+                    expected_producers=(["prospective-local"] if execute_evidence else None),
+                    producer_identity=(
+                        local_producer_identity(root, "prospective-local")
+                        if execute_evidence else None
+                    ),
+                    evaluation_mode="pr",
+                )
+            except (PreflightError, EvidenceError) as exc:
+                raise ProspectiveValidationError(str(exc)) from exc
+        if preflight.get("status") != "pass":
+            raise ProspectiveValidationError("canonical PR preflight did not pass")
+        boundaries.append({"id": "preflight", "state": "proved", "authority": "local"})
+        controller = preflight.get("self_controller")
+        controller_state = (
+            str(controller.get("status")) if isinstance(controller, dict) else "current"
+        )
+        if controller_state not in {"current", "pending_rotation"}:
+            raise ProspectiveValidationError(
+                f"controller compatibility is not admissible: {controller_state}"
+            )
+        transition_requirement = (
+            "no_transition"
+            if controller_state == "current"
+            else "alternate_lane_required"
+            if transition_class == "protected_policy_change"
+            else "provider_routine_transition_required"
+        )
+        boundaries.append(
             {
-                "BCF_ENFORCE_PR_CHANGELOG": "true",
-                "BCF_PR_BASE_SHA": context.base_sha,
-                "GITHUB_BASE_REF": context.default_branch,
-                "GITHUB_EVENT_NAME": "pull_request",
-                "GITHUB_EVENT_PATH": str(event_path),
-                "GITHUB_HEAD_REF": context.head_ref,
-                "GITHUB_SHA": context.head_sha,
+                "id": "controller_compatibility",
+                "state": "proved",
+                "authority": "installed_controller_parser",
+                "controller_state": controller_state,
+                "transition_class": transition_class,
+                "transition_requirement": transition_requirement,
+                "policy_identity": policy_identity,
+                **(
+                    {"alternate_lane": alternate_policy_lane_contract()}
+                    if transition_requirement == "alternate_lane_required"
+                    else {}
+                ),
+                "release_authority": False,
             }
         )
-        return runner(list(command), cwd=repo_root.resolve(), env=environment)
+        if not execute_evidence:
+            report = {
+                "schema_version": "1.0",
+                "status": "deterministic_front_door_pass",
+                "subject": identity.as_dict(),
+                "changed_paths": list(changed_paths),
+                "post_merge_evaluation": {
+                    "mode": post_merge_mode,
+                    "target": post_merge_target,
+                },
+                "boundaries": boundaries,
+                "provider_authority_substituted": False,
+            }
+            _confirm_unchanged(
+                root,
+                initial_context=context,
+                initial_identity=identity,
+                remote=remote,
+                runner=runner,
+            )
+            return report
+
+        try:
+            session = select_session(artifact_root / "sessions")
+        except EvidenceError as exc:
+            raise ProspectiveValidationError(str(exc)) from exc
+        nodes = preflight["verification_plan"]["execution_dag"]["nodes"]
+        producers = tuple(sorted({str(node["producer"]) for node in nodes}))
+        try:
+            _capture_planned_evidence(
+                root,
+                python_executable=python_executable.resolve(),
+                session_manifest=session.manifest_path,
+                session_root=session.root,
+                producers=producers,
+            )
+            pr_truth = _require_truth(
+                derive_truth(root, session.root, evaluation_mode="pr"),
+                boundary="PR truth",
+            )
+        except (EvidenceError, TruthfulnessError) as exc:
+            raise ProspectiveValidationError(str(exc)) from exc
+        if pr_truth.get("merge_eligibility") != "eligible":
+            raise ProspectiveValidationError("local PR truth is not merge eligible")
+        boundaries.append(
+            {
+                "id": "pr_evidence",
+                "state": "proved_non_authoritative",
+                "authority": "local_exact_tree_receipts",
+                "producers": list(producers),
+                "bundle_sha256": pr_truth["bundle_sha256"],
+            }
+        )
+        boundaries.extend(
+            [
+                {"id": "certification", "state": "provider_required"},
+                {"id": "merge", "state": "provider_required"},
+                {
+                    "id": "exact_main",
+                    "state": "fresh_provider_subject_required",
+                    "mode": post_merge_mode,
+                    "target": post_merge_target,
+                },
+                {
+                    "id": "controller_lifecycle",
+                    "state": (
+                        "rotation_required" if controller_state == "pending_rotation"
+                        else "ordinary_current_required"
+                    ),
+                    "transition_class": transition_class,
+                    **(
+                        {"alternate_lane": alternate_policy_lane_contract()}
+                        if transition_class == "protected_policy_change"
+                        else {}
+                    ),
+                },
+            ]
+        )
+        try:
+            bounded_truth = _require_truth(
+                derive_truth(
+                    root,
+                    session.root,
+                    evaluation_mode=post_merge_mode,
+                    evaluation_target=post_merge_target,
+                ),
+                boundary="post-merge semantic truth projection",
+            )
+        except TruthfulnessError as exc:
+            raise ProspectiveValidationError(str(exc)) from exc
+        subject = {"commit_sha": identity.commit_sha, "tree_sha": identity.tree_sha}
+        try:
+            proposition = validate_exact_main_truth_payload(
+                bounded_truth, subject=subject
+            )
+        except GitHubControllerError as exc:
+            raise ProspectiveValidationError(str(exc)) from exc
+        proposition_sha256 = hashlib.sha256(
+            json.dumps(proposition, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+        boundaries.extend(
+            [
+                {
+                    "id": "bounded_or_phase_truth",
+                    "state": "proved_semantics_provider_reexecution_required",
+                    "proposition": proposition,
+                },
+                {
+                    "id": "finalizer",
+                    "state": "provider_required",
+                    "proposition_sha256": proposition_sha256,
+                },
+                {
+                    "id": "publisher",
+                    "state": "provider_required",
+                    "scope": post_merge_mode,
+                    "status_context": status_context_for_evaluation(
+                        post_merge_mode
+                    ).value,
+                },
+                {
+                    "id": "successor_or_release_eligibility",
+                    "state": "proved_scope",
+                    "eligible_successors": proposition["eligible_successors"],
+                    "release_authority": is_terminal_phase_certification(
+                        {
+                            "evaluation_scope": bounded_truth["evaluation_scope"],
+                            "certified_proposition": proposition,
+                        }
+                    ),
+                },
+            ]
+        )
+    if tuple(item["id"] for item in boundaries) != BOUNDARY_CHAIN:
+        raise ProspectiveValidationError("prospective authority boundary inventory is not exact")
+    _confirm_unchanged(
+        root,
+        initial_context=context,
+        initial_identity=identity,
+        remote=remote,
+        runner=runner,
+    )
+    return {
+        "schema_version": "1.0",
+        "status": "prospectively_admissible_provider_proof_required",
+        "subject": identity.as_dict(),
+        "changed_paths": list(changed_paths),
+        "post_merge_evaluation": {
+            "mode": post_merge_mode,
+            "target": post_merge_target,
+        },
+        "boundaries": boundaries,
+        "provider_authority_substituted": False,
+        "ephemeral_state": {
+            "scope": "exact_prospective_run",
+            "state": "retired",
+        },
+    }
+
+
+def run_prospective_validation(
+    repo_root: Path,
+    *,
+    remote: str = "origin",
+    python_executable: Path,
+    runner: Runner = _run,
+) -> dict[str, Any]:
+    """Execute the complete locally knowable chain; no partial public mode exists."""
+
+    return _run_prospective_validation(
+        repo_root,
+        remote=remote,
+        python_executable=python_executable,
+        execute_evidence=True,
+        runner=runner,
+    )
