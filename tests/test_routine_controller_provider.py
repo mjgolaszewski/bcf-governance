@@ -173,13 +173,15 @@ def test_authorization_binds_protected_merge_policy_and_exact_artifact(
     )
     assert receipt == {
         "schema_version": "1.0",
+        "decision": "routine_transition_authorized",
+        "transition_class": "runtime_only",
         "applicable": True,
         "reason": "pending_controller_rotation",
         "transition": _authorized(),
     }
 
 
-def test_authorization_is_inapplicable_outside_pending_rotation(
+def test_authorization_closes_current_controller_as_no_transition(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
@@ -200,7 +202,7 @@ def test_authorization_is_inapplicable_outside_pending_rotation(
         provider,
         "compile_self_controller_pin",
         lambda *_args, **_kwargs: pytest.fail(
-            "an inapplicable topology must not select a controller artifact"
+            "a current topology must not select a controller artifact"
         ),
     )
 
@@ -214,14 +216,17 @@ def test_authorization_is_inapplicable_outside_pending_rotation(
 
     assert result == {
         "schema_version": "1.0",
+        "decision": "no_transition",
+        "transition_class": "none",
         "applicable": False,
-        "reason": "complete",
+        "reason": "controller_current",
         "subject": {"commit_sha": NEW, "tree_sha": TREE},
         "admission": {"run_id": "10", "run_attempt": "1"},
+        "release_authority": False,
     }
 
 
-def test_authorization_rejects_policy_change_and_self_selection(
+def test_authorization_routes_policy_change_out_of_routine_rotation(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
@@ -270,16 +275,124 @@ def test_authorization_rejects_policy_change_and_self_selection(
     )
     values = iter(("5" * 64, "6" * 64))
     monkeypatch.setattr(provider, "_policy_digest", lambda *_args, **_kwargs: next(values))
-    with pytest.raises(provider.RoutineRotationError, match="cannot change"):
+    result = provider.authorize_transition(
+        object(), repository="mjgolaszewski/bcf-governance",
+        admission_run_id="10", admission_run_attempt="1", artifact_dir=tmp_path,
+    )
+    assert result == {
+        "schema_version": "1.0",
+        "decision": "alternate_lane_required",
+        "transition_class": "protected_policy_change",
+        "applicable": False,
+        "reason": "authorization_policy_changed",
+        "subject": {"commit_sha": NEW, "tree_sha": TREE},
+        "admission": {"run_id": "10", "run_attempt": "1"},
+        "authority": {
+            "installed_controller_commit": OLD,
+            "implementation_pr": "260",
+            "candidate_commit_sha": "9" * 40,
+            "source_main_commit_sha": "7" * 40,
+            "policy_before_sha256": "5" * 64,
+            "policy_after_sha256": "6" * 64,
+        },
+        "target": _pin(),
+        "alternate_lane": {
+            "id": "ordinary_protected_n_n_plus_1",
+            "required_sequence": list(provider.ALTERNATE_POLICY_LANE_SEQUENCE),
+            "required_initial_state": "ordinary-pending-rotation",
+            "required_terminal_state": "ordinary-current",
+        },
+        "release_authority": False,
+    }
+
+
+def test_unrelated_noncertifying_topology_cannot_become_no_transition(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
+    monkeypatch.setattr(provider, "resolve_run_subject", lambda *_args, **_kwargs: MAIN)
+    monkeypatch.setattr(provider, "load_authority", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(provider, "authenticate_role_run", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        provider,
+        "classify_admission_topology",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            state=provider.AdmissionTopologyState.NONCERTIFYING,
+            reason="producer_inventory_incomplete",
+        ),
+    )
+    monkeypatch.setattr(
+        provider,
+        "compile_self_controller_pin",
+        lambda *_args, **_kwargs: pytest.fail("failed topology selected a target"),
+    )
+    with pytest.raises(GitHubControllerError, match="producer_inventory_incomplete"):
         provider.authorize_transition(
             object(), repository="mjgolaszewski/bcf-governance",
             admission_run_id="10", admission_run_attempt="1", artifact_dir=tmp_path,
         )
+
+
+def test_alternate_lane_decision_rejects_ambiguous_or_broadened_routes() -> None:
+    route = {
+        "schema_version": "1.0",
+        "decision": "alternate_lane_required",
+        "transition_class": "protected_policy_change",
+        "applicable": False,
+        "reason": "authorization_policy_changed",
+        "subject": {"commit_sha": NEW, "tree_sha": TREE},
+        "admission": {"run_id": "10", "run_attempt": "1"},
+        "authority": {
+            "installed_controller_commit": OLD,
+            "implementation_pr": "260",
+            "candidate_commit_sha": "9" * 40,
+            "source_main_commit_sha": "7" * 40,
+            "policy_before_sha256": "5" * 64,
+            "policy_after_sha256": "6" * 64,
+        },
+        "target": _pin(),
+        "alternate_lane": {
+            "id": "ordinary_protected_n_n_plus_1",
+            "required_sequence": list(provider.ALTERNATE_POLICY_LANE_SEQUENCE),
+            "required_initial_state": "ordinary-pending-rotation",
+            "required_terminal_state": "ordinary-current",
+        },
+        "release_authority": False,
+    }
+    assert provider.validate_routine_decision(route) == route
+    for mutation in (
+        lambda value: value.update(release_authority=True),
+        lambda value: value["alternate_lane"].update(id="carry_on"),
+        lambda value: value["authority"].update(policy_after_sha256="5" * 64),
+        lambda value: value.update(unowned="ambiguous"),
+    ):
+        candidate = copy.deepcopy(route)
+        mutation(candidate)
+        with pytest.raises(GitHubControllerError):
+            provider.validate_routine_decision(candidate)
+
+
+def test_authorization_rejects_self_selection(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
+    monkeypatch.setattr(provider, "resolve_run_subject", lambda *_args, **_kwargs: MAIN)
+    monkeypatch.setattr(provider, "load_authority", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(provider, "authenticate_role_run", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        provider,
+        "classify_admission_topology",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            state=provider.AdmissionTopologyState.PENDING_ROTATION,
+            reason="pending_controller_rotation",
+        ),
+    )
     monkeypatch.setattr(
         provider,
         "resolve_effective_controller",
         lambda *_args, **_kwargs: {"pin": _pin()},
     )
+    monkeypatch.setattr(provider, "compile_self_controller_pin", lambda *_args, **_kwargs: _pin())
     with pytest.raises(GitHubControllerError, match="no new target"):
         provider.authorize_transition(
             object(), repository="mjgolaszewski/bcf-governance",

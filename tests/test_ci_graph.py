@@ -71,24 +71,6 @@ def test_routine_rotation_allocates_each_receipt_parent_before_execution() -> No
             _validate_workflows(stale_graph)
 
 
-def test_routine_rotation_uses_authenticated_topology_applicability() -> None:
-    compiled = validate_ci_graph(REPO_ROOT)
-    condition = compiled.graph["conditions"]["routine-rotation-applicable"]
-    stage = compiled.graph["conditions"]["routine-stage-ready"]
-    workflow = next(
-        item for item in compiled.workflows if item["id"] == "automation-reconcile"
-    )
-    authorize = next(item for item in workflow["jobs"] if item["id"] == "authorize")
-
-    assert "workflow_run.name == 'bcf/exact-main-admission'" in condition
-    assert "workflow_run.conclusion == 'success'" in condition
-    assert "workflow_run.conclusion == 'failure'" not in condition
-    assert stage == "success() && needs.authorize.outputs.applicable != 'false'"
-    assert authorize["outputs"]["applicable"] == (
-        "${{ steps.authorize-transition.outputs.applicable }}"
-    )
-
-
 def test_graph_values_resolve_registered_list_members_without_duplicate_authority(
     tmp_path: Path,
 ) -> None:

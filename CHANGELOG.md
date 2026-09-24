@@ -1,6 +1,6 @@
 # Changelog
 
-- Authenticate routine controller-rotation applicability from the exact admission topology so successful builder-only pending rotations proceed while certifiable or unrelated failed topologies cannot allocate installation work.
+- Expand routine controller authorization with closed exact-topology decisions and exact subject/policy/target binding to the protected N/N+1 lane, leaving workflow activation behind compatible-controller installation.
 
 - Reauthenticate exact-main finalizer publication with the canonical workflow blob and definition pins so additive current-main metadata cannot rewrite trusted collector identity.
 

@@ -63,7 +63,11 @@ def run_controller_rotation_command(argv: list[str]) -> None:
             admission_run_attempt=args.admission_run_attempt,
             artifact_dir=args.artifact_dir,
         )
-        outputs = {"applicable": str(result["applicable"]).lower()}
+        outputs = {
+            "applicable": str(result["applicable"]).lower(),
+            "decision": result["decision"],
+            "transition_class": result["transition_class"],
+        }
         if result["applicable"]:
             transition = result["transition"]
             write_exclusive(args.output, transition)
@@ -79,6 +83,8 @@ def run_controller_rotation_command(argv: list[str]) -> None:
         else:
             write_exclusive(args.output, result)
             outputs["reason"] = result["reason"]
+            if result["decision"] == "alternate_lane_required":
+                outputs["alternate_lane"] = result["alternate_lane"]["id"]
     elif args.operation == "advance":
         payload = json.loads(args.receipt.read_text(encoding="utf-8"))
         result = advance_provider_transition(

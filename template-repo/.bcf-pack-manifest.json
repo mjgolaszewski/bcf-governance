@@ -984,11 +984,11 @@
     },
     "scripts/_bcf_runtime/routine_controller_commands.py": {
       "operation": "copy",
-      "sha256": "c461c7ad613658265025e089ead0de4772224893512549a090a424fdb04d3112"
+      "sha256": "6c27cdc19197f4b263af074e1fc646d7e5fc2238f1f11f5d93646d820efa93c5"
     },
     "scripts/_bcf_runtime/routine_controller_provider.py": {
       "operation": "copy",
-      "sha256": "312dc39c0afe76d697e9a30182044d9838d88810e4619df137d0af11c730fba3"
+      "sha256": "13c4ce7a27fcdc4a2f5be1abcecc7580bea4ca6bd5f873cacacc30ed2a17ccdd"
     },
     "scripts/_bcf_runtime/routine_controller_rotation.py": {
       "operation": "copy",
