@@ -22,12 +22,13 @@ workitems:
   - runtime-smoke
 - id: P27-P0-02
   priority: P0
-  status: TODO
-  summary: deliver measured constrained critical-path DAG with duration-aware assignment and one-PR routine controller rotation
+  status: DONE
+  summary: deliver measured constrained critical-path DAG with duration-aware assignment one-PR routine controller rotation and execution-scoped ephemeral-state closure
   acceptance:
   - measured constrained critical-path DAG and duration-aware mechanical assignment_is_complete
   - phase-specific critical-path measurements are recorded in the phase log
   - routine controller rotation uses one protected implementation PR and no bookkeeping-only follow-up repository mutation
+  - isolated adversarial and integration executions use unique session-bound state namespaces reject unexplained state retire only exact ownership on all terminal paths and permit persistence only by explicit workload declaration
   - requires-workitem-closure:P27-P0-01
   acceptance_evidence:
   - test

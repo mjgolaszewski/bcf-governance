@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import re
+import runpy
 import subprocess
 from pathlib import Path
 from typing import Any, Callable, Mapping
@@ -493,8 +494,17 @@ def _negative_control_targets(repo_root: Path) -> int:
             raise PreflightError(
                 "negative control oracle nodes are stale: " + ", ".join(stale_oracles)
             )
-        return inspect_negative_control_targets(repo_root, git=_git)
-    except NegativeControlPreflightError as exc:
+        declared = inspect_negative_control_targets(repo_root, git=_git)
+        mutant_path = repo_root / ".github/scripts/run_validator_mutants.py"
+        if not mutant_path.is_file():
+            return declared
+        mutant_contract = runpy.run_path(str(mutant_path))
+        validator = mutant_contract.get("validate_mutant_targets")
+        if not callable(validator):
+            raise PreflightError("scheduled mutant contract has no canonical validator")
+        scheduled = validator()
+        return declared + int(scheduled)
+    except (NegativeControlPreflightError, RuntimeError) as exc:
         raise PreflightError(str(exc)) from exc
 
 

@@ -3,9 +3,9 @@
   "title": "BCF fail-fast runtime capacity contract",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "runtime_root", "minimum_free_bytes", "maximum_owned_containers", "database", "cleanup"],
+  "required": ["schema_version", "runtime_root", "minimum_free_bytes", "maximum_owned_containers", "database", "cleanup", "execution_state"],
   "properties": {
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"const": "1.1"},
     "runtime_root": {"$ref": "#/$defs/path"},
     "minimum_free_bytes": {"type": "integer", "minimum": 1},
     "maximum_owned_containers": {"type": "integer", "minimum": 1},
@@ -27,6 +27,21 @@
         "daemon_global_prune": {"const": false},
         "exact_owner_revalidation": {"const": true},
         "remove_anonymous_volumes": {"const": true}
+      }
+    },
+    "execution_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default_lifecycle", "namespace_binding", "exported_environment", "generic_process_environment", "unexplained_preexisting", "persistent_requires_workload_declaration", "terminal_cleanup", "verify_removal"],
+      "properties": {
+        "default_lifecycle": {"const": "ephemeral"},
+        "namespace_binding": {"const": ["session_id", "workload_id", "execution_id"]},
+        "exported_environment": {"const": ["BCF_EXECUTION_STATE_NAMESPACE", "BCF_EXECUTION_STATE_ROOT", "BCF_EXECUTION_DATABASE_ROOT"]},
+        "generic_process_environment": {"const": "canonical_evidence_sandbox"},
+        "unexplained_preexisting": {"const": "reject"},
+        "persistent_requires_workload_declaration": {"const": true},
+        "terminal_cleanup": {"const": "exact_owned_namespace"},
+        "verify_removal": {"const": true}
       }
     }
   },

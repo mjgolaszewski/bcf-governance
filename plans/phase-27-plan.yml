@@ -20,7 +20,7 @@ phase:
 delivery_contract:
   tightly_scoped_deliverables:
   - selective execution planner with qualification-preserving negative-control reuse and a canonical assurance-owner inventory
-  - measured constrained critical-path DAG with duration-aware assignment and one-PR routine controller rotation
+  - measured constrained critical-path DAG with duration-aware assignment one-PR routine controller rotation and execution-scoped ephemeral-state closure
   - canonical convergent bcf reconcile fixed-point generation with controlled demolition of redundant ceremony
   - schema-validated timing telemetry routine-rotation proof empirical benchmarks and certified closeout
   parallelizable_workstreams:
@@ -44,6 +44,8 @@ scope_lock:
   statement: preserve assurance propositions while removing mechanisms that lack a unique assurance or authorization owner
 - order: 3
   statement: routine trusted-controller upgrades must converge on one protected implementation PR with no bookkeeping-only follow-up mutation or manually copied provider identity
+- order: 4
+  statement: isolated adversarial and integration execution state is uniquely session-bound rejected when unexplained and exactly retired on every terminal path; shared persistence requires an explicit workload declaration
 verification_plan:
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
 - .venv/bin/python -m pytest -q tests

@@ -187,6 +187,30 @@ def test_negative_control_preflight_accepts_unique_tracked_target(tmp_path: Path
     assert preflight._negative_control_targets(repo) == 1
 
 
+def test_negative_control_preflight_rejects_stale_scheduled_mutant(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    mutant_path = tmp_path / ".github/scripts/run_validator_mutants.py"
+    mutant_path.parent.mkdir(parents=True)
+    mutant_path.write_text("# governed scheduled mutant registry\n", encoding="utf-8")
+    monkeypatch.setattr(preflight, "stale_negative_control_oracles", lambda _root: [])
+    monkeypatch.setattr(
+        preflight, "inspect_negative_control_targets", lambda _root, *, git: 1
+    )
+
+    def stale_contract() -> int:
+        raise RuntimeError("mutant stale requires exactly one target; found 0")
+
+    monkeypatch.setattr(
+        preflight.runpy,
+        "run_path",
+        lambda _path: {"validate_mutant_targets": stale_contract},
+    )
+
+    with pytest.raises(preflight.PreflightError, match="requires exactly one target"):
+        preflight._negative_control_targets(tmp_path)
+
+
 def test_negative_control_preflight_reports_every_stale_oracle_node(tmp_path: Path) -> None:
     repo = _committed_repo(tmp_path, "owner.py", "AUTHORITY = 'new'\n")
     manifest = repo / "governance/test-manifests/contract-test.txt"

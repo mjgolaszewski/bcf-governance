@@ -274,12 +274,16 @@ TRUTH_MUTANTS = (
         mutant_id="evidence-isolated-positive",
         description="positive gates must execute in a pristine detached tree",
         search=(
+            "                repo_root,\n"
+            "                worktree,\n"
+            "                contract,\n"
             "                runtime_command,\n"
-            "                cwd=_execution_cwd(worktree, contract),\n"
         ),
         replace=(
+            "                repo_root,\n"
+            "                repo_root,\n"
+            "                contract,\n"
             "                runtime_command,\n"
-            "                cwd=_execution_cwd(repo_root, contract),\n"
         ),
         profiles=("semantic-high-value", "semantic-full"),
         target_path="scripts/governance_evidence.py",
@@ -497,6 +501,31 @@ def _mutate_source(mutant: Mutant, temp_dir: Path) -> Path:
         raise RuntimeError(f"mutant {mutant.mutant_id} did not change the validator source")
     target_path.write_text(mutated, encoding="utf-8")
     return validator_entrypoint
+
+
+def validate_mutant_targets(
+    mutants: tuple[Mutant, ...] | None = None,
+) -> int:
+    """Validate every scheduled mutation against exactly one canonical owner."""
+
+    selected = (*MUTANTS, *TRUTH_MUTANTS) if mutants is None else mutants
+    for mutant in selected:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            if mutant.target_path in TRUTH_TARGETS | EVIDENCE_TARGETS:
+                _copy_truth_sources(root)
+            elif mutant.target_path in SEMANTIC_TARGETS:
+                _copy_runtime_package(root)
+            else:
+                _copy_validator_sources(root)
+            target = _target_path(mutant, root)
+            occurrences = target.read_text(encoding="utf-8").count(mutant.search)
+            if occurrences != 1:
+                raise RuntimeError(
+                    f"mutant {mutant.mutant_id} requires exactly one target in "
+                    f"{mutant.target_path}; found {occurrences}"
+                )
+    return len(selected)
 
 
 def _run_tests(mutant: Mutant, mutated_path: Path) -> subprocess.CompletedProcess[str]:

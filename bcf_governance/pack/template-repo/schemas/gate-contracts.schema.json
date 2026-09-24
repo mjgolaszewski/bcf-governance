@@ -122,7 +122,23 @@
             "argv": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
             "cwd": {"type": "string", "minLength": 1},
             "env": {"type": "object", "additionalProperties": {"type": "string"}},
-            "required_env": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+            "required_env": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+            "state": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["lifecycle"],
+              "properties": {
+                "lifecycle": {"enum": ["ephemeral", "persistent_shared"]},
+                "namespace": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{5,63}$"}
+              },
+              "allOf": [
+                {
+                  "if": {"properties": {"lifecycle": {"const": "persistent_shared"}}},
+                  "then": {"required": ["namespace"]},
+                  "else": {"not": {"required": ["namespace"]}}
+                }
+              ]
+            }
             ,"timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 21600}
           }
         },

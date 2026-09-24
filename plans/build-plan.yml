@@ -24,8 +24,8 @@ phase_sequence:
   build_block: minimum-time-proof-composition-2.1.0
   objective: minimize certification critical-path time using P26 proof transport while preserving assurance semantics
   hard_dependencies: [P26]
-  tightly_scoped_deliverables: [selective execution planner with qualification-preserving negative-control reuse and a canonical assurance-owner inventory, measured constrained critical-path DAG with duration-aware assignment and one-PR routine controller rotation, canonical convergent bcf reconcile fixed-point generation with controlled demolition of redundant ceremony, schema-validated timing telemetry routine-rotation proof empirical benchmarks and certified closeout]
-  parallelizable_workstreams: [selective execution planning and assurance inventory, critical-path composition assignment and controller-transition migration, fixed-point generation and controlled demolition, telemetry rotation benchmarking and closeout]
+  tightly_scoped_deliverables: [selective execution planner with qualification-preserving negative-control reuse and a canonical assurance-owner inventory, measured constrained critical-path DAG with duration-aware assignment one-PR routine controller rotation and execution-scoped ephemeral-state closure, canonical convergent bcf reconcile fixed-point generation with controlled demolition of redundant ceremony, schema-validated timing telemetry routine-rotation proof empirical benchmarks and certified closeout]
+  parallelizable_workstreams: [selective execution planning and assurance inventory, critical-path composition assignment controller-transition migration and exact execution-state lifecycle, fixed-point generation and controlled demolition, telemetry rotation benchmarking and closeout]
   verification_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests]
 - phase_id: P28
   build_block: canonical-projection-parity-certification-2.1.0

@@ -12,9 +12,16 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from .runtime_capacity import (
+    EXECUTION_STATE_ENVIRONMENT,
+    allocate_execution_state,
+    load_runtime_contract,
+    retire_execution_state,
+)
 
 PYTHON_COMMANDS = {"python", "python3"}
 LOADER_ENVIRONMENT = ("LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH")
+STATE_ENVIRONMENT = frozenset(EXECUTION_STATE_ENVIRONMENT)
 
 
 class EvidenceError(ValueError):
@@ -138,12 +145,22 @@ def _execution_env(
     worktree: Path,
     contract: dict[str, Any],
     python_executable: Path,
+    *,
+    state_environment: dict[str, str] | None = None,
 ) -> tuple[dict[str, str], dict[str, Any]]:
     invocation = contract["invocation"]
     configured = invocation.get("env", {})
     required = invocation.get("required_env", [])
     if not isinstance(configured, dict) or not isinstance(required, list):
         raise EvidenceError("gate environment contract is invalid")
+    conflicts = sorted(
+        STATE_ENVIRONMENT.intersection(str(value) for value in configured)
+        | STATE_ENVIRONMENT.intersection(str(value) for value in required)
+    )
+    if conflicts:
+        raise EvidenceError(
+            "gate cannot override execution-state environment: " + ", ".join(conflicts)
+        )
     missing = sorted(name for name in required if not isinstance(name, str) or name not in os.environ)
     if missing:
         raise EvidenceError("required gate environment is missing: " + ", ".join(missing))
@@ -169,9 +186,68 @@ def _execution_env(
         },
         **{str(key): str(value) for key, value in configured.items()},
         **{str(name): os.environ[str(name)] for name in required},
+        **(state_environment or {}),
     }
     return env, {
         "declared": dict(sorted((str(key), str(value)) for key, value in configured.items())),
         "required_present": sorted(str(name) for name in required),
         "selected_interpreter": _interpreter_metadata(python_executable, env),
     }
+
+
+def _run_with_execution_state(
+    repo_root: Path,
+    worktree: Path,
+    contract: dict[str, Any],
+    command: list[str],
+    python_executable: Path,
+    *,
+    session_id: str,
+    execution_id: str,
+    require_state: bool,
+) -> tuple[
+    subprocess.CompletedProcess[str],
+    dict[str, str],
+    dict[str, Any],
+    dict[str, object] | None,
+]:
+    """Run once with exact execution-state allocation and terminal retirement."""
+
+    if not require_state:
+        env, metadata = _execution_env(worktree, contract, python_executable)
+        return (
+            _run(
+                command,
+                cwd=_execution_cwd(worktree, contract),
+                env=env,
+                timeout_seconds=contract["execution_timeout_seconds"],
+            ),
+            env,
+            metadata,
+            None,
+        )
+    runtime_contract = load_runtime_contract(repo_root / "governance/ci-runtime.yml")
+    lease = allocate_execution_state(
+        repo_root,
+        runtime_contract,
+        session_id=session_id,
+        workload_id=str(contract["target"]),
+        execution_id=execution_id,
+        invocation=contract["invocation"],
+    )
+    try:
+        env, metadata = _execution_env(
+            worktree,
+            contract,
+            python_executable,
+            state_environment=lease.environment(),
+        )
+        result = _run(
+            command,
+            cwd=_execution_cwd(worktree, contract),
+            env=env,
+            timeout_seconds=contract["execution_timeout_seconds"],
+        )
+    finally:
+        state_report = retire_execution_state(lease)
+    return result, env, metadata, state_report

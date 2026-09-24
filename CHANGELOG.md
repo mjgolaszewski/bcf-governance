@@ -1,5 +1,7 @@
 # Changelog
 
+- Close execution-scoped ephemeral state through exact session-bound namespaces, fail-fast stale-state rejection, and verified exact-owner retirement on every terminal evidence path.
+
 - Confirm the pagination-corrected controller on both trusted runners and restore ordinary-current custody.
 
 - Project the exact provider-built pagination-corrected controller as the ordinary rotation target while retaining installed N until two-runner confirmation.
