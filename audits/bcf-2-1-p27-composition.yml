@@ -334,3 +334,20 @@ p27_p0_02_migration_expansion:
       expansion: restore the legacy lane temporarily while N+1 accepts both present and absent legacy roles
       required_sequence: [expand, legacy_install_compatible_n_plus_1, remove_runtime_operations, routine_rotate, remove_inert_workflows_and_roles, bounded_certify]
       release_authority: absent
+    exact_main_applicability_correction:
+      failed_main: {subject: ffc189d3ae604efacd02369b3ef000a5e4d31dbc, exact_main: 36041153105/1, first_causal_job: '107773900685'}
+      deterministic_escape: installed N consumed candidate authority and admission succeeded, but the exact-main graph treated admission success alone as permission to allocate workitem evidence under a stale runtime
+      canonical_owner: trusted_controller_compatibility classifies current versus pending_rotation after invoking installed N authority validation
+      routing:
+      - the exact-main builder resolves provider-effective controller custody for non-authoritative execution routing
+      - bootstrap-incompatible state fails before controller build or semantic evidence
+      - pending_rotation builds and uploads exact N+1 while admission and semantic evidence are skipped
+      - current permits trusted admission, transported authority, semantic evidence, truth, finalization, and publication
+      authority_boundary: candidate routing output can only suppress or allocate work; trusted release preflight independently authenticates provider-effective custody and remains fail-closed, so routing cannot certify or confer release authority
+      terminal_behavior: builder-only topology finalizes, if observed, only as a noncertifying authority observation and publishes no success status
+      regression:
+      - rendered admission condition consumes the exact builder applicability output rather than admission success alone
+      - provider-effective current, pending_rotation, and installed-N bootstrap-incompatible states are distinct
+      - builder-only pending topology produces no certification and no published status
+      - fresh current topology retains bounded truth, finalizer, publisher, successor eligibility, and independent release rejection
+      release_authority: absent

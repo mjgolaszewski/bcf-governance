@@ -1,5 +1,7 @@
 # Changelog
 
+- Route provider-backed exact-main execution from the canonical controller-compatibility result so pending rotation builds N+1 without allocating semantic evidence or certification authority.
+
 - Expand controller authority compatibility so installed N can read the temporary legacy rotation roles while N+1 accepts their later controlled removal, and make pending-rotation preflight invoke installed N's canonical authority validator before provider execution.
 
 - Bind exact-main preflight controller compatibility to the provider-authenticated effective controller carried by same-admission prior evidence.

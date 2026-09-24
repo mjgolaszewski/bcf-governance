@@ -378,7 +378,12 @@ def _validate_private_transport(
 def _condition_needs(graph: dict[str, Any], condition: str | None) -> set[str]:
     if condition is None or condition in {"success", "always", "failure", "cancelled"}:
         return set()
-    return set(re.findall(r"\bneeds\.([A-Za-z0-9._-]+)\.", graph["conditions"][condition]))
+    return set(
+        re.findall(
+            r"\bneeds\.([A-Za-z0-9._-]+?)(?=\.result\b|\.outputs\.)",
+            graph["conditions"][condition],
+        )
+    )
 
 
 def _validate_condition_scope(

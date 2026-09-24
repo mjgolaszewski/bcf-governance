@@ -8,9 +8,11 @@ import pytest
 import yaml
 
 from bcf_governance.tooling.trusted_controller_compatibility import (
+    TrustedControllerApplicabilityState,
     TrustedControllerBootstrapIncompatibleError,
     TrustedControllerCompatibilityError,
     TrustedControllerRuntimeStaleError,
+    classify_trusted_controller_applicability,
     trusted_runtime_source_files,
     verify_pr_bootstrap_compatibility,
     verify_trusted_controller_compatibility,
@@ -119,6 +121,37 @@ def test_target_may_lag_unrelated_files_but_not_trusted_runtime(
         match="target is stale.*ci_github_api.py",
     ):
         verify_trusted_controller_compatibility(root, target_commit=target)
+
+
+def test_exact_main_applicability_is_derived_from_canonical_compatibility(
+    tmp_path: Path,
+) -> None:
+    root, target = _repository(tmp_path)
+
+    current = classify_trusted_controller_applicability(
+        root, target_commit=target
+    )
+    assert current.state is TrustedControllerApplicabilityState.CURRENT
+    assert current.as_dict() == {
+        "controller_state": "current",
+        "semantic_evidence_applicable": True,
+        "target_commit": target,
+    }
+
+    api = root / "bcf_governance/tooling/ci_github_api.py"
+    api.write_text("class GitHubAPI:\n    expanded = True\n", encoding="utf-8")
+    _git(root, "add", api.relative_to(root).as_posix())
+    _git(root, "commit", "-q", "-m", "expand trusted runtime")
+
+    pending = classify_trusted_controller_applicability(
+        root, target_commit=target
+    )
+    assert pending.state is TrustedControllerApplicabilityState.PENDING_ROTATION
+    assert pending.as_dict() == {
+        "controller_state": "pending_rotation",
+        "semantic_evidence_applicable": False,
+        "target_commit": target,
+    }
 
 
 def test_target_may_lag_canonical_inert_version_metadata(tmp_path: Path) -> None:
@@ -397,6 +430,14 @@ def test_pending_rotation_requires_candidate_authority_consumable_by_installed_n
     ):
         verify_trusted_controller_compatibility(root, target_commit=controller_n)
 
+    with pytest.raises(
+        TrustedControllerBootstrapIncompatibleError,
+        match="cannot be consumed by installed controller.*bootstrap.*required",
+    ):
+        classify_trusted_controller_applicability(
+            root, target_commit=controller_n
+        )
+
 
 def test_pending_rotation_allows_schema_expansion_when_installed_n_consumes_candidate(
     tmp_path: Path,
@@ -416,3 +457,4 @@ def test_pending_rotation_allows_schema_expansion_when_installed_n_consumes_cand
 
     with pytest.raises(TrustedControllerRuntimeStaleError):
         verify_trusted_controller_compatibility(root, target_commit=controller_n)
+    classify_trusted_controller_applicability,

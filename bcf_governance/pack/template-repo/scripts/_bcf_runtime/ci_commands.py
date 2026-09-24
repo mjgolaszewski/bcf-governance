@@ -22,12 +22,17 @@ from .ci_graph_contracts import CIGraphError
 from .ci_graph_render import apply_ci_graph, check_ci_graph
 from .ci_authority_pins import CIAuthorityPinError, pin_workflow_authority
 from .ci_github_identity import GitHubControllerError
+from .ci_github_cli_io import github_output, github_output_path
 from .ci_self_controller import project_self_controller_pin
 from .local_pr import LocalPRError, run_local_pr_validation
 from .runtime_capacity import (
     RuntimeCapacityError,
     check_runtime_capacity,
     load_runtime_contract,
+)
+from .trusted_controller_compatibility import (
+    TrustedControllerCompatibilityError,
+    classify_trusted_controller_applicability,
 )
 
 
@@ -98,6 +103,14 @@ def _parser() -> argparse.ArgumentParser:
     runtime.add_argument("--contract", type=Path, required=True)
     runtime.add_argument("--owned-containers", type=int, required=True)
     runtime.add_argument("--format", choices=("text", "json"), default="text")
+    applicability = subparsers.add_parser(
+        "controller-applicability",
+        help="Classify exact-main work against one provider-resolved controller.",
+    )
+    applicability.add_argument("--repo-root", type=Path, default=Path.cwd())
+    applicability.add_argument("--target-commit", required=True)
+    applicability.add_argument("--github-output", action="store_true")
+    applicability.add_argument("--format", choices=("text", "json"), default="json")
     pin = subparsers.add_parser(
         "pin-authority", help="Derive exact workflow authority pins from Git."
     )
@@ -216,6 +229,14 @@ def main(argv: list[str] | None = None) -> None:
             )
             _print(report.as_dict(), args.format)
             return
+        if args.operation == "controller-applicability":
+            result = classify_trusted_controller_applicability(
+                args.repo_root.resolve(), target_commit=args.target_commit
+            ).as_dict()
+            if args.github_output:
+                github_output(result, path=github_output_path())
+            _print(result, args.format)
+            return
         if args.operation == "pin-authority":
             result = pin_workflow_authority(
                 args.repo_root,
@@ -266,5 +287,6 @@ def main(argv: list[str] | None = None) -> None:
         GithubAdoptionError,
         LocalPRError,
         RuntimeCapacityError,
+        TrustedControllerCompatibilityError,
     ) as exc:
         raise SystemExit(str(exc)) from exc

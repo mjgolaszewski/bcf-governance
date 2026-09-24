@@ -1113,6 +1113,69 @@ def test_v11_partial_topology_shapes_are_noncertifying(
     assert not (Path(result.bundle_dir) / "ci-certification.json").exists()
 
 
+def test_v11_pending_rotation_builder_only_path_stays_noncertifying(
+    tmp_path: Path,
+) -> None:
+    api = FakeAPI()
+    authority = _prepare_v11_run(api)
+    authority["workflow_registry"]["admission"]["job_roles"][
+        "trusted-controller-build"
+    ] = "controller-builder"
+    authority["controller_builder_jobs"] = [
+        {"job_id": "Build independent exact-main trusted controller"}
+    ]
+    api.run_job_names["100"] = (
+        "Build independent exact-main trusted controller",
+        "Admit exact main",
+        "Governance truth",
+        "Package proof",
+    )
+    api.run_job_conclusions["100"] = {
+        "Build independent exact-main trusted controller": "success",
+        "Admit exact main": "skipped",
+        "Governance truth": "skipped",
+        "Package proof": "skipped",
+    }
+
+    result = finalize_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        trigger_run_id=100,
+        trigger_run_attempt=1,
+        output_dir=tmp_path / "pending-rotation",
+    )
+
+    assert result.status == "noncertifying"
+    assert result.computed_state == "noncertifying"
+    root = Path(result.bundle_dir)
+    observation = json.loads((root / "authority-observation.json").read_text())
+    assert observation["reason"] == "admission_not_successful"
+    assert not (root / "ci-certification.json").exists()
+
+    api.runs["400"].update(status="completed", conclusion="success")
+    api.runs["401"] = {
+        **api.runs["400"],
+        "id": 401,
+        "workflow_id": 97,
+        "status": "in_progress",
+        "conclusion": None,
+    }
+    published = publish_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        bundle_dir=root,
+        target_url="https://github.example/runs/400",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        publisher_run_id=401,
+        publisher_run_attempt=1,
+    )
+    assert published["computed_state"] == "noncertifying"
+    assert api.published_statuses == []
+
+
 @pytest.mark.parametrize("shape", ["active-extra", "duplicate"])
 def test_v11_malformed_topology_cannot_be_reclassified_as_noncertifying(
     tmp_path: Path, shape: str

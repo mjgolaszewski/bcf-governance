@@ -63,7 +63,7 @@ artifacts:
   weekly-mutant-results: {path: .artifacts/scheduled-mutants, kind: control, scope: run-attempt, retention_days: 90}
   trusted-controller-bundle: {path: .artifacts/trusted-control, kind: control, scope: run-attempt, retention_days: 30}
   prior-evidence-transport: {path: .artifacts/bcf/prior-evidence, kind: control, scope: run-attempt, retention_days: 30}
-conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', prior-evidence-enabled: inputs.use_prior_evidence == true, prior-evidence-disabled: inputs.use_prior_evidence != true, evidence-prerequisites-with-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence == true, evidence-prerequisites-without-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence != true, exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' || vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'repository_dispatch' && github.event.workflow_run.head_branch == 'main', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED
+conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', prior-evidence-enabled: inputs.use_prior_evidence == true, prior-evidence-disabled: inputs.use_prior_evidence != true, evidence-prerequisites-with-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence == true, evidence-prerequisites-without-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence != true, exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-semantic-admission-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && needs.trusted-controller-build.outputs.semantic_evidence_applicable == 'true', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' || vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'repository_dispatch' && github.event.workflow_run.head_branch == 'main', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED
     == 'true' && github.event.workflow_run.name == 'bcf/trusted-evidence-finalizer' && github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main', always-step: always()}
 commands:
   install-governance-dependencies:
@@ -128,6 +128,14 @@ commands:
     environment: {}
   build-trusted-controller:
     argv: ['{python}', .github/scripts/build_trusted_controller.py, --output, .artifacts/trusted-control, --run-id, '${{ github.run_id }}', --run-attempt, '${{ github.run_attempt }}']
+    cwd: .
+    environment: {}
+  resolve-effective-controller-candidate:
+    argv: ['{python}', -m, bcf_governance.cli, ci-github, controller-rotation, resolve, --repository, '${{ github.repository }}']
+    cwd: .
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+  classify-exact-main-controller:
+    argv: ['{python}', -m, bcf_governance.cli, ci, controller-applicability, --repo-root, ., --target-commit, '${{ steps.candidate-effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}', --github-output, --format, json]
     cwd: .
     environment: {}
   exact-main-admit-effective:
@@ -413,6 +421,22 @@ step_components:
     environment: {}
     produces: [trusted-controller-bundle]
     consumes: []
+  resolve-effective-controller-candidate:
+    kind: command
+    name: Observe provider-effective controller for non-authoritative routing
+    id: candidate-effective-controller
+    command: resolve-effective-controller-candidate
+    environment: {}
+    produces: []
+    consumes: []
+  classify-exact-main-controller:
+    kind: command
+    name: Classify exact-main semantic evidence applicability
+    id: exact-main-applicability
+    command: classify-exact-main-controller
+    environment: {}
+    produces: []
+    consumes: []
   upload-trusted-controller:
     kind: action
     name: Upload the exact-main trusted controller bundle
@@ -518,7 +542,7 @@ workflows:
     trust: trusted
     controller_requirement: current-or-recovery-reentry
     needs: [trusted-controller-build]
-    condition: exact-main-authority-enabled
+    condition: exact-main-semantic-admission-enabled
     timeout_minutes: 5
     permissions: {actions: write, contents: read, statuses: write}
     checkout: false
@@ -560,12 +584,13 @@ workflows:
     needs: []
     condition: exact-main-authority-enabled
     timeout_minutes: 15
-    permissions: {contents: read}
+    permissions: {actions: read, contents: read}
     checkout: false
     components: []
+    outputs: {controller_state: '${{ steps.exact-main-applicability.outputs.controller_state }}', semantic_evidence_applicable: '${{ steps.exact-main-applicability.outputs.semantic_evidence_applicable }}', target_commit: '${{ steps.exact-main-applicability.outputs.target_commit }}'}
     executor:
       kind: component_sequence
-      components: [checkout-candidate, setup-python, install-governance, build-trusted-controller, upload-trusted-controller]
+      components: [checkout-candidate, setup-python, install-governance, resolve-effective-controller-candidate, classify-exact-main-controller, build-trusted-controller, upload-trusted-controller]
     produces: [trusted-controller-bundle]
     consumes: []
     required: true
