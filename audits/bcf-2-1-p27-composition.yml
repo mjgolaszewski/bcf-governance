@@ -246,4 +246,10 @@ p27_p0_02_migration_expansion:
       failure: authenticated routine authorization had no graph-owned parent directory for its exclusive transition receipt
       correction: canonical directory-setup components allocate each authorized installing probed and active receipt parent before its writer executes
       fast_fail: CI graph validation rejects every routine authorize or advance output whose parent is not allocated earlier in the same component sequence
-      authority_effect: none; exact merge artifact runner and transition bindings remain unchanged
+      authority_effect: generated workflow bytes and mechanically pinned workflow authority changed; routine self-modification therefore remained fail closed
+      corrective_rotation_target:
+        subject: {commit_sha: 1511b09b5a27ef6e541b37a0c2154dcb44448c65, tree_sha: 0ac50d24fbe13e906a1544b2ecaa1380d9ba94b5}
+        exact_main: 35955324164/1
+        artifact: {id: '10790466077', name: bcf-trusted-control-1511b09b5a27ef6e541b37a0c2154dcb44448c65-1, provider_digest: 'sha256:95f70b50a314efb2b083cdcb4278c2a60f74aac99a98ab547e60a050c4c00ace', wheel_sha256: e898563616040329995676d7838ed03bd79cddf2d69699d7e97ba19c11227754}
+        lane: existing_governed_legacy_n_n_plus_1
+        custody: ordinary_pending_rotation
