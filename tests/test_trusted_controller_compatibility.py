@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import subprocess
 
 import pytest
+import yaml
 
 from bcf_governance.tooling.trusted_controller_compatibility import (
     TrustedControllerBootstrapIncompatibleError,
     TrustedControllerCompatibilityError,
+    TrustedControllerRuntimeStaleError,
     trusted_runtime_source_files,
     verify_pr_bootstrap_compatibility,
     verify_trusted_controller_compatibility,
@@ -332,3 +335,84 @@ def test_active_schema_mutation_or_removal_is_rejected(
         verify_trusted_controller_compatibility(
             root, target_commit=controller_n_plus_one
         )
+
+
+def _install_rotation_authority_contract(root: Path) -> str:
+    source_root = Path(__file__).resolve().parents[1]
+    validator = root / "bcf_governance/tooling/ci_authority_contracts.py"
+    validator.write_text(
+        (source_root / validator.relative_to(root)).read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    schema_path = root / "bcf_governance/pack/template-repo/schemas/ci-authority.schema.json"
+    schema = json.loads(
+        (source_root / schema_path.relative_to(root)).read_text(encoding="utf-8")
+    )
+    required = schema["$defs"]["roles"]["required"]
+    required.extend(["bootstrap", "probe"])
+    schema_path.write_text(json.dumps(schema, indent=2) + "\n", encoding="utf-8")
+    authority = root / "governance/ci-authority.yml"
+    authority.parent.mkdir()
+    authority_payload = yaml.safe_load(
+        (source_root / authority.relative_to(root)).read_text(encoding="utf-8")
+    )
+    authority_payload["roles"].setdefault(
+        "bootstrap", authority_payload["roles"]["finalizer"]
+    )
+    authority_payload["roles"].setdefault(
+        "probe", authority_payload["roles"]["finalizer"]
+    )
+    authority.write_text(
+        yaml.safe_dump(authority_payload, sort_keys=False), encoding="utf-8"
+    )
+    _git(root, "add", ".")
+    _git(root, "commit", "-q", "-m", "install controller N authority contract")
+    return _git(root, "rev-parse", "HEAD")
+
+
+def test_pending_rotation_requires_candidate_authority_consumable_by_installed_n(
+    tmp_path: Path,
+) -> None:
+    root, _ = _repository(tmp_path)
+    controller_n = _install_rotation_authority_contract(root)
+    schema_path = root / "bcf_governance/pack/template-repo/schemas/ci-authority.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    schema["$defs"]["roles"]["required"] = [
+        value
+        for value in schema["$defs"]["roles"]["required"]
+        if value not in {"bootstrap", "probe"}
+    ]
+    schema_path.write_text(json.dumps(schema, indent=2) + "\n", encoding="utf-8")
+    authority_path = root / "governance/ci-authority.yml"
+    authority = yaml.safe_load(authority_path.read_text(encoding="utf-8"))
+    del authority["roles"]["bootstrap"]
+    del authority["roles"]["probe"]
+    authority_path.write_text(yaml.safe_dump(authority, sort_keys=False), encoding="utf-8")
+    _git(root, "add", ".")
+    _git(root, "commit", "-q", "-m", "contract rotation roles before N plus one")
+
+    with pytest.raises(
+        TrustedControllerBootstrapIncompatibleError,
+        match="cannot be consumed by installed controller.*bootstrap.*required",
+    ):
+        verify_trusted_controller_compatibility(root, target_commit=controller_n)
+
+
+def test_pending_rotation_allows_schema_expansion_when_installed_n_consumes_candidate(
+    tmp_path: Path,
+) -> None:
+    root, _ = _repository(tmp_path)
+    controller_n = _install_rotation_authority_contract(root)
+    schema_path = root / "bcf_governance/pack/template-repo/schemas/ci-authority.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    schema["$defs"]["roles"]["required"] = [
+        value
+        for value in schema["$defs"]["roles"]["required"]
+        if value not in {"bootstrap", "probe"}
+    ]
+    schema_path.write_text(json.dumps(schema, indent=2) + "\n", encoding="utf-8")
+    _git(root, "add", ".")
+    _git(root, "commit", "-q", "-m", "expand N plus one authority schema")
+
+    with pytest.raises(TrustedControllerRuntimeStaleError):
+        verify_trusted_controller_compatibility(root, target_commit=controller_n)

@@ -22,6 +22,7 @@ from .ci_graph_contracts import CIGraphError
 from .ci_graph_render import apply_ci_graph, check_ci_graph
 from .ci_authority_pins import CIAuthorityPinError, pin_workflow_authority
 from .ci_github_identity import GitHubControllerError
+from .ci_self_controller import project_self_controller_pin
 from .local_pr import LocalPRError, run_local_pr_validation
 from .runtime_capacity import (
     RuntimeCapacityError,
@@ -114,6 +115,21 @@ def _parser() -> argparse.ArgumentParser:
     pin_mode.add_argument("--check", action="store_true")
     pin_mode.add_argument("--apply", action="store_true")
     pin.add_argument("--format", choices=("text", "json"), default="text")
+    sync = subparsers.add_parser(
+        "sync-self-controller",
+        help="Project one mechanically compiled self-controller pin.",
+    )
+    sync.add_argument("--repo-root", type=Path, default=Path.cwd())
+    sync.add_argument("--pin", type=Path, required=True)
+    sync.add_argument(
+        "--confirmation",
+        type=Path,
+        help="Provider-compiled installation proof; omit while rotation is pending.",
+    )
+    sync_mode = sync.add_mutually_exclusive_group(required=True)
+    sync_mode.add_argument("--check", action="store_true")
+    sync_mode.add_argument("--apply", action="store_true")
+    sync.add_argument("--format", choices=("text", "json"), default="text")
     return parser
 
 
@@ -206,6 +222,27 @@ def main(argv: list[str] | None = None) -> None:
                 authority_path=args.authority,
                 definition_commit=args.definition_commit,
                 references=tuple(args.workflow or ()),
+                apply=args.apply,
+            )
+            _print(result.as_dict(), args.format)
+            if args.check and result.status != "clean":
+                raise SystemExit(1)
+            return
+        if args.operation == "sync-self-controller":
+            payload = json.loads(args.pin.read_text(encoding="utf-8"))
+            value = payload.get("trusted_controller_artifact")
+            confirmation = None
+            if args.confirmation is not None:
+                confirmation_payload = json.loads(
+                    args.confirmation.read_text(encoding="utf-8")
+                )
+                confirmation = confirmation_payload.get(
+                    "trusted_controller_installation"
+                )
+            result = project_self_controller_pin(
+                args.repo_root,
+                pin=value,
+                confirmation=confirmation,
                 apply=args.apply,
             )
             _print(result.as_dict(), args.format)

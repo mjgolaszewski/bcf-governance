@@ -64,7 +64,7 @@ execution_evidence:
   - failed legacy bootstrap 36000475188/1 changed no runner state; it selected a duplicate artifact after routine activation, so the correction restores ordinary-current source custody and leaves the active provider transition as the sole effective N+1 authority
   - exact-main 36004029461/1 failed closed when its admission resolver observed its concurrent controller builder mutate repository artifact pagination; canonical graph ordering now completes builder upload before admission resolves the same inventory
   - exact-main 36010879352/1 admitted through the active provider-transition controller but preflight retained the ordinary source-policy baseline; same-admission transport now binds provider-effective controller custody for compatibility without granting candidate authority
-  - controlled-demolition reconciliation of routine rotation 35994196357/1 against duplicate PRs 275 and 276 removes the legacy controller-pin sync target bootstrap probe confirmation and normalization lane; the committed pin/install pair survives only as immutable transition genesis and recovery anchor
+  - 'post-merge 11f5ccdeb99d08433bd60f036ce04d40d6a7af41 exposed an N/N+1 contraction error: installed 1511b09b rejected absent bootstrap/probe roles before provider-chain resolution; compatibility expansion temporarily restores the legacy lane while making those roles optional to N+1 before demolition resumes'
 closeout_requirements:
   claims:
     workitems_closed:

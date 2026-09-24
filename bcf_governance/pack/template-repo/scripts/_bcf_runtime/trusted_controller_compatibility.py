@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 import re
 import subprocess
+import sys
+import tempfile
 from typing import Iterable
 
 import yaml
@@ -38,6 +40,16 @@ GOVERNANCE_WORKFLOW = PurePosixPath(".github/workflows/governance.yml")
 PR_EVIDENCE_INVENTORY_CAPABILITY_FILES = (
     PurePosixPath("bcf_governance/tooling/prior_evidence_transport.py"),
     PurePosixPath("bcf_governance/tooling/provider_job_inventory.py"),
+)
+AUTHORITY_CONTRACT = PurePosixPath("governance/ci-authority.yml")
+INSTALLED_AUTHORITY_VALIDATOR = PurePosixPath(
+    "bcf_governance/tooling/ci_authority_contracts.py"
+)
+INSTALLED_AUTHORITY_VALIDATION_PROGRAM = (
+    "import pathlib,runpy,sys,yaml;"
+    "owner=runpy.run_path(sys.argv[1]);"
+    "payload=yaml.safe_load(pathlib.Path(sys.argv[3]).read_text(encoding='utf-8'));"
+    "owner['validate_ci_contract'](pathlib.Path(sys.argv[2]),'authority',payload)"
 )
 
 
@@ -238,6 +250,63 @@ def _workflow_job_inventory(repo_root: Path, *, ref: str | None) -> tuple[str, .
         ) from exc
 
 
+def _verify_installed_authority_consumability(
+    repo_root: Path, *, target_commit: str
+) -> None:
+    """Run candidate authority through installed N's exact canonical validator."""
+
+    authority_path = repo_root / AUTHORITY_CONTRACT
+    if not authority_path.is_file() or authority_path.is_symlink():
+        return
+    try:
+        with tempfile.TemporaryDirectory(prefix="bcf-installed-authority-") as raw:
+            checkout = Path(raw) / "controller"
+            materialized = subprocess.run(
+                ["git", "worktree", "add", "--detach", str(checkout), target_commit],
+                cwd=repo_root,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if materialized.returncode != 0:
+                raise ValueError(
+                    materialized.stderr.strip() or "installed controller unavailable"
+                )
+            try:
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        "-c",
+                        INSTALLED_AUTHORITY_VALIDATION_PROGRAM,
+                        str(checkout / INSTALLED_AUTHORITY_VALIDATOR),
+                        str(checkout / "bcf_governance/pack/template-repo"),
+                        str(authority_path),
+                    ],
+                    cwd=repo_root,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                if result.returncode != 0:
+                    detail = result.stderr.strip().splitlines()
+                    raise ValueError(
+                        detail[-1] if detail else "installed validation failed"
+                    )
+            finally:
+                subprocess.run(
+                    ["git", "worktree", "remove", "--force", str(checkout)],
+                    cwd=repo_root,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+    except Exception as exc:
+        raise TrustedControllerBootstrapIncompatibleError(
+            "candidate authority cannot be consumed by installed controller "
+            f"{target_commit}: {exc}"
+        ) from exc
+
+
 def verify_pr_bootstrap_compatibility(
     repo_root: Path, *, base_commit: str, target_commit: str
 ) -> None:
@@ -307,6 +376,9 @@ def verify_trusted_controller_compatibility(
             )
         ]
     if incompatible:
+        _verify_installed_authority_consumability(
+            root, target_commit=target_commit
+        )
         raise TrustedControllerRuntimeStaleError(
             "trusted controller target is stale for runtime files: "
             + ", ".join(incompatible)
