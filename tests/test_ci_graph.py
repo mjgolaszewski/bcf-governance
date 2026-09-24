@@ -13,7 +13,7 @@ import yaml
 
 from bcf_governance.tooling.ci_graph_contracts import (
     CIGraphError,
-    _validate_rotation_output_directories,
+    _validate_workflows,
     validate_ci_graph,
 )
 from bcf_governance.tooling.ci_graph_controller_lifecycle import ControllerLifecycleState
@@ -59,12 +59,16 @@ def test_routine_rotation_allocates_each_receipt_parent_before_execution() -> No
         job = next(item for item in workflow["jobs"] if item["id"] == job_id)
         components = job["executor"]["components"]
         assert setup in components
-        _validate_rotation_output_directories(compiled.graph, job, job["executor"])
-
-        stale = copy.deepcopy(job["executor"])
-        stale["components"].remove(setup)
+        stale_graph = copy.deepcopy(compiled.graph)
+        stale_workflow = next(
+            item
+            for item in stale_graph["workflows"]
+            if item["id"] == "automation-reconcile"
+        )
+        stale_job = next(item for item in stale_workflow["jobs"] if item["id"] == job_id)
+        stale_job["executor"]["components"].remove(setup)
         with pytest.raises(CIGraphError, match="must be allocated before execution"):
-            _validate_rotation_output_directories(compiled.graph, job, stale)
+            _validate_workflows(stale_graph)
 
 
 def test_graph_values_resolve_registered_list_members_without_duplicate_authority(
