@@ -517,7 +517,7 @@ workflows:
     resource_class: trusted-control
     trust: trusted
     controller_requirement: current-or-recovery-reentry
-    needs: []
+    needs: [trusted-controller-build]
     condition: exact-main-authority-enabled
     timeout_minutes: 5
     permissions: {actions: write, contents: read, statuses: write}
