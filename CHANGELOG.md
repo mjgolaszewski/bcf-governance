@@ -1,5 +1,7 @@
 # Changelog
 
+- Confirm the P27 rotation-output controller on both trusted runners and restore ordinary-current custody.
+
 - Project the exact provider-built P27 rotation-output controller through the governed legacy N/N+1 lane after the routine policy-change guard correctly rejected self-modification.
 
 - Allocate every routine controller-transition receipt directory through the canonical CI graph before its authenticated writer executes, with preflight rejection for missing ownership.

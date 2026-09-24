@@ -51,6 +51,7 @@ execution_evidence:
   - confirmation PR 269 merged as addfc669551da88d9c42beb009de2a28e44d4e8c; exact-main 35935999512/1 authenticated the normalized controller and all producer evidence before correctly rejecting the still-TODO P27-P0-02 target
   - 'P27-P0-02 closes execution-scoped state through the existing runtime owner: exact session workload and execution namespaces reject unexplained state and are ownership-revalidated retired and removal-verified on success failure and adversarial paths'
   - exact-main 35955324164/1 built controller 1511b09b5a27ef6e541b37a0c2154dcb44448c65; routine authorization 35955443307/1 correctly rejected the workflow-authority policy delta, so the existing governed legacy N/N+1 lane owns this bounded corrective installation
+  - both trusted runners bootstrapped and probed controller 1511b09b5a27ef6e541b37a0c2154dcb44448c65 through 35964790801/1 and 35965795354/1; provider-compiled confirmation restores ordinary-current custody
 closeout_requirements:
   claims:
     workitems_closed:

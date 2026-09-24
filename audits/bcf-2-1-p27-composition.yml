@@ -253,3 +253,9 @@ p27_p0_02_migration_expansion:
         artifact: {id: '10790466077', name: bcf-trusted-control-1511b09b5a27ef6e541b37a0c2154dcb44448c65-1, provider_digest: 'sha256:95f70b50a314efb2b083cdcb4278c2a60f74aac99a98ab547e60a050c4c00ace', wheel_sha256: e898563616040329995676d7838ed03bd79cddf2d69699d7e97ba19c11227754}
         lane: existing_governed_legacy_n_n_plus_1
         custody: ordinary_pending_rotation
+      corrective_rotation_confirmation:
+        subject: {commit_sha: 55ebb609161f798883acbcf5e402dda79d37ec9f, tree_sha: f795c44fff576e3facad6fc630a080b623e235e1}
+        bootstrap: 35964790801/1
+        probe: 35965795354/1
+        installed_controller: 1511b09b5a27ef6e541b37a0c2154dcb44448c65
+        custody: ordinary_current
