@@ -32,10 +32,12 @@
     "execution_state": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["default_lifecycle", "namespace_binding", "unexplained_preexisting", "persistent_requires_workload_declaration", "terminal_cleanup", "verify_removal"],
+      "required": ["default_lifecycle", "namespace_binding", "exported_environment", "generic_process_environment", "unexplained_preexisting", "persistent_requires_workload_declaration", "terminal_cleanup", "verify_removal"],
       "properties": {
         "default_lifecycle": {"const": "ephemeral"},
         "namespace_binding": {"const": ["session_id", "workload_id", "execution_id"]},
+        "exported_environment": {"const": ["BCF_EXECUTION_STATE_NAMESPACE", "BCF_EXECUTION_STATE_ROOT", "BCF_EXECUTION_DATABASE_ROOT"]},
+        "generic_process_environment": {"const": "canonical_evidence_sandbox"},
         "unexplained_preexisting": {"const": "reject"},
         "persistent_requires_workload_declaration": {"const": true},
         "terminal_cleanup": {"const": "exact_owned_namespace"},

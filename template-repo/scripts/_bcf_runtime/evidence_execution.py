@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from .runtime_capacity import (
+    EXECUTION_STATE_ENVIRONMENT,
     allocate_execution_state,
     load_runtime_contract,
     retire_execution_state,
@@ -20,18 +21,7 @@ from .runtime_capacity import (
 
 PYTHON_COMMANDS = {"python", "python3"}
 LOADER_ENVIRONMENT = ("LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH")
-STATE_ENVIRONMENT = {
-    "BCF_EXECUTION_DATABASE_ROOT",
-    "BCF_EXECUTION_STATE_NAMESPACE",
-    "BCF_EXECUTION_STATE_ROOT",
-    "HOME",
-    "PYTHONUSERBASE",
-    "TEMP",
-    "TMP",
-    "TMPDIR",
-    "XDG_CACHE_HOME",
-    "XDG_STATE_HOME",
-}
+STATE_ENVIRONMENT = frozenset(EXECUTION_STATE_ENVIRONMENT)
 
 
 class EvidenceError(ValueError):

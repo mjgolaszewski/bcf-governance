@@ -11,6 +11,8 @@ cleanup:
 execution_state:
   default_lifecycle: ephemeral
   namespace_binding: [session_id, workload_id, execution_id]
+  exported_environment: [BCF_EXECUTION_STATE_NAMESPACE, BCF_EXECUTION_STATE_ROOT, BCF_EXECUTION_DATABASE_ROOT]
+  generic_process_environment: canonical_evidence_sandbox
   unexplained_preexisting: reject
   persistent_requires_workload_declaration: true
   terminal_cleanup: exact_owned_namespace

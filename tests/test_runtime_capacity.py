@@ -34,6 +34,12 @@ def _contract() -> dict[str, object]:
         "execution_state": {
             "default_lifecycle": "ephemeral",
             "namespace_binding": ["session_id", "workload_id", "execution_id"],
+            "exported_environment": [
+                "BCF_EXECUTION_STATE_NAMESPACE",
+                "BCF_EXECUTION_STATE_ROOT",
+                "BCF_EXECUTION_DATABASE_ROOT",
+            ],
+            "generic_process_environment": "canonical_evidence_sandbox",
             "unexplained_preexisting": "reject",
             "persistent_requires_workload_declaration": True,
             "terminal_cleanup": "exact_owned_namespace",
@@ -114,7 +120,11 @@ def test_ephemeral_execution_state_is_exact_owned_and_retired(tmp_path: Path) ->
 
     assert lease.root.is_dir()
     assert lease.database_root.is_dir()
-    assert lease.environment()["BCF_EXECUTION_STATE_NAMESPACE"] == lease.namespace
+    assert lease.environment() == {
+        "BCF_EXECUTION_STATE_NAMESPACE": lease.namespace,
+        "BCF_EXECUTION_STATE_ROOT": str(lease.root),
+        "BCF_EXECUTION_DATABASE_ROOT": str(lease.database_root),
+    }
     report = retire_execution_state(lease)
 
     assert report["retired"] is True

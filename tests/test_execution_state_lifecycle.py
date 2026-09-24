@@ -35,6 +35,12 @@ def _runtime_contract(repo: Path) -> None:
                 "execution_state": {
                     "default_lifecycle": "ephemeral",
                     "namespace_binding": ["session_id", "workload_id", "execution_id"],
+                    "exported_environment": [
+                        "BCF_EXECUTION_STATE_NAMESPACE",
+                        "BCF_EXECUTION_STATE_ROOT",
+                        "BCF_EXECUTION_DATABASE_ROOT",
+                    ],
+                    "generic_process_environment": "canonical_evidence_sandbox",
                     "unexplained_preexisting": "reject",
                     "persistent_requires_workload_declaration": True,
                     "terminal_cleanup": "exact_owned_namespace",
@@ -125,3 +131,28 @@ def test_workload_cannot_override_canonical_state_environment(tmp_path: Path) ->
 
     with pytest.raises(EvidenceError, match="cannot override execution-state"):
         _execution_env(tmp_path, contract, Path(sys.executable))
+
+
+def test_execution_state_does_not_relocate_generic_process_temporary_paths(
+    tmp_path: Path,
+) -> None:
+    _runtime_contract(tmp_path)
+    contract = _contract("probe.py")
+    lease_environment = {
+        "BCF_EXECUTION_STATE_NAMESPACE": "bcf-exact-state",
+        "BCF_EXECUTION_STATE_ROOT": str(tmp_path / ".artifacts/runtime/database/bcf-exact-state"),
+        "BCF_EXECUTION_DATABASE_ROOT": str(
+            tmp_path / ".artifacts/runtime/database/bcf-exact-state/database"
+        ),
+    }
+
+    env, _metadata = _execution_env(
+        tmp_path,
+        contract,
+        Path(sys.executable),
+        state_environment=lease_environment,
+    )
+
+    assert env["HOME"] == str(tmp_path.parent / ".bcf-home")
+    generic_state = {"TMP", "TEMP", "TMPDIR", "XDG_CACHE_HOME", "XDG_STATE_HOME"}
+    assert not generic_state & env.keys()

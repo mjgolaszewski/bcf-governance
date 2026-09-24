@@ -5,7 +5,7 @@ import os
 import runpy
 import subprocess
 import sys
-import tempfile
+from dataclasses import replace
 from pathlib import Path
 
 
@@ -45,19 +45,21 @@ def test_mutant_harness_uses_its_selected_python_for_pytest() -> None:
 
 def test_every_mutant_targets_exactly_one_canonical_semantic_owner() -> None:
     harness = runpy.run_path(HARNESS)
-    mutants = (*harness["MUTANTS"], *harness["TRUTH_MUTANTS"])
+    assert harness["validate_mutant_targets"]() == len(
+        (*harness["MUTANTS"], *harness["TRUTH_MUTANTS"])
+    )
 
-    for mutant in mutants:
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            if mutant.target_path in harness["TRUTH_TARGETS"] | harness["EVIDENCE_TARGETS"]:
-                harness["_copy_truth_sources"](root)
-            else:
-                harness["_copy_validator_sources"](root)
-            target = harness["_target_path"](mutant, root)
-            assert target.read_text(encoding="utf-8").count(mutant.search) == 1, (
-                mutant.mutant_id
-            )
+
+def test_scheduled_mutant_target_drift_fails_before_evidence() -> None:
+    harness = runpy.run_path(HARNESS)
+    mutant = replace(harness["TRUTH_MUTANTS"][0], search="absent mutation target")
+
+    try:
+        harness["validate_mutant_targets"]((mutant,))
+    except RuntimeError as exc:
+        assert "requires exactly one target" in str(exc)
+    else:
+        raise AssertionError("stale scheduled mutant target was accepted")
 
 
 def test_mutant_harness_emits_exact_subject_result(tmp_path: Path) -> None:

@@ -41,29 +41,28 @@ class ExecutionStateLease:
     preexisting: bool
 
     def environment(self) -> dict[str, str]:
-        home = self.root / "home"
-        temporary = self.root / "tmp"
-        return {
+        values = {
             "BCF_EXECUTION_STATE_NAMESPACE": self.namespace,
             "BCF_EXECUTION_STATE_ROOT": str(self.root),
             "BCF_EXECUTION_DATABASE_ROOT": str(self.database_root),
-            "HOME": str(home),
-            "PYTHONUSERBASE": str(self.root / "python-userbase"),
-            "TMPDIR": str(temporary),
-            "TMP": str(temporary),
-            "TEMP": str(temporary),
-            "XDG_CACHE_HOME": str(self.root / "cache"),
-            "XDG_STATE_HOME": str(self.root / "state"),
         }
+        return {name: values[name] for name in EXECUTION_STATE_ENVIRONMENT}
 
 
 DiskUsage = Callable[[Path], shutil._ntuple_diskusage]
 Remover = Callable[[Path], None]
 STATE_MANIFEST = ".bcf-execution-state.json"
 STATE_NAMESPACE = re.compile(r"^[a-z0-9][a-z0-9-]{5,63}$")
+EXECUTION_STATE_ENVIRONMENT = (
+    "BCF_EXECUTION_STATE_NAMESPACE",
+    "BCF_EXECUTION_STATE_ROOT",
+    "BCF_EXECUTION_DATABASE_ROOT",
+)
 EXECUTION_STATE_POLICY = {
     "default_lifecycle": "ephemeral",
     "namespace_binding": ["session_id", "workload_id", "execution_id"],
+    "exported_environment": list(EXECUTION_STATE_ENVIRONMENT),
+    "generic_process_environment": "canonical_evidence_sandbox",
     "unexplained_preexisting": "reject",
     "persistent_requires_workload_declaration": True,
     "terminal_cleanup": "exact_owned_namespace",
@@ -234,15 +233,7 @@ def allocate_execution_state(
         manifest.chmod(0o400)
         preexisting = False
     database_root = root / "database"
-    for path in (
-        database_root,
-        root / "home",
-        root / "python-userbase",
-        root / "tmp",
-        root / "cache",
-        root / "state",
-    ):
-        path.mkdir(mode=0o700, exist_ok=True)
+    database_root.mkdir(mode=0o700, exist_ok=True)
     return ExecutionStateLease(
         namespace=namespace,
         lifecycle=lifecycle,
