@@ -260,7 +260,7 @@ class FakeAPI:
         self.published_statuses.append(payload)
 
     def commit_statuses(self, repository: str, *, sha: str) -> tuple[dict[str, str], ...]:
-        assert repository == "owner/repo" and sha == SHA_A
+        assert repository == "owner/repo" and sha in {SHA_A, SHA_B}
         return tuple(self.existing_statuses)
 
     def _truth_archive(self) -> bytes:
@@ -819,6 +819,11 @@ def test_v11_post_install_chain_preserves_only_bounded_workitem_authority(
 ) -> None:
     api = FakeAPI()
     _prepare_v11_run(api)
+    api.main = SHA_B
+    api.runs["100"]["head_sha"] = SHA_B
+    api.runs["400"]["head_sha"] = SHA_B
+    for reference in api.runs["100"]["referenced_workflows"]:
+        reference["sha"] = SHA_B
     lifecycle = resolve_controller_lifecycle(
         Path(__file__).resolve().parents[1],
         {
@@ -834,7 +839,7 @@ def test_v11_post_install_chain_preserves_only_bounded_workitem_authority(
     api.truth_artifact_override = {
         "status": "pass",
         "subject": {
-            "commit_sha": SHA_A,
+            "commit_sha": SHA_B,
             "tree_sha": TREE,
             "tracked_clean": True,
             "untracked_clean": True,
@@ -846,7 +851,7 @@ def test_v11_post_install_chain_preserves_only_bounded_workitem_authority(
         "certified_proposition": {
             "predicate": "workitem_closed",
             "target": {"kind": "workitem", "id": "P26-P0-01"},
-            "subject": {"commit_sha": SHA_A, "tree_sha": TREE},
+            "subject": {"commit_sha": SHA_B, "tree_sha": TREE},
             "conclusion": "success",
             "authorizes": ["declared_successor_workitem_eligibility"],
             "eligible_successors": ["P26-P0-02"],
@@ -1118,6 +1123,11 @@ def test_v11_pending_rotation_builder_only_path_stays_noncertifying(
 ) -> None:
     api = FakeAPI()
     authority = _prepare_v11_run(api)
+    api.main = SHA_B
+    api.runs["100"]["head_sha"] = SHA_B
+    api.runs["400"]["head_sha"] = SHA_B
+    for reference in api.runs["100"]["referenced_workflows"]:
+        reference["sha"] = SHA_B
     authority["workflow_registry"]["admission"]["job_roles"][
         "trusted-controller-build"
     ] = "controller-builder"
@@ -1152,6 +1162,13 @@ def test_v11_pending_rotation_builder_only_path_stays_noncertifying(
     root = Path(result.bundle_dir)
     observation = json.loads((root / "authority-observation.json").read_text())
     assert observation["reason"] == "admission_not_successful"
+    assert observation["subject"]["commit_sha"] == SHA_B
+    assert (
+        observation["collector"]["workflow"][
+            "trusted_workflow_definition_commit"
+        ]
+        == SHA_A
+    )
     assert not (root / "ci-certification.json").exists()
 
     api.runs["400"].update(status="completed", conclusion="success")
@@ -1173,6 +1190,24 @@ def test_v11_pending_rotation_builder_only_path_stays_noncertifying(
         publisher_run_attempt=1,
     )
     assert published["computed_state"] == "noncertifying"
+    assert api.published_statuses == []
+
+    authority["workflow_registry"]["finalizer"][
+        "trusted_workflow_definition_commit"
+    ] = SHA_B
+    with pytest.raises(
+        GitHubControllerError, match="authority observation collector is not exact"
+    ):
+        publish_exact_main(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            bundle_dir=root,
+            target_url="https://github.example/runs/400",
+            collector_run_id=400,
+            collector_run_attempt=1,
+            publisher_run_id=401,
+            publisher_run_attempt=1,
+        )
     assert api.published_statuses == []
 
 

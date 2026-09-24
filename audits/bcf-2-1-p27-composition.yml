@@ -355,3 +355,10 @@ p27_p0_02_migration_expansion:
         remaining_contracts: mandatory CHANGELOG delta, generated parity, manifests, locks, editorial freshness, governance syntax/schema, and controller consumability remain canonical preflight prerequisites to session allocation
         invariant: behavioral gates cannot receive a canonical evidence session for a final tree that fails any deterministic candidate contract
       release_authority: absent
+    noncertifying_publisher_custody_correction:
+      failed_main: {subject: 34763561b79c2ef3ba7f37e37b88228328147fe9, exact_main: 36055638060/1, finalizer: 36055709933/1, publisher: 36055783723/1}
+      first_causal_invariant: publisher reconstructed the finalizer workflow definition from current main instead of the canonical authority pin preserved by the finalizer observation
+      correction: exact-main publication transports the canonical finalizer workflow blob and definition pins into provider reauthentication for both noncertifying observations and certifications
+      regression: a current subject newer than the pinned finalizer definition succeeds only when trusted bytes and canonical role identity remain exact; wrong identity still fails closed
+      lifecycle: trusted runtime change requires ordinary N/N+1 rotation before fresh bounded P27-P0-03 certification
+      release_authority: absent
