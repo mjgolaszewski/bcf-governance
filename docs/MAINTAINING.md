@@ -98,20 +98,15 @@ never copy blob hashes, workflow digests, definition commits, or display names i
 authority document. Preflight verifies the projection from Git on every governed tree.
 
 Likewise, never copy a controller artifact ID, run ID, provider digest, tree, or wheel
-hash into bootstrap YAML. Use the trusted `ci-github controller-pin resolve|compile`
-sequence, then `bcf ci sync-self-controller --pin PIN.json --apply`. The canonical pin
-record is the single source for the target. Active workflows remain on the separately
-recorded installed controller until rotation, but bootstrap itself must cold-start from
-the downloaded provider- and checksum-admitted artifact rather than assume that cache
-entry exists. Bootstrap and probe stage that wheel under the run-scoped temporary root
-using the project-selected Python before installing it persistently. After both runs
-succeed on all trusted runners, compile that provider proof with `bcf ci-github controller-pin confirm`
-and pass it to `bcf ci sync-self-controller --confirmation`; never edit the installed
-commit or proof run identities. A pending rotation blocks selection of another target.
-Controller artifacts derive runtime requirements directly from `pyproject.toml`; do not
-add a dependency to a builder-specific list. The build must validate recursive wheel
-metadata closure and complete an offline installation before upload, and `controller-pin
-compile` independently rejects an incomplete downloaded closure before projection.
+hash into source or workflow YAML. Routine controller changes use one protected
+implementation PR. Exact-main builds N+1; installed N authenticates the merge, artifact,
+two-runner bootstrap and independent probe, promotion, and atomic activation through the
+provider transition chain. There is no routine target, confirmation, normalization, or
+pin-recording command/PR. The committed pin and installation are an immutable genesis
+anchor, not an operator-selected target. Controller artifacts derive runtime requirements
+directly from `pyproject.toml`; do not add a dependency to a builder-specific list. The
+build and staged installation must validate recursive wheel metadata closure and complete
+offline installation before activation.
 
 The release front door does not rely on that rotation being remembered. Preflight
 derives the trusted GitHub command's Python import closure and packaged schema
@@ -214,11 +209,9 @@ trusted finalizers invoke the recovery-proven installation after the PR merges.
 It does not certify the controller.
 
 The resulting fresh exact-main cycle must admit the expanded authority, run the
-normal `trusted-controller-build`, complete governance and trusted finalization,
-and receive App 15368's `bcf/exact-main-certification=success`. Then select that
-normal builder artifact through the ordinary controller-pin and bootstrap/probe
-procedure. The recovery artifact is never valid `controller-pin resolve`
-evidence and must never become the steady-state artifact pin.
+normal `trusted-controller-build`, and enter the provider-backed routine transition
+under the recovered installed controller. The recovery artifact is never eligible as
+a routine transition artifact or steady-state effective controller.
 
 Rotate the private key after use or immediately on suspected exposure. To make
 recovery dormant, delete the environment secret or uninstall the App. To remove

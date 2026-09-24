@@ -1,5 +1,7 @@
 # Changelog
 
+- Remove the redundant source-mutating routine controller target, dispatch, confirmation, and normalization lane; provider-authenticated one-PR rotation is now the only ordinary upgrade path.
+
 - Bind exact-main preflight controller compatibility to the provider-authenticated effective controller carried by same-admission prior evidence.
 
 - Order exact-main controller build/upload before provider artifact resolution so strict pagination cannot race its own producer.

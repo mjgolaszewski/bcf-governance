@@ -405,25 +405,19 @@ governed exact-node manifest, and reuses it for every isolated control. Missing 
 ambiguous mappings fail closed; BCF never guesses a filesystem path from a JUnit
 classname. Diagnostic controls continue to execute the canonical gate command.
 
-BCF self-controller rotation has a separate mechanical path. Trusted control runs
-`bcf ci-github controller-pin resolve` to select the newest exact-main package
-producer and exact artifact without caller-supplied run IDs. After the provider
-artifact is downloaded, `controller-pin compile` verifies its checksum inventory,
-metadata, and wheel bytes and emits a pin record. A maintainer projects that record
-with `bcf ci sync-self-controller --pin PIN.json --apply`. The target pin and the
-last provider-proven installation are distinct: active control jobs stay on the
-installed commit during rotation. Bootstrap and probe do not require that commit
-to exist on a newly restored runner: they stage the downloaded, provider-digest-
-checked and checksum-admitted target wheel in a run-scoped environment, invoke it
-to authenticate custody, and then install the persistent target. After exact-main
-bootstrap and probe runs pass on every declared trusted runner,
-`bcf ci-github controller-pin confirm --repository OWNER/REPO --output PROOF.json`
-compiles their identities from provider state. Passing that proof through
-`bcf ci sync-self-controller --pin PIN.json --confirmation PROOF.json --apply`
-promotes the target and projects policy, topology, bootstrap, probe, finalizer,
-admission, and status workflows together. A second target is rejected while one
-rotation remains unconfirmed. AI and humans review policy and decide whether to
-rotate; they do not author custody values or declare installation success.
+BCF routine self-controller rotation is provider-backed. The protected implementation
+PR is the sole source mutation: after merge, the exact-main builder produces N+1 and
+the installed N authorizes one immutable transition. The canonical rotation workflow
+then bootstraps, independently probes, promotes on every declared trusted runner, and
+atomically activates the provider-authenticated transition. Effective-controller
+resolution derives custody from the immutable transition chain; operators never copy
+artifact, run, digest, pin, or confirmation identities into source control. The former
+target, bootstrap/probe-dispatch, confirmation, and normalization commands/workflows
+are intentionally absent because they supplied no additional routine assurance fact.
+The committed controller artifact and installation remain only the immutable genesis
+baseline for transition-chain validation and recovery; they are not a mutable routine
+target. Policy-changing migrations and Break Glass remain separate, non-routine
+authority propositions and cannot be smuggled through the routine path.
 
 The isolated authority canary uses `bcf ci-github canary admit|observe`. Its observer
 authenticates one exact run attempt and complete job inventory, then publishes through

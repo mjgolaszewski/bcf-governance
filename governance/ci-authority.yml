@@ -66,28 +66,6 @@ workflow_registry:
     expected_jobs:
     - job_id: Publish newest authenticated exact-main status or revocation
     - job_id: Dispatch post-rotation exact-main certification
-  bootstrap:
-    workflow_id: '346177113'
-    active_path: .github/workflows/bcf-trusted-control-bootstrap.yml
-    trusted_workflow_blob_oid: 4e8486d1b92e5b442021d7574baa5f513db53eac
-    trusted_workflow_sha256: d49881fde4d642e95e3b73b59feee7d47fe60c6fdd4b78555766cd10b7670fc7
-    trusted_workflow_definition_commit: 3b29fbde6949c71ff56cc27d33a511325a5f69e7
-    allowed_events:
-    - workflow_dispatch
-    expected_jobs:
-    - job_id: Install authenticated controller / bcf-trusted-control-1
-    - job_id: Install authenticated controller / bcf-trusted-control-2
-  probe:
-    workflow_id: '346154319'
-    active_path: .github/workflows/bcf-trusted-control-probe.yml
-    trusted_workflow_blob_oid: 0bf651704583cfdab2c727959d3a6755fec0d4bb
-    trusted_workflow_sha256: 6eb0a2cc48e63c7d0196e39dbc495b633c1525e4321e0e03133665506ed930dc
-    trusted_workflow_definition_commit: 3b29fbde6949c71ff56cc27d33a511325a5f69e7
-    allowed_events:
-    - workflow_dispatch
-    expected_jobs:
-    - job_id: Verify exact-main controller / bcf-trusted-control-1
-    - job_id: Verify exact-main controller / bcf-trusted-control-2
   release:
     workflow_id: '331325235'
     active_path: .github/workflows/release.yml
@@ -148,8 +126,6 @@ roles:
   - governance
   finalizer: finalizer
   status_publisher: status-publisher
-  bootstrap: bootstrap
-  probe: probe
   release_authorizer: release
   release_build: release
   release_verifier: release-verifier
