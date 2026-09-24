@@ -27,22 +27,23 @@ explicit candidate and trusted runner mappings. The graph is the operator
 interface for orchestration. Generated `.github/workflows/*.yml` files are
 deterministic projections and must not be edited directly.
 
-Use these commands after changing the graph or a registered extension:
+Use the canonical fixed-point operation after changing any governed source. The
+specialized graph commands remain read-only diagnostics:
 
 ```bash
-bcf ci graph lock --repo-root . --apply
+bcf reconcile --repo-root . --apply
+bcf reconcile --repo-root . --check
 bcf ci graph validate --repo-root .
 bcf ci graph diagnose --repo-root . --format json
 bcf ci graph explain --repo-root . --format json
 bcf ci graph audit --repo-root . --format json
 bcf ci graph diff --repo-root .
-bcf ci graph render --repo-root . --check
-bcf ci graph render --repo-root . --apply
 ```
 
-`lock --apply` updates only digests for registered extensions and declared
-value sources. `render --apply` changes only graph-generated workflow paths;
-unrelated workflows remain byte-identical. `bcf ci adopt github --check|--apply`
+`reconcile --apply` runs semantic locks, exact test manifests, graph locks and
+rendering, pack mirrors/manifests, and the current editorial audit in one stable
+order until an entire round is byte-identical. Non-convergence fails closed.
+Unrelated workflows remain byte-identical. `bcf ci adopt github --check|--apply`
 uses the graph when present. The older label and producer arguments remain only
 for profile-v1 adoption.
 
@@ -95,9 +96,8 @@ do not provide commit, tree, workflow, job, or producer identity:
 
 ```bash
 bcf evidence-store validate --repo-root .
-bcf ci graph lock --repo-root . --apply
+bcf reconcile --repo-root . --apply
 bcf ci graph validate --repo-root .
-bcf ci graph render --repo-root . --apply
 ```
 
 Generated CI authenticates ordinary source and provider reads with the trusted

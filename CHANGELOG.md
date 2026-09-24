@@ -1,5 +1,7 @@
 # Changelog
 
+- Add one fail-closed `bcf reconcile` fixed point for semantic locks, test manifests, graph projections, pack mirrors, and editorial custody, replacing agent-facing generator ordering.
+
 - Confirm the P27 rotation-output controller on both trusted runners and restore ordinary-current custody.
 
 - Project the exact provider-built P27 rotation-output controller through the governed legacy N/N+1 lane after the routine policy-change guard correctly rejected self-modification.

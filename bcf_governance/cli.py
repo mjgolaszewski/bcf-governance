@@ -45,6 +45,7 @@ COMMANDS = {
     "profile": profile_governance.main,
     "preflight": preflight.main,
     "publish-audit": publish_audit.main,
+    "reconcile": scaffold_governance_artifacts.reconcile_main,
     "validate": validate_governance_yaml.main,
     "scaffold": scaffold_governance_artifacts.main,
     "semantic-ownership": semantic_ownership_scan.main,

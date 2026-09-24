@@ -26,7 +26,7 @@ workitems:
   status: DONE
   summary: deliver measured constrained critical-path DAG with duration-aware assignment one-PR routine controller rotation and execution-scoped ephemeral-state closure
 - id: P27-P0-03
-  status: TODO
+  status: DONE
   summary: deliver canonical convergent bcf reconcile fixed-point generation with controlled demolition of redundant ceremony
 - id: P27-P0-04
   status: TODO
@@ -52,6 +52,8 @@ execution_evidence:
   - 'P27-P0-02 closes execution-scoped state through the existing runtime owner: exact session workload and execution namespaces reject unexplained state and are ownership-revalidated retired and removal-verified on success failure and adversarial paths'
   - exact-main 35955324164/1 built controller 1511b09b5a27ef6e541b37a0c2154dcb44448c65; routine authorization 35955443307/1 correctly rejected the workflow-authority policy delta, so the existing governed legacy N/N+1 lane owns this bounded corrective installation
   - both trusted runners bootstrapped and probed controller 1511b09b5a27ef6e541b37a0c2154dcb44448c65 through 35964790801/1 and 35965795354/1; provider-compiled confirmation restores ordinary-current custody
+  - exact-main 35970297382/1 and trusted finalizer/publisher 35970583885/1 and 35970654082/1 closed P27-P0-02 and made P27-P0-03 eligible while P27 remained active
+  - P27-P0-03 replaces agent-ordered generator ceremony with one bounded fixed point that fails on stale checks or non-convergence; commit-bound authority pinning remains separate because its proposition is exact committed Git identity
 closeout_requirements:
   claims:
     workitems_closed:

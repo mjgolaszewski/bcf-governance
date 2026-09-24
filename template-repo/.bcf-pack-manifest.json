@@ -62,7 +62,7 @@
     },
     "docs/OPERATIONS.md": {
       "operation": "copy",
-      "sha256": "422099796f6d4b53024abd8bf3470033003ac29874a9bbcc689c3625c8e51e7b"
+      "sha256": "304101ba848691b90c77c06651cc19ac8dc96b69c3ba9f1fb0f44ca3798d2e8b"
     },
     "governance-profile.yml": {
       "operation": "generate",
@@ -996,7 +996,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "51af4bf78880bfdaa6ed6571ab2f79e0411f2a16a7eb3de24c4011f107205735"
+      "sha256": "36770c2ff997f20c89ace6a02614031764bb2a404423c69c4e753e07a94609ca"
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",

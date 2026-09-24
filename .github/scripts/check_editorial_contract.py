@@ -246,7 +246,7 @@ def validate_editorial_contract(repo_root: Path = REPO_ROOT) -> list[str]:
         errors.append("README.md: preflight example does not use the implemented PR mode")
     for required_graph_command in (
         "bcf ci graph validate --repo-root .",
-        "bcf ci graph render --repo-root . --check",
+        "bcf reconcile --repo-root . --check",
         "bcf ci adopt github --repo-root . --check",
     ):
         if required_graph_command not in readme:
