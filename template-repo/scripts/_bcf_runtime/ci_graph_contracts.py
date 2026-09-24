@@ -29,6 +29,7 @@ from .ci_graph_values import CIGraphValueError, resolve_graph_values
 from .ci_graph_timeouts import validate_gate_job_timeouts
 from .ci_graph_storage import validate_evidence_storage
 from .ci_graph_routing import validate_candidate_routing
+from .ci_graph_rotation_outputs import validate_rotation_output_directories
 
 
 GRAPH_PATH = Path("governance/ci-graph.yml")
@@ -508,6 +509,7 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                     )
                 _validate_condition_scope(graph, job, executor["components"])
                 _validate_private_transport(graph, job, executor)
+                validate_rotation_output_directories(graph, job, executor)
                 execution_issues = job_execution_issues(
                     graph, job, executor, workflow
                 )

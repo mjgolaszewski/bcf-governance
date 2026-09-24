@@ -552,7 +552,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",
-      "sha256": "16f773217421f1ac254be395360ecc4b646dfbba640b803818404ffab1565329"
+      "sha256": "4cf98e80f4a279916385390bd8f12a0c98d6c498209d15cce0677d9445605338"
     },
     "scripts/_bcf_runtime/ci_graph_controller_lifecycle.py": {
       "operation": "copy",
@@ -593,6 +593,10 @@
     "scripts/_bcf_runtime/ci_graph_reusable_artifacts.py": {
       "operation": "copy",
       "sha256": "ef08719cb6c641341370d29cfcbe225378ebddfdc21ca8ed729a956c046ae95b"
+    },
+    "scripts/_bcf_runtime/ci_graph_rotation_outputs.py": {
+      "operation": "copy",
+      "sha256": "9a288f517662b86fc2714590fec1868a9294403b9746712b7c35adc2ccf7ce08"
     },
     "scripts/_bcf_runtime/ci_graph_routing.py": {
       "operation": "copy",
