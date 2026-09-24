@@ -1,5 +1,7 @@
 # Changelog
 
+- Reauthenticate exact-main finalizer publication with the canonical workflow blob and definition pins so additive current-main metadata cannot rewrite trusted collector identity.
+
 - Fail first on canonical context-byte and production-module LOC limits before reconciliation, candidate evidence planning, or behavioral gates.
 
 - Route provider-backed exact-main execution from the canonical controller-compatibility result so pending rotation builds N+1 without allocating semantic evidence or certification authority.

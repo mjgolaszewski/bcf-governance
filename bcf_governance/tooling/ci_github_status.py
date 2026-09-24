@@ -174,6 +174,8 @@ def publish(
     collector_workflow_path: str,
     collector_workflow_id: object | None = None,
     collector_workflow_sha256: str | None = None,
+    collector_workflow_blob_oid: object | None = None,
+    collector_workflow_definition_commit: object | None = None,
     require_evaluation_scope: bool = False,
 ) -> dict[str, Any]:
     """Reverify one authenticated finalizer bundle before status publication."""
@@ -226,6 +228,10 @@ def publish(
             require_success=True,
             expected_workflow_id=collector_workflow_id,
             expected_workflow_sha256=collector_workflow_sha256,
+            expected_workflow_blob_oid=collector_workflow_blob_oid,
+            expected_workflow_definition_commit=(
+                collector_workflow_definition_commit
+            ),
         )
         if observation.get("collector") != {
             "run_id": collector.run_id,
@@ -299,6 +305,8 @@ def publish(
         require_success=True,
         expected_workflow_id=collector_workflow_id,
         expected_workflow_sha256=collector_workflow_sha256,
+        expected_workflow_blob_oid=collector_workflow_blob_oid,
+        expected_workflow_definition_commit=collector_workflow_definition_commit,
     )
     session = json.loads((root / "evidence-session.json").read_text(encoding="utf-8"))
     producer = session.get("producer")

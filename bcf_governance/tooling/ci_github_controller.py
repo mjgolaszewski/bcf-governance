@@ -412,6 +412,8 @@ def publish(
     collector_workflow_path: str,
     collector_workflow_id: object | None = None,
     collector_workflow_sha256: str | None = None,
+    collector_workflow_blob_oid: object | None = None,
+    collector_workflow_definition_commit: object | None = None,
 ) -> dict[str, Any]:
     """Compatibility wrapper for the canonical status authority."""
 
@@ -425,6 +427,10 @@ def publish(
         collector_workflow_path=collector_workflow_path,
         collector_workflow_id=collector_workflow_id,
         collector_workflow_sha256=collector_workflow_sha256,
+        collector_workflow_blob_oid=collector_workflow_blob_oid,
+        collector_workflow_definition_commit=(
+            collector_workflow_definition_commit
+        ),
     )
 
 

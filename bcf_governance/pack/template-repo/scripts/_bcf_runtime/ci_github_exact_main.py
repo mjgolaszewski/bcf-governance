@@ -492,5 +492,9 @@ def publish_exact_main(
         collector_workflow_path=str(finalizer["active_path"]),
         collector_workflow_id=finalizer["workflow_id"],
         collector_workflow_sha256=str(finalizer["trusted_workflow_sha256"]),
+        collector_workflow_blob_oid=finalizer["trusted_workflow_blob_oid"],
+        collector_workflow_definition_commit=finalizer[
+            "trusted_workflow_definition_commit"
+        ],
         require_evaluation_scope=True,
     )
