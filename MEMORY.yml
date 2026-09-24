@@ -30,6 +30,7 @@ known_constraints:
 - legacy receipt v2 and session v1 evidence remains readable only for its exact original subject
 - unknown dependency applicability fails closed to a declared conservative workload
 - provider single-object limits archive expansion limits free-space requirements timeouts bounded parallelism and exact owned-resource cleanup remain safety controls
+- isolated adversarial and integration execution state is session-scoped and exactly retired; unexplained state fails before execution and persistent sharing requires an explicit workload contract
 - publication remains a separate write-authorized exact-byte boundary
 reusable_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests, bcf migrate-contract --repo-root . --check]
 references:

@@ -1,4 +1,4 @@
-schema_version: '1.0'
+schema_version: '1.1'
 runtime_root: .artifacts/runtime # non-authoritative local path
 minimum_free_bytes: 2147483648
 maximum_owned_containers: 8
@@ -8,3 +8,10 @@ cleanup:
   daemon_global_prune: false
   exact_owner_revalidation: true
   remove_anonymous_volumes: true
+execution_state:
+  default_lifecycle: ephemeral
+  namespace_binding: [session_id, workload_id, execution_id]
+  unexplained_preexisting: reject
+  persistent_requires_workload_declaration: true
+  terminal_cleanup: exact_owned_namespace
+  verify_removal: true

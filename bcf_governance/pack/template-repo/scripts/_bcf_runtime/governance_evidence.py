@@ -22,9 +22,7 @@ from .evidence_attestation import attest_bundle, bundle_digest
 from .evidence_execution import (
     EvidenceError,
     _command,
-    _execution_cwd,
-    _execution_env,
-    _run,
+    _run_with_execution_state,
     _runtime_command,
     _selected_python,
 )
@@ -293,6 +291,8 @@ def _negative_control_results(
     output_dir: Path,
     baseline_observations: dict[str, Any],
     python_executable: Path,
+    session_id: str,
+    require_state: bool,
 ) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
     controls = contract.get("negative_controls")
     if not isinstance(controls, list):
@@ -334,9 +334,12 @@ def _negative_control_results(
                 allowed_mutations = (
                     _project_graph_mutation(worktree, mutation_path) if applied else set()
                 )
-                env, _ = _execution_env(worktree, contract, python_executable)
-                observed = (
-                    _run(
+                state_report = None
+                if applied:
+                    observed, _env, _metadata, state_report = _run_with_execution_state(
+                        repo_root,
+                        worktree,
+                        contract,
                         negative_control_command(
                             command,
                             contract,
@@ -345,13 +348,13 @@ def _negative_control_results(
                             worktree,
                             selector_map,
                         ),
-                        cwd=_execution_cwd(worktree, contract),
-                        env=env,
-                        timeout_seconds=contract["execution_timeout_seconds"],
+                        python_executable,
+                        session_id=session_id,
+                        execution_id=f"negative-control:{control_id}",
+                        require_state=require_state,
                     )
-                    if applied
-                    else None
-                )
+                else:
+                    observed = None
                 oracle_observation = _oracle_observation(
                     worktree, contract, control, observed
                 )
@@ -430,6 +433,7 @@ def _negative_control_results(
                         "unexpected_worktree_changes": unexpected_changes,
                         "observed_exit_code": observed.returncode if observed is not None else None,
                         "raw_artifacts": artifact_names,
+                        "execution_state": state_report,
                     }
                 )
             finally:
@@ -540,14 +544,18 @@ def capture_gate(
             durable_observations, durable_artifacts = _install_durable_inputs(
                 repo_root, worktree, output_dir
             )
-            env, environment_metadata = _execution_env(
-                worktree, contract, selected_python
-            )
-            result = _run(
+            result, env, environment_metadata, state_report = _run_with_execution_state(
+                repo_root,
+                worktree,
+                contract,
                 runtime_command,
-                cwd=_execution_cwd(worktree, contract),
-                env=env,
-                timeout_seconds=contract["execution_timeout_seconds"],
+                selected_python,
+                session_id=(
+                    str(session.payload["session_id"])
+                    if session is not None else f"legacy-{head[:12]}"
+                ),
+                execution_id="positive",
+                require_state=contract_version == "3.0",
             )
             artifacts = _write_output_artifacts(output_dir, target, result)
             artifacts.extend(durable_artifacts)
@@ -559,6 +567,7 @@ def capture_gate(
                 "execution_timeout_seconds": contract["execution_timeout_seconds"],
                 "environment_assertions": _environment_observations(contract, env),
                 "durable_evidence_inputs": durable_observations,
+                "execution_state": state_report,
             }
             if session is not None:
                 observations["evidence_session"] = {
@@ -610,6 +619,8 @@ def capture_gate(
                 output_dir,
                 observations,
                 selected_python,
+                str(session.payload["session_id"]) if session is not None else f"legacy-{head[:12]}",
+                contract_version == "3.0",
             )
             probes.extend(captured)
             artifacts.extend(probe_artifacts)

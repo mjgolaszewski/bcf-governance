@@ -23,8 +23,8 @@ workitems:
   status: DONE
   summary: deliver selective execution planner with qualification-preserving negative-control reuse and a canonical assurance-owner inventory
 - id: P27-P0-02
-  status: TODO
-  summary: deliver measured constrained critical-path DAG with duration-aware assignment and one-PR routine controller rotation
+  status: DONE
+  summary: deliver measured constrained critical-path DAG with duration-aware assignment one-PR routine controller rotation and execution-scoped ephemeral-state closure
 - id: P27-P0-03
   status: TODO
   summary: deliver canonical convergent bcf reconcile fixed-point generation with controlled demolition of redundant ceremony
@@ -48,6 +48,8 @@ execution_evidence:
   - provider-backed routine rotation is activated for P27-P0-02 through protected-merge authorization, exact builder custody, two-runner staged proofs, immutable transition receipts, and a bounded fresh-certification callback; release authority remains absent
   - the pagination correction target is the exact provider-built controller from exact-main 35920146560/1 on d9daaaa7b319180dc405f28575c71ec5c4b4a1f8; installed N remains authoritative until bootstrap probe and confirmation
   - both trusted runners bootstrapped and probed the exact pagination-corrected controller through 35924384446/1 and 35924513385/1; canonical confirmation restores ordinary-current custody
+  - confirmation PR 269 merged as addfc669551da88d9c42beb009de2a28e44d4e8c; exact-main 35935999512/1 authenticated the normalized controller and all producer evidence before correctly rejecting the still-TODO P27-P0-02 target
+  - 'P27-P0-02 closes execution-scoped state through the existing runtime owner: exact session workload and execution namespaces reject unexplained state and are ownership-revalidated retired and removal-verified on success failure and adversarial paths'
 closeout_requirements:
   claims:
     workitems_closed:
@@ -80,4 +82,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- complete the P27-P0-02 one-time compatible-controller migration, activate provider-backed routine rotation, and prove its first no-bookkeeping runtime transition
+- certify P27-P0-02 through the first provider-driven one-PR runtime rotation then begin eligible P27-P0-03 fixed-point reconciliation

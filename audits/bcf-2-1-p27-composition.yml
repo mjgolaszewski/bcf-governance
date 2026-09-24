@@ -190,3 +190,36 @@ p27_p0_02_migration_expansion:
         runner_inventory: [bcf-trusted-control-1, bcf-trusted-control-2]
         installed_controller: d9daaaa7b319180dc405f28575c71ec5c4b4a1f8
         custody: ordinary_current
+    normalized_exact_main:
+      subject: {commit_sha: addfc669551da88d9c42beb009de2a28e44d4e8c, tree_sha: becd92ff156d9ca0bec9953f985549349c3f6375}
+      run: 35935999512/1
+      controller_build: success
+      admission: success
+      producer_evidence: success
+      truth: {status: fail, issue: bounded_workitem_target_not_closed, target: P27-P0-02}
+      interpretation: ordinary-current normalization succeeded and exact-main reached the intended open implementation boundary
+  execution_state_closure:
+    canonical_owner: bcf_governance/tooling/runtime_capacity.py
+    runtime_contract: governance/ci-runtime.yml
+    execution_consumer: bcf_governance/tooling/evidence_execution.py
+    invariants:
+    - ephemeral namespace identity is derived from exact session workload and execution identity
+    - unexplained or mismatched pre-existing state rejects before workload execution
+    - success failure and adversarial terminal paths retire only the exact ownership-revalidated namespace and verify absence
+    - persistent shared state requires an explicit workload lifecycle and safe namespace declaration
+    - consecutive execution identities cannot observe predecessor database bytes
+    surface_classification:
+      must_change: [governance/ci-runtime.yml, schemas/runtime-capacity.schema.json, schemas/gate-contracts.schema.json, bcf_governance/tooling/runtime_capacity.py, bcf_governance/tooling/evidence_execution.py, bcf_governance/tooling/governance_evidence.py, tests/test_runtime_capacity.py, tests/test_execution_state_lifecycle.py]
+      generated_consequence: [template-repo/scripts/_bcf_runtime/runtime_capacity.py, template-repo/scripts/_bcf_runtime/evidence_execution.py, template-repo/scripts/_bcf_runtime/governance_evidence.py, template-repo/schemas/runtime-capacity.schema.json, template-repo/schemas/gate-contracts.schema.json, bcf_governance/pack/template-repo, governance/gate-contracts.yml, governance/test-manifests, governance/semantic-lock.yml, audits/v2.0.0-editorial-review.yml]
+      inspected_no_impact: [governance/application-operations.yml, governance/canonical-representations.yml, governance/semantic-families.yml, governance/github-protection.yml, governance/ci-graph.yml, governance/ci-authority.yml, bcf_governance/tooling/ci_github_release.py, bcf_governance/tooling/release_receipts.py, governance/ci-extensions/bcf-break-glass-recovery.yml]
+    prospective_chain:
+    - {boundary: preflight, deterministic_next_rejection: runtime schema pack semantic lock manifest or editorial drift, disposition: mechanically reconcile and run exact cheap preflight on committed bytes}
+    - {boundary: controller_compatibility, deterministic_next_rejection: installed d9daaaa7 controller lacks runtime contract 1.1 and execution-state semantics, disposition: require predicted pending_rotation with release_authority false}
+    - {boundary: pr_evidence, deterministic_next_rejection: scoped execution leaves stale namespace or receipt lacks terminal state observation, disposition: exercise success failure adversarial and consecutive-run fixtures locally}
+    - {boundary: certification, deterministic_next_rejection: PR finalizer inventory subject or controller identity mismatch, disposition: preserve graph workflow and certification bytes and run bounded finalizer fixtures}
+    - {boundary: merge, deterministic_next_rejection: protected merge or implementation PR identity is absent from routine transition authorization, disposition: preserve provider compiler exact protected-merge binding}
+    - {boundary: exact_main, deterministic_next_rejection: stale N allocates semantic evidence before N+1 compatibility, disposition: require builder-only pending rotation and suppress incompatible evidence}
+    - {boundary: controller_lifecycle, deterministic_next_rejection: partial wrong-run wrong-runner replayed or superseded transition, disposition: exercise routine transition attack matrix and two-runner atomic activation}
+    - {boundary: bounded_truth, deterministic_next_rejection: P27-P0-02 evidence target or predecessor closure mismatch, disposition: require exact workitem closure under activated N+1}
+    - {boundary: finalizer_publisher, deterministic_next_rejection: scoped subject target run attempt or status context broadens, disposition: require bcf/workitem-certification only}
+    - {boundary: successor_release, deterministic_next_rejection: bounded success is used as phase or release authority, disposition: require P27-P0-03 eligibility while P27 remains active and release authority absent}
