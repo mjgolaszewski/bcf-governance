@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 from dataclasses import dataclass
+from enum import StrEnum
 from pathlib import Path, PurePosixPath
 import re
 import subprocess
@@ -65,6 +66,13 @@ class TrustedControllerBootstrapIncompatibleError(TrustedControllerCompatibility
     """Raised when controller N cannot authenticate a changed PR producer topology."""
 
 
+class TrustedControllerApplicabilityState(StrEnum):
+    """Non-authoritative execution applicability derived from compatibility."""
+
+    CURRENT = "current"
+    PENDING_ROTATION = "pending_rotation"
+
+
 @dataclass(frozen=True)
 class TrustedControllerCompatibility:
     target_commit: str
@@ -74,6 +82,23 @@ class TrustedControllerCompatibility:
         return {
             "target_commit": self.target_commit,
             "source_file_count": len(self.source_files),
+        }
+
+
+@dataclass(frozen=True)
+class TrustedControllerApplicability:
+    """Route exact-main work without conferring certification authority."""
+
+    state: TrustedControllerApplicabilityState
+    target_commit: str
+
+    def as_dict(self) -> dict[str, object]:
+        return {
+            "controller_state": self.state.value,
+            "semantic_evidence_applicable": (
+                self.state is TrustedControllerApplicabilityState.CURRENT
+            ),
+            "target_commit": self.target_commit,
         }
 
 
@@ -384,3 +409,23 @@ def verify_trusted_controller_compatibility(
             + ", ".join(incompatible)
         )
     return TrustedControllerCompatibility(target_commit, paths)
+
+
+def classify_trusted_controller_applicability(
+    repo_root: Path, *, target_commit: str
+) -> TrustedControllerApplicability:
+    """Classify only execution applicability using the canonical compatibility owner.
+
+    Bootstrap-incompatible candidates still raise. A stale but consumable controller is
+    noncertifying and may build N+1, but must not allocate semantic evidence.
+    """
+
+    try:
+        verify_trusted_controller_compatibility(
+            repo_root, target_commit=target_commit
+        )
+    except TrustedControllerRuntimeStaleError:
+        state = TrustedControllerApplicabilityState.PENDING_ROTATION
+    else:
+        state = TrustedControllerApplicabilityState.CURRENT
+    return TrustedControllerApplicability(state, target_commit)

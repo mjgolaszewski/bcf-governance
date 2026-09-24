@@ -261,6 +261,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     monkeypatch.setattr(
         preflight, "_git_state", lambda _: {"commit_sha": "a" * 40, "tree_sha": "b" * 40}
     )
+    monkeypatch.setattr(preflight, "validate_structural_limits", lambda _: {})
     monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {"python": 1})
     monkeypatch.setattr(preflight, "_exposure_scan", lambda _: {"findings": 0})
     monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {"pytest": "9.0.3"})
@@ -308,6 +309,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
 
     assert calls == [
         "git-state",
+        "structural-limits",
         "syntax",
         "exposure",
         "interpreter",
@@ -349,7 +351,7 @@ def test_context_budget_failure_precedes_evidence_session_allocation(
     monkeypatch.setattr(preflight, "_source_entrypoint_authority", lambda _: {})
     monkeypatch.setattr(
         preflight,
-        "validate_repo_root",
+        "validate_structural_limits",
         lambda _: (_ for _ in ()).throw(
             GovernanceValidationError(
                 "agent-required governance files exceeded context budgets"
@@ -371,14 +373,7 @@ def test_context_budget_failure_precedes_evidence_session_allocation(
             trace=calls.append,
         )
 
-    assert calls == [
-        "git-state",
-        "syntax",
-        "exposure",
-        "interpreter",
-        "source-entrypoints",
-        "governance",
-    ]
+    assert calls == ["git-state", "structural-limits"]
 
 
 def test_editorial_contract_rejection_is_a_preflight_failure(tmp_path: Path) -> None:
@@ -524,6 +519,7 @@ def test_stale_pack_manifest_fails_before_evidence(
         encoding="utf-8",
     )
     monkeypatch.setattr(preflight, "_git_state", lambda _: {})
+    monkeypatch.setattr(preflight, "validate_structural_limits", lambda _: {})
     monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
     monkeypatch.setattr(preflight, "_exposure_scan", lambda _: {})
     monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {})
@@ -559,6 +555,7 @@ def test_workflow_authority_failure_prevents_session_allocation(
     repo = tmp_path / "repo"
     repo.mkdir()
     monkeypatch.setattr(preflight, "_git_state", lambda _: {})
+    monkeypatch.setattr(preflight, "validate_structural_limits", lambda _: {})
     monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
     monkeypatch.setattr(preflight, "_exposure_scan", lambda _: {})
     monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {})
@@ -588,6 +585,7 @@ def test_workflow_authority_failure_prevents_session_allocation(
 
     assert calls == [
         "git-state",
+        "structural-limits",
         "syntax",
         "exposure",
         "interpreter",
@@ -734,7 +732,7 @@ def test_wrong_prior_transport_subject_stops_before_evidence_fanout(
             prior_transport_dir=transport_dir,
             artifact_root=tmp_path / "evidence", trace=calls.append,
         )
-    assert calls == ["git-state", "prior-transport"]
+    assert calls == ["git-state", "structural-limits", "prior-transport"]
 
 
 def test_interpreter_failure_prevents_session_allocation(
@@ -744,6 +742,7 @@ def test_interpreter_failure_prevents_session_allocation(
     repo = tmp_path / "repo"
     repo.mkdir()
     monkeypatch.setattr(preflight, "_git_state", lambda _: {})
+    monkeypatch.setattr(preflight, "validate_structural_limits", lambda _: {})
     monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
     monkeypatch.setattr(preflight, "_exposure_scan", lambda _: {})
     monkeypatch.setattr(
@@ -766,7 +765,9 @@ def test_interpreter_failure_prevents_session_allocation(
             trace=calls.append,
         )
 
-    assert calls == ["git-state", "syntax", "exposure", "interpreter"]
+    assert calls == [
+        "git-state", "structural-limits", "syntax", "exposure", "interpreter"
+    ]
 
 
 def test_undeclared_runtime_import_stops_full_preflight_before_evidence(
@@ -782,6 +783,7 @@ def test_undeclared_runtime_import_stops_full_preflight_before_evidence(
         encoding="utf-8",
     )
     monkeypatch.setattr(preflight, "_git_state", lambda _: {})
+    monkeypatch.setattr(preflight, "validate_structural_limits", lambda _: {})
     monkeypatch.setattr(preflight, "_syntax_checks", lambda _: {})
     monkeypatch.setattr(preflight, "_exposure_scan", lambda _: {})
     monkeypatch.setattr(
@@ -796,7 +798,9 @@ def test_undeclared_runtime_import_stops_full_preflight_before_evidence(
             artifact_root=tmp_path / "evidence",
             trace=calls.append,
         )
-    assert calls == ["git-state", "syntax", "exposure", "interpreter"]
+    assert calls == [
+        "git-state", "structural-limits", "syntax", "exposure", "interpreter"
+    ]
 
 
 def test_deterministic_failure_prevents_session_allocation(
@@ -806,6 +810,7 @@ def test_deterministic_failure_prevents_session_allocation(
     repo = tmp_path / "repo"
     repo.mkdir()
     monkeypatch.setattr(preflight, "_git_state", lambda _: {})
+    monkeypatch.setattr(preflight, "validate_structural_limits", lambda _: {})
     monkeypatch.setattr(
         preflight,
         "_syntax_checks",
@@ -824,7 +829,7 @@ def test_deterministic_failure_prevents_session_allocation(
             trace=calls.append,
         )
 
-    assert calls == ["git-state", "syntax"]
+    assert calls == ["git-state", "structural-limits", "syntax"]
 
 
 def test_semantic_ownership_failure_prevents_session_allocation(

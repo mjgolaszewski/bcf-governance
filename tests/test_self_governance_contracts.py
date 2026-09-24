@@ -22,6 +22,9 @@ from bcf_governance.tooling.governance_validation.runner import (
     validate_repo_root,
     validate_tooling_context_membership,
 )
+from bcf_governance.tooling.governance_validation.structural_limits import (
+    validate_production_module_size,
+)
 from bcf_governance.tooling.profile_v2_surfaces import render_v2_makefile
 from bcf_governance.tooling.release_runtime_verification import (
     is_release_sdist_test_context,
@@ -99,13 +102,7 @@ def test_source_layout_maps_to_declared_package_layers() -> None:
 
 
 def test_production_modules_respect_self_governance_loc_cap() -> None:
-    cap = int(_architecture()["production_module_policy"]["max_loc"])
-    violations = [
-        f"{path.relative_to(REPO_ROOT)}:{len(path.read_text().splitlines())}"
-        for path in _python_files(REPO_ROOT / "bcf_governance")
-        if len(path.read_text().splitlines()) > cap
-    ]
-    assert not violations, "module LOC cap exceeded: " + ", ".join(violations)
+    assert validate_production_module_size(REPO_ROOT) > 0
 
 
 def test_tooling_modules_map_to_exactly_one_context(tmp_path: Path) -> None:
@@ -202,6 +199,8 @@ def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
         "checkout-candidate",
         "setup-python",
         "install-governance",
+        "resolve-effective-controller-candidate",
+        "classify-exact-main-controller",
         "build-trusted-controller",
         "upload-trusted-controller",
     ]

@@ -432,7 +432,7 @@
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "07e2c4eb2563b0252539a1245e913870a9476d7a02dcbcfdfd5844bef3faa82e"
+      "sha256": "9ab44b8538011c8445e81b56877720a3143f97d9280cf47b4ee2bfa73833625e"
     },
     "scripts/_bcf_runtime/ci_exact_main_truth.py": {
       "operation": "copy",
@@ -552,7 +552,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",
-      "sha256": "4cf98e80f4a279916385390bd8f12a0c98d6c498209d15cce0677d9445605338"
+      "sha256": "8bdd904065662ae0ef186fbc2e25cb115f6b102d41f539d0a44e520eafd97aed"
     },
     "scripts/_bcf_runtime/ci_graph_controller_lifecycle.py": {
       "operation": "copy",
@@ -878,6 +878,10 @@
       "operation": "copy",
       "sha256": "a52207bc252052f0a4bd842e412a8366ac312a9c0321514dc4101a20bf925b10"
     },
+    "scripts/_bcf_runtime/governance_validation/structural_limits.py": {
+      "operation": "copy",
+      "sha256": "4b6c7d9b364594516da0ccb1f6b8d05bf56fb99cc9380841c556e21f7b2133a6"
+    },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
       "sha256": "a9a6fe745a6af731f2c4fe352c654a987297b23ef79538b23fa5dc9d0cd17d40"
@@ -904,7 +908,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "8f340bffabacf9d5a065668002aee32e97e04e9821f44efca01706e69b02164c"
+      "sha256": "eee870ee35e240e54867f5cfc6051436bb969e91e22f1c22713d26654259683a"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",
@@ -996,7 +1000,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "edaf4137947d6ce325958f3da55d2d634a2d8ac0f923efd664e68b5acdb8f67e"
+      "sha256": "4e399b51da55329ecaee644c4c119484b3b3c72242712c514e0ab4568eac1f2d"
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",
@@ -1096,7 +1100,7 @@
     },
     "scripts/_bcf_runtime/trusted_controller_compatibility.py": {
       "operation": "copy",
-      "sha256": "42b701536910df1161fb6bdf6d1579d9fde2166b949ce2e49d5f9b0dd1bb18b2"
+      "sha256": "ac369b225eabb24e1c307f638d0bd605783d2be88fa05da3cb868fe871e0784c"
     },
     "scripts/_bcf_runtime/trusted_inputs.py": {
       "operation": "copy",

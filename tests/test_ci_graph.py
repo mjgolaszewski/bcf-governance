@@ -751,6 +751,27 @@ def test_job_condition_cannot_reference_an_unavailable_dependency(tmp_path: Path
         validate_ci_graph(tmp_path)
 
 
+def test_job_condition_output_reference_uses_the_exact_dependency_id(
+    tmp_path: Path,
+) -> None:
+    graph = _graph()
+    first, second = graph["workflows"][0]["jobs"][:2]
+    first["outputs"] = {"applicable": "${{ steps.preflight.outputs.applicable }}"}
+    graph["conditions"]["output-applicable"] = (
+        f"needs.{first['id']}.outputs.applicable == 'true'"
+    )
+    second["needs"] = [first["id"]]
+    second["condition"] = "output-applicable"
+    _write_graph(tmp_path, graph)
+
+    validate_ci_graph(tmp_path)
+
+    second["needs"] = []
+    _write_graph(tmp_path, graph)
+    with pytest.raises(CIGraphError, match="condition references unavailable needs"):
+        validate_ci_graph(tmp_path)
+
+
 def test_selected_python_must_be_provisioned_before_governed_command(
     tmp_path: Path,
 ) -> None:
@@ -1220,6 +1241,7 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         assert evaluation_target is None
         assert all(item["status"] == "DONE" for item in workitems)
     assert admission["controller_requirement"] == "current-or-recovery-reentry"
+    assert admission["condition"] == "exact-main-semantic-admission-enabled"
     assert governance["needs"] == ["admit"]
     assert governance["condition"] == "exact-main-admitted"
     evaluation = {"evaluation_mode": evaluation_mode}
@@ -1259,6 +1281,17 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert builder["produces"] == ["trusted-controller-bundle"]
     assert "build-trusted-controller" in builder["executor"]["components"]
     assert "upload-trusted-controller" in builder["executor"]["components"]
+    assert builder["executor"]["components"].index(
+        "resolve-effective-controller-candidate"
+    ) < builder["executor"]["components"].index("classify-exact-main-controller")
+    assert builder["executor"]["components"].index(
+        "classify-exact-main-controller"
+    ) < builder["executor"]["components"].index("build-trusted-controller")
+    assert builder["outputs"] == {
+        "controller_state": "${{ steps.exact-main-applicability.outputs.controller_state }}",
+        "semantic_evidence_applicable": "${{ steps.exact-main-applicability.outputs.semantic_evidence_applicable }}",
+        "target_commit": "${{ steps.exact-main-applicability.outputs.target_commit }}",
+    }
     assert finalizer_contract["controller_requirement"] == "current"
     assert publisher_contract["controller_requirement"] == "current"
 
@@ -1376,7 +1409,11 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
             is ControllerLifecycleState.ORDINARY_CURRENT
         )
         assert "trusted_controller_recovery_reentry" not in policy["runner_security"]
-        assert exact_condition == "${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}"
+        assert exact_condition == (
+            "${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' && "
+            "needs.trusted-controller-build.outputs."
+            "semantic_evidence_applicable == 'true' }}"
+        )
         assert finalizer["if"] != "${{ false }}"
         assert publisher["if"] != "${{ false }}"
         assert rendered[".github/workflows/release.yml"]["jobs"]["authorize"][
