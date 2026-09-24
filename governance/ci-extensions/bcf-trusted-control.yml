@@ -81,6 +81,30 @@ commands:
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
 step_components:
+  setup-routine-authorized-directory:
+    kind: directory_setup
+    name: Allocate the private authorized-transition directory
+    paths: ['${{ runner.temp }}/bcf-controller-transition/authorized']
+    produces: []
+    consumes: []
+  setup-routine-installing-directory:
+    kind: directory_setup
+    name: Allocate the private installing-transition directory
+    paths: ['${{ runner.temp }}/bcf-controller-transition/installing']
+    produces: []
+    consumes: []
+  setup-routine-probed-directory:
+    kind: directory_setup
+    name: Allocate the private probed-transition directory
+    paths: ['${{ runner.temp }}/bcf-controller-transition/probed']
+    produces: []
+    consumes: []
+  setup-routine-active-directory:
+    kind: directory_setup
+    name: Allocate the private active-transition directory
+    paths: ['${{ runner.temp }}/bcf-controller-transition/active']
+    produces: []
+    consumes: []
   download-bootstrap-controller:
     kind: action
     name: Download only the mechanically pinned controller artifact
@@ -347,7 +371,7 @@ workflows:
       target_commit_sha: '${{ steps.authorize-transition.outputs.target_commit_sha }}'
       target_tree_sha: '${{ steps.authorize-transition.outputs.target_tree_sha }}'
       target_wheel_sha256: '${{ steps.authorize-transition.outputs.target_wheel_sha256 }}'
-    executor: {kind: component_sequence, components: [setup-python, download-routine-controller, resolve-effective-controller, authorize-routine-transition, upload-routine-authorized]}
+    executor: {kind: component_sequence, components: [setup-python, download-routine-controller, setup-routine-authorized-directory, resolve-effective-controller, authorize-routine-transition, upload-routine-authorized]}
     produces: [controller-transition-authorized]
     consumes: [trusted-controller-bundle]
     required: true
@@ -380,7 +404,7 @@ workflows:
     permissions: {actions: read, contents: read}
     checkout: false
     components: []
-    executor: {kind: component_sequence, components: [setup-python, download-routine-authorized, resolve-effective-controller, advance-routine-bootstrap, upload-routine-installing]}
+    executor: {kind: component_sequence, components: [setup-python, download-routine-authorized, setup-routine-installing-directory, resolve-effective-controller, advance-routine-bootstrap, upload-routine-installing]}
     produces: [controller-transition-installing]
     consumes: [controller-transition-authorized]
     required: true
@@ -413,7 +437,7 @@ workflows:
     permissions: {actions: read, contents: read}
     checkout: false
     components: []
-    executor: {kind: component_sequence, components: [setup-python, download-routine-installing, resolve-effective-controller, advance-routine-probe, upload-routine-probed]}
+    executor: {kind: component_sequence, components: [setup-python, download-routine-installing, setup-routine-probed-directory, resolve-effective-controller, advance-routine-probe, upload-routine-probed]}
     produces: [controller-transition-probed]
     consumes: [controller-transition-installing]
     required: true
@@ -446,7 +470,7 @@ workflows:
     permissions: {actions: read, contents: read}
     checkout: false
     components: []
-    executor: {kind: component_sequence, components: [setup-python, download-routine-probed, resolve-effective-controller, activate-routine-transition, upload-routine-active]}
+    executor: {kind: component_sequence, components: [setup-python, download-routine-probed, setup-routine-active-directory, resolve-effective-controller, activate-routine-transition, upload-routine-active]}
     produces: [controller-transition-active]
     consumes: [controller-transition-probed]
     required: true

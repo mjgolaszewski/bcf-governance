@@ -238,3 +238,12 @@ p27_p0_02_migration_expansion:
       fast_fail:
       - runtime schema and profile validation bind the exact exported environment and canonical generic-process sandbox before fan-out
       - cheap preflight invokes the scheduled mutant registry's own exact-target validator before fan-out
+    post_merge_rotation_correction:
+      subject: {commit_sha: 00663db0bb0771315b67c68484741313b9368aaa, tree_sha: 84704286311266ae1ef08bcc4727b40ad0f8d86d}
+      exact_main: 35944537017/1
+      automation: 35944655169/1
+      first_causal_job: 107459834300
+      failure: authenticated routine authorization had no graph-owned parent directory for its exclusive transition receipt
+      correction: canonical directory-setup components allocate each authorized installing probed and active receipt parent before its writer executes
+      fast_fail: CI graph validation rejects every routine authorize or advance output whose parent is not allocated earlier in the same component sequence
+      authority_effect: none; exact merge artifact runner and transition bindings remain unchanged

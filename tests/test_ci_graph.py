@@ -11,7 +11,11 @@ from pathlib import Path
 import pytest
 import yaml
 
-from bcf_governance.tooling.ci_graph_contracts import CIGraphError, validate_ci_graph
+from bcf_governance.tooling.ci_graph_contracts import (
+    CIGraphError,
+    _validate_rotation_output_directories,
+    validate_ci_graph,
+)
 from bcf_governance.tooling.ci_graph_controller_lifecycle import ControllerLifecycleState
 from bcf_governance.tooling.ci_graph_audit import audit_ci_graph
 from bcf_governance.tooling.ci_graph_execution import (
@@ -38,6 +42,29 @@ from bcf_governance.tooling.truth_workflow_graph import graph_workflow_gate_issu
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_routine_rotation_allocates_each_receipt_parent_before_execution() -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    workflow = next(
+        item for item in compiled.workflows if item["id"] == "automation-reconcile"
+    )
+    expected = {
+        "authorize": "setup-routine-authorized-directory",
+        "advance-bootstrap": "setup-routine-installing-directory",
+        "advance-probe": "setup-routine-probed-directory",
+        "activate": "setup-routine-active-directory",
+    }
+    for job_id, setup in expected.items():
+        job = next(item for item in workflow["jobs"] if item["id"] == job_id)
+        components = job["executor"]["components"]
+        assert setup in components
+        _validate_rotation_output_directories(compiled.graph, job, job["executor"])
+
+        stale = copy.deepcopy(job["executor"])
+        stale["components"].remove(setup)
+        with pytest.raises(CIGraphError, match="must be allocated before execution"):
+            _validate_rotation_output_directories(compiled.graph, job, stale)
 
 
 def test_graph_values_resolve_registered_list_members_without_duplicate_authority(

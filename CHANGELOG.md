@@ -1,5 +1,7 @@
 # Changelog
 
+- Allocate every routine controller-transition receipt directory through the canonical CI graph before its authenticated writer executes, with preflight rejection for missing ownership.
+
 - Close execution-scoped ephemeral state through exact session-bound namespaces, fail-fast stale-state rejection, and verified exact-owner retirement on every terminal evidence path.
 
 - Confirm the pagination-corrected controller on both trusted runners and restore ordinary-current custody.
