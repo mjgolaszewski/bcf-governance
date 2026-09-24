@@ -299,9 +299,3 @@ p27_p0_02_migration_expansion:
     - {boundary: controller_lifecycle, expected: authorized routine one-PR transition installs probes and atomically activates N+1 without repository bookkeeping}
     - {boundary: bounded_truth, expected: fresh N+1 exact-main closes P27-P0-03 and makes P27-P0-04 eligible}
     - {boundary: release, expected: bounded workitem certification remains non-release-authoritative}
-    controller_rotation_target:
-      subject: {commit_sha: 77811a5d5d401cc16bb49013f5968974c9eb590f, tree_sha: 0a147302c78927022ff63b1e6988f544675bc0fd}
-      exact_main: 35994685405/1
-      artifact: {id: '10804609882', name: bcf-trusted-control-77811a5d5d401cc16bb49013f5968974c9eb590f-1, provider_digest: 'sha256:6c52574837f4f64cf3c26c3b71611cec762512fb32a7425f29a049f497756969', wheel_sha256: f7d62f9f3f68d0066ca97fef116173ab2f9ae14d3a25d24f6ac8b9780baa4372}
-      lane: existing_governed_legacy_n_n_plus_1
-      custody: ordinary_pending_rotation

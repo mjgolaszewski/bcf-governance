@@ -60,7 +60,6 @@ execution_evidence:
   - the repository-selected final canonical test gate passed all 1629 nodes on the corrected tree, including the three adopter flows; reconcile check reported zero stale rounds
   - PR 274 run 35986416000 reproduced three installed-profile governance-validation failures; the canonical reconcile owner had imported the outer package from its standalone runtime projection instead of the projected relative version primitive
   - the no-package provider-equivalent sandbox now imports the projected reconcile owner and passes lite standard and regulated profile flows while exact execution-state retirement remains verified
-  - exact-main 35994685405/1 built controller 77811a5d5d401cc16bb49013f5968974c9eb590f from tree 0a147302c78927022ff63b1e6988f544675bc0fd; the governed legacy N/N+1 lane retains installed N until two-runner bootstrap and probe confirmation
 closeout_requirements:
   claims:
     workitems_closed:
