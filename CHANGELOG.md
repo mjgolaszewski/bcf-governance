@@ -1,6 +1,6 @@
 # Changelog
 
-- Remove the redundant source-mutating routine controller target, dispatch, confirmation, and normalization lane; provider-authenticated one-PR rotation is now the only ordinary upgrade path.
+- Expand controller authority compatibility so installed N can read the temporary legacy rotation roles while N+1 accepts their later controlled removal, and make pending-rotation preflight invoke installed N's canonical authority validator before provider execution.
 
 - Bind exact-main preflight controller compatibility to the provider-authenticated effective controller carried by same-admission prior evidence.
 

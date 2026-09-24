@@ -50,6 +50,11 @@ from .ci_github_release_inputs import (
     resolve_release_publication_inputs,
 )
 from .ci_github_release_staging import stage_receipt_bundle, stage_verifier_bundle
+from .ci_self_controller import (
+    compile_self_controller_confirmation,
+    compile_self_controller_pin,
+    resolve_self_controller_artifact,
+)
 from .ci_github_bundle import write_exclusive
 from .release_asset_inventory import release_asset_paths
 from .release_runtime_verification import (
@@ -181,6 +186,54 @@ def _canary(argv: list[str]) -> None:
         target_url=args.target_url,
     )
     _github_output(result, path=github_output)
+    print(json.dumps(result, sort_keys=True))
+
+
+def _controller_pin(argv: list[str]) -> None:
+    parser = argparse.ArgumentParser(description="BCF self-controller pin compiler.")
+    operations = parser.add_subparsers(dest="operation", required=True)
+    resolve = operations.add_parser("resolve")
+    resolve.add_argument("--repository", required=True)
+    compile_pin = operations.add_parser("compile")
+    compile_pin.add_argument("--repository", required=True)
+    compile_pin.add_argument("--artifact-dir", type=Path, required=True)
+    compile_pin.add_argument("--output", type=Path, required=True)
+    confirm = operations.add_parser("confirm")
+    confirm.add_argument("--repository", required=True)
+    confirm.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args(argv)
+    controller_output = _github_output_path()
+    api = environment_api()
+    if args.operation == "resolve":
+        subject, artifact = resolve_self_controller_artifact(
+            api, repository=args.repository
+        )
+        result = {**subject, **artifact.as_dict()}
+    elif args.operation == "compile":
+        pin = compile_self_controller_pin(
+            api, repository=args.repository, artifact_dir=args.artifact_dir
+        )
+        result = {**pin, "output": str(args.output)}
+        _github_output(result, path=controller_output)
+        write_exclusive(
+            args.output,
+            {"schema_version": "1.0", "trusted_controller_artifact": pin},
+        )
+    else:
+        confirmation = compile_self_controller_confirmation(
+            api, repository=args.repository
+        )
+        result = {**confirmation, "output": str(args.output)}
+        _github_output(result, path=controller_output)
+        write_exclusive(
+            args.output,
+            {
+                "schema_version": "1.0",
+                "trusted_controller_installation": confirmation,
+            },
+        )
+    if args.operation == "resolve":
+        _github_output(result, path=controller_output)
     print(json.dumps(result, sort_keys=True))
 
 
@@ -589,6 +642,9 @@ def main(argv: list[str] | None = None) -> None:
             return
         if raw and raw[0] == "canary":
             _canary(raw[1:])
+            return
+        if raw and raw[0] == "controller-pin":
+            _controller_pin(raw[1:])
             return
         if raw and raw[0] == "controller-rotation":
             run_controller_rotation_command(raw[1:])

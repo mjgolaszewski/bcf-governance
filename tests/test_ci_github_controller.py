@@ -380,7 +380,7 @@ def _v11_authority() -> dict[str, object]:
     }
     registry["status"].pop("job_roles")
     role_names = (
-        "release-authorizer", "release-build",
+        "bootstrap", "probe", "release-authorizer", "release-build",
         "release-verifier", "release-collector", "release-publisher", "canary",
     )
     for index, name in enumerate(role_names, start=500):
@@ -413,6 +413,8 @@ def _v11_authority() -> dict[str, object]:
             "reusable_producers": ["governance", "pack"],
             "finalizer": "finalizer",
             "status_publisher": "status",
+            "bootstrap": "bootstrap",
+            "probe": "probe",
             "release_authorizer": "release-authorizer",
             "release_build": "release-build",
             "release_verifier": "release-verifier",
