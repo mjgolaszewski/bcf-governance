@@ -6,7 +6,7 @@ document:
   path: governance/semantic-lock.yml
 contracts:
   semantic_families: 08bcd173332a69d0865279614f002c2205ec0a27d913037a84594cc9db3cb034
-  application_operations: f0996b87233f0a541ff8a4543e73d9d848fad9ed4df218843b53ad1cbb1a8600
+  application_operations: ae82a3f80aee9bee138df407bd7a2ac481aad255ef00dc55d55ac29f2c389bca
   canonical_representations: 977898bccbf8291f678b442336903c9e0dfb751b374b30179d1951e9f810105e
 source_inventory_sha256: 2ce04eb1b29a10f60288cbc20b1952596d0510538da919c5e7d0fd529fb1b60f
 projection_outputs:
