@@ -9,10 +9,10 @@ from .common import (
     GovernanceValidationError,
     _load_yaml,
     _require_mapping,
-    _require_path,
     _require_positive_int,
 )
 from .context_budgets import _validate_context_budgets
+from .audit_artifacts import _validated_code_root
 
 
 def validate_context_budgets(repo_root: Path) -> int:
@@ -64,8 +64,8 @@ def validate_production_module_size(repo_root: Path) -> int:
         raise GovernanceValidationError(
             "architecture-boundaries.yml architecture.source_roots must be a non-empty list"
         )
-    roots = [
-        _require_path(
+    root_names = [
+        _validated_code_root(
             repo_root,
             str(value),
             context="architecture-boundaries.yml architecture.source_roots",
@@ -73,10 +73,11 @@ def validate_production_module_size(repo_root: Path) -> int:
         for value in raw_roots
         if isinstance(value, str) and value
     ]
-    if len(roots) != len(raw_roots):
+    if len(root_names) != len(raw_roots):
         raise GovernanceValidationError(
             "architecture-boundaries.yml architecture.source_roots is invalid"
         )
+    roots = [repo_root / name for name in root_names if (repo_root / name).is_dir()]
     modules = sorted(
         path
         for root in roots

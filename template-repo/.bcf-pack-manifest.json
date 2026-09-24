@@ -880,7 +880,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/structural_limits.py": {
       "operation": "copy",
-      "sha256": "12b65a3ae1e7be1d167f440080e8a2b07b0973de7143103d0d31bb3fc9738de5"
+      "sha256": "4b6c7d9b364594516da0ccb1f6b8d05bf56fb99cc9380841c556e21f7b2133a6"
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",

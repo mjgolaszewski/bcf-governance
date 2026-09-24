@@ -199,6 +199,8 @@ def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
         "checkout-candidate",
         "setup-python",
         "install-governance",
+        "resolve-effective-controller-candidate",
+        "classify-exact-main-controller",
         "build-trusted-controller",
         "upload-trusted-controller",
     ]
