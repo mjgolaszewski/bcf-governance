@@ -165,7 +165,7 @@ def _authority_payload() -> dict[str, object]:
 
 def _authority_v11_payload() -> dict[str, object]:
     workflow_names = (
-        "admission", "governance", "finalizer", "status", "bootstrap", "probe",
+        "admission", "governance", "finalizer", "status",
         "release-authorizer", "release-build", "release-verifier",
         "release-collector", "release-publisher", "canary",
     )
@@ -208,8 +208,6 @@ def _authority_v11_payload() -> dict[str, object]:
             "reusable_producers": ["governance"],
             "finalizer": "finalizer",
             "status_publisher": "status",
-            "bootstrap": "bootstrap",
-            "probe": "probe",
             "release_authorizer": "release-authorizer",
             "release_build": "release-build",
             "release_verifier": "release-verifier",
