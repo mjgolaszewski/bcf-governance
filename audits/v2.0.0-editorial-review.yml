@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: 25ca1178de8f16ed356f2498eb62cb0ee7430f7a7a619fdeebdcb8c0564aef71
-  after_sha256: aabc684d9c9993262ee2f846a5e09d561117b294526a443a321e9b9a2049125e
+  after_sha256: 566f373633bc5b71a088db82169201f77baf0537d39a6938fe87a87c7e3573ea
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: historical
@@ -60,10 +60,10 @@ documents:
   canonical_topic_owner: README.md
   topic_role: canonical
   before_sha256: 2f4035d39d1eb68c0f1ac528f90efa274cec256e3a0cf7ae66f361b23e094831
-  after_sha256: 2f4035d39d1eb68c0f1ac528f90efa274cec256e3a0cf7ae66f361b23e094831
+  after_sha256: 0e75d9bf0090b1cfde50ca20193dfe3435c0f1991796e7c7bdc9676639fdcae2
   findings:
-  - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  - updated the mechanically checked 2.0.0 correction-release package example
+  disposition: revised
 - path: audits/README.md
   audience: governance reviewers
   canonical_topic_owner: audits/README.md
@@ -96,10 +96,10 @@ documents:
   canonical_topic_owner: docs/MAINTAINING.md
   topic_role: canonical
   before_sha256: f430ff67b85b1b1ea5b2524061894e94207772f633717359b222cea5418ea8ed
-  after_sha256: f430ff67b85b1b1ea5b2524061894e94207772f633717359b222cea5418ea8ed
+  after_sha256: d68f4aa7fdf95d10e7dfdc5c228bc5378b1001f9edbc01dc9a21dcbe104a0fbc
   findings:
-  - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  - documented exact offline compiler provisioning, isolated wheel-consumer qualification, and the current release audit
+  disposition: revised
 - path: docs/RELIABILITY_MODEL.md
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/RELIABILITY_MODEL.md
@@ -114,10 +114,10 @@ documents:
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
   before_sha256: d803cd6698d5012b014271ffdd8f357d2ab88e9833025a96b0b256d1f7223356
-  after_sha256: d803cd6698d5012b014271ffdd8f357d2ab88e9833025a96b0b256d1f7223356
+  after_sha256: 194e855349cf75d2e66f8399e0c16be25444410f6dee14ab9247948ad4f2eb4e
   findings:
-  - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  - documented TypeScript adoption and lock compatibility, explicit routing eligibility, fallback, and provider label limits
+  disposition: revised
 - path: docs/assets/bcf-governance-pack-hero.jpg
   audience: BCF evaluators and adopters
   canonical_topic_owner: README.md
@@ -195,10 +195,10 @@ documents:
   canonical_topic_owner: template-repo/docs/OPERATIONS.md
   topic_role: canonical
   before_sha256: 422099796f6d4b53024abd8bf3470033003ac29874a9bbcc689c3625c8e51e7b
-  after_sha256: 422099796f6d4b53024abd8bf3470033003ac29874a9bbcc689c3625c8e51e7b
+  after_sha256: 304101ba848691b90c77c06651cc19ac8dc96b69c3ba9f1fb0f44ca3798d2e8b
   findings:
   - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  disposition: revised
 - path: template-repo/governance/EXISTING_REPO_ADOPTION.md
   audience: consumer repository operators
   canonical_topic_owner: template-repo/governance/EXISTING_REPO_ADOPTION.md

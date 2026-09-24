@@ -3,10 +3,23 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
+import hashlib
+import json
+import os
 from pathlib import Path
-from typing import Any
+import subprocess
+import sys
+from typing import Any, Callable, Iterable
 
 import yaml  # type: ignore[import-untyped]
+
+try:
+    from bcf_governance import __version__
+except ModuleNotFoundError:  # Standalone template runtime owns a relative projection.
+    from ._version import __version__
+
+from .test_manifests import declared_test_gates
 
 HOTFIX_MODES = {"lite", "full"}
 
@@ -258,6 +271,171 @@ def scaffold_hotfix_log(
     }
     _write_yaml(log_path, payload, force=force)
     return log_path
+
+
+class ReconcileError(ValueError):
+    """Governed projections cannot be checked or converged safely."""
+
+
+Action = Callable[[], None]
+
+
+@dataclass(frozen=True)
+class ReconcileStep:
+    """One canonical projection owner with distinct check and apply actions."""
+
+    step_id: str
+    check: Action
+    apply: Action
+
+
+def _run_reconcile_command(command: list[str], *, repo_root: Path, step_id: str) -> None:
+    environment = dict(os.environ)
+    environment.pop("PYTHONPATH", None)
+    result = subprocess.run(
+        command,
+        cwd=repo_root,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode:
+        detail = result.stderr.strip() or result.stdout.strip() or f"exit {result.returncode}"
+        raise ReconcileError(f"{step_id} failed: {detail}")
+
+
+def _reconcile_action(repo_root: Path, step_id: str, command: list[str]) -> Action:
+    return lambda: _run_reconcile_command(command, repo_root=repo_root, step_id=step_id)
+
+
+def _editorial_base(audit: Path) -> str:
+    try:
+        payload = yaml.safe_load(audit.read_text(encoding="utf-8"))
+        base = payload["base_commit"]
+    except (OSError, TypeError, KeyError, yaml.YAMLError) as exc:
+        raise ReconcileError("editorial audit does not expose an immutable base") from exc
+    if not isinstance(base, str) or len(base) != 40 or any(c not in "0123456789abcdef" for c in base):
+        raise ReconcileError("editorial audit base is not an exact commit")
+    return base
+
+
+def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
+    """Return the closed canonical projection order for this repository."""
+
+    cli = [str(python), "-m", "bcf_governance.cli"]
+    steps: list[ReconcileStep] = [
+        ReconcileStep(
+            "semantic-lock",
+            _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--check"]),
+            _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--apply"]),
+        )
+    ]
+    for gate_id in declared_test_gates(repo_root):
+        common = [*cli, "test-manifest"]
+        suffix = ["--gate", gate_id, "--repo-root", str(repo_root), "--python", str(python)]
+        steps.append(
+            ReconcileStep(
+                f"test-manifest:{gate_id}",
+                _reconcile_action(repo_root, f"test-manifest:{gate_id}", [*common, "check", *suffix]),
+                _reconcile_action(repo_root, f"test-manifest:{gate_id}", [*common, "update", *suffix]),
+            )
+        )
+    for operation in ("lock", "render"):
+        steps.append(
+            ReconcileStep(
+                f"ci-graph-{operation}",
+                _reconcile_action(repo_root, f"ci-graph-{operation}", [*cli, "ci", "graph", operation, "--repo-root", str(repo_root), "--check"]),
+                _reconcile_action(repo_root, f"ci-graph-{operation}", [*cli, "ci", "graph", operation, "--repo-root", str(repo_root), "--apply"]),
+            )
+        )
+    pack = repo_root / ".github/scripts/build_pack_manifest.py"
+    if pack.is_file() and not pack.is_symlink():
+        steps.append(
+            ReconcileStep(
+                "pack-projection",
+                _reconcile_action(repo_root, "pack-projection", [str(python), str(pack), "--check"]),
+                _reconcile_action(repo_root, "pack-projection", [str(python), str(pack)]),
+            )
+        )
+    checker = repo_root / ".github/scripts/check_editorial_contract.py"
+    builder = repo_root / ".github/scripts/build_editorial_audit.py"
+    if checker.is_file() and builder.is_file() and not checker.is_symlink() and not builder.is_symlink():
+        audit = repo_root / f"audits/v{__version__}-editorial-review.yml"
+        base = _editorial_base(audit)
+        steps.append(
+            ReconcileStep(
+                "editorial-audit",
+                _reconcile_action(repo_root, "editorial-audit", [str(python), str(checker)]),
+                _reconcile_action(repo_root, "editorial-audit", [str(python), str(builder), "--repo-root", str(repo_root), "--audit", str(audit), "--base-sha", base, "--apply"]),
+            )
+        )
+    return tuple(steps)
+
+
+def _reconcile_snapshot(repo_root: Path) -> str:
+    result = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+        cwd=repo_root,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode:
+        raise ReconcileError("cannot inventory governed repository files")
+    digest = hashlib.sha256()
+    for raw in sorted(value for value in result.stdout.split(b"\0") if value):
+        relative = raw.decode("utf-8")
+        path = repo_root / relative
+        digest.update(raw + b"\0")
+        if path.is_symlink():
+            digest.update(b"symlink\0" + os.readlink(path).encode())
+        elif path.is_file():
+            digest.update(b"file\0" + path.read_bytes())
+        else:
+            digest.update(b"absent\0")
+    return digest.hexdigest()
+
+
+def converge(
+    steps: Iterable[ReconcileStep],
+    snapshot: Callable[[], str],
+    *,
+    max_rounds: int = 4,
+) -> int:
+    """Apply the ordered owners until one entire round is byte-stable."""
+
+    ordered = tuple(steps)
+    for round_number in range(1, max_rounds + 1):
+        before = snapshot()
+        for step in ordered:
+            step.apply()
+        if snapshot() == before:
+            for step in ordered:
+                step.check()
+            return round_number
+    raise ReconcileError(f"governance projections did not converge after {max_rounds} rounds")
+
+
+def reconcile_main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Converge all mechanically derived governance surfaces.")
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument("--python", type=Path, default=Path(sys.executable))
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--check", action="store_true")
+    mode.add_argument("--apply", action="store_true")
+    args = parser.parse_args(argv)
+    root = args.repo_root.resolve()
+    try:
+        steps = reconcile_steps(root, args.python.resolve())
+        if args.check:
+            for step in steps:
+                step.check()
+            rounds = 0
+        else:
+            rounds = converge(steps, lambda: _reconcile_snapshot(root))
+    except (OSError, UnicodeError, ReconcileError, ValueError) as exc:
+        raise SystemExit(f"governance-reconcile-failed: {exc}") from exc
+    print(json.dumps({"status": "clean" if args.check else "converged", "rounds": rounds, "steps": [step.step_id for step in steps]}, sort_keys=True))
 
 
 def _parser() -> argparse.ArgumentParser:

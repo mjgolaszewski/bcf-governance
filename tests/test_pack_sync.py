@@ -67,6 +67,27 @@ def test_root_wrapper_bootstraps_an_uninstalled_source_checkout(tmp_path: Path) 
     assert "usage:" in result.stdout
 
 
+def test_projected_scaffold_runtime_imports_without_outer_package(tmp_path: Path) -> None:
+    runtime = REPO_ROOT / "template-repo/scripts"
+    site_packages = Path(yaml.__file__).resolve().parent.parent
+    probe = (
+        "import sys; "
+        f"sys.path.extend([{str(site_packages)!r}, {str(runtime)!r}]); "
+        "from _bcf_runtime.scaffold_governance_artifacts import reconcile_steps; "
+        "assert callable(reconcile_steps)"
+    )
+
+    result = subprocess.run(
+        [sys.executable, "-S", "-c", probe],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+
+
 def test_packaged_template_resource_stays_in_sync() -> None:
     template_files = sorted(
         path.relative_to(REPO_ROOT / "template-repo")

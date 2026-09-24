@@ -259,3 +259,43 @@ p27_p0_02_migration_expansion:
         probe: 35965795354/1
         installed_controller: 1511b09b5a27ef6e541b37a0c2154dcb44448c65
         custody: ordinary_current
+  fixed_point_reconciliation:
+    workitem: P27-P0-03
+    predecessor_closure:
+      exact_main: 35970297382/1
+      finalizer: 35970583885/1
+      publisher: 35970654082/1
+      proposition: {predicate: workitem_closed, target: P27-P0-02, eligible_successor: P27-P0-03}
+    canonical_command: bcf reconcile --repo-root . --apply|--check
+    ordered_owners: [semantic_lock, exact_test_manifests, ci_graph_locks, generated_workflows, pack_runtime_and_schema_mirrors, pack_manifests, editorial_audit]
+    convergence: apply repeats the closed order until one whole round is byte-stable; four unstable rounds reject
+    validation:
+      apply: {status: converged, rounds_after_final_source_change: 2}
+      check: {status: clean, rounds: 0}
+      focused: {passed: 145, expected_pre_pin_failure: immutable workflow authority awaited its exact definition commit}
+      post_pin_downstream: {passed: 13, coverage: [immutable_authority, bounded_truth, finalizer, publisher, successor_eligibility, release_authorizer_rejection, release_receipt_rejection]}
+      pr_preflight: {status: pass, controller: pending_rotation, release_authority: false}
+    controlled_demolition:
+      collapsed_agent_steps: [semantic_lock_apply, per_gate_manifest_update, graph_lock_apply, graph_render_apply, pack_manifest_builder, editorial_audit_builder]
+      surviving_agent_commands:
+      - {command: bcf reconcile, proposition: deterministically converge all mechanically derived repository bytes}
+      - {command: bcf ci local-pr, proposition: bind local validation to exact remote PR base and candidate identity}
+      - {command: bcf ci pin-authority, proposition: bind trusted workflows to an already committed exact Git object}
+      - {command: bcf preflight, proposition: reject deterministic contract defects before evidence allocation}
+      - {command: bcf evidence, proposition: execute isolated behavioral producers and causal controls}
+      - {command: bcf truth, proposition: compute lifecycle state only from authenticated evidence}
+      surviving_provider_planes:
+      - {plane: candidate_governance, proposition: independently execute declared assurance producers}
+      - {plane: trusted_finalization_and_publication, proposition: authenticate provider evidence and publish canonical status}
+      - {plane: trusted_controller_rotation, proposition: retain N authorization through independent N+1 installation probe and atomic activation}
+      - {plane: release, proposition: separately authorize verify and publish immutable release bytes}
+      commit_bound_exception: authority pinning cannot be generated before its workflow-definition commit exists and remains a separate mechanical second commit
+    prospective_chain:
+    - {boundary: preflight, expected: stale projection and non-convergence reject before fan-out}
+    - {boundary: controller_compatibility, expected: trusted runtime delta predicts pending_rotation and release_authority false}
+    - {boundary: pr_evidence, expected: test contract runtime smoke and reconciliation regressions execute normally}
+    - {boundary: certification, expected: exact candidate evidence finalizes without scoped-authority broadening}
+    - {boundary: exact_main, expected: installed N suppresses incompatible evidence and builds exact N+1}
+    - {boundary: controller_lifecycle, expected: authorized routine one-PR transition installs probes and atomically activates N+1 without repository bookkeeping}
+    - {boundary: bounded_truth, expected: fresh N+1 exact-main closes P27-P0-03 and makes P27-P0-04 eligible}
+    - {boundary: release, expected: bounded workitem certification remains non-release-authoritative}

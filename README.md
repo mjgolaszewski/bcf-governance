@@ -289,7 +289,7 @@ bcf profile promote --repo-root . --to standard --contract-version 2.0 \
 bcf ci graph validate --repo-root .
 bcf ci graph diagnose --repo-root .
 bcf ci graph audit --repo-root . --format json
-bcf ci graph render --repo-root . --check
+bcf reconcile --repo-root . --check
 bcf ci adopt github --repo-root . --check
 # Repeat with --apply after reviewing the check output.
 ```

@@ -47,8 +47,7 @@ workflow bytes. Promotion validation also preserves local Git custody so
 retained phase-history hashes remain mechanically verifiable. Fresh Standard-v2
 installs require explicit candidate and trusted runner mappings and render the
 reference graph. Thereafter edit the graph contract and use
-`bcf ci graph lock --apply`, `bcf ci graph validate`, and
-`bcf ci graph render --check|--apply`. Use
+`bcf reconcile --repo-root . --apply|--check` and `bcf ci graph validate`. Use
 `bcf ci graph audit --format json` for the complete effective workflow, gate,
 artifact, receipt, test, dependency, timeout, and authority inventory.
 `bcf ci adopt github --check|--apply`
@@ -89,8 +88,8 @@ Fresh repositories also receive an inactive
 inputs may explicitly configure its GitHub App, protected environment,
 freshness classes, reachability roots, and budgets, then declare graph-owned
 `durable-source` and `durable-reference` artifacts plus one trusted no-checkout
-`durable_publish` job. Run `bcf evidence-store validate`, `bcf ci graph lock
---apply`, and `bcf ci graph render --apply`; never hand-edit the generated
+`durable_publish` job. Run `bcf evidence-store validate` and
+`bcf reconcile --repo-root . --apply`; never hand-edit the generated
 transport steps or provider identities. The workflow token authenticates
 ordinary reads; the short-lived App token receives only `contents:write` for
 draft discovery, publication reads by release ID, complete Release inventory,

@@ -26,7 +26,7 @@ workitems:
   status: DONE
   summary: deliver measured constrained critical-path DAG with duration-aware assignment one-PR routine controller rotation and execution-scoped ephemeral-state closure
 - id: P27-P0-03
-  status: TODO
+  status: DONE
   summary: deliver canonical convergent bcf reconcile fixed-point generation with controlled demolition of redundant ceremony
 - id: P27-P0-04
   status: TODO
@@ -52,6 +52,14 @@ execution_evidence:
   - 'P27-P0-02 closes execution-scoped state through the existing runtime owner: exact session workload and execution namespaces reject unexplained state and are ownership-revalidated retired and removal-verified on success failure and adversarial paths'
   - exact-main 35955324164/1 built controller 1511b09b5a27ef6e541b37a0c2154dcb44448c65; routine authorization 35955443307/1 correctly rejected the workflow-authority policy delta, so the existing governed legacy N/N+1 lane owns this bounded corrective installation
   - both trusted runners bootstrapped and probed controller 1511b09b5a27ef6e541b37a0c2154dcb44448c65 through 35964790801/1 and 35965795354/1; provider-compiled confirmation restores ordinary-current custody
+  - exact-main 35970297382/1 and trusted finalizer/publisher 35970583885/1 and 35970654082/1 closed P27-P0-02 and made P27-P0-03 eligible while P27 remained active
+  - P27-P0-03 replaces agent-ordered generator ceremony with one bounded fixed point that fails on stale checks or non-convergence; commit-bound authority pinning remains separate because its proposition is exact committed Git identity
+  - P27-P0-03 final source changes converged in two ordered rounds and a subsequent check was byte-clean; exact-base PR preflight passed with pending_rotation and release_authority false
+  - PR 274 run 35977702565 exposed the stale exact-main target P27-P0-02 after P27-P0-03 became DONE; the canonical graph now targets P27-P0-03 so bounded truth can close it and make P27-P0-04 eligible
+  - the same run reported three adopter governance-validation failures that passed in isolated candidate editable and built-wheel environments; the final canonical test gate remains the required deterministic acceptance proof
+  - the repository-selected final canonical test gate passed all 1629 nodes on the corrected tree, including the three adopter flows; reconcile check reported zero stale rounds
+  - PR 274 run 35986416000 reproduced three installed-profile governance-validation failures; the canonical reconcile owner had imported the outer package from its standalone runtime projection instead of the projected relative version primitive
+  - the no-package provider-equivalent sandbox now imports the projected reconcile owner and passes lite standard and regulated profile flows while exact execution-state retirement remains verified
 closeout_requirements:
   claims:
     workitems_closed:
