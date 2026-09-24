@@ -269,6 +269,12 @@ p27_p0_02_migration_expansion:
     canonical_command: bcf reconcile --repo-root . --apply|--check
     ordered_owners: [semantic_lock, exact_test_manifests, ci_graph_locks, generated_workflows, pack_runtime_and_schema_mirrors, pack_manifests, editorial_audit]
     convergence: apply repeats the closed order until one whole round is byte-stable; four unstable rounds reject
+    validation:
+      apply: {status: converged, rounds_after_final_source_change: 2}
+      check: {status: clean, rounds: 0}
+      focused: {passed: 145, expected_pre_pin_failure: immutable workflow authority awaited its exact definition commit}
+      post_pin_downstream: {passed: 13, coverage: [immutable_authority, bounded_truth, finalizer, publisher, successor_eligibility, release_authorizer_rejection, release_receipt_rejection]}
+      pr_preflight: {status: pass, controller: pending_rotation, release_authority: false}
     controlled_demolition:
       collapsed_agent_steps: [semantic_lock_apply, per_gate_manifest_update, graph_lock_apply, graph_render_apply, pack_manifest_builder, editorial_audit_builder]
       surviving_agent_commands:

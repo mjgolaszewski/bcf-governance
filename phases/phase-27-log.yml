@@ -54,6 +54,7 @@ execution_evidence:
   - both trusted runners bootstrapped and probed controller 1511b09b5a27ef6e541b37a0c2154dcb44448c65 through 35964790801/1 and 35965795354/1; provider-compiled confirmation restores ordinary-current custody
   - exact-main 35970297382/1 and trusted finalizer/publisher 35970583885/1 and 35970654082/1 closed P27-P0-02 and made P27-P0-03 eligible while P27 remained active
   - P27-P0-03 replaces agent-ordered generator ceremony with one bounded fixed point that fails on stale checks or non-convergence; commit-bound authority pinning remains separate because its proposition is exact committed Git identity
+  - P27-P0-03 final source changes converged in two ordered rounds and a subsequent check was byte-clean; exact-base PR preflight passed with pending_rotation and release_authority false
 closeout_requirements:
   claims:
     workitems_closed:
