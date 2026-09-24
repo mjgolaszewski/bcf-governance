@@ -57,6 +57,7 @@ execution_evidence:
   - P27-P0-03 final source changes converged in two ordered rounds and a subsequent check was byte-clean; exact-base PR preflight passed with pending_rotation and release_authority false
   - PR 274 run 35977702565 exposed the stale exact-main target P27-P0-02 after P27-P0-03 became DONE; the canonical graph now targets P27-P0-03 so bounded truth can close it and make P27-P0-04 eligible
   - the same run reported three adopter governance-validation failures that passed in isolated candidate editable and built-wheel environments; the final canonical test gate remains the required deterministic acceptance proof
+  - the repository-selected final canonical test gate passed all 1629 nodes on the corrected tree, including the three adopter flows; reconcile check reported zero stale rounds
 closeout_requirements:
   claims:
     workitems_closed:
