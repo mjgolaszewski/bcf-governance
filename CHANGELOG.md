@@ -1,5 +1,7 @@
 # Changelog
 
+- Preserve the active provider-authenticated P27 reconcile controller transition as the sole effective N+1 custody source, removing a duplicate legacy target projection.
+
 - Add one fail-closed `bcf reconcile` fixed point for semantic locks, test manifests, graph projections, pack mirrors, and editorial custody, replacing agent-facing generator ordering.
 
 - Confirm the P27 rotation-output controller on both trusted runners and restore ordinary-current custody.

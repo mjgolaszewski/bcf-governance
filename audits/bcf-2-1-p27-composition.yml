@@ -299,3 +299,15 @@ p27_p0_02_migration_expansion:
     - {boundary: controller_lifecycle, expected: authorized routine one-PR transition installs probes and atomically activates N+1 without repository bookkeeping}
     - {boundary: bounded_truth, expected: fresh N+1 exact-main closes P27-P0-03 and makes P27-P0-04 eligible}
     - {boundary: release, expected: bounded workitem certification remains non-release-authoritative}
+    routine_rotation_activation:
+      run: 35994196357/1
+      transition_id: f686dd0138bf1e2e088949a8c4210185902a5ab266b7b495b4b33d9988e0b3ea
+      artifact: {id: '10805442014', run: 35994029047/1, provider_digest: 'sha256:195c40fde73f8b67f96ef8c6d855121312981538de449d18e8c19de81cd0947a', wheel_sha256: f7d62f9f3f68d0066ca97fef116173ab2f9ae14d3a25d24f6ac8b9780baa4372}
+      bootstrap_jobs: ['107615417029', '107615417184']
+      probe_jobs: ['107615779534', '107615779712']
+      promotion_jobs: ['107616106036', '107616105956']
+      result: active_on_both_trusted_runners
+    duplicate_legacy_projection_correction:
+      failed_bootstrap: 36000475188/1
+      cause: a later duplicate builder artifact was projected through the legacy target lane after the routine transition was already active
+      disposition: restore ordinary-current source custody so the canonical provider resolver can apply the authenticated active transition

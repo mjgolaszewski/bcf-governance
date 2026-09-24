@@ -60,6 +60,8 @@ execution_evidence:
   - the repository-selected final canonical test gate passed all 1629 nodes on the corrected tree, including the three adopter flows; reconcile check reported zero stale rounds
   - PR 274 run 35986416000 reproduced three installed-profile governance-validation failures; the canonical reconcile owner had imported the outer package from its standalone runtime projection instead of the projected relative version primitive
   - the no-package provider-equivalent sandbox now imports the projected reconcile owner and passes lite standard and regulated profile flows while exact execution-state retirement remains verified
+  - routine rotation 35994196357/1 authenticated protected PR 274, bootstrapped, probed, and promoted controller 77811a5d5d401cc16bb49013f5968974c9eb590f on both trusted runners; transition f686dd0138bf1e2e088949a8c4210185902a5ab266b7b495b4b33d9988e0b3ea is active
+  - failed legacy bootstrap 36000475188/1 changed no runner state; it selected a duplicate artifact after routine activation, so the correction restores ordinary-current source custody and leaves the active provider transition as the sole effective N+1 authority
 closeout_requirements:
   claims:
     workitems_closed:
