@@ -311,3 +311,10 @@ p27_p0_02_migration_expansion:
       failed_bootstrap: 36000475188/1
       cause: a later duplicate builder artifact was projected through the legacy target lane after the routine transition was already active
       disposition: restore ordinary-current source custody so the canonical provider resolver can apply the authenticated active transition
+    exact_main_artifact_order_correction:
+      run: 36004029461/1
+      first_causal_job: '107647473273'
+      failure: repository artifact inventory changed during pagination
+      invariant: strict provider inventory pagination remains fail closed
+      correction: the canonical exact-main DAG completes and uploads its controller artifact before admission resolves provider transition custody
+      authority_effect: generated exact-main workflow bytes require mechanical authority pinning; controller runtime and release authority are unchanged
