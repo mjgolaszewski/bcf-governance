@@ -16,6 +16,7 @@ from .ci_github_identity import GitHubControllerError
 from .ci_github_pr import finalize_pr, publish_pr
 from .github_protection import apply_protection, inspect_protection
 from .prior_evidence_transport import transport_prior_evidence
+from .routine_controller_provider import resolve_effective_controller
 
 
 def _event() -> dict[str, object]:
@@ -119,10 +120,17 @@ def _prior_evidence(argv: list[str]) -> dict[str, object]:
             required_environment("BCF_PROTECTION_INSPECT_OBSERVED_INSTALLATION_ID"),
             os.environ.get("GITHUB_API_URL", "https://api.github.com"),
         )
+    api = environment_api()
+    effective = resolve_effective_controller(api, repository=args.repository)
+    pin = effective["pin"]
     result = transport_prior_evidence(
-        environment_api(), repository=args.repository,
+        api, repository=args.repository,
         expected_main_sha=args.main_sha, output_root=args.output,
         protection_credential=credential,
+        controller_authority={
+            "controller_commit_sha": pin["BCF_BOOTSTRAP_COMMIT_SHA"],
+            "controller_bundle_sha256": pin["BCF_BOOTSTRAP_WHEEL_SHA256"],
+        },
     )
     return {
         "main_commit_sha": result["main"]["commit_sha"],

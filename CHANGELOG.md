@@ -1,5 +1,7 @@
 # Changelog
 
+- Bind exact-main preflight controller compatibility to the provider-authenticated effective controller carried by same-admission prior evidence.
+
 - Order exact-main controller build/upload before provider artifact resolution so strict pagination cannot race its own producer.
 
 - Preserve the active provider-authenticated P27 reconcile controller transition as the sole effective N+1 custody source, removing a duplicate legacy target projection.

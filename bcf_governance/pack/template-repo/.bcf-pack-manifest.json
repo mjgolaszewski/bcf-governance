@@ -504,7 +504,7 @@
     },
     "scripts/_bcf_runtime/ci_github_extension_commands.py": {
       "operation": "copy",
-      "sha256": "dad1459f7cf74f75dc26e0ac46a27a8b293917543f0520656a26ab23b7a87525"
+      "sha256": "9aff70fdf7cd56c2071be9a1e2640afd74b75a3a3b20c6e5ba2e109dc308c0ce"
     },
     "scripts/_bcf_runtime/ci_github_identity.py": {
       "operation": "copy",
@@ -904,7 +904,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "b564fee7d44a34241f9ec610a27880a149465ab0bb006fc2d682e210bf39a501"
+      "sha256": "8f340bffabacf9d5a065668002aee32e97e04e9821f44efca01706e69b02164c"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",
@@ -912,7 +912,7 @@
     },
     "scripts/_bcf_runtime/prior_evidence_transport.py": {
       "operation": "copy",
-      "sha256": "798a4bd32e2ffb2d99d3970e859bb3d571e5b76e75647ef0a3a354e703357680"
+      "sha256": "2fe1c898fadc32f4ad02cee8c9c371a15cc9080192397f8b247867391c92e61e"
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",

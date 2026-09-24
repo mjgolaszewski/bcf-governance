@@ -313,12 +313,19 @@ def test_transport_authenticates_and_preserves_exact_source_bytes(
 ) -> None:
     output = tmp_path / "transport"
     manifest = transport_prior_evidence(
-        provider, repository=REPOSITORY, expected_main_sha=MAIN, output_root=output
+        provider, repository=REPOSITORY, expected_main_sha=MAIN, output_root=output,
+        controller_authority={
+            "controller_commit_sha": "7" * 40,
+            "controller_bundle_sha256": DIGEST,
+        },
     )
     assert manifest["candidate"] == {"commit_sha": HEAD, "tree_sha": TREE}
     assert manifest["main"] == {"commit_sha": MAIN, "tree_sha": TREE}
     assert manifest["merge"]["candidate_tree_equals_main_tree"] is True
-    assert manifest["authority"]["controller_commit_sha"] == "9" * 40
+    assert manifest["authority"] == {
+        "controller_commit_sha": "7" * 40,
+        "controller_bundle_sha256": DIGEST,
+    }
     assert {value["role"] for value in manifest["artifacts"]} == {
         "certification", "session", "evidence", "truth"
     }
@@ -335,6 +342,17 @@ def test_transport_authenticates_and_preserves_exact_source_bytes(
     )
     Draft202012Validator(schema, resolver=resolver).validate(manifest)
     assert not ({"decision", "qualification", "dependency_closure"} & set(manifest))
+
+    with pytest.raises(
+        GitHubControllerError, match="effective controller authority is invalid"
+    ):
+        transport_prior_evidence(
+            provider,
+            repository=REPOSITORY,
+            expected_main_sha=MAIN,
+            output_root=tmp_path / "invalid-controller-authority",
+            controller_authority={"controller_commit_sha": "7" * 40},
+        )
 
 
 def test_transport_uses_candidate_inventory(

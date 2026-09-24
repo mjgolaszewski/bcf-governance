@@ -460,6 +460,21 @@ def test_stale_trusted_controller_is_a_preflight_failure(
         ):
             preflight._self_controller(tmp_path, allow_stale_runtime=False)
 
+    observed: list[str] = []
+    monkeypatch.setattr(
+        preflight,
+        "verify_trusted_controller_compatibility",
+        lambda _root, *, target_commit: observed.append(target_commit),
+    )
+    assert preflight._self_controller(
+        tmp_path,
+        transported_authority={
+            "controller_commit_sha": "c" * 40,
+            "controller_bundle_sha256": "d" * 64,
+        },
+    ) == 6
+    assert observed == ["c" * 40]
+
 
 def test_pr_bootstrap_fails_early(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
