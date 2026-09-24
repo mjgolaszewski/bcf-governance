@@ -216,7 +216,7 @@
     },
     "schemas/ci-authority.schema.json": {
       "operation": "copy",
-      "sha256": "5b90c483052da99a919c52957c24d925219fadbd03aceca5ea12b2b0f8d20839"
+      "sha256": "13878fdfa54743f1f7e6221c13115b4373126f3b6b0edf41f886fcc3afc6be17"
     },
     "schemas/ci-certification.schema.json": {
       "operation": "copy",
