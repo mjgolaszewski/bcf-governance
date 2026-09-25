@@ -7,11 +7,13 @@ import subprocess
 import pytest
 import yaml
 
+from bcf_governance.tooling import trusted_controller_compatibility as compatibility
 from bcf_governance.tooling.trusted_controller_compatibility import (
     TrustedControllerApplicabilityState,
     TrustedControllerBootstrapIncompatibleError,
     TrustedControllerCompatibilityError,
     TrustedControllerRuntimeStaleError,
+    TrustedControllerRoutineRotationIncompatibleError,
     classify_trusted_controller_applicability,
     trusted_runtime_source_files,
     verify_pr_bootstrap_compatibility,
@@ -152,6 +154,56 @@ def test_exact_main_applicability_is_derived_from_canonical_compatibility(
         "semantic_evidence_applicable": False,
         "target_commit": target,
     }
+
+
+def test_installed_n_topology_rejection_requires_exact_alternate_lane(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root, target = _repository(tmp_path)
+    api = root / "bcf_governance/tooling/ci_github_api.py"
+    api.write_text("class GitHubAPI:\n    expanded = True\n", encoding="utf-8")
+    _git(root, "add", api.relative_to(root).as_posix())
+    _git(root, "commit", "-q", "-m", "expand trusted runtime")
+    monkeypatch.setattr(
+        compatibility,
+        "_verify_installed_authority_consumability",
+        lambda *_args, **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        compatibility,
+        "_verify_installed_pending_topology",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            TrustedControllerRoutineRotationIncompatibleError(
+                "installed N rejected pending topology"
+            )
+        ),
+    )
+
+    with pytest.raises(TrustedControllerRoutineRotationIncompatibleError):
+        classify_trusted_controller_applicability(root, target_commit=target)
+
+    for path in compatibility.ALTERNATE_LANE_WORKFLOWS.values():
+        (root / path).write_text("name: governed\n", encoding="utf-8")
+    governance = root / "governance"
+    governance.mkdir(exist_ok=True)
+    (governance / "ci-authority.yml").write_text(
+        yaml.safe_dump(
+            {
+                "workflow_registry": {
+                    role: {"active_path": path.as_posix()}
+                    for role, path in compatibility.ALTERNATE_LANE_WORKFLOWS.items()
+                },
+                "roles": {
+                    role: role for role in compatibility.ALTERNATE_LANE_WORKFLOWS
+                },
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+
+    pending = classify_trusted_controller_applicability(root, target_commit=target)
+    assert pending.state is TrustedControllerApplicabilityState.PENDING_ROTATION
 
 
 def test_target_may_lag_canonical_inert_version_metadata(tmp_path: Path) -> None:

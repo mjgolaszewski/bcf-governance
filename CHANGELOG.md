@@ -1,5 +1,9 @@
 # Changelog
 
+- Derive pending-rotation producer facades from the authenticated admission workflow,
+  execute installed N's exact topology classifier during prospective compatibility,
+  and restore the governed alternate lane only when installed N cannot authorize N+1.
+
 - Remove the temporary normalization-compatibility bootstrap/probe lane after
   ordinary-current confirmation of the normalization-aware controller.
 

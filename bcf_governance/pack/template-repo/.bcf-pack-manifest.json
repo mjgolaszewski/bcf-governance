@@ -516,7 +516,7 @@
     },
     "scripts/_bcf_runtime/ci_github_membership.py": {
       "operation": "copy",
-      "sha256": "66d35d96ba50ccc893a7ee8f4f123a5929da87bcf8d772dbd5236ec8a85b8162"
+      "sha256": "e4941e4807652ef89b7e74d28849b6dc728875e43f0dd297dc58c6b47139949d"
     },
     "scripts/_bcf_runtime/ci_github_pr.py": {
       "operation": "copy",
@@ -900,7 +900,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "9085866acb9a5ae43dd37bb2ce57202a58e26aca415fba1140b486df41d38c0f"
+      "sha256": "e86dba2524c33e64dca75dd371ebbefa33f9d8b350c194d69b1aa91ef69d4769"
     },
     "scripts/_bcf_runtime/migrate_contracts.py": {
       "operation": "copy",
@@ -916,7 +916,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "eee870ee35e240e54867f5cfc6051436bb969e91e22f1c22713d26654259683a"
+      "sha256": "6236995c619e10131312c3d00aa07cf3b0492431d44dec8c92159a04262d8337"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",
@@ -1108,7 +1108,7 @@
     },
     "scripts/_bcf_runtime/trusted_controller_compatibility.py": {
       "operation": "copy",
-      "sha256": "ac369b225eabb24e1c307f638d0bd605783d2be88fa05da3cb868fe871e0784c"
+      "sha256": "8f90ea0c6a4342b4de98066a9b73dd458777761b6799d4ca0987691311c70fd0"
     },
     "scripts/_bcf_runtime/trusted_inputs.py": {
       "operation": "copy",

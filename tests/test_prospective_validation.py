@@ -485,6 +485,40 @@ def test_protected_policy_change_requires_exact_alternate_lane(
     }
 
 
+def test_installed_n_rotation_incompatibility_preserves_typed_alternate_lane(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    trace: list[str] = []
+    _front_door(monkeypatch, trace)
+    monkeypatch.setattr(
+        prospective,
+        "run_preflight",
+        lambda *_args, **_kwargs: {
+            "status": "pass",
+            "self_controller": {
+                "status": "pending_rotation",
+                "transition_requirement": "alternate_lane_required",
+                "release_authority": False,
+            },
+        },
+    )
+
+    report = prospective._run_prospective_train(
+        tmp_path,
+        **TRAIN,
+        python_executable=Path("/python"),
+        execute_evidence=False,
+        runner=_runner,
+    )
+
+    compatibility = report["boundaries"][1]
+    assert compatibility["transition_class"] == "runtime_only"
+    assert compatibility["transition_requirement"] == "alternate_lane_required"
+    assert compatibility["alternate_lane"]["id"] == (
+        "ordinary_protected_n_n_plus_1"
+    )
+
+
 
 def test_full_walk_rejects_wrong_finalizer_truth_subject(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path

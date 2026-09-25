@@ -437,3 +437,14 @@ p27_p0_02_migration_expansion:
         - {plane: trusted_finalization_and_publication, proposition: authenticate provider evidence and publish exact scoped status}
         - {plane: release, proposition: separately authorize verify and publish immutable release bytes}
       release_authority: absent until a later explicit terminal phase-closure certification
+    p27_p0_04_pending_topology_recovery:
+      failed_subject: {commit: 0ff7fd2c64d6ac5a04b0fa31721b64b6a6f565d3, tree: 1a048485c82cf4db995f7f50286b4be430f72eb1}
+      exact_main: {run: 36129865629, attempt: 1, state: builder_only_success}
+      failed_rotation: {run: 36129949527, attempt: 1, job: 108054669213, reason: admission_not_successful}
+      causal_invariant: installed N required nested producer job names during pending rotation, but GitHub represents a skipped reusable producer as its authenticated caller facade
+      classifier_correction: derive producer facades from the authenticated admission workflow job-role map and accept only exact builder-success plus admission-and-facade-skipped inventory
+      prospective_correction: execute installed N's exact topology classifier against the mechanically projected candidate provider shape before evidence allocation
+      alternate_lane: ordinary_protected_n_n_plus_1
+      lane_scope: temporarily restore only source-pinned bootstrap and probe projection until the compatible classifier is installed and ordinary-current
+      fail_closed: child jobs, unrelated facades, extra jobs, wrong conclusions, incomplete inventory, and absent alternate-lane authority remain rejected
+      release_authority: false

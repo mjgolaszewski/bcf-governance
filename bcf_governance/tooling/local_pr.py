@@ -534,6 +534,9 @@ def _run_prospective_train(
         transition_requirement = (
             "no_transition"
             if controller_state == "current"
+            else str(controller.get("transition_requirement"))
+            if isinstance(controller, dict)
+            and controller.get("transition_requirement") == "alternate_lane_required"
             else "alternate_lane_required"
             if transition_class == "protected_policy_change"
             else "provider_routine_transition_required"
@@ -646,7 +649,7 @@ def _run_prospective_train(
                     "transition_class": transition_class,
                     **(
                         {"alternate_lane": alternate_policy_lane_contract()}
-                        if transition_class == "protected_policy_change"
+                        if transition_requirement == "alternate_lane_required"
                         else {}
                     ),
                 },

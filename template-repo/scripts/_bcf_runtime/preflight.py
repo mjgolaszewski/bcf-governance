@@ -50,7 +50,9 @@ from .self_workflow_contracts import (
 from .test_manifests import check_all
 from .trusted_controller_compatibility import (
     TrustedControllerCompatibilityError,
+    TrustedControllerRoutineRotationIncompatibleError,
     TrustedControllerRuntimeStaleError,
+    ordinary_alternate_lane_available,
     verify_pr_bootstrap_compatibility,
     verify_trusted_controller_compatibility,
 )
@@ -460,6 +462,17 @@ def _self_controller(
             verify_trusted_controller_compatibility(
                 repo_root, target_commit=target
             )
+        except TrustedControllerRoutineRotationIncompatibleError:
+            if not allow_stale_runtime or not ordinary_alternate_lane_available(
+                repo_root
+            ):
+                raise
+            return {
+                "status": "pending_rotation",
+                "projection_count": count,
+                "transition_requirement": "alternate_lane_required",
+                "release_authority": False,
+            }
         except TrustedControllerRuntimeStaleError:
             if not allow_stale_runtime:
                 raise

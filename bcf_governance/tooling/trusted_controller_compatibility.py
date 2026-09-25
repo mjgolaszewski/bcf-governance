@@ -5,12 +5,13 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass
 from enum import StrEnum
+import json
 from pathlib import Path, PurePosixPath
 import re
 import subprocess
 import sys
 import tempfile
-from typing import Iterable
+from typing import Any, Iterable
 
 import yaml
 
@@ -46,6 +47,15 @@ AUTHORITY_CONTRACT = PurePosixPath("governance/ci-authority.yml")
 INSTALLED_AUTHORITY_VALIDATOR = PurePosixPath(
     "bcf_governance/tooling/ci_authority_contracts.py"
 )
+INSTALLED_TOPOLOGY_CLASSIFIER = PurePosixPath(
+    "bcf_governance/tooling/ci_github_membership.py"
+)
+ALTERNATE_LANE_WORKFLOWS = {
+    "bootstrap": PurePosixPath(
+        ".github/workflows/bcf-trusted-control-bootstrap.yml"
+    ),
+    "probe": PurePosixPath(".github/workflows/bcf-trusted-control-probe.yml"),
+}
 INSTALLED_AUTHORITY_VALIDATION_PROGRAM = (
     "import pathlib,runpy,sys,yaml;"
     "owner=runpy.run_path(sys.argv[1]);"
@@ -64,6 +74,12 @@ class TrustedControllerRuntimeStaleError(TrustedControllerCompatibilityError):
 
 class TrustedControllerBootstrapIncompatibleError(TrustedControllerCompatibilityError):
     """Raised when controller N cannot authenticate a changed PR producer topology."""
+
+
+class TrustedControllerRoutineRotationIncompatibleError(
+    TrustedControllerCompatibilityError
+):
+    """Raised when installed N cannot authorize the candidate pending topology."""
 
 
 class TrustedControllerApplicabilityState(StrEnum):
@@ -332,6 +348,146 @@ def _verify_installed_authority_consumability(
         ) from exc
 
 
+def ordinary_alternate_lane_available(repo_root: Path) -> bool:
+    """Recognize only the complete governed bootstrap/probe compatibility lane."""
+
+    authority_path = repo_root / AUTHORITY_CONTRACT
+    if not authority_path.is_file() or authority_path.is_symlink():
+        return False
+    try:
+        authority = yaml.safe_load(authority_path.read_text(encoding="utf-8"))
+        registry = authority["workflow_registry"]
+        roles = authority["roles"]
+    except (KeyError, TypeError, yaml.YAMLError):
+        return False
+    for role, relative in ALTERNATE_LANE_WORKFLOWS.items():
+        entry = registry.get(role) if isinstance(registry, dict) else None
+        path = repo_root / relative
+        if (
+            not isinstance(entry, dict)
+            or entry.get("active_path") != relative.as_posix()
+            or roles.get(role) != role
+            or not path.is_file()
+            or path.is_symlink()
+        ):
+            return False
+    return True
+
+
+def _candidate_pending_topology(
+    repo_root: Path,
+) -> tuple[dict[str, Any], list[dict[str, str]], list[str]]:
+    authority = yaml.safe_load((repo_root / AUTHORITY_CONTRACT).read_text(encoding="utf-8"))
+    workflow_entry = authority["workflow_registry"]["admission"]
+    workflow = yaml.safe_load(
+        (repo_root / workflow_entry["active_path"]).read_text(encoding="utf-8")
+    )
+    roles = workflow_entry["job_roles"]
+    jobs = workflow["jobs"]
+    facades = [
+        jobs[job_id]["name"]
+        for job_id, role in roles.items()
+        if role == "producer"
+    ]
+    provider_jobs = [
+        *(
+            {"name": str(value["job_id"]), "status": "completed", "conclusion": "success"}
+            for value in authority.get("controller_builder_jobs", [])
+        ),
+        *(
+            {"name": str(value["job_id"]), "status": "completed", "conclusion": "skipped"}
+            for value in authority["admission_jobs"]
+        ),
+        *(
+            {"name": str(name), "status": "completed", "conclusion": "skipped"}
+            for name in facades
+        ),
+    ]
+    return authority, provider_jobs, facades
+
+
+def _verify_installed_pending_topology(
+    repo_root: Path, *, target_commit: str
+) -> None:
+    """Run installed N's exact topology classifier on the candidate provider shape."""
+
+    exists = subprocess.run(
+        ["git", "cat-file", "-e", f"{target_commit}:{INSTALLED_TOPOLOGY_CLASSIFIER}"],
+        cwd=repo_root,
+        capture_output=True,
+        check=False,
+    )
+    if exists.returncode != 0:
+        return
+    try:
+        authority, jobs, facades = _candidate_pending_topology(repo_root)
+        with tempfile.TemporaryDirectory(prefix="bcf-installed-topology-") as raw:
+            root = Path(raw)
+            checkout = root / "controller"
+            materialized = subprocess.run(
+                ["git", "worktree", "add", "--detach", str(checkout), target_commit],
+                cwd=repo_root,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if materialized.returncode != 0:
+                raise ValueError(
+                    materialized.stderr.strip() or "installed controller unavailable"
+                )
+            try:
+                program = (
+                    "import importlib,json,pathlib,sys,types;"
+                    "sys.path.insert(0,sys.argv[1]);"
+                    "m=importlib.import_module('bcf_governance.tooling.ci_github_membership');"
+                    "m.authenticate_trusted_run=lambda *a,**k:None;"
+                    "m._reference_map=lambda *a,**k:{};"
+                    "m._validate_reference_inventory=lambda *a,**k:None;"
+                    "fixture=json.load(sys.stdin);"
+                    "authority=fixture['authority'];jobs=fixture['jobs'];facades=fixture['facades'];"
+                    "m._pending_producer_facades=lambda *a,**k:facades if hasattr(m,'_pending_producer_facades') else None;"
+                    "api=types.SimpleNamespace(run=lambda *a,**k:{'run_attempt':1},jobs=lambda *a,**k:jobs);"
+                    "main=types.SimpleNamespace(checkout_sha='a'*40);"
+                    "result=m.classify_admission_topology(api,repository='owner/repo',main=main,authority=authority,admission_run_id=1,admission_run_attempt=1);"
+                    "print(str(result.state.value)+':'+result.reason)"
+                )
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        "-c",
+                        program,
+                        str(checkout),
+                    ],
+                    cwd=repo_root,
+                    capture_output=True,
+                    text=True,
+                    input=json.dumps(
+                        {"authority": authority, "jobs": jobs, "facades": facades}
+                    ),
+                    check=False,
+                )
+                observed = result.stdout.strip()
+                if result.returncode != 0 or not observed.startswith(
+                    "pending_rotation:"
+                ):
+                    errors = result.stderr.strip().splitlines()
+                    detail = observed or (errors[-1] if errors else "")
+                    raise ValueError(detail or "installed topology classification failed")
+            finally:
+                subprocess.run(
+                    ["git", "worktree", "remove", "--force", str(checkout)],
+                    cwd=repo_root,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+    except Exception as exc:
+        raise TrustedControllerRoutineRotationIncompatibleError(
+            "installed controller cannot authorize candidate pending topology: "
+            f"{exc}"
+        ) from exc
+
+
 def verify_pr_bootstrap_compatibility(
     repo_root: Path, *, base_commit: str, target_commit: str
 ) -> None:
@@ -404,6 +560,7 @@ def verify_trusted_controller_compatibility(
         _verify_installed_authority_consumability(
             root, target_commit=target_commit
         )
+        _verify_installed_pending_topology(root, target_commit=target_commit)
         raise TrustedControllerRuntimeStaleError(
             "trusted controller target is stale for runtime files: "
             + ", ".join(incompatible)
@@ -424,6 +581,10 @@ def classify_trusted_controller_applicability(
         verify_trusted_controller_compatibility(
             repo_root, target_commit=target_commit
         )
+    except TrustedControllerRoutineRotationIncompatibleError:
+        if not ordinary_alternate_lane_available(repo_root):
+            raise
+        state = TrustedControllerApplicabilityState.PENDING_ROTATION
     except TrustedControllerRuntimeStaleError:
         state = TrustedControllerApplicabilityState.PENDING_ROTATION
     else:

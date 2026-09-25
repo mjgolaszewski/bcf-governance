@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
 
+import yaml
+
 from .ci_authority_contracts import (
     authority_role_workflow,
     producer_workflow,
@@ -74,6 +76,45 @@ def _authority_job_inventory(
     return admission, builders, producers
 
 
+def _pending_producer_facades(
+    api: GitHubAPI,
+    *,
+    repository: str,
+    main: MainIdentity,
+    authority: dict[str, Any],
+) -> list[str]:
+    """Project skipped producer callers from the authenticated admission workflow."""
+
+    workflow = authority_role_workflow(authority, "admission")
+    raw = api.content(
+        repository, str(workflow["active_path"]), ref=main.checkout_sha
+    ).content
+    try:
+        payload = yaml.safe_load(raw)
+    except yaml.YAMLError as exc:
+        raise GitHubControllerError("admission workflow is not readable YAML") from exc
+    jobs = payload.get("jobs") if isinstance(payload, dict) else None
+    roles = workflow.get("job_roles")
+    if not isinstance(jobs, dict) or not isinstance(roles, dict):
+        raise GitHubControllerError("admission workflow producer roles are invalid")
+    facades: list[str] = []
+    for job_id, role in roles.items():
+        if role != "producer":
+            continue
+        job = jobs.get(job_id)
+        name = job.get("name") if isinstance(job, dict) else None
+        if not isinstance(name, str) or not name:
+            raise GitHubControllerError(
+                "admission workflow producer facade is invalid"
+            )
+        facades.append(name)
+    if not facades or len(set(facades)) != len(facades):
+        raise GitHubControllerError(
+            "admission workflow producer facade inventory is invalid"
+        )
+    return facades
+
+
 def classify_admission_topology(
     api: GitHubAPI,
     *,
@@ -130,30 +171,34 @@ def classify_admission_topology(
         for name in unknown
     ):
         raise GitHubControllerError("admission job inventory contains an active extra job")
-    if (
-        builder_jobs
-        and actual == complete
-        and all(
+    builder_ready = bool(builder_jobs) and all(
             str(job_map[name].get("status")) == "completed"
             and str(job_map[name].get("conclusion")) == "success"
             for name in builder_jobs
         )
-        and all(
+    admission_skipped = all(
             str(job_map[name].get("status")) == "completed"
             and str(job_map[name].get("conclusion")) == "skipped"
             for name in admission_jobs
+            if name in job_map
+        ) and set(admission_jobs).issubset(actual)
+    if builder_ready and admission_skipped:
+        pending_facades = _pending_producer_facades(
+            api,
+            repository=repository,
+            main=main,
+            authority=authority,
         )
-        and all(
+        pending_complete = set(admission_jobs + builder_jobs + pending_facades)
+        if actual == pending_complete and all(
             str(job_map[name].get("status")) == "completed"
             and str(job_map[name].get("conclusion")) == "skipped"
-            for values in producer_jobs.values()
-            for name in values
-        )
-    ):
-        return AdmissionTopology(
-            AdmissionTopologyState.PENDING_ROTATION,
-            "pending_controller_rotation",
-        )
+            for name in pending_facades
+        ):
+            return AdmissionTopology(
+                AdmissionTopologyState.PENDING_ROTATION,
+                "pending_controller_rotation",
+            )
     if not set(admission_jobs).issubset(actual) or any(
         str(job_map[name].get("status")) != "completed"
         or str(job_map[name].get("conclusion")) != "success"

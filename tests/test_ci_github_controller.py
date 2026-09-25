@@ -151,6 +151,7 @@ class FakeAPI:
         self.run_job_conclusions: dict[str, dict[str, object]] = {}
         self.missing_workflows: set[str] = set()
         self.workflow_versions: dict[str, tuple[str, bytes]] = {}
+        self.workflow_path_versions: dict[tuple[str, str], tuple[str, bytes]] = {}
         self.workflow_paths = {
             "10": ".github/workflows/governance.yml",
             "11": ".github/workflows/pack.yml",
@@ -204,7 +205,9 @@ class FakeAPI:
         if path == "governance/ci-authority.yml":
             raw = yaml.safe_dump(self.authority, sort_keys=False).encode()
             return GitHubContent(path, SHA_B, raw)
-        blob_oid, content = self.workflow_versions.get(ref, (SHA_A, WORKFLOW))
+        blob_oid, content = self.workflow_path_versions.get(
+            (ref, path), self.workflow_versions.get(ref, (SHA_A, WORKFLOW))
+        )
         return GitHubContent(path, blob_oid, content)
 
     def workflow_runs(
@@ -1136,17 +1139,29 @@ def test_v11_pending_rotation_builder_only_path_stays_noncertifying(
     authority["controller_builder_jobs"] = [
         {"job_id": "Build independent exact-main trusted controller"}
     ]
+    workflow = b"name: exact-main\njobs:\n  admit:\n    name: Admit exact main\n  governance:\n    name: Governance producer facade\n  pack:\n    name: Package producer facade\n  trusted-controller-build:\n    name: Build independent exact-main trusted controller\n"
+    authority["workflow_registry"]["admission"]["trusted_workflow_sha256"] = (
+        hashlib.sha256(workflow).hexdigest()
+    )
+    api.workflow_path_versions[(SHA_A, ".github/workflows/control.yml")] = (
+        SHA_A,
+        workflow,
+    )
+    api.workflow_path_versions[(SHA_B, ".github/workflows/control.yml")] = (
+        SHA_A,
+        workflow,
+    )
     api.run_job_names["100"] = (
         "Build independent exact-main trusted controller",
         "Admit exact main",
-        "Governance truth",
-        "Package proof",
+        "Governance producer facade",
+        "Package producer facade",
     )
     api.run_job_conclusions["100"] = {
         "Build independent exact-main trusted controller": "success",
         "Admit exact main": "skipped",
-        "Governance truth": "skipped",
-        "Package proof": "skipped",
+        "Governance producer facade": "skipped",
+        "Package producer facade": "skipped",
     }
 
     result = finalize_exact_main(
@@ -1222,17 +1237,24 @@ def test_v11_topology_classifies_only_exact_builder_only_shape_as_pending() -> N
     authority["controller_builder_jobs"] = [
         {"job_id": "Build independent exact-main trusted controller"}
     ]
+    workflow = b"name: exact-main\njobs:\n  admit:\n    name: Admit exact main\n  governance:\n    name: Governance producer facade\n  pack:\n    name: Package producer facade\n  trusted-controller-build:\n    name: Build independent exact-main trusted controller\n"
+    digest = hashlib.sha256(workflow).hexdigest()
+    authority["workflow_registry"]["admission"]["trusted_workflow_sha256"] = digest
+    api.workflow_path_versions[(SHA_A, ".github/workflows/control.yml")] = (
+        SHA_A,
+        workflow,
+    )
     api.run_job_names["100"] = (
         "Build independent exact-main trusted controller",
         "Admit exact main",
-        "Governance truth",
-        "Package proof",
+        "Governance producer facade",
+        "Package producer facade",
     )
     api.run_job_conclusions["100"] = {
         "Build independent exact-main trusted controller": "success",
         "Admit exact main": "skipped",
-        "Governance truth": "skipped",
-        "Package proof": "skipped",
+        "Governance producer facade": "skipped",
+        "Package producer facade": "skipped",
     }
     main = resolve_main(api, "owner/repo")
 
@@ -1258,6 +1280,46 @@ def test_v11_topology_classifies_only_exact_builder_only_shape_as_pending() -> N
     )
     assert failed.state is AdmissionTopologyState.NONCERTIFYING
     assert failed.reason == "admission_not_successful"
+
+
+def test_v11_pending_rotation_rejects_child_or_unrelated_facade_laundering() -> None:
+    api = FakeAPI()
+    authority = _prepare_v11_run(api)
+    authority["workflow_registry"]["admission"]["job_roles"][
+        "trusted-controller-build"
+    ] = "controller-builder"
+    authority["controller_builder_jobs"] = [
+        {"job_id": "Build independent exact-main trusted controller"}
+    ]
+    workflow = b"name: exact-main\njobs:\n  admit:\n    name: Admit exact main\n  governance:\n    name: Governance producer facade\n  pack:\n    name: Package producer facade\n  trusted-controller-build:\n    name: Build independent exact-main trusted controller\n"
+    authority["workflow_registry"]["admission"]["trusted_workflow_sha256"] = (
+        hashlib.sha256(workflow).hexdigest()
+    )
+    api.workflow_path_versions[(SHA_A, ".github/workflows/control.yml")] = (
+        SHA_A,
+        workflow,
+    )
+    api.run_job_names["100"] = (
+        "Build independent exact-main trusted controller",
+        "Admit exact main",
+        "Governance truth",
+    )
+    api.run_job_conclusions["100"] = {
+        "Build independent exact-main trusted controller": "success",
+        "Admit exact main": "skipped",
+        "Governance truth": "skipped",
+    }
+
+    result = classify_admission_topology(
+        api,
+        repository="owner/repo",
+        main=resolve_main(api, "owner/repo"),
+        authority=authority,
+        admission_run_id="100",
+        admission_run_attempt="1",
+    )
+    assert result.state is AdmissionTopologyState.NONCERTIFYING
+    assert result.reason == "admission_not_successful"
 
 
 @pytest.mark.parametrize("shape", ["active-extra", "duplicate"])
