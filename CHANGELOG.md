@@ -1,5 +1,9 @@
 # Changelog
 
+- Bound provider-backed controller transitions to the installed source-normalization
+  subject so older authenticated transitions are absorbed while later forks and
+  disconnected chains remain fail-closed.
+
 - Activate closed provider-backed routine controller applicability and remove the
   superseded target/confirmation bootstrap and probe workflow path.
 

@@ -3,13 +3,11 @@
 from __future__ import annotations
 
 import hashlib
-import io
 import json
 from enum import StrEnum
 from pathlib import Path
 import re
 from typing import Any, Mapping
-import zipfile
 
 import yaml
 
@@ -36,6 +34,11 @@ from .ci_self_controller import (
     validate_controller_installation,
     validate_controller_pin,
 )
+from .controller_transition_provider_custody import (
+    TRANSITION_REPORT,
+    github_is_ancestor as _is_ancestor,
+    receipt_from_zip as _receipt_from_zip,
+)
 from .prior_evidence_transport import (
     authenticate_merged_pull,
     authenticate_pr_certification,
@@ -45,13 +48,13 @@ from .routine_controller_rotation import (
     advance_transition,
     effective_controller_pin,
     select_controller_chain,
+    transition_follows_normalization,
     transition_id,
     validate_transition,
 )
 
 
 TRANSITION_ARTIFACT_PREFIX = "bcf-controller-transition-"
-TRANSITION_REPORT = "controller-transition.json"
 ROTATION_POLICY_PATHS = (
     "governance/github-protection.yml",
     "governance/self-governance-policy.yml",
@@ -327,39 +330,12 @@ def _runner_policy(
     return pin, installation, labels
 
 
-def _receipt_from_zip(raw: bytes) -> dict[str, Any]:
-    try:
-        with zipfile.ZipFile(io.BytesIO(raw)) as archive:
-            names = archive.namelist()
-            if names != [TRANSITION_REPORT]:
-                raise GitHubControllerError(
-                    "controller transition artifact inventory is not exact"
-                )
-            value = json.loads(archive.read(TRANSITION_REPORT))
-    except (zipfile.BadZipFile, KeyError, json.JSONDecodeError) as exc:
-        raise GitHubControllerError("controller transition artifact is unreadable") from exc
-    if not isinstance(value, dict):
-        raise GitHubControllerError("controller transition report must be an object")
-    return value
-
-
-def _is_ancestor(
-    api: GitHubAPI, repository: str, *, base: str, head: str
-) -> bool:
-    comparison = api.compare_commits(repository, base=base, head=head)
-    base_value = comparison.get("base_commit")
-    merge_base = comparison.get("merge_base_commit")
-    if not isinstance(base_value, dict) or not isinstance(merge_base, dict):
-        raise GitHubControllerError("controller ancestry comparison is incomplete")
-    return (
-        comparison.get("status") in {"ahead", "identical"}
-        and base_value.get("sha") == base
-        and merge_base.get("sha") == base
-    )
-
-
 def _active_receipts(
-    api: GitHubAPI, repository: str, *, current: MainIdentity
+    api: GitHubAPI,
+    repository: str,
+    *,
+    current: MainIdentity,
+    normalization_subject: str,
 ) -> tuple[dict[str, Any], ...]:
     receipts: list[dict[str, Any]] = []
     pattern = re.compile(rf"^{TRANSITION_ARTIFACT_PREFIX}([a-f0-9]{{64}})$")
@@ -434,6 +410,18 @@ def _active_receipts(
             raise GitHubControllerError(
                 "controller transition artifact provider subject is not exact"
             )
+        try:
+            follows_normalization = transition_follows_normalization(
+                transition_subject=subject,
+                normalization_subject=normalization_subject,
+                is_ancestor=lambda base, head: _is_ancestor(
+                    api, repository, base=base, head=head
+                ),
+            )
+        except RoutineRotationError as exc:
+            raise GitHubControllerError(str(exc)) from exc
+        if not follows_normalization:
+            continue
         receipts.append(receipt)
     return tuple(receipts)
 
@@ -456,10 +444,16 @@ def resolve_effective_controller(
                 "commit_sha": current.checkout_sha,
                 "tree_sha": current.tree_sha,
             },
+            "normalization_subject": installation["subject_commit_sha"],
             "pin": baseline,
             "transition_ids": [],
         }
-    receipts = _active_receipts(api, repository, current=current)
+    receipts = _active_receipts(
+        api,
+        repository,
+        current=current,
+        normalization_subject=installation["subject_commit_sha"],
+    )
     ancestors = [
         value["subject"]["commit_sha"] for value in receipts
     ]
@@ -477,6 +471,7 @@ def resolve_effective_controller(
             "commit_sha": current.checkout_sha,
             "tree_sha": current.tree_sha,
         },
+        "normalization_subject": installation["subject_commit_sha"],
         "pin": pin,
         "transition_ids": [value["transition_id"] for value in chain],
     }
@@ -753,7 +748,12 @@ def dispatch_post_rotation_certification(
     resolved = resolve_effective_controller(api, repository=repository)
     if resolved["source"] != "provider_transition":
         raise GitHubControllerError("no active provider controller transition exists")
-    receipts = _active_receipts(api, repository, current=main)
+    receipts = _active_receipts(
+        api,
+        repository,
+        current=main,
+        normalization_subject=resolved["normalization_subject"],
+    )
     matching = [
         value
         for value in receipts

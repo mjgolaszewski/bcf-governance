@@ -11,6 +11,7 @@ from bcf_governance.tooling.routine_controller_rotation import (
     effective_controller_pin,
     select_active_transition,
     select_controller_chain,
+    transition_follows_normalization,
     transition_id,
     validate_transition,
 )
@@ -22,6 +23,30 @@ NEW = "2" * 40
 TREE = "3" * 40
 DIGEST = "sha256:" + "4" * 64
 POLICY = "5" * 64
+
+
+def test_source_normalization_absorbs_only_older_active_transitions() -> None:
+    older = "1" * 40
+    normalized = "2" * 40
+    newer = "3" * 40
+    ancestry = {(normalized, newer): True, (older, normalized): True}
+    relation = lambda base, head: ancestry.get((base, head), base == head)
+    assert transition_follows_normalization(
+        transition_subject=older,
+        normalization_subject=normalized,
+        is_ancestor=relation,
+    ) is False
+    assert transition_follows_normalization(
+        transition_subject=newer,
+        normalization_subject=normalized,
+        is_ancestor=relation,
+    ) is True
+    with pytest.raises(RoutineRotationError, match="not ordered"):
+        transition_follows_normalization(
+            transition_subject="4" * 40,
+            normalization_subject=normalized,
+            is_ancestor=relation,
+        )
 
 
 def _receipt(*, state: str = "active") -> dict:

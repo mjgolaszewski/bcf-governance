@@ -7,7 +7,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Callable, Iterable, Mapping, Sequence
 
 from jsonschema import Draft202012Validator
 
@@ -19,6 +19,25 @@ _DIGEST = re.compile(r"^sha256:[a-f0-9]{64}$")
 
 class RoutineRotationError(ValueError):
     """Raised when routine rotation evidence is incomplete or contradictory."""
+
+
+def transition_follows_normalization(
+    *,
+    transition_subject: object,
+    normalization_subject: object,
+    is_ancestor: Callable[[str, str], bool],
+) -> bool:
+    """Classify one transition against authenticated source normalization."""
+
+    transition = _exact_sha(transition_subject, field="transition subject")
+    normalization = _exact_sha(normalization_subject, field="normalization subject")
+    if is_ancestor(normalization, transition):
+        return True
+    if is_ancestor(transition, normalization):
+        return False
+    raise RoutineRotationError(
+        "controller transition is not ordered with source normalization"
+    )
 
 
 def _canonical(value: object) -> bytes:
