@@ -398,3 +398,42 @@ p27_p0_02_migration_expansion:
       confirmation_subject: {commit: 1eb36b6a9d9069b6457e86c7cd0dd597b6ded599, tree: 77b169812653a2e4bb265c2b491e817ec948bb83}
       installed_controller: 9c84cdad919c42e235250b4d6d023424786e3941
       contraction: temporary source-pinned workflows and bootstrap/probe authority roles removed after ordinary-current confirmation; provider-backed routine rotation remains the sole steady-state lane
+    prospective_validation_owner:
+      command: bcf ci prospective-train --intent <pr|workitem|closure> --target <bounded-target-if-required> --subject-commit <exact-commit> --subject-tree <exact-tree>
+      exact_boundary_order: [preflight, controller_compatibility, pr_evidence, certification, merge, exact_main, controller_lifecycle, bounded_or_phase_truth, finalizer, publisher, successor_or_release_eligibility]
+      deterministic_fast_fail: canonical reconcile checks precede preflight and evidence allocation; canonical graph supplies the post-merge evaluation intent and target; terminal reauthentication rejects remote-base or local commit/tree movement during validation
+      controller_routing: exact source/candidate commit tree and closed policy-byte digests distinguish no_transition provider_routine_transition_required and protected-policy alternate_lane_required; the latter carries the canonical ordinary_protected_n_n_plus_1 sequence and cannot degrade to generic inapplicability
+      evidence_transport: one private exact-tree session supplies the mechanically planned local producers to PR truth and the post-merge semantic projection, then the exact namespace is retired
+      finalizer_projection: the same finalizer-owned decoder used after provider artifact authentication projects exact commit/tree from richer canonical truth subjects and rejects wrong or malformed identities before a candidate is prospectively admissible
+      fixed_point_dependency: pack projection precedes semantic locking so a changed canonical runtime is mirrored before the semantic owner validates projection parity; subsequent rounds still lock and reproject every derived digest to convergence
+      authority_boundary: local receipts prove deterministic semantics only; provider certification, merge identity, fresh exact-main execution, trusted finalization, and App publication remain provider_required
+      non_escalation: the canonical certified-proposition validator preserves exact target and subject while the terminal-certification primitive determines release eligibility
+    p27_p0_03_closure:
+      subject: {commit: a4dea2731fea2ef8132a959fc90f3f85466dc653, tree: c999642424f2e1fd9127132e0259539def478ba5}
+      exact_main: 36103298835/1
+      finalizer: 36103662534/1
+      publisher: 36103735113/1
+      status_context: bcf/workitem-certification
+      proposition: {predicate: workitem_closed, target: P27-P0-03, eligible_successor: P27-P0-04}
+      phase_effective_state: active
+    p27_p0_04_closeout:
+      canonical_interface: bcf ci prospective-train
+      semantic_inputs: [intent, bounded_target_when_required, exact_subject_commit, exact_subject_tree]
+      deterministic_chain: [fixed_point, preflight, installed_n_compatibility, evidence_plan, exact_tree_execution, pr_truth, controller_lifecycle, bounded_or_phase_truth, finalizer_projection, publication_scope, successor_or_release_eligibility]
+      telemetry_stages: [planning, reuse, setup, producers, positive_tests, controls, normalization, truth, finalization, publication]
+      provider_required_stages: [protected_certification, merge, exact_main, finalization, publication]
+      execution_state: exact session-bound namespace is allocated by the existing evidence runtime owner and retired with exact-owner removal verification on every terminal path
+      callback_applicability:
+        no_transition: exact authenticated rotation job inventory contains successful authorization and only skipped installation stages; callback succeeds without dispatch and release authority remains false
+        active_transition: exact successful activation remains required before one fresh exact-main dispatch
+        invalid: missing extra partial ambiguous or incorrectly concluded jobs reject
+      simplification_accounting:
+        removed_agent_ordering: [individual_projection_commands, manual_evidence_command_selection, manual_controller_lane_selection, manual_finalizer_and_status_scope_projection]
+        surviving_agent_interface:
+        - {command: bcf ci prospective-train, proposition: derive the complete locally knowable exact-tree proof chain from typed intent and identity}
+        provider_planes:
+        - {plane: protected_pr_and_merge, proposition: independent provider execution and protected source authorization}
+        - {plane: trusted_controller_rotation, proposition: N-authorized independent N+1 installation probe and atomic activation}
+        - {plane: trusted_finalization_and_publication, proposition: authenticate provider evidence and publish exact scoped status}
+        - {plane: release, proposition: separately authorize verify and publish immutable release bytes}
+      release_authority: absent until a later explicit terminal phase-closure certification

@@ -44,8 +44,13 @@ from .prior_evidence_transport import (
     authenticate_pr_certification,
 )
 from .routine_controller_rotation import (
+    ALTERNATE_POLICY_LANE_SEQUENCE,
+    GovernedControllerLane,
     RoutineRotationError,
     advance_transition,
+    alternate_policy_lane_contract,
+    controller_policy_digest,
+    classify_callback_topology,
     effective_controller_pin,
     select_controller_chain,
     transition_follows_normalization,
@@ -78,20 +83,6 @@ class ControllerTransitionClass(StrEnum):
     NONE = "none"
     RUNTIME_ONLY = "runtime_only"
     PROTECTED_POLICY_CHANGE = "protected_policy_change"
-
-
-class GovernedControllerLane(StrEnum):
-    ORDINARY_PROTECTED_N_N_PLUS_1 = "ordinary_protected_n_n_plus_1"
-
-
-ALTERNATE_POLICY_LANE_SEQUENCE = (
-    "project_exact_provider_target",
-    "bootstrap_required_runners",
-    "probe_required_runners",
-    "provider_compile_confirmation",
-    "protected_confirmation_merge",
-    "normalize_ordinary_current",
-)
 
 
 def _exact_keys(value: Mapping[str, Any], expected: set[str], *, field: str) -> None:
@@ -281,12 +272,7 @@ def _policy_change_route(
             "policy_after_sha256": policy_after,
         },
         "target": dict(target),
-        "alternate_lane": {
-            "id": GovernedControllerLane.ORDINARY_PROTECTED_N_N_PLUS_1.value,
-            "required_sequence": list(ALTERNATE_POLICY_LANE_SEQUENCE),
-            "required_initial_state": "ordinary-pending-rotation",
-            "required_terminal_state": "ordinary-current",
-        },
+        "alternate_lane": alternate_policy_lane_contract(),
         "release_authority": False,
     })
 
@@ -298,11 +284,9 @@ def _sha256(value: bytes) -> str:
 def _policy_digest(
     api: GitHubAPI, repository: str, *, ref: str
 ) -> str:
-    digest = hashlib.sha256()
-    for path in ROTATION_POLICY_PATHS:
-        content = api.content(repository, path, ref=ref).content
-        digest.update(path.encode("utf-8") + b"\0" + content + b"\0")
-    return digest.hexdigest()
+    return controller_policy_digest(
+        lambda path: api.content(repository, path, ref=ref).content
+    )
 
 
 def _runner_policy(
@@ -745,6 +729,29 @@ def dispatch_post_rotation_certification(
         run_attempt=rotation_run_attempt,
         require_success=True,
     )
+    expected_jobs = {
+        str(value["job_id"])
+        for value in authority_role_jobs(authority, "controller_rotation")
+    }
+    jobs = api.jobs(
+        repository, rotation.run_id, attempt=rotation.run_attempt
+    )
+    try:
+        topology = classify_callback_topology(expected_jobs=expected_jobs, jobs=jobs)
+    except RoutineRotationError as exc:
+        raise GitHubControllerError(str(exc)) from exc
+    if topology == "no_transition":
+        return {
+            "status": "no_transition",
+            "dispatched": False,
+            "subject": {
+                "commit_sha": main.checkout_sha,
+                "tree_sha": main.tree_sha,
+            },
+            "rotation_run_id": rotation.run_id,
+            "rotation_run_attempt": rotation.run_attempt,
+            "release_authority": False,
+        }
     resolved = resolve_effective_controller(api, repository=repository)
     if resolved["source"] != "provider_transition":
         raise GitHubControllerError("no active provider controller transition exists")

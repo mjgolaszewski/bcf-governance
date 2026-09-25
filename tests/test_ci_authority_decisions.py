@@ -11,11 +11,19 @@ from bcf_governance.tooling.ci_authority_decisions import (
     StatusObservation,
     decide_status_publication,
     owned_cancellation_targets,
+    status_context_for_evaluation,
 )
 
 
 SHA_A = "a" * 40
 SHA_B = "b" * 40
+
+
+def test_terminal_evaluation_has_one_canonical_status_context() -> None:
+    assert status_context_for_evaluation("workitem") is StatusContext.BOUNDED_WORKITEM
+    assert status_context_for_evaluation("closure") is StatusContext.EXACT_MAIN
+    with pytest.raises(CIDecisionError, match="terminal status"):
+        status_context_for_evaluation("pr")
 
 
 def _status(

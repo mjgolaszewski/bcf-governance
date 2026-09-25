@@ -19,6 +19,7 @@ from bcf_governance.tooling.ci_graph_contracts import (
 from bcf_governance.tooling.ci_graph_controller_lifecycle import ControllerLifecycleState
 from bcf_governance.tooling.ci_graph_audit import audit_ci_graph
 from bcf_governance.tooling.ci_graph_execution import (
+    exact_main_evaluation,
     job_execution_issues,
     job_required_environment,
     workflow_input_issues,
@@ -42,6 +43,19 @@ from bcf_governance.tooling.truth_workflow_graph import graph_workflow_gate_issu
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_exact_main_evaluation_has_one_canonical_admission_and_truth_scope() -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    evaluation = exact_main_evaluation(compiled.workflows)
+    assert evaluation.mode == "workitem"
+    assert evaluation.target is not None
+    stale = copy.deepcopy(compiled)
+    workflow = next(item for item in stale.workflows if item["id"] == "exact-main")
+    governance = next(item for item in workflow["jobs"] if item["id"] == "governance")
+    governance["executor"]["inputs"]["evaluation_target"] = "wrong-target"
+    with pytest.raises(CIGraphError, match="evaluation intents differ"):
+        exact_main_evaluation(stale.workflows)
 
 
 def test_routine_rotation_allocates_each_receipt_parent_before_execution() -> None:

@@ -330,13 +330,24 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
             "structural-limits",
             lambda: validate_structural_limits(repo_root),
             lambda: validate_structural_limits(repo_root),
-        ),
+        )
+    ]
+    pack = repo_root / ".github/scripts/build_pack_manifest.py"
+    if pack.is_file() and not pack.is_symlink():
+        steps.append(
+            ReconcileStep(
+                "pack-projection",
+                _reconcile_action(repo_root, "pack-projection", [str(python), str(pack), "--check"]),
+                _reconcile_action(repo_root, "pack-projection", [str(python), str(pack)]),
+            )
+        )
+    steps.append(
         ReconcileStep(
             "semantic-lock",
             _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--check"]),
             _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--apply"]),
         )
-    ]
+    )
     for gate_id in declared_test_gates(repo_root):
         common = [*cli, "test-manifest"]
         suffix = ["--gate", gate_id, "--repo-root", str(repo_root), "--python", str(python)]
@@ -353,15 +364,6 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 f"ci-graph-{operation}",
                 _reconcile_action(repo_root, f"ci-graph-{operation}", [*cli, "ci", "graph", operation, "--repo-root", str(repo_root), "--check"]),
                 _reconcile_action(repo_root, f"ci-graph-{operation}", [*cli, "ci", "graph", operation, "--repo-root", str(repo_root), "--apply"]),
-            )
-        )
-    pack = repo_root / ".github/scripts/build_pack_manifest.py"
-    if pack.is_file() and not pack.is_symlink():
-        steps.append(
-            ReconcileStep(
-                "pack-projection",
-                _reconcile_action(repo_root, "pack-projection", [str(python), str(pack), "--check"]),
-                _reconcile_action(repo_root, "pack-projection", [str(python), str(pack)]),
             )
         )
     checker = repo_root / ".github/scripts/check_editorial_contract.py"

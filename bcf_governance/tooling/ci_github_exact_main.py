@@ -13,7 +13,10 @@ from .ci_authority_certification import (
     normalize_ci_certification,
     verify_ci_certification,
 )
-from .ci_authority_decisions import StatusConclusion, StatusContext
+from .ci_authority_decisions import (
+    StatusConclusion,
+    status_context_for_evaluation,
+)
 from .ci_authority_contracts import authority_role_workflow
 from .ci_github_api import GitHubAPI
 from .ci_github_authority import (
@@ -140,11 +143,7 @@ def admit_exact_main(
     )
     if scope.intent is EvaluationIntent.PR_PROGRESS:
         raise GitHubControllerError("exact-main admission cannot certify PR progress")
-    context = (
-        StatusContext.BOUNDED_WORKITEM
-        if scope.intent is EvaluationIntent.WORKITEM_CERTIFICATION
-        else StatusContext.EXACT_MAIN
-    )
+    context = status_context_for_evaluation(scope.intent.value)
     status = publish_observation(
         api,
         repository=repository,

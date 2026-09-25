@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 from pathlib import Path
 
 import pytest
 
 from bcf_governance.tooling.routine_controller_rotation import (
+    ALTERNATE_POLICY_LANE_SEQUENCE,
+    ROTATION_POLICY_PATHS,
     RoutineRotationError,
     advance_transition,
+    alternate_policy_lane_contract,
+    controller_policy_digest,
     effective_controller_pin,
     select_active_transition,
     select_controller_chain,
@@ -47,6 +52,28 @@ def test_source_normalization_absorbs_only_older_active_transitions() -> None:
             normalization_subject=normalized,
             is_ancestor=relation,
         )
+
+
+def test_policy_identity_and_alternate_lane_are_closed_primitives() -> None:
+    contents = {
+        path: f"{index}:{path}\n".encode()
+        for index, path in enumerate(ROTATION_POLICY_PATHS)
+    }
+    expected = hashlib.sha256()
+    for path in ROTATION_POLICY_PATHS:
+        expected.update(path.encode() + b"\0" + contents[path] + b"\0")
+    assert controller_policy_digest(contents.__getitem__) == expected.hexdigest()
+    changed = dict(contents)
+    changed[ROTATION_POLICY_PATHS[-1]] += b"changed\n"
+    assert controller_policy_digest(changed.__getitem__) != expected.hexdigest()
+    assert alternate_policy_lane_contract() == {
+        "id": "ordinary_protected_n_n_plus_1",
+        "required_sequence": list(ALTERNATE_POLICY_LANE_SEQUENCE),
+        "required_initial_state": "ordinary-pending-rotation",
+        "required_terminal_state": "ordinary-current",
+    }
+    with pytest.raises(RoutineRotationError, match="exact bytes"):
+        controller_policy_digest(lambda _path: "not-bytes")  # type: ignore[return-value]
 
 
 def _receipt(*, state: str = "active") -> dict:

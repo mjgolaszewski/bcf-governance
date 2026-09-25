@@ -24,7 +24,12 @@ from .ci_authority_pins import CIAuthorityPinError, pin_workflow_authority
 from .ci_github_identity import GitHubControllerError
 from .ci_github_cli_io import github_output, github_output_path
 from .ci_self_controller import project_self_controller_pin
-from .local_pr import LocalPRError, run_local_pr_validation
+from .local_pr import (
+    LocalPRError,
+    ProspectiveValidationError,
+    run_local_pr_validation,
+    run_prospective_train,
+)
 from .runtime_capacity import (
     RuntimeCapacityError,
     check_runtime_capacity,
@@ -98,6 +103,18 @@ def _parser() -> argparse.ArgumentParser:
     local.add_argument("--repo-root", type=Path, default=Path.cwd())
     local.add_argument("--remote", default="origin")
     local.add_argument("command", nargs=argparse.REMAINDER)
+    prospective = subparsers.add_parser(
+        "prospective-train",
+        help="Derive one exact proof train from typed intent and subject identity.",
+    )
+    prospective.add_argument("--repo-root", type=Path, default=Path.cwd())
+    prospective.add_argument("--remote", default="origin")
+    prospective.add_argument("--python", type=Path, default=Path(sys.executable))
+    prospective.add_argument("--intent", choices=("pr", "workitem", "closure"), required=True)
+    prospective.add_argument("--target")
+    prospective.add_argument("--subject-commit", required=True)
+    prospective.add_argument("--subject-tree", required=True)
+    prospective.add_argument("--format", choices=("text", "json"), default="json")
     runtime = subparsers.add_parser("runtime-check", help="Check capacity before heavy CI.")
     runtime.add_argument("--repo-root", type=Path, default=Path.cwd())
     runtime.add_argument("--contract", type=Path, required=True)
@@ -229,6 +246,18 @@ def main(argv: list[str] | None = None) -> None:
             )
             _print(report.as_dict(), args.format)
             return
+        if args.operation == "prospective-train":
+            result = run_prospective_train(
+                args.repo_root,
+                semantic_intent=args.intent,
+                evaluation_target=args.target,
+                subject_commit=args.subject_commit,
+                subject_tree=args.subject_tree,
+                remote=args.remote,
+                python_executable=args.python,
+            )
+            _print(result, args.format)
+            return
         if args.operation == "controller-applicability":
             result = classify_trusted_controller_applicability(
                 args.repo_root.resolve(), target_commit=args.target_commit
@@ -286,6 +315,7 @@ def main(argv: list[str] | None = None) -> None:
         GitHubControllerError,
         GithubAdoptionError,
         LocalPRError,
+        ProspectiveValidationError,
         RuntimeCapacityError,
         TrustedControllerCompatibilityError,
     ) as exc:
