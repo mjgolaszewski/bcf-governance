@@ -40,6 +40,33 @@ class RoutineRotationError(ValueError):
     """Raised when routine rotation evidence is incomplete or contradictory."""
 
 
+def classify_callback_topology(
+    *, expected_jobs: set[str], jobs: Sequence[Mapping[str, Any]]
+) -> str:
+    """Return the sole typed callback lane for one exact job inventory."""
+
+    authorize = "Authorize protected routine controller transition"
+    reconcile = "Commit the deterministic automation changelog entry"
+    actual = {str(value.get("name", "")): value for value in jobs}
+    if set(actual) != expected_jobs:
+        raise RoutineRotationError("rotation callback job inventory is not exact")
+    if authorize not in expected_jobs or reconcile not in expected_jobs:
+        raise RoutineRotationError("rotation callback authority inventory is invalid")
+    if actual[authorize].get("conclusion") != "success":
+        raise RoutineRotationError("rotation callback authorization did not succeed")
+    if actual[reconcile].get("conclusion") != "skipped":
+        raise RoutineRotationError("rotation callback reconcile topology is invalid")
+    conclusions = {
+        str(actual[name].get("conclusion"))
+        for name in expected_jobs - {authorize, reconcile}
+    }
+    if conclusions == {"skipped"}:
+        return "no_transition"
+    if conclusions == {"success"}:
+        return "active_transition"
+    raise RoutineRotationError("rotation callback topology is partial")
+
+
 def transition_follows_normalization(
     *,
     transition_subject: object,

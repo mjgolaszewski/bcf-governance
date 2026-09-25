@@ -50,13 +50,13 @@ from .routine_controller_rotation import (
     advance_transition,
     alternate_policy_lane_contract,
     controller_policy_digest,
+    classify_callback_topology,
     effective_controller_pin,
     select_controller_chain,
     transition_follows_normalization,
     transition_id,
     validate_transition,
 )
-from .routine_controller_callback import classify_callback_topology
 
 
 TRANSITION_ARTIFACT_PREFIX = "bcf-controller-transition-"
@@ -736,7 +736,10 @@ def dispatch_post_rotation_certification(
     jobs = api.jobs(
         repository, rotation.run_id, attempt=rotation.run_attempt
     )
-    topology = classify_callback_topology(expected_jobs=expected_jobs, jobs=jobs)
+    try:
+        topology = classify_callback_topology(expected_jobs=expected_jobs, jobs=jobs)
+    except RoutineRotationError as exc:
+        raise GitHubControllerError(str(exc)) from exc
     if topology == "no_transition":
         return {
             "status": "no_transition",

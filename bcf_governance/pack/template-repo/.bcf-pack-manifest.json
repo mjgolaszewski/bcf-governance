@@ -990,21 +990,17 @@
       "operation": "copy",
       "sha256": "cd6857fd20d31fcbf81b61713270337b1b35084e7ff6690fc470ddb2e03df5e9"
     },
-    "scripts/_bcf_runtime/routine_controller_callback.py": {
-      "operation": "copy",
-      "sha256": "73c84036288b4f907691203948b9aa688f32af8901c5549d00f5a4afafe0b7ac"
-    },
     "scripts/_bcf_runtime/routine_controller_commands.py": {
       "operation": "copy",
       "sha256": "6c27cdc19197f4b263af074e1fc646d7e5fc2238f1f11f5d93646d820efa93c5"
     },
     "scripts/_bcf_runtime/routine_controller_provider.py": {
       "operation": "copy",
-      "sha256": "ac412f22dadb0ee9353cba55a11e3226d519b19cfe2bd89f5e51c331f4a1480f"
+      "sha256": "571f1e50bd064e79f53d3d34b79546d745eee537a3e1b8aa936e2a8c7a3ad589"
     },
     "scripts/_bcf_runtime/routine_controller_rotation.py": {
       "operation": "copy",
-      "sha256": "b1d83103f7785baf04b34beffffff73d37b08b0aabb739202c0372f7e6f52033"
+      "sha256": "df5e1c19edec2ec89cbc3e172c6478ac4006f2805804c54f9326fe40bbe0f577"
     },
     "scripts/_bcf_runtime/runtime_capacity.py": {
       "operation": "copy",
