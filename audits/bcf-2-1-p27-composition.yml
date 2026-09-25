@@ -451,3 +451,5 @@ p27_p0_02_migration_expansion:
       protected_recovery_merge: {pr: 291, subject: c3ddbd278baaed5e34a26872193b964828a09d64, tree: 5c016001b7259bf56e09e69b0cedab743c224642}
       provider_built_target: {exact_main: 36145861454/1, artifact_id: '10869895050', provider_digest: 'sha256:47beebe9280ace6b5cab79d00f147b3ad488ef36cb4ee40c9b50a8119aec148d', wheel_sha256: a0e1d4dd74000ebc8df0ad61b1aa7187391439bc3026149ff9a1155ee175d926}
       target_projection: canonical provider compiler and self-controller projection; installed N remains authoritative until two-runner bootstrap, probe, and protected confirmation
+      installation_confirmation: {subject: 47fdf4bddb8c7d1a45e5b9ed7d08f87ffcee0403, tree: 1e3e92bc2f6bc57a8f8db4cc605deb9128cc05a2, bootstrap: 36153914017/1, bootstrap_jobs: ['108133704190', '108133703940'], probe: 36154525798/1, probe_jobs: ['108135725039', '108135725220'], installed_controller: c3ddbd278baaed5e34a26872193b964828a09d64}
+      normalized_custody: target and installed identities are equal; recovery reentry remains absent; temporary alternate lane remains only until the fixed routine mechanism contracts it
