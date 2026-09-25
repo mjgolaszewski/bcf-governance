@@ -1,5 +1,8 @@
 # Changelog
 
+- Restore the governed source-pinned bootstrap/probe lane for one normalization-boundary
+  compatibility crossing, pinned mechanically to the exact provider-built controller.
+
 - Bound provider-backed controller transitions to the installed source-normalization
   subject so older authenticated transitions are absorbed while later forks and
   disconnected chains remain fail-closed.
