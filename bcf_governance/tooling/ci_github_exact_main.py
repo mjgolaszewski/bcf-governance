@@ -219,7 +219,7 @@ def finalize_exact_main(
         admission_run_id=admission_run_id,
         admission_run_attempt=admission_attempt,
     )
-    if topology.state is AdmissionTopologyState.NONCERTIFYING:
+    if topology.state is not AdmissionTopologyState.CERTIFIABLE:
         root = _write_observation_bundle(
             output_dir,
             main=main,

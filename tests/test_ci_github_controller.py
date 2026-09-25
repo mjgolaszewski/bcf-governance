@@ -24,7 +24,9 @@ from bcf_governance.tooling.ci_github_controller import (
 )
 from bcf_governance.tooling.ci_github_identity import resolve_main, resolve_trusted_run
 from bcf_governance.tooling.ci_github_membership import (
+    AdmissionTopologyState,
     certification_producer_ids,
+    classify_admission_topology,
     collect_same_run_producers,
     select_latest_admission,
 )
@@ -1161,7 +1163,7 @@ def test_v11_pending_rotation_builder_only_path_stays_noncertifying(
     assert result.computed_state == "noncertifying"
     root = Path(result.bundle_dir)
     observation = json.loads((root / "authority-observation.json").read_text())
-    assert observation["reason"] == "admission_not_successful"
+    assert observation["reason"] == "pending_controller_rotation"
     assert observation["subject"]["commit_sha"] == SHA_B
     assert (
         observation["collector"]["workflow"][
@@ -1209,6 +1211,53 @@ def test_v11_pending_rotation_builder_only_path_stays_noncertifying(
             publisher_run_attempt=1,
         )
     assert api.published_statuses == []
+
+
+def test_v11_topology_classifies_only_exact_builder_only_shape_as_pending() -> None:
+    api = FakeAPI()
+    authority = _prepare_v11_run(api)
+    authority["workflow_registry"]["admission"]["job_roles"][
+        "trusted-controller-build"
+    ] = "controller-builder"
+    authority["controller_builder_jobs"] = [
+        {"job_id": "Build independent exact-main trusted controller"}
+    ]
+    api.run_job_names["100"] = (
+        "Build independent exact-main trusted controller",
+        "Admit exact main",
+        "Governance truth",
+        "Package proof",
+    )
+    api.run_job_conclusions["100"] = {
+        "Build independent exact-main trusted controller": "success",
+        "Admit exact main": "skipped",
+        "Governance truth": "skipped",
+        "Package proof": "skipped",
+    }
+    main = resolve_main(api, "owner/repo")
+
+    pending = classify_admission_topology(
+        api,
+        repository="owner/repo",
+        main=main,
+        authority=authority,
+        admission_run_id="100",
+        admission_run_attempt="1",
+    )
+    assert pending.state is AdmissionTopologyState.PENDING_ROTATION
+    assert pending.reason == "pending_controller_rotation"
+
+    api.run_job_conclusions["100"]["Admit exact main"] = "failure"
+    failed = classify_admission_topology(
+        api,
+        repository="owner/repo",
+        main=main,
+        authority=authority,
+        admission_run_id="100",
+        admission_run_attempt="1",
+    )
+    assert failed.state is AdmissionTopologyState.NONCERTIFYING
+    assert failed.reason == "admission_not_successful"
 
 
 @pytest.mark.parametrize("shape", ["active-extra", "duplicate"])
