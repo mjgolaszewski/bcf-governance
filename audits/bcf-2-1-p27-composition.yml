@@ -381,3 +381,8 @@ p27_p0_02_migration_expansion:
       no_transition: complete certifiable exact-main emits a closed nonapplicable decision and allocates no installation stage
       fail_closed: missing or false applicability cannot upload a transition artifact or advance bootstrap probe promotion or activation
       release_authority: absent
+    source_normalization_boundary:
+      failed_exact_main: 36090362031/1
+      first_causal_invariant: historical authenticated active-transition receipts predated the installed source-normalization subject and were incorrectly treated as a live disconnected chain
+      correction: source normalization absorbs only receipts ordered at or before its authenticated subject; later provider transitions remain eligible and later forks disconnected chains malformed custody or incomparable history reject
+      authority_effect: no transition is accepted without its existing provider authentication and no release or certification authority is added

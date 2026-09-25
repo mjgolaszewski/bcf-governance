@@ -485,7 +485,7 @@ def test_effective_controller_uses_only_linear_authenticated_chain(
         "_runner_policy",
         lambda *_args, **_kwargs: (
             _pin(OLD),
-            {"installed_commit_sha": OLD},
+            {"installed_commit_sha": OLD, "subject_commit_sha": OLD},
             tuple(active["required_runners"]),
         ),
     )
@@ -547,6 +547,7 @@ def test_callback_binds_completed_rotation_before_dispatch(
         "resolve_effective_controller",
         lambda *_args, **_kwargs: {
             "source": "provider_transition",
+            "normalization_subject": OLD,
             "subject": {"commit_sha": NEW, "tree_sha": TREE},
             "pin": _pin(),
             "transition_ids": [active["transition_id"]],
@@ -595,6 +596,7 @@ def test_callback_rejects_another_rotation_run(
         "resolve_effective_controller",
         lambda *_args, **_kwargs: {
             "source": "provider_transition",
+            "normalization_subject": OLD,
             "subject": {},
             "pin": _pin(),
             "transition_ids": [active["transition_id"]],
@@ -656,5 +658,8 @@ def test_active_transition_artifact_fails_closed_on_provider_custody(
     }[failure]
     with pytest.raises(GitHubControllerError, match=message):
         provider._active_receipts(
-            api, "mjgolaszewski/bcf-governance", current=MAIN
+            api,
+            "mjgolaszewski/bcf-governance",
+            current=MAIN,
+            normalization_subject=OLD,
         )

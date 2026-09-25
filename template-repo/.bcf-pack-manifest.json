@@ -642,6 +642,10 @@
       "operation": "copy",
       "sha256": "12656990add884de736af92665f6ac5d1a041884962bce51d9079616c1206c64"
     },
+    "scripts/_bcf_runtime/controller_transition_provider_custody.py": {
+      "operation": "copy",
+      "sha256": "c87db3bd2a74c4979bc0a2befb94553872dbada0a939f09555c10dc762aafd02"
+    },
     "scripts/_bcf_runtime/doctor_governance_pack.py": {
       "operation": "copy",
       "sha256": "a3595d777028941f0d172bfcf0af76a81e02b7bd2822042faa8f83226705cf02"
@@ -988,11 +992,11 @@
     },
     "scripts/_bcf_runtime/routine_controller_provider.py": {
       "operation": "copy",
-      "sha256": "13c4ce7a27fcdc4a2f5be1abcecc7580bea4ca6bd5f873cacacc30ed2a17ccdd"
+      "sha256": "beae766c5de483535d51ddb09e64db6c51ce68a3c7165060cf7d53c9635cd3a1"
     },
     "scripts/_bcf_runtime/routine_controller_rotation.py": {
       "operation": "copy",
-      "sha256": "67789a303f835c0fa4b7bb2527393db0e9b70ad45cd34d2d90b16e943114ca4d"
+      "sha256": "87e082d9e6a19a8e0610c53de153d234824fcfaebf104abc79fce2b43b1d6c67"
     },
     "scripts/_bcf_runtime/runtime_capacity.py": {
       "operation": "copy",
