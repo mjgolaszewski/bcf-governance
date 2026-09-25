@@ -20,6 +20,9 @@ from bcf_governance.tooling.ci_github_identity import (
 from bcf_governance.tooling.ci_graph_locks import apply_ci_graph_locks
 from bcf_governance.tooling.ci_graph_render import apply_ci_graph
 from bcf_governance.tooling.ci_graph_controller_lifecycle import ControllerLifecycleState
+from bcf_governance.tooling.trusted_controller_compatibility import (
+    ordinary_alternate_lane_available,
+)
 from tests._wheel_fixture import write_wheel
 
 
@@ -399,8 +402,11 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     assert pending["trusted_controller_installation"] == baseline_proof
     routine = (tmp_path / ROUTINE_WORKFLOW).read_text(encoding="utf-8")
     assert baseline_proof["installed_commit_sha"] in routine
-    assert not (tmp_path / controller.BOOTSTRAP_WORKFLOW).exists()
-    assert not (tmp_path / controller.PROBE_WORKFLOW).exists()
+    # The fixture preserves the canonical graph topology while exercising only
+    # pin projection; lane applicability therefore comes from its source owner.
+    alternate_lane = ordinary_alternate_lane_available(REPO_ROOT)
+    assert (tmp_path / controller.BOOTSTRAP_WORKFLOW).exists() is alternate_lane
+    assert (tmp_path / controller.PROBE_WORKFLOW).exists() is alternate_lane
     second_target = dict(pin)
     second_target["BCF_BOOTSTRAP_ARTIFACT_ID"] = "401"
     with pytest.raises(GitHubControllerError, match="rotation is already pending"):
