@@ -1,5 +1,8 @@
 # Changelog
 
+- Project the exact provider-built pending-topology classifier controller as the
+  typed compatibility-lane target while installed N remains authoritative.
+
 - Derive pending-rotation producer facades from the authenticated admission workflow,
   execute installed N's exact topology classifier during prospective compatibility,
   and restore the governed alternate lane only when installed N cannot authorize N+1.
