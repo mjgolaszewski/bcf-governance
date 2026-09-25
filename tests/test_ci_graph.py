@@ -68,12 +68,24 @@ def test_workflow_run_chain_cannot_exceed_provider_depth_limit() -> None:
 def test_exact_main_evaluation_has_one_canonical_admission_and_truth_scope() -> None:
     compiled = validate_ci_graph(REPO_ROOT)
     evaluation = exact_main_evaluation(compiled.workflows)
-    assert evaluation.mode == "workitem"
-    assert evaluation.target is not None
+    ledger = yaml.safe_load((REPO_ROOT / "plans/phase-ledger.yml").read_text())
+    workitems = yaml.safe_load(
+        (REPO_ROOT / ledger["active_phase"]["workitems"]).read_text()
+    )["workitems"]
+    if all(item["status"] == "DONE" for item in workitems):
+        assert evaluation.mode == "closure"
+        assert evaluation.target is None
+    else:
+        assert evaluation.mode == "workitem"
+        assert evaluation.target is not None
     stale = copy.deepcopy(compiled)
     workflow = next(item for item in stale.workflows if item["id"] == "exact-main")
     governance = next(item for item in workflow["jobs"] if item["id"] == "governance")
-    governance["executor"]["inputs"]["evaluation_target"] = "wrong-target"
+    if evaluation.mode == "workitem":
+        governance["executor"]["inputs"]["evaluation_target"] = "wrong-target"
+    else:
+        governance["executor"]["inputs"]["evaluation_mode"] = "workitem"
+        governance["executor"]["inputs"]["evaluation_target"] = "wrong-target"
     with pytest.raises(CIGraphError, match="evaluation intents differ"):
         exact_main_evaluation(stale.workflows)
 
