@@ -1,5 +1,8 @@
 # Changelog
 
+- Derive skipped routine-rotation matrix facades from the authenticated workflow
+  and prospectively execute the same exact callback classifier before provider use.
+
 - Remove the temporary pending-topology bootstrap/probe lane after authenticated
   ordinary-current confirmation; provider-backed routine rotation remains canonical.
 

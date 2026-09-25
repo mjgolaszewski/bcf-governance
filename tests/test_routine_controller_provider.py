@@ -15,7 +15,14 @@ from bcf_governance.tooling.ci_github_identity import (
     MainIdentity,
 )
 from bcf_governance.tooling import routine_controller_provider as provider
-from bcf_governance.tooling.routine_controller_rotation import transition_id
+from bcf_governance.tooling.routine_controller_rotation import (
+    AUTHORIZE_JOB,
+    RoutineCallbackTopologyError,
+    classify_callback_topology,
+    skipped_matrix_facades,
+    transition_id,
+)
+from bcf_governance.tooling.ci_authority_contracts import authority_role_jobs
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -524,17 +531,10 @@ def test_callback_binds_completed_rotation_before_dispatch(
 ) -> None:
     active = _active()
     dispatched: list[tuple[str, dict]] = []
+    authority = yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text())
     expected = [
-        value["job_id"] for value in provider.authority_role_jobs(
-            yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text()),
-            "controller_rotation",
-        )
+        value["job_id"] for value in authority_role_jobs(authority, "controller_rotation")
     ]
-    monkeypatch.setattr(
-        provider,
-        "authority_role_jobs",
-        lambda *_args, **_kwargs: tuple({"job_id": name} for name in expected),
-    )
     api = SimpleNamespace(
         dispatch=lambda _repo, *, event_type, client_payload: dispatched.append(
             (event_type, client_payload)
@@ -548,7 +548,7 @@ def test_callback_binds_completed_rotation_before_dispatch(
     monkeypatch.setattr(
         provider,
         "load_authority",
-        lambda *_args, **_kwargs: {"schema_version": "1.1"},
+        lambda *_args, **_kwargs: authority,
     )
     monkeypatch.setattr(
         provider,
@@ -597,8 +597,9 @@ def test_callback_rejects_another_rotation_run(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     active = _active()
+    authority = yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text())
     monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
-    monkeypatch.setattr(provider, "load_authority", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(provider, "load_authority", lambda *_args, **_kwargs: authority)
     monkeypatch.setattr(
         provider,
         "authenticate_role_run",
@@ -622,16 +623,8 @@ def test_callback_rejects_another_rotation_run(
         provider, "_active_receipts", lambda *_args, **_kwargs: (active,)
     )
     expected = [
-        value["job_id"] for value in provider.authority_role_jobs(
-            yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text()),
-            "controller_rotation",
-        )
+        value["job_id"] for value in authority_role_jobs(authority, "controller_rotation")
     ]
-    monkeypatch.setattr(
-        provider,
-        "authority_role_jobs",
-        lambda *_args, **_kwargs: tuple({"job_id": name} for name in expected),
-    )
     with pytest.raises(GitHubControllerError, match="does not bind"):
         provider.dispatch_post_rotation_certification(
             SimpleNamespace(jobs=lambda *_args, **_kwargs: tuple(
@@ -650,22 +643,14 @@ def test_callback_closes_exact_no_transition_without_dispatch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     authority = yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text())
-    expected = [
-        value["job_id"]
-        for value in provider.authority_role_jobs(authority, "controller_rotation")
-    ]
+    _, _, jobs = _collapsed_no_transition()
+    workflow = authority["workflow_registry"][authority["roles"]["controller_rotation"]]
+    raw = (ROOT / workflow["active_path"]).read_bytes()
     dispatched: list[object] = []
     api = SimpleNamespace(
-        jobs=lambda *_args, **_kwargs: tuple(
-            {
-                "name": name,
-                "conclusion": (
-                    "success"
-                    if name == "Authorize protected routine controller transition"
-                    else "skipped"
-                ),
-            }
-            for name in expected
+        jobs=lambda *_args, **_kwargs: tuple(jobs),
+        content=lambda *_args, **_kwargs: SimpleNamespace(
+            content=raw, blob_oid=workflow["trusted_workflow_blob_oid"]
         ),
         dispatch=lambda *_args, **_kwargs: dispatched.append(True),
     )
@@ -696,6 +681,53 @@ def test_callback_closes_exact_no_transition_without_dispatch(
         "release_authority": False,
     }
     assert dispatched == []
+
+
+def _collapsed_no_transition() -> tuple[set[str], dict[str, set[str]], list[dict[str, str]]]:
+    authority = yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text())
+    workflow = authority["workflow_registry"][authority["roles"]["controller_rotation"]]
+    raw = (ROOT / workflow["active_path"]).read_bytes()
+    expected = {
+        str(value["job_id"])
+        for value in authority_role_jobs(authority, "controller_rotation")
+    }
+    facades = skipped_matrix_facades(raw, expected_jobs=expected)
+    definitions = yaml.safe_load(raw)["jobs"]
+    jobs = [
+        {
+            "name": str(value.get("name", source)),
+            "conclusion": (
+                "success"
+                if str(value.get("name", source)) == AUTHORIZE_JOB
+                else "skipped"
+            ),
+        }
+        for source, value in definitions.items()
+    ]
+    return expected, facades, jobs
+
+
+def test_callback_accepts_exact_provider_collapsed_no_transition() -> None:
+    expected, facades, jobs = _collapsed_no_transition()
+    assert classify_callback_topology(
+        expected_jobs=expected, jobs=jobs, skipped_facades=facades
+    ) == "no_transition"
+
+
+@pytest.mark.parametrize("mutation", ("facade_success", "expanded_laundering", "extra"))
+def test_callback_collapsed_no_transition_still_fails_closed(mutation: str) -> None:
+    expected, facades, jobs = _collapsed_no_transition()
+    facade = next(iter(facades))
+    if mutation == "facade_success":
+        next(value for value in jobs if value["name"] == facade)["conclusion"] = "success"
+    elif mutation == "expanded_laundering":
+        jobs.append({"name": next(iter(facades[facade])), "conclusion": "skipped"})
+    else:
+        jobs.append({"name": "Undeclared rotation job", "conclusion": "skipped"})
+    with pytest.raises(RoutineCallbackTopologyError):
+        classify_callback_topology(
+            expected_jobs=expected, jobs=jobs, skipped_facades=facades
+        )
 
 
 @pytest.mark.parametrize("mutation", ("missing", "extra", "partial"))
@@ -734,7 +766,14 @@ def test_callback_rejects_nonexact_no_transition_topology(
             run_attempt=1,
         ),
     )
-    api = SimpleNamespace(jobs=lambda *_args, **_kwargs: tuple(jobs))
+    workflow = authority["workflow_registry"][authority["roles"]["controller_rotation"]]
+    raw = (ROOT / workflow["active_path"]).read_bytes()
+    api = SimpleNamespace(
+        jobs=lambda *_args, **_kwargs: tuple(jobs),
+        content=lambda *_args, **_kwargs: SimpleNamespace(
+            content=raw, blob_oid=workflow["trusted_workflow_blob_oid"]
+        ),
+    )
     error = "inventory is not exact" if mutation != "partial" else "topology is partial"
     with pytest.raises(GitHubControllerError, match=error):
         provider.dispatch_post_rotation_certification(

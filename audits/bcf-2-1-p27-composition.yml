@@ -454,3 +454,12 @@ p27_p0_02_migration_expansion:
       installation_confirmation: {subject: 47fdf4bddb8c7d1a45e5b9ed7d08f87ffcee0403, tree: 1e3e92bc2f6bc57a8f8db4cc605deb9128cc05a2, bootstrap: 36153914017/1, bootstrap_jobs: ['108133704190', '108133703940'], probe: 36154525798/1, probe_jobs: ['108135725039', '108135725220'], installed_controller: c3ddbd278baaed5e34a26872193b964828a09d64}
       normalized_custody: target and installed identities are equal; recovery reentry remains absent; temporary alternate lane remains only until the fixed routine mechanism contracts it
       controlled_demolition: source-pinned bootstrap and probe workflows, commands, components, and authority roles are removed after ordinary-current confirmation; provider-backed routine rotation remains the sole steady-state lane
+    p27_p0_04_callback_topology_correction:
+      bounded_closure: {subject: 3f4c0a4383e442c15286fd0b04004b66a04007b0, tree: 2566e11d3ff93b68fdf013d67378072ea7aaf844, exact_main: 36169555779/1, finalizer: 36169957940/1, publisher: 36170061125/1, status_context: bcf/workitem-certification}
+      proposition: {predicate: workitem_closed, target: P27-P0-04, phase_effective_state: active, release_authority: false}
+      failed_callback: {run: 36170039139/1, job: 108187065321, rotation_run: 36169957942/1, first_causal_invariant: rotation callback job inventory is not exact}
+      provider_shape: a wholly skipped matrix job is reported once under its literal workflow-name facade instead of as expanded matrix jobs
+      canonical_owner: the authority matrix compiler derives the exact expansion represented by each literal skipped facade from authenticated workflow bytes
+      fail_closed: only skipped facades expand; mixed facade and expanded jobs, successful facades, missing, extra, duplicate, partial, wrong-workflow, or wrong-digest inventories reject
+      prospective_fast_fail: the canonical prospective train executes the production callback classifier against the mechanically derived no-transition provider shape before evidence allocation
+      authority_effect: no transition, controller, certification, publication, or release authority is added; the correction only makes the exact closed non-dispatching topology representable

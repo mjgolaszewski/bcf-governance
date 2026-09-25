@@ -77,6 +77,8 @@ execution_evidence:
   - PR 291 merged the bounded classifier recovery as c3ddbd278baaed5e34a26872193b964828a09d64; exact-main 36145861454/1 built artifact 10869895050, which the canonical provider compiler projects as the sole compatibility-lane target while installed N remains authoritative
   - bootstrap 36153914017/1 and probe 36154525798/1 authenticated the exact c3ddbd278baaed5e34a26872193b964828a09d64 controller on both trusted runners; provider-compiled confirmation restores ordinary-current custody before the temporary lane is contracted
   - after ordinary-current confirmation, the bounded compatibility bootstrap/probe workflows and roles are removed; provider-backed routine rotation is the sole surviving steady-state mechanism before P27-P0-04 certification
+  - exact-main 36169555779/1, finalizer 36169957940/1, and publisher 36170061125/1 closed P27-P0-04 on 3f4c0a4383e442c15286fd0b04004b66a04007b0 while P27 remained active and release authority remained absent
+  - callback 36170039139/1 rejected rotation 36169957942/1 because GitHub collapsed wholly skipped matrix jobs to literal workflow-name facades; the canonical matrix compiler now derives only those authenticated skipped expansions and the prospective train executes the production no-transition classifier before provider use
 closeout_requirements:
   claims:
     workitems_closed:

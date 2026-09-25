@@ -37,6 +37,7 @@ from .routine_controller_rotation import (
     ROTATION_POLICY_PATHS,
     alternate_policy_lane_contract,
     controller_policy_digest,
+    prospective_no_transition_topology,
 )
 from .scaffold_governance_artifacts import ReconcileError, reconcile_steps
 
@@ -647,6 +648,9 @@ def _run_prospective_train(
                         else "ordinary_current_required"
                     ),
                     "transition_class": transition_class,
+                    "no_transition_callback_probe": prospective_no_transition_topology(
+                        root
+                    ),
                     **(
                         {"alternate_lane": alternate_policy_lane_contract()}
                         if transition_requirement == "alternate_lane_required"

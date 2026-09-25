@@ -140,6 +140,9 @@ def _front_door(monkeypatch: pytest.MonkeyPatch, trace: list[str]) -> None:
     monkeypatch.setattr(
         prospective, "_validate_train_telemetry", lambda *_args: None
     )
+    monkeypatch.setattr(
+        prospective, "prospective_no_transition_topology", lambda *_args: "no_transition"
+    )
 
 
 def test_deterministic_walk_orders_reconcile_before_preflight_and_never_claims_authority(
@@ -418,12 +421,17 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
         "id": "controller_lifecycle",
         "state": "rotation_required",
         "transition_class": "runtime_only",
+        "no_transition_callback_probe": "no_transition",
     }
     eligibility = report["boundaries"][-1]
     publisher = next(value for value in report["boundaries"] if value["id"] == "publisher")
     assert publisher["status_context"] == "bcf/workitem-certification"
     assert eligibility["eligible_successors"] == ["P27-P0-04"]
     assert eligibility["release_authority"] is False
+
+
+def test_prospective_callback_probe_executes_real_skipped_matrix_classifier() -> None:
+    assert prospective.prospective_no_transition_topology(REPO_ROOT) == "no_transition"
 
 
 def test_protected_policy_change_requires_exact_alternate_lane(

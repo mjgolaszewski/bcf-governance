@@ -49,8 +49,8 @@ from .routine_controller_rotation import (
     RoutineRotationError,
     advance_transition,
     alternate_policy_lane_contract,
+    classify_provider_callback_topology,
     controller_policy_digest,
-    classify_callback_topology,
     effective_controller_pin,
     select_controller_chain,
     transition_follows_normalization,
@@ -729,17 +729,14 @@ def dispatch_post_rotation_certification(
         run_attempt=rotation_run_attempt,
         require_success=True,
     )
-    expected_jobs = {
-        str(value["job_id"])
-        for value in authority_role_jobs(authority, "controller_rotation")
-    }
-    jobs = api.jobs(
-        repository, rotation.run_id, attempt=rotation.run_attempt
+    topology = classify_provider_callback_topology(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        run_id=rotation.run_id,
+        run_attempt=rotation.run_attempt,
     )
-    try:
-        topology = classify_callback_topology(expected_jobs=expected_jobs, jobs=jobs)
-    except RoutineRotationError as exc:
-        raise GitHubControllerError(str(exc)) from exc
     if topology == "no_transition":
         return {
             "status": "no_transition",
