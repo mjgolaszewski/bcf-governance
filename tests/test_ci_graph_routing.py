@@ -11,7 +11,7 @@ import re
 import pytest
 import yaml
 
-from bcf_governance.tooling.ci_authority_pins import _compiled_workflow_jobs
+from bcf_governance.tooling.ci_authority_pins import compiled_workflow_jobs
 from bcf_governance.tooling.ci_graph_audit import _effective_graph
 from bcf_governance.tooling.ci_graph_contracts import CIGraphError, validate_ci_graph
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
@@ -247,7 +247,9 @@ def test_routing_changes_only_allocation_and_exposes_eligibility(tmp_path: Path)
     assert rendered == ci_graph_render.render_ci_graph(tmp_path)
     for path, raw in rendered.items():
         old, new = yaml.safe_load(previous[path]), yaml.safe_load(raw)
-        assert _compiled_workflow_jobs(previous[path], roles=None) == _compiled_workflow_jobs(raw, roles=None)
+        assert compiled_workflow_jobs(previous[path], roles=None) == compiled_workflow_jobs(
+            raw, roles=None
+        )
         assert list(new["jobs"]) == list(old["jobs"])
         for job_id, job in new["jobs"].items():
             if isinstance(job.get("runs-on"), str) and job["runs-on"].startswith("${{ fromJSON"):

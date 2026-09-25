@@ -11,6 +11,11 @@ import re
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
 from jsonschema import Draft202012Validator
+import yaml
+
+from .ci_authority_contracts import authority_role_jobs, authority_role_workflow
+from .ci_authority_pins import compiled_workflow_jobs
+from .ci_github_identity import GitHubControllerError, MainIdentity
 
 
 SCHEMA = Path("schemas/controller-transition.schema.json")
@@ -36,35 +41,207 @@ ALTERNATE_POLICY_LANE_SEQUENCE = (
     "protected_confirmation_merge",
     "normalize_ordinary_current",
 )
+AUTHORIZE_JOB = "Authorize protected routine controller transition"
+RECONCILE_JOB = "Commit the deterministic automation changelog entry"
+
+
 class RoutineRotationError(ValueError):
     """Raised when routine rotation evidence is incomplete or contradictory."""
 
 
-def classify_callback_topology(
-    *, expected_jobs: set[str], jobs: Sequence[Mapping[str, Any]]
-) -> str:
-    """Return the sole typed callback lane for one exact job inventory."""
+class RoutineCallbackTopologyError(ValueError):
+    """Raised when one routine callback topology is incomplete or ambiguous."""
 
-    authorize = "Authorize protected routine controller transition"
-    reconcile = "Commit the deterministic automation changelog entry"
-    actual = {str(value.get("name", "")): value for value in jobs}
-    if set(actual) != expected_jobs:
-        raise RoutineRotationError("rotation callback job inventory is not exact")
-    if authorize not in expected_jobs or reconcile not in expected_jobs:
-        raise RoutineRotationError("rotation callback authority inventory is invalid")
-    if actual[authorize].get("conclusion") != "success":
-        raise RoutineRotationError("rotation callback authorization did not succeed")
-    if actual[reconcile].get("conclusion") != "skipped":
-        raise RoutineRotationError("rotation callback reconcile topology is invalid")
+
+def _workflow_jobs(raw: bytes) -> dict[str, Mapping[str, Any]]:
+    try:
+        payload = yaml.safe_load(raw)
+    except yaml.YAMLError as exc:
+        raise RoutineCallbackTopologyError(
+            "rotation callback workflow is invalid YAML"
+        ) from exc
+    jobs = payload.get("jobs") if isinstance(payload, Mapping) else None
+    if not isinstance(jobs, Mapping) or not jobs:
+        raise RoutineCallbackTopologyError(
+            "rotation callback workflow has no job inventory"
+        )
+    if any(
+        not isinstance(key, str) or not isinstance(value, Mapping)
+        for key, value in jobs.items()
+    ):
+        raise RoutineCallbackTopologyError(
+            "rotation callback workflow job inventory is invalid"
+        )
+    return {str(key): value for key, value in jobs.items()}
+
+
+def skipped_matrix_facades(
+    workflow_bytes: bytes, *, expected_jobs: set[str]
+) -> dict[str, set[str]]:
+    """Derive GitHub's literal facade for each wholly skipped matrix job."""
+
+    definitions = _workflow_jobs(workflow_bytes)
+    compiled = compiled_workflow_jobs(workflow_bytes, roles=None)
+    by_source: dict[str, set[str]] = {}
+    for source, value in compiled:
+        by_source.setdefault(source, set()).add(str(value["job_id"]))
+    facades: dict[str, set[str]] = {}
+    claimed: set[str] = set()
+    for source, definition in definitions.items():
+        strategy = definition.get("strategy", {})
+        matrix = strategy.get("matrix", {}) if isinstance(strategy, Mapping) else {}
+        if not isinstance(matrix, Mapping) or not matrix:
+            continue
+        facade = str(definition.get("name", source))
+        expansion = by_source.get(source, set())
+        if (
+            not facade
+            or "${{" not in facade
+            or not expansion
+            or not expansion <= expected_jobs
+            or facade in expected_jobs
+            or claimed & expansion
+        ):
+            raise RoutineCallbackTopologyError(
+                "rotation callback matrix facade is not mechanically exact"
+            )
+        facades[facade] = expansion
+        claimed.update(expansion)
+    return facades
+
+
+def classify_callback_topology(
+    *,
+    expected_jobs: set[str],
+    jobs: Sequence[Mapping[str, Any]],
+    skipped_facades: Mapping[str, set[str]] | None = None,
+) -> str:
+    """Return the sole typed callback lane for one exact provider inventory."""
+
+    actual: dict[str, Mapping[str, Any]] = {}
+    for value in jobs:
+        name = str(value.get("name", ""))
+        if not name or name in actual:
+            raise RoutineCallbackTopologyError(
+                "rotation callback job inventory is not exact"
+            )
+        actual[name] = value
+    normalized = dict(actual)
+    for facade, expansion in (skipped_facades or {}).items():
+        value = normalized.pop(facade, None)
+        if value is None:
+            continue
+        if value.get("conclusion") != "skipped" or set(expansion) & set(normalized):
+            raise RoutineCallbackTopologyError(
+                "rotation callback matrix facade is not an exact skipped job"
+            )
+        normalized.update({name: value for name in expansion})
+    if set(normalized) != expected_jobs:
+        raise RoutineCallbackTopologyError(
+            "rotation callback job inventory is not exact"
+        )
+    if AUTHORIZE_JOB not in expected_jobs or RECONCILE_JOB not in expected_jobs:
+        raise RoutineCallbackTopologyError(
+            "rotation callback authority inventory is invalid"
+        )
+    if normalized[AUTHORIZE_JOB].get("conclusion") != "success":
+        raise RoutineCallbackTopologyError(
+            "rotation callback authorization did not succeed"
+        )
+    if normalized[RECONCILE_JOB].get("conclusion") != "skipped":
+        raise RoutineCallbackTopologyError(
+            "rotation callback reconcile topology is invalid"
+        )
     conclusions = {
-        str(actual[name].get("conclusion"))
-        for name in expected_jobs - {authorize, reconcile}
+        str(normalized[name].get("conclusion"))
+        for name in expected_jobs - {AUTHORIZE_JOB, RECONCILE_JOB}
     }
     if conclusions == {"skipped"}:
         return "no_transition"
     if conclusions == {"success"}:
         return "active_transition"
-    raise RoutineRotationError("rotation callback topology is partial")
+    raise RoutineCallbackTopologyError("rotation callback topology is partial")
+
+
+def classify_provider_callback_topology(
+    api: Any,
+    *,
+    repository: str,
+    main: MainIdentity,
+    authority: Mapping[str, Any],
+    run_id: object,
+    run_attempt: object,
+) -> str:
+    """Authenticate GitHub's expanded or skipped-facade callback inventory."""
+
+    expected = {
+        str(value["job_id"])
+        for value in authority_role_jobs(dict(authority), "controller_rotation")
+    }
+    jobs = api.jobs(repository, run_id, attempt=run_attempt)
+    try:
+        return classify_callback_topology(expected_jobs=expected, jobs=jobs)
+    except RoutineCallbackTopologyError as exact_error:
+        workflow = authority_role_workflow(dict(authority), "controller_rotation")
+        content = api.content(
+            repository, str(workflow["active_path"]), ref=main.checkout_sha
+        )
+        if (
+            content.blob_oid != workflow["trusted_workflow_blob_oid"]
+            or hashlib.sha256(content.content).hexdigest()
+            != workflow["trusted_workflow_sha256"]
+        ):
+            raise GitHubControllerError(
+                "rotation callback workflow bytes do not match authority"
+            ) from exact_error
+        try:
+            return classify_callback_topology(
+                expected_jobs=expected,
+                jobs=jobs,
+                skipped_facades=skipped_matrix_facades(
+                    content.content, expected_jobs=expected
+                ),
+            )
+        except RoutineCallbackTopologyError as exc:
+            raise GitHubControllerError(str(exc)) from exc
+
+
+def prospective_no_transition_topology(repo_root: Path) -> str:
+    """Exercise the real callback classifier against canonical skipped facades."""
+
+    authority = yaml.safe_load(
+        (repo_root / "governance/ci-authority.yml").read_text(encoding="utf-8")
+    )
+    workflow = authority_role_workflow(authority, "controller_rotation")
+    raw = (repo_root / str(workflow["active_path"])).read_bytes()
+    if hashlib.sha256(raw).hexdigest() != workflow["trusted_workflow_sha256"]:
+        raise RoutineCallbackTopologyError(
+            "prospective callback workflow bytes do not match authority"
+        )
+    expected = {
+        str(value["job_id"])
+        for value in authority_role_jobs(authority, "controller_rotation")
+    }
+    facades = skipped_matrix_facades(raw, expected_jobs=expected)
+    definitions = _workflow_jobs(raw)
+    jobs = []
+    for source, definition in definitions.items():
+        name = str(definition.get("name", source))
+        strategy = definition.get("strategy", {})
+        matrix = strategy.get("matrix", {}) if isinstance(strategy, Mapping) else {}
+        jobs.append(
+            {
+                "name": name,
+                "conclusion": "success" if name == AUTHORIZE_JOB else "skipped",
+            }
+        )
+        if isinstance(matrix, Mapping) and matrix and name not in facades:
+            raise RoutineCallbackTopologyError(
+                "prospective callback omitted a matrix facade"
+            )
+    return classify_callback_topology(
+        expected_jobs=expected, jobs=jobs, skipped_facades=facades
+    )
 
 
 def transition_follows_normalization(

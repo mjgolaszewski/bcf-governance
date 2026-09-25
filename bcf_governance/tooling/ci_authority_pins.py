@@ -106,7 +106,7 @@ def _matrix_combinations(matrix: dict[str, Any]) -> list[dict[str, Any]]:
     return combinations
 
 
-def _compiled_workflow_jobs(
+def compiled_workflow_jobs(
     raw: bytes, *, roles: dict[str, str] | None
 ) -> list[tuple[str, dict[str, Any]]]:
     """Compile exact provider job names from one committed workflow definition."""
@@ -162,7 +162,7 @@ def compiled_workflow_job_names(raw: bytes) -> tuple[str, ...]:
 
     return tuple(
         str(value["job_id"])
-        for _, value in _compiled_workflow_jobs(raw, roles=None)
+        for _, value in compiled_workflow_jobs(raw, roles=None)
     )
 
 
@@ -187,7 +187,7 @@ def _compile_inventories(
             raise CIAuthorityPinError("workflow role policy must be a mapping")
         entry["expected_jobs"] = [
             value
-            for _, value in _compiled_workflow_jobs(
+            for _, value in compiled_workflow_jobs(
                 committed_workflows[str(reference)],
                 roles={str(key): str(value) for key, value in (roles or {}).items()},
             )
@@ -209,7 +209,7 @@ def _compile_inventories(
         if isinstance(value, dict)
     }
     if source_roles is None:
-        raw_jobs = _compiled_workflow_jobs(
+        raw_jobs = compiled_workflow_jobs(
             committed_workflows[admission_reference], roles=None
         )
         source_keys = {source for source, _ in raw_jobs}
@@ -223,11 +223,11 @@ def _compile_inventories(
             for source, _ in raw_jobs
         }
         admission_entry["job_roles"] = inferred_roles
-        caller_jobs = _compiled_workflow_jobs(
+        caller_jobs = compiled_workflow_jobs(
             committed_workflows[admission_reference], roles=inferred_roles
         )
     elif isinstance(source_roles, dict):
-        caller_jobs = _compiled_workflow_jobs(
+        caller_jobs = compiled_workflow_jobs(
             committed_workflows[admission_reference],
             roles={str(key): str(value) for key, value in source_roles.items()},
         )
@@ -275,7 +275,7 @@ def _compile_inventories(
         caller_name = str(caller_producers[producer_id]["job_id"])
         producer["expected_jobs"] = [
             {"job_id": f"{caller_name} / {value['job_id']}"}
-            for _, value in _compiled_workflow_jobs(
+            for _, value in compiled_workflow_jobs(
                 committed_workflows[reference], roles=None
             )
         ]
