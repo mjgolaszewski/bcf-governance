@@ -595,7 +595,7 @@ def _run_prospective_train(
             evidence_started = time.monotonic_ns()
             producer_observations = _capture_planned_evidence(
                 root,
-                python_executable=python_executable.resolve(),
+                python_executable=python_executable,
                 session_manifest=session.manifest_path,
                 session_root=session.root,
                 producers=producers,

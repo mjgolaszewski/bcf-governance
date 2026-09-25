@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import sys
 from types import SimpleNamespace
 
 import pytest
@@ -339,6 +340,9 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
         root=tmp_path / "session",
     )
     required = ["test"]
+    selected_python = tmp_path / "venv/bin/python"
+    selected_python.parent.mkdir(parents=True)
+    selected_python.symlink_to(sys.executable)
     def allocate(_root: Path, _artifacts: Path, gates: tuple[str, ...], **_kwargs: object) -> SimpleNamespace:
         assert gates == tuple(required)
         return session
@@ -360,10 +364,10 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
     monkeypatch.setattr(
         prospective,
         "_capture_planned_evidence",
-        lambda *_args, producers, **_kwargs: (
+        lambda *_args, producers, python_executable, **_kwargs: (
             trace.append("evidence")
-            if producers == tuple(required)
-            else pytest.fail("prospective execution omitted a planned producer")
+            if producers == tuple(required) and python_executable == selected_python
+            else pytest.fail("prospective execution changed its planned producer or interpreter")
         ),
     )
     subject = {"commit_sha": HEAD, "tree_sha": TREE}
@@ -395,7 +399,7 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
     report = prospective.run_prospective_train(
         tmp_path,
         **TRAIN,
-        python_executable=Path("/python"),
+        python_executable=selected_python,
         runner=_runner,
     )
     assert tuple(value["id"] for value in report["boundaries"]) == prospective.BOUNDARY_CHAIN
