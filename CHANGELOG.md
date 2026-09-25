@@ -1,5 +1,8 @@
 # Changelog
 
+- Project exact-main from certified P27-P0-04 closure to terminal parent-phase
+  closure without granting bounded certification any phase or release authority.
+
 - Continue post-rotation exact-main as a native rerun of its authenticated source
   run and reject workflow-run chains beyond GitHub's three-level provider limit.
 

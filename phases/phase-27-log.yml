@@ -81,6 +81,9 @@ execution_evidence:
   - callback 36170039139/1 rejected rotation 36169957942/1 because GitHub collapsed wholly skipped matrix jobs to literal workflow-name facades; the canonical matrix compiler now derives only those authenticated skipped expansions and the prospective train executes the production no-transition classifier before provider use
   - PR 295 merged as e22561a5d68e5205c76f180c837316e04b4f34e3; routine rotation 36180753253/1 installed that exact controller, but repository-dispatched exact-main 36181456071/1 exceeded GitHub's three-level workflow-run chain before the finalizer could be created
   - the canonical callback now reauthenticates and reruns the transition-bound source exact-main run as a new attempt; graph validation rejects deeper workflow-run chains before provider execution
+  - PR 296 merged as 72eb8048cfe2d5c6f6307ad17d3961bfb2a48926 with tree a0e44ba20d054adf748aed74d61ff00aa33957b2; rotation 36189812034/1 installed that exact controller on both trusted runners
+  - exact-main 36189726959/2 retained the original push subject and completed bounded truth; finalizer 36191002314/1 and publisher 36191108485/1 restored provider-visible P27-P0-04 certification while P27 remained active and release authority remained absent
+  - all four P27 workitems are DONE and bounded-certified; exact-main now requests terminal P27 closure without an evaluation target
 closeout_requirements:
   claims:
     workitems_closed:
@@ -113,4 +116,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- restore provider-visible bounded P27-P0-04 status through the exact source-run retry, then perform terminal P27 closure before beginning P28
+- perform terminal P27 closure under the ordinary-current controller, close issue 215, and stop before beginning P28

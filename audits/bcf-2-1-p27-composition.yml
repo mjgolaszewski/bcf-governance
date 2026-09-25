@@ -473,3 +473,37 @@ p27_p0_02_migration_expansion:
       custody: the new attempt retains exact workflow and subject identity while run_attempt remains provider-native and no evidence is relabeled
       prospective_fast_fail: canonical graph validation rejects cycles and workflow-run chains deeper than GitHub's three-level limit
       authority_effect: release authority remains false; no status is published until the normal finalizer authenticates the rerun attempt
+    terminal_p27_closure_projection:
+      bounded_precondition:
+        subject: {commit: 72eb8048cfe2d5c6f6307ad17d3961bfb2a48926, tree: a0e44ba20d054adf748aed74d61ff00aa33957b2}
+        exact_main: {run: 36189726959, attempt: 2, conclusion: success}
+        truth_artifact: {id: '10888470689', digest: 'sha256:41706dd26a50e7bb4740564e13eb9f8dd1f52b99ffd0c1bb434d8e933d6518b7'}
+        finalizer: {run: 36191002314, attempt: 1, conclusion: success}
+        certification_artifact: {id: '10888157350', digest: 'sha256:b2f68f5c199c0cb269908c78a0e404ffa8e29dc9c98851e23c0af3a838f6f414'}
+        publisher: {run: 36191108485, attempt: 1, conclusion: success}
+        status: {id: '54967530277', context: bcf/workitem-certification, state: success}
+        proposition: {predicate: workitem_closed, target: P27-P0-04, eligible_successors: [], release_authority: false}
+        controller: {target: 72eb8048cfe2d5c6f6307ad17d3961bfb2a48926, installed: 72eb8048cfe2d5c6f6307ad17d3961bfb2a48926, state: ordinary_current}
+      projection:
+        evaluation_mode: closure
+        evaluation_target: absent
+        parent_phase: P27
+        authored_phase_state: active
+        workitems: {total: 4, done: 4}
+      prospective_chain:
+        preflight: require every P27 workitem DONE and reject a closure target
+        controller_compatibility: ordinary-current controller remains compatible
+        pr_evidence: ordinary complete PR evidence and bcf/pr-certification remain required
+        certification: bounded certification cannot substitute for terminal exact-main closure
+        merge: normal protected merge with no bypass or candidate self-authorization
+        exact_main: authenticate prior PR evidence and evaluate P27 closure
+        controller_lifecycle: no pending or recovery state is permitted
+        bounded_truth: prior P27-P0-04 authority remains workitem-scoped
+        finalizer: authenticate exact phase-closure subject proposition run and attempt
+        publisher: publish terminal exact-main status only after authenticated closure
+        successor_eligibility: P28 remains blocked until terminal P27 closure succeeds
+      non_escalation:
+      - bounded P27-P0-04 certification grants no phase closure release publication or controller authority
+      - terminal closure has no evaluation target and cannot be represented as workitem certification
+      - release authority protection and recovery semantics remain unchanged
+      boundary: protected merge and fresh terminal P27 exact-main certification remain required; P28 remains inactive
