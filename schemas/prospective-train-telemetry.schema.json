@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "subject", "measurements", "producer_observations"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit_sha", "tree_sha"],
+      "properties": {
+        "commit_sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+        "tree_sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"}
+      }
+    },
+    "measurements": {
+      "type": "array",
+      "minItems": 11,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stage", "status"],
+        "properties": {
+          "stage": {"enum": ["fixed_point", "planning", "reuse", "setup", "producers", "positive_tests", "controls", "normalization", "truth", "finalization", "publication"]},
+          "status": {"enum": ["observed", "included", "provider_required"]},
+          "duration_ms": {"type": "integer", "minimum": 0},
+          "parent": {"type": "string", "minLength": 1}
+        },
+        "allOf": [
+          {"if": {"properties": {"status": {"const": "observed"}}}, "then": {"required": ["duration_ms"]}},
+          {"if": {"properties": {"status": {"const": "included"}}}, "then": {"required": ["parent"]}}
+        ]
+      }
+    },
+    "producer_observations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["producer", "duration_ms", "claim_count", "control_count"],
+        "properties": {
+          "producer": {"type": "string", "minLength": 1},
+          "duration_ms": {"type": "integer", "minimum": 1},
+          "claim_count": {"type": "integer", "minimum": 0},
+          "control_count": {"type": "integer", "minimum": 0}
+        }
+      }
+    }
+  }
+}

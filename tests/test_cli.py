@@ -47,13 +47,15 @@ def test_cli_exposes_transactional_github_ci_adopter() -> None:
 
 def test_cli_exposes_local_pr_and_runtime_contracts() -> None:
     local = _run_bcf("ci", "local-pr", "--help")
-    prospective = _run_bcf("ci", "prospective-pr", "--help")
+    prospective = _run_bcf("ci", "prospective-train", "--help")
     runtime = _run_bcf("ci", "runtime-check", "--help")
 
     assert local.returncode == 0
     assert "--remote" in local.stdout
     assert prospective.returncode == 0
     assert "--python" in prospective.stdout
+    assert "--intent" in prospective.stdout
+    assert "--subject-commit" in prospective.stdout
     assert "deterministic-only" not in prospective.stdout
     assert runtime.returncode == 0
     assert "--owned-containers" in runtime.stdout

@@ -399,7 +399,7 @@ p27_p0_02_migration_expansion:
       installed_controller: 9c84cdad919c42e235250b4d6d023424786e3941
       contraction: temporary source-pinned workflows and bootstrap/probe authority roles removed after ordinary-current confirmation; provider-backed routine rotation remains the sole steady-state lane
     prospective_validation_owner:
-      command: bcf ci prospective-train
+      command: bcf ci prospective-train --intent <pr|workitem|closure> --target <bounded-target-if-required> --subject-commit <exact-commit> --subject-tree <exact-tree>
       exact_boundary_order: [preflight, controller_compatibility, pr_evidence, certification, merge, exact_main, controller_lifecycle, bounded_or_phase_truth, finalizer, publisher, successor_or_release_eligibility]
       deterministic_fast_fail: canonical reconcile checks precede preflight and evidence allocation; canonical graph supplies the post-merge evaluation intent and target; terminal reauthentication rejects remote-base or local commit/tree movement during validation
       controller_routing: exact source/candidate commit tree and closed policy-byte digests distinguish no_transition provider_routine_transition_required and protected-policy alternate_lane_required; the latter carries the canonical ordinary_protected_n_n_plus_1 sequence and cannot degrade to generic inapplicability

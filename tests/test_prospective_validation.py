@@ -9,6 +9,7 @@ from bcf_governance.tooling.local_pr import LocalPRContext
 from bcf_governance.tooling import local_pr as prospective
 
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
 HEAD = "1" * 40
 TREE = "2" * 40
 BASE = "3" * 40
@@ -24,6 +25,12 @@ POLICY_IDENTITY = {
         "tree_sha": TREE,
         "policy_sha256": "6" * 64,
     },
+}
+TRAIN = {
+    "semantic_intent": "workitem",
+    "evaluation_target": "P27-P0-03",
+    "subject_commit": HEAD,
+    "subject_tree": TREE,
 }
 
 
@@ -99,6 +106,9 @@ def _front_door(monkeypatch: pytest.MonkeyPatch, trace: list[str]) -> None:
         "_controller_policy_identity",
         lambda *_args, **_kwargs: POLICY_IDENTITY,
     )
+    monkeypatch.setattr(
+        prospective, "_validate_train_telemetry", lambda *_args: None
+    )
 
 
 def test_deterministic_walk_orders_reconcile_before_preflight_and_never_claims_authority(
@@ -112,8 +122,9 @@ def test_deterministic_walk_orders_reconcile_before_preflight_and_never_claims_a
         return {"status": "pass", "self_controller": 24}
 
     monkeypatch.setattr(prospective, "run_preflight", preflight)
-    report = prospective._run_prospective_validation(
+    report = prospective._run_prospective_train(
         tmp_path,
+        **TRAIN,
         python_executable=Path("/python"),
         execute_evidence=False,
         runner=_runner,
@@ -152,8 +163,9 @@ def test_stale_projection_fails_before_preflight_or_evidence(
         lambda *_args, **_kwargs: pytest.fail("preflight ran after stale projection"),
     )
     with pytest.raises(prospective.ProspectiveValidationError, match="stale manifest"):
-        prospective._run_prospective_validation(
+        prospective._run_prospective_train(
             tmp_path,
+            **TRAIN,
             python_executable=Path("/python"),
             execute_evidence=False,
             runner=_runner,
@@ -177,8 +189,59 @@ def test_graph_intent_mismatch_fails_before_evidence(
         prospective.ProspectiveValidationError,
         match="evaluation intents differ",
     ):
-        prospective._run_prospective_validation(
+        prospective._run_prospective_train(
             tmp_path,
+            **TRAIN,
+            python_executable=Path("/python"),
+            execute_evidence=False,
+            runner=_runner,
+        )
+
+
+def test_exact_subject_input_rejects_wrong_tree_before_preflight(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    trace: list[str] = []
+    _front_door(monkeypatch, trace)
+    monkeypatch.setattr(
+        prospective,
+        "run_preflight",
+        lambda *_args, **_kwargs: pytest.fail("preflight ran for wrong subject"),
+    )
+    with pytest.raises(
+        prospective.ProspectiveValidationError,
+        match="does not match the exact committed tree",
+    ):
+        prospective._run_prospective_train(
+            tmp_path,
+            **{**TRAIN, "subject_tree": "9" * 40},
+            python_executable=Path("/python"),
+            execute_evidence=False,
+            runner=_runner,
+        )
+
+
+def test_typed_intent_must_match_canonical_graph_before_preflight(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    trace: list[str] = []
+    _front_door(monkeypatch, trace)
+    monkeypatch.setattr(
+        prospective,
+        "run_preflight",
+        lambda *_args, **_kwargs: pytest.fail("preflight ran for wrong intent"),
+    )
+    with pytest.raises(
+        prospective.ProspectiveValidationError,
+        match="intent/target does not match",
+    ):
+        prospective._run_prospective_train(
+            tmp_path,
+            **{
+                **TRAIN,
+                "semantic_intent": "closure",
+                "evaluation_target": None,
+            },
             python_executable=Path("/python"),
             execute_evidence=False,
             runner=_runner,
@@ -227,8 +290,9 @@ def test_terminal_reauthentication_rejects_base_movement(
         prospective.ProspectiveValidationError,
         match="changed during validation",
     ):
-        prospective._run_prospective_validation(
+        prospective._run_prospective_train(
             tmp_path,
+            **TRAIN,
             python_executable=Path("/python"),
             execute_evidence=False,
             runner=_runner,
@@ -290,8 +354,9 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
     }
     truths = iter((pr_truth, bounded))
     monkeypatch.setattr(prospective, "derive_truth", lambda *_args, **_kwargs: next(truths))
-    report = prospective.run_prospective_validation(
+    report = prospective.run_prospective_train(
         tmp_path,
+        **TRAIN,
         python_executable=Path("/python"),
         runner=_runner,
     )
@@ -300,6 +365,11 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
     assert report["ephemeral_state"] == {
         "scope": "exact_prospective_run",
         "state": "retired",
+    }
+    assert {item["stage"] for item in report["telemetry"]["measurements"]} == {
+        "fixed_point", "planning", "reuse", "setup", "producers",
+        "positive_tests", "controls", "normalization", "truth",
+        "finalization", "publication",
     }
     lifecycle = next(value for value in report["boundaries"] if value["id"] == "controller_lifecycle")
     assert lifecycle == {
@@ -347,8 +417,9 @@ def test_protected_policy_change_requires_exact_alternate_lane(
             },
         },
     )
-    report = prospective._run_prospective_validation(
+    report = prospective._run_prospective_train(
         tmp_path,
+        **TRAIN,
         python_executable=Path("/python"),
         execute_evidence=False,
         runner=_runner,
@@ -428,8 +499,23 @@ def test_full_walk_rejects_wrong_finalizer_truth_subject(
         prospective.ProspectiveValidationError,
         match="governance truth subject is not exact main",
     ):
-        prospective.run_prospective_validation(
+        prospective.run_prospective_train(
             tmp_path,
+            **TRAIN,
             python_executable=Path("/python"),
             runner=_runner,
         )
+
+
+def test_train_telemetry_schema_rejects_missing_stage() -> None:
+    telemetry = {
+        "schema_version": "1.0",
+        "subject": {"commit_sha": HEAD, "tree_sha": TREE},
+        "measurements": [],
+        "producer_observations": [],
+    }
+    with pytest.raises(
+        prospective.ProspectiveValidationError,
+        match="stage inventory is not exact",
+    ):
+        prospective._validate_train_telemetry(REPO_ROOT, telemetry)
