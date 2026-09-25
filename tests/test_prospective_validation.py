@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -39,6 +40,35 @@ class Result:
         self.stdout = stdout
         self.stderr = ""
         self.returncode = returncode
+
+
+def test_planned_evidence_stops_on_first_failed_producer(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    seen: list[str] = []
+    def capture(_root: Path, gate: str, output: Path, **_kwargs: object) -> Path:
+        seen.append(gate)
+        output.mkdir(parents=True)
+        (output / f"{gate}.stderr.txt").write_text("causal diagnostic\n")
+        receipt = output / f"{gate}.evidence.json"
+        receipt.write_text(json.dumps({
+            "result": "failed",
+            "observations": {"exit_code": 3},
+        }))
+        return receipt
+    monkeypatch.setattr(prospective, "capture_gate", capture)
+    with pytest.raises(
+        prospective.ProspectiveValidationError,
+        match="first failed with exit 3.*causal diagnostic",
+    ):
+        prospective._capture_planned_evidence(
+            tmp_path,
+            python_executable=Path("/python"),
+            session_manifest=tmp_path / "session.json",
+            session_root=tmp_path / "receipts",
+            producers=("first", "second"),
+        )
+    assert seen == ["first"]
 
 
 def _runner(command: list[str], **_kwargs: object) -> Result:
@@ -308,12 +338,11 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
         manifest_path=tmp_path / "session.json",
         root=tmp_path / "session",
     )
-    required = ["architecture-test", "test"]
+    required = ["test"]
     def allocate(_root: Path, _artifacts: Path, gates: tuple[str, ...], **_kwargs: object) -> SimpleNamespace:
         assert gates == tuple(required)
         return session
     monkeypatch.setattr(prospective, "allocate_session", allocate)
-    monkeypatch.setattr(prospective, "_required_gates", lambda *_args: required)
     monkeypatch.setattr(
         prospective,
         "run_preflight",
@@ -334,7 +363,7 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
         lambda *_args, producers, **_kwargs: (
             trace.append("evidence")
             if producers == tuple(required)
-            else pytest.fail("prospective execution omitted a canonical required gate")
+            else pytest.fail("prospective execution omitted a planned producer")
         ),
     )
     subject = {"commit_sha": HEAD, "tree_sha": TREE}
@@ -463,7 +492,6 @@ def test_full_walk_rejects_wrong_finalizer_truth_subject(
         root=tmp_path / "session",
     )
     monkeypatch.setattr(prospective, "allocate_session", lambda *_args, **_kwargs: session)
-    monkeypatch.setattr(prospective, "_required_gates", lambda *_args: ["test"])
     monkeypatch.setattr(
         prospective,
         "run_preflight",

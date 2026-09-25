@@ -32,7 +32,7 @@ from .evidence_scheduling import receipt_duration_ms
 from .evidence_sessions import allocate_session, local_producer_identity
 from .governance_evidence import capture_gate
 from .governance_truth import TruthfulnessError, derive_truth
-from .preflight import PreflightError, _required_gates, run_preflight
+from .preflight import PreflightError, run_preflight
 from .routine_controller_rotation import (
     ROTATION_POLICY_PATHS,
     alternate_policy_lane_contract,
@@ -330,6 +330,24 @@ def _capture_planned_evidence(
                 f"local evidence producer {producer} emitted no receipt"
             )
         payload = json.loads(receipt.read_text(encoding="utf-8"))
+        if payload.get("result") != "passed":
+            observations = payload.get("observations")
+            exit_code = (
+                observations.get("exit_code")
+                if isinstance(observations, dict)
+                else "unknown"
+            )
+            diagnostics = []
+            for suffix in ("stderr", "stdout"):
+                path = receipt.parent / f"{producer}.{suffix}.txt"
+                if path.is_file():
+                    value = path.read_text(encoding="utf-8", errors="replace").strip()
+                    if value:
+                        diagnostics.append(f"{suffix}: {value[-2000:]}")
+            raise ProspectiveValidationError(
+                f"local evidence producer {producer} failed with exit {exit_code}"
+                + (": " + " | ".join(diagnostics) if diagnostics else "")
+            )
         duration = receipt_duration_ms(payload)
         if duration is None:
             raise ProspectiveValidationError(
@@ -560,7 +578,8 @@ def _run_prospective_train(
             return report
 
         verification_plan = preflight["verification_plan"]
-        producers = tuple(_required_gates(root))
+        nodes = verification_plan["execution_dag"]["nodes"]
+        producers = tuple(sorted({str(node["producer"]) for node in nodes}))
         try:
             session = allocate_session(
                 root,
