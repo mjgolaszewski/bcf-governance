@@ -1,5 +1,8 @@
 # Changelog
 
+- Remove the temporary pending-topology bootstrap/probe lane after authenticated
+  ordinary-current confirmation; provider-backed routine rotation remains canonical.
+
 - Confirm the pending-topology classifier controller on both trusted runners and
   restore ordinary-current custody through provider-compiled installation proof.
 
