@@ -526,19 +526,17 @@ def test_transition_artifact_inventory_is_closed() -> None:
         provider._receipt_from_zip(bad.getvalue())
 
 
-def test_callback_binds_completed_rotation_before_dispatch(
+def test_callback_binds_completed_rotation_before_exact_admission_rerun(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     active = _active()
-    dispatched: list[tuple[str, dict]] = []
+    reruns: list[object] = []
     authority = yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text())
     expected = [
         value["job_id"] for value in authority_role_jobs(authority, "controller_rotation")
     ]
     api = SimpleNamespace(
-        dispatch=lambda _repo, *, event_type, client_payload: dispatched.append(
-            (event_type, client_payload)
-        ),
+        rerun_workflow=lambda _repo, run_id: reruns.append(run_id),
         jobs=lambda *_args, **_kwargs: tuple(
             {"name": name, "conclusion": "skipped" if name.startswith("Commit ") else "success"}
             for name in expected
@@ -554,7 +552,7 @@ def test_callback_binds_completed_rotation_before_dispatch(
         provider,
         "authenticate_role_run",
         lambda *_args, role, **_kwargs: SimpleNamespace(
-            run_id="40" if role == "controller_rotation_callback" else "30",
+            run_id={"controller_rotation_callback": "40", "controller_rotation": "30", "admission": "10"}[role],
             run_attempt=1,
         ),
     )
@@ -581,16 +579,11 @@ def test_callback_binds_completed_rotation_before_dispatch(
         rotation_run_attempt="1",
     )
     assert result["rotation_run_id"] == "30"
-    assert dispatched == [
-        (
-            "bcf-controller-rotation-certified",
-            {
-                "subject_commit": NEW,
-                "subject_tree": TREE,
-                "transition_id": active["transition_id"],
-            },
-        )
-    ]
+    assert result["status"] == "rerun_requested"
+    assert result["source_run_id"] == "10"
+    assert result["expected_run_attempt"] == 2
+    assert result["release_authority"] is False
+    assert reruns == ["10"]
 
 
 def test_callback_rejects_another_rotation_run(
@@ -639,20 +632,20 @@ def test_callback_rejects_another_rotation_run(
         )
 
 
-def test_callback_closes_exact_no_transition_without_dispatch(
+def test_callback_closes_exact_no_transition_without_rerun(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     authority = yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text())
     _, _, jobs = _collapsed_no_transition()
     workflow = authority["workflow_registry"][authority["roles"]["controller_rotation"]]
     raw = (ROOT / workflow["active_path"]).read_bytes()
-    dispatched: list[object] = []
+    reruns: list[object] = []
     api = SimpleNamespace(
         jobs=lambda *_args, **_kwargs: tuple(jobs),
         content=lambda *_args, **_kwargs: SimpleNamespace(
             content=raw, blob_oid=workflow["trusted_workflow_blob_oid"]
         ),
-        dispatch=lambda *_args, **_kwargs: dispatched.append(True),
+        rerun_workflow=lambda *_args, **_kwargs: reruns.append(True),
     )
     monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
     monkeypatch.setattr(provider, "load_authority", lambda *_args, **_kwargs: authority)
@@ -680,7 +673,7 @@ def test_callback_closes_exact_no_transition_without_dispatch(
         "rotation_run_attempt": 1,
         "release_authority": False,
     }
-    assert dispatched == []
+    assert reruns == []
 
 
 def _collapsed_no_transition() -> tuple[set[str], dict[str, set[str]], list[dict[str, str]]]:

@@ -2203,6 +2203,22 @@ def test_commit_comparison_is_exact_and_read_only() -> None:
         "GET",
         f"/repos/owner/repo/compare/{SHA_A}...{SHA_B}",
     )
+
+
+def test_workflow_rerun_is_exactly_scoped_to_authenticated_run() -> None:
+    class RecordingAPI(GitHubAPI):
+        def __init__(self) -> None:
+            super().__init__(token="test")
+            self.request: tuple[str, str, object] | None = None
+
+        def _request(self, method: str, path: str, *, payload=None):  # type: ignore[no-untyped-def]
+            self.request = (method, path, payload)
+
+    api = RecordingAPI()
+    api.rerun_workflow("owner/repo", "42")
+    assert api.request == ("POST", "/repos/owner/repo/actions/runs/42/rerun", None)
+    with pytest.raises(GitHubAPIError, match="positive numeric"):
+        api.rerun_workflow("owner/repo", "../42")
     with pytest.raises(GitHubAPIError, match="SHA"):
         api.compare_commits("owner/repo", base="main", head=SHA_B)
 

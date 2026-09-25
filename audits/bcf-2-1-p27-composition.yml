@@ -463,3 +463,13 @@ p27_p0_02_migration_expansion:
       fail_closed: only skipped facades expand; mixed facade and expanded jobs, successful facades, missing, extra, duplicate, partial, wrong-workflow, or wrong-digest inventories reject
       prospective_fast_fail: the canonical prospective train executes the production callback classifier against the mechanically derived no-transition provider shape before evidence allocation
       authority_effect: no transition, controller, certification, publication, or release authority is added; the correction only makes the exact closed non-dispatching topology representable
+    p27_p0_04_workflow_depth_correction:
+      merged_subject: {commit: e22561a5d68e5205c76f180c837316e04b4f34e3, tree: d86b5c35e112d366a6d7f5479478aab9184aa24d}
+      rotation: {run: 36180753253, attempt: 1, state: success}
+      callback: {run: 36181296752, attempt: 1, state: success}
+      fresh_exact_main: {run: 36181456071, attempt: 1, state: success}
+      first_causal_invariant: repository-dispatched fresh exact-main was the fourth workflow in a workflow-run-triggered chain, so GitHub did not create its finalizer
+      canonical_correction: reauthenticate the transition-bound source exact-main admission and request one native provider rerun of that exact run ID after activation
+      custody: the new attempt retains exact workflow and subject identity while run_attempt remains provider-native and no evidence is relabeled
+      prospective_fast_fail: canonical graph validation rejects cycles and workflow-run chains deeper than GitHub's three-level limit
+      authority_effect: release authority remains false; no status is published until the normal finalizer authenticates the rerun attempt

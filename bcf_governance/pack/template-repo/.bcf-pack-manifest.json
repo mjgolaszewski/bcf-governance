@@ -452,7 +452,7 @@
     },
     "scripts/_bcf_runtime/ci_github_api.py": {
       "operation": "copy",
-      "sha256": "721136af704c222ba2ccacb354b0f425dee8083ccc34441eb6469752026a1eee"
+      "sha256": "d5892398e8f45326bbed43b0f908e2cb1881ac3adaf5b5d4a2020aa243504c88"
     },
     "scripts/_bcf_runtime/ci_github_artifact_inventory.py": {
       "operation": "copy",
@@ -556,7 +556,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",
-      "sha256": "8bdd904065662ae0ef186fbc2e25cb115f6b102d41f539d0a44e520eafd97aed"
+      "sha256": "22f31bddf78f10de147ed0394e4586f125780ea360b3176bb70baf0c26aa36ea"
     },
     "scripts/_bcf_runtime/ci_graph_controller_lifecycle.py": {
       "operation": "copy",
@@ -617,6 +617,10 @@
     "scripts/_bcf_runtime/ci_graph_values.py": {
       "operation": "copy",
       "sha256": "7e762f547b73a726f9edab0680f43b78b42aa7ada74bb77814183b73ce9aba45"
+    },
+    "scripts/_bcf_runtime/ci_graph_workflow_run.py": {
+      "operation": "copy",
+      "sha256": "9fe13dda821cd70b8828852f51bb4c3f81622b0f854d96df4a22879ee3d31045"
     },
     "scripts/_bcf_runtime/ci_graph_yaml.py": {
       "operation": "copy",
@@ -996,11 +1000,11 @@
     },
     "scripts/_bcf_runtime/routine_controller_provider.py": {
       "operation": "copy",
-      "sha256": "6257c7f87690bc976717d8cffd955523ffdcb0163e74a70da51b6a20996ffada"
+      "sha256": "a6da076e5e57319e068c26a313cb13b4a615a3bdaf187e9f288083200e4bcce2"
     },
     "scripts/_bcf_runtime/routine_controller_rotation.py": {
       "operation": "copy",
-      "sha256": "b9397fc1df124e276bbd596a4f84f7850cfa6cf079854624b43d7b786c1fb7c7"
+      "sha256": "bef795e9c087c4168fedf05a7b15c39489dfcb3587dc2864d5bcae32b6668707"
     },
     "scripts/_bcf_runtime/runtime_capacity.py": {
       "operation": "copy",

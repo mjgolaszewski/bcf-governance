@@ -110,6 +110,13 @@ def test_active_transition_is_exact_and_selectable() -> None:
     ) == receipt
 
 
+def test_controller_artifact_is_bound_to_exact_admission() -> None:
+    receipt = _receipt()
+    receipt["artifact"]["run_attempt"] = "2"
+    with pytest.raises(RoutineRotationError, match="transition admission"):
+        validate_transition(ROOT, receipt)
+
+
 @pytest.mark.parametrize("field", ["repository", "installed", "subject"])
 def test_wrong_scope_or_replayed_transition_is_not_selected(field: str) -> None:
     values = {"repository_id": "1207503211", "installed_commit": OLD, "current_main_commit": NEW}

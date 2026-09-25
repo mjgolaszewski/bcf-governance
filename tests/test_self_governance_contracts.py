@@ -287,6 +287,7 @@ def test_scheduled_mutants_preflight_selected_interpreter_before_execution(
 def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> None:
     conditions = validate_ci_graph(REPO_ROOT).graph["conditions"]
     assert "workflow_run.event == 'push'" in conditions["exact-main-finalizer-admitted"]
+    assert "repository_dispatch" not in conditions["exact-main-finalizer-admitted"]
     assert "workflow_run.conclusion" not in conditions["exact-main-publisher-admitted"]
     assert conditions["exact-main-publisher-admitted"] == (
         "vars.BCF_CI_AUTHORITY_ENABLED == 'true' && "
@@ -294,6 +295,14 @@ def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> N
         "github.event.workflow_run.event == 'workflow_run' && "
         "github.event.workflow_run.head_branch == 'main'"
     )
+    graph = validate_ci_graph(REPO_ROOT).graph
+    exact_main = next(item for item in graph["workflows"] if item["id"] == "exact-main")
+    assert exact_main["events"] == [{"type": "push", "branches": ["main"]}]
+    publisher = next(
+        item for item in graph["workflows"] if item["id"] == "exact-main-publisher"
+    )
+    callback = next(item for item in publisher["jobs"] if item["id"] == "rotation-callback")
+    assert callback["permissions"]["actions"] == "write"
 
 
 def test_self_control_plane_is_an_exact_v11_generator_product() -> None:

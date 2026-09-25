@@ -772,20 +772,29 @@ def dispatch_post_rotation_certification(
         "run_attempt": str(rotation.run_attempt),
     }:
         raise GitHubControllerError("rotation callback does not bind the active transition")
-    api.dispatch(
-        repository,
-        event_type="bcf-controller-rotation-certified",
-        client_payload={
-            "subject_commit": main.checkout_sha,
-            "subject_tree": main.tree_sha,
-            "transition_id": resolved["transition_ids"][-1],
-        },
+    transition = matching[0]
+    exact_main_subject = {"commit_sha": main.checkout_sha, "tree_sha": main.tree_sha}
+    if transition["subject"] != exact_main_subject:
+        raise GitHubControllerError("rotation admission subject is not exact main")
+    admission = authenticate_role_run(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        role="admission",
+        run_id=transition["authority"]["admission_run_id"], run_attempt=transition["authority"]["admission_run_attempt"],
+        require_success=True,
     )
+    api.rerun_workflow(repository, admission.run_id)
     return {
-        "status": "dispatched",
+        "status": "rerun_requested",
         "subject": resolved["subject"],
         "controller_commit": resolved["pin"]["BCF_BOOTSTRAP_COMMIT_SHA"],
         "transition_id": resolved["transition_ids"][-1],
         "rotation_run_id": rotation.run_id,
         "rotation_run_attempt": rotation.run_attempt,
+        "source_run_id": admission.run_id,
+        "source_run_attempt": admission.run_attempt,
+        "expected_run_attempt": admission.run_attempt + 1,
+        "release_authority": False,
     }
