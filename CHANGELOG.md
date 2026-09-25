@@ -1,5 +1,8 @@
 # Changelog
 
+- Project the exact provider-built P27 applicability controller as the protected
+  N/N+1 target while keeping the installed controller active until confirmation.
+
 - Expand routine controller authorization with closed exact-topology decisions and exact subject/policy/target binding to the protected N/N+1 lane, leaving workflow activation behind compatible-controller installation.
 
 - Reauthenticate exact-main finalizer publication with the canonical workflow blob and definition pins so additive current-main metadata cannot rewrite trusted collector identity.
