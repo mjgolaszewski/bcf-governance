@@ -393,3 +393,7 @@ p27_p0_02_migration_expansion:
       alternate_lane: temporarily restore the existing source-pinned bootstrap and probe workflows, mechanically project the provider-compiled target, authenticate both runners, and normalize through a protected confirmation
       bounded_lifecycle: remove the temporary lane again before P27-P0-03 bounded certification; later routine rotations use the installed normalization-aware resolver
       authority_effect: no Break Glass, manual artifact, release authority, or certification authority
+      bootstrap: {run: 36097986782/1, jobs: ['107954212698', '107954212966']}
+      probe: {run: 36098070519/1, jobs: ['107954467428', '107954467521']}
+      confirmation_subject: {commit: 1eb36b6a9d9069b6457e86c7cd0dd597b6ded599, tree: 77b169812653a2e4bb265c2b491e817ec948bb83}
+      installed_controller: 9c84cdad919c42e235250b4d6d023424786e3941

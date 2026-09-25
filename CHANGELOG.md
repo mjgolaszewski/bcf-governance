@@ -1,5 +1,8 @@
 # Changelog
 
+- Confirm the normalization-aware controller on both trusted runners and restore
+  ordinary-current custody after the bounded compatibility crossing.
+
 - Restore the governed source-pinned bootstrap/probe lane for one normalization-boundary
   compatibility crossing, pinned mechanically to the exact provider-built controller.
 
