@@ -386,3 +386,10 @@ p27_p0_02_migration_expansion:
       first_causal_invariant: historical authenticated active-transition receipts predated the installed source-normalization subject and were incorrectly treated as a live disconnected chain
       correction: source normalization absorbs only receipts ordered at or before its authenticated subject; later provider transitions remain eligible and later forks disconnected chains malformed custody or incomparable history reject
       authority_effect: no transition is accepted without its existing provider authentication and no release or certification authority is added
+    source_normalization_compatibility_crossing:
+      failed_main: {subject: 9c84cdad919c42e235250b4d6d023424786e3941, exact_main: 36094181669/1, automation: 36094231290/1}
+      first_causal_invariant: installed controller 418937c5152b74cfa05d5cc0c533497f98a7569c cannot resolve historical active transitions across the authenticated source-normalization boundary
+      exact_target: {commit: 9c84cdad919c42e235250b4d6d023424786e3941, tree: 71459e7443bf66eda1ddddbe525c9b2c363083c3, admission: 36094181669/1, artifact_id: '10847375047', provider_digest: 'sha256:beaae81b3a2412862e9ad6b96e89e37401bc6dc64bcede1fcfaa5f7627acefb1'}
+      alternate_lane: temporarily restore the existing source-pinned bootstrap and probe workflows, mechanically project the provider-compiled target, authenticate both runners, and normalize through a protected confirmation
+      bounded_lifecycle: remove the temporary lane again before P27-P0-03 bounded certification; later routine rotations use the installed normalization-aware resolver
+      authority_effect: no Break Glass, manual artifact, release authority, or certification authority
