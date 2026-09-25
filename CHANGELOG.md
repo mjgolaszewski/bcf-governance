@@ -1,5 +1,8 @@
 # Changelog
 
+- Confirm the pending-topology classifier controller on both trusted runners and
+  restore ordinary-current custody through provider-compiled installation proof.
+
 - Project the exact provider-built pending-topology classifier controller as the
   typed compatibility-lane target while installed N remains authoritative.
 
