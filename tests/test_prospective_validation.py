@@ -308,7 +308,12 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
         manifest_path=tmp_path / "session.json",
         root=tmp_path / "session",
     )
-    monkeypatch.setattr(prospective, "select_session", lambda *_args: session)
+    required = ["architecture-test", "test"]
+    def allocate(_root: Path, _artifacts: Path, gates: tuple[str, ...], **_kwargs: object) -> SimpleNamespace:
+        assert gates == tuple(required)
+        return session
+    monkeypatch.setattr(prospective, "allocate_session", allocate)
+    monkeypatch.setattr(prospective, "_required_gates", lambda *_args: required)
     monkeypatch.setattr(
         prospective,
         "run_preflight",
@@ -326,7 +331,11 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
     monkeypatch.setattr(
         prospective,
         "_capture_planned_evidence",
-        lambda *_args, **_kwargs: trace.append("evidence"),
+        lambda *_args, producers, **_kwargs: (
+            trace.append("evidence")
+            if producers == tuple(required)
+            else pytest.fail("prospective execution omitted a canonical required gate")
+        ),
     )
     subject = {"commit_sha": HEAD, "tree_sha": TREE}
     pr_truth = {
@@ -453,7 +462,8 @@ def test_full_walk_rejects_wrong_finalizer_truth_subject(
         manifest_path=tmp_path / "session.json",
         root=tmp_path / "session",
     )
-    monkeypatch.setattr(prospective, "select_session", lambda *_args: session)
+    monkeypatch.setattr(prospective, "allocate_session", lambda *_args, **_kwargs: session)
+    monkeypatch.setattr(prospective, "_required_gates", lambda *_args: ["test"])
     monkeypatch.setattr(
         prospective,
         "run_preflight",

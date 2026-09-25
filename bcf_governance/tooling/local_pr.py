@@ -29,10 +29,10 @@ from .evaluation_scope import (
 )
 from .evidence_execution import EvidenceError
 from .evidence_scheduling import receipt_duration_ms
-from .evidence_sessions import local_producer_identity, select_session
+from .evidence_sessions import allocate_session, local_producer_identity
 from .governance_evidence import capture_gate
 from .governance_truth import TruthfulnessError, derive_truth
-from .preflight import PreflightError, run_preflight
+from .preflight import PreflightError, _required_gates, run_preflight
 from .routine_controller_rotation import (
     ROTATION_POLICY_PATHS,
     alternate_policy_lane_contract,
@@ -490,12 +490,6 @@ def _run_prospective_train(
                     root,
                     mode="pr",
                     python_executable=python_executable,
-                    artifact_root=(artifact_root if execute_evidence else None),
-                    expected_producers=(["prospective-local"] if execute_evidence else None),
-                    producer_identity=(
-                        local_producer_identity(root, "prospective-local")
-                        if execute_evidence else None
-                    ),
                     evaluation_mode="pr",
                 )
                 preflight_duration = _elapsed_ms(preflight_started)
@@ -565,12 +559,19 @@ def _run_prospective_train(
             )
             return report
 
+        verification_plan = preflight["verification_plan"]
+        producers = tuple(_required_gates(root))
         try:
-            session = select_session(artifact_root / "sessions")
+            session = allocate_session(
+                root,
+                artifact_root,
+                producers,
+                expected_producers=["prospective-local"],
+                producer_identity=local_producer_identity(root, "prospective-local"),
+                verification_plan=verification_plan,
+            )
         except EvidenceError as exc:
             raise ProspectiveValidationError(str(exc)) from exc
-        nodes = preflight["verification_plan"]["execution_dag"]["nodes"]
-        producers = tuple(sorted({str(node["producer"]) for node in nodes}))
         try:
             evidence_started = time.monotonic_ns()
             producer_observations = _capture_planned_evidence(
