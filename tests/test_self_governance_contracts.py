@@ -33,6 +33,9 @@ from bcf_governance.tooling.semantic_authority_contracts import (
     validate_application_operations,
 )
 from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
+from bcf_governance.tooling.trusted_controller_compatibility import (
+    ordinary_alternate_lane_available,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -210,10 +213,15 @@ def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
 def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
     compiled = validate_ci_graph(REPO_ROOT)
     workflow_ids = {str(workflow["id"]) for workflow in compiled.workflows}
-    assert "trusted-controller-bootstrap" not in workflow_ids
-    assert "trusted-controller-probe" not in workflow_ids
-    assert not (REPO_ROOT / ".github/workflows/bcf-trusted-control-bootstrap.yml").exists()
-    assert not (REPO_ROOT / ".github/workflows/bcf-trusted-control-probe.yml").exists()
+    alternate_lane = ordinary_alternate_lane_available(REPO_ROOT)
+    assert ("trusted-controller-bootstrap" in workflow_ids) is alternate_lane
+    assert ("trusted-controller-probe" in workflow_ids) is alternate_lane
+    assert (
+        REPO_ROOT / ".github/workflows/bcf-trusted-control-bootstrap.yml"
+    ).exists() is alternate_lane
+    assert (
+        REPO_ROOT / ".github/workflows/bcf-trusted-control-probe.yml"
+    ).exists() is alternate_lane
     routine = _workflow("automation-reconcile")
     job_ids = {str(job["id"]) for job in routine["jobs"]}
     assert {"authorize", "bootstrap", "probe", "promote", "activate"} <= job_ids
