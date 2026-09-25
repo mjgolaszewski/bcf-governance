@@ -74,6 +74,7 @@ execution_evidence:
   - execution timing is schema-validated across planning reuse setup producers positive tests controls normalization truth finalization and publication; provider-only stages remain explicitly provider-required rather than receiving fabricated local timings
   - the exact successful no-transition automation topology is now a closed non-dispatching observation; incomplete ambiguous or broadened job inventories reject instead of treating inapplicability as authority
   - exact-main 36129865629/1 built the #290 N+1 controller but installed N rejected its skipped reusable producer facade as admission_not_successful in automation 36129949527/1; the bounded recovery makes prospective compatibility execute installed N's exact topology classifier and restores only the governed alternate N/N+1 lane needed to install the corrected classifier
+  - PR 291 merged the bounded classifier recovery as c3ddbd278baaed5e34a26872193b964828a09d64; exact-main 36145861454/1 built artifact 10869895050, which the canonical provider compiler projects as the sole compatibility-lane target while installed N remains authoritative
 closeout_requirements:
   claims:
     workitems_closed:

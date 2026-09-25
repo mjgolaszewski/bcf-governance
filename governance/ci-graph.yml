@@ -6,7 +6,7 @@ default_branch: main
 trusted_controller: {kind: self_governance_policy, policy_path: governance/self-governance-policy.yml}
 evidence_storage: {path: governance/evidence-storage.yml, sha256: e7616b0c43cc0106779b5bab99ec9c1e5e8d30cbc51bff57a3698cb82454fdaa}
 value_sources:
-  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: ba332627856e9ef9958ca4f936598ce49a0a6bf4ad16008e52c8828e2c1ab2db}
+  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: e16877c05a38cadfdf320f474de6e34592d04a375e7ee8cb2f76a1b1cd285a29}
   release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: b271126eff3e027388727b8324c113ef59024217bd5608b191850aeb0e09c8f7}
   protection-contract: {kind: yaml, path: governance/github-protection.yml, sha256: 5f8c6fcd0d569e17050f694571474faa0f7538d12a5d11cc51891cf01c59a53a}
   automation-contract: {kind: yaml, path: governance/automation-producers.yml, sha256: 74c02575f7599f9e4a82cacc60f6d60692ee81dd1f7bec20441e6b375cf77cce}
