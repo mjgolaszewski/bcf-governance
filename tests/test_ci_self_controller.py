@@ -26,6 +26,7 @@ from tests._wheel_fixture import write_wheel
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMMIT = "a" * 40
 TREE = "b" * 40
+ROUTINE_WORKFLOW = ".github/workflows/bcf-automation-reconcile.yml"
 
 
 def _job_step(workflow: dict[str, object], job_id: str, name: str) -> dict[str, object]:
@@ -389,19 +390,17 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     )
     started = controller.project_self_controller_pin(tmp_path, pin=pin, apply=True)
     assert started.status == "changed"
-    bootstrap = yaml.safe_load(
-        (tmp_path / controller.BOOTSTRAP_WORKFLOW).read_text(encoding="utf-8")
-    )
-    assert {key: str(bootstrap["env"][key]) for key in controller.PIN_KEYS} == pin
-    install = _job_step(
-        bootstrap,
-        "bootstrap",
-        "Authenticate provider custody and install offline through the controller",
-    )
-    assert "/bcf-controller-${{ github.run_id }}-${{ github.run_attempt }}/bin/bcf" in str(
-        install["run"]
-    )
-    assert baseline_proof["installed_commit_sha"] not in str(install["run"])
+    pending = yaml.safe_load(
+        (tmp_path / "governance/self-governance-policy.yml").read_text(
+            encoding="utf-8"
+        )
+    )["runner_security"]
+    assert pending["trusted_controller_artifact"] == pin
+    assert pending["trusted_controller_installation"] == baseline_proof
+    routine = (tmp_path / ROUTINE_WORKFLOW).read_text(encoding="utf-8")
+    assert baseline_proof["installed_commit_sha"] in routine
+    assert not (tmp_path / controller.BOOTSTRAP_WORKFLOW).exists()
+    assert not (tmp_path / controller.PROBE_WORKFLOW).exists()
     second_target = dict(pin)
     second_target["BCF_BOOTSTRAP_ARTIFACT_ID"] = "401"
     with pytest.raises(GitHubControllerError, match="rotation is already pending"):
@@ -420,32 +419,9 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
         (tmp_path / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
     )["runner_security"]["trusted_controller_artifact"]
     assert {key: str(value) for key, value in projected.items()} == pin
-    bootstrap = yaml.safe_load(
-        (tmp_path / controller.BOOTSTRAP_WORKFLOW).read_text(encoding="utf-8")
-    )
-    install = _job_step(
-        bootstrap,
-        "bootstrap",
-        "Authenticate provider custody and install offline through the controller",
-    )
-    assert "/bcf-controller-${{ github.run_id }}-${{ github.run_attempt }}/bin/bcf" in str(
-        install["run"]
-    )
-    probe = yaml.safe_load(
-        (tmp_path / controller.PROBE_WORKFLOW).read_text(encoding="utf-8")
-    )
-    assert {key: str(probe["env"][key]) for key in controller.PIN_KEYS} == pin
-    download = _job_step(
-        probe, "probe", "Download only the mechanically pinned controller artifact"
-    )
-    assert str(download["uses"]).startswith("actions/download-artifact@")
-    install = _job_step(
-        probe,
-        "probe",
-        "Authenticate provider custody and install offline through the controller",
-    )
-    assert "ci-github bootstrap" in str(install["run"])
-    assert ".github/" not in str(install["run"])
+    routine = (tmp_path / ROUTINE_WORKFLOW).read_text(encoding="utf-8")
+    assert COMMIT in routine
+    assert baseline_proof["installed_commit_sha"] not in routine
     assert controller.project_self_controller_pin(
         tmp_path, pin=pin, apply=False
     ).status == "clean"
@@ -462,16 +438,14 @@ def test_controller_bootstrap_is_cold_start_safe_and_interpreter_owned(
         tmp_path, pin=pin, confirmation=None, apply=True
     )
     assert result.status == "clean"
-    workflow = yaml.safe_load(
-        (tmp_path / controller.BOOTSTRAP_WORKFLOW).read_text(encoding="utf-8")
-    )
+    workflow = yaml.safe_load((tmp_path / ROUTINE_WORKFLOW).read_text(encoding="utf-8"))
     steps = workflow["jobs"]["bootstrap"]["steps"]
     names = [step["name"] for step in steps]
     stage_index = names.index(
-        "Stage the checksum-admitted controller in an isolated temporary environment"
+        "Stage the transition-bound routine controller"
     )
     invoke_index = names.index(
-        "Authenticate provider custody and install offline through the controller"
+        "Authenticate and install the routine controller"
     )
     assert stage_index < invoke_index
     stage = steps[stage_index]

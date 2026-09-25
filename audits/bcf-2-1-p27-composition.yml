@@ -373,3 +373,11 @@ p27_p0_02_migration_expansion:
       activation_state: dormant until this compatible N+1 is installed and a separately protected workflow-policy contraction binds every downstream stage to its exact applicability output
       policy_change_behavior: N+1 emits alternate_lane_required for the protected_policy_change class, binding exact subject, admission, installed controller, merged candidate, source main, before/after policy digests, provider-built target, and the ordinary_protected_n_n_plus_1 sequence through ordinary-current normalization
       release_authority: absent
+    routine_rotation_policy_contraction:
+      compatible_controller: 418937c5152b74cfa05d5cc0c533497f98a7569c
+      canonical_change: bind every routine stage to the typed authorization applicability output and remove the superseded source-pinned bootstrap and probe workflows and authority roles
+      retained_proposition: provider-backed rotation keeps N as authorizer through exact artifact selection independent two-runner bootstrap probe and atomic activation
+      removed_ceremony: [source_target_projection_pr, source_installation_confirmation_pr, source_pin_recording]
+      no_transition: complete certifiable exact-main emits a closed nonapplicable decision and allocates no installation stage
+      fail_closed: missing or false applicability cannot upload a transition artifact or advance bootstrap probe promotion or activation
+      release_authority: absent
