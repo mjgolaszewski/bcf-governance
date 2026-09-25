@@ -343,7 +343,7 @@ def _capture_planned_evidence(
                 if path.is_file():
                     value = path.read_text(encoding="utf-8", errors="replace").strip()
                     if value:
-                        diagnostics.append(f"{suffix}: {value[-2000:]}")
+                        diagnostics.append(f"{suffix}: {value[-20000:]}")
             raise ProspectiveValidationError(
                 f"local evidence producer {producer} failed with exit {exit_code}"
                 + (": " + " | ".join(diagnostics) if diagnostics else "")
