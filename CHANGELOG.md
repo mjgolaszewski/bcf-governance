@@ -1,5 +1,8 @@
 # Changelog
 
+- Remove the temporary normalization-compatibility bootstrap/probe lane after
+  ordinary-current confirmation of the normalization-aware controller.
+
 - Confirm the normalization-aware controller on both trusted runners and restore
   ordinary-current custody after the bounded compatibility crossing.
 

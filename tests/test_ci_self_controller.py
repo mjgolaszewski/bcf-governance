@@ -399,9 +399,8 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     assert pending["trusted_controller_installation"] == baseline_proof
     routine = (tmp_path / ROUTINE_WORKFLOW).read_text(encoding="utf-8")
     assert baseline_proof["installed_commit_sha"] in routine
-    for path in controller.BOOTSTRAP_WORKFLOWS:
-        recovery = yaml.safe_load((tmp_path / path).read_text(encoding="utf-8"))
-        assert {key: str(recovery["env"][key]) for key in controller.PIN_KEYS} == pin
+    assert not (tmp_path / controller.BOOTSTRAP_WORKFLOW).exists()
+    assert not (tmp_path / controller.PROBE_WORKFLOW).exists()
     second_target = dict(pin)
     second_target["BCF_BOOTSTRAP_ARTIFACT_ID"] = "401"
     with pytest.raises(GitHubControllerError, match="rotation is already pending"):
@@ -423,9 +422,6 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     routine = (tmp_path / ROUTINE_WORKFLOW).read_text(encoding="utf-8")
     assert COMMIT in routine
     assert baseline_proof["installed_commit_sha"] not in routine
-    for path in controller.BOOTSTRAP_WORKFLOWS:
-        recovery = yaml.safe_load((tmp_path / path).read_text(encoding="utf-8"))
-        assert {key: str(recovery["env"][key]) for key in controller.PIN_KEYS} == pin
     assert controller.project_self_controller_pin(
         tmp_path, pin=pin, apply=False
     ).status == "clean"
