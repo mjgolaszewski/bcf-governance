@@ -557,6 +557,15 @@ class GitHubAPI:
             payload={"event_type": event_type, "client_payload": client_payload},
         )
 
+    def rerun_workflow(self, repository: str, run_id: object) -> None:
+        """Request one provider-native rerun of an exact workflow run."""
+
+        numeric = _positive_id(run_id, field="run ID")
+        self._request(
+            "POST",
+            f"/repos/{self._repository(repository)}/actions/runs/{numeric}/rerun",
+        )
+
     def status(
         self,
         repository: str,

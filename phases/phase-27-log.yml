@@ -79,6 +79,8 @@ execution_evidence:
   - after ordinary-current confirmation, the bounded compatibility bootstrap/probe workflows and roles are removed; provider-backed routine rotation is the sole surviving steady-state mechanism before P27-P0-04 certification
   - exact-main 36169555779/1, finalizer 36169957940/1, and publisher 36170061125/1 closed P27-P0-04 on 3f4c0a4383e442c15286fd0b04004b66a04007b0 while P27 remained active and release authority remained absent
   - callback 36170039139/1 rejected rotation 36169957942/1 because GitHub collapsed wholly skipped matrix jobs to literal workflow-name facades; the canonical matrix compiler now derives only those authenticated skipped expansions and the prospective train executes the production no-transition classifier before provider use
+  - PR 295 merged as e22561a5d68e5205c76f180c837316e04b4f34e3; routine rotation 36180753253/1 installed that exact controller, but repository-dispatched exact-main 36181456071/1 exceeded GitHub's three-level workflow-run chain before the finalizer could be created
+  - the canonical callback now reauthenticates and reruns the transition-bound source exact-main run as a new attempt; graph validation rejects deeper workflow-run chains before provider execution
 closeout_requirements:
   claims:
     workitems_closed:
@@ -111,4 +113,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify P27-P0-04 through the provider-driven one-PR runtime rotation then perform terminal P27 closure before beginning P28
+- restore provider-visible bounded P27-P0-04 status through the exact source-run retry, then perform terminal P27 closure before beginning P28

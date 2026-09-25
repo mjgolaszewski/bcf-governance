@@ -1,5 +1,8 @@
 # Changelog
 
+- Continue post-rotation exact-main as a native rerun of its authenticated source
+  run and reject workflow-run chains beyond GitHub's three-level provider limit.
+
 - Derive skipped routine-rotation matrix facades from the authenticated workflow
   and prospectively execute the same exact callback classifier before provider use.
 

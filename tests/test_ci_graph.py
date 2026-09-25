@@ -39,10 +39,30 @@ from bcf_governance.tooling.ci_graph_render import (
     render_ci_graph,
 )
 from bcf_governance.tooling.ci_graph_values import resolve_graph_values
+from bcf_governance.tooling.ci_graph_workflow_run import (
+    WorkflowRunTopologyError,
+    validate_workflow_run_depth,
+)
 from bcf_governance.tooling.truth_workflow_graph import graph_workflow_gate_issues
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_workflow_run_chain_cannot_exceed_provider_depth_limit() -> None:
+    workflows = [
+        {
+            "id": f"workflow-{index}",
+            "display_name": f"workflow/{index}",
+            "events": ([{"type": "push"}] if index == 0 else [{
+                "type": "workflow_run", "workflows": [f"workflow/{index - 1}"]
+            }]),
+        }
+        for index in range(5)
+    ]
+    with pytest.raises(WorkflowRunTopologyError, match="three-level"):
+        validate_workflow_run_depth(workflows)
+    validate_workflow_run_depth(workflows[:4])
 
 
 def test_exact_main_evaluation_has_one_canonical_admission_and_truth_scope() -> None:

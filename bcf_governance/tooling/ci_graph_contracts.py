@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from .ci_graph_workflow_run import WorkflowRunTopologyError, validate_workflow_run_depth
+
 from jsonschema import Draft202012Validator
 
 from .ci_graph_errors import CIGraphError, execution_graph_error
@@ -406,6 +408,10 @@ def _validate_condition_scope(
 
 def _validate_workflows(graph: dict[str, Any]) -> None:
     workflows = graph["workflows"]
+    try:
+        validate_workflow_run_depth(workflows)
+    except WorkflowRunTopologyError as exc:
+        raise CIGraphError(str(exc), kind="event", identifier="workflow_run") from exc
     workflow_ids = [item["id"] for item in workflows]
     paths = [item["path"] for item in workflows]
     if len(set(workflow_ids)) != len(workflow_ids) or len(set(paths)) != len(paths):

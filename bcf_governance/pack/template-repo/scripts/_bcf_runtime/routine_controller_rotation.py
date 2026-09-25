@@ -351,6 +351,12 @@ def validate_transition(repo_root: Path, payload: object) -> dict[str, Any]:
         raise RoutineRotationError("controller transition identity is not derived")
     if artifact["commit_sha"] != subject["commit_sha"] or artifact["tree_sha"] != subject["tree_sha"]:
         raise RoutineRotationError("controller artifact differs from transition subject")
+    if (
+        str(artifact["run_id"]) != str(value["authority"]["admission_run_id"])
+        or str(artifact["run_attempt"])
+        != str(value["authority"]["admission_run_attempt"])
+    ):
+        raise RoutineRotationError("controller artifact differs from transition admission")
     if artifact["commit_sha"] == value["authority"]["installed_controller_commit"]:
         raise RoutineRotationError("routine transition must change controller identity")
     if value["authority"]["policy_before_sha256"] != value["authority"]["policy_after_sha256"]:
