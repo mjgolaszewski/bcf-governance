@@ -48,14 +48,12 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 def test_exact_main_evaluation_has_one_canonical_admission_and_truth_scope() -> None:
     compiled = validate_ci_graph(REPO_ROOT)
     evaluation = exact_main_evaluation(compiled.workflows)
-    assert evaluation.as_dict() == {
-        "mode": "workitem",
-        "target": "P27-P0-03",
-    }
+    assert evaluation.mode == "workitem"
+    assert evaluation.target is not None
     stale = copy.deepcopy(compiled)
     workflow = next(item for item in stale.workflows if item["id"] == "exact-main")
     governance = next(item for item in workflow["jobs"] if item["id"] == "governance")
-    governance["executor"]["inputs"]["evaluation_target"] = "P27-P0-02"
+    governance["executor"]["inputs"]["evaluation_target"] = "wrong-target"
     with pytest.raises(CIGraphError, match="evaluation intents differ"):
         exact_main_evaluation(stale.workflows)
 

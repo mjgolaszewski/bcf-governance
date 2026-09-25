@@ -44,14 +44,19 @@ from .prior_evidence_transport import (
     authenticate_pr_certification,
 )
 from .routine_controller_rotation import (
+    ALTERNATE_POLICY_LANE_SEQUENCE,
+    GovernedControllerLane,
     RoutineRotationError,
     advance_transition,
+    alternate_policy_lane_contract,
+    controller_policy_digest,
     effective_controller_pin,
     select_controller_chain,
     transition_follows_normalization,
     transition_id,
     validate_transition,
 )
+from .routine_controller_callback import classify_callback_topology
 
 
 TRANSITION_ARTIFACT_PREFIX = "bcf-controller-transition-"
@@ -724,6 +729,26 @@ def dispatch_post_rotation_certification(
         run_attempt=rotation_run_attempt,
         require_success=True,
     )
+    expected_jobs = {
+        str(value["job_id"])
+        for value in authority_role_jobs(authority, "controller_rotation")
+    }
+    jobs = api.jobs(
+        repository, rotation.run_id, attempt=rotation.run_attempt
+    )
+    topology = classify_callback_topology(expected_jobs=expected_jobs, jobs=jobs)
+    if topology == "no_transition":
+        return {
+            "status": "no_transition",
+            "dispatched": False,
+            "subject": {
+                "commit_sha": main.checkout_sha,
+                "tree_sha": main.tree_sha,
+            },
+            "rotation_run_id": rotation.run_id,
+            "rotation_run_attempt": rotation.run_attempt,
+            "release_authority": False,
+        }
     resolved = resolve_effective_controller(api, repository=repository)
     if resolved["source"] != "provider_transition":
         raise GitHubControllerError("no active provider controller transition exists")

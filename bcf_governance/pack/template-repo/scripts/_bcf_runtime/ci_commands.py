@@ -28,7 +28,7 @@ from .local_pr import (
     LocalPRError,
     ProspectiveValidationError,
     run_local_pr_validation,
-    run_prospective_validation,
+    run_prospective_train,
 )
 from .runtime_capacity import (
     RuntimeCapacityError,
@@ -104,12 +104,16 @@ def _parser() -> argparse.ArgumentParser:
     local.add_argument("--remote", default="origin")
     local.add_argument("command", nargs=argparse.REMAINDER)
     prospective = subparsers.add_parser(
-        "prospective-pr",
-        help="Walk one exact final PR tree through every knowable authority boundary.",
+        "prospective-train",
+        help="Derive one exact proof train from typed intent and subject identity.",
     )
     prospective.add_argument("--repo-root", type=Path, default=Path.cwd())
     prospective.add_argument("--remote", default="origin")
     prospective.add_argument("--python", type=Path, default=Path(sys.executable))
+    prospective.add_argument("--intent", choices=("pr", "workitem", "closure"), required=True)
+    prospective.add_argument("--target")
+    prospective.add_argument("--subject-commit", required=True)
+    prospective.add_argument("--subject-tree", required=True)
     prospective.add_argument("--format", choices=("text", "json"), default="json")
     runtime = subparsers.add_parser("runtime-check", help="Check capacity before heavy CI.")
     runtime.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -242,9 +246,13 @@ def main(argv: list[str] | None = None) -> None:
             )
             _print(report.as_dict(), args.format)
             return
-        if args.operation == "prospective-pr":
-            result = run_prospective_validation(
+        if args.operation == "prospective-train":
+            result = run_prospective_train(
                 args.repo_root,
+                semantic_intent=args.intent,
+                evaluation_target=args.target,
+                subject_commit=args.subject_commit,
+                subject_tree=args.subject_tree,
                 remote=args.remote,
                 python_executable=args.python,
             )

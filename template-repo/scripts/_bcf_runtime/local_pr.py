@@ -7,10 +7,14 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import tempfile
+import time
 from typing import Any, Callable, Iterator, Mapping
 from contextlib import contextmanager
+
+from jsonschema import Draft202012Validator
 
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
 from .ci_graph_execution import exact_main_evaluation
@@ -18,9 +22,13 @@ from .ci_authority_decisions import status_context_for_evaluation
 from .ci_exact_main_truth import validate_exact_main_truth_payload
 from .ci_github_identity import GitHubControllerError
 from .evaluation_scope import (
+    EvaluationIntent,
+    EvaluationScopeError,
+    evaluation_scope,
     is_terminal_phase_certification,
 )
 from .evidence_execution import EvidenceError
+from .evidence_scheduling import receipt_duration_ms
 from .evidence_sessions import local_producer_identity, select_session
 from .governance_evidence import capture_gate
 from .governance_truth import TruthfulnessError, derive_truth
@@ -307,7 +315,8 @@ def _capture_planned_evidence(
     session_manifest: Path,
     session_root: Path,
     producers: tuple[str, ...],
-) -> None:
+) -> list[dict[str, Any]]:
+    observations: list[dict[str, Any]] = []
     for producer in producers:
         receipt = capture_gate(
             repo_root,
@@ -320,6 +329,62 @@ def _capture_planned_evidence(
             raise ProspectiveValidationError(
                 f"local evidence producer {producer} emitted no receipt"
             )
+        payload = json.loads(receipt.read_text(encoding="utf-8"))
+        duration = receipt_duration_ms(payload)
+        if duration is None:
+            raise ProspectiveValidationError(
+                f"local evidence producer {producer} emitted no valid duration"
+            )
+        observations.append(
+            {
+                "producer": producer,
+                "duration_ms": duration,
+                "claim_count": len(payload.get("claims") or ()),
+                "control_count": len(payload.get("behavioral_probes") or ()),
+            }
+        )
+    return observations
+
+
+def _elapsed_ms(started_ns: int) -> int:
+    return max(0, (time.monotonic_ns() - started_ns) // 1_000_000)
+
+
+def _validate_train_telemetry(repo_root: Path, telemetry: dict[str, Any]) -> None:
+    expected_stages = {
+        "fixed_point", "planning", "reuse", "setup", "producers",
+        "positive_tests", "controls", "normalization", "truth",
+        "finalization", "publication",
+    }
+    observed_stages = [
+        str(item.get("stage")) for item in telemetry.get("measurements", ())
+        if isinstance(item, dict)
+    ]
+    if len(observed_stages) != len(set(observed_stages)) or set(observed_stages) != expected_stages:
+        raise ProspectiveValidationError(
+            "prospective train telemetry stage inventory is not exact"
+        )
+    producers = [
+        str(item.get("producer")) for item in telemetry.get("producer_observations", ())
+        if isinstance(item, dict)
+    ]
+    if len(producers) != len(set(producers)):
+        raise ProspectiveValidationError(
+            "prospective train telemetry producer inventory is not unique"
+        )
+    schema = json.loads(
+        (repo_root / "schemas/prospective-train-telemetry.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    errors = sorted(
+        Draft202012Validator(schema).iter_errors(telemetry),
+        key=lambda item: list(item.path),
+    )
+    if errors:
+        raise ProspectiveValidationError(
+            "prospective train telemetry is invalid: " + errors[0].message
+        )
 
 
 def _require_truth(report: Mapping[str, Any], *, boundary: str) -> dict[str, Any]:
@@ -331,9 +396,13 @@ def _require_truth(report: Mapping[str, Any], *, boundary: str) -> dict[str, Any
     return dict(report)
 
 
-def _run_prospective_validation(
+def _run_prospective_train(
     repo_root: Path,
     *,
+    semantic_intent: str,
+    evaluation_target: str | None,
+    subject_commit: str,
+    subject_tree: str,
     remote: str = "origin",
     python_executable: Path,
     execute_evidence: bool = True,
@@ -344,9 +413,35 @@ def _run_prospective_validation(
     root = repo_root.resolve()
     context = resolve_local_pr_context(root, remote=remote, runner=runner)
     identity = _candidate_identity(root, context, runner=runner)
+    measurements: list[dict[str, Any]] = []
+    if re.fullmatch(r"[a-f0-9]{40}", subject_commit) is None or re.fullmatch(
+        r"[a-f0-9]{40}", subject_tree
+    ) is None:
+        raise ProspectiveValidationError("prospective train subject identity is malformed")
+    if (subject_commit, subject_tree) != (identity.commit_sha, identity.tree_sha):
+        raise ProspectiveValidationError(
+            "prospective train subject does not match the exact committed tree"
+        )
     try:
+        requested_scope = evaluation_scope(
+            semantic_intent,
+            target=evaluation_target,
+            phase_id="P00",
+            subject_commit=subject_commit,
+        )
+    except EvaluationScopeError as exc:
+        raise ProspectiveValidationError(str(exc)) from exc
+    try:
+        reconcile_started = time.monotonic_ns()
         for step in reconcile_steps(root, python_executable.resolve()):
             step.check()
+        reconcile_duration = _elapsed_ms(reconcile_started)
+        measurements.extend(
+            [
+                {"stage": "fixed_point", "status": "observed", "duration_ms": reconcile_duration},
+                {"stage": "normalization", "status": "observed", "duration_ms": reconcile_duration},
+            ]
+        )
         evaluation = exact_main_evaluation(validate_ci_graph(root).workflows)
         post_merge_mode, post_merge_target = evaluation.mode, evaluation.target
     except (
@@ -357,6 +452,18 @@ def _run_prospective_validation(
         EvidenceError,
     ) as exc:
         raise ProspectiveValidationError(str(exc)) from exc
+    expected_target = (
+        requested_scope.target_id
+        if requested_scope.intent is EvaluationIntent.WORKITEM_CERTIFICATION
+        else None
+    )
+    if (post_merge_mode, post_merge_target) != (
+        requested_scope.intent.value,
+        expected_target,
+    ):
+        raise ProspectiveValidationError(
+            "prospective train intent/target does not match the canonical exact-main graph"
+        )
     changed_paths = _changed_paths(root, identity, runner=runner)
     transition_class = (
         "protected_policy_change"
@@ -378,6 +485,7 @@ def _run_prospective_validation(
         artifact_root = Path(temporary) / "evidence"
         with _pr_environment(context):
             try:
+                preflight_started = time.monotonic_ns()
                 preflight = run_preflight(
                     root,
                     mode="pr",
@@ -390,10 +498,18 @@ def _run_prospective_validation(
                     ),
                     evaluation_mode="pr",
                 )
+                preflight_duration = _elapsed_ms(preflight_started)
             except (PreflightError, EvidenceError) as exc:
                 raise ProspectiveValidationError(str(exc)) from exc
         if preflight.get("status") != "pass":
             raise ProspectiveValidationError("canonical PR preflight did not pass")
+        measurements.extend(
+            [
+                {"stage": "planning", "status": "observed", "duration_ms": preflight_duration},
+                {"stage": "reuse", "status": "included", "parent": "planning"},
+                {"stage": "setup", "status": "included", "parent": "planning"},
+            ]
+        )
         boundaries.append({"id": "preflight", "state": "proved", "authority": "local"})
         controller = preflight.get("self_controller")
         controller_state = (
@@ -456,17 +572,28 @@ def _run_prospective_validation(
         nodes = preflight["verification_plan"]["execution_dag"]["nodes"]
         producers = tuple(sorted({str(node["producer"]) for node in nodes}))
         try:
-            _capture_planned_evidence(
+            evidence_started = time.monotonic_ns()
+            producer_observations = _capture_planned_evidence(
                 root,
                 python_executable=python_executable.resolve(),
                 session_manifest=session.manifest_path,
                 session_root=session.root,
                 producers=producers,
+            ) or []
+            evidence_duration = _elapsed_ms(evidence_started)
+            measurements.extend(
+                [
+                    {"stage": "producers", "status": "observed", "duration_ms": evidence_duration},
+                    {"stage": "positive_tests", "status": "included", "parent": "producers"},
+                    {"stage": "controls", "status": "included", "parent": "producers"},
+                ]
             )
+            truth_started = time.monotonic_ns()
             pr_truth = _require_truth(
                 derive_truth(root, session.root, evaluation_mode="pr"),
                 boundary="PR truth",
             )
+            pr_truth_duration = _elapsed_ms(truth_started)
         except (EvidenceError, TruthfulnessError) as exc:
             raise ProspectiveValidationError(str(exc)) from exc
         if pr_truth.get("merge_eligibility") != "eligible":
@@ -506,6 +633,7 @@ def _run_prospective_validation(
             ]
         )
         try:
+            bounded_truth_started = time.monotonic_ns()
             bounded_truth = _require_truth(
                 derive_truth(
                     root,
@@ -515,6 +643,7 @@ def _run_prospective_validation(
                 ),
                 boundary="post-merge semantic truth projection",
             )
+            bounded_truth_duration = _elapsed_ms(bounded_truth_started)
         except TruthfulnessError as exc:
             raise ProspectiveValidationError(str(exc)) from exc
         subject = {"commit_sha": identity.commit_sha, "tree_sha": identity.tree_sha}
@@ -560,6 +689,17 @@ def _run_prospective_validation(
                 },
             ]
         )
+        measurements.extend(
+            [
+                {
+                    "stage": "truth",
+                    "status": "observed",
+                    "duration_ms": pr_truth_duration + bounded_truth_duration,
+                },
+                {"stage": "finalization", "status": "provider_required"},
+                {"stage": "publication", "status": "provider_required"},
+            ]
+        )
     if tuple(item["id"] for item in boundaries) != BOUNDARY_CHAIN:
         raise ProspectiveValidationError("prospective authority boundary inventory is not exact")
     _confirm_unchanged(
@@ -569,6 +709,13 @@ def _run_prospective_validation(
         remote=remote,
         runner=runner,
     )
+    telemetry = {
+        "schema_version": "1.0",
+        "subject": {"commit_sha": identity.commit_sha, "tree_sha": identity.tree_sha},
+        "measurements": measurements,
+        "producer_observations": producer_observations,
+    }
+    _validate_train_telemetry(root, telemetry)
     return {
         "schema_version": "1.0",
         "status": "prospectively_admissible_provider_proof_required",
@@ -580,6 +727,7 @@ def _run_prospective_validation(
         },
         "boundaries": boundaries,
         "provider_authority_substituted": False,
+        "telemetry": telemetry,
         "ephemeral_state": {
             "scope": "exact_prospective_run",
             "state": "retired",
@@ -587,17 +735,25 @@ def _run_prospective_validation(
     }
 
 
-def run_prospective_validation(
+def run_prospective_train(
     repo_root: Path,
     *,
+    semantic_intent: str,
+    evaluation_target: str | None,
+    subject_commit: str,
+    subject_tree: str,
     remote: str = "origin",
     python_executable: Path,
     runner: Runner = _run,
 ) -> dict[str, Any]:
     """Execute the complete locally knowable chain; no partial public mode exists."""
 
-    return _run_prospective_validation(
+    return _run_prospective_train(
         repo_root,
+        semantic_intent=semantic_intent,
+        evaluation_target=evaluation_target,
+        subject_commit=subject_commit,
+        subject_tree=subject_tree,
         remote=remote,
         python_executable=python_executable,
         execute_evidence=True,

@@ -29,7 +29,7 @@ workitems:
   status: DONE
   summary: deliver canonical convergent bcf reconcile fixed-point generation with controlled demolition of redundant ceremony
 - id: P27-P0-04
-  status: TODO
+  status: DONE
   summary: deliver schema-validated timing telemetry routine-rotation proof empirical benchmarks and certified closeout
 execution_evidence:
   planned_commands:
@@ -69,6 +69,10 @@ execution_evidence:
   - the post-install contraction removes the temporary source-pinned bootstrap and probe workflows and binds every provider-backed rotation stage to the canonical typed applicability decision; no-transition allocates no installation work
   - exact-main 36090362031/1 exposed historical active-transition receipts surviving source normalization; the provider resolver now absorbs only authenticated receipts ordered at or before the installed normalization subject and keeps later ambiguity or disconnection fail-closed
   - the prospective PR owner accepts one exact committed tree, rejects stale deterministic projections before evidence, carries one mechanically planned local evidence session through PR and canonical post-merge truth, and preserves every provider-required authority boundary explicitly
+  - exact-main 36103298835/1, finalizer 36103662534/1, and publisher 36103735113/1 closed P27-P0-03 and made P27-P0-04 eligible while P27 remained active
+  - P27-P0-04 exposes one typed prospective-train interface whose exact-tree output covers fixed-point freshness, installed-controller compatibility, planned evidence, truth, lifecycle, scoped publication, and successor or release eligibility without substituting local authority
+  - execution timing is schema-validated across planning reuse setup producers positive tests controls normalization truth finalization and publication; provider-only stages remain explicitly provider-required rather than receiving fabricated local timings
+  - the exact successful no-transition automation topology is now a closed non-dispatching observation; incomplete ambiguous or broadened job inventories reject instead of treating inapplicability as authority
 closeout_requirements:
   claims:
     workitems_closed:
@@ -101,4 +105,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify P27-P0-02 through the first provider-driven one-PR runtime rotation then begin eligible P27-P0-03 fixed-point reconciliation
+- certify P27-P0-04 through the provider-driven one-PR runtime rotation then perform terminal P27 closure before beginning P28

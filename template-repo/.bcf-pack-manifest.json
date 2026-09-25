@@ -334,6 +334,10 @@
       "operation": "copy",
       "sha256": "354a2404471958e066bbab7e36194e31101ac3dd67a0d8bb4013ada734aae4db"
     },
+    "schemas/prospective-train-telemetry.schema.json": {
+      "operation": "copy",
+      "sha256": "25b0d5e9b6ca126277349f30e3390e655d374576d374c0e6db48ab71135fa1bb"
+    },
     "schemas/public-contracts.schema.json": {
       "operation": "copy",
       "sha256": "9d4ba185bbb2fb21442c810a8351762d6ab0fb55fd9db6c3a937827763acb3b7"
@@ -432,7 +436,7 @@
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "e629473b0641e4f10ef5eaa713b1e8cd28c726564eb7c437e6522e73452a5fde"
+      "sha256": "ff95312d483c1fd33ec7c650b9ac9e69bdd740f33a9f2f715f9b66c886564e5c"
     },
     "scripts/_bcf_runtime/ci_exact_main_truth.py": {
       "operation": "copy",
@@ -896,7 +900,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "2a6b40bb9dcdb6fe9dc2b4d40cf57f06a183bc6f08399f597211dfb3d1411730"
+      "sha256": "4617bd3c41dc0b22541d90d92321abf075b5f05a8ce54b65c9c18146520f0c4c"
     },
     "scripts/_bcf_runtime/migrate_contracts.py": {
       "operation": "copy",
@@ -986,13 +990,17 @@
       "operation": "copy",
       "sha256": "cd6857fd20d31fcbf81b61713270337b1b35084e7ff6690fc470ddb2e03df5e9"
     },
+    "scripts/_bcf_runtime/routine_controller_callback.py": {
+      "operation": "copy",
+      "sha256": "73c84036288b4f907691203948b9aa688f32af8901c5549d00f5a4afafe0b7ac"
+    },
     "scripts/_bcf_runtime/routine_controller_commands.py": {
       "operation": "copy",
       "sha256": "6c27cdc19197f4b263af074e1fc646d7e5fc2238f1f11f5d93646d820efa93c5"
     },
     "scripts/_bcf_runtime/routine_controller_provider.py": {
       "operation": "copy",
-      "sha256": "b7e0c3b4d6449f147e01cf395b37266aea2e96ceb11e2b446b5f581a80b47c6e"
+      "sha256": "ac412f22dadb0ee9353cba55a11e3226d519b19cfe2bd89f5e51c331f4a1480f"
     },
     "scripts/_bcf_runtime/routine_controller_rotation.py": {
       "operation": "copy",

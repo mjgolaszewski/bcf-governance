@@ -8,6 +8,7 @@ from types import SimpleNamespace
 import zipfile
 
 import pytest
+import yaml
 
 from bcf_governance.tooling.ci_github_identity import (
     GitHubControllerError,
@@ -523,10 +524,25 @@ def test_callback_binds_completed_rotation_before_dispatch(
 ) -> None:
     active = _active()
     dispatched: list[tuple[str, dict]] = []
+    expected = [
+        value["job_id"] for value in provider.authority_role_jobs(
+            yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text()),
+            "controller_rotation",
+        )
+    ]
+    monkeypatch.setattr(
+        provider,
+        "authority_role_jobs",
+        lambda *_args, **_kwargs: tuple({"job_id": name} for name in expected),
+    )
     api = SimpleNamespace(
         dispatch=lambda _repo, *, event_type, client_payload: dispatched.append(
             (event_type, client_payload)
-        )
+        ),
+        jobs=lambda *_args, **_kwargs: tuple(
+            {"name": name, "conclusion": "skipped" if name.startswith("Commit ") else "success"}
+            for name in expected
+        ),
     )
     monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
     monkeypatch.setattr(
@@ -605,13 +621,128 @@ def test_callback_rejects_another_rotation_run(
     monkeypatch.setattr(
         provider, "_active_receipts", lambda *_args, **_kwargs: (active,)
     )
+    expected = [
+        value["job_id"] for value in provider.authority_role_jobs(
+            yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text()),
+            "controller_rotation",
+        )
+    ]
+    monkeypatch.setattr(
+        provider,
+        "authority_role_jobs",
+        lambda *_args, **_kwargs: tuple({"job_id": name} for name in expected),
+    )
     with pytest.raises(GitHubControllerError, match="does not bind"):
         provider.dispatch_post_rotation_certification(
-            SimpleNamespace(),
+            SimpleNamespace(jobs=lambda *_args, **_kwargs: tuple(
+                {"name": name, "conclusion": "skipped" if name.startswith("Commit ") else "success"}
+                for name in expected
+            )),
             repository="mjgolaszewski/bcf-governance",
             callback_run_id="40",
             callback_run_attempt="1",
             rotation_run_id="31",
+            rotation_run_attempt="1",
+        )
+
+
+def test_callback_closes_exact_no_transition_without_dispatch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    authority = yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text())
+    expected = [
+        value["job_id"]
+        for value in provider.authority_role_jobs(authority, "controller_rotation")
+    ]
+    dispatched: list[object] = []
+    api = SimpleNamespace(
+        jobs=lambda *_args, **_kwargs: tuple(
+            {
+                "name": name,
+                "conclusion": (
+                    "success"
+                    if name == "Authorize protected routine controller transition"
+                    else "skipped"
+                ),
+            }
+            for name in expected
+        ),
+        dispatch=lambda *_args, **_kwargs: dispatched.append(True),
+    )
+    monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
+    monkeypatch.setattr(provider, "load_authority", lambda *_args, **_kwargs: authority)
+    monkeypatch.setattr(
+        provider,
+        "authenticate_role_run",
+        lambda *_args, role, **_kwargs: SimpleNamespace(
+            run_id="40" if role == "controller_rotation_callback" else "30",
+            run_attempt=1,
+        ),
+    )
+    result = provider.dispatch_post_rotation_certification(
+        api,
+        repository="mjgolaszewski/bcf-governance",
+        callback_run_id="40",
+        callback_run_attempt="1",
+        rotation_run_id="30",
+        rotation_run_attempt="1",
+    )
+    assert result == {
+        "status": "no_transition",
+        "dispatched": False,
+        "subject": {"commit_sha": NEW, "tree_sha": TREE},
+        "rotation_run_id": "30",
+        "rotation_run_attempt": 1,
+        "release_authority": False,
+    }
+    assert dispatched == []
+
+
+@pytest.mark.parametrize("mutation", ("missing", "extra", "partial"))
+def test_callback_rejects_nonexact_no_transition_topology(
+    monkeypatch: pytest.MonkeyPatch, mutation: str
+) -> None:
+    authority = yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text())
+    expected = [
+        value["job_id"]
+        for value in provider.authority_role_jobs(authority, "controller_rotation")
+    ]
+    jobs = [
+        {
+            "name": name,
+            "conclusion": (
+                "success"
+                if name == "Authorize protected routine controller transition"
+                else "skipped"
+            ),
+        }
+        for name in expected
+    ]
+    if mutation == "missing":
+        jobs.pop()
+    elif mutation == "extra":
+        jobs.append({"name": "Undeclared rotation job", "conclusion": "skipped"})
+    else:
+        jobs[-1]["conclusion"] = "success"
+    monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
+    monkeypatch.setattr(provider, "load_authority", lambda *_args, **_kwargs: authority)
+    monkeypatch.setattr(
+        provider,
+        "authenticate_role_run",
+        lambda *_args, role, **_kwargs: SimpleNamespace(
+            run_id="40" if role == "controller_rotation_callback" else "30",
+            run_attempt=1,
+        ),
+    )
+    api = SimpleNamespace(jobs=lambda *_args, **_kwargs: tuple(jobs))
+    error = "inventory is not exact" if mutation != "partial" else "topology is partial"
+    with pytest.raises(GitHubControllerError, match=error):
+        provider.dispatch_post_rotation_certification(
+            api,
+            repository="mjgolaszewski/bcf-governance",
+            callback_run_id="40",
+            callback_run_attempt="1",
+            rotation_run_id="30",
             rotation_run_attempt="1",
         )
 
