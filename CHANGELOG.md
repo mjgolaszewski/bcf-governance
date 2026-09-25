@@ -1,5 +1,8 @@
 # Changelog
 
+- Confirm provider-authenticated installation of the P27 applicability controller
+  on both trusted runners and restore ordinary-current custody.
+
 - Project the exact provider-built P27 applicability controller as the protected
   N/N+1 target while keeping the installed controller active until confirmation.
 
