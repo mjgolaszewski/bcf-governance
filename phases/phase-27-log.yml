@@ -66,6 +66,7 @@ execution_evidence:
   - exact-main 36010879352/1 admitted through the active provider-transition controller but preflight retained the ordinary source-policy baseline; same-admission transport now binds provider-effective controller custody for compatibility without granting candidate authority
   - 'post-merge 11f5ccdeb99d08433bd60f036ce04d40d6a7af41 exposed an N/N+1 contraction error: installed 1511b09b rejected absent bootstrap/probe roles before provider-chain resolution; compatibility expansion temporarily restores the legacy lane while making those roles optional to N+1 before demolition resumes'
   - exact-main 36062907622/1 produced the exact N+1 artifact under successful builder-only pending topology; the dormant runtime expansion derives closed topology decisions from authenticated job inventory, routes exact protected-policy changes through the bound ordinary N/N+1 lane, and leaves workflow activation until compatible N+1 installation
+  - the post-install contraction removes the temporary source-pinned bootstrap and probe workflows and binds every provider-backed rotation stage to the canonical typed applicability decision; no-transition allocates no installation work
 closeout_requirements:
   claims:
     workitems_closed:

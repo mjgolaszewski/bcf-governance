@@ -1,5 +1,8 @@
 # Changelog
 
+- Activate closed provider-backed routine controller applicability and remove the
+  superseded target/confirmation bootstrap and probe workflow path.
+
 - Confirm provider-authenticated installation of the P27 applicability controller
   on both trusted runners and restore ordinary-current custody.
 
