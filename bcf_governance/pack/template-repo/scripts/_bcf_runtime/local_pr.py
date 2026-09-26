@@ -38,6 +38,7 @@ from .ci_authority_prospective_telemetry import (
 )
 from .ci_github_api import GitHubAPI
 from .routine_controller_provider import effective_controller_authority
+from .trusted_controller_compatibility import classify_trusted_controller_applicability
 from .routine_controller_rotation import (
     ROTATION_POLICY_PATHS,
     alternate_policy_lane_contract,
@@ -482,7 +483,6 @@ def _run_prospective_train(
                     mode="pr",
                     python_executable=python_executable,
                     evaluation_mode="pr",
-                    transported_authority=controller_authority,
                 )
                 preflight_duration = _elapsed_ms(preflight_started)
             except (PreflightError, EvidenceError) as exc:
@@ -499,7 +499,13 @@ def _run_prospective_train(
         boundaries.append({"id": "preflight", "state": "proved", "authority": "local"})
         controller = preflight.get("self_controller")
         controller_state = (
-            str(controller.get("status")) if isinstance(controller, dict) else "current"
+            classify_trusted_controller_applicability(
+                root, target_commit=str(controller_authority["controller_commit_sha"])
+            ).state.value
+            if controller_authority is not None
+            else str(controller.get("status"))
+            if isinstance(controller, dict)
+            else "current"
         )
         if controller_state not in {"current", "pending_rotation"}:
             raise ProspectiveValidationError(

@@ -219,10 +219,14 @@ def test_prospective_preflight_uses_exact_provider_effective_controller(
     }
 
     def preflight(*_args: object, **kwargs: object) -> dict[str, object]:
-        assert kwargs["transported_authority"] == authority
         return {"status": "pass", "self_controller": 24}
 
     monkeypatch.setattr(prospective, "run_preflight", preflight)
+    monkeypatch.setattr(
+        prospective,
+        "classify_trusted_controller_applicability",
+        lambda *_args, **_kwargs: SimpleNamespace(state=SimpleNamespace(value="current")),
+    )
     report = prospective._run_prospective_train(
         tmp_path,
         **TRAIN,
