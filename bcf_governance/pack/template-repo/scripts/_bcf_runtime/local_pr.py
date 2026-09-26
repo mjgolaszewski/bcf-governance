@@ -31,7 +31,7 @@ from .evidence_sessions import allocate_session, local_producer_identity
 from .governance_evidence import capture_gate
 from .governance_truth import TruthfulnessError, derive_truth
 from .preflight import PreflightError, run_preflight
-from .ci_prospective_telemetry import (
+from .ci_authority_prospective_telemetry import (
     ProspectiveTelemetryError,
     elapsed_ms as _elapsed_ms,
     validate_train_telemetry,

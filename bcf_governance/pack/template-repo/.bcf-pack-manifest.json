@@ -450,6 +450,10 @@
       "operation": "copy",
       "sha256": "32eef1eadc1b0358adecec6a948b1f94f059a511f168a40897256b19054a12db"
     },
+    "scripts/_bcf_runtime/ci_authority_prospective_telemetry.py": {
+      "operation": "copy",
+      "sha256": "d7d57beed63bdd5f3f38c744384e681d57aae1ef2a6ed4f8646a1ace4302a653"
+    },
     "scripts/_bcf_runtime/ci_authority_state.py": {
       "operation": "copy",
       "sha256": "bab5772b54aba781f3298a40063be3349183a108487d92b3c3b0874764d22d4d"
@@ -673,10 +677,6 @@
     "scripts/_bcf_runtime/ci_prior_evidence_auth.py": {
       "operation": "copy",
       "sha256": "1ff5e3eaf49a68f9c7ec26092570ee4e0839488e928760b42787339383311bce"
-    },
-    "scripts/_bcf_runtime/ci_prospective_telemetry.py": {
-      "operation": "copy",
-      "sha256": "7bb6d555ab073f37b279acf663602911edce5611688eb2e75228f646f223f6f3"
     },
     "scripts/_bcf_runtime/ci_reuse_attestation_verifier.py": {
       "operation": "copy",
@@ -968,7 +968,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "bcb0b3a48fd80edad863e07685452e875b752caea91d1cd9d20bd371ccc83b25"
+      "sha256": "4c7c27d58ce73a9ab2b345288ef474038fd79ceaafac3c4fb77ffd1a55dad925"
     },
     "scripts/_bcf_runtime/migrate_contracts.py": {
       "operation": "copy",

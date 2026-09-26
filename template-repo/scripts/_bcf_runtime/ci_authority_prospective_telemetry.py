@@ -1,4 +1,4 @@
-"""Canonical CI telemetry validation for one prospective proof train."""
+"""Canonical CI-authority telemetry validation for one prospective proof train."""
 
 from __future__ import annotations
 
