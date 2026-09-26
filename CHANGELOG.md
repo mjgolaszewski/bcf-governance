@@ -1,5 +1,9 @@
 # Changelog
 
+- Open P28 from certified P27 closure, bind the amended BCF 2.1 product-parity,
+  one-PR rotation, simplicity, empirical, and immutable-release acceptance train,
+  and target exact-main at the first bounded projection workitem.
+
 - Project exact-main from certified P27-P0-04 closure to terminal parent-phase
   closure without granting bounded certification any phase or release authority.
 

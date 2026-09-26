@@ -19,6 +19,7 @@ from bcf_governance.tooling.evidence_sessions import (
     allocate_session,
     local_producer_identity,
 )
+from bcf_governance.tooling.evidence_planning import verification_plan
 from bcf_governance.tooling.governance_profiles import _v2_builtin_contracts
 from scripts.governance_evidence import attest_bundle, capture_gate
 from scripts.governance_truth import derive_truth
@@ -312,7 +313,13 @@ def semantic_config(repo: Path) -> Path:
     return path
 
 
-def gate_config(repo: Path, profile: str, public_key: Path | None) -> Path:
+def gate_config(
+    repo: Path,
+    profile: str,
+    public_key: Path | None,
+    *,
+    contract_version: str | None = None,
+) -> Path:
     gates: dict[str, Any] = {}
     for gate in gate_catalog().values():
         target = gate["target"]
@@ -322,10 +329,13 @@ def gate_config(repo: Path, profile: str, public_key: Path | None) -> Path:
         is_test = policy in TEST_POLICIES
         evidence: dict[str, Any] = {}
         if is_test:
+            manifest = f"governance/test-manifests/{target}.txt"
             evidence = {
                 "kind": "test_suite",
                 "test_contract": {
                     "junit_xml": f".artifacts/junit/{target}.xml",
+                    "expected_node_manifest": manifest,
+                    "expected_nodes_mode": "exact",
                     "min_collected": 1,
                     "min_executed": 1,
                     "max_skipped": 0,
@@ -410,14 +420,81 @@ def gate_config(repo: Path, profile: str, public_key: Path | None) -> Path:
             "permitted_risk_authorities": ["regulated-test-authority"],
         }
     path = repo / f"{profile}-profile.yml"
+    payload: dict[str, Any] = {
+        "schema_version": "1.0",
+        "target_profile": profile,
+        "gates": gates,
+        "provenance": provenance,
+    }
+    if contract_version is not None:
+        payload["profile_contract_version"] = contract_version
+    if contract_version == "3.0":
+        preflight_claims = {
+            "governance-contracts-valid": "governance-validate",
+            "governance-exposure-clean": "governance-exposure-scan",
+            "source-syntax-format": "lint",
+            "semantic-ownership-valid": "semantic-ownership",
+        }
+        evidence_targets = sorted(
+            {*gates, "semantic-ownership"} - set(preflight_claims.values())
+        )
+        payload["claim_model"] = {
+            "version": "1.0",
+            "dependency_sets": {"whole": ["**"]},
+            "execution_groups": {
+                "preflight": {
+                    "producer": "preflight",
+                    "captured_by_preflight": True,
+                    "claims": list(preflight_claims),
+                },
+                **{
+                    target: {"producer": target, "claims": [target]}
+                    for target in evidence_targets
+                },
+            },
+            "claims": {
+                **{
+                    claim_id: {
+                        "truth": f"{claim_id} passes on the exact subject",
+                        "execution_group": "preflight",
+                        "legacy_gate": legacy_gate,
+                        "dependencies": {
+                            "subject": ["whole"], "detector": [],
+                            "test_population": [], "toolchain": [], "trust": [],
+                        },
+                        "qualification_scope": "none",
+                        "profiles": ["normal", "regulated"],
+                    }
+                    for claim_id, legacy_gate in preflight_claims.items()
+                },
+                **{
+                    target: {
+                        "truth": f"{target} passes on the exact subject",
+                        "execution_group": target,
+                        "legacy_gate": target,
+                        "dependencies": {
+                            "subject": ["whole"], "detector": ["whole"],
+                            "test_population": ["whole"], "toolchain": ["whole"],
+                            "trust": ["whole"],
+                        },
+                        "qualification_scope": "subject",
+                        "profiles": ["normal", "regulated"],
+                    }
+                    for target in evidence_targets
+                },
+            },
+        }
+        manifest_root = repo / "governance/test-manifests"
+        manifest_root.mkdir(parents=True, exist_ok=True)
+        for target, gate in gates.items():
+            evidence = gate.get("evidence")
+            if isinstance(evidence, dict) and evidence.get("kind") == "test_suite":
+                (manifest_root / f"{target}.txt").write_text(
+                    f"tests/gates.py::{target}\n", encoding="utf-8"
+                )
     path.write_text(
         yaml.safe_dump(
-            {
-                "schema_version": "1.0",
-                "target_profile": profile,
-                "gates": gates,
-                "provenance": provenance,
-            },
+            payload,
             sort_keys=False,
         ),
         encoding="utf-8",
@@ -425,22 +502,35 @@ def gate_config(repo: Path, profile: str, public_key: Path | None) -> Path:
     return path
 
 
-def complete_phase(repo: Path) -> None:
+def complete_phase(repo: Path, *, derived_lifecycle: bool = False) -> None:
+    if derived_lifecycle:
+        plan_path = repo / "plans/phase-01-plan.yml"
+        plan = yaml.safe_load(plan_path.read_text(encoding="utf-8"))
+        plan["document"]["status"] = "active"
+        plan_path.write_text(yaml.safe_dump(plan, sort_keys=False), encoding="utf-8")
     log_path = repo / "phases/phase-01-log.yml"
     log = yaml.safe_load(log_path.read_text(encoding="utf-8"))
-    log["document"]["status"] = "completed"
+    if derived_lifecycle:
+        log["document"]["status"] = "active"
+    if not derived_lifecycle:
+        log["document"]["status"] = "completed"
     for item in log["workitems"]:
         item["status"] = "DONE"
     log_path.write_text(yaml.safe_dump(log, sort_keys=False), encoding="utf-8")
     workitems_path = repo / "plans/phase-01-workitems.yml"
     workitems = yaml.safe_load(workitems_path.read_text(encoding="utf-8"))
-    workitems["document"]["status"] = "completed"
+    if derived_lifecycle:
+        workitems["document"]["status"] = "active"
+    if not derived_lifecycle:
+        workitems["document"]["status"] = "completed"
     for item in workitems["workitems"]:
         item["status"] = "DONE"
     workitems_path.write_text(yaml.safe_dump(workitems, sort_keys=False), encoding="utf-8")
     ledger_path = repo / "plans/phase-ledger.yml"
     ledger = yaml.safe_load(ledger_path.read_text(encoding="utf-8"))
-    ledger["active_phase"]["lifecycle_status"] = "completed"
+    ledger["active_phase"]["lifecycle_status"] = (
+        "active" if derived_lifecycle else "completed"
+    )
     ledger_path.write_text(yaml.safe_dump(ledger, sort_keys=False), encoding="utf-8")
 
 
@@ -813,7 +903,7 @@ def test_full_profile_install_evidence_truth_flow(
             check=True,
             capture_output=True,
         )
-    config = gate_config(repo, profile, public_key)
+    config = gate_config(repo, profile, public_key, contract_version="3.0")
     semantic = semantic_config(repo)
     git(repo, "add", ".")
     git(repo, "commit", "--quiet", "-m", "application gate contracts")
@@ -825,6 +915,8 @@ def test_full_profile_install_evidence_truth_flow(
             str(repo),
             "--profile",
             profile,
+            "--profile-contract-version",
+            "3.0",
             "--profile-config",
             str(config),
             "--semantic-config",
@@ -840,7 +932,7 @@ def test_full_profile_install_evidence_truth_flow(
         ],
         check=True,
     )
-    complete_phase(repo)
+    complete_phase(repo, derived_lifecycle=True)
     git(repo, "add", ".")
     git(repo, "commit", "--quiet", "-m", "complete governed phase")
     monkeypatch.setenv(
@@ -885,7 +977,7 @@ def test_full_profile_install_evidence_truth_flow(
     governed_gates = [
         gate
         for job in governance_workflow["jobs"]
-        if job["executor"]["kind"] == "gate_group"
+        if job["executor"]["kind"] in {"gate_group", "gate_shard"}
         for gate in job["executor"]["gates"]
     ]
     assert workflow["env"]["BCF_ENFORCE_PR_CHANGELOG"] == (
@@ -894,14 +986,18 @@ def test_full_profile_install_evidence_truth_flow(
     assert workflow["env"]["BCF_PR_BASE_SHA"] == "${{ github.event.pull_request.base.sha }}"
     assert len(governed_gates) == len(set(governed_gates))
     assert set(governed_gates) == set(contracts["gates"])
+    subject = {"commit_sha": git(repo, "rev-parse", "HEAD"), "tree_sha": git(repo, "rev-parse", "HEAD^{tree}")}
+    plan = verification_plan(repo, subject, [])
+    planned_targets = [str(node["producer"]) for node in plan["execution_dag"]["nodes"]]
     session = allocate_session(
         repo,
         evidence,
-        contracts["gates"],
+        planned_targets,
         expected_producers=["local"],
         producer_identity=local_producer_identity(repo),
+        verification_plan=plan,
     )
-    for target in contracts["gates"]:
+    for target in planned_targets:
         receipt_path = capture_gate(
             repo,
             target,
@@ -909,7 +1005,7 @@ def test_full_profile_install_evidence_truth_flow(
             session_manifest=session.manifest_path,
         )
         receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-        assert receipt["schema_version"] == "2.0"
+        assert receipt["schema_version"] == "3.0"
         assert receipt["result"] == "passed", (target, receipt)
     if profile == "regulated":
         assert private_key is not None
@@ -922,10 +1018,16 @@ def test_full_profile_install_evidence_truth_flow(
             evidence / "regulated.attestation.json",
             actor_kind="human",
         )
-    report = derive_truth(repo, evidence)
-    assert report["status"] == "pass", report["issues"]
+    report = derive_truth(
+        repo,
+        evidence,
+        evaluation_mode="workitem",
+        evaluation_target="P01-P0-01",
+    )
+    assert report["status"] == "pass", report
     assert report["effective_state"] == "closed"
     assert report["release_readiness"]["effective_state"] == "closed"
+    assert report["certified_proposition"]["predicate"] == "workitem_closed"
     if profile == "regulated":
         assert (repo / "governance/MODEL_RISK_AND_PROVENANCE.md").is_file()
         assert (repo / "governance/HOTFIX_LANE.md").is_file()

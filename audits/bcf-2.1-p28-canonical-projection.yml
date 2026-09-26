@@ -1,0 +1,52 @@
+document:
+  kind: canonical_product_projection_audit
+  id: bcf-2.1-p28-canonical-projection
+  version: 1.0.0
+  status: candidate
+  path: audits/bcf-2.1-p28-canonical-projection.yml
+phase: P28
+workitem: P28-P0-01
+canonical_projection:
+  profile_contract: '3.0'
+  source_owner: bcf_governance/tooling/ci_graph_defaults.py
+  installed_owner: scripts/_bcf_runtime/ci_graph_defaults.py
+  portable_helpers:
+  - bcf_governance/tooling/evidence_shards.py
+  - bcf_governance/tooling/evidence_modes.py
+  projected_capabilities:
+  - claim-aware preflight and one exact evidence session
+  - planner-derived duration-aware four-shard execution
+  - optional exact prior-evidence transport
+  - grouped receipt fan-in and terminal scoped truth
+  - exact-main admission finalization and publication
+  - one agent-facing prospective-train command
+  excluded_self_authority:
+  - controller bootstrap probe installation and promotion
+  - recovery and Break Glass authority
+  - release publisher credentials
+  - repository protection mutation
+fresh_adopter_proof:
+  installation: real strict install_governance_pack.py path
+  profiles: [standard, regulated]
+  graph: canonical rendered contract with planned gate_shard execution
+  evidence: schema-v3 receipts from one planner-owned session
+  truth: bounded workitem certification from exact authenticated evidence
+  structural_rule: preflight-only claims are excluded from workitem acceptance through the canonical claim model
+prospective_chain:
+  preflight: exact generated graph manifests runtime and profile contracts must be fresh
+  controller_compatibility: adopter product projects no self controller authority; self changes remain governed by installed N
+  pr_evidence: one session and planner-derived shards execute only unresolved producers
+  certification: terminal truth preserves exact subject intent and target
+  merge: normal protected merge only
+  exact_main: authenticated admission transports exact prior evidence before reusable governance
+  controller_lifecycle: any changed self trusted-runtime bytes require ordinary N/N+1 handling without leaking that authority to adopters
+  bounded_truth: P28-P0-01 may close only from receipt-producing authenticated claims
+  finalizer: exact run attempt subject proposition and producer inventory remain mandatory
+  publisher: bounded status cannot substitute for release or protection authority
+  successor_eligibility: only authenticated P28-P0-01 closure makes P28-P0-02 eligible
+non_escalation:
+- candidate configuration cannot replace an existing canonical claim model
+- preflight observations cannot satisfy behavioral workitem evidence
+- prior evidence remains optional exact transport and ambiguous applicability executes canonically
+- no self authority credential workflow or protection mutation is projected into adopters
+- release authority remains absent

@@ -1832,13 +1832,57 @@ else:
 
 def test_capture_surfaces_do_not_reimplement_session_root_selection() -> None:
     renderer = (REPO_ROOT / "bcf_governance/tooling/ci_graph_render.py").read_text()
-    shard = (REPO_ROOT / ".github/scripts/capture_governance_shard.py").read_text()
+    shard = (REPO_ROOT / "bcf_governance/tooling/evidence_shards.py").read_text()
+    wrapper = (REPO_ROOT / ".github/scripts/capture_governance_shard.py").read_text()
 
     assert "find .artifacts/bcf/sessions" not in renderer
     assert "select-session --session-root" in renderer
     for forbidden in ("evidence-session.json", ".glob(", ".rglob(", ".iterdir("):
-        assert forbidden not in shard
+        assert forbidden not in wrapper
     assert "select_session(" in shard
+
+
+def test_v3_reference_graph_projects_proof_transport_and_planned_shards(
+    tmp_path: Path,
+) -> None:
+    gates = ["governance-validate", "test", "contract-test", "runtime-smoke"]
+    graph = build_reference_ci_graph(
+        project_id="v3-fixture",
+        profile="standard",
+        profile_contract_version="3.0",
+        gates=gates,
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["self-hosted", "fixture-trusted"],
+        candidate_hosted=True,
+        trusted_hosted=False,
+    )
+    _write_graph(tmp_path, graph)
+    compiled = validate_ci_graph(tmp_path)
+    governance = next(item for item in compiled.workflows if item["id"] == "governance")
+    assert [job["id"] for job in governance["jobs"]] == [
+        "preflight", "evidence", "governance-truthfulness",
+    ]
+    evidence = governance["jobs"][1]
+    assert evidence["executor"]["kind"] == "gate_shard"
+    assert evidence["executor"]["gates"] == gates
+    assert evidence["strategy"]["matrix"] == {
+        "shard": [0, 1, 2, 3],
+        "include": [
+            {"shard": index, "display_name": f"Evidence shard {index}"}
+            for index in range(4)
+        ],
+    }
+    assert governance["jobs"][0]["consumes"] == ["prior-evidence-transport"]
+    assert governance["jobs"][2]["consumes"] == [
+        "governance-receipts", "prior-evidence-transport",
+    ]
+    exact_main = next(item for item in compiled.workflows if item["id"] == "exact-main")
+    admit, producer = exact_main["jobs"]
+    assert admit["executor"]["operation"] == "admit-with-prior-evidence"
+    assert admit["produces"] == ["prior-evidence-transport"]
+    assert producer["executor"]["artifact_bindings"] == {
+        "prior-evidence-transport": "use_prior_evidence"
+    }
 
 
 def test_lite_reference_graph_has_no_release_or_trusted_control(tmp_path: Path) -> None:

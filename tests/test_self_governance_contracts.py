@@ -17,6 +17,7 @@ from bcf_governance.tooling.ci_github_actions import ACTION_PINS
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
 from bcf_governance.tooling.ci_graph_execution import job_required_environment
 from bcf_governance.tooling.ci_graph_render import check_ci_graph, render_ci_graph
+from bcf_governance.tooling import evidence_modes, evidence_shards
 from bcf_governance.tooling.governance_validation.runner import (
     GovernanceValidationError,
     validate_repo_root,
@@ -469,7 +470,7 @@ def test_every_github_action_uses_the_canonical_immutable_pin() -> None:
 
 
 def test_governance_evidence_shards_derive_every_required_gate_once() -> None:
-    module = _load_github_script("capture_governance_shard.py")
+    module = evidence_shards
     expected = module.required_gate_targets(REPO_ROOT)
     shards = [
         module.partition_required_gates(REPO_ROOT, shard_index=index, shard_count=4)
@@ -484,7 +485,7 @@ def test_governance_evidence_shards_derive_every_required_gate_once() -> None:
 
 
 def test_governance_evidence_shards_follow_the_duration_aware_plan() -> None:
-    module = _load_github_script("capture_governance_shard.py")
+    module = evidence_shards
     targets = ["test", "contract-test", "runtime-smoke"]
     dag = {
         "nodes": [
@@ -512,7 +513,7 @@ def test_governance_evidence_shards_follow_the_duration_aware_plan() -> None:
 def test_governance_shard_forwards_the_preflight_session(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    module = _load_github_script("capture_governance_shard.py")
+    module = evidence_shards
     commands: list[list[str]] = []
     monkeypatch.setattr(module, "partition_required_gates", lambda *_, **__: ["test"])
     monkeypatch.setattr(
@@ -532,7 +533,7 @@ def test_governance_shard_forwards_the_preflight_session(
 def test_governance_shards_execute_only_the_planned_producer_inventory(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    module = _load_github_script("capture_governance_shard.py")
+    module = evidence_shards
     commands: list[list[str]] = []
     session = SimpleNamespace(
         manifest_path=tmp_path / "evidence-session.json",
@@ -674,7 +675,7 @@ def test_governance_artifact_transport_restores_private_modes_before_capture(
     session.chmod(0o755)
     manifest.chmod(0o644)
 
-    restored = _load_github_script("restore_evidence_modes.py").restore(root)
+    restored = evidence_modes.restore(root)
 
     assert restored == 1
     assert stat.S_IMODE(session.stat().st_mode) == 0o700

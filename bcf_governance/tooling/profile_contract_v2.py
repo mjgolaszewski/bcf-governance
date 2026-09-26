@@ -368,7 +368,7 @@ def validate_profile_v2_readiness(
     return ProfileV2Readiness(
         status="ready",
         profile=profile,
-        profile_contract_version="2.0",
+        profile_contract_version=current_contract_version(repo_root),
         semantic_representations=len(representations),
         capability_na_records=len(na_paths),
         ci_authority=authority_state,

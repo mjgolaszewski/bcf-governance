@@ -18,19 +18,12 @@ global_gates:
   name: safe_execution_substrate
   applies_before: P10
   required_completion_criteria: [trusted control-plane VM executes no candidate code, every code-executing job receives a fresh disposable VM and ephemeral runner identity, no GitHub-hosted fallback is configured]
-phase_history: {path: plans/phase-history.yml, through_phase: P26}
+phase_history: {path: plans/phase-history.yml, through_phase: P27}
 phase_sequence:
-- phase_id: P27
-  build_block: minimum-time-proof-composition-2.1.0
-  objective: minimize certification critical-path time using P26 proof transport while preserving assurance semantics
-  hard_dependencies: [P26]
-  tightly_scoped_deliverables: [selective execution planner with qualification-preserving negative-control reuse and a canonical assurance-owner inventory, measured constrained critical-path DAG with duration-aware assignment one-PR routine controller rotation and execution-scoped ephemeral-state closure, canonical convergent bcf reconcile fixed-point generation with controlled demolition of redundant ceremony, schema-validated timing telemetry routine-rotation proof empirical benchmarks and certified closeout]
-  parallelizable_workstreams: [selective execution planning and assurance inventory, critical-path composition assignment controller-transition migration and exact execution-state lifecycle, fixed-point generation and controlled demolition, telemetry rotation benchmarking and closeout]
-  verification_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests]
 - phase_id: P28
   build_block: canonical-projection-parity-certification-2.1.0
   objective: project BCF 2.1 canonically prove self-adopter parity measure performance and publish immutable 2.1.0
   hard_dependencies: [P27]
-  tightly_scoped_deliverables: [normal install and adopt projection of P26 and P27 semantics, typed narrow self-authority overlays with enforced non-leakage, representative adopter parity and adversarial proof, empirical SLO immutable 2.1.0 publication custody and certified closeout]
-  parallelizable_workstreams: [canonical installation and adoption projection, typed self-authority overlays, self-adopter parity and attacks, empirical certification release and custody closeout]
+  tightly_scoped_deliverables: [normal install and adopt projection of P26 and P27 semantics, typed narrow self-authority overlays with enforced non-leakage, representative adopter parity and adversarial proof, empirical benchmarks product-simplicity inventory and final SLO, immutable 2.1.0 publication custody and certified closeout]
+  parallelizable_workstreams: [canonical installation and adoption projection, typed self-authority overlays, self-adopter parity and attacks, empirical benchmarks and product-simplicity inventory, immutable release certification and custody closeout]
   verification_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests]

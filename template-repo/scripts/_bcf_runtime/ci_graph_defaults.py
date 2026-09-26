@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from .evidence_shards import workflow_shard_matrix
+
 
 EXTENSION_POINTS = [
     "preflight",
@@ -113,6 +115,248 @@ def _preflight_argv(expected_producers: list[str]) -> list[str]:
         "--format",
         "text",
     ]
+
+
+def _v3_commands() -> dict[str, Any]:
+    scope = [
+        "--evaluation-mode", "${{ inputs.evaluation_mode || 'pr' }}",
+        "--evaluation-target", "${{ inputs.evaluation_target || '' }}",
+    ]
+    preflight = [
+        "{python}", "scripts/preflight_governance.py", "--repo-root", ".",
+        *scope, "--python", "{python}", "--artifact-root", ".artifacts/bcf",
+        "--expected-producer", "evidence", "--format", "text",
+    ]
+    truth = [
+        "{python}", "scripts/governance_truth.py", "--repo-root", ".",
+        "--evidence-dir", ".artifacts/bcf/fan-in", *scope, "--format", "json",
+        "--durable-ref",
+        "github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth",
+        "--output", ".artifacts/bcf/truth-report.json",
+    ]
+    return {
+        "v3-preflight": {"argv": preflight, "cwd": ".", "environment": {}},
+        "v3-preflight-with-prior": {
+            "argv": [*preflight[:-2], "--prior-evidence-dir", ".artifacts/bcf/prior-evidence", *preflight[-2:]],
+            "cwd": ".",
+            "environment": {},
+        },
+        "v3-capture-shard": {
+            "argv": [
+                "{python}", "scripts/capture_governance_shard.py", "--repo-root", ".",
+                "--shard-index", "${{ matrix.shard }}", "--shard-count", "4",
+                "--session-root", ".artifacts/bcf/sessions",
+            ],
+            "cwd": ".",
+            "environment": {},
+        },
+        "v3-restore-session-modes": {
+            "argv": ["{python}", "scripts/restore_evidence_modes.py", "--root", ".artifacts/bcf/sessions"],
+            "cwd": ".",
+            "environment": {},
+        },
+        "v3-restore-receipt-modes": {
+            "argv": ["{python}", "scripts/restore_evidence_modes.py", "--root", ".artifacts/bcf/fan-in"],
+            "cwd": ".",
+            "environment": {},
+        },
+        "v3-truth": {"argv": truth, "cwd": ".", "environment": {}},
+        "v3-truth-with-prior": {
+            "argv": [*truth[:6], "--prior-evidence-dir", ".artifacts/bcf/prior-evidence", *truth[6:]],
+            "cwd": ".",
+            "environment": {},
+        },
+    }
+
+
+def _component(
+    *, kind: str, name: str, produces: list[str] | None = None,
+    consumes: list[str] | None = None, **values: Any,
+) -> dict[str, Any]:
+    return {
+        "kind": kind,
+        "name": name,
+        **values,
+        "environment": {},
+        "produces": produces or [],
+        "consumes": consumes or [],
+    }
+
+
+def _v3_components() -> dict[str, Any]:
+    return {
+        "checkout-candidate": _component(
+            kind="action", name="Check out the exact candidate commit", action="checkout",
+            **{"with": {"fetch-depth": 0, "persist-credentials": False}},
+        ),
+        "setup-python": _component(
+            kind="action", name="Provision the declared Python runtime", action="setup-python",
+            **{"with": {"python-version": "3.12"}},
+        ),
+        "install-governance": _component(
+            kind="command", name="Install the declared governance environment",
+            command="install-governance-dependencies",
+        ),
+        "preflight": _component(
+            kind="command", name="Run canonical cheap preflight and allocate one evidence session",
+            condition="prior-evidence-disabled", command="v3-preflight",
+        ),
+        "preflight-with-prior": _component(
+            kind="command", name="Run canonical cheap preflight with exact prior evidence",
+            condition="prior-evidence-enabled", command="v3-preflight-with-prior",
+        ),
+        "upload-session": _component(
+            kind="action", name="Upload the exact evidence session", action="upload-artifact",
+            produces=["evidence-session"],
+            **{"with": {
+                "name": "bcf-session-${{ github.run_id }}-${{ github.run_attempt }}",
+                "path": ".artifacts/bcf/sessions", "if-no-files-found": "error", "retention-days": 30,
+            }},
+        ),
+        "download-session": _component(
+            kind="action", name="Download this attempt's evidence session", action="download-artifact",
+            consumes=["evidence-session"],
+            **{"with": {
+                "name": "bcf-session-${{ github.run_id }}-${{ github.run_attempt }}",
+                "path": ".artifacts/bcf/sessions",
+            }},
+        ),
+        "restore-session-modes": _component(
+            kind="command", name="Restore downloaded evidence-session modes",
+            command="v3-restore-session-modes", restores_private_artifacts=["evidence-session"],
+        ),
+        "capture-shard": _component(
+            kind="command", name="Capture the mechanically derived evidence shard", command="v3-capture-shard",
+        ),
+        "upload-receipts": _component(
+            kind="action", name="Upload this attempt's exact evidence shard", action="upload-artifact",
+            condition="always-step", produces=["governance-receipts"],
+            **{"with": {
+                "name": "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-shard-${{ matrix.shard }}",
+                "path": ".artifacts/bcf/sessions", "if-no-files-found": "error", "retention-days": 30,
+            }},
+        ),
+        "download-receipts": _component(
+            kind="action", name="Download only this attempt's evidence shards", action="download-artifact",
+            condition="evidence-prerequisites-green", consumes=["governance-receipts"],
+            **{"with": {
+                "pattern": "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-*",
+                "path": ".artifacts/bcf/fan-in",
+            }},
+        ),
+        "restore-receipt-modes": _component(
+            kind="command", name="Restore private evidence-session modes",
+            condition="evidence-prerequisites-green", command="v3-restore-receipt-modes",
+            restores_private_artifacts=["governance-receipts"],
+        ),
+        "truth": _component(
+            kind="command", name="Verify exact-tree governance evidence",
+            condition="evidence-prerequisites-without-prior", command="v3-truth",
+            produces=["truth-report"],
+        ),
+        "truth-with-prior": _component(
+            kind="command", name="Verify exact-tree governance evidence with prior transport",
+            condition="evidence-prerequisites-with-prior", command="v3-truth-with-prior",
+            produces=["truth-report"],
+        ),
+        "upload-truth": _component(
+            kind="action", name="Upload this attempt's terminal truth report", action="upload-artifact",
+            condition="always-step", produces=["truth-report"],
+            **{"with": {
+                "name": "bcf-governance-truth-${{ github.run_id }}-${{ github.run_attempt }}",
+                "path": ".artifacts/bcf/truth-report.json", "if-no-files-found": "error", "retention-days": 30,
+            }},
+        ),
+    }
+
+
+def _apply_v3_proof_composition(graph: dict[str, Any], gates: list[str]) -> None:
+    """Project canonical proof transport and planner-derived execution into v3 adopters."""
+
+    graph["conditions"].update(
+        {
+            "prior-evidence-enabled": "inputs.use_prior_evidence == true",
+            "prior-evidence-disabled": "inputs.use_prior_evidence != true",
+            "evidence-prerequisites-green": "needs.preflight.result == 'success' && needs.evidence.result == 'success'",
+            "evidence-prerequisites-with-prior": "needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence == true",
+            "evidence-prerequisites-without-prior": "needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence != true",
+            "always-step": "always()",
+        }
+    )
+    graph["commands"].update(_v3_commands())
+    graph["commands"]["install-governance-dependencies"] = {
+        "argv": ["{python}", "-m", "pip", "install", "-r", "requirements-governance.txt"],
+        "cwd": ".",
+        "environment": {},
+    }
+    graph["step_components"].update(_v3_components())
+    graph["artifacts"]["prior-evidence-transport"] = {
+        "path": ".artifacts/bcf/prior-evidence",
+        "kind": "control",
+        "scope": "run-attempt",
+        "retention_days": 30,
+    }
+    graph["artifacts"]["governance-receipts"] = {
+        "path": ".artifacts/bcf/sessions",
+        "kind": "lane-input",
+        "scope": "run-attempt",
+        "retention_days": 30,
+    }
+    governance = next(item for item in graph["workflows"] if item["id"] == "governance")
+    governance["events"] = [
+        {"type": "pull_request"},
+        {
+            "type": "workflow_call",
+            "inputs": {
+                "evaluation_mode": {"description": "Exact truth evaluation mode", "required": False, "default": "pr", "type": "string"},
+                "evaluation_target": {"description": "Exact bounded target", "required": False, "default": "", "type": "string"},
+                "use_prior_evidence": {"description": "Consume exact caller-bound prior evidence", "required": False, "default": False, "type": "boolean"},
+            },
+        },
+    ]
+    matrix = workflow_shard_matrix()
+    governance["jobs"] = [
+        _job(
+            "preflight", "cheap-preflight", executor={
+                "kind": "component_sequence",
+                "components": ["checkout-candidate", "setup-python", "install-governance", "preflight", "preflight-with-prior", "upload-session"],
+            }, produces=["evidence-session"], consumes=["prior-evidence-transport"], components=[],
+        ),
+        {
+            **_job(
+                "evidence", "required-evidence-shards", needs=["preflight"],
+                executor={
+                    "kind": "gate_shard", "shard_key": "shard", "shard_count": 4,
+                    "gates": gates,
+                    "components": ["checkout-candidate", "setup-python", "install-governance", "download-session", "restore-session-modes", "capture-shard", "upload-receipts"],
+                },
+                produces=["governance-receipts"], consumes=["evidence-session"], components=[],
+            ),
+            "display_name": "Evidence / ${{ matrix.display_name }}",
+            "strategy": {"fail_fast": False, "max_parallel": 4, "matrix": matrix},
+        },
+        _job(
+            "governance-truthfulness", "terminal-governance-truth", needs=["preflight", "evidence"],
+            condition="always",
+            executor={
+                "kind": "terminal_truth", "command": "v3-truth",
+                "components": ["checkout-candidate", "setup-python", "install-governance", "download-receipts", "restore-receipt-modes", "truth", "truth-with-prior", "upload-truth"],
+            },
+            produces=["truth-report"], consumes=["governance-receipts", "prior-evidence-transport"], components=[],
+        ),
+    ]
+    exact_main = next((item for item in graph["workflows"] if item["id"] == "exact-main"), None)
+    if exact_main is not None:
+        admit = next(item for item in exact_main["jobs"] if item["id"] == "admit")
+        admit["executor"] = {
+            "kind": "authority", "operation": "admit-with-prior-evidence", "evaluation_mode": "closure"
+        }
+        admit["permissions"] = {"actions": "write", "contents": "read", "statuses": "write"}
+        admit["produces"] = ["prior-evidence-transport"]
+        producer = next(item for item in exact_main["jobs"] if item["id"] == "governance-producer")
+        producer["executor"]["inputs"] = {"evaluation_mode": "closure", "use_prior_evidence": True}
+        producer["executor"]["artifact_bindings"] = {"prior-evidence-transport": "use_prior_evidence"}
+        producer["consumes"] = ["prior-evidence-transport"]
 
 
 def build_reference_ci_graph(
@@ -437,7 +681,7 @@ def build_reference_ci_graph(
     if profile == "lite":
         workflows[0]["events"].append({"type": "push", "branches": ["main"]})
         workflows[0]["role"] = "exact-main"
-    return {
+    graph = {
         "document": {
             "kind": "ci_graph",
             "name": f"{project_id} CI Graph",
@@ -487,3 +731,6 @@ def build_reference_ci_graph(
             "minimum_gate_timeout_headroom_seconds": 300,
         },
     }
+    if profile_contract_version == "3.0":
+        _apply_v3_proof_composition(graph, gates)
+    return graph

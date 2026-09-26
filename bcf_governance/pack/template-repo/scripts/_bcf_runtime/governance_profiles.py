@@ -8,6 +8,7 @@ from typing import Any
 
 import yaml  # type: ignore[import-untyped]
 
+from .evidence_planning import parse_claim_model, receipt_producing_legacy_gates
 from .profile_surface_generation import (
     write_makefile as render_makefile,
     write_workflow as render_workflow,
@@ -362,6 +363,7 @@ def load_contract(
     targets = required_targets(repo_root, profile, contract_version=contract_version)
     raw_gates: dict[str, Any] = {}
     provenance: dict[str, Any] = {}
+    configured_claim_model: dict[str, Any] | None = None
     if config_path is not None or config_payload is not None:
         payload = _load_yaml(config_path.resolve()) if config_path is not None else config_payload
         if not isinstance(payload, dict):
@@ -396,6 +398,13 @@ def load_contract(
         provenance = payload.get("provenance", {})
         if not isinstance(provenance, dict):
             raise ProfileContractError("profile config provenance must be a mapping")
+        claim_model = payload.get("claim_model")
+        if claim_model is not None:
+            if contract_version != "3.0" or not isinstance(claim_model, dict):
+                raise ProfileContractError(
+                    "profile config claim_model requires contract 3.0 and a mapping"
+                )
+            configured_claim_model = claim_model
     elif profile != "lite":
         raise ProfileContractError(f"--profile-config is required for {profile}")
     merged = {
@@ -457,6 +466,13 @@ def load_contract(
     if contract_version == "3.0":
         persisted = _load_yaml(repo_root / "governance/gate-contracts.yml")
         persisted_claim_model = persisted.get("claim_model")
+        if configured_claim_model is not None and isinstance(persisted_claim_model, dict):
+            if configured_claim_model != persisted_claim_model:
+                raise ProfileContractError(
+                    "profile config claim_model cannot replace existing canonical claim_model"
+                )
+        elif configured_claim_model is not None:
+            persisted_claim_model = configured_claim_model
         if not isinstance(persisted_claim_model, dict):
             raise ProfileContractError("profile contract 3.0 requires claim_model")
     return {
@@ -549,6 +565,18 @@ def apply_scaffold_requirements(
     acceptance = requirements["claims"]["required_suites_green"]
     if not acceptance:
         acceptance = requirements["claims"]["workitems_closed"]
+    if contract.get("profile_contract_version") == "3.0":
+        claim_model = contract.get("claim_model")
+        if not isinstance(claim_model, dict):
+            raise ProfileContractError("profile contract 3.0 requires claim_model")
+        receipt_gates = receipt_producing_legacy_gates(
+            parse_claim_model({"claim_model": claim_model, "gates": contract["gates"]})
+        )
+        acceptance = [gate for gate in acceptance if gate in receipt_gates]
+        if not acceptance:
+            raise ProfileContractError(
+                "profile contract 3.0 workitems require receipt-producing acceptance evidence"
+            )
     for workitem in workitems.get("workitems", []):
         if isinstance(workitem, dict):
             workitem["acceptance_evidence"] = acceptance

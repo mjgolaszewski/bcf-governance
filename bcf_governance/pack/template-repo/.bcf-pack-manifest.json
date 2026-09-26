@@ -102,6 +102,10 @@
       "operation": "copy",
       "sha256": "24f06087b0800b85f515bf9d51dd8e6ce707ae7d21e3655b597b936c9b9c5186"
     },
+    "governance/ci-runtime.yml": {
+      "operation": "copy",
+      "sha256": "bf89c746ed11595eee0f979d36b338a704157457e3e68d3adeb8c28ab3ad1fe9"
+    },
     "governance/evidence-policy.yml": {
       "operation": "generate",
       "sha256": "4608f9e8b4a06dc3bf6d2262cfa93e72cd3b5e7ca9d4b35547bf3d886f61e4f0"
@@ -568,7 +572,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_defaults.py": {
       "operation": "copy",
-      "sha256": "27dfdcd20405f36a4bc8d409258aa0c991b88a1dfe9fca3847190122079cdc3b"
+      "sha256": "502c2b10776f2f1ffe5fadb0d9f6a830ebd4f379b9298916d362c91a2c5a1c09"
     },
     "scripts/_bcf_runtime/ci_graph_diagnostics.py": {
       "operation": "copy",
@@ -682,6 +686,10 @@
       "operation": "copy",
       "sha256": "0c4e0ad747ab74b00b39f75d66f30faf335374751a5a80420e7f119c2e0d6acf"
     },
+    "scripts/_bcf_runtime/evidence_modes.py": {
+      "operation": "copy",
+      "sha256": "d1457a5339a5c7bc425e11446b6ccef383ecc1e3c09ecd80d5a3d0739c7d92e5"
+    },
     "scripts/_bcf_runtime/evidence_planning.py": {
       "operation": "copy",
       "sha256": "e805af2ef376d9275a859bb17047ee9749a2d32cf34b83c238ae44e0b773039e"
@@ -701,6 +709,10 @@
     "scripts/_bcf_runtime/evidence_sessions.py": {
       "operation": "copy",
       "sha256": "b61e83dc92173cc39dd6eed895797305c1c74c415406de551dd1940ccff2df58"
+    },
+    "scripts/_bcf_runtime/evidence_shards.py": {
+      "operation": "copy",
+      "sha256": "29f5d38e9e11bac82ead5c07ccc3a3bac60e384461e83a6bacc1f7133a77f069"
     },
     "scripts/_bcf_runtime/evidence_storage_archives.py": {
       "operation": "copy",
@@ -820,7 +832,7 @@
     },
     "scripts/_bcf_runtime/governance_profiles.py": {
       "operation": "copy",
-      "sha256": "f67a8e1d468039db937dc1a9382e473d8d3b17ec5054318da9a77ffcb51a4771"
+      "sha256": "26c60ae8ce78337ac078242ee8b31e8dc21b1908c817f680bbde1eb0980f1085"
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
@@ -932,7 +944,7 @@
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",
-      "sha256": "bdd5907dec0cf71ee7d3f1733752c64c117426d0965b09621c8518333132cbb5"
+      "sha256": "3eb00c77087f1195c32340990319ed0a67b2a6d844011beb13a9afadd08b09be"
     },
     "scripts/_bcf_runtime/profile_governance.py": {
       "operation": "copy",
@@ -1142,6 +1154,10 @@
       "operation": "copy",
       "sha256": "010c9bb281c2e6ca9e5142073e51ae47979b25c436e89b0913df0fce34fd453b"
     },
+    "scripts/capture_governance_shard.py": {
+      "operation": "copy",
+      "sha256": "2e6c4593bb411fddcc05fa8df2aa7175af2ec6f6431e8f621670f3731bb65d40"
+    },
     "scripts/check_governance_exposure.py": {
       "operation": "copy",
       "sha256": "cac23e4156f7a2c85e30058ac2e73b829ca6660d77d64538c26a6e614e53d0f6"
@@ -1173,6 +1189,10 @@
     "scripts/profile_governance.py": {
       "operation": "copy",
       "sha256": "87c80b65909c047bc966cc925ea32cf7e895bf33f8841c5db762412dbbed7ce2"
+    },
+    "scripts/restore_evidence_modes.py": {
+      "operation": "copy",
+      "sha256": "5dff800dbccb3328d4683169385dc0d8bac5b10e2709860d4a75f21d66676c38"
     },
     "scripts/scaffold_governance_artifacts.py": {
       "operation": "copy",
