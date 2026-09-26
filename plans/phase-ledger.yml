@@ -22,7 +22,19 @@ hotfix_lane:
     lite: {allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]}
     full: {required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]}
   open_records: []
-  remediation_history: []
+  remediation_history:
+  - id: P28-HF01
+    mode: full
+    recorded_at_utc: '2026-09-26T00:00:00Z'
+    action: Require bounded consecutive exact GitHub Actions artifact inventories so concurrent unrelated trusted uploads restart provider observation without weakening persistent-drift rejection.
+    remediated_in_phase: P28
+    hotfix_log: phases/phase-28-hotfix01.yml
+    canonical_artifacts: [bcf_governance/tooling/ci_github_artifact_inventory.py, tests/test_ci_github_controller.py, audits/bcf-2.1-p28-canonical-projection.yml]
+    local_validation:
+    - governance YAML validation passed
+    - 168 focused structural controller and provider tests passed
+    - canonical fixed-point reconciliation converged
+    - canonical full test suite passed on final committed bytes
 operator_requirements_choices_disambiguations:
 - {type: decision, statement: all governance memory specs plans workitem ledgers and phase logs remain YAML-native}
 - {type: security_boundary, statement: candidate code executes only on disposable workers and never on a persistent trusted control-plane worker}
