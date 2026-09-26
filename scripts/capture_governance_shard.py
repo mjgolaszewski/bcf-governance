@@ -1,5 +1,16 @@
-from bcf_governance.tooling.evidence_shards import main
+"""Compatibility wrapper for the packaged BCF evidence-shard implementation."""
+
+import sys
+from pathlib import Path
+
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from bcf_governance.tooling import evidence_shards as _implementation  # noqa: E402
+
+globals().update(
+    {name: getattr(_implementation, name) for name in dir(_implementation) if name != "__name__"}
+)
 
 
 if __name__ == "__main__":
-    main()
+    _implementation.main()
