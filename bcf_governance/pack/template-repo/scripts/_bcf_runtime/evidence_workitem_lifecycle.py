@@ -103,6 +103,32 @@ def validate_bounded_target_successor(
         )
 
 
+def validate_bounded_target_authored_ready(
+    repo_root: Path, target_id: str
+) -> None:
+    """Reject a prospectively impossible bounded target before evidence allocation."""
+
+    ledger = yaml.safe_load(
+        (repo_root / "plans/phase-ledger.yml").read_text(encoding="utf-8")
+    )
+    active = ledger.get("active_phase") if isinstance(ledger, dict) else None
+    workitems_path = active.get("workitems") if isinstance(active, dict) else None
+    if not isinstance(workitems_path, str):
+        raise WorkitemContractError("active workitem ledger is missing")
+    payload = yaml.safe_load((repo_root / workitems_path).read_text(encoding="utf-8"))
+    entries = payload.get("workitems") if isinstance(payload, dict) else None
+    if not isinstance(entries, list) or not all(isinstance(item, dict) for item in entries):
+        raise WorkitemContractError("active workitem entries are invalid")
+    validate_workitem_dependencies(entries)
+    target = next((item for item in entries if item.get("id") == target_id), None)
+    if target is None:
+        raise WorkitemContractError(f"bounded workitem target {target_id} is unknown")
+    if target.get("status") != "DONE":
+        raise WorkitemContractError(
+            f"bounded workitem target {target_id} is not authored DONE"
+        )
+
+
 def _authored_effective_state(authored_state: str) -> str:
     return {
         "DONE": "completed",

@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: 25ca1178de8f16ed356f2498eb62cb0ee7430f7a7a619fdeebdcb8c0564aef71
-  after_sha256: 9b3f001c7d8dcb044cb3207df22e0ae5da6cae20cf0235158c8ded6b0c4968db
+  after_sha256: 8c0a2a3c71d88d96398167b11a1d3ed67fbecfb8c55c59667ec051f774f76dc0
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: historical
@@ -60,7 +60,7 @@ documents:
   canonical_topic_owner: README.md
   topic_role: canonical
   before_sha256: 2f4035d39d1eb68c0f1ac528f90efa274cec256e3a0cf7ae66f361b23e094831
-  after_sha256: 0e75d9bf0090b1cfde50ca20193dfe3435c0f1991796e7c7bdc9676639fdcae2
+  after_sha256: f872fa289b1e26b0c32a42814ef4ad68ff9c9d00df4634ded72ca68ce1d7854b
   findings:
   - updated the mechanically checked 2.0.0 correction-release package example
   disposition: revised
@@ -114,7 +114,7 @@ documents:
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
   before_sha256: d803cd6698d5012b014271ffdd8f357d2ab88e9833025a96b0b256d1f7223356
-  after_sha256: 194e855349cf75d2e66f8399e0c16be25444410f6dee14ab9247948ad4f2eb4e
+  after_sha256: 0f1f6ed7145c99bec043ab7b9528bd28c34813f2daa2d8ef5fd8e95c5920e0fa
   findings:
   - documented TypeScript adoption and lock compatibility, explicit routing eligibility, fallback, and provider label limits
   disposition: revised
@@ -195,7 +195,7 @@ documents:
   canonical_topic_owner: template-repo/docs/OPERATIONS.md
   topic_role: canonical
   before_sha256: 422099796f6d4b53024abd8bf3470033003ac29874a9bbcc689c3625c8e51e7b
-  after_sha256: 304101ba848691b90c77c06651cc19ac8dc96b69c3ba9f1fb0f44ca3798d2e8b
+  after_sha256: c9ab95af33dab4f6abee7e9939187c562914b443d4217bd794d621ca82f74f6d
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: revised

@@ -426,6 +426,18 @@ def resolve_effective_controller(
     }
 
 
+def effective_controller_authority(
+    api: GitHubAPI, *, repository: str
+) -> dict[str, str]:
+    """Project the exact provider-composed identity accepted by preflight."""
+
+    pin = resolve_effective_controller(api, repository=repository)["pin"]
+    return {
+        "controller_commit_sha": pin["BCF_BOOTSTRAP_COMMIT_SHA"],
+        "controller_bundle_sha256": pin["BCF_BOOTSTRAP_WHEEL_SHA256"],
+    }
+
+
 def authorize_transition(
     api: GitHubAPI,
     *,

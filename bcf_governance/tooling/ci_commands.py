@@ -21,6 +21,7 @@ from .ci_github_api import GitHubAPI
 from .ci_graph_contracts import CIGraphError
 from .ci_graph_render import apply_ci_graph, check_ci_graph
 from .ci_authority_pins import CIAuthorityPinError, pin_workflow_authority
+from .ci_authority_submit import submit_candidate
 from .ci_github_identity import GitHubControllerError
 from .ci_github_cli_io import github_output, github_output_path
 from .ci_self_controller import project_self_controller_pin
@@ -117,12 +118,25 @@ def _parser() -> argparse.ArgumentParser:
     )
     prospective.add_argument("--repo-root", type=Path, default=Path.cwd())
     prospective.add_argument("--remote", default="origin")
+    prospective.add_argument(
+        "--repository",
+        help="resolve the provider-authenticated effective controller for this repository",
+    )
     prospective.add_argument("--python", type=Path, default=Path(sys.executable))
     prospective.add_argument("--intent", choices=("pr", "workitem", "closure"), required=True)
     prospective.add_argument("--target")
     prospective.add_argument("--subject-commit", required=True)
     prospective.add_argument("--subject-tree", required=True)
     prospective.add_argument("--format", choices=("text", "json"), default="json")
+    submit = subparsers.add_parser(
+        "submit",
+        help="run the canonical prospective train and push only its exact proved commit",
+    )
+    submit.add_argument("--repo-root", type=Path, default=Path.cwd())
+    submit.add_argument("--remote", default="origin")
+    submit.add_argument("--python", type=Path, default=Path(sys.executable))
+    submit.add_argument("--intent", choices=("workitem", "closure"), required=True)
+    submit.add_argument("--format", choices=("text", "json"), default="json")
     runtime = subparsers.add_parser("runtime-check", help="Check capacity before heavy CI.")
     runtime.add_argument("--repo-root", type=Path, default=Path.cwd())
     runtime.add_argument("--contract", type=Path, required=True)
@@ -263,6 +277,11 @@ def main(argv: list[str] | None = None) -> None:
             _print(report.as_dict(), args.format)
             return
         if args.operation == "prospective-train":
+            provider_api = None
+            if args.repository is not None:
+                from .ci_github_controller import environment_api
+
+                provider_api = environment_api()
             result = run_prospective_train(
                 args.repo_root,
                 semantic_intent=args.intent,
@@ -271,6 +290,20 @@ def main(argv: list[str] | None = None) -> None:
                 subject_tree=args.subject_tree,
                 remote=args.remote,
                 python_executable=args.python,
+                repository=args.repository,
+                provider_api=provider_api,
+            )
+            _print(result, args.format)
+            return
+        if args.operation == "submit":
+            from .ci_github_controller import environment_api
+
+            result = submit_candidate(
+                args.repo_root,
+                semantic_intent=args.intent,
+                python_executable=args.python,
+                provider_api=environment_api(),
+                remote=args.remote,
             )
             _print(result, args.format)
             return
