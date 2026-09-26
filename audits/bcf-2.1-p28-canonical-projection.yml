@@ -70,3 +70,20 @@ non_escalation:
 - protection omission policy drift mixed runner state wrong artifact run attempt subject or replay fails closed
 - active provider custody remains non-repository state and cannot broaden bounded certification
 - release authority remains absent
+post_merge_hotfix:
+  id: P28-HF01
+  failing_run: {workflow: bcf/automation-changelog-reconciler, run_id: '36218038519', run_attempt: '1', job_id: '108337832851'}
+  exact_subject: {commit_sha: 98716225814b305658060e5bc5b2589222ff1f17, tree_sha: 3c9e483e9d30d0484309850b538a383e7c5dd47b}
+  first_causal_failure: repository artifact inventory changed during pagination
+  concurrent_event: trusted finalizer 36218038537/1 uploaded its exact-main certification bundle during the repository artifact read
+  classification: provider_read_concurrency_defect
+  correction:
+  - require two consecutive exact canonical inventories before returning provider artifacts
+  - restart only bounded reads that observe concurrent inventory drift
+  - reject persistent churn malformed identities incomplete pages duplicate identities and same-count replacement
+  preserved:
+  - exact provider artifact and transition receipt authentication
+  - installed-N authorization of N+1
+  - two-runner bootstrap probe and promotion
+  - noncertifying pending-rotation topology
+  - release authority absence

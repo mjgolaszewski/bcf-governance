@@ -488,7 +488,7 @@
     },
     "scripts/_bcf_runtime/ci_github_artifact_inventory.py": {
       "operation": "copy",
-      "sha256": "8eadc3f8c3bfcc30034e62b5e47e54d1e1ab50891bbd488c464eaa9ed51cff3d"
+      "sha256": "2e4c9a6a4f6087bf61a111e3c742c7e241373bfea8a254385ff24b81bb4e712b"
     },
     "scripts/_bcf_runtime/ci_github_artifacts.py": {
       "operation": "copy",

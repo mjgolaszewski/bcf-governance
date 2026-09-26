@@ -1,5 +1,8 @@
 # Changelog
 
+- Stabilize exact GitHub Actions artifact inventory snapshots across concurrent
+  trusted uploads with bounded retry while persistent churn remains fail-closed.
+
 - Project typed opt-in trusted-controller custody, provider-authenticated one-PR
   routine rotation, independent two-runner verification, and post-activation
   certification through canonical adopter install/adopt without affecting ordinary adopters.

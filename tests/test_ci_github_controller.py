@@ -2258,6 +2258,7 @@ def test_break_glass_api_reads_are_exact_and_repository_scoped() -> None:
         "/users/owner",
         "/repos/owner/repo/collaborators/owner/permission",
         "/repos/owner/repo/actions/artifacts?per_page=100&page=1&name=recovery-build-abc",
+        "/repos/owner/repo/actions/artifacts?per_page=100&page=1&name=recovery-build-abc",
     ]
     with pytest.raises(GitHubAPIError, match="artifact name filter is unsafe"):
         api.repository_artifacts("owner/repo", name="../artifact")
@@ -2286,7 +2287,77 @@ def test_repository_artifact_inventory_is_complete_across_authenticated_pages() 
     assert api.paths == [
         "/repos/owner/repo/actions/artifacts?per_page=100&page=1",
         "/repos/owner/repo/actions/artifacts?per_page=100&page=2",
+        "/repos/owner/repo/actions/artifacts?per_page=100&page=1",
+        "/repos/owner/repo/actions/artifacts?per_page=100&page=2",
     ]
+
+
+def test_repository_artifact_inventory_restarts_after_concurrent_upload() -> None:
+    class ConcurrentUploadAPI(GitHubAPI):
+        def __init__(self) -> None:
+            super().__init__(token="test")
+            self.request_count = 0
+
+        def _request(self, method: str, path: str, *, payload=None):  # type: ignore[no-untyped-def]
+            self.request_count += 1
+            page = 2 if "page=2" in path else 1
+            if self.request_count <= 2:
+                total = 101 if page == 1 else 102
+            else:
+                total = 102
+            start = 101 if page == 2 else 1
+            stop = 103 if page == 2 else 101
+            return {
+                "total_count": total,
+                "artifacts": [{"id": value} for value in range(start, stop)],
+            }
+
+    api = ConcurrentUploadAPI()
+    artifacts = api.repository_artifacts("owner/repo")
+
+    assert [artifact["id"] for artifact in artifacts] == list(range(1, 103))
+    assert api.request_count == 6
+
+
+def test_repository_artifact_inventory_requires_consecutive_exact_snapshots() -> None:
+    class SameCountReplacementAPI(GitHubAPI):
+        def __init__(self) -> None:
+            super().__init__(token="test")
+            self.snapshot = 0
+
+        def _request(self, method: str, path: str, *, payload=None):  # type: ignore[no-untyped-def]
+            if "page=1" in path:
+                self.snapshot += 1
+            first = 1 if self.snapshot == 1 else 2
+            page = 2 if "page=2" in path else 1
+            start = first + 100 if page == 2 else first
+            stop = first + 101 if page == 2 else first + 100
+            return {
+                "total_count": 101,
+                "artifacts": [{"id": value} for value in range(start, stop)],
+            }
+
+    artifacts = SameCountReplacementAPI().repository_artifacts("owner/repo")
+
+    assert [artifact["id"] for artifact in artifacts] == list(range(2, 103))
+
+
+def test_repository_artifact_inventory_rejects_persistent_concurrent_churn() -> None:
+    class PersistentChurnAPI(GitHubAPI):
+        def _request(self, method: str, path: str, *, payload=None):  # type: ignore[no-untyped-def]
+            page = 2 if "page=2" in path else 1
+            return {
+                "total_count": 101 if page == 1 else 102,
+                "artifacts": [
+                    {"id": value}
+                    for value in range(101, 103)
+                    if page == 2
+                ]
+                or [{"id": value} for value in range(1, 101)],
+            }
+
+    with pytest.raises(GitHubAPIError, match="did not stabilize"):
+        PersistentChurnAPI(token="test").repository_artifacts("owner/repo")
 
 
 @pytest.mark.parametrize("failure", ["changed-total", "missing", "duplicate"])
