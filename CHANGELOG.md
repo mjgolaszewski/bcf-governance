@@ -36,6 +36,8 @@ BCF 2.1 is the first published 2.x release. The certified but unpublished
 
 ### Changed
 
+- Required protected merge commits whenever workflow authority names a
+  pre-merge definition commit, preserving exact Git-history custody after merge.
 - Made governance the canonical steady-state producer and composed release
   assurance from authenticated development evidence plus independent artifact
   construction and verification. The retired package producer is not required.
