@@ -238,7 +238,6 @@ def build_trusted_release_receipt(
     output_path: Path,
     certification_provider_artifact: dict[str, Any],
     build_provider_artifact: dict[str, Any],
-    verification_provider_artifact: dict[str, Any],
 ) -> ReleaseReceipt:
     """Build the sole v1.1 release receipt from verified, acyclic role outputs."""
 
@@ -298,12 +297,11 @@ def build_trusted_release_receipt(
     verifier = verification.get("verifier")
     if (
         not isinstance(verifier, dict)
-        or str(verification_provider_artifact.get("run_id"))
-        != str(verifier.get("run_id"))
-        or int(verification_provider_artifact.get("run_attempt", 0))
+        or str(collector_identity.get("run_id")) != str(verifier.get("run_id"))
+        or int(collector_identity.get("run_attempt", 0))
         != int(verifier.get("run_attempt", 0))
     ):
-        raise ReleaseReceiptError("verification provider artifact does not match verifier")
+        raise ReleaseReceiptError("verification does not match its active collector")
     release_paths = tuple(release_artifacts)
     if not release_paths or len({path.name for path in release_paths}) != len(release_paths):
         raise ReleaseReceiptError("trusted release asset inventory is empty or duplicated")
@@ -375,8 +373,8 @@ def build_trusted_release_receipt(
             "provider_artifacts": {
                 "certification": certification_provider_artifact,
                 "build": build_provider_artifact,
-                "verification": verification_provider_artifact,
             },
+            "verification_execution": verifier,
             "controller": controller,
             "dependency_closure": dependency,
             "release_artifacts": materials[5:],

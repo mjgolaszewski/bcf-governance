@@ -160,6 +160,19 @@ def test_verifier_separates_token_free_runtime_from_provider_authentication() ->
     assert upload["condition"] == "always-step"
 
 
+def test_release_collector_recomputes_verification_before_emitting_receipt() -> None:
+    collect = _job("release-verifier", "collect")
+    components = collect["executor"]["components"]
+    assert components.index("authenticate-release-verification") < components.index(
+        "collect-release"
+    ) < components.index("upload-release-receipt")
+    compiled = validate_ci_graph(REPO_ROOT)
+    assert "release-verification" not in compiled.graph["artifacts"]
+    assert "--verification-artifact-name" not in " ".join(
+        compiled.commands["collect-release"]["argv"]
+    )
+
+
 def test_verifier_controller_is_bound_to_the_triggering_authorization_attempt() -> None:
     compiled = validate_ci_graph(REPO_ROOT)
     download = compiled.graph["step_components"][

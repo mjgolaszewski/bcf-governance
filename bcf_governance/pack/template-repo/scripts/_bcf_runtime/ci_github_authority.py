@@ -142,3 +142,47 @@ def authenticate_role_job_inventory(
     if require_success and any(str(value.get("conclusion")) != "success" for value in jobs):
         raise GitHubControllerError("privileged workflow job inventory is not successful")
     return identity, jobs
+
+
+def authenticate_active_role_job_inventory(
+    api: GitHubAPI,
+    *,
+    repository: str,
+    main: MainIdentity,
+    authority: dict[str, Any],
+    role: str,
+    run_id: object,
+    run_attempt: object,
+):
+    """Authenticate an exact workflow inventory while its sole collector is active."""
+
+    identity, jobs = authenticate_role_job_inventory(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        role=role,
+        run_id=run_id,
+        run_attempt=run_attempt,
+        require_success=False,
+        require_terminal=False,
+    )
+    expected = {
+        str(value["job_id"]) for value in authority_role_jobs(authority, role)
+    }
+    observed = {str(value.get("name", "")) for value in jobs}
+    active = [
+        value
+        for value in jobs
+        if value.get("status") == "in_progress" and value.get("conclusion") is None
+    ]
+    completed = [
+        value
+        for value in jobs
+        if value.get("status") == "completed" and value.get("conclusion") == "success"
+    ]
+    if observed != expected or len(active) != 1 or len(completed) != len(jobs) - 1:
+        raise GitHubControllerError(
+            "active privileged workflow requires one collector and successful prerequisites"
+        )
+    return identity, jobs

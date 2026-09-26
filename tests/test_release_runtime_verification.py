@@ -277,7 +277,6 @@ def _release_cli_argv(operation: str, root: Path) -> list[str]:
             "--runtime-report", str(root / "runtime.json"),
             "--runtime-evidence", str(root / "runtime.log"), *common_assets,
             "--output", str(root / "receipt.json"),
-            "--verification-artifact-name", "release-verification",
         ],
         "inspect": [
             "--repository", "owner/repo", "--tag", "v0.8.0", "--commit", "a" * 40,
@@ -311,6 +310,8 @@ def _canonical_release_cli_argv(operation: str, root: Path) -> list[str] | None:
             "${{ steps.resolve.outputs.receipt_provider_digest }}": "sha256:" + "b" * 64,
             "${{ github.event.workflow_run.id }}": "31",
             "${{ github.event.workflow_run.run_attempt }}": "2",
+            "${{ github.run_id }}": "41",
+            "${{ github.run_attempt }}": "3",
             "{python}": str(root / "python"),
         }
         resolved = []
