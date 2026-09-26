@@ -54,6 +54,8 @@ execution_evidence:
   - the packaged bcf-controller-rotation extension remains canonical opt-in adopter product and cannot be classified as a self overlay
   - P28-P0-02 was authenticated as closed for merge subject 21518ed35563f10b3a09e16adbd6131549830eef by exact-main 36235288460/1, trusted finalizer 36235570350/1, and bcf/workitem-certification success
   - P28-P0-03 binds nine required semantic domains to exact canonical owners, self proof, real-installed-adopter proof, and attack proof nodes
+  - P28-P0-03 closed through exact-main 36247434961/1, trusted finalizer 36247747167/1, and authenticated bounded publication with 16 reusable groups and zero semantic re-execution
+  - P28-P0-04 corrects prospective lifecycle observation to use the provider-authenticated effective controller; the source-policy pin remains a normalization baseline and is not the active identity after provider transitions
   - the representative trusted-controller adopter is created through the real installer and adoption path, receives byte-exact canonical semantic owners, and receives no declared self-authority surface
   - parity validation fails closed on missing domains, owner drift, missing proof nodes, non-installed adopter claims, and missing attack coverage
 closeout_requirements:
@@ -88,4 +90,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify P28-P0-03 through ordinary protection and exact-main bounded truth before beginning empirical benchmarks and product-simplicity measurement
+- complete P28-P0-04 empirical benchmarks and product-simplicity measurement without reopening certified parity semantics

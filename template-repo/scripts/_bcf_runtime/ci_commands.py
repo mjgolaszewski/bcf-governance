@@ -117,6 +117,10 @@ def _parser() -> argparse.ArgumentParser:
     )
     prospective.add_argument("--repo-root", type=Path, default=Path.cwd())
     prospective.add_argument("--remote", default="origin")
+    prospective.add_argument(
+        "--repository",
+        help="resolve the provider-authenticated effective controller for this repository",
+    )
     prospective.add_argument("--python", type=Path, default=Path(sys.executable))
     prospective.add_argument("--intent", choices=("pr", "workitem", "closure"), required=True)
     prospective.add_argument("--target")
@@ -263,6 +267,11 @@ def main(argv: list[str] | None = None) -> None:
             _print(report.as_dict(), args.format)
             return
         if args.operation == "prospective-train":
+            provider_api = None
+            if args.repository is not None:
+                from .ci_github_controller import environment_api
+
+                provider_api = environment_api()
             result = run_prospective_train(
                 args.repo_root,
                 semantic_intent=args.intent,
@@ -271,6 +280,8 @@ def main(argv: list[str] | None = None) -> None:
                 subject_tree=args.subject_tree,
                 remote=args.remote,
                 python_executable=args.python,
+                repository=args.repository,
+                provider_api=provider_api,
             )
             _print(result, args.format)
             return

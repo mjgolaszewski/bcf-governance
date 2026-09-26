@@ -14,8 +14,6 @@ import time
 from typing import Any, Callable, Iterator, Mapping
 from contextlib import contextmanager
 
-from jsonschema import Draft202012Validator
-
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
 from .ci_graph_execution import exact_main_evaluation
 from .ci_authority_decisions import status_context_for_evaluation
@@ -33,6 +31,13 @@ from .evidence_sessions import allocate_session, local_producer_identity
 from .governance_evidence import capture_gate
 from .governance_truth import TruthfulnessError, derive_truth
 from .preflight import PreflightError, run_preflight
+from .prospective_telemetry import (
+    ProspectiveTelemetryError,
+    elapsed_ms as _elapsed_ms,
+    validate_train_telemetry,
+)
+from .ci_github_api import GitHubAPI
+from .routine_controller_provider import effective_controller_authority
 from .routine_controller_rotation import (
     ROTATION_POLICY_PATHS,
     alternate_policy_lane_contract,
@@ -365,47 +370,6 @@ def _capture_planned_evidence(
     return observations
 
 
-def _elapsed_ms(started_ns: int) -> int:
-    return max(0, (time.monotonic_ns() - started_ns) // 1_000_000)
-
-
-def _validate_train_telemetry(repo_root: Path, telemetry: dict[str, Any]) -> None:
-    expected_stages = {
-        "fixed_point", "planning", "reuse", "setup", "producers",
-        "positive_tests", "controls", "normalization", "truth",
-        "finalization", "publication",
-    }
-    observed_stages = [
-        str(item.get("stage")) for item in telemetry.get("measurements", ())
-        if isinstance(item, dict)
-    ]
-    if len(observed_stages) != len(set(observed_stages)) or set(observed_stages) != expected_stages:
-        raise ProspectiveValidationError(
-            "prospective train telemetry stage inventory is not exact"
-        )
-    producers = [
-        str(item.get("producer")) for item in telemetry.get("producer_observations", ())
-        if isinstance(item, dict)
-    ]
-    if len(producers) != len(set(producers)):
-        raise ProspectiveValidationError(
-            "prospective train telemetry producer inventory is not unique"
-        )
-    schema = json.loads(
-        (repo_root / "schemas/prospective-train-telemetry.schema.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    errors = sorted(
-        Draft202012Validator(schema).iter_errors(telemetry),
-        key=lambda item: list(item.path),
-    )
-    if errors:
-        raise ProspectiveValidationError(
-            "prospective train telemetry is invalid: " + errors[0].message
-        )
-
-
 def _require_truth(report: Mapping[str, Any], *, boundary: str) -> dict[str, Any]:
     if report.get("status") != "pass":
         detail = ", ".join(str(value) for value in report.get("issues") or ())
@@ -413,6 +377,13 @@ def _require_truth(report: Mapping[str, Any], *, boundary: str) -> dict[str, Any
             f"{boundary} rejected candidate: {detail or 'truth failed'}"
         )
     return dict(report)
+
+
+def _validate_train_telemetry(repo_root: Path, telemetry: dict[str, Any]) -> None:
+    try:
+        validate_train_telemetry(repo_root, telemetry)
+    except ProspectiveTelemetryError as exc:
+        raise ProspectiveValidationError(str(exc)) from exc
 
 
 def _run_prospective_train(
@@ -425,6 +396,7 @@ def _run_prospective_train(
     remote: str = "origin",
     python_executable: Path,
     execute_evidence: bool = True,
+    controller_authority: Mapping[str, Any] | None = None,
     runner: Runner = _run,
 ) -> dict[str, Any]:
     """Walk every knowable boundary while preserving provider-required authority."""
@@ -510,6 +482,7 @@ def _run_prospective_train(
                     mode="pr",
                     python_executable=python_executable,
                     evaluation_mode="pr",
+                    transported_authority=controller_authority,
                 )
                 preflight_duration = _elapsed_ms(preflight_started)
             except (PreflightError, EvidenceError) as exc:
@@ -551,6 +524,10 @@ def _run_prospective_train(
                 "transition_class": transition_class,
                 "transition_requirement": transition_requirement,
                 "policy_identity": policy_identity,
+                "effective_controller_source": (
+                    "provider_authenticated" if controller_authority is not None
+                    else "source_policy"
+                ),
                 **(
                     {"alternate_lane": alternate_policy_lane_contract()}
                     if transition_requirement == "alternate_lane_required"
@@ -771,9 +748,21 @@ def run_prospective_train(
     subject_tree: str,
     remote: str = "origin",
     python_executable: Path,
+    repository: str | None = None,
+    provider_api: GitHubAPI | None = None,
     runner: Runner = _run,
 ) -> dict[str, Any]:
     """Execute the complete locally knowable chain; no partial public mode exists."""
+
+    controller_authority = None
+    if repository is not None:
+        if provider_api is None:
+            raise ProspectiveValidationError(
+                "provider-authenticated prospective validation requires a provider API"
+            )
+        controller_authority = effective_controller_authority(
+            provider_api, repository=repository
+        )
 
     return _run_prospective_train(
         repo_root,
@@ -784,5 +773,6 @@ def run_prospective_train(
         remote=remote,
         python_executable=python_executable,
         execute_evidence=True,
+        controller_authority=controller_authority,
         runner=runner,
     )

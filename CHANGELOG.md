@@ -1,5 +1,8 @@
 # Changelog
 
+- Bind the prospective train's controller-compatibility decision to the canonical
+  provider-authenticated effective controller instead of the normalized source baseline.
+
 - Bind closure, reuse, invalidation, controls, planning, timing, fixed-point,
   controller-transition, and scope semantics to exact self/adopter/attack proofs.
 

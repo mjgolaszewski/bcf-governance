@@ -172,6 +172,71 @@ def test_deterministic_walk_orders_reconcile_before_preflight_and_never_claims_a
     }
 
 
+def test_provider_effective_controller_is_mechanically_bound_to_prospective_preflight(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    pin = {
+        "BCF_BOOTSTRAP_COMMIT_SHA": "a" * 40,
+        "BCF_BOOTSTRAP_WHEEL_SHA256": "b" * 64,
+    }
+    monkeypatch.setattr(
+        prospective,
+        "effective_controller_authority",
+        lambda api, *, repository: {
+            "controller_commit_sha": pin["BCF_BOOTSTRAP_COMMIT_SHA"],
+            "controller_bundle_sha256": pin["BCF_BOOTSTRAP_WHEEL_SHA256"],
+        },
+    )
+    captured: dict[str, object] = {}
+
+    def train(*_args: object, **kwargs: object) -> dict[str, object]:
+        captured.update(kwargs)
+        return {"status": "pass"}
+
+    monkeypatch.setattr(prospective, "_run_prospective_train", train)
+    result = prospective.run_prospective_train(
+        tmp_path,
+        **TRAIN,
+        python_executable=Path("/python"),
+        repository="owner/repo",
+        provider_api=object(),  # type: ignore[arg-type]
+    )
+    assert result == {"status": "pass"}
+    assert captured["controller_authority"] == {
+        "controller_commit_sha": "a" * 40,
+        "controller_bundle_sha256": "b" * 64,
+    }
+
+
+def test_prospective_preflight_uses_exact_provider_effective_controller(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    trace: list[str] = []
+    _front_door(monkeypatch, trace)
+    authority = {
+        "controller_commit_sha": "a" * 40,
+        "controller_bundle_sha256": "b" * 64,
+    }
+
+    def preflight(*_args: object, **kwargs: object) -> dict[str, object]:
+        assert kwargs["transported_authority"] == authority
+        return {"status": "pass", "self_controller": 24}
+
+    monkeypatch.setattr(prospective, "run_preflight", preflight)
+    report = prospective._run_prospective_train(
+        tmp_path,
+        **TRAIN,
+        python_executable=Path("/python"),
+        execute_evidence=False,
+        controller_authority=authority,
+        runner=_runner,
+    )
+    compatibility = report["boundaries"][1]
+    assert compatibility["controller_state"] == "current"
+    assert compatibility["transition_requirement"] == "no_transition"
+    assert compatibility["effective_controller_source"] == "provider_authenticated"
+
+
 def test_stale_projection_fails_before_preflight_or_evidence(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
