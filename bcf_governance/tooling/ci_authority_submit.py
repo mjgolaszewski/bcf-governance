@@ -26,6 +26,10 @@ Runner = Callable[..., Any]
 _SAFE_BRANCH = re.compile(r"(?!.*\.\.)(?!.*@\{)[A-Za-z0-9][A-Za-z0-9._/-]*")
 
 
+def _command_error(result: Any) -> str:
+    return result.stderr.strip() or result.stdout.strip() or "git push failed"
+
+
 def _canonical_inputs(repo_root: Path) -> tuple[str, str | None, str]:
     evaluation = exact_main_evaluation(validate_ci_graph(repo_root).workflows)
     protection = load_protection(repo_root)
@@ -51,8 +55,9 @@ def _push_exact_candidate(
         cwd=repo_root,
     )
     if result.returncode:
-        detail = result.stderr.strip() or result.stdout.strip() or "git push failed"
-        raise ProspectiveValidationError(f"exact candidate push failed: {detail}")
+        raise ProspectiveValidationError(
+            f"exact candidate push failed: {_command_error(result)}"
+        )
 
 
 def submit_candidate(
