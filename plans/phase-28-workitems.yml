@@ -25,6 +25,7 @@ workitems:
   status: TODO
   summary: typed narrow self-authority overlays with mechanically enforced non-leakage
   acceptance:
+  - requires-workitem-closure:P28-P0-01
   - typed narrow self-authority overlays identify one exact unique proposition and reject undeclared drift or leakage
   - phase-specific overlay non-leakage results are recorded in the phase log
   acceptance_evidence:
@@ -36,6 +37,7 @@ workitems:
   status: TODO
   summary: representative installed adopter parity and adversarial proof
   acceptance:
+  - requires-workitem-closure:P28-P0-02
   - representative repositories are installed through the real canonical path and prove self-adopter semantic parity
   - equivalent-tree selective-invalidation provenance replay substitution partial-installation supersession and scope attacks fail closed on both paths
   - phase-specific self-adopter parity results are recorded in the phase log
@@ -48,6 +50,7 @@ workitems:
   status: TODO
   summary: empirical self and adopter benchmarks including two consecutive one-PR routine trusted-controller rotations on each applicable path
   acceptance:
+  - requires-workitem-closure:P28-P0-03
   - all-equivalent reuse and selective-invalidation benchmarks report feedback and certification median p95 critical path and proof decisions
   - two consecutive real one-PR routine rotations on each applicable self and installed adopter path use zero bookkeeping PRs and zero manually copied provider identities
   - every agent-facing command concept workflow principal environment handoff and protected transition maps to a unique assurance or unavoidable provider boundary
@@ -61,6 +64,7 @@ workitems:
   status: TODO
   summary: immutable 2.1.0 publication custody terminal truth and certified closeout
   acceptance:
+  - requires-workitem-closure:P28-P0-04
   - canonical version public contracts manifests documentation changelog and editorial custody identify 2.1.0 exact bytes
   - immutable release publication and custody closeout are independently authenticated without rebuilding
   - exact-main terminal P28 truth succeeds before issue and milestone closure

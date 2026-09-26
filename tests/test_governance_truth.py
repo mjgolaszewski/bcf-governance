@@ -18,6 +18,7 @@ from scripts.governance_evidence import attest_bundle
 from bcf_governance.tooling.evidence_planning import build_dependency_manifest
 from bcf_governance.tooling.evidence_workitem_lifecycle import (
     WorkitemContractError,
+    validate_bounded_target_successor,
     validate_workitem_dependencies,
 )
 from bcf_governance.tooling.evaluation_scope import (
@@ -1013,6 +1014,31 @@ def test_workitem_dependency_ambiguity_fails_closed(
 ) -> None:
     with pytest.raises(WorkitemContractError, match=diagnostic):
         validate_workitem_dependencies(entries)
+
+
+def test_bounded_target_must_declare_successor_before_expensive_execution(
+    tmp_path: Path,
+) -> None:
+    _write_yaml(
+        tmp_path / "plans/phase-ledger.yml",
+        {"active_phase": {"workitems": "plans/workitems.yml"}},
+    )
+    workitems = {
+        "workitems": [
+            {"id": "P01-W01", "status": "DONE", "acceptance": []},
+            {"id": "P01-W02", "status": "TODO", "acceptance": []},
+        ]
+    }
+    _write_yaml(tmp_path / "plans/workitems.yml", workitems)
+
+    with pytest.raises(WorkitemContractError, match="would strand unfinished"):
+        validate_bounded_target_successor(tmp_path, "P01-W01")
+
+    workitems["workitems"][1]["acceptance"] = [
+        "requires-workitem-closure:P01-W01"
+    ]
+    _write_yaml(tmp_path / "plans/workitems.yml", workitems)
+    validate_bounded_target_successor(tmp_path, "P01-W01")
 
 
 def test_grouped_v3_finding_uses_one_later_eligible_receipt_for_proof(

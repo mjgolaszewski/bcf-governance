@@ -138,7 +138,7 @@ commands:
     cwd: .
     environment: {}
   exact-main-admit-effective:
-    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, exact-main, admit, --repository, '${{ github.repository }}', --sha, '${{ github.sha }}', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}', --evaluation-mode, closure]
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, exact-main, admit, --repository, '${{ github.repository }}', --sha, '${{ github.sha }}', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}', --evaluation-mode, workitem, --evaluation-target, P28-P0-01]
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
   prior-evidence-effective:
