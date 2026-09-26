@@ -62,7 +62,7 @@
     },
     "docs/OPERATIONS.md": {
       "operation": "copy",
-      "sha256": "304101ba848691b90c77c06651cc19ac8dc96b69c3ba9f1fb0f44ca3798d2e8b"
+      "sha256": "c9ab95af33dab4f6abee7e9939187c562914b443d4217bd794d621ca82f74f6d"
     },
     "governance-profile.yml": {
       "operation": "generate",
@@ -462,9 +462,13 @@
       "operation": "copy",
       "sha256": "bab5772b54aba781f3298a40063be3349183a108487d92b3c3b0874764d22d4d"
     },
+    "scripts/_bcf_runtime/ci_authority_submit.py": {
+      "operation": "copy",
+      "sha256": "6f9f416a3b54dd6c055ea4bd0554c6dfd1a623b52ee9d8b10ff4307480201e90"
+    },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "ce5ba83d69b64a97502097f285ab81adf1551e826d7da6d7c46a7966e9fb5089"
+      "sha256": "e61ee3a627409fbbbb9c702568f0b68bb7fe8dbae71609ab33c79360d0f9179a"
     },
     "scripts/_bcf_runtime/ci_controller_adoption.py": {
       "operation": "copy",

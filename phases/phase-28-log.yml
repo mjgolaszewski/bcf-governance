@@ -57,6 +57,7 @@ execution_evidence:
   - P28-P0-03 closed through exact-main 36247434961/1, trusted finalizer 36247747167/1, and authenticated bounded publication with 16 reusable groups and zero semantic re-execution
   - P28-P0-04 corrects prospective lifecycle observation to use the provider-authenticated effective controller; the source-policy pin remains a normalization baseline and is not the active identity after provider transitions
   - empirical certification validation is installed dormant with exact five-sample reuse, seven-class invalidation, two-cycle rotation, derived-metric, and unique-proposition checks; activation awaits immutable provider observations
+  - one canonical submit operation derives repository target and exact commit/tree, runs the ordered prospective train, rechecks immutable custody, and pushes only that proved SHA so agents do not own validation sequencing
   - the representative trusted-controller adopter is created through the real installer and adoption path, receives byte-exact canonical semantic owners, and receives no declared self-authority surface
   - parity validation fails closed on missing domains, owner drift, missing proof nodes, non-installed adopter claims, and missing attack coverage
 closeout_requirements:

@@ -142,6 +142,16 @@ bcf ci local-pr --repo-root . --remote origin
 The helper fetches the remote default branch, checks ancestry, and supplies the
 actual base SHA and pull-request event context to preflight.
 
+For the governed submission path, provide only semantic intent:
+
+```bash
+bcf ci submit --repo-root . --intent workitem
+```
+
+Submission derives repository, bounded target, commit, and tree; executes the
+canonical prospective train; rechecks immutable custody; and pushes only the
+exact proved commit. Agents do not sequence its internal checks.
+
 If the repo layout differs from the starter backend shape, update `architecture-boundaries.yml` before relying on `make architecture-test`.
 
 For existing repositories, install with `--adoption-mode existing` to include conversion playbooks; keep the first adoption commit focused on governance artifacts, inventory, and gate wiring.

@@ -716,6 +716,10 @@ clears the general artifact root.
 - `bcf semantic-ownership lock --check|--apply`: verify or derive contract,
   source, recipe, and projection digests mechanically.
 - `bcf ci local-pr`: exact local pull-request context and preflight.
+- `bcf ci submit`: derive the exact repository, bounded target, commit, and tree;
+  execute the complete prospective train in canonical order; recheck immutable
+  custody; and push only the exact proved commit. Agents supply semantic intent,
+  not an ordered validation recipe.
 - `bcf ci adopt github`: transactional GitHub reference-topology adoption.
 - `bcf truth`: evidence-derived lifecycle and release state.
 - `bcf doctor`: configuration and wiring diagnostics.

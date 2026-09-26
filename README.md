@@ -321,6 +321,7 @@ bcf exposure-scan
 bcf doctor --repo-root .
 bcf preflight --repo-root . --mode pr
 bcf ci local-pr --repo-root .
+bcf ci submit --repo-root . --intent workitem
 bcf semantic-ownership scaffold --repo-root . --output /tmp/semantic-candidate.yml
 bcf semantic-ownership adopt --repo-root . --config /path/to/semantic-authority.yml --check
 bcf semantic-ownership lock --repo-root . --check
