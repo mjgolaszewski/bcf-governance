@@ -56,6 +56,7 @@ execution_evidence:
   - P28-P0-03 binds nine required semantic domains to exact canonical owners, self proof, real-installed-adopter proof, and attack proof nodes
   - P28-P0-03 closed through exact-main 36247434961/1, trusted finalizer 36247747167/1, and authenticated bounded publication with 16 reusable groups and zero semantic re-execution
   - P28-P0-04 corrects prospective lifecycle observation to use the provider-authenticated effective controller; the source-policy pin remains a normalization baseline and is not the active identity after provider transitions
+  - empirical certification validation is installed dormant with exact five-sample reuse, seven-class invalidation, two-cycle rotation, derived-metric, and unique-proposition checks; activation awaits immutable provider observations
   - the representative trusted-controller adopter is created through the real installer and adoption path, receives byte-exact canonical semantic owners, and receives no declared self-authority surface
   - parity validation fails closed on missing domains, owner drift, missing proof nodes, non-installed adopter claims, and missing attack coverage
 closeout_requirements:

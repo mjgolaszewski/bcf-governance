@@ -21,6 +21,12 @@ from bcf_governance.tooling.evidence_sessions import (
 )
 from bcf_governance.tooling.evidence_planning import verification_plan
 from bcf_governance.tooling.governance_profiles import _v2_builtin_contracts
+from bcf_governance.tooling.routine_controller_rotation import (
+    effective_controller_pin,
+    select_controller_chain,
+    transition_id,
+    validate_transition,
+)
 from scripts.governance_evidence import attest_bundle, capture_gate
 from scripts.governance_truth import derive_truth
 
@@ -1182,6 +1188,89 @@ def test_fresh_adopter_projects_opt_in_one_pr_controller_rotation(
         for relative in overlay["authority_surfaces"]:
             assert not (repo / relative).exists(), (overlay["id"], relative)
     assert not (repo / "governance/product-parity.yml").exists()
+
+    baseline = yaml.safe_load(
+        (repo / "governance/trusted-controller-policy.yml").read_text(encoding="utf-8")
+    )["runner_security"]["trusted_controller_artifact"]
+    installed = baseline["BCF_BOOTSTRAP_COMMIT_SHA"]
+    transitions: list[dict[str, Any]] = []
+    subjects: list[str] = []
+    for serial in (1, 2):
+        runtime = repo / "scripts/_bcf_runtime/ci_authority_prospective_telemetry.py"
+        runtime.write_text(runtime.read_text(encoding="utf-8") + f"\nROTATION_SAMPLE = {serial}\n")
+        git(repo, "add", runtime.relative_to(repo).as_posix())
+        git(repo, "commit", "--quiet", "-m", f"trusted runtime upgrade {serial}")
+        subject = git(repo, "rev-parse", "HEAD")
+        tree = git(repo, "rev-parse", "HEAD^{tree}")
+        digest = "sha256:" + f"{serial + 1:x}" * 64
+        identity = transition_id(
+            repository_id="1",
+            installed_commit=installed,
+            subject_commit=subject,
+            subject_tree=tree,
+            artifact_digest=digest,
+        )
+        proofs = lambda stage: [
+            {
+                "runner": runner,
+                "controller_commit": subject,
+                "run_id": str(serial * 100 + stage),
+                "run_attempt": "1",
+                "job_id": str(serial * 1000 + stage * 10 + index),
+            }
+            for index, runner in enumerate(
+                ("fixture-control-1", "fixture-control-2"), 1
+            )
+        ]
+        receipt = {
+            "schema_version": "1.0",
+            "transition_id": identity,
+            "state": "active",
+            "repository": {"id": "1", "full_name": "fixture/adopter"},
+            "subject": {"commit_sha": subject, "tree_sha": tree},
+            "authority": {
+                "installed_controller_commit": installed,
+                "admission_run_id": str(serial * 100),
+                "admission_run_attempt": "1",
+                "implementation_pr": str(serial),
+                "policy_before_sha256": "f" * 64,
+                "policy_after_sha256": "f" * 64,
+            },
+            "artifact": {
+                "id": str(serial),
+                "name": f"bcf-trusted-control-{subject}-1",
+                "provider_digest": digest,
+                "wheel_sha256": f"{serial + 2:x}" * 64,
+                "run_id": str(serial * 100),
+                "run_attempt": "1",
+                "commit_sha": subject,
+                "tree_sha": tree,
+            },
+            "required_runners": ["fixture-control-1", "fixture-control-2"],
+            "bootstrap": proofs(1),
+            "probe": proofs(2),
+            "promotion": proofs(3),
+            "activation": {
+                "transition_id": identity,
+                "authorizing_controller_commit": installed,
+                "run_id": str(serial * 100 + 4),
+                "run_attempt": "1",
+            },
+        }
+        assert validate_transition(repo, receipt) == receipt
+        transitions.append(receipt)
+        subjects.append(subject)
+        installed = subject
+    chain = select_controller_chain(
+        repo,
+        transitions,
+        repository_id="1",
+        baseline_installed_commit=baseline["BCF_BOOTSTRAP_COMMIT_SHA"],
+        ancestor_commits=subjects,
+    )
+    assert [item["subject"]["commit_sha"] for item in chain] == subjects
+    assert effective_controller_pin(baseline, chain)["BCF_BOOTSTRAP_COMMIT_SHA"] == subjects[-1]
+    assert [item["authority"]["implementation_pr"] for item in chain] == ["1", "2"]
 
 
 @pytest.mark.parametrize("cycle", range(1, 6))

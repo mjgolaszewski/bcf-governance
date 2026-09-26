@@ -338,6 +338,10 @@
       "operation": "copy",
       "sha256": "5d8c32adcc6def86d628d51be58254f17bfe0940d32713b150eac6eff984db71"
     },
+    "schemas/product-certification.schema.json": {
+      "operation": "copy",
+      "sha256": "75ed050652b6139d1aaedfdf6d68e2663b4dc15bf66a3b698254015564d5d8e9"
+    },
     "schemas/product-parity.schema.json": {
       "operation": "copy",
       "sha256": "899a19c5de7c25b372c213df4044947ef923e64b217ff14fa88427d333910ce0"
@@ -930,6 +934,10 @@
       "operation": "copy",
       "sha256": "64976779172fdc0f4fb01888402616aba5917e42af05940b80fc0a5cf0a3f28f"
     },
+    "scripts/_bcf_runtime/governance_validation/product_certification.py": {
+      "operation": "copy",
+      "sha256": "625d35068778462c169f4b28a908c3dc33465996768b5c03dced479ddcb1cec1"
+    },
     "scripts/_bcf_runtime/governance_validation/product_parity.py": {
       "operation": "copy",
       "sha256": "a38bdffe49eeefd6622363a34b46d1e3997c128734f1e074f7bdb4fab55d8054"
@@ -948,7 +956,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/runner.py": {
       "operation": "copy",
-      "sha256": "83d09ac08d68744b5369b380a5c40831c86fd8f84db15f371cd9d94749e9c093"
+      "sha256": "6a35f1a328bd4ce3a321e45c9d3de067253fab52be0b823a89671da0038de026"
     },
     "scripts/_bcf_runtime/governance_validation/self_authority_overlays.py": {
       "operation": "copy",

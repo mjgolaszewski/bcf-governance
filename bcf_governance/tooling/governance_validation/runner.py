@@ -36,6 +36,10 @@ from .self_authority_overlays import (
     validate_self_authority_overlays,
 )
 from .product_parity import ProductParityError, validate_product_parity
+from .product_certification import (
+    ProductCertificationError,
+    validate_product_certification,
+)
 
 
 def validate_tooling_context_membership(repo_root: Path) -> None:
@@ -215,6 +219,23 @@ def validate_repo_root(
         try:
             validate_product_parity(repo_root, parity)
         except ProductParityError as exc:
+            raise GovernanceValidationError(str(exc)) from exc
+    certification_path = repo_root / "governance/product-certification.yml"
+    if certification_path.is_file():
+        certification = _load_yaml(certification_path)
+        _validate_schema(
+            repo_root,
+            schema_cache,
+            certification,
+            schema_name="product-certification.schema.json",
+            context=str(certification_path),
+        )
+        _validate_document_path(
+            repo_root, certification, certification_path, context=str(certification_path)
+        )
+        try:
+            validate_product_certification(repo_root, certification)
+        except ProductCertificationError as exc:
             raise GovernanceValidationError(str(exc)) from exc
     required_artifact_paths = _validate_artifact_manifest(repo_root, artifact_manifest, agents)
     observability_contract_paths = _validate_observability_contracts(repo_root, schema_cache)
