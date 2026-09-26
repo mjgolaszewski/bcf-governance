@@ -1,0 +1,77 @@
+document:
+  kind: product_certification
+  name: BCF 2.1 empirical product certification
+  id: bcf-2.1-product-certification
+  version: 1.0.0
+  status: active
+  path: governance/product-certification.yml
+schema_version: '1.0'
+equivalent_transitions:
+  self:
+  - &self1 {subject_commit: 72eb8048cfe2d5c6f6307ad17d3961bfb2a48926, custody: {pr_run: 36188088317/1, exact_main_run: 36189726959/2, finalizer_run: 36191002314/1, publisher_run: 36191108485/1}, feedback_seconds: 943, certification_seconds: 932, reused_groups: 16, new_groups: 0, invalidated_groups: 0, nodes_avoided: 16, critical_path: provider_queue_and_publication}
+  - &self2 {subject_commit: 5d720dce9877bed60d5f24716838d23354d6a28f, custody: {pr_run: 36195062623/1, exact_main_run: 36197358406/1, finalizer_run: 36197715019/1, publisher_run: 36197800018/1}, feedback_seconds: 1614, certification_seconds: 391, reused_groups: 16, new_groups: 0, invalidated_groups: 0, nodes_avoided: 16, critical_path: pr_test_producer}
+  - &self3 {subject_commit: 72dab4819186692c52038f1618bdc688e3661e7f, custody: {pr_run: 36227494105/1, exact_main_run: 36229275461/2, finalizer_run: 36230059407/1, publisher_run: 36230122432/1}, feedback_seconds: 1601, certification_seconds: 1077, reused_groups: 16, new_groups: 0, invalidated_groups: 0, nodes_avoided: 16, critical_path: rotation_and_provider_queue}
+  - &self4 {subject_commit: 21518ed35563f10b3a09e16adbd6131549830eef, custody: {pr_run: 36233714818/1, exact_main_run: 36235288460/1, finalizer_run: 36235570350/1, publisher_run: 36235646461/1}, feedback_seconds: 1565, certification_seconds: 492, reused_groups: 16, new_groups: 0, invalidated_groups: 0, nodes_avoided: 16, critical_path: exact_main_and_publication}
+  - &self5 {subject_commit: 87691004f6c17a7fd63f1f47ae446006f796dcb5, custody: {pr_run: 36245807498/1, exact_main_run: 36247434961/1, finalizer_run: 36247747167/1, publisher_run: 36247821360/1}, feedback_seconds: 1475, certification_seconds: 471, reused_groups: 16, new_groups: 0, invalidated_groups: 0, nodes_avoided: 16, critical_path: exact_main_and_publication}
+  adopter:
+  - {subject_commit: '1111111111111111111111111111111111111111', custody: {fixture_run: installed-adopter-equivalent-1, proof_node: tests.test_profile_flows::test_fresh_adopter_projects_opt_in_one_pr_controller_rotation}, feedback_seconds: 9, certification_seconds: 9, reused_groups: 16, new_groups: 0, invalidated_groups: 0, nodes_avoided: 16, critical_path: real_installer_and_canonical_planner}
+  - {subject_commit: '2222222222222222222222222222222222222222', custody: {fixture_run: installed-adopter-equivalent-2, proof_node: tests.test_profile_flows::test_fresh_adopter_projects_opt_in_one_pr_controller_rotation}, feedback_seconds: 9, certification_seconds: 9, reused_groups: 16, new_groups: 0, invalidated_groups: 0, nodes_avoided: 16, critical_path: real_installer_and_canonical_planner}
+  - {subject_commit: '3333333333333333333333333333333333333333', custody: {fixture_run: installed-adopter-equivalent-3, proof_node: tests.test_profile_flows::test_fresh_adopter_projects_opt_in_one_pr_controller_rotation}, feedback_seconds: 10, certification_seconds: 10, reused_groups: 16, new_groups: 0, invalidated_groups: 0, nodes_avoided: 16, critical_path: real_installer_and_canonical_planner}
+  - {subject_commit: '4444444444444444444444444444444444444444', custody: {fixture_run: installed-adopter-equivalent-4, proof_node: tests.test_profile_flows::test_fresh_adopter_projects_opt_in_one_pr_controller_rotation}, feedback_seconds: 9, certification_seconds: 9, reused_groups: 16, new_groups: 0, invalidated_groups: 0, nodes_avoided: 16, critical_path: real_installer_and_canonical_planner}
+  - {subject_commit: '5555555555555555555555555555555555555555', custody: {fixture_run: installed-adopter-equivalent-5, proof_node: tests.test_profile_flows::test_fresh_adopter_projects_opt_in_one_pr_controller_rotation}, feedback_seconds: 10, certification_seconds: 10, reused_groups: 16, new_groups: 0, invalidated_groups: 0, nodes_avoided: 16, critical_path: real_installer_and_canonical_planner}
+selective_invalidation:
+- {class: implementation, proof_node: tests.test_evidence_planning::test_isolated_implementation_change_invalidates_only_its_domain, decision: invalidate}
+- {class: test_population, proof_node: tests.test_evidence_planning::test_test_population_change_executes_only_dependent_groups, decision: invalidate}
+- {class: evidence_runtime, proof_node: tests.test_evidence_planning::test_detector_change_invalidates_detector_dependents, decision: invalidate}
+- {class: governance_profile, proof_node: tests.test_evidence_planning::test_unknown_behavior_path_expands_to_full_relevant_profile, decision: invalidate}
+- {class: toolchain_dependencies, proof_node: tests.test_evidence_planning::test_toolchain_change_reports_toolchain_and_environment_contract, decision: invalidate}
+- {class: workflow_trust, proof_node: tests.test_evidence_planning::test_trust_change_reports_trust_and_artifact_identity, decision: invalidate}
+- {class: negative_control_oracle, proof_node: tests.test_evidence_planning::test_main_side_qualification_recomputes_digest_and_control_inventory, decision: invalidate}
+routine_rotations:
+  self:
+  - {installed_controller: 256fb901f6782fe5cd2ad4d1c9dca7a3b42f7259, target_controller: 72dab4819186692c52038f1618bdc688e3661e7f, implementation_pr_count: 1, bookkeeping_pr_count: 0, copied_identity_count: 0, transition_run: 36229324974/1, receipt_artifact: '10901568560', final_publisher_run: 36230122432/1}
+  - {installed_controller: 72dab4819186692c52038f1618bdc688e3661e7f, target_controller: ca79761b00e17404343cdf78e7083d1b4c275d19, implementation_pr_count: 1, bookkeeping_pr_count: 0, copied_identity_count: 0, transition_run: 36260975441/1, receipt_artifact: '10912391613', final_publisher_run: 36261988968/1}
+  adopter:
+  - {installed_controller: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, target_controller: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, implementation_pr_count: 1, bookkeeping_pr_count: 0, copied_identity_count: 0}
+  - {installed_controller: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, target_controller: cccccccccccccccccccccccccccccccccccccccc, implementation_pr_count: 1, bookkeeping_pr_count: 0, copied_identity_count: 0}
+  adopter_proof_node: tests.test_profile_flows::test_fresh_adopter_projects_opt_in_one_pr_controller_rotation
+simplicity:
+  workflows:
+  - {id: governance, proposition: candidate_semantic_evidence, provider_boundary: github_actions}
+  - {id: exact-main, proposition: authoritative_main_evidence, provider_boundary: github_actions}
+  - {id: exact-main-finalizer, proposition: trusted_exact_main_certification, provider_boundary: trusted_runner}
+  - {id: exact-main-publisher, proposition: exact_main_status_publication, provider_boundary: github_app_15368}
+  - {id: scheduled-nightly-mutants, proposition: nightly_mutation_sampling, provider_boundary: github_schedule}
+  - {id: scheduled-weekly-mutants, proposition: weekly_mutation_sampling, provider_boundary: github_schedule}
+  - {id: break-glass-recovery, proposition: owner_authorized_recovery, provider_boundary: github_environment}
+  - {id: automation-admission, proposition: automation_candidate_authentication, provider_boundary: github_actions}
+  - {id: pr-finalizer, proposition: trusted_pr_certification, provider_boundary: trusted_runner}
+  - {id: pr-status-publisher, proposition: protected_pr_status_publication, provider_boundary: github_app_15368}
+  - {id: evidence-storage-qualification-source, proposition: storage_source_qualification, provider_boundary: github_actions}
+  - {id: evidence-storage-qualification, proposition: storage_runtime_qualification, provider_boundary: github_actions}
+  - {id: release-authority, proposition: immutable_release_authorization, provider_boundary: owner_environment}
+  - {id: release-verifier, proposition: independent_release_verification, provider_boundary: trusted_runner}
+  - {id: release-publisher, proposition: immutable_release_publication, provider_boundary: github_release_api}
+  - {id: automation-reconcile, proposition: deterministic_automation_reconciliation, provider_boundary: github_actions}
+  - {id: authority-canary, proposition: authority_boundary_canary, provider_boundary: github_actions}
+  mechanisms:
+  - {id: prospective-train, proposition: exact_candidate_downstream_admissibility, provider_boundary: local_non_authoritative}
+  - {id: atomic-submit, proposition: push_only_the_exact_unchanged_prospectively_proved_commit, provider_boundary: authenticated_git_remote}
+  - {id: protected-merge, proposition: human_reviewed_branch_admission, provider_boundary: github_branch_protection}
+  - {id: reuse-attestation, proposition: authenticated_unchanged_fact_transport, provider_boundary: exact_provider_artifacts}
+  - {id: routine-rotation, proposition: installed_n_authorizes_exact_n_plus_1, provider_boundary: github_actions_and_trusted_runners}
+  - {id: protection-inspector, proposition: complete_bypass_actor_observation, provider_boundary: repository_scoped_github_app}
+  - {id: candidate-runner, proposition: isolated_untrusted_candidate_execution, provider_boundary: github_hosted_runner}
+  - {id: trusted-runner-pair, proposition: independent_controller_custody, provider_boundary: self_hosted_runner_group}
+  - {id: release-credential, proposition: bounded_immutable_publication_mutation, provider_boundary: owner_provisioned_environment}
+  - {id: bounded-status, proposition: workitem_only_success_publication, provider_boundary: github_commit_status}
+derived_metrics:
+  self_feedback_median_seconds: 1565
+  self_feedback_p95_seconds: 1614
+  self_certification_median_seconds: 492
+  self_certification_p95_seconds: 1077
+  adopter_feedback_median_seconds: 9
+  adopter_feedback_p95_seconds: 10
+  adopter_certification_median_seconds: 9
+  adopter_certification_p95_seconds: 10
+release_authority: false
