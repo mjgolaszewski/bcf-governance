@@ -95,6 +95,31 @@ self_authority_overlays:
   - self-only graph value sources have declared ownership
   - typed opt-in adopter controller rotation remains packaged product outside the overlay inventory
   - proposition drift overlap omission missing files stale extension digests and pack leakage fail closed
+installed_adopter_parity:
+  workitem: P28-P0-03
+  canonical_contract: governance/product-parity.yml
+  schema: schemas/product-parity.schema.json
+  validator: bcf_governance/tooling/governance_validation/product_parity.py
+  representative_path:
+    install: scripts/install_governance_pack.py
+    profiles: [standard, regulated]
+    controller_adoption: bcf ci adopt trusted-controller
+    proof: tests.test_profile_flows::test_fresh_adopter_projects_opt_in_one_pr_controller_rotation
+  domains:
+  - closure
+  - reuse
+  - invalidation
+  - negative_controls
+  - planning
+  - timing
+  - fixed_point
+  - controller_transition
+  - scope_boundaries
+  parity_proof:
+  - every domain has one canonical tooling owner projected byte-for-byte into both pack roots and the real installed adopter
+  - every domain binds exact self installed-adopter and adversarial nodes from the canonical test manifest
+  - the representative adopter contains no declared self-authority surface
+  - missing domains owner drift proof-node drift and self-authority leakage fail closed
 post_merge_hotfix:
   id: P28-HF01
   failing_run: {workflow: bcf/automation-changelog-reconciler, run_id: '36218038519', run_attempt: '1', job_id: '108337832851'}

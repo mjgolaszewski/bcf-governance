@@ -1,0 +1,59 @@
+document:
+  kind: product_parity_contract
+  name: BCF self and installed-adopter product parity
+  id: bcf-product-parity
+  version: 1.0.0
+  status: active
+  path: governance/product-parity.yml
+schema_version: '1.0'
+representative_adopter:
+  install_path: scripts/install_governance_pack.py
+  profiles: [standard, regulated]
+  trusted_controller_adoption: bcf ci adopt trusted-controller
+  proof_node: tests.test_profile_flows::test_fresh_adopter_projects_opt_in_one_pr_controller_rotation
+domains:
+- id: closure
+  canonical_owner: bcf_governance/tooling/governance_truth.py
+  self_proof: [tests.test_governance_truth::test_current_evidence_and_reconciliation_compute_closed]
+  adopter_proof: ['tests.test_profile_flows::test_full_profile_install_evidence_truth_flow[standard]']
+  attack_proof: [tests.test_ci_github_release::test_release_authorizer_rejects_bounded_workitem_certification]
+- id: reuse
+  canonical_owner: bcf_governance/tooling/evidence_reuse_attestations.py
+  self_proof: [tests.test_evidence_reuse_attestations::test_reuse_attestations_admit_only_exact_applicable_claim]
+  adopter_proof: [tests.test_profile_flows::test_fresh_adopter_projects_opt_in_one_pr_controller_rotation]
+  attack_proof: [tests.test_evidence_reuse_attestations::test_reuse_attestation_rejects_wrong_producer]
+- id: invalidation
+  canonical_owner: bcf_governance/tooling/evidence_planning.py
+  self_proof: [tests.test_evidence_planning::test_documentation_only_change_reuses_unrelated_claims]
+  adopter_proof: [tests.test_profile_flows::test_fresh_adopter_projects_opt_in_one_pr_controller_rotation]
+  attack_proof: [tests.test_evidence_reuse_attestations::test_reuse_attestation_rejects_changed_main_dependency]
+- id: negative_controls
+  canonical_owner: bcf_governance/tooling/negative_control_execution.py
+  self_proof: [tests.test_governance_evidence::test_evidence_run_captures_process_artifacts_test_counts_and_negative_control]
+  adopter_proof: ['tests.test_profile_flows::test_full_profile_install_evidence_truth_flow[standard]']
+  attack_proof: [tests.test_governance_evidence::test_escaping_negative_control_cannot_touch_outside_worktree]
+- id: planning
+  canonical_owner: bcf_governance/tooling/evidence_planning.py
+  self_proof: [tests.test_evidence_planning::test_execution_dag_balances_groups_from_observed_receipt_durations]
+  adopter_proof: ['tests.test_profile_flows::test_full_profile_install_evidence_truth_flow[standard]']
+  attack_proof: [tests.test_evidence_reuse_attestations::test_reuse_attestation_rejects_wrong_producer]
+- id: timing
+  canonical_owner: bcf_governance/tooling/evidence_scheduling.py
+  self_proof: [tests.test_self_governance_contracts::test_governance_evidence_shards_follow_the_duration_aware_plan]
+  adopter_proof: [tests.test_profile_flows::test_fresh_adopter_projects_opt_in_one_pr_controller_rotation]
+  attack_proof: [tests.test_evidence_reuse_attestations::test_reuse_attestation_rejects_changed_main_dependency]
+- id: fixed_point
+  canonical_owner: bcf_governance/tooling/scaffold_governance_artifacts.py
+  self_proof: [tests.test_reconcile_governance::test_reconcile_runs_declared_order_to_a_fixed_point]
+  adopter_proof: [tests.test_profile_flows::test_fresh_adopter_projects_opt_in_one_pr_controller_rotation]
+  attack_proof: [tests.test_reconcile_governance::test_reconcile_rejects_non_convergence]
+- id: controller_transition
+  canonical_owner: bcf_governance/tooling/routine_controller_rotation.py
+  self_proof: [tests.test_routine_controller_provider::test_adopter_controller_policy_is_resolved_without_self_authority]
+  adopter_proof: [tests.test_profile_flows::test_fresh_adopter_projects_opt_in_one_pr_controller_rotation]
+  attack_proof: [tests.test_routine_controller_provider::test_adopter_controller_policy_rejects_foreign_repository]
+- id: scope_boundaries
+  canonical_owner: bcf_governance/tooling/evaluation_scope.py
+  self_proof: [tests.test_ci_github_release::test_release_authorizer_rejects_bounded_workitem_certification]
+  adopter_proof: ['tests.test_profile_flows::test_full_profile_install_evidence_truth_flow[standard]']
+  attack_proof: [tests.test_release_receipts::test_bounded_workitem_certification_cannot_authorize_release]
