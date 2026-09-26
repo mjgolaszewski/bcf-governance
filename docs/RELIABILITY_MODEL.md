@@ -97,6 +97,13 @@ BCF does not make spending thresholds part of truth, admission, lifecycle,
 retention, or release authority. Resource measurements may be operational
 telemetry, but they cannot change correctness decisions.
 
+The canonical prospective train turns one semantic intent into the ordered
+preflight, compatibility, evidence, certification-shape, and immutable-custody
+checks required before push. Its planner derives work from claim dependencies;
+agents do not select reusable evidence or maintain the command order. This lowers
+governance amplification without turning speed, job count, or a cached green
+result into authority.
+
 ## Common objections
 
 ### This is too much ceremony

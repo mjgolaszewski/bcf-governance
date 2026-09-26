@@ -85,7 +85,7 @@ is explicit, monotonic, transactional, and also preserves workflow bytes;
 GitHub workflow changes belong only to fresh installation or the explicit CI
 adopter. Tests must compare those bytes, not merely decoded job names.
 
-For profile v2, `governance/gate-contracts.yml` is the only owner of gate argv,
+For profile v3, `governance/gate-contracts.yml` is the only owner of gate argv,
 evidence assertions, and negative controls. `governance/evidence-policy.yml`
 owns claims, workflow requirements, provenance, and cross-gate policy; its
 `gate_overrides` mapping must remain empty. The validator rejects a duplicated
@@ -98,20 +98,13 @@ never copy blob hashes, workflow digests, definition commits, or display names i
 authority document. Preflight verifies the projection from Git on every governed tree.
 
 Likewise, never copy a controller artifact ID, run ID, provider digest, tree, or wheel
-hash into bootstrap YAML. Use the trusted `ci-github controller-pin resolve|compile`
-sequence, then `bcf ci sync-self-controller --pin PIN.json --apply`. The canonical pin
-record is the single source for the target. Active workflows remain on the separately
-recorded installed controller until rotation, but bootstrap itself must cold-start from
-the downloaded provider- and checksum-admitted artifact rather than assume that cache
-entry exists. Bootstrap and probe stage that wheel under the run-scoped temporary root
-using the project-selected Python before installing it persistently. After both runs
-succeed on all trusted runners, compile that provider proof with `bcf ci-github controller-pin confirm`
-and pass it to `bcf ci sync-self-controller --confirmation`; never edit the installed
-commit or proof run identities. A pending rotation blocks selection of another target.
-Controller artifacts derive runtime requirements directly from `pyproject.toml`; do not
-add a dependency to a builder-specific list. The build must validate recursive wheel
-metadata closure and complete an offline installation before upload, and `controller-pin
-compile` independently rejects an incomplete downloaded closure before projection.
+hash into repository policy. An adopter that enables the optional trusted-controller
+extension submits one protected implementation PR. The provider-backed transition
+derives the exact target and artifact, validates dependency closure, installs and probes
+it on every declared trusted runner, and atomically activates only the authenticated
+result. There are no maintainer-authored target, confirmation, normalization, or pin
+commits. A partial, competing, stale, or replayed transition remains noncertifying and
+resumes only from its exact provider state.
 
 The release front door does not rely on that rotation being remembered. Preflight
 derives the trusted GitHub command's Python import closure and packaged schema
@@ -122,115 +115,36 @@ before evidence work. A version-only promotion may differ in
 inert version-literal form; any added statement, import, or noncanonical shape
 is executable drift and fails closed. The installed controller version is not
 release authority: the exact-main public contract and generated graph own the tag.
-While target and independently proven installed commits differ, the graph renders
-release authorization, collection, and publication disabled; bootstrap and probe
-remain the only active rotation path.
+While target and independently proven installed commits differ, release authorization,
+collection, and publication remain disabled. The routine transition is the only active
+installation path.
 
-After changing v2 profile surfaces, test all four copies: packaged tooling,
+After changing v3 profile surfaces, test all four copies: packaged tooling,
 standalone private runtime, template source, and packaged template. Generated
-v2 workflows must allocate one session before evidence, execute positive gates
+workflows must allocate one session before evidence, execute positive gates
 once, use exact run/attempt artifact namespaces, and contain no polling,
 sleeping, or capacity-wait jobs.
 
 ## Break-glass controller recovery
 
-The `BCF Break Glass` GitHub App is an administrative root above BCF. It may
-recover installed-controller state after ordinary admission fails closed, but it
-cannot certify a PR or exact main, publish status, release, merge, or change
-protection. App 15368 remains the separate ordinary status publisher.
+Break Glass is a dormant BCF-self recovery authority, not an adopter workflow.
+It exists only for a control-plane bootstrap deadlock that the ordinary typed
+controller transition cannot represent. Its repository-scoped App has read-only
+Metadata, Contents, and Actions permissions and operates only through the
+owner-reviewed `bcf-break-glass-recovery` environment on `main`.
 
-| Permission | Access | Exact reason |
-| --- | --- | --- |
-| Metadata | Read | Authenticate exact installation-token repository scope and invoking administrator. |
-| Contents | Read | Resolve the exact current-main commit/tree and check out only those bytes. |
-| Actions | Read | Authenticate workflow, run, job, and immutable artifact identities. |
+A recovery operation is provider-authenticated, exact-subject, single-use, and
+noncertifying. It cannot publish status, certify, merge, release, administer
+protection, or become the steady-state controller source. Successful recovery
+means only that ordinary certification can resume; the normal provider-backed
+transition must subsequently restore ordinary custody. Missing, stale, replayed,
+or cross-repository state fails closed. Rotate or revoke its private key after
+use; uninstalling the App removes recovery authority without affecting ordinary
+BCF operation.
 
-Administration, Contents write, Pull requests write, Checks write, Commit
-statuses write, Deployments write, and Releases write are unnecessary and must
-remain disabled. Webhooks, callback URLs, user authorization, and setup URLs are
-also unnecessary.
-
-Create the App under **Settings → Developer settings → GitHub Apps → New GitHub
-App** with the name `BCF Break Glass`, any non-secret informational homepage,
-webhooks disabled, and only the three read permissions above. Install it for
-**Only select repositories**, selecting only `mjgolaszewski/bcf-governance`.
-Generate one private key and store it directly—never in chat—as the protected
-environment secret `BCF_BREAK_GLASS_APP_PRIVATE_KEY`.
-
-Create the protected environment `bcf-break-glass-recovery`, require the
-repository owner (or the deliberately authorized repository administrator) as
-reviewer, and restrict deployment branches to `main`. Do not enable
-prevent-self-review when the dispatching owner is the only authorized reviewer;
-enable it only when a second authorized administrator is intentionally part of
-the recovery ceremony. Set repository variables
-`BCF_BREAK_GLASS_APP_ID`, `BCF_BREAK_GLASS_INSTALLATION_ID`, and
-`BCF_BREAK_GLASS_WORKFLOW_ID` to their provider numeric identities. The App
-private key belongs only in the protected environment; it is not an ordinary
-repository secret and must not be shared with App 15368.
-
-The workflow uses the App ID to mint the installation token and binds the
-configured installation ID in policy and receipts. GitHub installation tokens
-do not self-report their installation ID through `GET /installation`; recovery
-therefore authenticates the token's exact one-repository scope through
-`GET /installation/repositories`. The configured installation ID is an expected
-administrative identity, not a falsely claimed token-observed fact. Metadata
-read also authorizes the independent collaborator-permission lookup used with
-the exact provider run actor and the policy's authorized owner identity.
-
-Recovery is one manual workflow entry point with three separately approved
-stages. Generate a fresh 32-character lowercase hexadecimal operation ID, then
-dispatch `bcf/break-glass-recovery` from `main` three times with the same ID and
-reason `ordinary_control_plane_bootstrap_deadlock`: first `build`, then
-`install`, then `probe`. Never rerun a failed stage as a different operation or
-select an arbitrary artifact. Success emits an immutable recovery-only receipt
-and means only `RECOVERY INSTALLED — NORMAL CERTIFICATION REQUIRED`.
-The failed live-integration nonce `4aa49c3ab6a100df627619d23c1df483`
-is permanently retired and must not be reused.
-
-Each recovery entry point owns its semantic stage exactly once. Build
-authorization owns `build`; build resolution accepts exactly `install` or
-`probe`; installation owns `install`; and probing plus receipt finalization own
-`probe`. A successful build remains eligible only while its authenticated run
-and bundle subject equal exact current main. If a correction merge moves main
-after a successful build but before installation, that historical operation is
-preserved as evidence but a fresh nonce and build are required; main identity
-must never be weakened to reuse the old artifact.
-
-Installation deliberately does not retarget ordinary workflow authority. After
-the receipt is downloaded from its uniquely named Actions artifact, create a
-branch at the receipt's exact subject commit and run:
-
-```bash
-python3 .github/scripts/break_glass_recovery.py project-installation \
-  --repo-root . --receipt /trusted/path/receipt.json
-```
-
-The command rejects a moved `HEAD` or tree and projects only the proven
-`trusted_controller_installation`; the ordinary controller artifact pin remains
-unchanged. Commit that projection, mechanically pin the changed workflow bytes
-in a following commit, and submit the branch as a normal protected PR. This
-temporary target/installed mismatch disables release authorization but makes
-trusted finalizers invoke the recovery-proven installation after the PR merges.
-It does not certify the controller.
-
-The resulting fresh exact-main cycle must admit the expanded authority, run the
-normal `trusted-controller-build`, complete governance and trusted finalization,
-and receive App 15368's `bcf/exact-main-certification=success`. Then select that
-normal builder artifact through the ordinary controller-pin and bootstrap/probe
-procedure. The recovery artifact is never valid `controller-pin resolve`
-evidence and must never become the steady-state artifact pin.
-
-Rotate the private key after use or immediately on suspected exposure. To make
-recovery dormant, delete the environment secret or uninstall the App. To remove
-the authority completely, uninstall the App from the repository and revoke all
-private keys; ordinary BCF remains unaffected.
-
-Controller evolution follows an N/N+1 rule: controller N must understand the
-explicit expand-only schema shape needed to install N+1 before N+1-only
-semantics become authoritative. The normal sequence is `expand parser/schema →
-rotate compatible controller → activate N+1 authority → optionally contract`.
-Unknown fields remain rejected; break-glass is used only when that ordering was
-missed and ordinary authority cannot bootstrap itself.
+Controller evolution remains fail-closed: installed authority must understand
+the candidate state required to authorize its successor before successor-only
+semantics activate. Break Glass is not a compatibility exemption.
 
 ## Change contract
 

@@ -17,7 +17,7 @@ separates two questions:
 - `bcf truth`: are lifecycle and release claims supported by current evidence
   for the exact Git subject?
 
-Supported package version: `v2.0.0` (correction-release candidate). Every release is published from certified
+Supported package version: `v2.1.0`. Every release is published from certified
 exact-main bytes through an immutable GitHub Release; the publisher never
 rebuilds the verified wheel or source archive.
 
@@ -177,7 +177,7 @@ evidence stale.
 Evidence capture executes exact argv from `governance/gate-contracts.yml` in
 pristine detached worktrees. Every mandatory gate has a typed negative control;
 arbitrary crashes, missing commands, timeouts, and all-skipped test lanes do not
-prove the claimed behavior. Profile-v2 evidence shares one immutable session
+prove the claimed behavior. Profile-v3 evidence shares one immutable session
 manifest and rejects mixed commits, trees, runs, attempts, or producers.
 
 CI-backed release claims use provider-authenticated workflow identity and an
@@ -188,7 +188,7 @@ wait. See [CI authority](docs/CI_AUTHORITY.md).
 
 ## Governed CI graph
 
-Profile-contract v2 repositories may make `governance/ci-graph.yml` the single
+Profile-contract v3 repositories make `governance/ci-graph.yml` the single
 orchestration owner. It declares events, stable job IDs, descriptive names,
 dependencies, resource classes, runner mappings, permissions, evidence fan-in,
 truth, exact-main authority, scheduled controls, and optional release roles.
@@ -204,7 +204,7 @@ not an editing surface; byte drift fails validation. This keeps specialized CI
 possible without making a probabilistic operator responsible for synchronizing
 a pile of YAML.
 
-The Standard-v2 reference graph includes cheap preflight, grouped evidence
+The Standard-v3 reference graph includes cheap preflight, grouped evidence
 lanes, exact run/attempt artifact fan-in, terminal truth, one main-push entry,
 scheduled controls, and explicit candidate/trusted runner classes. It is a
 starting contract, not a claim that one topology fits every repository. Mature
@@ -214,7 +214,7 @@ it cannot preserve behavior and meet the repository's performance threshold.
 
 ### Durable evidence inputs
 
-Standard-v2 also installs an inactive `governance/evidence-storage.yml`
+Standard-v3 also installs an inactive `governance/evidence-storage.yml`
 contract for repositories whose preparation artifacts are too large to retain
 once per lane and run. When explicitly configured, the graph can publish each
 verified input archive once under a content-addressed, non-product GitHub
@@ -237,12 +237,40 @@ digest to replace the bytes it identifies. Hosted producers and consumers
 remain run-and-done; publication is a short trusted no-checkout job and no
 hosted runner polls, sleeps, or waits for local capacity.
 
+## BCF 2.1 operating model
+
+An adopter declares assurance semantics—claims, dependencies, gates, controls,
+and provider boundaries—then uses one agent-facing submission operation:
+`bcf ci submit --repo-root . --intent workitem`. The command derives the exact
+repository, bounded target, commit, tree, and validation order; runs the
+canonical prospective train; verifies that the proved subject did not change;
+and pushes only those exact bytes. An agent does not maintain a command
+checklist or hand-carry evidence identities.
+
+Profile v3 transports authenticated source receipts and recomputes their
+qualification on the candidate or main subject. The planner reuses only claims
+whose complete dependency and authority bindings remain applicable, schedules
+only unresolved execution groups, preserves their causal controls, and falls
+back to canonical execution on ambiguity. Preflight observations remain
+structural diagnostics and cannot masquerade as behavioral evidence.
+
+Ordinary adopters do not need persistent trusted controllers or BCF's own
+repository Apps, release credentials, recovery lane, or publication authority.
+Repositories that explicitly adopt trusted-controller management receive the
+same optional provider-backed routine transition contract: one protected
+implementation PR is followed by mechanically selected construction,
+independent runner installation and probe, atomic activation, and scoped
+certification. Provider coordinates are derived, never copied into follow-up
+commits. BCF self-governance adds only typed overlays for its controller,
+publication, recovery, and repository authorities; those overlays are absent
+from the ordinary adopter pack.
+
 ## Install
 
-Install the `v2.0.0` wheel from its immutable GitHub Release after publication:
+Install the `v2.1.0` wheel from its immutable GitHub Release:
 
 ```bash
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.0.0/bcf_governance-2.0.0-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.1.0/bcf_governance-2.1.0-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel. Release publication
@@ -260,7 +288,7 @@ bcf install \
   --require-strict-validation
 ```
 
-Fresh Standard and Regulated installs use profile contract v2 and require a
+Fresh Standard and Regulated installs use profile contract v3 and require a
 complete configuration before mutation:
 
 ```bash
@@ -282,9 +310,9 @@ bcf install \
 Promotion and GitHub CI adoption are separate, explicit transactions:
 
 ```bash
-bcf profile promote --repo-root . --to standard --contract-version 2.0 \
+bcf profile promote --repo-root . --to standard --contract-version 3.0 \
   --semantic-config /path/to/semantic-authority.yml --check
-bcf profile promote --repo-root . --to standard --contract-version 2.0 \
+bcf profile promote --repo-root . --to standard --contract-version 3.0 \
   --semantic-config /path/to/semantic-authority.yml --apply
 bcf ci graph validate --repo-root .
 bcf ci graph diagnose --repo-root .
@@ -307,7 +335,7 @@ canonical inputs. Evidence subprocess deadlines come from gate contracts; graph
 validation rejects an outer evidence job that cannot contain the longest inner
 deadline plus explicit headroom.
 
-The 1.x contract supports Linux x86-64 and CPython 3.11–3.14.
+The 2.1 contract supports Linux x86-64 and CPython 3.11–3.14.
 GitHub is its only executable CI provider and GitHub Releases is its distribution
 channel. The mechanically frozen CLI surface is the top-level command inventory
 and its exit-code classes; nested arguments remain documented interfaces governed

@@ -30,7 +30,7 @@ workitems:
   status: DONE
   summary: empirical self and adopter benchmarks including two consecutive one-PR routine trusted-controller rotations on each applicable path
 - id: P28-P0-05
-  status: TODO
+  status: DONE
   summary: immutable 2.1.0 publication custody terminal truth and certified closeout
 execution_evidence:
   planned_commands:
@@ -66,6 +66,11 @@ execution_evidence:
   - superseded dispatcher 36261976084/1 failed closed on concurrent artifact inventory churn while the independently authenticated finalizer publisher succeeded; it conferred no status or authority and required no intervention
   - the representative trusted-controller adopter is created through the real installer and adoption path, receives byte-exact canonical semantic owners, and receives no declared self-authority surface
   - parity validation fails closed on missing domains, owner drift, missing proof nodes, non-installed adopter claims, and missing attack coverage
+  - P28-P0-04 closed for merge subject a2738d14cb8dc1a5848727d2a5d062c989cc02d0 and tree 95f1ad2c09b5fbabf7596ac2b36318f07247903c through exact-main 36266893780/1 trusted finalizer 36267256963/1 and authenticated bounded publication 36267338745/1
+  - every editorial source in the canonical inventory was reviewed line by line and byte-identical packaged mirrors were verified against their canonical template sources
+  - the 2.1.0 release candidate replaces obsolete controller ceremony with the semantic-intent prospective train selective proof composition optional provider-backed controller transition and explicit adopter versus BCF-self authority boundary
+  - the certified but unpublished 2.0.0 baseline remains historical and is superseded without a tag or immutable release; its N/N+1 repair chronology is collapsed into the released 2.1 controller-compatibility contract
+  - P28-P0-05 authors implementation completion so terminal exact-main truth can establish release authority before immutable publication; provider publication and its custody-only closeout remain downstream and cannot help prove phase closure
 closeout_requirements:
   claims:
     workitems_closed:
@@ -98,4 +103,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify P28-P0-04 bounded empirical truth before beginning immutable 2.1.0 publication custody
+- certify terminal P28 exact-main truth then publish and independently record immutable 2.1.0 custody without rebuilding

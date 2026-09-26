@@ -8,7 +8,8 @@ topology. [Architecture](ARCHITECTURE.md) explains the broader design;
 
 ```mermaid
 flowchart LR
-  A[Trusted admission run] --> P[Same-run reusable producers]
+  A[Trusted admission run] --> L[Claim-aware evidence planner]
+  L --> P[Required producers or authenticated reusable receipts]
   P --> C[Trusted snapshot collector]
   C --> N[Deterministic normalizer]
   N --> T[Truth recomputation]
@@ -22,6 +23,13 @@ candidate code on fresh workers. A trusted collector reconstructs provider
 state from authenticated APIs; callback payloads are hints, not authority. A
 normalizer produces the certification report, and truth independently
 recomputes it with ordinary gate receipts and the evidence-session manifest.
+
+The planner recomputes claim dependency closure and receipt qualification for
+the exact subject. It may reuse an authenticated execution group only when every
+declared claim, dependency, control, producer, session, and provider binding is
+still applicable. It schedules unresolved groups and falls back to canonical
+execution on ambiguity. Structural preflight observations never satisfy a
+behavioral claim.
 
 Only after a passing computation does truth emit a schema-2 release receipt.
 That receipt is outside the truth input directory and cannot help prove itself.
@@ -90,8 +98,8 @@ fail before writer use.
 
 The writer App has contents-write authority only. It cannot approve or merge a
 PR, publish certification, administer the repository, or execute candidate
-code. The trusted PR finalizer reconstructs the latest exact-head governance
-and package attempts; a separate publisher is the sole owner of
+code. The trusted PR finalizer reconstructs the latest exact-head governed producer
+attempts; a separate publisher is the sole owner of
 `bcf/pr-certification`. Newer pending, failed, cancelled, stale, or malformed
 work revokes an older success. This deterministic service authority does not
 delegate judgment to an AI agent.
@@ -137,36 +145,28 @@ causal controls prove that each mismatch fails. A maintainer or AI may propose p
 review a change, and decide whether to merge or publish; neither may substitute a
 copied value or judgment for the computation.
 
-Trusted-controller bootstrap has no warm-cache prerequisite. The generated bootstrap
-first verifies the provider artifact digest, exact checksum inventory, and controller
-wheel digest; it then stages the wheel in a run-scoped environment using the selected
-Python. Only that staged controller authenticates provider custody and creates the
-persistent installation. Restoring or replacing a trusted runner therefore cannot
-silently inherit authority from an absent or stale local cache.
+Trusted-controller operation is optional. Ordinary adopters need no persistent
+controller, self-hosted runner, BCF repository App, or BCF release credential.
+When a repository explicitly enables the controller extension, one protected
+implementation PR drives a provider-backed transition. The transition derives
+the exact source and artifact, validates the complete runtime dependency closure,
+installs and probes independently on every declared trusted runner, and atomically
+activates only the authenticated result. It has no warm-cache prerequisite and no
+operator-authored target, confirmation, normalization, or pin values. Partial,
+stale, competing, incompatible, or replayed transitions are noncertifying.
 
-The controller builder does not maintain a second dependency list. It reads the
-package runtime requirements, downloads their complete binary closure, records the
-build interpreter and platform in controller metadata v1.1, validates every applicable
-direct and transitive `Requires-Dist` edge, and performs a real offline install and CLI
-smoke before upload. The trusted pin compiler repeats the non-executing metadata and
-closure validation against downloaded bytes. Missing, duplicated, incompatible,
-direct-URL, malformed, or environment-ambiguous dependency wheels therefore fail
-before a controller target can be projected or a trusted runner allocated.
-
-Authority v1.1 has a narrow self-hosting compatibility state. Its base registry,
-admission jobs, and producer inventories remain readable by a pre-enrichment v1.1
-controller while a successor controller is built. Privileged workflow job inventories
-are absent in that state, so canary and release operations that require them fail
-closed. After the successor is installed, the authority compiler projects the enriched
-job inventories and preflight makes them exact; an identical tree or operator assertion
-cannot skip that transition.
+BCF's own controller, publication, recovery, and repository authorities are typed
+self-overlays. They are absent from the adopter pack and do not turn an adopter's
+candidate execution into BCF self-authority.
 
 ## GitHub reference topology
 
-The v1.1 topology uses one exact-main push admission whose jobs call the
-governance and package workflows at the admitted SHA. The finalizer reads only
-that run and exact attempt; a separate publisher applies the canonical status
-precedence. It has no polling, sleeping, capacity waiter, or hosted VM
+The profile-v3 topology uses one exact-main push admission whose jobs call the
+governance workflow at the admitted SHA and, when applicable, the independent
+controller builder. The claim-aware planner selects only required execution
+groups; no retired package producer is part of steady-state certification. The
+finalizer reads only that run and exact attempt; a separate publisher applies
+the canonical status precedence. It has no polling, sleeping, capacity waiter, or hosted VM
 allocated only to wait for another runner. Candidate jobs use fresh standard
 hosted runners. Persistent self-hosted runners are reserved for short trusted
 control-plane work and never check out candidate code.

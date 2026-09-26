@@ -62,7 +62,7 @@
     },
     "docs/OPERATIONS.md": {
       "operation": "copy",
-      "sha256": "c9ab95af33dab4f6abee7e9939187c562914b443d4217bd794d621ca82f74f6d"
+      "sha256": "11d7171288157c03607329a24a3eadb7ad112bfb3a0d5cb9e0b38d2ae9232e18"
     },
     "governance-profile.yml": {
       "operation": "generate",
@@ -400,7 +400,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "98471585690048e25d0c1e41af94eb894225425e893e6a1bb3c728a964bbd3ee"
+      "sha256": "0ca9aadba5f2aeb57166558672eac7ca86c2c54f27febac028e61c26db37446d"
     },
     "scripts/_bcf_runtime/automation_changelog.py": {
       "operation": "copy",

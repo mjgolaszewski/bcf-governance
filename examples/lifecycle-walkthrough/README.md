@@ -1,7 +1,7 @@
 # Lifecycle Walkthrough
 
-This walkthrough demonstrates the BCF 1.1 lifecycle: bootstrap Lite, declare
-Standard-v2 gates and semantic authority, promote transactionally, author
+This walkthrough demonstrates the BCF 2.1 lifecycle: bootstrap Lite, declare
+Standard-v3 gates and semantic authority, promote transactionally, author
 `completed`, and let exact evidence compute `verified` and `closed`.
 
 ## 1. Bootstrap Lite
@@ -47,7 +47,7 @@ contents. Preview the complete transaction before applying it:
 bcf profile promote \
   --repo-root /tmp/demo-governed-app \
   --to standard \
-  --contract-version 2.0 \
+  --contract-version 3.0 \
   --config /tmp/demo-standard-gates.yml \
   --semantic-config /tmp/demo-semantic-config.yml \
   --check
@@ -55,7 +55,7 @@ bcf profile promote \
 bcf profile promote \
   --repo-root /tmp/demo-governed-app \
   --to standard \
-  --contract-version 2.0 \
+  --contract-version 3.0 \
   --config /tmp/demo-standard-gates.yml \
   --semantic-config /tmp/demo-semantic-config.yml \
   --apply

@@ -40,11 +40,11 @@ applicability or generated workflow YAML. Use `bcf profile promote` with either 
 their command text is not verification.
 
 An absent `profile_contract_version` means v1. Fresh Standard and Regulated
-installs default to v2; Lite defaults to v1. Promote explicitly with
-`bcf profile promote --repo-root . --to standard --contract-version 2.0`
+installs default to v3; Lite defaults to v1. Promote explicitly with
+`bcf profile promote --repo-root . --to standard --contract-version 3.0`
 and either `--check` or `--apply`. Promotion and normal upgrades preserve
 workflow bytes. Promotion validation also preserves local Git custody so
-retained phase-history hashes remain mechanically verifiable. Fresh Standard-v2
+retained phase-history hashes remain mechanically verifiable. Fresh Standard-v3
 installs require explicit candidate and trusted runner mappings and render the
 reference graph. Thereafter edit the graph contract and use
 `bcf reconcile --repo-root . --apply|--check` and `bcf ci graph validate`. Use
@@ -74,7 +74,7 @@ manifest, and reuses the admitted raw selectors for isolated controls. It never
 reconstructs a filesystem path from a JUnit classname. Missing or ambiguous
 mappings fail closed.
 
-In profile v2, preflight allocates one private immutable evidence session for
+In profile v3, preflight allocates one private immutable evidence session for
 the exact commit, tree, profile, producer, run, attempt, and gate inventory.
 Every positive gate executes once and writes inside that session. Truth rejects
 mixed sessions or attempts. CI artifact names include the exact provider run
@@ -152,6 +152,19 @@ Submission derives repository, bounded target, commit, and tree; executes the
 canonical prospective train; rechecks immutable custody; and pushes only the
 exact proved commit. Agents do not sequence its internal checks.
 
+Profile v3 plans by claim and execution group. It reauthenticates immutable
+source receipts and recomputes their dependency closure, qualification, controls,
+producer, subject, session, and provider custody. Applicable groups may be reused;
+invalidated groups execute once; ambiguity falls back to canonical execution.
+Preflight observations are structural diagnostics and cannot satisfy behavioral
+evidence.
+
+Persistent trusted-controller operation is optional. Ordinary adopters use fresh
+candidate workers and do not install BCF's self-authority Apps, recovery lane,
+release credentials, or publication authority. A repository that explicitly
+enables the controller extension receives the typed provider-backed transition;
+operators do not author or copy its artifact, run, confirmation, or pin values.
+
 If the repo layout differs from the starter backend shape, update `architecture-boundaries.yml` before relying on `make architecture-test`.
 
 For existing repositories, install with `--adoption-mode existing` to include conversion playbooks; keep the first adoption commit focused on governance artifacts, inventory, and gate wiring.
@@ -172,7 +185,8 @@ Governance validation should cover structural schema checks from `schemas/`, rep
 Structural validation never promotes lifecycle state. Phase logs may author
 `completed`; `verified`, `closed`, and release readiness are computed by the
 truth engine from current-tree evidence and canonical finding accounting.
-Receipt and truth schemas are `2.0`; 0.5 bundles fail as
+New receipt and truth schemas are `3.0`; supported legacy bundles retain their
+exact-subject compatibility, while 0.5 bundles fail as
 `unsupported_schema_version` and must be recaptured.
 
 Standalone tooling is exported under the private `scripts/_bcf_runtime/`
