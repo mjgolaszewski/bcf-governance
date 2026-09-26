@@ -314,6 +314,34 @@ def test_authored_todo_workitem_fails_before_reconcile_or_evidence(
     assert trace == []
 
 
+def test_authored_todo_workitem_fails_before_provider_resolution(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        prospective,
+        "validate_bounded_target_authored_ready",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            prospective.WorkitemContractError("target is not authored DONE")
+        ),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "effective_controller_authority",
+        lambda *_args, **_kwargs: pytest.fail("provider resolution ran"),
+    )
+    with pytest.raises(
+        prospective.ProspectiveValidationError,
+        match="target_not_ready_for_bounded_certification",
+    ):
+        prospective.run_prospective_train(
+            tmp_path,
+            **TRAIN,
+            python_executable=Path("/python"),
+            repository="owner/repo",
+            provider_api=object(),  # type: ignore[arg-type]
+        )
+
+
 def test_graph_intent_mismatch_fails_before_evidence(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

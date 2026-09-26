@@ -968,7 +968,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "76960d8981b418e35d9db2c6758edb990edbe8b5184e506acb8c6692b21a53ff"
+      "sha256": "fc2f0b9bde915e4da1f5eb5da276098eafc7f79bf30cb874fcd355e0e40d32da"
     },
     "scripts/_bcf_runtime/migrate_contracts.py": {
       "operation": "copy",

@@ -391,6 +391,13 @@ def _validate_train_telemetry(repo_root: Path, telemetry: dict[str, Any]) -> Non
         raise ProspectiveValidationError(str(exc)) from exc
 
 
+def _require_authored_target_ready(repo_root: Path, target: str | None) -> None:
+    try:
+        validate_bounded_target_authored_ready(repo_root, target or "")
+    except WorkitemContractError as exc:
+        raise ProspectiveValidationError(f"target_not_ready_for_bounded_certification: {exc}") from exc
+
+
 def _run_prospective_train(
     repo_root: Path,
     *,
@@ -428,12 +435,7 @@ def _run_prospective_train(
     except EvaluationScopeError as exc:
         raise ProspectiveValidationError(str(exc)) from exc
     if requested_scope.intent is EvaluationIntent.WORKITEM_CERTIFICATION:
-        try:
-            validate_bounded_target_authored_ready(root, requested_scope.target_id or "")
-        except WorkitemContractError as exc:
-            raise ProspectiveValidationError(
-                f"target_not_ready_for_bounded_certification: {exc}"
-            ) from exc
+        _require_authored_target_ready(root, requested_scope.target_id)
     try:
         reconcile_started = time.monotonic_ns()
         for step in reconcile_steps(root, python_executable.resolve()):
@@ -771,6 +773,8 @@ def run_prospective_train(
 ) -> dict[str, Any]:
     """Execute the complete locally knowable chain; no partial public mode exists."""
 
+    if semantic_intent == "workitem":
+        _require_authored_target_ready(repo_root.resolve(), evaluation_target)
     controller_authority = None
     if repository is not None:
         if provider_api is None:
