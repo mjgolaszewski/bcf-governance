@@ -70,6 +70,31 @@ non_escalation:
 - protection omission policy drift mixed runner state wrong artifact run attempt subject or replay fails closed
 - active provider custody remains non-repository state and cannot broaden bounded certification
 - release authority remains absent
+self_authority_overlays:
+  workitem: P28-P0-02
+  canonical_contract: governance/self-overlays.yml
+  schema: schemas/self-authority-overlays.schema.json
+  validator: bcf_governance/tooling/governance_validation/self_authority_overlays.py
+  permitted_propositions:
+  - id: self-controller-custody
+    proposition: construct_install_and_activate_this_repository_trusted_controller
+    extensions: [bcf-trusted-control]
+  - id: self-publication-authority
+    proposition: publish_pre_certified_immutable_release_bytes
+    extensions: [bcf-release]
+  - id: self-recovery-authority
+    proposition: recover_only_from_ordinary_controller_bootstrap_deadlock
+    extensions: [bcf-break-glass-recovery]
+  - id: self-repository-authority
+    proposition: mutate_only_declared_repository_metadata_and_durable_evidence
+    extensions: [bcf-automation, bcf-evidence-storage]
+  mechanical_invariants:
+  - every self graph extension has exactly one overlay owner
+  - extension sources and generated workflows are derived and present
+  - authority surfaces and generated self workflows are absent from the ordinary adopter pack
+  - self-only graph value sources have declared ownership
+  - typed opt-in adopter controller rotation remains packaged product outside the overlay inventory
+  - proposition drift overlap omission missing files stale extension digests and pack leakage fail closed
 post_merge_hotfix:
   id: P28-HF01
   failing_run: {workflow: bcf/automation-changelog-reconciler, run_id: '36218038519', run_attempt: '1', job_id: '108337832851'}

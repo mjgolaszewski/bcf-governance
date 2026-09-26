@@ -366,6 +366,10 @@
       "operation": "copy",
       "sha256": "88d803c38b14406210a067c249b1aea55d8506fee05a6a57043d9f59fd97015b"
     },
+    "schemas/self-authority-overlays.schema.json": {
+      "operation": "copy",
+      "sha256": "843254d52bedd054330129f6685520568d1c03fbad7973ce7fc689c442d46825"
+    },
     "schemas/semantic-families.schema.json": {
       "operation": "copy",
       "sha256": "952a979c9ea51b30c44adfac8ce8b1bf490be1a9fd7d4ee1189ccea65f4c9b77"
@@ -932,7 +936,11 @@
     },
     "scripts/_bcf_runtime/governance_validation/runner.py": {
       "operation": "copy",
-      "sha256": "a52207bc252052f0a4bd842e412a8366ac312a9c0321514dc4101a20bf925b10"
+      "sha256": "0bb02a91ad292cf1d3a95f81528c778169f4e5d5463f5fa60fc468f4de8e4a2b"
+    },
+    "scripts/_bcf_runtime/governance_validation/self_authority_overlays.py": {
+      "operation": "copy",
+      "sha256": "6daa5d88622ec9a57d7f4e5f8e923cb7d1d3642a2fa3680836244ff8081e17dc"
     },
     "scripts/_bcf_runtime/governance_validation/structural_limits.py": {
       "operation": "copy",
