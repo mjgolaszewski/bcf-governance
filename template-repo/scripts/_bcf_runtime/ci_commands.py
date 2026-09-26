@@ -39,6 +39,7 @@ from .trusted_controller_compatibility import (
     TrustedControllerCompatibilityError,
     classify_trusted_controller_applicability,
 )
+from .ci_controller_adoption import adopt_trusted_controller
 
 
 def _local_pr_command(command: tuple[str, ...]) -> tuple[str, ...]:
@@ -73,6 +74,13 @@ def _adopt_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser
     mode.add_argument("--check", action="store_true")
     mode.add_argument("--apply", action="store_true")
     github.add_argument("--format", choices=("text", "json"), default="text")
+    controller = providers.add_parser("trusted-controller")
+    controller.add_argument("--repo-root", type=Path, default=Path.cwd())
+    controller.add_argument("--config", type=Path, required=True)
+    controller_mode = controller.add_mutually_exclusive_group(required=True)
+    controller_mode.add_argument("--check", action="store_true")
+    controller_mode.add_argument("--apply", action="store_true")
+    controller.add_argument("--format", choices=("text", "json"), default="text")
 
 
 def _automation_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -204,6 +212,14 @@ def main(argv: list[str] | None = None) -> None:
                 raise SystemExit(1)
             return
         if args.operation == "adopt":
+            if args.provider == "trusted-controller":
+                result = adopt_trusted_controller(
+                    args.repo_root, config=args.config, apply=args.apply
+                )
+                _print(result.as_dict(), args.format)
+                if args.check and result.status != "clean":
+                    raise SystemExit(1)
+                return
             graph_path = args.repo_root / "governance/ci-graph.yml"
             legacy_values = (args.candidate_label, args.trusted_label, args.producer_arg)
             if graph_path.is_file() and not any(legacy_values):

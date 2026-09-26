@@ -57,15 +57,13 @@ from .routine_controller_rotation import (
     transition_id,
     validate_transition,
 )
+from .ci_controller_provider import (
+    policy_digest as _policy_digest,
+    runner_policy as _runner_policy,
+)
 
 
 TRANSITION_ARTIFACT_PREFIX = "bcf-controller-transition-"
-ROTATION_POLICY_PATHS = (
-    "governance/github-protection.yml",
-    "governance/self-governance-policy.yml",
-    "governance/ci-extensions/bcf-trusted-control.yml",
-    "schemas/controller-transition.schema.json",
-)
 STAGE_JOB_PREFIXES = {
     "bootstrap": "Bootstrap routine controller / ",
     "probe": "Probe routine controller / ",
@@ -279,39 +277,6 @@ def _policy_change_route(
 
 def _sha256(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
-
-
-def _policy_digest(
-    api: GitHubAPI, repository: str, *, ref: str
-) -> str:
-    return controller_policy_digest(
-        lambda path: api.content(repository, path, ref=ref).content
-    )
-
-
-def _runner_policy(
-    api: GitHubAPI, repository: str, *, main: MainIdentity
-) -> tuple[dict[str, str], dict[str, str], tuple[str, ...]]:
-    content = api.content(
-        repository, "governance/self-governance-policy.yml", ref=main.checkout_sha
-    )
-    try:
-        payload = yaml.safe_load(content.content.decode("utf-8"))
-        runner = payload["runner_security"]
-        pin = validate_controller_pin(runner["trusted_controller_artifact"])
-        installation = validate_controller_installation(
-            runner["trusted_controller_installation"]
-        )
-        labels = tuple(str(value) for value in runner["trusted_instance_labels"])
-    except (KeyError, TypeError, UnicodeDecodeError, yaml.YAMLError) as exc:
-        raise GitHubControllerError("routine controller source policy is invalid") from exc
-    if len(labels) < 2 or labels != tuple(sorted(set(labels))):
-        raise GitHubControllerError("routine controller runner inventory is not canonical")
-    if pin["BCF_BOOTSTRAP_COMMIT_SHA"] != installation["installed_commit_sha"]:
-        raise GitHubControllerError(
-            "routine controller authority requires ordinary-current source custody"
-        )
-    return pin, installation, labels
 
 
 def _active_receipts(

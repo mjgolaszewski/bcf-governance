@@ -32,6 +32,8 @@ DIRECT_RUNTIME_FILES = (
 PACKAGED_SCHEMA_ROOT = PurePosixPath(
     "bcf_governance/pack/template-repo/schemas"
 )
+INSTALLED_RUNTIME_ROOT = PurePosixPath("scripts/_bcf_runtime")
+INSTALLED_SCHEMA_ROOT = PurePosixPath("schemas")
 SCHEMA_REQUIREMENTS_FILE = PurePosixPath("AGENTS.yml")
 VERSION_METADATA_FILE = PurePosixPath("bcf_governance/_version.py")
 VERSION_METADATA_PATTERN = re.compile(
@@ -170,7 +172,10 @@ def _imported_modules(path: PurePosixPath, tree: ast.Module) -> Iterable[str]:
 
 
 def _required_packaged_schemas(
-    repo_root: Path, *, ref: str | None
+    repo_root: Path,
+    *,
+    ref: str | None,
+    schema_root: PurePosixPath = PACKAGED_SCHEMA_ROOT,
 ) -> set[PurePosixPath]:
     source = (
         _git(repo_root, "show", f"{ref}:{SCHEMA_REQUIREMENTS_FILE.as_posix()}")
@@ -204,7 +209,7 @@ def _required_packaged_schemas(
             raise TrustedControllerCompatibilityError(
                 "trusted controller schema requirements are invalid"
             )
-        canonical.add(PACKAGED_SCHEMA_ROOT / path.relative_to("schemas"))
+        canonical.add(schema_root / path.relative_to("schemas"))
     if len(canonical) != len(required):
         raise TrustedControllerCompatibilityError(
             "trusted controller schema requirements are invalid"
@@ -232,6 +237,42 @@ def trusted_runtime_source_files(
     """Derive the trusted CLI closure and active packaged schema requirements."""
 
     root = repo_root.resolve()
+    installed_entrypoint = INSTALLED_RUNTIME_ROOT / "ci_github_commands.py"
+    if not (root / TRUSTED_ENTRYPOINT).is_file() and (root / installed_entrypoint).is_file():
+        runtime_files = {
+            path.relative_to(root).as_posix()
+            for path in (root / INSTALLED_RUNTIME_ROOT).rglob("*")
+            if path.is_file() and not path.is_symlink() and path.suffix in {".py", ".mjs"}
+        }
+        schema_files = _required_packaged_schemas(
+            root, ref=None, schema_root=INSTALLED_SCHEMA_ROOT
+        )
+        _require_packaged_schemas(root, schema_files, ref=None)
+        if target_commit is not None:
+            target_schemas = _required_packaged_schemas(
+                root, ref=target_commit, schema_root=INSTALLED_SCHEMA_ROOT
+            )
+            _require_packaged_schemas(root, target_schemas, ref=target_commit)
+            schema_files.update(target_schemas)
+        wrappers = {
+            path
+            for path in (
+                "scripts/build_trusted_controller.py",
+                "requirements-governance.txt",
+            )
+            if (root / path).is_file() and not (root / path).is_symlink()
+        }
+        observed_installed = runtime_files | {
+            value.as_posix() for value in schema_files
+        } | wrappers
+        if not runtime_files or not schema_files:
+            raise TrustedControllerCompatibilityError(
+                "installed trusted controller runtime is incomplete"
+            )
+        if target_commit is not None:
+            for relative in observed_installed:
+                _git(root, "cat-file", "-e", f"{target_commit}:{relative}")
+        return tuple(sorted(observed_installed))
     pending = [TRUSTED_ENTRYPOINT]
     observed = set(DIRECT_RUNTIME_FILES)
     while pending:
@@ -314,13 +355,24 @@ def _verify_installed_authority_consumability(
                     materialized.stderr.strip() or "installed controller unavailable"
                 )
             try:
+                source_layout = (checkout / INSTALLED_AUTHORITY_VALIDATOR).is_file()
+                validator = (
+                    checkout / INSTALLED_AUTHORITY_VALIDATOR
+                    if source_layout
+                    else checkout / INSTALLED_RUNTIME_ROOT / "ci_authority_contracts.py"
+                )
+                schema_root = (
+                    checkout / "bcf_governance/pack/template-repo"
+                    if source_layout
+                    else checkout
+                )
                 result = subprocess.run(
                     [
                         sys.executable,
                         "-c",
                         INSTALLED_AUTHORITY_VALIDATION_PROGRAM,
-                        str(checkout / INSTALLED_AUTHORITY_VALIDATOR),
-                        str(checkout / "bcf_governance/pack/template-repo"),
+                        str(validator),
+                        str(schema_root),
                         str(authority_path),
                     ],
                     cwd=repo_root,
@@ -411,8 +463,13 @@ def _verify_installed_pending_topology(
 ) -> None:
     """Run installed N's exact topology classifier on the candidate provider shape."""
 
+    topology_path = (
+        INSTALLED_TOPOLOGY_CLASSIFIER
+        if (repo_root / INSTALLED_TOPOLOGY_CLASSIFIER).is_file()
+        else INSTALLED_RUNTIME_ROOT / "ci_github_membership.py"
+    )
     exists = subprocess.run(
-        ["git", "cat-file", "-e", f"{target_commit}:{INSTALLED_TOPOLOGY_CLASSIFIER}"],
+        ["git", "cat-file", "-e", f"{target_commit}:{topology_path}"],
         cwd=repo_root,
         capture_output=True,
         check=False,
@@ -439,7 +496,8 @@ def _verify_installed_pending_topology(
                 program = (
                     "import importlib,json,pathlib,sys,types;"
                     "sys.path.insert(0,sys.argv[1]);"
-                    "m=importlib.import_module('bcf_governance.tooling.ci_github_membership');"
+                    "name='bcf_governance.tooling.ci_github_membership' if (pathlib.Path(sys.argv[1])/'bcf_governance').is_dir() else '_bcf_runtime.ci_github_membership';"
+                    "m=importlib.import_module(name);"
                     "m.authenticate_trusted_run=lambda *a,**k:None;"
                     "m._reference_map=lambda *a,**k:{};"
                     "m._validate_reference_inventory=lambda *a,**k:None;"

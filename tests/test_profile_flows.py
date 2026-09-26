@@ -40,6 +40,51 @@ EXPLICIT_HOSTED_RUNNERS = [
     "--trusted-runner-kind",
     "hosted",
 ]
+
+
+def trusted_controller_config(repo: Path) -> Path:
+    commit = git(repo, "rev-parse", "HEAD")
+    tree = git(repo, "rev-parse", "HEAD^{tree}")
+    digest = "a" * 64
+    runner_security = {
+        "trusted_labels": ["Linux", "X64", "fixture", "self-hosted"],
+        "trusted_instance_labels": ["fixture-control-1", "fixture-control-2"],
+        "trusted_controller_artifact": {
+            "BCF_BOOTSTRAP_ARTIFACT_ID": "1",
+            "BCF_BOOTSTRAP_ARTIFACT_NAME": f"bcf-trusted-control-{commit}-1",
+            "BCF_BOOTSTRAP_ARTIFACT_DIGEST": f"sha256:{digest}",
+            "BCF_BOOTSTRAP_RUN_ID": "1",
+            "BCF_BOOTSTRAP_RUN_ATTEMPT": "1",
+            "BCF_BOOTSTRAP_COMMIT_SHA": commit,
+            "BCF_BOOTSTRAP_TREE_SHA": tree,
+            "BCF_BOOTSTRAP_REPOSITORY_ID": "1",
+            "BCF_BOOTSTRAP_WHEEL_SHA256": digest,
+        },
+        "trusted_controller_installation": {
+            "schema_version": "1.0",
+            "installed_commit_sha": commit,
+            "subject_commit_sha": commit,
+            "subject_tree_sha": tree,
+            "bootstrap_run_id": "1",
+            "bootstrap_run_attempt": "1",
+            "probe_run_id": "2",
+            "probe_run_attempt": "1",
+        },
+    }
+    payload = {
+        "schema_version": "1.0",
+        "runner_security": runner_security,
+        "rotation_policy_paths": [
+            "governance/ci-extensions/bcf-controller-rotation.yml",
+            "governance/ci-graph.yml",
+            "governance/github-protection.yml",
+            "governance/trusted-controller-policy.yml",
+            "schemas/controller-transition.schema.json",
+        ],
+    }
+    path = repo.parent / f"{repo.name}-trusted-controller-config.yml"
+    path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    return path
 TEST_POLICIES = {
     "automated_tests",
     "contract_tests",
@@ -1031,6 +1076,95 @@ def test_full_profile_install_evidence_truth_flow(
     if profile == "regulated":
         assert (repo / "governance/MODEL_RISK_AND_PROVENANCE.md").is_file()
         assert (repo / "governance/HOTFIX_LANE.md").is_file()
+
+
+def test_fresh_adopter_projects_opt_in_one_pr_controller_rotation(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "trusted-controller-adopter"
+    repo.mkdir()
+    git(repo, "init", "--quiet")
+    git(repo, "config", "user.email", "controller-fixture@example.invalid")
+    git(repo, "config", "user.name", "Controller Fixture")
+    write_gate_runner(repo)
+    config = gate_config(repo, "standard", None)
+    semantic = semantic_config(repo)
+    git(repo, "add", ".")
+    git(repo, "commit", "--quiet", "-m", "fixture gate contracts")
+    subprocess.run(
+        [
+            sys.executable,
+            str(INSTALLER),
+            "--target", str(repo),
+            "--profile", "standard",
+            "--profile-config", str(config),
+            "--semantic-config", str(semantic),
+            "--project-id", "trusted-controller-adopter",
+            "--project-name", "Trusted Controller Adopter",
+            "--product-name", "Trusted Controller Adopter",
+            "--candidate-runner-label", "ubuntu-24.04",
+            "--trusted-runner-label", "Linux",
+            "--trusted-runner-label", "X64",
+            "--trusted-runner-label", "fixture",
+            "--trusted-runner-label", "self-hosted",
+            "--candidate-runner-kind", "hosted",
+            "--trusted-runner-kind", "self-hosted",
+            "--skip-validation",
+        ],
+        check=True,
+    )
+    git(repo, "add", ".")
+    git(repo, "commit", "--quiet", "-m", "install ordinary BCF governance")
+    ordinary_graph = yaml.safe_load((repo / "governance/ci-graph.yml").read_text())
+    assert ordinary_graph["trusted_controller"]["kind"] == "executable"
+    assert not (repo / "governance/trusted-controller-policy.yml").exists()
+    assert not (repo / ".github/workflows/bcf-controller-rotation.yml").exists()
+    controller = trusted_controller_config(repo)
+    check = subprocess.run(
+        [
+            sys.executable, "-m", "bcf_governance.cli", "ci", "adopt",
+            "trusted-controller", "--repo-root", str(repo), "--config",
+            str(controller), "--check", "--format", "json",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert check.returncode == 1
+    assert '"status": "actionable"' in check.stdout
+    subprocess.run(
+        [
+            sys.executable, "-m", "bcf_governance.cli", "ci", "adopt",
+            "trusted-controller", "--repo-root", str(repo), "--config",
+            str(controller), "--apply", "--format", "json",
+        ],
+        cwd=REPO_ROOT,
+        check=True,
+    )
+    graph = yaml.safe_load((repo / "governance/ci-graph.yml").read_text())
+    assert graph["trusted_controller"] == {
+        "kind": "governed_controller_policy",
+        "policy_path": "governance/trusted-controller-policy.yml",
+    }
+    assert [value["id"] for value in graph["extensions"]] == [
+        "bcf-controller-rotation"
+    ]
+    assert validate_ci_graph(repo).trusted_controller_current is True
+    assert (repo / "scripts/build_trusted_controller.py").is_file()
+    rotation = yaml.safe_load(
+        (repo / ".github/workflows/bcf-controller-rotation.yml").read_text()
+    )
+    jobs = rotation["jobs"]
+    assert set(jobs) == {
+        "authorize", "bootstrap", "advance-bootstrap", "probe",
+        "advance-probe", "promote", "activate",
+    }
+    assert "mjgolaszewski" not in (repo / ".github/workflows/bcf-controller-rotation.yml").read_text()
+    exact_main = yaml.safe_load((repo / ".github/workflows/bcf-exact-main.yml").read_text())
+    assert "trusted-controller-build" in exact_main["jobs"]
+    publisher = yaml.safe_load((repo / ".github/workflows/bcf-status-publisher.yml").read_text())
+    assert "rotation-callback" in publisher["jobs"]
 
 
 @pytest.mark.parametrize("cycle", range(1, 6))

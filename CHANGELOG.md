@@ -1,5 +1,9 @@
 # Changelog
 
+- Project typed opt-in trusted-controller custody, provider-authenticated one-PR
+  routine rotation, independent two-runner verification, and post-activation
+  certification through canonical adopter install/adopt without affecting ordinary adopters.
+
 - Open P28 from certified P27 closure, bind the amended BCF 2.1 product-parity,
   one-PR rotation, simplicity, empirical, and immutable-release acceptance train,
   and target exact-main at the first bounded projection workitem.

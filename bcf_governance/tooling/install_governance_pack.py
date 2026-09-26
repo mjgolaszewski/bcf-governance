@@ -65,6 +65,7 @@ RESCAFFOLD_REMOVE_PATHS = (
     ".github/workflows/bcf-exact-main.yml",
     ".github/workflows/bcf-trusted-finalizer.yml",
     ".github/workflows/bcf-status-publisher.yml",
+    ".github/workflows/bcf-controller-rotation.yml",
     ".github/workflows/governance-mutants-nightly.yml",
     ".github/workflows/governance-mutants-weekly.yml",
     "governance/ci-graph.yml",
@@ -74,6 +75,7 @@ RESCAFFOLD_REMOVE_PATHS = (
     "governance/semantic-lock.yml",
     "governance/evidence-storage.yml",
     "scripts/check_governance_exposure.py",
+    "scripts/build_trusted_controller.py",
     "scripts/evidence_storage.py",
     "scripts/governance_evidence.py",
     "scripts/governance_truth.py",
@@ -123,11 +125,11 @@ LITE_DEFERRED_GATES = (
     "runtime-smoke",
 )
 REQUIRED_STANDARD_GATES = ("governance-validate", "governance-exposure-scan", *LITE_DEFERRED_GATES)
-UPGRADE_REFRESH_PATHS = (
-    "schemas",
+UPGRADE_REFRESH_PATHS = ("schemas",
     "backend/tests/architecture/test_boundaries_ast.py",
     "governance/REPO_CLEANUP.md",
     "scripts/check_governance_exposure.py",
+    "scripts/build_trusted_controller.py",
     "scripts/evidence_storage.py",
     "scripts/governance_evidence.py",
     "scripts/governance_truth.py",

@@ -61,6 +61,7 @@ from .trusted_controller_compatibility import (
     verify_pr_bootstrap_compatibility,
     verify_trusted_controller_compatibility,
 )
+from .ci_controller_preflight import controller_preflight_projection
 
 
 class PreflightError(ValueError):
@@ -433,15 +434,16 @@ def _self_controller(
     pr_base_sha: str | None = None,
     transported_authority: Mapping[str, Any] | None = None,
 ) -> int | dict[str, Any]:
-    policy = repo_root / "governance/self-governance-policy.yml"
-    if not policy.is_file():
+    projection = controller_preflight_projection(
+        repo_root, self_verifier=verify_self_controller_projection
+    )
+    if projection is None:
         return 0
-    payload = yaml.safe_load(policy.read_text(encoding="utf-8"))
+    payload, count = projection
     runner = payload.get("runner_security") if isinstance(payload, dict) else None
     if not isinstance(runner, dict) or "trusted_controller_artifact" not in runner:
         return 0
     try:
-        count = verify_self_controller_projection(repo_root)
         target = str(runner["trusted_controller_artifact"]["BCF_BOOTSTRAP_COMMIT_SHA"])
         if transported_authority is not None:
             transported_commit = transported_authority.get("controller_commit_sha")
