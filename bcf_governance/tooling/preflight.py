@@ -628,7 +628,7 @@ def run_preflight(
         )
     except ValueError as exc:
         raise PreflightError(str(exc)) from exc
-    if scope.intent is EvaluationIntent.WORKITEM:
+    if scope.intent is EvaluationIntent.WORKITEM_CERTIFICATION:
         try:
             step(
                 "bounded-target",
