@@ -97,8 +97,13 @@ def test_exact_main_evaluation_has_one_canonical_admission_and_truth_scope() -> 
         item for item in stale_workflow["jobs"] if item["id"] == "admit"
     )
     command = stale_graph["commands"]["exact-main-admit-effective"]["argv"]
-    command[command.index("--evaluation-mode") + 1] = "closure"
-    del command[command.index("--evaluation-target"):]
+    if evaluation.mode == "workitem":
+        command[command.index("--evaluation-mode") + 1] = "closure"
+        target_index = command.index("--evaluation-target")
+        del command[target_index : target_index + 2]
+    else:
+        command[command.index("--evaluation-mode") + 1] = "workitem"
+        command.extend(["--evaluation-target", "wrong-target"])
     assert "exact-main admission command and executor evaluation intents differ" in (
         job_execution_issues(
             stale_graph,
