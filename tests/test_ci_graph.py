@@ -89,6 +89,25 @@ def test_exact_main_evaluation_has_one_canonical_admission_and_truth_scope() -> 
     with pytest.raises(CIGraphError, match="evaluation intents differ"):
         exact_main_evaluation(stale.workflows)
 
+    stale_graph = copy.deepcopy(compiled.graph)
+    stale_workflow = next(
+        item for item in stale_graph["workflows"] if item["id"] == "exact-main"
+    )
+    stale_admission = next(
+        item for item in stale_workflow["jobs"] if item["id"] == "admit"
+    )
+    command = stale_graph["commands"]["exact-main-admit-effective"]["argv"]
+    command[command.index("--evaluation-mode") + 1] = "closure"
+    del command[command.index("--evaluation-target"):]
+    assert "exact-main admission command and executor evaluation intents differ" in (
+        job_execution_issues(
+            stale_graph,
+            stale_admission,
+            stale_admission["executor"],
+            stale_workflow,
+        )
+    )
+
 
 def test_routine_rotation_allocates_each_receipt_parent_before_execution() -> None:
     compiled = validate_ci_graph(REPO_ROOT)

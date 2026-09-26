@@ -171,6 +171,7 @@ def job_execution_issues(
         and workflow.get("role") == "exact-main"
         and job.get("semantic_role") == "exact-main-admission"
         and executor.get("kind") == "component_sequence"
+        and "evaluation_mode" in executor
     ):
         commands = [
             graph["commands"][
