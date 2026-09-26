@@ -674,6 +674,10 @@
       "operation": "copy",
       "sha256": "1ff5e3eaf49a68f9c7ec26092570ee4e0839488e928760b42787339383311bce"
     },
+    "scripts/_bcf_runtime/ci_prospective_telemetry.py": {
+      "operation": "copy",
+      "sha256": "7bb6d555ab073f37b279acf663602911edce5611688eb2e75228f646f223f6f3"
+    },
     "scripts/_bcf_runtime/ci_reuse_attestation_verifier.py": {
       "operation": "copy",
       "sha256": "3a458a6d58c6751f6fe83f3f35f55e768b99deeba0aabb34cebcf5272486d5b9"
@@ -964,7 +968,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "dcf22db860c7fc5f5c716f705adaf3a7202bf83d94393a9f6ab025f6c4d5e1c4"
+      "sha256": "bcb0b3a48fd80edad863e07685452e875b752caea91d1cd9d20bd371ccc83b25"
     },
     "scripts/_bcf_runtime/migrate_contracts.py": {
       "operation": "copy",
@@ -1009,10 +1013,6 @@
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",
       "sha256": "de42f792cf713eefd420e854850ff598977be1ebaf0f4d6aa69f2e9649fad1f0"
-    },
-    "scripts/_bcf_runtime/prospective_telemetry.py": {
-      "operation": "copy",
-      "sha256": "dd87a27ed69ac0aadd88afc7d3e88e25fe3934086d1059a7fa7a977defdd53c7"
     },
     "scripts/_bcf_runtime/protection_inspection_client.py": {
       "operation": "copy",
