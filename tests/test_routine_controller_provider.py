@@ -14,7 +14,7 @@ from bcf_governance.tooling.ci_github_identity import (
     GitHubControllerError,
     MainIdentity,
 )
-from bcf_governance.tooling import routine_controller_provider as provider
+from bcf_governance.tooling import ci_controller_provider, routine_controller_provider as provider
 from bcf_governance.tooling.routine_controller_rotation import (
     AUTHORIZE_JOB,
     RoutineCallbackTopologyError,
@@ -30,6 +30,99 @@ OLD = "1" * 40
 NEW = "2" * 40
 TREE = "3" * 40
 MAIN = MainIdentity("1207503211", "main", NEW, TREE)
+
+
+def test_adopter_controller_policy_is_resolved_without_self_authority() -> None:
+    paths = [
+        "governance/ci-extensions/bcf-controller-rotation.yml",
+        "governance/ci-graph.yml",
+        "governance/github-protection.yml",
+        "governance/trusted-controller-policy.yml",
+        "schemas/controller-transition.schema.json",
+    ]
+    policy = {
+        "schema_version": "1.0",
+        "runner_security": {
+            "trusted_labels": ["Linux", "X64", "fixture", "self-hosted"],
+            "trusted_instance_labels": ["fixture-control-1", "fixture-control-2"],
+            "trusted_controller_artifact": _pin(OLD),
+            "trusted_controller_installation": {
+                "schema_version": "1.0",
+                "installed_commit_sha": OLD,
+                "subject_commit_sha": OLD,
+                "subject_tree_sha": TREE,
+                "bootstrap_run_id": "1",
+                "bootstrap_run_attempt": "1",
+                "probe_run_id": "2",
+                "probe_run_attempt": "1",
+            },
+        },
+        "rotation_policy_paths": paths,
+    }
+    graph = {
+        "trusted_controller": {
+            "kind": "governed_controller_policy",
+            "policy_path": "governance/trusted-controller-policy.yml",
+        }
+    }
+    content = {
+        "governance/ci-graph.yml": yaml.safe_dump(graph).encode(),
+        "governance/trusted-controller-policy.yml": yaml.safe_dump(policy).encode(),
+    }
+
+    class API:
+        def content(self, _repository: str, path: str, *, ref: str):
+            assert ref == NEW
+            return SimpleNamespace(content=content[path])
+
+    resolved, policy_paths = ci_controller_provider.source_policy(
+        API(), "owner/adopter", ref=NEW
+    )
+
+    assert resolved == policy
+    assert policy_paths == tuple(paths)
+    for path in paths:
+        content.setdefault(path, path.encode())
+    before = ci_controller_provider.policy_digest(
+        API(), "owner/adopter", ref=NEW
+    )
+    content["governance/github-protection.yml"] = b"changed protection contract"
+    assert ci_controller_provider.policy_digest(
+        API(), "owner/adopter", ref=NEW
+    ) != before
+
+
+def test_adopter_controller_policy_rejects_foreign_repository(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    policy = {
+        "runner_security": {
+            "trusted_controller_artifact": _pin(OLD),
+            "trusted_controller_installation": {
+                "schema_version": "1.0",
+                "installed_commit_sha": OLD,
+                "subject_commit_sha": OLD,
+                "subject_tree_sha": TREE,
+                "bootstrap_run_id": "1",
+                "bootstrap_run_attempt": "1",
+                "probe_run_id": "2",
+                "probe_run_attempt": "1",
+            },
+            "trusted_instance_labels": ["fixture-control-1", "fixture-control-2"],
+        }
+    }
+    policy["runner_security"]["trusted_controller_artifact"][
+        "BCF_BOOTSTRAP_REPOSITORY_ID"
+    ] = "999"
+    monkeypatch.setattr(
+        ci_controller_provider,
+        "source_policy",
+        lambda *_args, **_kwargs: (policy, ()),
+    )
+    with pytest.raises(GitHubControllerError, match="another repository"):
+        ci_controller_provider.runner_policy(
+            object(), "owner/adopter", main=MAIN
+        )
 
 
 def _pin(commit: str = NEW) -> dict[str, str]:

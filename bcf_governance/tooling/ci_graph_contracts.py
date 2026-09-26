@@ -26,6 +26,7 @@ from .ci_graph_controller_lifecycle import (
     ControllerLifecycleState,
     resolve_controller_lifecycle,
 )
+from .ci_controller_policy import TrustedControllerPolicyError, load_graph_controller_policy
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 from .ci_graph_values import CIGraphValueError, resolve_graph_values
 from .ci_graph_timeouts import validate_gate_job_timeouts
@@ -733,16 +734,15 @@ def _trusted_controller(
             ControllerLifecycleState.ORDINARY_CURRENT, executable, executable
         )
         return executable, f"command -v -- {executable} >/dev/null", lifecycle, ()
-    relative = str(contract["policy_path"])
-    path = repo_root / relative
     try:
-        payload = load_yaml_path(path)
-    except GraphYAMLError as exc:
+        payload, relative = load_graph_controller_policy(repo_root, graph)
+    except TrustedControllerPolicyError as exc:
         raise CIGraphError(str(exc)) from exc
     runner_security = payload.get("runner_security")
     if not isinstance(runner_security, dict):
         raise CIGraphError("self-governance policy lacks runner_security")
     lifecycle = resolve_controller_lifecycle(repo_root, runner_security)
+    path = repo_root / relative
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     control_root = f'"$RUNNER_TOOL_CACHE"/bcf-governance/{lifecycle.installed_commit}'
     executable = f"{control_root}/bin/bcf"

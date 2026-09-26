@@ -22,8 +22,8 @@ environment_facts:
   current_repo_state:
   - P24 and immutable v1.3.0 are historical; plans/phase-history.yml and release custody audits own those facts.
   - P25 and its certified 2.0.0 baseline are historical; release_15 was superseded without publication or a tag.
-  - P26 is closed by exact-main truth on b638f611363b14ac645e06218b8c8cb4b1906732; P27 is active and P28 remains planned until P27 is protected-merged, exact-main certified, and closed by bcf truth.
-  active_artifacts: {spec: plans/product-spec.yml, build_plan: plans/build-plan.yml, active_phase_ledger: plans/phase-ledger.yml, phase_history: plans/phase-history.yml, active_phase_plan: plans/phase-27-plan.yml, active_workitem_ledger: plans/phase-27-workitems.yml, active_phase_log: phases/phase-27-log.yml}
+  - P26 and P27 are closed by exact-main truth; P28 is active to project the canonical BCF 2.1 product, prove adopter parity, and publish immutable 2.1.0 custody.
+  active_artifacts: {spec: plans/product-spec.yml, build_plan: plans/build-plan.yml, active_phase_ledger: plans/phase-ledger.yml, phase_history: plans/phase-history.yml, active_phase_plan: plans/phase-28-plan.yml, active_workitem_ledger: plans/phase-28-workitems.yml, active_phase_log: phases/phase-28-log.yml}
 known_constraints:
 - candidate code runs only on disposable workers; trusted workers reconstruct provider state and never check out candidate code
 - routine controller rotation becomes active only after its dormant provider compiler is installed through the one-time ordinary N/N+1 migration; provider evidence never grants release authority

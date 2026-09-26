@@ -1,6 +1,32 @@
 document: {"kind":"phase_history","name":"BCF Governance Phase History","id":"bcf-governance-phase-history","version":"1.0.0","generated_at_utc":"2026-08-14T00:00:00Z","status":"active","path":"plans/phase-history.yml"}
 retention_policy: {"source":"governance/artifact-manifest.yml","purpose":"compact machine-readable history for removed or archived closed phase artifacts"}
 entries:
+- phase_id: P27
+  build_block: minimum-time-proof-composition-2.1.0
+  release_train: release_16
+  retention_source: git_history
+  retention_ref: 5d720dce9877bed60d5f24716838d23354d6a28f
+  status: completed
+  derived_state_at_capture: closed
+  verification_snapshot:
+    commit_sha: 5d720dce9877bed60d5f24716838d23354d6a28f
+    tree_sha: 4eeb4125c94bff099a8028ba480d73d2fc2269dc
+    truth_report_sha256: 07cf97fead4145342c8d44292b69d406f72a70475c75c06b00f03139995f6a56
+    evidence_bundle_sha256: bb54221cca6fdcce7dc48375d2114ea3a4353b1bbe4f2ba7d0d2f8d666d1a3ba
+    durable_ref: github-actions://mjgolaszewski/bcf-governance/runs/36197358406/attempts/1/bcf-governance-truth
+    verifier: {kind: workflow, id: 'exact-main 36197358406/1; finalizer 36197715019/1; publisher 36197800018/1'}
+  outcome: certified_phase_closure
+  summary:
+  - P27 delivered canonical selective proof composition duration-aware scheduling convergent fixed-point reconciliation execution-scoped cleanup and provider-backed one-PR routine controller rotation.
+  - Terminal exact-main truth certified phase_closed for P27 without release authority and App 15368 published bcf/exact-main-certification success.
+  validation:
+  - exact-main admission and truth 36197358406/1 succeeded
+  - trusted finalizer 36197715019/1 certified the exact commit tree and phase proposition
+  - App 15368 publisher 36197800018/1 published bcf/exact-main-certification success
+  archived_artifacts:
+  - {path: plans/phase-27-plan.yml, sha256: f0c3a19e90fc9919945b26ba23218b7aac9ed6a5633e1e38333f5c8255efcd2d, git_commit: 5d720dce9877bed60d5f24716838d23354d6a28f}
+  - {path: plans/phase-27-workitems.yml, sha256: ebdc1e7cc425c32ac46c92462a42ad2410c4c46792f7fb2275c5b3d13b12b65a, git_commit: 5d720dce9877bed60d5f24716838d23354d6a28f}
+  - {path: phases/phase-27-log.yml, sha256: 284af2dd19d3f4af6c98e8397b8cb30a11775483189469ab2aff0ddd112b340a, git_commit: 5d720dce9877bed60d5f24716838d23354d6a28f}
 - phase_id: P26
   build_block: invariant-closure-proof-transport-2.1.0
   release_train: release_16

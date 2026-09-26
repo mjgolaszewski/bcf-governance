@@ -84,6 +84,15 @@
             "kind": {"const": "self_governance_policy"},
             "policy_path": {"const": "governance/self-governance-policy.yml"}
           }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "policy_path"],
+          "properties": {
+            "kind": {"const": "governed_controller_policy"},
+            "policy_path": {"const": "governance/trusted-controller-policy.yml"}
+          }
         }
       ]
     },

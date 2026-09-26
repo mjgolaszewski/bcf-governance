@@ -9,8 +9,7 @@ constraints:
   operating_constraints: [repo_native_runtime, candidate_code_executes_only_on_one_job_disposable_workers, trusted_status_and_release_mutations_require_authenticated_exact_workflow_run_session_and_bundle_identity, release_sdist_contains_complete_git_tracked_source]
   known_external_dependencies: [github_actions, trusted_control_plane_and_disposable_vm_runner_substrate]
 architecture: {backend: python_package_with_private_portable_runtime, frontend: canonical_markdown_operator_and_maintainer_guides, data: closed_yaml_json_contracts_and_content_addressed_evidence}
-phase_history: {path: plans/phase-history.yml, through_phase: P26}
+phase_history: {path: plans/phase-history.yml, through_phase: P27}
 execution_phases:
-- {phase_id: P27, build_block: minimum-time-proof-composition-2.1.0, objective: 'minimize certification critical-path time using P26 proof transport while preserving assurance semantics', release_train: release_16}
 - {phase_id: P28, build_block: canonical-projection-parity-certification-2.1.0, objective: 'project BCF 2.1 canonically, prove self-adopter parity, measure performance, and publish immutable 2.1.0', release_train: release_16}
 acceptance: {release_gate: bcf truth, evidence_location: phases/}

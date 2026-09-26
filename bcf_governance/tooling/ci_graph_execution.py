@@ -89,6 +89,14 @@ def _command_ids(
     return ()
 
 
+def _argument(argv: list[str], flag: str) -> str | None:
+    try:
+        value = argv[argv.index(flag) + 1]
+    except (ValueError, IndexError):
+        return None
+    return value if isinstance(value, str) else None
+
+
 def _requires_selected_python(command: dict[str, Any]) -> bool:
     """Return whether a governed executable depends on the selected Python runtime."""
 
@@ -158,6 +166,37 @@ def job_execution_issues(
     """Return deterministic interpreter and trusted-input contract violations."""
 
     issues: list[str] = []
+    if (
+        workflow is not None
+        and workflow.get("role") == "exact-main"
+        and job.get("semantic_role") == "exact-main-admission"
+        and executor.get("kind") == "component_sequence"
+        and "evaluation_mode" in executor
+    ):
+        commands = [
+            graph["commands"][
+                graph["step_components"][component_id]["command"]
+            ]["argv"]
+            for component_id in executor["components"]
+            if graph["step_components"][component_id]["kind"] == "command"
+        ]
+        admissions = [
+            argv for argv in commands
+            if "ci-github" in argv and "exact-main" in argv and "admit" in argv
+        ]
+        if len(admissions) != 1:
+            issues.append("exact-main admission requires one canonical admission command")
+        else:
+            argv = admissions[0]
+            mode = _argument(argv, "--evaluation-mode")
+            target = _argument(argv, "--evaluation-target")
+            if (
+                mode != executor.get("evaluation_mode")
+                or target != executor.get("evaluation_target")
+            ):
+                issues.append(
+                    "exact-main admission command and executor evaluation intents differ"
+                )
     if executor.get("protection_inspection"):
         if (
             executor.get("kind") not in {"authority", "component_sequence"}

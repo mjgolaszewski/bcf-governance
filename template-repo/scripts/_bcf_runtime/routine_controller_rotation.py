@@ -274,11 +274,18 @@ def alternate_policy_lane_contract() -> dict[str, Any]:
     }
 
 
-def controller_policy_digest(read_content: Callable[[str], bytes]) -> str:
+def controller_policy_digest(
+    read_content: Callable[[str], bytes],
+    *,
+    policy_paths: Iterable[str] = ROTATION_POLICY_PATHS,
+) -> str:
     """Bind the exact closed rotation-policy byte inventory."""
 
     digest = hashlib.sha256()
-    for path in ROTATION_POLICY_PATHS:
+    paths = tuple(policy_paths)
+    if not paths or len(paths) != len(set(paths)):
+        raise RoutineRotationError("controller policy path inventory is not canonical")
+    for path in paths:
         content = read_content(path)
         if not isinstance(content, bytes):
             raise RoutineRotationError("controller policy content must be exact bytes")

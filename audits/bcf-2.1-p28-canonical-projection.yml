@@ -1,0 +1,72 @@
+document:
+  kind: canonical_product_projection_audit
+  id: bcf-2.1-p28-canonical-projection
+  version: 1.0.0
+  status: candidate
+  path: audits/bcf-2.1-p28-canonical-projection.yml
+phase: P28
+workitem: P28-P0-01
+canonical_projection:
+  profile_contract: '3.0'
+  source_owner: bcf_governance/tooling/ci_graph_defaults.py
+  installed_owner: scripts/_bcf_runtime/ci_graph_defaults.py
+  portable_helpers:
+  - bcf_governance/tooling/evidence_shards.py
+  - bcf_governance/tooling/evidence_modes.py
+  - bcf_governance/tooling/ci_controller_policy.py
+  - bcf_governance/tooling/ci_controller_adoption.py
+  - bcf_governance/tooling/ci_controller_builder.py
+  - bcf_governance/tooling/ci_controller_provider.py
+  - bcf_governance/tooling/routine_controller_rotation.py
+  projected_capabilities:
+  - claim-aware preflight and one exact evidence session
+  - planner-derived duration-aware four-shard execution
+  - optional exact prior-evidence transport
+  - grouped receipt fan-in and terminal scoped truth
+  - exact-main admission finalization and publication
+  - opt-in provider-authenticated one-PR trusted-controller rotation
+  - one agent-facing prospective-train command
+  excluded_self_authority:
+  - recovery and Break Glass authority
+  - release publisher credentials
+  - repository protection mutation
+  applicability:
+    ordinary_adopter: executable controller only; no controller policy workflow or authority is projected
+    trusted_controller_adopter: explicit typed adoption projects canonical build bootstrap probe activation and certification
+    self_governance: uses the same provider transition primitives under its separately governed self-policy custody
+fresh_adopter_proof:
+  installation: real strict install_governance_pack.py path
+  profiles: [standard, regulated]
+  graph: canonical rendered contract with planned gate_shard execution
+  evidence: schema-v3 receipts from one planner-owned session
+  truth: bounded workitem certification from exact authenticated evidence
+  structural_rule: preflight-only claims are excluded from workitem acceptance through the canonical claim model
+  trusted_controller:
+    adoption: explicit transaction after ordinary installation and committed N runtime
+    policy: closed schema binds installed N exact artifact installation two-runner inventory graph extension transition schema and protection contract
+    workflow: seven-stage provider-authenticated authorize bootstrap probe promote activate train
+    authority: installed N authorizes N+1; candidate cannot appoint itself
+    routine_repository_mutations: one protected implementation PR and zero bookkeeping mutations
+    post_activation: provider-active receipt selects N+1 and dispatches fresh exact-main certification
+    one_time_migration: initial runner App environment provider workflow IDs and installed-N custody are provisioned separately and are not Benchmark D evidence
+prospective_chain:
+  preflight: exact generated graph manifests runtime and profile contracts must be fresh
+  controller_compatibility: ordinary adopters remain executable-only; opted-in trusted-controller candidates are parsed by installed N and predict rotation only when N can authorize the exact candidate state
+  pr_evidence: one session and planner-derived shards execute only unresolved producers
+  certification: terminal truth preserves exact subject intent and target
+  merge: normal protected merge only
+  exact_main: authenticated admission transports exact prior evidence before reusable governance
+  controller_lifecycle: changed trusted-runtime bytes build N+1 once then installed N authorizes exact bootstrap probe and atomic provider activation without target confirmation or pin-recording PRs
+  bounded_truth: P28-P0-01 may close only from receipt-producing authenticated claims
+  finalizer: exact run attempt subject proposition and producer inventory remain mandatory
+  publisher: bounded status cannot substitute for release or protection authority
+  successor_eligibility: only authenticated P28-P0-01 closure makes P28-P0-02 eligible
+non_escalation:
+- candidate configuration cannot replace an existing canonical claim model
+- preflight observations cannot satisfy behavioral workitem evidence
+- prior evidence remains optional exact transport and ambiguous applicability executes canonically
+- no self authority credential workflow or protection mutation is projected into adopters
+- trusted-controller machinery appears only after explicit typed adoption and never in an ordinary install
+- protection omission policy drift mixed runner state wrong artifact run attempt subject or replay fails closed
+- active provider custody remains non-repository state and cannot broaden bounded certification
+- release authority remains absent

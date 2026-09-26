@@ -16,6 +16,10 @@ from typing import Any, Callable, Mapping
 import yaml  # type: ignore[import-untyped]
 
 from .evidence_execution import _selected_python
+from .evidence_workitem_lifecycle import (
+    WorkitemContractError,
+    validate_bounded_target_successor,
+)
 from .evidence_planning import load_prior_receipts, verification_plan as build_verification_plan
 from .evaluation_scope import EvaluationIntent, evaluation_scope
 from .ci_authority_pins import CIAuthorityPinError, verify_workflow_authority
@@ -37,6 +41,7 @@ from .interpreter_environment import (
     verify_interpreter_environment_projection,
 )
 from .prior_evidence_receipts import load_provisional_transport, provisional_receipts
+from .governance_validation.preflight_repository_context import pr_context as _pr_context
 from .governance_validation.preflight_negative_controls import (
     NegativeControlPreflightError,
     inspect_negative_control_targets,
@@ -56,6 +61,7 @@ from .trusted_controller_compatibility import (
     verify_pr_bootstrap_compatibility,
     verify_trusted_controller_compatibility,
 )
+from .ci_controller_preflight import controller_preflight_projection
 
 
 class PreflightError(ValueError):
@@ -428,15 +434,16 @@ def _self_controller(
     pr_base_sha: str | None = None,
     transported_authority: Mapping[str, Any] | None = None,
 ) -> int | dict[str, Any]:
-    policy = repo_root / "governance/self-governance-policy.yml"
-    if not policy.is_file():
+    projection = controller_preflight_projection(
+        repo_root, self_verifier=verify_self_controller_projection
+    )
+    if projection is None:
         return 0
-    payload = yaml.safe_load(policy.read_text(encoding="utf-8"))
+    payload, count = projection
     runner = payload.get("runner_security") if isinstance(payload, dict) else None
     if not isinstance(runner, dict) or "trusted_controller_artifact" not in runner:
         return 0
     try:
-        count = verify_self_controller_projection(repo_root)
         target = str(runner["trusted_controller_artifact"]["BCF_BOOTSTRAP_COMMIT_SHA"])
         if transported_authority is not None:
             transported_commit = transported_authority.get("controller_commit_sha")
@@ -557,22 +564,6 @@ def _semantic_ownership(repo_root: Path) -> dict[str, Any]:
     }
 
 
-def _pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
-    if mode != "pr":
-        return {"applicable": False}
-    base = os.environ.get("BCF_PR_BASE_SHA", "")
-    if not re.fullmatch(r"[a-f0-9]{40,64}", base):
-        raise PreflightError("PR preflight requires exact BCF_PR_BASE_SHA")
-    result = subprocess.run(
-        ["git", "merge-base", "--is-ancestor", base, "HEAD"],
-        cwd=repo_root,
-        check=False,
-    )
-    if result.returncode != 0:
-        raise PreflightError("PR base SHA is not an ancestor of HEAD")
-    return {"applicable": True, "base_sha": base}
-
-
 def _pack_manifest(repo_root: Path) -> dict[str, Any]:
     """Verify BCF's generated pack bytes before package or evidence work."""
 
@@ -639,6 +630,16 @@ def run_preflight(
         )
     except ValueError as exc:
         raise PreflightError(str(exc)) from exc
+    if scope.intent is EvaluationIntent.WORKITEM_CERTIFICATION:
+        try:
+            step(
+                "bounded-target",
+                lambda: validate_bounded_target_successor(
+                    repo_root, scope.target_id
+                ),
+            )
+        except WorkitemContractError as exc:
+            raise PreflightError(str(exc)) from exc
     syntax = step("syntax", lambda: _syntax_checks(repo_root))
     exposure = step("exposure", lambda: _exposure_scan(repo_root))
     interpreter = step(

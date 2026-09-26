@@ -6,7 +6,7 @@ default_branch: main
 trusted_controller: {kind: self_governance_policy, policy_path: governance/self-governance-policy.yml}
 evidence_storage: {path: governance/evidence-storage.yml, sha256: e7616b0c43cc0106779b5bab99ec9c1e5e8d30cbc51bff57a3698cb82454fdaa}
 value_sources:
-  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: ac33e3f0436768cf14ef7ccc40565c17b662ab738815581d54fb2bf3e9aad67b}
+  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 1e3c297241651dcf86df075ffd4e87bf287622a89b57ccf1e349a14ffb92b98f}
   release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: b271126eff3e027388727b8324c113ef59024217bd5608b191850aeb0e09c8f7}
   protection-contract: {kind: yaml, path: governance/github-protection.yml, sha256: 5f8c6fcd0d569e17050f694571474faa0f7538d12a5d11cc51891cf01c59a53a}
   automation-contract: {kind: yaml, path: governance/automation-producers.yml, sha256: 74c02575f7599f9e4a82cacc60f6d60692ee81dd1f7bec20441e6b375cf77cce}
@@ -63,7 +63,8 @@ artifacts:
   weekly-mutant-results: {path: .artifacts/scheduled-mutants, kind: control, scope: run-attempt, retention_days: 90}
   trusted-controller-bundle: {path: .artifacts/trusted-control, kind: control, scope: run-attempt, retention_days: 30}
   prior-evidence-transport: {path: .artifacts/bcf/prior-evidence, kind: control, scope: run-attempt, retention_days: 30}
-conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', prior-evidence-enabled: inputs.use_prior_evidence == true, prior-evidence-disabled: inputs.use_prior_evidence != true, evidence-prerequisites-with-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence == true, evidence-prerequisites-without-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence != true, exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-semantic-admission-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && needs.trusted-controller-build.outputs.semantic_evidence_applicable == 'true', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.name == 'bcf/trusted-evidence-finalizer' && github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main', always-step: always()}
+conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', prior-evidence-enabled: inputs.use_prior_evidence == true, prior-evidence-disabled: inputs.use_prior_evidence != true, evidence-prerequisites-with-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence == true, evidence-prerequisites-without-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence != true, exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-semantic-admission-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && needs.trusted-controller-build.outputs.semantic_evidence_applicable == 'true', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED
+    == 'true' && github.event.workflow_run.name == 'bcf/trusted-evidence-finalizer' && github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main', always-step: always()}
 commands:
   install-governance-dependencies:
     argv: ['{python}', -m, pip, install, -r, requirements-governance.txt]
@@ -78,11 +79,11 @@ commands:
     cwd: .
     environment: {}
   capture-governance-shard:
-    argv: ['{python}', .github/scripts/capture_governance_shard.py, --shard-index, '${{ matrix.shard }}', --shard-count, '4', --session-root, .artifacts/bcf/sessions]
+    argv: ['{python}', scripts/capture_governance_shard.py, --repo-root, ., --shard-index, '${{ matrix.shard }}', --shard-count, '4', --session-root, .artifacts/bcf/sessions]
     cwd: .
     environment: {}
   restore-governance-session-modes:
-    argv: ['{python}', .github/scripts/restore_evidence_modes.py, --root, .artifacts/bcf/sessions]
+    argv: ['{python}', scripts/restore_evidence_modes.py, --root, .artifacts/bcf/sessions]
     cwd: .
     environment: {}
   restore-evidence-modes:
@@ -138,7 +139,7 @@ commands:
     cwd: .
     environment: {}
   exact-main-admit-effective:
-    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, exact-main, admit, --repository, '${{ github.repository }}', --sha, '${{ github.sha }}', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}', --evaluation-mode, closure]
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, exact-main, admit, --repository, '${{ github.repository }}', --sha, '${{ github.sha }}', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}', --evaluation-mode, workitem, --evaluation-target, P28-P0-01]
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
   prior-evidence-effective:
@@ -548,7 +549,8 @@ workflows:
     executor:
       kind: component_sequence
       components: [setup-python, resolve-effective-controller, exact-main-admit-effective, protection-inspector-token, prior-evidence-effective, upload-prior-evidence-effective]
-      evaluation_mode: closure
+      evaluation_mode: workitem
+      evaluation_target: P28-P0-01
       protection_inspection: true
     produces: [prior-evidence-transport]
     consumes: []
@@ -567,7 +569,7 @@ workflows:
     executor:
       kind: reusable_workflow
       path: .github/workflows/governance.yml
-      inputs: {evaluation_mode: closure, use_prior_evidence: true}
+      inputs: {evaluation_mode: workitem, evaluation_target: P28-P0-01, use_prior_evidence: true}
       artifact_bindings: {prior-evidence-transport: use_prior_evidence}
     produces: []
     consumes: [prior-evidence-transport]

@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bcf.dev/schemas/trusted-controller-policy.schema.json",
+  "title": "BCF installed trusted-controller policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "runner_security", "rotation_policy_paths"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "runner_security": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trusted_labels", "trusted_instance_labels", "trusted_controller_artifact", "trusted_controller_installation"],
+      "properties": {
+        "trusted_labels": {"$ref": "#/$defs/labels"},
+        "trusted_instance_labels": {
+          "type": "array",
+          "prefixItems": [{"$ref": "#/$defs/label"}, {"$ref": "#/$defs/label"}],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true
+        },
+        "trusted_controller_artifact": {"$ref": "#/$defs/controllerArtifact"},
+        "trusted_controller_installation": {"$ref": "#/$defs/controllerInstallation"}
+      }
+    },
+    "rotation_policy_paths": {
+      "type": "array",
+      "minItems": 5,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/repositoryPath"}
+    }
+  },
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+    "digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "positiveIntegerString": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+    "label": {"type": "string", "pattern": "^[A-Za-z0-9._-]+$"},
+    "labels": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/label"}},
+    "repositoryPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"
+    },
+    "controllerArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["BCF_BOOTSTRAP_ARTIFACT_ID", "BCF_BOOTSTRAP_ARTIFACT_NAME", "BCF_BOOTSTRAP_ARTIFACT_DIGEST", "BCF_BOOTSTRAP_RUN_ID", "BCF_BOOTSTRAP_RUN_ATTEMPT", "BCF_BOOTSTRAP_COMMIT_SHA", "BCF_BOOTSTRAP_TREE_SHA", "BCF_BOOTSTRAP_REPOSITORY_ID", "BCF_BOOTSTRAP_WHEEL_SHA256"],
+      "properties": {
+        "BCF_BOOTSTRAP_ARTIFACT_ID": {"$ref": "#/$defs/positiveIntegerString"},
+        "BCF_BOOTSTRAP_ARTIFACT_NAME": {"type": "string", "minLength": 1},
+        "BCF_BOOTSTRAP_ARTIFACT_DIGEST": {"$ref": "#/$defs/digest"},
+        "BCF_BOOTSTRAP_RUN_ID": {"$ref": "#/$defs/positiveIntegerString"},
+        "BCF_BOOTSTRAP_RUN_ATTEMPT": {"$ref": "#/$defs/positiveIntegerString"},
+        "BCF_BOOTSTRAP_COMMIT_SHA": {"$ref": "#/$defs/sha"},
+        "BCF_BOOTSTRAP_TREE_SHA": {"$ref": "#/$defs/sha"},
+        "BCF_BOOTSTRAP_REPOSITORY_ID": {"$ref": "#/$defs/positiveIntegerString"},
+        "BCF_BOOTSTRAP_WHEEL_SHA256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "controllerInstallation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "installed_commit_sha", "subject_commit_sha", "subject_tree_sha", "bootstrap_run_id", "bootstrap_run_attempt", "probe_run_id", "probe_run_attempt"],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "installed_commit_sha": {"$ref": "#/$defs/sha"},
+        "subject_commit_sha": {"$ref": "#/$defs/sha"},
+        "subject_tree_sha": {"$ref": "#/$defs/sha"},
+        "bootstrap_run_id": {"$ref": "#/$defs/positiveIntegerString"},
+        "bootstrap_run_attempt": {"$ref": "#/$defs/positiveIntegerString"},
+        "probe_run_id": {"$ref": "#/$defs/positiveIntegerString"},
+        "probe_run_attempt": {"$ref": "#/$defs/positiveIntegerString"}
+      }
+    }
+  }
+}

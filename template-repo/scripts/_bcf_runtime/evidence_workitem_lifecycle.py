@@ -64,6 +64,45 @@ def validate_workitem_dependencies(entries: Iterable[dict[str, Any]]) -> list[st
     return ids
 
 
+def validate_bounded_target_successor(
+    repo_root: Path, target_id: str
+) -> None:
+    """Reject a bounded target that would strand later authored workitems."""
+
+    ledger = yaml.safe_load(
+        (repo_root / "plans/phase-ledger.yml").read_text(encoding="utf-8")
+    )
+    active = ledger.get("active_phase") if isinstance(ledger, dict) else None
+    workitems_path = active.get("workitems") if isinstance(active, dict) else None
+    if not isinstance(workitems_path, str):
+        raise WorkitemContractError("active workitem ledger is missing")
+    payload = yaml.safe_load((repo_root / workitems_path).read_text(encoding="utf-8"))
+    entries = payload.get("workitems") if isinstance(payload, dict) else None
+    if not isinstance(entries, list) or not all(isinstance(item, dict) for item in entries):
+        raise WorkitemContractError("active workitem entries are invalid")
+    ids = validate_workitem_dependencies(entries)
+    if target_id not in ids:
+        raise WorkitemContractError(f"bounded workitem target {target_id} is unknown")
+    unfinished = [
+        str(item["id"])
+        for item in entries
+        if item.get("id") != target_id and item.get("status") != "DONE"
+    ]
+    successors = [
+        str(item["id"])
+        for item in entries
+        if target_id in workitem_predecessors(item)
+    ]
+    if len(successors) > 1:
+        raise WorkitemContractError(
+            f"bounded workitem target {target_id} has ambiguous successors"
+        )
+    if unfinished and not successors:
+        raise WorkitemContractError(
+            f"bounded workitem target {target_id} would strand unfinished workitems"
+        )
+
+
 def _authored_effective_state(authored_state: str) -> str:
     return {
         "DONE": "completed",
