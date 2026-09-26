@@ -2,7 +2,7 @@
 
 - Bind the prospective train's controller-compatibility decision to the canonical
   provider-authenticated effective controller, fast-fail unready bounded targets, and
-  install the empirical certification validator plus two-cycle adopter rotation proof;
+  activate exact-provider empirical certification plus two-cycle adopter rotation proof;
   add one canonical submit operation that owns the prospective order and pushes only
   the exact unchanged commit that passed it.
 

@@ -156,3 +156,26 @@ post_merge_truth_hotfix:
   - P28-P0-01 bounded subject and proposition
   - P28-P0-02 successor eligibility only after authenticated predecessor closure
   - release authority absence
+empirical_product_certification:
+  workitem: P28-P0-04
+  contract: governance/product-certification.yml
+  schema: schemas/product-certification.schema.json
+  validator: bcf_governance/tooling/governance_validation/product_certification.py
+  equivalent_samples: {self_live_provider: 5, installed_adopter_fixture: 5}
+  equivalent_result: {reused_groups: 16, nodes_avoided: 16, new_groups: 0, invalidated_groups: 0}
+  selective_invalidation_classes: [implementation, test_population, evidence_runtime, governance_profile, toolchain_dependencies, workflow_trust, negative_control_oracle]
+  live_rotation_chain:
+  - {installed: 256fb901f6782fe5cd2ad4d1c9dca7a3b42f7259, target: 72dab4819186692c52038f1618bdc688e3661e7f, transition: 36229324974/1, active_receipt_artifact: '10901568560'}
+  - {installed: 72dab4819186692c52038f1618bdc688e3661e7f, target: ca79761b00e17404343cdf78e7083d1b4c275d19, transition: 36260975441/1, active_receipt_artifact: '10912391613'}
+  routine_mutation_counts: {implementation_prs_per_rotation: 1, bookkeeping_prs: 0, manually_copied_identities: 0}
+  final_slo_seconds:
+    self_feedback: {median_max: 1565, p95_max: 1614}
+    self_certification: {median_max: 492, p95_max: 1077}
+    installed_adopter_fixture_feedback: {median_max: 9, p95_max: 10}
+    installed_adopter_fixture_certification: {median_max: 9, p95_max: 10}
+  superseded_observation:
+    run: 36261976084/1
+    failure: repository artifact inventory changed during pagination
+    disposition: failed_closed_without_status_or_authority
+    authoritative_successor: {finalizer: 36261907345/1, publisher: 36261988968/1, status: bcf/workitem-certification=success}
+  non_escalation: [release_authority_false, provider_custody_not_candidate_assertion, fixture_custody_not_mislabeled_as_live_provider, bounded_status_only]
