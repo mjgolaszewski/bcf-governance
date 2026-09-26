@@ -39,6 +39,11 @@ def _run(repo_root: Path, argv: list[str], *, environment: dict[str, str] | None
     subprocess.run(argv, cwd=repo_root, env=environment, check=True)
 
 
+def _require_clean_head(repo_root: Path) -> None:
+    if _git(repo_root, "status", "--porcelain", "--untracked-files=all"):
+        raise TrustedControllerBuildError("trusted-controller source must be a clean committed HEAD")
+
+
 def _source_requirements(repo_root: Path) -> tuple[str, ...]:
     project = tomllib.loads((repo_root / "pyproject.toml").read_text(encoding="utf-8"))
     values = project.get("project", {}).get("dependencies")
@@ -137,8 +142,7 @@ def build(
         raise TrustedControllerBuildError(
             "trusted-controller output must be a nonsymlink repository path"
         )
-    if _git(repo_root, "status", "--porcelain", "--untracked-files=all"):
-        raise TrustedControllerBuildError("trusted-controller source must be a clean committed HEAD")
+    _require_clean_head(repo_root)
     destination.mkdir(parents=True, exist_ok=True)
     if any(destination.iterdir()):
         raise TrustedControllerBuildError("trusted-controller output must begin empty")

@@ -456,7 +456,7 @@
     },
     "scripts/_bcf_runtime/ci_controller_builder.py": {
       "operation": "copy",
-      "sha256": "300441c3d7ddf6b15e8004531ddb49b6db82448778c2d37d1c3e5bc1b29843a8"
+      "sha256": "4d268a45afba3ae973c9ee7a6d13b5e766bd67b207ac37c531b40e394198414a"
     },
     "scripts/_bcf_runtime/ci_controller_policy.py": {
       "operation": "copy",
