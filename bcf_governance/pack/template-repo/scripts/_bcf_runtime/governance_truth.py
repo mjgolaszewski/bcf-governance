@@ -495,6 +495,7 @@ def derive_truth(
         findings_clear=findings["open_count"] == 0 and not findings["issues"],
         claim_model=claim_model or {"claims": {}},
         preflight_claims=preflight_claims,
+        reuse_attestations=reuse_index,
     )
     required_gate_ids.update(hotfix_gate_ids)
     release_profile = profile_payload.get("release_gate_profile")

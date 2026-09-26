@@ -26,6 +26,7 @@ from bcf_governance.tooling.evaluation_scope import (
     EvaluationScope,
     certified_proposition,
 )
+from bcf_governance.tooling.governance_truth_support import compute_hotfix_reports
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TRUTH_MODULE_PATH = Path(
@@ -1659,6 +1660,72 @@ def test_active_phase_hotfix_closure_is_computed_and_blocks_release(tmp_path: Pa
     assert blocked["hotfixes"][0]["effective_state"] == "planned"
     assert blocked["release_readiness"]["effective_state"] == "completed"
     assert "hotfix_HF-001_effective_state_planned" in blocked["issues"]
+
+
+def test_hotfix_closure_resolves_only_exact_authenticated_reuse_claim(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    _write_yaml(
+        repo / "phases/phase-01-hotfix01.yml",
+        {
+            "document": {"status": "completed"},
+            "hotfix": {"id": "HF-001", "related_phase_id": "P01"},
+            "closeout_requirements": {
+                "claims": {
+                    "required_suites_green": {"required_evidence": ["test"]},
+                },
+                "reconciliation": {"required_evidence": ["reconcile"]},
+            },
+        },
+    )
+    model = {
+        "claims": {
+            "test-claim": {"legacy_gate": "test", "execution_group": "tests"},
+            "reconcile-claim": {
+                "legacy_gate": "reconcile",
+                "execution_group": "governance",
+            },
+        },
+        "execution_groups": {
+            "tests": {"producer": "test", "claims": ["test-claim"]},
+            "governance": {
+                "producer": "governance",
+                "claims": ["reconcile-claim"],
+            },
+        },
+    }
+    attestation = {
+        "claim": {"claim_id": "test-claim", "execution_group_id": "tests"},
+        "source_receipt": {"evidence_id": "source-test"},
+        "attestation_id": "a" * 64,
+        "decision": "reuse_admitted",
+    }
+
+    closed, _, issues = compute_hotfix_reports(
+        repo,
+        "P01",
+        {},
+        findings_clear=True,
+        claim_model=model,
+        preflight_claims={"reconcile-claim"},
+        reuse_attestations={"test-claim": attestation},
+    )
+    assert closed[0]["effective_state"] == "closed"
+    assert issues == []
+
+    attestation["claim"]["execution_group_id"] = "governance"
+    rejected, _, issues = compute_hotfix_reports(
+        repo,
+        "P01",
+        {},
+        findings_clear=True,
+        claim_model=model,
+        preflight_claims={"reconcile-claim"},
+        reuse_attestations={"test-claim": attestation},
+    )
+    assert rejected[0]["effective_state"] == "completed"
+    assert issues == ["hotfix_HF-001_effective_state_completed"]
 
 
 def test_missing_reconciliation_holds_verified_without_closing(tmp_path: Path) -> None:

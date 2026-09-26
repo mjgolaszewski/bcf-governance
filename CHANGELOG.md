@@ -1,5 +1,8 @@
 # Changelog
 
+- Resolve authenticated reuse attestations through the same canonical claim-aware
+  path for active hotfix closure as phase and bounded-workitem truth.
+
 - Stabilize exact GitHub Actions artifact inventory snapshots across concurrent
   trusted uploads with bounded retry while persistent churn remains fail-closed.
 

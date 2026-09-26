@@ -23,6 +23,18 @@ hotfix_lane:
     full: {required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]}
   open_records: []
   remediation_history:
+  - id: P28-HF02
+    mode: full
+    recorded_at_utc: '2026-09-26T00:00:00Z'
+    action: Carry the authenticated claim-indexed reuse projection into canonical hotfix closure without broadening claim, producer, subject, or session applicability.
+    remediated_in_phase: P28
+    hotfix_log: phases/phase-28-hotfix02.yml
+    canonical_artifacts: [bcf_governance/tooling/governance_truth.py, bcf_governance/tooling/governance_truth_support.py, tests/test_governance_truth.py, audits/bcf-2.1-p28-canonical-projection.yml]
+    local_validation:
+    - focused hotfix and claim-aware reuse truth tests passed
+    - governance YAML validation passed
+    - canonical fixed-point reconciliation converged
+    - canonical prospective train passed on final committed bytes
   - id: P28-HF01
     mode: full
     recorded_at_utc: '2026-09-26T00:00:00Z'
