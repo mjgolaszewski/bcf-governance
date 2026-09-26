@@ -118,7 +118,7 @@ tracked files, overlap, resolve through symlinks, or map one import name to more
 than one file. Package exports and aliases resolve through tracked
 `__init__.py` import declarations rather than suffix or basename guesses.
 
-Standard v2 blocks declared families; Regulated can require repository-wide
+Standard v3 blocks declared families; Regulated can require repository-wide
 completeness. Optional
 TypeScript analysis uses the consumer's locked compiler and configuration and
 does not download tools or fall back to Docker. `semantic_source_discovery.py`
@@ -199,7 +199,7 @@ or user-operated storage server is part of the authority chain.
 
 Schema-2 receipts bind invocation, environment, outputs, raw process material,
 commit, tree, execution tree, cleanliness, and negative-control observations.
-Profile-v2 sessions additionally bind producer, provider run, attempt, profile,
+Profile-v2 and v3 sessions additionally bind producer, provider run, attempt, profile,
 and the expected gate inventory. Truth recomputes observations rather than
 trusting the receipt's reported result.
 
@@ -215,8 +215,12 @@ receipts from becoming independent evidence.
 
 Authors report only `planned` or `completed`. `verified`, `closed`, and release
 readiness are computed for the current subject. This avoids retroactive claims
-and makes invalidation explicit. It also means meaningful changes require new
-evidence even when their content resembles a previously certified tree.
+and makes invalidation explicit. Profile v3 maps claims to their complete source,
+policy, producer, control, and authority dependencies. A new subject may reuse an
+immutable authenticated receipt only when the planner recomputes that full closure
+as applicable; changed or ambiguous dependencies schedule canonical execution.
+Grouped receipts prove only their declared claims and cannot launder unrelated
+claims. The original receipt bytes and provider custody never change.
 
 ## Fail-fast and bounded execution
 
@@ -272,7 +276,7 @@ agent or maintainer to synchronize derived workflow files manually.
 
 ## Profiles and scope
 
-Lite provides inexpensive bootstrap checks. Standard v2 blocks declared SOIP
+Lite provides inexpensive bootstrap checks. Standard v3 blocks declared SOIP
 families and requires complete executable gate contracts. Regulated adds
 repository-wide and cryptographic requirements. Typed N/A records describe a
 genuinely absent optional capability with scope, evidence, approval, subject,

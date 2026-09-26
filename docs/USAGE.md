@@ -11,9 +11,9 @@ certification. A governed repository's own commands belong in its installed
 - `lite` defaults to profile contract v1 and bootstraps a repository with `governance-validate` and
   `governance-exposure-scan`. It is the only profile allowed before the full
   application gate surface is known.
-- Fresh `standard` installations default to profile contract v2 and require complete executable contracts for architecture, lint,
+- Fresh `standard` installations default to profile contract v3 and require complete executable contracts for architecture, lint,
   type, test, contract, security, SBOM, scan, review, and runtime gates.
-- Fresh `regulated` installations also use v2 and add trusted verifier keys, independent Critical/High review,
+- Fresh `regulated` installations also use v3 and add trusted verifier keys, independent Critical/High review,
   permitted risk authorities, model-risk policy, and hotfix governance.
 
 Standard and regulated profiles cannot represent a partially wired target.
@@ -22,7 +22,7 @@ repository.
 
 ## CI graph ownership
 
-Fresh Standard-v2 installations create `governance/ci-graph.yml` and require
+Fresh Standard-v3 installations create `governance/ci-graph.yml` and require
 explicit candidate and trusted runner mappings. The graph is the operator
 interface for orchestration. Generated `.github/workflows/*.yml` files are
 deterministic projections and must not be edited directly.
@@ -172,7 +172,7 @@ the exact pull-request base SHA. It uses a full checkout and fails if the base
 commit cannot be resolved, preventing a shallow clone from silently bypassing
 the policy.
 
-Automation-authored dependency PRs are not exempt. Standard-v2 repositories
+Automation-authored dependency PRs are not exempt. Standard-v3 repositories
 may opt into a deterministic trusted producer after configuring a dedicated
 contents-write GitHub App and protected environment:
 
@@ -231,10 +231,10 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.0.0/bcf_governance-2.0.0-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.1.0/bcf_governance-2.1.0-py3-none-any.whl
 ```
 
-GitHub Releases is the supported distribution channel for BCF 1.x. Verify the
+GitHub Releases is the supported distribution channel for BCF 2.1. Verify the
 release and asset digest required by your repository's acquisition policy
 before installation.
 
@@ -298,9 +298,9 @@ to complete, not standard-profile exceptions.
 Preview and apply monotonic promotion:
 
 ```bash
-bcf profile promote --repo-root . --to standard --contract-version 2.0 \
+bcf profile promote --repo-root . --to standard --contract-version 3.0 \
   --semantic-config /path/to/semantic-authority.yml --check
-bcf profile promote --repo-root . --to standard --contract-version 2.0 \
+bcf profile promote --repo-root . --to standard --contract-version 3.0 \
   --semantic-config /path/to/semantic-authority.yml --apply
 ```
 
@@ -318,7 +318,7 @@ The authority controller treats command-line workflow values only as compatibili
 pins. It reconstructs numeric repository and workflow IDs, the active path,
 trusted workflow bytes, event, run attempt, commit, and tree through the
 provider API. A v1 CI-authority document may omit `admission_workflow`; an
-activated Standard-v2 topology records it as the canonical admission owner.
+activated Standard-v3 topology records it as the canonical admission owner.
 Authority v1.1 replaces inline privileged workflow copies with one closed
 workflow registry and role references. Its reusable producers are members of
 one admission run and exact attempt; a same-SHA success from another run is not
@@ -405,25 +405,24 @@ governed exact-node manifest, and reuses it for every isolated control. Missing 
 ambiguous mappings fail closed; BCF never guesses a filesystem path from a JUnit
 classname. Diagnostic controls continue to execute the canonical gate command.
 
-BCF self-controller rotation has a separate mechanical path. Trusted control runs
-`bcf ci-github controller-pin resolve` to select the newest exact-main package
-producer and exact artifact without caller-supplied run IDs. After the provider
-artifact is downloaded, `controller-pin compile` verifies its checksum inventory,
-metadata, and wheel bytes and emits a pin record. A maintainer projects that record
-with `bcf ci sync-self-controller --pin PIN.json --apply`. The target pin and the
-last provider-proven installation are distinct: active control jobs stay on the
-installed commit during rotation. Bootstrap and probe do not require that commit
-to exist on a newly restored runner: they stage the downloaded, provider-digest-
-checked and checksum-admitted target wheel in a run-scoped environment, invoke it
-to authenticate custody, and then install the persistent target. After exact-main
-bootstrap and probe runs pass on every declared trusted runner,
-`bcf ci-github controller-pin confirm --repository OWNER/REPO --output PROOF.json`
-compiles their identities from provider state. Passing that proof through
-`bcf ci sync-self-controller --pin PIN.json --confirmation PROOF.json --apply`
-promotes the target and projects policy, topology, bootstrap, probe, finalizer,
-admission, and status workflows together. A second target is rejected while one
-rotation remains unconfirmed. AI and humans review policy and decide whether to
-rotate; they do not author custody values or declare installation success.
+### Optional trusted-controller operation
+
+Ordinary adopters use hosted candidate execution and do not need persistent
+trusted controllers. A repository opts into controller management only when its
+own assurance model needs a no-checkout trusted control plane. The canonical
+installer/adopter then projects the typed controller-transition extension and
+its declared runner inventory; BCF's self-only release, recovery, protection,
+and repository authorities are not installed with it.
+
+A routine trusted-runtime change uses one protected implementation PR. After
+merge, the provider-backed transition derives the exact controller source and
+artifact, installs and probes it independently on every required trusted runner,
+atomically activates the authenticated transition, and requests fresh scoped
+certification. Operators do not create target, confirmation, normalization, or
+pin-recording commits, and they do not copy artifact IDs, digests, run IDs, or
+runner results. Interrupted stages resume only from their exact authenticated
+transition state; a competing, partial, stale, or replayed transition fails
+closed. A separate trust-policy change remains an ordinary reviewed policy PR.
 
 The isolated authority canary uses `bcf ci-github canary admit|observe`. Its observer
 authenticates one exact run attempt and complete job inventory, then publishes through
@@ -491,7 +490,7 @@ registry. Generated workflows therefore use exact commit identities rather
 than moving major tags. Consumer-owned workflows are preserved until explicit
 adoption, and action release updates remain reviewed governance changes.
 
-Standard-v2 N/A records live under `governance/capability-na/`. Each record
+Standard-v3 N/A records live under `governance/capability-na/`. Each record
 names the exact capability, gate, or semantic family; repository scope;
 rationale and supporting evidence; approving role; subject commit; review
 time; and either an expiry or deterministic re-review trigger. The subject
@@ -525,7 +524,7 @@ bcf migrate-contract --repo-root . --apply --format json
 ```
 
 Migration fails closed when the current graph, authority pins, or gate controls
-cannot support the active v2 contract. It never invents project-specific graph
+cannot support the active v3 contract. It never invents project-specific graph
 or authority values. Evidence-integrity migration remains a separate explicit
 `bcf migrate-evidence` operation; original values and hashes remain in its
 non-authoritative report.
@@ -565,6 +564,25 @@ and the real base SHA. No extra command is required. Advanced callers may append
 an exact argv after `--`; that explicit command receives the same authenticated
 PR environment. This makes PR-only changelog and base-diff behavior fail locally
 instead of first appearing in remote CI.
+
+### Semantic-intent submission and proof composition
+
+Use `bcf ci submit --repo-root . --intent workitem` for the governed candidate
+path. The command derives the active bounded target, exact base, commit and tree,
+then owns the complete order from deterministic preflight through controller
+compatibility, evidence planning, certification-shape verification, post-merge
+truth projection, finalizer scope, publication boundary, and successor
+eligibility. It rechecks unchanged custody immediately before pushing the exact
+proved commit. The caller supplies semantic intent, not a sequence of validators.
+
+Profile v3 plans by claim and execution group. Authenticated prior receipts retain
+their original bytes and provider custody; the candidate and main planners
+independently recompute dependency closure, qualification, control applicability,
+subject scope, and authority bindings. Applicable groups are reused, invalidated
+groups execute once, and ambiguous or incomplete mappings fall back to canonical
+execution. A valid grouped receipt proves only its declared claims, so an
+unrelated claim cannot be laundered through a green group. Structural preflight
+observations can stop work early but never satisfy behavioral evidence.
 
 ## Lifecycle and evidence
 
@@ -617,7 +635,7 @@ validate fails closed. Authenticated receipts that are merely stale or whose
 dependencies changed are admitted only so the planner can mark their claims
 invalidated and schedule their producers.
 
-Profile-v2 `release-check` first runs the cheap preflight and allocates one
+Profile-v3 `release-check` first runs the cheap preflight and allocates one
 private immutable evidence session. All positive gates bind receipts to that
 same manifest and execute once. Generated CI transports that manifest and
 names lane and terminal artifacts with the exact provider run and attempt;
@@ -730,7 +748,7 @@ clears the general artifact root.
 - `bcf ci-cleanup`: dry-run cleanup of exact-label CI resources only.
 - `bcf publish-audit --history`: opt-in redacted scan of reachable Git history.
 
-Standard-v2 repositories use `declared_families_blocking`: every declared
+Standard-v3 repositories use `declared_families_blocking`: every declared
 representation must name one discovered owner and causal construction path.
 Regulated repositories may select `repository_wide_blocking`, which additionally
 requires every discovered type in the authoritative Python roots to be
@@ -755,7 +773,7 @@ and reflective dispatch fail closed. Calls through component fields, such as
 component boundary as a permitted port. Declarations cannot turn an ambiguous
 same-instance helper into an exact source identity.
 
-Fresh Standard-v2 graphs set `policy.hosted_orchestration: run_and_done`.
+Fresh Standard-v3 graphs set `policy.hosted_orchestration: run_and_done`.
 Hosted jobs begin only when their GitHub dependency or event is ready, execute
 bounded candidate work, and exit. The compiler rejects sleep, polling, watch,
 shell-wait, and local-runner lease commands on hosted resources. Put trusted
@@ -770,7 +788,7 @@ lock-matching `typescript` package. Missing tools, configuration diagnostics, or
 version drift are infrastructure failures; the analyzer never downloads a
 compiler or falls back to Docker.
 
-In 1.3.0, scanning, locking, and adoption share the same Python and TypeScript
+Scanning, locking, and adoption share the same Python and TypeScript
 inventory. Compiler projects declared by operation populations participate even
 when the registry has no TypeScript engine. Export aliases resolve to their
 declarations; imported helpers and methods contribute their actual calls and

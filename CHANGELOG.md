@@ -1,252 +1,96 @@
 # Changelog
 
-- Bind the prospective train's controller-compatibility decision to the canonical
-  provider-authenticated effective controller, fast-fail unready bounded targets, and
-  activate exact-provider empirical certification plus two-cycle adopter rotation proof;
-  add one canonical submit operation that owns the prospective order and pushes only
-  the exact unchanged commit that passed it.
-
-- Bind closure, reuse, invalidation, controls, planning, timing, fixed-point,
-  controller-transition, and scope semantics to exact self/adopter/attack proofs.
-
-- Declare the four permitted self-authority overlays as typed exact propositions
-  and mechanically reject undeclared ownership, overlap, or adopter-pack leakage.
-
-- Resolve authenticated reuse attestations through the same canonical claim-aware
-  path for active hotfix closure as phase and bounded-workitem truth.
-
-- Stabilize exact GitHub Actions artifact inventory snapshots across concurrent
-  trusted uploads with bounded retry while persistent churn remains fail-closed.
-
-- Project typed opt-in trusted-controller custody, provider-authenticated one-PR
-  routine rotation, independent two-runner verification, and post-activation
-  certification through canonical adopter install/adopt without affecting ordinary adopters.
-
-- Open P28 from certified P27 closure, bind the amended BCF 2.1 product-parity,
-  one-PR rotation, simplicity, empirical, and immutable-release acceptance train,
-  and target exact-main at the first bounded projection workitem.
-
-- Project exact-main from certified P27-P0-04 closure to terminal parent-phase
-  closure without granting bounded certification any phase or release authority.
-
-- Continue post-rotation exact-main as a native rerun of its authenticated source
-  run and reject workflow-run chains beyond GitHub's three-level provider limit.
-
-- Derive skipped routine-rotation matrix facades from the authenticated workflow
-  and prospectively execute the same exact callback classifier before provider use.
-
-- Remove the temporary pending-topology bootstrap/probe lane after authenticated
-  ordinary-current confirmation; provider-backed routine rotation remains canonical.
-
-- Confirm the pending-topology classifier controller on both trusted runners and
-  restore ordinary-current custody through provider-compiled installation proof.
-
-- Project the exact provider-built pending-topology classifier controller as the
-  typed compatibility-lane target while installed N remains authoritative.
-
-- Derive pending-rotation producer facades from the authenticated admission workflow,
-  execute installed N's exact topology classifier during prospective compatibility,
-  and restore the governed alternate lane only when installed N cannot authorize N+1.
-
-- Remove the temporary normalization-compatibility bootstrap/probe lane after
-  ordinary-current confirmation of the normalization-aware controller.
-
-- Confirm the normalization-aware controller on both trusted runners and restore
-  ordinary-current custody after the bounded compatibility crossing.
-
-- Restore the governed source-pinned bootstrap/probe lane for one normalization-boundary
-  compatibility crossing, pinned mechanically to the exact provider-built controller.
-
-- Bound provider-backed controller transitions to the installed source-normalization
-  subject so older authenticated transitions are absorbed while later forks and
-  disconnected chains remain fail-closed.
-
-- Activate closed provider-backed routine controller applicability and remove the
-  superseded target/confirmation bootstrap and probe workflow path.
-
-- Confirm provider-authenticated installation of the P27 applicability controller
-  on both trusted runners and restore ordinary-current custody.
-
-- Project the exact provider-built P27 applicability controller as the protected
-  N/N+1 target while keeping the installed controller active until confirmation.
-
-- Add one canonical exact-tree `bcf ci prospective-train` command that accepts only typed semantic intent and exact subject identity, checks fixed-point freshness before preflight, binds exact before/after controller-policy identities and the closed alternate lane, mechanically carries one evidence session through PR and post-merge semantic truth, validates the real finalizer-owned subject/proposition projection, and marks provider-only certification, merge, finalization, and publication facts without substituting local authority; order pack projection before semantic locking so the same fixed point can reconcile changed canonical runtime bytes.
-
-- Expand routine controller authorization with closed exact-topology decisions and exact subject/policy/target binding to the protected N/N+1 lane, leaving workflow activation behind compatible-controller installation.
-
-- Reauthenticate exact-main finalizer publication with the canonical workflow blob and definition pins so additive current-main metadata cannot rewrite trusted collector identity.
-
-- Fail first on canonical context-byte and production-module LOC limits before reconciliation, candidate evidence planning, or behavioral gates.
-
-- Route provider-backed exact-main execution from the canonical controller-compatibility result so pending rotation builds N+1 without allocating semantic evidence or certification authority.
-
-- Expand controller authority compatibility so installed N can read the temporary legacy rotation roles while N+1 accepts their later controlled removal, and make pending-rotation preflight invoke installed N's canonical authority validator before provider execution.
-
-- Bind exact-main preflight controller compatibility to the provider-authenticated effective controller carried by same-admission prior evidence.
-
-- Order exact-main controller build/upload before provider artifact resolution so strict pagination cannot race its own producer.
-
-- Preserve the active provider-authenticated P27 reconcile controller transition as the sole effective N+1 custody source, removing a duplicate legacy target projection.
-
-- Add one fail-closed `bcf reconcile` fixed point for semantic locks, test manifests, graph projections, pack mirrors, and editorial custody, replacing agent-facing generator ordering.
-
-- Confirm the P27 rotation-output controller on both trusted runners and restore ordinary-current custody.
-
-- Project the exact provider-built P27 rotation-output controller through the governed legacy N/N+1 lane after the routine policy-change guard correctly rejected self-modification.
-
-- Allocate every routine controller-transition receipt directory through the canonical CI graph before its authenticated writer executes, with preflight rejection for missing ownership.
-
-- Close execution-scoped ephemeral state through exact session-bound namespaces, fail-fast stale-state rejection, and verified exact-owner retirement on every terminal evidence path.
-
-- Confirm the pagination-corrected controller on both trusted runners and restore ordinary-current custody.
-
-- Project the exact provider-built pagination-corrected controller as the ordinary rotation target while retaining installed N until two-runner confirmation.
-
-- Activate the provider-authenticated one-PR controller rotation, effective-controller resolution, and bounded P27-P0-02 exact-main target without granting release authority.
-
-- Confirm the provider-built P27 routine-rotation controller on both trusted runners and restore ordinary-current custody.
-
-- Project the exact provider-built P27 routine-rotation compiler as the ordinary controller target while retaining the installed N controller until confirmation.
-
-- Expand the dormant P27 routine-rotation runtime with provider-authenticated protected-merge authorization, exact artifact custody, linear replay-safe controller resolution, and N-authorized two-runner activation.
-
-- Confirm the P27 prior-evidence controller on both trusted runners and restore
-  ordinary-current custody.
-
-- Project the exact provider-built P27 prior-evidence controller as the ordinary
-  rotation target while keeping the prior installed controller active until confirmation.
-
-- Authenticate transported PR producer inventories from exact candidate workflow bytes and reject unsupported job-topology transitions during cheap preflight.
-
-- Begin P27 critical-path composition with receipt-derived duration-aware shard assignment and the dormant, fail-closed transition contract for the one-time migration to one-PR routine controller rotation.
-
-- Activate P27 with planner-owned selective execution, qualification-preserving negative-control reuse, and exact P26 closure custody while integrating the one-PR controller-rotation and controlled-demolition acceptance mandates.
-
-- Confirm the P26 finalizer subject-identity controller on both trusted runners and restore ordinary-current custody.
-
-- Project the exact provider-built controller containing the P26 finalizer subject-identity correction as the ordinary rotation target.
-
-- Rotate the ordinary trusted controller to the final provider-built P26 trusted-runtime-closure artifact.
-
-- Rotate the ordinary trusted controller target to the exact provider-built P26 scoped-certification artifact.
-
-- Expand exact-main truth and certification with typed, target-preserving bounded-workitem scope while keeping activation behind ordinary controller rotation.
-
-- Add a least-privilege, owner-approved break-glass App lane for exact-main controller bootstrap deadlocks, with recovery-only receipts and no certification authority.
-- Authenticate break-glass installation tokens through their exact repository inventory, bind the authorized owner explicitly, and retire the first failed live-operation nonce.
-- Make break-glass build resolution own its stage argument exactly once, preserving fail-closed exact-main artifact binding across build, install, and probe.
-
 All notable changes to BCF Governance are recorded here. This file follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Release target: `2.0.0`
+## [2.1.0] - 2026-09-26
+
+BCF 2.1 is the first published 2.x release. The certified but unpublished
+2.0.0 candidate is superseded without a tag or immutable release.
 
 ### Added
 
-- Add a dormant, repository-bound GET-only protection-inspection capability for a dedicated GitHub App; activation remains behind ordinary trusted-controller rotation.
-- Open the governed three-phase BCF 2.1 release train for invariant closure and
-  proof transport, minimum-time proof composition, and canonical self/adopter
-  projection with empirical certification.
-- Add dormant, provider-authenticated merged-PR evidence transport that preserves
-  exact source receipts and custody without making a reuse decision.
-- Activate the authenticated transport under the confirmed compatible controller
-  and bind P26-P0-02 to bounded workitem certification.
-- Expand dormant P26 main-side reuse qualification and exact provider-tree closure,
-  with same-admission trusted finalizer verification before any reuse activation.
-- Expand dormant exact-claim reuse truth composition and session binding while
-  retaining canonical execution until compatible-controller activation.
-- Add a dormant, typed reusable-workflow artifact binding that preserves exact
-  same-run transport custody and false-default direct-PR behavior.
-- Activate exact prior-evidence transport and claim-aware bounded P26 workitem
-  truth only after ordinary compatible-controller installation.
+- Added profile v3 claim and dependency contracts, immutable reuse attestations,
+  partial execution-group reuse, qualification-aware causal controls, and
+  exact-subject lifecycle derivation. Authenticated receipts retain their
+  original bytes and provider custody; ambiguity schedules canonical execution.
+- Added the canonical prospective train and `bcf ci submit`: an agent supplies
+  semantic intent while BCF derives the bounded target, exact commit and tree,
+  validation order, controller compatibility, evidence plan, certification
+  shape, and immutable push custody.
+- Added deterministic critical-path composition, execution telemetry, and the
+  `bcf reconcile --apply|--check` fixed point for graph, workflows, manifests,
+  mirrors, locks, authority projections, and editorial custody.
+- Added session-bound ephemeral state. Each isolated, adversarial, or integration
+  execution receives an exact owned namespace; unexplained prior state fails
+  before execution and every terminal path verifies exact-owner retirement.
+- Added canonical adopter projection for the profile-v3 planner, selective proof
+  composition, semantic-intent submission, fixed-point generation, telemetry,
+  attacks, and typed optional trusted-controller operation.
+- Added typed BCF-self overlays for controller, publication, recovery, and
+  repository authority. They are mechanically excluded from ordinary adopter
+  packs.
 
 ### Changed
 
-- Project exact-main from certified terminal P26 workitem closure to parent-phase
-  closure without granting bounded workitem certification any terminal authority.
-
-- Record the authenticated P26 equivalent-tree result and adversarial proof matrix,
-  and advance bounded exact-main evaluation to the completed P26-P0-04 closeout.
-
-- Preserve the certified BCF 2.0 implementation as the release baseline while
-  superseding v2.0.0 publication without creating a tag or immutable release.
-
-- Introduce profile/receipt v3 and evidence-session v2 with dependency-scoped claim reuse, grouped execution, reusable detector qualification, and derived lifecycle truth.
-- Retire active CI-economic governance while retaining provider, archive, cleanup, timeout, and trust-boundary safety limits.
-- Consolidate package verification into the planned governance producer and compose releases from authenticated development evidence plus independent artifact checks.
+- Made governance the canonical steady-state producer and composed release
+  assurance from authenticated development evidence plus independent artifact
+  construction and verification. The retired package producer is not required.
+- Replaced agent-managed controller target, bootstrap, confirmation,
+  normalization, and pin PRs with one optional provider-backed transition. A
+  protected implementation PR mechanically selects the exact artifact, validates
+  dependency closure, independently installs and probes declared trusted runners,
+  atomically activates the authenticated controller, and requests fresh scoped
+  certification. Ordinary adopters need no persistent controller.
+- Made deterministic preflight own repository cleanliness, generated parity,
+  changelog/editorial freshness, manifest and schema parity, context and line
+  budgets, controller compatibility, and closed alternate-lane applicability
+  before expensive evidence or provider execution.
+- Made the planner execute only absent, invalidated, or ineligible claim groups
+  while preserving negative-control applicability and exact provider,
+  subject, session, producer, run, and attempt bindings.
+- Separated bounded workitem certification, phase closure, release
+  authorization, publication authority, controller authority, and recovery
+  authority. A successful proposition cannot be broadened by a downstream
+  consumer or status name.
+- Projected the same product contracts through fresh installation and existing
+  repository adoption while preserving consumer-owned gates, architecture, and
+  provider boundaries.
 
 ### Fixed
 
-- Authenticate complete bounded repository artifact inventories across provider pages so routine controller resolution remains fail-closed after artifact count growth.
-- Close the implemented P26 main-side reuse workitem in governed lifecycle state so
-  bounded exact-main truth can certify it without implying parent-phase closure,
-  and require the graph target to be completed before successor eligibility is derived.
-- Confirm the P26 reuse controller on both trusted runners and restore
-  ordinary-current custody before activating reusable evidence.
-- Project the exact provider-built P26 reuse controller as the ordinary rotation
-  target while keeping the prior installed controller active until confirmation.
-- Reject undeclared trusted-runtime imports in cheap preflight using the same
-  deterministic dependency check as package validation.
-- Bind P26 successor-workitem eligibility to authenticated closure of its declared predecessor.
-- Activate repository-scoped trusted protection inspection for exact-main evidence transport after controller installation confirmation.
-- Confirm the protection-inspection controller on both trusted runners and restore ordinary-current custody before activating its dormant inspection path.
-- Project the exact provider-built protection-inspection controller as the ordinary rotation target before activating the dormant inspection path.
-- Confirm the active P26 transport controller on both trusted runners and
-  restore ordinary-current custody before bounded certification.
-- Project the exact provider-built controller for active P26 prior-evidence
-  transport as the ordinary rotation target before bounded certification.
-- Confirm the App job-projection controller on both trusted runners and restore
-  ordinary-current custody before P26 provider-transport activation.
-- Project the exact provider-built controller containing the authenticated App
-  job-projection correction as the ordinary rotation target.
-- Confirm the corrected P26 prior-evidence transport controller on both trusted
-  runners and restore ordinary-current custody before contract activation.
-- Project the exact provider-built controller containing the corrected
-  prior-evidence producer inventory as the ordinary rotation target.
-- Keep App-published PR certification separate from the graph-derived producer
-  job inventory, including its exact runnerless Actions-job projection.
-- Confirm the P26 prior-evidence transport controller on both trusted runners
-  and restore ordinary-current custody before contract activation.
-- Project the exact provider-built P26 prior-evidence transport controller as
-  the ordinary rotation target before activating its dormant contract.
-- Project exact commit/tree identity from canonical truth subjects while permitting
-  additive producer-owned subject metadata during trusted finalization.
-- Confirm the final P26 trusted-runtime controller on both trusted runners and
-  restore bounded workitem exact-main routing mechanically.
-- Classify authenticated partial exact-main topologies as noncertifying before
-  strict collection, preserving immutable subjects and scoped release exclusion.
-- Select bounded P26 foundation certification explicitly and keep asynchronous
-  exact-main finalization bound to its admitted immutable subject.
-- Confirm the P26 scoped controller on both trusted runners and restore ordinary
-  current-controller exact-main routing mechanically.
-- Keep pending-rotation exact-main execution non-certifying while preserving its
-  independent controller artifact producer for ordinary bootstrap.
-- Derive bounded ordinary-workitem closure only from receipt-producing, exact-subject
-  authenticated evidence while preserving active parent-phase authority and fail-closed
-  predecessor eligibility.
-- Reconcile exact-tree terminal actions through canonical grouped-claim resolution,
-  rejecting cross-producer claim laundering and removing already satisfied groups.
-- Separate packaged successor schemas from active trusted-runtime requirements,
-  preserving fail-closed N/N+1 controller rotation before schema activation.
-- Resolve grouped v3 claims consistently across closure, workitem, hotfix, reconciliation, and finding-proof consumers.
-- Bind editorial-audit bases to immutable commit SHAs so PR and post-merge freshness validation agree.
-- Confirm the recovered controller installation from authenticated bootstrap and probe inventories, restoring ordinary target/installation equality and mechanically retiring recovery re-entry authority.
-- Project the recovered exact-main controller artifact as the next ordinary controller target while retaining the authenticated recovery re-entry authorization until bootstrap and probe confirmation.
-- Add a receipt-bound, one-main-transition recovery re-entry state that permits only exact-main admission while ordinary controller custody is mismatched; release remains fail-closed and normalization removes the temporary authority.
-- Project the authenticated break-glass controller installation into ordinary repository authority through the canonical installation mechanism, while preserving recovery-only, non-certifying semantics.
-- Restore independent exact-main trusted-controller construction after the 2.0 package retirement, while keeping governance certification, publication, protection, stale-controller enforcement, and the existing governed rotation boundary unchanged.
-- Replace the one-shot BCF 2.0 successor branch authorization with the exact final activation branch, without broadening scope or changing topology and assurance anchors.
-- Refresh the trusted BCF 2.0 successor snapshot to the frozen reviewed representation that preserves the repaired controller, without changing transition semantics or activating the successor topology.
-- Confirm the race-safe exact-main controller installation from authenticated bootstrap and probe runs on both trusted runners, including mechanically current transition anchors.
-- Project the authenticated race-safe exact-main controller target and its mechanically current transition anchors while retaining the prior installed controller until governed bootstrap and probe confirmation.
-- Make trusted exact-main finalization race-safe by authenticating its directly fetched workflow-run trigger as locator-only provider evidence before deterministic newest-admission selection.
-- Refresh the BCF 2.0 transition contract's exact current-topology graph and package-workflow anchors after the certified controller rotation, without changing successor or equivalence semantics.
-- Confirm the carrier-backed exact-main controller installation from authenticated bootstrap and probe runs on both trusted runners.
-- Project the carrier-backed exact-main controller target from authenticated package evidence while keeping the prior installation active until governed bootstrap and probe confirmation.
-- Add a one-shot, fail-closed authority carrier that lets trusted current-main reconstruction authenticate the exact BCF 2.0 successor evidence for the retired package producer without changing the old topology.
+- Closed the 2.0 activation and controller-bootstrap defects as one fail-closed
+  compatibility invariant: installed authority must be able to parse and
+  authorize the exact candidate state required to construct its successor;
+  dormant expansion is distinct from activation, pending transitions are
+  noncertifying, and stale, partial, ambiguous, or replayed custody is rejected.
+- Made exact-main truth, finalization, and publication preserve additive canonical
+  subject metadata while authenticating the owned commit, tree, proposition,
+  target, workflow, run, and attempt identities.
+- Bound grouped receipts to their exact declared claims so broad green evidence
+  cannot launder an unrelated claim, and moved mechanically knowable ownership,
+  topology, budget, and generated-state defects into cheap preflight.
+- Made execution planning, finalization, publication, release receipt collection,
+  and provider-backed controller transitions fail closed on incomplete or
+  contradictory provider inventories without granting candidate assertions any
+  authority.
+- Preserved source receipts byte-for-byte while recomputing main-side closure and
+  qualification, including partial group reuse, hotfix closure, wrong-subject and
+  wrong-session rejection, and exact replay protection.
+
+### Removed
+
+- Removed the unpublished 2.0 topology's package producer, economics-as-governance,
+  and agent-operated N/N+1 maintenance ceremony.
+- Removed superseded target, confirmation, normalization, compatibility, and
+  duplicate rotation workflows whose propositions are now owned by the canonical
+  provider-backed transition.
+- Removed obsolete product instructions that exposed BCF self-authority,
+  recovery procedures, or repository-specific controller custody as ordinary
+  adopter operation.
 
 ## [1.3.0] - 2026-09-13
 
@@ -1330,7 +1174,8 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.3.0...v2.1.0
 [1.3.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.0...v1.1.1
