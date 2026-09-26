@@ -35,6 +35,7 @@ from .self_authority_overlays import (
     SelfAuthorityOverlayError,
     validate_self_authority_overlays,
 )
+from .product_parity import ProductParityError, validate_product_parity
 
 
 def validate_tooling_context_membership(repo_root: Path) -> None:
@@ -200,6 +201,21 @@ def validate_repo_root(
         validate_self_authority_overlays(repo_root)
     except SelfAuthorityOverlayError as exc:
         raise GovernanceValidationError(str(exc)) from exc
+    parity_path = repo_root / "governance/product-parity.yml"
+    if parity_path.is_file():
+        parity = _load_yaml(parity_path)
+        _validate_schema(
+            repo_root,
+            schema_cache,
+            parity,
+            schema_name="product-parity.schema.json",
+            context=str(parity_path),
+        )
+        _validate_document_path(repo_root, parity, parity_path, context=str(parity_path))
+        try:
+            validate_product_parity(repo_root, parity)
+        except ProductParityError as exc:
+            raise GovernanceValidationError(str(exc)) from exc
     required_artifact_paths = _validate_artifact_manifest(repo_root, artifact_manifest, agents)
     observability_contract_paths = _validate_observability_contracts(repo_root, schema_cache)
     declared_phase_paths = _validate_declared_phase_catalog(

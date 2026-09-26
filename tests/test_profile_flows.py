@@ -1165,6 +1165,23 @@ def test_fresh_adopter_projects_opt_in_one_pr_controller_rotation(
     assert "trusted-controller-build" in exact_main["jobs"]
     publisher = yaml.safe_load((repo / ".github/workflows/bcf-status-publisher.yml").read_text())
     assert "rotation-callback" in publisher["jobs"]
+    parity = yaml.safe_load(
+        (REPO_ROOT / "governance/product-parity.yml").read_text(encoding="utf-8")
+    )
+    for domain in parity["domains"]:
+        source = REPO_ROOT / domain["canonical_owner"]
+        relative = Path(domain["canonical_owner"]).relative_to(
+            "bcf_governance/tooling"
+        )
+        installed = repo / "scripts/_bcf_runtime" / relative
+        assert installed.read_bytes() == source.read_bytes(), domain["id"]
+    self_overlays = yaml.safe_load(
+        (REPO_ROOT / "governance/self-overlays.yml").read_text(encoding="utf-8")
+    )
+    for overlay in self_overlays["overlays"]:
+        for relative in overlay["authority_surfaces"]:
+            assert not (repo / relative).exists(), (overlay["id"], relative)
+    assert not (repo / "governance/product-parity.yml").exists()
 
 
 @pytest.mark.parametrize("cycle", range(1, 6))

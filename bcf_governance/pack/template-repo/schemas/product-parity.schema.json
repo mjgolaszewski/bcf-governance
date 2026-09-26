@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bcf.dev/schemas/product-parity.schema.json",
+  "title": "BCF self/adopter product parity contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document", "schema_version", "representative_adopter", "domains"],
+  "properties": {
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "id", "version", "status", "path"],
+      "properties": {
+        "kind": {"const": "product_parity_contract"},
+        "name": {"type": "string", "minLength": 1},
+        "id": {"const": "bcf-product-parity"},
+        "version": {"const": "1.0.0"},
+        "status": {"const": "active"},
+        "path": {"const": "governance/product-parity.yml"}
+      }
+    },
+    "schema_version": {"const": "1.0"},
+    "representative_adopter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["install_path", "profiles", "trusted_controller_adoption", "proof_node"],
+      "properties": {
+        "install_path": {"const": "scripts/install_governance_pack.py"},
+        "profiles": {"const": ["standard", "regulated"]},
+        "trusted_controller_adoption": {"const": "bcf ci adopt trusted-controller"},
+        "proof_node": {"type": "string", "pattern": "^tests\\.[A-Za-z0-9_.]+::test_[^ ]+$"}
+      }
+    },
+    "domains": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 9,
+      "items": {"$ref": "#/$defs/domain"}
+    }
+  },
+  "$defs": {
+    "node": {"type": "string", "pattern": "^tests\\.[A-Za-z0-9_.]+::test_[^ ]+$"},
+    "nodes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/node"}},
+    "owner": {"type": "string", "pattern": "^bcf_governance/tooling/[A-Za-z0-9_/-]+\\.py$"},
+    "domain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "canonical_owner", "self_proof", "adopter_proof", "attack_proof"],
+      "properties": {
+        "id": {"enum": ["closure", "reuse", "invalidation", "negative_controls", "planning", "timing", "fixed_point", "controller_transition", "scope_boundaries"]},
+        "canonical_owner": {"$ref": "#/$defs/owner"},
+        "self_proof": {"$ref": "#/$defs/nodes"},
+        "adopter_proof": {"$ref": "#/$defs/nodes"},
+        "attack_proof": {"$ref": "#/$defs/nodes"}
+      }
+    }
+  }
+}

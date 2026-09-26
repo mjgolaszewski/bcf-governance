@@ -1,5 +1,8 @@
 # Changelog
 
+- Bind closure, reuse, invalidation, controls, planning, timing, fixed-point,
+  controller-transition, and scope semantics to exact self/adopter/attack proofs.
+
 - Declare the four permitted self-authority overlays as typed exact propositions
   and mechanically reject undeclared ownership, overlap, or adopter-pack leakage.
 
