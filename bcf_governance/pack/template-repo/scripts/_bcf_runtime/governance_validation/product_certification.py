@@ -41,7 +41,9 @@ def _nearest_rank_p95(values: list[int]) -> int:
     return sorted(values)[math.ceil(len(values) * 0.95) - 1]
 
 
-def _validate_samples(samples: object, *, path: str) -> tuple[int, int]:
+def _validate_samples(
+    samples: object, *, path: str, live_provider: bool
+) -> tuple[int, int]:
     values = _list(samples, path)
     if len(values) < 5:
         raise ProductCertificationError(f"{path} requires at least five observations")
@@ -65,10 +67,14 @@ def _validate_samples(samples: object, *, path: str) -> tuple[int, int]:
             if not isinstance(value, int) or value < 0:
                 raise ProductCertificationError(f"{path} {key} is invalid")
             target.append(value)
-        provider = _mapping(sample.get("provider"), f"{path}[{index}].provider")
-        for key in ("pr_run", "exact_main_run", "finalizer_run", "publisher_run"):
-            if not isinstance(provider.get(key), str) or "/" not in provider[key]:
-                raise ProductCertificationError(f"{path} provider identity {key} is invalid")
+        custody = _mapping(sample.get("custody"), f"{path}[{index}].custody")
+        keys = (
+            ("pr_run", "exact_main_run", "finalizer_run", "publisher_run")
+            if live_provider
+            else ("fixture_run", "proof_node")
+        )
+        if any(not isinstance(custody.get(key), str) or not custody[key] for key in keys):
+            raise ProductCertificationError(f"{path} custody identity is incomplete")
     return int(statistics.median(feedback)), _nearest_rank_p95(certification)
 
 
@@ -100,8 +106,10 @@ def validate_product_certification(repo_root: Path, contract: dict[str, Any]) ->
     """Recompute measurements and require minimum justified product machinery."""
 
     equivalent = _mapping(contract.get("equivalent_transitions"), "equivalent_transitions")
-    self_median, self_cert_p95 = _validate_samples(equivalent.get("self"), path="self")
-    _validate_samples(equivalent.get("adopter"), path="adopter")
+    self_median, self_cert_p95 = _validate_samples(
+        equivalent.get("self"), path="self", live_provider=True
+    )
+    _validate_samples(equivalent.get("adopter"), path="adopter", live_provider=False)
     metrics = _mapping(contract.get("derived_metrics"), "derived_metrics")
     if metrics.get("self_feedback_median_seconds") != self_median:
         raise ProductCertificationError("self feedback median is not mechanically derived")

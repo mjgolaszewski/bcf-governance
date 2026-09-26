@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def _sample(index: int) -> dict[str, object]:
     return {
         "subject_commit": f"{index + 1:x}" * 40,
-        "provider": {
+        "custody": {
             "pr_run": f"{100 + index}/1",
             "exact_main_run": f"{200 + index}/1",
             "finalizer_run": f"{300 + index}/1",
@@ -49,6 +49,12 @@ def _rotation(installed: str, target: str, index: int) -> dict[str, object]:
 
 def _contract() -> dict[str, object]:
     samples = [_sample(index) for index in range(5)]
+    adopter_samples = copy.deepcopy(samples)
+    for index, sample in enumerate(adopter_samples):
+        sample["custody"] = {
+            "fixture_run": f"installed-adopter-equivalent-{index + 1}",
+            "proof_node": "tests.test_profile_flows::test_fresh_adopter_projects_opt_in_one_pr_controller_rotation",
+        }
     workflows = [
         {"id": item["id"], "proposition": f"workflow:{item['id']}"}
         for item in validate_ci_graph(ROOT).workflows
@@ -64,7 +70,7 @@ def _contract() -> dict[str, object]:
     }
     first, second, third = "a" * 40, "b" * 40, "c" * 40
     return {
-        "equivalent_transitions": {"self": samples, "adopter": copy.deepcopy(samples)},
+        "equivalent_transitions": {"self": samples, "adopter": adopter_samples},
         "selective_invalidation": [
             {"class": key, "proof_node": value, "decision": "invalidate"}
             for key, value in invalidation_nodes.items()

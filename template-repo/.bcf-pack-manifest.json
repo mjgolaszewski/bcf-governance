@@ -936,7 +936,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/product_certification.py": {
       "operation": "copy",
-      "sha256": "625d35068778462c169f4b28a908c3dc33465996768b5c03dced479ddcb1cec1"
+      "sha256": "8fcc5cf6f5bbc2e57a957d1fe4e3c11059a53c8b240036aaf4b8574f6ac52e18"
     },
     "scripts/_bcf_runtime/governance_validation/product_parity.py": {
       "operation": "copy",
