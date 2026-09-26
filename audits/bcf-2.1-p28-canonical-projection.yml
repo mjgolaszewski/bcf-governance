@@ -87,3 +87,22 @@ post_merge_hotfix:
   - two-runner bootstrap probe and promotion
   - noncertifying pending-rotation topology
   - release authority absence
+post_merge_truth_hotfix:
+  id: P28-HF02
+  failing_run: {workflow: bcf/exact-main, run_id: '36223127734', run_attempt: '2', job_id: '108354017329'}
+  exact_subject: {commit_sha: 256fb901f6782fe5cd2ad4d1c9dca7a3b42f7259, tree_sha: f37d37b4d74f7424c8455cb58dc75a6be563afbc}
+  first_causal_failure: hotfix_P28-HF01_effective_state_completed
+  classification: authenticated_reuse_consumer_projection_defect
+  causal_trace:
+  - phase and bounded-workitem truth received the canonical claim-indexed reuse projection
+  - hotfix truth received only current receipts and preflight observations
+  - exact reusable test contract-test and runtime-smoke claims were therefore invisible only to hotfix closeout
+  correction:
+  - pass the already-authenticated reuse index to the shared hotfix resolver
+  - resolve each required gate through its exact canonical claim and producer identity
+  - reject wrong claim execution-group source receipt and decision identities unchanged
+  preserved:
+  - preflight observations cannot masquerade as behavioral evidence
+  - P28-P0-01 bounded subject and proposition
+  - P28-P0-02 successor eligibility only after authenticated predecessor closure
+  - release authority absence

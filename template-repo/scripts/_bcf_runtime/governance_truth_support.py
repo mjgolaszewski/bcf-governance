@@ -9,7 +9,7 @@ import subprocess
 import tempfile
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
@@ -56,6 +56,7 @@ def compute_hotfix_reports(
     findings_clear: bool,
     claim_model: dict[str, Any],
     preflight_claims: set[str],
+    reuse_attestations: Mapping[str, dict[str, Any]] | None = None,
 ) -> tuple[list[dict[str, Any]], set[str], list[str]]:
     """Compute current-tree hotfix verification and closure for the active phase."""
     reports: list[dict[str, Any]] = []
@@ -89,7 +90,11 @@ def compute_hotfix_reports(
                 for gate_id in gate_ids
                 if next(
                     eligible_receipts(
-                        receipts, claim_model, gate_id, preflight_claims
+                        receipts,
+                        claim_model,
+                        gate_id,
+                        preflight_claims,
+                        reuse_attestations=reuse_attestations,
                     ),
                     None,
                 ) is None
@@ -112,7 +117,11 @@ def compute_hotfix_reports(
         reconciliation_verified = bool(reconciliation_gates) and all(
             next(
                 eligible_receipts(
-                    receipts, claim_model, gate_id, preflight_claims
+                    receipts,
+                    claim_model,
+                    gate_id,
+                    preflight_claims,
+                    reuse_attestations=reuse_attestations,
                 ),
                 None,
             ) is not None
