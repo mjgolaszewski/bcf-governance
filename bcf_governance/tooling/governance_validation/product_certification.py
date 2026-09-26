@@ -43,7 +43,7 @@ def _nearest_rank_p95(values: list[int]) -> int:
 
 def _validate_samples(
     samples: object, *, path: str, live_provider: bool
-) -> tuple[int, int]:
+) -> tuple[int, int, int, int]:
     values = _list(samples, path)
     if len(values) < 5:
         raise ProductCertificationError(f"{path} requires at least five observations")
@@ -75,7 +75,12 @@ def _validate_samples(
         )
         if any(not isinstance(custody.get(key), str) or not custody[key] for key in keys):
             raise ProductCertificationError(f"{path} custody identity is incomplete")
-    return int(statistics.median(feedback)), _nearest_rank_p95(certification)
+    return (
+        int(statistics.median(feedback)),
+        _nearest_rank_p95(feedback),
+        int(statistics.median(certification)),
+        _nearest_rank_p95(certification),
+    )
 
 
 def _validate_rotations(values: object, *, path: str, live_provider: bool) -> None:
@@ -106,15 +111,24 @@ def validate_product_certification(repo_root: Path, contract: dict[str, Any]) ->
     """Recompute measurements and require minimum justified product machinery."""
 
     equivalent = _mapping(contract.get("equivalent_transitions"), "equivalent_transitions")
-    self_median, self_cert_p95 = _validate_samples(
+    self_metrics = _validate_samples(
         equivalent.get("self"), path="self", live_provider=True
     )
-    _validate_samples(equivalent.get("adopter"), path="adopter", live_provider=False)
+    adopter_metrics = _validate_samples(
+        equivalent.get("adopter"), path="adopter", live_provider=False
+    )
     metrics = _mapping(contract.get("derived_metrics"), "derived_metrics")
-    if metrics.get("self_feedback_median_seconds") != self_median:
-        raise ProductCertificationError("self feedback median is not mechanically derived")
-    if metrics.get("self_certification_p95_seconds") != self_cert_p95:
-        raise ProductCertificationError("self certification p95 is not mechanically derived")
+    expected_metrics = {
+        f"{path}_{kind}_{stat}_seconds": value
+        for path, values in (("self", self_metrics), ("adopter", adopter_metrics))
+        for (kind, stat), value in zip(
+            (("feedback", "median"), ("feedback", "p95"),
+             ("certification", "median"), ("certification", "p95")),
+            values,
+        )
+    }
+    if metrics != expected_metrics:
+        raise ProductCertificationError("latency metrics are not mechanically derived")
     invalidation = _list(contract.get("selective_invalidation"), "selective_invalidation")
     observed = {item.get("class") for item in invalidation if isinstance(item, dict)}
     if observed != INVALIDATION_CLASSES or len(invalidation) != len(observed):
@@ -141,10 +155,11 @@ def validate_product_certification(repo_root: Path, contract: dict[str, Any]) ->
     ):
         raise ProductCertificationError("workflow simplicity inventory differs from graph")
     mechanisms = _list(simplicity.get("mechanisms"), "simplicity.mechanisms")
-    propositions = [item.get("proposition") for item in mechanisms if isinstance(item, dict)]
-    if len(mechanisms) != len(propositions) or len(propositions) != len(set(propositions)):
+    inventory = [*workflows, *mechanisms]
+    propositions = [item.get("proposition") for item in inventory if isinstance(item, dict)]
+    if len(inventory) != len(propositions) or len(propositions) != len(set(propositions)):
         raise ProductCertificationError("mandatory mechanisms lack unique propositions")
-    if any(not item.get("provider_boundary") for item in mechanisms):
+    if any(not item.get("provider_boundary") for item in inventory):
         raise ProductCertificationError("mandatory mechanism lacks a provider boundary")
     if contract.get("release_authority") is not False:
         raise ProductCertificationError("empirical certification cannot confer release authority")

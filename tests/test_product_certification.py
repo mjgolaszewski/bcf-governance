@@ -56,7 +56,11 @@ def _contract() -> dict[str, object]:
             "proof_node": "tests.test_profile_flows::test_fresh_adopter_projects_opt_in_one_pr_controller_rotation",
         }
     workflows = [
-        {"id": item["id"], "proposition": f"workflow:{item['id']}"}
+        {
+            "id": item["id"],
+            "proposition": f"workflow:{item['id']}",
+            "provider_boundary": "github_actions",
+        }
         for item in validate_ci_graph(ROOT).workflows
     ]
     invalidation_nodes = {
@@ -97,7 +101,13 @@ def _contract() -> dict[str, object]:
         },
         "derived_metrics": {
             "self_feedback_median_seconds": 102,
+            "self_feedback_p95_seconds": 104,
+            "self_certification_median_seconds": 202,
             "self_certification_p95_seconds": 204,
+            "adopter_feedback_median_seconds": 102,
+            "adopter_feedback_p95_seconds": 104,
+            "adopter_certification_median_seconds": 202,
+            "adopter_certification_p95_seconds": 204,
         },
         "release_authority": False,
     }
@@ -115,7 +125,7 @@ def test_product_certification_recomputes_complete_empirical_contract() -> None:
         (lambda value: value["routine_rotations"]["self"][1].update(installed_controller="f" * 40), "discontinuous"),
         (lambda value: value["routine_rotations"]["self"][0].update(bookkeeping_pr_count=1), "redundant rotation ceremony"),
         (lambda value: value["simplicity"]["mechanisms"][1].update(proposition="candidate_downstream_admissibility"), "unique propositions"),
-        (lambda value: value["derived_metrics"].update(self_feedback_median_seconds=1), "median is not mechanically derived"),
+        (lambda value: value["derived_metrics"].update(self_feedback_median_seconds=1), "metrics are not mechanically derived"),
     ],
 )
 def test_product_certification_rejects_incomplete_or_broadened_proof(
