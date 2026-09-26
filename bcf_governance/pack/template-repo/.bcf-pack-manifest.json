@@ -804,7 +804,7 @@
     },
     "scripts/_bcf_runtime/evidence_workitem_lifecycle.py": {
       "operation": "copy",
-      "sha256": "3c120557c409b400a4653cb7f5948cb07e639b3b6efe8c6fc6af950915bce6c5"
+      "sha256": "87eb1e8fe60882702c4e3563870922955b502475d3f60f8118c4d8c2d293ca1a"
     },
     "scripts/_bcf_runtime/github_protection.py": {
       "operation": "copy",
@@ -968,7 +968,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "2d6cf96a4923a4af1cbfe0fa3121fd599421d75dbf85b779fd5124e457549b8c"
+      "sha256": "76960d8981b418e35d9db2c6758edb990edbe8b5184e506acb8c6692b21a53ff"
     },
     "scripts/_bcf_runtime/migrate_contracts.py": {
       "operation": "copy",

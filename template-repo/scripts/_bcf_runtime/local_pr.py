@@ -28,6 +28,10 @@ from .evaluation_scope import (
 from .evidence_execution import EvidenceError
 from .evidence_scheduling import receipt_duration_ms
 from .evidence_sessions import allocate_session, local_producer_identity
+from .evidence_workitem_lifecycle import (
+    WorkitemContractError,
+    validate_bounded_target_authored_ready,
+)
 from .governance_evidence import capture_gate
 from .governance_truth import TruthfulnessError, derive_truth
 from .preflight import PreflightError, run_preflight
@@ -423,6 +427,13 @@ def _run_prospective_train(
         )
     except EvaluationScopeError as exc:
         raise ProspectiveValidationError(str(exc)) from exc
+    if requested_scope.intent is EvaluationIntent.WORKITEM_CERTIFICATION:
+        try:
+            validate_bounded_target_authored_ready(root, requested_scope.target_id or "")
+        except WorkitemContractError as exc:
+            raise ProspectiveValidationError(
+                f"target_not_ready_for_bounded_certification: {exc}"
+            ) from exc
     try:
         reconcile_started = time.monotonic_ns()
         for step in reconcile_steps(root, python_executable.resolve()):

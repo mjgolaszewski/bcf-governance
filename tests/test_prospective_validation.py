@@ -36,6 +36,13 @@ TRAIN = {
 }
 
 
+@pytest.fixture(autouse=True)
+def _authored_target_ready(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        prospective, "validate_bounded_target_authored_ready", lambda *_args: None
+    )
+
+
 class Result:
     def __init__(self, stdout: str = "", returncode: int = 0) -> None:
         self.stdout = stdout
@@ -208,7 +215,7 @@ def test_provider_effective_controller_is_mechanically_bound_to_prospective_pref
     }
 
 
-def test_prospective_preflight_uses_exact_provider_effective_controller(
+def test_prospective_lifecycle_uses_exact_provider_effective_controller(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     trace: list[str] = []
@@ -274,6 +281,37 @@ def test_stale_projection_fails_before_preflight_or_evidence(
             runner=_runner,
         )
     assert trace == ["reconcile"]
+
+
+def test_authored_todo_workitem_fails_before_reconcile_or_evidence(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    trace: list[str] = []
+    _front_door(monkeypatch, trace)
+    monkeypatch.setattr(
+        prospective,
+        "validate_bounded_target_authored_ready",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            prospective.WorkitemContractError(
+                "bounded workitem target P28-P0-04 is not authored DONE"
+            )
+        ),
+    )
+    with pytest.raises(
+        prospective.ProspectiveValidationError,
+        match="target_not_ready_for_bounded_certification.*not authored DONE",
+    ):
+        prospective._run_prospective_train(
+            tmp_path,
+            semantic_intent="workitem",
+            evaluation_target="P28-P0-04",
+            subject_commit=HEAD,
+            subject_tree=TREE,
+            python_executable=Path("/python"),
+            execute_evidence=False,
+            runner=_runner,
+        )
+    assert trace == []
 
 
 def test_graph_intent_mismatch_fails_before_evidence(
