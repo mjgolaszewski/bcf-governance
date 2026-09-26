@@ -1,0 +1,51 @@
+document:
+  kind: self_authority_overlay_contract
+  name: BCF self-authority overlays
+  id: bcf-self-authority-overlays
+  version: 1.0.0
+  status: active
+  path: governance/self-overlays.yml
+schema_version: '1.0'
+overlays:
+- id: self-controller-custody
+  authority_kind: controller
+  proposition: construct_install_and_activate_this_repository_trusted_controller
+  graph_extensions: [bcf-trusted-control]
+  authority_surfaces:
+  - governance/self-governance-policy.yml
+  - governance/ci-extensions/bcf-trusted-control.yml
+  adopter_alternative: typed_trusted_controller_adoption
+- id: self-publication-authority
+  authority_kind: publication
+  proposition: publish_pre_certified_immutable_release_bytes
+  graph_extensions: [bcf-release]
+  authority_surfaces:
+  - governance/ci-extensions/bcf-release.yml
+  - governance/public-contracts.yml
+  adopter_alternative: adopter_owned_publication_authority
+- id: self-recovery-authority
+  authority_kind: recovery
+  proposition: recover_only_from_ordinary_controller_bootstrap_deadlock
+  graph_extensions: [bcf-break-glass-recovery]
+  authority_surfaces:
+  - governance/break-glass-recovery.yml
+  - governance/ci-extensions/bcf-break-glass-recovery.yml
+  adopter_alternative: adopter_owned_recovery_authority
+- id: self-repository-authority
+  authority_kind: self_authority
+  proposition: mutate_only_declared_repository_metadata_and_durable_evidence
+  graph_extensions: [bcf-automation, bcf-evidence-storage]
+  authority_surfaces:
+  - governance/automation-producers.yml
+  - governance/ci-authority.yml
+  - governance/github-protection.yml
+  - governance/ci-extensions/bcf-automation.yml
+  - governance/ci-extensions/bcf-evidence-storage.yml
+  adopter_alternative: adopter_owned_repository_integrations
+non_leakage:
+  pack_manifest: template-repo/.bcf-pack-manifest.json
+  canonical_opt_in_controller_extension: governance/ci-extensions/bcf-controller-rotation.yml
+  rules:
+  - self authority surfaces are absent from the ordinary adopter pack
+  - generated self workflows are derived from exactly one declared overlay
+  - canonical opt-in adopter controller management is product not overlay

@@ -31,6 +31,10 @@ from .phase_catalog import (
 )
 from .release_gates import _validate_ci_profile, _validate_release_gate_targets, _validate_structural_gate_contract
 from .repo_cleanup import _load_repo_cleanup_contract
+from .self_authority_overlays import (
+    SelfAuthorityOverlayError,
+    validate_self_authority_overlays,
+)
 
 
 def validate_tooling_context_membership(repo_root: Path) -> None:
@@ -181,6 +185,21 @@ def validate_repo_root(
 
     _validate_agents(repo_root, agents)
     validate_tooling_context_membership(repo_root)
+    overlay_path = repo_root / "governance/self-overlays.yml"
+    if overlay_path.is_file():
+        overlays = _load_yaml(overlay_path)
+        _validate_schema(
+            repo_root,
+            schema_cache,
+            overlays,
+            schema_name="self-authority-overlays.schema.json",
+            context=str(overlay_path),
+        )
+        _validate_document_path(repo_root, overlays, overlay_path, context=str(overlay_path))
+    try:
+        validate_self_authority_overlays(repo_root)
+    except SelfAuthorityOverlayError as exc:
+        raise GovernanceValidationError(str(exc)) from exc
     required_artifact_paths = _validate_artifact_manifest(repo_root, artifact_manifest, agents)
     observability_contract_paths = _validate_observability_contracts(repo_root, schema_cache)
     declared_phase_paths = _validate_declared_phase_catalog(

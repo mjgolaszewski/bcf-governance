@@ -1,5 +1,8 @@
 # Changelog
 
+- Declare the four permitted self-authority overlays as typed exact propositions
+  and mechanically reject undeclared ownership, overlap, or adopter-pack leakage.
+
 - Resolve authenticated reuse attestations through the same canonical claim-aware
   path for active hotfix closure as phase and bounded-workitem truth.
 

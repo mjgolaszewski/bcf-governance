@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bcf.dev/schemas/self-authority-overlays.schema.json",
+  "title": "BCF self-authority overlay contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document", "schema_version", "overlays", "non_leakage"],
+  "properties": {
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "id", "version", "status", "path"],
+      "properties": {
+        "kind": {"const": "self_authority_overlay_contract"},
+        "name": {"type": "string", "minLength": 1},
+        "id": {"const": "bcf-self-authority-overlays"},
+        "version": {"const": "1.0.0"},
+        "status": {"const": "active"},
+        "path": {"const": "governance/self-overlays.yml"}
+      }
+    },
+    "schema_version": {"const": "1.0"},
+    "overlays": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {"$ref": "#/$defs/overlay"}
+    },
+    "non_leakage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pack_manifest", "canonical_opt_in_controller_extension", "rules"],
+      "properties": {
+        "pack_manifest": {"const": "template-repo/.bcf-pack-manifest.json"},
+        "canonical_opt_in_controller_extension": {"const": "governance/ci-extensions/bcf-controller-rotation.yml"},
+        "rules": {
+          "const": [
+            "self authority surfaces are absent from the ordinary adopter pack",
+            "generated self workflows are derived from exactly one declared overlay",
+            "canonical opt-in adopter controller management is product not overlay"
+          ]
+        }
+      }
+    }
+  },
+  "$defs": {
+    "safePath": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"
+    },
+    "baseOverlay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "authority_kind", "proposition", "graph_extensions", "authority_surfaces", "adopter_alternative"],
+      "properties": {
+        "id": {"type": "string"},
+        "authority_kind": {"enum": ["controller", "publication", "recovery", "self_authority"]},
+        "proposition": {"type": "string", "minLength": 1},
+        "graph_extensions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^bcf-[a-z0-9-]+$"}},
+        "authority_surfaces": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}},
+        "adopter_alternative": {"type": "string", "minLength": 1}
+      }
+    },
+    "overlay": {
+      "allOf": [
+        {"$ref": "#/$defs/baseOverlay"},
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "id": {"const": "self-controller-custody"},
+                "authority_kind": {"const": "controller"},
+                "proposition": {"const": "construct_install_and_activate_this_repository_trusted_controller"},
+                "graph_extensions": {"const": ["bcf-trusted-control"]},
+                "adopter_alternative": {"const": "typed_trusted_controller_adoption"}
+              }
+            },
+            {
+              "properties": {
+                "id": {"const": "self-publication-authority"},
+                "authority_kind": {"const": "publication"},
+                "proposition": {"const": "publish_pre_certified_immutable_release_bytes"},
+                "graph_extensions": {"const": ["bcf-release"]},
+                "adopter_alternative": {"const": "adopter_owned_publication_authority"}
+              }
+            },
+            {
+              "properties": {
+                "id": {"const": "self-recovery-authority"},
+                "authority_kind": {"const": "recovery"},
+                "proposition": {"const": "recover_only_from_ordinary_controller_bootstrap_deadlock"},
+                "graph_extensions": {"const": ["bcf-break-glass-recovery"]},
+                "adopter_alternative": {"const": "adopter_owned_recovery_authority"}
+              }
+            },
+            {
+              "properties": {
+                "id": {"const": "self-repository-authority"},
+                "authority_kind": {"const": "self_authority"},
+                "proposition": {"const": "mutate_only_declared_repository_metadata_and_durable_evidence"},
+                "graph_extensions": {"const": ["bcf-automation", "bcf-evidence-storage"]},
+                "adopter_alternative": {"const": "adopter_owned_repository_integrations"}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
