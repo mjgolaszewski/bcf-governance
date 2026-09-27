@@ -14,7 +14,7 @@ def validate_rotation_output_directories(
 
     prepared: set[str] = set()
     operations: list[tuple[str, str]] = []
-    for component_id in executor["components"]:
+    for component_index, component_id in enumerate(executor["components"]):
         component = graph["step_components"][component_id]
         if component["kind"] == "directory_setup":
             prepared.update(str(path).rstrip("/") for path in component["paths"])
@@ -25,6 +25,16 @@ def validate_rotation_output_directories(
         if len(argv) < 4 or argv[1:3] != ["ci-github", "controller-rotation"]:
             continue
         operations.append((component_id, str(argv[3])))
+        if argv[3] == "advance":
+            preceding = executor["components"][:component_index]
+            if argv[0] != "{ephemeral_controller}" or not any(
+                graph["step_components"][item]["kind"] == "controller_install"
+                for item in preceding
+            ):
+                raise CIGraphError(
+                    f"CI graph job {job['id']} must advance custody through the "
+                    "exact staged target controller"
+                )
         if argv[3] not in {
             "authorize", "advance", "materialize-authorization"
         } or "--output" not in argv:

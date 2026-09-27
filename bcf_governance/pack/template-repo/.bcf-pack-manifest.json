@@ -104,7 +104,7 @@
     },
     "governance/ci-extensions/bcf-controller-rotation.yml": {
       "operation": "copy",
-      "sha256": "ce431b035b34435e4e116442f082fa15dbcc3c376bc3ee1671e703c494688e34"
+      "sha256": "aff0db7da05aa86eb1abb72402c2542aa35522e7b3ee88ad3a8ef5752f9f67c2"
     },
     "governance/ci-runtime.yml": {
       "operation": "copy",
@@ -248,7 +248,7 @@
     },
     "schemas/controller-transition.schema.json": {
       "operation": "copy",
-      "sha256": "11a068e24ce4cfe185a2beae980e10097980561c5de113d0f4e69986692990e7"
+      "sha256": "e529711d2c38e9673c2d9a3b712965b773ffdca65e96a0d742462aa405fe44b5"
     },
     "schemas/evidence-input-manifest.schema.json": {
       "operation": "copy",
@@ -664,7 +664,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_rotation_outputs.py": {
       "operation": "copy",
-      "sha256": "e0f4f0ebaf60545bd363b3f8a806ef02be5ef1059fd376bb22f438a0358e4394"
+      "sha256": "550df4c4535869ca7d5f3a229d367f4010ed1563b7af4870b0a6e33b212664c4"
     },
     "scripts/_bcf_runtime/ci_graph_routing.py": {
       "operation": "copy",
@@ -1096,11 +1096,11 @@
     },
     "scripts/_bcf_runtime/routine_controller_provider.py": {
       "operation": "copy",
-      "sha256": "9cb4d8cabae288d29483a853daab78ca64830a6645268b7a0b36879ac4945d8e"
+      "sha256": "b13052efd73c9d735c787cf4b6d083034b141cd56907e8b5b850dd13acd043c0"
     },
     "scripts/_bcf_runtime/routine_controller_rotation.py": {
       "operation": "copy",
-      "sha256": "5a6d263213b579a76b934c8336745d7e18cf75c3de3c9c3a96482cf2a5d9cb22"
+      "sha256": "408bbecf1623b200dd432118c5816871a63517dcafee6a1d1d6445acf6c37382"
     },
     "scripts/_bcf_runtime/runtime_capacity.py": {
       "operation": "copy",
