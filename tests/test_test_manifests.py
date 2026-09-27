@@ -10,11 +10,13 @@ import yaml
 from bcf_governance.tooling.test_manifests import (
     TestManifestError as ManifestError,
     _selector_map_from_nodes,
+    check_all,
     check_gate,
     check_gate_selectors,
     collect_nodes,
     declared_test_gates,
     update_gate,
+    update_all,
 )
 
 
@@ -93,6 +95,52 @@ def test_manifest_collection_classifies_missing_pytest_as_infrastructure(
 
     with pytest.raises(ManifestError, match="collection infrastructure failure"):
         collect_nodes(repo, "test", python_executable=selected)
+
+
+def test_all_manifests_share_one_collection_and_partition_exactly(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _repo(tmp_path)
+    payload = yaml.safe_load(
+        (repo / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    )
+    payload["gates"]["focused"] = {
+        "evidence": {
+            "test_contract": {
+                "selectors": ["tests/test_sample.py::test_one"],
+                "expected_node_manifest": "governance/test-manifests/focused.txt",
+            }
+        }
+    }
+    (repo / "governance/gate-contracts.yml").write_text(
+        yaml.safe_dump(payload, sort_keys=False), encoding="utf-8"
+    )
+    calls = 0
+    original = __import__(
+        "bcf_governance.tooling.test_manifests", fromlist=["subprocess"]
+    ).subprocess.run
+
+    def observe(*args: object, **kwargs: object) -> object:
+        nonlocal calls
+        calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(
+        "bcf_governance.tooling.test_manifests.subprocess.run", observe
+    )
+
+    paths = update_all(repo, python_executable=sys.executable)
+    assert calls == 1
+    assert paths["focused"].read_text(encoding="utf-8").splitlines() == [
+        "tests.test_sample::test_one"
+    ]
+    assert paths["test"].read_text(encoding="utf-8").splitlines() == [
+        "tests.test_sample::test_one",
+        "tests.test_sample::test_two",
+    ]
+    counts = check_all(repo, python_executable=sys.executable)
+    assert calls == 2
+    assert counts == {"focused": 1, "test": 2}
 
 
 def test_selector_map_preserves_function_class_unittest_nested_and_parameter_nodes(
@@ -183,5 +231,4 @@ def test_current_repo_declares_exact_manifest_for_every_test_gate() -> None:
         "contract-test",
         "test",
     ]
-    for gate in gates:
-        assert check_gate(REPO_ROOT, gate, python_executable=sys.executable)
+    assert all(check_all(REPO_ROOT, python_executable=sys.executable).values())

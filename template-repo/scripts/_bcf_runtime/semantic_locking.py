@@ -65,6 +65,41 @@ def render_compact_semantic_yaml(payload: dict[str, Any]) -> bytes:
     return candidate
 
 
+def prepend_compact_list_rows(
+    existing: bytes, key: str, rows: list[dict[str, Any]]
+) -> bytes:
+    """Add canonical flow rows to one top-level list without rewriting other bytes."""
+
+    if not rows:
+        return existing
+    populated_marker = f"{key}:\n".encode()
+    empty_marker = f"{key}: []\n".encode()
+    marker_count = existing.count(populated_marker) + existing.count(empty_marker)
+    if marker_count != 1:
+        raise SemanticLockError(f"compact semantic contract requires one {key} list")
+    try:
+        previous = yaml.safe_load(existing)
+    except yaml.YAMLError as exc:
+        raise SemanticLockError(f"cannot decode compact semantic contract: {exc}") from exc
+    if not isinstance(previous, dict) or not isinstance(previous.get(key), list):
+        raise SemanticLockError(f"compact semantic contract {key} must be a list")
+    rendered = b"".join(
+        f"- {_compact_dump(row, flow=True).strip().removesuffix(chr(10) + '...')}\n".encode()
+        for row in rows
+    )
+    marker = populated_marker if populated_marker in existing else empty_marker
+    replacement = populated_marker + rendered
+    candidate = existing.replace(marker, replacement, 1)
+    try:
+        decoded = yaml.safe_load(candidate)
+    except yaml.YAMLError as exc:
+        raise SemanticLockError(f"cannot decode compact semantic contract: {exc}") from exc
+    expected = {**previous, key: [*rows, *previous[key]]}
+    if decoded != expected:
+        raise SemanticLockError("compact semantic row insertion changed unrelated values")
+    return candidate
+
+
 def render_lock_yaml(payload: dict[str, Any]) -> bytes:
     """Render the canonical semantic lock bytes."""
     header = {key: value for key, value in payload.items() if key != "projection_outputs"}

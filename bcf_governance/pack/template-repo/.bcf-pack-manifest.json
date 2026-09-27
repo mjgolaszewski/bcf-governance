@@ -1104,7 +1104,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "ddb9dcb9e2b13b1ac6ad5c97e9bbffccfde2e30e10d73e0301554e32f9667ade"
+      "sha256": "bdf939db7fb8d74cd32447f2c2347d3e93bb2a3afab74bc7695f5d57b93bcac3"
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",
@@ -1120,7 +1120,7 @@
     },
     "scripts/_bcf_runtime/semantic_authority_commands.py": {
       "operation": "copy",
-      "sha256": "258a0bf26aa08ba81bd6e1bc33e0b5d660fe2526cf44bc5facf058a42e62ee91"
+      "sha256": "2c6fc1b688c277ccc20222e447f6bff6c080825ed50d1b6f21f548baf76f6d26"
     },
     "scripts/_bcf_runtime/semantic_authority_contracts.py": {
       "operation": "copy",
@@ -1128,7 +1128,7 @@
     },
     "scripts/_bcf_runtime/semantic_authority_migrations.py": {
       "operation": "copy",
-      "sha256": "12757527bfde64e9b55bf0b7f456c77d84b9926d3d3f90e5506680350f1b173e"
+      "sha256": "3fb6cc14b6fdc3ac8a0cf1ac81e30375c752914c8aaa1dc7f4cb2f098e8aee4a"
     },
     "scripts/_bcf_runtime/semantic_derivations.py": {
       "operation": "copy",
@@ -1136,7 +1136,7 @@
     },
     "scripts/_bcf_runtime/semantic_locking.py": {
       "operation": "copy",
-      "sha256": "616940787220e678d1700ce31d0fe84fb9bc036ff695f123bf40d630563add82"
+      "sha256": "f1bf873ffb354de7051c77063df42a3180e3cf6765d7dcb9507f063bd719b129"
     },
     "scripts/_bcf_runtime/semantic_operation_effects.py": {
       "operation": "copy",
@@ -1172,7 +1172,7 @@
     },
     "scripts/_bcf_runtime/semantic_ownership_scan.py": {
       "operation": "copy",
-      "sha256": "85860eda6c2fef79f2ed9755e7279c547fae48062cdaa5a5f31b2085e71f1c56"
+      "sha256": "f5d64aabfd47d286aaf9b6667829620ddd94d760f8d88108b5895c8c7f661593"
     },
     "scripts/_bcf_runtime/semantic_ownership_typescript.mjs": {
       "operation": "copy",
@@ -1200,7 +1200,7 @@
     },
     "scripts/_bcf_runtime/test_manifests.py": {
       "operation": "copy",
-      "sha256": "60dca2065ae18e87aea53454e3894a11a1e0192696a7bc1391e99de795d7f252"
+      "sha256": "65d27c7adea8181eb76723ba1ccba919e1af0e700964f2c2e5bf091d2dacfcbc"
     },
     "scripts/_bcf_runtime/trusted_controller_compatibility.py": {
       "operation": "copy",

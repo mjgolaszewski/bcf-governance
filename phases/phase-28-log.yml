@@ -64,6 +64,7 @@ execution_evidence:
   - consecutive live self rotations 256fb901 to 72dab481 and 72dab481 to ca79761b each used one implementation PR, zero bookkeeping PRs, and zero manually copied identities; the real installed-adopter fixture proves the same two-cycle shape
   - the second live rotation is bound to exact-main 36260917039/2, controller artifact 10911994913, transition 36260975441/1, active receipt 10912391613, finalizer 36261907345/1, and publisher 36261988968/1
   - superseded dispatcher 36261976084/1 failed closed on concurrent artifact inventory churn while the independently authenticated finalizer publisher succeeded; it conferred no status or authority and required no intervention
+  - P28-HF06 was opened before 2.1.2 publication after AgentBus qualification proved fixed-point reconciliation mixed the exact tool runtime with a stale adopter BCF runtime; the same correction binds routine callbacks to the effective controller and removes both retry-dependent failure classes
   - the representative trusted-controller adopter is created through the real installer and adoption path, receives byte-exact canonical semantic owners, and receives no declared self-authority surface
   - parity validation fails closed on missing domains, owner drift, missing proof nodes, non-installed adopter claims, and missing attack coverage
   - P28-P0-04 closed for merge subject a2738d14cb8dc1a5848727d2a5d062c989cc02d0 and tree 95f1ad2c09b5fbabf7596ac2b36318f07247903c through exact-main 36266893780/1 trusted finalizer 36267256963/1 and authenticated bounded publication 36267338745/1
@@ -107,4 +108,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- P28 remains complete; P28-HF04 closes live-adopter parity through release_18 without reopening phase architecture
+- P28 remains complete; P28-HF06 must certify corrected verifier-bound 2.1.2 bytes through AgentBus and Racecar before immutable release_18 custody

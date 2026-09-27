@@ -30,6 +30,17 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Made the post-rotation callback classify exact no-transition topology through
   installed N before resolving N+1, eliminating an unnecessary repository-wide
   artifact scan and duplicate dispatch race after ordinary exact-main closure.
+- Bound every fixed-point governance command to the exact BCF tool runtime while
+  retaining the adopter-selected interpreter solely for project test collection,
+  preventing mixed-version migration and validation within one reconcile pass.
+- Bound post-rotation callback classification to the authenticated effective
+  controller so skipped-matrix topology is interpreted by the active runtime.
+- Collected all governed test-manifest selectors once per fixed-point round and
+  partitioned their exact node populations mechanically, removing repeated
+  collection without executing or weakening any product test.
+- Added deterministic exact-base operation-migration registration so semantic
+  effect changes derive their base and before/after digests mechanically instead
+  of relying on agent-authored custody values.
 
 ## [2.1.1] - 2026-09-27
 

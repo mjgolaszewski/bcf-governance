@@ -305,12 +305,30 @@ def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> N
     callback = next(item for item in publisher["jobs"] if item["id"] == "rotation-callback")
     assert callback["permissions"]["actions"] == "write"
     assert callback["executor"]["components"] == [
-        "setup-python", "dispatch-routine-certification",
+        "setup-python", "resolve-effective-controller", "dispatch-routine-certification",
     ]
     dispatch = graph["commands"]["dispatch-routine-certification"]
     assert dispatch["argv"][:4] == [
-        "{controller}", "ci-github", "controller-rotation", "dispatch-certification",
+        "${{ runner.tool_cache }}/bcf-governance/"
+        "${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf",
+        "ci-github", "controller-rotation", "dispatch-certification",
     ]
+    rendered = yaml.safe_load(
+        render_ci_graph(REPO_ROOT)[".github/workflows/bcf-status-publisher.yml"]
+    )
+    steps = rendered["jobs"]["rotation-callback"]["steps"]
+    resolve_index = next(
+        index for index, step in enumerate(steps)
+        if step.get("id") == "effective-controller"
+    )
+    dispatch_index = next(
+        index for index, step in enumerate(steps)
+        if "dispatch-certification" in step.get("run", "")
+    )
+    assert resolve_index < dispatch_index
+    assert "steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA" in steps[
+        dispatch_index
+    ]["run"]
 
 
 def test_self_control_plane_is_an_exact_v11_generator_product() -> None:
