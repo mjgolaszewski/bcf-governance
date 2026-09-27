@@ -14,12 +14,12 @@ hotfix:
   summary: Eliminate pre-classification artifact scans from exact no-transition callbacks
 execution_evidence:
   planned_commands:
-  - /docker/bcf-governance/.venv/bin/python -m pytest -q tests/test_self_governance_contracts.py::test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner
+  - .venv/bin/python -m pytest -q tests/test_self_governance_contracts.py::test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner
     tests/test_routine_controller_provider.py::test_callback_closes_exact_no_transition_without_rerun
   executed_commands:
-  - /docker/bcf-governance/.venv/bin/python -m pytest -q tests/test_self_governance_contracts.py::test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner tests/test_routine_controller_provider.py::test_callback_closes_exact_no_transition_without_rerun tests/test_routine_controller_provider.py::test_callback_accepts_exact_provider_collapsed_no_transition tests/test_routine_controller_provider.py::test_callback_collapsed_no_transition_still_fails_closed tests/test_routine_controller_provider.py::test_callback_rejects_nonexact_no_transition_topology
-  - /docker/bcf-governance/.venv/bin/python -m bcf_governance.cli ci graph render --repo-root . --check
-  - /docker/bcf-governance/.venv/bin/python -m bcf_governance.cli ci graph validate --repo-root .
+  - .venv/bin/python -m pytest -q tests/test_self_governance_contracts.py::test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner tests/test_routine_controller_provider.py::test_callback_closes_exact_no_transition_without_rerun tests/test_routine_controller_provider.py::test_callback_accepts_exact_provider_collapsed_no_transition tests/test_routine_controller_provider.py::test_callback_collapsed_no_transition_still_fails_closed tests/test_routine_controller_provider.py::test_callback_rejects_nonexact_no_transition_topology
+  - .venv/bin/python -m bcf_governance.cli ci graph render --repo-root . --check
+  - .venv/bin/python -m bcf_governance.cli ci graph validate --repo-root .
   notes:
   - Exact-main publisher run 36334475045/1 failed before callback classification because the generated callback performed a repository-wide controller-artifact scan while trusted finalizer artifacts were being uploaded.
   - The no-transition classifier already authenticates the exact triggering workflow, job inventory, subject, run, and attempt before any active-transition resolution is necessary.
