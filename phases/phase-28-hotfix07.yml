@@ -38,7 +38,7 @@ execution_evidence:
     materialization module's missing tooling-context registration before evidence
     allocation. Tooling-context ownership now runs in structural reconciliation,
     making the same deterministic class fail at the earliest fixed-point boundary.
-  - The first semantic fan-out rejected unrelated release-verifier rendering drift:
+  - The first semantic fan-out rejected unrelated release-verifier rendering drift because
     the new multi-path digest resolver had replaced the established single-path
     projection. The renderer now preserves exact legacy bytes for single-path
     consumers and activates multi-path resolution only for the typed rotation bridge.
