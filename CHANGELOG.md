@@ -38,6 +38,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Collected all governed test-manifest selectors once per fixed-point round and
   partitioned their exact node populations mechanically, removing repeated
   collection without executing or weakening any product test.
+- Added deterministic exact-base operation-migration registration so semantic
+  effect changes derive their base and before/after digests mechanically instead
+  of relying on agent-authored custody values.
 
 ## [2.1.1] - 2026-09-27
 

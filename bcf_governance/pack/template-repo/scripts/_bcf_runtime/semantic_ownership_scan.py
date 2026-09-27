@@ -368,7 +368,7 @@ def run_scan(repo_root: Path) -> dict[str, Any]:
 
 def main(argv: list[str] | None = None) -> None:
     raw_args = list(sys.argv[1:] if argv is None else argv)
-    if raw_args and raw_args[0] in {"scaffold", "adopt", "lock"}:
+    if raw_args and raw_args[0] in {"scaffold", "adopt", "lock", "migrate-operation"}:
         authority_main(raw_args)
         return
     if raw_args and raw_args[0] == "scan":

@@ -1360,6 +1360,7 @@ tests.test_semantic_authority::test_model_callable_operation_cannot_confer_autho
 tests.test_semantic_authority::test_multiply_classified_operation_is_rejected
 tests.test_semantic_authority::test_omitted_family_is_rejected
 tests.test_semantic_authority::test_operation_effect_change_requires_exact_base_migration
+tests.test_semantic_authority::test_operation_migration_registration_derives_exact_base_digests
 tests.test_semantic_authority::test_operation_population_adapters_are_closed[canonical_yaml_catalog-operations:\n  execute: application.execute\n-extra2-expected2]
 tests.test_semantic_authority::test_operation_population_adapters_are_closed[python_decorators-def governed(fn): return fn\n@governed\ndef execute(): pass\n-extra0-expected0]
 tests.test_semantic_authority::test_operation_population_adapters_are_closed[python_module_exports-__all__ = ['execute']\ndef execute(): pass\ndef _private(): pass\n-extra1-expected1]

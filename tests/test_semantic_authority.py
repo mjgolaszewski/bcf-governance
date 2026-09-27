@@ -783,6 +783,71 @@ def test_operation_effect_change_requires_exact_base_migration() -> None:
     )
 
 
+def test_operation_migration_registration_derives_exact_base_digests(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    base = "2" * 40
+    previous = {
+        "id": "operation.v1",
+        "semantic_kind": "command",
+        "authoritative_read": True,
+        "authoritative_mutation": True,
+        "authority_conferral": False,
+        "produces_projection": True,
+        "model_callable": False,
+        "allowed_mutation_ports": ["module.py::one"],
+        "allowed_authority_ports": [],
+    }
+    current = {**previous, "allowed_mutation_ports": ["module.py::one", "module.py::all"]}
+    registry = tmp_path / "governance" / "application-operations.yml"
+    registry.parent.mkdir()
+    registry.write_text(
+        yaml.safe_dump({"operations": [current], "migrations": []}, sort_keys=False),
+        encoding="utf-8",
+    )
+    owner = tmp_path / "phases" / "hotfix.yml"
+    owner.parent.mkdir()
+    owner.write_text("status: completed\n", encoding="utf-8")
+    monkeypatch.setattr(migrations, "_validate_exact_base", lambda *_: None)
+    monkeypatch.setattr(
+        migrations,
+        "_git_yaml",
+        lambda *_: {"operations": [previous], "migrations": []},
+    )
+
+    rows = migrations.register_operation_migration(
+        tmp_path,
+        base_sha=base,
+        subject_id="operation.v1",
+        owner="phases/hotfix.yml",
+        reason="authorize one batch projection through the existing owner",
+        apply=True,
+    )
+    payload = yaml.safe_load(registry.read_text(encoding="utf-8"))
+
+    assert payload["migrations"] == list(rows)
+    assert rows[0]["previous_sha256"] == migrations._stable_digest(previous)
+    assert rows[0]["current_sha256"] == migrations._stable_digest(current)
+    assert migrations.register_operation_migration(
+        tmp_path,
+        base_sha=base,
+        subject_id="operation.v1",
+        owner="phases/hotfix.yml",
+        reason="authorize one batch projection through the existing owner",
+        apply=True,
+    ) == rows
+    assert yaml.safe_load(registry.read_text(encoding="utf-8"))["migrations"] == list(rows)
+    with pytest.raises(migrations.SemanticMigrationError, match="custody metadata"):
+        migrations.register_operation_migration(
+            tmp_path,
+            base_sha=base,
+            subject_id="operation.v1",
+            owner="phases/hotfix.yml",
+            reason="a different agent-authored reason",
+            apply=True,
+        )
+
+
 def test_derivation_recipe_change_requires_exact_base_migration() -> None:
     base = "3" * 40
     previous = {"id": "projection", "classification": "derived", "recipe": "old"}

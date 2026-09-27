@@ -17,6 +17,7 @@ from typing import Any
 import yaml  # type: ignore[import-untyped]
 
 from .semantic_ownership_registry import Registry
+from .semantic_locking import atomic_write, prepend_compact_list_rows
 
 
 class SemanticMigrationError(ValueError):
@@ -26,6 +27,126 @@ class SemanticMigrationError(ValueError):
 def _stable_digest(payload: Any) -> str:
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
     return hashlib.sha256(encoded).hexdigest()
+
+
+_OPERATION_EFFECT_FIELDS = (
+    "authoritative_read",
+    "authoritative_mutation",
+    "authority_conferral",
+    "produces_projection",
+    "model_callable",
+    "allowed_mutation_ports",
+    "allowed_authority_ports",
+)
+
+
+def _operation_change_kinds(
+    previous: dict[str, Any], current: dict[str, Any] | None
+) -> tuple[str, ...]:
+    if current is None:
+        return ("retired",)
+    changes = []
+    if previous.get("semantic_kind") != current.get("semantic_kind"):
+        changes.append("semantic_kind_changed")
+    if any(previous.get(field) != current.get(field) for field in _OPERATION_EFFECT_FIELDS):
+        changes.append("effect_changed")
+    return tuple(changes)
+
+
+def _validate_exact_base(repo_root: Path, base_sha: str) -> None:
+    if not re.fullmatch(r"[a-f0-9]{40}", base_sha):
+        raise SemanticMigrationError("base SHA must be an exact 40-character commit")
+    result = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", base_sha, "HEAD"],
+        cwd=repo_root,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise SemanticMigrationError("semantic migration base is not an ancestor of HEAD")
+
+
+def register_operation_migration(
+    repo_root: Path,
+    *,
+    base_sha: str,
+    subject_id: str,
+    owner: str,
+    reason: str,
+    apply: bool,
+) -> tuple[dict[str, Any], ...]:
+    """Compute and register exact-base operation migrations without transcribed digests."""
+
+    _validate_exact_base(repo_root, base_sha)
+    relative = Path("governance/application-operations.yml")
+    path = repo_root / relative
+    if not path.is_file() or path.is_symlink():
+        raise SemanticMigrationError("application-operation registry must be a regular file")
+    previous_payload = _git_yaml(repo_root, base_sha, relative)
+    current_payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if previous_payload is None or not isinstance(current_payload, dict):
+        raise SemanticMigrationError("cannot load exact-base application-operation registries")
+    previous_rows = {
+        str(row["id"]): row for row in previous_payload.get("operations", [])
+    }
+    current_rows = {str(row["id"]): row for row in current_payload.get("operations", [])}
+    previous = previous_rows.get(subject_id)
+    if previous is None:
+        raise SemanticMigrationError("operation migration subject is absent from exact base")
+    current = current_rows.get(subject_id)
+    changes = _operation_change_kinds(previous, current)
+    if not changes:
+        raise SemanticMigrationError("operation migration has no governed semantic change")
+    owner_path = Path(owner)
+    if owner_path.is_absolute() or ".." in owner_path.parts:
+        raise SemanticMigrationError("operation migration owner must be repository-relative")
+    resolved_owner = repo_root / owner_path
+    if not resolved_owner.is_file() or resolved_owner.is_symlink():
+        raise SemanticMigrationError("operation migration owner must be a regular file")
+    if not reason.strip():
+        raise SemanticMigrationError("operation migration reason must be non-empty")
+    rows = tuple(
+        {
+            "subject_kind": "operation",
+            "subject_id": subject_id,
+            "change": change,
+            "base_sha": base_sha,
+            "previous_sha256": _stable_digest(previous),
+            "current_sha256": _stable_digest(current),
+            "owner": owner_path.as_posix(),
+            "reason": reason.strip(),
+        }
+        for change in changes
+    )
+    key_fields = (
+        "subject_kind", "subject_id", "change", "base_sha",
+        "previous_sha256", "current_sha256",
+    )
+    existing_rows = {
+        tuple(str(row[field]) for field in key_fields): row
+        for row in current_payload.get("migrations", [])
+    }
+    for row in rows:
+        key = tuple(str(row[field]) for field in key_fields)
+        if key in existing_rows and existing_rows[key] != row:
+            raise SemanticMigrationError(
+                "computed operation migration conflicts with registered custody metadata"
+            )
+    missing = [
+        row
+        for row in rows
+        if tuple(str(row[field]) for field in key_fields) not in existing_rows
+    ]
+    if not apply:
+        if missing:
+            raise SemanticMigrationError("computed operation migration is not registered")
+        return rows
+    if missing:
+        migrations = current_payload.setdefault("migrations", [])
+        if not isinstance(migrations, list):
+            raise SemanticMigrationError("application-operation migrations must be a list")
+        atomic_write(path, prepend_compact_list_rows(path.read_bytes(), "migrations", missing))
+    return rows
 
 
 def _git_yaml(repo_root: Path, base_sha: str, relative: Path) -> dict[str, Any] | None:
@@ -138,15 +259,6 @@ def _operation_changes(
 ) -> None:
     old = {str(row["id"]): row for row in old_payload.get("operations", [])}
     new = {str(row["id"]): row for row in new_payload["operations"]}
-    effect_fields = (
-        "authoritative_read",
-        "authoritative_mutation",
-        "authority_conferral",
-        "produces_projection",
-        "model_callable",
-        "allowed_mutation_ports",
-        "allowed_authority_ports",
-    )
     for subject_id, previous in old.items():
         current = new.get(subject_id)
         if current is None:
@@ -160,22 +272,12 @@ def _operation_changes(
                 current=None,
             )
             continue
-        if previous.get("semantic_kind") != current.get("semantic_kind"):
+        for change in _operation_change_kinds(previous, current):
             _require_migration(
                 migrations,
                 kind="operation",
                 subject_id=subject_id,
-                change="semantic_kind_changed",
-                base_sha=base_sha,
-                previous=previous,
-                current=current,
-            )
-        if any(previous.get(field) != current.get(field) for field in effect_fields):
-            _require_migration(
-                migrations,
-                kind="operation",
-                subject_id=subject_id,
-                change="effect_changed",
+                change=change,
                 base_sha=base_sha,
                 previous=previous,
                 current=current,

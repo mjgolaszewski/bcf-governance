@@ -31,6 +31,10 @@ from .semantic_locking import (
 from .semantic_adoption_dependencies import DependencySnapshot, SemanticDependencyError, snapshot_adoption_dependencies
 from .semantic_ownership_typescript import TypeScriptDiscoveryError
 from .semantic_ownership_registry import load_registry
+from .semantic_authority_migrations import (
+    SemanticMigrationError,
+    register_operation_migration,
+)
 
 
 MANAGED_PATHS = (
@@ -185,10 +189,16 @@ def _scaffold(repo_root: Path, output: Path) -> None:
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="bcf semantic-ownership")
-    parser.add_argument("command", choices=("scaffold", "adopt", "lock"))
+    parser.add_argument(
+        "command", choices=("scaffold", "adopt", "lock", "migrate-operation")
+    )
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--output", type=Path)
     parser.add_argument("--config", type=Path)
+    parser.add_argument("--base-sha")
+    parser.add_argument("--subject-id")
+    parser.add_argument("--owner")
+    parser.add_argument("--reason")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--check", action="store_true")
     mode.add_argument("--apply", action="store_true")
@@ -206,7 +216,7 @@ def main(argv: list[str] | None = None) -> None:
                 raise SemanticAuthorityError("adopt requires --config and exactly one of --check or --apply")
             _adopt(repo_root, args.config.resolve(), apply=args.apply)
             result = {"status": "adoption_applied" if args.apply else "adoption_check_passed"}
-        else:
+        elif args.command == "lock":
             if args.check == args.apply:
                 raise SemanticAuthorityError("lock requires exactly one of --check or --apply")
             lock = _lock(repo_root, apply=args.apply)
@@ -214,7 +224,31 @@ def main(argv: list[str] | None = None) -> None:
                 "status": "lock_applied" if args.apply else "lock_check_passed",
                 "projection_outputs": len(lock["projection_outputs"]),
             }
-    except (SemanticAuthorityError, TypeScriptDiscoveryError, SemanticLockError, SemanticDependencyError) as exc:
+        else:
+            if (
+                args.check == args.apply
+                or not args.base_sha
+                or not args.subject_id
+                or not args.owner
+                or not args.reason
+            ):
+                raise SemanticAuthorityError(
+                    "migrate-operation requires exact base, subject, owner, reason, and exactly one mutation mode"
+                )
+            rows = register_operation_migration(
+                repo_root,
+                base_sha=args.base_sha,
+                subject_id=args.subject_id,
+                owner=args.owner,
+                reason=args.reason,
+                apply=args.apply,
+            )
+            result = {
+                "status": "migration_applied" if args.apply else "migration_check_passed",
+                "migration_count": len(rows),
+                "changes": [row["change"] for row in rows],
+            }
+    except (SemanticAuthorityError, SemanticMigrationError, TypeScriptDiscoveryError, SemanticLockError, SemanticDependencyError) as exc:
         print(f"semantic-ownership-{args.command}-failed: {exc}")
         raise SystemExit(1) from exc
     print(json.dumps(result, sort_keys=True))
