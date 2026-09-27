@@ -83,7 +83,10 @@ Use `governance/repo-cleanup-contract.yml` as the cleanup contract and `governan
 4. Keep the first commit limited to governance artifacts, docs, scripts, schemas, CI fragments, and phase records.
 5. Inventory source roots, bounded contexts, architectural layers, command/query paths, read-model names, write API names, generated-file exclusions, and runtime surfaces.
 6. Update `architecture-boundaries.yml` to match the repo before treating architecture tests as release evidence.
-7. Merge or include `Makefile.fragment`.
+7. Merge `Makefile.fragment`, or include it from `Makefile` as the single exact
+   source on an `include Makefile.fragment`, `-include Makefile.fragment`, or
+   `sinclude Makefile.fragment` line. Variable, wildcard, multi-source, duplicate,
+   missing, or mixed merged-and-included ownership fails closed.
 8. Build a complete standard profile config with real argv, measurements,
    outputs, environment assertions, and negative controls for every gate.
 9. Scaffold and complete the semantic configuration, then preview and apply

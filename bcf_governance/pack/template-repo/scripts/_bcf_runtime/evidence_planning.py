@@ -18,7 +18,13 @@ from typing import Any, Iterable, Mapping
 import yaml  # type: ignore[import-untyped]
 
 from .evidence_execution import EvidenceError
-from .evidence_scheduling import assign_duration_aware_shards, duration_estimates
+from .evidence_scheduling import (
+    assign_duration_aware_shards,
+    duration_estimates,
+    expand_group_dependencies,
+    invalidate_dependency_reuse,
+    validate_group_dependencies,
+)
 
 
 DEPENDENCY_CLASSES = (
@@ -99,6 +105,10 @@ def parse_claim_model(payload: object) -> dict[str, Any]:
             raise EvidenceError(
                 f"execution group {group_id} producer is not an executable gate"
             )
+    try:
+        validate_group_dependencies(groups)
+    except ValueError as exc:
+        raise EvidenceError(str(exc)) from exc
     if grouped != claim_ids:
         raise EvidenceError("every claim must belong to exactly one execution group")
     if any(count != 1 for count in membership.values()):
@@ -630,6 +640,12 @@ def plan_verification(
             )
             continue
         grouped.setdefault(group, []).append(claim_id)
+    grouped, forced_groups = expand_group_dependencies(
+        grouped, model["execution_groups"]
+    )
+    reused, invalidated = invalidate_dependency_reuse(
+        grouped, forced_groups, reused, invalidated
+    )
     nodes = []
     for group_id, claim_ids in sorted(grouped.items()):
         qualification_refs: list[dict[str, str]] = []
@@ -651,8 +667,12 @@ def plan_verification(
             "id": group_id,
             "producer": model["execution_groups"][group_id]["producer"],
             "claims": sorted(claim_ids),
-            "depends_on": [],
-            "reason": "required claims lack applicable authenticated evidence",
+            "depends_on": list(model["execution_groups"][group_id].get("depends_on", [])),
+            "reason": (
+                "required by a current-run dependent producer"
+                if group_id in forced_groups
+                else "required claims lack applicable authenticated evidence"
+            ),
             "qualification_refs": qualification_refs,
         })
     nodes = assign_duration_aware_shards(
@@ -678,7 +698,14 @@ def plan_verification(
         "invalidated_evidence": sorted(
             invalidated, key=lambda value: (value["claim_id"], value["reasons"])
         ),
-        "execution_dag": {"nodes": nodes, "edges": []},
+        "execution_dag": {
+            "nodes": nodes,
+            "edges": [
+                {"from": dependency, "to": str(node["id"])}
+                for node in nodes
+                for dependency in node["depends_on"]
+            ],
+        },
         "decision_explanations": [
             *[
                 f"reused because {item['claim_id']} dependency fingerprints remain applicable"

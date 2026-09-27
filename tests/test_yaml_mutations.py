@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import pytest
+import yaml
 
 from bcf_governance.tooling.governance_profiles import _v2_builtin_contracts
 from bcf_governance.tooling.yaml_mutations import (
     YAMLMutationPathError,
     assign_yaml_value,
     mutation_mode,
+    replace_yaml_value_bytes,
     resolve_yaml_target,
     typed_mutation_value,
 )
@@ -71,6 +73,55 @@ def test_typed_yaml_value_can_be_encoded_without_exposing_fixture_content() -> N
     }
     assert mutation_mode(mutation, suffix=".yml") == "yaml"
     assert typed_mutation_value(mutation) == "/Users/example/private/AGENTS.yml"
+
+
+def test_typed_yaml_assignment_preserves_all_unrelated_bytes() -> None:
+    source = "document: {kind: phase_log, status: active}\nnotes:\n  - 'artifact: local-only'  # retained byte-for-byte\n"
+
+    mutated, previous = replace_yaml_value_bytes(source, "document.status", "verified")
+
+    assert previous == "active"
+    assert mutated == source.replace("status: active", "status: verified")
+
+
+def test_typed_yaml_assignment_preserves_keyed_selector_bytes() -> None:
+    source = "rows:\n- {id: first, values: [a]}\n- {id: second, values: [b]} # retained\n"
+
+    mutated, previous = replace_yaml_value_bytes(
+        source, "rows[id=second].values", ["mutant"]
+    )
+
+    assert previous == ["b"]
+    assert mutated == source.replace("values: [b]", "values: [mutant]")
+
+
+def test_typed_yaml_assignment_preserves_block_collection_separator() -> None:
+    source = "rows:\n- id: first\n  owners:\n  - old\n  authorized_pure_delegates: []\n"
+
+    mutated, previous = replace_yaml_value_bytes(
+        source, "rows[id=first].owners", ["new"]
+    )
+
+    assert previous == ["old"]
+    assert mutated == source.replace("owners:\n  - old", "owners:\n  - new")
+    assert yaml.safe_load(mutated)["rows"][0]["authorized_pure_delegates"] == []
+
+
+@pytest.mark.parametrize("style", ["'", '"'])
+def test_typed_yaml_assignment_preserves_quoted_flow_scalar(style: str) -> None:
+    current = "${{ github.event.workflow_run.run_attempt }}"
+    replacement = "${{ github.run_attempt }}"
+    source = f"component: {{name: {style}{current}{style}, retained: exact}}\n"
+
+    mutated, previous = replace_yaml_value_bytes(
+        source, "component.name", replacement
+    )
+
+    assert previous == current
+    assert yaml.safe_load(mutated) == {
+        "component": {"name": replacement, "retained": "exact"}
+    }
+    assert "retained: exact" in mutated
 
 
 @pytest.mark.parametrize(

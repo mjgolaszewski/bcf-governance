@@ -8,17 +8,37 @@ phase: P28
 workitem: P28-P0-01
 post_release_adopter_parity_hotfix:
   id: P28-HF03
-  issues: [311, 312, 313]
-  observed_by: racecar immutable-v2.1.0 adoption
+  issues: [311, 312, 313, 314, 315, 316, 317, 318, 319, 320]
+  observed_by: racecar and AgentBus immutable-v2.1.0 adoption
   defects:
   - migration success reporting referenced a noncanonical result field after atomic mutation
   - reconciliation dereferenced the selected virtual-environment interpreter symlink
   - reconciliation scheduled semantic locking despite a closed all-disabled capability state
+  - typed YAML controls rewrote unrelated governed bytes while constructing a mutation
+  - profile-v3 explicit executors duplicated implicit shallow and explicit full-history checkout
+  - the claim model could not declare a required behavioral producer dependency
+  - release-gate validation ignored an exact documented Makefile.fragment include
+  - semantic adoption expanded complete representation entries beyond an inherited hard line budget
+  - Lite generated preflight consumed the exact PR base from a shallow checkout
+  - typed mutation preflight did not prove that exact surgical bytes remained valid YAML
   correction:
   - report the canonical source_profile_version
   - preserve the absolute selected interpreter identity without symlink dereference
   - derive semantic-lock applicability from canonical capability_states and reject partial residue
-  non_escalation: [transaction_semantics_unchanged, semantic_strength_unchanged, controller_authority_unchanged, release_authority_unchanged]
+  - replace only the exact typed YAML node and prove all unrelated source bytes unchanged
+  - disable implicit checkout whenever the explicit executor owns full-history checkout
+  - validate and schedule producer dependencies as a closed acyclic co-located topological DAG
+  - resolve exactly one literal fragment include and reject missing or ambiguous ownership
+  - render semantic inventory rows compactly and prove decoded equality before promotion
+  - derive full-history checkout from exact PR-base consumption and reject missing or shallow ownership
+  - preserve scalar quote style and prove exact mutation-byte applicability before evidence fan-out
+  empirical_compaction:
+    fixture: AgentBus seven-representation adoption
+    released_output: {lines: 501, bytes: 18088, sha256: 81cde447b0083c9163efba01fd75b68269396baed5b0ac04df5f070e08629280}
+    corrected_output: {lines: 46, bytes: 17326, sha256: e2669647d28f06d3d2c3775679f6653e120a330822e2b856c5bed150a5a0f49b}
+    decoded_semantic_equality: true
+    hard_line_budget: 200
+  non_escalation: [transaction_semantics_unchanged, semantic_strength_unchanged, controller_authority_unchanged, release_authority_unchanged, preflight_cannot_supply_behavioral_evidence, producer_dependencies_cannot_cross_shards, release_gate_commands_still_validated, hard_context_budget_unchanged, adopter_workflow_overrides_not_required, mutation_oracles_unchanged]
 canonical_projection:
   profile_contract: '3.0'
   source_owner: bcf_governance/tooling/ci_graph_defaults.py
@@ -34,6 +54,7 @@ canonical_projection:
   projected_capabilities:
   - claim-aware preflight and one exact evidence session
   - planner-derived duration-aware four-shard execution
+  - consumer-owned producer dependencies with same-session topological execution
   - optional exact prior-evidence transport
   - grouped receipt fan-in and terminal scoped truth
   - exact-main admission finalization and publication

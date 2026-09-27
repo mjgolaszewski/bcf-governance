@@ -7,7 +7,7 @@ from .phase_artifacts import _validate_document_path
 from ..yaml_mutations import (
     YAMLMutationPathError,
     mutation_mode,
-    resolve_yaml_target,
+    replace_yaml_value_bytes,
     typed_mutation_value,
 )
 
@@ -167,12 +167,12 @@ def _validate_gate_contract_registry(
                                 f"{control.get('id')}:search-count={occurrences}"
                             )
                     else:
-                        current: Any = yaml.safe_load(
-                            mutation_file.read_text(encoding="utf-8")
-                        )
+                        source = mutation_file.read_text(encoding="utf-8")
                         try:
                             value = typed_mutation_value(mutation)
-                            current = resolve_yaml_target(current, yaml_path).value
+                            _mutated, current = replace_yaml_value_bytes(
+                                source, yaml_path, value
+                            )
                         except YAMLMutationPathError:
                             mutation_issues.append(f"{control.get('id')}:stale-yaml-path")
                         else:

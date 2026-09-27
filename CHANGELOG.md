@@ -13,6 +13,20 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Corrected legacy contract migration success reporting after its atomic transaction.
 - Preserved the selected virtual-environment interpreter through reconciliation and
   omitted semantic locking only for the closed, explicitly disabled capability state.
+- Made typed YAML negative controls mutate only their exact owned node, preserve
+  quoted flow scalars, and prove byte-applicability during cheap preflight; removed
+  duplicate implicit checkouts from explicit profile-v3 executors, and added a
+  consumer-owned execution-group dependency DAG whose producers are co-located
+  and run in deterministic topological order.
+- Made release-gate validation follow the documented single exact
+  `Makefile.fragment` include while rejecting missing, duplicate, multi-source,
+  variable, or mixed merged-and-included ownership.
+- Made semantic adoption render top-level inventory rows with the canonical
+  lossless compact form so complete Standard-v3 registries satisfy inherited
+  hard context budgets without weakening their propositions.
+- Derived full-history checkout from exact PR-base consumption so generated
+  Lite preflight can resolve its governed base and graph validation rejects
+  missing or shallow checkout ownership.
 
 ## [2.1.0] - 2026-09-26
 

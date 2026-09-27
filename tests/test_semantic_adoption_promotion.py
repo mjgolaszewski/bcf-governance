@@ -2,14 +2,39 @@
 
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 
 import pytest
+import yaml
 
 from bcf_governance.tooling import semantic_authority_commands as commands
 from bcf_governance.tooling.governance_install import transaction
 from bcf_governance.tooling.semantic_adoption_dependencies import SemanticDependencyError
 from semantic_typescript_fixture import repository
+
+
+def test_adoption_compacts_semantic_registries_without_changing_values(
+    tmp_path: Path,
+) -> None:
+    payload = repository(tmp_path)
+    registry = payload["contracts"]["canonical_representations"]
+    prototype = registry["representations"][0]
+    registry["representations"] = []
+    shared_symbols = ["model.py::Value"]
+    for index in range(7):
+        row = copy.deepcopy(prototype)
+        row["semantic_id"] = f"example.value-{index}.v1"
+        row["authorized_constructors_and_factories"] = shared_symbols
+        row["authorized_pure_delegates"] = shared_symbols
+        registry["representations"].append(row)
+
+    first = commands._contract_bytes(payload, "canonical_representations")
+    second = commands._contract_bytes(payload, "canonical_representations")
+
+    assert first == second
+    assert yaml.safe_load(first) == registry
+    assert len(first.splitlines()) <= 200
 
 
 def test_dependency_change_during_first_promotion_rolls_back_all_managed_bytes_and_modes(

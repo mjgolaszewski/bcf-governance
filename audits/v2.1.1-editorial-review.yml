@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: 6511f5322f759cccbf5f5670b548994c032f703f1f26588b7b1ae0090f12e9ae
-  after_sha256: 80744708e134c34b72c38d727f649b4b8ad6edc600078de99412ae16a8d1e09a
+  after_sha256: 6ada6a571b4ade66e8c99d51278ddb69ae07383c5aba6a51c51eee19c8f5ce4b
   findings:
   - collapsed the unpublished 2.0 candidate and 2.1 repair chronology into the released 2.1 product contract
   disposition: historical
@@ -114,7 +114,7 @@ documents:
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
   before_sha256: 02c20f8ca44b4bb5c24be8b3ab60b8de8fc4a72f95a10a58dfa7e8ac893aaeb3
-  after_sha256: 8503ac6b936255b82188e1775c0995e8bee129c918f51b9a756eac4e2ecc8365
+  after_sha256: 641904cae5c40572cdb997792ad5712d917349beb0ee4affe7a7d29a84d5b345
   findings:
   - replaced obsolete controller ceremony with the canonical 2.1 adopter and semantic-intent operation
   disposition: revised
@@ -204,10 +204,10 @@ documents:
   canonical_topic_owner: template-repo/governance/EXISTING_REPO_ADOPTION.md
   topic_role: canonical
   before_sha256: 9507c75820635c3ffbf6c546c309a6b4879c418d8e8ce24d3dd1c88814d8c57a
-  after_sha256: 9507c75820635c3ffbf6c546c309a6b4879c418d8e8ce24d3dd1c88814d8c57a
+  after_sha256: 2782cb4a3639073f0ee0249b05e73880a84c22b935ab1159a4d1b0248cf2bc73
   findings:
-  - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  - corrected upgrade and workflow ownership boundaries
+  disposition: revised
 - path: template-repo/governance/HOTFIX_LANE.md
   audience: consumer repository operators
   canonical_topic_owner: template-repo/governance/HOTFIX_LANE.md

@@ -26,10 +26,10 @@ hotfix_lane:
   - id: P28-HF03
     mode: full
     recorded_at_utc: '2026-09-27T00:00:00Z'
-    action: Restore released adopter migration reporting selected-interpreter custody and capability-derived reconciliation applicability.
+    action: Restore released adopter migration reporting, interpreter custody, reconciliation applicability, byte-applicable surgical negative controls, single-checkout projection, consumer-owned producer dependencies, exact release-gate include resolution, lossless semantic registry compaction, and exact-base checkout depth.
     remediated_in_phase: P28
     hotfix_log: phases/phase-28-hotfix03.yml
-    canonical_artifacts: [bcf_governance/tooling/migrate_contracts.py, bcf_governance/tooling/scaffold_governance_artifacts.py, bcf_governance/tooling/local_pr.py, tests/test_contract_migration.py, tests/test_reconcile_governance.py, tests/test_prospective_validation.py]
+    canonical_artifacts: [bcf_governance/tooling/migrate_contracts.py, bcf_governance/tooling/scaffold_governance_artifacts.py, bcf_governance/tooling/local_pr.py, bcf_governance/tooling/yaml_mutations.py, bcf_governance/tooling/evidence_planning.py, bcf_governance/tooling/evidence_scheduling.py, bcf_governance/tooling/evidence_shards.py, bcf_governance/tooling/ci_graph_defaults.py, bcf_governance/tooling/ci_graph_execution.py, bcf_governance/tooling/ci_graph_render.py, bcf_governance/tooling/governance_validation/preflight_negative_controls.py, bcf_governance/tooling/governance_validation/evidence_contracts.py, bcf_governance/tooling/governance_validation/release_gates.py, bcf_governance/tooling/semantic_authority_commands.py, bcf_governance/tooling/semantic_locking.py, schemas/gate-contracts.schema.json, tests/test_contract_migration.py, tests/test_reconcile_governance.py, tests/test_prospective_validation.py, tests/test_yaml_mutations.py, tests/test_evidence_planning.py, tests/test_ci_graph.py, tests/test_validate_governance_yaml.py, tests/test_semantic_adoption_promotion.py]
     local_validation:
     - 31 focused migration reconciliation prospective-train and pack-parity tests passed
     - canonical fixed-point reconciliation converged in two rounds
@@ -84,6 +84,6 @@ release_trains:
   release_14: {target_version: 1.3.0, status: completed, focus: [historical_release]}
   release_15: {target_version: 2.0.0, status: abandoned, focus: [dependency_scoped_truth, minimum_execution, evidence_composed_release, superseded_without_publication]}
   release_16: {target_version: 2.1.0, status: completed, focus: [invariant_closure, proof_transport, minimum_time_composition, canonical_projection, parity, empirical_certification]}
-  release_17: {target_version: 2.1.1, status: active, focus: [adopter_migration_reporting, interpreter_custody, reconciliation_applicability]}
+  release_17: {target_version: 2.1.1, status: active, focus: [adopter_migration_reporting, interpreter_custody, reconciliation_applicability, surgical_negative_controls, negative_control_byte_applicability, single_checkout_projection, producer_dependency_dag, release_gate_include_resolution, semantic_registry_compaction, exact_base_checkout_depth]}
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: [active phase has a plan workitem ledger and log, validation commands are listed before implementation starts]

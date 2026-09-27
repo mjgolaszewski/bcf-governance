@@ -18,7 +18,7 @@ from .ci_graph_artifact_steps import (
 )
 from .ci_graph_contracts import CompiledCIGraph, validate_ci_graph
 from .ci_graph_controller_lifecycle import controller_requirement_condition
-from .ci_graph_execution import job_required_environment
+from .ci_graph_execution import job_required_environment, job_requires_full_history
 from .ci_graph_reusable_artifacts import reusable_artifact_binding
 from .ci_graph_routing import render_runner
 from .ci_graph_yaml import render_yaml
@@ -570,6 +570,8 @@ def _job(
         steps.append(required_environment)
     if job["checkout"]:
         checkout_inputs: dict[str, Any] = {"persist-credentials": False}
+        if job_requires_full_history(compiled.graph, executor):
+            checkout_inputs["fetch-depth"] = 0
         if any(event["type"] == "workflow_run" for event in workflow["events"]):
             checkout_inputs["ref"] = "${{ github.event.workflow_run.head_sha }}"
         steps.append(

@@ -111,6 +111,19 @@ def _requires_selected_python(command: dict[str, Any]) -> bool:
     return bool(_SELECTED_PYTHON_EXECUTABLES.intersection(command["argv"]))
 
 
+def job_requires_full_history(
+    graph: dict[str, Any], executor: dict[str, Any]
+) -> bool:
+    """Derive whether a job consumes an exact pull-request base commit."""
+
+    return any(
+        "BCF_PR_BASE_SHA" in graph["commands"][command_id].get("environment", {})
+        or "BCF_PR_BASE_SHA"
+        in graph["commands"][command_id].get("required_environment", [])
+        for command_id in _command_ids(graph, executor)
+    )
+
+
 def _release_controller_issues(
     graph: dict[str, Any], job: dict[str, Any], executor: dict[str, Any]
 ) -> tuple[str, ...]:
@@ -213,6 +226,33 @@ def job_execution_issues(
     """Return deterministic interpreter and trusted-input contract violations."""
 
     issues: list[str] = []
+    if job_requires_full_history(graph, executor):
+        explicit_checkouts = [
+            graph["step_components"][component_id]
+            for component_id in executor.get("components", [])
+            if graph["step_components"][component_id].get("kind") == "action"
+            and graph["step_components"][component_id].get("action") == "checkout"
+        ]
+        if not job.get("checkout") and not explicit_checkouts:
+            issues.append(
+                f"CI graph job {job['id']} consumes an exact PR base without checkout"
+            )
+        elif explicit_checkouts and any(
+            component.get("with", {}).get("fetch-depth") != 0
+            for component in explicit_checkouts
+        ):
+            issues.append(
+                f"CI graph job {job['id']} consumes an exact PR base without full-history checkout"
+            )
+    if executor.get("kind") in _EXPLICIT_EXECUTORS and job.get("checkout"):
+        if any(
+            graph["step_components"][component_id].get("kind") == "action"
+            and graph["step_components"][component_id].get("action") == "checkout"
+            for component_id in executor["components"]
+        ):
+            issues.append(
+                f"CI graph job {job['id']} has duplicate implicit and explicit checkout ownership"
+            )
     issues.extend(_release_controller_issues(graph, job, executor))
     if (
         workflow is not None

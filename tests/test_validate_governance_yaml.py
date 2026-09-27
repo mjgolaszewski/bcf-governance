@@ -871,6 +871,56 @@ def test_validate_repo_root_does_not_certify_release_loop_from_command_text(tmp_
     validate_repo_root(repo_root)
 
 
+@pytest.mark.parametrize("directive", ["include", "-include", "sinclude"])
+def test_validate_repo_root_resolves_exact_makefile_fragment_include(
+    tmp_path: Path, directive: str,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    (repo_root / "Makefile").write_text(
+        f"{directive} Makefile.fragment\n\napplication:\n\t@echo application\n",
+        encoding="utf-8",
+    )
+
+    validate_repo_root(repo_root)
+
+
+@pytest.mark.parametrize(
+    ("makefile", "message"),
+    [
+        ("-include Makefile.fragment other.mk\n", "one exact source"),
+        (
+            "include Makefile.fragment\ninclude Makefile.fragment\n",
+            "more than once",
+        ),
+        (
+            "include Makefile.fragment\nrelease-check:\n\t@echo duplicate\n",
+            "ownership is ambiguous",
+        ),
+    ],
+)
+def test_validate_repo_root_rejects_ambiguous_makefile_fragment_include(
+    tmp_path: Path, makefile: str, message: str,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    (repo_root / "Makefile").write_text(makefile, encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError, match=message):
+        validate_repo_root(repo_root)
+
+
+def test_validate_repo_root_rejects_missing_included_makefile_fragment(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    (repo_root / "Makefile").write_text(
+        "-include Makefile.fragment\n", encoding="utf-8"
+    )
+    (repo_root / "Makefile.fragment").unlink()
+
+    with pytest.raises(GovernanceValidationError, match="includes missing"):
+        validate_repo_root(repo_root)
+
+
 def test_validate_repo_root_allows_omitted_optional_release_gate(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
     profile_path = repo_root / "governance-profile.yml"

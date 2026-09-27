@@ -75,10 +75,44 @@ def _release_gates_from_profile(profile: dict[str, Any] | None) -> dict[str, dic
 
 
 def _release_gate_makefile_path(repo_root: Path) -> Path | None:
-    for relative_path in ("Makefile", "Makefile.fragment"):
-        path = repo_root / relative_path
-        if path.exists():
-            return path
+    makefile = repo_root / "Makefile"
+    fragment = repo_root / "Makefile.fragment"
+    if makefile.exists():
+        include_count = 0
+        for line in makefile.read_text(encoding="utf-8").splitlines():
+            directive = re.match(r"^\s*(?:-?include|sinclude)\s+([^#]+?)(?:\s+#.*)?$", line)
+            if directive is None:
+                if "Makefile.fragment" in line and not line.lstrip().startswith("#"):
+                    raise GovernanceValidationError(
+                        "Makefile references Makefile.fragment through an unsupported include form"
+                    )
+                continue
+            sources = directive.group(1).split()
+            if "Makefile.fragment" not in sources:
+                continue
+            if sources != ["Makefile.fragment"]:
+                raise GovernanceValidationError(
+                    "Makefile must include Makefile.fragment as one exact source"
+                )
+            include_count += 1
+        if include_count > 1:
+            raise GovernanceValidationError(
+                "Makefile includes Makefile.fragment more than once"
+            )
+        owns_release_check = "release-check" in _makefile_target_bodies(makefile)
+        if owns_release_check and include_count:
+            raise GovernanceValidationError(
+                "release-check ownership is ambiguous between Makefile and Makefile.fragment"
+            )
+        if include_count:
+            if not fragment.is_file():
+                raise GovernanceValidationError(
+                    "Makefile includes missing Makefile.fragment"
+                )
+            return fragment
+        return makefile
+    if fragment.exists():
+        return fragment
     return None
 
 

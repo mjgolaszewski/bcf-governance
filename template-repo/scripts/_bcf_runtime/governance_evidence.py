@@ -56,7 +56,7 @@ from .ci_graph_contracts import CIGraphError, GRAPH_PATH
 from .ci_graph_locks import apply_ci_graph_locks
 from .ci_graph_render import apply_ci_graph
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
-from .yaml_mutations import YAMLMutationPathError, assign_yaml_value, typed_mutation_value
+from .yaml_mutations import YAMLMutationPathError, replace_yaml_value_bytes, typed_mutation_value
 
 
 RECEIPT_SUFFIX = ".evidence.json"
@@ -134,15 +134,15 @@ def _apply_negative_control(worktree: Path, control: dict[str, Any]) -> tuple[bo
     tracked_relative = path.relative_to(worktree.resolve()).as_posix()
     yaml_path = mutation.get("yaml_path")
     if isinstance(relative_path, str) and isinstance(yaml_path, str):
-        payload = yaml.safe_load(path.read_text(encoding="utf-8"))
         try:
             value = typed_mutation_value(mutation)
-            previous = assign_yaml_value(payload, yaml_path, value)
+            source = path.read_text(encoding="utf-8")
+            mutated, previous = replace_yaml_value_bytes(source, yaml_path, value)
         except YAMLMutationPathError:
             return False, None
         if previous == value:
             return False, None
-        path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+        path.write_text(mutated, encoding="utf-8")
         return True, tracked_relative
     search = mutation.get("search")
     replace = mutation.get("replace")
