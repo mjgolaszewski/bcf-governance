@@ -166,18 +166,12 @@ jobs:
         authority=pathlib.Path('"'"'${{ runner.temp }}/bcf-controller-transition-${{ github.run_id }}-${{ github.run_attempt }}/authorized/controller-transition.json'"'"')
         assert authority.is_file() and not authority.is_symlink()
         payload=json.loads(authority.read_text())
-        key_paths=[['"'"'artifact'"'"', '"'"'wheel_sha256'"'"']]
-        resolved=[]
-        for keys in key_paths:
-         value=payload
-         for key in keys:
-          if not isinstance(value,dict) or key not in value:
-           value=None;break
-          value=value[key]
-         if isinstance(value,str) and re.fullmatch(r'"'"'[a-f0-9]{64}'"'"',value):
-          resolved.append(value)
-        assert len(resolved)==1
-        expected=resolved[0]
+        keys=['"'"'artifact'"'"', '"'"'wheel_sha256'"'"']
+        expected=payload
+        for key in keys:
+         assert isinstance(expected,dict) and key in expected
+         expected=expected[key]
+        assert isinstance(expected,str) and re.fullmatch(r'"'"'[a-f0-9]{64}'"'"',expected)
         inventory=source/'"'"'SHA256SUMS'"'"'
         assert inventory.is_file() and not inventory.is_symlink()
         declared={}
@@ -278,18 +272,12 @@ jobs:
         authority=pathlib.Path('"'"'${{ runner.temp }}/bcf-controller-transition-${{ github.run_id }}-${{ github.run_attempt }}/installing/controller-transition.json'"'"')
         assert authority.is_file() and not authority.is_symlink()
         payload=json.loads(authority.read_text())
-        key_paths=[['"'"'artifact'"'"', '"'"'wheel_sha256'"'"']]
-        resolved=[]
-        for keys in key_paths:
-         value=payload
-         for key in keys:
-          if not isinstance(value,dict) or key not in value:
-           value=None;break
-          value=value[key]
-         if isinstance(value,str) and re.fullmatch(r'"'"'[a-f0-9]{64}'"'"',value):
-          resolved.append(value)
-        assert len(resolved)==1
-        expected=resolved[0]
+        keys=['"'"'artifact'"'"', '"'"'wheel_sha256'"'"']
+        expected=payload
+        for key in keys:
+         assert isinstance(expected,dict) and key in expected
+         expected=expected[key]
+        assert isinstance(expected,str) and re.fullmatch(r'"'"'[a-f0-9]{64}'"'"',expected)
         inventory=source/'"'"'SHA256SUMS'"'"'
         assert inventory.is_file() and not inventory.is_symlink()
         declared={}
@@ -390,18 +378,12 @@ jobs:
         authority=pathlib.Path('"'"'${{ runner.temp }}/bcf-controller-transition-${{ github.run_id }}-${{ github.run_attempt }}/probed/controller-transition.json'"'"')
         assert authority.is_file() and not authority.is_symlink()
         payload=json.loads(authority.read_text())
-        key_paths=[['"'"'artifact'"'"', '"'"'wheel_sha256'"'"']]
-        resolved=[]
-        for keys in key_paths:
-         value=payload
-         for key in keys:
-          if not isinstance(value,dict) or key not in value:
-           value=None;break
-          value=value[key]
-         if isinstance(value,str) and re.fullmatch(r'"'"'[a-f0-9]{64}'"'"',value):
-          resolved.append(value)
-        assert len(resolved)==1
-        expected=resolved[0]
+        keys=['"'"'artifact'"'"', '"'"'wheel_sha256'"'"']
+        expected=payload
+        for key in keys:
+         assert isinstance(expected,dict) and key in expected
+         expected=expected[key]
+        assert isinstance(expected,str) and re.fullmatch(r'"'"'[a-f0-9]{64}'"'"',expected)
         inventory=source/'"'"'SHA256SUMS'"'"'
         assert inventory.is_file() and not inventory.is_symlink()
         declared={}

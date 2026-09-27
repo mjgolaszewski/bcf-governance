@@ -656,7 +656,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "6c7eb77015615a4befd3696ca7e34af410dd8f88f7e2145d14efe9c80c0518ac"
+      "sha256": "8cf2eaf1129b6f45a67294f467bf125e1cd2edc05cbcb2448f545dcf4acf7ec1"
     },
     "scripts/_bcf_runtime/ci_graph_reusable_artifacts.py": {
       "operation": "copy",
