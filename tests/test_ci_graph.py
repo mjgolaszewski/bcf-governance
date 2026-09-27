@@ -19,11 +19,17 @@ from bcf_governance.tooling.ci_graph_contracts import (
 from bcf_governance.tooling.ci_graph_controller_lifecycle import ControllerLifecycleState
 from bcf_governance.tooling.ci_graph_audit import audit_ci_graph
 from bcf_governance.tooling.ci_graph_execution import (
+    DIRECT_POST_MERGE_MODE,
     exact_main_evaluation,
     job_execution_issues,
     job_required_environment,
     workflow_input_issues,
 )
+from bcf_governance.tooling.ci_graph_post_merge import (
+    post_merge_evaluation,
+    reconcile_direct_post_merge_scope,
+)
+from bcf_governance.tooling.ci_graph_yaml import render_yaml
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
 from bcf_governance.tooling.ci_graph_diagnostics import diagnose_ci_graph
 from bcf_governance.tooling.ci_graph_import import inventory_github_workflows
@@ -112,6 +118,102 @@ def test_exact_main_evaluation_has_one_canonical_admission_and_truth_scope() -> 
             stale_workflow,
         )
     )
+
+
+def test_v3_lite_uses_typed_direct_protected_main_closure() -> None:
+    graph = build_reference_ci_graph(
+        project_id="direct-adopter",
+        profile="lite",
+        profile_contract_version="3.0",
+        gates=["governance-validate"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    evaluation = post_merge_evaluation(graph)
+    assert evaluation.as_dict() == {
+        "mode": "closure",
+        "target": None,
+        "lane": "direct_protected_main",
+        "workflow_id": "governance",
+        "terminal_job_id": "governance-truthfulness",
+    }
+    assert graph["commands"]["v3-truth"]["argv"][
+        graph["commands"]["v3-truth"]["argv"].index("--evaluation-mode") + 1
+    ] == DIRECT_POST_MERGE_MODE
+    workflow = next(item for item in graph["workflows"] if item["id"] == "governance")
+    assert workflow_input_issues(graph, workflow) == ()
+
+
+def test_reference_exact_main_evaluation_uses_unique_semantic_roles() -> None:
+    graph = build_reference_ci_graph(
+        project_id="controller-adopter",
+        profile="standard",
+        profile_contract_version="3.0",
+        gates=["governance-validate"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    evaluation = post_merge_evaluation(graph)
+    assert evaluation.lane == "trusted_exact_main"
+    assert evaluation.mode == "closure"
+    assert evaluation.terminal_job_id == "governance-producer"
+    workflow = next(item for item in graph["workflows"] if item["id"] == "exact-main")
+    duplicate = copy.deepcopy(workflow["jobs"][1])
+    duplicate["id"] = "duplicate-producer"
+    workflow["jobs"].append(duplicate)
+    with pytest.raises(CIGraphError, match="semantic role.*not unique"):
+        exact_main_evaluation(tuple(graph["workflows"]))
+
+
+def test_direct_protected_main_rejects_pr_default_on_push() -> None:
+    graph = build_reference_ci_graph(
+        project_id="direct-adopter",
+        profile="lite",
+        profile_contract_version="3.0",
+        gates=["governance-validate"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    for command in graph["commands"].values():
+        command["argv"] = [
+            value.replace(DIRECT_POST_MERGE_MODE, "${{ inputs.evaluation_mode || 'pr' }}")
+            if isinstance(value, str) else value
+            for value in command["argv"]
+        ]
+    with pytest.raises(CIGraphError, match="not event-bound to closure"):
+        post_merge_evaluation(graph)
+
+
+def test_reconcile_normalizes_direct_protected_main_scope_once(tmp_path: Path) -> None:
+    graph = build_reference_ci_graph(
+        project_id="direct-adopter",
+        profile="lite",
+        profile_contract_version="3.0",
+        gates=["governance-validate"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    for command in graph["commands"].values():
+        command["argv"] = [
+            value.replace(DIRECT_POST_MERGE_MODE, "${{ inputs.evaluation_mode || 'pr' }}")
+            if isinstance(value, str) else value
+            for value in command["argv"]
+        ]
+    path = tmp_path / "governance/ci-graph.yml"
+    path.parent.mkdir(parents=True)
+    path.write_bytes(render_yaml(graph))
+    with pytest.raises(CIGraphError, match="run canonical reconciliation"):
+        reconcile_direct_post_merge_scope(tmp_path, apply=False)
+    assert reconcile_direct_post_merge_scope(tmp_path, apply=True) is True
+    assert reconcile_direct_post_merge_scope(tmp_path, apply=False) is False
 
 
 def test_routine_rotation_allocates_each_receipt_parent_before_execution() -> None:

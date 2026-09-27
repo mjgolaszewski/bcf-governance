@@ -107,4 +107,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- release_16 and P28 are complete; any further product work requires a separately governed phase
+- P28 remains complete; P28-HF04 closes live-adopter parity through release_18 without reopening phase architecture

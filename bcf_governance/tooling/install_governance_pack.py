@@ -21,6 +21,7 @@ if str(_SCRIPT_ROOT) not in sys.path:
 
 from .governance_install.ci_graph import write_reference_ci_graph  # noqa: E402
 from .governance_install.phase import generate_phase_artifacts  # noqa: E402
+from .governance_install.preservation import preserved_consumer_files  # noqa: E402
 from .governance_install.artifacts import (  # noqa: E402
     ensure_required_artifacts,
     merge_gitignore as _merge_gitignore,
@@ -44,6 +45,16 @@ TEMPLATE_EXAMPLE_ARTIFACTS = (
     "plans/phase-NN-workitems.yml",
     "phases/phase-NN-log.yml",
     "phases/phase-NN-hotfixNN.yml",
+)
+RUNTIME_SUPPORT_PATHS = (
+    "scripts/check_governance_exposure.py", "scripts/build_trusted_controller.py",
+    "scripts/capture_governance_shard.py", "scripts/evidence_storage.py",
+    "scripts/governance_evidence.py", "scripts/governance_truth.py",
+    "scripts/governance_truth_support.py", "scripts/preflight_governance.py",
+    "scripts/semantic_ownership.py", "scripts/restore_evidence_modes.py",
+    "scripts/_bcf_runtime", "scripts/migrate_governance_evidence.py",
+    "scripts/profile_governance.py", "scripts/governance_validation",
+    "scripts/scaffold_governance_artifacts.py", "scripts/validate_governance_yaml.py",
 )
 RESCAFFOLD_REMOVE_PATHS = (
     "AGENTS.yml",
@@ -74,19 +85,7 @@ RESCAFFOLD_REMOVE_PATHS = (
     "governance/application-operations.yml",
     "governance/semantic-lock.yml",
     "governance/evidence-storage.yml",
-    "scripts/check_governance_exposure.py",
-    "scripts/build_trusted_controller.py",
-    "scripts/evidence_storage.py",
-    "scripts/governance_evidence.py",
-    "scripts/governance_truth.py",
-    "scripts/governance_truth_support.py",
-    "scripts/preflight_governance.py", "scripts/semantic_ownership.py",
-    "scripts/_bcf_runtime",
-    "scripts/migrate_governance_evidence.py",
-    "scripts/profile_governance.py",
-    "scripts/governance_validation",
-    "scripts/scaffold_governance_artifacts.py",
-    "scripts/validate_governance_yaml.py",
+    *RUNTIME_SUPPORT_PATHS,
 )
 INSTALL_MANAGED_PATHS = tuple(
     dict.fromkeys(
@@ -128,19 +127,7 @@ REQUIRED_STANDARD_GATES = ("governance-validate", "governance-exposure-scan", *L
 UPGRADE_REFRESH_PATHS = ("schemas",
     "backend/tests/architecture/test_boundaries_ast.py",
     "governance/REPO_CLEANUP.md",
-    "scripts/check_governance_exposure.py",
-    "scripts/build_trusted_controller.py",
-    "scripts/evidence_storage.py",
-    "scripts/governance_evidence.py",
-    "scripts/governance_truth.py",
-    "scripts/governance_truth_support.py",
-    "scripts/preflight_governance.py", "scripts/semantic_ownership.py",
-    "scripts/_bcf_runtime",
-    "scripts/migrate_governance_evidence.py",
-    "scripts/profile_governance.py",
-    "scripts/governance_validation",
-    "scripts/scaffold_governance_artifacts.py",
-    "scripts/validate_governance_yaml.py",
+    *RUNTIME_SUPPORT_PATHS,
 )
 UPGRADE_PROJECT_OWNED_PATHS = (
     "governance-profile.yml",
@@ -345,6 +332,7 @@ def _copy_selected_template_paths(
     template_root: Path,
     target_root: Path,
     relative_paths: tuple[str, ...],
+    excluded_paths: frozenset[str] = frozenset(),
 ) -> tuple[int, list[Path]]:
     copied_files = 0
     destinations: list[Path] = []
@@ -357,6 +345,8 @@ def _copy_selected_template_paths(
             for source_file in _iter_template_files(source):
                 nested_relative = source_file.relative_to(source)
                 destination_file = destination / nested_relative
+                if destination_file.relative_to(target_root).as_posix() in excluded_paths:
+                    continue
                 _reject_symlink_destination(
                     target_root, destination_file.relative_to(target_root)
                 )
@@ -366,6 +356,8 @@ def _copy_selected_template_paths(
                 copied_files += 1
             continue
         _reject_symlink_destination(target_root, Path(relative_path))
+        if relative_path in excluded_paths:
+            continue
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
         destinations.append(destination)
@@ -565,6 +557,7 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
         template_root=template_root,
         target_root=target_root,
         relative_paths=tuple(dict.fromkeys(upgrade_paths)),
+        excluded_paths=preserved_consumer_files(target_root),
     )
     required_count, required_destinations = ensure_required_artifacts(
         template_root=template_root,

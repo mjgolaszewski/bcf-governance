@@ -9,6 +9,9 @@ import pytest
 
 from bcf_governance.tooling.local_pr import LocalPRContext
 from bcf_governance.tooling import local_pr as prospective
+from bcf_governance.tooling.evidence_workitem_lifecycle import (
+    validate_phase_closure_authored_ready,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -39,7 +42,7 @@ TRAIN = {
 @pytest.fixture(autouse=True)
 def _authored_target_ready(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        prospective, "validate_bounded_target_authored_ready", lambda *_args: None
+        prospective, "validate_evaluation_authored_ready", lambda *_args, **_kwargs: None
     )
 
 
@@ -90,8 +93,7 @@ def _runner(command: list[str], **_kwargs: object) -> Result:
 
 
 def _compiled(mode: str = "workitem", target: str | None = "P27-P0-03") -> SimpleNamespace:
-    return SimpleNamespace(
-        workflows=[
+    workflows = [
             {
                 "id": "exact-main",
                 "jobs": [
@@ -114,6 +116,23 @@ def _compiled(mode: str = "workitem", target: str | None = "P27-P0-03") -> Simpl
                 ],
             }
         ]
+    return SimpleNamespace(workflows=workflows, graph={"workflows": workflows})
+
+
+def _evaluation(mode: str = "workitem", target: str | None = "P27-P0-03") -> SimpleNamespace:
+    return SimpleNamespace(
+        mode=mode,
+        target=target,
+        lane="trusted_exact_main",
+        workflow_id="exact-main",
+        terminal_job_id="governance",
+        as_dict=lambda: {
+            "mode": mode,
+            "target": target,
+            "lane": "trusted_exact_main",
+            "workflow_id": "exact-main",
+            "terminal_job_id": "governance",
+        },
     )
 
 
@@ -133,10 +152,10 @@ def _front_door(monkeypatch: pytest.MonkeyPatch, trace: list[str]) -> None:
     monkeypatch.setattr(prospective, "validate_ci_graph", lambda *_args: _compiled())
     monkeypatch.setattr(
         prospective,
-        "exact_main_evaluation",
-        lambda workflows: SimpleNamespace(
-            mode=workflows[0]["jobs"][0]["executor"]["evaluation_mode"],
-            target=workflows[0]["jobs"][0]["executor"].get("evaluation_target"),
+        "post_merge_evaluation",
+        lambda graph: _evaluation(
+            graph["workflows"][0]["jobs"][0]["executor"]["evaluation_mode"],
+            graph["workflows"][0]["jobs"][0]["executor"].get("evaluation_target"),
         ),
     )
     monkeypatch.setattr(
@@ -176,6 +195,9 @@ def test_deterministic_walk_orders_reconcile_before_preflight_and_never_claims_a
     assert report["post_merge_evaluation"] == {
         "mode": "workitem",
         "target": "P27-P0-03",
+        "lane": "trusted_exact_main",
+        "workflow_id": "exact-main",
+        "terminal_job_id": "governance",
     }
 
 
@@ -186,6 +208,16 @@ def test_provider_effective_controller_is_mechanically_bound_to_prospective_pref
         "BCF_BOOTSTRAP_COMMIT_SHA": "a" * 40,
         "BCF_BOOTSTRAP_WHEEL_SHA256": "b" * 64,
     }
+    monkeypatch.setattr(
+        prospective,
+        "validate_ci_graph",
+        lambda *_args: SimpleNamespace(graph={"workflows": []}),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "post_merge_evaluation",
+        lambda *_args: SimpleNamespace(lane="trusted_exact_main"),
+    )
     monkeypatch.setattr(
         prospective,
         "effective_controller_authority",
@@ -213,6 +245,72 @@ def test_provider_effective_controller_is_mechanically_bound_to_prospective_pref
         "controller_commit_sha": "a" * 40,
         "controller_bundle_sha256": "b" * 64,
     }
+
+
+def test_direct_protected_main_lane_does_not_resolve_controller_authority(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        prospective,
+        "validate_ci_graph",
+        lambda *_args: SimpleNamespace(graph={"workflows": []}),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "post_merge_evaluation",
+        lambda *_args: SimpleNamespace(lane="direct_protected_main"),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "effective_controller_authority",
+        lambda *_args, **_kwargs: pytest.fail("direct adopter resolved a controller"),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "_run_prospective_train",
+        lambda *_args, **kwargs: {"controller_authority": kwargs["controller_authority"]},
+    )
+    report = prospective.run_prospective_train(
+        tmp_path,
+        **TRAIN,
+        python_executable=Path("/python"),
+        repository="owner/repo",
+        provider_api=object(),  # type: ignore[arg-type]
+    )
+    assert report == {"controller_authority": None}
+
+
+def test_direct_protected_main_lane_is_closed_without_controller_or_release_authority() -> None:
+    evaluation = SimpleNamespace(
+        mode="closure",
+        target=None,
+        lane="direct_protected_main",
+        workflow_id="governance",
+        terminal_job_id="governance-truthfulness",
+        as_dict=lambda: {
+            "mode": "closure", "target": None, "lane": "direct_protected_main",
+            "workflow_id": "governance", "terminal_job_id": "governance-truthfulness",
+        },
+    )
+    provider = prospective.provider_boundaries(
+        evaluation,
+        controller_state="not_adopted",
+        transition_class="direct_runtime_only",
+        policy_identity={"candidate": {"policy_sha256": "a" * 64}},
+        controller_probe=None,
+    )
+    terminal = prospective.terminal_boundaries(
+        evaluation,
+        proposition={"eligible_successors": []},
+        proposition_sha256="b" * 64,
+        bounded_truth={"evaluation_scope": {"intent": "closure"}},
+    )
+    assert provider[0]["state"] == "direct_protected_main_reexecution_required"
+    assert provider[1]["state"] == "not_adopted_direct_lane"
+    assert provider[1]["governed_alternate_lane"]["policy_sha256"] == "a" * 64
+    assert terminal[0]["state"] == "same_workflow_terminal_truth_required"
+    assert terminal[1]["status_context"] == "governance-truthfulness"
+    assert terminal[2]["release_authority"] is False
 
 
 def test_prospective_lifecycle_uses_exact_provider_effective_controller(
@@ -290,10 +388,10 @@ def test_authored_todo_workitem_fails_before_reconcile_or_evidence(
     _front_door(monkeypatch, trace)
     monkeypatch.setattr(
         prospective,
-        "validate_bounded_target_authored_ready",
+        "validate_evaluation_authored_ready",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(
             prospective.WorkitemContractError(
-                "bounded workitem target P28-P0-04 is not authored DONE"
+                "target_not_ready_for_bounded_certification: bounded workitem target P28-P0-04 is not authored DONE"
             )
         ),
     )
@@ -319,9 +417,11 @@ def test_authored_todo_workitem_fails_before_provider_resolution(
 ) -> None:
     monkeypatch.setattr(
         prospective,
-        "validate_bounded_target_authored_ready",
+        "validate_evaluation_authored_ready",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(
-            prospective.WorkitemContractError("target is not authored DONE")
+            prospective.WorkitemContractError(
+                "target_not_ready_for_bounded_certification: target is not authored DONE"
+            )
         ),
     )
     monkeypatch.setattr(
@@ -342,6 +442,67 @@ def test_authored_todo_workitem_fails_before_provider_resolution(
         )
 
 
+def test_planned_hotfix_fails_phase_closure_before_reconcile_or_evidence(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    trace: list[str] = []
+    _front_door(monkeypatch, trace)
+    monkeypatch.setattr(
+        prospective,
+        "validate_evaluation_authored_ready",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            prospective.WorkitemContractError(
+                "target_not_ready_for_phase_closure: phase closure hotfix P28-HF04 is not authored completed"
+            )
+        ),
+    )
+    with pytest.raises(
+        prospective.ProspectiveValidationError,
+        match="target_not_ready_for_phase_closure.*P28-HF04",
+    ):
+        prospective._run_prospective_train(
+            tmp_path,
+            semantic_intent="closure",
+            evaluation_target=None,
+            subject_commit=HEAD,
+            subject_tree=TREE,
+            python_executable=Path("/python"),
+            execute_evidence=True,
+            runner=_runner,
+        )
+    assert trace == []
+
+
+def test_phase_closure_readiness_reads_exact_authored_hotfix_state(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "phases").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        "active_phase: {id: P28, log: phases/phase-28-log.yml}\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "phases/phase-28-log.yml").write_text(
+        "document: {status: completed}\nphase: {id: P28}\n",
+        encoding="utf-8",
+    )
+    hotfix = tmp_path / "phases/phase-28-hotfix04.yml"
+    hotfix.write_text(
+        "document: {status: planned}\nhotfix: {id: P28-HF04, related_phase_id: P28}\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(
+        prospective.WorkitemContractError,
+        match="P28-HF04 is not authored completed",
+    ):
+        validate_phase_closure_authored_ready(tmp_path)
+    hotfix.write_text(
+        "document: {status: completed}\nhotfix: {id: P28-HF04, related_phase_id: P28}\n",
+        encoding="utf-8",
+    )
+    validate_phase_closure_authored_ready(tmp_path)
+
+
 def test_graph_intent_mismatch_fails_before_evidence(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -349,7 +510,7 @@ def test_graph_intent_mismatch_fails_before_evidence(
     _front_door(monkeypatch, trace)
     monkeypatch.setattr(
         prospective,
-        "exact_main_evaluation",
+        "post_merge_evaluation",
         lambda *_args: (_ for _ in ()).throw(
             prospective.CIGraphError("exact-main admission and governance evaluation intents differ")
         ),
@@ -442,8 +603,8 @@ def test_terminal_reauthentication_rejects_base_movement(
     monkeypatch.setattr(prospective, "validate_ci_graph", lambda *_args: _compiled())
     monkeypatch.setattr(
         prospective,
-        "exact_main_evaluation",
-        lambda *_args: SimpleNamespace(mode="workitem", target="P27-P0-03"),
+        "post_merge_evaluation",
+        lambda *_args: _evaluation(),
     )
     monkeypatch.setattr(
         prospective,

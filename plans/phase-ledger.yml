@@ -23,6 +23,7 @@ hotfix_lane:
     full: {required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]}
   open_records: []
   remediation_history:
+  - {id: P28-HF04, mode: full, recorded_at_utc: '2026-09-27T00:00:00Z', action: 'Repair direct protected-main prospective authority, ordinary-upgrade entrypoint completeness, authenticated consumer-file preservation, semantic-role exact-main discovery, and static fixed-point effect ownership.', remediated_in_phase: P28, hotfix_log: phases/phase-28-hotfix04.yml, canonical_artifacts: [bcf_governance/tooling/ci_graph_post_merge.py, bcf_governance/tooling/ci_authority_prospective_lanes.py, bcf_governance/tooling/governance_install/preservation.py, bcf_governance/tooling/install_governance_pack.py, bcf_governance/tooling/local_pr.py, bcf_governance/tooling/ci_graph_execution.py, bcf_governance/tooling/scaffold_governance_artifacts.py], local_validation: [six exact provider-failed semantic effect and closure nodes passed, exact pack runtime mirrors and manifests passed, canonical fixed-point reconciliation converged and checked clean]}
   - id: P28-HF03
     mode: full
     recorded_at_utc: '2026-09-27T00:00:00Z'
@@ -84,6 +85,7 @@ release_trains:
   release_14: {target_version: 1.3.0, status: completed, focus: [historical_release]}
   release_15: {target_version: 2.0.0, status: abandoned, focus: [dependency_scoped_truth, minimum_execution, evidence_composed_release, superseded_without_publication]}
   release_16: {target_version: 2.1.0, status: completed, focus: [invariant_closure, proof_transport, minimum_time_composition, canonical_projection, parity, empirical_certification]}
-  release_17: {target_version: 2.1.1, status: active, focus: [adopter_migration_reporting, interpreter_custody, reconciliation_applicability, surgical_negative_controls, negative_control_byte_applicability, single_checkout_projection, producer_dependency_dag, release_gate_include_resolution, semantic_registry_compaction, exact_base_checkout_depth]}
+  release_17: {target_version: 2.1.1, status: active, focus: [published_patch, adopter_migration_reporting, interpreter_custody, reconciliation_applicability, surgical_negative_controls, negative_control_byte_applicability, single_checkout_projection, producer_dependency_dag, release_gate_include_resolution, semantic_registry_compaction, exact_base_checkout_depth]}
+  release_18: {target_version: 2.1.2, status: active, focus: [direct_protected_main_prospective_parity, upgrade_entrypoint_completeness, consumer_assurance_preservation, semantic_role_job_resolution]}
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: [active phase has a plan workitem ledger and log, validation commands are listed before implementation starts]

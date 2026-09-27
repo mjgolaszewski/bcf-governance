@@ -22,7 +22,12 @@ def test_reconcile_is_the_canonical_cli_surface() -> None:
 def test_reconcile_declares_one_closed_dependency_order() -> None:
     root = Path(__file__).resolve().parents[1]
     ids = [step.step_id for step in reconcile_steps(root, Path(sys.executable))]
-    assert ids[:3] == ["structural-limits", "pack-projection", "semantic-lock"]
+    assert ids[:4] == [
+        "structural-limits",
+        "ci-graph-post-merge-scope",
+        "pack-projection",
+        "semantic-lock",
+    ]
     assert ids.index("ci-graph-lock") < ids.index("ci-graph-render")
     assert ids[-1] == "editorial-audit"
 

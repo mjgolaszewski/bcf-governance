@@ -27,6 +27,7 @@ from .semantic_authority_contracts import (
     OPERATIONS_PATH,
     capability_states,
 )
+from .ci_graph_post_merge import reconcile_direct_post_merge_scope
 
 HOTFIX_MODES = {"lite", "full"}
 
@@ -339,6 +340,13 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
             lambda: validate_structural_limits(repo_root),
         )
     ]
+    steps.append(
+        ReconcileStep(
+            "ci-graph-post-merge-scope",
+            lambda: reconcile_direct_post_merge_scope(repo_root, apply=False),
+            lambda: reconcile_direct_post_merge_scope(repo_root, apply=True),
+        )
+    )
     pack = repo_root / ".github/scripts/build_pack_manifest.py"
     if pack.is_file() and not pack.is_symlink():
         steps.append(

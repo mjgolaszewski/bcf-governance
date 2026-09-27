@@ -8,7 +8,7 @@ from typing import Any, Callable
 
 from .ci_github_api import GitHubAPI
 from .ci_graph_contracts import validate_ci_graph
-from .ci_graph_execution import exact_main_evaluation
+from .ci_graph_post_merge import post_merge_evaluation
 from .github_protection import load_protection
 from .local_pr import (
     CandidateIdentity,
@@ -31,7 +31,7 @@ def _command_error(result: Any) -> str:
 
 
 def _canonical_inputs(repo_root: Path) -> tuple[str, str | None, str]:
-    evaluation = exact_main_evaluation(validate_ci_graph(repo_root).workflows)
+    evaluation = post_merge_evaluation(validate_ci_graph(repo_root).graph)
     protection = load_protection(repo_root)
     return (
         evaluation.mode,

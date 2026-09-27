@@ -1,0 +1,48 @@
+document:
+  kind: hotfix_execution_log
+  name: P28-HF04 Hotfix Log
+  id: bcf-governance-phase-28-hotfix04
+  version: 1.0.0
+  generated_at_utc: '2026-09-27T00:00:00Z'
+  status: completed
+  path: phases/phase-28-hotfix04.yml
+hotfix:
+  id: P28-HF04
+  mode: full
+  related_phase_id: P28
+  hotfix_number: 4
+  summary: Repair released direct-adopter prospective and upgrade entrypoint parity
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests/test_ci_graph.py tests/test_prospective_validation.py
+    tests/test_install_governance_pack.py
+  executed_commands:
+  - BCF_PR_BASE_SHA=879980446cf9ece708eb910390624e92cd44ecc4 .venv/bin/python -m pytest -q tests/test_self_governance_contracts.py::test_cli_application_operations_are_closed_and_effect_safe tests/test_semantic_authority.py::test_bcf_declares_every_semantic_family_and_public_operation_once tests/test_semantic_authority.py::test_unclassified_operation_is_rejected tests/test_semantic_authority.py::test_multiply_classified_operation_is_rejected tests/test_semantic_authority.py::test_source_population_cannot_be_evaded_by_path_placement tests/test_semantic_authority.py::test_semantic_lock_is_idempotent_and_source_bound
+  - .venv/bin/python -m pytest -q tests/test_self_governance_contracts.py::test_template_and_private_runtime_copies_are_exact tests/test_pack_sync.py::test_complete_pack_manifest_check
+  - PYTHONPATH=. .venv/bin/python -m bcf_governance.cli reconcile --repo-root . --python .venv/bin/python --check
+  notes:
+  - '#322: prospective validation required BCF self exact-main topology from a valid direct protected-main Standard-v3 adopter.'
+  - The direct lane is closed and typed by exact graph digest, default branch, push event, terminal truth owner, and closure intent; it grants no controller or release authority.
+  - AgentBus hosted run 36317493677 proved ordinary upgrade omitted two pack-owned wrapper entrypoints required by the rendered evidence DAG.
+  - Racecar proved ordinary upgrade overwrote an exact runtime-lock preserved_consumer_file and silently removed project assurance logic.
+  - Racecar proved the reference exact-main generator and evaluator used divergent literal governance job IDs despite sharing one governed semantic role.
+  - Fixed-point reconciliation repairs the declared direct-main event intent mechanically; ordinary upgrade restores both wrappers from immutable pack bytes while preserving consumer-owned assurance files byte-for-byte.
+  - Trusted exact-main semantics, controller adoption, evidence strength, release authority, and BCF self overlays are unchanged.
+  - PR 323 exposed a function-local import that hid the fixed-point callback edge from static semantic effect ownership; module-level canonical import now makes the declared helper boundary reachable without weakening effect tracing.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml
