@@ -73,7 +73,7 @@ commands:
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
   dispatch-routine-certification:
-    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, controller-rotation, dispatch-certification, --repository, '${{ github.repository }}', --rotation-run-id, '${{ github.event.workflow_run.id }}', --rotation-run-attempt, '${{ github.event.workflow_run.run_attempt }}']
+    argv: ['{controller}', ci-github, controller-rotation, dispatch-certification, --repository, '${{ github.repository }}', --rotation-run-id, '${{ github.event.workflow_run.id }}', --rotation-run-attempt, '${{ github.event.workflow_run.run_attempt }}']
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
 step_components:

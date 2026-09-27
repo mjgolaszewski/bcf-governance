@@ -27,6 +27,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Made prospective closure reject incomplete authored phase or hotfix state before
   evidence allocation, while retaining terminal evidence-derived truth as the
   authoritative closure decision.
+- Made the post-rotation callback classify exact no-transition topology through
+  installed N before resolving N+1, eliminating an unnecessary repository-wide
+  artifact scan and duplicate dispatch race after ordinary exact-main closure.
 
 ## [2.1.1] - 2026-09-27
 
