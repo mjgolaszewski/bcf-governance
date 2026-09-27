@@ -6,6 +6,11 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Governance
+
+- Recorded immutable v2.1.0 provider, artifact, attestation, controller, exact-main,
+  and publication custody; closed P28 and release_16 without rebuilding released bytes.
+
 ## [2.1.0] - 2026-09-26
 
 BCF 2.1 is the first published 2.x release. The certified but unpublished

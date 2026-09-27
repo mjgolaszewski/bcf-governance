@@ -2,7 +2,7 @@ document:
   kind: canonical_product_projection_audit
   id: bcf-2.1-p28-canonical-projection
   version: 1.0.0
-  status: candidate
+  status: completed
   path: audits/bcf-2.1-p28-canonical-projection.yml
 phase: P28
 workitem: P28-P0-01
@@ -69,7 +69,7 @@ non_escalation:
 - trusted-controller machinery appears only after explicit typed adoption and never in an ordinary install
 - protection omission policy drift mixed runner state wrong artifact run attempt subject or replay fails closed
 - active provider custody remains non-repository state and cannot broaden bounded certification
-- release authority remains absent
+- release authority remained absent from bounded workitem certification and was granted only to the separately authenticated exact-byte publisher after terminal phase closure
 self_authority_overlays:
   workitem: P28-P0-02
   canonical_contract: governance/self-overlays.yml
