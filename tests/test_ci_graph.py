@@ -146,6 +146,29 @@ def test_v3_lite_uses_typed_direct_protected_main_closure() -> None:
     assert workflow_input_issues(graph, workflow) == ()
 
 
+def test_reference_exact_main_evaluation_uses_unique_semantic_roles() -> None:
+    graph = build_reference_ci_graph(
+        project_id="controller-adopter",
+        profile="standard",
+        profile_contract_version="3.0",
+        gates=["governance-validate"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    evaluation = post_merge_evaluation(graph)
+    assert evaluation.lane == "trusted_exact_main"
+    assert evaluation.mode == "closure"
+    assert evaluation.terminal_job_id == "governance-producer"
+    workflow = next(item for item in graph["workflows"] if item["id"] == "exact-main")
+    duplicate = copy.deepcopy(workflow["jobs"][1])
+    duplicate["id"] = "duplicate-producer"
+    workflow["jobs"].append(duplicate)
+    with pytest.raises(CIGraphError, match="semantic role.*not unique"):
+        exact_main_evaluation(tuple(graph["workflows"]))
+
+
 def test_direct_protected_main_rejects_pr_default_on_push() -> None:
     graph = build_reference_ci_graph(
         project_id="direct-adopter",

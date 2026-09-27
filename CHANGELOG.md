@@ -21,6 +21,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Preserved consumer-owned architecture assurance tests during ordinary upgrades;
   template skeletons remain fresh-install inputs and cannot overwrite exact bytes
   declared consumer-preserved by the runtime lock.
+- Resolved trusted exact-main admission and governance jobs by their unique
+  governed semantic roles, eliminating the reference generator/evaluator job-ID
+  mismatch while rejecting missing or duplicate role ownership.
 
 ## [2.1.1] - 2026-09-27
 

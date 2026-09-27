@@ -86,6 +86,6 @@ release_trains:
   release_15: {target_version: 2.0.0, status: abandoned, focus: [dependency_scoped_truth, minimum_execution, evidence_composed_release, superseded_without_publication]}
   release_16: {target_version: 2.1.0, status: completed, focus: [invariant_closure, proof_transport, minimum_time_composition, canonical_projection, parity, empirical_certification]}
   release_17: {target_version: 2.1.1, status: active, focus: [published_patch, adopter_migration_reporting, interpreter_custody, reconciliation_applicability, surgical_negative_controls, negative_control_byte_applicability, single_checkout_projection, producer_dependency_dag, release_gate_include_resolution, semantic_registry_compaction, exact_base_checkout_depth]}
-  release_18: {target_version: 2.1.2, status: active, focus: [direct_protected_main_prospective_parity, upgrade_entrypoint_completeness, consumer_assurance_preservation]}
+  release_18: {target_version: 2.1.2, status: active, focus: [direct_protected_main_prospective_parity, upgrade_entrypoint_completeness, consumer_assurance_preservation, semantic_role_job_resolution]}
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: [active phase has a plan workitem ledger and log, validation commands are listed before implementation starts]

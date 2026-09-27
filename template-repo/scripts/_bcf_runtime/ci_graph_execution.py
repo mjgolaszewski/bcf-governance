@@ -55,10 +55,18 @@ def exact_main_evaluation(
     selected = [item for item in workflows if item["id"] == "exact-main"]
     if len(selected) != 1:
         raise CIGraphError("canonical graph must contain one exact-main workflow")
-    jobs = {str(item["id"]): item for item in selected[0]["jobs"]}
+    def role(name: str) -> dict[str, Any]:
+        jobs = [
+            item for item in selected[0]["jobs"]
+            if item.get("semantic_role") == name
+        ]
+        if len(jobs) != 1:
+            raise CIGraphError(f"exact-main semantic role {name} is not unique")
+        return jobs[0]
+
     try:
-        admit = jobs["admit"]["executor"]
-        governance = jobs["governance"]["executor"]
+        admit = role("exact-main-admission")["executor"]
+        governance = role("exact-main-governance-producer")["executor"]
         mode = str(admit["evaluation_mode"])
         target = admit["evaluation_target"] if "evaluation_target" in admit else None
         inputs = governance["inputs"]

@@ -94,12 +94,16 @@ def post_merge_evaluation(graph: dict[str, Any]) -> PostMergeEvaluation:
     exact = [item for item in graph["workflows"] if item.get("id") == "exact-main"]
     if exact:
         evaluation = exact_main_evaluation(tuple(graph["workflows"]))
+        producer = next(
+            job for job in exact[0]["jobs"]
+            if job.get("semantic_role") == "exact-main-governance-producer"
+        )
         return PostMergeEvaluation(
             evaluation.mode,
             evaluation.target,
             "trusted_exact_main",
             "exact-main",
-            "governance",
+            str(producer["id"]),
         )
     workflow = _direct_workflow(graph)
     if workflow is None:
