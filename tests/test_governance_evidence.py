@@ -43,10 +43,55 @@ select_session = EVIDENCE_MODULE.select_session
 local_producer_identity = EVIDENCE_MODULE.local_producer_identity
 negative_control_command = EVIDENCE_MODULE.negative_control_command
 project_graph_mutation = EVIDENCE_MODULE._project_graph_mutation
+apply_negative_control = EVIDENCE_MODULE._apply_negative_control
 
 
 def _git(repo: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
+
+
+def test_active_phase_status_control_preserves_bytes_and_reaches_oracle(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--no-hardlinks", str(REPO_ROOT), str(repo)],
+        check=True,
+    )
+    contracts = yaml.safe_load(
+        (REPO_ROOT / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    )
+    control = next(
+        item
+        for item in contracts["gates"]["governance-validate"]["negative_controls"]
+        if item["id"] == "authored-verified-state-is-rejected"
+    )
+    ledger = yaml.safe_load((repo / "plans/phase-ledger.yml").read_text(encoding="utf-8"))
+    log = repo / ledger["active_phase"]["log"]
+    before = log.read_text(encoding="utf-8")
+
+    assert apply_negative_control(repo, control) == (
+        True,
+        ledger["active_phase"]["log"],
+    )
+    after = log.read_text(encoding="utf-8")
+    assert after == before.replace("  status: completed", "  status: verified", 1)
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(REPO_ROOT / "scripts/validate_governance_yaml.py"),
+            "--repo-root",
+            str(repo),
+        ],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 1
+    assert "verified" in result.stderr
+    assert "computed" in result.stderr or "not one of" in result.stderr
 
 
 def test_test_node_control_derives_minimal_pytest_command(tmp_path: Path) -> None:

@@ -23,7 +23,11 @@ from .semantic_authority_contracts import (
     validate_semantic_authority,
 )
 from .semantic_source_discovery import discover_source, compiler_contracts
-from .semantic_locking import SemanticLockError, validated_lock_bytes
+from .semantic_locking import (
+    SemanticLockError,
+    render_compact_semantic_yaml,
+    validated_lock_bytes,
+)
 from .semantic_adoption_dependencies import DependencySnapshot, SemanticDependencyError, snapshot_adoption_dependencies
 from .semantic_ownership_typescript import TypeScriptDiscoveryError
 from .semantic_ownership_registry import load_registry
@@ -61,7 +65,7 @@ def _load_config(path: Path) -> dict[str, Any]:
 
 
 def _contract_bytes(payload: dict[str, Any], key: str) -> bytes:
-    return yaml.safe_dump(payload["contracts"][key], sort_keys=False, width=1000).encode("utf-8")
+    return render_compact_semantic_yaml(payload["contracts"][key])
 
 
 def _lock(repo_root: Path, *, apply: bool) -> dict[str, Any]:

@@ -299,6 +299,74 @@ def test_execution_dag_balances_groups_from_observed_receipt_durations(tmp_path:
     assert all(node["duration_source"] == "observed_receipt" for node in nodes.values())
 
 
+def test_dependent_producer_reruns_its_reused_prerequisite_on_one_shard(
+    tmp_path: Path,
+) -> None:
+    root = _repo(tmp_path)
+    _registry_change(
+        root,
+        lambda payload: payload["claim_model"]["execution_groups"]["other-tests"].update(
+            {"depends_on": ["app-tests"]}
+        ),
+    )
+    app = _receipt(root, ["app-valid"])
+    other = _receipt(root, ["other-valid"])
+    _commit(root, "other.py", "OTHER = 2\n")
+
+    plan = plan_verification(root, [app, other], preflight_claims=["governance-valid"])
+
+    nodes = plan["execution_dag"]["nodes"]
+    assert [node["id"] for node in nodes] == ["app-tests", "other-tests"]
+    assert nodes[1]["depends_on"] == ["app-tests"]
+    assert nodes[0]["assigned_shard"] == nodes[1]["assigned_shard"]
+    assert plan["execution_dag"]["edges"] == [
+        {"from": "app-tests", "to": "other-tests"}
+    ]
+    assert not any(item["claim_id"] == "app-valid" for item in plan["reused_evidence"])
+    forced = next(
+        item for item in plan["invalidated_evidence"] if item["claim_id"] == "app-valid"
+    )
+    assert forced["reasons"] == ["current_run_dependency_required"]
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        (
+            lambda payload: payload["claim_model"]["execution_groups"]["other-tests"].update(
+                {"depends_on": ["missing"]}
+            ),
+            "depends on unknown group",
+        ),
+        (
+            lambda payload: payload["claim_model"]["execution_groups"]["other-tests"].update(
+                {"depends_on": ["preflight"]}
+            ),
+            "cannot depend on preflight-only group",
+        ),
+        (
+            lambda payload: (
+                payload["claim_model"]["execution_groups"]["other-tests"].update(
+                    {"depends_on": ["app-tests"]}
+                ),
+                payload["claim_model"]["execution_groups"]["app-tests"].update(
+                    {"depends_on": ["other-tests"]}
+                ),
+            ),
+            "contain a cycle",
+        ),
+    ],
+)
+def test_execution_group_dependencies_fail_closed(
+    tmp_path: Path, mutation, message: str,
+) -> None:
+    root = _repo(tmp_path)
+    _registry_change(root, mutation)
+
+    with pytest.raises(EvidenceError, match=message):
+        load_claim_model(root)
+
+
 def test_unavailable_source_commit_uses_exact_local_tree_for_planning_only(tmp_path: Path) -> None:
     root = _repo(tmp_path)
     receipt = _receipt(root, ["app-valid"])

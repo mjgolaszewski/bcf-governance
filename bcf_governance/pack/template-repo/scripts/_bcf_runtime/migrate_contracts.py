@@ -173,7 +173,7 @@ def apply_contract_migration(repo_root: Path) -> ContractMigrationPlan:
     if applied.status != "current":
         raise ContractMigrationError("migration did not produce active profile contract 3.0")
     return ContractMigrationPlan(
-        "applied", plan.source_version, "3.0", applied.authority_version, plan.changed_paths, ()
+        "applied", plan.source_profile_version, "3.0", applied.authority_version, plan.changed_paths, ()
     )
 
 

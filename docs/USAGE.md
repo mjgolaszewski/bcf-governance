@@ -168,9 +168,10 @@ fail-closed; an absent optional capability is reported by `bcf doctor`.
   `## [Unreleased]`, and uses `## [X.Y.Z] - YYYY-MM-DD` release headings.
 
 Every pull request changes `CHANGELOG.md`. Generated CI checks the diff from
-the exact pull-request base SHA. It uses a full checkout and fails if the base
-commit cannot be resolved, preventing a shallow clone from silently bypassing
-the policy.
+the exact pull-request base SHA. The graph mechanically derives full-history
+checkout for every job that consumes this identity and rejects missing or
+shallow checkout ownership, preventing a shallow clone from silently bypassing
+the policy without requiring adopter-authored workflow steps.
 
 Automation-authored dependency PRs are not exempt. Standard-v3 repositories
 may opt into a deterministic trusted producer after configuring a dedicated
@@ -231,7 +232,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.1.0/bcf_governance-2.1.0-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.1.1/bcf_governance-2.1.1-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 2.1. Verify the
@@ -584,6 +585,13 @@ execution. A valid grouped receipt proves only its declared claims, so an
 unrelated claim cannot be laundered through a green group. Structural preflight
 observations can stop work early but never satisfy behavioral evidence.
 
+When one behavioral producer requires another producer's current-session result,
+declare that relationship as `depends_on` on its execution group. BCF validates a
+closed acyclic group graph, schedules the complete dependency component on one
+shard, and executes it in deterministic topological order. Reusable evidence for
+a prerequisite is deliberately invalidated when its dependent must execute; an
+unknown, preflight-only, cyclic, or cross-shard dependency fails closed.
+
 ## Lifecycle and evidence
 
 Phase logs author work completion and requirement declarations. They never
@@ -645,6 +653,11 @@ a session manifest. Local automation that runs inside a provider process must
 declare its local identity explicitly with `--local-producer-id`; the immutable
 session then governs receipt producer binding instead of ambient provider
 environment variables.
+
+An existing repository may merge the generated `Makefile.fragment` recipes into
+`Makefile` or include that fragment as one exact source with `include`,
+`-include`, or `sinclude`. BCF resolves that declared owner mechanically and
+rejects missing, duplicate, multi-source, variable, wildcard, or mixed ownership.
 
 Dependent evidence producers select the session mechanically:
 
@@ -805,6 +818,10 @@ files. TypeScript source and compiler configuration/lockfile inputs enter the
 semantic lock. Python-only lock behavior is preserved. Empty projections use
 `projection_outputs: []` under schema 1.0; `null` remains invalid. A lock candidate
 is decoded, compared, and schema-validated before atomic replacement.
+Adopted semantic inventories use deterministic one-row flow compaction for each
+top-level list item; BCF decodes and compares the candidate to the complete input
+before promotion, so formatting cannot justify raising a hard context budget or
+dropping an assurance proposition.
 
 ### Optional private candidate runners
 

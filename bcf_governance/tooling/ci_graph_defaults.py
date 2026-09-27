@@ -50,6 +50,7 @@ def _job(
     consumes: list[str] | None = None,
     components: list[str] | None = None,
     permissions: dict[str, str] | None = None,
+    checkout: bool | None = None,
 ) -> dict[str, Any]:
     return {
         "id": job_id,
@@ -61,7 +62,11 @@ def _job(
         "condition": condition,
         "timeout_minutes": 45 if trust == "candidate" else 5,
         "permissions": permissions or {"contents": "read"},
-        "checkout": trust == "candidate" and executor["kind"] != "reusable_workflow",
+        "checkout": (
+            trust == "candidate" and executor["kind"] != "reusable_workflow"
+            if checkout is None
+            else checkout
+        ),
         "components": components
         if components is not None
         else (
@@ -320,7 +325,7 @@ def _apply_v3_proof_composition(graph: dict[str, Any], gates: list[str]) -> None
             "preflight", "cheap-preflight", executor={
                 "kind": "component_sequence",
                 "components": ["checkout-candidate", "setup-python", "install-governance", "preflight", "preflight-with-prior", "upload-session"],
-            }, produces=["evidence-session"], consumes=["prior-evidence-transport"], components=[],
+            }, produces=["evidence-session"], consumes=["prior-evidence-transport"], components=[], checkout=False,
         ),
         {
             **_job(
@@ -330,7 +335,7 @@ def _apply_v3_proof_composition(graph: dict[str, Any], gates: list[str]) -> None
                     "gates": gates,
                     "components": ["checkout-candidate", "setup-python", "install-governance", "download-session", "restore-session-modes", "capture-shard", "upload-receipts"],
                 },
-                produces=["governance-receipts"], consumes=["evidence-session"], components=[],
+                produces=["governance-receipts"], consumes=["evidence-session"], components=[], checkout=False,
             ),
             "display_name": "Evidence / ${{ matrix.display_name }}",
             "strategy": {"fail_fast": False, "max_parallel": 4, "matrix": matrix},
@@ -342,7 +347,7 @@ def _apply_v3_proof_composition(graph: dict[str, Any], gates: list[str]) -> None
                 "kind": "terminal_truth", "command": "v3-truth",
                 "components": ["checkout-candidate", "setup-python", "install-governance", "download-receipts", "restore-receipt-modes", "truth", "truth-with-prior", "upload-truth"],
             },
-            produces=["truth-report"], consumes=["governance-receipts", "prior-evidence-transport"], components=[],
+            produces=["truth-report"], consumes=["governance-receipts", "prior-evidence-transport"], components=[], checkout=False,
         ),
     ]
     exact_main = next((item for item in graph["workflows"] if item["id"] == "exact-main"), None)

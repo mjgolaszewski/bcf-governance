@@ -438,7 +438,7 @@ def _run_prospective_train(
         _require_authored_target_ready(root, requested_scope.target_id)
     try:
         reconcile_started = time.monotonic_ns()
-        for step in reconcile_steps(root, python_executable.resolve()):
+        for step in reconcile_steps(root, python_executable):
             step.check()
         reconcile_duration = _elapsed_ms(reconcile_started)
         measurements.extend(

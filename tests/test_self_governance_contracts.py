@@ -489,9 +489,9 @@ def test_governance_evidence_shards_follow_the_duration_aware_plan() -> None:
     targets = ["test", "contract-test", "runtime-smoke"]
     dag = {
         "nodes": [
-            {"id": "tests", "producer": "test", "assigned_shard": 2},
-            {"id": "contracts", "producer": "contract-test", "assigned_shard": 0},
-            {"id": "runtime", "producer": "runtime-smoke", "assigned_shard": 2},
+            {"id": "tests", "producer": "test", "assigned_shard": 2, "depends_on": []},
+            {"id": "contracts", "producer": "contract-test", "assigned_shard": 0, "depends_on": []},
+            {"id": "runtime", "producer": "runtime-smoke", "assigned_shard": 2, "depends_on": []},
         ],
         "edges": [],
     }
@@ -507,6 +507,34 @@ def test_governance_evidence_shards_follow_the_duration_aware_plan() -> None:
         module.partition_required_gates(
             REPO_ROOT, shard_index=0, shard_count=4,
             planned_targets=[*targets, "lint"], execution_dag=dag,
+        )
+
+
+def test_governance_evidence_shard_executes_dependencies_in_topological_order() -> None:
+    dag = {
+        "nodes": [
+            {"id": "quality", "producer": "test", "assigned_shard": 1, "depends_on": []},
+            {"id": "review", "producer": "security-review", "assigned_shard": 1, "depends_on": ["quality"]},
+        ],
+        "edges": [{"from": "quality", "to": "review"}],
+    }
+
+    assert evidence_shards.partition_required_gates(
+        REPO_ROOT,
+        shard_index=1,
+        shard_count=4,
+        planned_targets=["test", "security-review"],
+        execution_dag=dag,
+    ) == ["test", "security-review"]
+
+    dag["nodes"][1]["assigned_shard"] = 2
+    with pytest.raises(ValueError, match="ordered on one shard"):
+        evidence_shards.partition_required_gates(
+            REPO_ROOT,
+            shard_index=1,
+            shard_count=4,
+            planned_targets=["test", "security-review"],
+            execution_dag=dag,
         )
 
 

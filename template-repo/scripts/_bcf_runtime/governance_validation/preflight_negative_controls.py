@@ -7,7 +7,11 @@ from typing import Any, Callable
 
 import yaml  # type: ignore[import-untyped]
 
-from ..yaml_mutations import YAMLMutationPathError, resolve_yaml_target, typed_mutation_value
+from ..yaml_mutations import (
+    YAMLMutationPathError,
+    replace_yaml_value_bytes,
+    typed_mutation_value,
+)
 
 
 class NegativeControlPreflightError(ValueError):
@@ -100,10 +104,12 @@ def inspect_negative_control_targets(
                 yaml_path = mutation.get("yaml_path")
                 if not isinstance(yaml_path, str):
                     raise NegativeControlPreflightError(f"negative control mutation is unsupported: {control_id}")
-                current: Any = yaml.safe_load(target.read_text(encoding="utf-8"))
+                source = target.read_text(encoding="utf-8")
                 try:
                     value = typed_mutation_value(mutation)
-                    current = resolve_yaml_target(current, yaml_path).value
+                    _mutated, current = replace_yaml_value_bytes(
+                        source, yaml_path, value
+                    )
                 except YAMLMutationPathError as exc:
                     raise NegativeControlPreflightError(
                         f"negative control YAML target is stale: {control_id}"

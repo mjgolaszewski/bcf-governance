@@ -21,6 +21,12 @@ except ModuleNotFoundError:  # Standalone template runtime owns a relative proje
 
 from .test_manifests import declared_test_gates
 from .governance_validation.structural_limits import validate_structural_limits
+from .semantic_authority_contracts import (
+    FAMILIES_PATH,
+    LOCK_PATH,
+    OPERATIONS_PATH,
+    capability_states,
+)
 
 HOTFIX_MODES = {"lite", "full"}
 
@@ -324,6 +330,7 @@ def _editorial_base(audit: Path) -> str:
 def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
     """Return the closed canonical projection order for this repository."""
 
+    python = python.absolute()
     cli = [str(python), "-m", "bcf_governance.cli"]
     steps: list[ReconcileStep] = [
         ReconcileStep(
@@ -341,13 +348,24 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 _reconcile_action(repo_root, "pack-projection", [str(python), str(pack)]),
             )
         )
-    steps.append(
-        ReconcileStep(
-            "semantic-lock",
-            _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--check"]),
-            _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--apply"]),
-        )
+    semantic_states = capability_states(repo_root)
+    semantic_enabled = any(
+        state in {"advisory", "blocking"} for state in semantic_states.values()
     )
+    semantic_runtime_paths = (FAMILIES_PATH, OPERATIONS_PATH, LOCK_PATH)
+    if semantic_enabled:
+        steps.append(
+            ReconcileStep(
+                "semantic-lock",
+                _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--check"]),
+                _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--apply"]),
+            )
+        )
+    elif present := [path.as_posix() for path in semantic_runtime_paths if (repo_root / path).exists()]:
+        raise ReconcileError(
+            "semantic authority artifacts are present without an enabled semantic capability: "
+            + ", ".join(present)
+        )
     for gate_id in declared_test_gates(repo_root):
         common = [*cli, "test-manifest"]
         suffix = ["--gate", gate_id, "--repo-root", str(repo_root), "--python", str(python)]
@@ -434,7 +452,7 @@ def reconcile_main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     root = args.repo_root.resolve()
     try:
-        steps = reconcile_steps(root, args.python.resolve())
+        steps = reconcile_steps(root, args.python)
         if args.check:
             for step in steps:
                 step.check()

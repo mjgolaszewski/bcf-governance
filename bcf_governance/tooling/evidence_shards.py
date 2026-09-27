@@ -60,9 +60,12 @@ def partition_required_gates(
         raise ValueError("shard index must be within the positive shard count")
     if execution_dag is not None:
         nodes = execution_dag.get("nodes")
-        if not isinstance(nodes, list):
-            raise ValueError("planned execution DAG must contain nodes")
+        edges = execution_dag.get("edges")
+        if not isinstance(nodes, list) or not isinstance(edges, list):
+            raise ValueError("planned execution DAG must contain nodes and edges")
         assignments: dict[str, int] = {}
+        node_ids: set[str] = set()
+        expected_edges: list[dict[str, str]] = []
         for node in nodes:
             if not isinstance(node, dict):
                 raise ValueError("planned execution DAG node must be an object")
@@ -76,15 +79,54 @@ def partition_required_gates(
                 or assigned < 0
                 or assigned >= shard_count
                 or producer in assignments
+                or not isinstance(node.get("id"), str)
+                or node["id"] in node_ids
+                or not isinstance(node.get("depends_on"), list)
             ):
                 raise ValueError("planned shard assignment is incomplete or ambiguous")
             assignments[producer] = assigned
+            node_ids.add(node["id"])
+        by_id = {str(node["id"]): node for node in nodes}
+        dependents: dict[str, list[str]] = {node_id: [] for node_id in by_id}
+        indegree: dict[str, int] = {}
+        for node in nodes:
+            indegree[node["id"]] = len(node["depends_on"])
+            for dependency in node["depends_on"]:
+                if (
+                    not isinstance(dependency, str)
+                    or dependency not in by_id
+                    or by_id[dependency]["assigned_shard"] != node["assigned_shard"]
+                ):
+                    raise ValueError("planned execution dependency is not ordered on one shard")
+                dependents[dependency].append(node["id"])
+                expected_edges.append({"from": dependency, "to": node["id"]})
+        observed_edges = [
+            (edge.get("from"), edge.get("to")) if isinstance(edge, dict) else (None, None)
+            for edge in edges
+        ]
+        canonical_edges = [(edge["from"], edge["to"]) for edge in expected_edges]
+        if len(observed_edges) != len(set(observed_edges)) or set(observed_edges) != set(canonical_edges):
+            raise ValueError("planned execution DAG edges differ from node dependencies")
+        ready = sorted(node_id for node_id, count in indegree.items() if count == 0)
+        ordered: list[str] = []
+        while ready:
+            node_id = ready.pop(0)
+            ordered.append(node_id)
+            for dependent in sorted(dependents[node_id]):
+                indegree[dependent] -= 1
+                if indegree[dependent] == 0:
+                    ready.append(dependent)
+                    ready.sort()
+        if len(ordered) != len(nodes):
+            raise ValueError("planned execution dependencies contain a cycle")
         targets = planned_targets or []
         if set(assignments) != set(targets):
             raise ValueError("planned shard assignment differs from gate inventory")
-        return sorted(
-            producer for producer, assigned in assignments.items() if assigned == shard_index
-        )
+        return [
+            str(by_id[node_id]["producer"])
+            for node_id in ordered
+            if by_id[node_id]["assigned_shard"] == shard_index
+        ]
     targets = planned_targets if planned_targets is not None else required_gate_targets(repo_root)
     return [gate for index, gate in enumerate(targets) if index % shard_count == shard_index]
 

@@ -481,6 +481,15 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
     selected_python = tmp_path / "venv/bin/python"
     selected_python.parent.mkdir(parents=True)
     selected_python.symlink_to(sys.executable)
+    monkeypatch.setattr(
+        prospective,
+        "reconcile_steps",
+        lambda _root, python: (
+            SimpleNamespace(check=lambda: trace.append("reconcile")),
+        )
+        if python == selected_python
+        else pytest.fail("prospective reconciliation changed its selected interpreter"),
+    )
     def allocate(_root: Path, _artifacts: Path, gates: tuple[str, ...], **_kwargs: object) -> SimpleNamespace:
         assert gates == tuple(required)
         return session

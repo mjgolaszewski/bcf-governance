@@ -17,6 +17,21 @@ class SemanticLockError(ValueError):
     """A proposed semantic lock cannot be persisted as a valid contract."""
 
 
+class _NoAliasSafeDumper(yaml.SafeDumper):  # type: ignore[misc]
+    def ignore_aliases(self, data: Any) -> bool:
+        return True
+
+
+def _compact_dump(value: Any, *, flow: bool) -> str:
+    return yaml.dump(
+        value,
+        Dumper=_NoAliasSafeDumper,
+        sort_keys=False,
+        default_flow_style=flow,
+        width=1_000_000 if flow else 1000,
+    )
+
+
 def stable_payload_digest(payload: Any) -> str:
     """Return a canonical JSON digest for a semantic value."""
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
@@ -26,6 +41,28 @@ def stable_payload_digest(payload: Any) -> str:
 def sha256_bytes(value: bytes) -> str:
     """Return the SHA-256 digest of exact bytes."""
     return hashlib.sha256(value).hexdigest()
+
+
+def render_compact_semantic_yaml(payload: dict[str, Any]) -> bytes:
+    """Render top-level semantic inventories with one lossless row per list item."""
+
+    segments: list[str] = []
+    for key, value in payload.items():
+        if not isinstance(value, list):
+            segments.append(_compact_dump({key: value}, flow=False))
+            continue
+        segments.append(f"{key}: []\n" if not value else f"{key}:\n")
+        for row in value:
+            rendered = _compact_dump(row, flow=True).strip().removesuffix("\n...")
+            segments.append(f"- {rendered}\n")
+    candidate = "".join(segments).encode("utf-8")
+    try:
+        decoded = yaml.safe_load(candidate)
+    except yaml.YAMLError as exc:
+        raise SemanticLockError(f"cannot decode compact semantic contract: {exc}") from exc
+    if decoded != payload:
+        raise SemanticLockError("compact semantic contract does not preserve its input value")
+    return candidate
 
 
 def render_lock_yaml(payload: dict[str, Any]) -> bytes:

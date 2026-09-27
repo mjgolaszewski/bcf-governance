@@ -1919,6 +1919,17 @@ def test_v3_reference_graph_projects_proof_transport_and_planned_shards(
     assert governance["jobs"][2]["consumes"] == [
         "governance-receipts", "prior-evidence-transport",
     ]
+    assert all(job["checkout"] is False for job in governance["jobs"])
+    rendered = yaml.safe_load(render_ci_graph(tmp_path)[".github/workflows/governance.yml"])
+    for job in rendered["jobs"].values():
+        checkouts = [step for step in job["steps"] if str(step.get("uses", "")).startswith("actions/checkout@")]
+        assert len(checkouts) == 1
+        assert checkouts[0]["with"] == {"fetch-depth": 0, "persist-credentials": False}
+
+    graph["workflows"][0]["jobs"][0]["checkout"] = True
+    _write_graph(tmp_path, graph)
+    with pytest.raises(CIGraphError, match="duplicate implicit and explicit checkout ownership"):
+        validate_ci_graph(tmp_path)
     exact_main = next(item for item in compiled.workflows if item["id"] == "exact-main")
     admit, producer = exact_main["jobs"]
     assert admit["executor"]["operation"] == "admit-with-prior-evidence"
@@ -1948,6 +1959,48 @@ def test_lite_reference_graph_has_no_release_or_trusted_control(tmp_path: Path) 
         "workflow_call",
         "push",
     }
+    rendered = yaml.safe_load(render_ci_graph(tmp_path)[".github/workflows/governance.yml"])
+    checkout = next(
+        step
+        for step in rendered["jobs"]["cheap-preflight"]["steps"]
+        if str(step.get("uses", "")).startswith("actions/checkout@")
+    )
+    assert checkout["with"] == {"fetch-depth": 0, "persist-credentials": False}
+
+    graph["workflows"][0]["jobs"][0]["checkout"] = False
+    _write_graph(tmp_path, graph)
+    with pytest.raises(CIGraphError, match="exact PR base without checkout"):
+        validate_ci_graph(tmp_path)
+
+
+def test_exact_pr_base_consumer_rejects_explicit_shallow_checkout() -> None:
+    graph = {
+        "commands": {
+            "preflight": {
+                "argv": ["{python}", "scripts/preflight_governance.py"],
+                "cwd": ".",
+                "environment": {"BCF_PR_BASE_SHA": "${{ github.base_ref }}"},
+            }
+        },
+        "step_components": {
+            "checkout": {
+                "kind": "action",
+                "action": "checkout",
+                "with": {"fetch-depth": 1},
+            },
+            "python": {"kind": "action", "action": "setup-python"},
+            "preflight": {"kind": "command", "command": "preflight"},
+        },
+    }
+    executor = {
+        "kind": "component_sequence",
+        "components": ["checkout", "python", "preflight"],
+    }
+    job = {"id": "preflight", "trust": "candidate", "checkout": False}
+
+    assert job_execution_issues(graph, job, executor) == (
+        "CI graph job preflight consumes an exact PR base without full-history checkout",
+    )
 
 
 def _git(repo: Path, *args: str) -> str:
