@@ -112,11 +112,16 @@ def validate_routine_decision(value: Mapping[str, Any]) -> dict[str, Any]:
     decision = str(value.get("decision", ""))
     if decision == RoutineDecision.ROUTINE_TRANSITION_AUTHORIZED.value:
         _exact_keys(value, common | {"transition"}, field="routine decision")
+        transition_class = str(value.get("transition_class", ""))
+        reasons = {
+            ControllerTransitionClass.RUNTIME_ONLY.value: "pending_controller_rotation",
+            ControllerTransitionClass.PROTECTED_POLICY_CHANGE.value: "pending_protected_policy_rotation",
+        }
         if (
             value.get("schema_version") != "1.0"
-            or value.get("transition_class") != ControllerTransitionClass.RUNTIME_ONLY
+            or transition_class not in reasons
             or value.get("applicable") is not True
-            or value.get("reason") != "pending_controller_rotation"
+            or value.get("reason") != reasons[transition_class]
         ):
             raise GitHubControllerError("routine transition decision is invalid")
         result = dict(value)
@@ -230,48 +235,72 @@ def _no_transition(
     })
 
 
-def _policy_change_route(
+def _authorized_transition(
     main: MainIdentity,
     *,
+    repository: str,
     admission_run_id: object,
     admission_run_attempt: object,
     installed_commit: str,
     target: Mapping[str, str],
     implementation_pr: object,
-    candidate_commit: str,
-    source_main_commit: str,
     policy_before: str,
     policy_after: str,
+    runners: tuple[str, ...],
 ) -> dict[str, Any]:
-    return validate_routine_decision({
+    transition_class = (
+        ControllerTransitionClass.PROTECTED_POLICY_CHANGE.value
+        if policy_before != policy_after
+        else ControllerTransitionClass.RUNTIME_ONLY.value
+    )
+    identity = transition_id(
+        repository_id=main.repository_id,
+        installed_commit=installed_commit,
+        subject_commit=main.checkout_sha,
+        subject_tree=main.tree_sha,
+        artifact_digest=target["BCF_BOOTSTRAP_ARTIFACT_DIGEST"],
+    )
+    receipt = {
         "schema_version": "1.0",
-        "decision": RoutineDecision.ALTERNATE_LANE_REQUIRED.value,
-        "transition_class": ControllerTransitionClass.PROTECTED_POLICY_CHANGE.value,
-        "applicable": False,
-        "reason": "authorization_policy_changed",
-        "subject": {
-            "commit_sha": main.checkout_sha,
-            "tree_sha": main.tree_sha,
-        },
-        "admission": {
-            "run_id": str(positive_int(admission_run_id, field="admission run ID")),
-            "run_attempt": str(
-                positive_int(admission_run_attempt, field="admission run attempt")
-            ),
-        },
+        "transition_id": identity,
+        "transition_class": transition_class,
+        "state": "authorized",
+        "repository": {"id": main.repository_id, "full_name": repository},
+        "subject": {"commit_sha": main.checkout_sha, "tree_sha": main.tree_sha},
         "authority": {
             "installed_controller_commit": installed_commit,
-            "implementation_pr": str(
-                positive_int(implementation_pr, field="implementation PR")
-            ),
-            "candidate_commit_sha": candidate_commit,
-            "source_main_commit_sha": source_main_commit,
+            "admission_run_id": str(positive_int(admission_run_id, field="admission run ID")),
+            "admission_run_attempt": str(positive_int(admission_run_attempt, field="admission run attempt")),
+            "implementation_pr": str(positive_int(implementation_pr, field="implementation PR")),
             "policy_before_sha256": policy_before,
             "policy_after_sha256": policy_after,
         },
-        "target": dict(target),
-        "alternate_lane": alternate_policy_lane_contract(),
-        "release_authority": False,
+        "artifact": {
+            "id": target["BCF_BOOTSTRAP_ARTIFACT_ID"],
+            "name": target["BCF_BOOTSTRAP_ARTIFACT_NAME"],
+            "provider_digest": target["BCF_BOOTSTRAP_ARTIFACT_DIGEST"],
+            "wheel_sha256": target["BCF_BOOTSTRAP_WHEEL_SHA256"],
+            "run_id": target["BCF_BOOTSTRAP_RUN_ID"],
+            "run_attempt": target["BCF_BOOTSTRAP_RUN_ATTEMPT"],
+            "commit_sha": target["BCF_BOOTSTRAP_COMMIT_SHA"],
+            "tree_sha": target["BCF_BOOTSTRAP_TREE_SHA"],
+        },
+        "required_runners": list(runners),
+        "bootstrap": [],
+        "probe": [],
+        "promotion": [],
+    }
+    return validate_routine_decision({
+        "schema_version": "1.0",
+        "decision": RoutineDecision.ROUTINE_TRANSITION_AUTHORIZED.value,
+        "transition_class": transition_class,
+        "applicable": True,
+        "reason": (
+            "pending_protected_policy_rotation"
+            if transition_class == ControllerTransitionClass.PROTECTED_POLICY_CHANGE
+            else "pending_controller_rotation"
+        ),
+        "transition": validate_transition(packaged_repo_root(), receipt),
     })
 
 
@@ -509,64 +538,19 @@ def authorize_transition(
     )
     before = _policy_digest(api, repository, ref=source_main.checkout_sha)
     after = _policy_digest(api, repository, ref=main.checkout_sha)
-    if before != after:
-        return _policy_change_route(
-            main,
-            admission_run_id=admission_run_id,
-            admission_run_attempt=admission_run_attempt,
-            installed_commit=current_pin["BCF_BOOTSTRAP_COMMIT_SHA"],
-            target=target,
-            implementation_pr=pull["number"],
-            candidate_commit=candidate.checkout_sha,
-            source_main_commit=source_main.checkout_sha,
-            policy_before=before,
-            policy_after=after,
-        )
     _, _, runners = _runner_policy(api, repository, main=main)
-    identity = transition_id(
-        repository_id=main.repository_id,
+    return _authorized_transition(
+        main,
+        repository=repository,
+        admission_run_id=admission_run_id,
+        admission_run_attempt=admission_run_attempt,
         installed_commit=current_pin["BCF_BOOTSTRAP_COMMIT_SHA"],
-        subject_commit=main.checkout_sha,
-        subject_tree=main.tree_sha,
-        artifact_digest=target["BCF_BOOTSTRAP_ARTIFACT_DIGEST"],
+        target=target,
+        implementation_pr=pull["number"],
+        policy_before=before,
+        policy_after=after,
+        runners=runners,
     )
-    receipt = {
-        "schema_version": "1.0",
-        "transition_id": identity,
-        "state": "authorized",
-        "repository": {"id": main.repository_id, "full_name": repository},
-        "subject": {"commit_sha": main.checkout_sha, "tree_sha": main.tree_sha},
-        "authority": {
-            "installed_controller_commit": current_pin["BCF_BOOTSTRAP_COMMIT_SHA"],
-            "admission_run_id": str(positive_int(admission_run_id, field="admission run ID")),
-            "admission_run_attempt": str(positive_int(admission_run_attempt, field="admission run attempt")),
-            "implementation_pr": str(positive_int(pull["number"], field="implementation PR")),
-            "policy_before_sha256": before,
-            "policy_after_sha256": after,
-        },
-        "artifact": {
-            "id": target["BCF_BOOTSTRAP_ARTIFACT_ID"],
-            "name": target["BCF_BOOTSTRAP_ARTIFACT_NAME"],
-            "provider_digest": target["BCF_BOOTSTRAP_ARTIFACT_DIGEST"],
-            "wheel_sha256": target["BCF_BOOTSTRAP_WHEEL_SHA256"],
-            "run_id": target["BCF_BOOTSTRAP_RUN_ID"],
-            "run_attempt": target["BCF_BOOTSTRAP_RUN_ATTEMPT"],
-            "commit_sha": target["BCF_BOOTSTRAP_COMMIT_SHA"],
-            "tree_sha": target["BCF_BOOTSTRAP_TREE_SHA"],
-        },
-        "required_runners": list(runners),
-        "bootstrap": [],
-        "probe": [],
-        "promotion": [],
-    }
-    return validate_routine_decision({
-        "schema_version": "1.0",
-        "decision": RoutineDecision.ROUTINE_TRANSITION_AUTHORIZED.value,
-        "transition_class": ControllerTransitionClass.RUNTIME_ONLY.value,
-        "applicable": True,
-        "reason": "pending_controller_rotation",
-        "transition": validate_transition(packaged_repo_root(), receipt),
-    })
 
 
 def _stage_proofs(

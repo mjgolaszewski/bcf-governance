@@ -175,13 +175,31 @@ def _component_steps(
                     f"authority=pathlib.Path({component['wheel_sha256_file']!r})\n"
                     "assert authority.is_file() and not authority.is_symlink()\n"
                     "payload=json.loads(authority.read_text())\n"
-                    f"keys={component['wheel_sha256_keys']!r}\n"
-                    "expected=payload\n"
-                    "for key in keys:\n"
-                    " assert isinstance(expected,dict) and key in expected\n"
-                    " expected=expected[key]\n"
-                    "assert isinstance(expected,str) and re.fullmatch(r'[a-f0-9]{64}',expected)\n"
                 )
+                if "wheel_sha256_keys" in component:
+                    digest_loader += (
+                        f"keys={component['wheel_sha256_keys']!r}\n"
+                        "expected=payload\n"
+                        "for key in keys:\n"
+                        " assert isinstance(expected,dict) and key in expected\n"
+                        " expected=expected[key]\n"
+                        "assert isinstance(expected,str) and re.fullmatch(r'[a-f0-9]{64}',expected)\n"
+                    )
+                else:
+                    digest_loader += (
+                        f"key_paths={component['wheel_sha256_key_paths']!r}\n"
+                        "resolved=[]\n"
+                        "for keys in key_paths:\n"
+                        " value=payload\n"
+                        " for key in keys:\n"
+                        "  if not isinstance(value,dict) or key not in value:\n"
+                        "   value=None;break\n"
+                        "  value=value[key]\n"
+                        " if isinstance(value,str) and re.fullmatch(r'[a-f0-9]{64}',value):\n"
+                        "  resolved.append(value)\n"
+                        "assert len(resolved)==1\n"
+                        "expected=resolved[0]\n"
+                    )
             script = (
                 "import hashlib,json,pathlib,re,subprocess,sys,venv\n"
                 f"source=pathlib.Path({component['artifact_dir']!r})\n"
@@ -211,6 +229,8 @@ def _component_steps(
                 "run": "set -euo pipefail\n\"$BCF_PYTHON\" -I -c "
                 + shlex.quote(script),
             }
+            if component["condition"] is not None:
+                step["if"] = _condition(compiled, component["condition"])
             steps.append(step)
             continue
         if component["kind"] == "action":

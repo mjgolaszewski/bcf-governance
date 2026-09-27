@@ -13,6 +13,7 @@ def validate_rotation_output_directories(
     """Require routine transition receipts to have graph-owned output roots."""
 
     prepared: set[str] = set()
+    operations: list[tuple[str, str]] = []
     for component_id in executor["components"]:
         component = graph["step_components"][component_id]
         if component["kind"] == "directory_setup":
@@ -23,7 +24,10 @@ def validate_rotation_output_directories(
         argv = graph["commands"][component["command"]]["argv"]
         if len(argv) < 4 or argv[1:3] != ["ci-github", "controller-rotation"]:
             continue
-        if argv[3] not in {"authorize", "advance"} or "--output" not in argv:
+        operations.append((component_id, str(argv[3])))
+        if argv[3] not in {
+            "authorize", "advance", "materialize-authorization"
+        } or "--output" not in argv:
             continue
         output_index = argv.index("--output") + 1
         if output_index >= len(argv):
@@ -37,3 +41,29 @@ def validate_rotation_output_directories(
                 f"CI graph job {job['id']} routine transition output parent "
                 "must be allocated before execution"
             )
+    if not any(operation == "authorize" for _, operation in operations):
+        return
+    materializers = [
+        component_id for component_id, operation in operations
+        if operation == "materialize-authorization"
+    ]
+    if len(materializers) != 1:
+        raise CIGraphError(
+            f"CI graph job {job['id']} must mechanically materialize every "
+            "rotation-required authorization"
+        )
+    materializer = graph["step_components"][materializers[0]]
+    condition_id = materializer.get("condition")
+    condition = graph["conditions"].get(condition_id)
+    if condition != "steps.authorize-transition.outputs.decision != 'no_transition'":
+        raise CIGraphError(
+            f"CI graph job {job['id']} may skip only an exact no-transition decision"
+        )
+    expected_applicable = (
+        f"${{{{ steps.{materializer.get('id')}.outputs.applicable }}}}"
+    )
+    if job.get("outputs", {}).get("applicable") != expected_applicable:
+        raise CIGraphError(
+            f"CI graph job {job['id']} applicability must derive from the "
+            "materialized rotation authorization"
+        )

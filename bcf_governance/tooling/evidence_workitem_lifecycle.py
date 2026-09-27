@@ -17,6 +17,17 @@ class WorkitemContractError(ValueError):
     """Raised when ordinary workitem dependency declarations are ambiguous."""
 
 
+def _authored_yaml(path: Path) -> object:
+    """Load authored lifecycle YAML through one typed fail-closed boundary."""
+
+    try:
+        return yaml.safe_load(path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as exc:
+        raise WorkitemContractError(
+            f"authored lifecycle contract is unreadable: {path.as_posix()}"
+        ) from exc
+
+
 def workitem_predecessors(entry: dict[str, Any]) -> list[str]:
     """Decode exact predecessor predicates from the existing acceptance contract."""
     values = entry.get("acceptance", [])
@@ -69,14 +80,12 @@ def validate_bounded_target_successor(
 ) -> None:
     """Reject a bounded target that would strand later authored workitems."""
 
-    ledger = yaml.safe_load(
-        (repo_root / "plans/phase-ledger.yml").read_text(encoding="utf-8")
-    )
+    ledger = _authored_yaml(repo_root / "plans/phase-ledger.yml")
     active = ledger.get("active_phase") if isinstance(ledger, dict) else None
     workitems_path = active.get("workitems") if isinstance(active, dict) else None
     if not isinstance(workitems_path, str):
         raise WorkitemContractError("active workitem ledger is missing")
-    payload = yaml.safe_load((repo_root / workitems_path).read_text(encoding="utf-8"))
+    payload = _authored_yaml(repo_root / workitems_path)
     entries = payload.get("workitems") if isinstance(payload, dict) else None
     if not isinstance(entries, list) or not all(isinstance(item, dict) for item in entries):
         raise WorkitemContractError("active workitem entries are invalid")
@@ -108,14 +117,12 @@ def validate_bounded_target_authored_ready(
 ) -> None:
     """Reject a prospectively impossible bounded target before evidence allocation."""
 
-    ledger = yaml.safe_load(
-        (repo_root / "plans/phase-ledger.yml").read_text(encoding="utf-8")
-    )
+    ledger = _authored_yaml(repo_root / "plans/phase-ledger.yml")
     active = ledger.get("active_phase") if isinstance(ledger, dict) else None
     workitems_path = active.get("workitems") if isinstance(active, dict) else None
     if not isinstance(workitems_path, str):
         raise WorkitemContractError("active workitem ledger is missing")
-    payload = yaml.safe_load((repo_root / workitems_path).read_text(encoding="utf-8"))
+    payload = _authored_yaml(repo_root / workitems_path)
     entries = payload.get("workitems") if isinstance(payload, dict) else None
     if not isinstance(entries, list) or not all(isinstance(item, dict) for item in entries):
         raise WorkitemContractError("active workitem entries are invalid")
@@ -132,22 +139,20 @@ def validate_bounded_target_authored_ready(
 def validate_phase_closure_authored_ready(repo_root: Path) -> None:
     """Reject structurally impossible phase closure before evidence allocation."""
 
-    ledger = yaml.safe_load(
-        (repo_root / "plans/phase-ledger.yml").read_text(encoding="utf-8")
-    )
+    ledger = _authored_yaml(repo_root / "plans/phase-ledger.yml")
     active = ledger.get("active_phase") if isinstance(ledger, dict) else None
     phase_id = active.get("id") if isinstance(active, dict) else None
     log_path = active.get("log") if isinstance(active, dict) else None
     if not isinstance(phase_id, str) or not isinstance(log_path, str):
         raise WorkitemContractError("active phase closure identity is missing")
-    phase = yaml.safe_load((repo_root / log_path).read_text(encoding="utf-8"))
+    phase = _authored_yaml(repo_root / log_path)
     document = phase.get("document") if isinstance(phase, dict) else None
     if not isinstance(document, dict) or document.get("status") != "completed":
         raise WorkitemContractError(
             f"phase closure target {phase_id} is not authored completed"
         )
     for path in sorted((repo_root / "phases").glob("phase-[0-9]*-hotfix*.yml")):
-        payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+        payload = _authored_yaml(path)
         hotfix = payload.get("hotfix") if isinstance(payload, dict) else None
         if not isinstance(hotfix, dict) or hotfix.get("related_phase_id") != phase_id:
             continue

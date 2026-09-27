@@ -497,6 +497,15 @@ def test_phase_closure_readiness_reads_exact_authored_hotfix_state(
     ):
         validate_phase_closure_authored_ready(tmp_path)
     hotfix.write_text(
+        "document: {status: completed}\nhotfix:\n  id: P28-HF04\n  broken:\nnot-indented\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(
+        prospective.WorkitemContractError,
+        match="authored lifecycle contract is unreadable",
+    ):
+        validate_phase_closure_authored_ready(tmp_path)
+    hotfix.write_text(
         "document: {status: completed}\nhotfix: {id: P28-HF04, related_phase_id: P28}\n",
         encoding="utf-8",
     )

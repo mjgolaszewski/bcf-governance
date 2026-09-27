@@ -14,7 +14,11 @@ from bcf_governance.tooling.ci_github_identity import (
     GitHubControllerError,
     MainIdentity,
 )
-from bcf_governance.tooling import ci_controller_provider, routine_controller_provider as provider
+from bcf_governance.tooling import (
+    ci_controller_provider,
+    routine_controller_materialization as materialization,
+    routine_controller_provider as provider,
+)
 from bcf_governance.tooling.routine_controller_rotation import (
     AUTHORIZE_JOB,
     RoutineCallbackTopologyError,
@@ -150,6 +154,7 @@ def _authorized() -> dict:
     return {
         "schema_version": "1.0",
         "transition_id": identity,
+        "transition_class": "runtime_only",
         "state": "authorized",
         "repository": {
             "id": "1207503211",
@@ -181,6 +186,34 @@ def _authorized() -> dict:
         "bootstrap": [],
         "probe": [],
         "promotion": [],
+    }
+
+
+def _alternate() -> dict:
+    return {
+        "schema_version": "1.0",
+        "decision": "alternate_lane_required",
+        "transition_class": "protected_policy_change",
+        "applicable": False,
+        "reason": "authorization_policy_changed",
+        "subject": {"commit_sha": NEW, "tree_sha": TREE},
+        "admission": {"run_id": "10", "run_attempt": "1"},
+        "authority": {
+            "installed_controller_commit": OLD,
+            "implementation_pr": "260",
+            "candidate_commit_sha": "9" * 40,
+            "source_main_commit_sha": "7" * 40,
+            "policy_before_sha256": "5" * 64,
+            "policy_after_sha256": "6" * 64,
+        },
+        "target": _pin(),
+        "alternate_lane": {
+            "id": "ordinary_protected_n_n_plus_1",
+            "required_sequence": list(provider.ALTERNATE_POLICY_LANE_SEQUENCE),
+            "required_initial_state": "ordinary-pending-rotation",
+            "required_terminal_state": "ordinary-current",
+        },
+        "release_authority": False,
     }
 
 
@@ -327,7 +360,7 @@ def test_authorization_closes_current_controller_as_no_transition(
     }
 
 
-def test_authorization_routes_policy_change_out_of_routine_rotation(
+def test_authorization_materializes_policy_change_as_governed_rotation(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
@@ -380,30 +413,16 @@ def test_authorization_routes_policy_change_out_of_routine_rotation(
         object(), repository="mjgolaszewski/bcf-governance",
         admission_run_id="10", admission_run_attempt="1", artifact_dir=tmp_path,
     )
+    expected = _authorized()
+    expected["transition_class"] = "protected_policy_change"
+    expected["authority"]["policy_after_sha256"] = "6" * 64
     assert result == {
         "schema_version": "1.0",
-        "decision": "alternate_lane_required",
+        "decision": "routine_transition_authorized",
         "transition_class": "protected_policy_change",
-        "applicable": False,
-        "reason": "authorization_policy_changed",
-        "subject": {"commit_sha": NEW, "tree_sha": TREE},
-        "admission": {"run_id": "10", "run_attempt": "1"},
-        "authority": {
-            "installed_controller_commit": OLD,
-            "implementation_pr": "260",
-            "candidate_commit_sha": "9" * 40,
-            "source_main_commit_sha": "7" * 40,
-            "policy_before_sha256": "5" * 64,
-            "policy_after_sha256": "6" * 64,
-        },
-        "target": _pin(),
-        "alternate_lane": {
-            "id": "ordinary_protected_n_n_plus_1",
-            "required_sequence": list(provider.ALTERNATE_POLICY_LANE_SEQUENCE),
-            "required_initial_state": "ordinary-pending-rotation",
-            "required_terminal_state": "ordinary-current",
-        },
-        "release_authority": False,
+        "applicable": True,
+        "reason": "pending_protected_policy_rotation",
+        "transition": expected,
     }
 
 
@@ -435,31 +454,7 @@ def test_unrelated_noncertifying_topology_cannot_become_no_transition(
 
 
 def test_alternate_lane_decision_rejects_ambiguous_or_broadened_routes() -> None:
-    route = {
-        "schema_version": "1.0",
-        "decision": "alternate_lane_required",
-        "transition_class": "protected_policy_change",
-        "applicable": False,
-        "reason": "authorization_policy_changed",
-        "subject": {"commit_sha": NEW, "tree_sha": TREE},
-        "admission": {"run_id": "10", "run_attempt": "1"},
-        "authority": {
-            "installed_controller_commit": OLD,
-            "implementation_pr": "260",
-            "candidate_commit_sha": "9" * 40,
-            "source_main_commit_sha": "7" * 40,
-            "policy_before_sha256": "5" * 64,
-            "policy_after_sha256": "6" * 64,
-        },
-        "target": _pin(),
-        "alternate_lane": {
-            "id": "ordinary_protected_n_n_plus_1",
-            "required_sequence": list(provider.ALTERNATE_POLICY_LANE_SEQUENCE),
-            "required_initial_state": "ordinary-pending-rotation",
-            "required_terminal_state": "ordinary-current",
-        },
-        "release_authority": False,
-    }
+    route = _alternate()
     assert provider.validate_routine_decision(route) == route
     for mutation in (
         lambda value: value.update(release_authority=True),
@@ -471,6 +466,81 @@ def test_alternate_lane_decision_rejects_ambiguous_or_broadened_routes() -> None
         mutation(candidate)
         with pytest.raises(GitHubControllerError):
             provider.validate_routine_decision(candidate)
+
+
+def test_installed_n_alternate_decision_materializes_exact_rotation(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    source = MainIdentity("1207503211", "main", "7" * 40, "8" * 40)
+    monkeypatch.setattr(materialization, "resolve_main", lambda *_args, **_kwargs: MAIN)
+    monkeypatch.setattr(materialization, "load_authority", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(materialization, "authenticate_role_run", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        materialization, "resolve_effective_controller",
+        lambda *_args, **_kwargs: {"pin": _pin(OLD)},
+    )
+    monkeypatch.setattr(
+        materialization, "compile_self_controller_pin", lambda *_args, **_kwargs: _pin()
+    )
+    monkeypatch.setattr(
+        materialization, "authenticate_merged_pull",
+        lambda *_args, **_kwargs: (
+            {"number": 260, "merged_at": "2026-09-23T00:00:00Z"},
+            SimpleNamespace(checkout_sha="9" * 40), source, "feature",
+        ),
+    )
+    monkeypatch.setattr(
+        materialization, "authenticate_pr_certification",
+        lambda *_args, **_kwargs: ({}, "1", 1),
+    )
+    values = iter(("5" * 64, "6" * 64))
+    monkeypatch.setattr(materialization, "policy_digest", lambda *_args, **_kwargs: next(values))
+    monkeypatch.setattr(
+        materialization, "runner_policy",
+        lambda *_args, **_kwargs: (
+            _pin(OLD), {"installed_commit_sha": OLD},
+            ("bcf-trusted-control-1", "bcf-trusted-control-2"),
+        ),
+    )
+    result = materialization.materialize_transition_authorization(
+        object(), repository="mjgolaszewski/bcf-governance",
+        decision=_alternate(), artifact_dir=tmp_path,
+    )
+
+    assert result["decision"] == "routine_transition_authorized"
+    assert result["transition_class"] == "protected_policy_change"
+    assert result["transition"]["transition_class"] == "protected_policy_change"
+    assert result["transition"]["subject"] == _alternate()["subject"]
+
+
+def test_materialization_rejects_no_transition(tmp_path: Path) -> None:
+    no_transition = {
+        "schema_version": "1.0", "decision": "no_transition",
+        "transition_class": "none", "applicable": False,
+        "reason": "controller_current",
+        "subject": {"commit_sha": NEW, "tree_sha": TREE},
+        "admission": {"run_id": "10", "run_attempt": "1"},
+        "release_authority": False,
+    }
+    with pytest.raises(GitHubControllerError, match="requires a rotation decision"):
+        materialization.materialize_transition_authorization(
+            object(), repository="mjgolaszewski/bcf-governance",
+            decision=no_transition, artifact_dir=tmp_path,
+        )
+
+
+def test_current_authorized_decision_materializes_without_reinterpretation(
+    tmp_path: Path,
+) -> None:
+    decision = {
+        "schema_version": "1.0", "decision": "routine_transition_authorized",
+        "transition_class": "runtime_only", "applicable": True,
+        "reason": "pending_controller_rotation", "transition": _authorized(),
+    }
+    assert materialization.materialize_transition_authorization(
+        object(), repository="mjgolaszewski/bcf-governance",
+        decision=decision, artifact_dir=tmp_path,
+    ) == decision
 
 
 def test_authorization_rejects_self_selection(

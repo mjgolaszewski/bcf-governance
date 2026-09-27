@@ -28,7 +28,8 @@ conditions:
   owner-main-observer: always() && github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main' && needs.admit.result == 'success'
   routine-rotation-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.name == 'bcf/exact-main-admission' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
   routine-stage-ready: success() && needs.authorize.outputs.applicable == 'true'
-  routine-transition-artifact-applicable: steps.authorize-transition.outputs.applicable == 'true'
+  routine-transition-required: steps.authorize-transition.outputs.decision != 'no_transition'
+  routine-transition-artifact-applicable: steps.materialize-transition.outputs.applicable == 'true'
   routine-callback-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.name == 'bcf/automation-changelog-reconciler' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
 commands:
   canary-admit:
@@ -52,7 +53,11 @@ commands:
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
   authorize-routine-transition:
-    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, controller-rotation, authorize, --repository, '${{ github.repository }}', --admission-run-id, '${{ github.event.workflow_run.id }}', --admission-run-attempt, '${{ github.event.workflow_run.run_attempt }}', --artifact-dir, '${{ runner.temp }}/bcf-trusted-control', --output, '${{ runner.temp }}/bcf-controller-transition/authorized/controller-transition.json']
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, controller-rotation, authorize, --repository, '${{ github.repository }}', --admission-run-id, '${{ github.event.workflow_run.id }}', --admission-run-attempt, '${{ github.event.workflow_run.run_attempt }}', --artifact-dir, '${{ runner.temp }}/bcf-trusted-control', --output, '${{ runner.temp }}/bcf-controller-transition/decision/controller-decision.json']
+    cwd: .
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+  materialize-routine-transition:
+    argv: ['{ephemeral_controller}', ci-github, controller-rotation, materialize-authorization, --repository, '${{ github.repository }}', --decision, '${{ runner.temp }}/bcf-controller-transition/decision/controller-decision.json', --artifact-dir, '${{ runner.temp }}/bcf-trusted-control', --output, '${{ runner.temp }}/bcf-controller-transition/authorized/controller-transition.json']
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
   install-routine-controller:
@@ -77,6 +82,12 @@ commands:
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
 step_components:
+  setup-routine-decision-directory:
+    kind: directory_setup
+    name: Allocate the private installed-controller decision directory
+    paths: ['${{ runner.temp }}/bcf-controller-transition/decision']
+    produces: []
+    consumes: []
   setup-routine-authorized-directory:
     kind: directory_setup
     name: Allocate the private authorized-transition directory
@@ -150,6 +161,25 @@ step_components:
     name: Authorize the exact protected-merge controller transition
     id: authorize-transition
     command: authorize-routine-transition
+    environment: {}
+    produces: []
+    consumes: [trusted-controller-bundle]
+  stage-routine-authorization-controller:
+    kind: controller_install
+    name: Stage the exact target controller for authorization normalization
+    condition: routine-transition-required
+    artifact_dir: '${{ runner.temp }}/bcf-trusted-control'
+    install_root: '${{ runner.temp }}/bcf-controller'
+    wheel_sha256_file: '${{ runner.temp }}/bcf-controller-transition/decision/controller-decision.json'
+    wheel_sha256_key_paths: [[transition, artifact, wheel_sha256], [target, BCF_BOOTSTRAP_WHEEL_SHA256]]
+    produces: []
+    consumes: [trusted-controller-bundle]
+  materialize-routine-transition:
+    kind: command
+    name: Materialize the exact governed routine transition
+    id: materialize-transition
+    condition: routine-transition-required
+    command: materialize-routine-transition
     environment: {}
     produces: [controller-transition-authorized]
     consumes: [trusted-controller-bundle]
@@ -330,18 +360,18 @@ workflows:
     checkout: false
     components: []
     outputs:
-      applicable: '${{ steps.authorize-transition.outputs.applicable }}'
-      reason: '${{ steps.authorize-transition.outputs.reason }}'
-      transition_id: '${{ steps.authorize-transition.outputs.transition_id }}'
-      target_id: '${{ steps.authorize-transition.outputs.target_id }}'
-      target_name: '${{ steps.authorize-transition.outputs.target_name }}'
-      target_provider_digest: '${{ steps.authorize-transition.outputs.target_provider_digest }}'
-      target_run_id: '${{ steps.authorize-transition.outputs.target_run_id }}'
-      target_run_attempt: '${{ steps.authorize-transition.outputs.target_run_attempt }}'
-      target_commit_sha: '${{ steps.authorize-transition.outputs.target_commit_sha }}'
-      target_tree_sha: '${{ steps.authorize-transition.outputs.target_tree_sha }}'
-      target_wheel_sha256: '${{ steps.authorize-transition.outputs.target_wheel_sha256 }}'
-    executor: {kind: component_sequence, components: [setup-python, download-routine-controller, setup-routine-authorized-directory, resolve-effective-controller, authorize-routine-transition, upload-routine-authorized]}
+      applicable: '${{ steps.materialize-transition.outputs.applicable }}'
+      reason: '${{ steps.materialize-transition.outputs.reason }}'
+      transition_id: '${{ steps.materialize-transition.outputs.transition_id }}'
+      target_id: '${{ steps.materialize-transition.outputs.target_id }}'
+      target_name: '${{ steps.materialize-transition.outputs.target_name }}'
+      target_provider_digest: '${{ steps.materialize-transition.outputs.target_provider_digest }}'
+      target_run_id: '${{ steps.materialize-transition.outputs.target_run_id }}'
+      target_run_attempt: '${{ steps.materialize-transition.outputs.target_run_attempt }}'
+      target_commit_sha: '${{ steps.materialize-transition.outputs.target_commit_sha }}'
+      target_tree_sha: '${{ steps.materialize-transition.outputs.target_tree_sha }}'
+      target_wheel_sha256: '${{ steps.materialize-transition.outputs.target_wheel_sha256 }}'
+    executor: {kind: component_sequence, components: [setup-python, download-routine-controller, setup-routine-decision-directory, setup-routine-authorized-directory, resolve-effective-controller, authorize-routine-transition, stage-routine-authorization-controller, materialize-routine-transition, upload-routine-authorized]}
     produces: [controller-transition-authorized]
     consumes: [trusted-controller-bundle]
     required: true
