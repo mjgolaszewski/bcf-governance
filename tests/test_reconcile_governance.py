@@ -74,7 +74,7 @@ def test_reconcile_rejects_disabled_capabilities_with_partial_semantic_runtime(
         reconcile_steps(tmp_path, Path(sys.executable))
 
 
-def test_reconcile_preserves_selected_python_symlink(
+def test_reconcile_separates_tool_runtime_from_selected_project_python(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:
     (tmp_path / "governance-profile.yml").write_text(
@@ -90,16 +90,20 @@ def test_reconcile_preserves_selected_python_symlink(
     )
     monkeypatch.setattr(
         "bcf_governance.tooling.scaffold_governance_artifacts.declared_test_gates",
-        lambda _root: (),
+        lambda _root: ("test",),
     )
 
-    graph_lock = next(
-        step for step in reconcile_steps(tmp_path, selected) if step.step_id == "ci-graph-lock"
-    )
+    steps = reconcile_steps(tmp_path, selected)
+    graph_lock = next(step for step in steps if step.step_id == "ci-graph-lock")
     graph_lock.check()
+    manifest = next(step for step in steps if step.step_id == "test-manifests")
+    manifest.check()
 
-    assert observed[0][0] == str(selected.absolute())
-    assert observed[0][0] != str(selected.resolve())
+    assert observed[0][0] == str(Path(sys.executable).absolute())
+    assert observed[0][0] != str(selected.absolute())
+    assert observed[1][0] == str(Path(sys.executable).absolute())
+    assert "--all" in observed[1]
+    assert observed[1][observed[1].index("--python") + 1] == str(selected.absolute())
 
 
 def test_reconcile_runs_declared_order_to_a_fixed_point(tmp_path: Path) -> None:
@@ -126,6 +130,32 @@ def test_reconcile_runs_declared_order_to_a_fixed_point(tmp_path: Path) -> None:
     assert rounds == 2
     assert calls == ["first", "second", "first", "second"]
     assert checks == ["first", "second"]
+
+
+def test_reconcile_does_not_repeat_checks_already_proven_by_apply(
+    tmp_path: Path,
+) -> None:
+    checks: list[str] = []
+    applications: list[str] = []
+    steps = (
+        ReconcileStep(
+            "self-verifying",
+            lambda: checks.append("self-verifying"),
+            lambda: applications.append("self-verifying"),
+            apply_verifies=True,
+        ),
+        ReconcileStep(
+            "independent-check",
+            lambda: checks.append("independent-check"),
+            lambda: applications.append("independent-check"),
+        ),
+    )
+
+    rounds = converge(steps, lambda: "stable")
+
+    assert rounds == 1
+    assert applications == ["self-verifying", "independent-check"]
+    assert checks == ["independent-check"]
 
 
 def test_reconcile_rejects_non_convergence(tmp_path: Path) -> None:

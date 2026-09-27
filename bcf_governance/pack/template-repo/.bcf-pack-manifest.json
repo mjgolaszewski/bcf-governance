@@ -1104,7 +1104,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "ddb9dcb9e2b13b1ac6ad5c97e9bbffccfde2e30e10d73e0301554e32f9667ade"
+      "sha256": "bdf939db7fb8d74cd32447f2c2347d3e93bb2a3afab74bc7695f5d57b93bcac3"
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",
@@ -1200,7 +1200,7 @@
     },
     "scripts/_bcf_runtime/test_manifests.py": {
       "operation": "copy",
-      "sha256": "60dca2065ae18e87aea53454e3894a11a1e0192696a7bc1391e99de795d7f252"
+      "sha256": "65d27c7adea8181eb76723ba1ccba919e1af0e700964f2c2e5bf091d2dacfcbc"
     },
     "scripts/_bcf_runtime/trusted_controller_compatibility.py": {
       "operation": "copy",

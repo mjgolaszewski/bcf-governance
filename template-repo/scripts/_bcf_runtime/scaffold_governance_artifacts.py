@@ -295,6 +295,7 @@ class ReconcileStep:
     step_id: str
     check: Action
     apply: Action
+    apply_verifies: bool = False
 
 
 def _run_reconcile_command(command: list[str], *, repo_root: Path, step_id: str) -> None:
@@ -331,8 +332,9 @@ def _editorial_base(audit: Path) -> str:
 def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
     """Return the closed canonical projection order for this repository."""
 
-    python = python.absolute()
-    cli = [str(python), "-m", "bcf_governance.cli"]
+    project_python = python.absolute()
+    tool_python = Path(sys.executable).absolute()
+    cli = [str(tool_python), "-m", "bcf_governance.cli"]
     steps: list[ReconcileStep] = [
         ReconcileStep(
             "structural-limits",
@@ -352,8 +354,8 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
         steps.append(
             ReconcileStep(
                 "pack-projection",
-                _reconcile_action(repo_root, "pack-projection", [str(python), str(pack), "--check"]),
-                _reconcile_action(repo_root, "pack-projection", [str(python), str(pack)]),
+                _reconcile_action(repo_root, "pack-projection", [str(tool_python), str(pack), "--check"]),
+                _reconcile_action(repo_root, "pack-projection", [str(tool_python), str(pack)]),
             )
         )
     semantic_states = capability_states(repo_root)
@@ -367,6 +369,7 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 "semantic-lock",
                 _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--check"]),
                 _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--apply"]),
+                apply_verifies=True,
             )
         )
     elif present := [path.as_posix() for path in semantic_runtime_paths if (repo_root / path).exists()]:
@@ -374,14 +377,15 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
             "semantic authority artifacts are present without an enabled semantic capability: "
             + ", ".join(present)
         )
-    for gate_id in declared_test_gates(repo_root):
+    if declared_test_gates(repo_root):
         common = [*cli, "test-manifest"]
-        suffix = ["--gate", gate_id, "--repo-root", str(repo_root), "--python", str(python)]
+        suffix = ["--all", "--repo-root", str(repo_root), "--python", str(project_python)]
         steps.append(
             ReconcileStep(
-                f"test-manifest:{gate_id}",
-                _reconcile_action(repo_root, f"test-manifest:{gate_id}", [*common, "check", *suffix]),
-                _reconcile_action(repo_root, f"test-manifest:{gate_id}", [*common, "update", *suffix]),
+                "test-manifests",
+                _reconcile_action(repo_root, "test-manifests", [*common, "check", *suffix]),
+                _reconcile_action(repo_root, "test-manifests", [*common, "update", *suffix]),
+                apply_verifies=True,
             )
         )
     for operation in ("lock", "render"):
@@ -400,8 +404,8 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
         steps.append(
             ReconcileStep(
                 "editorial-audit",
-                _reconcile_action(repo_root, "editorial-audit", [str(python), str(checker)]),
-                _reconcile_action(repo_root, "editorial-audit", [str(python), str(builder), "--repo-root", str(repo_root), "--audit", str(audit), "--base-sha", base, "--apply"]),
+                _reconcile_action(repo_root, "editorial-audit", [str(tool_python), str(checker)]),
+                _reconcile_action(repo_root, "editorial-audit", [str(tool_python), str(builder), "--repo-root", str(repo_root), "--audit", str(audit), "--base-sha", base, "--apply"]),
             )
         )
     return tuple(steps)
@@ -445,7 +449,8 @@ def converge(
             step.apply()
         if snapshot() == before:
             for step in ordered:
-                step.check()
+                if not step.apply_verifies:
+                    step.check()
             return round_number
     raise ReconcileError(f"governance projections did not converge after {max_rounds} rounds")
 

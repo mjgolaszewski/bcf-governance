@@ -1,0 +1,44 @@
+document:
+  kind: hotfix_execution_log
+  name: P28-HF06 Hotfix Log
+  id: bcf-governance-phase-28-hotfix06
+  version: 1.0.0
+  generated_at_utc: '2026-09-27T00:00:00Z'
+  status: planned
+  path: phases/phase-28-hotfix06.yml
+hotfix:
+  id: P28-HF06
+  mode: full
+  related_phase_id: P28
+  hotfix_number: 6
+  summary: Bind fixed-point reconciliation to one exact tool runtime and callbacks
+    to the effective controller
+execution_evidence:
+  planned_commands:
+  - focused reconcile/runtime separation and callback topology tests
+  - canonical prospective train on final committed bytes
+  executed_commands:
+  - /docker/bcf-governance/.venv/bin/python -m pytest -q tests/test_reconcile_governance.py::test_reconcile_separates_tool_runtime_from_selected_project_python tests/test_ci_graph.py::test_reconcile_normalizes_direct_protected_main_scope_once tests/test_ci_graph.py::test_direct_event_command_inputs_require_mechanical_fallback tests/test_self_governance_contracts.py::test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner tests/test_routine_controller_provider.py::test_callback_closes_exact_no_transition_without_rerun tests/test_routine_controller_provider.py::test_callback_accepts_exact_provider_collapsed_no_transition
+  notes:
+  - AgentBus qualification installed the verifier-bound 2.1.2 candidate but canonical reconciliation delegated graph commands to its project interpreter containing BCF 2.1.1; the mixed-version pass migrated then rejected the same graph.
+  - The exact BCF process interpreter now owns pack, semantic, manifest, graph, and editorial commands. The separately declared project interpreter is passed only to test collection.
+  - The no-transition callback now resolves and invokes the authenticated effective controller before interpreting provider topology; source-policy controller bytes cannot silently define current callback semantics.
+  - Both corrections remove deterministic retry and red-callback wall clock without weakening exact topology, controller, subject, run, attempt, or release-authority checks.
+  - Test-manifest reconciliation now performs one union collection and exact selector partition instead of ten independent collections per round; the clean canonical fixed point fell from 138 seconds to 72 seconds while executing zero product tests.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml
