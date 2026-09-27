@@ -86,7 +86,8 @@ def _receipt(*, state: str = "active") -> dict:
         for index, runner in enumerate(("bcf-trusted-control-1", "bcf-trusted-control-2"), 1)
     ]
     value = {
-        "schema_version": "1.0", "transition_id": identity, "state": state,
+        "schema_version": "1.0", "transition_id": identity,
+        "transition_class": "runtime_only", "state": state,
         "repository": {"id": "1207503211", "full_name": "mjgolaszewski/bcf-governance"},
         "subject": {"commit_sha": NEW, "tree_sha": TREE},
         "authority": {"installed_controller_commit": OLD, "admission_run_id": "10", "admission_run_attempt": "1", "implementation_pr": "300", "policy_before_sha256": POLICY, "policy_after_sha256": POLICY},
@@ -139,11 +140,13 @@ def test_partial_or_mixed_runner_proof_fails_closed(stage: str) -> None:
         validate_transition(ROOT, receipt)
 
 
-def test_policy_change_is_not_a_routine_rotation() -> None:
+def test_policy_change_requires_exact_protected_transition_class() -> None:
     receipt = _receipt()
     receipt["authority"]["policy_after_sha256"] = "7" * 64
-    with pytest.raises(RoutineRotationError, match="cannot change authorization policy"):
+    with pytest.raises(RoutineRotationError, match="class does not match"):
         validate_transition(ROOT, receipt)
+    receipt["transition_class"] = "protected_policy_change"
+    assert validate_transition(ROOT, receipt) == receipt
 
 
 def test_artifact_substitution_and_ambiguous_activation_fail_closed() -> None:

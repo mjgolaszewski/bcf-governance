@@ -1225,6 +1225,7 @@ def test_fresh_adopter_projects_opt_in_one_pr_controller_rotation(
         receipt = {
             "schema_version": "1.0",
             "transition_id": identity,
+            "transition_class": "runtime_only",
             "state": "active",
             "repository": {"id": "1", "full_name": "fixture/adopter"},
             "subject": {"commit_sha": subject, "tree_sha": tree},

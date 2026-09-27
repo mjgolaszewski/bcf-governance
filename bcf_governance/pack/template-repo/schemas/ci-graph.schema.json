@@ -265,17 +265,20 @@
           "additionalProperties": false,
           "required": ["kind", "name", "artifact_dir", "install_root", "produces", "consumes"],
           "oneOf": [
-            {"required": ["wheel_sha256"], "not": {"anyOf": [{"required": ["wheel_sha256_file"]}, {"required": ["wheel_sha256_keys"]}]}},
-            {"required": ["wheel_sha256_file", "wheel_sha256_keys"], "not": {"required": ["wheel_sha256"]}}
+            {"required": ["wheel_sha256"], "not": {"anyOf": [{"required": ["wheel_sha256_file"]}, {"required": ["wheel_sha256_keys"]}, {"required": ["wheel_sha256_key_paths"]}]}},
+            {"required": ["wheel_sha256_file", "wheel_sha256_keys"], "not": {"anyOf": [{"required": ["wheel_sha256"]}, {"required": ["wheel_sha256_key_paths"]}]}},
+            {"required": ["wheel_sha256_file", "wheel_sha256_key_paths"], "not": {"anyOf": [{"required": ["wheel_sha256"]}, {"required": ["wheel_sha256_keys"]}]}}
           ],
           "properties": {
             "kind": {"const": "controller_install"},
             "name": {"type": "string", "minLength": 1},
+            "condition": {"oneOf": [{"$ref": "#/$defs/identifier"}, {"type": "null"}]},
             "artifact_dir": {"type": "string", "minLength": 1},
             "install_root": {"type": "string", "minLength": 1},
             "wheel_sha256": {"$ref": "#/$defs/sha256"},
             "wheel_sha256_file": {"type": "string", "minLength": 1},
             "wheel_sha256_keys": {"type": "array", "minItems": 1, "items": {"pattern": "^[A-Za-z_][A-Za-z0-9_]*$"}},
+            "wheel_sha256_key_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "array", "minItems": 1, "items": {"pattern": "^[A-Za-z_][A-Za-z0-9_]*$"}}},
             "produces": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}},
             "consumes": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}}
           }

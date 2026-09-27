@@ -238,17 +238,18 @@ def _compose(graph: dict[str, Any], extensions: list[dict[str, Any]]) -> dict[st
 
 def _apply_canonical_defaults(graph: dict[str, Any]) -> None:
     """Apply optional contract defaults once, before any downstream consumer."""
-
     graph["policy"].setdefault("reserved_status_contexts", [])
     for resource in graph["resource_classes"].values():
         resource.setdefault("python_version", "3.12")
     for command in graph["commands"].values():
         command.setdefault("required_environment", [])
     for component in graph["step_components"].values():
-        if component["kind"] not in {"controller_install", "directory_setup"}:
-            component.setdefault("id", None)
+        kind = component["kind"]
+        if kind != "directory_setup":
             component.setdefault("condition", None)
-        if component["kind"] == "command":
+        if kind not in {"controller_install", "directory_setup"}:
+            component.setdefault("id", None)
+        if kind == "command":
             component.setdefault("restores_private_artifacts", [])
     for workflow in graph["workflows"]:
         workflow.setdefault("environment", {})
@@ -266,7 +267,7 @@ def _validate_step_components(graph: dict[str, Any]) -> None:
     commands = set(graph["commands"])
     conditions = set(graph["conditions"])
     for component_id, component in graph["step_components"].items():
-        if component["kind"] in {"controller_install", "directory_setup"}:
+        if component["kind"] == "directory_setup":
             continue
         condition = component["condition"]
         if condition is not None and condition not in conditions:

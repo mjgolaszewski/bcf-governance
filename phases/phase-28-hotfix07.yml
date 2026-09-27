@@ -1,0 +1,44 @@
+document:
+  kind: hotfix_execution_log
+  name: P28-HF07 Hotfix Log
+  id: project-phase-28-hotfix07
+  version: 1.0.0
+  generated_at_utc: '2026-09-27T00:00:00Z'
+  status: active
+  path: phases/phase-28-hotfix07.yml
+hotfix:
+  id: P28-HF07
+  mode: full
+  related_phase_id: P28
+  hotfix_number: 7
+  summary: Close installed-N protected-policy rotation parity
+execution_evidence:
+  planned_commands:
+  - canonical prospective closure train on final committed bytes
+  executed_commands: []
+  notes:
+  - Exact-main admission 36349455370/1 built target 98cf2c381a62400e0491de108b05cdc0bcfa211a,
+    but routine rotation 36349563985/1 mapped the installed-N typed
+    alternate_lane_required decision to an all-skipped DAG.
+  - The correction normalizes every exact rotation-required decision through the
+    provider-built target controller in the existing authorization job; only exact
+    no_transition may suppress the governed bootstrap/probe/promotion path.
+  - Canonical graph validation rejects the escaped topology before evidence fan-out,
+    and self plus adopter projections share the same deterministic contract.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

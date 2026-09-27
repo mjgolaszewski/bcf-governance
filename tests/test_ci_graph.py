@@ -243,6 +243,47 @@ def test_routine_rotation_allocates_each_receipt_parent_before_execution() -> No
             _validate_workflows(stale_graph)
 
 
+def test_rotation_required_decision_cannot_project_to_all_skipped_jobs() -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    stale_graph = copy.deepcopy(compiled.graph)
+    workflow = next(
+        item for item in stale_graph["workflows"]
+        if item["id"] == "automation-reconcile"
+    )
+    authorize = next(item for item in workflow["jobs"] if item["id"] == "authorize")
+    authorize["outputs"]["applicable"] = (
+        "${{ steps.authorize-transition.outputs.applicable }}"
+    )
+    with pytest.raises(
+        CIGraphError,
+        match="applicability must derive from the materialized rotation authorization",
+    ):
+        _validate_workflows(stale_graph)
+
+    stale_graph = copy.deepcopy(compiled.graph)
+    stale_graph["conditions"]["routine-transition-required"] = (
+        "steps.authorize-transition.outputs.applicable == 'true'"
+    )
+    with pytest.raises(CIGraphError, match="may skip only an exact no-transition"):
+        _validate_workflows(stale_graph)
+
+
+def test_rotation_bridge_preserves_installed_n_authorize_interface() -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    argv = compiled.commands["authorize-routine-transition"]["argv"]
+    assert "--target-output" not in argv
+    assert argv[argv.index("--output") + 1].endswith(
+        "/decision/controller-decision.json"
+    )
+    stage = compiled.graph["step_components"][
+        "stage-routine-authorization-controller"
+    ]
+    assert stage["wheel_sha256_key_paths"] == [
+        ["transition", "artifact", "wheel_sha256"],
+        ["target", "BCF_BOOTSTRAP_WHEEL_SHA256"],
+    ]
+
+
 def test_graph_values_resolve_registered_list_members_without_duplicate_authority(
     tmp_path: Path,
 ) -> None:
