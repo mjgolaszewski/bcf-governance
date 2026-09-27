@@ -15,15 +15,18 @@ from typing import Any, Callable, Iterator, Mapping
 from contextlib import contextmanager
 
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
-from .ci_graph_execution import exact_main_evaluation
-from .ci_authority_decisions import status_context_for_evaluation
+from .ci_graph_post_merge import post_merge_evaluation
+from .ci_authority_prospective_lanes import (
+    direct_policy_identity,
+    provider_boundaries,
+    terminal_boundaries,
+)
 from .ci_exact_main_truth import validate_exact_main_truth_payload
 from .ci_github_identity import GitHubControllerError
 from .evaluation_scope import (
     EvaluationIntent,
     EvaluationScopeError,
     evaluation_scope,
-    is_terminal_phase_certification,
 )
 from .evidence_execution import EvidenceError
 from .evidence_scheduling import receipt_duration_ms
@@ -447,7 +450,7 @@ def _run_prospective_train(
                 {"stage": "normalization", "status": "observed", "duration_ms": reconcile_duration},
             ]
         )
-        evaluation = exact_main_evaluation(validate_ci_graph(root).workflows)
+        evaluation = post_merge_evaluation(validate_ci_graph(root).graph)
         post_merge_mode, post_merge_target = evaluation.mode, evaluation.target
     except (
         CIGraphError,
@@ -467,15 +470,35 @@ def _run_prospective_train(
         expected_target,
     ):
         raise ProspectiveValidationError(
-            "prospective train intent/target does not match the canonical exact-main graph"
+            "prospective train intent/target does not match canonical post-merge authority"
         )
     changed_paths = _changed_paths(root, identity, runner=runner)
     transition_class = (
-        "protected_policy_change"
+        "direct_graph_change"
+        if evaluation.lane == "direct_protected_main"
+        and "governance/ci-graph.yml" in changed_paths
+        else "direct_runtime_only"
+        if evaluation.lane == "direct_protected_main"
+        else "protected_policy_change"
         if set(changed_paths).intersection(ROTATION_POLICY_PATHS)
         else "runtime_only"
     )
-    policy_identity = _controller_policy_identity(root, identity, runner=runner)
+    policy_identity = (
+        direct_policy_identity(
+            base_sha=identity.base_sha,
+            base_tree=_checked(
+                runner,
+                ["git", "rev-parse", "--verify", f"{identity.base_sha}^{{tree}}"],
+                cwd=root,
+            ),
+            candidate_sha=identity.commit_sha,
+            candidate_tree=identity.tree_sha,
+            base_graph=_git_blob(root, ref=identity.base_sha, path="governance/ci-graph.yml"),
+            candidate_graph=_git_blob(root, ref=identity.commit_sha, path="governance/ci-graph.yml"),
+        )
+        if evaluation.lane == "direct_protected_main"
+        else _controller_policy_identity(root, identity, runner=runner)
+    )
     if (
         transition_class == "protected_policy_change"
         and policy_identity["source"]["policy_sha256"]
@@ -512,7 +535,9 @@ def _run_prospective_train(
         boundaries.append({"id": "preflight", "state": "proved", "authority": "local"})
         controller = preflight.get("self_controller")
         controller_state = (
-            classify_trusted_controller_applicability(
+            "not_adopted"
+            if evaluation.lane == "direct_protected_main"
+            else classify_trusted_controller_applicability(
                 root, target_commit=str(controller_authority["controller_commit_sha"])
             ).state.value
             if controller_authority is not None
@@ -520,12 +545,14 @@ def _run_prospective_train(
             if isinstance(controller, dict)
             else "current"
         )
-        if controller_state not in {"current", "pending_rotation"}:
+        if controller_state not in {"current", "pending_rotation", "not_adopted"}:
             raise ProspectiveValidationError(
                 f"controller compatibility is not admissible: {controller_state}"
             )
         transition_requirement = (
-            "no_transition"
+            "direct_protected_main"
+            if controller_state == "not_adopted"
+            else "no_transition"
             if controller_state == "current"
             else str(controller.get("transition_requirement"))
             if isinstance(controller, dict)
@@ -544,7 +571,9 @@ def _run_prospective_train(
                 "transition_requirement": transition_requirement,
                 "policy_identity": policy_identity,
                 "effective_controller_source": (
-                    "provider_authenticated" if controller_authority is not None
+                    "direct_graph_policy"
+                    if controller_state == "not_adopted"
+                    else "provider_authenticated" if controller_authority is not None
                     else "source_policy"
                 ),
                 **(
@@ -561,10 +590,7 @@ def _run_prospective_train(
                 "status": "deterministic_front_door_pass",
                 "subject": identity.as_dict(),
                 "changed_paths": list(changed_paths),
-                "post_merge_evaluation": {
-                    "mode": post_merge_mode,
-                    "target": post_merge_target,
-                },
+                "post_merge_evaluation": evaluation.as_dict(),
                 "boundaries": boundaries,
                 "provider_authority_substituted": False,
             }
@@ -628,33 +654,21 @@ def _run_prospective_train(
             }
         )
         boundaries.extend(
-            [
-                {"id": "certification", "state": "provider_required"},
-                {"id": "merge", "state": "provider_required"},
-                {
-                    "id": "exact_main",
-                    "state": "fresh_provider_subject_required",
-                    "mode": post_merge_mode,
-                    "target": post_merge_target,
-                },
-                {
-                    "id": "controller_lifecycle",
-                    "state": (
-                        "rotation_required" if controller_state == "pending_rotation"
-                        else "ordinary_current_required"
-                    ),
-                    "transition_class": transition_class,
-                    "no_transition_callback_probe": prospective_no_transition_topology(
-                        root
-                    ),
-                    **(
-                        {"alternate_lane": alternate_policy_lane_contract()}
-                        if transition_requirement == "alternate_lane_required"
-                        else {}
-                    ),
-                },
-            ]
+            [{"id": "certification", "state": "provider_required"},
+             {"id": "merge", "state": "provider_required"},
+             *provider_boundaries(
+                 evaluation,
+                 controller_state=controller_state,
+                 transition_class=transition_class,
+                 policy_identity=policy_identity,
+                 controller_probe=(
+                     None if controller_state == "not_adopted"
+                     else prospective_no_transition_topology(root)
+                 ),
+             )]
         )
+        if transition_requirement == "alternate_lane_required":
+            boundaries[-1]["alternate_lane"] = alternate_policy_lane_contract()
         try:
             bounded_truth_started = time.monotonic_ns()
             bounded_truth = _require_truth(
@@ -680,37 +694,16 @@ def _run_prospective_train(
             json.dumps(proposition, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest()
         boundaries.extend(
-            [
-                {
-                    "id": "bounded_or_phase_truth",
-                    "state": "proved_semantics_provider_reexecution_required",
-                    "proposition": proposition,
-                },
-                {
-                    "id": "finalizer",
-                    "state": "provider_required",
-                    "proposition_sha256": proposition_sha256,
-                },
-                {
-                    "id": "publisher",
-                    "state": "provider_required",
-                    "scope": post_merge_mode,
-                    "status_context": status_context_for_evaluation(
-                        post_merge_mode
-                    ).value,
-                },
-                {
-                    "id": "successor_or_release_eligibility",
-                    "state": "proved_scope",
-                    "eligible_successors": proposition["eligible_successors"],
-                    "release_authority": is_terminal_phase_certification(
-                        {
-                            "evaluation_scope": bounded_truth["evaluation_scope"],
-                            "certified_proposition": proposition,
-                        }
-                    ),
-                },
-            ]
+            [{
+                "id": "bounded_or_phase_truth",
+                "state": "proved_semantics_provider_reexecution_required",
+                "proposition": proposition,
+            }, *terminal_boundaries(
+                evaluation,
+                proposition=proposition,
+                proposition_sha256=proposition_sha256,
+                bounded_truth=bounded_truth,
+            )]
         )
         measurements.extend(
             [
@@ -744,10 +737,7 @@ def _run_prospective_train(
         "status": "prospectively_admissible_provider_proof_required",
         "subject": identity.as_dict(),
         "changed_paths": list(changed_paths),
-        "post_merge_evaluation": {
-            "mode": post_merge_mode,
-            "target": post_merge_target,
-        },
+        "post_merge_evaluation": evaluation.as_dict(),
         "boundaries": boundaries,
         "provider_authority_substituted": False,
         "telemetry": telemetry,
@@ -776,7 +766,11 @@ def run_prospective_train(
     if semantic_intent == "workitem":
         _require_authored_target_ready(repo_root.resolve(), evaluation_target)
     controller_authority = None
-    if repository is not None:
+    try:
+        lane = post_merge_evaluation(validate_ci_graph(repo_root.resolve()).graph).lane
+    except CIGraphError as exc:
+        raise ProspectiveValidationError(str(exc)) from exc
+    if repository is not None and lane == "trusted_exact_main":
         if provider_api is None:
             raise ProspectiveValidationError(
                 "provider-authenticated prospective validation requires a provider API"

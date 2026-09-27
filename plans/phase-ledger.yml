@@ -21,7 +21,8 @@ hotfix_lane:
   modes:
     lite: {allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]}
     full: {required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]}
-  open_records: []
+  open_records:
+  - {id: P28-HF04, mode: full, status: active, triggered_by_commits: [879980446cf9ece708eb910390624e92cd44ecc4], failing_workflows: [AgentBus-hosted-36317493677, AgentBus-hosted-36317804286, Racecar-v2.1.1-upgrade], root_cause: prospective authority assumed BCF self topology and ordinary upgrade omitted pack entrypoints while overwriting runtime-lock preserved consumer bytes, remediated_in_phase: P28, hotfix_log: phases/phase-28-hotfix04.yml, canonical_artifacts: [bcf_governance/tooling/ci_graph_post_merge.py, bcf_governance/tooling/ci_authority_prospective_lanes.py, bcf_governance/tooling/governance_install/preservation.py, bcf_governance/tooling/install_governance_pack.py, bcf_governance/tooling/local_pr.py]}
   remediation_history:
   - id: P28-HF03
     mode: full
@@ -84,6 +85,7 @@ release_trains:
   release_14: {target_version: 1.3.0, status: completed, focus: [historical_release]}
   release_15: {target_version: 2.0.0, status: abandoned, focus: [dependency_scoped_truth, minimum_execution, evidence_composed_release, superseded_without_publication]}
   release_16: {target_version: 2.1.0, status: completed, focus: [invariant_closure, proof_transport, minimum_time_composition, canonical_projection, parity, empirical_certification]}
-  release_17: {target_version: 2.1.1, status: active, focus: [adopter_migration_reporting, interpreter_custody, reconciliation_applicability, surgical_negative_controls, negative_control_byte_applicability, single_checkout_projection, producer_dependency_dag, release_gate_include_resolution, semantic_registry_compaction, exact_base_checkout_depth]}
+  release_17: {target_version: 2.1.1, status: active, focus: [published_patch, adopter_migration_reporting, interpreter_custody, reconciliation_applicability, surgical_negative_controls, negative_control_byte_applicability, single_checkout_projection, producer_dependency_dag, release_gate_include_resolution, semantic_registry_compaction, exact_base_checkout_depth]}
+  release_18: {target_version: 2.1.2, status: active, focus: [direct_protected_main_prospective_parity, upgrade_entrypoint_completeness, consumer_assurance_preservation]}
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: [active phase has a plan workitem ledger and log, validation commands are listed before implementation starts]

@@ -30,6 +30,10 @@ _INPUT_REFERENCE = re.compile(r"inputs\.([A-Za-z_][A-Za-z0-9_-]*)")
 _LITERAL_INPUT_FALLBACK = re.compile(
     r"inputs\.([A-Za-z_][A-Za-z0-9_-]*)\s*\|\|\s*(['\"])(.*?)\2"
 )
+DIRECT_POST_MERGE_MODE = (
+    "${{ inputs.evaluation_mode || "
+    "(github.event_name == 'push' && 'closure' || 'pr') }}"
+)
 
 
 @dataclass(frozen=True)
@@ -417,7 +421,12 @@ def workflow_input_issues(
                         if isinstance(expected, bool)
                         else "" if expected is None else str(expected)
                     )
-                    if fallbacks.get(name) != expected_literal:
+                    actual_fallback = (
+                        "pr"
+                        if name == "evaluation_mode" and value == DIRECT_POST_MERGE_MODE
+                        else fallbacks.get(name)
+                    )
+                    if actual_fallback != expected_literal:
                         issues.append(
                             f"direct-event workflow {workflow['id']} {surface} input {name} "
                             "fallback must equal its declared workflow_call default"

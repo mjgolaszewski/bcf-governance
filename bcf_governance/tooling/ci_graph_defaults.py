@@ -6,6 +6,7 @@ import re
 from typing import Any
 
 from .evidence_shards import workflow_shard_matrix
+from .ci_graph_execution import DIRECT_POST_MERGE_MODE
 
 
 EXTENSION_POINTS = [
@@ -122,9 +123,10 @@ def _preflight_argv(expected_producers: list[str]) -> list[str]:
     ]
 
 
-def _v3_commands() -> dict[str, Any]:
+def _v3_commands(*, direct_push: bool = False) -> dict[str, Any]:
+    mode = DIRECT_POST_MERGE_MODE if direct_push else "${{ inputs.evaluation_mode || 'pr' }}"
     scope = [
-        "--evaluation-mode", "${{ inputs.evaluation_mode || 'pr' }}",
+        "--evaluation-mode", mode,
         "--evaluation-target", "${{ inputs.evaluation_target || '' }}",
     ]
     preflight = [
@@ -278,6 +280,9 @@ def _v3_components() -> dict[str, Any]:
 def _apply_v3_proof_composition(graph: dict[str, Any], gates: list[str]) -> None:
     """Project canonical proof transport and planner-derived execution into v3 adopters."""
 
+    governance = next(item for item in graph["workflows"] if item["id"] == "governance")
+    direct_push = any(item.get("type") == "push" for item in governance["events"])
+
     graph["conditions"].update(
         {
             "prior-evidence-enabled": "inputs.use_prior_evidence == true",
@@ -288,7 +293,7 @@ def _apply_v3_proof_composition(graph: dict[str, Any], gates: list[str]) -> None
             "always-step": "always()",
         }
     )
-    graph["commands"].update(_v3_commands())
+    graph["commands"].update(_v3_commands(direct_push=direct_push))
     graph["commands"]["install-governance-dependencies"] = {
         "argv": ["{python}", "-m", "pip", "install", "-r", "requirements-governance.txt"],
         "cwd": ".",
@@ -307,7 +312,6 @@ def _apply_v3_proof_composition(graph: dict[str, Any], gates: list[str]) -> None
         "scope": "run-attempt",
         "retention_days": 30,
     }
-    governance = next(item for item in graph["workflows"] if item["id"] == "governance")
     governance["events"] = [
         {"type": "pull_request"},
         {
@@ -319,6 +323,10 @@ def _apply_v3_proof_composition(graph: dict[str, Any], gates: list[str]) -> None
             },
         },
     ]
+    if direct_push:
+        governance["events"].append(
+            {"type": "push", "branches": [graph["default_branch"]]}
+        )
     matrix = workflow_shard_matrix()
     governance["jobs"] = [
         _job(

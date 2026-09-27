@@ -1,0 +1,43 @@
+document:
+  kind: hotfix_execution_log
+  name: P28-HF04 Hotfix Log
+  id: bcf-governance-phase-28-hotfix04
+  version: 1.0.0
+  generated_at_utc: '2026-09-27T00:00:00Z'
+  status: planned
+  path: phases/phase-28-hotfix04.yml
+hotfix:
+  id: P28-HF04
+  mode: full
+  related_phase_id: P28
+  hotfix_number: 4
+  summary: Repair released direct-adopter prospective and upgrade entrypoint parity
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests/test_ci_graph.py tests/test_prospective_validation.py
+    tests/test_install_governance_pack.py
+  executed_commands: []
+  notes:
+  - '#322: prospective validation required BCF self exact-main topology from a valid direct protected-main Standard-v3 adopter.'
+  - The direct lane is closed and typed by exact graph digest, default branch, push event, terminal truth owner, and closure intent; it grants no controller or release authority.
+  - AgentBus hosted run 36317493677 proved ordinary upgrade omitted two pack-owned wrapper entrypoints required by the rendered evidence DAG.
+  - Racecar proved ordinary upgrade overwrote an exact runtime-lock preserved_consumer_file and silently removed project assurance logic.
+  - Fixed-point reconciliation repairs the declared direct-main event intent mechanically; ordinary upgrade restores both wrappers from immutable pack bytes while preserving consumer-owned assurance files byte-for-byte.
+  - Trusted exact-main semantics, controller adoption, evidence strength, release authority, and BCF self overlays are unchanged.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

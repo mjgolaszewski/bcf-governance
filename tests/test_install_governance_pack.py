@@ -283,6 +283,7 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         "plans/build-plan.yml",
         "plans/phase-01-plan.yml",
         "requirements-governance.txt",
+        "backend/tests/architecture/test_boundaries_ast.py",
         ".github/workflows/governance.yml",
     )
     for relative_path in protected_paths:
@@ -295,8 +296,20 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         relative_path: (target / relative_path).read_bytes()
         for relative_path in protected_paths
     }
+    preserved = {
+        relative_path: hashlib.sha256((target / relative_path).read_bytes()).hexdigest()
+        for relative_path in (
+            "schemas/architecture-boundaries.schema.json",
+            "backend/tests/architecture/test_boundaries_ast.py",
+        )
+    }
+    (target / "governance/bcf-runtime-lock.json").write_text(
+        json.dumps({"preserved_consumer_files": preserved}), encoding="utf-8"
+    )
     (target / "scripts/validate_governance_yaml.py").write_text("old validator\n", encoding="utf-8")
     (target / "scripts/check_governance_exposure.py").unlink()
+    (target / "scripts/capture_governance_shard.py").unlink()
+    (target / "scripts/restore_evidence_modes.py").unlink()
 
     result = _run_installer(target, "--upgrade", "--profile", "lite", "--skip-validation")
 
@@ -305,6 +318,12 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         encoding="utf-8"
     )
     assert (target / "scripts/check_governance_exposure.py").exists()
+    assert (target / "scripts/capture_governance_shard.py").read_bytes() == (
+        REPO_ROOT / "bcf_governance/pack/template-repo/scripts/capture_governance_shard.py"
+    ).read_bytes()
+    assert (target / "scripts/restore_evidence_modes.py").read_bytes() == (
+        REPO_ROOT / "bcf_governance/pack/template-repo/scripts/restore_evidence_modes.py"
+    ).read_bytes()
     assert (target / "scripts/_bcf_runtime/governance_validation/runner.py").exists()
     assert (target / "schemas/phase-history.schema.json").exists()
     assert (target / "governance/gate-contracts.yml").exists()
@@ -312,6 +331,21 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         relative_path: (target / relative_path).read_bytes()
         for relative_path in protected_paths
     } == state_before
+
+
+def test_upgrade_rejects_drift_in_runtime_locked_consumer_file(tmp_path: Path) -> None:
+    target = tmp_path / "upgrade-locked-drift"
+    _run_installer(target, "--profile", "lite", "--require-strict-validation")
+    relative = "backend/tests/architecture/test_boundaries_ast.py"
+    path = target / relative
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    (target / "governance/bcf-runtime-lock.json").write_text(
+        json.dumps({"preserved_consumer_files": {relative: digest}}), encoding="utf-8"
+    )
+    path.write_text("unexplained drift\n", encoding="utf-8")
+    result = _run_installer(target, "--upgrade", "--skip-validation", check=False)
+    assert result.returncode == 1
+    assert "does not match its runtime lock" in result.stderr
 
 
 def test_upgrade_preserves_bounded_package_metadata_ownership(tmp_path: Path) -> None:

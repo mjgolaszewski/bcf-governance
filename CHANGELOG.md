@@ -6,6 +6,22 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [2.1.2] - 2026-09-27
+
+### Fixed
+
+- Derived prospective validation from either the explicit trusted exact-main lane
+  or the exact graph-owned direct protected-main lane, preserving optional
+  controller adoption and preventing BCF self-authority from leaking into adopters.
+- Made fixed-point reconciliation bind direct-push profile-v3 truth to terminal
+  closure while preserving pull-request and explicit reusable-workflow intent.
+- Restored the two pack-owned evidence shard and private-mode entrypoint wrappers
+  during ordinary upgrades so rendered profile-v3 workflows execute installed
+  canonical runtime modules without adopter-authored compatibility files.
+- Preserved consumer-owned architecture assurance tests during ordinary upgrades;
+  template skeletons remain fresh-install inputs and cannot overwrite exact bytes
+  declared consumer-preserved by the runtime lock.
+
 ## [2.1.1] - 2026-09-27
 
 ### Fixed
