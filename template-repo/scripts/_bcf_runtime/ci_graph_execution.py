@@ -18,6 +18,14 @@ _RUN_AND_DONE_FORBIDDEN = frozenset(
 _SELECTED_PYTHON_EXECUTABLES = frozenset(
     {"{python}", "{controller}", "{ephemeral_controller}"}
 )
+_EFFECTIVE_CONTROLLER = (
+    "${{ runner.tool_cache }}/bcf-governance/"
+    "${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf"
+)
+_EFFECTIVE_RELEASE_OPERATIONS = frozenset(
+    {"resolve", "authorize", "resolve-publication", "publish"}
+)
+_TRIGGER_RELEASE_OPERATIONS = frozenset({"runtime", "verify-evidence", "collect"})
 _INPUT_REFERENCE = re.compile(r"inputs\.([A-Za-z_][A-Za-z0-9_-]*)")
 _LITERAL_INPUT_FALLBACK = re.compile(
     r"inputs\.([A-Za-z_][A-Za-z0-9_-]*)\s*\|\|\s*(['\"])(.*?)\2"
@@ -103,6 +111,45 @@ def _requires_selected_python(command: dict[str, Any]) -> bool:
     return bool(_SELECTED_PYTHON_EXECUTABLES.intersection(command["argv"]))
 
 
+def _release_controller_issues(
+    graph: dict[str, Any], job: dict[str, Any], executor: dict[str, Any]
+) -> tuple[str, ...]:
+    """Bind each privileged release operation to its canonical controller custody."""
+
+    if executor["kind"] not in _EXPLICIT_EXECUTORS:
+        return ()
+    components = executor["components"]
+    installed = [
+        index
+        for index, component_id in enumerate(components)
+        if graph["step_components"][component_id]["kind"] == "controller_install"
+    ]
+    issues: list[str] = []
+    for index, component_id in enumerate(components):
+        component = graph["step_components"][component_id]
+        if component["kind"] != "command":
+            continue
+        argv = graph["commands"][component["command"]]["argv"]
+        if len(argv) < 4 or argv[1:3] != ["ci-github", "release"]:
+            continue
+        operation = argv[3]
+        if operation in _EFFECTIVE_RELEASE_OPERATIONS:
+            if argv[0] != _EFFECTIVE_CONTROLLER or (
+                "resolve-effective-controller" not in components[:index]
+            ) or job.get("controller_requirement") != "current":
+                issues.append(
+                    f"release {operation} must require the current controller and invoke its provider-effective identity"
+                )
+        elif operation in _TRIGGER_RELEASE_OPERATIONS and (
+            argv[0] != "{ephemeral_controller}"
+            or not any(install_index < index for install_index in installed)
+        ):
+            issues.append(
+                f"release {operation} must invoke its previously installed exact triggering controller"
+            )
+    return tuple(issues)
+
+
 def job_required_environment(
     graph: dict[str, Any],
     workflow: dict[str, Any],
@@ -166,6 +213,7 @@ def job_execution_issues(
     """Return deterministic interpreter and trusted-input contract violations."""
 
     issues: list[str] = []
+    issues.extend(_release_controller_issues(graph, job, executor))
     if (
         workflow is not None
         and workflow.get("role") == "exact-main"

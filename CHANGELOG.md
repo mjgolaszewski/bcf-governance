@@ -80,7 +80,9 @@ BCF 2.1 is the first published 2.x release. The certified but unpublished
   contradictory provider inventories without granting candidate assertions any
   authority. Release receipt collection binds the provider-materialized
   verification from its exact active attempt without circularly requiring that
-  attempt to have already completed.
+  attempt to have already completed, and every privileged release operation
+  invokes either the provider-effective controller or its exact authenticated
+  triggering artifact.
 - Preserved source receipts byte-for-byte while recomputing main-side closure and
   qualification, including partial group reuse, hotfix closure, wrong-subject and
   wrong-session rejection, and exact replay protection.
