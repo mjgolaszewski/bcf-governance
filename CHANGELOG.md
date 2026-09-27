@@ -11,7 +11,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Made protected-policy controller changes enter the same exact provider-backed
   rotation DAG as runtime-only changes, with an installed-N compatibility
   projection and graph validation that permits only exact `no_transition` to
-  suppress bootstrap, probe, and promotion.
+  suppress bootstrap, probe, and promotion; tooling-context ownership now runs
+  in the first structural reconciliation stage before longer proof gates.
 
 ## [2.1.2] - 2026-09-27
 

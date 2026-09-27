@@ -40,35 +40,7 @@ from .product_certification import (
     ProductCertificationError,
     validate_product_certification,
 )
-
-
-def validate_tooling_context_membership(repo_root: Path) -> None:
-    """Fail early when a self-governed tooling module has no unique context."""
-    policy_path = repo_root / "governance/self-governance-policy.yml"
-    if not policy_path.is_file():
-        return  # Adopter repositories do not own the self-governance policy.
-    contexts = _load_yaml(policy_path).get("tooling_contexts")
-    if not isinstance(contexts, dict) or not contexts:
-        raise GovernanceValidationError("self-governance tooling_contexts are missing")
-    tooling_root = repo_root / "bcf_governance/tooling"
-    for path in sorted(tooling_root.rglob("*.py")):
-        relative = path.relative_to(tooling_root).as_posix()
-        if relative == "__init__.py" or relative.endswith("/__init__.py"):
-            continue
-        matches = [
-            name
-            for name, prefixes in contexts.items()
-            if isinstance(prefixes, list)
-            and any(
-                isinstance(prefix, str)
-                and (relative == prefix or relative.startswith(prefix))
-                for prefix in prefixes
-            )
-        ]
-        if len(matches) != 1:
-            raise GovernanceValidationError(
-                f"tooling context membership: {relative} maps to {matches}"
-            )
+from .structural_limits import validate_tooling_context_membership
 
 
 def _validate_test_tombstones(repo_root: Path, schema_cache: dict[str, dict[str, Any]]) -> Path | None:

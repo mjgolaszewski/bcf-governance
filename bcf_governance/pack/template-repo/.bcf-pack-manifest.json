@@ -976,7 +976,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/runner.py": {
       "operation": "copy",
-      "sha256": "6a35f1a328bd4ce3a321e45c9d3de067253fab52be0b823a89671da0038de026"
+      "sha256": "56ce76c84d1bbdde6252d63b4719b5fcb9295e379baa005f5ec82ac6d9ccdf38"
     },
     "scripts/_bcf_runtime/governance_validation/self_authority_overlays.py": {
       "operation": "copy",
@@ -984,7 +984,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/structural_limits.py": {
       "operation": "copy",
-      "sha256": "4b6c7d9b364594516da0ccb1f6b8d05bf56fb99cc9380841c556e21f7b2133a6"
+      "sha256": "ce421df53d1338a8669c072699ef08225375276aa3ec5355e0bd4d1fc5836762"
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",

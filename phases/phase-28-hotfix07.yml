@@ -34,6 +34,10 @@ execution_evidence:
     and self plus adopter projections share the same deterministic contract.
   - Focused provider, transition, graph, and adopter-profile validation passed 139
     nodes in 168.24 seconds on the authority-pinned correction.
+  - The first final prospective preflight rejected the newly extracted
+    materialization module's missing tooling-context registration before evidence
+    allocation. Tooling-context ownership now runs in structural reconciliation,
+    making the same deterministic class fail at the earliest fixed-point boundary.
 closeout_requirements:
   claims:
     required_suites_green:

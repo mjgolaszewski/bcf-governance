@@ -25,6 +25,7 @@ from bcf_governance.tooling.governance_validation.runner import (
 )
 from bcf_governance.tooling.governance_validation.structural_limits import (
     validate_production_module_size,
+    validate_structural_limits,
 )
 from bcf_governance.tooling.profile_v2_surfaces import render_v2_makefile
 from bcf_governance.tooling.release_runtime_verification import (
@@ -119,6 +120,8 @@ def test_tooling_modules_map_to_exactly_one_context(tmp_path: Path) -> None:
     policy_path.write_text("tooling_contexts: {ci_authority: [other.py]}\n", encoding="utf-8")
     with pytest.raises(GovernanceValidationError, match="new_module.py maps to \\[\\]"):
         validate_tooling_context_membership(tmp_path)
+    with pytest.raises(GovernanceValidationError, match="new_module.py maps to \\[\\]"):
+        validate_structural_limits(tmp_path)
     policy_path.write_text(
         "tooling_contexts: {ci_authority: [new_module.py], validation: [new_module.py]}\n",
         encoding="utf-8",
