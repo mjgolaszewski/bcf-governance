@@ -33,7 +33,7 @@ from .evidence_scheduling import receipt_duration_ms
 from .evidence_sessions import allocate_session, local_producer_identity
 from .evidence_workitem_lifecycle import (
     WorkitemContractError,
-    validate_bounded_target_authored_ready,
+    validate_evaluation_authored_ready,
 )
 from .governance_evidence import capture_gate
 from .governance_truth import TruthfulnessError, derive_truth
@@ -394,13 +394,6 @@ def _validate_train_telemetry(repo_root: Path, telemetry: dict[str, Any]) -> Non
         raise ProspectiveValidationError(str(exc)) from exc
 
 
-def _require_authored_target_ready(repo_root: Path, target: str | None) -> None:
-    try:
-        validate_bounded_target_authored_ready(repo_root, target or "")
-    except WorkitemContractError as exc:
-        raise ProspectiveValidationError(f"target_not_ready_for_bounded_certification: {exc}") from exc
-
-
 def _run_prospective_train(
     repo_root: Path,
     *,
@@ -435,10 +428,11 @@ def _run_prospective_train(
             phase_id="P00",
             subject_commit=subject_commit,
         )
-    except EvaluationScopeError as exc:
+        validate_evaluation_authored_ready(
+            root, intent=requested_scope.intent.value, target=requested_scope.target_id
+        )
+    except (EvaluationScopeError, WorkitemContractError) as exc:
         raise ProspectiveValidationError(str(exc)) from exc
-    if requested_scope.intent is EvaluationIntent.WORKITEM_CERTIFICATION:
-        _require_authored_target_ready(root, requested_scope.target_id)
     try:
         reconcile_started = time.monotonic_ns()
         for step in reconcile_steps(root, python_executable):
@@ -763,8 +757,18 @@ def run_prospective_train(
 ) -> dict[str, Any]:
     """Execute the complete locally knowable chain; no partial public mode exists."""
 
-    if semantic_intent == "workitem":
-        _require_authored_target_ready(repo_root.resolve(), evaluation_target)
+    try:
+        requested_scope = evaluation_scope(
+            semantic_intent,
+            target=evaluation_target,
+            phase_id="P00",
+            subject_commit=subject_commit,
+        )
+        validate_evaluation_authored_ready(
+            repo_root.resolve(), intent=requested_scope.intent.value, target=requested_scope.target_id
+        )
+    except (EvaluationScopeError, WorkitemContractError) as exc:
+        raise ProspectiveValidationError(str(exc)) from exc
     controller_authority = None
     try:
         lane = post_merge_evaluation(validate_ci_graph(repo_root.resolve()).graph).lane

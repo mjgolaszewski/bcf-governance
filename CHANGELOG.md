@@ -24,6 +24,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Resolved trusted exact-main admission and governance jobs by their unique
   governed semantic roles, eliminating the reference generator/evaluator job-ID
   mismatch while rejecting missing or duplicate role ownership.
+- Made prospective closure reject incomplete authored phase or hotfix state before
+  evidence allocation, while retaining terminal evidence-derived truth as the
+  authoritative closure decision.
 
 ## [2.1.1] - 2026-09-27
 

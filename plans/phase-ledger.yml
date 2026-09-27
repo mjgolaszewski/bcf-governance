@@ -21,9 +21,9 @@ hotfix_lane:
   modes:
     lite: {allowed_when: [single_commit_fix, no_public_contract_change, no_security_scope_change]}
     full: {required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]}
-  open_records:
-  - {id: P28-HF04, mode: full, status: active, triggered_by_commits: [879980446cf9ece708eb910390624e92cd44ecc4], failing_workflows: [AgentBus-hosted-36317493677, AgentBus-hosted-36317804286, Racecar-v2.1.1-upgrade], root_cause: prospective authority assumed BCF self topology and ordinary upgrade omitted pack entrypoints while overwriting runtime-lock preserved consumer bytes, remediated_in_phase: P28, hotfix_log: phases/phase-28-hotfix04.yml, canonical_artifacts: [bcf_governance/tooling/ci_graph_post_merge.py, bcf_governance/tooling/ci_authority_prospective_lanes.py, bcf_governance/tooling/governance_install/preservation.py, bcf_governance/tooling/install_governance_pack.py, bcf_governance/tooling/local_pr.py]}
+  open_records: []
   remediation_history:
+  - {id: P28-HF04, mode: full, recorded_at_utc: '2026-09-27T00:00:00Z', action: 'Repair direct protected-main prospective authority, ordinary-upgrade entrypoint completeness, authenticated consumer-file preservation, semantic-role exact-main discovery, and static fixed-point effect ownership.', remediated_in_phase: P28, hotfix_log: phases/phase-28-hotfix04.yml, canonical_artifacts: [bcf_governance/tooling/ci_graph_post_merge.py, bcf_governance/tooling/ci_authority_prospective_lanes.py, bcf_governance/tooling/governance_install/preservation.py, bcf_governance/tooling/install_governance_pack.py, bcf_governance/tooling/local_pr.py, bcf_governance/tooling/ci_graph_execution.py, bcf_governance/tooling/scaffold_governance_artifacts.py], local_validation: [six exact provider-failed semantic effect and closure nodes passed, exact pack runtime mirrors and manifests passed, canonical fixed-point reconciliation converged and checked clean]}
   - id: P28-HF03
     mode: full
     recorded_at_utc: '2026-09-27T00:00:00Z'

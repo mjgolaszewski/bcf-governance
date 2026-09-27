@@ -9,6 +9,9 @@ import pytest
 
 from bcf_governance.tooling.local_pr import LocalPRContext
 from bcf_governance.tooling import local_pr as prospective
+from bcf_governance.tooling.evidence_workitem_lifecycle import (
+    validate_phase_closure_authored_ready,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -39,7 +42,7 @@ TRAIN = {
 @pytest.fixture(autouse=True)
 def _authored_target_ready(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        prospective, "validate_bounded_target_authored_ready", lambda *_args: None
+        prospective, "validate_evaluation_authored_ready", lambda *_args, **_kwargs: None
     )
 
 
@@ -385,10 +388,10 @@ def test_authored_todo_workitem_fails_before_reconcile_or_evidence(
     _front_door(monkeypatch, trace)
     monkeypatch.setattr(
         prospective,
-        "validate_bounded_target_authored_ready",
+        "validate_evaluation_authored_ready",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(
             prospective.WorkitemContractError(
-                "bounded workitem target P28-P0-04 is not authored DONE"
+                "target_not_ready_for_bounded_certification: bounded workitem target P28-P0-04 is not authored DONE"
             )
         ),
     )
@@ -414,9 +417,11 @@ def test_authored_todo_workitem_fails_before_provider_resolution(
 ) -> None:
     monkeypatch.setattr(
         prospective,
-        "validate_bounded_target_authored_ready",
+        "validate_evaluation_authored_ready",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(
-            prospective.WorkitemContractError("target is not authored DONE")
+            prospective.WorkitemContractError(
+                "target_not_ready_for_bounded_certification: target is not authored DONE"
+            )
         ),
     )
     monkeypatch.setattr(
@@ -435,6 +440,67 @@ def test_authored_todo_workitem_fails_before_provider_resolution(
             repository="owner/repo",
             provider_api=object(),  # type: ignore[arg-type]
         )
+
+
+def test_planned_hotfix_fails_phase_closure_before_reconcile_or_evidence(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    trace: list[str] = []
+    _front_door(monkeypatch, trace)
+    monkeypatch.setattr(
+        prospective,
+        "validate_evaluation_authored_ready",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            prospective.WorkitemContractError(
+                "target_not_ready_for_phase_closure: phase closure hotfix P28-HF04 is not authored completed"
+            )
+        ),
+    )
+    with pytest.raises(
+        prospective.ProspectiveValidationError,
+        match="target_not_ready_for_phase_closure.*P28-HF04",
+    ):
+        prospective._run_prospective_train(
+            tmp_path,
+            semantic_intent="closure",
+            evaluation_target=None,
+            subject_commit=HEAD,
+            subject_tree=TREE,
+            python_executable=Path("/python"),
+            execute_evidence=True,
+            runner=_runner,
+        )
+    assert trace == []
+
+
+def test_phase_closure_readiness_reads_exact_authored_hotfix_state(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "phases").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        "active_phase: {id: P28, log: phases/phase-28-log.yml}\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "phases/phase-28-log.yml").write_text(
+        "document: {status: completed}\nphase: {id: P28}\n",
+        encoding="utf-8",
+    )
+    hotfix = tmp_path / "phases/phase-28-hotfix04.yml"
+    hotfix.write_text(
+        "document: {status: planned}\nhotfix: {id: P28-HF04, related_phase_id: P28}\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(
+        prospective.WorkitemContractError,
+        match="P28-HF04 is not authored completed",
+    ):
+        validate_phase_closure_authored_ready(tmp_path)
+    hotfix.write_text(
+        "document: {status: completed}\nhotfix: {id: P28-HF04, related_phase_id: P28}\n",
+        encoding="utf-8",
+    )
+    validate_phase_closure_authored_ready(tmp_path)
 
 
 def test_graph_intent_mismatch_fails_before_evidence(

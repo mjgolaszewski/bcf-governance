@@ -129,6 +129,56 @@ def validate_bounded_target_authored_ready(
         )
 
 
+def validate_phase_closure_authored_ready(repo_root: Path) -> None:
+    """Reject structurally impossible phase closure before evidence allocation."""
+
+    ledger = yaml.safe_load(
+        (repo_root / "plans/phase-ledger.yml").read_text(encoding="utf-8")
+    )
+    active = ledger.get("active_phase") if isinstance(ledger, dict) else None
+    phase_id = active.get("id") if isinstance(active, dict) else None
+    log_path = active.get("log") if isinstance(active, dict) else None
+    if not isinstance(phase_id, str) or not isinstance(log_path, str):
+        raise WorkitemContractError("active phase closure identity is missing")
+    phase = yaml.safe_load((repo_root / log_path).read_text(encoding="utf-8"))
+    document = phase.get("document") if isinstance(phase, dict) else None
+    if not isinstance(document, dict) or document.get("status") != "completed":
+        raise WorkitemContractError(
+            f"phase closure target {phase_id} is not authored completed"
+        )
+    for path in sorted((repo_root / "phases").glob("phase-[0-9]*-hotfix*.yml")):
+        payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+        hotfix = payload.get("hotfix") if isinstance(payload, dict) else None
+        if not isinstance(hotfix, dict) or hotfix.get("related_phase_id") != phase_id:
+            continue
+        hotfix_document = payload.get("document")
+        hotfix_id = str(hotfix.get("id", path.stem))
+        if (
+            not isinstance(hotfix_document, dict)
+            or hotfix_document.get("status") != "completed"
+        ):
+            raise WorkitemContractError(
+                f"phase closure hotfix {hotfix_id} is not authored completed"
+            )
+
+
+def validate_evaluation_authored_ready(
+    repo_root: Path, *, intent: str, target: str
+) -> None:
+    """Validate the authored prerequisite for one exact evaluation intent."""
+
+    try:
+        if intent == "workitem":
+            validate_bounded_target_authored_ready(repo_root, target)
+        elif intent == "closure":
+            validate_phase_closure_authored_ready(repo_root)
+    except WorkitemContractError as exc:
+        boundary = (
+            "bounded_certification" if intent == "workitem" else "phase_closure"
+        )
+        raise WorkitemContractError(f"target_not_ready_for_{boundary}: {exc}") from exc
+
+
 def _authored_effective_state(authored_state: str) -> str:
     return {
         "DONE": "completed",
