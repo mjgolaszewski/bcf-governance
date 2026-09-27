@@ -587,7 +587,9 @@ def _add_self_controller_release_job(
     }
     graph["commands"]["release-authorize"] = {
         "argv": [
-            "{controller}", "ci-github", "release", "authorize",
+            "${{ runner.tool_cache }}/bcf-governance/"
+            "${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf",
+            "ci-github", "release", "authorize",
             "--repository", "${{ github.repository }}",
         ],
         "cwd": ".",
@@ -597,6 +599,20 @@ def _add_self_controller_release_job(
         "kind": "command",
         "name": "Authorize release",
         "command": "release-authorize",
+        "environment": {},
+        "produces": [],
+        "consumes": [],
+    }
+    graph["commands"]["resolve-effective-controller"] = {
+        "argv": ["{controller}", "ci-github", "controller-rotation", "resolve"],
+        "cwd": ".",
+        "environment": {},
+    }
+    graph["step_components"]["resolve-effective-controller"] = {
+        "kind": "command",
+        "name": "Resolve effective controller",
+        "id": "effective-controller",
+        "command": "resolve-effective-controller",
         "environment": {},
         "produces": [],
         "consumes": [],
@@ -617,7 +633,10 @@ def _add_self_controller_release_job(
         trust="trusted",
         executor={
             "kind": "component_sequence",
-            "components": ["setup-release-python", "release-authorize"],
+            "components": [
+                "setup-release-python", "resolve-effective-controller",
+                "release-authorize",
+            ],
         },
         components=[],
     )

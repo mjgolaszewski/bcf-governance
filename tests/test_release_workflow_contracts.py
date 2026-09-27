@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import hashlib
 import importlib.util
 import os
@@ -11,6 +12,7 @@ import pytest
 import yaml
 
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
+from bcf_governance.tooling.ci_graph_execution import job_execution_issues
 from bcf_governance.tooling.ci_graph_render import render_ci_graph
 
 
@@ -55,10 +57,18 @@ def test_release_authorizer_is_owner_dispatched_no_checkout_control_plane() -> N
         "github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main'"
     )
     assert authorize["executor"]["components"] == [
-        "setup-python", "setup-release-directories", "resolve-release-inputs",
+        "setup-python", "resolve-effective-controller", "setup-release-directories",
+        "resolve-release-inputs",
         "download-release-certification", "download-release-controller",
         "authorize-release", "upload-release-authorization",
     ]
+    compiled = validate_ci_graph(REPO_ROOT)
+    effective = (
+        "${{ runner.tool_cache }}/bcf-governance/"
+        "${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf"
+    )
+    assert compiled.commands["resolve-release-inputs"]["argv"][0] == effective
+    assert compiled.commands["authorize-release"]["argv"][0] == effective
 
 
 def test_release_builder_uses_exact_subject_closed_runtime_and_no_credentials() -> None:
@@ -150,6 +160,7 @@ def test_verifier_separates_token_free_runtime_from_provider_authentication() ->
         "ACTIONS_RUNTIME_TOKEN": "",
     }
     assert runtime["produces"] == ["release-runtime-evidence"]
+    assert authenticate["controller_requirement"] is None
     assert runtime["consumes"] == [
         "release-authorization", "release-build-bundle"
     ]
@@ -171,6 +182,7 @@ def test_release_collector_recomputes_verification_before_emitting_receipt() -> 
     assert "--verification-artifact-name" not in " ".join(
         compiled.commands["collect-release"]["argv"]
     )
+    assert compiled.commands["collect-release"]["argv"][0] == "{ephemeral_controller}"
 
 
 def test_verifier_controller_is_bound_to_the_triggering_authorization_attempt() -> None:
@@ -227,6 +239,19 @@ def test_release_file_selection_and_attempt_fan_in_are_controller_owned() -> Non
     assert "--runtime-evidence-dir" in commands["authenticate-release-verification"]
     assert "--release-artifact-dir" in commands["collect-release"]
     assert "resolve-publication" in commands["resolve-release-publication"]
+    effective = (
+        "${{ runner.tool_cache }}/bcf-governance/"
+        "${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf"
+    )
+    for command_id in (
+        "resolve-release-inputs", "authorize-release",
+        "resolve-release-publication", "publish-release",
+    ):
+        assert compiled.commands[command_id]["argv"][0] == effective
+    assert compiled.commands["collect-release"]["argv"][0] == "{ephemeral_controller}"
+    assert _job("release-publisher", "publish")["executor"]["components"][:2] == [
+        "setup-python", "resolve-effective-controller",
+    ]
     assert release_tag in commands["publish-release"]
     assert "steps.resolve.outputs.tag" not in commands["publish-release"]
     assert (
@@ -255,3 +280,49 @@ def test_collector_is_no_checkout_trusted_recomputation_and_sole_receipt_owner()
         if "release-receipt-bundle" in job["produces"]
     ]
     assert producers == [("release-verifier", "collect")]
+
+
+@pytest.mark.parametrize(
+    ("workflow_id", "job_id", "command_id", "replacement", "diagnostic"),
+    [
+        ("release-authority", "authorize", "resolve-release-inputs", "{controller}", "provider-effective"),
+        ("release-authority", "authorize", "authorize-release", "{controller}", "provider-effective"),
+        ("release-verifier", "runtime", "verify-release-runtime", "{controller}", "exact triggering"),
+        ("release-verifier", "collect", "authenticate-release-verification", "{controller}", "exact triggering"),
+        ("release-verifier", "collect", "collect-release", "{controller}", "exact triggering"),
+        ("release-publisher", "publish", "resolve-release-publication", "{controller}", "provider-effective"),
+        ("release-publisher", "publish", "publish-release", "{controller}", "provider-effective"),
+    ],
+)
+def test_release_controller_routing_fails_before_provider_execution(
+    workflow_id: str,
+    job_id: str,
+    command_id: str,
+    replacement: str,
+    diagnostic: str,
+) -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    graph = copy.deepcopy(compiled.graph)
+    graph["commands"][command_id]["argv"][0] = replacement
+    workflow = next(item for item in graph["workflows"] if item["id"] == workflow_id)
+    job = next(item for item in workflow["jobs"] if item["id"] == job_id)
+    assert any(
+        diagnostic in issue
+        for issue in job_execution_issues(graph, job, job["executor"], workflow)
+    )
+
+
+def test_release_triggering_controller_must_be_installed_before_use() -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    graph = copy.deepcopy(compiled.graph)
+    workflow = next(
+        item for item in graph["workflows"] if item["id"] == "release-verifier"
+    )
+    job = next(item for item in workflow["jobs"] if item["id"] == "collect")
+    components = job["executor"]["components"]
+    components.remove("install-triggering-release-controller")
+    components.append("install-triggering-release-controller")
+    assert any(
+        "exact triggering" in issue
+        for issue in job_execution_issues(graph, job, job["executor"], workflow)
+    )
