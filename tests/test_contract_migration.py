@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import subprocess
 
 import yaml
 
-from bcf_governance.tooling.migrate_contracts import plan_contract_migration
+from bcf_governance.tooling import migrate_contracts
+from bcf_governance.tooling.migrate_contracts import (
+    ContractMigrationPlan,
+    plan_contract_migration,
+)
 from bcf_governance.tooling.governance_profiles import required_targets
 
 
@@ -36,6 +41,35 @@ def test_v2_contract_without_v3_claim_model_fails_closed(tmp_path: Path) -> None
     assert plan.changed_paths == ()
     assert contract is None
     assert plan.blockers
+
+
+def test_applied_migration_reports_the_canonical_source_profile_version(
+    monkeypatch, capsys, tmp_path: Path,
+) -> None:
+    ready = ContractMigrationPlan("ready", "2.0", "3.0", "1.1", ("governance-profile.yml",), ())
+    current = ContractMigrationPlan("current", "3.0", "3.0", "1.1", (), ())
+    plans = iter(((ready, {"profile_contract_version": "3.0"}), (current, None)))
+    monkeypatch.setattr(migrate_contracts, "plan_contract_migration", lambda _root: next(plans))
+    monkeypatch.setattr(migrate_contracts, "apply_profile_contract", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        migrate_contracts.subprocess,
+        "run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, "", ""),
+    )
+    monkeypatch.setattr(
+        migrate_contracts,
+        "apply_transaction",
+        lambda root, *, mutate_shadow, **_kwargs: mutate_shadow(root),
+    )
+
+    migrate_contracts.main(
+        ["--repo-root", str(tmp_path), "--apply", "--format", "json"]
+    )
+    applied = json.loads(capsys.readouterr().out)
+
+    assert applied["status"] == "applied"
+    assert applied["source_profile_version"] == "2.0"
+    assert applied["target_profile_version"] == "3.0"
 
 
 def test_legacy_authority_and_graph_are_reported_together(tmp_path: Path) -> None:

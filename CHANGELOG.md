@@ -6,10 +6,13 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-### Governance
+## [2.1.1] - 2026-09-27
 
-- Recorded immutable v2.1.0 provider, artifact, attestation, controller, exact-main,
-  and publication custody; closed P28 and release_16 without rebuilding released bytes.
+### Fixed
+
+- Corrected legacy contract migration success reporting after its atomic transaction.
+- Preserved the selected virtual-environment interpreter through reconciliation and
+  omitted semantic locking only for the closed, explicitly disabled capability state.
 
 ## [2.1.0] - 2026-09-26
 

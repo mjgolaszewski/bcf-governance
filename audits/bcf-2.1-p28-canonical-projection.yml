@@ -6,6 +6,19 @@ document:
   path: audits/bcf-2.1-p28-canonical-projection.yml
 phase: P28
 workitem: P28-P0-01
+post_release_adopter_parity_hotfix:
+  id: P28-HF03
+  issues: [311, 312, 313]
+  observed_by: racecar immutable-v2.1.0 adoption
+  defects:
+  - migration success reporting referenced a noncanonical result field after atomic mutation
+  - reconciliation dereferenced the selected virtual-environment interpreter symlink
+  - reconciliation scheduled semantic locking despite a closed all-disabled capability state
+  correction:
+  - report the canonical source_profile_version
+  - preserve the absolute selected interpreter identity without symlink dereference
+  - derive semantic-lock applicability from canonical capability_states and reject partial residue
+  non_escalation: [transaction_semantics_unchanged, semantic_strength_unchanged, controller_authority_unchanged, release_authority_unchanged]
 canonical_projection:
   profile_contract: '3.0'
   source_owner: bcf_governance/tooling/ci_graph_defaults.py

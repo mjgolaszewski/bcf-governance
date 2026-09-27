@@ -23,6 +23,17 @@ hotfix_lane:
     full: {required_when: [default_branch_red_ci, release_blocking_regression, security_or_expiring_external_breakage]}
   open_records: []
   remediation_history:
+  - id: P28-HF03
+    mode: full
+    recorded_at_utc: '2026-09-27T00:00:00Z'
+    action: Restore released adopter migration reporting selected-interpreter custody and capability-derived reconciliation applicability.
+    remediated_in_phase: P28
+    hotfix_log: phases/phase-28-hotfix03.yml
+    canonical_artifacts: [bcf_governance/tooling/migrate_contracts.py, bcf_governance/tooling/scaffold_governance_artifacts.py, bcf_governance/tooling/local_pr.py, tests/test_contract_migration.py, tests/test_reconcile_governance.py, tests/test_prospective_validation.py]
+    local_validation:
+    - 31 focused migration reconciliation prospective-train and pack-parity tests passed
+    - canonical fixed-point reconciliation converged in two rounds
+    - pre-pin compatibility matrix passed 63 nodes and identified only the required mechanical authority projection
   - id: P28-HF02
     mode: full
     recorded_at_utc: '2026-09-26T00:00:00Z'
@@ -73,5 +84,6 @@ release_trains:
   release_14: {target_version: 1.3.0, status: completed, focus: [historical_release]}
   release_15: {target_version: 2.0.0, status: abandoned, focus: [dependency_scoped_truth, minimum_execution, evidence_composed_release, superseded_without_publication]}
   release_16: {target_version: 2.1.0, status: completed, focus: [invariant_closure, proof_transport, minimum_time_composition, canonical_projection, parity, empirical_certification]}
+  release_17: {target_version: 2.1.1, status: active, focus: [adopter_migration_reporting, interpreter_custody, reconciliation_applicability]}
 release_readiness: {computed_by: bcf truth, requirements_source: governance/evidence-policy.yml, validating_command: bcf truth}
 definition_of_ready_before_execution: [active phase has a plan workitem ledger and log, validation commands are listed before implementation starts]

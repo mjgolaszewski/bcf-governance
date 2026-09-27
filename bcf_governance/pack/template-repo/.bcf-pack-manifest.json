@@ -400,7 +400,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "0ca9aadba5f2aeb57166558672eac7ca86c2c54f27febac028e61c26db37446d"
+      "sha256": "a6e6df64437fa0e4b3cd989f4dc18256a29fe2ae6bceaf26a57846a70fe73c4c"
     },
     "scripts/_bcf_runtime/automation_changelog.py": {
       "operation": "copy",
@@ -984,11 +984,11 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "fc2f0b9bde915e4da1f5eb5da276098eafc7f79bf30cb874fcd355e0e40d32da"
+      "sha256": "4fe1a9a8019b700ef67f153b5ab52bc220b4b7afd05d15097f310c1791bb5b08"
     },
     "scripts/_bcf_runtime/migrate_contracts.py": {
       "operation": "copy",
-      "sha256": "3ce465623e51061c89b488000ed6d75aded26da98a3c942ba1002fa6f68dfa06"
+      "sha256": "00121807c5bd8d5e0f219b2e20f1319f9e5903b507672a96cacb1bb33b9fdefd"
     },
     "scripts/_bcf_runtime/migrate_governance_evidence.py": {
       "operation": "copy",
@@ -1092,7 +1092,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "1233f2ff093eec3e5b869a66d942901b603b41d3afc4fbbc98f0e55e643a5197"
+      "sha256": "bf1e0f52c1cd60ea54df4d3e7c0b145c4abe935e2dcf5a2149f6ffbc8c04a93b"
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",
