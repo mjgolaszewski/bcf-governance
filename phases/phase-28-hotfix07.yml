@@ -4,7 +4,7 @@ document:
   id: project-phase-28-hotfix07
   version: 1.0.0
   generated_at_utc: '2026-09-27T00:00:00Z'
-  status: active
+  status: completed
   path: phases/phase-28-hotfix07.yml
 hotfix:
   id: P28-HF07
@@ -15,7 +15,14 @@ hotfix:
 execution_evidence:
   planned_commands:
   - canonical prospective closure train on final committed bytes
-  executed_commands: []
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests/test_routine_controller_provider.py
+    tests/test_routine_controller_rotation.py tests/test_ci_graph.py
+    tests/test_profile_flows.py -x
+  - .venv/bin/python -m bcf_governance.cli reconcile --repo-root . --apply
+  - .venv/bin/python -m bcf_governance.cli ci prospective-train --repo-root .
+    --python .venv/bin/python --intent closure --subject-commit $(git rev-parse
+    HEAD) --subject-tree $(git rev-parse HEAD^{tree}) --format json
   notes:
   - Exact-main admission 36349455370/1 built target 98cf2c381a62400e0491de108b05cdc0bcfa211a,
     but routine rotation 36349563985/1 mapped the installed-N typed
@@ -25,6 +32,8 @@ execution_evidence:
     no_transition may suppress the governed bootstrap/probe/promotion path.
   - Canonical graph validation rejects the escaped topology before evidence fan-out,
     and self plus adopter projections share the same deterministic contract.
+  - Focused provider, transition, graph, and adopter-profile validation passed 139
+    nodes in 168.24 seconds on the authority-pinned correction.
 closeout_requirements:
   claims:
     required_suites_green:
