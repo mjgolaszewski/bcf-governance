@@ -315,7 +315,6 @@ def _release_parser() -> argparse.ArgumentParser:
     _release_artifact_arguments(collect)
     collect.add_argument("--output", type=Path, required=True)
     collect.add_argument("--bundle-output", type=Path)
-    collect.add_argument("--verification-artifact-name", required=True)
     for operation in (operations.add_parser("inspect"), operations.add_parser("publish")):
         operation.add_argument("--repository", required=True)
         operation.add_argument("--tag", required=True)
@@ -519,7 +518,6 @@ def _release(argv: list[str]) -> None:
                 release_artifacts=_release_artifacts(args),
                 collector_run_id=_required_environment("GITHUB_RUN_ID"),
                 collector_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
-                verification_artifact_name=args.verification_artifact_name,
                 runtime_report_path=args.runtime_report,
                 runtime_evidence=_runtime_evidence(args),
                 output_path=args.output,

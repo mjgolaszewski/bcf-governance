@@ -25,6 +25,7 @@ from .ci_github_authority import (
     load_authority,
     packaged_repo_root,
 )
+from .ci_github_release_collection import authenticate_release_collection_roles
 from .ci_github_bundle import verify_bundle, write_exclusive
 from .ci_github_identity import GitHubControllerError, positive_int, resolve_main
 from .ci_github_membership import select_latest_admission
@@ -440,7 +441,6 @@ def collect_release(
     release_artifacts: Iterable[Path],
     collector_run_id: object,
     collector_run_attempt: object,
-    verification_artifact_name: object,
     runtime_report_path: Path,
     runtime_evidence: Iterable[Path],
     output_path: Path,
@@ -457,11 +457,11 @@ def collect_release(
     build = _load_json(build_manifest_path, label="release build manifest")
     main = resolve_main(api, repository)
     authority = load_authority(api, repository, main, required_version="1.1")
-    collector, _ = authenticate_role_job_inventory(
+    collector = authenticate_release_collection_roles(
         api, repository=repository, main=main, authority=authority,
-        role="release_collector", run_id=collector_run_id,
-        run_attempt=collector_run_attempt, require_success=False,
-        require_terminal=False,
+        authorization=authorization, build=build, verification=verification,
+        collector_run_id=collector_run_id,
+        collector_run_attempt=collector_run_attempt,
     )
     release_workflow = authority_role_workflow(authority, "release_authorizer")
     admitted_release_runs = api.workflow_runs(
@@ -476,20 +476,6 @@ def collect_release(
         admitted_release_runs,
         key=lambda value: (int(value.get("id", 0)), int(value.get("run_attempt", 0))),
     )
-    for role, payload, key in (
-        ("release_authorizer", authorization, "authorizer"),
-        ("release_build", build, "builder"),
-        ("release_verifier", verification, "verifier"),
-    ):
-        identity = payload.get(key)
-        if not isinstance(identity, dict):
-            raise GitHubControllerError(f"{role} identity is missing")
-        authenticate_role_job_inventory(
-            api, repository=repository, main=main, authority=authority, role=role,
-            run_id=identity.get("run_id"), run_attempt=identity.get("run_attempt"),
-            require_success=True,
-            require_terminal=True,
-        )
     authorizer = authorization["authorizer"]
     builder = build["builder"]
     if (
@@ -514,20 +500,6 @@ def collect_release(
         artifact_id=verified_build.get("artifact_id"),
         artifact_name=build.get("artifact_name"),
         artifact_digest=verified_build.get("provider_digest"),
-        require_success=True,
-    )
-    verifier_identity = verification.get("verifier")
-    if not isinstance(verifier_identity, dict):
-        raise GitHubControllerError("release verifier identity is missing")
-    verification_artifact = resolve_role_artifact(
-        api,
-        repository=repository,
-        main=main,
-        authority=authority,
-        role="release_verifier",
-        run_id=verifier_identity.get("run_id"),
-        run_attempt=verifier_identity.get("run_attempt"),
-        artifact_name=verification_artifact_name,
         require_success=True,
     )
     release_paths = tuple(release_artifacts)
@@ -589,7 +561,6 @@ def collect_release(
             "run_attempt": str(collector.run_attempt),
         },
         build_provider_artifact=build_artifact.as_dict(),
-        verification_provider_artifact=verification_artifact.as_dict(),
         certification_provider_artifact=certification_artifact.as_dict(),
         output_path=output_path,
     )

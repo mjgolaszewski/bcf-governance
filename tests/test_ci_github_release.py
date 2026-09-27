@@ -134,6 +134,54 @@ def test_nonterminal_privileged_inventory_accepts_only_pinned_partial_jobs(
         )
 
 
+def test_active_role_inventory_accepts_one_collector_after_successful_prerequisites(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    authority = {
+        "schema_version": "1.1",
+        "roles": {"release_collector": "release-verifier"},
+        "workflow_registry": {
+            "release-verifier": {
+                "expected_jobs": [
+                    {"job_id": "Verify runtime"},
+                    {"job_id": "Collect receipt"},
+                ],
+            },
+        },
+    }
+    identity = SimpleNamespace(run_id="30", run_attempt=2)
+    monkeypatch.setattr(
+        ci_github_authority, "authenticate_role_run", lambda *_, **__: identity
+    )
+    jobs = [
+        {"name": "Verify runtime", "status": "completed", "conclusion": "success"},
+        {"name": "Collect receipt", "status": "in_progress", "conclusion": None},
+    ]
+    api = SimpleNamespace(jobs=lambda *_, **__: jobs)
+    kwargs = {
+        "repository": "owner/repo",
+        "main": MainIdentity("101", "main", COMMIT, TREE),
+        "authority": authority,
+        "role": "release_collector",
+        "run_id": "30",
+        "run_attempt": 2,
+    }
+
+    observed, inventory = ci_github_authority.authenticate_active_role_job_inventory(
+        api, **kwargs
+    )
+    assert observed == identity and inventory == jobs
+
+    for mutation in (
+        {"status": "queued", "conclusion": None},
+        {"status": "completed", "conclusion": "failure"},
+    ):
+        jobs[0].update(mutation)
+        with pytest.raises(GitHubControllerError, match="one collector"):
+            ci_github_authority.authenticate_active_role_job_inventory(api, **kwargs)
+        jobs[0].update(status="completed", conclusion="success")
+
+
 def _workflow(path: str, event: str) -> WorkflowIdentity:
     return WorkflowIdentity(
         provider="github",
@@ -471,15 +519,31 @@ def test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles(
         release_artifacts=values["artifacts"],  # type: ignore[arg-type]
         collector_identity={
             "workflow_path": ".github/workflows/bcf-release-collector.yml",
-            "run_id": "50",
-            "run_attempt": "1",
+            "run_id": "30",
+            "run_attempt": "2",
         },
         output_path=tmp_path / "release.evidence.json",
         certification_provider_artifact=_provider_artifact("50", 1, "41"),
         build_provider_artifact=_provider_artifact("20", 1, "40", "e"),
-        verification_provider_artifact=_provider_artifact("30", 2, "42"),
     )
     assert receipt.payload["observations"]["acyclic_construction"]["candidate_authored_receipt_accepted"] is False
+
+    with pytest.raises(ReleaseReceiptError, match="active collector"):
+        build_trusted_release_receipt(
+            REPO_ROOT,
+            certification=certification,
+            certification_path=certification_path,
+            certification_verification={"status": "pass", "computed_state": "certified"},
+            session_manifest_path=session,
+            authorization_path=values["authorization"],  # type: ignore[arg-type]
+            build_manifest_path=values["build"],  # type: ignore[arg-type]
+            verification_path=verification_path,
+            release_artifacts=values["artifacts"],  # type: ignore[arg-type]
+            collector_identity={"workflow_path": "x", "run_id": "31", "run_attempt": "2"},
+            output_path=tmp_path / "wrong-collector.json",
+            certification_provider_artifact=_provider_artifact("50", 1, "41"),
+            build_provider_artifact=_provider_artifact("20", 1, "40", "e"),
+        )
 
     verification["build"]["manifest_sha256"] = "0" * 64  # type: ignore[index]
     _json(verification_path, verification)
@@ -498,7 +562,6 @@ def test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles(
             output_path=tmp_path / "lookalike.json",
             certification_provider_artifact=_provider_artifact("50", 1, "41"),
             build_provider_artifact=_provider_artifact("20", 1, "40", "e"),
-            verification_provider_artifact=_provider_artifact("30", 2, "42"),
         )
 
 
@@ -1046,7 +1109,7 @@ def test_release_collection_rejects_an_older_same_sha_admission(
     verification_path = _json(
         tmp_path / "release-verification.json",
         {
-            "verifier": {"run_id": "30", "run_attempt": 1},
+            "verifier": {"run_id": "50", "run_attempt": 1},
             "build": {"artifact_id": "40", "provider_digest": f"sha256:{'e' * 64}"},
         },
     )
@@ -1074,6 +1137,10 @@ def test_release_collection_rejects_an_older_same_sha_admission(
         lambda *args, **kwargs: (identity, ()),
     )
     monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.authenticate_release_collection_roles",
+        lambda *args, **kwargs: identity,
+    )
+    monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release.authority_role_workflow",
         lambda authority, role: {"workflow_id": "202"},
     )
@@ -1094,7 +1161,6 @@ def test_release_collection_rejects_an_older_same_sha_admission(
             release_artifacts=values["artifacts"],  # type: ignore[arg-type]
             collector_run_id="50",
             collector_run_attempt="1",
-            verification_artifact_name="verification",
             runtime_report_path=values["runtime_report"],  # type: ignore[arg-type]
             runtime_evidence=values["runtime_evidence"],  # type: ignore[arg-type]
             output_path=tmp_path / "receipt.json",
