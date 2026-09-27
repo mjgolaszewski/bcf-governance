@@ -4,7 +4,7 @@ document:
   id: project-phase-28-workitems
   version: 1.0.0
   generated_at_utc: '2026-09-18T00:00:00Z'
-  status: active
+  status: completed
   path: plans/phase-28-workitems.yml
   phase_id: P28
 workitems:

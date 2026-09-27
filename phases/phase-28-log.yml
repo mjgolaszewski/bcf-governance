@@ -4,13 +4,13 @@ document:
   id: project-phase-28-log
   version: 1.0.0
   generated_at_utc: '2026-09-18T00:00:00Z'
-  status: active
+  status: completed
   path: phases/phase-28-log.yml
 phase:
   id: P28
   build_block: canonical-projection-parity-certification-2.1.0
 summary:
-  outcome: active
+  outcome: completed
   highlights:
   - P28 opens after P27 terminal exact-main truth on 5d720dce9877bed60d5f24716838d23354d6a28f proved phase_closed with no release authority
   - P28 projects the canonical BCF 2.1 product proves installed adopter parity measures the simplified system and publishes immutable 2.1.0
@@ -71,6 +71,10 @@ execution_evidence:
   - the 2.1.0 release candidate replaces obsolete controller ceremony with the semantic-intent prospective train selective proof composition optional provider-backed controller transition and explicit adopter versus BCF-self authority boundary
   - the certified but unpublished 2.0.0 baseline remains historical and is superseded without a tag or immutable release; its N/N+1 repair chronology is collapsed into the released 2.1 controller-compatibility contract
   - P28-P0-05 authors implementation completion so terminal exact-main truth can establish release authority before immutable publication; provider publication and its custody-only closeout remain downstream and cannot help prove phase closure
+  - exact-main 36290132704/2 and finalizer 36291066509/1 certified phase_closed for P28 on 407c82fdaaad73a96c700e30b09d06dba44b90e7 and tree e137b50fca06f53fae3fd72e6285f2a070883c7e
+  - release build 36291231276/1 and independent verifier 36291328350/1 produced the exact receipt-bound 2.1.0 wheel source archive and checksum inventory without publication authority
+  - publisher 36292071650/1 published immutable non-draft release 397498080 from annotated tag v2.1.0; all three assets match SHA256SUMS and passed independent GitHub attestation verification
+  - the temporary BCF_RELEASE_ADMIN_TOKEN secret was deleted after publication; audits/v2.1.0-release-custody.yml owns exact provider and asset custody
 closeout_requirements:
   claims:
     workitems_closed:
@@ -103,4 +107,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify terminal P28 exact-main truth then publish and independently record immutable 2.1.0 custody without rebuilding
+- release_16 and P28 are complete; any further product work requires a separately governed phase

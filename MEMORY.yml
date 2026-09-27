@@ -22,7 +22,7 @@ environment_facts:
   current_repo_state:
   - P24 and immutable v1.3.0 are historical; plans/phase-history.yml and release custody audits own those facts.
   - P25 and its certified 2.0.0 baseline are historical; release_15 was superseded without publication or a tag.
-  - P26 and P27 are closed by exact-main truth; P28 is active to project the canonical BCF 2.1 product, prove adopter parity, and publish immutable 2.1.0 custody.
+  - P26 P27 and P28 are closed by exact-main truth; immutable v2.1.0 release 397498080 is published from certified commit 407c82fdaaad73a96c700e30b09d06dba44b90e7 and audits/v2.1.0-release-custody.yml owns exact custody.
   active_artifacts: {spec: plans/product-spec.yml, build_plan: plans/build-plan.yml, active_phase_ledger: plans/phase-ledger.yml, phase_history: plans/phase-history.yml, active_phase_plan: plans/phase-28-plan.yml, active_workitem_ledger: plans/phase-28-workitems.yml, active_phase_log: phases/phase-28-log.yml}
 known_constraints:
 - candidate code runs only on disposable workers; trusted workers reconstruct provider state and never check out candidate code

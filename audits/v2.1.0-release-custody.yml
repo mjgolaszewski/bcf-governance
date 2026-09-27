@@ -1,0 +1,96 @@
+document:
+  kind: audit_report
+  name: BCF v2.1.0 Release Custody
+  id: bcf-v2.1.0-release-custody
+  version: 1.0.0
+  status: completed
+  path: audits/v2.1.0-release-custody.yml
+subject:
+  version: 2.1.0
+  tag: v2.1.0
+  tag_kind: annotated
+  tag_object: be2e560d6d08eb06a0e43e0018cd566cf85e04bc
+  tag_signed: false
+  tag_verification_reason: unsigned
+  commit: 407c82fdaaad73a96c700e30b09d06dba44b90e7
+  tree: e137b50fca06f53fae3fd72e6285f2a070883c7e
+provider_release:
+  id: 397498080
+  immutable: true
+  draft: false
+  prerelease: false
+  published_at: '2026-09-27T03:41:37Z'
+assets:
+- id: 592064724
+  name: bcf_governance-2.1.0-py3-none-any.whl
+  size: 1381717
+  sha256: e34aa25b1165f7663b7daa59ae21e5f218130fe2a377cc8ceccd97c6ffab4bee
+- id: 592064744
+  name: bcf_governance-2.1.0.tar.gz
+  size: 7227856
+  sha256: 3b1dba6fbcdb7eb1cd2063e52936c9205036b37a2f225695902111a3cf260ab5
+- id: 592064713
+  name: SHA256SUMS
+  size: 198
+  sha256: 5299390a3839492e2c7d5eb4eceff082e61da1acf7adc429543c2ef28d9c0194
+authority:
+  exact_main:
+    run_id: '36290132704'
+    run_attempt: 2
+    truth_artifact_id: '10921244464'
+    truth_artifact_name: bcf-governance-truth-36290132704-2
+    truth_provider_digest: sha256:a698e0d0312b186d80f228684d9d8f87c1e4d4e4c114a6f642bb451e63cb4fde
+    truth_report_sha256: e1fd17f86dfc90b76f9befb81144fc2598638b237e1b4ccca121768b164bb47a
+    evidence_bundle_sha256: 1567e9bdb55237b6fb915a7e7980194dae3bd72f78c28b2f0d6ad058ec4a9fa1
+    certified_proposition: {predicate: phase_closed, target_kind: phase, target_id: P28, conclusion: success}
+  finalizer:
+    run_id: '36291066509'
+    run_attempt: 1
+    artifact_id: '10922416338'
+    artifact_name: bcf-exact-main-certification-36291066509-1
+    provider_digest: sha256:dcd450cd68462d5bdf554dfb00eab3e6a203bee678a39bb56565d43ffc85014b
+  controller:
+    commit: 407c82fdaaad73a96c700e30b09d06dba44b90e7
+    tree: e137b50fca06f53fae3fd72e6285f2a070883c7e
+    artifact_id: '10922028261'
+    artifact_name: bcf-trusted-control-407c82fdaaad73a96c700e30b09d06dba44b90e7-2
+    provider_digest: sha256:4eba21b195da01eaad43421f4384f0b70ef34bff72bad5b3dd592244bf93911e
+  release_build:
+    run_id: '36291231276'
+    run_attempt: 1
+    authorization_artifact_id: '10922481372'
+    authorization_provider_digest: sha256:95a646343f84bc048d193eb8872dca0f89fb0693ed42fa8966bb1c3af07b3ffc
+    build_artifact_id: '10922242352'
+    build_artifact_name: bcf-release-build-407c82fdaaad73a96c700e30b09d06dba44b90e7-1
+    build_provider_digest: sha256:576b112d40f6948655c51bd84bc3d1239c4f5ee66fa1c5de0062f9be1da3e9bc
+  release_verifier:
+    run_id: '36291328350'
+    run_attempt: 1
+    runtime_artifact_id: '10922376828'
+    runtime_provider_digest: sha256:ea5d6c611d39041a2d913c7edaed14043dd75ffa4ceedc49f9624043eda8dc0a
+    receipt_artifact_id: '10922063766'
+    receipt_artifact_name: bcf-release-receipt-36291328350-1
+    receipt_provider_digest: sha256:e86a41f472e75a7f0eebeaec9077c5d8ded8035ffe459879271b918d3a0f0a09
+  publisher: {run_id: '36292071650', run_attempt: 1, conclusion: success}
+verification:
+  exact_asset_inventory: passed
+  sha256sums: passed
+  github_attestations: passed_for_all_three_assets
+  release_target: exact_annotated_tag_commit
+  released_bytes_rebuilt_during_publication: false
+  candidate_authored_receipt_accepted: false
+  short_lived_secret_present_after_publication: false
+product_boundary:
+  adopter_semantics: canonical install and adopt project the profile-v3 planner selective proof composition prospective train fixed point telemetry attacks and optional trusted-controller operation
+  self_authority_excluded: controller publication recovery and repository authority remain typed self-only overlays and are absent from ordinary adopter packs
+  agent_facing_operation: semantic intent enters one canonical prospective train and exact mechanically derived proof exits
+  release_authority: separate provider-authenticated exact-byte publication; bounded or candidate evidence cannot confer it
+  canonical_proof: audits/bcf-2.1-p28-canonical-projection.yml
+closeout:
+  phase: P28
+  release_train: release_16
+  phase_state: closed
+  release_state: completed
+  issue: 216
+  milestone: BCF 2.1.0
+  remaining_publication_work: []
