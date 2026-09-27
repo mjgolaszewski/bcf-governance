@@ -304,6 +304,13 @@ def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> N
     )
     callback = next(item for item in publisher["jobs"] if item["id"] == "rotation-callback")
     assert callback["permissions"]["actions"] == "write"
+    assert callback["executor"]["components"] == [
+        "setup-python", "dispatch-routine-certification",
+    ]
+    dispatch = graph["commands"]["dispatch-routine-certification"]
+    assert dispatch["argv"][:4] == [
+        "{controller}", "ci-github", "controller-rotation", "dispatch-certification",
+    ]
 
 
 def test_self_control_plane_is_an_exact_v11_generator_product() -> None:
