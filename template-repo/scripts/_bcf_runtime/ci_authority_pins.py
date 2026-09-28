@@ -343,6 +343,7 @@ def pin_workflow_authority(
     authority_path: Path,
     definition_commit: str,
     references: tuple[str, ...],
+    workflow_paths: dict[str, str] | None = None,
     apply: bool,
 ) -> CIAuthorityPinResult:
     """Derive exact blob and SHA-256 pins; optionally update the canonical registry."""
@@ -368,10 +369,14 @@ def pin_workflow_authority(
             "workflow authority pinning must compile the complete registry"
         )
     committed_workflows: dict[str, bytes] = {}
+    graph_paths = workflow_paths or {}
     for reference in selected:
         entry = registry.get(reference)
         if not isinstance(entry, dict):
             raise CIAuthorityPinError(f"workflow reference is not registered: {reference}")
+        derived_path = graph_paths.get(reference)
+        if derived_path is not None:
+            entry["active_path"] = derived_path
         path = str(entry.get("active_path", ""))
         if not path.startswith(".github/workflows/") or ".." in Path(path).parts:
             raise CIAuthorityPinError("workflow authority path is unsafe")

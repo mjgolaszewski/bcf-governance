@@ -43,7 +43,6 @@ ALTERNATE_POLICY_LANE_SEQUENCE = (
 )
 AUTHORIZE_JOB = "Authorize protected routine controller transition"
 OUTCOME_JOB = "Project the unique routine rotation outcome"
-RECONCILE_JOB = "Commit the deterministic automation changelog entry"
 
 
 class RoutineRotationError(ValueError):
@@ -141,11 +140,7 @@ def classify_callback_topology(
         raise RoutineCallbackTopologyError(
             "rotation callback job inventory is not exact"
         )
-    if (
-        AUTHORIZE_JOB not in expected_jobs
-        or OUTCOME_JOB not in expected_jobs
-        or RECONCILE_JOB not in expected_jobs
-    ):
+    if AUTHORIZE_JOB not in expected_jobs or OUTCOME_JOB not in expected_jobs:
         raise RoutineCallbackTopologyError(
             "rotation callback authority inventory is invalid"
         )
@@ -157,13 +152,9 @@ def classify_callback_topology(
         raise RoutineCallbackTopologyError(
             "rotation callback outcome projection did not succeed"
         )
-    if normalized[RECONCILE_JOB].get("conclusion") != "skipped":
-        raise RoutineCallbackTopologyError(
-            "rotation callback reconcile topology is invalid"
-        )
     conclusions = {
         str(normalized[name].get("conclusion"))
-        for name in expected_jobs - {AUTHORIZE_JOB, OUTCOME_JOB, RECONCILE_JOB}
+        for name in expected_jobs - {AUTHORIZE_JOB, OUTCOME_JOB}
     }
     if conclusions == {"skipped"}:
         return "no_transition"

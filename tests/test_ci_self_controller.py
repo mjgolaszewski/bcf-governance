@@ -29,7 +29,8 @@ from tests._wheel_fixture import write_wheel
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMMIT = "a" * 40
 TREE = "b" * 40
-ROUTINE_WORKFLOW = ".github/workflows/bcf-automation-reconcile.yml"
+ROUTINE_WORKFLOW = ".github/workflows/bcf-controller-rotation.yml"
+AUTOMATION_WORKFLOW = ".github/workflows/bcf-automation-reconcile.yml"
 
 
 def _job_step(workflow: dict[str, object], job_id: str, name: str) -> dict[str, object]:
@@ -400,8 +401,9 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     )["runner_security"]
     assert pending["trusted_controller_artifact"] == pin
     assert pending["trusted_controller_installation"] == baseline_proof
-    routine = (tmp_path / ROUTINE_WORKFLOW).read_text(encoding="utf-8")
-    assert baseline_proof["installed_commit_sha"] in routine
+    automation = (tmp_path / AUTOMATION_WORKFLOW).read_text(encoding="utf-8")
+    assert baseline_proof["installed_commit_sha"] in automation
+    assert COMMIT not in automation
     # The fixture preserves the canonical graph topology while exercising only
     # pin projection; lane applicability therefore comes from its source owner.
     alternate_lane = ordinary_alternate_lane_available(REPO_ROOT)
@@ -425,9 +427,9 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
         (tmp_path / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
     )["runner_security"]["trusted_controller_artifact"]
     assert {key: str(value) for key, value in projected.items()} == pin
-    routine = (tmp_path / ROUTINE_WORKFLOW).read_text(encoding="utf-8")
-    assert COMMIT in routine
-    assert baseline_proof["installed_commit_sha"] not in routine
+    automation = (tmp_path / AUTOMATION_WORKFLOW).read_text(encoding="utf-8")
+    assert COMMIT in automation
+    assert baseline_proof["installed_commit_sha"] not in automation
     assert controller.project_self_controller_pin(
         tmp_path, pin=pin, apply=False
     ).status == "clean"

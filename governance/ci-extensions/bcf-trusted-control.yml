@@ -36,7 +36,7 @@ conditions:
   routine-outcome-no-transition: needs.authorize.outputs.applicable != 'true'
   routine-outcome-active: needs.authorize.outputs.applicable == 'true'
   routine-transition-artifact-applicable: steps.materialize-transition.outputs.applicable == 'true'
-  routine-callback-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.name == 'bcf/automation-changelog-reconciler' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
+  routine-callback-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.name == 'bcf/controller-rotation' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
 commands:
   canary-admit:
     argv: ['{controller}', ci-github, canary, admit, --repository, '${{ github.repository }}', --sha, '${{ github.sha }}', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}']
@@ -388,7 +388,7 @@ workflows:
   role: trusted-control
   events:
   - type: workflow_run
-    workflows: [bcf/exact-main-admission, bcf/automation-admission]
+    workflows: [bcf/automation-admission]
     types: [completed]
   permissions: {actions: read, checks: read, contents: read, pull-requests: read, statuses: read}
   environment:
@@ -411,6 +411,19 @@ workflows:
     produces: []
     consumes: []
     required: true
+- id: controller-rotation
+  path: .github/workflows/bcf-controller-rotation.yml
+  display_name: bcf/controller-rotation
+  role: trusted-control
+  events:
+  - type: workflow_run
+    workflows: [bcf/exact-main-admission]
+    types: [completed]
+  permissions: {actions: read, checks: read, contents: read, pull-requests: read, statuses: read}
+  environment:
+    BCF_REPOSITORY_ID: '{source:self-policy:runner_security.trusted_controller_artifact.BCF_BOOTSTRAP_REPOSITORY_ID}'
+  concurrency: {group: bcf-routine-controller-rotation, cancel_in_progress: false}
+  jobs:
   - id: authorize
     display_name: Authorize protected routine controller transition
     semantic_role: routine-controller-authorization

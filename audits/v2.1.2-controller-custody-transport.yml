@@ -10,6 +10,18 @@ provider_compatibility_finding:
   publisher: {run: 36380866058/1, job: 108796175333, outcome: rejected_missing_newer_bundle_custody_field}
   class: installed_N_consumer_contract_must_accept_installed_N_producer_shape
   correction: finalizer transports the unchanged admission capsule separately from versioned certification-bundle content
+trigger_applicability_finding:
+  run: 36386947935/1
+  failed_job: 108814211705
+  cause: one self-only workflow combined automation-admission and exact-main triggers while its unconditional rotation outcome consumed an artifact impossible for the automation lane
+  correction: project the existing adopter topology back into self; automation reconciliation and controller rotation own disjoint workflows and exact trigger classes
+  unique_propositions:
+    automation_reconcile: deterministic automation changelog reconciliation
+    controller_rotation_workflow: exact controller rotation orchestration
+    routine_rotation_mechanism: installed N authorizes exact N+1
+  consumer_reconciliation:
+    removed_assumption: rotation authority inventory includes automation changelog reconciliation
+    fast_fail_owner: cheap controller-custody prospective validation executes the real no-transition callback classifier
 producer_contract:
   routing_observation:
     authority: none

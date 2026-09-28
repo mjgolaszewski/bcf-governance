@@ -18,7 +18,7 @@ from .ci_graph_commands import add_graph_parser, run_graph_command
 from .automation_commands import adopt_dependabot
 from .automation_contracts import AutomationContractError, load_automation_registry
 from .ci_github_api import GitHubAPI
-from .ci_graph_contracts import CIGraphError
+from .ci_graph_contracts import CIGraphError, validate_ci_graph
 from .ci_graph_render import apply_ci_graph, check_ci_graph
 from .ci_authority_pins import CIAuthorityPinError, pin_workflow_authority
 from .ci_authority_submit import submit_candidate
@@ -316,11 +316,16 @@ def main(argv: list[str] | None = None) -> None:
             _print(result, args.format)
             return
         if args.operation == "pin-authority":
+            workflows = validate_ci_graph(args.repo_root).workflows
             result = pin_workflow_authority(
                 args.repo_root,
                 authority_path=args.authority,
                 definition_commit=args.definition_commit,
                 references=tuple(args.workflow or ()),
+                workflow_paths={
+                    str(workflow["id"]): str(workflow["path"])
+                    for workflow in workflows
+                },
                 apply=args.apply,
             )
             _print(result.as_dict(), args.format)

@@ -98,6 +98,37 @@ def test_workflow_authority_pinning_rejects_uncommitted_definition_bytes(
         )
 
 
+def test_workflow_authority_path_migration_is_derived_from_graph_identity(
+    tmp_path: Path,
+) -> None:
+    root, _, content = _repository(tmp_path)
+    migrated = root / ".github/workflows/admission.yml"
+    migrated.write_bytes(content)
+    _git(root, "add", ".")
+    _git(root, "commit", "-m", "migrate workflow owner")
+    commit = _git(root, "rev-parse", "HEAD")
+
+    pin_workflow_authority(
+        root,
+        authority_path=Path("governance/ci-authority.yml"),
+        definition_commit=commit,
+        references=("admission",),
+        workflow_paths={"admission": ".github/workflows/admission.yml"},
+        apply=True,
+    )
+
+    payload = yaml.safe_load(
+        (root / "governance/ci-authority.yml").read_text(encoding="utf-8")
+    )
+    assert payload["workflow_registry"]["admission"]["active_path"] == (
+        ".github/workflows/admission.yml"
+    )
+    assert verify_workflow_authority(
+        root,
+        authority_path=Path("governance/ci-authority.yml"),
+    ) == 1
+
+
 def test_workflow_authority_compiles_matrix_names_and_semantic_roles(
     tmp_path: Path,
 ) -> None:

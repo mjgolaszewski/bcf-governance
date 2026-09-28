@@ -235,7 +235,7 @@ def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
     assert (
         REPO_ROOT / ".github/workflows/bcf-trusted-control-probe.yml"
     ).exists() is alternate_lane
-    routine = _workflow("automation-reconcile")
+    routine = _workflow("controller-rotation")
     job_ids = {str(job["id"]) for job in routine["jobs"]}
     assert {"authorize", "bootstrap", "probe", "promote", "activate"} <= job_ids
 
@@ -465,6 +465,25 @@ def test_automation_authority_is_metadata_only_and_candidate_excluded() -> None:
     assert admission["permissions"].get("contents") == "read"
     assert reconcile["checkout"] is False
     assert reconcile["protected_environment"] == "bcf-trusted-automation"
+    assert _workflow("automation-reconcile")["events"] == [{
+        "type": "workflow_run",
+        "workflows": ["bcf/automation-admission"],
+        "types": ["completed"],
+    }]
+    assert [job["id"] for job in _workflow("automation-reconcile")["jobs"]] == [
+        "reconcile"
+    ]
+    assert _workflow("controller-rotation")["events"] == [{
+        "type": "workflow_run",
+        "workflows": ["bcf/exact-main-admission"],
+        "types": ["completed"],
+    }]
+    assert compiled.graph["conditions"]["routine-callback-applicable"] == (
+        "vars.BCF_CI_AUTHORITY_ENABLED == 'true' && "
+        "github.event.workflow_run.name == 'bcf/controller-rotation' && "
+        "github.event.workflow_run.head_branch == 'main' && "
+        "github.event.workflow_run.conclusion == 'success'"
+    )
     assert publisher["permissions"] == {
         "actions": "read",
         "checks": "write",
