@@ -15,6 +15,8 @@ from typing import Any
 
 import yaml
 
+from .ci_github_api import GitHubAPI, GitHubAPIError
+
 
 class CIAuthorityPinError(ValueError):
     """Raised when workflow custody cannot be derived exactly from Git."""
@@ -59,6 +61,88 @@ def _mapping(path: Path) -> tuple[bytes, dict[str, Any]]:
     if not isinstance(value, dict):
         raise CIAuthorityPinError("CI authority must contain a mapping")
     return raw, value
+
+
+def provider_workflow_ids(
+    api: GitHubAPI, repository: str, workflow_paths: dict[str, str]
+) -> dict[str, str]:
+    """Resolve exact provider IDs for canonical workflow paths or fail closed."""
+
+    identities: dict[str, str] = {}
+    for reference, path in workflow_paths.items():
+        if not path.startswith(".github/workflows/") or ".." in Path(path).parts:
+            raise CIAuthorityPinError("workflow authority path is unsafe")
+        try:
+            workflow = api.workflow(repository, Path(path).name)
+        except GitHubAPIError as exc:
+            raise CIAuthorityPinError(
+                f"provider workflow identity is unavailable: {reference}"
+            ) from exc
+        observed_id = str(workflow.get("id", ""))
+        if (
+            not observed_id.isdigit()
+            or int(observed_id) < 1
+            or workflow.get("path") != path
+            or workflow.get("state") != "active"
+        ):
+            raise CIAuthorityPinError(
+                f"provider workflow identity mismatched: {reference}"
+            )
+        identities[reference] = observed_id
+    if len(set(identities.values())) != len(identities):
+        raise CIAuthorityPinError("provider workflow identities are not unique")
+    return identities
+
+
+def verify_provider_workflow_authority(
+    repo_root: Path, *, authority_path: Path, api: GitHubAPI, repository: str
+) -> int:
+    """Verify every canonical path/ID pair against provider-owned identity."""
+
+    root = repo_root.resolve()
+    authority = authority_path if authority_path.is_absolute() else root / authority_path
+    _, payload = _mapping(authority)
+    registry = payload.get("workflow_registry")
+    if payload.get("schema_version") != "1.1" or not isinstance(registry, dict):
+        return 0
+    paths = {
+        str(reference): str(entry.get("active_path", ""))
+        for reference, entry in registry.items()
+        if isinstance(entry, dict)
+    }
+    if len(paths) != len(registry):
+        raise CIAuthorityPinError("workflow registry entry must be a mapping")
+    observed = provider_workflow_ids(api, repository, paths)
+    for reference, entry in registry.items():
+        if str(entry.get("workflow_id", "")) != observed[str(reference)]:
+            raise CIAuthorityPinError(
+                f"provider workflow ID mismatched: {reference}"
+            )
+    return len(registry)
+
+
+def projected_workflow_paths(
+    repo_root: Path,
+    *,
+    authority_path: Path,
+    workflow_paths: dict[str, str],
+) -> dict[str, str]:
+    """Join graph-owned migrations onto the complete authority registry."""
+
+    root = repo_root.resolve()
+    authority = authority_path if authority_path.is_absolute() else root / authority_path
+    _, payload = _mapping(authority)
+    registry = payload.get("workflow_registry")
+    if payload.get("schema_version") != "1.1" or not isinstance(registry, dict):
+        raise CIAuthorityPinError("workflow projection requires authority version 1.1")
+    projected: dict[str, str] = {}
+    for reference, entry in registry.items():
+        if not isinstance(entry, dict):
+            raise CIAuthorityPinError("workflow registry entry must be a mapping")
+        projected[str(reference)] = workflow_paths.get(
+            str(reference), str(entry.get("active_path", ""))
+        )
+    return projected
 
 
 def _matrix_combinations(matrix: dict[str, Any]) -> list[dict[str, Any]]:
@@ -344,6 +428,7 @@ def pin_workflow_authority(
     definition_commit: str,
     references: tuple[str, ...],
     workflow_paths: dict[str, str] | None = None,
+    workflow_ids: dict[str, str] | None = None,
     apply: bool,
 ) -> CIAuthorityPinResult:
     """Derive exact blob and SHA-256 pins; optionally update the canonical registry."""
@@ -370,6 +455,10 @@ def pin_workflow_authority(
         )
     committed_workflows: dict[str, bytes] = {}
     graph_paths = workflow_paths or {}
+    if workflow_ids is not None and set(workflow_ids) != set(registry):
+        raise CIAuthorityPinError(
+            "provider workflow identity inventory must cover the complete registry"
+        )
     for reference in selected:
         entry = registry.get(reference)
         if not isinstance(entry, dict):
@@ -377,6 +466,8 @@ def pin_workflow_authority(
         derived_path = graph_paths.get(reference)
         if derived_path is not None:
             entry["active_path"] = derived_path
+        if workflow_ids is not None:
+            entry["workflow_id"] = workflow_ids[reference]
         path = str(entry.get("active_path", ""))
         if not path.startswith(".github/workflows/") or ".." in Path(path).parts:
             raise CIAuthorityPinError("workflow authority path is unsafe")

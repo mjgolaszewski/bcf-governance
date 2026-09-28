@@ -22,6 +22,20 @@ trigger_applicability_finding:
   consumer_reconciliation:
     removed_assumption: rotation authority inventory includes automation changelog reconciliation
     fast_fail_owner: cheap controller-custody prospective validation executes the real no-transition callback classifier
+provider_identity_finding:
+  rotation: 36404342406/1
+  first_causal_job: 108870440414
+  observed:
+    declared_controller_rotation_workflow_id: '348690108'
+    declared_id_actual_owner: .github/workflows/bcf-automation-reconcile.yml
+    canonical_controller_rotation_path: .github/workflows/bcf-controller-rotation.yml
+    canonical_path_provider_id: '368956359'
+  cause: graph-owned path migration preserved the retired provider workflow ID because provider identity was not an input to the canonical pin compiler
+  correction:
+    compiler: derive every provider workflow ID from the complete projected authority path inventory
+    cheap_preflight: reject provider path or ID drift before evidence fan-out
+    prospective_train: authenticate candidate provider workflow identities before allocating evidence
+    rotation: never reuse bootstrap success from a run whose enclosing workflow identity failed authentication
 producer_contract:
   routing_observation:
     authority: none

@@ -8,6 +8,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Made authority pinning derive provider workflow IDs from each exact canonical
+  path and made cheap/provider prospective validation reject path/ID drift
+  before evidence fan-out or controller rotation.
 - Isolated dependency-changelog reconciliation from exact-main controller
   rotation at the workflow trigger boundary, so an intentionally skipped
   automation admission cannot invoke a rotation outcome or callback consumer;

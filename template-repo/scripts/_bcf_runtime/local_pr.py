@@ -783,8 +783,7 @@ def run_prospective_train(
                 "provider-authenticated prospective validation requires a provider API"
             )
         controller_authority = effective_controller_authority(
-            provider_api, repository=repository
-        )
+            provider_api, repository=repository, repo_root=repo_root.resolve())
 
     return _run_prospective_train(
         repo_root,
