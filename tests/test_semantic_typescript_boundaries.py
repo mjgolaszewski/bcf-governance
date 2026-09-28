@@ -10,13 +10,14 @@ from bcf_governance.tooling.semantic_ownership_scan import run_scan
 from semantic_typescript_fixture import dump, repository, write
 
 
-@pytest.mark.parametrize("failure", ["diagnostic", "untracked", "compiler-drift"])
+@pytest.mark.parametrize("failure", ["diagnostic", "ignored", "compiler-drift"])
 def test_real_compiler_failure_is_typed_and_cannot_write_lock(tmp_path: Path, failure: str, capsys) -> None:
     repository(tmp_path)
     if failure == "diagnostic":
         write(tmp_path, "src/api.ts", "export function query(): number { return 'wrong'; }\n")
         diagnostic = "compiler diagnostic"
-    elif failure == "untracked":
+    elif failure == "ignored":
+        write(tmp_path, ".gitignore", "src/hidden.ts\n")
         write(tmp_path, "src/hidden.ts", "export function hidden(): number { return 1; }\n")
         write(tmp_path, "src/api.ts", "export { hidden as query } from './hidden.js';\n")
         diagnostic = "not a tracked repository file"
