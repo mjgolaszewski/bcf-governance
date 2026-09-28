@@ -63,6 +63,7 @@ artifacts:
   weekly-mutant-results: {path: .artifacts/scheduled-mutants, kind: control, scope: run-attempt, retention_days: 90}
   trusted-controller-bundle: {path: .artifacts/trusted-control, kind: control, scope: run-attempt, retention_days: 30}
   controller-custody: {path: .artifacts/controller-custody, kind: control, scope: run-attempt, retention_days: 30}
+  finalizer-controller-custody: {path: .artifacts/controller-custody, kind: control, scope: run-attempt, retention_days: 30}
   prior-evidence-transport: {path: .artifacts/bcf/prior-evidence, kind: control, scope: run-attempt, retention_days: 30}
 conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', prior-evidence-enabled: inputs.use_prior_evidence == true, prior-evidence-disabled: inputs.use_prior_evidence != true, evidence-prerequisites-with-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence == true, evidence-prerequisites-without-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence != true, exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-semantic-admission-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && needs.trusted-controller-build.outputs.semantic_evidence_applicable == 'true', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED
     == 'true' && github.event.workflow_run.name == 'bcf/trusted-evidence-finalizer' && github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main', always-step: always()}
@@ -347,6 +348,22 @@ step_components:
     environment: {}
     produces: []
     consumes: [controller-custody]
+  upload-finalizer-controller-custody:
+    kind: action
+    name: Preserve triggering admission controller custody for publication
+    action: upload-artifact
+    with: {name: 'bcf-finalizer-controller-custody-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-controller-custody', if-no-files-found: error, retention-days: 30}
+    environment: {}
+    produces: [finalizer-controller-custody]
+    consumes: [controller-custody]
+  download-finalizer-controller-custody:
+    kind: action
+    name: Download finalizer-preserved admission controller custody
+    action: download-artifact
+    with: {name: 'bcf-finalizer-controller-custody-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ github.event.workflow_run.id }}', path: '${{ runner.temp }}/bcf-controller-custody'}
+    environment: {}
+    produces: []
+    consumes: [finalizer-controller-custody]
   upload-prior-evidence-effective:
     kind: action
     name: Upload exact prior evidence transport
@@ -484,6 +501,14 @@ step_components:
     environment: {BCF_CONTROLLER_ROUTE_FILE: '${{ runner.temp }}/bcf-exact-main-certification/controller-custody.json'}
     produces: []
     consumes: [exact-main-certification]
+  project-finalizer-controller-route:
+    kind: command
+    name: Project non-authoritative routing from finalizer-preserved admission custody
+    id: controller-route
+    command: project-controller-route
+    environment: {BCF_CONTROLLER_ROUTE_FILE: '${{ runner.temp }}/bcf-controller-custody/controller-custody.json'}
+    produces: []
+    consumes: [finalizer-controller-custody]
   classify-exact-main-controller:
     kind: command
     name: Classify exact-main semantic evidence applicability
@@ -670,8 +695,8 @@ workflows:
     components: []
     executor:
       kind: component_sequence
-      components: [setup-python, download-trigger-controller-custody, project-custody-controller-route, exact-main-finalize-effective, upload-exact-main-certification-effective]
-    produces: [exact-main-certification]
+      components: [setup-python, download-trigger-controller-custody, project-custody-controller-route, exact-main-finalize-effective, upload-exact-main-certification-effective, upload-finalizer-controller-custody]
+    produces: [exact-main-certification, finalizer-controller-custody]
     consumes: [controller-custody]
     required: true
 - id: exact-main-publisher
@@ -698,9 +723,9 @@ workflows:
     components: []
     executor:
       kind: component_sequence
-      components: [setup-python, download-exact-main-certification-effective, project-certification-controller-route, exact-main-publish-effective]
+      components: [setup-python, download-exact-main-certification-effective, download-finalizer-controller-custody, project-finalizer-controller-route, exact-main-publish-effective]
     produces: []
-    consumes: [exact-main-certification]
+    consumes: [exact-main-certification, finalizer-controller-custody]
     required: true
   - id: rotation-callback
     display_name: Dispatch post-rotation exact-main certification

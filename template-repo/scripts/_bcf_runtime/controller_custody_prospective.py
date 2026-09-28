@@ -20,7 +20,7 @@ _BASE_ROUTED_JOBS = {
         "project-custody-controller-route", "exact-main-finalize-effective"
     ),
     ("exact-main-publisher", "publish"): (
-        "project-certification-controller-route", "exact-main-publish-effective"
+        "project-finalizer-controller-route", "exact-main-publish-effective"
     ),
 }
 
@@ -157,6 +157,65 @@ def validate_controller_custody_chain(
         custody_components, "project-controller-custody", "upload-controller-custody"
     ) or "controller-custody" not in controller_builder.get("produces", []):
         raise GitHubControllerError("exact-main route-custody producer is not closed")
+    finalizer = _job(graph, "exact-main-finalizer", "finalize")
+    finalizer_components = _components(finalizer)
+    if (
+        not _ordered(
+            finalizer_components,
+            "download-trigger-controller-custody",
+            "upload-finalizer-controller-custody",
+        )
+        or finalizer.get("produces")
+        != ["exact-main-certification", "finalizer-controller-custody"]
+        or finalizer.get("consumes") != ["controller-custody"]
+    ):
+        raise GitHubControllerError(
+            "finalizer controller-custody pass-through contract is not closed"
+        )
+    publisher = _job(graph, "exact-main-publisher", "publish")
+    publisher_components = _components(publisher)
+    if (
+        not _ordered(
+            publisher_components,
+            "download-finalizer-controller-custody",
+            "project-finalizer-controller-route",
+        )
+        or publisher.get("consumes")
+        != ["exact-main-certification", "finalizer-controller-custody"]
+    ):
+        raise GitHubControllerError(
+            "publisher controller-custody pass-through contract is not closed"
+        )
+    components = graph.get("step_components")
+    upload = components.get("upload-finalizer-controller-custody", {})
+    download = components.get("download-finalizer-controller-custody", {})
+    if (
+        upload.get("with")
+        != {
+            "name": (
+                "bcf-finalizer-controller-custody-${{ github.run_id }}-"
+                "${{ github.run_attempt }}"
+            ),
+            "path": "${{ runner.temp }}/bcf-controller-custody",
+            "if-no-files-found": "error",
+            "retention-days": 30,
+        }
+        or download.get("with")
+        != {
+            "name": (
+                "bcf-finalizer-controller-custody-"
+                "${{ github.event.workflow_run.id }}-"
+                "${{ github.event.workflow_run.run_attempt }}"
+            ),
+            "github-token": "${{ github.token }}",
+            "repository": "${{ github.repository }}",
+            "run-id": "${{ github.event.workflow_run.id }}",
+            "path": "${{ runner.temp }}/bcf-controller-custody",
+        }
+    ):
+        raise GitHubControllerError(
+            "finalizer controller-custody transport is not attempt-exact"
+        )
     exact_commands = graph["commands"]
     privileged_commands = [
         "exact-main-finalize-effective",
@@ -236,6 +295,7 @@ def validate_controller_custody_chain(
     payloads = {
         "admission_custody": custody,
         "certification": custody,
+        "legacy_noncertifying_finalizer": custody,
         "no_transition": {"controller_custody": custody},
         "active_transition": {"artifact": {"commit_sha": commit}},
         "release_receipt": {"observations": {"controller_custody": custody}},

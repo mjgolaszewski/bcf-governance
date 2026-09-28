@@ -8,6 +8,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Preserved the exact admission controller-custody capsule through the trusted
+  finalizer as a run-attempt-bound pass-through, so both legacy noncertifying
+  observations and current certification bundles route publication without
+  requiring an older installed controller to emit a newer bundle field.
 - Transported one standalone provider-observed controller-custody contract from
   exact-main construction through rotation, finalization, publication, and release;
   every privileged consumer now invokes and reauthenticates that exact identity, while
