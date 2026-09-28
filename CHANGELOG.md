@@ -8,6 +8,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Recorded immutable v2.1.2 provider custody after exact-main phase closure,
+  independent release verification, exact-byte publication, and credential
+  retirement; release_17 is superseded and release_18 owns the current patch line.
 - Made authority pinning derive provider workflow IDs from each exact canonical
   path and made cheap/provider prospective validation reject path/ID drift
   before evidence fan-out or controller rotation.
