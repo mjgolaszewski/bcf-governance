@@ -406,7 +406,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "a39c72aae6a8e83fb3aa41a9647f69f448e80076cabfa73f64b1e0addadddf5f"
+      "sha256": "9e2c4689e1d8d956e3a413dd6b2166d882b6cc9aaa5793e2e969c38713ded5c7"
     },
     "scripts/_bcf_runtime/automation_changelog.py": {
       "operation": "copy",

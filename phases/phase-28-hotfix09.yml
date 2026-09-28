@@ -1,0 +1,46 @@
+document:
+  kind: hotfix_execution_log
+  name: P28-HF09 Hotfix Log
+  id: project-phase-28-hotfix09
+  version: 1.0.0
+  generated_at_utc: '2026-09-28T00:00:00Z'
+  status: completed
+  path: phases/phase-28-hotfix09.yml
+hotfix:
+  id: P28-HF09
+  mode: full
+  related_phase_id: P28
+  hotfix_number: 9
+  summary: Release the certified adopter-truth contract without self-authority leakage
+execution_evidence:
+  planned_commands:
+  - bcf ci submit --intent closure
+  executed_commands:
+  - focused Lite v1 and Standard v3 fresh-install PR workitem closure and no-controller custody suites
+  - strict released-wheel upgrade and mixed-language installed-consumer suites
+  - canonical bcf ci submit closure train on exact implementation candidate 5eaf77e239517e18896cc90e41080879021a4216
+  notes:
+  - AgentBus v2.1.2 qualification proved self-only Break Glass and App custody leaked into an ordinary Standard v3 install; Racecar proved active-phase bounded submission could not derive its eligible workitem target.
+  - Typed self-authority pack scope now excludes self-only surfaces from fresh installs and retires them on upgrade; optional controller authority remains absent unless explicitly adopted.
+  - Post-merge intent derives mechanically from authored lifecycle state and binds PR progress, the unique completed workitem, or terminal phase closure without broadening certification scope.
+  - PR 333 certified through governance 36468189209/1 and merged as b3d84bc6970bb19bbdd80e15b808ff8117f1c247 with tree c500fef5aa9f1236e1ed881a55cba3a77de365bd.
+  - Ordinary controller rotation 36472643230/1 installed b3d84bc6970bb19bbdd80e15b808ff8117f1c247 on both trusted runners.
+  - Exact-main 36472191538/5 reused applicable authenticated evidence; finalizer 36477153833/1 and publisher 36477452349/1 published bcf/exact-main-certification success.
+  - Provider transient GET failures before evidence are tracked in issue 298 for bounded retry; the exact callback 36477456394/2 completed no-transition successfully.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml
