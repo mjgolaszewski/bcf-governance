@@ -572,7 +572,7 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
     # upgrade refreshes the renderer/runtime, so converge those projections
     # before validating the resulting adopter tree. Git-bound authority pins
     # remain a post-commit reconciliation concern.
-    if (target_root / "governance/ci-graph.yml").is_file():
+    if not args.skip_validation and (target_root / "governance/ci-graph.yml").is_file():
         reconcile_post_merge_scope(target_root, apply=True)
         apply_ci_graph_locks(target_root)
         apply_ci_graph(target_root)

@@ -1015,7 +1015,7 @@
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
-      "sha256": "b792be12de06014cfdd501e37084910588bf13b797fc5d040dc989b640a3df9b"
+      "sha256": "d523598d036e57f6e29b90156aac21634b30b2fc4cc3c691c6bb1d7dbacfa523"
     },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",
