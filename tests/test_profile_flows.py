@@ -151,7 +151,7 @@ def main() -> None:
         junit = artifacts / 'junit' / f'{gate}.xml'
         junit.parent.mkdir(parents=True, exist_ok=True)
         failure = '<failure>mutated gate</failure>' if BROKEN else ''
-        junit.write_text(f'<testsuite tests="1" failures="{int(BROKEN)}"><testcase classname="tests/gates.py" name="{gate}">{failure}</testcase></testsuite>')
+        junit.write_text(f'<testsuite tests="1" failures="{int(BROKEN)}"><testcase classname="backend.tests.gates" name="test_gate[{gate}]">{failure}</testcase></testsuite>')
     for name in {
         'security-sbom': 'sbom.json',
         'security-vulnerability-scan': 'vulnerability-scan.json',
@@ -397,6 +397,7 @@ def gate_config(
                     "min_collected": 1,
                     "min_executed": 1,
                     "max_skipped": 0,
+                    "selectors": [f"backend/tests/gates.py::test_gate[{target}]"],
                 },
             }
         elif policy == "runtime_smoke":
@@ -434,7 +435,7 @@ def gate_config(
         oracle = (
             {
                 "kind": "test_node_failure",
-                "node_ids": [f"tests/gates.py::{target}"],
+                "node_ids": [f"backend.tests.gates::test_gate[{target}]"],
             }
             if is_test
             else {
@@ -544,11 +545,28 @@ def gate_config(
         }
         manifest_root = repo / "governance/test-manifests"
         manifest_root.mkdir(parents=True, exist_ok=True)
+        test_targets = sorted(
+            target
+            for target, gate in gates.items()
+            if isinstance(gate.get("evidence"), dict)
+            and gate["evidence"].get("kind") == "test_suite"
+        )
+        tests_root = repo / "backend/tests"
+        tests_root.mkdir(parents=True, exist_ok=True)
+        (tests_root / "gates.py").write_text(
+            "import pytest\n\n"
+            "from gate import build_gate_result\n\n"
+            f"TARGETS = {test_targets!r}\n\n"
+            "@pytest.mark.parametrize('gate', TARGETS, ids=TARGETS)\n"
+            "def test_gate(gate: str) -> None:\n"
+            "    assert build_gate_result(gate).passed\n",
+            encoding="utf-8",
+        )
         for target, gate in gates.items():
             evidence = gate.get("evidence")
             if isinstance(evidence, dict) and evidence.get("kind") == "test_suite":
                 (manifest_root / f"{target}.txt").write_text(
-                    f"tests/gates.py::{target}\n", encoding="utf-8"
+                    f"backend.tests.gates::test_gate[{target}]\n", encoding="utf-8"
                 )
     path.write_text(
         yaml.safe_dump(

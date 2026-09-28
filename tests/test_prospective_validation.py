@@ -14,6 +14,7 @@ from bcf_governance.tooling import controller_custody_prospective as custody
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
 from bcf_governance.tooling.ci_authority_prospective_lanes import (
     direct_policy_identity,
+    ordinary_authority_policy_identity,
 )
 from bcf_governance.tooling.routine_controller_rotation import (
     prospective_no_transition_topology,
@@ -373,6 +374,24 @@ def test_ordinary_exact_main_does_not_require_optional_rotation_topology(
     assert proof["custody_state"] == "ordinary_executable_controller"
     assert proof["controller_custody_required"] is False
     assert proof["release_authority"] is False
+
+
+def test_fresh_ordinary_exact_main_authenticates_absent_optional_authority() -> None:
+    blobs = {
+        (HEAD, "governance/ci-graph.yml"): b"candidate graph\n",
+    }
+
+    identity = ordinary_authority_policy_identity(
+        base_sha=BASE,
+        base_tree=BASE_TREE,
+        candidate_sha=HEAD,
+        candidate_tree=TREE,
+        read_blob=lambda ref, path: blobs.get((ref, path)),
+    )
+
+    assert identity["source"]["policy_paths"]["governance/ci-graph.yml"]["state"] == "absent"
+    assert identity["candidate"]["policy_paths"]["governance/ci-graph.yml"]["state"] == "present"
+    assert identity["candidate"]["policy_paths"]["governance/ci-authority.yml"]["state"] == "absent"
 
 
 def test_provider_workflow_identity_mismatch_stops_before_prospective_evidence(

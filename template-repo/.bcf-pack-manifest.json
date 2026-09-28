@@ -468,7 +468,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_prospective_lanes.py": {
       "operation": "copy",
-      "sha256": "7affe931fcad224891196bcde2641f7386a0f7854e567c6eb60fd4c96318826a"
+      "sha256": "69548d66a1ca09973aba5b8f8a4068950f27410a4fb989f88ffde85ce6941f64"
     },
     "scripts/_bcf_runtime/ci_authority_prospective_telemetry.py": {
       "operation": "copy",

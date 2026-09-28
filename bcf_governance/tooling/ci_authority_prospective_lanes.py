@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from pathlib import Path
 import subprocess
 from typing import Any, Callable, Literal, overload
@@ -92,26 +93,33 @@ def ordinary_authority_policy_identity(
     base_tree: str,
     candidate_sha: str,
     candidate_tree: str,
-    read_blob: Callable[[str, str], bytes],
+    read_blob: Callable[[str, str], bytes | None],
 ) -> dict[str, Any]:
-    """Bind the exact graph/authority pair for an unpinned executable controller."""
+    """Bind exact present/absent policy paths for an executable controller."""
 
-    def digest(ref: str) -> str:
-        return controller_policy_digest(
-            lambda path: read_blob(ref, path),
-            policy_paths=ORDINARY_AUTHORITY_POLICY_PATHS,
-        )
+    def projection(ref: str, *, require_graph: bool) -> dict[str, Any]:
+        paths: dict[str, dict[str, str | None]] = {}
+        for path in ORDINARY_AUTHORITY_POLICY_PATHS:
+            raw = read_blob(ref, path)
+            if require_graph and path == "governance/ci-graph.yml" and raw is None:
+                raise ProspectiveLaneError("candidate ordinary exact-main graph is absent")
+            paths[path] = {
+                "state": "absent" if raw is None else "present",
+                "sha256": None if raw is None else hashlib.sha256(raw).hexdigest(),
+            }
+        encoded = json.dumps(paths, sort_keys=True, separators=(",", ":")).encode()
+        return {"policy_paths": paths, "policy_sha256": hashlib.sha256(encoded).hexdigest()}
 
     return {
         "source": {
             "commit_sha": base_sha,
             "tree_sha": base_tree,
-            "policy_sha256": digest(base_sha),
+            **projection(base_sha, require_graph=False),
         },
         "candidate": {
             "commit_sha": candidate_sha,
             "tree_sha": candidate_tree,
-            "policy_sha256": digest(candidate_sha),
+            **projection(candidate_sha, require_graph=True),
         },
     }
 
@@ -163,7 +171,9 @@ def prospective_policy_binding(
             base_tree=base_tree,
             candidate_sha=candidate_sha,
             candidate_tree=candidate_tree,
-            read_blob=read,
+            read_blob=lambda ref, path: git_blob(
+                repo_root, ref=ref, path=path, allow_absent=True
+            ),
         )
     else:
         transition = (
