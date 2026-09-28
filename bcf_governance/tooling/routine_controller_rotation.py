@@ -42,6 +42,7 @@ ALTERNATE_POLICY_LANE_SEQUENCE = (
     "normalize_ordinary_current",
 )
 AUTHORIZE_JOB = "Authorize protected routine controller transition"
+OUTCOME_JOB = "Project the unique routine rotation outcome"
 RECONCILE_JOB = "Commit the deterministic automation changelog entry"
 
 
@@ -140,7 +141,11 @@ def classify_callback_topology(
         raise RoutineCallbackTopologyError(
             "rotation callback job inventory is not exact"
         )
-    if AUTHORIZE_JOB not in expected_jobs or RECONCILE_JOB not in expected_jobs:
+    if (
+        AUTHORIZE_JOB not in expected_jobs
+        or OUTCOME_JOB not in expected_jobs
+        or RECONCILE_JOB not in expected_jobs
+    ):
         raise RoutineCallbackTopologyError(
             "rotation callback authority inventory is invalid"
         )
@@ -148,13 +153,17 @@ def classify_callback_topology(
         raise RoutineCallbackTopologyError(
             "rotation callback authorization did not succeed"
         )
+    if normalized[OUTCOME_JOB].get("conclusion") != "success":
+        raise RoutineCallbackTopologyError(
+            "rotation callback outcome projection did not succeed"
+        )
     if normalized[RECONCILE_JOB].get("conclusion") != "skipped":
         raise RoutineCallbackTopologyError(
             "rotation callback reconcile topology is invalid"
         )
     conclusions = {
         str(normalized[name].get("conclusion"))
-        for name in expected_jobs - {AUTHORIZE_JOB, RECONCILE_JOB}
+        for name in expected_jobs - {AUTHORIZE_JOB, OUTCOME_JOB, RECONCILE_JOB}
     }
     if conclusions == {"skipped"}:
         return "no_transition"
@@ -232,7 +241,9 @@ def prospective_no_transition_topology(repo_root: Path) -> str:
         jobs.append(
             {
                 "name": name,
-                "conclusion": "success" if name == AUTHORIZE_JOB else "skipped",
+                "conclusion": (
+                    "success" if name in {AUTHORIZE_JOB, OUTCOME_JOB} else "skipped"
+                ),
             }
         )
         if isinstance(matrix, Mapping) and matrix and name not in facades:

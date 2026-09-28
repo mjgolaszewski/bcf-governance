@@ -25,6 +25,8 @@ from .ci_github_bundle import write_exclusive
 from .ci_github_identity import GitHubControllerError, MainIdentity, resolve_main
 from .ci_github_membership import select_latest_admission
 from .ci_self_controller import resolve_self_controller_artifact
+from .controller_custody import compile_controller_custody, require_controller_execution
+from .routine_controller_provider import resolve_effective_controller
 from .release_versions import ReleaseVersion, ReleaseVersionError, parse_release_version
 
 
@@ -169,6 +171,12 @@ def resolve_release_authorization_inputs(
     """Resolve release inputs without caller-selected provider identities."""
 
     main = resolve_main(api, repository)
+    require_controller_execution(
+        compile_controller_custody(
+            resolve_effective_controller(api, repository=repository),
+            repository=repository,
+        )
+    )
     authority = load_authority(api, repository, main, required_version="1.1")
     admission_run_id, admission_attempt = select_latest_admission(
         api, repository=repository, main=main, authority=authority
@@ -279,6 +287,12 @@ def resolve_release_publication_inputs(
     """Resolve the newest exact-main release receipt without operator coordinates."""
 
     main = resolve_main(api, repository)
+    require_controller_execution(
+        compile_controller_custody(
+            resolve_effective_controller(api, repository=repository),
+            repository=repository,
+        )
+    )
     release_version = _release_version_at_main(
         api, repository=repository, main=main
     )

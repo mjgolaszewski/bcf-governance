@@ -47,12 +47,58 @@ from bcf_governance.tooling.release_receipts import (
     ReleaseReceiptError,
     build_trusted_release_receipt,
 )
+from bcf_governance.tooling.controller_custody import compile_controller_custody
 from tests._wheel_fixture import write_wheel
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMMIT = "a" * 40
 TREE = "b" * 40
+
+
+def _controller_custody() -> dict[str, object]:
+    return compile_controller_custody(
+        {
+            "source": "source_policy",
+            "subject": {"commit_sha": COMMIT, "tree_sha": TREE},
+            "transition_ids": [],
+            "pin": {
+                "BCF_BOOTSTRAP_ARTIFACT_ID": "42",
+                "BCF_BOOTSTRAP_ARTIFACT_NAME": f"bcf-trusted-control-{COMMIT}-1",
+                "BCF_BOOTSTRAP_ARTIFACT_DIGEST": "sha256:" + "b" * 64,
+                "BCF_BOOTSTRAP_RUN_ID": "100",
+                "BCF_BOOTSTRAP_RUN_ATTEMPT": "1",
+                "BCF_BOOTSTRAP_COMMIT_SHA": COMMIT,
+                "BCF_BOOTSTRAP_TREE_SHA": TREE,
+                "BCF_BOOTSTRAP_REPOSITORY_ID": "101",
+                "BCF_BOOTSTRAP_WHEEL_SHA256": "d" * 64,
+            },
+        },
+        repository="owner/repo",
+    )
+
+
+@pytest.fixture(autouse=True)
+def _provider_controller_custody(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_inputs.resolve_effective_controller",
+        lambda *_args, **_kwargs: {
+            "source": "source_policy",
+            "subject": {"commit_sha": COMMIT, "tree_sha": TREE},
+            "transition_ids": [],
+            "pin": {
+                "BCF_BOOTSTRAP_ARTIFACT_ID": "42",
+                "BCF_BOOTSTRAP_ARTIFACT_NAME": f"bcf-trusted-control-{COMMIT}-1",
+                "BCF_BOOTSTRAP_ARTIFACT_DIGEST": "sha256:" + "b" * 64,
+                "BCF_BOOTSTRAP_RUN_ID": "100",
+                "BCF_BOOTSTRAP_RUN_ATTEMPT": "1",
+                "BCF_BOOTSTRAP_COMMIT_SHA": COMMIT,
+                "BCF_BOOTSTRAP_TREE_SHA": TREE,
+                "BCF_BOOTSTRAP_REPOSITORY_ID": "101",
+                "BCF_BOOTSTRAP_WHEEL_SHA256": "d" * 64,
+            },
+        },
+    )
 
 
 def _terminal_scope() -> dict[str, object]:
@@ -274,6 +320,7 @@ def _release_inputs(tmp_path: Path) -> dict[str, object]:
                 "commit_sha": COMMIT,
                 "tree_sha": TREE,
             },
+            "controller_custody": _controller_custody(),
             "release_inputs": {
                 "dependency_lock": {
                     "path": "release/requirements-cp312-linux-x86_64.lock",
@@ -581,6 +628,7 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
         },
     }
     _json(bundle / "ci-certification.json", certification)
+    _json(bundle / "controller-custody.json", _controller_custody())
     _json(
         bundle / "evidence-session.json",
         {"producer": {"run_id": "50", "run_attempt": "1"}},
@@ -737,6 +785,7 @@ def test_release_authorizer_rejects_bounded_workitem_certification(
         "subject": {"checkout_sha": COMMIT, "tree_sha": TREE},
         **bounded,
     })
+    _json(bundle / "controller-custody.json", _controller_custody())
     _json(bundle / "evidence-session.json", {})
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release.verify_bundle", lambda _: {}
@@ -1188,6 +1237,7 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
             },
             "invocation": {"workflow": {"run_id": "50", "run_attempt": "1"}},
             "observations": {
+                "controller_custody": _controller_custody(),
                 "release_artifacts": [
                     {"path": name, "sha256": digest} for name, digest in assets.items()
                 ]

@@ -12,6 +12,7 @@ from typing import Any, Iterable
 
 from jsonschema import Draft202012Validator
 from .evaluation_scope import is_terminal_phase_certification
+from .controller_custody import validate_controller_custody
 
 
 class ReleaseReceiptError(ValueError):
@@ -310,6 +311,9 @@ def build_trusted_release_receipt(
     if verified_assets != actual_assets:
         raise ReleaseReceiptError("trusted release assets differ from verifier output")
     controller = authorization.get("controller")
+    controller_custody = validate_controller_custody(
+        authorization.get("controller_custody")
+    )
     dependency = verification.get("dependency_closure")
     if not isinstance(controller, dict) or not isinstance(dependency, dict):
         raise ReleaseReceiptError("controller or dependency closure identity is missing")
@@ -376,6 +380,7 @@ def build_trusted_release_receipt(
             },
             "verification_execution": verifier,
             "controller": controller,
+            "controller_custody": controller_custody,
             "dependency_closure": dependency,
             "release_artifacts": materials[5:],
             "acyclic_construction": {

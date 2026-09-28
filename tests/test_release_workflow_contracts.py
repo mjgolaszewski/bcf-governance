@@ -48,27 +48,34 @@ def _job(workflow_id: str, job_id: str) -> dict[str, object]:
 
 def test_release_authorizer_is_owner_dispatched_no_checkout_control_plane() -> None:
     workflow = _workflow("release-authority")
+    route = _job("release-authority", "controller-route")
     authorize = _job("release-authority", "authorize")
     assert workflow["events"] == [{"type": "workflow_dispatch"}]
-    assert [job["id"] for job in workflow["jobs"]] == ["authorize", "build"]
+    assert [job["id"] for job in workflow["jobs"]] == [
+        "controller-route", "authorize", "build",
+    ]
+    assert route["trust"] == "candidate"
+    assert route["controller_requirement"] is None
     assert authorize["trust"] == "trusted" and authorize["checkout"] is False
+    assert authorize["needs"] == ["controller-route"]
+    assert authorize["controller_requirement"] == "current"
     assert authorize["condition"] == "release-owner-main"
     assert validate_ci_graph(REPO_ROOT).graph["conditions"]["release-owner-main"] == (
         "github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main'"
     )
     assert authorize["executor"]["components"] == [
-        "setup-python", "resolve-effective-controller", "setup-release-directories",
+        "setup-python", "setup-release-directories",
         "resolve-release-inputs",
         "download-release-certification", "download-release-controller",
         "authorize-release", "upload-release-authorization",
     ]
     compiled = validate_ci_graph(REPO_ROOT)
-    effective = (
+    routed = (
         "${{ runner.tool_cache }}/bcf-governance/"
-        "${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf"
+        "${{ needs.controller-route.outputs.target_commit }}/bin/bcf"
     )
-    assert compiled.commands["resolve-release-inputs"]["argv"][0] == effective
-    assert compiled.commands["authorize-release"]["argv"][0] == effective
+    assert compiled.commands["resolve-release-inputs"]["argv"][0] == routed
+    assert compiled.commands["authorize-release"]["argv"][0] == routed
 
 
 def test_release_builder_uses_exact_subject_closed_runtime_and_no_credentials() -> None:
@@ -239,18 +246,20 @@ def test_release_file_selection_and_attempt_fan_in_are_controller_owned() -> Non
     assert "--runtime-evidence-dir" in commands["authenticate-release-verification"]
     assert "--release-artifact-dir" in commands["collect-release"]
     assert "resolve-publication" in commands["resolve-release-publication"]
-    effective = (
+    routed = (
         "${{ runner.tool_cache }}/bcf-governance/"
-        "${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf"
+        "${{ needs.controller-route.outputs.target_commit }}/bin/bcf"
     )
     for command_id in (
         "resolve-release-inputs", "authorize-release",
         "resolve-release-publication", "publish-release",
     ):
-        assert compiled.commands[command_id]["argv"][0] == effective
+        assert compiled.commands[command_id]["argv"][0] == routed
     assert compiled.commands["collect-release"]["argv"][0] == "{ephemeral_controller}"
-    assert _job("release-publisher", "publish")["executor"]["components"][:2] == [
-        "setup-python", "resolve-effective-controller",
+    publisher = _job("release-publisher", "publish")
+    assert publisher["needs"] == ["controller-route"]
+    assert publisher["executor"]["components"][:2] == [
+        "setup-python", "setup-publication-directories",
     ]
     assert release_tag in commands["publish-release"]
     assert "steps.resolve.outputs.tag" not in commands["publish-release"]

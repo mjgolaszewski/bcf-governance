@@ -22,6 +22,10 @@ _EFFECTIVE_CONTROLLER = (
     "${{ runner.tool_cache }}/bcf-governance/"
     "${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf"
 )
+_ROUTED_RELEASE_CONTROLLER = (
+    "${{ runner.tool_cache }}/bcf-governance/"
+    "${{ needs.controller-route.outputs.target_commit }}/bin/bcf"
+)
 _EFFECTIVE_RELEASE_OPERATIONS = frozenset(
     {"resolve", "authorize", "resolve-publication", "publish"}
 )
@@ -109,6 +113,29 @@ def _command_ids(
     return ()
 
 
+def controller_command_ids(
+    graph: dict[str, Any], executor: dict[str, Any]
+) -> tuple[str, ...]:
+    """Derive every fixed, transported, or ephemeral trusted-controller command."""
+
+    selected: list[str] = []
+    route_tokens = (
+        "needs.trusted-controller-build.outputs.target_commit",
+        "steps.controller-route.outputs.controller_commit_sha",
+        "needs.controller-route.outputs.target_commit",
+    )
+    for command_id in _command_ids(graph, executor):
+        argv = graph["commands"][command_id]["argv"]
+        if "{controller}" in argv or any(
+            isinstance(value, str)
+            and "runner.tool_cache" in value
+            and any(token in value for token in route_tokens)
+            for value in argv
+        ):
+            selected.append(command_id)
+    return tuple(selected)
+
+
 def _argument(argv: list[str], flag: str) -> str | None:
     try:
         value = argv[argv.index(flag) + 1]
@@ -159,9 +186,16 @@ def _release_controller_issues(
             continue
         operation = argv[3]
         if operation in _EFFECTIVE_RELEASE_OPERATIONS:
-            if argv[0] != _EFFECTIVE_CONTROLLER or (
-                "resolve-effective-controller" not in components[:index]
-            ) or job.get("controller_requirement") != "current":
+            fixed_route = argv[0] == _EFFECTIVE_CONTROLLER and (
+                "resolve-effective-controller" in components[:index]
+            )
+            transported_route = (
+                argv[0] == _ROUTED_RELEASE_CONTROLLER
+                and "controller-route" in job.get("needs", [])
+            )
+            if not (fixed_route or transported_route) or (
+                job.get("controller_requirement") != "current"
+            ):
                 issues.append(
                     f"release {operation} must require the current controller and invoke its provider-effective identity"
                 )

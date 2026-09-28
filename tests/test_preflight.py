@@ -267,7 +267,9 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {"pytest": "9.0.3"})
     monkeypatch.setattr(preflight, "_source_entrypoint_authority", lambda _: {"package_imports_checked": 1})
     monkeypatch.setattr(preflight, "validate_repo_root", lambda _: None)
-    monkeypatch.setattr(preflight, "_self_workflows", lambda _: 18)
+    monkeypatch.setattr(
+        preflight, "validate_controller_contracts_preflight", lambda *_args, **_kwargs: 18
+    )
     monkeypatch.setattr(preflight, "_workflow_authority", lambda _: 12)
     monkeypatch.setattr(preflight, "_self_controller", lambda _, **__: 6)
     monkeypatch.setattr(preflight, "_negative_control_targets", lambda _: 1)
@@ -561,7 +563,9 @@ def test_workflow_authority_failure_prevents_session_allocation(
     monkeypatch.setattr(preflight, "_interpreter_requirements", lambda *_: {})
     monkeypatch.setattr(preflight, "_source_entrypoint_authority", lambda _: {})
     monkeypatch.setattr(preflight, "validate_repo_root", lambda _: None)
-    monkeypatch.setattr(preflight, "_self_workflows", lambda _: 18)
+    monkeypatch.setattr(
+        preflight, "validate_controller_contracts_preflight", lambda *_args, **_kwargs: 18
+    )
     monkeypatch.setattr(
         preflight,
         "_workflow_authority",

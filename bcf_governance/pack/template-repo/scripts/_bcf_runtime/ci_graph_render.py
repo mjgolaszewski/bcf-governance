@@ -40,7 +40,7 @@ class CIGraphRenderResult:
     changed_paths: tuple[str, ...]
 
 
-def _scope_runner_temp_value(value: Any) -> Any:
+def scope_runner_temp_value(value: Any) -> Any:
     """Project every runner-temp root into the current run and attempt."""
 
     if isinstance(value, str):
@@ -51,9 +51,9 @@ def _scope_runner_temp_value(value: Any) -> Any:
             value,
         )
     if isinstance(value, dict):
-        return {key: _scope_runner_temp_value(item) for key, item in value.items()}
+        return {key: scope_runner_temp_value(item) for key, item in value.items()}
     if isinstance(value, list):
-        return [_scope_runner_temp_value(item) for item in value]
+        return [scope_runner_temp_value(item) for item in value]
     return value
 
 
@@ -672,7 +672,7 @@ def _job(
         )
     result["steps"] = steps
     if job["trust"] == "trusted" and job["checkout"] is False:
-        result = _scope_runner_temp_value(result)
+        result = scope_runner_temp_value(result)
     return result
 
 

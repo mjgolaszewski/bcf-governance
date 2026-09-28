@@ -10,6 +10,7 @@ from typing import Any
 from .ci_github_artifacts import ProviderArtifact, resolve_role_artifact
 from .ci_github_authority import packaged_repo_root
 from .ci_github_identity import GitHubControllerError, MainIdentity
+from .controller_custody import authority_identity, validate_controller_custody
 from .evidence_execution import EvidenceError
 from .prior_evidence_receipts import _transport_schema, validate_transport_material
 from .prior_evidence_transport import _archive_files
@@ -20,6 +21,11 @@ class AuthenticatedPriorTransport:
     artifact: ProviderArtifact
     manifest: dict[str, Any]
     files: dict[str, bytes]
+
+    @property
+    def controller_custody(self) -> dict[str, Any] | None:
+        value = self.manifest.get("controller_custody")
+        return validate_controller_custody(value) if value is not None else None
 
 
 def _validate_transport_schema(manifest: dict[str, Any]) -> None:
@@ -89,6 +95,23 @@ def authenticate_prior_transport(
     if not isinstance(manifest, dict):
         raise GitHubControllerError("prior transport manifest must be an object")
     _validate_transport_schema(manifest)
+    custody = manifest.get("controller_custody")
+    if custody is not None:
+        normalized = validate_controller_custody(custody)
+        if (
+            normalized["repository"] != {
+                "full_name": repository,
+                "repository_id": main.repository_id,
+            }
+            or normalized["subject"] != {
+                "commit_sha": main.checkout_sha,
+                "tree_sha": main.tree_sha,
+            }
+            or manifest.get("authority") != authority_identity(normalized)
+        ):
+            raise GitHubControllerError(
+                "prior transport controller custody is not exact"
+            )
     merge = manifest.get("merge")
     if manifest.get("repository") != {
         "provider": "github", "full_name": repository,

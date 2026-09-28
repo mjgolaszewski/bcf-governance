@@ -8,6 +8,11 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Transported one standalone provider-observed controller-custody contract from
+  exact-main construction through rotation, finalization, publication, and release;
+  every privileged consumer now invokes and reauthenticates that exact identity, while
+  cheap preflight executes every producer shape and rejects missing, ambiguous,
+  or unowned downstream permutations before evidence fan-out.
 - Made protected-policy controller changes enter the same exact provider-backed
   rotation DAG as runtime-only changes, with an installed-N compatibility
   projection and graph validation that permits only exact `no_transition` to

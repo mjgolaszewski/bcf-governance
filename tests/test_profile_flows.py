@@ -15,6 +15,9 @@ import yaml
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
 from bcf_governance.tooling.ci_graph_audit import audit_ci_graph
 from bcf_governance.tooling.ci_graph_render import apply_ci_graph, check_ci_graph
+from bcf_governance.tooling.controller_custody_prospective import (
+    validate_controller_custody_chain,
+)
 from bcf_governance.tooling.evidence_sessions import (
     allocate_session,
     local_producer_identity,
@@ -1156,7 +1159,11 @@ def test_fresh_adopter_projects_opt_in_one_pr_controller_rotation(
     assert [value["id"] for value in graph["extensions"]] == [
         "bcf-controller-rotation"
     ]
-    assert validate_ci_graph(repo).trusted_controller_current is True
+    compiled = validate_ci_graph(repo)
+    assert compiled.trusted_controller_current is True
+    assert validate_controller_custody_chain(
+        compiled.graph, python_executable=Path(sys.executable)
+    )["status"] == "proved"
     assert (repo / "scripts/build_trusted_controller.py").is_file()
     rotation = yaml.safe_load(
         (repo / ".github/workflows/bcf-controller-rotation.yml").read_text()
@@ -1164,7 +1171,7 @@ def test_fresh_adopter_projects_opt_in_one_pr_controller_rotation(
     jobs = rotation["jobs"]
     assert set(jobs) == {
         "authorize", "bootstrap", "advance-bootstrap", "probe",
-        "advance-probe", "promote", "activate",
+        "advance-probe", "promote", "activate", "outcome",
     }
     assert "mjgolaszewski" not in (repo / ".github/workflows/bcf-controller-rotation.yml").read_text()
     exact_main = yaml.safe_load((repo / ".github/workflows/bcf-exact-main.yml").read_text())

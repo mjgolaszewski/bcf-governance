@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 import hashlib
+import json
 from pathlib import Path
 import secrets
 from typing import Any
@@ -31,6 +32,7 @@ from .ci_github_bundle import (
     write_exclusive,
 )
 from .ci_exact_main_truth import authenticated_exact_main_truth
+from .controller_custody import require_controller_execution, validate_controller_custody
 from .ci_reuse_attestation_verifier import verify_same_admission_reuse
 from .ci_github_identity import (
     GitHubControllerError,
@@ -48,6 +50,8 @@ from .ci_github_membership import (
 from .ci_github_status import publish as publish_bundle
 from .ci_github_status import publish_observation
 from .evaluation_scope import EvaluationIntent, evaluation_scope
+from .routine_controller_admission_custody import authenticate_admission_custody
+from .routine_controller_provider import resolve_effective_controller
 
 
 @dataclass(frozen=True)
@@ -70,6 +74,7 @@ def _write_observation_bundle(
     ordinal: int,
     computed_state: str,
     reason: str | None = None,
+    controller_custody: dict[str, Any] | None = None,
 ) -> Path:
     """Write one exact authenticated non-certification observation bundle."""
 
@@ -93,13 +98,19 @@ def _write_observation_bundle(
     if reason is not None:
         observation["reason"] = reason
     digest = write_exclusive(root / "authority-observation.json", observation)
+    files = {"authority-observation.json": digest}
+    if controller_custody is not None:
+        files["controller-custody.json"] = write_exclusive(
+            root / "controller-custody.json",
+            validate_controller_custody(controller_custody),
+        )
     manifest = {
         "schema_version": "1.1",
         "kind": "authority_observation",
         "subject": observation["subject"],
         "admission_ordinal": str(ordinal),
         "computed_state": computed_state,
-        "files": {"authority-observation.json": digest},
+        "files": files,
     }
     (root / "bundle-manifest.json").write_bytes(canonical_json(manifest))
     for path in root.rglob("*.json"):
@@ -245,6 +256,15 @@ def finalize_exact_main(
         run_id=admission_run_id,
         run_attempt=admission_attempt,
     )
+    controller_custody = authenticate_admission_custody(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        admission_run_id=admission_run_id,
+        admission_run_attempt=admission_attempt,
+        effective=resolve_effective_controller(api, repository=repository),
+    )
     verify_same_admission_reuse(
         api, repository=repository, main=main, authority=authority,
         run_id=admission_run_id, run_attempt=admission_attempt,
@@ -276,6 +296,7 @@ def finalize_exact_main(
             admission_attempt=admission_attempt,
             ordinal=ordinal,
             computed_state="pending",
+            controller_custody=controller_custody,
         )
         return ExactMainResult(
             "pending", "pending", admission_run_id, admission_attempt, ordinal,
@@ -326,6 +347,7 @@ def finalize_exact_main(
         (root / "governance-truth.json").write_bytes(truth_bytes)
     authority_path = root / "ci-authority.json"
     write_exclusive(authority_path, authority)
+    write_exclusive(root / "controller-custody.json", controller_custody)
     raw_dir = root / "raw"
     raw_dir.mkdir(mode=0o700)
     descriptors: list[dict[str, Any]] = []
@@ -474,6 +496,43 @@ def publish_exact_main(
     if bundle_dir.is_symlink():
         raise GitHubControllerError("certification bundle cannot be a symlink")
     manifest = verify_bundle(bundle_dir.resolve())
+    custody_path = bundle_dir / "controller-custody.json"
+    if manifest.get("kind") == "authority_observation" and not custody_path.exists():
+        return publish_bundle(
+            api,
+            repository=repository,
+            bundle_dir=bundle_dir,
+            target_url=target_url,
+            collector_run_id=collector_run_id,
+            collector_run_attempt=collector_run_attempt,
+            collector_workflow_path=str(finalizer["active_path"]),
+            collector_workflow_id=finalizer["workflow_id"],
+            collector_workflow_sha256=str(finalizer["trusted_workflow_sha256"]),
+            collector_workflow_blob_oid=finalizer["trusted_workflow_blob_oid"],
+            collector_workflow_definition_commit=finalizer[
+                "trusted_workflow_definition_commit"
+            ],
+            require_evaluation_scope=True,
+        )
+    if not custody_path.is_file() or custody_path.is_symlink():
+        raise GitHubControllerError("certification controller custody is missing")
+    try:
+        custody = validate_controller_custody(
+            json.loads(custody_path.read_text(encoding="utf-8"))
+        )
+    except (OSError, ValueError) as exc:
+        raise GitHubControllerError("certification controller custody is invalid") from exc
+    if custody["repository"] != {
+        "full_name": repository,
+        "repository_id": publisher_main.repository_id,
+    } or custody["subject"] != {
+        "commit_sha": publisher_main.checkout_sha,
+        "tree_sha": publisher_main.tree_sha,
+    }:
+        raise GitHubControllerError(
+            "certification controller custody is not bound to publisher subject"
+        )
+    require_controller_execution(custody)
     if manifest.get("subject") != {
         "commit_sha": publisher_main.checkout_sha,
         "tree_sha": publisher_main.tree_sha,

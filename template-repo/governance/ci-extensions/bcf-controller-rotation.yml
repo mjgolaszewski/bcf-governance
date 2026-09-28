@@ -16,6 +16,9 @@ artifacts:
   controller-transition-installing: {path: .artifacts/controller-transition/installing, kind: control, scope: run-attempt, retention_days: 30}
   controller-transition-probed: {path: .artifacts/controller-transition/probed, kind: control, scope: run-attempt, retention_days: 30}
   controller-transition-active: {path: .artifacts/controller-transition/active, kind: control, scope: run-attempt, retention_days: 30}
+  controller-transition-decision: {path: .artifacts/controller-transition/decision, kind: control, scope: run-attempt, retention_days: 30}
+  controller-transition-active-callback-source: {path: .artifacts/controller-transition/active-callback-source, kind: control, scope: run-attempt, retention_days: 30}
+  controller-rotation-outcome: {path: .artifacts/controller-transition/outcome, kind: control, scope: run-attempt, retention_days: 30}
 jobs:
 - workflow: exact-main-publisher
   id: rotation-callback
@@ -30,22 +33,28 @@ jobs:
   permissions: {actions: write, contents: read}
   checkout: false
   components: []
-  executor: {kind: component_sequence, components: [setup-python, resolve-effective-controller, dispatch-routine-certification]}
+  executor: {kind: component_sequence, components: [setup-python, download-trigger-routine-outcome, project-rotation-outcome-route, dispatch-routine-certification]}
   produces: []
-  consumes: []
+  consumes: [controller-rotation-outcome]
   required: true
-conditions: {routine-rotation-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.name == 'bcf/exact-main-admission' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main'
-    && github.event.workflow_run.conclusion == 'success', routine-stage-ready: success() && needs.authorize.outputs.applicable == 'true', routine-transition-required: steps.authorize-transition.outputs.decision != 'no_transition', routine-transition-artifact-applicable: steps.materialize-transition.outputs.applicable == 'true', routine-callback-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.name == 'bcf/controller-rotation' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'}
+conditions:
+  routine-rotation-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.name == 'bcf/exact-main-admission' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
+  routine-stage-ready: success() && needs.authorize.outputs.applicable == 'true'
+  routine-transition-required: steps.authorize-transition.outputs.decision != 'no_transition'
+  routine-transition-artifact-applicable: steps.materialize-transition.outputs.applicable == 'true'
+  routine-outcome-no-transition: needs.authorize.outputs.applicable != 'true'
+  routine-outcome-active: needs.authorize.outputs.applicable == 'true'
+  routine-callback-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.name == 'bcf/controller-rotation' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
 commands:
   resolve-effective-controller:
     argv: ['{controller}', ci-github, controller-rotation, resolve, --repository, '${{ github.repository }}']
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
   authorize-routine-transition:
-    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, controller-rotation, authorize, --repository, '${{ github.repository }}', --admission-run-id, '${{ github.event.workflow_run.id
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.controller-route.outputs.controller_commit_sha }}/bin/bcf', ci-github, controller-rotation, authorize, --repository, '${{ github.repository }}', --admission-run-id, '${{ github.event.workflow_run.id
         }}', --admission-run-attempt, '${{ github.event.workflow_run.run_attempt }}', --artifact-dir, '${{ runner.temp }}/bcf-trusted-control', --output, '${{ runner.temp }}/bcf-controller-transition/decision/controller-decision.json']
     cwd: .
-    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+    environment: {GITHUB_TOKEN: '${{ github.token }}', BCF_CONTROLLER_CUSTODY_PATH: '${{ runner.temp }}/bcf-controller-custody/controller-custody.json', BCF_CONTROLLER_EXECUTION_REQUIRED: 'true'}
   materialize-routine-transition:
     argv: ['{ephemeral_controller}', ci-github, controller-rotation, materialize-authorization, --repository, '${{ github.repository }}', --decision, '${{ runner.temp }}/bcf-controller-transition/decision/controller-decision.json', --artifact-dir, '${{ runner.temp }}/bcf-trusted-control', --output, '${{ runner.temp }}/bcf-controller-transition/authorized/controller-transition.json']
     cwd: .
@@ -74,9 +83,9 @@ commands:
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
   dispatch-routine-certification:
-    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, controller-rotation, dispatch-certification, --repository, '${{ github.repository }}', --rotation-run-id, '${{ github.event.workflow_run.id }}', --rotation-run-attempt, '${{ github.event.workflow_run.run_attempt }}']
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.controller-route.outputs.controller_commit_sha }}/bin/bcf', ci-github, controller-rotation, dispatch-certification, --repository, '${{ github.repository }}', --rotation-run-id, '${{ github.event.workflow_run.id }}', --rotation-run-attempt, '${{ github.event.workflow_run.run_attempt }}']
     cwd: .
-    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+    environment: {GITHUB_TOKEN: '${{ github.token }}', BCF_CONTROLLER_CUSTODY_PATH: '${{ runner.temp }}/bcf-controller-transition/outcome', BCF_CONTROLLER_EXECUTION_REQUIRED: 'true'}
 step_components:
   setup-routine-decision-directory:
     kind: directory_setup
@@ -132,7 +141,7 @@ step_components:
     command: authorize-routine-transition
     environment: {}
     produces: []
-    consumes: [trusted-controller-bundle]
+    consumes: [trusted-controller-bundle, controller-custody]
   stage-routine-authorization-controller:
     kind: controller_install
     name: Stage the exact target controller for authorization normalization
@@ -279,7 +288,65 @@ step_components:
     environment: {}
     produces: [controller-transition-active]
     consumes: []
-  dispatch-routine-certification: {kind: command, name: Authenticate activation and request fresh exact-main certification, command: dispatch-routine-certification, environment: {}, produces: [], consumes: []}
+  upload-routine-decision:
+    kind: action
+    name: Publish the exact rotation decision
+    action: upload-artifact
+    with: {name: 'bcf-controller-transition-decision-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-controller-transition/decision', if-no-files-found: error, retention-days: 30}
+    environment: {}
+    produces: [controller-transition-decision]
+    consumes: []
+  upload-routine-active-callback-source:
+    kind: action
+    name: Publish the active callback source
+    action: upload-artifact
+    with: {name: 'bcf-controller-transition-active-callback-source-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-controller-transition/active', if-no-files-found: error, retention-days: 30}
+    environment: {}
+    produces: [controller-transition-active-callback-source]
+    consumes: []
+  download-routine-decision-outcome:
+    kind: action
+    name: Select the no-transition outcome
+    condition: routine-outcome-no-transition
+    action: download-artifact
+    with: {name: 'bcf-controller-transition-decision-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-controller-transition/outcome'}
+    environment: {}
+    produces: []
+    consumes: [controller-transition-decision]
+  download-routine-active-outcome:
+    kind: action
+    name: Select the active-transition outcome
+    condition: routine-outcome-active
+    action: download-artifact
+    with: {name: 'bcf-controller-transition-active-callback-source-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-controller-transition/outcome'}
+    environment: {}
+    produces: []
+    consumes: [controller-transition-active-callback-source]
+  upload-routine-outcome:
+    kind: action
+    name: Publish the unique exact rotation outcome
+    action: upload-artifact
+    with: {name: 'bcf-controller-rotation-outcome-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-controller-transition/outcome', if-no-files-found: error, retention-days: 30}
+    environment: {}
+    produces: [controller-rotation-outcome]
+    consumes: []
+  download-trigger-routine-outcome:
+    kind: action
+    name: Download the triggering rotation outcome
+    action: download-artifact
+    with: {name: 'bcf-controller-rotation-outcome-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ github.event.workflow_run.id }}', path: '${{ runner.temp }}/bcf-controller-transition/outcome'}
+    environment: {}
+    produces: []
+    consumes: [controller-rotation-outcome]
+  project-rotation-outcome-route:
+    kind: command
+    name: Project non-authoritative routing from the exact rotation outcome
+    id: controller-route
+    command: project-controller-route
+    environment: {BCF_CONTROLLER_ROUTE_FILE: '${{ runner.temp }}/bcf-controller-transition/outcome'}
+    produces: []
+    consumes: [controller-rotation-outcome]
+  dispatch-routine-certification: {kind: command, name: Authenticate activation and request fresh exact-main certification, command: dispatch-routine-certification, environment: {}, produces: [], consumes: [controller-rotation-outcome]}
 workflows:
 - id: controller-rotation
   path: .github/workflows/bcf-controller-rotation.yml
@@ -311,9 +378,9 @@ workflows:
         }}', target_wheel_sha256: '${{ steps.materialize-transition.outputs.target_wheel_sha256 }}'}
     executor:
       kind: component_sequence
-      components: [setup-python, download-routine-controller, setup-routine-decision-directory, setup-routine-authorized-directory, resolve-effective-controller, authorize-routine-transition, stage-routine-authorization-controller, materialize-routine-transition, upload-routine-authorized]
-    produces: [controller-transition-authorized]
-    consumes: [trusted-controller-bundle]
+      components: [setup-python, download-routine-controller, download-trigger-controller-custody, project-custody-controller-route, setup-routine-decision-directory, setup-routine-authorized-directory, authorize-routine-transition, upload-routine-decision, stage-routine-authorization-controller, materialize-routine-transition, upload-routine-authorized]
+    produces: [controller-transition-authorized, controller-transition-decision]
+    consumes: [trusted-controller-bundle, controller-custody]
     required: true
   - id: bootstrap
     display_name: Bootstrap routine controller / ${{ matrix.trusted_runner }}
@@ -434,7 +501,23 @@ workflows:
     components: []
     executor:
       kind: component_sequence
-      components: [setup-python, download-routine-controller, download-routine-probed, stage-promoted-routine-controller, setup-routine-active-directory, activate-routine-transition, upload-routine-active]
-    produces: [controller-transition-active]
+      components: [setup-python, download-routine-controller, download-routine-probed, stage-promoted-routine-controller, setup-routine-active-directory, activate-routine-transition, upload-routine-active, upload-routine-active-callback-source]
+    produces: [controller-transition-active, controller-transition-active-callback-source]
     consumes: [trusted-controller-bundle, controller-transition-probed]
+    required: true
+  - id: outcome
+    display_name: Project the unique routine rotation outcome
+    semantic_role: routine-controller-outcome
+    resource_class: trusted-control
+    trust: trusted
+    controller_requirement: null
+    needs: [authorize, activate]
+    condition: always
+    timeout_minutes: 5
+    permissions: {actions: read, contents: read}
+    checkout: false
+    components: []
+    executor: {kind: component_sequence, components: [setup-python, download-routine-decision-outcome, download-routine-active-outcome, upload-routine-outcome]}
+    produces: [controller-rotation-outcome]
+    consumes: [controller-transition-decision, controller-transition-active-callback-source]
     required: true

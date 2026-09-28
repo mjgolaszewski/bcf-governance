@@ -10,6 +10,7 @@ import pytest
 import yaml
 
 from bcf_governance.tooling import ci_github_callbacks as callbacks
+from bcf_governance.tooling import ci_github_exact_main as exact_main_target
 from bcf_governance.tooling.ci_github_api import GitHubAPI, GitHubAPIError, GitHubContent
 from bcf_governance.tooling.ci_github_callbacks import (
     finalize_callback,
@@ -40,6 +41,7 @@ from bcf_governance.tooling.ci_graph_controller_lifecycle import (
     resolve_controller_lifecycle,
 )
 from bcf_governance.tooling.evaluation_scope import is_terminal_phase_certification
+from bcf_governance.tooling.controller_custody import compile_controller_custody
 
 
 SHA_A = "a" * 40
@@ -57,6 +59,42 @@ COLLECTOR_IDENTITY = {
     "collector_workflow_path": ".github/workflows/finalizer.yml",
     "collector_workflow_sha256": DIGEST,
 }
+
+
+def _controller_custody(main) -> dict[str, object]:
+    pin = {
+        "BCF_BOOTSTRAP_ARTIFACT_ID": "20",
+        "BCF_BOOTSTRAP_ARTIFACT_NAME": f"bcf-trusted-control-{SHA_A}-1",
+        "BCF_BOOTSTRAP_ARTIFACT_DIGEST": "sha256:" + "4" * 64,
+        "BCF_BOOTSTRAP_RUN_ID": "10",
+        "BCF_BOOTSTRAP_RUN_ATTEMPT": "1",
+        "BCF_BOOTSTRAP_COMMIT_SHA": SHA_A,
+        "BCF_BOOTSTRAP_TREE_SHA": TREE,
+        "BCF_BOOTSTRAP_REPOSITORY_ID": "42",
+        "BCF_BOOTSTRAP_WHEEL_SHA256": "6" * 64,
+    }
+    return compile_controller_custody(
+        {
+            "source": "source_policy",
+            "subject": {
+                "commit_sha": main.checkout_sha,
+                "tree_sha": main.tree_sha,
+            },
+            "pin": pin,
+            "transition_ids": [],
+        },
+        repository="owner/repo",
+    )
+
+
+@pytest.fixture(autouse=True)
+def _authenticated_controller_transport(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(exact_main_target, "resolve_effective_controller", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(
+        exact_main_target,
+        "authenticate_admission_custody",
+        lambda *_args, main, **_kwargs: _controller_custody(main),
+    )
 
 
 def _producer(producer_id: str, workflow_id: str, path: str, job: str) -> dict[str, object]:
@@ -711,7 +749,7 @@ def test_v11_publisher_rejects_run_for_different_subject(tmp_path: Path) -> None
         "conclusion": None,
     }
 
-    with pytest.raises(GitHubControllerError, match="certification subject"):
+    with pytest.raises(GitHubControllerError, match="certification.*subject"):
         publish_exact_main(
             api,  # type: ignore[arg-type]
             repository="owner/repo",

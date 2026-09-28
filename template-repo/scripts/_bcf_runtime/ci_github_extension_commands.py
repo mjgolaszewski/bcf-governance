@@ -12,6 +12,7 @@ from .ci_github_api import GitHubAPI, GitHubAPIError
 from .ci_github_automation import admit_automation_pr, reconcile_automation_changelog
 from .ci_github_cli_io import github_output, github_output_path, required_environment
 from .ci_github_controller import environment_api
+from .controller_custody import compile_controller_custody, require_controller_execution
 from .ci_github_identity import GitHubControllerError
 from .ci_github_pr import finalize_pr, publish_pr
 from .github_protection import apply_protection, inspect_protection
@@ -122,15 +123,13 @@ def _prior_evidence(argv: list[str]) -> dict[str, object]:
         )
     api = environment_api()
     effective = resolve_effective_controller(api, repository=args.repository)
-    pin = effective["pin"]
+    custody = compile_controller_custody(effective, repository=args.repository)
+    require_controller_execution(custody)
     result = transport_prior_evidence(
         api, repository=args.repository,
         expected_main_sha=args.main_sha, output_root=args.output,
         protection_credential=credential,
-        controller_authority={
-            "controller_commit_sha": pin["BCF_BOOTSTRAP_COMMIT_SHA"],
-            "controller_bundle_sha256": pin["BCF_BOOTSTRAP_WHEEL_SHA256"],
-        },
+        controller_custody=custody,
     )
     return {
         "main_commit_sha": result["main"]["commit_sha"],

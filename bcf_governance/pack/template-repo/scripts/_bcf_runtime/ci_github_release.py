@@ -29,6 +29,7 @@ from .ci_github_release_collection import authenticate_release_collection_roles
 from .ci_github_bundle import verify_bundle, write_exclusive
 from .ci_github_identity import GitHubControllerError, positive_int, resolve_main
 from .ci_github_membership import select_latest_admission
+from .controller_custody import require_controller_execution, validate_controller_custody
 from .release_asset_inventory import (
     exact_assets,
     release_asset_version,
@@ -88,6 +89,9 @@ def authorize_release(
     certification_path = root / "ci-certification.json"
     session_path = root / "evidence-session.json"
     certification = _load_json(certification_path, label="CI certification")
+    controller_custody = validate_controller_custody(
+        _load_json(root / "controller-custody.json", label="controller custody")
+    )
     verification = verify_ci_certification(
         packaged_repo_root(),
         authority_path=root / "ci-authority.json",
@@ -109,6 +113,14 @@ def authorize_release(
         manifest.get("subject") != subject
     ):
         raise GitHubControllerError("release authorization subject is not current exact main")
+    if controller_custody["repository"] != {
+        "full_name": repository,
+        "repository_id": main.repository_id,
+    } or controller_custody["subject"] != subject:
+        raise GitHubControllerError(
+            "release authorization controller custody is not exact main"
+        )
+    require_controller_execution(controller_custody)
     authority = load_authority(api, repository, main, required_version="1.1")
     identity, _ = authenticate_role_job_inventory(
         api,
@@ -221,6 +233,7 @@ def authorize_release(
             "workflow": asdict(identity.workflow),
         },
         "controller": dict(sorted({**controller, "wheel_sha256": wheel_sha256}.items())),
+        "controller_custody": controller_custody,
         "release_inputs": release_source_bindings(
             api, repository, subject["commit_sha"]
         ),
@@ -659,6 +672,20 @@ def publish_certified_release(
         raise GitHubControllerError("release receipt subject is not current exact main")
     if receipt.get("kind") != "release" or receipt.get("result") != "passed":
         raise GitHubControllerError("publication requires a passing release receipt")
+    custody = validate_controller_custody(
+        receipt.get("observations", {}).get("controller_custody")
+    )
+    if custody["repository"] != {
+        "full_name": repository,
+        "repository_id": main.repository_id,
+    } or custody["subject"] != {
+        "commit_sha": main.checkout_sha,
+        "tree_sha": main.tree_sha,
+    }:
+        raise GitHubControllerError(
+            "release receipt controller custody is not exact main"
+        )
+    require_controller_execution(custody)
     authority = load_authority(api, repository, main, required_version="1.1")
     authenticate_role_job_inventory(
         api,

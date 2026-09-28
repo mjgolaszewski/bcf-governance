@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import io
 import json
 from pathlib import Path
@@ -20,13 +21,17 @@ from bcf_governance.tooling import (
     routine_controller_provider as provider,
 )
 from bcf_governance.tooling.routine_controller_rotation import (
+    ALTERNATE_POLICY_LANE_SEQUENCE,
     AUTHORIZE_JOB,
+    OUTCOME_JOB,
     RoutineCallbackTopologyError,
     classify_callback_topology,
     skipped_matrix_facades,
     transition_id,
 )
 from bcf_governance.tooling.ci_authority_contracts import authority_role_jobs
+from bcf_governance.tooling.ci_authority_pins import compiled_workflow_job_names
+from bcf_governance.tooling.controller_custody import compile_controller_custody
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -143,6 +148,22 @@ def _pin(commit: str = NEW) -> dict[str, str]:
     }
 
 
+def _resolved(commit: str = OLD, *, source: str = "source_policy") -> dict:
+    return {
+        "source": source,
+        "normalization_subject": commit,
+        "subject": {"commit_sha": NEW, "tree_sha": TREE},
+        "pin": _pin(commit),
+        "transition_ids": [],
+    }
+
+
+def _custody(commit: str = OLD) -> dict:
+    return compile_controller_custody(
+        _resolved(commit), repository="mjgolaszewski/bcf-governance"
+    )
+
+
 def _authorized() -> dict:
     identity = transition_id(
         repository_id="1207503211",
@@ -208,7 +229,7 @@ def _alternate() -> dict:
         "target": _pin(),
         "alternate_lane": {
             "id": "ordinary_protected_n_n_plus_1",
-            "required_sequence": list(provider.ALTERNATE_POLICY_LANE_SEQUENCE),
+            "required_sequence": list(ALTERNATE_POLICY_LANE_SEQUENCE),
             "required_initial_state": "ordinary-pending-rotation",
             "required_terminal_state": "ordinary-current",
         },
@@ -247,6 +268,26 @@ def _transition_zip(value: dict) -> bytes:
     return buffer.getvalue()
 
 
+def _callback_outcome(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, value: dict
+) -> None:
+    path = tmp_path / "controller-rotation-outcome.json"
+    path.write_text(json.dumps(value), encoding="utf-8")
+    monkeypatch.setenv("BCF_CONTROLLER_CUSTODY_PATH", str(path))
+
+
+def _rotation_authority() -> dict:
+    authority = yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text())
+    workflow = authority["workflow_registry"][authority["roles"]["controller_rotation"]]
+    raw = (ROOT / workflow["active_path"]).read_bytes()
+    workflow["expected_jobs"] = [
+        {"job_id": name} for name in compiled_workflow_job_names(raw)
+    ]
+    workflow["trusted_workflow_sha256"] = hashlib.sha256(raw).hexdigest()
+    workflow["trusted_workflow_blob_oid"] = "local-candidate"
+    return authority
+
+
 def test_authorization_binds_protected_merge_policy_and_exact_artifact(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -269,7 +310,10 @@ def test_authorization_binds_protected_merge_policy_and_exact_artifact(
     monkeypatch.setattr(
         provider,
         "resolve_effective_controller",
-        lambda *_args, **_kwargs: {"pin": _pin(OLD)},
+        lambda *_args, **_kwargs: _resolved(),
+    )
+    monkeypatch.setattr(
+        provider, "authenticate_admission_custody", lambda *_args, **_kwargs: _custody()
     )
     monkeypatch.setattr(
         provider, "compile_self_controller_pin", lambda *_args, **_kwargs: _pin()
@@ -332,6 +376,12 @@ def test_authorization_closes_current_controller_as_no_transition(
         ),
     )
     monkeypatch.setattr(
+        provider, "resolve_effective_controller", lambda *_args, **_kwargs: _resolved()
+    )
+    monkeypatch.setattr(
+        provider, "authenticate_admission_custody", lambda *_args, **_kwargs: _custody()
+    )
+    monkeypatch.setattr(
         provider,
         "compile_self_controller_pin",
         lambda *_args, **_kwargs: pytest.fail(
@@ -355,6 +405,7 @@ def test_authorization_closes_current_controller_as_no_transition(
         "reason": "controller_current",
         "subject": {"commit_sha": NEW, "tree_sha": TREE},
         "admission": {"run_id": "10", "run_attempt": "1"},
+        "controller_custody": _custody(),
         "release_authority": False,
     }
 
@@ -379,7 +430,10 @@ def test_authorization_materializes_policy_change_as_governed_rotation(
     monkeypatch.setattr(
         provider,
         "resolve_effective_controller",
-        lambda *_args, **_kwargs: {"pin": _pin(OLD)},
+        lambda *_args, **_kwargs: _resolved(),
+    )
+    monkeypatch.setattr(
+        provider, "authenticate_admission_custody", lambda *_args, **_kwargs: _custody()
     )
     monkeypatch.setattr(
         provider, "compile_self_controller_pin", lambda *_args, **_kwargs: _pin()
@@ -520,6 +574,7 @@ def test_materialization_rejects_no_transition(tmp_path: Path) -> None:
         "reason": "controller_current",
         "subject": {"commit_sha": NEW, "tree_sha": TREE},
         "admission": {"run_id": "10", "run_attempt": "1"},
+        "controller_custody": _custody(),
         "release_authority": False,
     }
     with pytest.raises(GitHubControllerError, match="requires a rotation decision"):
@@ -566,7 +621,10 @@ def test_authorization_rejects_self_selection(
     monkeypatch.setattr(
         provider,
         "resolve_effective_controller",
-        lambda *_args, **_kwargs: {"pin": _pin()},
+        lambda *_args, **_kwargs: _resolved(NEW),
+    )
+    monkeypatch.setattr(
+        provider, "authenticate_admission_custody", lambda *_args, **_kwargs: _custody(NEW)
     )
     monkeypatch.setattr(provider, "compile_self_controller_pin", lambda *_args, **_kwargs: _pin())
     with pytest.raises(GitHubControllerError, match="no new target"):
@@ -696,11 +754,11 @@ def test_transition_artifact_inventory_is_closed() -> None:
 
 
 def test_callback_binds_completed_rotation_before_exact_admission_rerun(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:
     active = _active()
     reruns: list[object] = []
-    authority = yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text())
+    authority = _rotation_authority()
     expected = [
         value["job_id"] for value in authority_role_jobs(authority, "controller_rotation")
     ]
@@ -739,6 +797,7 @@ def test_callback_binds_completed_rotation_before_exact_admission_rerun(
     monkeypatch.setattr(
         provider, "_active_receipts", lambda *_args, **_kwargs: (active,)
     )
+    _callback_outcome(monkeypatch, tmp_path, active)
     result = provider.dispatch_post_rotation_certification(
         api,
         repository="mjgolaszewski/bcf-governance",
@@ -756,10 +815,10 @@ def test_callback_binds_completed_rotation_before_exact_admission_rerun(
 
 
 def test_callback_rejects_another_rotation_run(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:
     active = _active()
-    authority = yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text())
+    authority = _rotation_authority()
     monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
     monkeypatch.setattr(provider, "load_authority", lambda *_args, **_kwargs: authority)
     monkeypatch.setattr(
@@ -776,7 +835,7 @@ def test_callback_rejects_another_rotation_run(
         lambda *_args, **_kwargs: {
             "source": "provider_transition",
             "normalization_subject": OLD,
-            "subject": {},
+            "subject": {"commit_sha": NEW, "tree_sha": TREE},
             "pin": _pin(),
             "transition_ids": [active["transition_id"]],
         },
@@ -784,6 +843,7 @@ def test_callback_rejects_another_rotation_run(
     monkeypatch.setattr(
         provider, "_active_receipts", lambda *_args, **_kwargs: (active,)
     )
+    _callback_outcome(monkeypatch, tmp_path, active)
     expected = [
         value["job_id"] for value in authority_role_jobs(authority, "controller_rotation")
     ]
@@ -802,9 +862,9 @@ def test_callback_rejects_another_rotation_run(
 
 
 def test_callback_closes_exact_no_transition_without_rerun(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:
-    authority = yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text())
+    authority = _rotation_authority()
     _, _, jobs = _collapsed_no_transition()
     workflow = authority["workflow_registry"][authority["roles"]["controller_rotation"]]
     raw = (ROOT / workflow["active_path"]).read_bytes()
@@ -819,6 +879,9 @@ def test_callback_closes_exact_no_transition_without_rerun(
     monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
     monkeypatch.setattr(provider, "load_authority", lambda *_args, **_kwargs: authority)
     monkeypatch.setattr(
+        provider, "resolve_effective_controller", lambda *_args, **_kwargs: _resolved()
+    )
+    monkeypatch.setattr(
         provider,
         "authenticate_role_run",
         lambda *_args, role, **_kwargs: SimpleNamespace(
@@ -826,6 +889,18 @@ def test_callback_closes_exact_no_transition_without_rerun(
             run_attempt=1,
         ),
     )
+    no_transition = {
+        "schema_version": "1.0",
+        "decision": "no_transition",
+        "transition_class": "none",
+        "applicable": False,
+        "reason": "controller_current",
+        "subject": {"commit_sha": NEW, "tree_sha": TREE},
+        "admission": {"run_id": "10", "run_attempt": "1"},
+        "controller_custody": _custody(),
+        "release_authority": False,
+    }
+    _callback_outcome(monkeypatch, tmp_path, no_transition)
     result = provider.dispatch_post_rotation_certification(
         api,
         repository="mjgolaszewski/bcf-governance",
@@ -846,7 +921,7 @@ def test_callback_closes_exact_no_transition_without_rerun(
 
 
 def _collapsed_no_transition() -> tuple[set[str], dict[str, set[str]], list[dict[str, str]]]:
-    authority = yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text())
+    authority = _rotation_authority()
     workflow = authority["workflow_registry"][authority["roles"]["controller_rotation"]]
     raw = (ROOT / workflow["active_path"]).read_bytes()
     expected = {
@@ -860,7 +935,7 @@ def _collapsed_no_transition() -> tuple[set[str], dict[str, set[str]], list[dict
             "name": str(value.get("name", source)),
             "conclusion": (
                 "success"
-                if str(value.get("name", source)) == AUTHORIZE_JOB
+                if str(value.get("name", source)) in {AUTHORIZE_JOB, OUTCOME_JOB}
                 else "skipped"
             ),
         }
@@ -896,7 +971,7 @@ def test_callback_collapsed_no_transition_still_fails_closed(mutation: str) -> N
 def test_callback_rejects_nonexact_no_transition_topology(
     monkeypatch: pytest.MonkeyPatch, mutation: str
 ) -> None:
-    authority = yaml.safe_load((ROOT / "governance/ci-authority.yml").read_text())
+    authority = _rotation_authority()
     expected = [
         value["job_id"]
         for value in provider.authority_role_jobs(authority, "controller_rotation")
@@ -906,7 +981,7 @@ def test_callback_rejects_nonexact_no_transition_topology(
             "name": name,
             "conclusion": (
                 "success"
-                if name == "Authorize protected routine controller transition"
+                if name in {AUTHORIZE_JOB, OUTCOME_JOB}
                 else "skipped"
             ),
         }
@@ -917,7 +992,11 @@ def test_callback_rejects_nonexact_no_transition_topology(
     elif mutation == "extra":
         jobs.append({"name": "Undeclared rotation job", "conclusion": "skipped"})
     else:
-        jobs[-1]["conclusion"] = "success"
+        next(
+            value
+            for value in jobs
+            if str(value["name"]).startswith("Bootstrap routine controller")
+        )["conclusion"] = "success"
     monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
     monkeypatch.setattr(provider, "load_authority", lambda *_args, **_kwargs: authority)
     monkeypatch.setattr(

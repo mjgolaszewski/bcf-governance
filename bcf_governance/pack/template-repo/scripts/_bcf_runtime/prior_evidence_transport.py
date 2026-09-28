@@ -19,6 +19,7 @@ from jsonschema import Draft202012Validator
 import yaml
 
 from .ci_authority_state import CandidateIdentity
+from .controller_custody import authority_identity, validate_controller_custody
 from .ci_github_api import GitHubAPI
 from .ci_github_authority import packaged_repo_root
 from .ci_github_bundle import canonical_json, prepare_output, write_exclusive
@@ -437,6 +438,7 @@ def transport_prior_evidence(
     api: GitHubAPI, *, repository: str, expected_main_sha: str, output_root: Path,
     protection_credential: tuple[str, str, str, str] | None = None,
     controller_authority: Mapping[str, str] | None = None,
+    controller_custody: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Authenticate current main's merged-PR evidence and preserve exact bytes."""
 
@@ -619,6 +621,28 @@ def transport_prior_evidence(
             ),
         })
     payload_digest = _sha256(canonical_json(dict(sorted(payload_files.items()))))
+    custody = (
+        validate_controller_custody(controller_custody)
+        if controller_custody is not None
+        else None
+    )
+    if custody is not None and (
+        custody["repository"] != {
+            "full_name": repository,
+            "repository_id": main.repository_id,
+        }
+        or custody["subject"] != {
+            "commit_sha": main.checkout_sha,
+            "tree_sha": main.tree_sha,
+        }
+    ):
+        raise GitHubControllerError(
+            "controller custody is not bound to the transport subject"
+        )
+    if custody is not None and controller_authority is not None:
+        raise GitHubControllerError(
+            "controller authority cannot be supplied beside exact custody"
+        )
     manifest = {
         "schema_version": "1.0",
         "kind": "prior_evidence_transport",
@@ -657,8 +681,12 @@ def transport_prior_evidence(
             "finalizer_run_attempt": finalizer_attempt,
             "completed_at": check["completed_at"],
         },
-        "authority": _controller_authority(
-            api, repository, main=main, effective=controller_authority
+        "authority": (
+            authority_identity(custody)
+            if custody is not None
+            else _controller_authority(
+                api, repository, main=main, effective=controller_authority
+            )
         ),
         "protection": {
             "declaration_sha256": _sha256(protection_raw),
@@ -671,5 +699,7 @@ def transport_prior_evidence(
         "bundle_sha256": payload_digest,
         "authenticated_at": check["completed_at"],
     }
+    if custody is not None:
+        manifest["controller_custody"] = custody
     write_exclusive(root / "prior-evidence-transport.json", manifest)
     return manifest
