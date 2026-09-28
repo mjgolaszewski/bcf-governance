@@ -51,6 +51,49 @@ def _validate(
     )
 
 
+def test_python_inventory_retains_only_runtime_overload_implementation(
+    tmp_path: Path,
+) -> None:
+    inventory = _inventory(
+        tmp_path,
+        "from typing import overload\n"
+        "@overload\n"
+        "def load(value: int) -> int: ...\n"
+        "@overload\n"
+        "def load(value: str) -> str: ...\n"
+        "def load(value: int | str) -> int | str:\n"
+        "    return value\n",
+    )
+
+    functions = [
+        row
+        for row in inventory["functions"]
+        if row["symbol"] == "backend/src/demo/service.py::load"
+    ]
+    assert len(functions) == 1
+    assert functions[0]["parameters"] == {"value": "int | str"}
+    assert functions[0]["decorators"] == []
+
+
+def test_python_inventory_rejects_overload_without_runtime_implementation(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "backend/src/demo/service.py"
+    source.parent.mkdir(parents=True)
+    source.write_text(
+        "from typing_extensions import overload as typed_overload\n"
+        "@typed_overload\n"
+        "def load(value: int) -> int: ...\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match=r"overload declarations require one runtime implementation: .*::load",
+    ):
+        discover_python_source(tmp_path, files=[source])
+
+
 def test_public_operation_rejects_write_hidden_by_same_instance_method(
     tmp_path: Path,
 ) -> None:

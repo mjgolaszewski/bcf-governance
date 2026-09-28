@@ -10,6 +10,14 @@ import ast
 from typing import Any
 
 
+_OVERLOAD_DECORATORS = {
+    "typing::module.overload",
+    "typing::overload",
+    "typing_extensions::module.overload",
+    "typing_extensions::overload",
+}
+
+
 def root_name(node: ast.AST) -> str | None:
     """Return the lexical root of a simple attribute/call expression."""
     while isinstance(node, (ast.Attribute, ast.Subscript, ast.Call)):
@@ -22,6 +30,63 @@ def root_name(node: ast.AST) -> str | None:
         else:
             break
     return node.id if isinstance(node, ast.Name) else None
+
+
+def runtime_function_scopes(
+    tree: ast.Module,
+    *,
+    path: str,
+    imports: dict[str, str],
+) -> tuple[
+    list[tuple[str | None, list[ast.FunctionDef | ast.AsyncFunctionDef]]],
+    list[str],
+]:
+    """Return runtime definitions while rejecting type-only overload identities."""
+
+    scopes = [
+        (
+            None,
+            [
+                node
+                for node in tree.body
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            ],
+        ),
+        *[
+            (
+                node.name,
+                [
+                    member
+                    for member in node.body
+                    if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef))
+                ],
+            )
+            for node in tree.body
+            if isinstance(node, ast.ClassDef)
+        ],
+    ]
+    result = []
+    missing = []
+    for class_name, members in scopes:
+        def is_overload(member: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+            return any(
+                source_symbol(decorator, path, imports) in _OVERLOAD_DECORATORS
+                for decorator in member.decorator_list
+            )
+
+        overloads = {
+            member.name
+            for member in members
+            if is_overload(member)
+        }
+        runtime = [member for member in members if not is_overload(member)]
+        implementations = {member.name for member in runtime}
+        scope = f"{class_name}." if class_name else ""
+        missing.extend(
+            f"{path}::{scope}{name}" for name in sorted(overloads - implementations)
+        )
+        result.append((class_name, runtime))
+    return result, missing
 
 
 def call_name(node: ast.Call) -> str:

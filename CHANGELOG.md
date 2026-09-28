@@ -12,7 +12,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   in-progress changes explicitly noncertifying, selecting the unique completed
   workitem for bounded closure, and selecting phase closure only after authored
   completion; ordinary install and upgrade now also exclude every typed
-  self-authority pack surface instead of shipping BCF repository/App custody.
+  self-authority pack surface instead of shipping BCF repository/App custody,
+  while mixed-language semantic discovery treats typed overload declarations
+  as non-runtime and requires their concrete implementation.
 - Recorded immutable v2.1.2 provider custody after exact-main phase closure,
   independent release verification, exact-byte publication, and credential
   retirement; release_17 is superseded and release_18 owns the current patch line.
