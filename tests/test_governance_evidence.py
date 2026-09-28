@@ -240,13 +240,14 @@ def test_registered_graph_mutant_refreshes_locks_and_generated_bytes(tmp_path: P
     _git(repo, "commit", "-m", "graph baseline")
     extension = repo / "governance/ci-extensions/bcf-release.yml"
     extension_contract = yaml.safe_load(extension.read_text(encoding="utf-8"))
-    mutated_workflow = extension_contract["workflows"][0]
-    generated_path = mutated_workflow["path"]
-    component_id = next(
-        component
-        for component in mutated_workflow["jobs"][0]["executor"]["components"]
+    mutated_workflow, component_id = next(
+        (workflow, component)
+        for workflow in extension_contract["workflows"]
+        for job in workflow["jobs"]
+        for component in job["executor"]["components"]
         if component in extension_contract["step_components"]
     )
+    generated_path = mutated_workflow["path"]
     extension_contract["step_components"][component_id]["name"] += " mutant"
     extension.write_text(yaml.safe_dump(extension_contract, sort_keys=False), encoding="utf-8")
 
