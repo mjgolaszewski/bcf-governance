@@ -16,7 +16,11 @@ from bcf_governance.tooling.ci_authority_pins import verify_workflow_authority
 from bcf_governance.tooling.ci_github_actions import ACTION_PINS
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
 from bcf_governance.tooling.ci_graph_execution import job_required_environment
-from bcf_governance.tooling.ci_graph_render import check_ci_graph, render_ci_graph
+from bcf_governance.tooling.ci_graph_render import (
+    check_ci_graph,
+    render_ci_graph,
+    scope_runner_temp_value,
+)
 from bcf_governance.tooling import evidence_modes, evidence_shards
 from bcf_governance.tooling.governance_validation.runner import (
     GovernanceValidationError,
@@ -208,10 +212,15 @@ def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
         "install-governance",
         "resolve-effective-controller-candidate",
         "classify-exact-main-controller",
+        "setup-controller-custody-directory",
+        "project-controller-custody",
+        "upload-controller-custody",
         "build-trusted-controller",
         "upload-trusted-controller",
     ]
-    assert builder["produces"] == ["trusted-controller-bundle"]
+    assert builder["produces"] == [
+        "controller-custody", "trusted-controller-bundle",
+    ]
 
 
 def test_trusted_bootstrap_is_owner_dispatched_pinned_and_offline() -> None:
@@ -247,7 +256,7 @@ def test_every_required_environment_is_validated_once_before_generated_work() ->
             observed += 1
             first = projection["jobs"][job["id"]]["steps"][0]
             assert first["name"] == "Validate all required environment inputs before work"
-            assert first["env"] == bindings
+            assert first["env"] == scope_runner_temp_value(bindings)
     assert observed > 0
 
 
@@ -308,28 +317,29 @@ def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> N
     callback = next(item for item in publisher["jobs"] if item["id"] == "rotation-callback")
     assert callback["permissions"]["actions"] == "write"
     assert callback["executor"]["components"] == [
-        "setup-python", "resolve-effective-controller", "dispatch-routine-certification",
+        "setup-python", "download-trigger-routine-outcome",
+        "project-rotation-outcome-route", "dispatch-routine-certification",
     ]
     dispatch = graph["commands"]["dispatch-routine-certification"]
     assert dispatch["argv"][:4] == [
         "${{ runner.tool_cache }}/bcf-governance/"
-        "${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf",
+        "${{ steps.controller-route.outputs.controller_commit_sha }}/bin/bcf",
         "ci-github", "controller-rotation", "dispatch-certification",
     ]
     rendered = yaml.safe_load(
         render_ci_graph(REPO_ROOT)[".github/workflows/bcf-status-publisher.yml"]
     )
     steps = rendered["jobs"]["rotation-callback"]["steps"]
-    resolve_index = next(
+    route_index = next(
         index for index, step in enumerate(steps)
-        if step.get("id") == "effective-controller"
+        if step.get("id") == "controller-route"
     )
     dispatch_index = next(
         index for index, step in enumerate(steps)
         if "dispatch-certification" in step.get("run", "")
     )
-    assert resolve_index < dispatch_index
-    assert "steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA" in steps[
+    assert route_index < dispatch_index
+    assert "steps.controller-route.outputs.controller_commit_sha" in steps[
         dispatch_index
     ]["run"]
 

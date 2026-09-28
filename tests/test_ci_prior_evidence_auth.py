@@ -13,6 +13,10 @@ from bcf_governance.tooling.ci_github_artifacts import ProviderArtifact
 from bcf_governance.tooling.ci_github_bundle import canonical_json
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError, MainIdentity
 from bcf_governance.tooling import ci_prior_evidence_auth as target
+from bcf_governance.tooling.controller_custody import (
+    authority_identity,
+    compile_controller_custody,
+)
 
 
 MAIN = MainIdentity(
@@ -21,7 +25,29 @@ MAIN = MainIdentity(
 )
 
 
-def _transport(*, altered: str = "") -> tuple[bytes, dict]:
+def _custody() -> dict:
+    return compile_controller_custody(
+        {
+            "source": "source_policy",
+            "subject": {"commit_sha": MAIN.checkout_sha, "tree_sha": MAIN.tree_sha},
+            "transition_ids": [],
+            "pin": {
+                "BCF_BOOTSTRAP_ARTIFACT_ID": "20",
+                "BCF_BOOTSTRAP_ARTIFACT_NAME": f"bcf-trusted-control-{'f' * 40}-1",
+                "BCF_BOOTSTRAP_ARTIFACT_DIGEST": "sha256:" + "3" * 64,
+                "BCF_BOOTSTRAP_RUN_ID": "10",
+                "BCF_BOOTSTRAP_RUN_ATTEMPT": "1",
+                "BCF_BOOTSTRAP_COMMIT_SHA": "f" * 40,
+                "BCF_BOOTSTRAP_TREE_SHA": "4" * 40,
+                "BCF_BOOTSTRAP_REPOSITORY_ID": MAIN.repository_id,
+                "BCF_BOOTSTRAP_WHEEL_SHA256": "1" * 64,
+            },
+        },
+        repository="owner/repo",
+    )
+
+
+def _transport(*, altered: str = "", with_custody: bool = False) -> tuple[bytes, dict]:
     receipt = b'{"evidence_id":"source"}'
     payload: dict[str, bytes] = {}
     artifacts = []
@@ -69,6 +95,9 @@ def _transport(*, altered: str = "") -> tuple[bytes, dict]:
                       "immutable_reference": "github-actions://owner/repo/runs/900/attempts/1/artifacts/123/test/test.evidence.json"}],
         "authenticated_at": "2026-09-22T00:00:00Z",
     }
+    if with_custody:
+        manifest["controller_custody"] = _custody()
+        manifest["authority"] = authority_identity(manifest["controller_custody"])
     if altered == "wrong_main":
         manifest["main"]["tree_sha"] = "0" * 40
     if altered == "bypass":
@@ -146,6 +175,43 @@ def test_trusted_transport_rejects_provider_digest_substitution(monkeypatch: pyt
     raw, _ = _transport()
     api, _ = _provider(monkeypatch, raw, wrong_digest=True)
     with pytest.raises(GitHubControllerError, match="provider digest"):
+        target.authenticate_prior_transport(
+            api, repository="owner/repo", main=MAIN, authority={},
+            run_id="1234", run_attempt=1,
+        )
+
+
+def test_trusted_transport_preserves_exact_controller_custody(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    raw, _ = _transport(with_custody=True)
+    api, _ = _provider(monkeypatch, raw)
+    result = target.authenticate_prior_transport(
+        api, repository="owner/repo", main=MAIN, authority={},
+        run_id="1234", run_attempt=1,
+    )
+    assert result.controller_custody == _custody()
+
+
+@pytest.mark.parametrize("mutation", ("subject", "repository", "authority"))
+def test_trusted_transport_rejects_controller_custody_laundering(
+    monkeypatch: pytest.MonkeyPatch, mutation: str,
+) -> None:
+    raw, manifest = _transport(with_custody=True)
+    if mutation == "subject":
+        manifest["controller_custody"]["subject"]["commit_sha"] = "0" * 40
+    elif mutation == "repository":
+        manifest["controller_custody"]["repository"]["full_name"] = "other/repo"
+    else:
+        manifest["authority"]["controller_commit_sha"] = "0" * 40
+    files = target._archive_files(raw)
+    files["prior-evidence-transport.json"] = canonical_json(manifest)
+    stream = BytesIO()
+    with zipfile.ZipFile(stream, "w") as archive:
+        for path, value in sorted(files.items()):
+            archive.writestr(path, value)
+    api, _ = _provider(monkeypatch, stream.getvalue())
+    with pytest.raises(GitHubControllerError, match="controller custody"):
         target.authenticate_prior_transport(
             api, repository="owner/repo", main=MAIN, authority={},
             run_id="1234", run_attempt=1,

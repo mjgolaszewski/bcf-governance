@@ -1519,7 +1519,6 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     } == {
         "components": [
             "setup-python",
-            "resolve-effective-controller",
             "exact-main-admit-effective",
             "protection-inspector-token",
             "prior-evidence-effective",
@@ -1538,7 +1537,11 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert builder["needs"] == []
     assert builder["condition"] == "exact-main-authority-enabled"
     assert builder["semantic_role"] == "exact-main-controller-builder"
-    assert builder["produces"] == ["trusted-controller-bundle"]
+    assert builder["produces"] == [
+        "controller-custody", "trusted-controller-bundle",
+    ]
+    assert "project-controller-custody" in builder["executor"]["components"]
+    assert "upload-controller-custody" in builder["executor"]["components"]
     assert "build-trusted-controller" in builder["executor"]["components"]
     assert "upload-trusted-controller" in builder["executor"]["components"]
     assert builder["executor"]["components"].index(
@@ -1598,6 +1601,7 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     )
     expected_transport_env = {
         "BCF_PYTHON": "${{ env.pythonLocation }}/bin/python",
+        "BCF_CONTROLLER_EXECUTION_REQUIRED": "true",
         "GITHUB_TOKEN": "${{ github.token }}",
     }
     if admission["executor"].get("protection_inspection"):

@@ -58,6 +58,9 @@ def run_controller_rotation_command(argv: list[str]) -> None:
     dispatch.add_argument("--repository", required=True)
     dispatch.add_argument("--rotation-run-id", required=True)
     dispatch.add_argument("--rotation-run-attempt", required=True)
+    project = operations.add_parser("project-custody")
+    project.add_argument("--repository", required=True)
+    project.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
     api = environment_api()
     output_path = github_output_path()
@@ -121,6 +124,16 @@ def run_controller_rotation_command(argv: list[str]) -> None:
             "controller_source": result["source"],
             **{key: str(value) for key, value in result["pin"].items()},
         }
+    elif args.operation == "project-custody":
+        from .routine_controller_provider import (
+            project_effective_controller_custody_observation,
+        )
+
+        result = project_effective_controller_custody_observation(
+            api, repository=args.repository
+        )
+        write_exclusive(args.output, result)
+        outputs = {"controller_commit_sha": result["controller"]["commit_sha"]}
     else:
         result = dispatch_post_rotation_certification(
             api,

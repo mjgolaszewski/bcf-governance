@@ -1,0 +1,73 @@
+document:
+  kind: prospective_contract_migration
+  id: v2.1.2-controller-custody-transport
+  status: implemented_pending_final_validation
+  thesis: semantic intent enters once; exact provider-authenticated controller custody is transported to every downstream consumer
+producer_contract:
+  routing_observation:
+    authority: none
+    owner: exact-main controller builder
+    purpose: emit one standalone provider observation that selects only a previously trusted runner installation
+    prohibition: cannot certify, publish, release, install, or authorize
+  authenticated_custody:
+    owner: each installed trusted consumer after provider reauthentication of the standalone capsule
+    binds: [repository, exact_main_subject, controller_commit, controller_tree, wheel_digest, provider_artifact, producer_run_attempt, transition_chain]
+    rule: every authority consumer authenticates the producer artifact and exact custody before acting
+  terminal_projection:
+    owner: trusted finalizer
+    binds: [authenticated_custody, certification_subject, admission_run_attempt, certified_proposition]
+    rule: publication and release consume the projection; they do not reconstruct controller authority
+consumer_matrix:
+  exact_main_admission:
+    change: existing builder-selected admission route remains non-authoritative; semantic admission does not consume or confer capsule authority
+    permutations: [ordinary_current, pending_runtime_rotation, pending_policy_rotation, recovery_reentry_rejected_for_certification]
+  governance_evidence_truth:
+    change: no authority change; optional prior-evidence transport may carry an additive copy but cannot replace the standalone capsule
+    permutations: [fresh_evidence, authenticated_reuse, invalid_or_missing_transport]
+  routine_rotation_authorizer:
+    change: route from the triggering builder observation, then reauthenticate provider custody under that installed controller; never ask a fixed historical controller to parse a newer active chain
+    permutations: [no_transition, runtime_only, protected_policy_change, stale_or_superseded_subject]
+  rotation_bootstrap_probe_promotion:
+    change: preserve exact authorized target and provider artifact identity through every stage
+    permutations: [both_runners_green, incomplete_inventory, wrong_run_attempt, wrong_artifact]
+  rotation_callback:
+    change: consume the triggering rotation active receipt and invoke its exact promoted target
+    permutations: [no_transition, active_transition, skipped_matrix_facades, wrong_or_missing_active_receipt]
+  exact_main_finalizer:
+    change: consume triggering admission custody and project it into the certification bundle
+    permutations: [certifiable, pending_rotation_noncertifying, superseded_subject, wrong_run_attempt]
+  exact_main_publisher:
+    change: consume finalizer-projected custody and preserve certification scope
+    permutations: [workitem, phase_closure, failed_truth, noncertifying_observation]
+  pr_finalizer_publisher:
+    change: none; the stable PR observation contract neither consumes nor produces exact-main controller custody
+    inspected_no_impact: true
+  release_authorizer:
+    change: consume certification custody and exact provider controller artifact
+    permutations: [terminal_phase_only, bounded_workitem_rejected, stale_certification, wrong_controller_artifact]
+  release_verifier_collector:
+    change: preserve authorization custody through build, verification, and release receipt
+    permutations: [exact_assets, substituted_build, substituted_controller, wrong_collector_attempt]
+  release_publisher:
+    change: consume release-receipt custody; never independently resolve controller authority
+    permutations: [immutable_publish, wrong_receipt, wrong_subject, bounded_certification]
+  adopter_projection:
+    change: mechanically project the same optional trusted-controller contract through installer and pack mirrors
+    permutations: [ordinary_adopter_without_controller, adopter_with_controller, bcf_self_authority]
+  recovery:
+    change: none
+    inspected_no_impact: true
+    rule: recovery re-entry and Break Glass remain separate, noncertifying, and cannot manufacture custody
+failure_matrix:
+  reject: [missing_custody, malformed_custody, wrong_repository, wrong_subject, wrong_tree, wrong_controller, wrong_wheel, wrong_artifact, wrong_run, wrong_attempt, stale_chain, ambiguous_chain, scope_broadening]
+  preserve: [candidate_non_authority, release_authority_false_during_rotation, exact_subject_evidence, protection_no_bypass]
+generated_surfaces: [canonical_graph, extensions, workflows, template_projection, runtime_mirrors, schemas, manifests, locks, authority_projection, editorial_audit]
+prospective_exit:
+  rule: no provider-required placeholder may stand in for a deterministic producer-consumer contract simulation
+  required_paths: [no_transition, runtime_rotation, policy_rotation, bounded_certification, phase_closure, release_rejection, release_acceptance, adopter_without_controller]
+mechanical_proof:
+  preflight_owner: bcf_governance/tooling/controller_custody_prospective.py
+  producer_shapes: [admission_custody, certification, no_transition, active_transition, release_receipt]
+  invalid_permutations: [missing_identity, ambiguous_identity, malformed_identity]
+  consumer_rule: every routed privileged command validates provider custody and its executing controller independently
+  no_hand_authored_boundary: candidate routing observations can select an executable but cannot certify, publish, release, or rotate it

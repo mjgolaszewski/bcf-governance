@@ -44,6 +44,10 @@
       }
     },
     "authority": {"$ref": "reuse-attestation.schema.json#/$defs/authorityIdentity"},
+    "controller_custody": {
+      "$comment": "Additive N+1 custody. It is optional only while installed N emits the v1 transport during rotation; certifying N+1 consumers require it.",
+      "$ref": "#/$defs/controllerCustody"
+    },
     "protection": {
       "type": "object", "additionalProperties": false,
       "required": ["declaration_sha256", "ruleset_id", "provider_state", "required_context", "publisher_app_id", "bypass_actors"],
@@ -102,5 +106,40 @@
       "$ref": "reuse-attestation.schema.json#/$defs/sha256"
     },
     "authenticated_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "controllerCustody": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "kind", "repository", "subject", "source", "transition_ids", "controller"],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "kind": {"const": "controller_custody"},
+        "repository": {
+          "type": "object", "additionalProperties": false,
+          "required": ["full_name", "repository_id"],
+          "properties": {
+            "full_name": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+            "repository_id": {"type": "string", "pattern": "^[1-9][0-9]*$"}
+          }
+        },
+        "subject": {"$ref": "reuse-attestation.schema.json#/$defs/subjectIdentity"},
+        "source": {"enum": ["source_policy", "provider_transition"]},
+        "transition_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-f0-9]{64}$"}},
+        "controller": {
+          "type": "object", "additionalProperties": false,
+          "required": ["commit_sha", "tree_sha", "wheel_sha256", "artifact_id", "artifact_name", "provider_digest", "run_id", "run_attempt"],
+          "properties": {
+            "commit_sha": {"$ref": "reuse-attestation.schema.json#/$defs/gitObject"},
+            "tree_sha": {"$ref": "reuse-attestation.schema.json#/$defs/gitObject"},
+            "wheel_sha256": {"$ref": "reuse-attestation.schema.json#/$defs/sha256"},
+            "artifact_id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+            "artifact_name": {"type": "string", "minLength": 1},
+            "provider_digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+            "run_id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+            "run_attempt": {"type": "string", "pattern": "^[1-9][0-9]*$"}
+          }
+        }
+      }
+    }
   }
 }

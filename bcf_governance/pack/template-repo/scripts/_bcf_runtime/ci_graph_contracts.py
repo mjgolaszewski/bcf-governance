@@ -19,7 +19,11 @@ from .ci_graph_dag import ancestors as _ancestors, job_graph as _job_graph
 from .ci_graph_reusable_artifacts import (
     reusable_artifact_binding, validate_reusable_binding_declarations,
 )
-from .ci_graph_execution import hosted_command_issues, job_execution_issues
+from .ci_graph_execution import (
+    controller_command_ids,
+    hosted_command_issues,
+    job_execution_issues,
+)
 from .ci_graph_authority_policy import validate_graph_authority_policy
 from .ci_graph_controller_lifecycle import (
     ControllerLifecycle,
@@ -554,15 +558,9 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                     raise CIGraphError(
                         f"CI graph job {job['id']} component-consumed artifacts do not match its contract"
                     )
-                controller_commands = [
-                    graph["step_components"][component_id]["command"]
-                    for component_id in executor["components"]
-                    if graph["step_components"][component_id]["kind"] == "command"
-                    and "{controller}"
-                    in graph["commands"][
-                        graph["step_components"][component_id]["command"]
-                    ]["argv"]
-                ]
+                controller_commands = list(
+                    controller_command_ids(graph, executor)
+                )
                 if controller_commands and job["trust"] != "trusted":
                     raise CIGraphError(
                         f"candidate CI graph job {job['id']} may not invoke the trusted controller"

@@ -23,6 +23,7 @@ from .ci_authority_prospective_lanes import (
 )
 from .ci_exact_main_truth import validate_exact_main_truth_payload
 from .ci_github_identity import GitHubControllerError
+from .controller_custody_prospective import validate_controller_custody_graph
 from .evaluation_scope import (
     EvaluationIntent,
     EvaluationScopeError,
@@ -444,10 +445,11 @@ def _run_prospective_train(
                 {"stage": "normalization", "status": "observed", "duration_ms": reconcile_duration},
             ]
         )
-        evaluation = post_merge_evaluation(validate_ci_graph(root).graph)
+        evaluation, custody_contract = validate_controller_custody_graph(root, python_executable=python_executable)
         post_merge_mode, post_merge_target = evaluation.mode, evaluation.target
     except (
         CIGraphError,
+        GitHubControllerError,
         ReconcileError,
         PreflightError,
         TruthfulnessError,
@@ -576,6 +578,7 @@ def _run_prospective_train(
                     else {}
                 ),
                 "release_authority": False,
+                "controller_custody_contract": custody_contract,
             }
         )
         if not execute_evidence:

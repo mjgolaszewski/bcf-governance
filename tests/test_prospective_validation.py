@@ -44,6 +44,14 @@ def _authored_target_ready(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         prospective, "validate_evaluation_authored_ready", lambda *_args, **_kwargs: None
     )
+    monkeypatch.setattr(
+        prospective,
+        "validate_controller_custody_graph",
+        lambda *_args, **_kwargs: (
+            prospective.post_merge_evaluation(prospective.validate_ci_graph(REPO_ROOT).graph),
+            {"status": "proved"},
+        ),
+    )
 
 
 class Result:
