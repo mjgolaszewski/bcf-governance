@@ -14,6 +14,7 @@ overlays:
   authority_surfaces:
   - governance/self-governance-policy.yml
   - governance/ci-extensions/bcf-trusted-control.yml
+  adopter_excluded_pack_surfaces: []
   adopter_alternative: typed_trusted_controller_adoption
 - id: self-publication-authority
   authority_kind: publication
@@ -22,6 +23,7 @@ overlays:
   authority_surfaces:
   - governance/ci-extensions/bcf-release.yml
   - governance/public-contracts.yml
+  adopter_excluded_pack_surfaces: []
   adopter_alternative: adopter_owned_publication_authority
 - id: self-recovery-authority
   authority_kind: recovery
@@ -30,6 +32,12 @@ overlays:
   authority_surfaces:
   - governance/break-glass-recovery.yml
   - governance/ci-extensions/bcf-break-glass-recovery.yml
+  adopter_excluded_pack_surfaces:
+  - schemas/break-glass-recovery-policy.schema.json
+  - schemas/break-glass-recovery-receipt.schema.json
+  - schemas/recovery-reentry-authorization.schema.json
+  - scripts/_bcf_runtime/break_glass_recovery.py
+  - scripts/_bcf_runtime/break_glass_reentry.py
   adopter_alternative: adopter_owned_recovery_authority
 - id: self-repository-authority
   authority_kind: self_authority
@@ -41,6 +49,13 @@ overlays:
   - governance/github-protection.yml
   - governance/ci-extensions/bcf-automation.yml
   - governance/ci-extensions/bcf-evidence-storage.yml
+  adopter_excluded_pack_surfaces:
+  - schemas/product-certification.schema.json
+  - schemas/product-parity.schema.json
+  - schemas/self-authority-overlays.schema.json
+  - scripts/_bcf_runtime/governance_validation/product_certification.py
+  - scripts/_bcf_runtime/governance_validation/product_parity.py
+  - scripts/_bcf_runtime/governance_validation/self_authority_overlays.py
   adopter_alternative: adopter_owned_repository_integrations
 non_leakage:
   pack_manifest: template-repo/.bcf-pack-manifest.json

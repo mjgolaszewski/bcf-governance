@@ -361,16 +361,39 @@ def validate_controller_custody_chain(
 def validate_controller_custody_graph(
     repo_root: Path, *, python_executable: Path
 ) -> tuple[Any, dict[str, Any]]:
-    """Compile the graph once and prove its custody chain before other work."""
+    """Compile the graph once and prove only its applicable custody lane."""
 
     graph = validate_ci_graph(repo_root).graph
+    evaluation = post_merge_evaluation(graph)
+    if evaluation.lane == "direct_protected_main":
+        return evaluation, {
+            "schema_version": "1.0",
+            "status": "proved",
+            "custody_state": "controller_not_adopted",
+            "controller_required": False,
+            "authority": "direct_protected_main_graph",
+            "workflow_id": evaluation.workflow_id,
+            "terminal_job_id": evaluation.terminal_job_id,
+            "release_authority": False,
+        }
     proof = validate_controller_custody_chain(
         graph, python_executable=python_executable
     )
+    if proof["status"] == "not_adopted":
+        return evaluation, {
+            "schema_version": "1.0",
+            "status": "proved",
+            "custody_state": "ordinary_executable_controller",
+            "controller_custody_required": False,
+            "authority": "declared_executable_controller",
+            "workflow_id": evaluation.workflow_id,
+            "terminal_job_id": evaluation.terminal_job_id,
+            "release_authority": False,
+        }
     proof["no_transition_callback_probe"] = prospective_no_transition_topology(
         repo_root
     )
-    return post_merge_evaluation(graph), proof
+    return evaluation, proof
 
 
 def validate_controller_contracts_preflight(

@@ -51,13 +51,14 @@
     "baseOverlay": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "authority_kind", "proposition", "graph_extensions", "authority_surfaces", "adopter_alternative"],
+      "required": ["id", "authority_kind", "proposition", "graph_extensions", "authority_surfaces", "adopter_excluded_pack_surfaces", "adopter_alternative"],
       "properties": {
         "id": {"type": "string"},
         "authority_kind": {"enum": ["controller", "publication", "recovery", "self_authority"]},
         "proposition": {"type": "string", "minLength": 1},
         "graph_extensions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^bcf-[a-z0-9-]+$"}},
         "authority_surfaces": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}},
+        "adopter_excluded_pack_surfaces": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}},
         "adopter_alternative": {"type": "string", "minLength": 1}
       }
     },

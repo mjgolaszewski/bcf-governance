@@ -20,14 +20,17 @@ from bcf_governance.tooling.ci_graph_controller_lifecycle import ControllerLifec
 from bcf_governance.tooling.ci_graph_audit import audit_ci_graph
 from bcf_governance.tooling.ci_graph_execution import (
     DIRECT_POST_MERGE_MODE,
+    direct_post_merge_mode,
     exact_main_evaluation,
     job_execution_issues,
     job_required_environment,
     workflow_input_issues,
 )
 from bcf_governance.tooling.ci_graph_post_merge import (
+    authored_post_merge_scope,
     post_merge_evaluation,
     reconcile_direct_post_merge_scope,
+    reconcile_post_merge_scope,
 )
 from bcf_governance.tooling.ci_graph_yaml import render_yaml
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
@@ -78,8 +81,14 @@ def test_exact_main_evaluation_has_one_canonical_admission_and_truth_scope() -> 
     workitems = yaml.safe_load(
         (REPO_ROOT / ledger["active_phase"]["workitems"]).read_text()
     )["workitems"]
-    if all(item["status"] == "DONE" for item in workitems):
+    phase = yaml.safe_load(
+        (REPO_ROOT / ledger["active_phase"]["log"]).read_text()
+    )
+    if phase["document"]["status"] == "completed":
         assert evaluation.mode == "closure"
+        assert evaluation.target is None
+    elif any(item["status"] in {"IN_PROGRESS", "BLOCKED"} for item in workitems):
+        assert evaluation.mode == "pr"
         assert evaluation.target is None
     else:
         assert evaluation.mode == "workitem"
@@ -120,7 +129,108 @@ def test_exact_main_evaluation_has_one_canonical_admission_and_truth_scope() -> 
     )
 
 
-def test_v3_lite_uses_typed_direct_protected_main_closure() -> None:
+@pytest.mark.parametrize(
+    ("phase_status", "statuses", "expected"),
+    [
+        ("active", ["TODO", "TODO"], ("pr", None)),
+        ("active", ["IN_PROGRESS", "TODO"], ("pr", None)),
+        ("active", ["DONE", "TODO"], ("workitem", "P01-P0-01")),
+        ("active", ["DONE", "IN_PROGRESS"], ("pr", None)),
+        ("active", ["DONE", "DONE"], ("workitem", "P01-P0-02")),
+        ("completed", ["DONE", "DONE"], ("closure", None)),
+    ],
+)
+def test_post_merge_scope_is_derived_from_authored_lifecycle(
+    tmp_path: Path,
+    phase_status: str,
+    statuses: list[str],
+    expected: tuple[str, str | None],
+) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "phases").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump(
+            {
+                "active_phase": {
+                    "id": "P01",
+                    "workitems": "plans/phase-01-workitems.yml",
+                    "log": "phases/phase-01-log.yml",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    workitems = [
+        {
+            "id": "P01-P0-01",
+            "status": statuses[0],
+            "acceptance": ["first_complete"],
+        },
+        {
+            "id": "P01-P0-02",
+            "status": statuses[1],
+            "acceptance": ["requires-workitem-closure:P01-P0-01"],
+        },
+    ]
+    (tmp_path / "plans/phase-01-workitems.yml").write_text(
+        yaml.safe_dump({"workitems": workitems}), encoding="utf-8"
+    )
+    (tmp_path / "phases/phase-01-log.yml").write_text(
+        yaml.safe_dump({"document": {"status": phase_status}}), encoding="utf-8"
+    )
+
+    assert authored_post_merge_scope(tmp_path) == expected
+
+
+def test_reconcile_replaces_stale_adopter_closure_with_pr_progress(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "governance").mkdir()
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "phases").mkdir()
+    (tmp_path / "governance/ci-graph.yml").write_bytes(
+        (REPO_ROOT / "governance/ci-graph.yml").read_bytes()
+    )
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump(
+            {
+                "active_phase": {
+                    "id": "P02",
+                    "workitems": "plans/phase-02-workitems.yml",
+                    "log": "phases/phase-02-log.yml",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "plans/phase-02-workitems.yml").write_text(
+        yaml.safe_dump(
+            {
+                "workitems": [
+                    {
+                        "id": "P02-CI-BCF-210-04",
+                        "status": "IN_PROGRESS",
+                        "acceptance": ["consumer_graph_complete"],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "phases/phase-02-log.yml").write_text(
+        yaml.safe_dump({"document": {"status": "active"}}), encoding="utf-8"
+    )
+
+    with pytest.raises(CIGraphError, match="scope is stale"):
+        reconcile_post_merge_scope(tmp_path, apply=False)
+    assert reconcile_post_merge_scope(tmp_path, apply=True) is True
+    evaluation = post_merge_evaluation(
+        yaml.safe_load((tmp_path / "governance/ci-graph.yml").read_text())
+    )
+    assert (evaluation.mode, evaluation.target) == ("pr", None)
+
+
+def test_v3_lite_starts_with_typed_direct_pr_progress() -> None:
     graph = build_reference_ci_graph(
         project_id="direct-adopter",
         profile="lite",
@@ -133,7 +243,7 @@ def test_v3_lite_uses_typed_direct_protected_main_closure() -> None:
     )
     evaluation = post_merge_evaluation(graph)
     assert evaluation.as_dict() == {
-        "mode": "closure",
+        "mode": "pr",
         "target": None,
         "lane": "direct_protected_main",
         "workflow_id": "governance",
@@ -141,7 +251,7 @@ def test_v3_lite_uses_typed_direct_protected_main_closure() -> None:
     }
     assert graph["commands"]["v3-truth"]["argv"][
         graph["commands"]["v3-truth"]["argv"].index("--evaluation-mode") + 1
-    ] == DIRECT_POST_MERGE_MODE
+    ] == direct_post_merge_mode("pr")
     workflow = next(item for item in graph["workflows"] if item["id"] == "governance")
     assert workflow_input_issues(graph, workflow) == ()
 
@@ -159,7 +269,7 @@ def test_reference_exact_main_evaluation_uses_unique_semantic_roles() -> None:
     )
     evaluation = post_merge_evaluation(graph)
     assert evaluation.lane == "trusted_exact_main"
-    assert evaluation.mode == "closure"
+    assert evaluation.mode == "pr"
     assert evaluation.terminal_job_id == "governance-producer"
     workflow = next(item for item in graph["workflows"] if item["id"] == "exact-main")
     duplicate = copy.deepcopy(workflow["jobs"][1])
@@ -182,12 +292,61 @@ def test_direct_protected_main_rejects_pr_default_on_push() -> None:
     )
     for command in graph["commands"].values():
         command["argv"] = [
-            value.replace(DIRECT_POST_MERGE_MODE, "${{ inputs.evaluation_mode || 'pr' }}")
+            value.replace(
+                direct_post_merge_mode("pr"),
+                "${{ inputs.evaluation_mode || 'pr' }}",
+            )
             if isinstance(value, str) else value
             for value in command["argv"]
         ]
-    with pytest.raises(CIGraphError, match="not event-bound to closure"):
+    with pytest.raises(CIGraphError, match="not canonically event-bound"):
         post_merge_evaluation(graph)
+
+
+def test_direct_protected_main_binds_exact_workitem_target(tmp_path: Path) -> None:
+    graph = build_reference_ci_graph(
+        project_id="direct-adopter",
+        profile="lite",
+        profile_contract_version="3.0",
+        gates=["governance-validate"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    path = tmp_path / "governance/ci-graph.yml"
+    path.parent.mkdir(parents=True)
+    path.write_bytes(render_yaml(graph))
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "phases").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump(
+            {"active_phase": {
+                "workitems": "plans/phase-01-workitems.yml",
+                "log": "phases/phase-01-log.yml",
+            }}
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "plans/phase-01-workitems.yml").write_text(
+        yaml.safe_dump({"workitems": [
+            {"id": "P01-P0-01", "status": "DONE", "acceptance": ["complete"]},
+            {"id": "P01-P0-02", "status": "TODO", "acceptance": [
+                "requires-workitem-closure:P01-P0-01"
+            ]},
+        ]}),
+        encoding="utf-8",
+    )
+    (tmp_path / "phases/phase-01-log.yml").write_text(
+        yaml.safe_dump({"document": {"status": "active"}}), encoding="utf-8"
+    )
+
+    assert reconcile_direct_post_merge_scope(tmp_path, apply=True) is True
+    proposed = yaml.safe_load(path.read_text())
+    evaluation = post_merge_evaluation(proposed)
+    assert (evaluation.mode, evaluation.target) == ("workitem", "P01-P0-01")
+    workflow = next(item for item in proposed["workflows"] if item["id"] == "governance")
+    assert workflow_input_issues(proposed, workflow) == ()
 
 
 def test_reconcile_normalizes_direct_protected_main_scope_once(tmp_path: Path) -> None:
@@ -203,13 +362,47 @@ def test_reconcile_normalizes_direct_protected_main_scope_once(tmp_path: Path) -
     )
     for command in graph["commands"].values():
         command["argv"] = [
-            value.replace(DIRECT_POST_MERGE_MODE, "${{ inputs.evaluation_mode || 'pr' }}")
+            value.replace(
+                direct_post_merge_mode("pr"),
+                "${{ inputs.evaluation_mode || 'pr' }}",
+            )
             if isinstance(value, str) else value
             for value in command["argv"]
         ]
     path = tmp_path / "governance/ci-graph.yml"
     path.parent.mkdir(parents=True)
     path.write_bytes(render_yaml(graph))
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "phases").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump(
+            {
+                "active_phase": {
+                    "workitems": "plans/phase-01-workitems.yml",
+                    "log": "phases/phase-01-log.yml",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "plans/phase-01-workitems.yml").write_text(
+        yaml.safe_dump(
+            {
+                "workitems": [
+                    {
+                        "id": "P01-P0-01",
+                        "status": "DONE",
+                        "acceptance": ["complete"],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "phases/phase-01-log.yml").write_text(
+        yaml.safe_dump({"document": {"status": "completed"}}),
+        encoding="utf-8",
+    )
     with pytest.raises(CIGraphError, match="run canonical reconciliation"):
         reconcile_direct_post_merge_scope(tmp_path, apply=False)
     assert reconcile_direct_post_merge_scope(tmp_path, apply=True) is True

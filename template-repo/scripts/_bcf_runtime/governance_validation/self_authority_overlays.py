@@ -10,6 +10,11 @@ from typing import Any
 import yaml  # type: ignore[import-untyped]
 from jsonschema import Draft202012Validator
 
+from ..pack_installation_scope import (
+    PackInstallationScopeError,
+    self_authority_pack_surfaces,
+)
+
 
 class SelfAuthorityOverlayError(ValueError):
     """The self overlay contract is incomplete, ambiguous, or leaks to adopters."""
@@ -82,7 +87,12 @@ def validate_self_authority_overlays(repo_root: Path) -> dict[str, tuple[str, ..
         manifest = _mapping(json.loads(manifest_path.read_text(encoding="utf-8")), str(manifest_path))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise SelfAuthorityOverlayError("cannot read canonical adopter pack manifest") from exc
-    packed = set(_mapping(manifest.get("files"), "pack manifest files"))
+    packed_entries = _mapping(manifest.get("files"), "pack manifest files")
+    packed = set(packed_entries)
+    try:
+        self_only = self_authority_pack_surfaces(root)
+    except PackInstallationScopeError as exc:
+        raise SelfAuthorityOverlayError(str(exc)) from exc
 
     for overlay_id, overlay in by_id.items():
         extension_ids = tuple(_sequence(overlay.get("graph_extensions"), f"{overlay_id}.graph_extensions"))
@@ -129,6 +139,22 @@ def validate_self_authority_overlays(repo_root: Path) -> dict[str, tuple[str, ..
                 workflow_paths.append(workflow_path)
             declared_extensions[extension_id] = overlay_id
         generated_workflows[overlay_id] = tuple(sorted(workflow_paths))
+
+    scoped = {
+        path
+        for path, entry in packed_entries.items()
+        if isinstance(entry, dict) and entry.get("installation_scope") == "self_authority"
+    }
+    if scoped != set(self_only):
+        raise SelfAuthorityOverlayError(
+            "self-only pack installation scope differs from overlay ownership"
+        )
+    for relative, overlay_id in self_only.items():
+        path = root / "template-repo" / relative
+        if relative not in packed or not path.is_file() or path.is_symlink():
+            raise SelfAuthorityOverlayError(
+                f"self-only pack surface {relative} for {overlay_id} is unavailable"
+            )
 
     if set(declared_extensions) != set(graph_extensions):
         raise SelfAuthorityOverlayError("every self CI graph extension must have exactly one overlay owner")

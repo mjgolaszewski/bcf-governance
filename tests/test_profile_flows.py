@@ -15,6 +15,10 @@ import yaml
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
 from bcf_governance.tooling.ci_graph_audit import audit_ci_graph
 from bcf_governance.tooling.ci_graph_render import apply_ci_graph, check_ci_graph
+from bcf_governance.tooling.ci_graph_post_merge import (
+    post_merge_evaluation,
+    reconcile_post_merge_scope,
+)
 from bcf_governance.tooling.controller_custody_prospective import (
     validate_controller_custody_chain,
 )
@@ -147,7 +151,7 @@ def main() -> None:
         junit = artifacts / 'junit' / f'{gate}.xml'
         junit.parent.mkdir(parents=True, exist_ok=True)
         failure = '<failure>mutated gate</failure>' if BROKEN else ''
-        junit.write_text(f'<testsuite tests="1" failures="{int(BROKEN)}"><testcase classname="tests/gates.py" name="{gate}">{failure}</testcase></testsuite>')
+        junit.write_text(f'<testsuite tests="1" failures="{int(BROKEN)}"><testcase classname="backend.tests.gates" name="test_gate[{gate}]">{failure}</testcase></testsuite>')
     for name in {
         'security-sbom': 'sbom.json',
         'security-vulnerability-scan': 'vulnerability-scan.json',
@@ -393,6 +397,7 @@ def gate_config(
                     "min_collected": 1,
                     "min_executed": 1,
                     "max_skipped": 0,
+                    "selectors": [f"backend/tests/gates.py::test_gate[{target}]"],
                 },
             }
         elif policy == "runtime_smoke":
@@ -430,7 +435,7 @@ def gate_config(
         oracle = (
             {
                 "kind": "test_node_failure",
-                "node_ids": [f"tests/gates.py::{target}"],
+                "node_ids": [f"backend.tests.gates::test_gate[{target}]"],
             }
             if is_test
             else {
@@ -540,11 +545,28 @@ def gate_config(
         }
         manifest_root = repo / "governance/test-manifests"
         manifest_root.mkdir(parents=True, exist_ok=True)
+        test_targets = sorted(
+            target
+            for target, gate in gates.items()
+            if isinstance(gate.get("evidence"), dict)
+            and gate["evidence"].get("kind") == "test_suite"
+        )
+        tests_root = repo / "backend/tests"
+        tests_root.mkdir(parents=True, exist_ok=True)
+        (tests_root / "gates.py").write_text(
+            "import pytest\n\n"
+            "from gate import build_gate_result\n\n"
+            f"TARGETS = {test_targets!r}\n\n"
+            "@pytest.mark.parametrize('gate', TARGETS, ids=TARGETS)\n"
+            "def test_gate(gate: str) -> None:\n"
+            "    assert build_gate_result(gate).passed\n",
+            encoding="utf-8",
+        )
         for target, gate in gates.items():
             evidence = gate.get("evidence")
             if isinstance(evidence, dict) and evidence.get("kind") == "test_suite":
                 (manifest_root / f"{target}.txt").write_text(
-                    f"tests/gates.py::{target}\n", encoding="utf-8"
+                    f"backend.tests.gates::test_gate[{target}]\n", encoding="utf-8"
                 )
     path.write_text(
         yaml.safe_dump(
@@ -586,6 +608,122 @@ def complete_phase(repo: Path, *, derived_lifecycle: bool = False) -> None:
         "active" if derived_lifecycle else "completed"
     )
     ledger_path.write_text(yaml.safe_dump(ledger, sort_keys=False), encoding="utf-8")
+
+
+def test_standard_v3_adopter_install_derives_each_post_merge_scope(
+    tmp_path: Path,
+) -> None:
+    """Exercise the shipped adopter path, not BCF's self-authority topology."""
+
+    repo = tmp_path / "standard-adopter"
+    repo.mkdir()
+    git(repo, "init", "--quiet")
+    git(repo, "config", "user.email", "adopter@example.invalid")
+    git(repo, "config", "user.name", "Adopter Acceptance")
+    write_gate_runner(repo)
+    config = gate_config(repo, "standard", None, contract_version="3.0")
+    semantic = semantic_config(repo)
+    git(repo, "add", ".")
+    git(repo, "commit", "--quiet", "-m", "application contracts")
+    subprocess.run(
+        [
+            sys.executable,
+            str(INSTALLER),
+            "--target",
+            str(repo),
+            "--profile",
+            "standard",
+            "--profile-contract-version",
+            "3.0",
+            "--profile-config",
+            str(config),
+            "--semantic-config",
+            str(semantic),
+            "--project-id",
+            "standard-adopter",
+            "--project-name",
+            "Standard Adopter",
+            "--product-name",
+            "Standard Adopter",
+            *EXPLICIT_HOSTED_RUNNERS,
+            "--require-strict-validation",
+        ],
+        check=True,
+    )
+    self_contract = yaml.safe_load(
+        (REPO_ROOT / "governance/self-overlays.yml").read_text(encoding="utf-8")
+    )
+    excluded = {
+        relative
+        for overlay in self_contract["overlays"]
+        for relative in overlay["adopter_excluded_pack_surfaces"]
+    }
+    assert excluded
+    assert all(not (repo / relative).exists() for relative in excluded)
+
+    compiled = validate_ci_graph(repo)
+    initial = post_merge_evaluation(compiled.graph)
+    assert (initial.mode, initial.target) == ("pr", None)
+
+    complete_phase(repo, derived_lifecycle=True)
+    assert reconcile_post_merge_scope(repo, apply=True) is True
+    apply_ci_graph(repo)
+    bounded = post_merge_evaluation(validate_ci_graph(repo).graph)
+    assert (bounded.mode, bounded.target) == ("workitem", "P01-P0-01")
+
+    complete_phase(repo)
+    assert reconcile_post_merge_scope(repo, apply=True) is True
+    apply_ci_graph(repo)
+    terminal = post_merge_evaluation(validate_ci_graph(repo).graph)
+    assert (terminal.mode, terminal.target) == ("closure", None)
+
+
+def test_lite_v1_adopter_install_derives_each_post_merge_scope(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "lite-adopter"
+    repo.mkdir()
+    git(repo, "init", "--quiet")
+    git(repo, "config", "user.email", "adopter@example.invalid")
+    git(repo, "config", "user.name", "Adopter Acceptance")
+    subprocess.run(
+        [
+            sys.executable,
+            str(INSTALLER),
+            "--target",
+            str(repo),
+            "--profile",
+            "lite",
+            "--project-id",
+            "lite-adopter",
+            "--project-name",
+            "Lite Adopter",
+            "--product-name",
+            "Lite Adopter",
+            *EXPLICIT_HOSTED_RUNNERS,
+            "--require-strict-validation",
+        ],
+        check=True,
+    )
+    compiled = validate_ci_graph(repo)
+    initial = post_merge_evaluation(compiled.graph)
+    assert (initial.mode, initial.target, initial.lane) == (
+        "pr",
+        None,
+        "direct_protected_main",
+    )
+
+    complete_phase(repo, derived_lifecycle=True)
+    assert reconcile_post_merge_scope(repo, apply=True) is True
+    apply_ci_graph(repo)
+    bounded = post_merge_evaluation(validate_ci_graph(repo).graph)
+    assert (bounded.mode, bounded.target) == ("workitem", "P01-P0-01")
+
+    complete_phase(repo)
+    assert reconcile_post_merge_scope(repo, apply=True) is True
+    apply_ci_graph(repo)
+    terminal = post_merge_evaluation(validate_ci_graph(repo).graph)
+    assert (terminal.mode, terminal.target) == ("closure", None)
 
 
 def test_lite_profile_install_evidence_truth_flow(

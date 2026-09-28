@@ -83,6 +83,39 @@ def test_submit_rejects_wrong_intent_before_proof_or_push(
         )
 
 
+def test_submit_accepts_derived_pr_progress_without_terminal_target(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    context, identity = _state(monkeypatch)
+    monkeypatch.setattr(
+        submit,
+        "_canonical_inputs",
+        lambda *_a, **_k: ("pr", None, "owner/repo"),
+    )
+    observed: list[tuple[str, object]] = []
+    monkeypatch.setattr(
+        submit,
+        "run_prospective_train",
+        lambda *_a, **kwargs: observed.append(
+            (kwargs["semantic_intent"], kwargs["evaluation_target"])
+        )
+        or {"status": "prospectively_admissible_provider_proof_required"},
+    )
+    monkeypatch.setattr(submit, "_confirm_unchanged", lambda *_a, **_k: None)
+
+    result = submit.submit_candidate(
+        tmp_path,
+        semantic_intent="pr",
+        python_executable=Path("/python"),
+        provider_api=object(),  # type: ignore[arg-type]
+        runner=lambda *_a, **_k: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+
+    assert observed == [("pr", None)]
+    assert result["subject"] == identity.as_dict()
+    assert result["branch"] == context.head_ref
+
+
 def test_submit_never_pushes_after_failed_or_mutated_proof(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

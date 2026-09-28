@@ -29,7 +29,24 @@ def test_reconcile_declares_one_closed_dependency_order() -> None:
         "semantic-lock",
     ]
     assert ids.index("ci-graph-lock") < ids.index("ci-graph-render")
+    assert ids.index("ci-graph-render") < ids.index("workflow-authority")
     assert ids[-1] == "editorial-audit"
+
+
+def test_reconcile_omits_workflow_authority_when_contract_is_absent(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    (tmp_path / "governance-profile.yml").write_text(
+        "semantic_capabilities: {}\n", encoding="utf-8"
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.scaffold_governance_artifacts.declared_test_gates",
+        lambda _root: (),
+    )
+
+    assert "workflow-authority" not in {
+        step.step_id for step in reconcile_steps(tmp_path, Path(sys.executable))
+    }
 
 
 def test_reconcile_omits_semantic_lock_for_closed_disabled_capabilities(

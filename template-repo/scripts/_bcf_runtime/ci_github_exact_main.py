@@ -153,7 +153,13 @@ def admit_exact_main(
         subject_commit=main.checkout_sha,
     )
     if scope.intent is EvaluationIntent.PR_PROGRESS:
-        raise GitHubControllerError("exact-main admission cannot certify PR progress")
+        return {
+            "status": "suppressed",
+            "reason": "pr_progress_noncertifying",
+            "tree_sha": main.tree_sha,
+            "admission_run_id": identity.run_id,
+            "admission_run_attempt": identity.run_attempt,
+        }
     context = status_context_for_evaluation(scope.intent.value)
     status = publish_observation(
         api,
@@ -274,6 +280,26 @@ def finalize_exact_main(
     if not isinstance(raw_scope, dict):
         raise GitHubControllerError(
             "certifiable exact-main truth lacks typed evaluation scope"
+        )
+    if raw_scope.get("intent") == "pr":
+        root = _write_observation_bundle(
+            output_dir,
+            main=main,
+            collector=collector,
+            admission_run_id=admission_run_id,
+            admission_attempt=admission_attempt,
+            ordinal=ordinal,
+            computed_state="noncertifying",
+            reason="pr_progress",
+            controller_custody=controller_custody,
+        )
+        return ExactMainResult(
+            "noncertifying",
+            "noncertifying",
+            admission_run_id,
+            admission_attempt,
+            ordinal,
+            str(root),
         )
     required_producers = certification_producer_ids(authority, raw_scope)
     producer_runs = collect_same_run_producers(

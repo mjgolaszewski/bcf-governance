@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -9,6 +10,15 @@ import pytest
 
 from bcf_governance.tooling.local_pr import LocalPRContext
 from bcf_governance.tooling import local_pr as prospective
+from bcf_governance.tooling import controller_custody_prospective as custody
+from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
+from bcf_governance.tooling.ci_authority_prospective_lanes import (
+    direct_policy_identity,
+    ordinary_authority_policy_identity,
+)
+from bcf_governance.tooling.routine_controller_rotation import (
+    prospective_no_transition_topology,
+)
 from bcf_governance.tooling.evidence_workitem_lifecycle import (
     validate_phase_closure_authored_ready,
 )
@@ -49,7 +59,11 @@ def _authored_target_ready(monkeypatch: pytest.MonkeyPatch) -> None:
         "validate_controller_custody_graph",
         lambda *_args, **_kwargs: (
             prospective.post_merge_evaluation(prospective.validate_ci_graph(REPO_ROOT).graph),
-            {"status": "proved"},
+            {
+                "status": "proved",
+                "custody_state": "managed_controller",
+                "no_transition_callback_probe": "no_transition",
+            },
         ),
     )
 
@@ -94,6 +108,7 @@ def _runner(command: list[str], **_kwargs: object) -> Result:
     values = {
         ("git", "rev-parse", "--verify", "HEAD"): HEAD,
         ("git", "rev-parse", "--verify", "HEAD^{tree}"): TREE,
+        ("git", "rev-parse", "--verify", f"{BASE}^{{tree}}"): BASE_TREE,
         ("git", "status", "--porcelain=v1", "--untracked-files=all", "--ignored=no"): "",
         ("git", "diff", "--name-only", BASE, HEAD): "source.py\n",
     }
@@ -168,14 +183,11 @@ def _front_door(monkeypatch: pytest.MonkeyPatch, trace: list[str]) -> None:
     )
     monkeypatch.setattr(
         prospective,
-        "_controller_policy_identity",
-        lambda *_args, **_kwargs: POLICY_IDENTITY,
+        "prospective_policy_binding",
+        lambda *_args, **_kwargs: ("runtime_only", POLICY_IDENTITY),
     )
     monkeypatch.setattr(
         prospective, "_validate_train_telemetry", lambda *_args: None
-    )
-    monkeypatch.setattr(
-        prospective, "prospective_no_transition_topology", lambda *_args: "no_transition"
     )
 
 
@@ -288,6 +300,100 @@ def test_direct_protected_main_lane_does_not_resolve_controller_authority(
     assert report == {"controller_authority": None}
 
 
+def test_direct_adopter_custody_never_enters_controller_topology(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    graph = build_reference_ci_graph(
+        project_id="direct-adopter",
+        profile="lite",
+        profile_contract_version="1.0",
+        gates=["governance-validate"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    monkeypatch.setattr(
+        custody, "validate_ci_graph", lambda *_args: SimpleNamespace(graph=graph)
+    )
+    monkeypatch.setattr(
+        custody,
+        "validate_controller_custody_chain",
+        lambda *_args, **_kwargs: pytest.fail("direct adopter entered controller custody"),
+    )
+    monkeypatch.setattr(
+        custody,
+        "prospective_no_transition_topology",
+        lambda *_args, **_kwargs: pytest.fail("direct adopter entered controller callback"),
+    )
+
+    evaluation, proof = custody.validate_controller_custody_graph(
+        tmp_path, python_executable=Path(sys.executable)
+    )
+
+    assert evaluation.lane == "direct_protected_main"
+    assert proof == {
+        "schema_version": "1.0",
+        "status": "proved",
+        "custody_state": "controller_not_adopted",
+        "controller_required": False,
+        "authority": "direct_protected_main_graph",
+        "workflow_id": "governance",
+        "terminal_job_id": "governance-truthfulness",
+        "release_authority": False,
+    }
+
+
+def test_ordinary_exact_main_does_not_require_optional_rotation_topology(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    graph = build_reference_ci_graph(
+        project_id="ordinary-adopter",
+        profile="standard",
+        profile_contract_version="3.0",
+        gates=["governance-validate"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    monkeypatch.setattr(
+        custody, "validate_ci_graph", lambda *_args: SimpleNamespace(graph=graph)
+    )
+    monkeypatch.setattr(
+        custody,
+        "prospective_no_transition_topology",
+        lambda *_args, **_kwargs: pytest.fail("ordinary adopter entered rotation callback"),
+    )
+
+    evaluation, proof = custody.validate_controller_custody_graph(
+        tmp_path, python_executable=Path(sys.executable)
+    )
+
+    assert evaluation.lane == "trusted_exact_main"
+    assert proof["custody_state"] == "ordinary_executable_controller"
+    assert proof["controller_custody_required"] is False
+    assert proof["release_authority"] is False
+
+
+def test_fresh_ordinary_exact_main_authenticates_absent_optional_authority() -> None:
+    blobs = {
+        (HEAD, "governance/ci-graph.yml"): b"candidate graph\n",
+    }
+
+    identity = ordinary_authority_policy_identity(
+        base_sha=BASE,
+        base_tree=BASE_TREE,
+        candidate_sha=HEAD,
+        candidate_tree=TREE,
+        read_blob=lambda ref, path: blobs.get((ref, path)),
+    )
+
+    assert identity["source"]["policy_paths"]["governance/ci-graph.yml"]["state"] == "absent"
+    assert identity["candidate"]["policy_paths"]["governance/ci-graph.yml"]["state"] == "present"
+    assert identity["candidate"]["policy_paths"]["governance/ci-authority.yml"]["state"] == "absent"
+
+
 def test_provider_workflow_identity_mismatch_stops_before_prospective_evidence(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -357,6 +463,70 @@ def test_direct_protected_main_lane_is_closed_without_controller_or_release_auth
     assert terminal[0]["state"] == "same_workflow_terminal_truth_required"
     assert terminal[1]["status_context"] == "governance-truthfulness"
     assert terminal[2]["release_authority"] is False
+
+
+def test_fresh_direct_policy_identity_is_exact_and_typed() -> None:
+    candidate = b"document: {kind: ci_graph}\n"
+
+    identity = direct_policy_identity(
+        base_sha=BASE,
+        base_tree=BASE_TREE,
+        candidate_sha=HEAD,
+        candidate_tree=TREE,
+        base_graph=None,
+        candidate_graph=candidate,
+    )
+
+    assert identity["source"] == {
+        "commit_sha": BASE,
+        "tree_sha": BASE_TREE,
+        "policy_state": "absent",
+        "policy_sha256": None,
+    }
+    assert identity["candidate"] == {
+        "commit_sha": HEAD,
+        "tree_sha": TREE,
+        "policy_state": "present",
+        "policy_sha256": hashlib.sha256(candidate).hexdigest(),
+    }
+
+
+def test_pr_progress_provider_boundary_is_explicitly_noncertifying() -> None:
+    evaluation = SimpleNamespace(
+        mode="pr",
+        target=None,
+        lane="trusted_exact_main",
+        workflow_id="exact-main",
+        terminal_job_id="governance",
+    )
+
+    terminal = prospective.terminal_boundaries(
+        evaluation,
+        proposition={"eligible_successors": []},
+        proposition_sha256="b" * 64,
+        bounded_truth={"evaluation_scope": {"intent": "pr"}},
+    )
+
+    assert terminal == [
+        {
+            "id": "finalizer",
+            "state": "provider_noncertifying_observation_required",
+            "proposition_sha256": "b" * 64,
+            "terminal_job_id": "governance",
+        },
+        {
+            "id": "publisher",
+            "state": "provider_suppression_required",
+            "scope": "pr",
+            "status_context": None,
+        },
+        {
+            "id": "successor_or_release_eligibility",
+            "state": "proved_scope",
+            "eligible_successors": [],
+            "release_authority": False,
+        },
+    ]
 
 
 def test_prospective_lifecycle_uses_exact_provider_effective_controller(
@@ -668,8 +838,8 @@ def test_terminal_reauthentication_rejects_base_movement(
     )
     monkeypatch.setattr(
         prospective,
-        "_controller_policy_identity",
-        lambda *_args, **_kwargs: POLICY_IDENTITY,
+        "prospective_policy_binding",
+        lambda *_args, **_kwargs: ("runtime_only", POLICY_IDENTITY),
     )
     with pytest.raises(
         prospective.ProspectiveValidationError,
@@ -791,7 +961,7 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
 
 
 def test_prospective_callback_probe_executes_real_skipped_matrix_classifier() -> None:
-    assert prospective.prospective_no_transition_topology(REPO_ROOT) == "no_transition"
+    assert prospective_no_transition_topology(REPO_ROOT) == "no_transition"
 
 
 def test_protected_policy_change_requires_exact_alternate_lane(
@@ -813,8 +983,8 @@ def test_protected_policy_change_requires_exact_alternate_lane(
     }
     monkeypatch.setattr(
         prospective,
-        "_controller_policy_identity",
-        lambda *_args, **_kwargs: changed_policy,
+        "prospective_policy_binding",
+        lambda *_args, **_kwargs: ("protected_policy_change", changed_policy),
     )
     monkeypatch.setattr(
         prospective,

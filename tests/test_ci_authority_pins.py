@@ -13,6 +13,7 @@ from bcf_governance.tooling.ci_authority_pins import (
     pin_workflow_authority,
     projected_workflow_paths,
     provider_workflow_ids,
+    reconcile_workflow_authority,
     verify_provider_workflow_authority,
     verify_workflow_authority,
 )
@@ -108,6 +109,87 @@ def test_workflow_authority_pinning_rejects_uncommitted_definition_bytes(
             references=("admission",),
             apply=False,
         )
+
+
+def test_workflow_authority_reconcile_is_stable_without_byte_changes(
+    tmp_path: Path,
+) -> None:
+    root, commit, _ = _repository(tmp_path)
+    pin_workflow_authority(
+        root,
+        authority_path=Path("governance/ci-authority.yml"),
+        definition_commit=commit,
+        references=("admission",),
+        apply=True,
+    )
+    original = (root / "governance/ci-authority.yml").read_bytes()
+
+    result = reconcile_workflow_authority(
+        root,
+        authority_path=Path("governance/ci-authority.yml"),
+        workflow_paths={"admission": ".github/workflows/exact.yml"},
+        apply=True,
+    )
+
+    assert result.status == "clean"
+    assert result.definition_commit == commit
+    assert (root / "governance/ci-authority.yml").read_bytes() == original
+
+
+def test_workflow_authority_reconcile_rejects_uncommitted_workflow_bytes(
+    tmp_path: Path,
+) -> None:
+    root, commit, _ = _repository(tmp_path)
+    pin_workflow_authority(
+        root,
+        authority_path=Path("governance/ci-authority.yml"),
+        definition_commit=commit,
+        references=("admission",),
+        apply=True,
+    )
+    (root / ".github/workflows/exact.yml").write_text(
+        "name: changed\non: push\n", encoding="utf-8"
+    )
+
+    with pytest.raises(CIAuthorityPinError, match="differ from definition commit"):
+        reconcile_workflow_authority(
+            root,
+            authority_path=Path("governance/ci-authority.yml"),
+            workflow_paths={"admission": ".github/workflows/exact.yml"},
+            apply=True,
+        )
+
+
+def test_workflow_authority_reconcile_pins_exact_committed_change(
+    tmp_path: Path,
+) -> None:
+    root, commit, _ = _repository(tmp_path)
+    pin_workflow_authority(
+        root,
+        authority_path=Path("governance/ci-authority.yml"),
+        definition_commit=commit,
+        references=("admission",),
+        apply=True,
+    )
+    (root / ".github/workflows/exact.yml").write_text(
+        "name: changed\non: push\n", encoding="utf-8"
+    )
+    _git(root, "add", ".")
+    _git(root, "commit", "-m", "change canonical workflow")
+    changed_commit = _git(root, "rev-parse", "HEAD")
+
+    result = reconcile_workflow_authority(
+        root,
+        authority_path=Path("governance/ci-authority.yml"),
+        workflow_paths={"admission": ".github/workflows/exact.yml"},
+        apply=True,
+    )
+
+    payload = yaml.safe_load((root / "governance/ci-authority.yml").read_text())
+    assert result.status == "changed"
+    assert payload["workflow_registry"]["admission"][
+        "trusted_workflow_definition_commit"
+    ] == changed_commit
 
 
 def test_workflow_authority_path_migration_is_derived_from_graph_identity(

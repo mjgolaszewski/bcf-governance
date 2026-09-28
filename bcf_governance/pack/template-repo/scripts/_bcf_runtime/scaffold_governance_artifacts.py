@@ -27,7 +27,9 @@ from .semantic_authority_contracts import (
     OPERATIONS_PATH,
     capability_states,
 )
-from .ci_graph_post_merge import reconcile_direct_post_merge_scope
+from .ci_graph_post_merge import reconcile_post_merge_scope
+from .ci_graph_contracts import validate_ci_graph
+from .ci_authority_pins import projected_workflow_paths, reconcile_workflow_authority
 
 HOTFIX_MODES = {"lite", "full"}
 
@@ -318,6 +320,22 @@ def _reconcile_action(repo_root: Path, step_id: str, command: list[str]) -> Acti
     return lambda: _run_reconcile_command(command, repo_root=repo_root, step_id=step_id)
 
 
+def _reconcile_workflow_authority(repo_root: Path, *, apply: bool) -> None:
+    workflows = validate_ci_graph(repo_root).workflows
+    authority_path = Path("governance/ci-authority.yml")
+    graph_paths = {str(value["id"]): str(value["path"]) for value in workflows}
+    reconcile_workflow_authority(
+        repo_root,
+        authority_path=authority_path,
+        workflow_paths=projected_workflow_paths(
+            repo_root,
+            authority_path=authority_path,
+            workflow_paths=graph_paths,
+        ),
+        apply=apply,
+    )
+
+
 def _editorial_base(audit: Path) -> str:
     try:
         payload = yaml.safe_load(audit.read_text(encoding="utf-8"))
@@ -345,8 +363,8 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
     steps.append(
         ReconcileStep(
             "ci-graph-post-merge-scope",
-            lambda: reconcile_direct_post_merge_scope(repo_root, apply=False),
-            lambda: reconcile_direct_post_merge_scope(repo_root, apply=True),
+            lambda: reconcile_post_merge_scope(repo_root, apply=False),
+            lambda: reconcile_post_merge_scope(repo_root, apply=True),
         )
     )
     pack = repo_root / ".github/scripts/build_pack_manifest.py"
@@ -394,6 +412,14 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 f"ci-graph-{operation}",
                 _reconcile_action(repo_root, f"ci-graph-{operation}", [*cli, "ci", "graph", operation, "--repo-root", str(repo_root), "--check"]),
                 _reconcile_action(repo_root, f"ci-graph-{operation}", [*cli, "ci", "graph", operation, "--repo-root", str(repo_root), "--apply"]),
+            )
+        )
+    if (repo_root / "governance/ci-authority.yml").is_file():
+        steps.append(
+            ReconcileStep(
+                "workflow-authority",
+                lambda: _reconcile_workflow_authority(repo_root, apply=False),
+                lambda: _reconcile_workflow_authority(repo_root, apply=True),
             )
         )
     checker = repo_root / ".github/scripts/check_editorial_contract.py"

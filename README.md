@@ -241,8 +241,10 @@ hosted runner polls, sleeps, or waits for local capacity.
 
 An adopter declares assurance semantics—claims, dependencies, gates, controls,
 and provider boundaries—then uses one agent-facing submission operation:
-`bcf ci submit --repo-root . --intent workitem`. The command derives the exact
-repository, bounded target, commit, tree, and validation order; runs the
+`bcf ci submit --repo-root . --intent pr` while work remains, and the same
+operation with `workitem` or `closure` only when authored lifecycle state derives
+that terminal proposition. The command derives the exact repository, bounded
+target, commit, tree, and validation order; runs the
 canonical prospective train; verifies that the proved subject did not change;
 and pushes only those exact bytes. An agent does not maintain a command
 checklist or hand-carry evidence identities.
@@ -349,7 +351,7 @@ bcf exposure-scan
 bcf doctor --repo-root .
 bcf preflight --repo-root . --mode pr
 bcf ci local-pr --repo-root .
-bcf ci submit --repo-root . --intent workitem
+bcf ci submit --repo-root . --intent pr
 bcf semantic-ownership scaffold --repo-root . --output /tmp/semantic-candidate.yml
 bcf semantic-ownership adopt --repo-root . --config /path/to/semantic-authority.yml --check
 bcf semantic-ownership lock --repo-root . --check

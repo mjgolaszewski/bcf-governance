@@ -421,21 +421,39 @@ def verify_workflow_authority(
     return len(registry)
 
 
+def reconcile_workflow_authority(
+    repo_root: Path,
+    *,
+    authority_path: Path,
+    workflow_paths: dict[str, str],
+    apply: bool,
+) -> CIAuthorityPinResult:
+    """Refresh workflow custody only when committed canonical bytes changed."""
+    return pin_workflow_authority(
+        repo_root,
+        authority_path=authority_path,
+        definition_commit=None,
+        references=(),
+        workflow_paths=workflow_paths,
+        preserve_clean=True,
+        apply=apply,
+    )
+
+
 def pin_workflow_authority(
     repo_root: Path,
     *,
     authority_path: Path,
-    definition_commit: str,
+    definition_commit: str | None,
     references: tuple[str, ...],
     workflow_paths: dict[str, str] | None = None,
     workflow_ids: dict[str, str] | None = None,
+    preserve_clean: bool = False,
     apply: bool,
 ) -> CIAuthorityPinResult:
     """Derive exact blob and SHA-256 pins; optionally update the canonical registry."""
 
     root = repo_root.resolve()
-    if not re.fullmatch(r"[a-f0-9]{40,64}", definition_commit):
-        raise CIAuthorityPinError("definition commit must be an exact Git object ID")
     if len(set(references)) != len(references):
         raise CIAuthorityPinError("workflow references must be unique")
     authority = authority_path if authority_path.is_absolute() else root / authority_path
@@ -447,14 +465,69 @@ def pin_workflow_authority(
     registry = payload.get("workflow_registry")
     if payload.get("schema_version") != "1.1" or not isinstance(registry, dict):
         raise CIAuthorityPinError("workflow pinning requires authority contract version 1.1")
-    _git(root, "cat-file", "-e", f"{definition_commit}^{{commit}}")
     selected = references or tuple(str(value) for value in registry)
+    graph_paths = workflow_paths or {}
+    if preserve_clean:
+        if set(graph_paths) != set(registry):
+            raise CIAuthorityPinError(
+                "canonical graph must cover the complete workflow authority registry"
+            )
+        projected = deepcopy(payload)
+        current_workflows: dict[str, bytes] = {}
+        for reference, entry in projected["workflow_registry"].items():
+            if not isinstance(entry, dict):
+                raise CIAuthorityPinError("workflow registry entry must be a mapping")
+            path = graph_paths[str(reference)]
+            if not path.startswith(".github/workflows/") or ".." in Path(path).parts:
+                raise CIAuthorityPinError("workflow authority path is unsafe")
+            entry["active_path"] = path
+            current = root / path
+            if current.is_symlink() or not current.is_file():
+                raise CIAuthorityPinError(
+                    f"current workflow bytes differ from authority: {reference}"
+                )
+            current_bytes = current.read_bytes()
+            current_workflows[str(reference)] = current_bytes
+            entry["trusted_workflow_blob_oid"] = (
+                _git(root, "hash-object", "--stdin", input_bytes=current_bytes)
+                .decode()
+                .strip()
+            )
+            entry["trusted_workflow_sha256"] = hashlib.sha256(current_bytes).hexdigest()
+        _compile_inventories(projected, current_workflows)
+        current_projection = yaml.safe_dump(
+            projected, sort_keys=False, allow_unicode=False, width=1000
+        ).encode("utf-8")
+        if current_projection == raw:
+            definition_commits = {
+                str(entry.get("trusted_workflow_definition_commit", ""))
+                for entry in registry.values()
+                if isinstance(entry, dict)
+            }
+            current_definition = (
+                next(iter(definition_commits))
+                if len(definition_commits) == 1
+                else "mixed"
+            )
+            return _finish(
+                authority,
+                relative=relative,
+                raw=raw,
+                desired_raw=raw,
+                definition_commit=current_definition,
+                selected=selected,
+                apply=apply,
+            )
+    if definition_commit is None:
+        definition_commit = _git(root, "rev-parse", "HEAD").decode().strip()
+    if not re.fullmatch(r"[a-f0-9]{40,64}", definition_commit):
+        raise CIAuthorityPinError("definition commit must be an exact Git object ID")
+    _git(root, "cat-file", "-e", f"{definition_commit}^{{commit}}")
     if set(selected) != set(registry):
         raise CIAuthorityPinError(
             "workflow authority pinning must compile the complete registry"
         )
     committed_workflows: dict[str, bytes] = {}
-    graph_paths = workflow_paths or {}
     if workflow_ids is not None and set(workflow_ids) != set(registry):
         raise CIAuthorityPinError(
             "provider workflow identity inventory must cover the complete registry"

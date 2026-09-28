@@ -3,10 +3,83 @@
 from __future__ import annotations
 
 import shutil
+from copy import deepcopy
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, Iterable, Mapping
 
 import yaml  # type: ignore[import-untyped]
+
+from ..runtime_capacity import EXECUTION_STATE_POLICY
+
+
+def retire_self_authority_pack_surfaces(
+    *,
+    target_root: Path,
+    entries: Mapping[str, Mapping[str, Any]],
+    reject_destination: Callable[[Path, Path], None],
+    prune_empty_parents: Callable[[Path, Path], None],
+) -> list[Path]:
+    """Remove only exact pack-owned destinations now classified as self-only."""
+
+    removed: list[Path] = []
+    for value, entry in sorted(entries.items()):
+        if entry.get("installation_scope") != "self_authority":
+            continue
+        relative = Path(value)
+        reject_destination(target_root, relative)
+        destination = target_root / relative
+        if not destination.exists():
+            continue
+        if not destination.is_file():
+            raise ValueError(f"self-only pack destination is not a file: {value}")
+        destination.unlink()
+        prune_empty_parents(target_root, destination)
+        removed.append(destination)
+    return removed
+
+
+def copy_selected_template_paths(
+    *,
+    template_root: Path,
+    target_root: Path,
+    relative_paths: tuple[str, ...],
+    entries: Mapping[str, Mapping[str, Any]],
+    iter_template_files: Callable[[Path], Iterable[Path]],
+    reject_destination: Callable[[Path, Path], None],
+    excluded_paths: frozenset[str] = frozenset(),
+) -> tuple[int, list[Path]]:
+    """Refresh ordinary pack-owned upgrade paths from the scoped manifest."""
+
+    destinations: list[Path] = []
+    for relative_path in relative_paths:
+        source = template_root / relative_path
+        destination = target_root / relative_path
+        sources = iter_template_files(source) if source.is_dir() else (source,)
+        for source_file in sources:
+            if not source_file.exists():
+                continue
+            destination_file = (
+                destination / source_file.relative_to(source)
+                if source.is_dir()
+                else destination
+            )
+            destination_relative = destination_file.relative_to(target_root).as_posix()
+            entry = entries.get(destination_relative)
+            if entry is None:
+                raise ValueError(
+                    f"upgrade path is absent from pack manifest: {destination_relative}"
+                )
+            if (
+                destination_relative in excluded_paths
+                or entry.get("installation_scope", "ordinary_adopter")
+                != "ordinary_adopter"
+            ):
+                continue
+            reject_destination(target_root, destination_file.relative_to(target_root))
+            destination_file.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_file, destination_file)
+            destinations.append(destination_file)
+    return len(destinations), destinations
 
 
 def _find_target_span(lines: list[str], target: str) -> tuple[int, int] | None:
@@ -101,6 +174,42 @@ def _copy_template_file_if_missing(
     shutil.copy2(source, destination)
     _replace_placeholders_in_files([destination], values)
     return [destination]
+
+
+def _upgrade_runtime_contract(target_root: Path) -> list[Path]:
+    """Migrate only the closed prior runtime contract to isolated state v1.1."""
+
+    path = target_root / "governance/ci-runtime.yml"
+    if not path.exists():
+        return []
+    payload = _load_yaml_mapping(path)
+    if payload.get("schema_version") == "1.1":
+        return []
+    legacy_fields = {
+        "schema_version",
+        "runtime_root",
+        "minimum_free_bytes",
+        "maximum_owned_containers",
+        "database",
+        "cleanup",
+    }
+    if payload.get("schema_version") != "1.0" or set(payload) != legacy_fields:
+        raise ValueError("runtime contract is not an exact migratable v1.0 shape")
+    raw = path.read_text(encoding="utf-8")
+    marker = "schema_version: '1.0'"
+    if raw.count(marker) != 1:
+        raise ValueError("runtime contract v1.0 version bytes are ambiguous")
+    execution = yaml.safe_dump(
+        {"execution_state": deepcopy(EXECUTION_STATE_POLICY)},
+        sort_keys=False,
+        default_flow_style=None,
+        width=4096,
+    )
+    path.write_text(
+        raw.replace(marker, "schema_version: '1.1'", 1).rstrip() + "\n" + execution,
+        encoding="utf-8",
+    )
+    return [path]
 
 
 
@@ -467,6 +576,7 @@ def _upgrade_state_files(
             values=values,
         )
     )
+    created.extend(_upgrade_runtime_contract(target_root))
     return created
 
 

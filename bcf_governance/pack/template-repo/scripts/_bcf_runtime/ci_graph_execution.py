@@ -34,10 +34,53 @@ _INPUT_REFERENCE = re.compile(r"inputs\.([A-Za-z_][A-Za-z0-9_-]*)")
 _LITERAL_INPUT_FALLBACK = re.compile(
     r"inputs\.([A-Za-z_][A-Za-z0-9_-]*)\s*\|\|\s*(['\"])(.*?)\2"
 )
-DIRECT_POST_MERGE_MODE = (
-    "${{ inputs.evaluation_mode || "
-    "(github.event_name == 'push' && 'closure' || 'pr') }}"
+_DIRECT_POST_MERGE_MODE = re.compile(
+    r"^\$\{\{ inputs\.evaluation_mode \|\| "
+    r"\(github\.event_name == 'push' && '(pr|workitem|closure)' \|\| 'pr'\) \}\}$"
 )
+_DIRECT_POST_MERGE_TARGET = re.compile(
+    r"^\$\{\{ inputs\.evaluation_target \|\| "
+    r"\(github\.event_name == 'push' && '([^']+)' \|\| ''\) \}\}$"
+)
+
+
+def direct_post_merge_mode(mode: str) -> str:
+    """Render one event-safe direct-push evaluation intent."""
+
+    if mode not in {"pr", "workitem", "closure"}:
+        raise CIGraphError("direct post-merge evaluation intent is invalid")
+    return (
+        "${{ inputs.evaluation_mode || "
+        f"(github.event_name == 'push' && '{mode}' || 'pr') }}}}"
+    )
+
+
+def parse_direct_post_merge_mode(value: object) -> str | None:
+    """Decode only the canonical event-safe direct-push intent expression."""
+
+    match = _DIRECT_POST_MERGE_MODE.fullmatch(str(value))
+    return match.group(1) if match else None
+
+
+def direct_post_merge_target(target: str) -> str:
+    """Render one event-safe exact direct-push workitem target."""
+
+    if not target or "'" in target:
+        raise CIGraphError("direct post-merge evaluation target is invalid")
+    return (
+        "${{ inputs.evaluation_target || "
+        f"(github.event_name == 'push' && '{target}' || '') }}}}"
+    )
+
+
+def parse_direct_post_merge_target(value: object) -> str | None:
+    """Decode only the canonical event-safe direct-push target expression."""
+
+    match = _DIRECT_POST_MERGE_TARGET.fullmatch(str(value))
+    return match.group(1) if match else None
+
+
+DIRECT_POST_MERGE_MODE = direct_post_merge_mode("closure")
 
 
 @dataclass(frozen=True)
@@ -76,16 +119,16 @@ def exact_main_evaluation(
         inputs = governance["inputs"]
     except (KeyError, TypeError) as exc:
         raise CIGraphError("exact-main evaluation intent is incomplete") from exc
-    if mode not in {"workitem", "closure"}:
-        raise CIGraphError("exact-main evaluation intent is not terminally typed")
+    if mode not in {"pr", "workitem", "closure"}:
+        raise CIGraphError("exact-main evaluation intent is not typed")
     input_mode = inputs["evaluation_mode"] if "evaluation_mode" in inputs else None
     input_target = inputs["evaluation_target"] if "evaluation_target" in inputs else None
     if input_mode != mode or input_target != target:
         raise CIGraphError("exact-main admission and governance evaluation intents differ")
     if mode == "workitem" and not isinstance(target, str):
         raise CIGraphError("bounded exact-main target is missing")
-    if mode == "closure" and target is not None:
-        raise CIGraphError("phase closure cannot carry a workitem target")
+    if mode in {"pr", "closure"} and target is not None:
+        raise CIGraphError("unbounded evaluation cannot carry a workitem target")
     return ExactMainEvaluation(mode, target)
 
 
@@ -465,7 +508,11 @@ def workflow_input_issues(
                     )
                     actual_fallback = (
                         "pr"
-                        if name == "evaluation_mode" and value == DIRECT_POST_MERGE_MODE
+                        if name == "evaluation_mode"
+                        and parse_direct_post_merge_mode(value) is not None
+                        else ""
+                        if name == "evaluation_target"
+                        and parse_direct_post_merge_target(value) is not None
                         else fallbacks.get(name)
                     )
                     if actual_fallback != expected_literal:

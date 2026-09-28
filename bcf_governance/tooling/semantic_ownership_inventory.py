@@ -23,6 +23,7 @@ from .semantic_python_method_identity import (
     method_dispatch_reference,
     resolve_method_dispatch,
     root_name as _root_name,
+    runtime_function_scopes,
     source_symbol,
 )
 
@@ -474,12 +475,16 @@ def discover_python_source(
                 import_bindings=bindings_by_local,
             )
         )
-        for node in tree.body:
-            members = node.body if isinstance(node, ast.ClassDef) else [node]
-            class_name = node.name if isinstance(node, ast.ClassDef) else None
+        scopes, missing = runtime_function_scopes(
+            tree, path=relative, imports=imports
+        )
+        if missing:
+            raise SemanticInventoryError(
+                "Python overload declarations require one runtime implementation: "
+                + ", ".join(missing)
+            )
+        for class_name, members in scopes:
             for member in members:
-                if not isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                    continue
                 local_bindings = {
                     str(value["local"]): value
                     for value in _import_bindings(member, recursive=True)

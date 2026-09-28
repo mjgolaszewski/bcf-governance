@@ -6,7 +6,7 @@ import re
 from typing import Any
 
 from .evidence_shards import workflow_shard_matrix
-from .ci_graph_execution import DIRECT_POST_MERGE_MODE
+from .ci_graph_execution import direct_post_merge_mode
 
 
 EXTENSION_POINTS = [
@@ -124,7 +124,7 @@ def _preflight_argv(expected_producers: list[str]) -> list[str]:
 
 
 def _v3_commands(*, direct_push: bool = False) -> dict[str, Any]:
-    mode = DIRECT_POST_MERGE_MODE if direct_push else "${{ inputs.evaluation_mode || 'pr' }}"
+    mode = direct_post_merge_mode("pr") if direct_push else "${{ inputs.evaluation_mode || 'pr' }}"
     scope = [
         "--evaluation-mode", mode,
         "--evaluation-target", "${{ inputs.evaluation_target || '' }}",
@@ -174,6 +174,40 @@ def _v3_commands(*, direct_push: bool = False) -> dict[str, Any]:
             "environment": {},
         },
     }
+
+
+def _apply_legacy_direct_post_merge_scope(graph: dict[str, Any]) -> None:
+    """Give the Lite-v1 direct lane the same typed lifecycle-owned intent."""
+
+    workflow = graph["workflows"][0]
+    call = next(event for event in workflow["events"] if event["type"] == "workflow_call")
+    call["inputs"] = {
+        "evaluation_mode": {
+            "description": "Exact truth evaluation mode",
+            "required": False,
+            "default": "pr",
+            "type": "string",
+        },
+        "evaluation_target": {
+            "description": "Exact bounded target",
+            "required": False,
+            "default": "",
+            "type": "string",
+        },
+    }
+    mode = direct_post_merge_mode("pr")
+    target = "${{ inputs.evaluation_target || '' }}"
+    preflight = graph["commands"]["preflight"]
+    argv = preflight["argv"]
+    mode_index = argv.index("--mode")
+    argv[mode_index : mode_index + 2] = ["--evaluation-mode", mode]
+    argv.extend(["--evaluation-target", target])
+    preflight["environment"].pop("BCF_PREFLIGHT_MODE", None)
+    truth = graph["commands"]["truth"]
+    truth_argv = truth["argv"]
+    truth_argv[truth_argv.index("--evaluation-mode") + 1] = mode
+    truth_argv.extend(["--evaluation-target", target])
+    truth["environment"].pop("BCF_TRUTH_MODE", None)
 
 
 def _component(
@@ -362,12 +396,12 @@ def _apply_v3_proof_composition(graph: dict[str, Any], gates: list[str]) -> None
     if exact_main is not None:
         admit = next(item for item in exact_main["jobs"] if item["id"] == "admit")
         admit["executor"] = {
-            "kind": "authority", "operation": "admit-with-prior-evidence", "evaluation_mode": "closure"
+            "kind": "authority", "operation": "admit-with-prior-evidence", "evaluation_mode": "pr"
         }
         admit["permissions"] = {"actions": "write", "contents": "read", "statuses": "write"}
         admit["produces"] = ["prior-evidence-transport"]
         producer = next(item for item in exact_main["jobs"] if item["id"] == "governance-producer")
-        producer["executor"]["inputs"] = {"evaluation_mode": "closure", "use_prior_evidence": True}
+        producer["executor"]["inputs"] = {"evaluation_mode": "pr", "use_prior_evidence": True}
         producer["executor"]["artifact_bindings"] = {"prior-evidence-transport": "use_prior_evidence"}
         producer["consumes"] = ["prior-evidence-transport"]
 
@@ -746,4 +780,6 @@ def build_reference_ci_graph(
     }
     if profile_contract_version == "3.0":
         _apply_v3_proof_composition(graph, gates)
+    elif profile == "lite":
+        _apply_legacy_direct_post_merge_scope(graph)
     return graph
