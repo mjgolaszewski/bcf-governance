@@ -10,7 +10,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 - Isolated dependency-changelog reconciliation from exact-main controller
   rotation at the workflow trigger boundary, so an intentionally skipped
-  automation admission cannot invoke a rotation outcome or callback consumer.
+  automation admission cannot invoke a rotation outcome or callback consumer;
+  authority pinning now derives migrated workflow paths from graph identity,
+  and callback inventory requires only rotation-owned jobs.
 - Preserved the exact admission controller-custody capsule through the trusted
   finalizer as a run-attempt-bound pass-through, so both legacy noncertifying
   observations and current certification bundles route publication without

@@ -13,6 +13,7 @@ from .ci_graph_contracts import validate_ci_graph
 from .ci_graph_post_merge import post_merge_evaluation
 from .self_workflow_contracts import validate_self_workflow_contracts
 from .controller_custody import compile_controller_custody
+from .routine_controller_rotation import prospective_no_transition_topology
 
 
 _BASE_ROUTED_JOBS = {
@@ -365,6 +366,9 @@ def validate_controller_custody_graph(
     graph = validate_ci_graph(repo_root).graph
     proof = validate_controller_custody_chain(
         graph, python_executable=python_executable
+    )
+    proof["no_transition_callback_probe"] = prospective_no_transition_topology(
+        repo_root
     )
     return post_merge_evaluation(graph), proof
 

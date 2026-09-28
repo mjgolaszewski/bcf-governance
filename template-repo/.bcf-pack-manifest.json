@@ -452,7 +452,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_pins.py": {
       "operation": "copy",
-      "sha256": "32eef1eadc1b0358adecec6a948b1f94f059a511f168a40897256b19054a12db"
+      "sha256": "2b66a46dba59fde62a2ac3c8cf38a070bbf3815659f49f3d145d98b7aef311a2"
     },
     "scripts/_bcf_runtime/ci_authority_prospective_lanes.py": {
       "operation": "copy",
@@ -472,7 +472,7 @@
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "e61ee3a627409fbbbb9c702568f0b68bb7fe8dbae71609ab33c79360d0f9179a"
+      "sha256": "479dd41dd6e466f7613df7d463de059b7560295b61cee2b888bec13f16e434aa"
     },
     "scripts/_bcf_runtime/ci_controller_adoption.py": {
       "operation": "copy",
@@ -724,7 +724,7 @@
     },
     "scripts/_bcf_runtime/controller_custody_prospective.py": {
       "operation": "copy",
-      "sha256": "3d0c2f83f47462ff7b2035e82dc4878f25ce06860d03fed6519393df27885cc2"
+      "sha256": "e66370ea1fbd45ca2eee92adee7fcab5b70a648eda5cfbf8c8ede49b66ef2e16"
     },
     "scripts/_bcf_runtime/controller_transition_provider_custody.py": {
       "operation": "copy",
@@ -1124,7 +1124,7 @@
     },
     "scripts/_bcf_runtime/routine_controller_rotation.py": {
       "operation": "copy",
-      "sha256": "87c581393792151f5f8f557c43492d5d5107d92339c19e8dd4f87e8ffc5acd28"
+      "sha256": "46cfe26763b9bc93c093766b1e1ad1cd26c6f183c0535420b41a111bee17f0b5"
     },
     "scripts/_bcf_runtime/runtime_capacity.py": {
       "operation": "copy",

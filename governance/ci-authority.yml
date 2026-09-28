@@ -27,14 +27,24 @@ workflow_registry:
     - workflow_call
   controller-rotation:
     workflow_id: '348690108'
-    active_path: .github/workflows/bcf-automation-reconcile.yml
-    trusted_workflow_blob_oid: 3f9717e53f5bb64865daaa0f68a2da735528ec55
-    trusted_workflow_sha256: b9cc91166f03f52275c5258e2def41ac19880ba9bfb833ed5613d993d410b898
+    active_path: .github/workflows/bcf-controller-rotation.yml
+    trusted_workflow_blob_oid: 0ad6a580b30fae21292acda9d565183ca9e8e936
+    trusted_workflow_sha256: f246539349d76a62c2ecf4084f6828a4b8f4e142f7eaa6cf9b56fc5b86780f42
     trusted_workflow_definition_commit: a2b1a755917b4b6457c104c6c7764a02a438465e
     allowed_events:
     - workflow_run
     expected_jobs:
-    - job_id: Commit the deterministic automation changelog entry
+    - job_id: Authorize protected routine controller transition
+    - job_id: Bootstrap routine controller / bcf-trusted-control-1
+    - job_id: Bootstrap routine controller / bcf-trusted-control-2
+    - job_id: Authenticate routine bootstrap inventory
+    - job_id: Probe routine controller / bcf-trusted-control-1
+    - job_id: Probe routine controller / bcf-trusted-control-2
+    - job_id: Authenticate routine probe inventory
+    - job_id: Promote routine controller / bcf-trusted-control-1
+    - job_id: Promote routine controller / bcf-trusted-control-2
+    - job_id: Activate authenticated routine controller transition
+    - job_id: Project the unique routine rotation outcome
   finalizer:
     workflow_id: '346274484'
     active_path: .github/workflows/bcf-trusted-finalizer.yml

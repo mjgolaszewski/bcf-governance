@@ -19,6 +19,9 @@ trigger_applicability_finding:
     automation_reconcile: deterministic automation changelog reconciliation
     controller_rotation_workflow: exact controller rotation orchestration
     routine_rotation_mechanism: installed N authorizes exact N+1
+  consumer_reconciliation:
+    removed_assumption: rotation authority inventory includes automation changelog reconciliation
+    fast_fail_owner: cheap controller-custody prospective validation executes the real no-transition callback classifier
 producer_contract:
   routing_observation:
     authority: none

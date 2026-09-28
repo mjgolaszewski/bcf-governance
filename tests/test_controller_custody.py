@@ -20,6 +20,7 @@ from bcf_governance.tooling.controller_custody import (
     validate_controller_custody,
 )
 from bcf_governance.tooling.controller_custody_prospective import (
+    validate_controller_custody_graph,
     validate_controller_custody_chain,
 )
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
@@ -165,6 +166,15 @@ def test_prospective_chain_rejects_mixed_automation_and_rotation_triggers() -> N
             graph,
             python_executable=Path(sys.executable),
         )
+
+
+def test_cheap_custody_preflight_executes_real_no_transition_consumer() -> None:
+    root = Path(__file__).resolve().parents[1]
+    _, proof = validate_controller_custody_graph(
+        root,
+        python_executable=Path(sys.executable),
+    )
+    assert proof["no_transition_callback_probe"] == "no_transition"
 
 
 def _custody_archive(*, extra: bool = False) -> bytes:
