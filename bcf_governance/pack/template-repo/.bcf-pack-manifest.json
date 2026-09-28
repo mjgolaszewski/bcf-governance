@@ -452,7 +452,11 @@
     },
     "scripts/_bcf_runtime/ci_authority_pins.py": {
       "operation": "copy",
-      "sha256": "2b66a46dba59fde62a2ac3c8cf38a070bbf3815659f49f3d145d98b7aef311a2"
+      "sha256": "3ee9c09b9a647aef3f73c71ccc6643f5d4bf13ffadda26783cb367537044c73e"
+    },
+    "scripts/_bcf_runtime/ci_authority_preflight.py": {
+      "operation": "copy",
+      "sha256": "526a3ad0708312f40dc4e9296100daa5e2c4ff3f15b0e11d5c642ea9330e8b3c"
     },
     "scripts/_bcf_runtime/ci_authority_prospective_lanes.py": {
       "operation": "copy",
@@ -472,7 +476,7 @@
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "479dd41dd6e466f7613df7d463de059b7560295b61cee2b888bec13f16e434aa"
+      "sha256": "148bc7930d4d47b705b6cc4c870d8515ee2ecef599b92a6d6b5723ee8c263d16"
     },
     "scripts/_bcf_runtime/ci_controller_adoption.py": {
       "operation": "copy",
@@ -1008,7 +1012,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "53a322c4f09e726b7243dac131007972797b4a92cb68e1923f931f3bae1e7a58"
+      "sha256": "09db08fdfe10c3fd98b5d9534bfc4bd6398417ed98f2cdc6da2650d9c392220e"
     },
     "scripts/_bcf_runtime/migrate_contracts.py": {
       "operation": "copy",
@@ -1024,7 +1028,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "d8e7377198f709c1fac5ceedc3b03a0d4cfb30549bd6005d56b9a05f6a577d81"
+      "sha256": "2aff4c7a418548e5c3d3efda5dde58c0e744418334efc4d3d7f75342a0487d96"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",
@@ -1120,7 +1124,7 @@
     },
     "scripts/_bcf_runtime/routine_controller_provider.py": {
       "operation": "copy",
-      "sha256": "43af87530c97a37cc8c6a8fcfb894d4585db7901cd75ad15f9b24f3e1ddafcb4"
+      "sha256": "7a024654058860f60ad451c76c4bfaeb8c6bc6d4ba8db07a690c21c1c71ce5c7"
     },
     "scripts/_bcf_runtime/routine_controller_rotation.py": {
       "operation": "copy",

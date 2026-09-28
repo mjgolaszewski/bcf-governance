@@ -26,7 +26,7 @@ workflow_registry:
     - pull_request
     - workflow_call
   controller-rotation:
-    workflow_id: '348690108'
+    workflow_id: '368956359'
     active_path: .github/workflows/bcf-controller-rotation.yml
     trusted_workflow_blob_oid: 0ad6a580b30fae21292acda9d565183ca9e8e936
     trusted_workflow_sha256: f246539349d76a62c2ecf4084f6828a4b8f4e142f7eaa6cf9b56fc5b86780f42

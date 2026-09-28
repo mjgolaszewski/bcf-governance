@@ -229,7 +229,7 @@ def test_provider_effective_controller_is_mechanically_bound_to_prospective_pref
     monkeypatch.setattr(
         prospective,
         "effective_controller_authority",
-        lambda api, *, repository: {
+        lambda api, *, repository, repo_root: {
             "controller_commit_sha": pin["BCF_BOOTSTRAP_COMMIT_SHA"],
             "controller_bundle_sha256": pin["BCF_BOOTSTRAP_WHEEL_SHA256"],
         },
@@ -286,6 +286,44 @@ def test_direct_protected_main_lane_does_not_resolve_controller_authority(
         provider_api=object(),  # type: ignore[arg-type]
     )
     assert report == {"controller_authority": None}
+
+
+def test_provider_workflow_identity_mismatch_stops_before_prospective_evidence(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        prospective,
+        "validate_ci_graph",
+        lambda *_args: SimpleNamespace(graph={"workflows": []}),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "post_merge_evaluation",
+        lambda *_args: SimpleNamespace(lane="trusted_exact_main"),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "effective_controller_authority",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            prospective.GitHubControllerError("provider workflow ID mismatched")
+        ),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "_run_prospective_train",
+        lambda *_args, **_kwargs: pytest.fail("evidence train was allocated"),
+    )
+
+    with pytest.raises(
+        prospective.GitHubControllerError, match="provider workflow ID mismatched"
+    ):
+        prospective.run_prospective_train(
+            tmp_path,
+            **TRAIN,
+            python_executable=Path("/python"),
+            repository="owner/repo",
+            provider_api=object(),  # type: ignore[arg-type]
+        )
 
 
 def test_direct_protected_main_lane_is_closed_without_controller_or_release_authority() -> None:

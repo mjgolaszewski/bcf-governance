@@ -11,6 +11,7 @@ from typing import Any, Mapping
 import yaml
 
 from .ci_authority_contracts import authority_role_jobs
+from .ci_authority_pins import verify_provider_workflow_authority
 from .ci_github_api import GitHubAPI
 from .ci_github_authority import (
     authenticate_role_run,
@@ -329,10 +330,17 @@ def resolve_effective_controller(
 
 
 def effective_controller_authority(
-    api: GitHubAPI, *, repository: str
+    api: GitHubAPI, *, repository: str, repo_root: Path | None = None
 ) -> dict[str, str]:
     """Project the exact provider-composed identity accepted by preflight."""
 
+    if repo_root is not None:
+        verify_provider_workflow_authority(
+            repo_root,
+            authority_path=Path("governance/ci-authority.yml"),
+            api=api,
+            repository=repository,
+        )
     pin = resolve_effective_controller(api, repository=repository)["pin"]
     return {
         "controller_commit_sha": pin["BCF_BOOTSTRAP_COMMIT_SHA"],

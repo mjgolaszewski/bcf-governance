@@ -11,6 +11,9 @@ from bcf_governance.tooling.ci_authority_pins import (
     CIAuthorityPinError,
     _compile_inventories,
     pin_workflow_authority,
+    projected_workflow_paths,
+    provider_workflow_ids,
+    verify_provider_workflow_authority,
     verify_workflow_authority,
 )
 from bcf_governance.tooling.release_runtime_verification import (
@@ -19,6 +22,15 @@ from bcf_governance.tooling.release_runtime_verification import (
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+class Provider:
+    def __init__(self, workflows: dict[str, dict[str, object]]) -> None:
+        self.workflows = workflows
+
+    def workflow(self, repository: str, workflow_id: object) -> dict[str, object]:
+        assert repository == "owner/repo"
+        return self.workflows[str(workflow_id)]
 
 
 def _git(root: Path, *args: str) -> str:
@@ -127,6 +139,80 @@ def test_workflow_authority_path_migration_is_derived_from_graph_identity(
         root,
         authority_path=Path("governance/ci-authority.yml"),
     ) == 1
+
+
+def test_workflow_authority_path_migration_derives_provider_identity(
+    tmp_path: Path,
+) -> None:
+    root, _, content = _repository(tmp_path)
+    migrated = root / ".github/workflows/admission.yml"
+    migrated.write_bytes(content)
+    _git(root, "add", ".")
+    _git(root, "commit", "-m", "migrate workflow owner")
+    commit = _git(root, "rev-parse", "HEAD")
+    paths = {"admission": ".github/workflows/admission.yml"}
+    provider = Provider({
+        "admission.yml": {
+            "id": 22,
+            "path": paths["admission"],
+            "state": "active",
+        }
+    })
+
+    identities = provider_workflow_ids(provider, "owner/repo", paths)  # type: ignore[arg-type]
+    pin_workflow_authority(
+        root,
+        authority_path=Path("governance/ci-authority.yml"),
+        definition_commit=commit,
+        references=("admission",),
+        workflow_paths=paths,
+        workflow_ids=identities,
+        apply=True,
+    )
+
+    payload = yaml.safe_load(
+        (root / "governance/ci-authority.yml").read_text(encoding="utf-8")
+    )
+    assert payload["workflow_registry"]["admission"]["workflow_id"] == "22"
+    assert verify_provider_workflow_authority(
+        root,
+        authority_path=Path("governance/ci-authority.yml"),
+        api=provider,  # type: ignore[arg-type]
+        repository="owner/repo",
+    ) == 1
+
+
+def test_provider_workflow_authority_rejects_stale_path_identity(
+    tmp_path: Path,
+) -> None:
+    root, _, _ = _repository(tmp_path)
+    provider = Provider({
+        "exact.yml": {
+            "id": 2,
+            "path": ".github/workflows/exact.yml",
+            "state": "active",
+        }
+    })
+
+    with pytest.raises(CIAuthorityPinError, match="provider workflow ID mismatched"):
+        verify_provider_workflow_authority(
+            root,
+            authority_path=Path("governance/ci-authority.yml"),
+            api=provider,  # type: ignore[arg-type]
+            repository="owner/repo",
+        )
+
+
+def test_provider_identity_projection_joins_graph_paths_to_authority_aliases(
+    tmp_path: Path,
+) -> None:
+    root, _, _ = _repository(tmp_path)
+
+    assert projected_workflow_paths(
+        root,
+        authority_path=Path("governance/ci-authority.yml"),
+        workflow_paths={"unrelated-graph-id": ".github/workflows/other.yml"},
+    ) == {"admission": ".github/workflows/exact.yml"}
 
 
 def test_workflow_authority_compiles_matrix_names_and_semantic_roles(

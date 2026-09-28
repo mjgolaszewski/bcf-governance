@@ -22,7 +22,8 @@ from .evidence_workitem_lifecycle import (
 )
 from .evidence_planning import load_prior_receipts, verification_plan as build_verification_plan
 from .evaluation_scope import EvaluationIntent, evaluation_scope
-from .ci_authority_pins import CIAuthorityPinError, verify_workflow_authority
+from .ci_authority_pins import CIAuthorityPinError
+from .ci_authority_preflight import verify_workflow_authority_preflight
 from .ci_github_identity import GitHubControllerError
 from .ci_self_controller import verify_self_controller_projection
 from .check_governance_exposure import scan_exposures
@@ -419,9 +420,7 @@ def _workflow_authority(repo_root: Path) -> int:
     if not (repo_root / "governance/ci-authority.yml").is_file():
         return 0
     try:
-        return verify_workflow_authority(
-            repo_root, authority_path=Path("governance/ci-authority.yml")
-        )
+        return verify_workflow_authority_preflight(repo_root)
     except CIAuthorityPinError as exc:
         raise PreflightError(f"workflow authority preflight failed: {exc}") from exc
 
