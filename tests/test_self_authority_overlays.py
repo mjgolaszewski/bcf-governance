@@ -45,6 +45,12 @@ def _copy_contract(tmp_path: Path) -> Path:
             rendered = root / workflow["path"]
             rendered.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(REPO_ROOT / workflow["path"], rendered)
+    contract = _contract(root)
+    for overlay in contract["overlays"]:
+        for relative in overlay["adopter_excluded_pack_surfaces"]:
+            target = root / "template-repo" / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(REPO_ROOT / "template-repo" / relative, target)
     return root
 
 
@@ -147,3 +153,24 @@ def test_canonical_opt_in_controller_path_is_product_not_self_overlay() -> None:
 
     assert "governance/ci-extensions/bcf-controller-rotation.yml" in manifest["files"]
     assert "governance/ci-extensions/bcf-controller-rotation.yml" not in surfaces
+
+
+def test_every_self_only_pack_surface_has_one_owner_and_is_not_installed() -> None:
+    contract = _contract(REPO_ROOT)
+    declared = {
+        relative: overlay["id"]
+        for overlay in contract["overlays"]
+        for relative in overlay["adopter_excluded_pack_surfaces"]
+    }
+    manifest = json.loads(
+        (REPO_ROOT / "template-repo/.bcf-pack-manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )["files"]
+
+    assert declared
+    assert set(declared) == {
+        relative
+        for relative, entry in manifest.items()
+        if entry.get("installation_scope") == "self_authority"
+    }

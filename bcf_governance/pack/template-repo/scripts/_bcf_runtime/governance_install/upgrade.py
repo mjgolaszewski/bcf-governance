@@ -4,9 +4,79 @@ from __future__ import annotations
 
 import shutil
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, Iterable, Mapping
 
 import yaml  # type: ignore[import-untyped]
+
+
+def retire_self_authority_pack_surfaces(
+    *,
+    target_root: Path,
+    entries: Mapping[str, Mapping[str, Any]],
+    reject_destination: Callable[[Path, Path], None],
+    prune_empty_parents: Callable[[Path, Path], None],
+) -> list[Path]:
+    """Remove only exact pack-owned destinations now classified as self-only."""
+
+    removed: list[Path] = []
+    for value, entry in sorted(entries.items()):
+        if entry.get("installation_scope") != "self_authority":
+            continue
+        relative = Path(value)
+        reject_destination(target_root, relative)
+        destination = target_root / relative
+        if not destination.exists():
+            continue
+        if not destination.is_file():
+            raise ValueError(f"self-only pack destination is not a file: {value}")
+        destination.unlink()
+        prune_empty_parents(target_root, destination)
+        removed.append(destination)
+    return removed
+
+
+def copy_selected_template_paths(
+    *,
+    template_root: Path,
+    target_root: Path,
+    relative_paths: tuple[str, ...],
+    entries: Mapping[str, Mapping[str, Any]],
+    iter_template_files: Callable[[Path], Iterable[Path]],
+    reject_destination: Callable[[Path, Path], None],
+    excluded_paths: frozenset[str] = frozenset(),
+) -> tuple[int, list[Path]]:
+    """Refresh ordinary pack-owned upgrade paths from the scoped manifest."""
+
+    destinations: list[Path] = []
+    for relative_path in relative_paths:
+        source = template_root / relative_path
+        destination = target_root / relative_path
+        sources = iter_template_files(source) if source.is_dir() else (source,)
+        for source_file in sources:
+            if not source_file.exists():
+                continue
+            destination_file = (
+                destination / source_file.relative_to(source)
+                if source.is_dir()
+                else destination
+            )
+            destination_relative = destination_file.relative_to(target_root).as_posix()
+            entry = entries.get(destination_relative)
+            if entry is None:
+                raise ValueError(
+                    f"upgrade path is absent from pack manifest: {destination_relative}"
+                )
+            if (
+                destination_relative in excluded_paths
+                or entry.get("installation_scope", "ordinary_adopter")
+                != "ordinary_adopter"
+            ):
+                continue
+            reject_destination(target_root, destination_file.relative_to(target_root))
+            destination_file.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_file, destination_file)
+            destinations.append(destination_file)
+    return len(destinations), destinations
 
 
 def _find_target_span(lines: list[str], target: str) -> tuple[int, int] | None:

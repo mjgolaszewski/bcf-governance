@@ -70,7 +70,9 @@ def _exact_main_parser() -> argparse.ArgumentParser:
     admit.add_argument("--repository", required=True)
     admit.add_argument("--sha", required=True)
     admit.add_argument("--target-url", required=True)
-    admit.add_argument("--evaluation-mode", choices=("workitem", "closure"), default="closure")
+    admit.add_argument(
+        "--evaluation-mode", choices=("pr", "workitem", "closure"), default="closure"
+    )
     admit.add_argument("--evaluation-target")
     finalize_parser = operations.add_parser("finalize")
     finalize_parser.add_argument("--repository", required=True)

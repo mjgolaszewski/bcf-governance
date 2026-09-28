@@ -17,7 +17,8 @@ from contextlib import contextmanager
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
 from .ci_graph_post_merge import post_merge_evaluation
 from .ci_authority_prospective_lanes import (
-    direct_policy_identity,
+    ProspectiveLaneError,
+    prospective_policy_binding,
     provider_boundaries,
     terminal_boundaries,
 )
@@ -47,12 +48,7 @@ from .ci_authority_prospective_telemetry import (
 from .ci_github_api import GitHubAPI
 from .routine_controller_provider import effective_controller_authority
 from .trusted_controller_compatibility import classify_trusted_controller_applicability
-from .routine_controller_rotation import (
-    ROTATION_POLICY_PATHS,
-    alternate_policy_lane_contract,
-    controller_policy_digest,
-    prospective_no_transition_topology,
-)
+from .routine_controller_rotation import alternate_policy_lane_contract
 from .scaffold_governance_artifacts import ReconcileError, reconcile_steps
 
 
@@ -260,49 +256,6 @@ def _changed_paths(
     return tuple(sorted(value for value in output.splitlines() if value))
 
 
-def _git_blob(repo_root: Path, *, ref: str, path: str) -> bytes:
-    result = subprocess.run(
-        ["git", "show", f"{ref}:{path}"],
-        cwd=repo_root,
-        capture_output=True,
-        check=False,
-    )
-    if result.returncode != 0:
-        detail = result.stderr.decode("utf-8", errors="replace").strip()
-        raise ProspectiveValidationError(
-            f"cannot resolve controller policy {path} at {ref}: {detail or 'git show failed'}"
-        )
-    return result.stdout
-
-
-def _controller_policy_identity(
-    repo_root: Path, identity: CandidateIdentity, *, runner: Runner
-) -> dict[str, Any]:
-    source_tree = _checked(
-        runner,
-        ["git", "rev-parse", "--verify", f"{identity.base_sha}^{{tree}}"],
-        cwd=repo_root,
-    )
-    source_digest = controller_policy_digest(
-        lambda path: _git_blob(repo_root, ref=identity.base_sha, path=path)
-    )
-    candidate_digest = controller_policy_digest(
-        lambda path: _git_blob(repo_root, ref=identity.commit_sha, path=path)
-    )
-    return {
-        "source": {
-            "commit_sha": identity.base_sha,
-            "tree_sha": source_tree,
-            "policy_sha256": source_digest,
-        },
-        "candidate": {
-            "commit_sha": identity.commit_sha,
-            "tree_sha": identity.tree_sha,
-            "policy_sha256": candidate_digest,
-        },
-    }
-
-
 def _confirm_unchanged(
     repo_root: Path,
     *,
@@ -469,18 +422,13 @@ def _run_prospective_train(
             "prospective train intent/target does not match canonical post-merge authority"
         )
     changed_paths = _changed_paths(root, identity, runner=runner)
-    transition_class = (
-        "direct_graph_change"
-        if evaluation.lane == "direct_protected_main"
-        and "governance/ci-graph.yml" in changed_paths
-        else "direct_runtime_only"
-        if evaluation.lane == "direct_protected_main"
-        else "protected_policy_change"
-        if set(changed_paths).intersection(ROTATION_POLICY_PATHS)
-        else "runtime_only"
-    )
-    policy_identity = (
-        direct_policy_identity(
+    custody_state = str(custody_contract.get("custody_state", "managed_controller"))
+    try:
+        transition_class, policy_identity = prospective_policy_binding(
+            root,
+            lane=evaluation.lane,
+            custody_state=custody_state,
+            changed_paths=changed_paths,
             base_sha=identity.base_sha,
             base_tree=_checked(
                 runner,
@@ -489,20 +437,9 @@ def _run_prospective_train(
             ),
             candidate_sha=identity.commit_sha,
             candidate_tree=identity.tree_sha,
-            base_graph=_git_blob(root, ref=identity.base_sha, path="governance/ci-graph.yml"),
-            candidate_graph=_git_blob(root, ref=identity.commit_sha, path="governance/ci-graph.yml"),
         )
-        if evaluation.lane == "direct_protected_main"
-        else _controller_policy_identity(root, identity, runner=runner)
-    )
-    if (
-        transition_class == "protected_policy_change"
-        and policy_identity["source"]["policy_sha256"]
-        == policy_identity["candidate"]["policy_sha256"]
-    ):
-        raise ProspectiveValidationError(
-            "protected controller-policy paths changed without a policy identity change"
-        )
+    except ProspectiveLaneError as exc:
+        raise ProspectiveValidationError(str(exc)) from exc
     boundaries: list[dict[str, Any]] = []
 
     with tempfile.TemporaryDirectory(prefix="bcf-prospective-") as temporary:
@@ -533,6 +470,8 @@ def _run_prospective_train(
         controller_state = (
             "not_adopted"
             if evaluation.lane == "direct_protected_main"
+            else "ordinary_executable"
+            if custody_state == "ordinary_executable_controller"
             else classify_trusted_controller_applicability(
                 root, target_commit=str(controller_authority["controller_commit_sha"])
             ).state.value
@@ -541,13 +480,17 @@ def _run_prospective_train(
             if isinstance(controller, dict)
             else "current"
         )
-        if controller_state not in {"current", "pending_rotation", "not_adopted"}:
+        if controller_state not in {
+            "current", "pending_rotation", "not_adopted", "ordinary_executable"
+        }:
             raise ProspectiveValidationError(
                 f"controller compatibility is not admissible: {controller_state}"
             )
         transition_requirement = (
             "direct_protected_main"
             if controller_state == "not_adopted"
+            else "ordinary_exact_main"
+            if controller_state == "ordinary_executable"
             else "no_transition"
             if controller_state == "current"
             else str(controller.get("transition_requirement"))
@@ -569,6 +512,8 @@ def _run_prospective_train(
                 "effective_controller_source": (
                     "direct_graph_policy"
                     if controller_state == "not_adopted"
+                    else "declared_executable_controller"
+                    if controller_state == "ordinary_executable"
                     else "provider_authenticated" if controller_authority is not None
                     else "source_policy"
                 ),
@@ -659,8 +604,7 @@ def _run_prospective_train(
                  transition_class=transition_class,
                  policy_identity=policy_identity,
                  controller_probe=(
-                     None if controller_state == "not_adopted"
-                     else prospective_no_transition_topology(root)
+                     custody_contract.get("no_transition_callback_probe")
                  ),
              )]
         )

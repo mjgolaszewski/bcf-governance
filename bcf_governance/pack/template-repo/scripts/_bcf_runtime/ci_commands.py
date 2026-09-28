@@ -140,7 +140,7 @@ def _parser() -> argparse.ArgumentParser:
     submit.add_argument("--repo-root", type=Path, default=Path.cwd())
     submit.add_argument("--remote", default="origin")
     submit.add_argument("--python", type=Path, default=Path(sys.executable))
-    submit.add_argument("--intent", choices=("workitem", "closure"), required=True)
+    submit.add_argument("--intent", choices=("pr", "workitem", "closure"), required=True)
     submit.add_argument("--format", choices=("text", "json"), default="json")
     runtime = subparsers.add_parser("runtime-check", help="Check capacity before heavy CI.")
     runtime.add_argument("--repo-root", type=Path, default=Path.cwd())

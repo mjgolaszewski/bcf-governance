@@ -31,15 +31,6 @@ from .phase_catalog import (
 )
 from .release_gates import _validate_ci_profile, _validate_release_gate_targets, _validate_structural_gate_contract
 from .repo_cleanup import _load_repo_cleanup_contract
-from .self_authority_overlays import (
-    SelfAuthorityOverlayError,
-    validate_self_authority_overlays,
-)
-from .product_parity import ProductParityError, validate_product_parity
-from .product_certification import (
-    ProductCertificationError,
-    validate_product_certification,
-)
 from .structural_limits import validate_tooling_context_membership
 
 
@@ -164,6 +155,11 @@ def validate_repo_root(
     validate_tooling_context_membership(repo_root)
     overlay_path = repo_root / "governance/self-overlays.yml"
     if overlay_path.is_file():
+        from .self_authority_overlays import (
+            SelfAuthorityOverlayError,
+            validate_self_authority_overlays,
+        )
+
         overlays = _load_yaml(overlay_path)
         _validate_schema(
             repo_root,
@@ -173,12 +169,14 @@ def validate_repo_root(
             context=str(overlay_path),
         )
         _validate_document_path(repo_root, overlays, overlay_path, context=str(overlay_path))
-    try:
-        validate_self_authority_overlays(repo_root)
-    except SelfAuthorityOverlayError as exc:
-        raise GovernanceValidationError(str(exc)) from exc
+        try:
+            validate_self_authority_overlays(repo_root)
+        except SelfAuthorityOverlayError as exc:
+            raise GovernanceValidationError(str(exc)) from exc
     parity_path = repo_root / "governance/product-parity.yml"
     if parity_path.is_file():
+        from .product_parity import ProductParityError, validate_product_parity
+
         parity = _load_yaml(parity_path)
         _validate_schema(
             repo_root,
@@ -194,6 +192,11 @@ def validate_repo_root(
             raise GovernanceValidationError(str(exc)) from exc
     certification_path = repo_root / "governance/product-certification.yml"
     if certification_path.is_file():
+        from .product_certification import (
+            ProductCertificationError,
+            validate_product_certification,
+        )
+
         certification = _load_yaml(certification_path)
         _validate_schema(
             repo_root,

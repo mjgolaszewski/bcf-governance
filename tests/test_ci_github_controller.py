@@ -10,6 +10,7 @@ import pytest
 import yaml
 
 from bcf_governance.tooling import ci_github_callbacks as callbacks
+from bcf_governance.tooling.ci_github_commands import _exact_main_parser
 from bcf_governance.tooling import ci_github_exact_main as exact_main_target
 from bcf_governance.tooling.ci_github_api import GitHubAPI, GitHubAPIError, GitHubContent
 from bcf_governance.tooling.ci_github_callbacks import (
@@ -59,6 +60,25 @@ COLLECTOR_IDENTITY = {
     "collector_workflow_path": ".github/workflows/finalizer.yml",
     "collector_workflow_sha256": DIGEST,
 }
+
+
+def test_exact_main_cli_preserves_noncertifying_pr_evaluation_scope() -> None:
+    args = _exact_main_parser().parse_args(
+        [
+            "admit",
+            "--repository",
+            "owner/repo",
+            "--sha",
+            SHA_A,
+            "--target-url",
+            "https://example.invalid/run",
+            "--evaluation-mode",
+            "pr",
+        ]
+    )
+
+    assert args.evaluation_mode == "pr"
+    assert args.evaluation_target is None
 
 
 def _controller_custody(main) -> dict[str, object]:
@@ -533,6 +553,25 @@ def test_v11_bounded_admission_publishes_only_bounded_pending_context() -> None:
     )
     assert api.published_statuses[-1]["context"] == "bcf/workitem-certification"
     assert "P26-P0-01" in api.published_statuses[-1]["description"]
+
+
+def test_v11_pr_progress_admission_is_authenticated_but_noncertifying() -> None:
+    api = FakeAPI()
+    _prepare_v11_run(api)
+
+    result = admit_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        expected_sha=SHA_A,
+        run_id="100",
+        run_attempt="1",
+        target_url="https://github.example/runs/100",
+        evaluation_mode="pr",
+    )
+
+    assert result["status"] == "suppressed"
+    assert result["reason"] == "pr_progress_noncertifying"
+    assert api.published_statuses == []
 
 
 def test_v11_direct_trigger_survives_temporary_list_absence() -> None:
@@ -1078,6 +1117,66 @@ def test_v11_finalizer_rejects_mismatched_bounded_truth(
             collector_run_attempt=1,
             output_dir=tmp_path / "bundle",
         )
+
+
+def test_v11_pr_progress_finalizer_and_publisher_remain_noncertifying(
+    tmp_path: Path,
+) -> None:
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    target = {"kind": "pull_request_progress", "id": SHA_A}
+    api.truth_artifact_override = {
+        "status": "pass",
+        "subject": {"commit_sha": SHA_A, "tree_sha": TREE},
+        "evaluation_scope": {"intent": "pr", "target": target},
+        "certified_proposition": {
+            "predicate": "pull_request_progress_valid",
+            "target": target,
+            "subject": {"commit_sha": SHA_A, "tree_sha": TREE},
+            "conclusion": "success",
+            "authorizes": [],
+            "eligible_successors": [],
+        },
+        "durable_ref": (
+            "github-actions://owner/repo/runs/100/attempts/1/"
+            "bcf-governance-truth"
+        ),
+    }
+
+    result = finalize_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        output_dir=tmp_path / "bundle",
+    )
+
+    assert result.status == "noncertifying"
+    manifest = json.loads(
+        (Path(result.bundle_dir) / "bundle-manifest.json").read_text()
+    )
+    assert manifest["kind"] == "authority_observation"
+    api.runs["400"].update(status="completed", conclusion="success")
+    api.runs["401"] = {
+        **api.runs["400"],
+        "id": 401,
+        "workflow_id": 97,
+        "status": "in_progress",
+        "conclusion": None,
+    }
+    published = publish_exact_main(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        bundle_dir=Path(result.bundle_dir),
+        target_url="https://github.example/runs/400",
+        collector_run_id=400,
+        collector_run_attempt=1,
+        publisher_run_id=401,
+        publisher_run_attempt=1,
+    )
+    assert published["status"] == "suppressed"
+    assert published["reason"] == "certification_inapplicable"
+    assert api.published_statuses == []
 
 
 def test_v11_incomplete_observation_is_noncertifying_without_borrowing_older_runs(

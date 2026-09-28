@@ -7,9 +7,18 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
+import sys
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from bcf_governance.tooling.pack_installation_scope import (
+    self_authority_pack_surfaces,
+)
+
+
 GENERATED_PATHS = {
     ".github/workflows/governance.yml",
     "Makefile.fragment",
@@ -73,6 +82,7 @@ def _sync_packaged_template(source: Path, destination: Path) -> None:
 
 
 def build(template_root: Path) -> dict[str, object]:
+    self_only = self_authority_pack_surfaces(REPO_ROOT)
     files = {
         path.relative_to(template_root).as_posix(): {
             "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
@@ -92,6 +102,11 @@ def build(template_root: Path) -> dict[str, object]:
                     "governance/MODEL_RISK_AND_PROVENANCE.md",
                     "governance/HOTFIX_LANE.md",
                 }
+                else {}
+            ),
+            **(
+                {"installation_scope": "self_authority"}
+                if path.relative_to(template_root).as_posix() in self_only
                 else {}
             ),
         }

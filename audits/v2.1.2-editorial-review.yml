@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: 6ada6a571b4ade66e8c99d51278ddb69ae07383c5aba6a51c51eee19c8f5ce4b
-  after_sha256: 40fdc6ff692f3d27a670e6e382589caca31d9ca4d4d08402f72775ca09dbdda8
+  after_sha256: 039a311825fd040a281d6fe0ccca44890763a293763a3d497b29995f4812204d
   findings:
   - collapsed the unpublished 2.0 candidate and 2.1 repair chronology into the released 2.1 product contract
   disposition: historical
@@ -60,7 +60,7 @@ documents:
   canonical_topic_owner: README.md
   topic_role: canonical
   before_sha256: 56aa8a5a0bc9c50df1b2255a1b20f1ab1ef781ef4129604234277ba26c238fb9
-  after_sha256: c871d7b898516e8d6d83ba878169e5e154030d5f04ee95850e4d78b120e175f8
+  after_sha256: e20bf670e4e908b8a09fc15aa6fd7d4f48709ad7322de25a89055232f2d97dd3
   findings:
   - documented the 2.1 semantic-intent, selective-proof, optional-controller, and adopter-authority contract
   disposition: revised
@@ -114,7 +114,7 @@ documents:
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
   before_sha256: 641904cae5c40572cdb997792ad5712d917349beb0ee4affe7a7d29a84d5b345
-  after_sha256: 84f6e58f18569e0b44136ff4f7cde225d52272be77e5778c625c3eb71b3349e5
+  after_sha256: 4ef6adc9eb2dc0a0886a5fd3b8fec8afede5d101c7cbd26cded8d2447b58438f
   findings:
   - replaced obsolete controller ceremony with the canonical 2.1 adopter and semantic-intent operation
   disposition: revised
@@ -195,10 +195,10 @@ documents:
   canonical_topic_owner: template-repo/docs/OPERATIONS.md
   topic_role: canonical
   before_sha256: 11d7171288157c03607329a24a3eadb7ad112bfb3a0d5cb9e0b38d2ae9232e18
-  after_sha256: 11d7171288157c03607329a24a3eadb7ad112bfb3a0d5cb9e0b38d2ae9232e18
+  after_sha256: 80f847a1ccf22ac613550258cc0a63e158e1cb7d49af5ba2c778e175fa4354eb
   findings:
-  - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  - documented adopter selective proof composition and the optional trusted-controller boundary
+  disposition: revised
 - path: template-repo/governance/EXISTING_REPO_ADOPTION.md
   audience: consumer repository operators
   canonical_topic_owner: template-repo/governance/EXISTING_REPO_ADOPTION.md

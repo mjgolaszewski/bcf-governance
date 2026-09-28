@@ -568,8 +568,10 @@ instead of first appearing in remote CI.
 
 ### Semantic-intent submission and proof composition
 
-Use `bcf ci submit --repo-root . --intent workitem` for the governed candidate
-path. The command derives the active bounded target, exact base, commit and tree,
+Use `bcf ci submit --repo-root . --intent pr` for governed in-progress changes,
+then use the same command with `--intent workitem` when the canonical lifecycle
+derives one authored-complete bounded target, or `--intent closure` after phase
+completion. The command derives the active bounded target, exact base, commit and tree,
 then owns the complete order from deterministic preflight through controller
 compatibility, evidence planning, certification-shape verification, post-merge
 truth projection, finalizer scope, publication boundary, and successor

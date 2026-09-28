@@ -421,6 +421,77 @@ def verify_workflow_authority(
     return len(registry)
 
 
+def reconcile_workflow_authority(
+    repo_root: Path,
+    *,
+    authority_path: Path,
+    workflow_paths: dict[str, str],
+    apply: bool,
+) -> CIAuthorityPinResult:
+    """Refresh workflow custody only when committed canonical bytes changed."""
+
+    root = repo_root.resolve()
+    authority = authority_path if authority_path.is_absolute() else root / authority_path
+    raw, payload = _mapping(authority)
+    registry = payload.get("workflow_registry")
+    if payload.get("schema_version") != "1.1" or not isinstance(registry, dict):
+        raise CIAuthorityPinError(
+            "workflow reconciliation requires authority contract version 1.1"
+        )
+    if set(workflow_paths) != set(registry):
+        raise CIAuthorityPinError(
+            "canonical graph must cover the complete workflow authority registry"
+        )
+    projected = deepcopy(payload)
+    committed_workflows: dict[str, bytes] = {}
+    for reference, entry in projected["workflow_registry"].items():
+        if not isinstance(entry, dict):
+            raise CIAuthorityPinError("workflow registry entry must be a mapping")
+        path = workflow_paths[str(reference)]
+        if not path.startswith(".github/workflows/") or ".." in Path(path).parts:
+            raise CIAuthorityPinError("workflow authority path is unsafe")
+        entry["active_path"] = path
+        current = root / path
+        if current.is_symlink() or not current.is_file():
+            raise CIAuthorityPinError(
+                f"current workflow bytes differ from authority: {reference}"
+            )
+        current_bytes = current.read_bytes()
+        committed_workflows[str(reference)] = current_bytes
+        entry["trusted_workflow_blob_oid"] = (
+            _git(root, "hash-object", "--stdin", input_bytes=current_bytes).decode().strip()
+        )
+        entry["trusted_workflow_sha256"] = hashlib.sha256(current_bytes).hexdigest()
+    _compile_inventories(projected, committed_workflows)
+    current_projection = yaml.safe_dump(
+        projected, sort_keys=False, allow_unicode=False, width=1000
+    ).encode("utf-8")
+    if current_projection == raw:
+        definition_commits = {
+            str(entry.get("trusted_workflow_definition_commit", ""))
+            for entry in registry.values()
+            if isinstance(entry, dict)
+        }
+        definition_commit = (
+            next(iter(definition_commits)) if len(definition_commits) == 1 else "mixed"
+        )
+        return CIAuthorityPinResult(
+            status="clean",
+            changed_paths=(),
+            definition_commit=definition_commit,
+            references=tuple(str(value) for value in registry),
+        )
+    head = _git(root, "rev-parse", "HEAD").decode().strip()
+    return pin_workflow_authority(
+        root,
+        authority_path=authority,
+        definition_commit=head,
+        references=(),
+        workflow_paths=workflow_paths,
+        apply=apply,
+    )
+
+
 def pin_workflow_authority(
     repo_root: Path,
     *,

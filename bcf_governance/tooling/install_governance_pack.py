@@ -27,7 +27,12 @@ from .governance_install.artifacts import (  # noqa: E402
     merge_gitignore as _merge_gitignore,
 )
 from .governance_install.transaction import apply_transaction  # noqa: E402
-from .governance_install.upgrade import replace_placeholders_in_files, upgrade_state_files  # noqa: E402
+from .governance_install.upgrade import (  # noqa: E402
+    copy_selected_template_paths,
+    replace_placeholders_in_files,
+    retire_self_authority_pack_surfaces,
+    upgrade_state_files,
+)
 from .governance_profiles import (  # noqa: E402
     apply_profile_contract,
     apply_scaffold_requirements,
@@ -254,6 +259,9 @@ def _pack_manifest_entries(template_root: Path) -> dict[str, dict[str, Any]]:
             or not all(value in PROFILE_CHOICES for value in profiles)
         ):
             raise ValueError(f"pack manifest has invalid profiles for {raw_path}")
+        scope = raw_entry.get("installation_scope", "ordinary_adopter")
+        if scope not in {"ordinary_adopter", "self_authority"}:
+            raise ValueError(f"pack manifest has invalid installation scope for {raw_path}")
         if relative.as_posix() in entries:
             raise ValueError(f"pack manifest duplicates {raw_path}")
         entries[relative.as_posix()] = raw_entry
@@ -290,6 +298,8 @@ def _copy_template(
         Path(value)
         for value in sorted(entries)
         if profile in entries[value].get("profiles", PROFILE_CHOICES)
+        and entries[value].get("installation_scope", "ordinary_adopter")
+        == "ordinary_adopter"
     ]
     for relative_path in relative_paths:
         _reject_symlink_destination(target_root, relative_path)
@@ -325,44 +335,6 @@ def _copy_template(
             shutil.copy2(source, destination)
         destinations.append(destination)
     return len(destinations), destinations
-
-
-def _copy_selected_template_paths(
-    *,
-    template_root: Path,
-    target_root: Path,
-    relative_paths: tuple[str, ...],
-    excluded_paths: frozenset[str] = frozenset(),
-) -> tuple[int, list[Path]]:
-    copied_files = 0
-    destinations: list[Path] = []
-    for relative_path in relative_paths:
-        source = template_root / relative_path
-        destination = target_root / relative_path
-        if not source.exists():
-            continue
-        if source.is_dir():
-            for source_file in _iter_template_files(source):
-                nested_relative = source_file.relative_to(source)
-                destination_file = destination / nested_relative
-                if destination_file.relative_to(target_root).as_posix() in excluded_paths:
-                    continue
-                _reject_symlink_destination(
-                    target_root, destination_file.relative_to(target_root)
-                )
-                destination_file.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(source_file, destination_file)
-                destinations.append(destination_file)
-                copied_files += 1
-            continue
-        _reject_symlink_destination(target_root, Path(relative_path))
-        if relative_path in excluded_paths:
-            continue
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, destination)
-        destinations.append(destination)
-        copied_files += 1
-    return copied_files, destinations
 
 
 def _prune_empty_parents(target_root: Path, start: Path) -> None:
@@ -550,15 +522,26 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
         raise RuntimeError("--upgrade cannot be combined with --force-rescaffold")
 
     template_root = _template_root()
+    entries = _pack_manifest_entries(template_root)
+    retired_self_authority = retire_self_authority_pack_surfaces(
+        target_root=target_root,
+        entries=entries,
+        reject_destination=_reject_symlink_destination,
+        prune_empty_parents=_prune_empty_parents,
+    )
     upgrade_paths = UPGRADE_REFRESH_PATHS + (
         UPGRADE_RESET_OPTION_PATHS if args.reset_options else ()
     )
-    copied_files, destinations = _copy_selected_template_paths(
+    copied_files, destinations = copy_selected_template_paths(
         template_root=template_root,
         target_root=target_root,
         relative_paths=tuple(dict.fromkeys(upgrade_paths)),
+        entries=entries,
+        iter_template_files=_iter_template_files,
+        reject_destination=_reject_symlink_destination,
         excluded_paths=preserved_consumer_files(target_root),
     )
+    destinations.extend(retired_self_authority)
     required_count, required_destinations = ensure_required_artifacts(
         template_root=template_root,
         target_root=target_root,

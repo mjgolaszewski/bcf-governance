@@ -164,6 +164,17 @@ def test_installer_lite_profile_passes_strict_validation(tmp_path: Path) -> None
     )
     assert (target / "CHANGELOG.md").read_text(encoding="utf-8").startswith("# Changelog\n")
 
+    self_contract = yaml.safe_load(
+        (REPO_ROOT / "governance/self-overlays.yml").read_text(encoding="utf-8")
+    )
+    excluded = {
+        relative
+        for overlay in self_contract["overlays"]
+        for relative in overlay["adopter_excluded_pack_surfaces"]
+    }
+    assert excluded
+    assert all(not (target / relative).exists() for relative in excluded)
+
 
 def test_existing_required_repository_artifacts_are_preserved_byte_identically(
     tmp_path: Path,
@@ -331,6 +342,39 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         relative_path: (target / relative_path).read_bytes()
         for relative_path in protected_paths
     } == state_before
+
+
+def test_upgrade_retires_only_declared_self_authority_pack_surfaces(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "upgrade-self-authority"
+    _run_installer(target, "--profile", "lite", "--require-strict-validation")
+    contract = yaml.safe_load(
+        (REPO_ROOT / "governance/self-overlays.yml").read_text(encoding="utf-8")
+    )
+    excluded = {
+        relative
+        for overlay in contract["overlays"]
+        for relative in overlay["adopter_excluded_pack_surfaces"]
+    }
+    for relative in excluded:
+        destination = target / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes((REPO_ROOT / "template-repo" / relative).read_bytes())
+    retained = target / "scripts/_bcf_runtime/ci_graph_contracts.py"
+    before = retained.read_bytes()
+
+    result = _run_installer(
+        target,
+        "--upgrade",
+        "--profile",
+        "lite",
+        "--require-strict-validation",
+    )
+
+    assert "validation: strict pass" in result.stdout
+    assert all(not (target / relative).exists() for relative in excluded)
+    assert retained.read_bytes() == before
 
 
 def test_upgrade_rejects_drift_in_runtime_locked_consumer_file(tmp_path: Path) -> None:
@@ -561,6 +605,31 @@ def test_pack_manifest_rejects_duplicate_destinations(tmp_path: Path) -> None:
     )
 
     with pytest.raises(ValueError, match="duplicates destination a.txt"):
+        installer._pack_manifest_entries(tmp_path)
+
+
+def test_pack_manifest_rejects_unknown_installation_scope(tmp_path: Path) -> None:
+    installer = _load_installer_module()
+    (tmp_path / "a.txt").write_text("a\n", encoding="utf-8")
+    digest = hashlib.sha256(b"a\n").hexdigest()
+    (tmp_path / ".bcf-pack-manifest.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "files": {
+                    "a.txt": {
+                        "sha256": digest,
+                        "operation": "copy",
+                        "installation_scope": "unknown",
+                    }
+                },
+                "generated": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="invalid installation scope"):
         installer._pack_manifest_entries(tmp_path)
 
 

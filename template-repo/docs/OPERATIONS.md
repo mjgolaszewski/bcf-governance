@@ -145,12 +145,14 @@ actual base SHA and pull-request event context to preflight.
 For the governed submission path, provide only semantic intent:
 
 ```bash
-bcf ci submit --repo-root . --intent workitem
+bcf ci submit --repo-root . --intent pr
 ```
 
-Submission derives repository, bounded target, commit, and tree; executes the
-canonical prospective train; rechecks immutable custody; and pushes only the
-exact proved commit. Agents do not sequence its internal checks.
+Use `workitem` only when authored lifecycle state derives one completed bounded
+target, and `closure` only after authored phase completion. Submission derives
+repository, bounded target, commit, and tree; executes the canonical prospective
+train; rechecks immutable custody; and pushes only the exact proved commit.
+Agents do not sequence its internal checks.
 
 Profile v3 plans by claim and execution group. It reauthenticates immutable
 source receipts and recomputes their dependency closure, qualification, controls,
