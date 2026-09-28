@@ -3,6 +3,13 @@ document:
   id: v2.1.2-controller-custody-transport
   status: implemented_pending_final_validation
   thesis: semantic intent enters once; exact provider-authenticated controller custody is transported to every downstream consumer
+provider_compatibility_finding:
+  subject: {commit: 42f8473fe130992ed1067a8b3e560bc60df2165c, tree: ad63a9a9c5e9873ebf34f5cc57a07c9695e971b9}
+  admission: 36380561334/1
+  finalizer: {run: 36380833150/1, outcome: legacy_pending_rotation_noncertifying_observation}
+  publisher: {run: 36380866058/1, job: 108796175333, outcome: rejected_missing_newer_bundle_custody_field}
+  class: installed_N_consumer_contract_must_accept_installed_N_producer_shape
+  correction: finalizer transports the unchanged admission capsule separately from versioned certification-bundle content
 producer_contract:
   routing_observation:
     authority: none
@@ -34,11 +41,11 @@ consumer_matrix:
     change: consume the triggering rotation active receipt and invoke its exact promoted target
     permutations: [no_transition, active_transition, skipped_matrix_facades, wrong_or_missing_active_receipt]
   exact_main_finalizer:
-    change: consume triggering admission custody and project it into the certification bundle
+    change: consume triggering admission custody, project it into certifying bundles, and preserve its exact unchanged capsule as a separately scoped pass-through for every publisher shape
     permutations: [certifiable, pending_rotation_noncertifying, superseded_subject, wrong_run_attempt]
   exact_main_publisher:
-    change: consume finalizer-projected custody and preserve certification scope
-    permutations: [workitem, phase_closure, failed_truth, noncertifying_observation]
+    change: route from finalizer-preserved admission custody independently of bundle shape, then authenticate certifying bundle custody when present and preserve certification scope
+    permutations: [workitem, phase_closure, failed_truth, legacy_noncertifying_observation_without_embedded_custody]
   pr_finalizer_publisher:
     change: none; the stable PR observation contract neither consumes nor produces exact-main controller custody
     inspected_no_impact: true
@@ -67,7 +74,7 @@ prospective_exit:
   required_paths: [no_transition, runtime_rotation, policy_rotation, bounded_certification, phase_closure, release_rejection, release_acceptance, adopter_without_controller]
 mechanical_proof:
   preflight_owner: bcf_governance/tooling/controller_custody_prospective.py
-  producer_shapes: [admission_custody, certification, no_transition, active_transition, release_receipt]
+  producer_shapes: [admission_custody, certification, legacy_noncertifying_finalizer, no_transition, active_transition, release_receipt]
   invalid_permutations: [missing_identity, ambiguous_identity, malformed_identity]
   consumer_rule: every routed privileged command validates provider custody and its executing controller independently
   no_hand_authored_boundary: candidate routing observations can select an executable but cannot certify, publish, release, or rotate it

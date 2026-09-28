@@ -83,6 +83,15 @@ def apply_trusted_controller_management(
             "retention_days": 30,
         },
     )
+    graph["artifacts"].setdefault(
+        "finalizer-controller-custody",
+        {
+            "path": ".artifacts/controller-custody",
+            "kind": "control",
+            "scope": "run-attempt",
+            "retention_days": 30,
+        },
+    )
     graph["conditions"].update(
         {
             "exact-main-authority-enabled": "vars.BCF_CI_AUTHORITY_ENABLED == 'true'",
@@ -181,8 +190,11 @@ def apply_trusted_controller_management(
             "project-controller-custody": {"kind": "command", "name": "Project provider-authenticated controller custody", "command": "project-controller-custody", "environment": {}, "produces": ["controller-custody"], "consumes": []},
             "upload-controller-custody": {"kind": "action", "name": "Upload exact-main controller custody", "action": "upload-artifact", "with": {"name": "bcf-controller-custody-${{ github.run_id }}-${{ github.run_attempt }}", "path": "${{ runner.temp }}/bcf-controller-custody", "if-no-files-found": "error", "retention-days": 30}, "environment": {}, "produces": ["controller-custody"], "consumes": []},
             "download-trigger-controller-custody": {"kind": "action", "name": "Download triggering exact-main controller custody", "action": "download-artifact", "with": {"name": "bcf-controller-custody-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}", "github-token": "${{ github.token }}", "repository": "${{ github.repository }}", "run-id": "${{ github.event.workflow_run.id }}", "path": "${{ runner.temp }}/bcf-controller-custody"}, "environment": {}, "produces": [], "consumes": ["controller-custody"]},
+            "upload-finalizer-controller-custody": {"kind": "action", "name": "Preserve triggering admission controller custody for publication", "action": "upload-artifact", "with": {"name": "bcf-finalizer-controller-custody-${{ github.run_id }}-${{ github.run_attempt }}", "path": "${{ runner.temp }}/bcf-controller-custody", "if-no-files-found": "error", "retention-days": 30}, "environment": {}, "produces": ["finalizer-controller-custody"], "consumes": ["controller-custody"]},
+            "download-finalizer-controller-custody": {"kind": "action", "name": "Download finalizer-preserved admission controller custody", "action": "download-artifact", "with": {"name": "bcf-finalizer-controller-custody-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}", "github-token": "${{ github.token }}", "repository": "${{ github.repository }}", "run-id": "${{ github.event.workflow_run.id }}", "path": "${{ runner.temp }}/bcf-controller-custody"}, "environment": {}, "produces": [], "consumes": ["finalizer-controller-custody"]},
             "project-custody-controller-route": {"kind": "command", "name": "Project non-authoritative routing from admission custody", "id": "controller-route", "command": "project-controller-route", "environment": {"BCF_CONTROLLER_ROUTE_FILE": "${{ runner.temp }}/bcf-controller-custody/controller-custody.json"}, "produces": [], "consumes": ["controller-custody"]},
             "project-certification-controller-route": {"kind": "command", "name": "Project non-authoritative routing from finalizer custody", "id": "controller-route", "command": "project-controller-route", "environment": {"BCF_CONTROLLER_ROUTE_FILE": "${{ runner.temp }}/bcf-exact-main-certification/controller-custody.json"}, "produces": [], "consumes": ["exact-main-certification"]},
+            "project-finalizer-controller-route": {"kind": "command", "name": "Project non-authoritative routing from finalizer-preserved admission custody", "id": "controller-route", "command": "project-controller-route", "environment": {"BCF_CONTROLLER_ROUTE_FILE": "${{ runner.temp }}/bcf-controller-custody/controller-custody.json"}, "produces": [], "consumes": ["finalizer-controller-custody"]},
             "upload-trusted-controller": {"kind": "action", "name": "Upload the exact-main trusted controller bundle", "action": "upload-artifact", "with": {"name": "bcf-trusted-control-${{ github.sha }}-${{ github.run_attempt }}", "path": ".artifacts/trusted-control", "if-no-files-found": "error", "retention-days": 30}, "environment": {}, "produces": ["trusted-controller-bundle"], "consumes": []},
             "exact-main-finalize-effective": {"kind": "command", "name": "Reconstruct exact-main evidence with the effective controller", "command": "exact-main-finalize-effective", "environment": {}, "produces": ["exact-main-certification"], "consumes": []},
             "upload-exact-main-certification-effective": {"kind": "action", "name": "Upload exact-main certification bundle", "action": "upload-artifact", "with": {"name": "bcf-exact-main-certification-${{ github.run_id }}-${{ github.run_attempt }}", "path": "${{ runner.temp }}/bcf-exact-main-certification", "if-no-files-found": "error", "retention-days": 30}, "environment": {}, "produces": ["exact-main-certification"], "consumes": []},
@@ -232,10 +244,10 @@ def apply_trusted_controller_management(
     )
     finalizer = next(item for item in graph["workflows"] if item["id"] == "exact-main-finalizer")
     finalizer["events"][0]["workflows"] = ["bcf/exact-main-admission"]
-    finalizer["jobs"][0].update({"controller_requirement": "current", "executor": {"kind": "component_sequence", "components": ["setup-python", "download-trigger-controller-custody", "project-custody-controller-route", "exact-main-finalize-effective", "upload-exact-main-certification-effective"]}, "consumes": ["controller-custody"]})
+    finalizer["jobs"][0].update({"controller_requirement": "current", "executor": {"kind": "component_sequence", "components": ["setup-python", "download-trigger-controller-custody", "project-custody-controller-route", "exact-main-finalize-effective", "upload-exact-main-certification-effective", "upload-finalizer-controller-custody"]}, "produces": ["exact-main-certification", "finalizer-controller-custody"], "consumes": ["controller-custody"]})
     publisher = next(item for item in graph["workflows"] if item["id"] == "exact-main-publisher")
     publisher["events"][0]["workflows"].append("bcf/controller-rotation")
-    publisher["jobs"][0].update({"controller_requirement": "current", "executor": {"kind": "component_sequence", "components": ["setup-python", "download-exact-main-certification-effective", "project-certification-controller-route", "exact-main-publish-effective"]}})
+    publisher["jobs"][0].update({"controller_requirement": "current", "executor": {"kind": "component_sequence", "components": ["setup-python", "download-exact-main-certification-effective", "download-finalizer-controller-custody", "project-finalizer-controller-route", "exact-main-publish-effective"]}, "consumes": ["exact-main-certification", "finalizer-controller-custody"]})
 
 
 def _sync_evidence_workflow_contract(

@@ -102,9 +102,38 @@ def test_prospective_chain_executes_every_producer_shape_and_consumer_route() ->
         "active_transition",
         "admission_custody",
         "certification",
+        "legacy_noncertifying_finalizer",
         "no_transition",
         "release_receipt",
     ]
+
+
+def test_prospective_chain_rejects_publisher_without_exact_finalizer_custody() -> None:
+    root = Path(__file__).resolve().parents[1]
+    graph = copy.deepcopy(validate_ci_graph(root).graph)
+    publisher = next(
+        value for value in graph["workflows"]
+        if value["id"] == "exact-main-publisher"
+    )["jobs"][0]
+    publisher["consumes"] = ["exact-main-certification"]
+    with pytest.raises(GitHubControllerError, match="publisher controller-custody"):
+        validate_controller_custody_chain(
+            graph,
+            python_executable=Path(sys.executable),
+        )
+
+
+def test_prospective_chain_rejects_unbound_finalizer_custody_transport() -> None:
+    root = Path(__file__).resolve().parents[1]
+    graph = copy.deepcopy(validate_ci_graph(root).graph)
+    graph["step_components"]["download-finalizer-controller-custody"]["with"][
+        "run-id"
+    ] = "${{ github.run_id }}"
+    with pytest.raises(GitHubControllerError, match="transport is not attempt-exact"):
+        validate_controller_custody_chain(
+            graph,
+            python_executable=Path(sys.executable),
+        )
 
 
 def test_prospective_chain_rejects_an_unowned_downstream_permutation() -> None:

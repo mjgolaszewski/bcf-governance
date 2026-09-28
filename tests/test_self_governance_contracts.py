@@ -344,6 +344,32 @@ def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> N
     ]["run"]
 
 
+def test_finalizer_preserves_exact_admission_custody_for_every_publisher_shape() -> None:
+    graph = validate_ci_graph(REPO_ROOT).graph
+    finalizer = _job("exact-main-finalizer", "finalize")
+    publisher = _job("exact-main-publisher", "publish")
+    assert finalizer["executor"]["components"][-2:] == [
+        "upload-exact-main-certification-effective",
+        "upload-finalizer-controller-custody",
+    ]
+    assert finalizer["produces"] == [
+        "exact-main-certification", "finalizer-controller-custody",
+    ]
+    assert publisher["executor"]["components"] == [
+        "setup-python",
+        "download-exact-main-certification-effective",
+        "download-finalizer-controller-custody",
+        "project-finalizer-controller-route",
+        "exact-main-publish-effective",
+    ]
+    assert publisher["consumes"] == [
+        "exact-main-certification", "finalizer-controller-custody",
+    ]
+    assert graph["step_components"]["upload-finalizer-controller-custody"][
+        "with"
+    ]["path"] == "${{ runner.temp }}/bcf-controller-custody"
+
+
 def test_self_control_plane_is_an_exact_v11_generator_product() -> None:
     assert check_ci_graph(REPO_ROOT).status == "clean"
     rendered = render_ci_graph(REPO_ROOT)
