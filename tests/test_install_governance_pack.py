@@ -11,6 +11,7 @@ import pytest
 import yaml
 
 from bcf_governance.tooling.governance_install import transaction
+from bcf_governance.tooling.runtime_capacity import EXECUTION_STATE_POLICY
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 INSTALLER = REPO_ROOT / "scripts" / "install_governance_pack.py"
@@ -394,6 +395,54 @@ def test_upgrade_reconciles_graph_owned_workflows_before_strict_validation(
         (target / graph["workflows"][0]["path"]).read_text(encoding="utf-8")
     )
     assert workflow["name"] == "Governance adopter projection"
+
+
+def test_upgrade_migrates_exact_runtime_v1_without_overwriting_capacity(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "upgrade-runtime-contract"
+    _run_installer(target, "--profile", "lite", "--require-strict-validation")
+    runtime_path = target / "governance/ci-runtime.yml"
+    runtime_path.write_text(
+        "schema_version: '1.0'\n"
+        "runtime_root: .artifacts/runtime # non-authoritative local runtime state\n"
+        "minimum_free_bytes: 987654321\n"
+        "maximum_owned_containers: 17\n"
+        "database:\n"
+        "  storage: repository_bind_mount\n"
+        "  relative_path: .artifacts/runtime/database # non-authoritative local runtime state\n"
+        "cleanup:\n"
+        "  caller_globs: false\n"
+        "  daemon_global_prune: false\n"
+        "  exact_owner_revalidation: true\n"
+        "  remove_anonymous_volumes: true\n",
+        encoding="utf-8",
+    )
+
+    result = _run_installer(target, "--upgrade", "--require-strict-validation")
+
+    assert "validation: strict pass" in result.stdout
+    migrated = yaml.safe_load(runtime_path.read_text(encoding="utf-8"))
+    assert migrated["schema_version"] == "1.1"
+    assert migrated["minimum_free_bytes"] == 987654321
+    assert migrated["maximum_owned_containers"] == 17
+    assert migrated["execution_state"] == EXECUTION_STATE_POLICY
+
+
+def test_upgrade_rejects_ambiguous_legacy_runtime_contract(tmp_path: Path) -> None:
+    target = tmp_path / "upgrade-ambiguous-runtime"
+    _run_installer(target, "--profile", "lite", "--require-strict-validation")
+    runtime_path = target / "governance/ci-runtime.yml"
+    runtime = yaml.safe_load(runtime_path.read_text(encoding="utf-8"))
+    runtime["schema_version"] = "1.0"
+    runtime.pop("execution_state")
+    runtime["undeclared_state_policy"] = "retain"
+    runtime_path.write_text(yaml.safe_dump(runtime, sort_keys=False), encoding="utf-8")
+
+    result = _run_installer(target, "--upgrade", "--skip-validation", check=False)
+
+    assert result.returncode == 1
+    assert "not an exact migratable v1.0 shape" in result.stderr
 
 
 def test_upgrade_rejects_drift_in_runtime_locked_consumer_file(tmp_path: Path) -> None:

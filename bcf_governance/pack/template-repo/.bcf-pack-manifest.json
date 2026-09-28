@@ -916,7 +916,7 @@
     },
     "scripts/_bcf_runtime/governance_install/upgrade.py": {
       "operation": "copy",
-      "sha256": "256384805d79653a15ad3553d99a21bb6f270b468a168b210afd22deadcc1ede"
+      "sha256": "836f53cd4438692c316f4df201a711f6b8d000e6b06e503957ffeea8afc9419f"
     },
     "scripts/_bcf_runtime/governance_profiles.py": {
       "operation": "copy",

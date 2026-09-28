@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import shutil
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping
 
 import yaml  # type: ignore[import-untyped]
+
+from ..runtime_capacity import EXECUTION_STATE_POLICY
 
 
 def retire_self_authority_pack_surfaces(
@@ -171,6 +174,42 @@ def _copy_template_file_if_missing(
     shutil.copy2(source, destination)
     _replace_placeholders_in_files([destination], values)
     return [destination]
+
+
+def _upgrade_runtime_contract(target_root: Path) -> list[Path]:
+    """Migrate only the closed prior runtime contract to isolated state v1.1."""
+
+    path = target_root / "governance/ci-runtime.yml"
+    if not path.exists():
+        return []
+    payload = _load_yaml_mapping(path)
+    if payload.get("schema_version") == "1.1":
+        return []
+    legacy_fields = {
+        "schema_version",
+        "runtime_root",
+        "minimum_free_bytes",
+        "maximum_owned_containers",
+        "database",
+        "cleanup",
+    }
+    if payload.get("schema_version") != "1.0" or set(payload) != legacy_fields:
+        raise ValueError("runtime contract is not an exact migratable v1.0 shape")
+    raw = path.read_text(encoding="utf-8")
+    marker = "schema_version: '1.0'"
+    if raw.count(marker) != 1:
+        raise ValueError("runtime contract v1.0 version bytes are ambiguous")
+    execution = yaml.safe_dump(
+        {"execution_state": deepcopy(EXECUTION_STATE_POLICY)},
+        sort_keys=False,
+        default_flow_style=None,
+        width=4096,
+    )
+    path.write_text(
+        raw.replace(marker, "schema_version: '1.1'", 1).rstrip() + "\n" + execution,
+        encoding="utf-8",
+    )
+    return [path]
 
 
 
@@ -537,6 +576,7 @@ def _upgrade_state_files(
             values=values,
         )
     )
+    created.extend(_upgrade_runtime_contract(target_root))
     return created
 
 
