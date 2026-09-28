@@ -724,7 +724,7 @@
     },
     "scripts/_bcf_runtime/controller_custody_prospective.py": {
       "operation": "copy",
-      "sha256": "07a77138d2c50d13825011bb19ebf98431d7279d2051bbaffba417bc7f048c09"
+      "sha256": "3d0c2f83f47462ff7b2035e82dc4878f25ce06860d03fed6519393df27885cc2"
     },
     "scripts/_bcf_runtime/controller_transition_provider_custody.py": {
       "operation": "copy",

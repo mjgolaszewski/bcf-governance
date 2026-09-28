@@ -16,7 +16,7 @@ extensions:
 - {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: adde42bee237d4da4a67a72d6d5e8600e63ed010486cea4084391f940b9d1bb0}
 - {id: bcf-evidence-storage, path: governance/ci-extensions/bcf-evidence-storage.yml, sha256: 41e40dad457efc53292249a211575505e9d6021d73d3fee2e52c4e9eede68eea}
 - {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 02baf98acec7dfe25a59f2673fcdb723afe99c58c79ccf3f3bf98e5307c7b06c}
-- {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: 70150222240916ba64174eba3db56aaf586b72502a44a26a0e9572314f5ba6a2}
+- {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: c55436da969ff31bed0e79cdd22b7d4eda05cf90bcf82f93c525d1ebf88d655a}
 resource_classes:
   hosted-python:
     runner: ubuntu-24.04
@@ -705,7 +705,7 @@ workflows:
   role: trusted-control
   events:
   - type: workflow_run
-    workflows: [bcf/trusted-evidence-finalizer, bcf/automation-changelog-reconciler]
+    workflows: [bcf/trusted-evidence-finalizer, bcf/controller-rotation]
     types: [completed]
   permissions: {actions: read, contents: write, statuses: write}
   jobs:

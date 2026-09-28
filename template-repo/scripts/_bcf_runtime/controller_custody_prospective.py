@@ -124,11 +124,33 @@ def validate_controller_custody_chain(
             "negative_permutations": 0,
         }
     workflow_ids = {str(value.get("id")) for value in graph["workflows"]}
-    rotation_id = (
-        "automation-reconcile"
-        if "automation-reconcile" in workflow_ids
-        else "controller-rotation"
-    )
+    rotation_id = "controller-rotation"
+    if rotation_id not in workflow_ids:
+        raise GitHubControllerError("controller rotation workflow is unavailable")
+    if "automation-reconcile" in workflow_ids:
+        automation = _workflow(graph, "automation-reconcile")
+        if (
+            automation.get("events")
+            != [{
+                "type": "workflow_run",
+                "workflows": ["bcf/automation-admission"],
+                "types": ["completed"],
+            }]
+            or [job.get("id") for job in automation.get("jobs", [])]
+            != ["reconcile"]
+        ):
+            raise GitHubControllerError(
+                "automation reconciliation and controller rotation are not trigger-isolated"
+            )
+    rotation_contract = _workflow(graph, rotation_id)
+    if rotation_contract.get("events") != [{
+        "type": "workflow_run",
+        "workflows": ["bcf/exact-main-admission"],
+        "types": ["completed"],
+    }]:
+        raise GitHubControllerError(
+            "controller rotation trigger is not exact-main isolated"
+        )
     routed_jobs = {
         **_BASE_ROUTED_JOBS,
         ("exact-main-publisher", "rotation-callback"): (

@@ -140,12 +140,27 @@ def test_prospective_chain_rejects_an_unowned_downstream_permutation() -> None:
     root = Path(__file__).resolve().parents[1]
     graph = copy.deepcopy(validate_ci_graph(root).graph)
     workflow = next(
-        value for value in graph["workflows"] if value["id"] == "automation-reconcile"
+        value for value in graph["workflows"] if value["id"] == "controller-rotation"
     )
     next(value for value in workflow["jobs"] if value["id"] == "outcome")[
         "produces"
     ] = []
     with pytest.raises(GitHubControllerError, match="outcome producer contract"):
+        validate_controller_custody_chain(
+            graph,
+            python_executable=Path(sys.executable),
+        )
+
+
+def test_prospective_chain_rejects_mixed_automation_and_rotation_triggers() -> None:
+    root = Path(__file__).resolve().parents[1]
+    graph = copy.deepcopy(validate_ci_graph(root).graph)
+    automation = next(
+        value for value in graph["workflows"]
+        if value["id"] == "automation-reconcile"
+    )
+    automation["events"][0]["workflows"].append("bcf/exact-main-admission")
+    with pytest.raises(GitHubControllerError, match="not trigger-isolated"):
         validate_controller_custody_chain(
             graph,
             python_executable=Path(sys.executable),

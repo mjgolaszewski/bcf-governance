@@ -219,7 +219,7 @@ def test_reconcile_normalizes_direct_protected_main_scope_once(tmp_path: Path) -
 def test_routine_rotation_allocates_each_receipt_parent_before_execution() -> None:
     compiled = validate_ci_graph(REPO_ROOT)
     workflow = next(
-        item for item in compiled.workflows if item["id"] == "automation-reconcile"
+        item for item in compiled.workflows if item["id"] == "controller-rotation"
     )
     expected = {
         "authorize": "setup-routine-authorized-directory",
@@ -235,7 +235,7 @@ def test_routine_rotation_allocates_each_receipt_parent_before_execution() -> No
         stale_workflow = next(
             item
             for item in stale_graph["workflows"]
-            if item["id"] == "automation-reconcile"
+            if item["id"] == "controller-rotation"
         )
         stale_job = next(item for item in stale_workflow["jobs"] if item["id"] == job_id)
         stale_job["executor"]["components"].remove(setup)
@@ -248,7 +248,7 @@ def test_rotation_required_decision_cannot_project_to_all_skipped_jobs() -> None
     stale_graph = copy.deepcopy(compiled.graph)
     workflow = next(
         item for item in stale_graph["workflows"]
-        if item["id"] == "automation-reconcile"
+        if item["id"] == "controller-rotation"
     )
     authorize = next(item for item in workflow["jobs"] if item["id"] == "authorize")
     authorize["outputs"]["applicable"] = (
@@ -287,7 +287,7 @@ def test_rotation_bridge_preserves_installed_n_authorize_interface() -> None:
 def test_rotation_advancement_is_owned_by_exact_staged_target() -> None:
     compiled = validate_ci_graph(REPO_ROOT)
     workflow = next(
-        item for item in compiled.workflows if item["id"] == "automation-reconcile"
+        item for item in compiled.workflows if item["id"] == "controller-rotation"
     )
     for job_id in ("advance-bootstrap", "advance-probe", "activate"):
         job = next(item for item in workflow["jobs"] if item["id"] == job_id)

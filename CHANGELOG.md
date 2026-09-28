@@ -8,6 +8,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Isolated dependency-changelog reconciliation from exact-main controller
+  rotation at the workflow trigger boundary, so an intentionally skipped
+  automation admission cannot invoke a rotation outcome or callback consumer.
 - Preserved the exact admission controller-custody capsule through the trusted
   finalizer as a run-attempt-bound pass-through, so both legacy noncertifying
   observations and current certification bundles route publication without
