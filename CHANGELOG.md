@@ -13,6 +13,10 @@ All notable changes to BCF Governance are recorded here. This file follows
   projection and graph validation that permits only exact `no_transition` to
   suppress bootstrap, probe, and promotion; tooling-context ownership now runs
   in the first structural reconciliation stage before longer proof gates.
+- Preserved the immutable historical transition-receipt schema across protected
+  policy rotation, derived its typed class from exact policy digests, and made
+  the staged provider-built N+1 controller own every custody advancement after
+  installed N authorizes the exact target.
 
 ## [2.1.2] - 2026-09-27
 

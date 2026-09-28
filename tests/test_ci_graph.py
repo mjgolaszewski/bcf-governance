@@ -284,6 +284,34 @@ def test_rotation_bridge_preserves_installed_n_authorize_interface() -> None:
     ]
 
 
+def test_rotation_advancement_is_owned_by_exact_staged_target() -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    workflow = next(
+        item for item in compiled.workflows if item["id"] == "automation-reconcile"
+    )
+    for job_id in ("advance-bootstrap", "advance-probe", "activate"):
+        job = next(item for item in workflow["jobs"] if item["id"] == job_id)
+        components = job["executor"]["components"]
+        command_id = next(
+            item for item in components
+            if compiled.graph["step_components"][item].get("command", "").startswith(
+                ("advance-routine-", "activate-routine-")
+            )
+        )
+        command = compiled.graph["step_components"][command_id]["command"]
+        assert compiled.commands[command]["argv"][0] == "{ephemeral_controller}"
+        command_index = components.index(command_id)
+        assert any(
+            compiled.graph["step_components"][item]["kind"] == "controller_install"
+            for item in components[:command_index]
+        )
+
+        stale_graph = copy.deepcopy(compiled.graph)
+        stale_graph["commands"][command]["argv"][0] = "{controller}"
+        with pytest.raises(CIGraphError, match="exact staged target controller"):
+            _validate_workflows(stale_graph)
+
+
 def test_graph_values_resolve_registered_list_members_without_duplicate_authority(
     tmp_path: Path,
 ) -> None:

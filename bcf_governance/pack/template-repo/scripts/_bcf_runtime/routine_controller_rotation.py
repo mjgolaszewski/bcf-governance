@@ -366,14 +366,6 @@ def validate_transition(repo_root: Path, payload: object) -> dict[str, Any]:
         raise RoutineRotationError("controller artifact differs from transition admission")
     if artifact["commit_sha"] == value["authority"]["installed_controller_commit"]:
         raise RoutineRotationError("routine transition must change controller identity")
-    policy_changed = (
-        value["authority"]["policy_before_sha256"]
-        != value["authority"]["policy_after_sha256"]
-    )
-    if policy_changed != (value["transition_class"] == "protected_policy_change"):
-        raise RoutineRotationError(
-            "controller transition class does not match authorization policy"
-        )
     runners = value["required_runners"]
     completed_stages = {
         "authorized": (),

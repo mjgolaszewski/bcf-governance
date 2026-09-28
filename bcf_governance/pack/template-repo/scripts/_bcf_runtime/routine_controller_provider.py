@@ -128,6 +128,16 @@ def validate_routine_decision(value: Mapping[str, Any]) -> dict[str, Any]:
         result["transition"] = validate_transition(
             packaged_repo_root(), value.get("transition")
         )
+        authority = result["transition"]["authority"]
+        derived_class = (
+            ControllerTransitionClass.PROTECTED_POLICY_CHANGE.value
+            if authority["policy_before_sha256"] != authority["policy_after_sha256"]
+            else ControllerTransitionClass.RUNTIME_ONLY.value
+        )
+        if transition_class != derived_class:
+            raise GitHubControllerError(
+                "routine transition class differs from exact policy custody"
+            )
         return result
 
     subject_admission = common | {"subject", "admission", "release_authority"}
@@ -263,7 +273,6 @@ def _authorized_transition(
     receipt = {
         "schema_version": "1.0",
         "transition_id": identity,
-        "transition_class": transition_class,
         "state": "authorized",
         "repository": {"id": main.repository_id, "full_name": repository},
         "subject": {"commit_sha": main.checkout_sha, "tree_sha": main.tree_sha},

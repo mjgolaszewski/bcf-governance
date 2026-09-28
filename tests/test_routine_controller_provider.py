@@ -154,7 +154,6 @@ def _authorized() -> dict:
     return {
         "schema_version": "1.0",
         "transition_id": identity,
-        "transition_class": "runtime_only",
         "state": "authorized",
         "repository": {
             "id": "1207503211",
@@ -414,7 +413,6 @@ def test_authorization_materializes_policy_change_as_governed_rotation(
         admission_run_id="10", admission_run_attempt="1", artifact_dir=tmp_path,
     )
     expected = _authorized()
-    expected["transition_class"] = "protected_policy_change"
     expected["authority"]["policy_after_sha256"] = "6" * 64
     assert result == {
         "schema_version": "1.0",
@@ -509,7 +507,9 @@ def test_installed_n_alternate_decision_materializes_exact_rotation(
 
     assert result["decision"] == "routine_transition_authorized"
     assert result["transition_class"] == "protected_policy_change"
-    assert result["transition"]["transition_class"] == "protected_policy_change"
+    assert result["transition"]["authority"]["policy_before_sha256"] != (
+        result["transition"]["authority"]["policy_after_sha256"]
+    )
     assert result["transition"]["subject"] == _alternate()["subject"]
 
 
@@ -541,6 +541,11 @@ def test_current_authorized_decision_materializes_without_reinterpretation(
         object(), repository="mjgolaszewski/bcf-governance",
         decision=decision, artifact_dir=tmp_path,
     ) == decision
+    mismatched = copy.deepcopy(decision)
+    mismatched["transition_class"] = "protected_policy_change"
+    mismatched["reason"] = "pending_protected_policy_rotation"
+    with pytest.raises(GitHubControllerError, match="differs from exact policy custody"):
+        provider.validate_routine_decision(mismatched)
 
 
 def test_authorization_rejects_self_selection(
@@ -650,6 +655,7 @@ def test_effective_controller_uses_only_linear_authenticated_chain(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     active = _active()
+    assert "transition_class" not in active  # Historical provider receipt shape.
     monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
     monkeypatch.setattr(
         provider,

@@ -66,15 +66,15 @@ commands:
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
     required_environment: [BCF_REPOSITORY_ID]
   advance-routine-bootstrap:
-    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, controller-rotation, advance, --repository, '${{ github.repository }}', --receipt, '${{ runner.temp }}/bcf-controller-transition/authorized/controller-transition.json', --stage, bootstrap, --rotation-run-id, '${{ github.run_id }}', --rotation-run-attempt, '${{ github.run_attempt }}', --output, '${{ runner.temp }}/bcf-controller-transition/installing/controller-transition.json']
+    argv: ['{ephemeral_controller}', ci-github, controller-rotation, advance, --repository, '${{ github.repository }}', --receipt, '${{ runner.temp }}/bcf-controller-transition/authorized/controller-transition.json', --stage, bootstrap, --rotation-run-id, '${{ github.run_id }}', --rotation-run-attempt, '${{ github.run_attempt }}', --output, '${{ runner.temp }}/bcf-controller-transition/installing/controller-transition.json']
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
   advance-routine-probe:
-    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, controller-rotation, advance, --repository, '${{ github.repository }}', --receipt, '${{ runner.temp }}/bcf-controller-transition/installing/controller-transition.json', --stage, probe, --rotation-run-id, '${{ github.run_id }}', --rotation-run-attempt, '${{ github.run_attempt }}', --output, '${{ runner.temp }}/bcf-controller-transition/probed/controller-transition.json']
+    argv: ['{ephemeral_controller}', ci-github, controller-rotation, advance, --repository, '${{ github.repository }}', --receipt, '${{ runner.temp }}/bcf-controller-transition/installing/controller-transition.json', --stage, probe, --rotation-run-id, '${{ github.run_id }}', --rotation-run-attempt, '${{ github.run_attempt }}', --output, '${{ runner.temp }}/bcf-controller-transition/probed/controller-transition.json']
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
   activate-routine-transition:
-    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}/bin/bcf', ci-github, controller-rotation, advance, --repository, '${{ github.repository }}', --receipt, '${{ runner.temp }}/bcf-controller-transition/probed/controller-transition.json', --stage, promotion, --rotation-run-id, '${{ github.run_id }}', --rotation-run-attempt, '${{ github.run_attempt }}', --output, '${{ runner.temp }}/bcf-controller-transition/active/controller-transition.json']
+    argv: ['{ephemeral_controller}', ci-github, controller-rotation, advance, --repository, '${{ github.repository }}', --receipt, '${{ runner.temp }}/bcf-controller-transition/probed/controller-transition.json', --stage, promotion, --rotation-run-id, '${{ github.run_id }}', --rotation-run-attempt, '${{ github.run_attempt }}', --output, '${{ runner.temp }}/bcf-controller-transition/active/controller-transition.json']
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
   dispatch-routine-certification:
@@ -397,16 +397,16 @@ workflows:
     semantic_role: routine-controller-bootstrap-authentication
     resource_class: trusted-control
     trust: trusted
-    controller_requirement: current
+    controller_requirement: null
     needs: [authorize, bootstrap]
     condition: routine-stage-ready
     timeout_minutes: 5
     permissions: {actions: read, contents: read}
     checkout: false
     components: []
-    executor: {kind: component_sequence, components: [setup-python, download-routine-authorized, setup-routine-installing-directory, resolve-effective-controller, advance-routine-bootstrap, upload-routine-installing]}
+    executor: {kind: component_sequence, components: [setup-python, download-routine-controller, download-routine-authorized, stage-routine-controller, setup-routine-installing-directory, advance-routine-bootstrap, upload-routine-installing]}
     produces: [controller-transition-installing]
-    consumes: [controller-transition-authorized]
+    consumes: [trusted-controller-bundle, controller-transition-authorized]
     required: true
   - id: probe
     display_name: Probe routine controller / ${{ matrix.trusted_runner }}
@@ -430,16 +430,16 @@ workflows:
     semantic_role: routine-controller-probe-authentication
     resource_class: trusted-control
     trust: trusted
-    controller_requirement: current
+    controller_requirement: null
     needs: [authorize, probe]
     condition: routine-stage-ready
     timeout_minutes: 5
     permissions: {actions: read, contents: read}
     checkout: false
     components: []
-    executor: {kind: component_sequence, components: [setup-python, download-routine-installing, setup-routine-probed-directory, resolve-effective-controller, advance-routine-probe, upload-routine-probed]}
+    executor: {kind: component_sequence, components: [setup-python, download-routine-controller, download-routine-installing, stage-probed-routine-controller, setup-routine-probed-directory, advance-routine-probe, upload-routine-probed]}
     produces: [controller-transition-probed]
-    consumes: [controller-transition-installing]
+    consumes: [trusted-controller-bundle, controller-transition-installing]
     required: true
   - id: promote
     display_name: Promote routine controller / ${{ matrix.trusted_runner }}
@@ -463,16 +463,16 @@ workflows:
     semantic_role: routine-controller-activation
     resource_class: trusted-control
     trust: trusted
-    controller_requirement: current
+    controller_requirement: null
     needs: [authorize, promote]
     condition: routine-stage-ready
     timeout_minutes: 5
     permissions: {actions: read, contents: read}
     checkout: false
     components: []
-    executor: {kind: component_sequence, components: [setup-python, download-routine-probed, setup-routine-active-directory, resolve-effective-controller, activate-routine-transition, upload-routine-active]}
+    executor: {kind: component_sequence, components: [setup-python, download-routine-controller, download-routine-probed, stage-promoted-routine-controller, setup-routine-active-directory, activate-routine-transition, upload-routine-active]}
     produces: [controller-transition-active]
-    consumes: [controller-transition-probed]
+    consumes: [trusted-controller-bundle, controller-transition-probed]
     required: true
 - id: authority-canary
   path: .github/workflows/bcf-authority-canary.yml
