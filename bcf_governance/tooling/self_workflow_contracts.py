@@ -90,8 +90,13 @@ def validate_self_workflow_contracts(repo_root: Path) -> int:
     credential = runner.get("trusted_release_credential")
     secret = credential.get("secret_name") if isinstance(credential, dict) else None
     publish = compiled.commands.get("publish-release")
-    if not isinstance(secret, str) or not isinstance(publish, dict) or (
-        publish.get("required_environment") != [secret]
+    required = publish.get("required_environment") if isinstance(publish, dict) else None
+    environment = publish.get("environment") if isinstance(publish, dict) else None
+    if (
+        not isinstance(secret, str)
+        or required != [secret, "BCF_CONTROLLER_EXECUTION_REQUIRED"]
+        or not isinstance(environment, dict)
+        or environment.get("BCF_CONTROLLER_EXECUTION_REQUIRED") != "true"
     ):
         raise SelfWorkflowContractError("release administration authority is not exact")
 
