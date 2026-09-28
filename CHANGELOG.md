@@ -6,6 +6,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [2.1.3] - 2026-09-28
+
 ### Fixed
 
 - Derived adopter post-merge intent from authored lifecycle state, keeping
@@ -15,6 +17,11 @@ All notable changes to BCF Governance are recorded here. This file follows
   self-authority pack surface instead of shipping BCF repository/App custody,
   while mixed-language semantic discovery treats typed overload declarations
   as non-runtime and requires their concrete implementation.
+
+## [2.1.2] - 2026-09-27
+
+### Fixed
+
 - Recorded immutable v2.1.2 provider custody after exact-main phase closure,
   independent release verification, exact-byte publication, and credential
   retirement; release_17 is superseded and release_18 owns the current patch line.
@@ -44,10 +51,6 @@ All notable changes to BCF Governance are recorded here. This file follows
   policy rotation, derived its typed class from exact policy digests, and made
   the staged provider-built N+1 controller own every custody advancement after
   installed N authorizes the exact target.
-
-## [2.1.2] - 2026-09-27
-
-### Fixed
 
 - Derived prospective validation from either the explicit trusted exact-main lane
   or the exact graph-owned direct protected-main lane, preserving optional
@@ -1277,7 +1280,10 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.3...HEAD
+[2.1.3]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.2...v2.1.3
+[2.1.2]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.1...v2.1.2
+[2.1.1]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.3.0...v2.1.0
 [1.3.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v1.1.1...v1.2.0

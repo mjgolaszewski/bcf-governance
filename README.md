@@ -17,7 +17,7 @@ separates two questions:
 - `bcf truth`: are lifecycle and release claims supported by current evidence
   for the exact Git subject?
 
-Supported package version: `v2.1.2`. Every release is published from certified
+Supported package version: `v2.1.3`. Every release is published from certified
 exact-main bytes through an immutable GitHub Release; the publisher never
 rebuilds the verified wheel or source archive.
 
@@ -269,10 +269,10 @@ from the ordinary adopter pack.
 
 ## Install
 
-Install the `v2.1.2` wheel from its immutable GitHub Release:
+Install the `v2.1.3` wheel from its immutable GitHub Release:
 
 ```bash
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.1.2/bcf_governance-2.1.2-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.1.3/bcf_governance-2.1.3-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel. Release publication
