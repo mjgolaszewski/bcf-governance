@@ -15,6 +15,10 @@ trigger_applicability_finding:
   failed_job: 108814211705
   cause: one self-only workflow combined automation-admission and exact-main triggers while its unconditional rotation outcome consumed an artifact impossible for the automation lane
   correction: project the existing adopter topology back into self; automation reconciliation and controller rotation own disjoint workflows and exact trigger classes
+  unique_propositions:
+    automation_reconcile: deterministic automation changelog reconciliation
+    controller_rotation_workflow: exact controller rotation orchestration
+    routine_rotation_mechanism: installed N authorizes exact N+1
 producer_contract:
   routing_observation:
     authority: none

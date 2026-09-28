@@ -53,6 +53,7 @@ simplicity:
   - {id: release-verifier, proposition: independent_release_verification, provider_boundary: trusted_runner}
   - {id: release-publisher, proposition: immutable_release_publication, provider_boundary: github_release_api}
   - {id: automation-reconcile, proposition: deterministic_automation_reconciliation, provider_boundary: github_actions}
+  - {id: controller-rotation, proposition: exact_controller_rotation_orchestration, provider_boundary: github_actions_and_trusted_runners}
   - {id: authority-canary, proposition: authority_boundary_canary, provider_boundary: github_actions}
   mechanisms:
   - {id: prospective-train, proposition: exact_candidate_downstream_admissibility, provider_boundary: local_non_authoritative}
