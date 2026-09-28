@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-28-hotfix10
   version: 1.0.0
   generated_at_utc: '2026-09-28T00:00:00Z'
-  status: active
+  status: completed
   path: phases/phase-28-hotfix10.yml
 hotfix:
   id: P28-HF10
