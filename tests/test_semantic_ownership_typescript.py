@@ -45,19 +45,22 @@ def test_typescript_contract_is_closed_and_repository_relative() -> None:
         contract_from_mapping(payload)
 
 
-def test_typescript_inventory_is_tracked_and_source_first(tmp_path: Path) -> None:
+def test_typescript_inventory_uses_candidate_additions_and_deletions(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     (repo / "src").mkdir(parents=True)
     (repo / "src/owned.ts").write_text("export const owned = true;\n", encoding="utf-8")
+    (repo / "src/retired.ts").write_text("export const retired = true;\n", encoding="utf-8")
     _git(repo, "init")
     _git(repo, "config", "user.email", "soip@example.test")
     _git(repo, "config", "user.name", "SOIP Test")
-    _git(repo, "add", "src/owned.ts")
+    _git(repo, "add", "src/owned.ts", "src/retired.ts")
     _git(repo, "commit", "-m", "tracked TypeScript")
     (repo / "src/untracked.ts").write_text("export const hidden = true;\n", encoding="utf-8")
+    (repo / "src/retired.ts").unlink()
 
     assert [value.relative_to(repo).as_posix() for value in tracked_typescript_files(repo)] == [
-        "src/owned.ts"
+        "src/owned.ts",
+        "src/untracked.ts",
     ]
 
 

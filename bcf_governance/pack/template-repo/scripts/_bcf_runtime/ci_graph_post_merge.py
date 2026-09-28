@@ -201,8 +201,6 @@ def authored_post_merge_scope(repo_root: Path) -> tuple[str, str | None]:
         if set(statuses.values()) != {"DONE"}:
             raise CIGraphError("completed phase contains unfinished workitems")
         return "closure", None
-    if any(value in {"IN_PROGRESS", "BLOCKED"} for value in statuses.values()):
-        return "pr", None
     unfinished = {identity for identity, status in statuses.items() if status != "DONE"}
     candidates = []
     for item in workitems:

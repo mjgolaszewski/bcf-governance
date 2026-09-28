@@ -77,20 +77,27 @@ def test_source_discovery_precedes_registry_access(
     assert report["subject"]["discovery_preceded_registry_load"] is True
 
 
-def test_tracked_source_inventory_excludes_untracked_python(tmp_path: Path) -> None:
+def test_candidate_source_inventory_includes_additions_and_excludes_deletions(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "owned.py").write_text("def owned() -> str:\n    return 'owned'\n", encoding="utf-8")
+    (repo / "retired.py").write_text("def retired():\n    pass\n", encoding="utf-8")
     _git(repo, "init")
     _git(repo, "config", "user.email", "soip@example.test")
     _git(repo, "config", "user.name", "SOIP Test")
-    _git(repo, "add", "owned.py")
+    _git(repo, "add", "owned.py", "retired.py")
     _git(repo, "commit", "-m", "owned source")
     (repo / "untracked.py").write_text("def hidden():\n    pass\n", encoding="utf-8")
+    (repo / "retired.py").unlink()
 
     discovered = inventory.discover_python_source(repo)
 
-    assert [value["path"] for value in discovered["files"]] == ["owned.py"]
+    assert [value["path"] for value in discovered["files"]] == [
+        "owned.py",
+        "untracked.py",
+    ]
 
 
 def test_current_bcf_registry_is_conformant_and_report_is_compact(tmp_path: Path) -> None:

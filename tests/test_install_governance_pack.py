@@ -378,6 +378,52 @@ def test_upgrade_retires_only_declared_self_authority_pack_surfaces(
     assert retained.read_bytes() == before
 
 
+def test_upgrade_reconcile_uses_candidate_tree_after_retiring_tracked_self_authority(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "upgrade-tracked-self-authority"
+    _run_installer(target, "--profile", "lite", "--require-strict-validation")
+    contract = yaml.safe_load(
+        (REPO_ROOT / "governance/self-overlays.yml").read_text(encoding="utf-8")
+    )
+    excluded = {
+        relative
+        for overlay in contract["overlays"]
+        for relative in overlay["adopter_excluded_pack_surfaces"]
+    }
+    for relative in excluded:
+        destination = target / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes((REPO_ROOT / "template-repo" / relative).read_bytes())
+    subprocess.run(["git", "add", "."], cwd=target, check=True)
+    subprocess.run(
+        ["git", "commit", "--quiet", "-m", "adopter before upgrade"],
+        cwd=target,
+        check=True,
+    )
+
+    _run_installer(target, "--upgrade", "--profile", "lite", "--require-strict-validation")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bcf_governance.cli",
+            "reconcile",
+            "--repo-root",
+            str(target),
+            "--python",
+            sys.executable,
+            "--apply",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert all(not (target / relative).exists() for relative in excluded)
+
+
 def test_upgrade_reconciles_graph_owned_workflows_before_strict_validation(
     tmp_path: Path,
 ) -> None:
