@@ -40,6 +40,9 @@ from .governance_profiles import (  # noqa: E402
 )
 from .profile_contract_v2 import resolve_install_contract_version  # noqa: E402
 from .semantic_authority_commands import _apply_config, _load_config  # noqa: E402
+from .ci_graph_locks import apply_ci_graph_locks  # noqa: E402
+from .ci_graph_post_merge import reconcile_post_merge_scope  # noqa: E402
+from .ci_graph_render import apply_ci_graph  # noqa: E402
 
 PROFILE_CHOICES = ("lite", "standard", "regulated")
 ADOPTION_MODE_CHOICES = ("fresh", "existing")
@@ -564,6 +567,15 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
         apply_profile_contract(target_root, args.profile_contract, write_workflow=False)
     if args.reset_options:
         _configure_architecture_boundaries(target_root, args.profile)
+
+    # The installed graph is the sole owner of generated workflow bytes. An
+    # upgrade refreshes the renderer/runtime, so converge those projections
+    # before validating the resulting adopter tree. Git-bound authority pins
+    # remain a post-commit reconciliation concern.
+    if (target_root / "governance/ci-graph.yml").is_file():
+        reconcile_post_merge_scope(target_root, apply=True)
+        apply_ci_graph_locks(target_root)
+        apply_ci_graph(target_root)
 
     strict_validation_passed = False
     bootstrap_validation_passed = False

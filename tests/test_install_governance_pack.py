@@ -377,6 +377,25 @@ def test_upgrade_retires_only_declared_self_authority_pack_surfaces(
     assert retained.read_bytes() == before
 
 
+def test_upgrade_reconciles_graph_owned_workflows_before_strict_validation(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "upgrade-graph-projection"
+    _run_installer(target, "--profile", "lite", "--require-strict-validation")
+    graph_path = target / "governance/ci-graph.yml"
+    graph = yaml.safe_load(graph_path.read_text(encoding="utf-8"))
+    graph["workflows"][0]["display_name"] = "Governance adopter projection"
+    graph_path.write_text(yaml.safe_dump(graph, sort_keys=False), encoding="utf-8")
+
+    result = _run_installer(target, "--upgrade", "--require-strict-validation")
+
+    assert "validation: strict pass" in result.stdout
+    workflow = yaml.safe_load(
+        (target / graph["workflows"][0]["path"]).read_text(encoding="utf-8")
+    )
+    assert workflow["name"] == "Governance adopter projection"
+
+
 def test_upgrade_rejects_drift_in_runtime_locked_consumer_file(tmp_path: Path) -> None:
     target = tmp_path / "upgrade-locked-drift"
     _run_installer(target, "--profile", "lite", "--require-strict-validation")
