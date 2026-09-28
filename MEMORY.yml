@@ -23,8 +23,8 @@ environment_facts:
   - P24 and immutable v1.3.0 are historical; plans/phase-history.yml and release custody audits own those facts.
   - P25 and its certified 2.0.0 baseline are historical; release_15 was superseded without publication or a tag.
   - P26 P27 and P28 are closed by exact-main truth; immutable v2.1.0 release 397498080 is published from certified commit 407c82fdaaad73a96c700e30b09d06dba44b90e7 and audits/v2.1.0-release-custody.yml owns exact custody.
-  - P28-HF03 and release_17 repair live-adopter parity defects #311 #312 and #313 for patch release 2.1.1 without reopening P28 architecture.
-  - P28-HF04 and release_18 repair live-adopter direct-main prospective authority and ordinary-upgrade entrypoint completeness for patch release 2.1.2.
+  - P28-HF03 and superseded release_17 published immutable patch release v2.1.1 for live-adopter parity defects #311 #312 and #313 without reopening P28 architecture.
+  - P28-HF04 and current maintenance release_18 published immutable v2.1.2 from certified commit 71cd313df01099c60a007b4e09430bd2ced35108; audits/v2.1.2-release-custody.yml owns exact provider and asset custody.
   active_artifacts: {spec: plans/product-spec.yml, build_plan: plans/build-plan.yml, active_phase_ledger: plans/phase-ledger.yml, phase_history: plans/phase-history.yml, active_phase_plan: plans/phase-28-plan.yml, active_workitem_ledger: plans/phase-28-workitems.yml, active_phase_log: phases/phase-28-log.yml}
 known_constraints:
 - candidate code runs only on disposable workers; trusted workers reconstruct provider state and never check out candidate code

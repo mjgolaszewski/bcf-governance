@@ -76,6 +76,11 @@ execution_evidence:
   - release build 36291231276/1 and independent verifier 36291328350/1 produced the exact receipt-bound 2.1.0 wheel source archive and checksum inventory without publication authority
   - publisher 36292071650/1 published immutable non-draft release 397498080 from annotated tag v2.1.0; all three assets match SHA256SUMS and passed independent GitHub attestation verification
   - the temporary BCF_RELEASE_ADMIN_TOKEN secret was deleted after publication; audits/v2.1.0-release-custody.yml owns exact provider and asset custody
+  - release_17 published immutable v2.1.1 provider release 397624338 and is superseded by current maintenance release_18
+  - exact-main 36414537819/2 and finalizer 36416732996/1 certified phase_closed for P28 on 71cd313df01099c60a007b4e09430bd2ced35108 and tree 6811027d6382d2ca1e4ccbda0b5032b4b2ee15d7
+  - release build 36417883662/1 and independent verifier 36418345750/1 produced the exact receipt-bound 2.1.2 wheel source archive and checksum inventory without publication authority
+  - publisher 36421623699/1 published immutable non-draft release 398228660 from annotated tag v2.1.2; all three assets match SHA256SUMS and passed the canonical release inspector and independent GitHub attestation verification
+  - the temporary BCF_RELEASE_ADMIN_TOKEN secret was deleted after v2.1.2 publication; audits/v2.1.2-release-custody.yml owns exact provider and asset custody
 closeout_requirements:
   claims:
     workitems_closed:
@@ -108,4 +113,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- P28 remains complete; P28-HF06 must certify corrected verifier-bound 2.1.2 bytes through AgentBus and Racecar before immutable release_18 custody
+- P28 and release_18 custody are complete; post-2.1 simplification and performance work remains governed by issue 298
