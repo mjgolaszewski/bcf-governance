@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import ExitStack, contextmanager
 import hashlib
 import json
 import os
@@ -42,6 +43,52 @@ def _run(repo_root: Path, argv: list[str], *, environment: dict[str, str] | None
 def _require_clean_head(repo_root: Path) -> None:
     if _git(repo_root, "status", "--porcelain", "--untracked-files=all"):
         raise TrustedControllerBuildError("trusted-controller source must be a clean committed HEAD")
+
+
+@contextmanager
+def exact_head_source(repo_root: Path):
+    """Materialize committed HEAD without inheriting ignored build state."""
+
+    repo_root = repo_root.resolve()
+    _require_clean_head(repo_root)
+    commit_sha = _git(repo_root, "rev-parse", "HEAD")
+    with tempfile.TemporaryDirectory(prefix="bcf-exact-source-") as name:
+        source = Path(name) / "source"
+        result = subprocess.run(
+            [
+                "git",
+                "worktree",
+                "add",
+                "--quiet",
+                "--detach",
+                str(source),
+                commit_sha,
+            ],
+            cwd=repo_root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode:
+            raise TrustedControllerBuildError(
+                "exact committed source could not be materialized"
+            )
+        try:
+            if _git(source, "rev-parse", "HEAD") != commit_sha or _git(
+                source, "status", "--porcelain", "--untracked-files=all"
+            ):
+                raise TrustedControllerBuildError(
+                    "materialized build source is not exact committed HEAD"
+                )
+            yield source
+        finally:
+            subprocess.run(
+                ["git", "worktree", "remove", "--force", str(source)],
+                cwd=repo_root,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
 
 
 def _source_requirements(repo_root: Path) -> tuple[str, ...]:
@@ -146,15 +193,16 @@ def build(
     destination.mkdir(parents=True, exist_ok=True)
     if any(destination.iterdir()):
         raise TrustedControllerBuildError("trusted-controller output must begin empty")
-    temporary: tempfile.TemporaryDirectory[str] | None = None
-    if (repo_root / "bcf_governance/cli.py").is_file():
-        source_root = repo_root
-        requirements = _source_requirements(repo_root)
-    else:
-        temporary = tempfile.TemporaryDirectory(prefix="bcf-installed-controller-")
-        source_root = _materialize_installed_source(repo_root, Path(temporary.name))
-        requirements = RUNTIME_REQUIREMENTS
-    try:
+    with ExitStack() as stack:
+        if (repo_root / "bcf_governance/cli.py").is_file():
+            source_root = stack.enter_context(exact_head_source(repo_root))
+            requirements = _source_requirements(source_root)
+        else:
+            temporary = stack.enter_context(
+                tempfile.TemporaryDirectory(prefix="bcf-installed-controller-")
+            )
+            source_root = _materialize_installed_source(repo_root, Path(temporary))
+            requirements = RUNTIME_REQUIREMENTS
         environment = dict(os.environ)
         environment["SOURCE_DATE_EPOCH"] = _git(repo_root, "show", "-s", "--format=%ct", "HEAD")
         _run(
@@ -191,9 +239,6 @@ def build(
         wheel, _ = verify_controller_inventory(destination.resolve())
         _verify_offline_install(repo_root, destination, wheel)
         return metadata
-    finally:
-        if temporary is not None:
-            temporary.cleanup()
 
 
 def main(argv: list[str] | None = None) -> None:

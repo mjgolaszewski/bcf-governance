@@ -11,12 +11,15 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_ROOT))
 from release_source_inventory import validate_sdist_source_inventory
+from bcf_governance.tooling.ci_controller_builder import exact_head_source
 
 
 def _run(
     argv: list[str],
     *,
+    cwd: Path = REPO_ROOT,
     stdout: Path | None = None,
     stderr: Path | None = None,
     environment: dict[str, str] | None = None,
@@ -26,7 +29,7 @@ def _run(
     try:
         result = subprocess.run(
             argv,
-            cwd=REPO_ROOT,
+            cwd=cwd,
             env=environment,
             stdout=stdout_handle,
             stderr=stderr_handle,
@@ -97,21 +100,23 @@ def build(output: Path, *, authorization: Path, artifact_name: str) -> list[Path
         text=True,
         check=True,
     ).stdout.strip()
-    _run(
-        [
-            sys.executable,
-            "-m",
-            "build",
-            "--no-isolation",
-            "--wheel",
-            "--sdist",
-            "--outdir",
-            str(assets),
-        ],
-        stdout=evidence / "build.stdout",
-        stderr=evidence / "build.stderr",
-        environment=environment,
-    )
+    with exact_head_source(REPO_ROOT) as source_root:
+        _run(
+            [
+                sys.executable,
+                "-m",
+                "build",
+                "--no-isolation",
+                "--wheel",
+                "--sdist",
+                "--outdir",
+                str(assets),
+            ],
+            cwd=source_root,
+            stdout=evidence / "build.stdout",
+            stderr=evidence / "build.stderr",
+            environment=environment,
+        )
     built = sorted(assets.iterdir())
     wheels = [path for path in built if path.suffix == ".whl"]
     sdists = [path for path in built if path.name.endswith(".tar.gz")]

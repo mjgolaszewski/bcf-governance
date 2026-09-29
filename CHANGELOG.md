@@ -23,7 +23,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   each gate's exact pull-request producer-job environment and resolves its
   workspace binding to the actual local checkout, preserving explicitly
   declared and independently admitted shared inputs while detached source and
-  BCF execution-state isolation remain unchanged.
+  BCF execution-state isolation remain unchanged. Release and trusted-controller
+  packages now materialize exact committed source, excluding ignored build-cache
+  bytes from artifact authority.
 
 ## [2.1.3] - 2026-09-28
 

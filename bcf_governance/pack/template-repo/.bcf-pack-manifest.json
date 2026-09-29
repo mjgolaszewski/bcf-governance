@@ -492,7 +492,7 @@
     },
     "scripts/_bcf_runtime/ci_controller_builder.py": {
       "operation": "copy",
-      "sha256": "4d268a45afba3ae973c9ee7a6d13b5e766bd67b207ac37c531b40e394198414a"
+      "sha256": "ae2f3c4136e23be9899e68bd4715c086d6fe7835913ef05979276c43db2abe5e"
     },
     "scripts/_bcf_runtime/ci_controller_custody_auth.py": {
       "operation": "copy",
