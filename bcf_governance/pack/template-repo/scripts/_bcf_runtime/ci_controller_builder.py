@@ -113,6 +113,7 @@ def _source_requirements(repo_root: Path) -> tuple[str, ...]:
 
 
 def _materialize_installed_source(repo_root: Path, destination: Path) -> Path:
+    _require_clean_head(repo_root.resolve())
     runtime = repo_root / "scripts/_bcf_runtime"
     schemas = repo_root / "schemas"
     if not runtime.is_dir() or runtime.is_symlink() or not schemas.is_dir():
@@ -189,7 +190,6 @@ def build(
         raise TrustedControllerBuildError(
             "trusted-controller output must be a nonsymlink repository path"
         )
-    _require_clean_head(repo_root)
     destination.mkdir(parents=True, exist_ok=True)
     if any(destination.iterdir()):
         raise TrustedControllerBuildError("trusted-controller output must begin empty")
