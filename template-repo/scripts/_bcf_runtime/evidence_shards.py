@@ -141,11 +141,46 @@ def workflow_shard_matrix() -> dict[str, list[Any]]:
     }
 
 
+def planned_gate_targets(
+    repo_root: Path,
+    *,
+    planned_targets: list[str] | None,
+    execution_dag: dict[str, Any] | None,
+) -> list[str]:
+    """Return every planned producer once in canonical local execution order."""
+
+    if execution_dag is None:
+        return planned_targets if planned_targets is not None else required_gate_targets(repo_root)
+    nodes = execution_dag.get("nodes")
+    if not isinstance(nodes, list) or not nodes:
+        if nodes == [] and planned_targets == []:
+            return []
+        raise ValueError("planned execution DAG must contain its gate inventory")
+    assignments = [
+        node.get("assigned_shard") if isinstance(node, dict) else None for node in nodes
+    ]
+    if any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in assignments):
+        raise ValueError("planned shard assignment is incomplete or ambiguous")
+    shard_count = max(assignments) + 1
+    return [
+        gate
+        for shard_index in range(shard_count)
+        for gate in partition_required_gates(
+            repo_root,
+            shard_index=shard_index,
+            shard_count=shard_count,
+            planned_targets=planned_targets,
+            execution_dag=execution_dag,
+        )
+    ]
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--shard-index", type=int, required=True)
-    parser.add_argument("--shard-count", type=int, required=True)
+    parser.add_argument("--shard-index", type=int)
+    parser.add_argument("--shard-count", type=int)
+    parser.add_argument("--all-planned", action="store_true")
     parser.add_argument("--output-root", type=Path)
     parser.add_argument("--session-manifest", type=Path)
     parser.add_argument("--session-root", type=Path)
@@ -169,17 +204,27 @@ def main(argv: list[str] | None = None) -> None:
         if session is not None and session.payload.get("schema_version") == "2.0"
         else None
     )
-    gates = partition_required_gates(
-        repo_root,
-        shard_index=args.shard_index,
-        shard_count=args.shard_count,
-        planned_targets=planned,
-        execution_dag=(
-            session.payload.get("execution_dag")
-            if session is not None and session.payload.get("schema_version") == "2.0"
-            else None
-        ),
+    execution_dag = (
+        session.payload.get("execution_dag")
+        if session is not None and session.payload.get("schema_version") == "2.0"
+        else None
     )
+    if args.all_planned:
+        if args.shard_index is not None or args.shard_count is not None:
+            raise SystemExit("--all-planned cannot be combined with shard coordinates")
+        gates = planned_gate_targets(
+            repo_root, planned_targets=planned, execution_dag=execution_dag
+        )
+    else:
+        if args.shard_index is None or args.shard_count is None:
+            raise SystemExit("provide shard coordinates or --all-planned")
+        gates = partition_required_gates(
+            repo_root,
+            shard_index=args.shard_index,
+            shard_count=args.shard_count,
+            planned_targets=planned,
+            execution_dag=execution_dag,
+        )
     for gate in gates:
         result = subprocess.run(
             [

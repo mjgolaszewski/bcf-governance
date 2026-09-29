@@ -1,0 +1,47 @@
+document:
+  kind: hotfix_execution_log
+  name: P28-HF12 Hotfix Log
+  id: bcf-governance-phase-28-hotfix12
+  version: 1.0.0
+  generated_at_utc: '2026-09-29T00:00:00Z'
+  status: planned
+  path: phases/phase-28-hotfix12.yml
+hotfix:
+  id: P28-HF12
+  mode: full
+  related_phase_id: P28
+  hotfix_number: 12
+  summary: Make adopter release upgrades and selective local execution mechanically
+    complete
+execution_evidence:
+  planned_commands:
+  - bcf ci submit --repo-root . --intent closure
+  executed_commands: []
+  notes:
+  - v2.1.4 could replace pack-owned runtime but had no canonical producer for the
+    authenticated adopter runtime lock, so every release-bound upgrade either
+    retained stale custody or required hand-authored state.
+  - The release-check surface also bypassed the selective session plan by
+    iterating configured gates; preflight-satisfied claims were therefore
+    incorrectly requested from an evidence session that intentionally omitted them.
+  - The bounded repair gives the existing installer sole atomic ownership of
+    release authentication, runtime projection, and derived custody, and gives
+    the existing shard executor one all-planned local mode. No new ceremony or
+    alternate authority lane is introduced.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

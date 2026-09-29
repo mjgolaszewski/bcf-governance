@@ -32,8 +32,10 @@ Start with `lite` when the existing repo has not yet mapped its architecture,
 CI, and release gates. Promote to `standard` only after every mandatory gate
 has a complete executable contract and behavioral control.
 
-Use `bcf install --upgrade` for normal pack updates. It refreshes pack-owned
-runtime and schemas while preserving project-owned profiles, gate contracts,
+For a release-bound repository, download the three exact immutable release
+assets and pass their directory to `bcf install --upgrade --release-assets`.
+The installer authenticates and atomically advances pack-owned runtime bytes and
+the runtime lock while preserving project-owned profiles, gate contracts,
 semantic contracts, graph configuration, extensions, unrelated workflows, and
 generated workflow bytes. Workflow changes occur only through explicit graph
 adoption or rendering. Use `--force-rescaffold` only when the owner intends to

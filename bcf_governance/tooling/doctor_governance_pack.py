@@ -33,6 +33,17 @@ try:
 except ImportError:  # pragma: no cover - direct standalone execution
     import validate_governance_yaml as validator  # type: ignore[no-redef]
 
+try:
+    from .governance_install.release_custody import (
+        ReleaseCustodyError,
+        validate_installed_runtime_lock,
+    )
+except ImportError:  # pragma: no cover - direct standalone execution
+    from governance_install.release_custody import (  # type: ignore[no-redef]
+        ReleaseCustodyError,
+        validate_installed_runtime_lock,
+    )
+
 
 DOCTOR_OUTPUT_FORMATS = {"text", "json"}
 PLACEHOLDER_SCAN_EXCLUDE_PARTS = {
@@ -167,6 +178,20 @@ def doctor_repo(repo_root: Path) -> dict[str, Any]:
     blockers: list[str] = []
     warnings: list[str] = []
     next_actions: list[str] = []
+
+    runtime_lock = repo_root / "governance/bcf-runtime-lock.json"
+    if runtime_lock.exists():
+        try:
+            validate_installed_runtime_lock(
+                repo_root,
+                expected_version=__version__,
+                schema_path=repo_root / "schemas/bcf-runtime-lock.schema.json",
+            )
+        except ReleaseCustodyError as exc:
+            blockers.append(str(exc))
+            next_actions.append(
+                "rerun bcf install --upgrade with exact --release-assets and GITHUB_TOKEN"
+            )
 
     placeholders = _scan_placeholders(repo_root)
     if placeholders:

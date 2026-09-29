@@ -17,7 +17,7 @@ separates two questions:
 - `bcf truth`: are lifecycle and release claims supported by current evidence
   for the exact Git subject?
 
-Supported package version: `v2.1.4`. Every release is published from certified
+Supported package version: `v2.1.5`. Every release is published from certified
 exact-main bytes through an immutable GitHub Release; the publisher never
 rebuilds the verified wheel or source archive.
 
@@ -269,10 +269,10 @@ from the ordinary adopter pack.
 
 ## Install
 
-Install the `v2.1.4` wheel from its immutable GitHub Release:
+Install the `v2.1.5` wheel from its immutable GitHub Release:
 
 ```bash
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.1.4/bcf_governance-2.1.4-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.1.5/bcf_governance-2.1.5-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel. Release publication
@@ -325,9 +325,21 @@ bcf ci adopt github --repo-root . --check
 ```
 
 Use `--adoption-mode existing` for an established repository. Normal
-`bcf install --upgrade` refreshes pack-owned runtime and schema files while
-preserving project-owned profile, gate, evidence, graph, extension, and workflow
-bytes. Legacy contracts move only through the explicit, fail-closed
+For a release-bound repository, download the exact immutable release assets and
+advance runtime bytes and custody in one atomic installer transaction:
+
+```bash
+gh release download v2.1.5 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.1.5
+GITHUB_TOKEN="$GITHUB_TOKEN" bcf install --target . --upgrade \
+  --release-assets /tmp/bcf-v2.1.5 --require-strict-validation
+```
+
+The installer authenticates the official repository, tag, immutable release,
+asset digests, attestations, packaged template, projected runtime, and resulting
+runtime lock before committing any byte. It preserves project-owned profile,
+gate, evidence, graph, extension, and workflow bytes. A release-bound upgrade
+without exact assets fails before mutation. Legacy contracts move only through
+the explicit, fail-closed
 `bcf migrate-contract` command. The destructive replacement path is the
 explicitly confirmed `--force-rescaffold`; BCF has no generic `--force` bypass.
 

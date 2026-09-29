@@ -19,6 +19,7 @@ from bcf_governance.tooling.release_runtime_verification import (
     is_release_sdist_test_context,
 )
 from bcf_governance.tooling.ci_adopt_github import render_github_adoption
+from bcf_governance.tooling.evidence_shards import planned_gate_targets
 from bcf_governance.tooling.profile_v2_surfaces import (
     render_v2_makefile,
     render_v2_workflow,
@@ -228,6 +229,9 @@ def test_v2_surfaces_bind_one_session_and_do_not_wait() -> None:
     assert "@cd . && $(PYTHON) scripts/validate_governance_yaml.py" in makefile
     assert "@cd . && python3 scripts/validate_governance_yaml.py" not in makefile
     assert 'session_dir="$${session%/evidence-session.json}"' in makefile
+    assert "scripts/capture_governance_shard.py" in makefile
+    assert "--all-planned" in makefile
+    assert "for gate in" not in makefile.split("release-check:", 1)[1]
     assert '--evidence-dir "$$session_dir"' in makefile
     assert "--evidence-dir $(BCF_EVIDENCE_DIR)" not in makefile.split("release-check:", 1)[1]
     assert workflow["jobs"]["evidence"]["needs"] == ["preflight"]
@@ -290,6 +294,61 @@ def test_v2_release_check_stops_at_a_failed_preflight(tmp_path: Path) -> None:
     assert "controlled-preflight-failure" in result.stderr
     assert "preflight did not produce an evidence session" not in result.stderr
     assert not marker.exists()
+
+
+def test_v2_release_check_delegates_selective_plan_to_canonical_shard_owner() -> None:
+    contract = {
+        "profile_contract_version": "3.0",
+        "gates": {
+            "governance-exposure-scan": {
+                "invocation": {
+                    "argv": ["python3", "scripts/check_governance_exposure.py"],
+                    "cwd": ".",
+                    "env": {},
+                }
+            },
+            "test": {
+                "invocation": {
+                    "argv": ["python3", "-m", "pytest"],
+                    "cwd": ".",
+                    "env": {},
+                }
+            },
+        },
+    }
+
+    release_check = render_v2_makefile(contract).split("release-check:", 1)[1]
+
+    assert "scripts/capture_governance_shard.py" in release_check
+    assert "--session-manifest \"$$session\"" in release_check
+    assert "--all-planned" in release_check
+    assert "for gate in" not in release_check
+    assert "governance-exposure-scan governance-validate" not in release_check
+
+
+def test_local_release_execution_consumes_only_the_selective_session_plan() -> None:
+    planned = ["governance-validate", "test"]
+    dag = {
+        "nodes": [
+            {
+                "id": "group:test",
+                "producer": "test",
+                "assigned_shard": 3,
+                "depends_on": [],
+            },
+            {
+                "id": "group:governance-validate",
+                "producer": "governance-validate",
+                "assigned_shard": 1,
+                "depends_on": [],
+            },
+        ],
+        "edges": [],
+    }
+
+    assert planned_gate_targets(
+        REPO_ROOT, planned_targets=planned, execution_dag=dag
+    ) == ["governance-validate", "test"]
 
 
 def test_bcf_standard_v2_promotion_fits_declared_context_budgets(tmp_path: Path) -> None:
