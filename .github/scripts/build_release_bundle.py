@@ -13,7 +13,14 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 from release_source_inventory import validate_sdist_source_inventory
-from bcf_governance.tooling.ci_controller_builder import exact_head_source
+
+
+def exact_head_source(repo_root: Path):
+    """Load the clean-source owner only after the locked dependencies exist."""
+
+    from bcf_governance.tooling.ci_controller_builder import exact_head_source as materialize
+
+    return materialize(repo_root)
 
 
 def _run(

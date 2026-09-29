@@ -65,6 +65,29 @@ def test_release_builder_has_no_source_test_replay_or_compiler_bootstrap() -> No
     assert "pytest" not in source
 
 
+def test_release_builder_bootstraps_before_locked_dependencies_are_installed() -> None:
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if key not in {"PYTHONHOME", "PYTHONPATH", "VIRTUAL_ENV"}
+    }
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-S",
+            str(ROOT / ".github/scripts/build_release_bundle.py"),
+            "--help",
+        ],
+        cwd=ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_release_builder_builds_from_exact_head_materialization(tmp_path: Path, monkeypatch) -> None:
     module = _module(ROOT / ".github/scripts/build_release_bundle.py")
     monkeypatch.setattr(module, "REPO_ROOT", tmp_path)
