@@ -26,7 +26,7 @@ from .ci_authority_prospective_lanes import (
 )
 from .ci_exact_main_truth import validate_exact_main_truth_payload
 from .ci_github_identity import GitHubControllerError
-from .ci_graph_execution import LocalGateProducer, local_gate_job_environments
+from .ci_graph_execution import local_gate_job_environments
 from .controller_custody_prospective import validate_controller_custody_graph
 from .evaluation_scope import (
     EvaluationIntent,
@@ -42,11 +42,6 @@ from .evidence_workitem_lifecycle import (
 )
 from .governance_evidence import capture_gate
 from .governance_truth import TruthfulnessError, derive_truth
-from .local_producer_workspaces import (
-    LocalProducerWorkspaceError,
-    local_producer_environments,
-    planned_local_producers,
-)
 from .preflight import PreflightError, run_preflight
 from .ci_authority_prospective_telemetry import (
     ProspectiveTelemetryError,
@@ -291,62 +286,60 @@ def _capture_planned_evidence(
     session_manifest: Path,
     session_root: Path,
     producers: tuple[str, ...],
-    producer_environments: dict[str, LocalGateProducer],
+    producer_environments: dict[str, dict[str, str]],
 ) -> list[dict[str, Any]]:
     observations: list[dict[str, Any]] = []
-    try:
-        with local_producer_environments(
-            session_manifest, producer_environments
-        ) as resolved_environments:
-            for producer in producers:
-                receipt = capture_gate(
-                    repo_root,
-                    producer,
-                    session_root / producer,
-                    python_executable=python_executable,
-                    session_manifest=session_manifest,
-                    job_environment=resolved_environments[producer],
-                )
-                if not receipt.is_file():
-                    raise ProspectiveValidationError(
-                        f"local evidence producer {producer} emitted no receipt"
-                    )
-                payload = json.loads(receipt.read_text(encoding="utf-8"))
-                if payload.get("result") != "passed":
-                    producer_observations = payload.get("observations")
-                    exit_code = (
-                        producer_observations.get("exit_code")
-                        if isinstance(producer_observations, dict)
-                        else "unknown"
-                    )
-                    diagnostics = []
-                    for suffix in ("stderr", "stdout"):
-                        path = receipt.parent / f"{producer}.{suffix}.txt"
-                        if path.is_file():
-                            value = path.read_text(
-                                encoding="utf-8", errors="replace"
-                            ).strip()
-                            if value:
-                                diagnostics.append(f"{suffix}: {value[-20000:]}")
-                    raise ProspectiveValidationError(
-                        f"local evidence producer {producer} failed with exit {exit_code}"
-                        + (": " + " | ".join(diagnostics) if diagnostics else "")
-                    )
-                duration = receipt_duration_ms(payload)
-                if duration is None:
-                    raise ProspectiveValidationError(
-                        f"local evidence producer {producer} emitted no valid duration"
-                    )
-                observations.append(
-                    {
-                        "producer": producer,
-                        "duration_ms": duration,
-                        "claim_count": len(payload.get("claims") or ()),
-                        "control_count": len(payload.get("behavioral_probes") or ()),
-                    }
-                )
-    except LocalProducerWorkspaceError as exc:
-        raise ProspectiveValidationError(str(exc)) from exc
+    for producer in producers:
+        environment = {
+            name: value.replace("${{ github.workspace }}", str(repo_root))
+            for name, value in producer_environments[producer].items()
+        }
+        receipt = capture_gate(
+            repo_root,
+            producer,
+            session_root / producer,
+            python_executable=python_executable,
+            session_manifest=session_manifest,
+            job_environment=environment,
+        )
+        if not receipt.is_file():
+            raise ProspectiveValidationError(
+                f"local evidence producer {producer} emitted no receipt"
+            )
+        payload = json.loads(receipt.read_text(encoding="utf-8"))
+        if payload.get("result") != "passed":
+            producer_observations = payload.get("observations")
+            exit_code = (
+                producer_observations.get("exit_code")
+                if isinstance(producer_observations, dict)
+                else "unknown"
+            )
+            diagnostics = []
+            for suffix in ("stderr", "stdout"):
+                path = receipt.parent / f"{producer}.{suffix}.txt"
+                if path.is_file():
+                    value = path.read_text(
+                        encoding="utf-8", errors="replace"
+                    ).strip()
+                    if value:
+                        diagnostics.append(f"{suffix}: {value[-20000:]}")
+            raise ProspectiveValidationError(
+                f"local evidence producer {producer} failed with exit {exit_code}"
+                + (": " + " | ".join(diagnostics) if diagnostics else "")
+            )
+        duration = receipt_duration_ms(payload)
+        if duration is None:
+            raise ProspectiveValidationError(
+                f"local evidence producer {producer} emitted no valid duration"
+            )
+        observations.append(
+            {
+                "producer": producer,
+                "duration_ms": duration,
+                "claim_count": len(payload.get("claims") or ()),
+                "control_count": len(payload.get("behavioral_probes") or ()),
+            }
+        )
     return observations
 
 
@@ -565,12 +558,16 @@ def _run_prospective_train(
 
         verification_plan = preflight["verification_plan"]
         nodes = verification_plan["execution_dag"]["nodes"]
-        try:
-            producers, assigned_shards = planned_local_producers(nodes)
-            producer_environments = local_gate_job_environments(
-                validate_ci_graph(root).graph, producers, assigned_shards
+        producers = tuple(str(node["producer"]) for node in nodes)
+        if len(producers) != len(set(producers)) or any(not value for value in producers):
+            raise ProspectiveValidationError(
+                "planned local producer topology is incomplete or ambiguous"
             )
-        except (CIGraphError, LocalProducerWorkspaceError) as exc:
+        try:
+            producer_environments = local_gate_job_environments(
+                validate_ci_graph(root).graph, producers
+            )
+        except CIGraphError as exc:
             raise ProspectiveValidationError(str(exc)) from exc
         try:
             session = allocate_session(

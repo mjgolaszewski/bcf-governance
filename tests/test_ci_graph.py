@@ -20,7 +20,6 @@ from bcf_governance.tooling.ci_graph_controller_lifecycle import ControllerLifec
 from bcf_governance.tooling.ci_graph_audit import audit_ci_graph
 from bcf_governance.tooling.ci_graph_execution import (
     DIRECT_POST_MERGE_MODE,
-    LocalGateProducer,
     direct_post_merge_mode,
     exact_main_evaluation,
     job_execution_issues,
@@ -1390,32 +1389,17 @@ def test_local_gate_environment_comes_from_exact_pr_producer_job(
         ]
     }
 
-    assert local_gate_job_environments(graph, ("test",), {"test": 2}) == {
-        "test": LocalGateProducer(
-            workflow_id="governance",
-            job_id="evidence",
-            instance_id="shard:2",
-            environment={
-                "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared",
-                "SHARED": "literal",
-            },
-        )
+    assert local_gate_job_environments(graph, ("test",)) == {
+        "test": {
+            "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared",
+            "SHARED": "literal",
+        }
     }
 
     graph["workflows"][0]["jobs"].append(copy.deepcopy(graph["workflows"][0]["jobs"][0]))
     graph["workflows"][0]["jobs"][1]["id"] = "duplicate"
     with pytest.raises(CIGraphError, match="does not have one exact pull-request producer job"):
-        local_gate_job_environments(graph, ("test",), {"test": 2})
-
-    graph["workflows"][0]["jobs"].pop()
-    with pytest.raises(CIGraphError, match="lacks one exact planned shard"):
-        local_gate_job_environments(graph, ("test",), {})
-
-    executor = graph["workflows"][0]["jobs"][0]["executor"]
-    executor["kind"] = "gate_group"
-    executor.pop("shard_key")
-    executor.pop("shard_count")
-    assert local_gate_job_environments(graph, ("test",), {})["test"].instance_id == "singleton"
+        local_gate_job_environments(graph, ("test",))
 
 
 def test_missing_or_conflicting_required_environment_fails_at_graph_compile(
