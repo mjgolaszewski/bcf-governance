@@ -16,6 +16,8 @@ from contextlib import contextmanager
 
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
 from .ci_graph_post_merge import post_merge_evaluation
+from .ci_authority_pins import verify_provider_workflow_authority
+from .ci_controller_policy import graph_controller_policy_path
 from .ci_authority_prospective_lanes import (
     ProspectiveLaneError,
     prospective_policy_binding,
@@ -718,7 +720,8 @@ def run_prospective_train(
         raise ProspectiveValidationError(str(exc)) from exc
     controller_authority = None
     try:
-        lane = post_merge_evaluation(validate_ci_graph(repo_root.resolve()).graph).lane
+        graph = validate_ci_graph(repo_root.resolve()).graph
+        lane = post_merge_evaluation(graph).lane
     except CIGraphError as exc:
         raise ProspectiveValidationError(str(exc)) from exc
     if repository is not None and lane == "trusted_exact_main":
@@ -726,8 +729,16 @@ def run_prospective_train(
             raise ProspectiveValidationError(
                 "provider-authenticated prospective validation requires a provider API"
             )
-        controller_authority = effective_controller_authority(
-            provider_api, repository=repository, repo_root=repo_root.resolve())
+        verify_provider_workflow_authority(
+            repo_root.resolve(),
+            authority_path=Path("governance/ci-authority.yml"),
+            api=provider_api,
+            repository=repository,
+        )
+        if graph_controller_policy_path(graph) is not None:
+            controller_authority = effective_controller_authority(
+                provider_api, repository=repository
+            )
 
     return _run_prospective_train(
         repo_root,

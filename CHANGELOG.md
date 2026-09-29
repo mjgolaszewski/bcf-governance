@@ -12,7 +12,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 - Made semantic source inventories reflect the exact candidate tree during
   upgrades and made bounded certification select a unique completed lifecycle
-  frontier without discarding unrelated concurrent work.
+  frontier without discarding unrelated concurrent work; provider-bound
+  prospective validation now authenticates workflow custody while resolving
+  controller authority only when the adopter graph explicitly owns it.
 
 ## [2.1.3] - 2026-09-28
 
