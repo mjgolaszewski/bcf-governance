@@ -153,6 +153,7 @@ def execute_cross_gate_baseline(
     session_id: str,
     require_state: bool,
     runner: Callable[..., tuple[subprocess.CompletedProcess[str], dict[str, str], dict[str, Any], dict[str, Any]]],
+    job_environment: dict[str, str] | None = None,
 ) -> bool:
     """Prove a cross-gate oracle passes before applying its exact mutation."""
 
@@ -173,6 +174,7 @@ def execute_cross_gate_baseline(
         session_id=session_id,
         execution_id=f"negative-control-baseline:{control['id']}",
         require_state=require_state,
+        job_environment=job_environment,
     )
     test_contract = execution.contract.get("test_contract")
     junit_value = (

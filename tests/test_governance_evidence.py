@@ -333,9 +333,13 @@ def test_evidence_run_captures_process_artifacts_test_counts_and_negative_contro
     (repo / "governance").mkdir()
     (repo / ".gitignore").write_text(".artifacts/\n", encoding="utf-8")
     (repo / "gate.py").write_text(
-        """import pathlib
+        """import os
+import pathlib
 import sys
 PASS = True
+prepared = pathlib.Path(os.environ['PREPARED_ROOT'])
+if prepared != pathlib.Path.cwd() / '.artifacts/prepared':
+    raise SystemExit('graph job environment was not resolved inside the evidence worktree')
 failure = '' if PASS else '<failure>mutated</failure>'
 path = pathlib.Path('.artifacts/test.junit.xml')
 path.parent.mkdir(parents=True, exist_ok=True)
@@ -414,7 +418,7 @@ sys.exit(0 if PASS else 1)
                             "argv": ["python3", "gate.py"],
                             "cwd": ".",
                             "env": {},
-                            "required_env": [],
+                            "required_env": ["PREPARED_ROOT"],
                         },
                         "evidence": {
                             "kind": "test_suite",
@@ -440,7 +444,14 @@ sys.exit(0 if PASS else 1)
     _git(repo, "add", ".")
     _git(repo, "commit", "-m", "gate")
 
-    receipt_path = capture_gate(repo, "test", tmp_path / "evidence")
+    receipt_path = capture_gate(
+        repo,
+        "test",
+        tmp_path / "evidence",
+        job_environment={
+            "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"
+        },
+    )
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
 
     assert receipt["subject"]["binding"] == "exact_tree"

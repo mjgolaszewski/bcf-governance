@@ -26,6 +26,7 @@ from .ci_authority_prospective_lanes import (
 )
 from .ci_exact_main_truth import validate_exact_main_truth_payload
 from .ci_github_identity import GitHubControllerError
+from .ci_graph_execution import local_gate_job_environments
 from .controller_custody_prospective import validate_controller_custody_graph
 from .evaluation_scope import (
     EvaluationIntent,
@@ -285,6 +286,7 @@ def _capture_planned_evidence(
     session_manifest: Path,
     session_root: Path,
     producers: tuple[str, ...],
+    producer_environments: dict[str, dict[str, str]],
 ) -> list[dict[str, Any]]:
     observations: list[dict[str, Any]] = []
     for producer in producers:
@@ -294,6 +296,7 @@ def _capture_planned_evidence(
             session_root / producer,
             python_executable=python_executable,
             session_manifest=session_manifest,
+            job_environment=producer_environments[producer],
         )
         if not receipt.is_file():
             raise ProspectiveValidationError(
@@ -551,6 +554,12 @@ def _run_prospective_train(
         nodes = verification_plan["execution_dag"]["nodes"]
         producers = tuple(sorted({str(node["producer"]) for node in nodes}))
         try:
+            producer_environments = local_gate_job_environments(
+                validate_ci_graph(root).graph, producers
+            )
+        except CIGraphError as exc:
+            raise ProspectiveValidationError(str(exc)) from exc
+        try:
             session = allocate_session(
                 root,
                 artifact_root,
@@ -569,6 +578,7 @@ def _run_prospective_train(
                 session_manifest=session.manifest_path,
                 session_root=session.root,
                 producers=producers,
+                producer_environments=producer_environments,
             ) or []
             evidence_duration = _elapsed_ms(evidence_started)
             measurements.extend(

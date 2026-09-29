@@ -285,6 +285,7 @@ def _negative_control_results(
     python_executable: Path,
     session_id: str,
     require_state: bool,
+    job_environment: dict[str, str] | None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
     controls = contract.get("negative_controls")
     if not isinstance(controls, list):
@@ -356,6 +357,7 @@ def _negative_control_results(
                         session_id=session_id,
                         require_state=require_state,
                         runner=_run_with_execution_state,
+                        job_environment=job_environment,
                     )
                 applied, mutation_path = _apply_negative_control(worktree, control)
                 allowed_mutations = (
@@ -379,6 +381,7 @@ def _negative_control_results(
                         session_id=session_id,
                         execution_id=f"negative-control:{control_id}",
                         require_state=require_state,
+                        job_environment=job_environment,
                     )
                 else:
                     observed = None
@@ -517,6 +520,7 @@ def capture_gate(
     *,
     python_executable: str | Path | None = None,
     session_manifest: Path | None = None,
+    job_environment: dict[str, str] | None = None,
 ) -> Path:
     repo_root = repo_root.resolve()
     caller_state = capture_subject_preflight(repo_root, output_dir)
@@ -561,6 +565,7 @@ def capture_gate(
                 ),
                 execution_id="positive",
                 require_state=contract_version == "3.0",
+                job_environment=job_environment,
             )
             artifacts = _write_output_artifacts(output_dir, target, result)
             artifacts.extend(durable_artifacts)
@@ -626,6 +631,7 @@ def capture_gate(
                 selected_python,
                 str(session.payload["session_id"]) if session is not None else f"legacy-{head[:12]}",
                 contract_version == "3.0",
+                job_environment,
             )
             probes.extend(captured)
             artifacts.extend(probe_artifacts)

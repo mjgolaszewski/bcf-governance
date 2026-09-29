@@ -24,6 +24,7 @@ from bcf_governance.tooling.ci_graph_execution import (
     exact_main_evaluation,
     job_execution_issues,
     job_required_environment,
+    local_gate_job_environments,
     workflow_input_issues,
 )
 from bcf_governance.tooling.ci_graph_post_merge import (
@@ -1358,6 +1359,40 @@ def test_required_environment_is_bound_once_and_validated_before_checkout(
     )
     assert bindings == {"REQUIRED_TOKEN": "${{ secrets.REQUIRED_TOKEN }}"}
     assert issues == ()
+
+
+def test_local_gate_environment_comes_from_exact_pr_producer_job(
+    tmp_path: Path,
+) -> None:
+    graph = {
+        "workflows": [
+            {
+                "role": "pull-request",
+                "environment": {"SHARED": "literal"},
+                "jobs": [
+                    {
+                        "id": "evidence",
+                        "environment": {
+                            "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"
+                        },
+                        "executor": {"kind": "gate_shard", "gates": ["test"]},
+                    }
+                ],
+            }
+        ]
+    }
+
+    assert local_gate_job_environments(graph, ("test",)) == {
+        "test": {
+            "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared",
+            "SHARED": "literal",
+        }
+    }
+
+    graph["workflows"][0]["jobs"].append(copy.deepcopy(graph["workflows"][0]["jobs"][0]))
+    graph["workflows"][0]["jobs"][1]["id"] = "duplicate"
+    with pytest.raises(CIGraphError, match="does not have one exact pull-request producer job"):
+        local_gate_job_environments(graph, ("test",))
 
 
 def test_missing_or_conflicting_required_environment_fails_at_graph_compile(

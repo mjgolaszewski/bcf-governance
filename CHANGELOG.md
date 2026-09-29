@@ -19,7 +19,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   adopter's governed manifests for both preflight and execution. Execution
   namespaces now live under their own BCF-owned runtime root, leaving declared
   durable workload database state untouched while retaining exact fail-closed
-  ownership and terminal retirement.
+  ownership and terminal retirement. Local prospective execution now derives
+  each gate's exact pull-request producer-job environment and resolves its
+  workspace binding inside the same detached evidence sandbox used by CI.
 
 ## [2.1.3] - 2026-09-28
 

@@ -100,8 +100,48 @@ def test_planned_evidence_stops_on_first_failed_producer(
             session_manifest=tmp_path / "session.json",
             session_root=tmp_path / "receipts",
             producers=("first", "second"),
+            producer_environments={"first": {}, "second": {}},
         )
     assert seen == ["first"]
+
+
+def test_planned_evidence_projects_exact_graph_job_environment(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    observed: list[dict[str, str]] = []
+
+    def capture(_root: Path, gate: str, output: Path, **kwargs: object) -> Path:
+        observed.append(dict(kwargs["job_environment"]))
+        output.mkdir(parents=True)
+        receipt = output / f"{gate}.evidence.json"
+        receipt.write_text(
+            json.dumps({
+                "result": "passed",
+                "observations": {"duration_ms": 1},
+                "claims": [],
+                "behavioral_probes": [],
+                "started_at": "2026-09-29T00:00:00Z",
+                "timestamp": "2026-09-29T00:00:01Z",
+            }),
+            encoding="utf-8",
+        )
+        return receipt
+
+    monkeypatch.setattr(prospective, "capture_gate", capture)
+    prospective._capture_planned_evidence(
+        tmp_path,
+        python_executable=Path("/python"),
+        session_manifest=tmp_path / "session.json",
+        session_root=tmp_path / "receipts",
+        producers=("test",),
+        producer_environments={
+            "test": {"PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"}
+        },
+    )
+
+    assert observed == [
+        {"PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"}
+    ]
 
 
 def _runner(command: list[str], **_kwargs: object) -> Result:
@@ -188,6 +228,11 @@ def _front_door(monkeypatch: pytest.MonkeyPatch, trace: list[str]) -> None:
     )
     monkeypatch.setattr(
         prospective, "_validate_train_telemetry", lambda *_args: None
+    )
+    monkeypatch.setattr(
+        prospective,
+        "local_gate_job_environments",
+        lambda _graph, producers: {producer: {} for producer in producers},
     )
 
 

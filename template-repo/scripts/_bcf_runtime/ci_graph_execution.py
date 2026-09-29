@@ -306,6 +306,32 @@ def job_required_environment(
     return bindings, tuple(issues)
 
 
+def local_gate_job_environments(
+    graph: dict[str, Any], producers: tuple[str, ...]
+) -> dict[str, dict[str, str]]:
+    """Project each gate from its one exact pull-request producer job."""
+
+    matches: dict[str, list[dict[str, str]]] = {producer: [] for producer in producers}
+    for workflow in graph["workflows"]:
+        if workflow.get("role") != "pull-request":
+            continue
+        inherited = workflow.get("environment", {})
+        for job in workflow["jobs"]:
+            executor = job["executor"]
+            if executor.get("kind") not in {"gate_group", "gate_shard"}:
+                continue
+            environment = {**inherited, **job.get("environment", {})}
+            for producer in set(executor.get("gates", ())).intersection(matches):
+                matches[producer].append(dict(sorted(environment.items())))
+    invalid = sorted(producer for producer, values in matches.items() if len(values) != 1)
+    if invalid:
+        raise CIGraphError(
+            "local evidence gate does not have one exact pull-request producer job: "
+            + ", ".join(invalid)
+        )
+    return {producer: values[0] for producer, values in sorted(matches.items())}
+
+
 def job_execution_issues(
     graph: dict[str, Any],
     job: dict[str, Any],
