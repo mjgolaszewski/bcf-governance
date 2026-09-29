@@ -13,6 +13,10 @@ from bcf_governance.tooling.scaffold_governance_artifacts import (
     converge,
     reconcile_steps,
 )
+from bcf_governance.tooling.release_version_projection import (
+    ReleaseVersionProjectionError,
+    reconcile_release_version_surfaces,
+)
 
 
 def test_reconcile_is_the_canonical_cli_surface() -> None:
@@ -22,8 +26,9 @@ def test_reconcile_is_the_canonical_cli_surface() -> None:
 def test_reconcile_declares_one_closed_dependency_order() -> None:
     root = Path(__file__).resolve().parents[1]
     ids = [step.step_id for step in reconcile_steps(root, Path(sys.executable))]
-    assert ids[:4] == [
+    assert ids[:5] == [
         "structural-limits",
+        "release-version-surfaces",
         "ci-graph-post-merge-scope",
         "pack-projection",
         "semantic-lock",
@@ -31,6 +36,35 @@ def test_reconcile_declares_one_closed_dependency_order() -> None:
     assert ids.index("ci-graph-lock") < ids.index("ci-graph-render")
     assert ids.index("ci-graph-render") < ids.index("workflow-authority")
     assert ids[-1] == "editorial-audit"
+
+
+def test_reconcile_projects_all_derived_release_versions_before_pack_work(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "governance").mkdir()
+    (tmp_path / "manifest.yml").write_text(
+        "document:\n  kind: template_governance_pack_manifest\n  version: 2.1.4\n",
+        encoding="utf-8",
+    )
+    contracts = tmp_path / "governance/public-contracts.yml"
+    contracts.write_text(
+        "document: {kind: public_contract_registry}\npackage:\n  version: 2.1.4\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ReleaseVersionProjectionError, match="manifest.yml"):
+        reconcile_release_version_surfaces(tmp_path, version="2.1.5", apply=False)
+
+    changed = reconcile_release_version_surfaces(
+        tmp_path, version="2.1.5", apply=True
+    )
+
+    assert changed == ("manifest.yml", "governance/public-contracts.yml")
+    assert yaml.safe_load((tmp_path / "manifest.yml").read_text())["document"]["version"] == "2.1.5"
+    assert yaml.safe_load(contracts.read_text())["package"]["version"] == "2.1.5"
+    assert not reconcile_release_version_surfaces(
+        tmp_path, version="2.1.5", apply=False
+    )
 
 
 def test_reconcile_omits_workflow_authority_when_contract_is_absent(
