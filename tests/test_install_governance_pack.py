@@ -3,8 +3,11 @@ from __future__ import annotations
 import importlib.util
 import hashlib
 import json
+import os
+import shutil
 import subprocess
 import sys
+import venv
 from pathlib import Path
 
 import pytest
@@ -16,6 +19,41 @@ from bcf_governance.tooling.runtime_capacity import EXECUTION_STATE_POLICY
 REPO_ROOT = Path(__file__).resolve().parents[1]
 INSTALLER = REPO_ROOT / "scripts" / "install_governance_pack.py"
 DOCTOR = REPO_ROOT / "scripts" / "doctor_governance_pack.py"
+
+
+def _candidate_source_runtime(root: Path) -> tuple[Path, dict[str, str]]:
+    """Bind child CLI processes to the exact candidate source under test."""
+
+    venv.EnvBuilder(with_pip=False, system_site_packages=True).create(root)
+    python = root / "bin/python"
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if key not in {"PYTHONHOME", "PYTHONPATH", "VIRTUAL_ENV"}
+    }
+    purelib = subprocess.run(
+        [str(python), "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"],
+        env=environment,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    installed = Path(purelib) / "bcf_governance"
+    shutil.copytree(
+        REPO_ROOT / "bcf_governance",
+        installed,
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+    )
+    resolved = subprocess.run(
+        [str(python), "-c", "import bcf_governance; print(bcf_governance.__file__)"],
+        cwd=root,
+        env=environment,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    assert Path(resolved).resolve() == (installed / "__init__.py").resolve()
+    return python, environment
 
 
 def _load_installer_module():
@@ -403,10 +441,13 @@ def test_upgrade_reconcile_uses_candidate_tree_after_retiring_tracked_self_autho
     )
 
     _run_installer(target, "--upgrade", "--profile", "lite", "--require-strict-validation")
+    tool_python, tool_environment = _candidate_source_runtime(
+        tmp_path / "candidate-tool-runtime"
+    )
 
     result = subprocess.run(
         [
-            sys.executable,
+            str(tool_python),
             "-m",
             "bcf_governance.cli",
             "reconcile",
@@ -417,6 +458,7 @@ def test_upgrade_reconcile_uses_candidate_tree_after_retiring_tracked_self_autho
             "--apply",
         ],
         cwd=REPO_ROOT,
+        env=tool_environment,
         capture_output=True,
         text=True,
     )
