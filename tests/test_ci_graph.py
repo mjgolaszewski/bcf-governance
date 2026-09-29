@@ -1367,7 +1367,8 @@ def test_local_gate_environment_comes_from_exact_pr_producer_job(
     graph = {
         "workflows": [
             {
-                "role": "pull-request",
+                "role": "exact-main",
+                "events": [{"type": "pull_request"}, {"type": "push"}],
                 "environment": {"SHARED": "literal"},
                 "jobs": [
                     {

@@ -313,7 +313,7 @@ def local_gate_job_environments(
 
     matches: dict[str, list[dict[str, str]]] = {producer: [] for producer in producers}
     for workflow in graph["workflows"]:
-        if workflow.get("role") != "pull-request":
+        if not any(event.get("type") == "pull_request" for event in workflow["events"]):
             continue
         inherited = workflow.get("environment", {})
         for job in workflow["jobs"]:
