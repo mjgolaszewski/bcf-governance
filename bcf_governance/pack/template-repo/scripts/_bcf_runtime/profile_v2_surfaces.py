@@ -10,6 +10,23 @@ import yaml
 from .ci_github_actions import action_pin
 
 
+def selective_release_check_lines() -> list[str]:
+    """Render the sole local selective-plan execution boundary."""
+
+    return [
+        "release-check:",
+        "\t@mkdir -p $(BCF_EVIDENCE_DIR)",
+        "\t@preflight_output=\"$$($(PYTHON) scripts/preflight_governance.py --repo-root . --mode release --python $(PYTHON) --artifact-root $(BCF_EVIDENCE_DIR) --expected-producer local --local-producer-id local --format text)\" || exit $$?; \\",
+        "\tprintf '%s\\n' \"$$preflight_output\"; \\",
+        "\tsession=\"$$(printf '%s\\n' \"$$preflight_output\" | tail -n 1)\"; \\",
+        "\ttest -n \"$$session\" && test -f \"$$session\" || { echo 'preflight did not produce an evidence session' >&2; exit 1; }; \\",
+        "\tsession_dir=\"$${session%/evidence-session.json}\"; \\",
+        "\t$(PYTHON) scripts/capture_governance_shard.py --repo-root . --all-planned --output-root \"$$session_dir\" --session-manifest \"$$session\" || exit $$?; \\",
+        "\t$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir \"$$session_dir\"",
+        "",
+    ]
+
+
 def render_v2_makefile(contract: dict[str, Any]) -> str:
     gates = contract["gates"]
     targets = " ".join(gates)
@@ -39,20 +56,7 @@ def render_v2_makefile(contract: dict[str, Any]) -> str:
         lines.extend(
             [f"{target}:", f"\t@cd {cwd} && {env + ' ' if env else ''}{argv}", ""]
         )
-    lines.extend(
-        [
-            "release-check:",
-            "\t@mkdir -p $(BCF_EVIDENCE_DIR)",
-            "\t@preflight_output=\"$$($(PYTHON) scripts/preflight_governance.py --repo-root . --mode release --python $(PYTHON) --artifact-root $(BCF_EVIDENCE_DIR) --expected-producer local --local-producer-id local --format text)\" || exit $$?; \\",
-            "\tprintf '%s\\n' \"$$preflight_output\"; \\",
-            "\tsession=\"$$(printf '%s\\n' \"$$preflight_output\" | tail -n 1)\"; \\",
-            "\ttest -n \"$$session\" && test -f \"$$session\" || { echo 'preflight did not produce an evidence session' >&2; exit 1; }; \\",
-            "\tsession_dir=\"$${session%/evidence-session.json}\"; \\",
-            "\t$(PYTHON) scripts/capture_governance_shard.py --repo-root . --all-planned --output-root \"$$session_dir\" --session-manifest \"$$session\" || exit $$?; \\",
-            "\t$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir \"$$session_dir\"",
-            "",
-        ]
-    )
+    lines.extend(selective_release_check_lines())
     return "\n".join(lines)
 
 

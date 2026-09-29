@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from bcf_governance.tooling.governance_install import transaction
+from bcf_governance.tooling.governance_install import transaction, upgrade
 from bcf_governance.tooling.runtime_capacity import EXECUTION_STATE_POLICY
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -632,6 +632,45 @@ def test_installer_upgrade_can_reset_profile_and_makefile_options(tmp_path: Path
     assert "$(MAKE) governance-truthfulness" in makefile
     profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
     assert profile["profile"]["selected"] == "lite"
+
+
+def test_upgrade_projects_v3_release_check_from_selective_plan(tmp_path: Path) -> None:
+    target = tmp_path / "upgrade-v3-release-check"
+    target.mkdir()
+    (target / "governance-profile.yml").write_text(
+        yaml.safe_dump(
+            {
+                "profile": {"selected": "standard"},
+                "profile_contract_version": "3.0",
+                "release_gate_profile": {
+                    "gates": {
+                        "governance_validate": {
+                            "target": "governance-validate", "status": "required"
+                        },
+                        "test": {"target": "test", "status": "required"},
+                    }
+                },
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    (target / "Makefile.fragment").write_text(
+        "BCF_EVIDENCE_DIR ?= .artifacts/bcf\n\n"
+        ".PHONY: release-check governance-validate test\n\n"
+        "release-check:\n"
+        "\t@for gate in governance-validate test; do echo $$gate; done\n",
+        encoding="utf-8",
+    )
+
+    upgrade._upgrade_makefile_fragment(target)
+
+    release_check = (target / "Makefile.fragment").read_text(encoding="utf-8").split(
+        "release-check:", 1
+    )[1]
+    assert "scripts/capture_governance_shard.py" in release_check
+    assert "--all-planned" in release_check
+    assert "for gate in" not in release_check
 
 
 def test_installer_existing_adoption_mode_labels_conversion_phase(tmp_path: Path) -> None:

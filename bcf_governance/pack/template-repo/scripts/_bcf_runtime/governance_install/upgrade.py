@@ -9,6 +9,8 @@ from typing import Any, Callable, Iterable, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
+from ..profile_contract_v2 import current_contract_version
+from ..profile_v2_surfaces import selective_release_check_lines
 from ..runtime_capacity import EXECUTION_STATE_POLICY
 
 
@@ -493,14 +495,19 @@ def _upgrade_makefile_fragment(target_root: Path) -> None:
     if release_span is not None and gate_targets:
         lines = text.splitlines()
         start, end = release_span
-        replacement = [
-            lines[start],
-            "\t@mkdir -p $(BCF_EVIDENCE_DIR)",
-            f"\t@for gate in {' '.join(gate_targets)}; do \\",
-            "\t\t$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output $(BCF_EVIDENCE_DIR)/$$gate || exit $$?; \\",
-            "\tdone",
-            "\t$(MAKE) governance-truthfulness",
-        ]
+        if current_contract_version(target_root) in {"2.0", "3.0"}:
+            replacement = selective_release_check_lines()
+            if replacement[-1] == "":
+                replacement.pop()
+        else:
+            replacement = [
+                lines[start],
+                "\t@mkdir -p $(BCF_EVIDENCE_DIR)",
+                f"\t@for gate in {' '.join(gate_targets)}; do \\",
+                "\t\t$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output $(BCF_EVIDENCE_DIR)/$$gate || exit $$?; \\",
+                "\tdone",
+                "\t$(MAKE) governance-truthfulness",
+            ]
         text = "\n".join([*lines[:start], *replacement, *lines[end:]]) + "\n"
     path.write_text(text, encoding="utf-8")
 
