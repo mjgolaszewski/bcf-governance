@@ -67,6 +67,26 @@ def test_reconcile_projects_all_derived_release_versions_before_pack_work(
     )
 
 
+def test_reconcile_skips_release_versions_when_adopter_owns_no_release_surfaces(
+    tmp_path: Path,
+) -> None:
+    assert not reconcile_release_version_surfaces(
+        tmp_path, version="2.1.5", apply=False
+    )
+    assert not reconcile_release_version_surfaces(
+        tmp_path, version="2.1.5", apply=True
+    )
+
+
+def test_reconcile_rejects_partial_release_version_ownership(tmp_path: Path) -> None:
+    (tmp_path / "manifest.yml").write_text(
+        "document:\n  version: 2.1.5\n", encoding="utf-8"
+    )
+
+    with pytest.raises(ReleaseVersionProjectionError, match="ownership is partial"):
+        reconcile_release_version_surfaces(tmp_path, version="2.1.5", apply=True)
+
+
 def test_reconcile_omits_workflow_authority_when_contract_is_absent(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:

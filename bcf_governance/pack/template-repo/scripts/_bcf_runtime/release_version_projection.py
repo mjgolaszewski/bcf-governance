@@ -54,6 +54,18 @@ def reconcile_release_version_surfaces(
 ) -> tuple[str, ...]:
     """Check or project the package version through every mechanical owner."""
 
+    present = tuple((repo_root / relative).exists() for relative, _, _ in SURFACES)
+    if not any(present):
+        return ()
+    if not all(present):
+        names = ", ".join(
+            relative.as_posix()
+            for (relative, _, _), exists in zip(SURFACES, present, strict=True)
+            if not exists
+        )
+        raise ReleaseVersionProjectionError(
+            f"release version ownership is partial; missing: {names}"
+        )
     stale: list[tuple[Path, str, str]] = []
     for relative, parent, key in SURFACES:
         path = repo_root / relative

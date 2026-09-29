@@ -1123,7 +1123,7 @@
     },
     "scripts/_bcf_runtime/release_version_projection.py": {
       "operation": "copy",
-      "sha256": "f169130fad8c4755270f76722c3799d203fc0e0a90dd4a2208fc17781561d804"
+      "sha256": "f44571e737bd8ab2707980d48bfebb63dae3df52d8514611abf04fb7e9531386"
     },
     "scripts/_bcf_runtime/release_versions.py": {
       "operation": "copy",
