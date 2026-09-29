@@ -25,7 +25,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   declared and independently admitted shared inputs while detached source and
   BCF execution-state isolation remain unchanged. Release and trusted-controller
   packages now materialize exact committed source, excluding ignored build-cache
-  bytes from artifact authority.
+  bytes from artifact authority. Diagnostic mutation controls no longer depend
+  on unrelated test-producer manifests; test-node controls retain exact governed
+  producer resolution.
 
 ## [2.1.3] - 2026-09-28
 

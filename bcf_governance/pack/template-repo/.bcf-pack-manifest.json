@@ -876,7 +876,7 @@
     },
     "scripts/_bcf_runtime/governance_evidence.py": {
       "operation": "copy",
-      "sha256": "88afff53373fcfd6d454f5cc26de92b3ff708a7f1d92cc74f4ab9e13892dedd8"
+      "sha256": "eb61772bc8188defb286597876adc739af8aae136bf7ea9df96ad4a0ced5082c"
     },
     "scripts/_bcf_runtime/governance_install/__init__.py": {
       "operation": "copy",
@@ -1035,7 +1035,7 @@
     },
     "scripts/_bcf_runtime/negative_control_execution.py": {
       "operation": "copy",
-      "sha256": "26b7182f33a92ef0f0648da88bec2d679a9a0bec12ebf89087f8934d1b364e53"
+      "sha256": "84c5fc7a8b342fc2a42ecb3978d1501716210abf321224a38f9971e4dfa144a2"
     },
     "scripts/_bcf_runtime/pack_installation_scope.py": {
       "operation": "copy",

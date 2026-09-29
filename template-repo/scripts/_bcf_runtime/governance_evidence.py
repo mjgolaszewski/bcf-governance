@@ -55,9 +55,9 @@ from .negative_control_execution import (
     execute_cross_gate_baseline,
     junit_nodes,
     negative_control_command,
-    resolve_negative_control_oracle,
+    resolve_negative_control_oracle, selected_oracle_manifest_index,
 )
-from .test_manifests import TestManifestError, oracle_manifest_index
+from .test_manifests import TestManifestError
 from .ci_graph_contracts import CIGraphError, GRAPH_PATH
 from .ci_graph_locks import apply_ci_graph_locks
 from .ci_graph_render import apply_ci_graph
@@ -291,7 +291,7 @@ def _negative_control_results(
     if not isinstance(controls, list):
         return [], []
     try:
-        manifest_index = oracle_manifest_index(repo_root)
+        manifest_index = selected_oracle_manifest_index(repo_root, controls)
         selector_maps = {}
         oracle_executions = {
             str(control.get("id", f"control-{index}")): resolve_negative_control_oracle(

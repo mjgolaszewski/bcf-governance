@@ -17,6 +17,20 @@ class NegativeControlCommandError(ValueError):
     """Raised when a declared test-node oracle cannot be executed exactly."""
 
 
+def selected_oracle_manifest_index(
+    repo_root: Path, controls: list[object]
+) -> OracleManifestIndex | None:
+    """Load manifests only when a selected control owns a test-node oracle."""
+
+    required = any(
+        isinstance(control, dict)
+        and isinstance(control.get("oracle"), dict)
+        and control["oracle"].get("kind") == "test_node_failure"
+        for control in controls
+    )
+    return oracle_manifest_index(repo_root) if required else None
+
+
 @dataclass(frozen=True)
 class NegativeControlOracleExecution:
     """Exact graph-owned test producer for one negative-control oracle."""
