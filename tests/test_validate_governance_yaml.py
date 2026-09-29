@@ -18,7 +18,7 @@ from bcf_governance.tooling import preflight
 from bcf_governance.tooling.release_runtime_verification import (
     is_release_sdist_test_context,
 )
-from bcf_governance.tooling.governance_validation import phase_catalog
+from bcf_governance.tooling.governance_validation import phase_catalog, release_gates
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -882,6 +882,23 @@ def test_validate_repo_root_resolves_exact_makefile_fragment_include(
     )
 
     validate_repo_root(repo_root)
+
+
+def test_validate_repo_root_uses_generated_fragment_without_rewriting_consumer_makefile(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    (repo_root / "Makefile").write_text(
+        "application:\n\t@echo application\n\n"
+        "release-check:\n\t@for gate in test; do echo $$gate; done\n",
+        encoding="utf-8",
+    )
+
+    validate_repo_root(repo_root)
+
+    assert release_gates.canonical_release_check_command(repo_root) == (
+        "make -f Makefile.fragment release-check"
+    )
 
 
 @pytest.mark.parametrize(

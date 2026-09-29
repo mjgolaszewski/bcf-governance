@@ -191,7 +191,7 @@ def test_installer_lite_profile_passes_strict_validation(tmp_path: Path) -> None
 
     makefile = (target / "Makefile.fragment").read_text(encoding="utf-8")
     assert "scripts/governance_evidence.py" in makefile
-    assert "$(MAKE) governance-truthfulness" in makefile
+    assert "scripts/governance_truth.py" in makefile
     assert "configure repo-specific" not in makefile
     assert (target / "Makefile").read_text(encoding="utf-8") == (
         "include Makefile.fragment\n"
@@ -224,6 +224,37 @@ def test_installer_lite_profile_passes_strict_validation(tmp_path: Path) -> None
     }
     assert excluded
     assert all(not (target / relative).exists() for relative in excluded)
+
+
+def test_existing_install_reports_generated_release_owner_without_rewriting_makefile(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "existing-release-owner"
+    target.mkdir()
+    subprocess.run(["git", "init", "--quiet"], cwd=target, check=True)
+    makefile = target / "Makefile"
+    original = "application:\n\t@echo application\n"
+    makefile.write_text(original, encoding="utf-8")
+
+    result = _run_installer(
+        target,
+        "--profile",
+        "lite",
+        "--adoption-mode",
+        "existing",
+        "--skip-validation",
+    )
+
+    assert makefile.read_text(encoding="utf-8") == original
+    assert "next: run make -f Makefile.fragment release-check" in result.stdout
+    make = subprocess.run(
+        ["make", "-f", "Makefile.fragment", "--dry-run", "release-check"],
+        cwd=target,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert make.returncode == 0, make.stdout + make.stderr
 
 
 def test_existing_required_repository_artifacts_are_preserved_byte_identically(
@@ -640,7 +671,7 @@ def test_installer_upgrade_can_reset_profile_and_makefile_options(tmp_path: Path
     assert "upgraded governance pack into" in result.stdout
     makefile = (target / "Makefile.fragment").read_text(encoding="utf-8")
     assert "scripts/governance_evidence.py" in makefile
-    assert "$(MAKE) governance-truthfulness" in makefile
+    assert "scripts/governance_truth.py" in makefile
     profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
     assert profile["profile"]["selected"] == "lite"
 

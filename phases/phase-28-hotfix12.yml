@@ -19,8 +19,8 @@ execution_evidence:
   executed_commands:
   - focused installer, upgrade, custody, doctor, profile, reconciliation, pack,
     and historical 2.1.3 upgrade regressions
-  - exact clean-source Lite v1 and Standard v3 adopter qualification before the
-    canonical prospective train
+  - independent Lite v1 and Standard v3 pre-gate adopter probes against exact
+    clean-source candidates
   notes:
   - v2.1.4 could replace pack-owned runtime but had no canonical producer for the
     authenticated adopter runtime lock, so every release-bound upgrade either
@@ -36,6 +36,12 @@ execution_evidence:
     only direct gate execution. Doctor now derives the evidence-capture contract
     from the installed profile version, accepts canonical all-planned delegation,
     and rejects shard execution that ignores the selective session plan.
+  - The Racecar probe exposed that Doctor and install guidance selected a preserved
+    consumer Makefile after upgrade. BCF now resolves the generated fragment as
+    the canonical release owner and reports its directly executable command, so
+    merged legacy aliases remain byte-preserved and require no manual forward-port.
+  - Lite-v1 release execution invokes canonical truth directly from the generated
+    fragment, preventing recursive make from falling back to a consumer Makefile.
 closeout_requirements:
   claims:
     required_suites_green:

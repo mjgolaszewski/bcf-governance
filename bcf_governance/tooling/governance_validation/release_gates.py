@@ -74,31 +74,38 @@ def _release_gates_from_profile(profile: dict[str, Any] | None) -> dict[str, dic
     return gates_by_target
 
 
+def _makefile_fragment_include_count(makefile: Path) -> int:
+    """Validate and count exact generated-fragment includes."""
+
+    include_count = 0
+    for line in makefile.read_text(encoding="utf-8").splitlines():
+        directive = re.match(r"^\s*(?:-?include|sinclude)\s+([^#]+?)(?:\s+#.*)?$", line)
+        if directive is None:
+            if "Makefile.fragment" in line and not line.lstrip().startswith("#"):
+                raise GovernanceValidationError(
+                    "Makefile references Makefile.fragment through an unsupported include form"
+                )
+            continue
+        sources = directive.group(1).split()
+        if "Makefile.fragment" not in sources:
+            continue
+        if sources != ["Makefile.fragment"]:
+            raise GovernanceValidationError(
+                "Makefile must include Makefile.fragment as one exact source"
+            )
+        include_count += 1
+    if include_count > 1:
+        raise GovernanceValidationError(
+            "Makefile includes Makefile.fragment more than once"
+        )
+    return include_count
+
+
 def _release_gate_makefile_path(repo_root: Path) -> Path | None:
     makefile = repo_root / "Makefile"
     fragment = repo_root / "Makefile.fragment"
     if makefile.exists():
-        include_count = 0
-        for line in makefile.read_text(encoding="utf-8").splitlines():
-            directive = re.match(r"^\s*(?:-?include|sinclude)\s+([^#]+?)(?:\s+#.*)?$", line)
-            if directive is None:
-                if "Makefile.fragment" in line and not line.lstrip().startswith("#"):
-                    raise GovernanceValidationError(
-                        "Makefile references Makefile.fragment through an unsupported include form"
-                    )
-                continue
-            sources = directive.group(1).split()
-            if "Makefile.fragment" not in sources:
-                continue
-            if sources != ["Makefile.fragment"]:
-                raise GovernanceValidationError(
-                    "Makefile must include Makefile.fragment as one exact source"
-                )
-            include_count += 1
-        if include_count > 1:
-            raise GovernanceValidationError(
-                "Makefile includes Makefile.fragment more than once"
-            )
+        include_count = _makefile_fragment_include_count(makefile)
         owns_release_check = "release-check" in _makefile_target_bodies(makefile)
         if owns_release_check and include_count:
             raise GovernanceValidationError(
@@ -110,10 +117,23 @@ def _release_gate_makefile_path(repo_root: Path) -> Path | None:
                     "Makefile includes missing Makefile.fragment"
                 )
             return fragment
-        return makefile
-    if fragment.exists():
+    if fragment.is_file():
         return fragment
-    return None
+    return makefile if makefile.exists() else None
+
+
+def canonical_release_check_command(repo_root: Path) -> str:
+    """Derive the one non-destructive local release command from its owner."""
+
+    owner = _release_gate_makefile_path(repo_root)
+    if owner is None:
+        return "make release-check"
+    if owner.name != "Makefile.fragment":
+        return "make release-check"
+    makefile = repo_root / "Makefile"
+    if makefile.is_file() and _makefile_fragment_include_count(makefile) == 1:
+        return "make release-check"
+    return "make -f Makefile.fragment release-check"
 
 
 def _validate_release_gate_command_semantics(

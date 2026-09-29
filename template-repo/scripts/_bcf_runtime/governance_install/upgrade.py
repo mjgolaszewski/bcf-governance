@@ -506,7 +506,7 @@ def _upgrade_makefile_fragment(target_root: Path) -> None:
                 f"\t@for gate in {' '.join(gate_targets)}; do \\",
                 "\t\t$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output $(BCF_EVIDENCE_DIR)/$$gate || exit $$?; \\",
                 "\tdone",
-                "\t$(MAKE) governance-truthfulness",
+                "\t$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)",
             ]
         text = "\n".join([*lines[:start], *replacement, *lines[end:]]) + "\n"
     path.write_text(text, encoding="utf-8")

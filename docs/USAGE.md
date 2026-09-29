@@ -663,9 +663,11 @@ declare its local identity explicitly with `--local-producer-id`; the immutable
 session then governs receipt producer binding instead of ambient provider
 environment variables.
 
-An existing repository may merge the generated `Makefile.fragment` recipes into
-`Makefile` or include that fragment as one exact source with `include`,
-`-include`, or `sinclude`. BCF resolves that declared owner mechanically and
+An existing repository keeps its consumer-owned `Makefile` byte-for-byte and
+runs `make -f Makefile.fragment release-check`; no recipe merge or manual
+forward-port is required. A repository may expose the shorter developer alias
+by including the generated fragment as one exact source with `include`,
+`-include`, or `sinclude`. BCF resolves the generated owner mechanically and
 rejects missing, duplicate, multi-source, variable, wildcard, or mixed ownership.
 
 Dependent evidence producers select the session mechanically:

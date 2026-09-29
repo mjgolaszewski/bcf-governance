@@ -15,7 +15,7 @@ Run the configured release gate from the repo root:
 
 ```bash
 python3 -m pip install -r requirements-governance.txt
-make release-check
+make -f Makefile.fragment release-check
 ```
 
 Lite runs only governance validation and exposure scanning. Standard and
@@ -38,6 +38,10 @@ registered `governance/ci-extensions/*.yml` files. Do not hand-author
 applicability or generated workflow YAML. Use `bcf profile promote` with either `--check` or
 `--apply` and a complete profile contract to change profiles. Make targets remain developer aliases;
 their command text is not verification.
+Fresh repositories receive a `Makefile` alias that includes the generated
+fragment, so `make release-check` is equivalent. Existing repositories keep
+their consumer-owned `Makefile` byte-for-byte and execute the generated owner
+directly; no manual merge or forward-port is required.
 
 An absent `profile_contract_version` means v1. Fresh Standard and Regulated
 installs default to v3; Lite defaults to v1. Promote explicitly with

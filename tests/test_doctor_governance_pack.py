@@ -10,7 +10,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 try:
     from scripts import doctor_governance_pack as doctor
-    from scripts.governance_validation import phase_catalog
+    from scripts.governance_validation import phase_catalog, release_gates
 finally:
     sys.path.pop(0)
 
@@ -108,6 +108,28 @@ def test_doctor_accepts_canonical_selective_plan_capture_for_v3(tmp_path: Path) 
     blockers, _, _ = doctor._release_gate_diagnostics(repo)
 
     assert "release-check does not capture typed gate evidence" not in blockers
+
+
+def test_doctor_uses_generated_release_owner_when_consumer_makefile_is_preserved(
+    tmp_path: Path,
+) -> None:
+    repo = _release_check_repo(
+        tmp_path,
+        contract_version="3.0",
+        capture="python scripts/capture_governance_shard.py --all-planned",
+    )
+    (repo / "Makefile").write_text(
+        "application:\n\t@echo application\n\n"
+        "release-check:\n\t@for gate in test; do echo $$gate; done\n",
+        encoding="utf-8",
+    )
+
+    blockers, _, _ = doctor._release_gate_diagnostics(repo)
+
+    assert "release-check does not capture typed gate evidence" not in blockers
+    assert release_gates.canonical_release_check_command(repo) == (
+        "make -f Makefile.fragment release-check"
+    )
 
 
 def test_doctor_rejects_v3_shard_capture_that_ignores_selective_plan(

@@ -15,7 +15,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   partial, mismatched, or unauthenticated upgrades now fail before mutation.
 - Made local release execution consume the canonical selective evidence plan,
   so preflight-satisfied claims are not incorrectly reintroduced by a static
-  gate list.
+  gate list; existing adopters now execute the generated release surface
+  directly without rewriting or depending on a preserved consumer `Makefile`.
 
 ## [2.1.4] - 2026-09-28
 

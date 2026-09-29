@@ -49,7 +49,7 @@ def write_makefile(repo_root: Path, contract: dict[str, Any]) -> None:
             f"\t@for gate in {targets}; do \\",
             "\t\t$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output $(BCF_EVIDENCE_DIR)/$$gate || exit $$?; \\",
             "\tdone",
-            "\t$(MAKE) governance-truthfulness",
+            "\t$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)",
             "",
         ]
     )

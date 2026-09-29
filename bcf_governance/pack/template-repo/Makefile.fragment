@@ -18,4 +18,4 @@ release-check:
 	@for gate in governance-exposure-scan governance-validate; do \
 		$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output $(BCF_EVIDENCE_DIR)/$$gate || exit $$?; \
 	done
-	$(MAKE) governance-truthfulness
+	$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)
