@@ -245,6 +245,34 @@ def test_negative_control_preflight_reports_every_stale_oracle_node(tmp_path: Pa
     assert "another-stale-oracle-must-fail" in str(captured.value)
 
 
+def test_negative_control_preflight_resolves_cross_gate_oracle_owner(
+    tmp_path: Path,
+) -> None:
+    repo = _committed_repo(tmp_path, "owner.py", "AUTHORITY = 'new'\n")
+    manifest = repo / "governance/test-manifests/contract-test.txt"
+    manifest.parent.mkdir(parents=True)
+    manifest.write_text("tests.test_owner::test_current\n", encoding="utf-8")
+    (repo / "governance/gate-contracts.yml").write_text(
+        "gates:\n"
+        "  contract-test:\n"
+        "    evidence:\n"
+        "      test_contract:\n"
+        "        selectors: [tests/test_owner.py]\n"
+        "        expected_node_manifest: governance/test-manifests/contract-test.txt\n"
+        "  security-secret-scan:\n"
+        "    evidence: {}\n"
+        "    negative_controls:\n"
+        "    - id: cross-gate-oracle\n"
+        "      mutation: {path: owner.py, search: new, replace: mutant}\n"
+        "      oracle:\n"
+        "        kind: test_node_failure\n"
+        "        node_ids: [tests.test_owner::test_current]\n",
+        encoding="utf-8",
+    )
+
+    assert preflight.stale_negative_control_oracles(repo) == []
+
+
 def test_lifecycle_authoring_is_not_an_execution_front_door() -> None:
     source = Path(preflight.__file__).read_text(encoding="utf-8")
     assert "_closure_authoring" not in source

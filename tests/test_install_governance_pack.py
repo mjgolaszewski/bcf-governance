@@ -3,8 +3,11 @@ from __future__ import annotations
 import importlib.util
 import hashlib
 import json
+import os
+import shutil
 import subprocess
 import sys
+import venv
 from pathlib import Path
 
 import pytest
@@ -16,6 +19,41 @@ from bcf_governance.tooling.runtime_capacity import EXECUTION_STATE_POLICY
 REPO_ROOT = Path(__file__).resolve().parents[1]
 INSTALLER = REPO_ROOT / "scripts" / "install_governance_pack.py"
 DOCTOR = REPO_ROOT / "scripts" / "doctor_governance_pack.py"
+
+
+def _candidate_source_runtime(root: Path) -> tuple[Path, dict[str, str]]:
+    """Bind child CLI processes to the exact candidate source under test."""
+
+    venv.EnvBuilder(with_pip=False, system_site_packages=True).create(root)
+    python = root / "bin/python"
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if key not in {"PYTHONHOME", "PYTHONPATH", "VIRTUAL_ENV"}
+    }
+    purelib = subprocess.run(
+        [str(python), "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"],
+        env=environment,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    installed = Path(purelib) / "bcf_governance"
+    shutil.copytree(
+        REPO_ROOT / "bcf_governance",
+        installed,
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+    )
+    resolved = subprocess.run(
+        [str(python), "-c", "import bcf_governance; print(bcf_governance.__file__)"],
+        cwd=root,
+        env=environment,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    assert Path(resolved).resolve() == (installed / "__init__.py").resolve()
+    return python, environment
 
 
 def _load_installer_module():
@@ -376,6 +414,56 @@ def test_upgrade_retires_only_declared_self_authority_pack_surfaces(
     assert "validation: strict pass" in result.stdout
     assert all(not (target / relative).exists() for relative in excluded)
     assert retained.read_bytes() == before
+
+
+def test_upgrade_reconcile_uses_candidate_tree_after_retiring_tracked_self_authority(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "upgrade-tracked-self-authority"
+    _run_installer(target, "--profile", "lite", "--require-strict-validation")
+    contract = yaml.safe_load(
+        (REPO_ROOT / "governance/self-overlays.yml").read_text(encoding="utf-8")
+    )
+    excluded = {
+        relative
+        for overlay in contract["overlays"]
+        for relative in overlay["adopter_excluded_pack_surfaces"]
+    }
+    for relative in excluded:
+        destination = target / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes((REPO_ROOT / "template-repo" / relative).read_bytes())
+    subprocess.run(["git", "add", "."], cwd=target, check=True)
+    subprocess.run(
+        ["git", "commit", "--quiet", "-m", "adopter before upgrade"],
+        cwd=target,
+        check=True,
+    )
+
+    _run_installer(target, "--upgrade", "--profile", "lite", "--require-strict-validation")
+    tool_python, tool_environment = _candidate_source_runtime(
+        tmp_path / "candidate-tool-runtime"
+    )
+
+    result = subprocess.run(
+        [
+            str(tool_python),
+            "-m",
+            "bcf_governance.cli",
+            "reconcile",
+            "--repo-root",
+            str(target),
+            "--python",
+            sys.executable,
+            "--apply",
+        ],
+        cwd=REPO_ROOT,
+        env=tool_environment,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert all(not (target / relative).exists() for relative in excluded)
 
 
 def test_upgrade_reconciles_graph_owned_workflows_before_strict_validation(

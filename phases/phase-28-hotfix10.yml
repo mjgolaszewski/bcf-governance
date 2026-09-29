@@ -1,0 +1,44 @@
+document:
+  kind: hotfix_execution_log
+  name: P28-HF10 Hotfix Log
+  id: bcf-governance-phase-28-hotfix10
+  version: 1.0.0
+  generated_at_utc: '2026-09-28T00:00:00Z'
+  status: completed
+  path: phases/phase-28-hotfix10.yml
+hotfix:
+  id: P28-HF10
+  mode: full
+  related_phase_id: P28
+  hotfix_number: 10
+  summary: Qualify exact candidate-tree adoption before immutable publication
+execution_evidence:
+  planned_commands:
+  - bcf ci submit --intent closure
+  executed_commands:
+  - focused candidate-tree inventory, installer-upgrade, and lifecycle-frontier regression suites
+  notes:
+  - Released v2.1.3 adopter qualification failed before evidence allocation because semantic discovery treated a tracked deletion as present; a second adopter could not select its unique completed bounded frontier while unrelated work remained active.
+  - Candidate-tree discovery now uses tracked plus nonignored additions minus working-tree deletions, and post-merge scope derives the unique completed dependency frontier independently of unrelated active work.
+  - A pre-gate Racecar replay proved provider-bound prospective validation incorrectly resolved optional controller authority for an executable-only adopter; canonical workflow custody remains mandatory while controller resolution now derives solely from the adopter graph.
+  - The repaired pre-gate replay then proved cheap preflight and negative-control execution assumed the oracle belonged to the mutated gate; one cached manifest index now resolves a unique most-specific test producer, rejects ambiguity, and proves the exact oracle before and after mutation.
+  - The next full Racecar replay proved the execution-state allocator treated the adopter's durable database root as BCF namespace inventory; ephemeral and declared-shared namespaces now live under a distinct BCF-owned runtime root, so durable workload state is preserved and unexplained state inside the governed namespace still fails closed.
+  - The subsequent replay proved local prospective evidence omitted environment bindings authored on the exact pull-request producer job and then distinguished the actual local checkout from detached source worktrees; the canonical graph now selects one exact job per gate and resolves its workspace expression to the checkout, preserving explicitly declared independently admitted shared inputs while detached source and BCF execution-state isolation remain unchanged.
+  - Immutable v2.1.4 publication is forbidden until the exact final candidate package passes both preserved real-adopter install, reconcile, and prospective-validation fixtures.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

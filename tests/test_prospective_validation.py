@@ -90,6 +90,8 @@ def test_planned_evidence_stops_on_first_failed_producer(
         }))
         return receipt
     monkeypatch.setattr(prospective, "capture_gate", capture)
+    (tmp_path / "session.json").write_text("{}")
+    bindings = {gate: {} for gate in ("first", "second")}
     with pytest.raises(
         prospective.ProspectiveValidationError,
         match="first failed with exit 3.*causal diagnostic",
@@ -100,8 +102,59 @@ def test_planned_evidence_stops_on_first_failed_producer(
             session_manifest=tmp_path / "session.json",
             session_root=tmp_path / "receipts",
             producers=("first", "second"),
+            producer_environments=bindings,
         )
     assert seen == ["first"]
+
+
+def test_planned_evidence_projects_exact_graph_job_environment(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    prepared = tmp_path / ".artifacts/prepared"
+    prepared.mkdir(parents=True)
+    prepared.joinpath("ready").write_text("admitted")
+    observed: list[tuple[str, dict[str, str], str]] = []
+
+    def capture(_root: Path, gate: str, output: Path, **kwargs: object) -> Path:
+        environment = dict(kwargs["job_environment"])
+        workspace = Path(environment["PREPARED_ROOT"]).parents[1]
+        observed.append(
+            (gate, environment, Path(environment["PREPARED_ROOT"], "ready").read_text())
+        )
+        output.mkdir(parents=True)
+        receipt = output / f"{gate}.evidence.json"
+        receipt.write_text(
+            json.dumps({
+                "result": "passed",
+                "observations": {"duration_ms": 1},
+                "claims": [],
+                "behavioral_probes": [],
+                "started_at": "2026-09-29T00:00:00Z",
+                "timestamp": "2026-09-29T00:00:01Z",
+            }),
+            encoding="utf-8",
+        )
+        return receipt
+
+    monkeypatch.setattr(prospective, "capture_gate", capture)
+    (tmp_path / "session.json").write_text("{}")
+    prospective._capture_planned_evidence(
+        tmp_path,
+        python_executable=Path("/python"),
+        session_manifest=tmp_path / "session.json",
+        session_root=tmp_path / "receipts",
+        producers=("first", "second", "third"),
+        producer_environments={
+            producer: {"PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"}
+            for producer in ("first", "second", "third")
+        },
+    )
+
+    first = Path(observed[0][1]["PREPARED_ROOT"]).parents[1]
+    second = Path(observed[1][1]["PREPARED_ROOT"]).parents[1]
+    third = Path(observed[2][1]["PREPARED_ROOT"]).parents[1]
+    assert first == second == third == tmp_path
+    assert [item[2] for item in observed] == ["admitted", "admitted", "admitted"]
 
 
 def _runner(command: list[str], **_kwargs: object) -> Result:
@@ -189,6 +242,11 @@ def _front_door(monkeypatch: pytest.MonkeyPatch, trace: list[str]) -> None:
     monkeypatch.setattr(
         prospective, "_validate_train_telemetry", lambda *_args: None
     )
+    monkeypatch.setattr(
+        prospective,
+        "local_gate_job_environments",
+        lambda _graph, producers: {producer: {} for producer in producers},
+    )
 
 
 def test_deterministic_walk_orders_reconcile_before_preflight_and_never_claims_authority(
@@ -240,8 +298,18 @@ def test_provider_effective_controller_is_mechanically_bound_to_prospective_pref
     )
     monkeypatch.setattr(
         prospective,
+        "graph_controller_policy_path",
+        lambda *_args: "governance/self-governance-policy.yml",
+    )
+    monkeypatch.setattr(
+        prospective,
+        "verify_provider_workflow_authority",
+        lambda *_args, **_kwargs: 1,
+    )
+    monkeypatch.setattr(
+        prospective,
         "effective_controller_authority",
-        lambda api, *, repository, repo_root: {
+        lambda api, *, repository: {
             "controller_commit_sha": pin["BCF_BOOTSTRAP_COMMIT_SHA"],
             "controller_bundle_sha256": pin["BCF_BOOTSTRAP_WHEEL_SHA256"],
         },
@@ -284,6 +352,11 @@ def test_direct_protected_main_lane_does_not_resolve_controller_authority(
         prospective,
         "effective_controller_authority",
         lambda *_args, **_kwargs: pytest.fail("direct adopter resolved a controller"),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "verify_provider_workflow_authority",
+        lambda *_args, **_kwargs: pytest.fail("direct adopter resolved provider authority"),
     )
     monkeypatch.setattr(
         prospective,
@@ -409,7 +482,7 @@ def test_provider_workflow_identity_mismatch_stops_before_prospective_evidence(
     )
     monkeypatch.setattr(
         prospective,
-        "effective_controller_authority",
+        "verify_provider_workflow_authority",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(
             prospective.GitHubControllerError("provider workflow ID mismatched")
         ),
@@ -430,6 +503,51 @@ def test_provider_workflow_identity_mismatch_stops_before_prospective_evidence(
             repository="owner/repo",
             provider_api=object(),  # type: ignore[arg-type]
         )
+
+
+def test_provider_bound_adopter_without_optional_controller_skips_controller_resolution(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    graph = {"workflows": [], "trusted_controller": {"kind": "executable"}}
+    authority_calls: list[str] = []
+    monkeypatch.setattr(
+        prospective,
+        "validate_ci_graph",
+        lambda *_args: SimpleNamespace(graph=graph),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "post_merge_evaluation",
+        lambda *_args: SimpleNamespace(lane="trusted_exact_main"),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "verify_provider_workflow_authority",
+        lambda _root, *, authority_path, api, repository: authority_calls.append(
+            f"{authority_path}:{repository}"
+        ),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "effective_controller_authority",
+        lambda *_args, **_kwargs: pytest.fail("optional controller was resolved"),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "_run_prospective_train",
+        lambda *_args, **kwargs: {"controller_authority": kwargs["controller_authority"]},
+    )
+
+    report = prospective.run_prospective_train(
+        tmp_path,
+        **TRAIN,
+        python_executable=Path("/python"),
+        repository="owner/repo",
+        provider_api=object(),  # type: ignore[arg-type]
+    )
+
+    assert authority_calls == ["governance/ci-authority.yml:owner/repo"]
+    assert report == {"controller_authority": None}
 
 
 def test_direct_protected_main_lane_is_closed_without_controller_or_release_authority() -> None:
@@ -890,7 +1008,7 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
                 "release_authority": False,
             },
             "verification_plan": {
-                "execution_dag": {"nodes": [{"producer": "test"}]}
+                "execution_dag": {"nodes": [{"producer": "test", "assigned_shard": 0}]}
             },
         },
     )
@@ -1075,7 +1193,7 @@ def test_full_walk_rejects_wrong_finalizer_truth_subject(
             "status": "pass",
             "self_controller": {"status": "current"},
             "verification_plan": {
-                "execution_dag": {"nodes": [{"producer": "test"}]}
+                "execution_dag": {"nodes": [{"producer": "test", "assigned_shard": 0}]}
             },
         },
     )

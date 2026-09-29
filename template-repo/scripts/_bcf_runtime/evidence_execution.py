@@ -147,6 +147,7 @@ def _execution_env(
     python_executable: Path,
     *,
     state_environment: dict[str, str] | None = None,
+    job_environment: dict[str, str] | None = None,
 ) -> tuple[dict[str, str], dict[str, Any]]:
     invocation = contract["invocation"]
     configured = invocation.get("env", {})
@@ -161,7 +162,24 @@ def _execution_env(
         raise EvidenceError(
             "gate cannot override execution-state environment: " + ", ".join(conflicts)
         )
-    missing = sorted(name for name in required if not isinstance(name, str) or name not in os.environ)
+    projected = os.environ
+    unsupported: list[str] = []
+    if job_environment is not None:
+        projected = dict(job_environment)
+        unsupported = sorted(
+            name
+            for name, value in projected.items()
+            if "${{" in value
+            or "}}" in value
+            or "\0" in value
+            or "\n" in value
+            or "\r" in value
+        )
+    if unsupported:
+        raise EvidenceError(
+            "unsupported local graph environment: " + ", ".join(unsupported)
+        )
+    missing = sorted(name for name in required if not isinstance(name, str) or name not in projected)
     if missing:
         raise EvidenceError("required gate environment is missing: " + ", ".join(missing))
     runtime_home = worktree.parent / ".bcf-home"
@@ -185,7 +203,7 @@ def _execution_env(
             if os.environ.get(name)
         },
         **{str(key): str(value) for key, value in configured.items()},
-        **{str(name): os.environ[str(name)] for name in required},
+        **{str(name): projected[str(name)] for name in required},
         **(state_environment or {}),
     }
     return env, {
@@ -205,6 +223,7 @@ def _run_with_execution_state(
     session_id: str,
     execution_id: str,
     require_state: bool,
+    job_environment: dict[str, str] | None = None,
 ) -> tuple[
     subprocess.CompletedProcess[str],
     dict[str, str],
@@ -214,7 +233,9 @@ def _run_with_execution_state(
     """Run once with exact execution-state allocation and terminal retirement."""
 
     if not require_state:
-        env, metadata = _execution_env(worktree, contract, python_executable)
+        env, metadata = _execution_env(
+            worktree, contract, python_executable, job_environment=job_environment
+        )
         return (
             _run(
                 command,
@@ -241,6 +262,7 @@ def _run_with_execution_state(
             contract,
             python_executable,
             state_environment=lease.environment(),
+            job_environment=job_environment,
         )
         result = _run(
             command,

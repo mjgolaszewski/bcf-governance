@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from .semantic_adoption_dependencies import SemanticDependencyError, resolve_dependency_file
+from .semantic_source_paths import candidate_source_files
 
 
 class TypeScriptDiscoveryError(RuntimeError):
@@ -93,32 +94,14 @@ def contract_from_mapping(payload: object) -> TypeScriptContract:
 
 
 def tracked_typescript_files(repo_root: Path) -> list[Path]:
-    """Discover the complete tracked TypeScript population before declarations."""
-    result = subprocess.run(
-        ["git", "ls-files", "-z", "--", "*.ts", "*.tsx", "*.mts", "*.cts"],
-        cwd=repo_root,
-        capture_output=True,
-        check=False,
+    """Discover the TypeScript population present in the proposed candidate tree."""
+    return candidate_source_files(
+        repo_root,
+        ("*.ts", "*.tsx", "*.mts", "*.cts"),
+        label="TypeScript",
+        error=TypeScriptDiscoveryError,
+        allow_empty=True,
     )
-    if result.returncode != 0:
-        raise TypeScriptDiscoveryError("tracked TypeScript discovery requires Git")
-    paths: list[Path] = []
-    for raw in result.stdout.split(b"\0"):
-        if not raw:
-            continue
-        try:
-            relative = Path(raw.decode("utf-8"))
-        except UnicodeDecodeError as exc:
-            raise TypeScriptDiscoveryError("tracked TypeScript path is not UTF-8") from exc
-        path = repo_root / relative
-        if relative.is_absolute() or ".." in relative.parts:
-            raise TypeScriptDiscoveryError("tracked TypeScript path escapes the repository")
-        if path.is_symlink() or not path.is_file():
-            raise TypeScriptDiscoveryError(
-                f"tracked TypeScript source must be a regular file: {relative.as_posix()}"
-            )
-        paths.append(path)
-    return sorted(paths)
 
 
 def _inside(relative: str, roots: tuple[str, ...]) -> bool:

@@ -16,6 +16,8 @@ from contextlib import contextmanager
 
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
 from .ci_graph_post_merge import post_merge_evaluation
+from .ci_authority_pins import verify_provider_workflow_authority
+from .ci_controller_policy import graph_controller_policy_path
 from .ci_authority_prospective_lanes import (
     ProspectiveLaneError,
     prospective_policy_binding,
@@ -24,6 +26,7 @@ from .ci_authority_prospective_lanes import (
 )
 from .ci_exact_main_truth import validate_exact_main_truth_payload
 from .ci_github_identity import GitHubControllerError
+from .ci_graph_execution import local_gate_job_environments
 from .controller_custody_prospective import validate_controller_custody_graph
 from .evaluation_scope import (
     EvaluationIntent,
@@ -283,15 +286,21 @@ def _capture_planned_evidence(
     session_manifest: Path,
     session_root: Path,
     producers: tuple[str, ...],
+    producer_environments: dict[str, dict[str, str]],
 ) -> list[dict[str, Any]]:
     observations: list[dict[str, Any]] = []
     for producer in producers:
+        environment = {
+            name: value.replace("${{ github.workspace }}", str(repo_root))
+            for name, value in producer_environments[producer].items()
+        }
         receipt = capture_gate(
             repo_root,
             producer,
             session_root / producer,
             python_executable=python_executable,
             session_manifest=session_manifest,
+            job_environment=environment,
         )
         if not receipt.is_file():
             raise ProspectiveValidationError(
@@ -299,17 +308,19 @@ def _capture_planned_evidence(
             )
         payload = json.loads(receipt.read_text(encoding="utf-8"))
         if payload.get("result") != "passed":
-            observations = payload.get("observations")
+            producer_observations = payload.get("observations")
             exit_code = (
-                observations.get("exit_code")
-                if isinstance(observations, dict)
+                producer_observations.get("exit_code")
+                if isinstance(producer_observations, dict)
                 else "unknown"
             )
             diagnostics = []
             for suffix in ("stderr", "stdout"):
                 path = receipt.parent / f"{producer}.{suffix}.txt"
                 if path.is_file():
-                    value = path.read_text(encoding="utf-8", errors="replace").strip()
+                    value = path.read_text(
+                        encoding="utf-8", errors="replace"
+                    ).strip()
                     if value:
                         diagnostics.append(f"{suffix}: {value[-20000:]}")
             raise ProspectiveValidationError(
@@ -547,7 +558,17 @@ def _run_prospective_train(
 
         verification_plan = preflight["verification_plan"]
         nodes = verification_plan["execution_dag"]["nodes"]
-        producers = tuple(sorted({str(node["producer"]) for node in nodes}))
+        producers = tuple(str(node["producer"]) for node in nodes)
+        if len(producers) != len(set(producers)) or any(not value for value in producers):
+            raise ProspectiveValidationError(
+                "planned local producer topology is incomplete or ambiguous"
+            )
+        try:
+            producer_environments = local_gate_job_environments(
+                validate_ci_graph(root).graph, producers
+            )
+        except CIGraphError as exc:
+            raise ProspectiveValidationError(str(exc)) from exc
         try:
             session = allocate_session(
                 root,
@@ -567,6 +588,7 @@ def _run_prospective_train(
                 session_manifest=session.manifest_path,
                 session_root=session.root,
                 producers=producers,
+                producer_environments=producer_environments,
             ) or []
             evidence_duration = _elapsed_ms(evidence_started)
             measurements.extend(
@@ -718,7 +740,8 @@ def run_prospective_train(
         raise ProspectiveValidationError(str(exc)) from exc
     controller_authority = None
     try:
-        lane = post_merge_evaluation(validate_ci_graph(repo_root.resolve()).graph).lane
+        graph = validate_ci_graph(repo_root.resolve()).graph
+        lane = post_merge_evaluation(graph).lane
     except CIGraphError as exc:
         raise ProspectiveValidationError(str(exc)) from exc
     if repository is not None and lane == "trusted_exact_main":
@@ -726,8 +749,16 @@ def run_prospective_train(
             raise ProspectiveValidationError(
                 "provider-authenticated prospective validation requires a provider API"
             )
-        controller_authority = effective_controller_authority(
-            provider_api, repository=repository, repo_root=repo_root.resolve())
+        verify_provider_workflow_authority(
+            repo_root.resolve(),
+            authority_path=Path("governance/ci-authority.yml"),
+            api=provider_api,
+            repository=repository,
+        )
+        if graph_controller_policy_path(graph) is not None:
+            controller_authority = effective_controller_authority(
+                provider_api, repository=repository
+            )
 
     return _run_prospective_train(
         repo_root,

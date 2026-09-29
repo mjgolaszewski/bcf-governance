@@ -24,6 +24,7 @@ from bcf_governance.tooling.ci_graph_execution import (
     exact_main_evaluation,
     job_execution_issues,
     job_required_environment,
+    local_gate_job_environments,
     workflow_input_issues,
 )
 from bcf_governance.tooling.ci_graph_post_merge import (
@@ -135,7 +136,7 @@ def test_exact_main_evaluation_has_one_canonical_admission_and_truth_scope() -> 
         ("active", ["TODO", "TODO"], ("pr", None)),
         ("active", ["IN_PROGRESS", "TODO"], ("pr", None)),
         ("active", ["DONE", "TODO"], ("workitem", "P01-P0-01")),
-        ("active", ["DONE", "IN_PROGRESS"], ("pr", None)),
+        ("active", ["DONE", "IN_PROGRESS"], ("workitem", "P01-P0-01")),
         ("active", ["DONE", "DONE"], ("workitem", "P01-P0-02")),
         ("completed", ["DONE", "DONE"], ("closure", None)),
     ],
@@ -180,6 +181,58 @@ def test_post_merge_scope_is_derived_from_authored_lifecycle(
     )
 
     assert authored_post_merge_scope(tmp_path) == expected
+
+
+def test_post_merge_scope_selects_unique_done_frontier_amid_unrelated_active_work(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "phases").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump(
+            {
+                "active_phase": {
+                    "id": "P02",
+                    "workitems": "plans/phase-02-workitems.yml",
+                    "log": "phases/phase-02-log.yml",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    workitems = [
+        {
+            "id": "P02-CI-BCF-210-04",
+            "status": "DONE",
+            "acceptance": ["migration_complete"],
+        },
+        {
+            "id": "P02-CI-BCF-210-05",
+            "status": "IN_PROGRESS",
+            "acceptance": ["product_work"],
+        },
+        {
+            "id": "P02-RUNNER-01",
+            "status": "BLOCKED",
+            "acceptance": ["runner_work"],
+        },
+        {
+            "id": "P02-HISTORICAL-ISLAND",
+            "status": "DONE",
+            "acceptance": ["historical_work"],
+        },
+    ]
+    (tmp_path / "plans/phase-02-workitems.yml").write_text(
+        yaml.safe_dump({"workitems": workitems}), encoding="utf-8"
+    )
+    (tmp_path / "phases/phase-02-log.yml").write_text(
+        yaml.safe_dump({"document": {"status": "active"}}), encoding="utf-8"
+    )
+
+    assert authored_post_merge_scope(tmp_path) == (
+        "workitem",
+        "P02-CI-BCF-210-04",
+    )
 
 
 def test_reconcile_replaces_stale_adopter_closure_with_pr_progress(
@@ -1306,6 +1359,47 @@ def test_required_environment_is_bound_once_and_validated_before_checkout(
     )
     assert bindings == {"REQUIRED_TOKEN": "${{ secrets.REQUIRED_TOKEN }}"}
     assert issues == ()
+
+
+def test_local_gate_environment_comes_from_exact_pr_producer_job(
+    tmp_path: Path,
+) -> None:
+    graph = {
+        "workflows": [
+            {
+                "id": "governance",
+                "role": "exact-main",
+                "events": [{"type": "pull_request"}, {"type": "push"}],
+                "environment": {"SHARED": "literal"},
+                "jobs": [
+                    {
+                        "id": "evidence",
+                        "environment": {
+                            "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"
+                        },
+                        "executor": {
+                            "kind": "gate_shard",
+                            "gates": ["test"],
+                            "shard_key": "shard",
+                            "shard_count": 4,
+                        },
+                    }
+                ],
+            }
+        ]
+    }
+
+    assert local_gate_job_environments(graph, ("test",)) == {
+        "test": {
+            "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared",
+            "SHARED": "literal",
+        }
+    }
+
+    graph["workflows"][0]["jobs"].append(copy.deepcopy(graph["workflows"][0]["jobs"][0]))
+    graph["workflows"][0]["jobs"][1]["id"] = "duplicate"
+    with pytest.raises(CIGraphError, match="does not have one exact pull-request producer job"):
+        local_gate_job_environments(graph, ("test",))
 
 
 def test_missing_or_conflicting_required_environment_fails_at_graph_compile(

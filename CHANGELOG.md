@@ -6,6 +6,29 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [2.1.4] - 2026-09-28
+
+### Fixed
+
+- Made semantic source inventories reflect the exact candidate tree during
+  upgrades and made bounded certification select a unique completed lifecycle
+  frontier without discarding unrelated concurrent work; provider-bound
+  prospective validation now authenticates workflow custody while resolving
+  controller authority only when the adopter graph explicitly owns it, and
+  cross-gate negative controls derive their exact test producer from the
+  adopter's governed manifests for both preflight and execution. Execution
+  namespaces now live under their own BCF-owned runtime root, leaving declared
+  durable workload database state untouched while retaining exact fail-closed
+  ownership and terminal retirement. Local prospective execution now derives
+  each gate's exact pull-request producer-job environment and resolves its
+  workspace binding to the actual local checkout, preserving explicitly
+  declared and independently admitted shared inputs while detached source and
+  BCF execution-state isolation remain unchanged. Release and trusted-controller
+  packages now materialize exact committed source, excluding ignored build-cache
+  bytes from artifact authority. Diagnostic mutation controls no longer depend
+  on unrelated test-producer manifests; test-node controls retain exact governed
+  producer resolution.
+
 ## [2.1.3] - 2026-09-28
 
 ### Fixed
@@ -1280,7 +1303,8 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.3...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.4...HEAD
+[2.1.4]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.3...v2.1.4
 [2.1.3]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.2...v2.1.3
 [2.1.2]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.0...v2.1.1

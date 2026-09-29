@@ -65,6 +65,36 @@ def test_release_builder_has_no_source_test_replay_or_compiler_bootstrap() -> No
     assert "pytest" not in source
 
 
+def test_release_builder_builds_from_exact_head_materialization(tmp_path: Path, monkeypatch) -> None:
+    module = _module(ROOT / ".github/scripts/build_release_bundle.py")
+    monkeypatch.setattr(module, "REPO_ROOT", tmp_path)
+    calls = []
+
+    class Source:
+        def __enter__(self):
+            return Path("/tmp/exact-head-source")
+
+        def __exit__(self, *_args):
+            return None
+
+    monkeypatch.setattr(module, "exact_head_source", lambda _root: Source())
+
+    def stop(argv, **kwargs):
+        if argv[:3] == [sys.executable, "-m", "build"]:
+            calls.append(kwargs["cwd"])
+            raise RuntimeError("reached build boundary")
+
+    monkeypatch.setattr(module, "_run", stop)
+    monkeypatch.setattr(module.subprocess, "run", lambda *_args, **_kwargs: SimpleNamespace(stdout="1\n"))
+    with pytest.raises(RuntimeError, match="reached build boundary"):
+        module.build(
+            Path("output"),
+            authorization=Path("authorization.json"),
+            artifact_name="fixture",
+        )
+    assert calls == [Path("/tmp/exact-head-source")]
+
+
 @pytest.mark.parametrize("kind", ["wheel", "sdist"])
 def test_standalone_package_qualifiers_seed_compiler_before_consumer_or_source_tests(tmp_path: Path, monkeypatch, kind: str) -> None:
     module = _module(ROOT / ".github/scripts/test_release_artifacts.py")

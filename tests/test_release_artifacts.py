@@ -62,6 +62,33 @@ def test_controller_builder_rejects_dirty_tree_before_expense(
         )
 
 
+def test_exact_head_build_source_excludes_ignored_stale_payload(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "--quiet"], cwd=repo, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "fixture@example.invalid"],
+        cwd=repo,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Fixture"], cwd=repo, check=True
+    )
+    (repo / ".gitignore").write_text("build/\n", encoding="utf-8")
+    (repo / "source.py").write_text("VALUE = 1\n", encoding="utf-8")
+    subprocess.run(["git", "add", "."], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "--quiet", "-m", "fixture"], cwd=repo, check=True)
+    stale = repo / "build/lib/deleted.py"
+    stale.parent.mkdir(parents=True)
+    stale.write_text("STALE = True\n", encoding="utf-8")
+
+    with controller_builder.exact_head_source(repo) as source:
+        assert (source / "source.py").read_text(encoding="utf-8") == "VALUE = 1\n"
+        assert not (source / "build").exists()
+
+    assert stale.is_file()
+
+
 def test_release_artifact_entrypoint_bootstraps_clean_source_checkout() -> None:
     environment = {
         key: value

@@ -15,6 +15,7 @@ from bcf_governance.tooling.test_manifests import (
     check_gate_selectors,
     collect_nodes,
     declared_test_gates,
+    resolve_oracle_test_gate,
     update_gate,
     update_all,
 )
@@ -141,6 +142,61 @@ def test_all_manifests_share_one_collection_and_partition_exactly(
     counts = check_all(repo, python_executable=sys.executable)
     assert calls == 2
     assert counts == {"focused": 1, "test": 2}
+
+
+def test_oracle_producer_resolves_preferred_or_unique_most_specific_manifest(
+    tmp_path: Path,
+) -> None:
+    repo = _repo(tmp_path)
+    payload = yaml.safe_load(
+        (repo / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    )
+    payload["gates"]["focused"] = {
+        "evidence": {
+            "test_contract": {
+                "selectors": ["tests/test_sample.py::test_one"],
+                "expected_node_manifest": "governance/test-manifests/focused.txt",
+            }
+        }
+    }
+    (repo / "governance/gate-contracts.yml").write_text(
+        yaml.safe_dump(payload, sort_keys=False), encoding="utf-8"
+    )
+    update_all(repo, python_executable=sys.executable)
+
+    assert resolve_oracle_test_gate(
+        repo, ["tests.test_sample::test_one"]
+    ) == "focused"
+    assert resolve_oracle_test_gate(
+        repo, ["tests.test_sample::test_one"], preferred_gate="test"
+    ) == "test"
+    assert resolve_oracle_test_gate(
+        repo,
+        ["tests.test_sample::test_one", "tests.test_sample::test_two"],
+    ) == "test"
+
+
+def test_oracle_producer_rejects_ambiguous_equal_manifests(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    payload = yaml.safe_load(
+        (repo / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    )
+    for gate_id in ("left", "right"):
+        payload["gates"][gate_id] = {
+            "evidence": {
+                "test_contract": {
+                    "selectors": ["tests/test_sample.py::test_one"],
+                    "expected_node_manifest": f"governance/test-manifests/{gate_id}.txt",
+                }
+            }
+        }
+    (repo / "governance/gate-contracts.yml").write_text(
+        yaml.safe_dump(payload, sort_keys=False), encoding="utf-8"
+    )
+    update_all(repo, python_executable=sys.executable)
+
+    with pytest.raises(ManifestError, match="producer is ambiguous"):
+        resolve_oracle_test_gate(repo, ["tests.test_sample::test_one"])
 
 
 def test_selector_map_preserves_function_class_unittest_nested_and_parameter_nodes(

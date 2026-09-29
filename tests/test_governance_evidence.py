@@ -42,6 +42,8 @@ allocate_session = EVIDENCE_MODULE.allocate_session
 select_session = EVIDENCE_MODULE.select_session
 local_producer_identity = EVIDENCE_MODULE.local_producer_identity
 negative_control_command = EVIDENCE_MODULE.negative_control_command
+execute_cross_gate_baseline = EVIDENCE_MODULE.execute_cross_gate_baseline
+NegativeControlOracleExecution = EVIDENCE_MODULE.NegativeControlOracleExecution
 project_graph_mutation = EVIDENCE_MODULE._project_graph_mutation
 apply_negative_control = EVIDENCE_MODULE._apply_negative_control
 
@@ -134,6 +136,68 @@ def test_test_node_control_derives_minimal_pytest_command(tmp_path: Path) -> Non
         "tests/test_ci_github_artifacts.py::test_identity[digest-artifact identity]",
         "--junitxml=.artifacts/junit/contract-test.xml",
     ]
+
+
+def test_cross_gate_oracle_baseline_executes_exact_resolved_node(
+    tmp_path: Path,
+) -> None:
+    worktree = tmp_path / "worktree"
+    worktree.mkdir()
+    contract = {
+        "target": "contract-test",
+        "test_contract": {
+            "selectors": ["tests/test_owner.py"],
+            "expected_node_manifest": "governance/test-manifests/contract-test.txt",
+            "junit_xml": ".artifacts/junit/contract-test.xml",
+        },
+    }
+    selector_map = _selector_map_from_nodes(
+        "contract-test", ["tests/test_owner.py::test_current"]
+    )
+    execution = NegativeControlOracleExecution(
+        "contract-test", contract, selector_map
+    )
+    observed: dict[str, object] = {}
+
+    def runner(*args: object, **kwargs: object) -> tuple[object, dict, dict, dict]:
+        command = args[3]
+        observed["command"] = command
+        observed["execution_id"] = kwargs["execution_id"]
+        junit = worktree / ".artifacts/junit/contract-test.xml"
+        junit.parent.mkdir(parents=True, exist_ok=True)
+        junit.write_text(
+            '<testsuite><testcase classname="tests.test_owner" '
+            'name="test_current"/></testsuite>',
+            encoding="utf-8",
+        )
+        return subprocess.CompletedProcess(command, 0, "", ""), {}, {}, {}
+
+    assert execute_cross_gate_baseline(
+        tmp_path,
+        worktree,
+        [sys.executable, "scripts/run_gate.py", "security-secret-scan"],
+        execution,
+        {
+            "id": "cross-gate",
+            "oracle": {
+                "kind": "test_node_failure",
+                "node_ids": ["tests.test_owner::test_current"],
+            },
+        },
+        Path(sys.executable),
+        session_id="session",
+        require_state=False,
+        runner=runner,
+    )
+    assert observed["command"] == [
+        sys.executable,
+        "-m",
+        "pytest",
+        "-q",
+        "tests/test_owner.py::test_current",
+        "--junitxml=.artifacts/junit/contract-test.xml",
+    ]
+    assert observed["execution_id"] == "negative-control-baseline:cross-gate"
 
 
 def test_test_node_control_preserves_class_based_raw_selector(tmp_path: Path) -> None:
@@ -265,13 +329,20 @@ def test_evidence_run_captures_process_artifacts_test_counts_and_negative_contro
     tmp_path: Path,
 ) -> None:
     repo = tmp_path / "repo"
+    job_workspace = tmp_path / "job-workspace"
+    job_workspace.mkdir()
+    prepared_root = job_workspace / ".artifacts/prepared"
     repo.mkdir()
     (repo / "governance").mkdir()
     (repo / ".gitignore").write_text(".artifacts/\n", encoding="utf-8")
     (repo / "gate.py").write_text(
-        """import pathlib
+        """import os
+import pathlib
 import sys
 PASS = True
+prepared = pathlib.Path(os.environ['PREPARED_ROOT'])
+if prepared != pathlib.Path(%r):
+    raise SystemExit('graph job environment was not resolved to its exact job workspace')
 failure = '' if PASS else '<failure>mutated</failure>'
 path = pathlib.Path('.artifacts/test.junit.xml')
 path.parent.mkdir(parents=True, exist_ok=True)
@@ -279,7 +350,7 @@ path.write_text(f'<testsuite tests="1" failures="{int(not PASS)}"><testcase clas
 print('collected 1 item')
 print('1 passed' if PASS else '1 failed')
 sys.exit(0 if PASS else 1)
-""",
+""" % str(prepared_root),
         encoding="utf-8",
     )
     (repo / "Makefile").write_text("test:\n\tpython gate.py\n", encoding="utf-8")
@@ -350,7 +421,7 @@ sys.exit(0 if PASS else 1)
                             "argv": ["python3", "gate.py"],
                             "cwd": ".",
                             "env": {},
-                            "required_env": [],
+                            "required_env": ["PREPARED_ROOT"],
                         },
                         "evidence": {
                             "kind": "test_suite",
@@ -376,7 +447,14 @@ sys.exit(0 if PASS else 1)
     _git(repo, "add", ".")
     _git(repo, "commit", "-m", "gate")
 
-    receipt_path = capture_gate(repo, "test", tmp_path / "evidence")
+    receipt_path = capture_gate(
+        repo,
+        "test",
+        tmp_path / "evidence",
+        job_environment={
+            "PREPARED_ROOT": str(prepared_root)
+        },
+    )
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
 
     assert receipt["subject"]["binding"] == "exact_tree"
@@ -662,6 +740,116 @@ def _enable_profile_v2(repo: Path) -> None:
     policy_path.write_text(yaml.safe_dump(policy, sort_keys=False), encoding="utf-8")
     _git(repo, "add", "governance-profile.yml", "governance/evidence-policy.yml")
     _git(repo, "commit", "-m", "enable profile v2")
+
+
+def test_cross_gate_negative_control_uses_exact_governed_test_producer(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "cross-gate-repo"
+    (repo / "governance/test-manifests").mkdir(parents=True)
+    (repo / "tests").mkdir()
+    (repo / ".gitignore").write_text(".artifacts/\n", encoding="utf-8")
+    (repo / "gate.py").write_text("print('security pass')\n", encoding="utf-8")
+    (repo / "owner.py").write_text("ENFORCE = True\n", encoding="utf-8")
+    (repo / "tests/test_owner.py").write_text(
+        "import owner\n\ndef test_inventory():\n    assert owner.ENFORCE\n",
+        encoding="utf-8",
+    )
+    node = "tests.test_owner::test_inventory"
+    (repo / "governance/test-manifests/contract-test.txt").write_text(
+        node + "\n", encoding="utf-8"
+    )
+    control = {
+        "id": "security-inventory",
+        "mutation": {
+            "path": "owner.py",
+            "search": "ENFORCE = True",
+            "replace": "ENFORCE = False",
+        },
+        "oracle": {"kind": "test_node_failure", "node_ids": [node]},
+    }
+    profile_gates = {
+        "contract-test": {
+            "target": "contract-test",
+            "status": "required",
+            "command_policy": "contract_tests",
+        },
+        "security-secret-scan": {
+            "target": "security-secret-scan",
+            "status": "required",
+            "command_policy": "security_secret_scan",
+        },
+    }
+    (repo / "governance-profile.yml").write_text(
+        yaml.safe_dump(
+            {
+                "profile_contract_version": "2.0",
+                "profile": {"selected": "standard"},
+                "release_gate_profile": {"gates": profile_gates},
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    (repo / "governance/evidence-policy.yml").write_text(
+        "gate_overrides: {}\n", encoding="utf-8"
+    )
+    test_contract = {
+        "selectors": ["tests/test_owner.py"],
+        "expected_node_manifest": "governance/test-manifests/contract-test.txt",
+        "junit_xml": ".artifacts/junit/contract-test.xml",
+    }
+    gates = {
+        "contract-test": {
+            "invocation": {
+                "argv": ["python3", "-m", "pytest", "-q", "tests/test_owner.py"],
+                "cwd": ".",
+                "env": {},
+                "required_env": [],
+            },
+            "evidence": {"kind": "test_suite", "test_contract": test_contract},
+            "negative_controls": [],
+        },
+        "security-secret-scan": {
+            "invocation": {
+                "argv": ["python3", "gate.py"],
+                "cwd": ".",
+                "env": {},
+                "required_env": [],
+            },
+            "evidence": {"kind": "gate"},
+            "negative_controls": [control],
+        },
+    }
+    (repo / "governance/gate-contracts.yml").write_text(
+        yaml.safe_dump({"gates": gates}, sort_keys=False), encoding="utf-8"
+    )
+    _git(repo, "init")
+    _git(repo, "config", "user.email", "evidence@example.test")
+    _git(repo, "config", "user.name", "Evidence Test")
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "cross gate")
+
+    session = allocate_session(
+        repo, tmp_path / "cross-gate-session", ["security-secret-scan"]
+    )
+    receipt = json.loads(
+        capture_gate(
+            repo,
+            "security-secret-scan",
+            session.root / "security-secret-scan",
+            python_executable=Path(sys.executable),
+            session_manifest=session.manifest_path,
+        ).read_text(encoding="utf-8")
+    )
+
+    assert receipt["result"] == "passed"
+    assert receipt["behavioral_probes"][0]["baseline_test_nodes_passed"] is True
+    assert receipt["behavioral_probes"][0]["oracle_observation"] == {
+        "satisfied": True,
+        "kind": "test_node_failure",
+        "failed_node_ids": [node],
+    }
 
 
 def test_capture_rejects_nonignored_untracked_helper_before_execution(tmp_path: Path) -> None:

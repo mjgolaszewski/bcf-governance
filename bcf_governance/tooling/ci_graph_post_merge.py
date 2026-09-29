@@ -19,7 +19,6 @@ from .ci_graph_yaml import load_yaml_path, render_yaml
 from .evidence_workitem_lifecycle import (
     WorkitemContractError,
     validate_workitem_dependencies,
-    workitem_predecessors,
 )
 
 
@@ -201,27 +200,17 @@ def authored_post_merge_scope(repo_root: Path) -> tuple[str, str | None]:
         if set(statuses.values()) != {"DONE"}:
             raise CIGraphError("completed phase contains unfinished workitems")
         return "closure", None
-    if any(value in {"IN_PROGRESS", "BLOCKED"} for value in statuses.values()):
-        return "pr", None
-    unfinished = {identity for identity, status in statuses.items() if status != "DONE"}
-    candidates = []
+    completed_prefix = []
     for item in workitems:
         identity = str(item["id"])
         if statuses[identity] != "DONE":
-            continue
-        successors = [
-            successor
-            for successor in workitems
-            if identity in workitem_predecessors(successor)
-        ]
-        if (
-            unfinished
-            and any(str(value["id"]) in unfinished for value in successors)
-        ) or (not unfinished and not successors):
-            candidates.append(identity)
-    if len(candidates) > 1:
-        raise CIGraphError("post-merge bounded target is ambiguous")
-    return ("workitem", candidates[0]) if candidates else ("pr", None)
+            break
+        completed_prefix.append(identity)
+    return (
+        ("workitem", completed_prefix[-1])
+        if completed_prefix
+        else ("pr", None)
+    )
 
 
 def _replace_caller_scope(

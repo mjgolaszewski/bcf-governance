@@ -140,9 +140,11 @@ def test_execution_state_does_not_relocate_generic_process_temporary_paths(
     contract = _contract("probe.py")
     lease_environment = {
         "BCF_EXECUTION_STATE_NAMESPACE": "bcf-exact-state",
-        "BCF_EXECUTION_STATE_ROOT": str(tmp_path / ".artifacts/runtime/database/bcf-exact-state"),
+        "BCF_EXECUTION_STATE_ROOT": str(
+            tmp_path / ".artifacts/runtime/execution-state/bcf-exact-state"
+        ),
         "BCF_EXECUTION_DATABASE_ROOT": str(
-            tmp_path / ".artifacts/runtime/database/bcf-exact-state/database"
+            tmp_path / ".artifacts/runtime/execution-state/bcf-exact-state/database"
         ),
     }
 
@@ -156,3 +158,35 @@ def test_execution_state_does_not_relocate_generic_process_temporary_paths(
     assert env["HOME"] == str(tmp_path.parent / ".bcf-home")
     generic_state = {"TMP", "TEMP", "TMPDIR", "XDG_CACHE_HOME", "XDG_STATE_HOME"}
     assert not generic_state & env.keys()
+
+
+def test_unresolved_graph_job_environment_cannot_reach_evidence_execution(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    contract = _contract("probe.py")
+    contract["invocation"]["required_env"] = ["PREPARED_ROOT"]
+    monkeypatch.setenv("PREPARED_ROOT", "/ambient/forgery")
+
+    with pytest.raises(EvidenceError, match="unsupported local graph environment"):
+        _execution_env(
+            tmp_path,
+            contract,
+            Path(sys.executable),
+            job_environment={
+                "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"
+            },
+        )
+    with pytest.raises(EvidenceError, match="unsupported local graph environment"):
+        _execution_env(
+            tmp_path,
+            contract,
+            Path(sys.executable),
+            job_environment={"PREPARED_ROOT": "${{ secrets.PREPARED_ROOT }}"},
+        )
+    with pytest.raises(EvidenceError, match="required gate environment is missing"):
+        _execution_env(
+            tmp_path,
+            contract,
+            Path(sys.executable),
+            job_environment={},
+        )
