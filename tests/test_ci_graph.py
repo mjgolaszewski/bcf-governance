@@ -1378,17 +1378,23 @@ def test_local_gate_environment_comes_from_exact_pr_producer_job(
                         "environment": {
                             "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"
                         },
-                        "executor": {"kind": "gate_shard", "gates": ["test"]},
+                        "executor": {
+                            "kind": "gate_shard",
+                            "gates": ["test"],
+                            "shard_key": "shard",
+                            "shard_count": 4,
+                        },
                     }
                 ],
             }
         ]
     }
 
-    assert local_gate_job_environments(graph, ("test",)) == {
+    assert local_gate_job_environments(graph, ("test",), {"test": 2}) == {
         "test": LocalGateProducer(
             workflow_id="governance",
             job_id="evidence",
+            instance_id="shard:2",
             environment={
                 "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared",
                 "SHARED": "literal",
@@ -1399,7 +1405,17 @@ def test_local_gate_environment_comes_from_exact_pr_producer_job(
     graph["workflows"][0]["jobs"].append(copy.deepcopy(graph["workflows"][0]["jobs"][0]))
     graph["workflows"][0]["jobs"][1]["id"] = "duplicate"
     with pytest.raises(CIGraphError, match="does not have one exact pull-request producer job"):
-        local_gate_job_environments(graph, ("test",))
+        local_gate_job_environments(graph, ("test",), {"test": 2})
+
+    graph["workflows"][0]["jobs"].pop()
+    with pytest.raises(CIGraphError, match="lacks one exact planned shard"):
+        local_gate_job_environments(graph, ("test",), {})
+
+    executor = graph["workflows"][0]["jobs"][0]["executor"]
+    executor["kind"] = "gate_group"
+    executor.pop("shard_key")
+    executor.pop("shard_count")
+    assert local_gate_job_environments(graph, ("test",), {})["test"].instance_id == "singleton"
 
 
 def test_missing_or_conflicting_required_environment_fails_at_graph_compile(

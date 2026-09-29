@@ -45,6 +45,7 @@ from .governance_truth import TruthfulnessError, derive_truth
 from .local_producer_workspaces import (
     LocalProducerWorkspaceError,
     local_producer_environments,
+    planned_local_producers,
 )
 from .preflight import PreflightError, run_preflight
 from .ci_authority_prospective_telemetry import (
@@ -564,12 +565,12 @@ def _run_prospective_train(
 
         verification_plan = preflight["verification_plan"]
         nodes = verification_plan["execution_dag"]["nodes"]
-        producers = tuple(sorted({str(node["producer"]) for node in nodes}))
         try:
+            producers, assigned_shards = planned_local_producers(nodes)
             producer_environments = local_gate_job_environments(
-                validate_ci_graph(root).graph, producers
+                validate_ci_graph(root).graph, producers, assigned_shards
             )
-        except CIGraphError as exc:
+        except (CIGraphError, LocalProducerWorkspaceError) as exc:
             raise ProspectiveValidationError(str(exc)) from exc
         try:
             session = allocate_session(

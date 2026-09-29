@@ -21,8 +21,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   durable workload database state untouched while retaining exact fail-closed
   ownership and terminal retirement. Local prospective execution now derives
   each gate's exact pull-request producer-job environment and resolves its
-  workspace binding into one execution-owned ephemeral job workspace shared
-  only by that job's isolated gates and retired on every terminal path.
+  workspace binding into one execution-owned ephemeral job-instance workspace
+  shared only by gates on the same planned shard and retired on every terminal
+  path.
 
 ## [2.1.3] - 2026-09-28
 

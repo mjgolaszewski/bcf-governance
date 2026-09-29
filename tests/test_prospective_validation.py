@@ -13,6 +13,10 @@ from bcf_governance.tooling import local_pr as prospective
 from bcf_governance.tooling import controller_custody_prospective as custody
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
 from bcf_governance.tooling.ci_graph_execution import LocalGateProducer
+from bcf_governance.tooling.local_producer_workspaces import (
+    LocalProducerWorkspaceError,
+    planned_local_producers,
+)
 from bcf_governance.tooling.ci_authority_prospective_lanes import (
     direct_policy_identity,
     ordinary_authority_policy_identity,
@@ -80,8 +84,10 @@ def test_planned_evidence_stops_on_first_failed_producer(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     seen: list[str] = []
+    workspaces: list[Path] = []
     def capture(_root: Path, gate: str, output: Path, **_kwargs: object) -> Path:
         seen.append(gate)
+        workspaces.append(Path(_kwargs["job_environment"]["WORKSPACE_ROOT"]))
         output.mkdir(parents=True)
         (output / f"{gate}.stderr.txt").write_text("causal diagnostic\n")
         receipt = output / f"{gate}.evidence.json"
@@ -93,7 +99,12 @@ def test_planned_evidence_stops_on_first_failed_producer(
     monkeypatch.setattr(prospective, "capture_gate", capture)
     (tmp_path / "session.json").write_text("{}")
     bindings = {
-        gate: LocalGateProducer("governance", "evidence", {})
+        gate: LocalGateProducer(
+            "governance",
+            "evidence",
+            "shard:0",
+            {"WORKSPACE_ROOT": "${{ github.workspace }}"},
+        )
         for gate in ("first", "second")
     }
     with pytest.raises(
@@ -109,6 +120,7 @@ def test_planned_evidence_stops_on_first_failed_producer(
             producer_environments=bindings,
         )
     assert seen == ["first"]
+    assert len(workspaces) == 1 and not workspaces[0].exists()
 
 
 def test_planned_evidence_projects_exact_graph_job_environment(
@@ -147,13 +159,13 @@ def test_planned_evidence_projects_exact_graph_job_environment(
         producers=("first", "second", "third"),
         producer_environments={
             "first": LocalGateProducer(
-                "governance", "evidence", {"PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"}
+                "governance", "evidence", "shard:0", {"PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"}
             ),
             "second": LocalGateProducer(
-                "governance", "evidence", {"PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"}
+                "governance", "evidence", "shard:0", {"PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"}
             ),
             "third": LocalGateProducer(
-                "governance", "other-evidence", {"PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"}
+                "governance", "evidence", "shard:1", {"PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"}
             ),
         },
     )
@@ -164,6 +176,20 @@ def test_planned_evidence_projects_exact_graph_job_environment(
     assert first == second and first != third
     assert [item[2] for item in observed] == [False, True, False]
     assert not first.exists() and not third.exists()
+
+
+def test_local_producer_topology_preserves_plan_order_and_rejects_ambiguity() -> None:
+    nodes = [
+        {"producer": "dependency", "assigned_shard": 2},
+        {"producer": "dependent", "assigned_shard": 2},
+        {"producer": "parallel", "assigned_shard": 0},
+    ]
+    assert planned_local_producers(nodes) == (
+        ("dependency", "dependent", "parallel"),
+        {"dependency": 2, "dependent": 2, "parallel": 0},
+    )
+    with pytest.raises(LocalProducerWorkspaceError, match="incomplete or ambiguous"):
+        planned_local_producers([*nodes, {"producer": "dependency", "assigned_shard": 1}])
 
 
 def _runner(command: list[str], **_kwargs: object) -> Result:
@@ -254,7 +280,10 @@ def _front_door(monkeypatch: pytest.MonkeyPatch, trace: list[str]) -> None:
     monkeypatch.setattr(
         prospective,
         "local_gate_job_environments",
-        lambda _graph, producers: {producer: {} for producer in producers},
+        lambda _graph, producers, _shards: {
+            producer: LocalGateProducer("governance", "evidence", "shard:0", {})
+            for producer in producers
+        },
     )
 
 
@@ -1017,7 +1046,7 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
                 "release_authority": False,
             },
             "verification_plan": {
-                "execution_dag": {"nodes": [{"producer": "test"}]}
+                "execution_dag": {"nodes": [{"producer": "test", "assigned_shard": 0}]}
             },
         },
     )
@@ -1202,7 +1231,7 @@ def test_full_walk_rejects_wrong_finalizer_truth_subject(
             "status": "pass",
             "self_controller": {"status": "current"},
             "verification_plan": {
-                "execution_dag": {"nodes": [{"producer": "test"}]}
+                "execution_dag": {"nodes": [{"producer": "test", "assigned_shard": 0}]}
             },
         },
     )

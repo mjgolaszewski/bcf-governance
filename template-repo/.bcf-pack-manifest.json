@@ -656,7 +656,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_execution.py": {
       "operation": "copy",
-      "sha256": "19c9a66d6f3645767badb2f7a1997c174d85f1877b391bbda017279062a4b010"
+      "sha256": "c0dcf94e3f4a6d2f3f2146ad780d8b7ad13245cf72452bb8465d3ffbec07bf1d"
     },
     "scripts/_bcf_runtime/ci_graph_import.py": {
       "operation": "copy",
@@ -1023,11 +1023,11 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "df93b234375b5eb14d64675678d4fe2ee9189131c26ec607f9d91a623dd65582"
+      "sha256": "1df715a04172aee5df2421c16fa173da641df4204ad8961e37862b9ba372311e"
     },
     "scripts/_bcf_runtime/local_producer_workspaces.py": {
       "operation": "copy",
-      "sha256": "66eb6327cd06676537c7cb3edbbc4ae43caab1f8f0b8f0019619439bbb0ebed0"
+      "sha256": "52df9dbf284cb63579e2c84f51593c389aae2793af93f553dfc6a9213cdd0d63"
     },
     "scripts/_bcf_runtime/migrate_contracts.py": {
       "operation": "copy",
