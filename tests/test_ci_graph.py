@@ -207,11 +207,6 @@ def test_post_merge_scope_selects_unique_done_frontier_amid_unrelated_active_wor
         },
         {
             "id": "P02-CI-BCF-210-05",
-            "status": "TODO",
-            "acceptance": ["requires-workitem-closure:P02-CI-BCF-210-04"],
-        },
-        {
-            "id": "P02-PRODUCT-01",
             "status": "IN_PROGRESS",
             "acceptance": ["product_work"],
         },
@@ -219,6 +214,11 @@ def test_post_merge_scope_selects_unique_done_frontier_amid_unrelated_active_wor
             "id": "P02-RUNNER-01",
             "status": "BLOCKED",
             "acceptance": ["runner_work"],
+        },
+        {
+            "id": "P02-HISTORICAL-ISLAND",
+            "status": "DONE",
+            "acceptance": ["historical_work"],
         },
     ]
     (tmp_path / "plans/phase-02-workitems.yml").write_text(
