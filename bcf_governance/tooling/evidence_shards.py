@@ -10,7 +10,14 @@ from typing import Any
 
 import yaml
 
+from .ci_graph_contracts import validate_ci_graph
+from .ci_graph_execution import (
+    local_gate_job_environments,
+    resolve_local_job_environment,
+)
 from .evidence_sessions import load_session, select_session
+from .evidence_test_adapters import captured_receipt_succeeded
+from .governance_evidence import capture_gate
 
 
 SHARD_DISPLAY_NAMES = tuple(f"Evidence shard {index}" for index in range(4))
@@ -215,6 +222,9 @@ def main(argv: list[str] | None = None) -> None:
         gates = planned_gate_targets(
             repo_root, planned_targets=planned, execution_dag=execution_dag
         )
+        graph_environments = local_gate_job_environments(
+            validate_ci_graph(repo_root).graph, tuple(gates)
+        )
     else:
         if args.shard_index is None or args.shard_count is None:
             raise SystemExit("provide shard coordinates or --all-planned")
@@ -226,6 +236,20 @@ def main(argv: list[str] | None = None) -> None:
             execution_dag=execution_dag,
         )
     for gate in gates:
+        if args.all_planned:
+            receipt = capture_gate(
+                repo_root,
+                gate,
+                output_root / gate,
+                python_executable=sys.executable,
+                session_manifest=session_manifest,
+                job_environment=resolve_local_job_environment(
+                    graph_environments[gate], repo_root
+                ),
+            )
+            if not captured_receipt_succeeded(receipt):
+                raise SystemExit(1)
+            continue
         result = subprocess.run(
             [
                 sys.executable,

@@ -40,6 +40,14 @@ execution_evidence:
     consumer Makefile after upgrade. BCF now resolves the generated fragment as
     the canonical release owner and reports its directly executable command, so
     merged legacy aliases remain byte-preserved and require no manual forward-port.
+  - The subsequent Racecar execution exposed that the local all-planned path did
+    not project producer environment already owned by the canonical CI graph. The
+    shard executor now uses the same graph-to-local projection as prospective
+    validation, resolves only the exact workspace binding, and leaves unavailable
+    provider expressions fail-closed rather than requiring adopter wrappers.
+  - The same prospective pass found the generated Makefile outside the closed
+    fixed-point order. The canonical reconciler now owns its exact profile
+    projection before pack, manifest, graph, authority, and editorial work.
   - Lite-v1 release execution invokes canonical truth directly from the generated
     fragment, preventing recursive make from falling back to a consumer Makefile.
 closeout_requirements:

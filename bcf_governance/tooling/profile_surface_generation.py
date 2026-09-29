@@ -11,15 +11,13 @@ import yaml  # type: ignore[import-untyped]
 from .ci_github_actions import action_pin
 
 
-def write_makefile(repo_root: Path, contract: dict[str, Any]) -> None:
-    """Render the profile-owned Makefile fragment."""
+def render_makefile(contract: dict[str, Any]) -> str:
+    """Return the exact profile-owned Makefile fragment."""
+
     if contract.get("profile_contract_version") in {"2.0", "3.0"}:
         from .profile_v2_surfaces import render_v2_makefile
 
-        (repo_root / "Makefile.fragment").write_text(
-            render_v2_makefile(contract), encoding="utf-8"
-        )
-        return
+        return render_v2_makefile(contract)
     gates = contract["gates"]
     targets = " ".join(gates)
     lines = [
@@ -53,7 +51,31 @@ def write_makefile(repo_root: Path, contract: dict[str, Any]) -> None:
             "",
         ]
     )
-    (repo_root / "Makefile.fragment").write_text("\n".join(lines), encoding="utf-8")
+    return "\n".join(lines)
+
+
+def write_makefile(repo_root: Path, contract: dict[str, Any]) -> None:
+    """Render the profile-owned Makefile fragment."""
+
+    (repo_root / "Makefile.fragment").write_text(
+        render_makefile(contract), encoding="utf-8"
+    )
+
+
+def reconcile_makefile(repo_root: Path, *, apply: bool) -> None:
+    """Check or project the exact profile-owned Makefile fragment."""
+
+    contract = yaml.safe_load(
+        (repo_root / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    )
+    if not isinstance(contract, dict):
+        raise ValueError("governance/gate-contracts.yml must deserialize to a mapping")
+    path = repo_root / "Makefile.fragment"
+    expected = render_makefile(contract)
+    if apply:
+        path.write_text(expected, encoding="utf-8")
+    elif not path.is_file() or path.read_text(encoding="utf-8") != expected:
+        raise ValueError("Makefile.fragment differs from its canonical profile projection")
 
 
 def write_workflow(repo_root: Path, contract: dict[str, Any]) -> None:

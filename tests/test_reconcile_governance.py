@@ -17,6 +17,7 @@ from bcf_governance.tooling.release_version_projection import (
     ReleaseVersionProjectionError,
     reconcile_release_version_surfaces,
 )
+from bcf_governance.tooling.profile_surface_generation import reconcile_makefile
 
 
 def test_reconcile_is_the_canonical_cli_surface() -> None:
@@ -26,9 +27,10 @@ def test_reconcile_is_the_canonical_cli_surface() -> None:
 def test_reconcile_declares_one_closed_dependency_order() -> None:
     root = Path(__file__).resolve().parents[1]
     ids = [step.step_id for step in reconcile_steps(root, Path(sys.executable))]
-    assert ids[:5] == [
+    assert ids[:6] == [
         "structural-limits",
         "release-version-surfaces",
+        "profile-makefile",
         "ci-graph-post-merge-scope",
         "pack-projection",
         "semantic-lock",
@@ -36,6 +38,37 @@ def test_reconcile_declares_one_closed_dependency_order() -> None:
     assert ids.index("ci-graph-lock") < ids.index("ci-graph-render")
     assert ids.index("ci-graph-render") < ids.index("workflow-authority")
     assert ids[-1] == "editorial-audit"
+
+
+def test_reconcile_owns_profile_makefile_projection(tmp_path: Path) -> None:
+    governance = tmp_path / "governance"
+    governance.mkdir()
+    (governance / "gate-contracts.yml").write_text(
+        yaml.safe_dump(
+            {
+                "profile_contract_version": "2.0",
+                "gates": {
+                    "test": {
+                        "invocation": {
+                            "argv": ["python3", "-m", "pytest", "-q"],
+                            "cwd": ".",
+                            "env": {},
+                        }
+                    }
+                },
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "Makefile.fragment").write_text("stale\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="canonical profile projection"):
+        reconcile_makefile(tmp_path, apply=False)
+
+    reconcile_makefile(tmp_path, apply=True)
+    reconcile_makefile(tmp_path, apply=False)
+    assert "--all-planned" in (tmp_path / "Makefile.fragment").read_text()
 
 
 def test_reconcile_projects_all_derived_release_versions_before_pack_work(

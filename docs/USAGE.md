@@ -516,6 +516,10 @@ version, immutable tag/release, asset digests and attestations, installed runtim
 bytes, and `governance/bcf-runtime-lock.json` in one atomic transaction. Existing
 release custody cannot be silently retained by an upgrade without those inputs.
 
+Local all-planned release execution derives each producer environment from the
+canonical CI graph and resolves only the checkout workspace binding. Unavailable
+provider expressions remain unresolved and fail closed before producer execution.
+
 Upgrade preserves the repository's profile, gate contracts, evidence policy,
 CI graph, registered extensions, and all workflow bytes. It does not run a
 contract or evidence migration implicitly. A conflicting `--profile` or `--profile-contract-version`

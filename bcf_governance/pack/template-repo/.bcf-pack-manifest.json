@@ -664,7 +664,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_execution.py": {
       "operation": "copy",
-      "sha256": "0dc7af3afb1107807f4201bef1900eda31af7df3a89c2d4a0de3af70e2472211"
+      "sha256": "00caff360f409cfa34316799e049333266b37042333edd0f1b3f26aa0c5c4e44"
     },
     "scripts/_bcf_runtime/ci_graph_import.py": {
       "operation": "copy",
@@ -804,7 +804,7 @@
     },
     "scripts/_bcf_runtime/evidence_shards.py": {
       "operation": "copy",
-      "sha256": "078fc4e6bddf0923bb760350e0cf8be977635cd9e8847ee32b168eddf585cff6"
+      "sha256": "a6180dde3f69be1846fe8b7f1963eda35b885044e863110de884218e99895b12"
     },
     "scripts/_bcf_runtime/evidence_storage_archives.py": {
       "operation": "copy",
@@ -852,7 +852,7 @@
     },
     "scripts/_bcf_runtime/evidence_test_adapters.py": {
       "operation": "copy",
-      "sha256": "6f64bb1d572c347d0ba1bcb1380ee155c4f263d41ac4f4c178df573a86c8eb44"
+      "sha256": "d9373c772f8e5b8c93100463e60e5ffb5f2d9a756d3db4011d824066177c630d"
     },
     "scripts/_bcf_runtime/evidence_workitem_lifecycle.py": {
       "operation": "copy",
@@ -884,7 +884,7 @@
     },
     "scripts/_bcf_runtime/governance_evidence.py": {
       "operation": "copy",
-      "sha256": "eb61772bc8188defb286597876adc739af8aae136bf7ea9df96ad4a0ced5082c"
+      "sha256": "a683f0c595bc244158d932b05d1510c30fd2336f6dfde7c2a83e6a298f263013"
     },
     "scripts/_bcf_runtime/governance_install/__init__.py": {
       "operation": "copy",
@@ -1035,7 +1035,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "24eba13327d3d71983560b5e758587cded80525816da74af6c963544db27e42f"
+      "sha256": "2df0494c777ab5237c2ed4c8c1844e14351cd4b0558ed7f02aea8a6df8b51ddf"
     },
     "scripts/_bcf_runtime/migrate_contracts.py": {
       "operation": "copy",
@@ -1075,7 +1075,7 @@
     },
     "scripts/_bcf_runtime/profile_surface_generation.py": {
       "operation": "copy",
-      "sha256": "2dd7d9f37eb4a64ecc76428f74212edcc072a281425f7313e8afdb0e5e05bc1b"
+      "sha256": "6575cf8c62bb4734d6481ce28b4753509163aec5c3822379604b1032e5dcbd65"
     },
     "scripts/_bcf_runtime/profile_v2_surfaces.py": {
       "operation": "copy",
@@ -1167,7 +1167,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "7b98cbde279bc6d8bc649613b61bac0ad0b422cda40f8a461695d134b785218d"
+      "sha256": "5de7c788473243a12f28b0758e9d46f568a6adf4f28ea0c034894f0a012d3816"
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",

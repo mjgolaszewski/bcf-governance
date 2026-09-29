@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 import re
 from typing import Any
 
@@ -330,6 +331,18 @@ def local_gate_job_environments(
             + ", ".join(invalid)
         )
     return {producer: values[0] for producer, values in sorted(matches.items())}
+
+
+def resolve_local_job_environment(
+    environment: dict[str, str], repo_root: Path
+) -> dict[str, str]:
+    """Resolve only the canonical local-workspace graph binding."""
+
+    workspace = str(repo_root.resolve())
+    return {
+        name: value.replace("${{ github.workspace }}", workspace)
+        for name, value in sorted(environment.items())
+    }
 
 
 def job_execution_issues(
