@@ -110,14 +110,17 @@ def test_planned_evidence_stops_on_first_failed_producer(
 def test_planned_evidence_projects_exact_graph_job_environment(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    observed: list[tuple[str, dict[str, str], bool]] = []
+    prepared = tmp_path / ".artifacts/prepared"
+    prepared.mkdir(parents=True)
+    prepared.joinpath("ready").write_text("admitted")
+    observed: list[tuple[str, dict[str, str], str]] = []
 
     def capture(_root: Path, gate: str, output: Path, **kwargs: object) -> Path:
         environment = dict(kwargs["job_environment"])
         workspace = Path(environment["PREPARED_ROOT"]).parents[1]
-        marker = workspace / "shared-marker"
-        observed.append((gate, environment, marker.exists()))
-        marker.write_text(gate)
+        observed.append(
+            (gate, environment, Path(environment["PREPARED_ROOT"], "ready").read_text())
+        )
         output.mkdir(parents=True)
         receipt = output / f"{gate}.evidence.json"
         receipt.write_text(
@@ -151,7 +154,7 @@ def test_planned_evidence_projects_exact_graph_job_environment(
     second = Path(observed[1][1]["PREPARED_ROOT"]).parents[1]
     third = Path(observed[2][1]["PREPARED_ROOT"]).parents[1]
     assert first == second == third == tmp_path
-    assert [item[2] for item in observed] == [False, True, True]
+    assert [item[2] for item in observed] == ["admitted", "admitted", "admitted"]
 
 
 def _runner(command: list[str], **_kwargs: object) -> Result:
