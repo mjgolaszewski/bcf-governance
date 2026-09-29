@@ -663,7 +663,13 @@ def test_upgrade_projects_v3_release_check_from_selective_plan(tmp_path: Path) -
         encoding="utf-8",
     )
 
-    upgrade._upgrade_makefile_fragment(target)
+    template = tmp_path / "template"
+    template.mkdir()
+    upgrade.upgrade_state_files(
+        template_root=template,
+        target_root=target,
+        values={},
+    )
 
     release_check = (target / "Makefile.fragment").read_text(encoding="utf-8").split(
         "release-check:", 1

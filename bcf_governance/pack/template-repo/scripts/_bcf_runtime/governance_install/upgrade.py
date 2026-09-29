@@ -583,6 +583,7 @@ def _upgrade_state_files(
             values=values,
         )
     )
+    _upgrade_makefile_fragment(target_root)
     created.extend(_upgrade_runtime_contract(target_root))
     return created
 
