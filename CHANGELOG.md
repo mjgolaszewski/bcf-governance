@@ -10,6 +10,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Recorded immutable v2.1.4 provider custody after exact-main phase closure,
+  independent release verification, exact-byte publication, and credential
+  retirement; release_20 owns the current patch line.
 - Made semantic source inventories reflect the exact candidate tree during
   upgrades and made bounded certification select a unique completed lifecycle
   frontier without discarding unrelated concurrent work; provider-bound
