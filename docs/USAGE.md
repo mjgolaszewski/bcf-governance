@@ -20,6 +20,11 @@ Standard and regulated profiles cannot represent a partially wired target.
 Their complete profile configuration is validated before BCF mutates the
 repository.
 
+Project-specific required gates belong in that same configuration: `gates`
+owns each executable contract and `gate_catalog` owns its unique target,
+`required` status, command policy, and rationale. BCF rejects catalog entries
+that override pack gates or lack an exact executable contract.
+
 ## CI graph ownership
 
 Fresh Standard-v3 installations create `governance/ci-graph.yml` and require

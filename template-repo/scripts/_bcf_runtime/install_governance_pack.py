@@ -737,6 +737,7 @@ def install(args: argparse.Namespace) -> InstallResult:
             args.profile_config,
             asset_root=target_root,
             contract_version=contract_version,
+            fresh_install=not args.upgrade,
         )
     semantic_required = (
         not args.upgrade

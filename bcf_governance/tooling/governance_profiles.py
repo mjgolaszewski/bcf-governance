@@ -351,6 +351,51 @@ def required_targets(
     return targets
 
 
+def _merged_gate_catalog(
+    template: dict[str, Any], payload: dict[str, Any], raw_gates: dict[str, Any]
+) -> dict[str, Any]:
+    """Merge exact adopter-owned gate metadata without overriding pack gates."""
+
+    configured = payload.get("gate_catalog", {})
+    if not isinstance(configured, dict):
+        raise ProfileContractError("profile config gate_catalog must be a mapping")
+    merged = dict(template)
+    known_targets = {
+        str(value.get("target"))
+        for value in template.values()
+        if isinstance(value, dict)
+    }
+    for gate_id, value in configured.items():
+        if not isinstance(gate_id, str) or not gate_id or not isinstance(value, dict):
+            raise ProfileContractError(
+                f"profile config gate_catalog entry {gate_id!r} is invalid or overrides a pack gate"
+            )
+        if gate_id in merged:
+            if merged[gate_id] != value:
+                raise ProfileContractError(
+                    f"profile config gate_catalog entry {gate_id!r} is invalid or overrides a pack gate"
+                )
+            continue
+        target = value.get("target")
+        if (
+            not isinstance(target, str)
+            or not target
+            or target in known_targets
+            or target not in raw_gates
+            or value.get("status") != "required"
+            or not isinstance(value.get("command_policy"), str)
+            or not value.get("command_policy")
+            or not isinstance(value.get("rationale"), str)
+            or not value.get("rationale")
+        ):
+            raise ProfileContractError(
+                f"profile config gate_catalog entry {gate_id!r} is not an exact required custom gate"
+            )
+        merged[gate_id] = dict(value)
+        known_targets.add(target)
+    return merged
+
+
 def load_contract(
     repo_root: Path,
     profile: str,
@@ -359,7 +404,13 @@ def load_contract(
     asset_root: Path | None = None,
     contract_version: str = "1.0",
     config_payload: dict[str, Any] | None = None,
+    fresh_install: bool = False,
 ) -> dict[str, Any]:
+    profile_payload = _load_yaml(repo_root / "governance-profile.yml")
+    template_catalog = profile_payload.get("release_gate_profile", {}).get("gates")
+    if not isinstance(template_catalog, dict):
+        raise ProfileContractError("governance profile gate catalog is missing")
+    gate_catalog = dict(template_catalog)
     targets = required_targets(repo_root, profile, contract_version=contract_version)
     raw_gates: dict[str, Any] = {}
     provenance: dict[str, Any] = {}
@@ -381,6 +432,11 @@ def load_contract(
         if not isinstance(candidate, dict):
             raise ProfileContractError("profile config gates must be a mapping")
         raw_gates = candidate
+        gate_catalog = _merged_gate_catalog(template_catalog, payload, raw_gates)
+        targets.update(
+            str(value["target"])
+            for value in payload.get("gate_catalog", {}).values()
+        )
         if contract_version == "1.0":
             raw_gates = {
                 key: value
@@ -416,7 +472,13 @@ def load_contract(
     extra = sorted(set(merged) - targets)
     if missing or extra:
         raise ProfileContractError(f"profile gate set mismatch: missing={missing}, extra={extra}")
-    metadata = _profile_gate_metadata(repo_root)
+    metadata = {
+        str(value["target"]): (str(key), str(value["command_policy"]))
+        for key, value in gate_catalog.items()
+        if isinstance(value, dict)
+        and isinstance(value.get("target"), str)
+        and isinstance(value.get("command_policy"), str)
+    }
     gates = {
         target: _validate_gate(
             target,
@@ -458,16 +520,14 @@ def load_contract(
             "trusted_verifier_keys": normalized_keys,
             "permitted_risk_authorities": sorted(set(authorities)),
         }
-    profile_payload = _load_yaml(repo_root / "governance-profile.yml")
-    gate_catalog = profile_payload.get("release_gate_profile", {}).get("gates")
-    if not isinstance(gate_catalog, dict):
-        raise ProfileContractError("governance profile gate catalog is missing")
     persisted_claim_model = None
     if contract_version == "3.0":
         persisted = _load_yaml(repo_root / "governance/gate-contracts.yml")
         persisted_claim_model = persisted.get("claim_model")
         if configured_claim_model is not None and isinstance(persisted_claim_model, dict):
-            if configured_claim_model != persisted_claim_model:
+            if fresh_install:
+                persisted_claim_model = configured_claim_model
+            elif configured_claim_model != persisted_claim_model:
                 raise ProfileContractError(
                     "profile config claim_model cannot replace existing canonical claim_model"
                 )

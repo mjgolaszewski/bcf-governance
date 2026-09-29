@@ -309,6 +309,11 @@ bcf install \
   --require-strict-validation
 ```
 
+An adopter-specific required gate is declared in the same profile config by
+pairing its executable `gates` entry with a unique `gate_catalog` entry carrying
+its target, `required` status, command policy, and rationale. Custom catalog
+entries cannot override pack gates or name an executable absent from `gates`.
+
 Promotion and GitHub CI adoption are separate, explicit transactions:
 
 ```bash

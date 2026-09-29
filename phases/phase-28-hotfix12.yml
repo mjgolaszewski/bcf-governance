@@ -48,6 +48,11 @@ execution_evidence:
   - The same prospective pass found the generated Makefile outside the closed
     fixed-point order. The canonical reconciler now owns its exact profile
     projection before pack, manifest, graph, authority, and editorial work.
+  - The AgentBus fresh-adoption probe exposed that executable custom gates could
+    not carry their catalog metadata or fresh-install claim model through the
+    profile contract. Fresh installs now admit exact required custom gates while
+    rejecting pack overrides, unbound entries, and claim-model replacement in
+    an existing governed repository.
   - Lite-v1 release execution invokes canonical truth directly from the generated
     fragment, preventing recursive make from falling back to a consumer Makefile.
 closeout_requirements:

@@ -27,7 +27,12 @@ from bcf_governance.tooling.evidence_sessions import (
     local_producer_identity,
 )
 from bcf_governance.tooling.evidence_planning import verification_plan
-from bcf_governance.tooling.governance_profiles import _v2_builtin_contracts
+from bcf_governance.tooling.governance_profiles import (
+    ProfileContractError,
+    _v2_builtin_contracts,
+    apply_profile_contract,
+    load_contract,
+)
 from bcf_governance.tooling.routine_controller_rotation import (
     effective_controller_pin,
     select_controller_chain,
@@ -156,6 +161,7 @@ def main() -> None:
         'security-sbom': 'sbom.json',
         'security-vulnerability-scan': 'vulnerability-scan.json',
         'runtime-smoke': 'runtime-smoke.json',
+        'release-smoke': 'release-smoke.json',
     }.items():
         if gate == name[0]:
             (artifacts / name[1]).write_text(json.dumps({'gate': gate, 'production': True}))
@@ -578,6 +584,178 @@ def gate_config(
     return path
 
 
+def add_custom_release_gate(config: Path) -> None:
+    payload = yaml.safe_load(config.read_text(encoding="utf-8"))
+    custom = json.loads(json.dumps(payload["gates"]["runtime-smoke"]))
+    custom["invocation"]["argv"] = ["python3", "gate.py", "release-smoke"]
+    custom["evidence"]["output_requirements"][0]["path"] = (
+        ".artifacts/release-smoke.json"
+    )
+    custom["negative_controls"][0]["id"] = "release-smoke-must-detect-mutation"
+    custom["negative_controls"][0]["oracle"]["regex"] = "mutated gate release-smoke"
+    payload["gates"]["release-smoke"] = custom
+    payload["gate_catalog"] = {
+        "release_smoke": {
+            "target": "release-smoke",
+            "status": "required",
+            "command_policy": "runtime_smoke",
+            "rationale": "adopter-owned release behavior remains executable",
+        }
+    }
+    claim_model = payload.get("claim_model")
+    if isinstance(claim_model, dict):
+        claim_model["execution_groups"]["release-smoke"] = {
+            "producer": "release-smoke",
+            "claims": ["release-smoke"],
+        }
+        claim = json.loads(json.dumps(claim_model["claims"]["runtime-smoke"]))
+        claim.update(
+            {"execution_group": "release-smoke", "legacy_gate": "release-smoke"}
+        )
+        claim_model["claims"]["release-smoke"] = claim
+    config.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+
+def test_fresh_profile_contract_admits_exact_declared_custom_gate_catalog(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "custom-gate-adopter"
+    repo.mkdir()
+    write_gate_runner(repo)
+    config = gate_config(repo, "standard", None, contract_version="1.0")
+    add_custom_release_gate(config)
+
+    contract = load_contract(
+        REPO_ROOT / "template-repo",
+        "standard",
+        config,
+        asset_root=repo,
+        contract_version="1.0",
+    )
+
+    assert contract["gate_catalog"]["release_smoke"]["target"] == "release-smoke"
+    assert contract["gates"]["release-smoke"]["invocation"]["argv"][-1] == "release-smoke"
+
+
+def test_fresh_v3_profile_uses_declared_custom_gate_claim_model_only_on_install(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "custom-v3-adopter"
+    repo.mkdir()
+    write_gate_runner(repo)
+    config = gate_config(repo, "standard", None, contract_version="3.0")
+    add_custom_release_gate(config)
+    payload = yaml.safe_load(config.read_text(encoding="utf-8"))
+
+    contract = load_contract(
+        REPO_ROOT / "template-repo",
+        "standard",
+        config,
+        asset_root=repo,
+        contract_version="3.0",
+        fresh_install=True,
+    )
+
+    assert "release-smoke" in contract["claim_model"]["claims"]
+    existing = tmp_path / "existing-contract"
+    shutil.copytree(REPO_ROOT / "template-repo", existing)
+    apply_profile_contract(existing, contract, write_workflow=False)
+    assert load_contract(
+        existing,
+        "standard",
+        config,
+        asset_root=repo,
+        contract_version="3.0",
+    )["gate_catalog"]["release_smoke"] == contract["gate_catalog"][
+        "release_smoke"
+    ]
+    assert yaml.safe_load(
+        (existing / "governance-profile.yml").read_text(encoding="utf-8")
+    )["release_gate_profile"]["gates"]["release_smoke"] == contract[
+        "gate_catalog"
+    ]["release_smoke"]
+    payload["claim_model"]["claims"]["release-smoke"]["truth"] = "replacement"
+    config.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    with pytest.raises(ProfileContractError, match="cannot replace existing"):
+        load_contract(
+            existing,
+            "standard",
+            config,
+            asset_root=repo,
+            contract_version="3.0",
+        )
+
+
+@pytest.mark.parametrize(
+    ("catalog", "error"),
+    [
+        (
+            {
+                "runtime_smoke": {
+                    "target": "release-smoke",
+                    "status": "required",
+                    "command_policy": "runtime_smoke",
+                    "rationale": "override",
+                }
+            },
+            "overrides a pack gate",
+        ),
+        (
+            {
+                "release_smoke": {
+                    "target": "undeclared-smoke",
+                    "status": "required",
+                    "command_policy": "runtime_smoke",
+                    "rationale": "unbound",
+                }
+            },
+            "not an exact required custom gate",
+        ),
+        (
+            {
+                "release_smoke": {
+                    "target": "runtime-smoke",
+                    "status": "required",
+                    "command_policy": "runtime_smoke",
+                    "rationale": "duplicate target",
+                }
+            },
+            "not an exact required custom gate",
+        ),
+        (
+            {
+                "release_smoke": {
+                    "target": "release-smoke",
+                    "status": "deferred",
+                    "command_policy": "runtime_smoke",
+                    "rationale": "inactive executable",
+                }
+            },
+            "not an exact required custom gate",
+        ),
+    ],
+)
+def test_fresh_profile_contract_rejects_unbound_custom_gate_catalog(
+    tmp_path: Path, catalog: dict[str, Any], error: str
+) -> None:
+    repo = tmp_path / "invalid-custom-gate"
+    repo.mkdir()
+    write_gate_runner(repo)
+    config = gate_config(repo, "standard", None, contract_version="1.0")
+    payload = yaml.safe_load(config.read_text(encoding="utf-8"))
+    payload["gate_catalog"] = catalog
+    config.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(ProfileContractError, match=error):
+        load_contract(
+            REPO_ROOT / "template-repo",
+            "standard",
+            config,
+            asset_root=repo,
+            contract_version="1.0",
+        )
+
+
 def complete_phase(repo: Path, *, derived_lifecycle: bool = False) -> None:
     if derived_lifecycle:
         plan_path = repo / "plans/phase-01-plan.yml"
@@ -622,6 +800,7 @@ def test_standard_v3_adopter_install_derives_each_post_merge_scope(
     git(repo, "config", "user.name", "Adopter Acceptance")
     write_gate_runner(repo)
     config = gate_config(repo, "standard", None, contract_version="3.0")
+    add_custom_release_gate(config)
     semantic = semantic_config(repo)
     git(repo, "add", ".")
     git(repo, "commit", "--quiet", "-m", "application contracts")
@@ -660,6 +839,17 @@ def test_standard_v3_adopter_install_derives_each_post_merge_scope(
     }
     assert excluded
     assert all(not (repo / relative).exists() for relative in excluded)
+    installed_contract = yaml.safe_load(
+        (repo / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    )
+    installed_profile = yaml.safe_load(
+        (repo / "governance-profile.yml").read_text(encoding="utf-8")
+    )
+    assert installed_contract["gate_catalog"]["release_smoke"]["target"] == "release-smoke"
+    assert "release-smoke" in installed_contract["claim_model"]["claims"]
+    assert installed_profile["release_gate_profile"]["gates"]["release_smoke"] == (
+        installed_contract["gate_catalog"]["release_smoke"]
+    )
 
     compiled = validate_ci_graph(repo)
     initial = post_merge_evaluation(compiled.graph)
@@ -800,6 +990,7 @@ def test_profile_promotion_is_checkable_monotonic_and_preserves_phase_artifacts(
     )
     write_gate_runner(repo)
     config = gate_config(repo, "standard", None)
+    add_custom_release_gate(config)
     git(repo, "add", ".")
     git(repo, "commit", "--quiet", "-m", "configure standard promotion")
     phase_paths = [
@@ -841,6 +1032,15 @@ def test_profile_promotion_is_checkable_monotonic_and_preserves_phase_artifacts(
     )
     profile = yaml.safe_load((repo / "governance-profile.yml").read_text(encoding="utf-8"))
     assert profile["profile"]["selected"] == "standard"
+    assert profile["release_gate_profile"]["gates"]["release_smoke"]["target"] == (
+        "release-smoke"
+    )
+    promoted_contract = yaml.safe_load(
+        (repo / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    )
+    assert promoted_contract["gates"]["release-smoke"]["invocation"]["argv"][-1] == (
+        "release-smoke"
+    )
     assert {path: path.read_bytes() for path in phase_paths} == before
     assert (repo / ".github/workflows/governance.yml").read_bytes() == workflow_before
     repeated = subprocess.run(
@@ -1096,6 +1296,7 @@ def test_full_profile_install_evidence_truth_flow(
             capture_output=True,
         )
     config = gate_config(repo, profile, public_key, contract_version="3.0")
+    add_custom_release_gate(config)
     semantic = semantic_config(repo)
     git(repo, "add", ".")
     git(repo, "commit", "--quiet", "-m", "application gate contracts")
@@ -1181,6 +1382,7 @@ def test_full_profile_install_evidence_truth_flow(
     subject = {"commit_sha": git(repo, "rev-parse", "HEAD"), "tree_sha": git(repo, "rev-parse", "HEAD^{tree}")}
     plan = verification_plan(repo, subject, [])
     planned_targets = [str(node["producer"]) for node in plan["execution_dag"]["nodes"]]
+    assert "release-smoke" in planned_targets
     session = allocate_session(
         repo,
         evidence,

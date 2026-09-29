@@ -932,7 +932,7 @@
     },
     "scripts/_bcf_runtime/governance_profiles.py": {
       "operation": "copy",
-      "sha256": "26c60ae8ce78337ac078242ee8b31e8dc21b1908c817f680bbde1eb0980f1085"
+      "sha256": "d70758b0dc81b0e99ae0060b23abbb9e2a669ea71ab553f9ac5b2baf36352dd1"
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
@@ -1027,7 +1027,7 @@
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
-      "sha256": "5c54350948edd97a2d00954cfdc1ef76988d8cd37bf8945a621b0fe0d9762025"
+      "sha256": "117831bbc12b393ee594ff2c61beb6bbe35f3440acb8b90859e6d4323e07634c"
     },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",
