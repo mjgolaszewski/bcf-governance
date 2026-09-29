@@ -27,7 +27,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   packages now materialize exact committed source, excluding ignored build-cache
   bytes from artifact authority. Diagnostic mutation controls no longer depend
   on unrelated test-producer manifests; test-node controls retain exact governed
-  producer resolution.
+  producer resolution. Release construction now establishes its locked build
+  environment before loading clean-source tooling.
 
 ## [2.1.3] - 2026-09-28
 
