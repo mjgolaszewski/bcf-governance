@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
+import os
 from pathlib import Path
 import subprocess
+import sys
+import tarfile
 from types import SimpleNamespace
 from urllib.request import Request
 import zipfile
@@ -20,6 +24,63 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE_ROOT = REPO_ROOT / "bcf_governance/pack/template-repo"
 COMMIT = "a" * 40
 TAG_OBJECT = "b" * 40
+PREDECESSOR_COMMIT = "deedeced7a30858eba720eaaee0160a2383fc807"
+
+
+def _install_exact_predecessor(target: Path, source_root: Path) -> None:
+    archive = subprocess.run(
+        ["git", "archive", "--format=tar", PREDECESSOR_COMMIT],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+    ).stdout
+    source_root.mkdir()
+    with tarfile.open(fileobj=io.BytesIO(archive), mode="r:") as packaged:
+        packaged.extractall(source_root, filter="data")
+    target.mkdir()
+    subprocess.run(["git", "init", "--quiet"], cwd=target, check=True)
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(source_root)
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bcf_governance.cli",
+            "install",
+            "--target",
+            str(target),
+            "--profile",
+            "lite",
+            "--project-id",
+            "predecessor-fixture",
+            "--project-name",
+            "Predecessor Fixture",
+            "--date",
+            "2026-09-29",
+            "--skip-validation",
+        ],
+        cwd=source_root,
+        env=environment,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(["git", "add", "-A"], cwd=target, check=True)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=BCF Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "--quiet",
+            "-m",
+            "install exact BCF 2.1.3 predecessor",
+        ],
+        cwd=target,
+        check=True,
+    )
 
 
 def _release_assets(root: Path) -> tuple[Path, dict[str, str]]:
@@ -266,16 +327,24 @@ def test_upgrade_atomically_projects_release_custody_with_runtime_bytes(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     target = tmp_path / "repo"
-    target.mkdir()
-    subprocess.run(["git", "init", "--quiet"], cwd=target, check=True)
-    install_cli.main(
-        ["--target", str(target), "--profile", "lite", "--skip-validation"]
-    )
+    _install_exact_predecessor(target, tmp_path / "bcf-2.1.3")
     lock_path = target / "governance/bcf-runtime-lock.json"
+    assert not lock_path.exists()
+    predecessor_runtime = target / "scripts/_bcf_runtime/_version.py"
+    assert '"2.1.3"' in predecessor_runtime.read_text(encoding="utf-8")
     lock_path.write_text(
-        json.dumps({"version": "2.1.3", "preserved_consumer_files": {}}),
+        json.dumps(
+            {
+                "version": "2.1.3",
+                "source_commit": PREDECESSOR_COMMIT,
+                "preserved_consumer_files": {},
+            }
+        ),
         encoding="utf-8",
     )
+    predecessor_lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    assert predecessor_lock["version"] == "2.1.3"
+    assert predecessor_lock["source_commit"] == PREDECESSOR_COMMIT
     released = {
         path.relative_to(TEMPLATE_ROOT).as_posix(): path.read_bytes()
         for path in TEMPLATE_ROOT.rglob("*")
@@ -299,7 +368,9 @@ def test_upgrade_atomically_projects_release_custody_with_runtime_bytes(
     )
     monkeypatch.setattr(
         "bcf_governance.tooling.install_governance_pack.prepare_upgrade_release_custody",
-        lambda *_args, **_kwargs: release_custody.UpgradeReleaseCustody(custody, {}),
+        lambda *_args, **_kwargs: release_custody.UpgradeReleaseCustody(
+            custody, release_custody.preserved_consumer_inventory(target)
+        ),
     )
     assets = tmp_path / "assets"
     assets.mkdir()
@@ -311,7 +382,7 @@ def test_upgrade_atomically_projects_release_custody_with_runtime_bytes(
             "--upgrade",
             "--release-assets",
             str(assets),
-            "--skip-validation",
+            "--require-strict-validation",
         ]
     )
 
