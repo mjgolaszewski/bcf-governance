@@ -283,6 +283,86 @@ def declared_test_gates(repo_root: Path) -> list[str]:
     )
 
 
+@dataclass(frozen=True)
+class OracleManifestIndex:
+    """One immutable index from governed test producers to exact node sets."""
+
+    manifests: tuple[tuple[str, frozenset[str]], ...]
+
+    def resolve(self, node_ids: object, *, preferred_gate: str | None = None) -> str:
+        if (
+            not isinstance(node_ids, list)
+            or not node_ids
+            or not all(isinstance(node, str) and node for node in node_ids)
+        ):
+            raise TestManifestError("test-node oracle has no exact nodes")
+        required = set(node_ids)
+        candidates = {
+            gate_id: set(nodes)
+            for gate_id, nodes in self.manifests
+            if required.issubset(nodes)
+        }
+        if preferred_gate in candidates:
+            return str(preferred_gate)
+        most_specific = {
+            gate_id
+            for gate_id, nodes in candidates.items()
+            if not any(other_nodes < nodes for other_nodes in candidates.values())
+        }
+        if len(most_specific) == 1:
+            return next(iter(most_specific))
+        if not candidates:
+            raise TestManifestError("test-node oracle is absent from governed manifests")
+        raise TestManifestError(
+            "test-node oracle producer is ambiguous: "
+            + ", ".join(sorted(most_specific))
+        )
+
+
+def oracle_manifest_index(repo_root: Path) -> OracleManifestIndex:
+    """Compile all governed oracle producers once from canonical manifests."""
+
+    registry = _load_yaml(repo_root / "governance/gate-contracts.yml")
+    gates = registry.get("gates")
+    if not isinstance(gates, dict):
+        raise TestManifestError("gate contract registry has no gate mappings")
+    manifests: list[tuple[str, frozenset[str]]] = []
+    for gate_id, gate in sorted(gates.items()):
+        evidence = gate.get("evidence") if isinstance(gate, dict) else None
+        contract = (
+            evidence.get("test_contract") if isinstance(evidence, dict) else None
+        )
+        if not isinstance(contract, dict) or not contract.get(
+            "expected_node_manifest"
+        ):
+            continue
+        path = _safe_manifest_path(
+            repo_root, contract.get("expected_node_manifest")
+        )
+        if not path.is_file() or path.is_symlink():
+            raise TestManifestError(f"expected node manifest is missing for {gate_id}")
+        nodes = frozenset(
+            line.strip()
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        )
+        manifests.append((str(gate_id), nodes))
+    return OracleManifestIndex(tuple(manifests))
+
+
+def resolve_oracle_test_gate(
+    repo_root: Path,
+    node_ids: object,
+    *,
+    preferred_gate: str | None = None,
+) -> str:
+    """Resolve one exact test producer for an oracle from governed manifests."""
+
+    return oracle_manifest_index(repo_root).resolve(
+        node_ids, preferred_gate=preferred_gate
+    )
+
+
 def check_gate_selectors(
     repo_root: Path,
     gate_id: str,

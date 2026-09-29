@@ -12,6 +12,7 @@ from ..yaml_mutations import (
     replace_yaml_value_bytes,
     typed_mutation_value,
 )
+from ..test_manifests import TestManifestError, oracle_manifest_index
 
 
 class NegativeControlPreflightError(ValueError):
@@ -26,29 +27,21 @@ def stale_negative_control_oracles(repo_root: Path) -> list[str]:
     gates = registry.get("gates") if isinstance(registry, dict) else None
     if not isinstance(gates, dict):
         raise NegativeControlPreflightError("gate contract registry has no gate mappings")
+    try:
+        manifest_index = oracle_manifest_index(repo_root)
+    except TestManifestError as exc:
+        raise NegativeControlPreflightError(str(exc)) from exc
     stale_oracles: list[str] = []
     for gate_id, gate in gates.items():
-        evidence = gate.get("evidence") if isinstance(gate, dict) else None
-        test_contract = evidence.get("test_contract") if isinstance(evidence, dict) else None
-        manifest_value = test_contract.get("expected_node_manifest") if isinstance(test_contract, dict) else None
-        manifest_path = repo_root / manifest_value if isinstance(manifest_value, str) else None
-        governed_nodes = (
-            {
-                line.strip()
-                for line in manifest_path.read_text(encoding="utf-8").splitlines()
-                if line.strip()
-            }
-            if manifest_path is not None and manifest_path.is_file()
-            else set()
-        )
         controls = gate.get("negative_controls") if isinstance(gate, dict) else None
         for control in controls if isinstance(controls, list) else ():
             oracle = control.get("oracle") if isinstance(control, dict) else None
             nodes = oracle.get("node_ids") if isinstance(oracle, dict) else None
-            if oracle and oracle.get("kind") == "test_node_failure" and (
-                not isinstance(nodes, list) or not nodes or any(node not in governed_nodes for node in nodes)
-            ):
-                stale_oracles.append(str(control.get("id", gate_id)))
+            if oracle and oracle.get("kind") == "test_node_failure":
+                try:
+                    manifest_index.resolve(nodes, preferred_gate=str(gate_id))
+                except TestManifestError:
+                    stale_oracles.append(str(control.get("id", gate_id)))
     return sorted(stale_oracles)
 
 

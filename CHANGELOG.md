@@ -14,7 +14,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   upgrades and made bounded certification select a unique completed lifecycle
   frontier without discarding unrelated concurrent work; provider-bound
   prospective validation now authenticates workflow custody while resolving
-  controller authority only when the adopter graph explicitly owns it.
+  controller authority only when the adopter graph explicitly owns it, and
+  cross-gate negative controls derive their exact test producer from the
+  adopter's governed manifests for both preflight and execution.
 
 ## [2.1.3] - 2026-09-28
 

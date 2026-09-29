@@ -876,7 +876,7 @@
     },
     "scripts/_bcf_runtime/governance_evidence.py": {
       "operation": "copy",
-      "sha256": "623be5f51ae9424f17202f0cd699bf8acf6f89eba7d75d6f7197da40b73bd3c9"
+      "sha256": "25f2d9b3e775dbaa0d2216af5ef86ec1553df44faa050c304b6f05d4b468e86f"
     },
     "scripts/_bcf_runtime/governance_install/__init__.py": {
       "operation": "copy",
@@ -972,7 +972,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/preflight_negative_controls.py": {
       "operation": "copy",
-      "sha256": "f3ea54728bdbfaf4f2e3cc4116c93d5bb63a7b0344cf77590edf0212273770ff"
+      "sha256": "3f9e87e1fac28fb80229154bea8571e5fd56c1a39cb6462d6d28c9aec196bf33"
     },
     "scripts/_bcf_runtime/governance_validation/preflight_repository_context.py": {
       "operation": "copy",
@@ -1035,7 +1035,7 @@
     },
     "scripts/_bcf_runtime/negative_control_execution.py": {
       "operation": "copy",
-      "sha256": "74f3c8568554f8668878bc92bd496644ddf2da753273bcf078f95bb0b9994055"
+      "sha256": "04f550e50dedb08a018072cf8ca39eb8726d5d90f9bc22782a50c46f35d26a99"
     },
     "scripts/_bcf_runtime/pack_installation_scope.py": {
       "operation": "copy",
@@ -1251,7 +1251,7 @@
     },
     "scripts/_bcf_runtime/test_manifests.py": {
       "operation": "copy",
-      "sha256": "65d27c7adea8181eb76723ba1ccba919e1af0e700964f2c2e5bf091d2dacfcbc"
+      "sha256": "094a63bd3f7c03e745247913c3bc1b26dc08857164745a122a864d96f66a7bee"
     },
     "scripts/_bcf_runtime/trusted_controller_compatibility.py": {
       "operation": "copy",

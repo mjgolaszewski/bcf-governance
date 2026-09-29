@@ -11,7 +11,6 @@ import re
 import shutil
 import subprocess
 import tempfile
-import xml.etree.ElementTree as ET
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -50,8 +49,15 @@ from .evidence_test_adapters import (
     recompute_test_artifact_observations,
     test_observations as _test_observations,
 )
-from .negative_control_execution import negative_control_command
-from .test_manifests import TestManifestError, check_gate_selectors
+from .negative_control_execution import (
+    NegativeControlCommandError,
+    NegativeControlOracleExecution,
+    execute_cross_gate_baseline,
+    junit_nodes,
+    negative_control_command,
+    resolve_negative_control_oracle,
+)
+from .test_manifests import TestManifestError, oracle_manifest_index
 from .ci_graph_contracts import CIGraphError, GRAPH_PATH
 from .ci_graph_locks import apply_ci_graph_locks
 from .ci_graph_render import apply_ci_graph
@@ -225,20 +231,6 @@ def _unexpected_worktree_changes(worktree: Path, allowed_tracked: set[str]) -> l
     return sorted((modified | staged) - allowed_tracked | untracked)
 
 
-def _junit_failed_nodes(path: Path) -> set[str]:
-    if not path.is_file():
-        return set()
-    root = ET.parse(path).getroot()
-    failed: set[str] = set()
-    for case in root.iter("testcase"):
-        if case.find("failure") is None and case.find("error") is None:
-            continue
-        classname = case.attrib.get("classname", "")
-        name = case.attrib.get("name", "")
-        failed.add(f"{classname}::{name}" if classname else name)
-    return failed
-
-
 def _oracle_observation(
     worktree: Path,
     contract: dict[str, Any],
@@ -271,7 +263,7 @@ def _oracle_observation(
         test_contract = contract.get("test_contract")
         junit_value = test_contract.get("junit_xml") if isinstance(test_contract, dict) else None
         failed_nodes = (
-            _junit_failed_nodes(worktree / junit_value)
+            junit_nodes(worktree / junit_value)[1]
             if isinstance(junit_value, str)
             else set()
         )
@@ -297,39 +289,74 @@ def _negative_control_results(
     controls = contract.get("negative_controls")
     if not isinstance(controls, list):
         return [], []
-    selector_map = None
-    test_contract = contract.get("test_contract")
-    supports_isolated_nodes = (
-        isinstance(test_contract, dict)
-        and isinstance(test_contract.get("selectors"), list)
-        and isinstance(test_contract.get("expected_node_manifest"), str)
-    )
-    if supports_isolated_nodes and any(
-        isinstance(control, dict)
-        and isinstance(control.get("oracle"), dict)
-        and control["oracle"].get("kind") == "test_node_failure"
-        for control in controls
-    ):
-        try:
-            selector_map = check_gate_selectors(
+    try:
+        manifest_index = oracle_manifest_index(repo_root)
+        selector_maps = {}
+        oracle_executions = {
+            str(control.get("id", f"control-{index}")): resolve_negative_control_oracle(
                 repo_root,
-                str(contract["target"]),
+                contract,
+                control,
                 python_executable=python_executable,
+                manifest_index=manifest_index,
+                selector_maps=selector_maps,
             )
-        except TestManifestError as exc:
-            raise EvidenceError(
-                f"negative-control selector admission failed: {exc}"
-            ) from exc
+            for index, control in enumerate(controls, start=1)
+            if isinstance(control, dict)
+        }
+    except (NegativeControlCommandError, TestManifestError) as exc:
+        raise EvidenceError(
+            f"negative-control selector admission failed: {exc}"
+        ) from exc
     results: list[dict[str, Any]] = []
     artifacts: list[dict[str, str]] = []
     for index, raw_control in enumerate(controls, start=1):
         control = raw_control if isinstance(raw_control, dict) else {}
         control_id = str(control.get("id", f"control-{index}"))
+        oracle_execution = oracle_executions.get(control_id)
+        if oracle_execution is None:
+            raise EvidenceError(f"negative-control oracle is invalid: {control_id}")
+        oracle_contract = oracle_execution.contract
+        oracle = control.get("oracle")
+        required_baseline_nodes = {
+            str(value)
+            for value in oracle.get("node_ids", [])
+            if isinstance(oracle, dict) and isinstance(value, str)
+        }
+        baseline_nodes = {
+            str(value)
+            for value in baseline_observations.get("test_node_ids", [])
+            if isinstance(value, str)
+        }
+        baseline_nodes_passed = (
+            oracle.get("kind") != "test_node_failure"
+            if isinstance(oracle, dict)
+            else False
+        ) or (
+            bool(required_baseline_nodes)
+            and required_baseline_nodes.issubset(baseline_nodes)
+        )
         with tempfile.TemporaryDirectory(prefix="bcf-evidence-") as temp_name:
             worktree = Path(temp_name) / "repo"
             _git(repo_root, "worktree", "add", "--quiet", "--detach", str(worktree), "HEAD")
             try:
                 _install_durable_inputs(repo_root, worktree)
+                if (
+                    isinstance(oracle, dict)
+                    and oracle.get("kind") == "test_node_failure"
+                    and oracle_execution.gate_id != str(contract["target"])
+                ):
+                    baseline_nodes_passed = execute_cross_gate_baseline(
+                        repo_root,
+                        worktree,
+                        command,
+                        oracle_execution,
+                        control,
+                        python_executable,
+                        session_id=session_id,
+                        require_state=require_state,
+                        runner=_run_with_execution_state,
+                    )
                 applied, mutation_path = _apply_negative_control(worktree, control)
                 allowed_mutations = (
                     _project_graph_mutation(worktree, mutation_path) if applied else set()
@@ -339,14 +366,14 @@ def _negative_control_results(
                     observed, _env, _metadata, state_report = _run_with_execution_state(
                         repo_root,
                         worktree,
-                        contract,
+                        oracle_contract,
                         negative_control_command(
                             command,
-                            contract,
+                            oracle_contract,
                             control,
                             python_executable,
                             worktree,
-                            selector_map,
+                            oracle_execution.selector_map,
                         ),
                         python_executable,
                         session_id=session_id,
@@ -356,26 +383,7 @@ def _negative_control_results(
                 else:
                     observed = None
                 oracle_observation = _oracle_observation(
-                    worktree, contract, control, observed
-                )
-                oracle = control.get("oracle")
-                baseline_nodes = {
-                    str(value)
-                    for value in baseline_observations.get("test_node_ids", [])
-                    if isinstance(value, str)
-                }
-                required_baseline_nodes = {
-                    str(value)
-                    for value in oracle.get("node_ids", [])
-                    if isinstance(oracle, dict) and isinstance(value, str)
-                }
-                baseline_nodes_passed = (
-                    oracle.get("kind") != "test_node_failure"
-                    if isinstance(oracle, dict)
-                    else False
-                ) or (
-                    bool(required_baseline_nodes)
-                    and required_baseline_nodes.issubset(baseline_nodes)
+                    worktree, oracle_contract, control, observed
                 )
                 if not baseline_nodes_passed:
                     oracle_observation = {
@@ -407,11 +415,8 @@ def _negative_control_results(
                     }
                     artifacts.append(artifact)
                     artifact_names[stream] = path.name
-                junit_value = (
-                    test_contract.get("junit_xml")
-                    if isinstance(test_contract, dict)
-                    else None
-                )
+                test_contract = oracle_contract.get("test_contract")
+                junit_value = test_contract.get("junit_xml") if isinstance(test_contract, dict) else None
                 if isinstance(junit_value, str) and (worktree / junit_value).is_file():
                     junit_path = output_dir / f"{contract['target']}.{control_id}.junit.xml"
                     shutil.copy2(worktree / junit_value, junit_path)
