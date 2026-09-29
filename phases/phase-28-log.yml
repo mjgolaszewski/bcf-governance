@@ -82,7 +82,7 @@ execution_evidence:
   - publisher 36421623699/1 published immutable non-draft release 398228660 from annotated tag v2.1.2; all three assets match SHA256SUMS and passed the canonical release inspector and independent GitHub attestation verification
   - the temporary BCF_RELEASE_ADMIN_TOKEN secret was deleted after v2.1.2 publication; audits/v2.1.2-release-custody.yml owns exact provider and asset custody
   - P28-HF09 closes the adopter-truth defects reported by AgentBus and Racecar through typed self-authority pack scope and lifecycle-derived post-merge intent; PR 333 merged as b3d84bc6970bb19bbdd80e15b808ff8117f1c247 and exact-main 36472191538/5 plus finalizer 36477153833/1 published successful exact certification after ordinary rotation
-  - P28-HF10 repairs exact candidate-tree semantic inventory concurrent bounded-frontier derivation provider-bound optional-controller resolution and graph-derived cross-gate negative-control execution; final v2.1.4 candidate bytes require preserved real-adopter qualification before protected submission and immutable publication
+  - P28-HF10 repairs exact candidate-tree semantic inventory concurrent bounded-frontier derivation provider-bound optional-controller resolution graph-derived cross-gate negative-control execution and the separation of BCF-owned execution namespaces from adopter durable database storage; final v2.1.4 candidate bytes require preserved real-adopter qualification before protected submission and immutable publication
 closeout_requirements:
   claims:
     workitems_closed:

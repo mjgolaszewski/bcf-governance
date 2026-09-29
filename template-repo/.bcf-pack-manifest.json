@@ -1147,7 +1147,7 @@
     },
     "scripts/_bcf_runtime/runtime_capacity.py": {
       "operation": "copy",
-      "sha256": "8ad69cffa9cabb29fea5211106dc1ad5723ae6328fae2a1af0e28960167c7209"
+      "sha256": "a0c5bb0623a2d8dca244a90dc4738123563b3637e3b546bc58438f0aa2f54583"
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",

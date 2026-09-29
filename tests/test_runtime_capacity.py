@@ -144,11 +144,28 @@ def test_unexplained_preexisting_execution_state_fails_before_execution(
 
 
 def test_unrelated_unowned_state_fails_before_execution(tmp_path: Path) -> None:
-    base = tmp_path / ".artifacts/bcf/runtime/database/unowned"
+    base = tmp_path / ".artifacts/bcf/runtime/execution-state/unowned"
     base.mkdir(parents=True)
 
     with pytest.raises(RuntimeCapacityError, match="unexplained pre-existing"):
         _allocate(tmp_path)
+
+
+def test_durable_database_root_is_not_execution_namespace_inventory(
+    tmp_path: Path,
+) -> None:
+    durable = tmp_path / ".artifacts/bcf/runtime/database"
+    (durable / "config").mkdir(parents=True)
+    (durable / "cluster").mkdir()
+    (durable / "runtime.json").write_text("{}\n", encoding="utf-8")
+
+    lease = _allocate(tmp_path)
+
+    assert lease.root.parent == tmp_path / ".artifacts/bcf/runtime/execution-state"
+    assert (durable / "config").is_dir()
+    assert (durable / "cluster").is_dir()
+    assert (durable / "runtime.json").read_text(encoding="utf-8") == "{}\n"
+    retire_execution_state(lease)
 
 
 def test_separately_owned_execution_namespaces_can_run_concurrently(

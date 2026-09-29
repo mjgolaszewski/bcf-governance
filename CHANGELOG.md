@@ -16,7 +16,10 @@ All notable changes to BCF Governance are recorded here. This file follows
   prospective validation now authenticates workflow custody while resolving
   controller authority only when the adopter graph explicitly owns it, and
   cross-gate negative controls derive their exact test producer from the
-  adopter's governed manifests for both preflight and execution.
+  adopter's governed manifests for both preflight and execution. Execution
+  namespaces now live under their own BCF-owned runtime root, leaving declared
+  durable workload database state untouched while retaining exact fail-closed
+  ownership and terminal retirement.
 
 ## [2.1.3] - 2026-09-28
 

@@ -52,6 +52,7 @@ class ExecutionStateLease:
 DiskUsage = Callable[[Path], shutil._ntuple_diskusage]
 Remover = Callable[[Path], None]
 STATE_MANIFEST = ".bcf-execution-state.json"
+STATE_DIRECTORY = "execution-state"
 STATE_NAMESPACE = re.compile(r"^[a-z0-9][a-z0-9-]{5,63}$")
 EXECUTION_STATE_ENVIRONMENT = (
     "BCF_EXECUTION_STATE_NAMESPACE",
@@ -183,10 +184,12 @@ def allocate_execution_state(
     database = contract.get("database")
     if not isinstance(database, dict) or database.get("storage") != "repository_bind_mount":
         raise RuntimeCapacityError("database storage must use a repository-owned bind mount")
+    runtime_root = str(contract.get("runtime_root", ""))
+    _safe_repo_path(repo_root, runtime_root, field="runtime_root")
     base = _safe_repo_path(
         repo_root,
-        str(database.get("relative_path", "")),
-        field="database.relative_path",
+        (Path(runtime_root) / STATE_DIRECTORY).as_posix(),
+        field="execution_state.root",
     )
     session = _identity(session_id, field="session_id")
     workload = _identity(workload_id, field="workload_id")

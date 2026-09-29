@@ -140,9 +140,11 @@ def test_execution_state_does_not_relocate_generic_process_temporary_paths(
     contract = _contract("probe.py")
     lease_environment = {
         "BCF_EXECUTION_STATE_NAMESPACE": "bcf-exact-state",
-        "BCF_EXECUTION_STATE_ROOT": str(tmp_path / ".artifacts/runtime/database/bcf-exact-state"),
+        "BCF_EXECUTION_STATE_ROOT": str(
+            tmp_path / ".artifacts/runtime/execution-state/bcf-exact-state"
+        ),
         "BCF_EXECUTION_DATABASE_ROOT": str(
-            tmp_path / ".artifacts/runtime/database/bcf-exact-state/database"
+            tmp_path / ".artifacts/runtime/execution-state/bcf-exact-state/database"
         ),
     }
 

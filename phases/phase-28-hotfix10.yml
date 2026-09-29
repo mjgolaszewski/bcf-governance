@@ -22,6 +22,7 @@ execution_evidence:
   - Candidate-tree discovery now uses tracked plus nonignored additions minus working-tree deletions, and post-merge scope derives the unique completed dependency frontier independently of unrelated active work.
   - A pre-gate Racecar replay proved provider-bound prospective validation incorrectly resolved optional controller authority for an executable-only adopter; canonical workflow custody remains mandatory while controller resolution now derives solely from the adopter graph.
   - The repaired pre-gate replay then proved cheap preflight and negative-control execution assumed the oracle belonged to the mutated gate; one cached manifest index now resolves a unique most-specific test producer, rejects ambiguity, and proves the exact oracle before and after mutation.
+  - The next full Racecar replay proved the execution-state allocator treated the adopter's durable database root as BCF namespace inventory; ephemeral and declared-shared namespaces now live under a distinct BCF-owned runtime root, so durable workload state is preserved and unexplained state inside the governed namespace still fails closed.
   - Immutable v2.1.4 publication is forbidden until the exact final candidate package passes both preserved real-adopter install, reconcile, and prospective-validation fixtures.
 closeout_requirements:
   claims:
