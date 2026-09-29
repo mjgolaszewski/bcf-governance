@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-28-hotfix12
   version: 1.0.0
   generated_at_utc: '2026-09-29T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-28-hotfix12.yml
 hotfix:
   id: P28-HF12
@@ -16,7 +16,11 @@ hotfix:
 execution_evidence:
   planned_commands:
   - bcf ci submit --repo-root . --intent closure
-  executed_commands: []
+  executed_commands:
+  - focused installer, upgrade, custody, doctor, profile, reconciliation, pack,
+    and historical 2.1.3 upgrade regressions
+  - exact clean-source Lite v1 and Standard v3 adopter qualification before the
+    canonical prospective train
   notes:
   - v2.1.4 could replace pack-owned runtime but had no canonical producer for the
     authenticated adopter runtime lock, so every release-bound upgrade either
