@@ -42,4 +42,4 @@ def print_summary(
             "next: follow governance/EXISTING_REPO_ADOPTION.md and "
             "governance/existing-repo-adoption.yml to inventory existing boundaries and wire gates"
         )
-    print("next: merge Makefile.fragment into the repo Makefile or include it from the repo Makefile")
+    print("next: run make release-check")

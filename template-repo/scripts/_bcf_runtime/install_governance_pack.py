@@ -101,6 +101,7 @@ INSTALL_MANAGED_PATHS = tuple(
             *RESCAFFOLD_REMOVE_PATHS,
             "docs/OPERATIONS.md",
             ".gitignore",
+            "Makefile",
             "README.md",
             "LICENSE",
             "CHANGELOG.md",
@@ -108,7 +109,7 @@ INSTALL_MANAGED_PATHS = tuple(
         )
     )
 )
-PRESERVED_REQUIRED_ARTIFACTS = ("README.md", "LICENSE", "CHANGELOG.md")
+PRESERVED_REQUIRED_ARTIFACTS = ("README.md", "LICENSE", "CHANGELOG.md", "Makefile")
 EXISTING_ADOPTION_ARTIFACTS = (
     "governance/EXISTING_REPO_ADOPTION.md",
     "governance/existing-repo-adoption.yml",

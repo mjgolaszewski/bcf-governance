@@ -32,6 +32,10 @@
       "operation": "copy",
       "sha256": "bff2d56a65db4d17635dd419f3f24c2692eefa1761c5ae9c31d2e4e17232ea5f"
     },
+    "Makefile": {
+      "operation": "preserve",
+      "sha256": "0d1aab9ad1a60817f5d79cdefad04c41f49dfc230af271c0b286b0c306b3c1f3"
+    },
     "Makefile.fragment": {
       "operation": "generate",
       "sha256": "e252ea7cd777aa7324af76fcaba58d7ffd0f1a0f862a6f1c38a64f258bb428a6"
@@ -916,7 +920,7 @@
     },
     "scripts/_bcf_runtime/governance_install/reporting.py": {
       "operation": "copy",
-      "sha256": "efeb033f7c6c0abc2f902641096a259b55f8e63d60d729bf88363902ed2a767c"
+      "sha256": "7e5237f920e6bec53f09c43f5532ff816bfafc153b82aa0a76c3d351bfe5d5c1"
     },
     "scripts/_bcf_runtime/governance_install/transaction.py": {
       "operation": "copy",
@@ -1023,7 +1027,7 @@
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
-      "sha256": "07771757c357552e77f8111a08f6a1346252f5c9e4526c94f8c671ff9ed0e0d5"
+      "sha256": "5c54350948edd97a2d00954cfdc1ef76988d8cd37bf8945a621b0fe0d9762025"
     },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",

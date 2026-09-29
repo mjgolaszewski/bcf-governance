@@ -193,6 +193,17 @@ def test_installer_lite_profile_passes_strict_validation(tmp_path: Path) -> None
     assert "scripts/governance_evidence.py" in makefile
     assert "$(MAKE) governance-truthfulness" in makefile
     assert "configure repo-specific" not in makefile
+    assert (target / "Makefile").read_text(encoding="utf-8") == (
+        "include Makefile.fragment\n"
+    )
+    make = subprocess.run(
+        ["make", "--dry-run", "release-check"],
+        cwd=target,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert make.returncode == 0, make.stdout + make.stderr
 
     strict = _run_installed_validator(target)
     assert strict.returncode == 0
