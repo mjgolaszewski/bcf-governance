@@ -165,10 +165,7 @@ def _execution_env(
     projected = os.environ
     unsupported: list[str] = []
     if job_environment is not None:
-        projected = {
-            name: value.replace("${{ github.workspace }}", str(worktree))
-            for name, value in job_environment.items()
-        }
+        projected = dict(job_environment)
         unsupported = sorted(
             name
             for name, value in projected.items()

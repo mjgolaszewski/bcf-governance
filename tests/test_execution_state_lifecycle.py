@@ -160,23 +160,22 @@ def test_execution_state_does_not_relocate_generic_process_temporary_paths(
     assert not generic_state & env.keys()
 
 
-def test_graph_job_environment_resolves_only_workspace_inside_evidence_worktree(
+def test_unresolved_graph_job_environment_cannot_reach_evidence_execution(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     contract = _contract("probe.py")
     contract["invocation"]["required_env"] = ["PREPARED_ROOT"]
     monkeypatch.setenv("PREPARED_ROOT", "/ambient/forgery")
 
-    env, _metadata = _execution_env(
-        tmp_path,
-        contract,
-        Path(sys.executable),
-        job_environment={
-            "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"
-        },
-    )
-
-    assert env["PREPARED_ROOT"] == str(tmp_path / ".artifacts/prepared")
+    with pytest.raises(EvidenceError, match="unsupported local graph environment"):
+        _execution_env(
+            tmp_path,
+            contract,
+            Path(sys.executable),
+            job_environment={
+                "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"
+            },
+        )
     with pytest.raises(EvidenceError, match="unsupported local graph environment"):
         _execution_env(
             tmp_path,

@@ -329,6 +329,9 @@ def test_evidence_run_captures_process_artifacts_test_counts_and_negative_contro
     tmp_path: Path,
 ) -> None:
     repo = tmp_path / "repo"
+    job_workspace = tmp_path / "job-workspace"
+    job_workspace.mkdir()
+    prepared_root = job_workspace / ".artifacts/prepared"
     repo.mkdir()
     (repo / "governance").mkdir()
     (repo / ".gitignore").write_text(".artifacts/\n", encoding="utf-8")
@@ -338,8 +341,8 @@ import pathlib
 import sys
 PASS = True
 prepared = pathlib.Path(os.environ['PREPARED_ROOT'])
-if prepared != pathlib.Path.cwd() / '.artifacts/prepared':
-    raise SystemExit('graph job environment was not resolved inside the evidence worktree')
+if prepared != pathlib.Path(%r):
+    raise SystemExit('graph job environment was not resolved to its exact job workspace')
 failure = '' if PASS else '<failure>mutated</failure>'
 path = pathlib.Path('.artifacts/test.junit.xml')
 path.parent.mkdir(parents=True, exist_ok=True)
@@ -347,7 +350,7 @@ path.write_text(f'<testsuite tests="1" failures="{int(not PASS)}"><testcase clas
 print('collected 1 item')
 print('1 passed' if PASS else '1 failed')
 sys.exit(0 if PASS else 1)
-""",
+""" % str(prepared_root),
         encoding="utf-8",
     )
     (repo / "Makefile").write_text("test:\n\tpython gate.py\n", encoding="utf-8")
@@ -449,7 +452,7 @@ sys.exit(0 if PASS else 1)
         "test",
         tmp_path / "evidence",
         job_environment={
-            "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"
+            "PREPARED_ROOT": str(prepared_root)
         },
     )
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))

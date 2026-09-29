@@ -12,6 +12,7 @@ from bcf_governance.tooling.local_pr import LocalPRContext
 from bcf_governance.tooling import local_pr as prospective
 from bcf_governance.tooling import controller_custody_prospective as custody
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
+from bcf_governance.tooling.ci_graph_execution import LocalGateProducer
 from bcf_governance.tooling.ci_authority_prospective_lanes import (
     direct_policy_identity,
     ordinary_authority_policy_identity,
@@ -90,6 +91,11 @@ def test_planned_evidence_stops_on_first_failed_producer(
         }))
         return receipt
     monkeypatch.setattr(prospective, "capture_gate", capture)
+    (tmp_path / "session.json").write_text("{}")
+    bindings = {
+        gate: LocalGateProducer("governance", "evidence", {})
+        for gate in ("first", "second")
+    }
     with pytest.raises(
         prospective.ProspectiveValidationError,
         match="first failed with exit 3.*causal diagnostic",
@@ -100,7 +106,7 @@ def test_planned_evidence_stops_on_first_failed_producer(
             session_manifest=tmp_path / "session.json",
             session_root=tmp_path / "receipts",
             producers=("first", "second"),
-            producer_environments={"first": {}, "second": {}},
+            producer_environments=bindings,
         )
     assert seen == ["first"]
 
@@ -108,10 +114,14 @@ def test_planned_evidence_stops_on_first_failed_producer(
 def test_planned_evidence_projects_exact_graph_job_environment(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    observed: list[dict[str, str]] = []
+    observed: list[tuple[str, dict[str, str], bool]] = []
 
     def capture(_root: Path, gate: str, output: Path, **kwargs: object) -> Path:
-        observed.append(dict(kwargs["job_environment"]))
+        environment = dict(kwargs["job_environment"])
+        workspace = Path(environment["PREPARED_ROOT"]).parents[1]
+        marker = workspace / "shared-marker"
+        observed.append((gate, environment, marker.exists()))
+        marker.write_text(gate)
         output.mkdir(parents=True)
         receipt = output / f"{gate}.evidence.json"
         receipt.write_text(
@@ -128,20 +138,32 @@ def test_planned_evidence_projects_exact_graph_job_environment(
         return receipt
 
     monkeypatch.setattr(prospective, "capture_gate", capture)
+    (tmp_path / "session.json").write_text("{}")
     prospective._capture_planned_evidence(
         tmp_path,
         python_executable=Path("/python"),
         session_manifest=tmp_path / "session.json",
         session_root=tmp_path / "receipts",
-        producers=("test",),
+        producers=("first", "second", "third"),
         producer_environments={
-            "test": {"PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"}
+            "first": LocalGateProducer(
+                "governance", "evidence", {"PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"}
+            ),
+            "second": LocalGateProducer(
+                "governance", "evidence", {"PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"}
+            ),
+            "third": LocalGateProducer(
+                "governance", "other-evidence", {"PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"}
+            ),
         },
     )
 
-    assert observed == [
-        {"PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"}
-    ]
+    first = Path(observed[0][1]["PREPARED_ROOT"]).parents[1]
+    second = Path(observed[1][1]["PREPARED_ROOT"]).parents[1]
+    third = Path(observed[2][1]["PREPARED_ROOT"]).parents[1]
+    assert first == second and first != third
+    assert [item[2] for item in observed] == [False, True, False]
+    assert not first.exists() and not third.exists()
 
 
 def _runner(command: list[str], **_kwargs: object) -> Result:

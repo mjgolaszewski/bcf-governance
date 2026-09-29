@@ -20,6 +20,7 @@ from bcf_governance.tooling.ci_graph_controller_lifecycle import ControllerLifec
 from bcf_governance.tooling.ci_graph_audit import audit_ci_graph
 from bcf_governance.tooling.ci_graph_execution import (
     DIRECT_POST_MERGE_MODE,
+    LocalGateProducer,
     direct_post_merge_mode,
     exact_main_evaluation,
     job_execution_issues,
@@ -1367,6 +1368,7 @@ def test_local_gate_environment_comes_from_exact_pr_producer_job(
     graph = {
         "workflows": [
             {
+                "id": "governance",
                 "role": "exact-main",
                 "events": [{"type": "pull_request"}, {"type": "push"}],
                 "environment": {"SHARED": "literal"},
@@ -1384,10 +1386,14 @@ def test_local_gate_environment_comes_from_exact_pr_producer_job(
     }
 
     assert local_gate_job_environments(graph, ("test",)) == {
-        "test": {
-            "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared",
-            "SHARED": "literal",
-        }
+        "test": LocalGateProducer(
+            workflow_id="governance",
+            job_id="evidence",
+            environment={
+                "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared",
+                "SHARED": "literal",
+            },
+        )
     }
 
     graph["workflows"][0]["jobs"].append(copy.deepcopy(graph["workflows"][0]["jobs"][0]))

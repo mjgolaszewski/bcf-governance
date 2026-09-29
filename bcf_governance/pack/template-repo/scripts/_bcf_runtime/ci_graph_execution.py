@@ -44,6 +44,15 @@ _DIRECT_POST_MERGE_TARGET = re.compile(
 )
 
 
+@dataclass(frozen=True)
+class LocalGateProducer:
+    """Exact graph job and environment that own one local gate."""
+
+    workflow_id: str
+    job_id: str
+    environment: dict[str, str]
+
+
 def direct_post_merge_mode(mode: str) -> str:
     """Render one event-safe direct-push evaluation intent."""
 
@@ -308,10 +317,12 @@ def job_required_environment(
 
 def local_gate_job_environments(
     graph: dict[str, Any], producers: tuple[str, ...]
-) -> dict[str, dict[str, str]]:
+) -> dict[str, LocalGateProducer]:
     """Project each gate from its one exact pull-request producer job."""
 
-    matches: dict[str, list[dict[str, str]]] = {producer: [] for producer in producers}
+    matches: dict[str, list[LocalGateProducer]] = {
+        producer: [] for producer in producers
+    }
     for workflow in graph["workflows"]:
         if not any(event.get("type") == "pull_request" for event in workflow["events"]):
             continue
@@ -322,7 +333,13 @@ def local_gate_job_environments(
                 continue
             environment = {**inherited, **job.get("environment", {})}
             for producer in set(executor.get("gates", ())).intersection(matches):
-                matches[producer].append(dict(sorted(environment.items())))
+                matches[producer].append(
+                    LocalGateProducer(
+                        workflow_id=str(workflow["id"]),
+                        job_id=str(job["id"]),
+                        environment=dict(sorted(environment.items())),
+                    )
+                )
     invalid = sorted(producer for producer, values in matches.items() if len(values) != 1)
     if invalid:
         raise CIGraphError(
