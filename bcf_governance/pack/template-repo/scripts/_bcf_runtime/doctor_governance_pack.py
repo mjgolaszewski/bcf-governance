@@ -150,9 +150,21 @@ def _release_gate_diagnostics(repo_root: Path) -> tuple[list[str], list[str], li
         return blockers, warnings, next_actions
 
     release_text = "\n".join(release_check_body)
-    if "governance_evidence.py" not in release_text and "bcf evidence run" not in release_text:
+    contract_version = str(profile.get("profile_contract_version", "1.0"))
+    if contract_version in {"2.0", "3.0"}:
+        captures_typed_evidence = (
+            "scripts/capture_governance_shard.py" in release_text
+            and "--all-planned" in release_text
+        )
+        capture_action = "delegate the selective session plan to scripts/capture_governance_shard.py --all-planned"
+    else:
+        captures_typed_evidence = (
+            "governance_evidence.py" in release_text or "bcf evidence run" in release_text
+        )
+        capture_action = "run required gates through scripts/governance_evidence.py"
+    if not captures_typed_evidence:
         blockers.append("release-check does not capture typed gate evidence")
-        next_actions.append("run required gates through scripts/governance_evidence.py")
+        next_actions.append(capture_action)
     if "governance-truthfulness" not in release_text and "governance_truth.py" not in release_text:
         blockers.append("release-check does not derive computed lifecycle truth")
         next_actions.append("invoke governance-truthfulness after evidence capture")

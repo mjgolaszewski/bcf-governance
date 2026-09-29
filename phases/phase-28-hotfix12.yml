@@ -28,6 +28,10 @@ execution_evidence:
     release authentication, runtime projection, and derived custody, and gives
     the existing shard executor one all-planned local mode. No new ceremony or
     alternate authority lane is introduced.
+  - The Standard-v3 adopter probe exposed a stale doctor diagnostic that accepted
+    only direct gate execution. Doctor now derives the evidence-capture contract
+    from the installed profile version, accepts canonical all-planned delegation,
+    and rejects shard execution that ignores the selective session plan.
 closeout_requirements:
   claims:
     required_suites_green:

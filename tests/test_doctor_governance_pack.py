@@ -74,3 +74,67 @@ def test_doctor_reports_running_version_source_and_public_install(tmp_path: Path
     assert report["tooling"]["public_install"].endswith(
         f"/v{__version__}/bcf_governance-{__version__}-py3-none-any.whl"
     )
+
+
+def _release_check_repo(tmp_path: Path, *, contract_version: str, capture: str) -> Path:
+    (tmp_path / "governance-profile.yml").write_text(
+        "profile_contract_version: '" + contract_version + "'\n"
+        "release_gate_profile:\n"
+        "  gates:\n"
+        "    test: {target: test, status: required, command_policy: automated_tests}\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "Makefile.fragment").write_text(
+        "release-check:\n"
+        f"\t{capture}\n"
+        "\tpython scripts/governance_truth.py\n"
+        "test:\n"
+        "\tpython -m pytest\n",
+        encoding="utf-8",
+    )
+    return tmp_path
+
+
+def test_doctor_accepts_canonical_selective_plan_capture_for_v3(tmp_path: Path) -> None:
+    repo = _release_check_repo(
+        tmp_path,
+        contract_version="3.0",
+        capture=(
+            "python scripts/capture_governance_shard.py --all-planned "
+            "--session-manifest evidence-session.json"
+        ),
+    )
+
+    blockers, _, _ = doctor._release_gate_diagnostics(repo)
+
+    assert "release-check does not capture typed gate evidence" not in blockers
+
+
+def test_doctor_rejects_v3_shard_capture_that_ignores_selective_plan(
+    tmp_path: Path,
+) -> None:
+    repo = _release_check_repo(
+        tmp_path,
+        contract_version="3.0",
+        capture=(
+            "python scripts/capture_governance_shard.py --shard-index 0 "
+            "--shard-count 1"
+        ),
+    )
+
+    blockers, _, actions = doctor._release_gate_diagnostics(repo)
+
+    assert "release-check does not capture typed gate evidence" in blockers
+    assert any("--all-planned" in action for action in actions)
+
+
+def test_doctor_preserves_direct_typed_capture_for_v1(tmp_path: Path) -> None:
+    repo = _release_check_repo(
+        tmp_path,
+        contract_version="1.0",
+        capture="python scripts/governance_evidence.py run --gate test",
+    )
+
+    blockers, _, _ = doctor._release_gate_diagnostics(repo)
+
+    assert "release-check does not capture typed gate evidence" not in blockers
