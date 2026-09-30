@@ -57,6 +57,9 @@ execution_evidence:
     Canonical remove-pack now derives its minimal roots from installer ownership,
     rejects uncovered ordinary manifest members, retires the exact runtime root,
     preserves product files, and proves strict Standard-v3 custom-gate re-adoption.
+  - The prospective train crossed a UTC fixture expiry during execution. Expiring
+    capability-N/A tests now bind an explicit evaluation instant; production
+    wall-clock expiry remains fail-closed and unchanged.
   - Lite-v1 release execution invokes canonical truth directly from the generated
     fragment, preventing recursive make from falling back to a consumer Makefile.
 closeout_requirements:

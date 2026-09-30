@@ -179,10 +179,15 @@ def test_standard_semantic_na_requires_one_typed_record_per_capability(
     _git(repo, "add", ".")
     _git(repo, "commit", "--quiet", "-m", "record semantic non-applicability")
 
-    report = validate_profile_v2_readiness(repo, profile="standard")
+    fixture_time = datetime(2026, 9, 1, tzinfo=timezone.utc)
+    report = validate_profile_v2_readiness(
+        repo, profile="standard", evaluated_at=fixture_time
+    )
     assert report.capability_na_records == 3
     with pytest.raises(ProfileV2Error, match="cannot be bypassed by N/A"):
-        validate_profile_v2_readiness(repo, profile="regulated")
+        validate_profile_v2_readiness(
+            repo, profile="regulated", evaluated_at=fixture_time
+        )
 
 
 def test_declared_github_topology_requires_exact_installed_workflows(
