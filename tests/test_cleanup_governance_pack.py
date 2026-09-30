@@ -11,6 +11,7 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CLEANUP = REPO_ROOT / "scripts" / "cleanup_governance_pack.py"
+INSTALLER = REPO_ROOT / "scripts" / "install_governance_pack.py"
 
 
 def _load_cleanup_module():
@@ -194,6 +195,11 @@ def test_cleanup_remove_governance_pack_deletes_owned_artifacts_only(tmp_path: P
         "docs/OPERATIONS.md",
         "backend/tests/architecture/test_boundaries_ast.py",
         "scripts/check_governance_exposure.py",
+        "scripts/build_trusted_controller.py",
+        "scripts/capture_governance_shard.py",
+        "scripts/evidence_storage.py",
+        "scripts/profile_governance.py",
+        "scripts/restore_evidence_modes.py",
         "scripts/scaffold_governance_artifacts.py",
         "scripts/validate_governance_yaml.py",
     ]
@@ -204,6 +210,7 @@ def test_cleanup_remove_governance_pack_deletes_owned_artifacts_only(tmp_path: P
         "phases",
         "plans",
         "schemas",
+        "scripts/_bcf_runtime",
         "scripts/governance_validation",
     ]
     for relative_path in owned_files:
@@ -236,6 +243,56 @@ def test_cleanup_remove_governance_pack_deletes_owned_artifacts_only(tmp_path: P
     assert app_workflow.exists()
     assert mixed_workflow.exists()
     assert any("manual BCF references remain" in warning for warning in report.warnings)
+
+
+def test_remove_pack_then_fresh_install_is_closed_and_preserves_product(
+    tmp_path: Path,
+) -> None:
+    cleanup = _load_cleanup_module()
+    repo = tmp_path / "fresh-readoption"
+    repo.mkdir()
+    subprocess.run(["git", "init", "--quiet"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.email", "adopter@example.invalid"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.name", "Adopter"], cwd=repo, check=True)
+    (repo / "app.py").write_text("PRODUCT = True\n", encoding="utf-8")
+    (repo / "README.md").write_text("# Product\n", encoding="utf-8")
+    subprocess.run(["git", "add", "."], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "--quiet", "-m", "product"], cwd=repo, check=True)
+    install = [
+        sys.executable,
+        str(INSTALLER),
+        "--target",
+        str(repo),
+        "--profile",
+        "lite",
+        "--project-id",
+        "fresh-readoption",
+        "--project-name",
+        "Fresh Readoption",
+        "--product-name",
+        "Fresh Readoption",
+        "--candidate-runner-label",
+        "ubuntu-24.04",
+        "--trusted-runner-label",
+        "ubuntu-24.04",
+        "--candidate-runner-kind",
+        "hosted",
+        "--trusted-runner-kind",
+        "hosted",
+        "--require-strict-validation",
+    ]
+    subprocess.run(install, check=True, capture_output=True, text=True)
+
+    report = cleanup.apply_cleanup(
+        repo, assume_yes=True, remove_governance_pack=True
+    )
+
+    assert report.applied
+    assert (repo / "app.py").read_text(encoding="utf-8") == "PRODUCT = True\n"
+    assert (repo / "README.md").read_text(encoding="utf-8") == "# Product\n"
+    assert not (repo / "scripts/_bcf_runtime").exists()
+    assert not (repo / "scripts/capture_governance_shard.py").exists()
+    subprocess.run(install, check=True, capture_output=True, text=True)
 
 
 def test_cleanup_remove_governance_pack_cli_outputs_json(tmp_path: Path) -> None:

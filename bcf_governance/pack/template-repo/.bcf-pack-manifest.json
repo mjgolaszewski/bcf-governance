@@ -736,7 +736,7 @@
     },
     "scripts/_bcf_runtime/cleanup_governance_pack.py": {
       "operation": "copy",
-      "sha256": "12656990add884de736af92665f6ac5d1a041884962bce51d9079616c1206c64"
+      "sha256": "d1dcd71e70ea982dd5d018cbc25c3a6cc830a50192b1f9430e2b75083e1ea822"
     },
     "scripts/_bcf_runtime/controller_custody.py": {
       "operation": "copy",
@@ -869,6 +869,10 @@
     "scripts/_bcf_runtime/governance_cleanup/models.py": {
       "operation": "copy",
       "sha256": "b1c78e3dbde06f75aa7e5962468222b7b4a765d20e36402c1742177f37ddc972"
+    },
+    "scripts/_bcf_runtime/governance_cleanup/pack_removal.py": {
+      "operation": "copy",
+      "sha256": "477feec772c9f2bccee423e385515e2eda8ac7f7e954099de61ccd27697e2688"
     },
     "scripts/_bcf_runtime/governance_cleanup/phase_retention.py": {
       "operation": "copy",

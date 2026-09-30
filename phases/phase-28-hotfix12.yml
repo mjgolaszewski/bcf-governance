@@ -53,6 +53,10 @@ execution_evidence:
     profile contract. Fresh installs now admit exact required custom gates while
     rejecting pack overrides, unbound entries, and claim-model replacement in
     an existing governed repository.
+  - The next clean-adoption probe exposed a duplicated, stale removal inventory.
+    Canonical remove-pack now derives its minimal roots from installer ownership,
+    rejects uncovered ordinary manifest members, retires the exact runtime root,
+    preserves product files, and proves strict Standard-v3 custom-gate re-adoption.
   - Lite-v1 release execution invokes canonical truth directly from the generated
     fragment, preventing recursive make from falling back to a consumer Makefile.
 closeout_requirements:

@@ -739,7 +739,10 @@ bcf cleanup --repo-root . --phase-retention-mode archive \
 ```
 
 Use `--remove-governance-pack` only to decommission BCF. Dedicated BCF files and
-CI can be removed; mixed workflows are reported for manual editing.
+CI are removed from the same canonical managed-path ownership used by install;
+preserved product files and merged files remain. The operation fails closed if
+an ordinary pack-manifest member lacks removal ownership, and mixed workflows
+are reported for manual editing.
 
 Evidence-session retention is a separate exact-root operation:
 

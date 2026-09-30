@@ -15,6 +15,7 @@ import yaml
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
 from bcf_governance.tooling.ci_graph_audit import audit_ci_graph
 from bcf_governance.tooling.ci_graph_render import apply_ci_graph, check_ci_graph
+from bcf_governance.tooling.cleanup_governance_pack import apply_cleanup
 from bcf_governance.tooling.ci_graph_post_merge import (
     post_merge_evaluation,
     reconcile_post_merge_scope,
@@ -866,6 +867,58 @@ def test_standard_v3_adopter_install_derives_each_post_merge_scope(
     apply_ci_graph(repo)
     terminal = post_merge_evaluation(validate_ci_graph(repo).graph)
     assert (terminal.mode, terminal.target) == ("closure", None)
+
+
+def test_standard_v3_custom_gate_remove_pack_then_fresh_readoption(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "custom-readoption"
+    repo.mkdir()
+    git(repo, "init", "--quiet")
+    git(repo, "config", "user.email", "adopter@example.invalid")
+    git(repo, "config", "user.name", "Adopter Acceptance")
+    write_gate_runner(repo)
+    config = gate_config(repo, "standard", None, contract_version="3.0")
+    add_custom_release_gate(config)
+    semantic = semantic_config(repo)
+    git(repo, "add", ".")
+    git(repo, "commit", "--quiet", "-m", "application contracts")
+    install = [
+        sys.executable,
+        str(INSTALLER),
+        "--target",
+        str(repo),
+        "--profile",
+        "standard",
+        "--profile-contract-version",
+        "3.0",
+        "--profile-config",
+        str(config),
+        "--semantic-config",
+        str(semantic),
+        "--project-id",
+        "custom-readoption",
+        "--project-name",
+        "Custom Readoption",
+        "--product-name",
+        "Custom Readoption",
+        *EXPLICIT_HOSTED_RUNNERS,
+        "--require-strict-validation",
+    ]
+    subprocess.run(install, check=True, capture_output=True, text=True)
+
+    apply_cleanup(repo, assume_yes=True, remove_governance_pack=True)
+
+    assert config.is_file()
+    assert semantic.is_file()
+    assert (repo / "gate.py").is_file()
+    assert not (repo / "scripts/_bcf_runtime").exists()
+    subprocess.run(install, check=True, capture_output=True, text=True)
+    contract = yaml.safe_load(
+        (repo / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    )
+    assert contract["gate_catalog"]["release_smoke"]["target"] == "release-smoke"
+    assert "release-smoke" in contract["claim_model"]["claims"]
 
 
 def test_lite_v1_adopter_install_derives_each_post_merge_scope(
