@@ -10,6 +10,7 @@ from typing import Any, Callable, Iterable, Mapping
 import yaml  # type: ignore[import-untyped]
 
 from ..profile_contract_v2 import current_contract_version
+from ..profile_yaml import render_governance_profile
 from ..profile_v2_surfaces import selective_release_check_lines
 from ..runtime_capacity import EXECUTION_STATE_POLICY
 
@@ -448,7 +449,7 @@ def _upgrade_governance_profile(template_root: Path, target_root: Path) -> None:
     template_ci = template.get("ci_profile")
     if isinstance(template_ci, dict):
         _ensure_list_items(ci_profile, "required_push_jobs", ["governance-exposure-scan"])
-    _write_yaml_mapping(path, payload)
+    path.write_text(render_governance_profile(payload), encoding="utf-8")
 
 
 

@@ -13,7 +13,7 @@ from .profile_surface_generation import (
     write_makefile as render_makefile,
     write_workflow as render_workflow,
 )
-from .profile_yaml import render_profile_surface
+from .profile_yaml import render_governance_profile, render_profile_surface
 from .profile_v2_surfaces import apply_profile_v2_artifact_defaults
 from .yaml_mutations import YAMLMutationPathError, mutation_mode
 
@@ -681,7 +681,7 @@ def apply_profile_contract(
         value["status"] = "required" if value["target"] in active_targets else "deferred"
     profile["ci_profile"]["required_push_jobs"] = sorted(active_targets)
     (repo_root / "governance-profile.yml").write_text(
-        yaml.safe_dump(profile, sort_keys=False, width=120, default_flow_style=None), encoding="utf-8"
+        render_governance_profile(profile), encoding="utf-8"
     )
 
     persisted = {

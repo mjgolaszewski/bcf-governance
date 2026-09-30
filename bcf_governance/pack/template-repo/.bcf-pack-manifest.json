@@ -932,11 +932,11 @@
     },
     "scripts/_bcf_runtime/governance_install/upgrade.py": {
       "operation": "copy",
-      "sha256": "3411d338fbdf2b3870f81556074ee2b4319f7849b5f5d8ac7b5f644945832095"
+      "sha256": "03600cc4e59a42f5aad3d3dce043774deeb3611b1f4bcfef718cdebef58b6c50"
     },
     "scripts/_bcf_runtime/governance_profiles.py": {
       "operation": "copy",
-      "sha256": "d70758b0dc81b0e99ae0060b23abbb9e2a669ea71ab553f9ac5b2baf36352dd1"
+      "sha256": "587e18b0633c8405ec1f0b2095f0b99bfa745924ffba6483accf7cc71f4e46cf"
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
@@ -1087,7 +1087,7 @@
     },
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",
-      "sha256": "de42f792cf713eefd420e854850ff598977be1ebaf0f4d6aa69f2e9649fad1f0"
+      "sha256": "d989ffa1a2eee43a94ecdfd16d89270960bbd2fc244803c644a8eb7fe6603a7a"
     },
     "scripts/_bcf_runtime/protection_inspection_client.py": {
       "operation": "copy",
@@ -1187,7 +1187,7 @@
     },
     "scripts/_bcf_runtime/semantic_authority_commands.py": {
       "operation": "copy",
-      "sha256": "2c6fc1b688c277ccc20222e447f6bff6c080825ed50d1b6f21f548baf76f6d26"
+      "sha256": "c7c7d3d5dae1eb0dc8c6200e8f9340ab0815a4327c234b424160d144aad7c72c"
     },
     "scripts/_bcf_runtime/semantic_authority_contracts.py": {
       "operation": "copy",

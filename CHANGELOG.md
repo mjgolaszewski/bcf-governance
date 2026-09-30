@@ -15,7 +15,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   partial, mismatched, or unauthenticated upgrades now fail before mutation.
 - Made fresh Standard and Regulated adoption carry exact project-specific gate
   metadata beside executable contracts, without permitting pack-gate overrides
-  or unbound catalog entries.
+  or unbound catalog entries; every profile writer now uses one lossless compact
+  projection so custom catalogs remain inside their declared context budget.
 - Made governance-pack removal expand installer transaction scopes into exact
   ordinary manifest files, preserve unrelated adopter files in mixed governance
   directories, and prove strict fresh re-adoption without recursive ownership.

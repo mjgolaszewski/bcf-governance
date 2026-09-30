@@ -61,6 +61,9 @@ execution_evidence:
     as recursive ownership: mixed audits, plans, phases, governance, schemas, and
     runtime directories contained adopter bytes. Removal now targets exact files,
     rejects non-file collisions, and prunes only empty parents.
+  - The AgentBus two-custom-gate fixture then exceeded the profile line cap before
+    mutation. Profile installation, semantic adoption, and ordinary upgrade now
+    share one lossless compact renderer; the exact fixture passes the authored cap.
   - The prospective train crossed a UTC fixture expiry during execution. Expiring
     capability-N/A tests now bind an explicit evaluation instant; production
     wall-clock expiry remains fail-closed and unchanged.

@@ -585,35 +585,38 @@ def gate_config(
     return path
 
 
-def add_custom_release_gate(config: Path) -> None:
+def add_custom_release_gate(
+    config: Path,
+    *,
+    target: str = "release-smoke",
+    gate_id: str = "release_smoke",
+) -> None:
     payload = yaml.safe_load(config.read_text(encoding="utf-8"))
     custom = json.loads(json.dumps(payload["gates"]["runtime-smoke"]))
-    custom["invocation"]["argv"] = ["python3", "gate.py", "release-smoke"]
+    custom["invocation"]["argv"] = ["python3", "gate.py", target]
     custom["evidence"]["output_requirements"][0]["path"] = (
-        ".artifacts/release-smoke.json"
+        f".artifacts/{target}.json"
     )
-    custom["negative_controls"][0]["id"] = "release-smoke-must-detect-mutation"
-    custom["negative_controls"][0]["oracle"]["regex"] = "mutated gate release-smoke"
-    payload["gates"]["release-smoke"] = custom
-    payload["gate_catalog"] = {
-        "release_smoke": {
-            "target": "release-smoke",
-            "status": "required",
-            "command_policy": "runtime_smoke",
-            "rationale": "adopter-owned release behavior remains executable",
-        }
+    custom["negative_controls"][0]["id"] = f"{target}-must-detect-mutation"
+    custom["negative_controls"][0]["oracle"]["regex"] = f"mutated gate {target}"
+    payload["gates"][target] = custom
+    payload.setdefault("gate_catalog", {})[gate_id] = {
+        "target": target,
+        "status": "required",
+        "command_policy": "runtime_smoke",
+        "rationale": "adopter-owned release behavior remains executable",
     }
     claim_model = payload.get("claim_model")
     if isinstance(claim_model, dict):
-        claim_model["execution_groups"]["release-smoke"] = {
-            "producer": "release-smoke",
-            "claims": ["release-smoke"],
+        claim_model["execution_groups"][target] = {
+            "producer": target,
+            "claims": [target],
         }
         claim = json.loads(json.dumps(claim_model["claims"]["runtime-smoke"]))
         claim.update(
-            {"execution_group": "release-smoke", "legacy_gate": "release-smoke"}
+            {"execution_group": target, "legacy_gate": target}
         )
-        claim_model["claims"]["release-smoke"] = claim
+        claim_model["claims"][target] = claim
     config.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
 
 
@@ -646,6 +649,11 @@ def test_fresh_v3_profile_uses_declared_custom_gate_claim_model_only_on_install(
     write_gate_runner(repo)
     config = gate_config(repo, "standard", None, contract_version="3.0")
     add_custom_release_gate(config)
+    add_custom_release_gate(
+        config,
+        target="python314-compatibility",
+        gate_id="python314_compatibility",
+    )
     payload = yaml.safe_load(config.read_text(encoding="utf-8"))
 
     contract = load_contract(
@@ -661,6 +669,14 @@ def test_fresh_v3_profile_uses_declared_custom_gate_claim_model_only_on_install(
     existing = tmp_path / "existing-contract"
     shutil.copytree(REPO_ROOT / "template-repo", existing)
     apply_profile_contract(existing, contract, write_workflow=False)
+    profile_limit = yaml.safe_load(
+        (existing / "governance/artifact-manifest.yml").read_text(encoding="utf-8")
+    )["context_budgets"]["agent_required_files"]["governance-profile.yml"][
+        "line_hard_cap"
+    ]
+    assert len(
+        (existing / "governance-profile.yml").read_text(encoding="utf-8").splitlines()
+    ) <= profile_limit
     assert load_contract(
         existing,
         "standard",
@@ -802,6 +818,11 @@ def test_standard_v3_adopter_install_derives_each_post_merge_scope(
     write_gate_runner(repo)
     config = gate_config(repo, "standard", None, contract_version="3.0")
     add_custom_release_gate(config)
+    add_custom_release_gate(
+        config,
+        target="python314-compatibility",
+        gate_id="python314_compatibility",
+    )
     semantic = semantic_config(repo)
     git(repo, "add", ".")
     git(repo, "commit", "--quiet", "-m", "application contracts")
@@ -851,6 +872,14 @@ def test_standard_v3_adopter_install_derives_each_post_merge_scope(
     assert installed_profile["release_gate_profile"]["gates"]["release_smoke"] == (
         installed_contract["gate_catalog"]["release_smoke"]
     )
+    profile_limit = yaml.safe_load(
+        (repo / "governance/artifact-manifest.yml").read_text(encoding="utf-8")
+    )["context_budgets"]["agent_required_files"]["governance-profile.yml"][
+        "line_hard_cap"
+    ]
+    assert len(
+        (repo / "governance-profile.yml").read_text(encoding="utf-8").splitlines()
+    ) <= profile_limit
 
     compiled = validate_ci_graph(repo)
     initial = post_merge_evaluation(compiled.graph)
