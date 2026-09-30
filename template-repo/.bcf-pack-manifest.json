@@ -1123,7 +1123,7 @@
     },
     "scripts/_bcf_runtime/reconcile_authority_transition.py": {
       "operation": "copy",
-      "sha256": "937e13ac1459c55c3eb72be626eb64eb9d5bd7e34661496158df00fee2fb5573"
+      "sha256": "cf646012f69c5d926b0082f9e0c809b40075725b0e67f6c06ddc7207b536e44d"
     },
     "scripts/_bcf_runtime/release_asset_inventory.py": {
       "operation": "copy",

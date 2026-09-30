@@ -174,7 +174,9 @@ def _reject_unowned_untracked_files(root: Path) -> None:
         )
 
 
-def _preconditions(root: Path, paths: tuple[str, ...]) -> tuple[str, str, str]:
+def _preconditions(
+    root: Path, paths: tuple[str, ...]
+) -> tuple[str, str, str, tuple[str, str]]:
     if Path(_text(root, "rev-parse", "--show-toplevel")).resolve() != root:
         raise ReconcileAuthorityTransitionError(
             "workflow-authority transition requires the repository root"
@@ -182,32 +184,48 @@ def _preconditions(root: Path, paths: tuple[str, ...]) -> tuple[str, str, str]:
     head = _text(root, "rev-parse", "HEAD")
     branch = _branch(root, head)
     _reject_unowned_untracked_files(root)
+    identity: list[str] = []
     for key in ("user.name", "user.email"):
         value = _git(root, "config", "--get", key, check=False)
         if value.returncode or not value.stdout.decode("utf-8").strip():
             raise ReconcileAuthorityTransitionError(
                 f"workflow-authority transition requires configured Git {key}"
             )
+        identity.append(value.stdout.decode("utf-8").strip())
     status = _text(root, "status", "--porcelain=v1", "-z")
-    return head, branch, status
+    return head, branch, status, (identity[0], identity[1])
 
 
-def _commit_all(root: Path, message: str) -> str:
+def _commit_all(root: Path, message: str, identity: tuple[str, str]) -> str:
     _git(root, "add", "--all")
     if _git(root, "diff", "--cached", "--quiet", check=False).returncode == 0:
         raise ReconcileAuthorityTransitionError(
             f"workflow-authority transition produced no commit for {message}"
         )
-    _git(root, "commit", "--quiet", "-m", message)
+    _git(
+        root,
+        "-c",
+        f"user.name={identity[0]}",
+        "-c",
+        f"user.email={identity[1]}",
+        "commit",
+        "--quiet",
+        "-m",
+        message,
+    )
     return _text(root, "rev-parse", "HEAD")
 
 
-def _snapshot_commit(root: Path) -> str:
+def _snapshot_commit(root: Path, identity: tuple[str, str]) -> str:
     """Create an ephemeral exact working-tree commit for rollback only."""
 
     _git(root, "add", "--all")
     _git(
         root,
+        "-c",
+        f"user.name={identity[0]}",
+        "-c",
+        f"user.email={identity[1]}",
         "commit",
         "--quiet",
         "--allow-empty",
@@ -261,14 +279,14 @@ def apply_workflow_authority_transition(
 
     root = repo_root.resolve()
     paths = _workflow_paths(root)
-    head, branch, original_status = _preconditions(root, paths)
+    head, branch, original_status, identity = _preconditions(root, paths)
     original_snapshot = snapshot(root)
     original_index_tree = _text(root, "write-tree")
     with tempfile.TemporaryDirectory(prefix="bcf-reconcile-authority-") as temporary:
         backup = Path(temporary) / "backup"
         shadow = Path(temporary) / "repo"
         copy_repository_shadow(root, backup, preserve_git_history=True)
-        backup_commit = _snapshot_commit(backup)
+        backup_commit = _snapshot_commit(backup, identity)
         copy_repository_shadow(root, shadow, preserve_git_history=True)
         before_authority, authority_and_after = _split_steps(step_factory(shadow))
         for step in _workflow_projection_steps(before_authority):
@@ -277,9 +295,9 @@ def apply_workflow_authority_transition(
         if not _changed_workflows(shadow, head, paths):
             return None
         first_rounds = converge(before_authority, lambda: snapshot(shadow))
-        definition_commit = _commit_all(shadow, _DEFINITION_MESSAGE)
+        definition_commit = _commit_all(shadow, _DEFINITION_MESSAGE, identity)
         second_rounds = converge(authority_and_after, lambda: snapshot(shadow))
-        authority_commit = _commit_all(shadow, _AUTHORITY_MESSAGE)
+        authority_commit = _commit_all(shadow, _AUTHORITY_MESSAGE, identity)
         for step in step_factory(shadow):
             step.check()
         if _text(shadow, "status", "--porcelain=v1", "-z"):

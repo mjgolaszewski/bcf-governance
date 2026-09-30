@@ -136,9 +136,10 @@ def test_doctor_reports_legacy_overlap_and_version_without_reinterpreting_it(
 
     report = doctor.doctor_repo(tmp_path)
 
-    assert "runtime_custody_version_mismatch: installed=2.1.4 executing=2.1.5" in report[
-        "blockers"
-    ]
+    assert (
+        f"runtime_custody_version_mismatch: installed=2.1.4 executing={__version__}"
+        in report["blockers"]
+    )
     assert any("legacy ownership overlap" in value for value in report["warnings"])
 
 
@@ -149,9 +150,10 @@ def test_doctor_classifies_predecessor_lock_without_local_schema(tmp_path: Path)
     report = doctor.doctor_repo(tmp_path)
 
     assert not any("lock_unreadable" in value for value in report["blockers"])
-    assert "runtime_custody_version_mismatch: installed=2.1.4 executing=2.1.5" in report[
-        "blockers"
-    ]
+    assert (
+        f"runtime_custody_version_mismatch: installed=2.1.4 executing={__version__}"
+        in report["blockers"]
+    )
     assert any("legacy ownership overlap" in value for value in report["warnings"])
 
 
