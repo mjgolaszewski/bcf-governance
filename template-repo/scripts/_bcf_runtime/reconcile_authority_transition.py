@@ -192,6 +192,21 @@ def _commit_all(root: Path, message: str) -> str:
     return _text(root, "rev-parse", "HEAD")
 
 
+def _snapshot_commit(root: Path) -> str:
+    """Create an ephemeral exact working-tree commit for rollback only."""
+
+    _git(root, "add", "--all")
+    _git(
+        root,
+        "commit",
+        "--quiet",
+        "--allow-empty",
+        "-m",
+        "bcf internal reconcile rollback snapshot",
+    )
+    return _text(root, "rev-parse", "HEAD")
+
+
 def _changed_workflows(root: Path, head: str, paths: Iterable[str]) -> tuple[str, ...]:
     return tuple(
         relative
@@ -238,8 +253,12 @@ def apply_workflow_authority_transition(
     paths = _workflow_paths(root)
     head, branch, original_status = _preconditions(root, paths)
     original_snapshot = snapshot(root)
+    original_index_tree = _text(root, "write-tree")
     with tempfile.TemporaryDirectory(prefix="bcf-reconcile-authority-") as temporary:
+        backup = Path(temporary) / "backup"
         shadow = Path(temporary) / "repo"
+        copy_repository_shadow(root, backup, preserve_git_history=True)
+        backup_commit = _snapshot_commit(backup)
         copy_repository_shadow(root, shadow, preserve_git_history=True)
         before_authority, authority_and_after = _split_steps(step_factory(shadow))
         for step in _workflow_projection_steps(before_authority):
@@ -266,8 +285,11 @@ def apply_workflow_authority_transition(
                 "repository status changed while workflow-authority transition was being proved"
             )
         temporary_ref = f"refs/bcf/reconcile/{authority_commit}"
+        backup_ref = f"refs/bcf/reconcile-backup/{backup_commit}"
+        promoted = False
         try:
             _git(root, "fetch", "--quiet", str(shadow), f"{authority_commit}:{temporary_ref}")
+            _git(root, "fetch", "--quiet", str(backup), f"{backup_commit}:{backup_ref}")
             if _text(root, "rev-parse", f"{authority_commit}^") != definition_commit:
                 raise ReconcileAuthorityTransitionError(
                     "authority commit is not the direct child of the definition commit"
@@ -276,6 +298,7 @@ def apply_workflow_authority_transition(
                 raise ReconcileAuthorityTransitionError(
                     "definition commit is not based on the original exact subject"
                 )
+            promoted = True
             _git(root, "reset", "--hard", "--quiet", authority_commit)
             promoted_branch = _git(
                 root, "symbolic-ref", "--quiet", "--short", "HEAD", check=False
@@ -293,8 +316,29 @@ def apply_workflow_authority_transition(
                 raise ReconcileAuthorityTransitionError(
                     "promoted workflow-authority tree differs from the proved shadow"
                 )
+        except BaseException:
+            if promoted:
+                try:
+                    _git(root, "reset", "--hard", "--quiet", backup_commit)
+                    _git(root, "reset", "--mixed", "--quiet", head)
+                    _git(root, "read-tree", original_index_tree)
+                    if (
+                        _text(root, "rev-parse", "HEAD") != head
+                        or snapshot(root) != original_snapshot
+                        or _text(root, "status", "--porcelain=v1", "-z")
+                        != original_status
+                    ):
+                        raise ReconcileAuthorityTransitionError(
+                            "workflow-authority rollback did not restore exact custody"
+                        )
+                except BaseException as rollback_exc:
+                    raise ReconcileAuthorityTransitionError(
+                        "workflow-authority promotion and exact rollback both failed"
+                    ) from rollback_exc
+            raise
         finally:
             _git(root, "update-ref", "-d", temporary_ref, check=False)
+            _git(root, "update-ref", "-d", backup_ref, check=False)
     return ReconcileAuthorityTransitionResult(
         rounds=first_rounds + second_rounds,
         definition_commit=definition_commit,

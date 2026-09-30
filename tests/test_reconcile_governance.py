@@ -8,6 +8,7 @@ import sys
 import pytest
 import yaml
 
+from bcf_governance.tooling import reconcile_authority_transition as authority_transition
 from bcf_governance.cli import COMMANDS
 from bcf_governance.tooling.scaffold_governance_artifacts import (
     ReconcileError,
@@ -480,3 +481,47 @@ def test_reconcile_rejects_unowned_untracked_input_before_mutation(
         )
 
     assert secret.read_text() == "not candidate input\n"
+
+
+def test_reconcile_promotion_failure_restores_head_index_and_worktree(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    root = _authority_transition_repository(tmp_path)
+    (root / "intent").write_text("new\n", encoding="utf-8")
+    _git(root, "add", "intent")
+    head = _git(root, "rev-parse", "HEAD")
+    snapshot = _transition_snapshot(root)
+    status = _git(root, "status", "--porcelain=v1")
+    original_git = authority_transition._git
+    failed = False
+
+    def fail_after_first_promotion(
+        candidate: Path,
+        *args: str,
+        input_bytes: bytes | None = None,
+        check: bool = True,
+    ) -> subprocess.CompletedProcess[bytes]:
+        nonlocal failed
+        result = original_git(
+            candidate, *args, input_bytes=input_bytes, check=check
+        )
+        if args[:3] == ("reset", "--hard", "--quiet") and not failed:
+            failed = True
+            raise ReconcileAuthorityTransitionError("injected promotion failure")
+        return result
+
+    monkeypatch.setattr(authority_transition, "_git", fail_after_first_promotion)
+
+    with pytest.raises(
+        ReconcileAuthorityTransitionError, match="injected promotion failure"
+    ):
+        apply_workflow_authority_transition(
+            root,
+            step_factory=_transition_steps,
+            converge=converge,
+            snapshot=_transition_snapshot,
+        )
+
+    assert _git(root, "rev-parse", "HEAD") == head
+    assert _transition_snapshot(root) == snapshot
+    assert _git(root, "status", "--porcelain=v1") == status
