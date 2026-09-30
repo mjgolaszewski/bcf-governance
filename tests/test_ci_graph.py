@@ -25,6 +25,7 @@ from bcf_governance.tooling.ci_graph_execution import (
     job_execution_issues,
     job_required_environment,
     local_gate_job_environments,
+    resolve_local_job_environment,
     workflow_input_issues,
 )
 from bcf_governance.tooling.ci_graph_post_merge import (
@@ -1400,6 +1401,23 @@ def test_local_gate_environment_comes_from_exact_pr_producer_job(
     graph["workflows"][0]["jobs"][1]["id"] = "duplicate"
     with pytest.raises(CIGraphError, match="does not have one exact pull-request producer job"):
         local_gate_job_environments(graph, ("test",))
+
+
+def test_local_graph_environment_resolves_only_exact_workspace_binding(
+    tmp_path: Path,
+) -> None:
+    assert resolve_local_job_environment(
+        {
+            "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared",
+            "LITERAL": "value",
+            "SECRET": "${{ secrets.REQUIRED_TOKEN }}",
+        },
+        tmp_path,
+    ) == {
+        "LITERAL": "value",
+        "PREPARED_ROOT": f"{tmp_path.resolve()}/.artifacts/prepared",
+        "SECRET": "${{ secrets.REQUIRED_TOKEN }}",
+    }
 
 
 def test_missing_or_conflicting_required_environment_fails_at_graph_compile(

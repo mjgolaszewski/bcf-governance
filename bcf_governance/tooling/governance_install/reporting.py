@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from ..governance_validation.release_gates import canonical_release_check_command
+
 
 def print_summary(
     args: Any,
@@ -42,4 +44,4 @@ def print_summary(
             "next: follow governance/EXISTING_REPO_ADOPTION.md and "
             "governance/existing-repo-adoption.yml to inventory existing boundaries and wire gates"
         )
-    print("next: merge Makefile.fragment into the repo Makefile or include it from the repo Makefile")
+    print(f"next: run {canonical_release_check_command(target_root)}")

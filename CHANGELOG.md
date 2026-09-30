@@ -6,6 +6,30 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [2.1.5] - 2026-09-29
+
+### Fixed
+
+- Made ordinary adopter upgrades authenticate exact immutable release custody
+  and atomically derive the installed runtime lock from projected bytes; stale,
+  partial, mismatched, or unauthenticated upgrades now fail before mutation.
+- Made fresh Standard and Regulated adoption carry exact project-specific gate
+  metadata beside executable contracts, without permitting pack-gate overrides
+  or unbound catalog entries; every profile writer now uses one lossless compact
+  projection so custom catalogs remain inside their declared context budget.
+- Separated installed-byte custody from deletion authority: governance-pack
+  removal now fails closed without mutation, while a typed state matrix rejects
+  malformed, contradictory, missing, or drifted upgrade custody before writes;
+  predecessor locks without a locally installed schema are classified against
+  the exact executing runtime's packaged schema.
+- Made local release execution consume the canonical selective evidence plan,
+  so preflight-satisfied claims are not incorrectly reintroduced by a static
+  gate list; each local producer also receives its exact graph-declared
+  environment with only the canonical workspace binding resolved. Existing
+  adopters now execute the generated release surface directly without rewriting
+  or depending on a preserved consumer `Makefile`, and the canonical reconciler
+  now owns that generated release surface so stale bytes fail before evidence.
+
 ## [2.1.4] - 2026-09-28
 
 ### Fixed
@@ -1307,7 +1331,8 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.4...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.5...HEAD
+[2.1.5]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.4...v2.1.5
 [2.1.4]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.3...v2.1.4
 [2.1.3]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.2...v2.1.3
 [2.1.2]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.1...v2.1.2

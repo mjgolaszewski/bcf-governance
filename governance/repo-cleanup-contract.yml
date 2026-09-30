@@ -69,7 +69,7 @@ deterministic_actions:
     safety: verifies truth-report commit and tree bindings and records an evidence-backed historical computation before moving phase artifacts into ignored archive storage and pruning related hotfix lane records
     outputs: [plans/phase-history.yml, governance/archive/phase-artifacts]
   - {id: force_rescaffold, command: "bcf install --target . --force-rescaffold", applies_when: "owner accepts destructive replacement of active BCF-owned files", safety: "asks before deleting known BCF governance paths", outputs: [fresh_active_governance, validation_report]}
-  - {id: remove_governance_pack, command: "bcf cleanup --repo-root . --remove-governance-pack --apply --yes", applies_when: "owner decommissions BCF governance", safety: "dry-run first; --yes records explicit noninteractive approval before deleting BCF-owned paths", outputs: [removed_governance_artifacts, manual_ci_references]}
+  - {id: remove_governance_pack, command: "bcf cleanup --repo-root . --remove-governance-pack --apply --yes", applies_when: "owner requests BCF decommission", safety: "fails closed with reject_deletion_authority_absent until an independent authenticated deletion-authority contract exists; installed custody, canonical paths, and confirmation do not confer deletion authority", outputs: [typed_rejection, unchanged_repository]}
 llm_review_required:
   - id: documentation_currency
     reason: prose can be stale while schemas still pass
@@ -84,4 +84,4 @@ validation_required:
   commands: [bcf validate, bcf truth --evidence-dir .artifacts/bcf, make release-check] # non-authoritative local path; retain report sha256 in CI artifact
   status_policy: record pass fail or blocked with exact command and reason in the active phase log
 evidence_required: [cleanup report or cleanup index, moved artifact summary, vendored pack declarations, documentation currency notes, validation command outcomes]
-closeout_rules: [do not claim cleanup complete while manual actions remain unexplained, do not delete historical evidence unless git history is the declared retention source and the validator can verify the recorded refs, do not remove tests to fit the scaffold; tune tests to the accepted repo shape, git-history compaction without an exact closed truth report records authored completed status only and omits derived_state_at_capture and verification_snapshot]
+closeout_rules: [do not claim cleanup complete while manual actions remain unexplained, do not delete historical evidence unless git history is the declared retention source and the validator can verify the recorded refs, installed runtime custody is not deletion authority, do not remove tests to fit the scaffold; tune tests to the accepted repo shape, git-history compaction without an exact closed truth report records authored completed status only and omits derived_state_at_capture and verification_snapshot]

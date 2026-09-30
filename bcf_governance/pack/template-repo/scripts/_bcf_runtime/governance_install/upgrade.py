@@ -9,6 +9,9 @@ from typing import Any, Callable, Iterable, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
+from ..profile_contract_v2 import current_contract_version
+from ..profile_yaml import render_governance_profile
+from ..profile_v2_surfaces import selective_release_check_lines
 from ..runtime_capacity import EXECUTION_STATE_POLICY
 
 
@@ -446,7 +449,7 @@ def _upgrade_governance_profile(template_root: Path, target_root: Path) -> None:
     template_ci = template.get("ci_profile")
     if isinstance(template_ci, dict):
         _ensure_list_items(ci_profile, "required_push_jobs", ["governance-exposure-scan"])
-    _write_yaml_mapping(path, payload)
+    path.write_text(render_governance_profile(payload), encoding="utf-8")
 
 
 
@@ -493,14 +496,19 @@ def _upgrade_makefile_fragment(target_root: Path) -> None:
     if release_span is not None and gate_targets:
         lines = text.splitlines()
         start, end = release_span
-        replacement = [
-            lines[start],
-            "\t@mkdir -p $(BCF_EVIDENCE_DIR)",
-            f"\t@for gate in {' '.join(gate_targets)}; do \\",
-            "\t\t$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output $(BCF_EVIDENCE_DIR)/$$gate || exit $$?; \\",
-            "\tdone",
-            "\t$(MAKE) governance-truthfulness",
-        ]
+        if current_contract_version(target_root) in {"2.0", "3.0"}:
+            replacement = selective_release_check_lines()
+            if replacement[-1] == "":
+                replacement.pop()
+        else:
+            replacement = [
+                lines[start],
+                "\t@mkdir -p $(BCF_EVIDENCE_DIR)",
+                f"\t@for gate in {' '.join(gate_targets)}; do \\",
+                "\t\t$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output $(BCF_EVIDENCE_DIR)/$$gate || exit $$?; \\",
+                "\tdone",
+                "\t$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)",
+            ]
         text = "\n".join([*lines[:start], *replacement, *lines[end:]]) + "\n"
     path.write_text(text, encoding="utf-8")
 
@@ -576,6 +584,7 @@ def _upgrade_state_files(
             values=values,
         )
     )
+    _upgrade_makefile_fragment(target_root)
     created.extend(_upgrade_runtime_contract(target_root))
     return created
 

@@ -13,6 +13,11 @@ from bcf_governance.tooling.scaffold_governance_artifacts import (
     converge,
     reconcile_steps,
 )
+from bcf_governance.tooling.release_version_projection import (
+    ReleaseVersionProjectionError,
+    reconcile_release_version_surfaces,
+)
+from bcf_governance.tooling.profile_surface_generation import reconcile_makefile
 
 
 def test_reconcile_is_the_canonical_cli_surface() -> None:
@@ -22,8 +27,10 @@ def test_reconcile_is_the_canonical_cli_surface() -> None:
 def test_reconcile_declares_one_closed_dependency_order() -> None:
     root = Path(__file__).resolve().parents[1]
     ids = [step.step_id for step in reconcile_steps(root, Path(sys.executable))]
-    assert ids[:4] == [
+    assert ids[:6] == [
         "structural-limits",
+        "release-version-surfaces",
+        "profile-makefile",
         "ci-graph-post-merge-scope",
         "pack-projection",
         "semantic-lock",
@@ -31,6 +38,86 @@ def test_reconcile_declares_one_closed_dependency_order() -> None:
     assert ids.index("ci-graph-lock") < ids.index("ci-graph-render")
     assert ids.index("ci-graph-render") < ids.index("workflow-authority")
     assert ids[-1] == "editorial-audit"
+
+
+def test_reconcile_owns_profile_makefile_projection(tmp_path: Path) -> None:
+    governance = tmp_path / "governance"
+    governance.mkdir()
+    (governance / "gate-contracts.yml").write_text(
+        yaml.safe_dump(
+            {
+                "profile_contract_version": "2.0",
+                "gates": {
+                    "test": {
+                        "invocation": {
+                            "argv": ["python3", "-m", "pytest", "-q"],
+                            "cwd": ".",
+                            "env": {},
+                        }
+                    }
+                },
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "Makefile.fragment").write_text("stale\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="canonical profile projection"):
+        reconcile_makefile(tmp_path, apply=False)
+
+    reconcile_makefile(tmp_path, apply=True)
+    reconcile_makefile(tmp_path, apply=False)
+    assert "--all-planned" in (tmp_path / "Makefile.fragment").read_text()
+
+
+def test_reconcile_projects_all_derived_release_versions_before_pack_work(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "governance").mkdir()
+    (tmp_path / "manifest.yml").write_text(
+        "document:\n  kind: template_governance_pack_manifest\n  version: 2.1.4\n",
+        encoding="utf-8",
+    )
+    contracts = tmp_path / "governance/public-contracts.yml"
+    contracts.write_text(
+        "document: {kind: public_contract_registry}\npackage:\n  version: 2.1.4\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ReleaseVersionProjectionError, match="manifest.yml"):
+        reconcile_release_version_surfaces(tmp_path, version="2.1.5", apply=False)
+
+    changed = reconcile_release_version_surfaces(
+        tmp_path, version="2.1.5", apply=True
+    )
+
+    assert changed == ("manifest.yml", "governance/public-contracts.yml")
+    assert yaml.safe_load((tmp_path / "manifest.yml").read_text())["document"]["version"] == "2.1.5"
+    assert yaml.safe_load(contracts.read_text())["package"]["version"] == "2.1.5"
+    assert not reconcile_release_version_surfaces(
+        tmp_path, version="2.1.5", apply=False
+    )
+
+
+def test_reconcile_skips_release_versions_when_adopter_owns_no_release_surfaces(
+    tmp_path: Path,
+) -> None:
+    assert not reconcile_release_version_surfaces(
+        tmp_path, version="2.1.5", apply=False
+    )
+    assert not reconcile_release_version_surfaces(
+        tmp_path, version="2.1.5", apply=True
+    )
+
+
+def test_reconcile_rejects_partial_release_version_ownership(tmp_path: Path) -> None:
+    (tmp_path / "manifest.yml").write_text(
+        "document:\n  version: 2.1.5\n", encoding="utf-8"
+    )
+
+    with pytest.raises(ReleaseVersionProjectionError, match="ownership is partial"):
+        reconcile_release_version_surfaces(tmp_path, version="2.1.5", apply=True)
 
 
 def test_reconcile_omits_workflow_authority_when_contract_is_absent(

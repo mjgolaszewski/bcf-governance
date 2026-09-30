@@ -26,7 +26,7 @@ from .ci_authority_prospective_lanes import (
 )
 from .ci_exact_main_truth import validate_exact_main_truth_payload
 from .ci_github_identity import GitHubControllerError
-from .ci_graph_execution import local_gate_job_environments
+from .ci_graph_execution import local_gate_job_environments, resolve_local_job_environment
 from .controller_custody_prospective import validate_controller_custody_graph
 from .evaluation_scope import (
     EvaluationIntent,
@@ -290,10 +290,9 @@ def _capture_planned_evidence(
 ) -> list[dict[str, Any]]:
     observations: list[dict[str, Any]] = []
     for producer in producers:
-        environment = {
-            name: value.replace("${{ github.workspace }}", str(repo_root))
-            for name, value in producer_environments[producer].items()
-        }
+        environment = resolve_local_job_environment(
+            producer_environments[producer], repo_root
+        )
         receipt = capture_gate(
             repo_root,
             producer,

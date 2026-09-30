@@ -13,6 +13,27 @@ from typing import Any, Callable
 import yaml
 
 
+_RUNTIME_VERSION_PATTERN = re.compile(
+    r'^__version__\s*=\s*["\']([^"\']+)["\']',
+    flags=re.MULTILINE,
+)
+
+
+def executing_runtime_version() -> str:
+    """Read the nearest projected/package version owner deterministically."""
+
+    root = Path(__file__).resolve().parent
+    candidates = (root / "_version.py", root.parent / "_version.py")
+    for candidate in candidates:
+        if not candidate.is_file() or candidate.is_symlink():
+            continue
+        match = _RUNTIME_VERSION_PATTERN.search(candidate.read_text(encoding="utf-8"))
+        if match is not None:
+            return match.group(1)
+        raise RuntimeError(f"BCF runtime version owner is malformed: {candidate}")
+    raise RuntimeError("BCF runtime version owner is unavailable")
+
+
 class RuntimeCapacityError(ValueError):
     """Raised before expensive work when runtime custody is unsafe or insufficient."""
 

@@ -46,6 +46,7 @@ from .evidence_sessions import (
 from .evidence_sessions import receipt_workflow_identity
 from .evidence_storage_projection import install_durable_inputs as _install_durable_inputs
 from .evidence_test_adapters import (
+    captured_receipt_succeeded,
     recompute_test_artifact_observations,
     test_observations as _test_observations,
 )
@@ -782,18 +783,8 @@ def main(argv: list[str] | None = None) -> None:
         print(str(exc), file=os.sys.stderr)
         raise SystemExit(1)
     print(path)
-    if args.operation == "run":
-        receipt = json.loads(path.read_text(encoding="utf-8"))
-        observations = receipt.get("observations", {})
-        probes = receipt.get("behavioral_probes", [])
-        invalid_probe = not probes or any(
-            not isinstance(probe, dict)
-            or probe.get("mutation_applied") is not True
-            or probe.get("oracle_observation", {}).get("satisfied") is not True
-            for probe in probes
-        )
-        if receipt.get("result") != "passed" or observations.get("exit_code") != 0 or invalid_probe:
-            raise SystemExit(1)
+    if args.operation == "run" and not captured_receipt_succeeded(path):
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

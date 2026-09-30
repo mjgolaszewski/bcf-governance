@@ -1,6 +1,6 @@
 document: {kind: public_contract_registry, name: BCF Supported Public Contracts, id: bcf-governance-public-contracts, version: 1.0.0, status: active, path: governance/public-contracts.yml}
 package:
-  version: 2.1.4
+  version: 2.1.5
   distribution: github_releases
   executable_ci_providers: [github]
   platforms: [linux_x86_64]
@@ -26,6 +26,7 @@ contracts:
   semantic_families: {path: schemas/semantic-families.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
   application_operations: {path: schemas/application-operations.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
   semantic_lock: {path: schemas/semantic-lock.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
+  bcf_runtime_lock: {path: schemas/bcf-runtime-lock.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
 ci_graph:
   canonical_path: governance/ci-graph.yml
   extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]

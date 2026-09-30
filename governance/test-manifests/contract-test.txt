@@ -491,6 +491,7 @@ tests.test_release_toolchain::test_release_builder_has_no_source_test_replay_or_
 tests.test_release_toolchain::test_standalone_package_qualifiers_seed_compiler_before_consumer_or_source_tests[sdist]
 tests.test_release_toolchain::test_standalone_package_qualifiers_seed_compiler_before_consumer_or_source_tests[wheel]
 tests.test_release_versions::test_github_draft_marks_release_candidates_mechanically
+tests.test_release_versions::test_public_release_version_ordering_is_mechanical
 tests.test_release_versions::test_public_release_version_policy[1.0.0-v1.0.0-False]
 tests.test_release_versions::test_public_release_version_policy[1.0.0a1-v1.0.0a1-True]
 tests.test_release_versions::test_public_release_version_policy[1.0.0b2-v1.0.0b2-True]

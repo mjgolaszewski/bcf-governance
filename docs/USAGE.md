@@ -20,6 +20,11 @@ Standard and regulated profiles cannot represent a partially wired target.
 Their complete profile configuration is validated before BCF mutates the
 repository.
 
+Project-specific required gates belong in that same configuration: `gates`
+owns each executable contract and `gate_catalog` owns its unique target,
+`required` status, command policy, and rationale. BCF rejects catalog entries
+that override pack gates or lack an exact executable contract.
+
 ## CI graph ownership
 
 Fresh Standard-v3 installations create `governance/ci-graph.yml` and require
@@ -232,7 +237,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.1.4/bcf_governance-2.1.4-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.1.5/bcf_governance-2.1.5-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 2.1. Verify the
@@ -506,8 +511,19 @@ Normal upgrade refreshes pack-owned runtime and schemas and creates required roo
 artifacts only when absent:
 
 ```bash
-bcf install --target . --upgrade
+gh release download v2.1.5 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.1.5
+GITHUB_TOKEN="$GITHUB_TOKEN" bcf install --target . --upgrade \
+  --release-assets /tmp/bcf-v2.1.5 --require-strict-validation
 ```
+
+The exact release assets and GET-only provider inspection bind the executing BCF
+version, immutable tag/release, asset digests and attestations, installed runtime
+bytes, and `governance/bcf-runtime-lock.json` in one atomic transaction. Existing
+release custody cannot be silently retained by an upgrade without those inputs.
+
+Local all-planned release execution derives each producer environment from the
+canonical CI graph and resolves only the checkout workspace binding. Unavailable
+provider expressions remain unresolved and fail closed before producer execution.
 
 Upgrade preserves the repository's profile, gate contracts, evidence policy,
 CI graph, registered extensions, and all workflow bytes. It does not run a
@@ -656,9 +672,11 @@ declare its local identity explicitly with `--local-producer-id`; the immutable
 session then governs receipt producer binding instead of ambient provider
 environment variables.
 
-An existing repository may merge the generated `Makefile.fragment` recipes into
-`Makefile` or include that fragment as one exact source with `include`,
-`-include`, or `sinclude`. BCF resolves that declared owner mechanically and
+An existing repository keeps its consumer-owned `Makefile` byte-for-byte and
+runs `make -f Makefile.fragment release-check`; no recipe merge or manual
+forward-port is required. A repository may expose the shorter developer alias
+by including the generated fragment as one exact source with `include`,
+`-include`, or `sinclude`. BCF resolves the generated owner mechanically and
 rejects missing, duplicate, multi-source, variable, wildcard, or mixed ownership.
 
 Dependent evidence producers select the session mechanically:
@@ -720,8 +738,12 @@ bcf cleanup --repo-root . --phase-retention-mode archive \
   --truth-report .artifacts/bcf/truth.json --apply # non-authoritative path; verify sha256 against retained CI
 ```
 
-Use `--remove-governance-pack` only to decommission BCF. Dedicated BCF files and
-CI can be removed; mixed workflows are reported for manual editing.
+`--remove-governance-pack` is currently a fail-closed decommission request. The
+installed-runtime lock establishes exact byte custody for upgrade, not deletion
+authority. Until a separate authenticated deletion-authority contract exists,
+the command returns `reject_deletion_authority_absent` without mutation. Path
+names, installer transaction scopes, pack membership, and operator confirmation
+cannot substitute for that authority.
 
 Evidence-session retention is a separate exact-root operation:
 

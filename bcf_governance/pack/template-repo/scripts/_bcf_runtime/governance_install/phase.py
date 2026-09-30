@@ -6,15 +6,16 @@ from pathlib import Path
 from typing import Any
 
 from .. import scaffold_governance_artifacts
+from ..governance_validation.release_gates import canonical_release_check_command
 
 
-def _validation_commands(profile: str) -> list[str]:
+def _validation_commands(profile: str, repo_root: Path) -> list[str]:
     if profile == "lite":
         return ["make governance-validate"]
     return [
         "make governance-validate",
         "make architecture-test",
-        "make release-check",
+        canonical_release_check_command(repo_root),
     ]
 
 
@@ -30,6 +31,6 @@ def generate_phase_artifacts(args: Any, target_root: Path) -> dict[str, Path]:
         hard_dependencies=args.hard_dependency,
         deliverables=args.deliverable,
         workstreams=args.workstream,
-        verification_commands=_validation_commands(args.profile),
+        verification_commands=_validation_commands(args.profile, target_root),
         force=True,
     )

@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from bcf_governance.tooling.governance_install import transaction
+from bcf_governance.tooling.governance_install import transaction, upgrade
 from bcf_governance.tooling.runtime_capacity import EXECUTION_STATE_POLICY
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -191,8 +191,19 @@ def test_installer_lite_profile_passes_strict_validation(tmp_path: Path) -> None
 
     makefile = (target / "Makefile.fragment").read_text(encoding="utf-8")
     assert "scripts/governance_evidence.py" in makefile
-    assert "$(MAKE) governance-truthfulness" in makefile
+    assert "scripts/governance_truth.py" in makefile
     assert "configure repo-specific" not in makefile
+    assert (target / "Makefile").read_text(encoding="utf-8") == (
+        "include Makefile.fragment\n"
+    )
+    make = subprocess.run(
+        ["make", "--dry-run", "release-check"],
+        cwd=target,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert make.returncode == 0, make.stdout + make.stderr
 
     strict = _run_installed_validator(target)
     assert strict.returncode == 0
@@ -213,6 +224,37 @@ def test_installer_lite_profile_passes_strict_validation(tmp_path: Path) -> None
     }
     assert excluded
     assert all(not (target / relative).exists() for relative in excluded)
+
+
+def test_existing_install_reports_generated_release_owner_without_rewriting_makefile(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "existing-release-owner"
+    target.mkdir()
+    subprocess.run(["git", "init", "--quiet"], cwd=target, check=True)
+    makefile = target / "Makefile"
+    original = "application:\n\t@echo application\n"
+    makefile.write_text(original, encoding="utf-8")
+
+    result = _run_installer(
+        target,
+        "--profile",
+        "lite",
+        "--adoption-mode",
+        "existing",
+        "--skip-validation",
+    )
+
+    assert makefile.read_text(encoding="utf-8") == original
+    assert "next: run make -f Makefile.fragment release-check" in result.stdout
+    make = subprocess.run(
+        ["make", "-f", "Makefile.fragment", "--dry-run", "release-check"],
+        cwd=target,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert make.returncode == 0, make.stdout + make.stderr
 
 
 def test_existing_required_repository_artifacts_are_preserved_byte_identically(
@@ -333,7 +375,6 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         "plans/build-plan.yml",
         "plans/phase-01-plan.yml",
         "requirements-governance.txt",
-        "backend/tests/architecture/test_boundaries_ast.py",
         ".github/workflows/governance.yml",
     )
     for relative_path in protected_paths:
@@ -346,16 +387,6 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         relative_path: (target / relative_path).read_bytes()
         for relative_path in protected_paths
     }
-    preserved = {
-        relative_path: hashlib.sha256((target / relative_path).read_bytes()).hexdigest()
-        for relative_path in (
-            "schemas/architecture-boundaries.schema.json",
-            "backend/tests/architecture/test_boundaries_ast.py",
-        )
-    }
-    (target / "governance/bcf-runtime-lock.json").write_text(
-        json.dumps({"preserved_consumer_files": preserved}), encoding="utf-8"
-    )
     (target / "scripts/validate_governance_yaml.py").write_text("old validator\n", encoding="utf-8")
     (target / "scripts/check_governance_exposure.py").unlink()
     (target / "scripts/capture_governance_shard.py").unlink()
@@ -381,6 +412,34 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         relative_path: (target / relative_path).read_bytes()
         for relative_path in protected_paths
     } == state_before
+
+
+def test_upgrade_rejects_ungoverned_repository_before_mutation(tmp_path: Path) -> None:
+    target = tmp_path / "ungoverned"
+    target.mkdir()
+    application = target / "app.py"
+    application.write_text("PRODUCT = True\n", encoding="utf-8")
+
+    result = _run_installer(target, "--upgrade", "--skip-validation", check=False)
+
+    assert result.returncode == 1
+    assert "reject_not_installed" in result.stderr
+    assert application.read_text(encoding="utf-8") == "PRODUCT = True\n"
+    assert not (target / "scripts/_bcf_runtime").exists()
+
+
+def test_upgrade_rejects_partial_installation_before_mutation(tmp_path: Path) -> None:
+    target = tmp_path / "partial"
+    target.mkdir()
+    profile = target / "governance-profile.yml"
+    profile.write_text("profile: lite\n", encoding="utf-8")
+
+    result = _run_installer(target, "--upgrade", "--skip-validation", check=False)
+
+    assert result.returncode == 1
+    assert "reject_partial_installation" in result.stderr
+    assert profile.read_text(encoding="utf-8") == "profile: lite\n"
+    assert not (target / "scripts/_bcf_runtime").exists()
 
 
 def test_upgrade_retires_only_declared_self_authority_pack_surfaces(
@@ -540,12 +599,38 @@ def test_upgrade_rejects_drift_in_runtime_locked_consumer_file(tmp_path: Path) -
     path = target / relative
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     (target / "governance/bcf-runtime-lock.json").write_text(
-        json.dumps({"preserved_consumer_files": {relative: digest}}), encoding="utf-8"
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "version": "2.1.4",
+                "source_repository": "mjgolaszewski/bcf-governance",
+                "source_repository_id": 1207503211,
+                "source_commit": "a" * 40,
+                "release_id": 1,
+                "release_url": "https://github.com/mjgolaszewski/bcf-governance/releases/tag/v2.1.4",
+                "wheel_sha256": "b" * 64,
+                "source_archive_sha256": "c" * 64,
+                "checksum_manifest_sha256": "d" * 64,
+                "official_installer_adaptations": {},
+                "files": {},
+                "preserved_consumer_files": {relative: digest},
+            }
+        ),
+        encoding="utf-8",
     )
     path.write_text("unexplained drift\n", encoding="utf-8")
-    result = _run_installer(target, "--upgrade", "--skip-validation", check=False)
+    assets = tmp_path / "release-assets"
+    assets.mkdir()
+    result = _run_installer(
+        target,
+        "--upgrade",
+        "--release-assets",
+        str(assets),
+        "--skip-validation",
+        check=False,
+    )
     assert result.returncode == 1
-    assert "does not match its runtime lock" in result.stderr
+    assert "consumer_preserved_drift" in result.stderr
 
 
 def test_upgrade_preserves_bounded_package_metadata_ownership(tmp_path: Path) -> None:
@@ -629,9 +714,54 @@ def test_installer_upgrade_can_reset_profile_and_makefile_options(tmp_path: Path
     assert "upgraded governance pack into" in result.stdout
     makefile = (target / "Makefile.fragment").read_text(encoding="utf-8")
     assert "scripts/governance_evidence.py" in makefile
-    assert "$(MAKE) governance-truthfulness" in makefile
+    assert "scripts/governance_truth.py" in makefile
     profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
     assert profile["profile"]["selected"] == "lite"
+
+
+def test_upgrade_projects_v3_release_check_from_selective_plan(tmp_path: Path) -> None:
+    target = tmp_path / "upgrade-v3-release-check"
+    target.mkdir()
+    (target / "governance-profile.yml").write_text(
+        yaml.safe_dump(
+            {
+                "profile": {"selected": "standard"},
+                "profile_contract_version": "3.0",
+                "release_gate_profile": {
+                    "gates": {
+                        "governance_validate": {
+                            "target": "governance-validate", "status": "required"
+                        },
+                        "test": {"target": "test", "status": "required"},
+                    }
+                },
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    (target / "Makefile.fragment").write_text(
+        "BCF_EVIDENCE_DIR ?= .artifacts/bcf\n\n"
+        ".PHONY: release-check governance-validate test\n\n"
+        "release-check:\n"
+        "\t@for gate in governance-validate test; do echo $$gate; done\n",
+        encoding="utf-8",
+    )
+
+    template = tmp_path / "template"
+    template.mkdir()
+    upgrade.upgrade_state_files(
+        template_root=template,
+        target_root=target,
+        values={},
+    )
+
+    release_check = (target / "Makefile.fragment").read_text(encoding="utf-8").split(
+        "release-check:", 1
+    )[1]
+    assert "scripts/capture_governance_shard.py" in release_check
+    assert "--all-planned" in release_check
+    assert "for gate in" not in release_check
 
 
 def test_installer_existing_adoption_mode_labels_conversion_phase(tmp_path: Path) -> None:

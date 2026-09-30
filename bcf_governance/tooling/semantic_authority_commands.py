@@ -31,6 +31,7 @@ from .semantic_locking import (
 from .semantic_adoption_dependencies import DependencySnapshot, SemanticDependencyError, snapshot_adoption_dependencies
 from .semantic_ownership_typescript import TypeScriptDiscoveryError
 from .semantic_ownership_registry import load_registry
+from .profile_yaml import render_governance_profile
 from .semantic_authority_migrations import (
     SemanticMigrationError,
     register_operation_migration,
@@ -101,7 +102,7 @@ def _set_capabilities(repo_root: Path) -> None:
         "application_operation_inventory": "blocking",
         "representation_provenance": "blocking",
     }
-    atomic_write(path, yaml.safe_dump(profile, sort_keys=False, width=120).encode("utf-8"))
+    atomic_write(path, render_governance_profile(profile).encode("utf-8"))
 
 
 def _apply_config(

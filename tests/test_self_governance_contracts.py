@@ -682,6 +682,76 @@ def test_governance_shards_execute_only_the_planned_producer_inventory(
     assert commands[0][commands[0].index("--gate") + 1] == "runtime-smoke"
 
 
+def test_all_planned_shards_project_exact_graph_environment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = evidence_shards
+    monkeypatch.chdir(tmp_path)
+    session = SimpleNamespace(
+        payload={
+            "schema_version": "2.0",
+            "expected_gate_inventory": ["test"],
+            "execution_dag": {
+                "nodes": [
+                    {
+                        "id": "tests",
+                        "producer": "test",
+                        "assigned_shard": 0,
+                        "depends_on": [],
+                    }
+                ],
+                "edges": [],
+            },
+        }
+    )
+    observed: dict[str, str] = {}
+    monkeypatch.setattr(module, "load_session", lambda _: session)
+    monkeypatch.setattr(
+        module, "validate_ci_graph", lambda _: SimpleNamespace(graph={})
+    )
+    monkeypatch.setattr(
+        module,
+        "local_gate_job_environments",
+        lambda *_: {
+            "test": {
+                "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"
+            }
+        },
+    )
+
+    def capture(*_args: object, **kwargs: object) -> Path:
+        observed.update(kwargs["job_environment"])
+        return tmp_path / "test.evidence.json"
+
+    monkeypatch.setattr(module, "capture_gate", capture)
+    monkeypatch.setattr(module, "captured_receipt_succeeded", lambda _: True)
+    monkeypatch.setattr(
+        module.subprocess,
+        "run",
+        lambda *_args, **_kwargs: pytest.fail("all-planned used subprocess CLI"),
+    )
+    manifest = tmp_path / "evidence-session.json"
+    manifest.write_text("{}\n", encoding="utf-8")
+    monkeypatch.setattr(
+        module.sys,
+        "argv",
+        [
+            "capture_governance_shard.py",
+            "--all-planned",
+            "--output-root",
+            str(tmp_path / "session"),
+            "--session-manifest",
+            str(manifest),
+        ],
+    )
+
+    module.main()
+
+    assert observed == {
+        "PREPARED_ROOT": f"{tmp_path.resolve()}/.artifacts/prepared"
+    }
+
+
 def test_self_gate_runner_bootstraps_an_uninstalled_source_checkout() -> None:
     result = subprocess.run(
         [sys.executable, "-I", ".github/scripts/run_self_governance_gate.py", "runtime-smoke"],

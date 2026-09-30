@@ -95,6 +95,14 @@ def build_parser(
         help="Refresh latest pack-owned support files while preserving product and phase state.",
     )
     parser.add_argument(
+        "--release-assets",
+        type=Path,
+        help=(
+            "Exact immutable BCF release asset directory used to authenticate and "
+            "atomically advance adopter runtime custody during --upgrade."
+        ),
+    )
+    parser.add_argument(
         "--reset-options",
         action="store_true",
         help="With --upgrade, reset profile, Makefile, and architecture option surfaces from current flags.",

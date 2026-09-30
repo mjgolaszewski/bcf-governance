@@ -26,7 +26,7 @@ GENERATED_PATHS = {
     "governance/evidence-policy.yml",
     "governance/gate-contracts.yml",
 }
-PRESERVED_REQUIRED_ARTIFACTS = {"README.md", "LICENSE", "CHANGELOG.md"}
+PRESERVED_REQUIRED_ARTIFACTS = {"README.md", "LICENSE", "CHANGELOG.md", "Makefile"}
 
 
 def _sync_tree(source: Path, destination: Path, *, suffixes: set[str]) -> None:

@@ -21,7 +21,7 @@ if str(_SCRIPT_ROOT) not in sys.path:
 
 from .governance_install.ci_graph import write_reference_ci_graph  # noqa: E402
 from .governance_install.phase import generate_phase_artifacts  # noqa: E402
-from .governance_install.preservation import preserved_consumer_files  # noqa: E402
+from .governance_install.release_custody import prepare_upgrade_release_custody  # noqa: E402
 from .governance_install.artifacts import (  # noqa: E402
     ensure_required_artifacts,
     merge_gitignore as _merge_gitignore,
@@ -61,7 +61,7 @@ RUNTIME_SUPPORT_PATHS = (
     "scripts/governance_truth_support.py", "scripts/preflight_governance.py",
     "scripts/semantic_ownership.py", "scripts/restore_evidence_modes.py",
     "scripts/_bcf_runtime", "scripts/migrate_governance_evidence.py",
-    "scripts/profile_governance.py", "scripts/governance_validation",
+    "scripts/profile_governance.py",
     "scripts/scaffold_governance_artifacts.py", "scripts/validate_governance_yaml.py",
 )
 RESCAFFOLD_REMOVE_PATHS = (
@@ -101,13 +101,15 @@ INSTALL_MANAGED_PATHS = tuple(
             *RESCAFFOLD_REMOVE_PATHS,
             "docs/OPERATIONS.md",
             ".gitignore",
+            "Makefile",
             "README.md",
             "LICENSE",
             "CHANGELOG.md",
+            "governance/bcf-runtime-lock.json",
         )
     )
 )
-PRESERVED_REQUIRED_ARTIFACTS = ("README.md", "LICENSE", "CHANGELOG.md")
+PRESERVED_REQUIRED_ARTIFACTS = ("README.md", "LICENSE", "CHANGELOG.md", "Makefile")
 EXISTING_ADOPTION_ARTIFACTS = (
     "governance/EXISTING_REPO_ADOPTION.md",
     "governance/existing-repo-adoption.yml",
@@ -542,7 +544,7 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
         entries=entries,
         iter_template_files=_iter_template_files,
         reject_destination=_reject_symlink_destination,
-        excluded_paths=preserved_consumer_files(target_root),
+        excluded_paths=args.release_custody.excluded_paths,
     )
     destinations.extend(retired_self_authority)
     required_count, required_destinations = ensure_required_artifacts(
@@ -555,6 +557,7 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
     destinations.extend(required_destinations)
     values = _placeholder_values(args, target_root)
     replace_placeholders_in_files(destinations, values)
+    args.release_custody.project(target_root, entries, upgrade_paths, values)
     copied_files += len(
         upgrade_state_files(
         template_root=template_root,
@@ -713,6 +716,13 @@ def install(args: argparse.Namespace) -> InstallResult:
     )
     if git_root.returncode != 0 or Path(git_root.stdout.strip()).resolve() != target_root:
         raise RuntimeError("installation target must be the root of an initialized Git repository")
+    args.release_custody = prepare_upgrade_release_custody(
+        target_root,
+        getattr(args, "release_assets", None),
+        args.upgrade,
+        _template_root(),
+        force_rescaffold=getattr(args, "force_rescaffold", False),
+    )
     args.profile, contract_version = resolve_install_contract_version(
         target_root, args.profile, args.profile_contract_version, args.upgrade, args.reset_options)
     args.semantic_config_payload = None
@@ -728,6 +738,7 @@ def install(args: argparse.Namespace) -> InstallResult:
             args.profile_config,
             asset_root=target_root,
             contract_version=contract_version,
+            fresh_install=not args.upgrade,
         )
     semantic_required = (
         not args.upgrade

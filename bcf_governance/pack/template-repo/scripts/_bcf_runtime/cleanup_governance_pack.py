@@ -24,6 +24,7 @@ from .governance_cleanup.models import (  # noqa: E402
 )
 from .governance_cleanup import phase_retention as phase_retention_ops  # noqa: E402
 from .governance_cleanup import phase_retention_projection as retention_projection  # noqa: E402
+from .governance_cleanup.pack_removal import governed_pack_removal_paths  # noqa: E402
 
 OUTPUT_FORMATS = {"text", "json"}
 PHASE_RETENTION_MODE_CHOICES = {"archive", "git-history"}
@@ -49,35 +50,6 @@ AUDIT_MOVE_ROOTS = {
     "governance/test-audits": "audits/test-audits",
     "governance/code-reviews": "audits/code-reviews",
 }
-GOVERNANCE_PACK_REMOVE_PATHS = (
-    "AGENTS.yml",
-    "AGENTS.md",
-    "CLAUDE.md",
-    "MEMORY.yml",
-    "architecture-boundaries.yml",
-    "governance-profile.yml",
-    "Makefile.fragment",
-    "requirements-governance.txt",
-    ".github/workflows/governance.yml",
-    "audits",
-    "contracts/observability",
-    "docs/OPERATIONS.md",
-    "governance",
-    "phases",
-    "plans",
-    "schemas",
-    "backend/tests/architecture/test_boundaries_ast.py",
-    "scripts/check_governance_exposure.py",
-    "scripts/governance_evidence.py",
-    "scripts/governance_truth.py",
-    "scripts/governance_truth_support.py",
-    "scripts/preflight_governance.py",
-    "scripts/semantic_ownership.py",
-    "scripts/migrate_governance_evidence.py",
-    "scripts/governance_validation",
-    "scripts/scaffold_governance_artifacts.py",
-    "scripts/validate_governance_yaml.py",
-)
 BCF_CI_REFERENCE_MARKERS = (
     "bcf validate",
     "bcf exposure-scan",
@@ -138,10 +110,14 @@ def _destination_for_move(relative_path: str) -> str | None:
     return None
 def _governance_pack_remove_actions(repo_root: Path) -> list[CleanupAction]:
     actions: list[CleanupAction] = []
-    for relative_path in GOVERNANCE_PACK_REMOVE_PATHS:
+    for relative_path in governed_pack_removal_paths(repo_root):
         path = repo_root / relative_path
         if not path.exists():
             continue
+        if not path.is_file() or path.is_symlink():
+            raise ValueError(
+                f"pack-owned cleanup path is not a regular file: {relative_path}"
+            )
         actions.append(
             CleanupAction(
                 kind="remove_governance_artifact",
@@ -680,6 +656,10 @@ def apply_cleanup(
         after = _file_snapshot(shadow)
         after_modes = _file_modes(shadow)
         _commit_shadow(repo_root, before, after, before_modes, after_modes)
+        if remove_governance_pack:
+            for action in report.actions:
+                if action.kind == "remove_governance_artifact":
+                    _remove_path(repo_root, action.source)
     return replace(report, repo_root=str(repo_root))
 
 

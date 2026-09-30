@@ -27,6 +27,24 @@ class ReleaseVersion:
     def tag(self) -> str:
         return f"v{self.value}"
 
+    @property
+    def ordering_key(self) -> tuple[int, int, int, int, int]:
+        """Return canonical public precedence without accepting aliases."""
+
+        match = _PUBLIC_VERSION.fullmatch(self.value)
+        if match is None:  # constructor is public; retain fail-closed behavior
+            raise ReleaseVersionError("release version is not canonical")
+        stage = match.group(4)
+        stage_rank = {"a": 0, "b": 1, "rc": 2, None: 3}[stage]
+        stage_number = int(match.group(5)) if match.group(5) is not None else 0
+        return (
+            int(match.group(1)),
+            int(match.group(2)),
+            int(match.group(3)),
+            stage_rank,
+            stage_number,
+        )
+
 
 def parse_release_version(value: str) -> ReleaseVersion:
     """Accept canonical X.Y.Z and X.Y.Z{a,b,rc}N release identities."""
