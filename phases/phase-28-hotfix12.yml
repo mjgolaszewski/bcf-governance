@@ -58,7 +58,7 @@ execution_evidence:
     ordinary manifest files, rejects uncovered members, preserves product files,
     and proves strict Standard-v3 custom-gate re-adoption.
   - The independent Racecar plan then proved that transaction scopes cannot serve
-    as recursive ownership: mixed audits, plans, phases, governance, schemas, and
+    as recursive ownership. Mixed audits, plans, phases, governance, schemas, and
     runtime directories contained adopter bytes. Removal now targets exact files,
     rejects non-file collisions, and prunes only empty parents.
   - The AgentBus two-custom-gate fixture then exceeded the profile line cap before
