@@ -525,3 +525,26 @@ def test_reconcile_promotion_failure_restores_head_index_and_worktree(
     assert _git(root, "rev-parse", "HEAD") == head
     assert _transition_snapshot(root) == snapshot
     assert _git(root, "status", "--porcelain=v1") == status
+
+
+def test_reconcile_rejects_graph_declared_default_branch_without_remote_head(
+    tmp_path: Path,
+) -> None:
+    root = _authority_transition_repository(tmp_path)
+    (root / "governance/ci-graph.yml").write_text(
+        "default_branch: trunk\n", encoding="utf-8"
+    )
+    _git(root, "add", "governance/ci-graph.yml")
+    _git(root, "commit", "--quiet", "-m", "declare exact default branch")
+    _git(root, "branch", "-m", "trunk")
+    (root / "intent").write_text("new\n", encoding="utf-8")
+
+    with pytest.raises(
+        ReconcileAuthorityTransitionError, match="forbidden on the default branch"
+    ):
+        apply_workflow_authority_transition(
+            root,
+            step_factory=_transition_steps,
+            converge=converge,
+            snapshot=_transition_snapshot,
+        )

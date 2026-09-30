@@ -127,18 +127,29 @@ def _branch(root: Path) -> str:
         raise ReconcileAuthorityTransitionError(
             "workflow-authority transition requires a safe named branch"
         )
-    remote_head = _git(
-        root, "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD", check=False
-    )
-    if remote_head.returncode == 0:
-        default_branch = remote_head.stdout.decode("utf-8").strip().removeprefix("origin/")
-        if branch == default_branch:
-            raise ReconcileAuthorityTransitionError(
-                "workflow-authority transition is forbidden on the default branch"
-            )
-    elif branch in {"main", "master"}:
+    graph_path = root / "governance/ci-graph.yml"
+    try:
+        graph = yaml.safe_load(graph_path.read_text(encoding="utf-8"))
+        default_branch = graph["default_branch"]
+    except (OSError, KeyError, TypeError, yaml.YAMLError):
+        default_branch = None
+    if not isinstance(default_branch, str) or _SAFE_BRANCH.fullmatch(default_branch) is None:
+        remote_head = _git(
+            root,
+            "symbolic-ref",
+            "--quiet",
+            "--short",
+            "refs/remotes/origin/HEAD",
+            check=False,
+        )
+        default_branch = (
+            remote_head.stdout.decode("utf-8").strip().removeprefix("origin/")
+            if remote_head.returncode == 0
+            else None
+        )
+    if branch == default_branch or (default_branch is None and branch in {"main", "master"}):
         raise ReconcileAuthorityTransitionError(
-            "workflow-authority transition is forbidden on an unresolved default branch"
+            "workflow-authority transition is forbidden on the default branch"
         )
     return branch
 
