@@ -35,6 +35,15 @@ def test_public_release_version_policy_rejects_aliases(value: str) -> None:
         parse_release_version(value)
 
 
+def test_public_release_version_ordering_is_mechanical() -> None:
+    ordered = ["2.1.4", "2.1.5a1", "2.1.5b1", "2.1.5rc1", "2.1.5", "2.2.0"]
+
+    assert sorted(
+        ordered,
+        key=lambda value: parse_release_version(value).ordering_key,
+    ) == ordered
+
+
 def test_github_draft_marks_release_candidates_mechanically(monkeypatch) -> None:
     requests: list[dict[str, object]] = []
 

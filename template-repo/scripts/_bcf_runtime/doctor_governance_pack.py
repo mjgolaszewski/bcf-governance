@@ -5,28 +5,9 @@ from __future__ import annotations
 import argparse
 import importlib.metadata
 import json
-import re
 import subprocess
 from pathlib import Path
 from typing import Any
-
-try:
-    from bcf_governance import __version__
-except ModuleNotFoundError:  # direct source-script execution without installation
-    adjacent_version = Path(__file__).resolve().with_name("_version.py")
-    package_init = (
-        adjacent_version
-        if adjacent_version.is_file()
-        else Path(__file__).resolve().parents[1] / "_version.py"
-    )
-    version_match = re.search(
-        r'^__version__\s*=\s*["\']([^"\']+)["\']',
-        package_init.read_text(encoding="utf-8"),
-        flags=re.MULTILINE,
-    )
-    if version_match is None:  # pragma: no cover - corrupt source checkout
-        raise RuntimeError("unable to determine BCF package version")
-    __version__ = version_match.group(1)
 
 try:
     from . import validate_governance_yaml as validator
@@ -34,15 +15,25 @@ except ImportError:  # pragma: no cover - direct standalone execution
     import validate_governance_yaml as validator  # type: ignore[no-redef]
 
 try:
-    from .governance_install.release_custody import (
-        ReleaseCustodyError,
-        validate_installed_runtime_lock,
+    from .governance_install.runtime_custody import (
+        RuntimeCustodyError,
+        RuntimeCustodyState,
+        inspect_runtime_custody,
     )
 except ImportError:  # pragma: no cover - direct standalone execution
-    from governance_install.release_custody import (  # type: ignore[no-redef]
-        ReleaseCustodyError,
-        validate_installed_runtime_lock,
+    from governance_install.runtime_custody import (  # type: ignore[no-redef]
+        RuntimeCustodyError,
+        RuntimeCustodyState,
+        inspect_runtime_custody,
     )
+
+try:
+    from .runtime_capacity import executing_runtime_version
+except ImportError:  # pragma: no cover - direct standalone execution
+    from runtime_capacity import executing_runtime_version  # type: ignore[no-redef]
+
+
+__version__ = executing_runtime_version()
 
 
 DOCTOR_OUTPUT_FORMATS = {"text", "json"}
@@ -194,16 +185,26 @@ def doctor_repo(repo_root: Path) -> dict[str, Any]:
     runtime_lock = repo_root / "governance/bcf-runtime-lock.json"
     if runtime_lock.exists():
         try:
-            validate_installed_runtime_lock(
-                repo_root,
-                expected_version=__version__,
-                schema_path=repo_root / "schemas/bcf-runtime-lock.schema.json",
-            )
-        except ReleaseCustodyError as exc:
+            custody = inspect_runtime_custody(repo_root)
+        except RuntimeCustodyError as exc:
             blockers.append(str(exc))
             next_actions.append(
                 "rerun bcf install --upgrade with exact --release-assets and GITHUB_TOKEN"
             )
+        else:
+            if custody.version != __version__:
+                blockers.append(
+                    "runtime_custody_version_mismatch: "
+                    f"installed={custody.version} executing={__version__}"
+                )
+                next_actions.append(
+                    "rerun bcf install --upgrade with exact --release-assets and GITHUB_TOKEN"
+                )
+            if custody.state is RuntimeCustodyState.LEGACY_OVERLAP_EXACT:
+                warnings.append(
+                    "runtime custody has exact legacy ownership overlap; "
+                    "the next authenticated upgrade will preserve and normalize it"
+                )
 
     placeholders = _scan_placeholders(repo_root)
     if placeholders:

@@ -375,7 +375,6 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         "plans/build-plan.yml",
         "plans/phase-01-plan.yml",
         "requirements-governance.txt",
-        "backend/tests/architecture/test_boundaries_ast.py",
         ".github/workflows/governance.yml",
     )
     for relative_path in protected_paths:
@@ -388,16 +387,6 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         relative_path: (target / relative_path).read_bytes()
         for relative_path in protected_paths
     }
-    preserved = {
-        relative_path: hashlib.sha256((target / relative_path).read_bytes()).hexdigest()
-        for relative_path in (
-            "schemas/architecture-boundaries.schema.json",
-            "backend/tests/architecture/test_boundaries_ast.py",
-        )
-    }
-    (target / "governance/bcf-runtime-lock.json").write_text(
-        json.dumps({"preserved_consumer_files": preserved}), encoding="utf-8"
-    )
     (target / "scripts/validate_governance_yaml.py").write_text("old validator\n", encoding="utf-8")
     (target / "scripts/check_governance_exposure.py").unlink()
     (target / "scripts/capture_governance_shard.py").unlink()
@@ -423,6 +412,34 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         relative_path: (target / relative_path).read_bytes()
         for relative_path in protected_paths
     } == state_before
+
+
+def test_upgrade_rejects_ungoverned_repository_before_mutation(tmp_path: Path) -> None:
+    target = tmp_path / "ungoverned"
+    target.mkdir()
+    application = target / "app.py"
+    application.write_text("PRODUCT = True\n", encoding="utf-8")
+
+    result = _run_installer(target, "--upgrade", "--skip-validation", check=False)
+
+    assert result.returncode == 1
+    assert "reject_not_installed" in result.stderr
+    assert application.read_text(encoding="utf-8") == "PRODUCT = True\n"
+    assert not (target / "scripts/_bcf_runtime").exists()
+
+
+def test_upgrade_rejects_partial_installation_before_mutation(tmp_path: Path) -> None:
+    target = tmp_path / "partial"
+    target.mkdir()
+    profile = target / "governance-profile.yml"
+    profile.write_text("profile: lite\n", encoding="utf-8")
+
+    result = _run_installer(target, "--upgrade", "--skip-validation", check=False)
+
+    assert result.returncode == 1
+    assert "reject_partial_installation" in result.stderr
+    assert profile.read_text(encoding="utf-8") == "profile: lite\n"
+    assert not (target / "scripts/_bcf_runtime").exists()
 
 
 def test_upgrade_retires_only_declared_self_authority_pack_surfaces(
@@ -582,12 +599,38 @@ def test_upgrade_rejects_drift_in_runtime_locked_consumer_file(tmp_path: Path) -
     path = target / relative
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     (target / "governance/bcf-runtime-lock.json").write_text(
-        json.dumps({"preserved_consumer_files": {relative: digest}}), encoding="utf-8"
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "version": "2.1.4",
+                "source_repository": "mjgolaszewski/bcf-governance",
+                "source_repository_id": 1207503211,
+                "source_commit": "a" * 40,
+                "release_id": 1,
+                "release_url": "https://github.com/mjgolaszewski/bcf-governance/releases/tag/v2.1.4",
+                "wheel_sha256": "b" * 64,
+                "source_archive_sha256": "c" * 64,
+                "checksum_manifest_sha256": "d" * 64,
+                "official_installer_adaptations": {},
+                "files": {},
+                "preserved_consumer_files": {relative: digest},
+            }
+        ),
+        encoding="utf-8",
     )
     path.write_text("unexplained drift\n", encoding="utf-8")
-    result = _run_installer(target, "--upgrade", "--skip-validation", check=False)
+    assets = tmp_path / "release-assets"
+    assets.mkdir()
+    result = _run_installer(
+        target,
+        "--upgrade",
+        "--release-assets",
+        str(assets),
+        "--skip-validation",
+        check=False,
+    )
     assert result.returncode == 1
-    assert "does not match its runtime lock" in result.stderr
+    assert "consumer_preserved_drift" in result.stderr
 
 
 def test_upgrade_preserves_bounded_package_metadata_ownership(tmp_path: Path) -> None:

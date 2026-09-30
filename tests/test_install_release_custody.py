@@ -16,6 +16,10 @@ import pytest
 
 from bcf_governance import __version__
 from bcf_governance.tooling.governance_install import release_custody
+from bcf_governance.tooling.governance_install.runtime_custody import (
+    RuntimeCustodyState,
+    inspect_runtime_custody,
+)
 from bcf_governance.tooling.governance_install import cli as install_cli
 from bcf_governance.tooling.release_asset_inventory import exact_assets
 
@@ -281,11 +285,19 @@ def test_runtime_lock_is_derived_from_projected_bytes_and_validated(tmp_path: Pa
         expected_version=__version__,
         schema_path=REPO_ROOT / "schemas/bcf-runtime-lock.schema.json",
     )
+    snapshot = inspect_runtime_custody(
+        target,
+        schema_path=REPO_ROOT / "schemas/bcf-runtime-lock.schema.json",
+    )
 
     assert payload["files"] == {relative: hashlib.sha256(installed).hexdigest()}
     assert payload["preserved_consumer_files"] == {
         "schemas/consumer.schema.json": preserved_digest
     }
+    assert snapshot.state is RuntimeCustodyState.NORMALIZED_EXACT
+    assert snapshot.runtime_owned == payload["files"]
+    assert snapshot.consumer_preserved == payload["preserved_consumer_files"]
+    assert snapshot.deletion_authorized is False
     assert payload["official_installer_adaptations"][relative] == {
         "released_sha256": hashlib.sha256(source).hexdigest(),
         "installed_sha256": hashlib.sha256(installed).hexdigest(),
@@ -307,9 +319,32 @@ def test_release_bound_upgrade_cannot_silently_preserve_stale_custody(
     target = tmp_path / "repo"
     target.mkdir()
     subprocess.run(["git", "init", "--quiet"], cwd=target, check=True)
+    runtime = target / "scripts/_bcf_runtime/example.py"
+    runtime.parent.mkdir(parents=True)
+    runtime.write_text("installed\n", encoding="utf-8")
     lock = target / "governance/bcf-runtime-lock.json"
     lock.parent.mkdir()
-    lock.write_text(json.dumps({"version": "2.1.3", "preserved_consumer_files": {}}))
+    lock.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "version": "2.1.3",
+                "source_commit": PREDECESSOR_COMMIT,
+                "release_id": 1,
+                "release_url": "https://github.com/mjgolaszewski/bcf-governance/releases/tag/v2.1.3",
+                "wheel_sha256": "a" * 64,
+                "source_archive_sha256": "b" * 64,
+                "checksum_manifest_sha256": "c" * 64,
+                "official_installer_adaptations": {},
+                "files": {
+                    "scripts/_bcf_runtime/example.py": hashlib.sha256(
+                        runtime.read_bytes()
+                    ).hexdigest()
+                },
+                "preserved_consumer_files": {},
+            }
+        )
+    )
     args = SimpleNamespace(
         target=target,
         release_assets=None,
@@ -319,7 +354,7 @@ def test_release_bound_upgrade_cannot_silently_preserve_stale_custody(
 
     from bcf_governance.tooling import install_governance_pack
 
-    with pytest.raises(RuntimeError, match="stale custody cannot be preserved"):
+    with pytest.raises(RuntimeError, match="reject_release_assets_required"):
         install_governance_pack.install(args)
 
 
@@ -332,19 +367,6 @@ def test_upgrade_atomically_projects_release_custody_with_runtime_bytes(
     assert not lock_path.exists()
     predecessor_runtime = target / "scripts/_bcf_runtime/_version.py"
     assert '"2.1.3"' in predecessor_runtime.read_text(encoding="utf-8")
-    lock_path.write_text(
-        json.dumps(
-            {
-                "version": "2.1.3",
-                "source_commit": PREDECESSOR_COMMIT,
-                "preserved_consumer_files": {},
-            }
-        ),
-        encoding="utf-8",
-    )
-    predecessor_lock = json.loads(lock_path.read_text(encoding="utf-8"))
-    assert predecessor_lock["version"] == "2.1.3"
-    assert predecessor_lock["source_commit"] == PREDECESSOR_COMMIT
     released = {
         path.relative_to(TEMPLATE_ROOT).as_posix(): path.read_bytes()
         for path in TEMPLATE_ROOT.rglob("*")
@@ -369,7 +391,7 @@ def test_upgrade_atomically_projects_release_custody_with_runtime_bytes(
     monkeypatch.setattr(
         "bcf_governance.tooling.install_governance_pack.prepare_upgrade_release_custody",
         lambda *_args, **_kwargs: release_custody.UpgradeReleaseCustody(
-            custody, release_custody.preserved_consumer_inventory(target)
+            custody, {}
         ),
     )
     assets = tmp_path / "assets"
@@ -392,6 +414,70 @@ def test_upgrade_atomically_projects_release_custody_with_runtime_bytes(
     assert lock["source_repository"] == release_custody.OFFICIAL_RELEASE_REPOSITORY
     runtime = "scripts/_bcf_runtime/install_governance_pack.py"
     assert lock["files"][runtime] == hashlib.sha256((target / runtime).read_bytes()).hexdigest()
+
+
+def test_authenticated_upgrade_normalizes_exact_legacy_overlap(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "repo"
+    relative = "schemas/architecture-boundaries.schema.json"
+    runtime_relative = "scripts/_bcf_runtime/_version.py"
+    path = target / relative
+    path.parent.mkdir(parents=True)
+    path.write_bytes((TEMPLATE_ROOT / relative).read_bytes())
+    runtime_path = target / runtime_relative
+    runtime_path.parent.mkdir(parents=True)
+    runtime_path.write_bytes((TEMPLATE_ROOT / runtime_relative).read_bytes())
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    lock = target / "governance/bcf-runtime-lock.json"
+    lock.parent.mkdir(parents=True)
+    lock.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "version": "2.1.4",
+                "source_commit": "e" * 40,
+                "release_id": 1,
+                "release_url": "https://github.com/mjgolaszewski/bcf-governance/releases/tag/v2.1.4",
+                "wheel_sha256": "1" * 64,
+                "source_archive_sha256": "2" * 64,
+                "checksum_manifest_sha256": "3" * 64,
+                "official_installer_adaptations": {},
+                "files": {relative: digest},
+                "preserved_consumer_files": {relative: digest},
+            }
+        ),
+        encoding="utf-8",
+    )
+    assets_root, assets = _release_assets(tmp_path / "assets")
+
+    prepared = release_custody.prepare_upgrade_release_custody(
+        target,
+        assets_root,
+        True,
+        TEMPLATE_ROOT,
+        api=_Provider(assets),
+    )
+
+    assert prepared.preserved == {relative: digest}
+    prepared.project(
+        target,
+        manifest_entries={
+            relative: {"installation_scope": "ordinary_adopter"},
+            runtime_relative: {"installation_scope": "ordinary_adopter"},
+        },
+        upgrade_paths=("schemas", "scripts/_bcf_runtime"),
+        placeholder_values={},
+    )
+    successor = inspect_runtime_custody(
+        target,
+        schema_path=REPO_ROOT / "schemas/bcf-runtime-lock.schema.json",
+    )
+    assert successor.state is RuntimeCustodyState.NORMALIZED_EXACT
+    assert successor.runtime_owned == {
+        runtime_relative: hashlib.sha256(runtime_path.read_bytes()).hexdigest()
+    }
+    assert successor.consumer_preserved == {relative: digest}
 
 
 def test_upgrade_rolls_back_runtime_and_lock_when_custody_projection_fails(

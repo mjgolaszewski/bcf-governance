@@ -738,12 +738,12 @@ bcf cleanup --repo-root . --phase-retention-mode archive \
   --truth-report .artifacts/bcf/truth.json --apply # non-authoritative path; verify sha256 against retained CI
 ```
 
-Use `--remove-governance-pack` only to decommission BCF. Installer transaction
-scopes are expanded through the pack manifest into exact removable files; they
-never confer recursive ownership over mixed governance directories. Preserved,
-merged, and unrelated adopter files remain. The operation fails closed if an
-ordinary pack-manifest member lacks removal ownership, and mixed workflows are
-reported for manual editing.
+`--remove-governance-pack` is currently a fail-closed decommission request. The
+installed-runtime lock establishes exact byte custody for upgrade, not deletion
+authority. Until a separate authenticated deletion-authority contract exists,
+the command returns `reject_deletion_authority_absent` without mutation. Path
+names, installer transaction scopes, pack membership, and operator confirmation
+cannot substitute for that authority.
 
 Evidence-session retention is a separate exact-root operation:
 

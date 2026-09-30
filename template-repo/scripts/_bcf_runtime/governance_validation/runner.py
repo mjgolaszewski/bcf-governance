@@ -31,6 +31,7 @@ from .phase_catalog import (
 )
 from .release_gates import _validate_ci_profile, _validate_release_gate_targets, _validate_structural_gate_contract
 from .repo_cleanup import _load_repo_cleanup_contract
+from .runtime_custody import validate_runtime_custody
 from .structural_limits import validate_tooling_context_membership
 
 
@@ -63,6 +64,7 @@ def validate_repo_root(
     allow_placeholders: bool = False,
     allow_release_gate_placeholders: bool = False,
 ) -> None:
+    validate_runtime_custody(repo_root)
     schema_cache: dict[str, dict[str, Any]] = {}
     agents = _load_yaml(repo_root / "AGENTS.yml")
     memory = _load_yaml(repo_root / "MEMORY.yml")

@@ -50,7 +50,6 @@ AUDIT_MOVE_ROOTS = {
     "governance/test-audits": "audits/test-audits",
     "governance/code-reviews": "audits/code-reviews",
 }
-GOVERNANCE_PACK_REMOVE_PATHS = governed_pack_removal_paths()
 BCF_CI_REFERENCE_MARKERS = (
     "bcf validate",
     "bcf exposure-scan",
@@ -111,7 +110,7 @@ def _destination_for_move(relative_path: str) -> str | None:
     return None
 def _governance_pack_remove_actions(repo_root: Path) -> list[CleanupAction]:
     actions: list[CleanupAction] = []
-    for relative_path in GOVERNANCE_PACK_REMOVE_PATHS:
+    for relative_path in governed_pack_removal_paths(repo_root):
         path = repo_root / relative_path
         if not path.exists():
             continue

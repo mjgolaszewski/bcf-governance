@@ -1,50 +1,26 @@
-"""Derive exact governance-pack removal paths from installer ownership."""
+"""Apply the typed custody operation contract before pack removal."""
 
 from __future__ import annotations
 
-from pathlib import PurePosixPath
+from pathlib import Path
 
-from ..install_governance_pack import (
-    INSTALL_MANAGED_PATHS,
-    PRESERVED_REQUIRED_ARTIFACTS,
-    _pack_manifest_entries,
-    _template_root,
+from ..governance_install.runtime_custody import inspect_runtime_custody
+from ..governance_install.runtime_custody_operations import (
+    RuntimeCustodyOperation,
+    decide_runtime_custody_operation,
 )
+from ..install_governance_pack import _template_root
 
 
-def _covered(path: str, roots: list[str] | tuple[str, ...]) -> bool:
-    candidate = PurePosixPath(path)
-    return any(
-        candidate == PurePosixPath(root) or candidate.is_relative_to(root)
-        for root in roots
+def governed_pack_removal_paths(repo_root: Path) -> tuple[str, ...]:
+    """Reject removal until an independent deletion-authority contract exists."""
+
+    snapshot = inspect_runtime_custody(
+        repo_root,
+        schema_path=_template_root() / "schemas/bcf-runtime-lock.schema.json",
     )
-
-
-def _contains_manifest_path(root: str, paths: tuple[str, ...]) -> bool:
-    return any(_covered(path, (root,)) for path in paths)
-
-
-def governed_pack_removal_paths() -> tuple[str, ...]:
-    """Return exact removable files without treating transaction roots as ownership."""
-
-    retained = {*PRESERVED_REQUIRED_ARTIFACTS, ".gitignore"}
-    entries = _pack_manifest_entries(_template_root())
-    removable = {
-        path
-        for path, entry in entries.items()
-        if entry.get("installation_scope", "ordinary_adopter") == "ordinary_adopter"
-        and entry["operation"] not in {"merge", "preserve"}
-    }
-    uncovered = sorted(path for path in removable if not _covered(path, INSTALL_MANAGED_PATHS))
-    if uncovered:
-        raise ValueError(
-            "installer removal ownership omits manifest paths: " + ", ".join(uncovered)
-        )
-    manifest_paths = tuple(entries)
-    generated_files = {
-        path
-        for path in INSTALL_MANAGED_PATHS
-        if path not in retained
-        and not _contains_manifest_path(path, manifest_paths)
-    }
-    return tuple(sorted(removable | generated_files))
+    decision = decide_runtime_custody_operation(
+        snapshot,
+        RuntimeCustodyOperation.REMOVE_RUNTIME,
+    )
+    raise ValueError(decision.disposition.value)

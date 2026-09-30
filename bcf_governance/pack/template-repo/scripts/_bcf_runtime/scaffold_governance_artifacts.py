@@ -14,10 +14,10 @@ from typing import Any, Callable, Iterable
 
 import yaml  # type: ignore[import-untyped]
 
-try:
-    from bcf_governance import __version__
-except ModuleNotFoundError:  # Standalone template runtime owns a relative projection.
-    from ._version import __version__
+from .runtime_capacity import executing_runtime_version
+
+
+__version__ = executing_runtime_version()
 
 from .test_manifests import declared_test_gates
 from .governance_validation.structural_limits import validate_structural_limits

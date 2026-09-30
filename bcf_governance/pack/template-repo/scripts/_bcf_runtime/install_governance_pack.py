@@ -721,6 +721,7 @@ def install(args: argparse.Namespace) -> InstallResult:
         getattr(args, "release_assets", None),
         args.upgrade,
         _template_root(),
+        force_rescaffold=getattr(args, "force_rescaffold", False),
     )
     args.profile, contract_version = resolve_install_contract_version(
         target_root, args.profile, args.profile_contract_version, args.upgrade, args.reset_options)

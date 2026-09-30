@@ -898,7 +898,7 @@ def test_standard_v3_adopter_install_derives_each_post_merge_scope(
     assert (terminal.mode, terminal.target) == ("closure", None)
 
 
-def test_standard_v3_custom_gate_remove_pack_then_fresh_readoption(
+def test_standard_v3_custom_gate_remove_pack_without_deletion_authority_fails_closed(
     tmp_path: Path,
 ) -> None:
     repo = tmp_path / "custom-readoption"
@@ -936,13 +936,13 @@ def test_standard_v3_custom_gate_remove_pack_then_fresh_readoption(
     ]
     subprocess.run(install, check=True, capture_output=True, text=True)
 
-    apply_cleanup(repo, assume_yes=True, remove_governance_pack=True)
+    with pytest.raises(ValueError, match="reject_deletion_authority_absent"):
+        apply_cleanup(repo, assume_yes=True, remove_governance_pack=True)
 
     assert config.is_file()
     assert semantic.is_file()
     assert (repo / "gate.py").is_file()
-    assert not any((repo / "scripts/_bcf_runtime").rglob("*.py"))
-    subprocess.run(install, check=True, capture_output=True, text=True)
+    assert (repo / "scripts/_bcf_runtime").exists()
     contract = yaml.safe_load(
         (repo / "governance/gate-contracts.yml").read_text(encoding="utf-8")
     )

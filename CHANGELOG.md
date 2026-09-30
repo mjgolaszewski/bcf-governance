@@ -17,9 +17,11 @@ All notable changes to BCF Governance are recorded here. This file follows
   metadata beside executable contracts, without permitting pack-gate overrides
   or unbound catalog entries; every profile writer now uses one lossless compact
   projection so custom catalogs remain inside their declared context budget.
-- Made governance-pack removal expand installer transaction scopes into exact
-  ordinary manifest files, preserve unrelated adopter files in mixed governance
-  directories, and prove strict fresh re-adoption without recursive ownership.
+- Separated installed-byte custody from deletion authority: governance-pack
+  removal now fails closed without mutation, while a typed state matrix rejects
+  malformed, contradictory, missing, or drifted upgrade custody before writes;
+  predecessor locks without a locally installed schema are classified against
+  the exact executing runtime's packaged schema.
 - Made local release execution consume the canonical selective evidence plan,
   so preflight-satisfied claims are not incorrectly reintroduced by a static
   gate list; each local producer also receives its exact graph-declared

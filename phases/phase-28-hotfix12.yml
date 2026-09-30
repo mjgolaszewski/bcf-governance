@@ -53,15 +53,19 @@ execution_evidence:
     profile contract. Fresh installs now admit exact required custom gates while
     rejecting pack overrides, unbound entries, and claim-model replacement in
     an existing governed repository.
-  - The next clean-adoption probe exposed a duplicated, stale removal inventory.
-    Canonical remove-pack now expands installer transaction scopes into exact
-    ordinary manifest files, rejects uncovered members, preserves product files,
-    and proves strict Standard-v3 custom-gate re-adoption.
-  - The independent Racecar plan then proved that transaction scopes cannot serve
-    as recursive ownership. Mixed audits, plans, phases, governance, schemas, and
-    runtime directories contained adopter bytes. Removal now targets exact files,
-    rejects non-file collisions, and prunes only empty parents.
-  - The AgentBus two-custom-gate fixture then exceeded the profile line cap before
+  - Clean-adoption and Racecar probes proved that transaction roots, canonical
+    paths, pack membership, and installed-byte custody do not establish deletion
+    authority. Remove-pack now returns one typed rejection without mutation until
+    an independent authenticated deletion-authority contract exists.
+  - Racecar's retained prior-version lock has one exact owned/preserved overlap.
+    The custody matrix classifies that legacy state, makes consumer preservation
+    win, validates every claimed byte before upgrade, and requires an authenticated
+    target release to emit the normalized non-overlapping successor lock.
+  - Post-gate Racecar qualification proved v2.1.3 retained its runtime lock but
+    did not install the lock schema. The custody primitive now selects an exact
+    local schema when present and otherwise the executing runtime's packaged
+    schema; a present malformed or symlinked local schema remains fail-closed.
+  - The AgentBus two-custom-gate fixture exceeded the profile line cap before
     mutation. Profile installation, semantic adoption, and ordinary upgrade now
     share one lossless compact renderer; the exact fixture passes the authored cap.
   - The prospective train crossed a UTC fixture expiry during execution. Expiring

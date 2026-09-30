@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import hashlib
 import json
 import subprocess
 import sys
@@ -29,6 +30,45 @@ def _run_cleanup(target: Path, *args: str) -> subprocess.CompletedProcess[str]:
         ],
         capture_output=True,
         text=True,
+    )
+
+
+def _write_runtime_lock(
+    repo: Path,
+    *,
+    owned: list[str],
+    preserved: list[str] | None = None,
+) -> None:
+    def digest(relative: str) -> str:
+        return hashlib.sha256((repo / relative).read_bytes()).hexdigest()
+
+    path = repo / "governance/bcf-runtime-lock.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "version": "2.1.4",
+                "source_repository": "mjgolaszewski/bcf-governance",
+                "source_repository_id": 1207503211,
+                "source_commit": "a" * 40,
+                "release_id": 1,
+                "release_url": (
+                    "https://github.com/mjgolaszewski/bcf-governance/"
+                    "releases/tag/v2.1.4"
+                ),
+                "wheel_sha256": "b" * 64,
+                "source_archive_sha256": "c" * 64,
+                "checksum_manifest_sha256": "d" * 64,
+                "official_installer_adaptations": {},
+                "files": {relative: digest(relative) for relative in owned},
+                "preserved_consumer_files": {
+                    relative: digest(relative) for relative in preserved or []
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
     )
 
 
@@ -179,38 +219,14 @@ def test_cleanup_apply_non_tty_requires_yes_before_mutation(tmp_path: Path) -> N
     assert not (repo / "audits/security.md").exists()
 
 
-def test_cleanup_remove_governance_pack_deletes_owned_artifacts_only(tmp_path: Path) -> None:
+def test_cleanup_remove_governance_pack_requires_independent_deletion_authority(
+    tmp_path: Path,
+) -> None:
     cleanup = _load_cleanup_module()
     repo = tmp_path / "repo"
     owned_files = [
-        "AGENTS.yml",
-        "AGENTS.md",
-        "CLAUDE.md",
-        "MEMORY.yml",
-        "architecture-boundaries.yml",
-        "governance-profile.yml",
-        "Makefile.fragment",
-        "requirements-governance.txt",
-        ".github/workflows/governance.yml",
-        "docs/OPERATIONS.md",
-        "backend/tests/architecture/test_boundaries_ast.py",
-        "scripts/check_governance_exposure.py",
-        "scripts/build_trusted_controller.py",
-        "scripts/capture_governance_shard.py",
-        "scripts/evidence_storage.py",
-        "scripts/profile_governance.py",
-        "scripts/restore_evidence_modes.py",
-        "scripts/scaffold_governance_artifacts.py",
-        "scripts/validate_governance_yaml.py",
-    ]
-    owned_nested_files = [
-        "audits/README.md",
-        "contracts/observability/v1/logging.contract.yml",
-        "governance/REPO_CLEANUP.md",
-        "phases/phase-01-log.yml",
-        "plans/build-plan.yml",
-        "schemas/agents.schema.json",
         "scripts/_bcf_runtime/__init__.py",
+        "scripts/capture_governance_shard.py",
     ]
     adopter_owned_files = [
         "audits/security-review.md",
@@ -221,7 +237,7 @@ def test_cleanup_remove_governance_pack_deletes_owned_artifacts_only(tmp_path: P
         "schemas/product.schema.json",
         "scripts/_bcf_runtime/product-helper.py",
     ]
-    for relative_path in [*owned_files, *owned_nested_files]:
+    for relative_path in owned_files:
         path = repo / relative_path
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("bcf\n", encoding="utf-8")
@@ -231,31 +247,26 @@ def test_cleanup_remove_governance_pack_deletes_owned_artifacts_only(tmp_path: P
         path.write_text("adopter\n", encoding="utf-8")
     (repo / "app.py").write_text("print('keep')\n", encoding="utf-8")
     app_workflow = repo / ".github/workflows/app.yml"
+    app_workflow.parent.mkdir(parents=True)
     app_workflow.write_text("name: app\n", encoding="utf-8")
     mixed_workflow = repo / ".github/workflows/mixed.yml"
     mixed_workflow.write_text("run: make governance-validate\n", encoding="utf-8")
+    _write_runtime_lock(repo, owned=owned_files, preserved=adopter_owned_files)
 
-    plan = cleanup.plan_cleanup(repo, remove_governance_pack=True)
+    with pytest.raises(ValueError, match="reject_deletion_authority_absent"):
+        cleanup.plan_cleanup(repo, remove_governance_pack=True)
 
-    assert plan.status == "actionable"
-    assert all(action.kind == "remove_governance_artifact" for action in plan.actions)
-    assert {action.path for action in plan.manual_actions} == {".github/workflows/mixed.yml"}
-    assert "remove_governance_pack" in plan.warnings[0]
-
-    report = cleanup.apply_cleanup(repo, assume_yes=True, remove_governance_pack=True)
-
-    assert report.applied
-    for relative_path in [*owned_files, *owned_nested_files]:
-        assert not (repo / relative_path).exists()
+    for relative_path in owned_files:
+        assert (repo / relative_path).read_text(encoding="utf-8") == "bcf\n"
+    assert (repo / "governance/bcf-runtime-lock.json").exists()
     for relative_path in adopter_owned_files:
         assert (repo / relative_path).read_text(encoding="utf-8") == "adopter\n"
     assert (repo / "app.py").read_text(encoding="utf-8") == "print('keep')\n"
     assert app_workflow.exists()
     assert mixed_workflow.exists()
-    assert any("manual BCF references remain" in warning for warning in report.warnings)
 
 
-def test_remove_pack_then_fresh_install_is_closed_and_preserves_product(
+def test_remove_pack_without_runtime_custody_fails_before_mutation(
     tmp_path: Path,
 ) -> None:
     cleanup = _load_cleanup_module()
@@ -293,16 +304,43 @@ def test_remove_pack_then_fresh_install_is_closed_and_preserves_product(
     ]
     subprocess.run(install, check=True, capture_output=True, text=True)
 
-    report = cleanup.apply_cleanup(
-        repo, assume_yes=True, remove_governance_pack=True
-    )
-
-    assert report.applied
+    with pytest.raises(ValueError, match="reject_deletion_authority_absent"):
+        cleanup.apply_cleanup(repo, assume_yes=True, remove_governance_pack=True)
     assert (repo / "app.py").read_text(encoding="utf-8") == "PRODUCT = True\n"
     assert (repo / "README.md").read_text(encoding="utf-8") == "# Product\n"
-    assert not any((repo / "scripts/_bcf_runtime").rglob("*.py"))
-    assert not (repo / "scripts/capture_governance_shard.py").exists()
-    subprocess.run(install, check=True, capture_output=True, text=True)
+    assert (repo / "scripts/_bcf_runtime").exists()
+    assert (repo / "scripts/capture_governance_shard.py").exists()
+
+
+def test_remove_pack_rejects_drift_in_authenticated_owned_bytes(tmp_path: Path) -> None:
+    cleanup = _load_cleanup_module()
+    repo = tmp_path / "repo"
+    owned = "scripts/_bcf_runtime/__init__.py"
+    path = repo / owned
+    path.parent.mkdir(parents=True)
+    path.write_text("installed\n", encoding="utf-8")
+    _write_runtime_lock(repo, owned=[owned])
+    path.write_text("adopter change\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="runtime_owned_drift"):
+        cleanup.plan_cleanup(repo, remove_governance_pack=True)
+
+    assert path.read_text(encoding="utf-8") == "adopter change\n"
+    assert (repo / "governance/bcf-runtime-lock.json").exists()
+
+
+def test_remove_pack_rejects_path_claim_without_deletion_authority(tmp_path: Path) -> None:
+    cleanup = _load_cleanup_module()
+    repo = tmp_path / "repo"
+    path = repo / "app.py"
+    repo.mkdir()
+    path.write_text("product\n", encoding="utf-8")
+    _write_runtime_lock(repo, owned=["app.py"])
+
+    with pytest.raises(ValueError, match="reject_deletion_authority_absent"):
+        cleanup.plan_cleanup(repo, remove_governance_pack=True)
+
+    assert path.read_text(encoding="utf-8") == "product\n"
 
 
 def test_cleanup_remove_governance_pack_cli_outputs_json(tmp_path: Path) -> None:
@@ -312,18 +350,8 @@ def test_cleanup_remove_governance_pack_cli_outputs_json(tmp_path: Path) -> None
 
     result = _run_cleanup(repo, "--remove-governance-pack", "--format", "json", "--compact")
 
-    assert result.returncode == 0
-    payload = json.loads(result.stdout)
-    assert payload["status"] == "actionable"
-    assert payload["actions"] == [
-        {
-            "kind": "remove_governance_artifact",
-            "source": "AGENTS.yml",
-            "destination": None,
-            "reason": "remove BCF governance pack-owned artifact or dedicated CI gate",
-            "safe_to_apply": True,
-        }
-    ]
+    assert result.returncode == 1
+    assert "reject_deletion_authority_absent" in result.stderr
 
 
 def _write_yaml(path: Path, payload: dict) -> None:

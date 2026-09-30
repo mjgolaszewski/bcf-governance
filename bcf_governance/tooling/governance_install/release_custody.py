@@ -14,8 +14,6 @@ from urllib.parse import quote
 from urllib.request import Request
 import zipfile
 
-from jsonschema import Draft202012Validator
-
 from ..ci_github_downloads import open_download
 from ..ci_github_artifacts import provider_digest
 from ..release_asset_inventory import (
@@ -23,7 +21,17 @@ from ..release_asset_inventory import (
     release_asset_paths,
     release_asset_version,
 )
-from .preservation import preserved_consumer_inventory
+from ..runtime_capacity import executing_runtime_version
+from .runtime_custody import (
+    RuntimeCustodyError,
+    RuntimeCustodyFailure,
+    RuntimeCustodyState,
+    inspect_runtime_custody,
+)
+from .runtime_custody_operations import (
+    RuntimeCustodyOperation,
+    decide_runtime_custody_operation,
+)
 
 
 OFFICIAL_RELEASE_REPOSITORY = "mjgolaszewski/bcf-governance"
@@ -333,6 +341,27 @@ def _project_bytes(raw: bytes, values: dict[str, str]) -> bytes:
     return text.encode("utf-8")
 
 
+def selected_runtime_inventory_paths(
+    manifest_entries: dict[str, dict[str, Any]],
+    upgrade_paths: tuple[str, ...],
+) -> frozenset[str]:
+    """Return exact ordinary runtime files selected by canonical upgrade roots."""
+
+    def selected(relative: str) -> bool:
+        path = Path(relative)
+        return any(
+            path == Path(root) or path.is_relative_to(Path(root))
+            for root in upgrade_paths
+        )
+
+    return frozenset(
+        relative
+        for relative, entry in manifest_entries.items()
+        if selected(relative)
+        and entry.get("installation_scope", "ordinary_adopter") == "ordinary_adopter"
+    )
+
+
 def write_runtime_lock(
     target_root: Path,
     *,
@@ -344,19 +373,9 @@ def write_runtime_lock(
 ) -> None:
     """Project exact provider and installed-byte custody into one canonical lock."""
 
-    def selected(relative: str) -> bool:
-        path = Path(relative)
-        return any(path == Path(root) or path.is_relative_to(Path(root)) for root in upgrade_paths)
-
     files: dict[str, str] = {}
     adaptations: dict[str, dict[str, str]] = {}
-    expected = {
-        relative
-        for relative, entry in manifest_entries.items()
-        if selected(relative)
-        and entry.get("installation_scope", "ordinary_adopter") == "ordinary_adopter"
-        and relative not in preserved
-    }
+    expected = selected_runtime_inventory_paths(manifest_entries, upgrade_paths) - preserved.keys()
     if not expected:
         raise ReleaseCustodyError("release custody runtime inventory is empty")
     for relative in sorted(expected):
@@ -400,31 +419,37 @@ def write_runtime_lock(
 def validate_installed_runtime_lock(
     repo_root: Path, *, expected_version: str, schema_path: Path
 ) -> dict[str, Any]:
-    """Validate typed lock shape, version, and every exact installed byte."""
+    """Compatibility projection over canonical exact custody classification."""
 
-    lock_path = repo_root / "governance/bcf-runtime-lock.json"
     try:
-        payload = json.loads(lock_path.read_text(encoding="utf-8"))
-        schema = json.loads(schema_path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        snapshot = inspect_runtime_custody(repo_root, schema_path=schema_path)
+    except RuntimeCustodyError as exc:
+        if exc.failure is RuntimeCustodyFailure.SCHEMA_INVALID:
+            raise ReleaseCustodyError(
+                f"BCF runtime lock schema violation: {exc.detail}"
+            ) from exc
+        if exc.failure is RuntimeCustodyFailure.CONTRADICTORY_OVERLAP:
+            raise ReleaseCustodyError(
+                "BCF runtime lock ownership inventories overlap"
+            ) from exc
+        if exc.failure in {
+            RuntimeCustodyFailure.RUNTIME_OWNED_DRIFT,
+            RuntimeCustodyFailure.CONSUMER_PRESERVED_DRIFT,
+        }:
+            relative = exc.paths[0] if exc.paths else "unknown"
+            raise ReleaseCustodyError(
+                f"BCF runtime lock byte mismatch: {relative}"
+            ) from exc
         raise ReleaseCustodyError("BCF runtime lock or schema is unreadable") from exc
-    errors = sorted(
-        Draft202012Validator(schema).iter_errors(payload),
-        key=lambda error: list(error.absolute_path),
-    )
-    if errors:
-        raise ReleaseCustodyError(f"BCF runtime lock schema violation: {errors[0].message}")
-    if payload["version"] != expected_version:
+    if snapshot.state is RuntimeCustodyState.ABSENT or snapshot.lock_bytes is None:
+        raise ReleaseCustodyError("BCF runtime lock or schema is unreadable")
+    if snapshot.version != expected_version:
         raise ReleaseCustodyError("BCF runtime lock version differs from executing BCF")
-    inventories = (payload["files"], payload["preserved_consumer_files"])
-    overlap = set(inventories[0]) & set(inventories[1])
-    if overlap:
+    if snapshot.state is not RuntimeCustodyState.NORMALIZED_EXACT:
         raise ReleaseCustodyError("BCF runtime lock ownership inventories overlap")
-    for inventory in inventories:
-        for relative, expected in inventory.items():
-            path = repo_root / relative
-            if not path.is_file() or path.is_symlink() or _sha256_bytes(path.read_bytes()) != expected:
-                raise ReleaseCustodyError(f"BCF runtime lock byte mismatch: {relative}")
+    payload = json.loads(snapshot.lock_bytes)
+    if not isinstance(payload, dict):  # canonical classifier already enforces this
+        raise ReleaseCustodyError("BCF runtime lock or schema is unreadable")
     return payload
 
 
@@ -438,35 +463,45 @@ def prepare_upgrade_release_custody(
     upgrade: bool,
     template_root: Path,
     api: ReleaseProvider | None = None,
+    *,
+    force_rescaffold: bool = False,
 ) -> UpgradeReleaseCustody:
     """Fail before mutation unless an upgrade can advance existing custody."""
 
     if release_assets is not None and not upgrade:
         raise RuntimeError("--release-assets requires --upgrade")
-    lock = target_root / "governance/bcf-runtime-lock.json"
-    release_bound = False
-    if lock.is_file() and not lock.is_symlink():
-        try:
-            payload = json.loads(lock.read_text(encoding="utf-8"))
-        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-            raise RuntimeError("BCF runtime lock is unreadable before upgrade") from exc
-        release_bound = isinstance(payload, dict) and "version" in payload
-    if upgrade and release_bound and release_assets is None:
-        raise RuntimeError(
-            "release-bound upgrade requires --release-assets; stale custody cannot be preserved"
-        )
+    snapshot = inspect_runtime_custody(
+        target_root,
+        schema_path=template_root / "schemas/bcf-runtime-lock.schema.json",
+    )
+    operation = (
+        RuntimeCustodyOperation.FORCE_RESCAFFOLD
+        if force_rescaffold
+        else RuntimeCustodyOperation.RELEASE_UPGRADE_REQUEST
+        if release_assets is not None
+        else RuntimeCustodyOperation.FRESH_INSTALL
+        if not upgrade
+        else RuntimeCustodyOperation.LOCAL_UPGRADE
+    )
+    decision = decide_runtime_custody_operation(
+        snapshot,
+        operation,
+        target_version=executing_runtime_version(),
+    )
+    if not decision.allowed:
+        raise RuntimeError(decision.disposition.value)
+    if force_rescaffold:
+        return UpgradeReleaseCustody(None, {})
     if release_assets is None:
-        return UpgradeReleaseCustody(None, preserved_consumer_inventory(target_root))
-    from bcf_governance import __version__
-
+        return UpgradeReleaseCustody(None, snapshot.consumer_preserved)
     release = prepare_release_custody(
         release_assets,
-        installed_version=__version__,
+        installed_version=executing_runtime_version(),
         template_root=template_root,
         token=os.environ.get("GITHUB_TOKEN", ""),
         api=api,
     )
-    return UpgradeReleaseCustody(release, preserved_consumer_inventory(target_root))
+    return UpgradeReleaseCustody(release, snapshot.consumer_preserved)
 
 
 def project_upgrade_runtime_lock(

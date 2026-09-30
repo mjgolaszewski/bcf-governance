@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -74,6 +76,83 @@ def test_doctor_reports_running_version_source_and_public_install(tmp_path: Path
     assert report["tooling"]["public_install"].endswith(
         f"/v{__version__}/bcf_governance-{__version__}-py3-none-any.whl"
     )
+
+
+def _write_runtime_custody(
+    repo: Path,
+    *,
+    version: str,
+    overlap: bool = False,
+) -> None:
+    schema = repo / "schemas/bcf-runtime-lock.schema.json"
+    schema.parent.mkdir(parents=True, exist_ok=True)
+    schema.write_bytes((REPO_ROOT / "schemas/bcf-runtime-lock.schema.json").read_bytes())
+    runtime = repo / "scripts/_bcf_runtime/tool.py"
+    runtime.parent.mkdir(parents=True, exist_ok=True)
+    runtime.write_text("runtime\n", encoding="utf-8")
+    digest = hashlib.sha256(runtime.read_bytes()).hexdigest()
+    lock = repo / "governance/bcf-runtime-lock.json"
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    lock.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "version": version,
+                "source_repository": "mjgolaszewski/bcf-governance",
+                "source_repository_id": 1207503211,
+                "source_commit": "a" * 40,
+                "release_id": 1,
+                "release_url": (
+                    "https://github.com/mjgolaszewski/bcf-governance/"
+                    f"releases/tag/v{version}"
+                ),
+                "wheel_sha256": "b" * 64,
+                "source_archive_sha256": "c" * 64,
+                "checksum_manifest_sha256": "d" * 64,
+                "official_installer_adaptations": {},
+                "files": {"scripts/_bcf_runtime/tool.py": digest},
+                "preserved_consumer_files": (
+                    {"scripts/_bcf_runtime/tool.py": digest} if overlap else {}
+                ),
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_doctor_uses_canonical_normalized_custody_classification(tmp_path: Path) -> None:
+    _write_runtime_custody(tmp_path, version=__version__)
+
+    report = doctor.doctor_repo(tmp_path)
+
+    assert not any("runtime_custody" in value for value in report["blockers"])
+    assert not any("legacy ownership overlap" in value for value in report["warnings"])
+
+
+def test_doctor_reports_legacy_overlap_and_version_without_reinterpreting_it(
+    tmp_path: Path,
+) -> None:
+    _write_runtime_custody(tmp_path, version="2.1.4", overlap=True)
+
+    report = doctor.doctor_repo(tmp_path)
+
+    assert "runtime_custody_version_mismatch: installed=2.1.4 executing=2.1.5" in report[
+        "blockers"
+    ]
+    assert any("legacy ownership overlap" in value for value in report["warnings"])
+
+
+def test_doctor_classifies_predecessor_lock_without_local_schema(tmp_path: Path) -> None:
+    _write_runtime_custody(tmp_path, version="2.1.4", overlap=True)
+    (tmp_path / "schemas/bcf-runtime-lock.schema.json").unlink()
+
+    report = doctor.doctor_repo(tmp_path)
+
+    assert not any("lock_unreadable" in value for value in report["blockers"])
+    assert "runtime_custody_version_mismatch: installed=2.1.4 executing=2.1.5" in report[
+        "blockers"
+    ]
+    assert any("legacy ownership overlap" in value for value in report["warnings"])
 
 
 def _release_check_repo(tmp_path: Path, *, contract_version: str, capture: str) -> Path:
