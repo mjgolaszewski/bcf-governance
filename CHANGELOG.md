@@ -16,9 +16,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Made fresh Standard and Regulated adoption carry exact project-specific gate
   metadata beside executable contracts, without permitting pack-gate overrides
   or unbound catalog entries.
-- Made governance-pack removal consume the installer's canonical managed-path
-  ownership, verify complete ordinary manifest coverage, retire exact runtime
-  namespaces, and prove a strict fresh re-adoption without deleting product files.
+- Made governance-pack removal expand installer transaction scopes into exact
+  ordinary manifest files, preserve unrelated adopter files in mixed governance
+  directories, and prove strict fresh re-adoption without recursive ownership.
 - Made local release execution consume the canonical selective evidence plan,
   so preflight-satisfied claims are not incorrectly reintroduced by a static
   gate list; each local producer also receives its exact graph-declared

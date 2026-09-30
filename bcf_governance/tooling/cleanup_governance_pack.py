@@ -24,7 +24,7 @@ from .governance_cleanup.models import (  # noqa: E402
 )
 from .governance_cleanup import phase_retention as phase_retention_ops  # noqa: E402
 from .governance_cleanup import phase_retention_projection as retention_projection  # noqa: E402
-from .governance_cleanup.pack_removal import governed_pack_removal_roots  # noqa: E402
+from .governance_cleanup.pack_removal import governed_pack_removal_paths  # noqa: E402
 
 OUTPUT_FORMATS = {"text", "json"}
 PHASE_RETENTION_MODE_CHOICES = {"archive", "git-history"}
@@ -50,7 +50,7 @@ AUDIT_MOVE_ROOTS = {
     "governance/test-audits": "audits/test-audits",
     "governance/code-reviews": "audits/code-reviews",
 }
-GOVERNANCE_PACK_REMOVE_PATHS = governed_pack_removal_roots()
+GOVERNANCE_PACK_REMOVE_PATHS = governed_pack_removal_paths()
 BCF_CI_REFERENCE_MARKERS = (
     "bcf validate",
     "bcf exposure-scan",
@@ -115,6 +115,10 @@ def _governance_pack_remove_actions(repo_root: Path) -> list[CleanupAction]:
         path = repo_root / relative_path
         if not path.exists():
             continue
+        if not path.is_file() or path.is_symlink():
+            raise ValueError(
+                f"pack-owned cleanup path is not a regular file: {relative_path}"
+            )
         actions.append(
             CleanupAction(
                 kind="remove_governance_artifact",

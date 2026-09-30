@@ -203,24 +203,32 @@ def test_cleanup_remove_governance_pack_deletes_owned_artifacts_only(tmp_path: P
         "scripts/scaffold_governance_artifacts.py",
         "scripts/validate_governance_yaml.py",
     ]
-    owned_dirs = [
-        "audits",
-        "contracts/observability",
-        "governance",
-        "phases",
-        "plans",
-        "schemas",
-        "scripts/_bcf_runtime",
-        "scripts/governance_validation",
+    owned_nested_files = [
+        "audits/README.md",
+        "contracts/observability/v1/logging.contract.yml",
+        "governance/REPO_CLEANUP.md",
+        "phases/phase-01-log.yml",
+        "plans/build-plan.yml",
+        "schemas/agents.schema.json",
+        "scripts/_bcf_runtime/__init__.py",
     ]
-    for relative_path in owned_files:
+    adopter_owned_files = [
+        "audits/security-review.md",
+        "contracts/observability/product.contract.yml",
+        "governance/product-policy.yml",
+        "phases/product-history.yml",
+        "plans/product-roadmap.yml",
+        "schemas/product.schema.json",
+        "scripts/_bcf_runtime/product-helper.py",
+    ]
+    for relative_path in [*owned_files, *owned_nested_files]:
         path = repo / relative_path
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("bcf\n", encoding="utf-8")
-    for relative_path in owned_dirs:
+    for relative_path in adopter_owned_files:
         path = repo / relative_path
-        path.mkdir(parents=True, exist_ok=True)
-        (path / "owned.yml").write_text("bcf: true\n", encoding="utf-8")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("adopter\n", encoding="utf-8")
     (repo / "app.py").write_text("print('keep')\n", encoding="utf-8")
     app_workflow = repo / ".github/workflows/app.yml"
     app_workflow.write_text("name: app\n", encoding="utf-8")
@@ -237,8 +245,10 @@ def test_cleanup_remove_governance_pack_deletes_owned_artifacts_only(tmp_path: P
     report = cleanup.apply_cleanup(repo, assume_yes=True, remove_governance_pack=True)
 
     assert report.applied
-    for relative_path in [*owned_files, *owned_dirs]:
+    for relative_path in [*owned_files, *owned_nested_files]:
         assert not (repo / relative_path).exists()
+    for relative_path in adopter_owned_files:
+        assert (repo / relative_path).read_text(encoding="utf-8") == "adopter\n"
     assert (repo / "app.py").read_text(encoding="utf-8") == "print('keep')\n"
     assert app_workflow.exists()
     assert mixed_workflow.exists()
@@ -290,7 +300,7 @@ def test_remove_pack_then_fresh_install_is_closed_and_preserves_product(
     assert report.applied
     assert (repo / "app.py").read_text(encoding="utf-8") == "PRODUCT = True\n"
     assert (repo / "README.md").read_text(encoding="utf-8") == "# Product\n"
-    assert not (repo / "scripts/_bcf_runtime").exists()
+    assert not any((repo / "scripts/_bcf_runtime").rglob("*.py"))
     assert not (repo / "scripts/capture_governance_shard.py").exists()
     subprocess.run(install, check=True, capture_output=True, text=True)
 

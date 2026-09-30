@@ -736,7 +736,7 @@
     },
     "scripts/_bcf_runtime/cleanup_governance_pack.py": {
       "operation": "copy",
-      "sha256": "d1dcd71e70ea982dd5d018cbc25c3a6cc830a50192b1f9430e2b75083e1ea822"
+      "sha256": "ed8caed43b12ac3d23fbff4410e1f28df73a16f2d150ab2beee3c16fd35acd74"
     },
     "scripts/_bcf_runtime/controller_custody.py": {
       "operation": "copy",
@@ -872,7 +872,7 @@
     },
     "scripts/_bcf_runtime/governance_cleanup/pack_removal.py": {
       "operation": "copy",
-      "sha256": "477feec772c9f2bccee423e385515e2eda8ac7f7e954099de61ccd27697e2688"
+      "sha256": "f94612dad03080c7b42a30246c44674e31ac905d5c6570b8c59168b86991081b"
     },
     "scripts/_bcf_runtime/governance_cleanup/phase_retention.py": {
       "operation": "copy",
@@ -1031,7 +1031,7 @@
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
-      "sha256": "117831bbc12b393ee594ff2c61beb6bbe35f3440acb8b90859e6d4323e07634c"
+      "sha256": "94219890dcc445c33773d408b048527999b81a405fb66957c1e5637c32d2777d"
     },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",

@@ -912,7 +912,7 @@ def test_standard_v3_custom_gate_remove_pack_then_fresh_readoption(
     assert config.is_file()
     assert semantic.is_file()
     assert (repo / "gate.py").is_file()
-    assert not (repo / "scripts/_bcf_runtime").exists()
+    assert not any((repo / "scripts/_bcf_runtime").rglob("*.py"))
     subprocess.run(install, check=True, capture_output=True, text=True)
     contract = yaml.safe_load(
         (repo / "governance/gate-contracts.yml").read_text(encoding="utf-8")

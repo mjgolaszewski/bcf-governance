@@ -61,7 +61,7 @@ RUNTIME_SUPPORT_PATHS = (
     "scripts/governance_truth_support.py", "scripts/preflight_governance.py",
     "scripts/semantic_ownership.py", "scripts/restore_evidence_modes.py",
     "scripts/_bcf_runtime", "scripts/migrate_governance_evidence.py",
-    "scripts/profile_governance.py", "scripts/governance_validation",
+    "scripts/profile_governance.py",
     "scripts/scaffold_governance_artifacts.py", "scripts/validate_governance_yaml.py",
 )
 RESCAFFOLD_REMOVE_PATHS = (

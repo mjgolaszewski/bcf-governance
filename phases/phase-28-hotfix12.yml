@@ -54,9 +54,13 @@ execution_evidence:
     rejecting pack overrides, unbound entries, and claim-model replacement in
     an existing governed repository.
   - The next clean-adoption probe exposed a duplicated, stale removal inventory.
-    Canonical remove-pack now derives its minimal roots from installer ownership,
-    rejects uncovered ordinary manifest members, retires the exact runtime root,
-    preserves product files, and proves strict Standard-v3 custom-gate re-adoption.
+    Canonical remove-pack now expands installer transaction scopes into exact
+    ordinary manifest files, rejects uncovered members, preserves product files,
+    and proves strict Standard-v3 custom-gate re-adoption.
+  - The independent Racecar plan then proved that transaction scopes cannot serve
+    as recursive ownership: mixed audits, plans, phases, governance, schemas, and
+    runtime directories contained adopter bytes. Removal now targets exact files,
+    rejects non-file collisions, and prunes only empty parents.
   - The prospective train crossed a UTC fixture expiry during execution. Expiring
     capability-N/A tests now bind an explicit evaluation instant; production
     wall-clock expiry remains fail-closed and unchanged.
