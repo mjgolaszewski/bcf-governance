@@ -31,10 +31,11 @@ execution_evidence:
   - Detached candidates and safe non-default branches preserve their identity;
     default-branch mutation, unexplained workflow drift, unowned untracked files,
     missing Git identity, pin failure, and non-convergence fail before promotion.
-  - Isolated proof and rollback repositories receive the already-validated
-    candidate Git identity explicitly for mechanical commits; they never depend
-    on ambient runner configuration. Version-sensitive Doctor assertions derive
-    the executing package version instead of retaining patch-release literals.
+  - Isolated proof and rollback repositories use the canonical non-authorizing
+    BCF Reconciler identity for mechanical commits; they never depend on an
+    operator or ambient runner Git configuration. Version-sensitive Doctor
+    assertions derive the executing package version instead of retaining
+    patch-release literals.
   - Racecar pre-gate and post-gate qualification remain required for the exact
     release_22 candidate.
 closeout_requirements:

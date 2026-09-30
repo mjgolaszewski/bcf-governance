@@ -394,6 +394,28 @@ def test_reconcile_mechanically_commits_definition_then_exact_authority(
     assert (root / ".github/workflows/admission.yml").read_text() == "name: new\n"
 
 
+def test_reconcile_mechanical_commits_do_not_require_ambient_git_identity(
+    tmp_path: Path,
+) -> None:
+    root = _authority_transition_repository(tmp_path)
+    _git(root, "config", "--unset-all", "user.name")
+    _git(root, "config", "--unset-all", "user.email")
+    (root / "intent").write_text("new\n", encoding="utf-8")
+
+    result = apply_workflow_authority_transition(
+        root,
+        step_factory=_transition_steps,
+        converge=converge,
+        snapshot=_transition_snapshot,
+    )
+
+    assert result is not None
+    for commit in (result.definition_commit, result.authority_commit):
+        assert _git(root, "show", "-s", "--format=%an <%ae>", commit) == (
+            "BCF Reconciler <bcf-reconciler@example.invalid>"
+        )
+
+
 def test_reconcile_authority_failure_leaves_original_repository_byte_exact(
     tmp_path: Path,
 ) -> None:
