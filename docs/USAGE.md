@@ -48,7 +48,14 @@ bcf ci graph diff --repo-root .
 `reconcile --apply` runs semantic locks, exact test manifests, graph locks and
 rendering, pack mirrors/manifests, and the current editorial audit in one stable
 order until an entire round is byte-identical. Non-convergence fails closed.
-Unrelated workflows remain byte-identical. `bcf ci adopt github --check|--apply`
+When canonical projection changes trusted workflow bytes, the same operation
+proves the complete projection in an isolated Git shadow, creates the mandatory
+workflow-definition commit and its mechanically compiled authority commit, and
+only then advances the current named or detached candidate. A failed or
+ambiguous transition leaves the original commit, index, and working bytes
+unchanged. Existing partially applied canonical projections resume; unexplained
+workflow bytes fail closed. Unrelated workflows remain byte-identical.
+`bcf ci adopt github --check|--apply`
 uses the graph when present. The older label and producer arguments remain only
 for profile-v1 adoption.
 
@@ -237,7 +244,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.1.5/bcf_governance-2.1.5-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.1.6/bcf_governance-2.1.6-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 2.1. Verify the
@@ -363,8 +370,10 @@ secret because GitHub's workflow token cannot read repository immutable-release
 settings. Provision it only on the trusted no-checkout path with Administration read,
 Attestations read, and Contents write, then remove it after publication.
 
-Workflow custody is compiled, not transcribed. After committing final workflow
-bytes, derive the complete registry in one operation:
+Workflow custody is compiled, not transcribed. Routine reconciliation owns the
+definition-plus-authority commit pair described above. The lower-level compiler
+remains available for diagnosis and reviewed recovery of an already committed
+definition:
 
 ```bash
 bcf ci pin-authority \
@@ -511,9 +520,9 @@ Normal upgrade refreshes pack-owned runtime and schemas and creates required roo
 artifacts only when absent:
 
 ```bash
-gh release download v2.1.5 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.1.5
+gh release download v2.1.6 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.1.6
 GITHUB_TOKEN="$GITHUB_TOKEN" bcf install --target . --upgrade \
-  --release-assets /tmp/bcf-v2.1.5 --require-strict-validation
+  --release-assets /tmp/bcf-v2.1.6 --require-strict-validation
 ```
 
 The exact release assets and GET-only provider inspection bind the executing BCF

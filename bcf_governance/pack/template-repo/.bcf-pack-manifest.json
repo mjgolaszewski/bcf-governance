@@ -14,7 +14,7 @@
     },
     "AGENTS.yml": {
       "operation": "copy",
-      "sha256": "366b5d8c08b2dc3d15eeed79af0b68c213cf0a76b2be98d1c32f09695d377eef"
+      "sha256": "7e0f1cfb2a643c9d3b9f233f4885e883203e2b690cc8e746030b8c1881eccefe"
     },
     "CHANGELOG.md": {
       "operation": "preserve",
@@ -414,7 +414,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "6690f15ee2518ec9229435c082700acda38eca53cdb23a4a01c013d92e1df921"
+      "sha256": "9d87c1ffb58e2f1f79912fd264dc5bd4145293d101bb253d80a9dc6913b80e78"
     },
     "scripts/_bcf_runtime/automation_changelog.py": {
       "operation": "copy",
@@ -1121,6 +1121,10 @@
       "operation": "copy",
       "sha256": "63abb8dfd3f2acae183bc0b6b8b315aad401c20e32a3bc9ed8955a7a4359dc5e"
     },
+    "scripts/_bcf_runtime/reconcile_authority_transition.py": {
+      "operation": "copy",
+      "sha256": "a40eeffd8630711344ea1363c2f30c50bc5fcebe42258226f5dd6dba8a7b7334"
+    },
     "scripts/_bcf_runtime/release_asset_inventory.py": {
       "operation": "copy",
       "sha256": "b9cc54c6feb889b64656ea0dcaa3c2b362da98352010630dbd4b36a65430dd24"
@@ -1183,7 +1187,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "f5fde41e101b6dc65b689a5f221f631e8554f4848ad20e64ac43e0f2f90ed22d"
+      "sha256": "5297c1079a7556a2765950e4a63079317313ddd18426e201c93d2386b8716683"
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",
