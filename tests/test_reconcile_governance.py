@@ -537,6 +537,9 @@ def test_reconcile_rejects_graph_declared_default_branch_without_remote_head(
     _git(root, "add", "governance/ci-graph.yml")
     _git(root, "commit", "--quiet", "-m", "declare exact default branch")
     _git(root, "branch", "-m", "trunk")
+    (root / "governance/ci-graph.yml").write_text(
+        "default_branch: other\n", encoding="utf-8"
+    )
     (root / "intent").write_text("new\n", encoding="utf-8")
 
     with pytest.raises(

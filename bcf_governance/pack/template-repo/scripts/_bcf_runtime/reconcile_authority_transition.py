@@ -118,7 +118,7 @@ def _reject_unexplained_workflow_drift(
         )
 
 
-def _branch(root: Path) -> str:
+def _branch(root: Path, head: str) -> str:
     resolved = _git(root, "symbolic-ref", "--quiet", "--short", "HEAD", check=False)
     if resolved.returncode:
         return "detached-head"
@@ -127,11 +127,10 @@ def _branch(root: Path) -> str:
         raise ReconcileAuthorityTransitionError(
             "workflow-authority transition requires a safe named branch"
         )
-    graph_path = root / "governance/ci-graph.yml"
     try:
-        graph = yaml.safe_load(graph_path.read_text(encoding="utf-8"))
+        graph = yaml.safe_load(_bytes_at(root, head, "governance/ci-graph.yml"))
         default_branch = graph["default_branch"]
-    except (OSError, KeyError, TypeError, yaml.YAMLError):
+    except (ReconcileAuthorityTransitionError, KeyError, TypeError, yaml.YAMLError):
         default_branch = None
     if not isinstance(default_branch, str) or _SAFE_BRANCH.fullmatch(default_branch) is None:
         remote_head = _git(
@@ -179,9 +178,9 @@ def _preconditions(root: Path, paths: tuple[str, ...]) -> tuple[str, str, str]:
     if Path(_text(root, "rev-parse", "--show-toplevel")).resolve() != root:
         raise ReconcileAuthorityTransitionError(
             "workflow-authority transition requires the repository root"
-        )
+    )
     head = _text(root, "rev-parse", "HEAD")
-    branch = _branch(root)
+    branch = _branch(root, head)
     _reject_unowned_untracked_files(root)
     for key in ("user.name", "user.email"):
         value = _git(root, "config", "--get", key, check=False)
