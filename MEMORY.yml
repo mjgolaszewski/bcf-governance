@@ -43,4 +43,4 @@ reusable_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-
 references:
   governance: [AGENTS.yml, governance-profile.yml, governance/gate-contracts.yml, governance/evidence-policy.yml, governance/ci-graph.yml, plans/phase-ledger.yml, plans/phase-history.yml]
   product: [plans/product-spec.yml, plans/build-plan.yml]
-  execution: [plans/phase-26-plan.yml, plans/phase-26-workitems.yml, phases/phase-26-log.yml, plans/phase-27-plan.yml, plans/phase-27-workitems.yml, phases/phase-27-log.yml, plans/phase-28-plan.yml, plans/phase-28-workitems.yml, phases/phase-28-log.yml, plans/phase-29-plan.yml, plans/phase-29-workitems.yml, phases/phase-29-log.yml]
+  execution: [plans/phase-history.yml, plans/phase-29-plan.yml, plans/phase-29-workitems.yml, phases/phase-29-log.yml]

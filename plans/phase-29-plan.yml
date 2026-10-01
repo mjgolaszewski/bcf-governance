@@ -19,12 +19,10 @@ phase:
   - MEMORY.yml
 delivery_contract:
   tightly_scoped_deliverables:
-  - persist the complete provider-event evaluation-proposition and downstream consumer
-    state matrix
-  - repair direct protected-main comparison context and prospective event-parity validation
-  - optimize deterministic reconciliation and add bounded provider-read resilience
-  - add non-authoritative progress planning history amplification and provider scheduling
-    observations
+  - persist the CI state matrix and repair direct-main comparison context
+  - optimize deterministic fixed-point reconciliation
+  - add bounded provider-read resilience
+  - derive lifecycle projections and emit non-authoritative operational observations
   - prove self Lite and Standard v3 parity and publish immutable 2.1.7 custody
   parallelizable_workstreams:
   - id: P29-WS1
