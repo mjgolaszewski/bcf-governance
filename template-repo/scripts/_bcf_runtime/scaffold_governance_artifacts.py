@@ -31,6 +31,11 @@ from .ci_graph_post_merge import reconcile_post_merge_scope
 from .ci_graph_contracts import validate_ci_graph
 from .ci_authority_pins import projected_workflow_paths, reconcile_workflow_authority
 from .release_version_projection import reconcile_release_version_surfaces
+from .reconcile_authority_transition import (
+    ReconcileAuthorityTransitionError,
+    apply_workflow_authority_transition,
+    result_json as authority_transition_json,
+)
 from .profile_surface_generation import reconcile_makefile
 
 HOTFIX_MODES = {"lite", "full"}
@@ -517,8 +522,25 @@ def reconcile_main(argv: list[str] | None = None) -> None:
                 step.check()
             rounds = 0
         else:
+            transition = None
+            if any(step.step_id == "workflow-authority" for step in steps):
+                transition = apply_workflow_authority_transition(
+                    root,
+                    step_factory=lambda candidate: reconcile_steps(candidate, args.python),
+                    converge=converge,
+                    snapshot=_reconcile_snapshot,
+                )
+            if transition is not None:
+                print(authority_transition_json(transition))
+                return
             rounds = converge(steps, lambda: _reconcile_snapshot(root))
-    except (OSError, UnicodeError, ReconcileError, ValueError) as exc:
+    except (
+        OSError,
+        UnicodeError,
+        ReconcileError,
+        ReconcileAuthorityTransitionError,
+        ValueError,
+    ) as exc:
         raise SystemExit(f"governance-reconcile-failed: {exc}") from exc
     print(json.dumps({"status": "clean" if args.check else "converged", "rounds": rounds, "steps": [step.step_id for step in steps]}, sort_keys=True))
 

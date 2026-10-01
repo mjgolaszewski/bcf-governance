@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from pathlib import Path
+import hashlib
+import subprocess
 import sys
 
 import pytest
 import yaml
 
+from bcf_governance.tooling import reconcile_authority_transition as authority_transition
 from bcf_governance.cli import COMMANDS
 from bcf_governance.tooling.scaffold_governance_artifacts import (
     ReconcileError,
@@ -18,6 +21,93 @@ from bcf_governance.tooling.release_version_projection import (
     reconcile_release_version_surfaces,
 )
 from bcf_governance.tooling.profile_surface_generation import reconcile_makefile
+from bcf_governance.tooling.reconcile_authority_transition import (
+    ReconcileAuthorityTransitionError,
+    apply_workflow_authority_transition,
+)
+
+
+def _git(root: Path, *args: str) -> str:
+    result = subprocess.run(
+        ["git", "-C", str(root), *args],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return result.stdout.strip()
+
+
+def _authority_transition_repository(tmp_path: Path) -> Path:
+    root = tmp_path / "repo"
+    root.mkdir()
+    _git(root, "init", "--quiet", "--initial-branch=main")
+    _git(root, "config", "user.name", "BCF Test")
+    _git(root, "config", "user.email", "bcf@example.invalid")
+    (root / ".github/workflows").mkdir(parents=True)
+    (root / "governance").mkdir()
+    (root / ".github/workflows/admission.yml").write_text("name: old\n", encoding="utf-8")
+    (root / "intent").write_text("old\n", encoding="utf-8")
+    (root / "governance/ci-authority.yml").write_text(
+        yaml.safe_dump(
+            {
+                "workflow_registry": {
+                    "admission": {
+                        "active_path": ".github/workflows/admission.yml",
+                        "trusted_workflow_definition_commit": "0" * 40,
+                    }
+                }
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    _git(root, "add", "--all")
+    _git(root, "commit", "--quiet", "-m", "base")
+    _git(root, "switch", "--quiet", "-c", "fix/reconcile")
+    return root
+
+
+def _transition_snapshot(root: Path) -> str:
+    digest = hashlib.sha256()
+    for relative in sorted(
+        value
+        for value in _git(root, "ls-files", "--cached", "--others", "--exclude-standard").splitlines()
+        if value
+    ):
+        digest.update(relative.encode() + b"\0" + (root / relative).read_bytes())
+    return digest.hexdigest()
+
+
+def _transition_steps(root: Path, *, fail_authority: bool = False) -> tuple[ReconcileStep, ...]:
+    workflow = root / ".github/workflows/admission.yml"
+    authority = root / "governance/ci-authority.yml"
+
+    def project() -> None:
+        workflow.write_text(
+            f"name: {(root / 'intent').read_text(encoding='utf-8').strip()}\n",
+            encoding="utf-8",
+        )
+
+    def pin() -> None:
+        if fail_authority:
+            raise ReconcileError("injected authority failure")
+        payload = yaml.safe_load(authority.read_text(encoding="utf-8"))
+        payload["workflow_registry"]["admission"][
+            "trusted_workflow_definition_commit"
+        ] = _git(root, "rev-parse", "HEAD")
+        authority.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    def check_pin() -> None:
+        payload = yaml.safe_load(authority.read_text(encoding="utf-8"))
+        commit = payload["workflow_registry"]["admission"][
+            "trusted_workflow_definition_commit"
+        ]
+        assert _git(root, "show", f"{commit}:.github/workflows/admission.yml") == workflow.read_text().strip()
+
+    return (
+        ReconcileStep("projection", lambda: None, project),
+        ReconcileStep("workflow-authority", check_pin, pin),
+    )
 
 
 def test_reconcile_is_the_canonical_cli_surface() -> None:
@@ -274,4 +364,212 @@ def test_reconcile_rejects_non_convergence(tmp_path: Path) -> None:
             (ReconcileStep("oscillating-owner", lambda: None, oscillate),),
             lambda: state.read_text(encoding="utf-8") if state.exists() else "absent",
             max_rounds=3,
+        )
+
+
+def test_reconcile_mechanically_commits_definition_then_exact_authority(
+    tmp_path: Path,
+) -> None:
+    root = _authority_transition_repository(tmp_path)
+    base = _git(root, "rev-parse", "HEAD")
+    (root / "intent").write_text("new\n", encoding="utf-8")
+
+    result = apply_workflow_authority_transition(
+        root,
+        step_factory=_transition_steps,
+        converge=converge,
+        snapshot=_transition_snapshot,
+    )
+
+    assert result is not None
+    assert _git(root, "rev-parse", f"{result.definition_commit}^") == base
+    assert _git(root, "rev-parse", f"{result.authority_commit}^") == result.definition_commit
+    authority = yaml.safe_load(
+        (root / "governance/ci-authority.yml").read_text(encoding="utf-8")
+    )
+    assert authority["workflow_registry"]["admission"][
+        "trusted_workflow_definition_commit"
+    ] == result.definition_commit
+    assert _git(root, "status", "--porcelain") == ""
+    assert (root / ".github/workflows/admission.yml").read_text() == "name: new\n"
+
+
+def test_reconcile_mechanical_commits_do_not_require_ambient_git_identity(
+    tmp_path: Path,
+) -> None:
+    root = _authority_transition_repository(tmp_path)
+    _git(root, "config", "--unset-all", "user.name")
+    _git(root, "config", "--unset-all", "user.email")
+    (root / "intent").write_text("new\n", encoding="utf-8")
+
+    result = apply_workflow_authority_transition(
+        root,
+        step_factory=_transition_steps,
+        converge=converge,
+        snapshot=_transition_snapshot,
+    )
+
+    assert result is not None
+    for commit in (result.definition_commit, result.authority_commit):
+        assert _git(root, "show", "-s", "--format=%an <%ae>", commit) == (
+            "BCF Reconciler <bcf-reconciler@example.invalid>"
+        )
+
+
+def test_reconcile_authority_failure_leaves_original_repository_byte_exact(
+    tmp_path: Path,
+) -> None:
+    root = _authority_transition_repository(tmp_path)
+    (root / "intent").write_text("new\n", encoding="utf-8")
+    head = _git(root, "rev-parse", "HEAD")
+    snapshot = _transition_snapshot(root)
+    status = _git(root, "status", "--porcelain=v1")
+
+    with pytest.raises(ReconcileError, match="injected authority failure"):
+        apply_workflow_authority_transition(
+            root,
+            step_factory=lambda candidate: _transition_steps(
+                candidate, fail_authority=True
+            ),
+            converge=converge,
+            snapshot=_transition_snapshot,
+        )
+
+    assert _git(root, "rev-parse", "HEAD") == head
+    assert _transition_snapshot(root) == snapshot
+    assert _git(root, "status", "--porcelain=v1") == status
+
+
+def test_reconcile_rejects_ambiguous_preexisting_workflow_drift_before_mutation(
+    tmp_path: Path,
+) -> None:
+    root = _authority_transition_repository(tmp_path)
+    workflow = root / ".github/workflows/admission.yml"
+    workflow.write_text("name: hand-authored\n", encoding="utf-8")
+    snapshot = _transition_snapshot(root)
+
+    with pytest.raises(
+        ReconcileAuthorityTransitionError,
+        match="differ from both committed authority and canonical projection",
+    ):
+        apply_workflow_authority_transition(
+            root,
+            step_factory=_transition_steps,
+            converge=converge,
+            snapshot=_transition_snapshot,
+        )
+
+    assert _transition_snapshot(root) == snapshot
+    assert workflow.read_text() == "name: hand-authored\n"
+
+
+def test_reconcile_preserves_detached_candidate_identity(tmp_path: Path) -> None:
+    root = _authority_transition_repository(tmp_path)
+    _git(root, "checkout", "--quiet", "--detach")
+    (root / "intent").write_text("new\n", encoding="utf-8")
+
+    result = apply_workflow_authority_transition(
+        root,
+        step_factory=_transition_steps,
+        converge=converge,
+        snapshot=_transition_snapshot,
+    )
+
+    assert result is not None
+    assert _git(root, "rev-parse", "HEAD") == result.authority_commit
+    detached = subprocess.run(
+        ["git", "-C", str(root), "symbolic-ref", "--quiet", "HEAD"],
+        check=False,
+    )
+    assert detached.returncode == 1
+
+
+def test_reconcile_rejects_unowned_untracked_input_before_mutation(
+    tmp_path: Path,
+) -> None:
+    root = _authority_transition_repository(tmp_path)
+    secret = root / "unreviewed.txt"
+    secret.write_text("not candidate input\n", encoding="utf-8")
+
+    with pytest.raises(
+        ReconcileAuthorityTransitionError,
+        match="new candidate files to be staged or authenticated",
+    ):
+        apply_workflow_authority_transition(
+            root,
+            step_factory=_transition_steps,
+            converge=converge,
+            snapshot=_transition_snapshot,
+        )
+
+    assert secret.read_text() == "not candidate input\n"
+
+
+def test_reconcile_promotion_failure_restores_head_index_and_worktree(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    root = _authority_transition_repository(tmp_path)
+    (root / "intent").write_text("new\n", encoding="utf-8")
+    _git(root, "add", "intent")
+    head = _git(root, "rev-parse", "HEAD")
+    snapshot = _transition_snapshot(root)
+    status = _git(root, "status", "--porcelain=v1")
+    original_git = authority_transition._git
+    failed = False
+
+    def fail_after_first_promotion(
+        candidate: Path,
+        *args: str,
+        input_bytes: bytes | None = None,
+        check: bool = True,
+    ) -> subprocess.CompletedProcess[bytes]:
+        nonlocal failed
+        result = original_git(
+            candidate, *args, input_bytes=input_bytes, check=check
+        )
+        if args[:3] == ("reset", "--hard", "--quiet") and not failed:
+            failed = True
+            raise ReconcileAuthorityTransitionError("injected promotion failure")
+        return result
+
+    monkeypatch.setattr(authority_transition, "_git", fail_after_first_promotion)
+
+    with pytest.raises(
+        ReconcileAuthorityTransitionError, match="injected promotion failure"
+    ):
+        apply_workflow_authority_transition(
+            root,
+            step_factory=_transition_steps,
+            converge=converge,
+            snapshot=_transition_snapshot,
+        )
+
+    assert _git(root, "rev-parse", "HEAD") == head
+    assert _transition_snapshot(root) == snapshot
+    assert _git(root, "status", "--porcelain=v1") == status
+
+
+def test_reconcile_rejects_graph_declared_default_branch_without_remote_head(
+    tmp_path: Path,
+) -> None:
+    root = _authority_transition_repository(tmp_path)
+    (root / "governance/ci-graph.yml").write_text(
+        "default_branch: trunk\n", encoding="utf-8"
+    )
+    _git(root, "add", "governance/ci-graph.yml")
+    _git(root, "commit", "--quiet", "-m", "declare exact default branch")
+    _git(root, "branch", "-m", "trunk")
+    (root / "governance/ci-graph.yml").write_text(
+        "default_branch: other\n", encoding="utf-8"
+    )
+    (root / "intent").write_text("new\n", encoding="utf-8")
+
+    with pytest.raises(
+        ReconcileAuthorityTransitionError, match="forbidden on the default branch"
+    ):
+        apply_workflow_authority_transition(
+            root,
+            step_factory=_transition_steps,
+            converge=converge,
+            snapshot=_transition_snapshot,
         )

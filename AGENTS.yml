@@ -177,7 +177,7 @@ quality:
   mandatory_sync_rules: [update specs plans and MEMORY when behavior or environment contracts change, update observability contracts and tests together, record blockers before implementation proceeds, governance validation passes when governed artifacts change, hotfixes reconcile into canonical artifacts before closeout]
 git_scope:
   default_root: "."
-  rules: [stage explicit scopes, verify staged files before commit]
+  rules: [stage explicit scopes, verify staged files before commit, use bcf reconcile --apply as the sole owner of any required workflow-definition and authority commit pair; never hand-author or separately order workflow pins]
 references:
   canonical_product_spec: plans/product-spec.yml
   canonical_build_plan: plans/build-plan.yml
