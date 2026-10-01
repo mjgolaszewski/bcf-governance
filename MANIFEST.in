@@ -16,6 +16,7 @@ recursive-include phases *.md *.yml *.yaml *.json
 recursive-include plans *.md *.yml *.yaml *.json
 recursive-include release *.lock *.yml *.yaml *.json
 recursive-include schemas *.json
+recursive-include spec *.md *.yml *.yaml *.json
 include .gitignore AGENTS.md AGENTS.yml CHANGELOG.md CLAUDE.md LICENSE MEMORY.yml Makefile.fragment README.md
 include architecture-boundaries.yml governance-profile.yml manifest.yml requirements-governance.txt
 global-exclude __pycache__ *.py[cod]

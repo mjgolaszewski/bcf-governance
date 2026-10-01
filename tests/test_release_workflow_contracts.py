@@ -262,6 +262,17 @@ def test_release_file_selection_and_attempt_fan_in_are_controller_owned() -> Non
         "setup-python", "setup-publication-directories",
     ]
     assert release_tag in commands["publish-release"]
+    rendered_publisher = yaml.safe_load(
+        render_ci_graph(REPO_ROOT)[
+            ".github/workflows/bcf-release-publisher.yml"
+        ]
+    )
+    publish_step = next(
+        step
+        for step in rendered_publisher["jobs"]["publish"]["steps"]
+        if step.get("name") == "Publish only the authenticated pre-certified bytes"
+    )
+    assert publish_step["env"]["BCF_CONTROLLER_EXECUTION_REQUIRED"] == "true"
     assert "steps.resolve.outputs.tag" not in commands["publish-release"]
     assert (
         release_contract_path.relative_to(REPO_ROOT).as_posix(),

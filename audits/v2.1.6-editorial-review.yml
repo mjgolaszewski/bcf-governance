@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: 8a2ff7d1cf3d699c2584658a05d9f1da6c25f1cc8e202d74dbb6ab768b8c86ae
-  after_sha256: bdcddd15457124882cab944a984c9502c1ff88008ac4f21bd90d5c6b097510a4
+  after_sha256: 7217101e0a384d342f5f129034c6e0593cba468faa7c27d495001ab91a4abbae
   findings:
   - collapsed the unpublished 2.0 candidate and 2.1 repair chronology into the released 2.1 product contract
   disposition: historical
@@ -87,16 +87,16 @@ documents:
   canonical_topic_owner: docs/CI_AUTHORITY.md
   topic_role: canonical
   before_sha256: ef37eb672f938d090df8d743d36a454ec7f5bc4d82df7d831a84e42114acc629
-  after_sha256: ef37eb672f938d090df8d743d36a454ec7f5bc4d82df7d831a84e42114acc629
+  after_sha256: 043f3c5bdd0cb6760b7b9a4bf1e714e65c55a58c229393f1fe46444af4a637c9
   findings:
-  - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  - documented claim-selective provider authority, governance-only production, and optional controller custody
+  disposition: revised
 - path: docs/MAINTAINING.md
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/MAINTAINING.md
   topic_role: canonical
   before_sha256: 000f17be4b1f34c467018aaa5e93c487574293e4f0709be0dc50e28fed0b4201
-  after_sha256: f896faf3b2811cf957fef8cf9b22adb03e90438e87a14534b780fb2e565ccb4e
+  after_sha256: 850fbe7a83dd2238dfa0ba39a34304fdd6190512595b949dac9eb375da5a342f
   findings:
   - removed superseded controller runbooks and retained only routine transition and dormant self-recovery boundaries
   disposition: revised
@@ -136,6 +136,15 @@ documents:
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: retained
+- path: spec/RELEASE_TRAIN_STATE_DAG.md
+  audience: BCF evaluators and adopters
+  canonical_topic_owner: spec/RELEASE_TRAIN_STATE_DAG.md
+  topic_role: canonical
+  before_sha256: null
+  after_sha256: 55661a3ea1f6ca81695000cd2591616645b313d9b2b29f2516a5cba0d5766a18
+  findings:
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: revised
 - path: template-repo/AGENTS.md
   audience: repository agents
   canonical_topic_owner: template-repo/AGENTS.yml

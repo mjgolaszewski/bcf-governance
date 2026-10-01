@@ -6,6 +6,15 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Made the trusted immutable publisher create and reauthenticate the exact
+  annotated release tag after receipt and attestation validation, eliminating
+  the ungoverned pre-dispatch tag step; generated commands now preserve
+  canonical required-environment literals instead of replacing them with an
+  empty ambient lookup, and newly tracked source roots must be selected by the
+  source-distribution manifest before semantic evidence fan-out.
+
 ## [2.1.6] - 2026-09-30
 
 ### Fixed

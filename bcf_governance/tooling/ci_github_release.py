@@ -42,6 +42,7 @@ from .release_source_bindings import (
     release_source_bindings,
     verify_release_source_bindings,
 )
+from .release_tag_publication import ensure_release_tag
 from .evaluation_scope import is_terminal_phase_certification
 
 def _now() -> str:
@@ -753,24 +754,10 @@ def publish_release(
     immutable = api.immutable_releases(repository)
     if immutable.get("enabled") is not True:
         raise GitHubControllerError("immutable releases must be enabled before publication")
-    reference = api.reference(repository, f"tags/{tag}")
-    target = reference.get("object")
-    if not isinstance(target, dict) or target.get("type") != "tag":
-        raise GitHubControllerError("release publication requires an annotated tag")
-    tag_object = api.tag_object(repository, str(target.get("sha")))
-    tag_target = tag_object.get("object")
-    tag_verification = tag_object.get("verification")
-    if tag_object.get("tag") != tag or not isinstance(tag_target, dict) or (
-        tag_target.get("type") != "commit" or tag_target.get("sha") != expected_commit
-    ):
-        raise GitHubControllerError("release publication tag does not match certified commit")
-    if not isinstance(tag_verification, dict) or tag_verification.get("verified") is not False or (
-        tag_verification.get("reason") != "unsigned"
-    ):
-        raise GitHubControllerError("release publication requires the annotated unsigned tag policy")
     expected_assets = exact_assets(paths)
     attestation_error = "release assets must be attested before provider mutation"
     _require_attestations(api, repository, expected_assets.values(), attestation_error)
+    ensure_release_tag(api, repository=repository, tag=tag, commit_sha=expected_commit)
     draft = api.create_draft_release(repository, tag=tag, name=tag, body=body)
     release_id = draft.get("id")
     upload_url = str(draft.get("upload_url", ""))

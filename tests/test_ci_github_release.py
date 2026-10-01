@@ -1337,11 +1337,28 @@ class _ReleaseAPI:
             "assets": [{"name": "asset.whl", "digest": f"sha256:{'d' * 64}"}],
         }
         self.attested = True
+        self.mutations: list[str] = []
+
+    @staticmethod
+    def _repository(repository: str) -> str:
+        return repository
 
     def immutable_releases(self, repository: str):
         return self.immutable
 
     def reference(self, repository: str, ref: str):
+        return self.ref
+
+    def _request(self, method: str, path: str, *, payload=None, not_found_none=False):
+        if method == "GET":
+            return self.ref
+        if path.endswith("/git/tags"):
+            self.mutations.append("annotated-tag")
+            self.tag["tag"] = payload["tag"]
+            self.tag["object"] = {"type": "commit", "sha": payload["object"]}
+            return {"sha": "c" * 40, **self.tag}
+        self.mutations.append("tag-reference")
+        self.ref = {"object": {"type": "tag", "sha": payload["sha"]}}
         return self.ref
 
     def tag_object(self, repository: str, sha: str):
@@ -1375,6 +1392,89 @@ def test_release_publication_checks_attestations_before_provider_mutation(
             body="notes",
         )
     assert provider_mutations == []
+    assert api.mutations == []
+
+
+def test_release_publication_mechanically_creates_absent_exact_annotated_tag(
+    tmp_path: Path,
+) -> None:
+    values = _release_inputs(tmp_path)
+    api = _ReleaseAPI()
+    api.ref = None  # type: ignore[assignment]
+    api.create_draft_release = lambda *args, **kwargs: {  # type: ignore[attr-defined]
+        "id": 70,
+        "draft": True,
+        "upload_url": "https://uploads.github.com/repos/owner/repo/releases/70/assets{?name,label}",
+    }
+    api.upload_release_asset = lambda **kwargs: {  # type: ignore[attr-defined]
+        "digest": f"sha256:{values['assets'][kwargs['name']]}"
+    }
+    api.publish_release = lambda *args, **kwargs: {"draft": False}  # type: ignore[attr-defined]
+    api.release["assets"] = [
+        {"name": name, "digest": f"sha256:{digest}"}
+        for name, digest in values["assets"].items()
+    ]
+
+    result = publish_release(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        tag="v0.7.1",
+        expected_commit=COMMIT,
+        release_artifacts=values["artifacts"],  # type: ignore[arg-type]
+        body="notes",
+    )
+
+    assert api.mutations == ["annotated-tag", "tag-reference"]
+    assert result["status"] == "verified"
+
+
+def test_release_publication_rejects_wrong_existing_tag_without_mutation(
+    tmp_path: Path,
+) -> None:
+    values = _release_inputs(tmp_path)
+    api = _ReleaseAPI()
+    api.tag["object"] = {"type": "commit", "sha": "e" * 40}
+    with pytest.raises(GitHubControllerError, match="does not match certified commit"):
+        publish_release(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            tag="v0.7.1",
+            expected_commit=COMMIT,
+            release_artifacts=values["artifacts"],  # type: ignore[arg-type]
+            body="notes",
+        )
+    assert api.mutations == []
+
+
+@pytest.mark.parametrize(
+    ("mutation", "diagnostic"),
+    [
+        ("lightweight", "annotated tag"),
+        ("signed", "unsigned tag policy"),
+        ("wrong-name", "does not match certified commit"),
+    ],
+)
+def test_release_publication_rejects_conflicting_existing_tag_states(
+    tmp_path: Path, mutation: str, diagnostic: str
+) -> None:
+    values = _release_inputs(tmp_path)
+    api = _ReleaseAPI()
+    if mutation == "lightweight":
+        api.ref["object"] = {"type": "commit", "sha": COMMIT}
+    elif mutation == "signed":
+        api.tag["verification"] = {"verified": True, "reason": "valid"}
+    else:
+        api.tag["tag"] = "v0.7.2"
+    with pytest.raises(GitHubControllerError, match=diagnostic):
+        publish_release(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            tag="v0.7.1",
+            expected_commit=COMMIT,
+            release_artifacts=values["artifacts"],  # type: ignore[arg-type]
+            body="notes",
+        )
+    assert api.mutations == []
 
 
 def test_release_inspection_accepts_only_exact_immutable_attested_provider_state() -> None:
