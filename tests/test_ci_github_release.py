@@ -1392,6 +1392,7 @@ def test_release_publication_checks_attestations_before_provider_mutation(
             body="notes",
         )
     assert provider_mutations == []
+    assert api.mutations == []
 
 
 def test_release_publication_mechanically_creates_absent_exact_annotated_tag(
@@ -1434,6 +1435,37 @@ def test_release_publication_rejects_wrong_existing_tag_without_mutation(
     api = _ReleaseAPI()
     api.tag["object"] = {"type": "commit", "sha": "e" * 40}
     with pytest.raises(GitHubControllerError, match="does not match certified commit"):
+        publish_release(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            tag="v0.7.1",
+            expected_commit=COMMIT,
+            release_artifacts=values["artifacts"],  # type: ignore[arg-type]
+            body="notes",
+        )
+    assert api.mutations == []
+
+
+@pytest.mark.parametrize(
+    ("mutation", "diagnostic"),
+    [
+        ("lightweight", "annotated tag"),
+        ("signed", "unsigned tag policy"),
+        ("wrong-name", "does not match certified commit"),
+    ],
+)
+def test_release_publication_rejects_conflicting_existing_tag_states(
+    tmp_path: Path, mutation: str, diagnostic: str
+) -> None:
+    values = _release_inputs(tmp_path)
+    api = _ReleaseAPI()
+    if mutation == "lightweight":
+        api.ref["object"] = {"type": "commit", "sha": COMMIT}
+    elif mutation == "signed":
+        api.tag["verification"] = {"verified": True, "reason": "valid"}
+    else:
+        api.tag["tag"] = "v0.7.2"
+    with pytest.raises(GitHubControllerError, match=diagnostic):
         publish_release(
             api,  # type: ignore[arg-type]
             repository="owner/repo",
