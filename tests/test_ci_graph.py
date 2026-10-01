@@ -247,9 +247,28 @@ def test_reconcile_replaces_stale_adopter_closure_with_pr_progress(
     (tmp_path / "governance").mkdir()
     (tmp_path / "plans").mkdir()
     (tmp_path / "phases").mkdir()
-    (tmp_path / "governance/ci-graph.yml").write_bytes(
-        (REPO_ROOT / "governance/ci-graph.yml").read_bytes()
+    stale_graph = yaml.safe_load(
+        (REPO_ROOT / "governance/ci-graph.yml").read_text(encoding="utf-8")
     )
+    exact = next(item for item in stale_graph["workflows"] if item["id"] == "exact-main")
+    admission = next(
+        item for item in exact["jobs"]
+        if item["semantic_role"] == "exact-main-admission"
+    )
+    producer = next(
+        item for item in exact["jobs"]
+        if item["semantic_role"] == "exact-main-governance-producer"
+    )
+    admission["executor"]["evaluation_mode"] = "closure"
+    admission["executor"].pop("evaluation_target", None)
+    producer["executor"]["inputs"]["evaluation_mode"] = "closure"
+    producer["executor"]["inputs"].pop("evaluation_target", None)
+    argv = stale_graph["commands"]["exact-main-admit-effective"]["argv"]
+    argv[argv.index("--evaluation-mode") + 1] = "closure"
+    if "--evaluation-target" in argv:
+        target_index = argv.index("--evaluation-target")
+        del argv[target_index : target_index + 2]
+    (tmp_path / "governance/ci-graph.yml").write_bytes(render_yaml(stale_graph))
     (tmp_path / "plans/phase-ledger.yml").write_text(
         yaml.safe_dump(
             {
@@ -1832,6 +1851,11 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
             )
         else:
             assert all(item["status"] == "DONE" for item in workitems)
+    elif evaluation_mode == "pr":
+        assert evaluation_target is None
+        assert any(
+            item["status"] in {"IN_PROGRESS", "BLOCKED"} for item in workitems
+        )
     else:
         assert evaluation_mode == "closure"
         assert evaluation_target is None

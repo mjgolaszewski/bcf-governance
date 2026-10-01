@@ -1022,7 +1022,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/required_artifacts.py": {
       "operation": "copy",
-      "sha256": "d0d76400342a5766ecb324d0a9fc419c64d7632d63618425104498c234c231f3"
+      "sha256": "c8ebcd98db61c90678cb2dc086e7eae88bdcb8a80dfd724cbf6c218477801afd"
     },
     "scripts/_bcf_runtime/governance_validation/runner.py": {
       "operation": "copy",

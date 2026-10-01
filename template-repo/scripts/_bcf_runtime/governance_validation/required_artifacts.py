@@ -124,7 +124,8 @@ def _validate_changelog_workflow_contract(repo_root: Path) -> None:
         workflow.get("env"), context=".github/workflows/governance.yml env"
     )
     events = _require_mapping(
-        workflow.get("on"), context=".github/workflows/governance.yml on"
+        workflow.get("on", workflow.get(True)),
+        context=".github/workflows/governance.yml on",
     )
     direct_push = "push" in events
     expected = {
