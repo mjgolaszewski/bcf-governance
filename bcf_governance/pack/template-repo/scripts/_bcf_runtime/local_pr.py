@@ -42,7 +42,7 @@ from .evidence_workitem_lifecycle import (
 )
 from .governance_evidence import capture_gate
 from .governance_truth import TruthfulnessError, derive_truth
-from .preflight import PreflightError, run_preflight
+from .preflight import PreflightError, preflight_mode_for_evaluation, run_preflight
 from .ci_authority_prospective_telemetry import (
     ProspectiveTelemetryError,
     elapsed_ms as _elapsed_ms,
@@ -52,6 +52,7 @@ from .ci_github_api import GitHubAPI
 from .routine_controller_provider import effective_controller_authority
 from .trusted_controller_compatibility import classify_trusted_controller_applicability
 from .routine_controller_rotation import alternate_policy_lane_contract
+from .repository_comparison_context import local_push_environment
 from .scaffold_governance_artifacts import ReconcileError, reconcile_steps
 
 
@@ -177,6 +178,8 @@ def _pr_environment_values(
     context: LocalPRContext, *, event_path: str | None = None
 ) -> dict[str, str]:
     values = {
+        "BCF_PROVIDER_EVENT": "pull_request",
+        "BCF_COMPARISON_BASE_SHA": context.base_sha,
         "BCF_ENFORCE_PR_CHANGELOG": "true",
         "BCF_PR_BASE_SHA": context.base_sha,
         "GITHUB_BASE_REF": context.default_branch,
@@ -468,6 +471,25 @@ def _run_prospective_train(
                 raise ProspectiveValidationError(str(exc)) from exc
         if preflight.get("status") != "pass":
             raise ProspectiveValidationError("canonical PR preflight did not pass")
+        try:
+            with local_push_environment(
+                base_sha=context.base_sha, head_sha=context.head_sha
+            ):
+                post_merge_preflight = run_preflight(
+                    root,
+                    mode=preflight_mode_for_evaluation(post_merge_mode),
+                    python_executable=python_executable,
+                    evaluation_mode=post_merge_mode,
+                    evaluation_target=post_merge_target,
+                )
+        except (PreflightError, EvidenceError, ValueError) as exc:
+            raise ProspectiveValidationError(
+                f"canonical direct-push preflight rejected the candidate: {exc}"
+            ) from exc
+        if post_merge_preflight.get("status") != "pass":
+            raise ProspectiveValidationError(
+                "canonical direct-push preflight did not pass"
+            )
         measurements.extend(
             [
                 {"stage": "planning", "status": "observed", "duration_ms": preflight_duration},

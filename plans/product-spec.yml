@@ -12,4 +12,5 @@ architecture: {backend: python_package_with_private_portable_runtime, frontend: 
 phase_history: {path: plans/phase-history.yml, through_phase: P27}
 execution_phases:
 - {phase_id: P28, build_block: canonical-projection-parity-certification-2.1.0, objective: 'project BCF 2.1 canonically, prove self-adopter parity, measure performance, and publish immutable 2.1.0', release_train: release_16}
+- {phase_id: P29, build_block: deterministic-ci-context-and-low-risk-operations-2.1.7, objective: 'repair direct-main event context and deliver deterministic low-risk CI operations for BCF 2.1.7', release_train: release_23}
 acceptance: {release_gate: bcf truth, evidence_location: phases/}

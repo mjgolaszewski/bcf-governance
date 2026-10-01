@@ -8,6 +8,12 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Separated provider-event comparison context from lifecycle evaluation intent,
+  so direct protected-main progress uses its authenticated push predecessor
+  rather than a pull-request-only base; the same release train adds
+  deterministic selective reconciliation, bounded read-only provider retries,
+  derived lifecycle projections, and explicitly non-authoritative progress and
+  latency observations.
 - Made the trusted immutable publisher create and reauthenticate the exact
   annotated release tag after receipt and attestation validation, eliminating
   the ungoverned pre-dispatch tag step; generated commands now preserve

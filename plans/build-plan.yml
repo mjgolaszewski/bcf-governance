@@ -27,3 +27,10 @@ phase_sequence:
   tightly_scoped_deliverables: [normal install and adopt projection of P26 and P27 semantics, typed narrow self-authority overlays with enforced non-leakage, representative adopter parity and adversarial proof, empirical benchmarks product-simplicity inventory and final SLO, immutable 2.1.0 publication custody and certified closeout]
   parallelizable_workstreams: [canonical installation and adoption projection, typed self-authority overlays, self-adopter parity and attacks, empirical benchmarks and product-simplicity inventory, immutable release certification and custody closeout]
   verification_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests]
+- phase_id: P29
+  build_block: deterministic-ci-context-and-low-risk-operations-2.1.7
+  objective: repair direct-main event context and deliver deterministic low-risk CI operations for BCF 2.1.7
+  hard_dependencies: [P28]
+  tightly_scoped_deliverables: [complete CI state and downstream permutation matrix, event-aware direct-main comparison context, deterministic selective reconciliation, bounded GET-only provider resilience, derived lifecycle projections, non-authoritative progress amplification and scheduling telemetry, immutable 2.1.7 custody]
+  parallelizable_workstreams: [state matrix and direct-main repair, deterministic reconciliation and provider reads, observability and derived lifecycle projections, adopter parity release certification and custody]
+  verification_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests]

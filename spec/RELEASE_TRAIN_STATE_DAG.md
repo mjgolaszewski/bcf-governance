@@ -34,6 +34,12 @@ provider evidence.
 10. Terminal cleanup retires only state and credentials owned by the exact
     execution. No wildcard cleanup, implicit persistence, or global pruning is
     permitted.
+11. Evaluation proposition and provider event are independent typed facts.
+    `pr` means progress semantics; it does not imply that the provider event is
+    a pull request or that pull-request-only fields exist.
+12. Optimization and observability are non-authoritative. A skipped projection
+    has an exact content proof, a retry preserves immutable request identity,
+    and progress or cost telemetry cannot satisfy an assurance proposition.
 
 ## State matrix
 
@@ -56,6 +62,71 @@ provider evidence.
 | Published custody | immutable non-draft release, exact tag/assets/digests/attestations | credential retirement and adopter qualification | mutable/draft release, missing asset, retained credential |
 | Qualified release | immutable custody plus adopter same-byte reports | phase/release closeout | unpublished package, different bytes, simulated adopter authority |
 
+## Provider-event and evaluation matrix
+
+The provider event owns comparison context. The lifecycle owns the proposition.
+Neither may infer or rewrite the other.
+
+| Provider event | Evaluation proposition | Exact comparison base | Changelog enforcement | Required result |
+| --- | --- | --- | --- | --- |
+| `pull_request` | `pr` | authenticated PR base SHA | required | candidate progress proof |
+| `pull_request` | `workitem:<id>` | authenticated PR base SHA | required | bounded candidate proof only |
+| `pull_request` | `closure` | authenticated PR base SHA | required | candidate terminal-closure proof |
+| protected `push` | `pr` | authenticated event `before` SHA | inapplicable: `direct_push`, exact event/policy bound | merged-main progress proof |
+| protected `push` | `workitem:<id>` | authenticated event `before` SHA | inapplicable: `direct_push`, exact event/policy bound | bounded merged-main proof |
+| protected `push` | `closure` | authenticated event `before` SHA | inapplicable: `direct_push`, exact event/policy bound | merged-main terminal proof |
+| `workflow_call` | any declared proposition | explicit caller-supplied exact base SHA | caller contract, never inferred | proof for the declared proposition |
+
+For every row, base and head must be exact commits in the checked-out history,
+base must be an ancestor of head, and event provenance must match the selected
+source. Missing, zero, unresolved, moved, or event-mismatched identity fails in
+cheap preflight. A direct push with `pr` semantics therefore never reads
+`pull_request.base.sha`.
+
+## Deterministic operational-state matrix
+
+| Facility state | Canonical inputs | Mechanical transition | Fail-closed condition | Authority |
+| --- | --- | --- | --- | --- |
+| Reconcile stage dirty | owner version plus exact declared input/output digests | execute stage and record output digest/duration | undeclared input, missing output, or non-convergence | none |
+| Reconcile stage clean | matching owner/input/output digests | verify and skip execution | output drift or stale owner token | none |
+| Reconcile complete | ordered stage ledger plus convergence token | emit byte-identical projection | forced recomputation differs | none |
+| Provider GET pending | immutable method/URL/repository/request identity | issue attempt | non-GET or mutable request | none |
+| Provider GET transient | 429/502/503/504, reset, or timeout | bounded backoff and retry same request | attempts exhausted or invalid `Retry-After` | none |
+| Provider GET terminal | authenticated exact bytes and response metadata | digest/size/identity validation | 401/403/404, schema, digest, identity, or redirect violation | none until consumer authenticates |
+| Prospective stage running | execution identity, declared stage ID, monotonic sequence/time | emit `authority:false` progress | unknown stage or execution | none |
+| Prospective stage terminal | complete/fail plus terminal train result | render observation | progress used as proof | none |
+| Planning projection current | lifecycle-derived current/predecessor/successor/history | consume projection | authored copy contradicts derivation | lifecycle only |
+| Amplification observation | exact train/subject/provider identities and typed counters | closeout analysis | missing/double-counted event | none |
+| Provider scheduling observation | created/queued/assigned/started/completed timestamps and labels | latency decomposition | absent timestamp represented as a value other than `unknown` | none |
+
+### Reconciliation dependency contract
+
+Each reconcile stage declares its canonical owner token, complete input paths or
+upstream stage tokens, and owned output paths. A stage is skippable only when
+all three exact digests match a prior ledger for the same repository subject.
+The orchestrator, never an agent, derives the dirty set and ordered execution.
+Forced recomputation is the equivalence oracle. The final convergence token
+binds the ordered stage ledger and resulting repository snapshot.
+
+### Provider-read retry contract
+
+Only the canonical read-only transport may retry, and only an exact `GET` for
+429, 502, 503, 504, connection reset, or timeout. Attempts use one bounded
+schedule and a bounded valid `Retry-After`; redirects remain credential-safe.
+Authentication, authorization, absence, schema, size, digest, repository,
+installation, subject, run, attempt, and artifact mismatches are terminal.
+Mutation clients do not consume this primitive.
+
+### Observation contract
+
+Prospective progress, governance amplification, and provider queue timing bind
+one execution identity and carry `authority:false`. Truth, finalization,
+publication, protection, and controller decisions ignore these observations.
+Missing provider timestamps are `unknown`; queued time is provider scheduling,
+not product or BCF execution. Lifecycle projections are different: they are
+deterministically derived contract state and contradictory authored copies fail
+in structural preflight.
+
 ## Construction tree
 
 ### Invariants to primitives
@@ -67,9 +138,16 @@ provider evidence.
   - evaluation scope, target, and proposition
 - Deterministic derivation
   - fixed-point reconciler
+  - stage owner/input/output digests and ordered convergence ledger
   - CI graph compiler and renderer
   - manifest, lock, mirror, and editorial generators
-  - provider-state resolver
+  - typed provider-event comparison-context resolver
+  - read-only provider transport with closed retry taxonomy
+  - lifecycle-derived planning/history projector
+- Non-authoritative observation
+  - prospective stage-event stream
+  - governance-amplification counters
+  - provider scheduling latency decomposition
 - Authority separation
   - candidate producer
   - trusted finalizer
@@ -100,6 +178,12 @@ provider evidence.
   producer identities, and provider artifact coordinates.
 - the fixed-point contract owns all generated consequences and rejects
   non-convergence or hand-maintained drift.
+- the provider-event contract owns comparison-base provenance independently of
+  lifecycle evaluation scope.
+- the read-only transport contract owns bounded transient retry; consumers own
+  final schema, digest, and identity authentication.
+- observation schemas explicitly deny authority and cannot be dependencies of
+  truth, finalization, publication, or protection.
 
 ### Contracts to producers
 
@@ -117,6 +201,10 @@ provider evidence.
    release receipt.
 10. Trusted publisher authenticates receipt, assets, attestations, tag state,
     and its own role before the first provider mutation.
+11. The prospective orchestrator emits non-authoritative progress and one
+    deterministic reconcile-stage ledger without delegating stage selection.
+12. Read-only provider adapters emit bounded attempt and queue observations;
+    they return data only after transport invariants hold.
 
 ### Producers to consumers
 
@@ -132,6 +220,24 @@ provider evidence.
   artifact identity.
 - Immutable release custody is consumed by installer/upgrade verification and
   adopter qualification; a local wheel path is not release custody.
+- Reconcile stage ledgers are consumed by the reconciler and performance
+  reporting only; agents cannot use them to select or waive stages.
+- Progress, amplification, and scheduling records are consumed by observers and
+  closeout analysis only.
+
+## Changed-contract downstream permutation table
+
+Every change in this phase must mark each row canonical-change, generated,
+test-only, or inspected-no-impact before provider execution.
+
+| Contract | Preflight | Controller compatibility | PR evidence/certification | Merge/direct main | Exact-main/truth | Finalizer/publisher | Successor/release | Lite / Standard v3 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Event comparison context | canonical change | inspected-no-impact | exact PR base | exact push/caller base | exact subject/base | inspected-no-impact | inspected-no-impact | generated parity |
+| Reconcile dirty set | structural check | exact runtime token | clean fixed point | clean generated bytes | clean generated bytes | inspected-no-impact | release byte parity | installed parity |
+| Provider GET retry | inspected-no-impact | exact artifact read | exact provider reads | exact provider reads | artifact reads | exact same request identity | custody reads | installed runtime parity |
+| Progress stream | display only | ignored | ignored by authority | display only | ignored by truth | ignored | ignored | schema parity |
+| Derived planning/history | first-stage structural | lifecycle input only | exact lifecycle projection | successor selection | scoped target | scope preserved | release closure rejects stale state | installed parity |
+| Amplification/queue metrics | display only | display only | observation only | observation only | observation only | observation only | closeout only | schema parity |
 
 ## Canonical DAG
 

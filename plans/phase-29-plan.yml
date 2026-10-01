@@ -1,0 +1,52 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 29 Plan
+  id: project-phase-29-plan
+  version: 1.0.0
+  generated_at_utc: '2026-10-01T00:00:00Z'
+  status: active
+  path: plans/phase-29-plan.yml
+phase:
+  id: P29
+  build_block: deterministic-ci-context-and-low-risk-operations-2.1.7
+  planner: codex
+  date: '2026-10-01'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - persist the complete provider-event evaluation-proposition and downstream consumer
+    state matrix
+  - repair direct protected-main comparison context and prospective event-parity validation
+  - optimize deterministic reconciliation and add bounded provider-read resilience
+  - add non-authoritative progress planning history amplification and provider scheduling
+    observations
+  - prove self Lite and Standard v3 parity and publish immutable 2.1.7 custody
+  parallelizable_workstreams:
+  - id: P29-WS1
+    name: state matrix and direct-main repair
+  - id: P29-WS2
+    name: deterministic reconciliation and provider reads
+  - id: P29-WS3
+    name: observability and derived lifecycle projections
+  - id: P29-WS4
+    name: adopter parity release certification and custody
+  hard_dependencies:
+  - P28
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: keep the phase narrowly scoped to declared deliverables and update canonical
+    governed artifacts in the same change
+- order: 2
+  statement: evaluation proposition and provider event remain separate typed facts and every event proposition permutation receives exact comparison context
+- order: 3
+  statement: optimization and observation cannot confer authority skip assurance or delegate stage selection to an agent
+verification_plan:
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest -q tests

@@ -182,6 +182,12 @@ def _apply_legacy_direct_post_merge_scope(graph: dict[str, Any]) -> None:
     workflow = graph["workflows"][0]
     call = next(event for event in workflow["events"] if event["type"] == "workflow_call")
     call["inputs"] = {
+        "comparison_base_sha": {
+            "description": "Exact repository comparison base for explicit calls",
+            "required": False,
+            "default": "",
+            "type": "string",
+        },
         "evaluation_mode": {
             "description": "Exact truth evaluation mode",
             "required": False,
@@ -351,6 +357,7 @@ def _apply_v3_proof_composition(graph: dict[str, Any], gates: list[str]) -> None
         {
             "type": "workflow_call",
             "inputs": {
+                "comparison_base_sha": {"description": "Exact repository comparison base for explicit calls", "required": False, "default": "", "type": "string"},
                 "evaluation_mode": {"description": "Exact truth evaluation mode", "required": False, "default": "pr", "type": "string"},
                 "evaluation_target": {"description": "Exact bounded target", "required": False, "default": "", "type": "string"},
                 "use_prior_evidence": {"description": "Consume exact caller-bound prior evidence", "required": False, "default": False, "type": "boolean"},

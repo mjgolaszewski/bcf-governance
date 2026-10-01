@@ -19,6 +19,10 @@ from .ci_graph_artifact_steps import (
 from .ci_graph_contracts import CompiledCIGraph, validate_ci_graph
 from .ci_graph_controller_lifecycle import controller_requirement_condition
 from .ci_graph_execution import job_required_environment, job_requires_full_history
+from .repository_comparison_context import (
+    PULL_REQUEST_BASE_EXPRESSION,
+    direct_comparison_environment,
+)
 from .ci_graph_reusable_artifacts import reusable_artifact_binding
 from .ci_graph_routing import render_runner
 from .ci_graph_yaml import render_yaml
@@ -679,9 +683,15 @@ def _job(
 def _workflow(compiled: CompiledCIGraph, workflow: dict[str, Any]) -> bytes:
     workflow_environment = copy.deepcopy(workflow["environment"])
     if any(event["type"] == "pull_request" for event in workflow["events"]):
+        event_types = {event["type"] for event in workflow["events"]}
+        comparison_environment = (
+            direct_comparison_environment()
+            if {"pull_request", "push", "workflow_call"}.issubset(event_types)
+            else {"BCF_PR_BASE_SHA": PULL_REQUEST_BASE_EXPRESSION}
+        )
         workflow_environment = {
             "BCF_ENFORCE_PR_CHANGELOG": "${{ github.event_name == 'pull_request' }}",
-            "BCF_PR_BASE_SHA": "${{ github.event.pull_request.base.sha }}",
+            **comparison_environment,
             **workflow_environment,
         }
     payload: dict[str, Any] = {

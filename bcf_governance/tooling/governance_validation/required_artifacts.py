@@ -6,6 +6,10 @@ from __future__ import annotations
 import subprocess
 
 from ..release_versions import ReleaseVersionError, parse_release_version
+from ..repository_comparison_context import (
+    PULL_REQUEST_BASE_EXPRESSION,
+    direct_comparison_environment,
+)
 from .common import *  # noqa: F403,F405
 
 
@@ -119,9 +123,19 @@ def _validate_changelog_workflow_contract(repo_root: Path) -> None:
     environment = _require_mapping(
         workflow.get("env"), context=".github/workflows/governance.yml env"
     )
+    events = _require_mapping(
+        workflow.get("on"), context=".github/workflows/governance.yml on"
+    )
+    direct_push = "push" in events
     expected = {
         "BCF_ENFORCE_PR_CHANGELOG": "${{ github.event_name == 'pull_request' }}",
-        "BCF_PR_BASE_SHA": "${{ github.event.pull_request.base.sha }}",
+        **(
+            direct_comparison_environment(
+                explicit_call="workflow_call" in events
+            )
+            if direct_push
+            else {"BCF_PR_BASE_SHA": PULL_REQUEST_BASE_EXPRESSION}
+        ),
     }
     if any(environment.get(name) != value for name, value in expected.items()):
         raise GovernanceValidationError(

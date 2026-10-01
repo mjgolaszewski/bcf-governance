@@ -44,7 +44,6 @@ _DIRECT_POST_MERGE_TARGET = re.compile(
     r"\(github\.event_name == 'push' && '([^']+)' \|\| ''\) \}\}$"
 )
 
-
 def direct_post_merge_mode(mode: str) -> str:
     """Render one event-safe direct-push evaluation intent."""
 

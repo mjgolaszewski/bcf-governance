@@ -28,6 +28,11 @@ from bcf_governance.tooling.ci_graph_execution import (
     resolve_local_job_environment,
     workflow_input_issues,
 )
+from bcf_governance.tooling.repository_comparison_context import (
+    DIRECT_COMPARISON_BASE_EXPRESSION,
+    PROVIDER_EVENT_EXPRESSION,
+    direct_comparison_environment,
+)
 from bcf_governance.tooling.ci_graph_post_merge import (
     authored_post_merge_scope,
     post_merge_evaluation,
@@ -308,6 +313,32 @@ def test_v3_lite_starts_with_typed_direct_pr_progress() -> None:
     ] == direct_post_merge_mode("pr")
     workflow = next(item for item in graph["workflows"] if item["id"] == "governance")
     assert workflow_input_issues(graph, workflow) == ()
+
+
+def test_direct_workflow_declares_event_owned_comparison_context() -> None:
+    graph = build_reference_ci_graph(
+        project_id="direct-adopter",
+        profile="lite",
+        profile_contract_version="3.0",
+        gates=["governance-validate"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    assert direct_comparison_environment() == {
+        "BCF_PROVIDER_EVENT": PROVIDER_EVENT_EXPRESSION,
+        "BCF_COMPARISON_BASE_SHA": DIRECT_COMPARISON_BASE_EXPRESSION,
+        "BCF_PR_BASE_SHA": "${{ github.event.pull_request.base.sha }}",
+    }
+    workflow = next(item for item in graph["workflows"] if item["id"] == "governance")
+    call = next(item for item in workflow["events"] if item["type"] == "workflow_call")
+    assert call["inputs"]["comparison_base_sha"] == {
+        "description": "Exact repository comparison base for explicit calls",
+        "required": False,
+        "default": "",
+        "type": "string",
+    }
 
 
 def test_reference_exact_main_evaluation_uses_unique_semantic_roles() -> None:
