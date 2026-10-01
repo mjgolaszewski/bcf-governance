@@ -82,6 +82,56 @@ def test_repository_context_rejects_event_mismatch(
         pr_context(repo, "pr")
 
 
+def test_candidate_preflight_rejects_pull_request_target(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _committed_repo(tmp_path, "source.py", "VALUE = 1\n")
+    base = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, text=True,
+        capture_output=True, check=True,
+    ).stdout.strip()
+    monkeypatch.setenv("BCF_PROVIDER_EVENT", "pull_request_target")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request_target")
+    monkeypatch.setenv("BCF_COMPARISON_BASE_SHA", base)
+    monkeypatch.setenv("BCF_PR_BASE_SHA", base)
+
+    with pytest.raises(ValueError, match="event is not supported"):
+        pr_context(repo, "pr")
+
+
+def test_workflow_call_comparison_base_is_explicit_exact_and_available(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _committed_repo(tmp_path, "source.py", "VALUE = 1\n")
+    base = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, text=True,
+        capture_output=True, check=True,
+    ).stdout.strip()
+    monkeypatch.setenv("BCF_PROVIDER_EVENT", "workflow_call")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "workflow_call")
+    monkeypatch.setenv("BCF_COMPARISON_BASE_SHA", base)
+
+    assert pr_context(repo, "pr") == {
+        "applicable": True,
+        "event": "workflow_call",
+        "base_sha": base,
+        "provenance": "workflow_call.input",
+    }
+
+
+@pytest.mark.parametrize("base", ["", " ", "0" * 40, "f" * 40])
+def test_workflow_call_rejects_nonexact_comparison_base(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, base: str
+) -> None:
+    repo = _committed_repo(tmp_path, "source.py", "VALUE = 1\n")
+    monkeypatch.setenv("BCF_PROVIDER_EVENT", "workflow_call")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "workflow_call")
+    monkeypatch.setenv("BCF_COMPARISON_BASE_SHA", base)
+
+    with pytest.raises(ValueError, match="comparison base"):
+        pr_context(repo, "pr")
+
+
 def test_syntax_preflight_rejects_duplicate_yaml_keys(tmp_path: Path) -> None:
     repo = _committed_repo(tmp_path, "duplicate.yml", "owner: first\nowner: second\n")
 

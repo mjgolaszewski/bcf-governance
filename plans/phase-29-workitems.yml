@@ -18,6 +18,7 @@ workitems:
   - prospective execution exercises the exact direct-push preflight and rejects missing moved unresolved or stranded lifecycle context before evidence fan-out
   - workflow expressions never enter shell source and typed evaluation inputs reach preflight and truth only through validated environment data
   - adversarial workflow-call evaluation input cannot alter argv execute shell text or change the canonical proposition
+  - candidate governance rejects privileged pull-request-target context reserved environment collisions and expression-fed interpreter source sinks before execution
   - self Lite and Standard v3 graph render runtime and pack projections remain exact
   acceptance_evidence:
   - test

@@ -4,6 +4,7 @@ import copy
 import hashlib
 import json
 import os
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -48,8 +49,10 @@ from bcf_governance.tooling.ci_graph_locks import (
     check_ci_graph_locks,
 )
 from bcf_governance.tooling.ci_graph_render import (
+    _command_step,
     _executor_steps,
     _job as render_job,
+    _workflow as render_workflow,
     apply_ci_graph,
     check_ci_graph,
     render_ci_graph,
@@ -59,6 +62,10 @@ from bcf_governance.tooling.ci_graph_values import resolve_graph_values
 from bcf_governance.tooling.ci_graph_workflow_run import (
     WorkflowRunTopologyError,
     validate_workflow_run_depth,
+)
+from bcf_governance.tooling.evaluation_scope import (
+    EvaluationScopeError,
+    evaluation_scope,
 )
 from bcf_governance.tooling.truth_workflow_graph import graph_workflow_gate_issues
 
@@ -80,6 +87,14 @@ def test_workflow_run_chain_cannot_exceed_provider_depth_limit() -> None:
     with pytest.raises(WorkflowRunTopologyError, match="three-level"):
         validate_workflow_run_depth(workflows)
     validate_workflow_run_depth(workflows[:4])
+
+
+def test_candidate_governance_rejects_pull_request_target_before_render() -> None:
+    graph = yaml.safe_load((REPO_ROOT / "governance/ci-graph.yml").read_text())
+    workflow = next(item for item in graph["workflows"] if item["role"] == "pull-request")
+    workflow["events"].append({"type": "pull_request_target"})
+    with pytest.raises(CIGraphError, match="cannot use pull_request_target"):
+        _validate_workflows(graph)
 
 
 def test_exact_main_evaluation_has_one_canonical_admission_and_truth_scope() -> None:
@@ -915,6 +930,28 @@ def test_workflow_inputs_are_rendered_as_environment_data_not_shell_source(
     }
     assert any("inputs.evaluation_mode" in value for value in projected)
     assert any("inputs.evaluation_target" in value for value in projected)
+    assert "${{ inputs.evaluation_mode || 'pr' }}" in projected
+    assert "${{ inputs.evaluation_target || '' }}" in projected
+
+
+def test_evaluation_input_empty_and_whitespace_states_are_closed() -> None:
+    scope = evaluation_scope(
+        "pr", target=None, phase_id="P29", subject_commit="a" * 40
+    )
+    assert scope.intent.value == "pr"
+    for intent in ("", " ", "unknown"):
+        with pytest.raises(EvaluationScopeError, match="intent is unsupported"):
+            evaluation_scope(
+                intent, target=None, phase_id="P29", subject_commit="a" * 40
+            )
+    for target in (None, "", " "):
+        with pytest.raises(EvaluationScopeError, match="requires one exact target"):
+            evaluation_scope(
+                "workitem",
+                target=target,
+                phase_id="P29",
+                subject_commit="a" * 40,
+            )
 
 
 @pytest.mark.parametrize(
@@ -945,6 +982,71 @@ def test_expression_hoisting_keeps_malicious_input_one_inert_argument(
     )
     assert result.stdout in {payload, f"prefix-{payload}"}
     assert not (tmp_path / "executed").exists()
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        'eval "${{ inputs.evaluation_target }}"',
+        'source "${{ inputs.evaluation_target }}"',
+        'bash -c "${{ inputs.evaluation_target }}"',
+        'python -c "${{ inputs.evaluation_target }}"',
+    ],
+)
+def test_expression_projection_rejects_interpreter_source_sinks(source: str) -> None:
+    with pytest.raises(AssertionError, match="interpreter source sink"):
+        hoist_run_expressions([{"run": source}])
+
+
+def test_expression_projection_rejects_reserved_environment_collisions() -> None:
+    with pytest.raises(AssertionError, match="reserved BCF_RUN_EXPRESSION_"):
+        hoist_run_expressions([{
+            "run": 'printf "%s" "${{ inputs.evaluation_target }}"',
+            "env": {"BCF_RUN_EXPRESSION_0": "candidate-owned"},
+        }])
+
+    compiled = validate_ci_graph(REPO_ROOT)
+    command = compiled.commands["governance-truth"]
+    command["environment"]["BCF_COMMAND_ARG_0"] = "candidate-owned"
+    with pytest.raises(AssertionError, match="reserved BCF_COMMAND_ARG_"):
+        _command_step(compiled, "governance-truth", name="mutant")
+
+
+@pytest.mark.parametrize("surface", ["workflow", "job", "component"])
+def test_context_environment_ownership_cannot_be_overridden(surface: str) -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    workflow = next(item for item in compiled.workflows if item["id"] == "governance")
+    if surface == "workflow":
+        workflow["environment"]["BCF_PROVIDER_EVENT"] = "candidate-owned"
+    elif surface == "job":
+        workflow["jobs"][0]["environment"]["BCF_COMPARISON_BASE_SHA"] = (
+            "candidate-owned"
+        )
+    else:
+        compiled.graph["step_components"]["checkout-candidate"]["environment"][
+            "BCF_EVALUATION_MODE"
+        ] = "candidate-owned"
+    with pytest.raises(AssertionError, match="overrides reserved context"):
+        render_workflow(compiled, workflow)
+
+
+def test_controller_install_interpreter_reads_paths_only_as_environment_data() -> None:
+    rendered = yaml.safe_load(
+        render_ci_graph(REPO_ROOT)[".github/workflows/bcf-controller-rotation.yml"]
+    )
+    steps = [
+        step
+        for job in rendered["jobs"].values()
+        for step in job.get("steps", [])
+        if "BCF_CONTROLLER_ARTIFACT_DIR" in step.get("env", {})
+    ]
+    assert steps
+    for step in steps:
+        assert "${{" not in step["run"]
+        script = shlex.split("\n".join(step["run"].splitlines()[1:]))[3]
+        assert "os.environ['BCF_CONTROLLER_ARTIFACT_DIR']" in script
+        assert "os.environ['BCF_CONTROLLER_INSTALL_ROOT']" in script
+        assert "${{" in step["env"]["BCF_CONTROLLER_ARTIFACT_DIR"]
 
 
 def _write_graph(repo: Path, payload: dict[str, object] | None = None) -> Path:

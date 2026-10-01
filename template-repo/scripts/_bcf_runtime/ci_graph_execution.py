@@ -588,3 +588,21 @@ def hosted_command_issues(graph: dict[str, Any]) -> tuple[str, ...]:
                             f"hosted waiter token {token!r} is prohibited in job {job['id']}"
                         )
     return tuple(issues)
+
+
+def validate_workflow_event_contract(workflow: dict[str, Any]) -> None:
+    """Reject event/role combinations that cross execution trust boundaries."""
+
+    event_types = {event["type"] for event in workflow["events"]}
+    if workflow["role"] == "pull-request" and "pull_request_target" in event_types:
+        raise CIGraphError(
+            "candidate pull-request workflow cannot use pull_request_target",
+            kind="event",
+            identifier=workflow["id"],
+        )
+    if workflow["role"] == "scheduled" and event_types & {"pull_request", "push"}:
+        raise CIGraphError(
+            "scheduled controls cannot be required by PR or push events",
+            kind="event",
+            identifier=workflow["id"],
+        )

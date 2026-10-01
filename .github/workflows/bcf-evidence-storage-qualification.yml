@@ -25,13 +25,13 @@ jobs:
       with: {app-id: '${{ vars.BCF_EVIDENCE_APP_ID }}', private-key: '${{ secrets.BCF_EVIDENCE_APP_PRIVATE_KEY }}', permission-contents: write}
     - name: Publish one authenticated immutable evidence input
       shell: bash
-      env: {GITHUB_TOKEN: '${{ github.token }}', BCF_EVIDENCE_WRITE_TOKEN: '${{ steps.evidence-app-token.outputs.token }}', BCF_EVIDENCE_SETTINGS_READ_TOKEN: '${{ secrets.BCF_EVIDENCE_ADMIN_TOKEN }}', BCF_RUN_EXPRESSION_0: '${{ github.event.workflow_run.id }}', BCF_RUN_EXPRESSION_1: '${{ github.event.workflow_run.run_attempt }}', BCF_RUN_EXPRESSION_2: '${{ runner.temp }}'}
+      env: {GITHUB_TOKEN: '${{ github.token }}', BCF_EVIDENCE_WRITE_TOKEN: '${{ steps.evidence-app-token.outputs.token }}', BCF_EVIDENCE_SETTINGS_READ_TOKEN: '${{ secrets.BCF_EVIDENCE_ADMIN_TOKEN }}', BCF_RUN_EXPRESSION_0: '${{ github.event.workflow_run.id }}', BCF_RUN_EXPRESSION_1: '${{ github.event.workflow_run.run_attempt }}', BCF_RUN_EXPRESSION_2: '${{ runner.temp }}', BCF_RUN_EXPRESSION_3: '${{ github.run_id }}', BCF_RUN_EXPRESSION_4: '${{ github.run_attempt }}'}
       run: |-
         set -euo pipefail
         test -d "$RUNNER_TOOL_CACHE"/bcf-governance/c3ddbd278baaed5e34a26872193b964828a09d64
         test ! -L "$RUNNER_TOOL_CACHE"/bcf-governance/c3ddbd278baaed5e34a26872193b964828a09d64
         test -x "$RUNNER_TOOL_CACHE"/bcf-governance/c3ddbd278baaed5e34a26872193b964828a09d64/bin/bcf
-        "$RUNNER_TOOL_CACHE"/bcf-governance/c3ddbd278baaed5e34a26872193b964828a09d64/bin/bcf evidence-store publish-github --repository "$GITHUB_REPOSITORY" --run-id "${BCF_RUN_EXPRESSION_0}" --run-attempt "${BCF_RUN_EXPRESSION_1}" --artifact-name "bcf-evidence-storage-qualification-source-${BCF_RUN_EXPRESSION_0}-${BCF_RUN_EXPRESSION_1}" --output "${BCF_RUN_EXPRESSION_2}/bcf-evidence-storage-qualification-reference/evidence-input-reference.json"
+        "$RUNNER_TOOL_CACHE"/bcf-governance/c3ddbd278baaed5e34a26872193b964828a09d64/bin/bcf evidence-store publish-github --repository "$GITHUB_REPOSITORY" --run-id "${BCF_RUN_EXPRESSION_0}" --run-attempt "${BCF_RUN_EXPRESSION_1}" --artifact-name "bcf-evidence-storage-qualification-source-${BCF_RUN_EXPRESSION_0}-${BCF_RUN_EXPRESSION_1}" --output "${BCF_RUN_EXPRESSION_2}/bcf-evidence-storage-qualification-reference-${BCF_RUN_EXPRESSION_3}-${BCF_RUN_EXPRESSION_4}/evidence-input-reference.json"
     - name: Upload exact evidence-storage-qualification-reference evidence
       if: ${{ success() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a

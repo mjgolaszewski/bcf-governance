@@ -52,8 +52,8 @@ jobs:
       shell: bash
       run: |-
         set -euo pipefail
-        mkdir -p -- ''"${BCF_RUN_EXPRESSION_0}"'/bcf-release/certification' ''"${BCF_RUN_EXPRESSION_0}"'/bcf-release/controller'
-      env: {BCF_RUN_EXPRESSION_0: '${{ runner.temp }}'}
+        mkdir -p -- ''"${BCF_RUN_EXPRESSION_0}"'/bcf-release-'"${BCF_RUN_EXPRESSION_1}"'-'"${BCF_RUN_EXPRESSION_2}"'/certification' ''"${BCF_RUN_EXPRESSION_0}"'/bcf-release-'"${BCF_RUN_EXPRESSION_1}"'-'"${BCF_RUN_EXPRESSION_2}"'/controller'
+      env: {BCF_RUN_EXPRESSION_0: '${{ runner.temp }}', BCF_RUN_EXPRESSION_1: '${{ github.run_id }}', BCF_RUN_EXPRESSION_2: '${{ github.run_attempt }}'}
     - name: Resolve provider-authenticated release inputs
       shell: bash
       working-directory: .

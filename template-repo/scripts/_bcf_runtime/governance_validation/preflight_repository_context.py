@@ -21,16 +21,16 @@ def pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
         if mode != "pr":
             return {"applicable": False}
         event = "pull_request"
-    if event not in {"pull_request", "pull_request_target", "push", "workflow_call"}:
+    if event not in {"pull_request", "push", "workflow_call"}:
         raise ValueError("repository comparison event is not supported")
     base = os.environ.get("BCF_COMPARISON_BASE_SHA", "")
-    if not base and event in {"pull_request", "pull_request_target"}:
+    if not base and event == "pull_request":
         base = os.environ.get("BCF_PR_BASE_SHA", "")
     if not re.fullmatch(r"[a-f0-9]{40,64}", base):
         raise ValueError("repository preflight requires exact comparison base SHA")
     if set(base) == {"0"}:
         raise ValueError("repository comparison base SHA cannot be the zero object")
-    if event in {"pull_request", "pull_request_target"}:
+    if event == "pull_request":
         pr_base = os.environ.get("BCF_PR_BASE_SHA", "")
         if pr_base != base:
             raise ValueError("pull-request comparison base does not match BCF_PR_BASE_SHA")
@@ -54,7 +54,7 @@ def pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
         "base_sha": base,
         "provenance": (
             "pull_request.base.sha"
-            if event in {"pull_request", "pull_request_target"}
+            if event == "pull_request"
             else "push.before" if event == "push" else "workflow_call.input"
         ),
     }

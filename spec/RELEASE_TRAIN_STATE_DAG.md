@@ -75,6 +75,7 @@ Neither may infer or rewrite the other.
 | `pull_request` | `pr` | authenticated PR base SHA | required | candidate progress proof |
 | `pull_request` | `workitem:<id>` | authenticated PR base SHA | required | bounded candidate proof only |
 | `pull_request` | `closure` | authenticated PR base SHA | required | candidate terminal-closure proof |
+| `pull_request_target` | any proposition | none | none | reject from the candidate-governance lane; privileged automation has a separate event contract |
 | protected `push` | `pr` | authenticated event `before` SHA | inapplicable: `direct_push`, exact event/policy bound | merged-main progress proof |
 | protected `push` | `workitem:<id>` | authenticated event `before` SHA | inapplicable: `direct_push`, exact event/policy bound | bounded merged-main proof |
 | protected `push` | `closure` | authenticated event `before` SHA | inapplicable: `direct_push`, exact event/policy bound | merged-main terminal proof |
@@ -84,7 +85,12 @@ For every row, base and head must be exact commits in the checked-out history,
 base must be an ancestor of head, and event provenance must match the selected
 source. Missing, zero, unresolved, moved, or event-mismatched identity fails in
 cheap preflight. A direct push with `pr` semantics therefore never reads
-`pull_request.base.sha`.
+`pull_request.base.sha`. For `workflow_call`, absent or explicitly empty,
+zero, malformed, unavailable, non-ancestor, wrong-repository, wrong-source, or
+event-conflicting bases all reject before evidence. The candidate-governance
+lane does not accept `pull_request_target`; BCF automation workflows that use
+that privileged event authenticate it under their separate fixed-purpose
+contract and never reinterpret it as candidate evidence.
 
 ## Evaluation-input transport state machine
 
@@ -100,10 +106,18 @@ the runtime scope parser owns meaning. No shell owns interpretation.
 | `workflow_call(workitem, exact-id)` | `workitem` / exact workitem | declared inputs -> environment | authored-ready workitem scope | bounded proposition only |
 | `workflow_call(closure, '')` | `closure` / none | declared input -> environment | phase-closure scope | terminal phase proposition only |
 | absent caller inputs | declared workflow defaults | default expression -> environment | graph default-parity validation | same result as explicit defaults |
+| explicit-empty intent | `pr` / none | declared empty-as-default rule -> environment | evaluation scope | same result as absent intent |
+| explicit-empty target with `pr` or `closure` | declared intent / none | one empty environment value | evaluation scope | accept only the targetless proposition |
+| explicit-empty target with `workitem` | none | one empty environment value | evaluation scope | reject before evidence |
+| whitespace-only intent or target | none | one exact environment value | evaluation scope | reject; never trim into authority |
+| explicit exact comparison base | unchanged proposition | exact caller input -> comparison environment | repository comparison context | accept only available ancestor from the bound repository/event |
+| absent or explicit-empty comparison base | none | exact empty value -> comparison environment | repository comparison context | reject before evidence |
 | unknown intent | none | inert environment bytes | evaluation scope | reject before evidence |
 | workitem without target | none | inert environment bytes | evaluation scope | reject before evidence |
 | non-workitem with target | none | inert environment bytes | evaluation scope | reject before evidence |
 | shell metacharacters or expression-shaped payload | none | one quoted environment value | evaluation scope | reject as data; execute nothing |
+| authored environment collides with a renderer-reserved slot | none | forbidden | graph/render structural validation | reject before workflow projection |
+| expression-fed value reaches `eval`, `source`, `*-c`, or another interpreter source | none | forbidden; pass data through an interpreter-owned environment/argument API instead | graph/render structural validation | reject before workflow projection |
 | expression embedded in `run:` | none | forbidden | graph/render structural validation | reject before workflow projection |
 | fallback differs from declared default | none | forbidden | workflow-input parity validation | reject before workflow projection |
 | terminal observation differs from producer scope | none | exact environment projection | terminal observation verifier | reject; emit no certification |
@@ -113,7 +127,7 @@ Canonical lineage is singular:
 
 ```text
 provider event/caller input
-  -> graph-declared source + default
+  -> graph-declared event, comparison base, source + default
   -> renderer-owned environment slot
   -> quoted shell variable as one argv value
   -> argparse value
@@ -125,7 +139,8 @@ provider event/caller input
   -> successor eligibility OR terminal release authorization
 ```
 
-The same effective intent/target pair must survive every edge. Environment
+The same event/base provenance and effective intent/target pair must survive
+every edge. Environment
 transport confers no authority and may not normalize, broaden, or default a
 value after the graph boundary.
 
@@ -134,8 +149,8 @@ value after the graph boundary.
 - **Invariant:** provider/caller strings are inert data and one exact scope is
   preserved end to end.
   - **Primitives:** provider-event kind, comparison base, evaluation-intent
-    enum, optional exact target, deterministic environment slot, scoped
-    proposition.
+    enum, optional exact target, reserved-slot registry, interpreter-sink
+    classifier, deterministic environment slot, scoped proposition.
     - **Contracts:** CI graph input/default declaration, expression-in-run
       prohibition, environment placeholder grammar, evaluation-scope schema,
       terminal observation and certification scope.

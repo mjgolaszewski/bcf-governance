@@ -49,6 +49,10 @@ execution_evidence:
   - issue 348 focused graph context and controller compatibility validation passed 110 tests; bounded truth finalizer publisher release and prospective validation passed 16 tests; malicious evaluation-input transport remained one inert argument in every shell quote state
   - canonical reconciliation converged in four rounds and emitted its workflow-definition and authority commits; the immediate fixed-point check was clean
   - the first committed prospective train rejected a stale phase-plan deliverable identity before evidence; the plan workitem and log now share the canonical P29-P0-01 evaluation-input projection identity
+  - pre-gate adopter review identified comparison-base empty-input privileged-event reserved-environment and interpreter-sink permutations; the canonical matrix now closes each state before evidence
+  - controller installation consumes provider paths through interpreter-owned environment APIs and runner-temp scoping precedes expression hoisting so exact run-attempt namespace identity is preserved
+  - the post-review graph preflight context and controller-bootstrap matrix passed 162 tests; focused rotation compatibility and release paths passed 29 tests and automation terminal release-rejection paths passed 13 tests
+  - the controller-install extraction retargeted release-verifier-controller-digest-must-fail to its canonical owner; its baseline oracle passed and the exact digest-check inversion failed that oracle
   - the focused graph preflight prospective local and profile matrix passed 191 tests in 256.49 seconds
   - the exact self test population completed once in 1718.06 seconds then exhausted the shared 1800-second gate deadline on a later clean run; the canonical test workload now declares a measured 2400-second deadline while outer-job containment remains mechanically enforced
 closeout_requirements:

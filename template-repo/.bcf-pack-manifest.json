@@ -640,7 +640,11 @@
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",
-      "sha256": "8a8633804592692348e7fca2cff132a08b5b64ef537257bdb7c309ca514d6ba7"
+      "sha256": "5354105e406cdd6da81b935be43e0a60c6f098efbae1c4056d0abf24743bfc67"
+    },
+    "scripts/_bcf_runtime/ci_graph_controller_install.py": {
+      "operation": "copy",
+      "sha256": "4e9bb0e4fb9ec39bbad4e5043bd1e12b6e452e060a4f0853191ef8106607be9b"
     },
     "scripts/_bcf_runtime/ci_graph_controller_lifecycle.py": {
       "operation": "copy",
@@ -664,7 +668,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_execution.py": {
       "operation": "copy",
-      "sha256": "d51dbaeb3dfb3d1cfc8c825c4e9cff9fdcbcb9cadb0aaf9370a75c29dd5c9456"
+      "sha256": "100df7a1d567a0ad7b2210481a14e67f534d904602a3d602389fe2eb26a79143"
     },
     "scripts/_bcf_runtime/ci_graph_import.py": {
       "operation": "copy",
@@ -680,7 +684,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "0e2f699141923556fc31f7cc81fa4843f797d2bd09cb79c9b903a4d4c808a014"
+      "sha256": "d1de90de4fd640b72dc49be4c96ba8dfd4875d81fbac91eeea204e35c86edde1"
     },
     "scripts/_bcf_runtime/ci_graph_reusable_artifacts.py": {
       "operation": "copy",
@@ -696,7 +700,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_shell_projection.py": {
       "operation": "copy",
-      "sha256": "fcc999deb1cf5a938d73835275daadb77ae430db26f80ce1285009978cfaca95"
+      "sha256": "db7f229cfbf316dd556fd4c860443fce15f6ed70980f1de01ee7cab903a52729"
     },
     "scripts/_bcf_runtime/ci_graph_storage.py": {
       "operation": "copy",
@@ -1004,7 +1008,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/preflight_repository_context.py": {
       "operation": "copy",
-      "sha256": "0b23dc337ef9757c156d31987e53734c710930c6482686eaa31cc21a5e8e61fc"
+      "sha256": "6043326d06ed982ab4af007e8d5793e39d5853ab2f51e08be987ecfa1a906469"
     },
     "scripts/_bcf_runtime/governance_validation/product_certification.py": {
       "installation_scope": "self_authority",
