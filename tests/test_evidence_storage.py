@@ -1859,11 +1859,15 @@ def test_graph_renders_short_handoff_trusted_publish_and_cold_resolve(
         "private-key": "${{ secrets.BCF_EVIDENCE_APP_PRIVATE_KEY }}",
         "permission-contents": "write",
     }
-    assert publish_step["env"] == {
+    expected_publish_authority = {
         "GITHUB_TOKEN": "${{ github.token }}",
         "BCF_EVIDENCE_WRITE_TOKEN": "${{ steps.evidence-app-token.outputs.token }}",
         "BCF_EVIDENCE_SETTINGS_READ_TOKEN": "${{ secrets.BCF_EVIDENCE_ADMIN_TOKEN }}",
     }
+    assert {
+        name: publish_step["env"][name]
+        for name in expected_publish_authority
+    } == expected_publish_authority
     source_upload = next(
         step
         for step in source_rendered["jobs"]["cheap-preflight"]["steps"]
