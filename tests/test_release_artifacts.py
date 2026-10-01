@@ -109,6 +109,27 @@ def test_release_artifact_entrypoint_bootstraps_clean_source_checkout() -> None:
 
 def test_current_source_contains_complete_sdist_test_payload() -> None:
     release_artifacts.validate_sdist_payload(REPO_ROOT)
+    release_artifacts.validate_sdist_root_selection(REPO_ROOT)
+
+
+def test_new_tracked_source_root_requires_sdist_selection(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "--quiet"], cwd=repo, check=True)
+    (repo / "existing").mkdir()
+    (repo / "existing/source.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (repo / "new-spec").mkdir()
+    (repo / "new-spec/contract.md").write_text("# Contract\n", encoding="utf-8")
+    (repo / "MANIFEST.in").write_text(
+        "recursive-include existing *.py\n", encoding="utf-8"
+    )
+    (repo / "pyproject.toml").write_text(
+        '[tool.setuptools.packages.find]\ninclude = ["existing*"]\n', encoding="utf-8"
+    )
+    subprocess.run(["git", "add", "."], cwd=repo, check=True)
+
+    with pytest.raises(RuntimeError, match="omits tracked source root: new-spec"):
+        release_artifacts.validate_sdist_root_selection(repo)
 
 
 def test_built_sdist_contains_every_governed_source_file(tmp_path: Path) -> None:

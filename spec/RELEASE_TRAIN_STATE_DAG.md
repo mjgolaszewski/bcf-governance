@@ -187,6 +187,8 @@ Every late correction records the following before its first push:
 5. Exercise absent, exact, malformed, stale, wrong-subject, wrong-run,
    wrong-attempt, wrong-producer, conflicting, and retry states where applicable.
 6. Run cheap structural budgets before semantic fan-out.
+   This includes proving every tracked top-level source root is selected by the
+   source-distribution manifest.
 7. Reuse exact-input evidence where the applicability resolver proves it legal;
    otherwise state the changed binding that requires recomputation.
 8. Require generated parity and a clean fixed point before provider execution.

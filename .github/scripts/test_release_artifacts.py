@@ -28,7 +28,7 @@ from bcf_governance.tooling.release_runtime_verification import (
     SDIST_PORTABLE_TEST_ENV,
 )
 from bcf_governance.tooling.ci_github_bootstrap import verify_controller_inventory
-from release_source_inventory import validate_sdist_source_inventory
+from release_source_inventory import tracked_source_inventory, validate_sdist_source_inventory
 
 
 REQUIRED_SDIST_PATHS = (
@@ -46,6 +46,7 @@ REQUIRED_SDIST_PATHS = (
     "plans",
     "release",
     "schemas",
+    "spec",
     "template-repo",
     "template-repo/schemas",
     "tests",
@@ -123,6 +124,29 @@ def validate_sdist_payload(source_root: Path) -> None:
     missing = [*missing_directories, *missing_files]
     if missing:
         raise RuntimeError("sdist payload missing: " + ", ".join(missing))
+
+
+def validate_sdist_root_selection(source_root: Path) -> None:
+    """Reject a tracked top-level source root absent from package selection."""
+
+    tracked_roots = {
+        path.split("/", 1)[0]
+        for path in tracked_source_inventory(source_root)
+        if "/" in path
+    }
+    selected_roots = {
+        line.split()[1].split("/", 1)[0]
+        for line in (source_root / "MANIFEST.in").read_text(encoding="utf-8").splitlines()
+        if line.startswith("recursive-include ") and len(line.split()) >= 3
+    }
+    project = tomllib.loads((source_root / "pyproject.toml").read_text(encoding="utf-8"))
+    selected_roots.update(
+        value.rstrip("*").rstrip("/")
+        for value in project["tool"]["setuptools"]["packages"]["find"]["include"]
+    )
+    missing = sorted(tracked_roots - selected_roots)
+    if missing:
+        raise RuntimeError("sdist manifest omits tracked source root: " + ", ".join(missing))
 
 
 def validate_sdist_test_skips(junit_path: Path) -> None:
