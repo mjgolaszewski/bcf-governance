@@ -328,9 +328,13 @@ def test_v3_lite_starts_with_typed_direct_pr_progress() -> None:
         "workflow_id": "governance",
         "terminal_job_id": "governance-truthfulness",
     }
-    assert graph["commands"]["v3-truth"]["argv"][
-        graph["commands"]["v3-truth"]["argv"].index("--evaluation-mode") + 1
-    ] == direct_post_merge_mode("pr")
+    command = graph["commands"]["v3-truth"]
+    assert command["argv"][
+        command["argv"].index("--evaluation-mode") + 1
+    ] == "{env:BCF_EVALUATION_MODE}"
+    assert command["environment"]["BCF_EVALUATION_MODE"] == direct_post_merge_mode(
+        "pr"
+    )
     workflow = next(item for item in graph["workflows"] if item["id"] == "governance")
     assert workflow_input_issues(graph, workflow) == ()
 
@@ -396,14 +400,15 @@ def test_direct_protected_main_rejects_pr_default_on_push() -> None:
         trusted_hosted=True,
     )
     for command in graph["commands"].values():
-        command["argv"] = [
-            value.replace(
+        command["environment"] = {
+            name: value.replace(
                 direct_post_merge_mode("pr"),
                 "${{ inputs.evaluation_mode || 'pr' }}",
             )
-            if isinstance(value, str) else value
-            for value in command["argv"]
-        ]
+            if isinstance(value, str)
+            else value
+            for name, value in command["environment"].items()
+        }
     with pytest.raises(CIGraphError, match="not canonically event-bound"):
         post_merge_evaluation(graph)
 
@@ -466,14 +471,15 @@ def test_reconcile_normalizes_direct_protected_main_scope_once(tmp_path: Path) -
         trusted_hosted=True,
     )
     for command in graph["commands"].values():
-        command["argv"] = [
-            value.replace(
+        command["environment"] = {
+            name: value.replace(
                 direct_post_merge_mode("pr"),
                 "${{ inputs.evaluation_mode || 'pr' }}",
             )
-            if isinstance(value, str) else value
-            for value in command["argv"]
-        ]
+            if isinstance(value, str)
+            else value
+            for name, value in command["environment"].items()
+        }
     path = tmp_path / "governance/ci-graph.yml"
     path.parent.mkdir(parents=True)
     path.write_bytes(render_yaml(graph))
@@ -2017,14 +2023,21 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
             if step["name"] == "Upload exact prior evidence transport"
     )
     assert "prior-evidence transport" in transport["run"]
-    assert (
-        '--main-sha "$GITHUB_SHA"' in transport["run"]
-        or '--main-sha "${{ github.sha }}"' in transport["run"]
-    )
+    assert '--main-sha "$BCF_COMMAND_ARG_7"' in transport["run"]
     expected_transport_env = {
         "BCF_PYTHON": "${{ env.pythonLocation }}/bin/python",
         "BCF_CONTROLLER_EXECUTION_REQUIRED": "true",
         "GITHUB_TOKEN": "${{ github.token }}",
+        "BCF_COMMAND_ARG_0": (
+            "${{ runner.tool_cache }}/bcf-governance/"
+            "${{ needs.trusted-controller-build.outputs.target_commit }}/bin/bcf"
+        ),
+        "BCF_COMMAND_ARG_5": "${{ github.repository }}",
+        "BCF_COMMAND_ARG_7": "${{ github.sha }}",
+        "BCF_COMMAND_ARG_9": (
+            "${{ runner.temp }}/bcf-prior-evidence-"
+            "${{ github.run_id }}-${{ github.run_attempt }}"
+        ),
     }
     if admission["executor"].get("protection_inspection"):
         expected_transport_env.update({
@@ -2043,7 +2056,8 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         assert steps.index(mint) < steps.index(transport)
     assert transport["env"] == expected_transport_env
     assert upload["with"]["path"].startswith("${{ runner.temp }}/bcf-prior-evidence-")
-    assert f'--output "{upload["with"]["path"]}"' in transport["run"]
+    assert transport["env"]["BCF_COMMAND_ARG_9"] == upload["with"]["path"]
+    assert '--output "$BCF_COMMAND_ARG_9"' in transport["run"]
     assert exact_jobs["governance"]["with"] == {
         **evaluation, "use_prior_evidence": True,
     }
@@ -2210,19 +2224,22 @@ def test_exact_main_finalizer_uses_callback_identity_only_as_provider_locator() 
             ".github/workflows/bcf-trusted-finalizer.yml"
         ]
     )
-    command = next(
-        step["run"]
+    step = next(
+        step
         for step in rendered["jobs"]["finalize"]["steps"]
         if "exact-main finalize" in step.get("run", "")
     )
+    command = step["run"]
 
-    assert '--trigger-run-id "${{ github.event.workflow_run.id }}"' in command
-    assert (
-        '--trigger-run-attempt "${{ github.event.workflow_run.run_attempt }}"'
-        in command
+    assert '--trigger-run-id "$BCF_COMMAND_ARG_7"' in command
+    assert '--trigger-run-attempt "$BCF_COMMAND_ARG_9"' in command
+    assert step["env"]["BCF_COMMAND_ARG_7"] == "${{ github.event.workflow_run.id }}"
+    assert step["env"]["BCF_COMMAND_ARG_9"] == (
+        "${{ github.event.workflow_run.run_attempt }}"
     )
-    assert "github.event.workflow_run.head_sha" not in command
-    assert "github.event.workflow_run.conclusion" not in command
+    projected = "\n".join([command, *step["env"].values()])
+    assert "github.event.workflow_run.head_sha" not in projected
+    assert "github.event.workflow_run.conclusion" not in projected
     assert all(token not in command for token in ("sleep ", "poll ", "retry "))
 
 
