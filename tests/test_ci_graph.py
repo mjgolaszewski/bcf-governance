@@ -2622,7 +2622,7 @@ def test_bcf_ci_authority_audit_reports_the_complete_effective_graph() -> None:
     ]
     assert report["timeout_contract"] == {
         "default_gate_seconds": 1800,
-        "per_gate_seconds": {},
+        "per_gate_seconds": {"test": 2400},
         "minimum_outer_headroom_seconds": 300,
     }
     assert {item["fact"] for item in report["authority_map"]} >= {

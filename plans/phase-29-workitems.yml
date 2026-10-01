@@ -28,6 +28,7 @@ workitems:
   - requires-workitem-closure:P29-P0-01
   - one canonical owner derives the dirty stage set from exact owner input and output digests and emits an ordered timing and convergence ledger
   - clean stages are skipped without changing canonical bytes and forced recomputation proves byte equivalence
+  - gate-specific measured deadlines and outer-job headroom fail fast before execution and timeout or partial output never become evidence
   - representative unchanged and selectively changed trees materially reduce median and p95 reconciliation wall clock
   acceptance_evidence:
   - test

@@ -43,6 +43,7 @@ execution_evidence:
   - the canonical git-history retention owner compacted completed P28 and all thirteen phase-scoped hotfix records into plans/phase-history.yml with exact path digests and git retention commit while deriving product and build history pointers through P28
   - issue 347 separates lifecycle proposition from provider event through one event-owned comparison context and executes the exact direct-push preflight before local evidence allocation
   - the focused graph preflight prospective local and profile matrix passed 191 tests in 256.49 seconds
+  - the exact self test population completed once in 1718.06 seconds then exhausted the shared 1800-second gate deadline on a later clean run; the canonical test workload now declares a measured 2400-second deadline while outer-job containment remains mechanically enforced
 closeout_requirements:
   claims:
     workitems_closed:
