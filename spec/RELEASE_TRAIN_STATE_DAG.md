@@ -166,6 +166,7 @@ shell fallback after the canonical graph has produced the typed pair.
 | Amplification observation | exact train/subject/provider identities and typed counters | closeout analysis | missing/double-counted event | none |
 | Provider scheduling observation | created/queued/assigned/started/completed timestamps and labels | latency decomposition | absent timestamp represented as a value other than `unknown` | none |
 | Workflow evaluation input | declared default or explicit typed intent/target | environment/data projection then runtime validation | expression embedded in `run:` source, unknown intent, or malformed target | none |
+| Phase artifact identity | exact plan deliverable, workitem summary, and log summary | canonical phase-catalog validation | any authored identity differs across the triplet | none; reject before evidence |
 
 ### Reconciliation dependency contract
 

@@ -19,14 +19,14 @@ phase:
   - MEMORY.yml
 delivery_contract:
   tightly_scoped_deliverables:
-  - persist the CI state matrix and repair direct-main comparison context
+  - persist the CI state matrix and repair evaluation-input projection
   - optimize deterministic fixed-point reconciliation
   - add bounded provider-read resilience
   - derive lifecycle projections and emit non-authoritative operational observations
   - prove self Lite and Standard v3 parity and publish immutable 2.1.7 custody
   parallelizable_workstreams:
   - id: P29-WS1
-    name: state matrix and direct-main repair
+    name: state matrix and evaluation-input projection repair
   - id: P29-WS2
     name: deterministic reconciliation and provider reads
   - id: P29-WS3
