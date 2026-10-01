@@ -136,6 +136,15 @@ documents:
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: retained
+- path: spec/RELEASE_TRAIN_STATE_DAG.md
+  audience: BCF evaluators and adopters
+  canonical_topic_owner: spec/RELEASE_TRAIN_STATE_DAG.md
+  topic_role: canonical
+  before_sha256: null
+  after_sha256: 3833f671f5ae522c241b5d9553c91272a39ae57e5446a7440884d60570b0fa3f
+  findings:
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: revised
 - path: template-repo/AGENTS.md
   audience: repository agents
   canonical_topic_owner: template-repo/AGENTS.yml
