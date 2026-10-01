@@ -6,6 +6,11 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Changed
+
+<!-- bcf-automation-changelog:1207503211:dependabot:349:dca78cb87810a061cc30473c00ba4294263857297cc8e3ef7a7452bf053e744b -->
+- Automated dependency update `dependabot` from PR #349: `build` from `==1.6.0` to `==1.6.1` (`pyproject.toml`, `requirements-governance.txt`, `template-repo/requirements-governance.txt`).
+
 ### Fixed
 
 - Made the trusted immutable publisher create and reauthenticate the exact
