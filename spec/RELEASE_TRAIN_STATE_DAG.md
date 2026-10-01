@@ -40,6 +40,9 @@ provider evidence.
 12. Optimization and observability are non-authoritative. A skipped projection
     has an exact content proof, a retry preserves immutable request identity,
     and progress or cost telemetry cannot satisfy an assurance proposition.
+13. Provider expressions are data, never executable shell source. Typed
+    evaluation intent and target cross workflow boundaries through environment
+    or structured inputs and are validated before they become command argv.
 
 ## State matrix
 
@@ -83,6 +86,68 @@ source. Missing, zero, unresolved, moved, or event-mismatched identity fails in
 cheap preflight. A direct push with `pr` semantics therefore never reads
 `pull_request.base.sha`.
 
+## Evaluation-input transport state machine
+
+Provider expressions are untrusted workflow data even when GitHub produced
+them. The graph owns their source and defaults; the renderer owns transport;
+the runtime scope parser owns meaning. No shell owns interpretation.
+
+| Event/input state | Effective intent/target | Transport | First validator | Required outcome |
+| --- | --- | --- | --- | --- |
+| direct `pull_request`, inputs absent | `pr` / none | canonical event default -> environment | comparison context then evaluation scope | PR progress only |
+| protected `push`, inputs absent | lifecycle-selected intent/target | canonical graph value -> environment | direct-push preflight then evaluation scope | exact merged-main proposition |
+| `workflow_call(pr, '')` | `pr` / none | declared input -> environment | evaluation scope | PR progress only |
+| `workflow_call(workitem, exact-id)` | `workitem` / exact workitem | declared inputs -> environment | authored-ready workitem scope | bounded proposition only |
+| `workflow_call(closure, '')` | `closure` / none | declared input -> environment | phase-closure scope | terminal phase proposition only |
+| absent caller inputs | declared workflow defaults | default expression -> environment | graph default-parity validation | same result as explicit defaults |
+| unknown intent | none | inert environment bytes | evaluation scope | reject before evidence |
+| workitem without target | none | inert environment bytes | evaluation scope | reject before evidence |
+| non-workitem with target | none | inert environment bytes | evaluation scope | reject before evidence |
+| shell metacharacters or expression-shaped payload | none | one quoted environment value | evaluation scope | reject as data; execute nothing |
+| expression embedded in `run:` | none | forbidden | graph/render structural validation | reject before workflow projection |
+| fallback differs from declared default | none | forbidden | workflow-input parity validation | reject before workflow projection |
+| terminal observation differs from producer scope | none | exact environment projection | terminal observation verifier | reject; emit no certification |
+| bounded certification reaches release consumer | bounded scope preserved | certification payload | release authorizer and receipt verifier | reject as non-terminal authority |
+
+Canonical lineage is singular:
+
+```text
+provider event/caller input
+  -> graph-declared source + default
+  -> renderer-owned environment slot
+  -> quoted shell variable as one argv value
+  -> argparse value
+  -> evaluation_scope(intent, target)
+  -> preflight and truth proposition
+  -> terminal observation
+  -> finalizer certification scope
+  -> status publisher context
+  -> successor eligibility OR terminal release authorization
+```
+
+The same effective intent/target pair must survive every edge. Environment
+transport confers no authority and may not normalize, broaden, or default a
+value after the graph boundary.
+
+### Evaluation-input construction tree
+
+- **Invariant:** provider/caller strings are inert data and one exact scope is
+  preserved end to end.
+  - **Primitives:** provider-event kind, comparison base, evaluation-intent
+    enum, optional exact target, deterministic environment slot, scoped
+    proposition.
+    - **Contracts:** CI graph input/default declaration, expression-in-run
+      prohibition, environment placeholder grammar, evaluation-scope schema,
+      terminal observation and certification scope.
+      - **Producers:** graph defaults/adoption compiler, canonical renderer,
+        preflight, truth producer, terminal observer, trusted finalizer.
+        - **Consumers:** evidence planner, status publisher, successor
+          eligibility, release authorizer, release-receipt verifier, Lite and
+          Standard-v3 installer projections.
+
+No consumer may infer scope from event kind, status name, missing target, or a
+shell fallback after the canonical graph has produced the typed pair.
+
 ## Deterministic operational-state matrix
 
 | Facility state | Canonical inputs | Mechanical transition | Fail-closed condition | Authority |
@@ -100,6 +165,7 @@ cheap preflight. A direct push with `pr` semantics therefore never reads
 | Planning projection current | lifecycle-derived current/predecessor/successor/history | consume projection | authored copy contradicts derivation | lifecycle only |
 | Amplification observation | exact train/subject/provider identities and typed counters | closeout analysis | missing/double-counted event | none |
 | Provider scheduling observation | created/queued/assigned/started/completed timestamps and labels | latency decomposition | absent timestamp represented as a value other than `unknown` | none |
+| Workflow evaluation input | declared default or explicit typed intent/target | environment/data projection then runtime validation | expression embedded in `run:` source, unknown intent, or malformed target | none |
 
 ### Reconciliation dependency contract
 
@@ -254,6 +320,24 @@ test-only, or inspected-no-impact before provider execution.
 | Progress stream | display only | ignored | ignored by authority | display only | ignored by truth | ignored | ignored | schema parity |
 | Derived planning/history | first-stage structural | lifecycle input only | exact lifecycle projection | successor selection | scoped target | scope preserved | release closure rejects stale state | installed parity |
 | Amplification/queue metrics | display only | display only | observation only | observation only | observation only | observation only | closeout only | schema parity |
+| Evaluation-input projection | structural expression-in-run rejection | inspected-no-impact | typed environment data | direct-event default parity | exact scoped proposition | scope preserved | bounded certification cannot broaden | generated parity |
+
+### Evaluation-input affected-surface classification
+
+| Surface | Classification | Required proof |
+| --- | --- | --- |
+| `spec/RELEASE_TRAIN_STATE_DAG.md` and P29 workitem/log | canonical contract | complete states and lineage above |
+| graph input/default and command environment | canonical change | exact defaults, placeholders, no semantic drift |
+| graph renderer | canonical change | every expression-bearing command argument becomes one environment value; none enters shell source |
+| direct comparison-context resolver | inspected-no-impact | event-owned base remains independent of lifecycle scope |
+| evaluation-scope parser | inspected-no-impact | invalid intent/target combinations already fail closed |
+| preflight, truth, terminal observation | generated/consumer consequence | identical typed pair and malicious payload rejection |
+| finalizer, certification, publisher | inspected-no-impact plus regression | exact scope preserved; status cannot erase target |
+| successor and release consumers | inspected-no-impact plus regression | bounded success enables only declared successor; release rejects it |
+| self workflows | generated consequence | render parity and authority hashes/locks reconciled mechanically |
+| Lite and Standard-v3 templates/runtime pack | generated consequence | installed projection contains environment transport and identical validation |
+| manifests, mirrors, editorial inventory | generated consequence only when canonical reconciliation reports drift | fixed point and exact packaged bytes |
+| mutation controls and tests | test-only | expression-in-run mutant killed; defaults, explicit modes, malformed inputs, and shell payload covered |
 
 ## Canonical DAG
 

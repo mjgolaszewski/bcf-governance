@@ -125,9 +125,13 @@ def _preflight_argv(expected_producers: list[str]) -> list[str]:
 
 def _v3_commands(*, direct_push: bool = False) -> dict[str, Any]:
     mode = direct_post_merge_mode("pr") if direct_push else "${{ inputs.evaluation_mode || 'pr' }}"
+    environment = {
+        "BCF_EVALUATION_MODE": mode,
+        "BCF_EVALUATION_TARGET": "${{ inputs.evaluation_target || '' }}",
+    }
     scope = [
-        "--evaluation-mode", mode,
-        "--evaluation-target", "${{ inputs.evaluation_target || '' }}",
+        "--evaluation-mode", "{env:BCF_EVALUATION_MODE}",
+        "--evaluation-target", "{env:BCF_EVALUATION_TARGET}",
     ]
     preflight = [
         "{python}", "scripts/preflight_governance.py", "--repo-root", ".",
@@ -142,11 +146,11 @@ def _v3_commands(*, direct_push: bool = False) -> dict[str, Any]:
         "--output", ".artifacts/bcf/truth-report.json",
     ]
     return {
-        "v3-preflight": {"argv": preflight, "cwd": ".", "environment": {}},
+        "v3-preflight": {"argv": preflight, "cwd": ".", "environment": environment},
         "v3-preflight-with-prior": {
             "argv": [*preflight[:-2], "--prior-evidence-dir", ".artifacts/bcf/prior-evidence", *preflight[-2:]],
             "cwd": ".",
-            "environment": {},
+            "environment": environment,
         },
         "v3-capture-shard": {
             "argv": [
@@ -167,11 +171,11 @@ def _v3_commands(*, direct_push: bool = False) -> dict[str, Any]:
             "cwd": ".",
             "environment": {},
         },
-        "v3-truth": {"argv": truth, "cwd": ".", "environment": {}},
+        "v3-truth": {"argv": truth, "cwd": ".", "environment": environment},
         "v3-truth-with-prior": {
             "argv": [*truth[:6], "--prior-evidence-dir", ".artifacts/bcf/prior-evidence", *truth[6:]],
             "cwd": ".",
-            "environment": {},
+            "environment": environment,
         },
     }
 
@@ -207,12 +211,14 @@ def _apply_legacy_direct_post_merge_scope(graph: dict[str, Any]) -> None:
     argv = preflight["argv"]
     mode_index = argv.index("--mode")
     argv[mode_index : mode_index + 2] = ["--evaluation-mode", mode]
-    argv.extend(["--evaluation-target", target])
+    argv.extend(["--evaluation-target", "{env:BCF_EVALUATION_TARGET}"])
+    preflight["environment"]["BCF_EVALUATION_TARGET"] = target
     preflight["environment"].pop("BCF_PREFLIGHT_MODE", None)
     truth = graph["commands"]["truth"]
     truth_argv = truth["argv"]
     truth_argv[truth_argv.index("--evaluation-mode") + 1] = mode
-    truth_argv.extend(["--evaluation-target", target])
+    truth_argv.extend(["--evaluation-target", "{env:BCF_EVALUATION_TARGET}"])
+    truth["environment"]["BCF_EVALUATION_TARGET"] = target
     truth["environment"].pop("BCF_TRUTH_MODE", None)
 
 

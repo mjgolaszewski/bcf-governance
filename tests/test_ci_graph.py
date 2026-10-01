@@ -54,6 +54,7 @@ from bcf_governance.tooling.ci_graph_render import (
     check_ci_graph,
     render_ci_graph,
 )
+from bcf_governance.tooling.ci_graph_shell_projection import hoist_run_expressions
 from bcf_governance.tooling.ci_graph_values import resolve_graph_values
 from bcf_governance.tooling.ci_graph_workflow_run import (
     WorkflowRunTopologyError,
@@ -877,6 +878,67 @@ def test_direct_event_command_inputs_require_mechanical_fallback() -> None:
         "direct-event workflow governance command preflight input "
         "evaluation_mode fallback must equal its declared workflow_call default",
     )
+
+
+def test_workflow_inputs_are_rendered_as_environment_data_not_shell_source(
+    tmp_path: Path,
+) -> None:
+    graph = _graph()
+    command_id = graph["workflows"][0]["jobs"][0]["executor"]["command"]
+    graph["commands"][command_id]["argv"].extend(
+        [
+            "${{ inputs.evaluation_mode || 'pr' }}",
+            "${{ inputs.evaluation_target || '' }}",
+        ]
+    )
+    _write_graph(tmp_path, graph)
+    workflow = yaml.safe_load(render_ci_graph(tmp_path)[".github/workflows/governance.yml"])
+    steps = [
+        step
+        for job in workflow["jobs"].values()
+        for step in job.get("steps", [])
+        if "run" in step
+    ]
+    assert steps
+    assert all("${{" not in step["run"] for step in steps)
+    projected = {
+        value
+        for step in steps
+        for value in step.get("env", {}).values()
+        if isinstance(value, str)
+    }
+    assert any("inputs.evaluation_mode" in value for value in projected)
+    assert any("inputs.evaluation_target" in value for value in projected)
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        'printf "%s" "${{ inputs.evaluation_target }}"',
+        'printf "%s" prefix-${{ inputs.evaluation_target }}',
+        "printf '%s' '${{ inputs.evaluation_target }}'",
+    ],
+)
+def test_expression_hoisting_keeps_malicious_input_one_inert_argument(
+    tmp_path: Path, source: str
+) -> None:
+    steps = [{"run": source}]
+    hoist_run_expressions(steps)
+    assert "${{" not in steps[0]["run"]
+    environment = os.environ.copy()
+    slot = next(iter(steps[0]["env"]))
+    payload = f"; touch {tmp_path / 'executed'}; $(printf injected) *"
+    environment[slot] = payload
+    result = subprocess.run(
+        ["bash", "-c", steps[0]["run"]],
+        cwd=tmp_path,
+        env=environment,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    assert result.stdout in {payload, f"prefix-{payload}"}
+    assert not (tmp_path / "executed").exists()
 
 
 def _write_graph(repo: Path, payload: dict[str, object] | None = None) -> Path:

@@ -25,6 +25,7 @@ from .repository_comparison_context import (
 )
 from .ci_graph_reusable_artifacts import reusable_artifact_binding
 from .ci_graph_routing import render_runner
+from .ci_graph_shell_projection import hoist_run_expressions
 from .ci_graph_yaml import render_yaml
 from .governance_install.transaction import apply_transaction
 
@@ -96,7 +97,11 @@ def _command_step(
 ) -> dict[str, Any]:
     command = compiled.commands[command_id]
     argv: list[str] = []
-    for value in command["argv"]:
+    environment = {
+        "BCF_PYTHON": SELECTED_PYTHON,
+        **command["environment"],
+    }
+    for index, value in enumerate(command["argv"]):
         if value == "{python}":
             argv.append('"$BCF_PYTHON"')
         elif value == "{controller}":
@@ -108,16 +113,12 @@ def _command_step(
             if not env_name.replace("_", "A").isalnum() or env_name.upper() != env_name:
                 raise AssertionError(f"invalid governed environment placeholder {value}")
             argv.append(f'"${env_name}"')
+        elif "${{" in value and "}}" in value:
+            env_name = f"BCF_COMMAND_ARG_{index}"
+            environment[env_name] = value
+            argv.append(f'"${env_name}"')
         else:
-            argv.append(
-                '"' + value.replace('"', '\\"') + '"'
-                if "${{" in value and "}}" in value
-                else shlex.quote(value)
-            )
-    environment = {
-        "BCF_PYTHON": SELECTED_PYTHON,
-        **command["environment"],
-    }
+            argv.append(shlex.quote(value))
     for required in command["required_environment"]:
         environment.setdefault(required, "${{ env." + required + " }}")
     return {
@@ -674,6 +675,7 @@ def _job(
                 "run": "set -euo pipefail\nbcf ci-cleanup --repo-root .",
             }
         )
+    hoist_run_expressions(steps)
     result["steps"] = steps
     if job["trust"] == "trusted" and job["checkout"] is False:
         result = scope_runner_temp_value(result)

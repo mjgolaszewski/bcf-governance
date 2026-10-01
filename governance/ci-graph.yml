@@ -73,13 +73,13 @@ commands:
     cwd: .
     environment: {}
   governance-preflight:
-    argv: ['{python}', scripts/preflight_governance.py, --repo-root, ., --evaluation-mode, '${{ inputs.evaluation_mode || ''pr'' }}', --evaluation-target, '${{ inputs.evaluation_target || '''' }}', --python, '{python}', --artifact-root, .artifacts/bcf, --expected-producer, evidence, --format, text]
+    argv: ['{python}', scripts/preflight_governance.py, --repo-root, ., --evaluation-mode, '{env:BCF_EVALUATION_MODE}', --evaluation-target, '{env:BCF_EVALUATION_TARGET}', --python, '{python}', --artifact-root, .artifacts/bcf, --expected-producer, evidence, --format, text]
     cwd: .
-    environment: {}
+    environment: {BCF_EVALUATION_MODE: '${{ inputs.evaluation_mode || ''pr'' }}', BCF_EVALUATION_TARGET: '${{ inputs.evaluation_target || '''' }}'}
   governance-preflight-with-prior:
-    argv: ['{python}', scripts/preflight_governance.py, --repo-root, ., --evaluation-mode, '${{ inputs.evaluation_mode || ''pr'' }}', --evaluation-target, '${{ inputs.evaluation_target || '''' }}', --python, '{python}', --artifact-root, .artifacts/bcf, --expected-producer, evidence, --prior-evidence-dir, .artifacts/bcf/prior-evidence, --format, text]
+    argv: ['{python}', scripts/preflight_governance.py, --repo-root, ., --evaluation-mode, '{env:BCF_EVALUATION_MODE}', --evaluation-target, '{env:BCF_EVALUATION_TARGET}', --python, '{python}', --artifact-root, .artifacts/bcf, --expected-producer, evidence, --prior-evidence-dir, .artifacts/bcf/prior-evidence, --format, text]
     cwd: .
-    environment: {}
+    environment: {BCF_EVALUATION_MODE: '${{ inputs.evaluation_mode || ''pr'' }}', BCF_EVALUATION_TARGET: '${{ inputs.evaluation_target || '''' }}'}
   capture-governance-shard:
     argv: ['{python}', scripts/capture_governance_shard.py, --repo-root, ., --shard-index, '${{ matrix.shard }}', --shard-count, '4', --session-root, .artifacts/bcf/sessions]
     cwd: .
@@ -93,17 +93,17 @@ commands:
     cwd: .
     environment: {}
   governance-truth:
-    argv: ['{python}', scripts/governance_truth.py, --repo-root, ., --evidence-dir, .artifacts/bcf/fan-in, --evaluation-mode, '${{ inputs.evaluation_mode || ''pr'' }}', --evaluation-target, '${{ inputs.evaluation_target || '''' }}', --format, json, --durable-ref, 'github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth', --output, .artifacts/bcf/truth-report.json]
+    argv: ['{python}', scripts/governance_truth.py, --repo-root, ., --evidence-dir, .artifacts/bcf/fan-in, --evaluation-mode, '{env:BCF_EVALUATION_MODE}', --evaluation-target, '{env:BCF_EVALUATION_TARGET}', --format, json, --durable-ref, 'github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth', --output, .artifacts/bcf/truth-report.json]
     cwd: .
-    environment: {}
+    environment: {BCF_EVALUATION_MODE: '${{ inputs.evaluation_mode || ''pr'' }}', BCF_EVALUATION_TARGET: '${{ inputs.evaluation_target || '''' }}'}
   governance-truth-with-prior:
-    argv: ['{python}', scripts/governance_truth.py, --repo-root, ., --evidence-dir, .artifacts/bcf/fan-in, --prior-evidence-dir, .artifacts/bcf/prior-evidence, --evaluation-mode, '${{ inputs.evaluation_mode || ''pr'' }}', --evaluation-target, '${{ inputs.evaluation_target || '''' }}', --format, json, --durable-ref, 'github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth', --output, .artifacts/bcf/truth-report.json]
+    argv: ['{python}', scripts/governance_truth.py, --repo-root, ., --evidence-dir, .artifacts/bcf/fan-in, --prior-evidence-dir, .artifacts/bcf/prior-evidence, --evaluation-mode, '{env:BCF_EVALUATION_MODE}', --evaluation-target, '{env:BCF_EVALUATION_TARGET}', --format, json, --durable-ref, 'github-actions://${{ github.repository }}/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/bcf-governance-truth', --output, .artifacts/bcf/truth-report.json]
     cwd: .
-    environment: {}
+    environment: {BCF_EVALUATION_MODE: '${{ inputs.evaluation_mode || ''pr'' }}', BCF_EVALUATION_TARGET: '${{ inputs.evaluation_target || '''' }}'}
   governance-terminal-observation:
-    argv: ['{python}', .github/scripts/governance_terminal_observation.py, --repo-root, ., --output, .artifacts/bcf/truth-report.json, --preflight-result, '${{ needs.preflight.result }}', --evidence-result, '${{ needs.evidence.result }}', --repository, '${{ github.repository }}', --commit-sha, '${{ github.sha }}', --run-id, '${{ github.run_id }}', --run-attempt, '${{ github.run_attempt }}', --evaluation-mode, '${{ inputs.evaluation_mode || ''pr'' }}', --evaluation-target, '${{ inputs.evaluation_target || '''' }}']
+    argv: ['{python}', .github/scripts/governance_terminal_observation.py, --repo-root, ., --output, .artifacts/bcf/truth-report.json, --preflight-result, '{env:BCF_PREFLIGHT_RESULT}', --evidence-result, '{env:BCF_EVIDENCE_RESULT}', --repository, '{env:GITHUB_REPOSITORY}', --commit-sha, '{env:GITHUB_SHA}', --run-id, '{env:GITHUB_RUN_ID}', --run-attempt, '{env:GITHUB_RUN_ATTEMPT}', --evaluation-mode, '{env:BCF_EVALUATION_MODE}', --evaluation-target, '{env:BCF_EVALUATION_TARGET}']
     cwd: .
-    environment: {}
+    environment: {BCF_PREFLIGHT_RESULT: '${{ needs.preflight.result }}', BCF_EVIDENCE_RESULT: '${{ needs.evidence.result }}', BCF_EVALUATION_MODE: '${{ inputs.evaluation_mode || ''pr'' }}', BCF_EVALUATION_TARGET: '${{ inputs.evaluation_target || '''' }}'}
   scheduled-preflight:
     argv: ['{python}', scripts/preflight_governance.py, --repo-root, ., --mode, release, --python, '{python}', --format, text]
     cwd: .

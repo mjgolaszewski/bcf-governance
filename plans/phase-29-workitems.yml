@@ -11,11 +11,13 @@ workitems:
 - id: P29-P0-01
   priority: P0
   status: IN_PROGRESS
-  summary: persist the CI state matrix and repair direct-main comparison context
+  summary: persist the CI state matrix and repair evaluation-input projection
   acceptance:
   - the provider-event evaluation-proposition and downstream consumer matrix is canonical and complete
   - pull request direct push and workflow-call contexts bind their exact authenticated base independently of lifecycle intent
   - prospective execution exercises the exact direct-push preflight and rejects missing moved unresolved or stranded lifecycle context before evidence fan-out
+  - workflow expressions never enter shell source and typed evaluation inputs reach preflight and truth only through validated environment data
+  - adversarial workflow-call evaluation input cannot alter argv execute shell text or change the canonical proposition
   - self Lite and Standard v3 graph render runtime and pack projections remain exact
   acceptance_evidence:
   - test

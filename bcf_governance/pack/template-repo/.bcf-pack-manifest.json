@@ -652,7 +652,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_defaults.py": {
       "operation": "copy",
-      "sha256": "fd085d068a2f15a187d5428029c806f623bcb04a691c1ae2c7b9d94d2a62ecd0"
+      "sha256": "409a499b2b44bc0505cc08cdcb9def6f6182c97504ed06ca1916a502e6f2b79f"
     },
     "scripts/_bcf_runtime/ci_graph_diagnostics.py": {
       "operation": "copy",
@@ -680,7 +680,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "3de3f4f03c8626b7ceb1fc997dd5aea37cfce0b93df460c0ccc7390b7503f471"
+      "sha256": "0e2f699141923556fc31f7cc81fa4843f797d2bd09cb79c9b903a4d4c808a014"
     },
     "scripts/_bcf_runtime/ci_graph_reusable_artifacts.py": {
       "operation": "copy",
@@ -693,6 +693,10 @@
     "scripts/_bcf_runtime/ci_graph_routing.py": {
       "operation": "copy",
       "sha256": "3ef29df2712723aa8ad943d608a5b5956dc612e9ca3ff102895a3097e758595e"
+    },
+    "scripts/_bcf_runtime/ci_graph_shell_projection.py": {
+      "operation": "copy",
+      "sha256": "fcc999deb1cf5a938d73835275daadb77ae430db26f80ce1285009978cfaca95"
     },
     "scripts/_bcf_runtime/ci_graph_storage.py": {
       "operation": "copy",
