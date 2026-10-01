@@ -15,7 +15,10 @@ import yaml
 from bcf_governance.tooling.ci_authority_pins import verify_workflow_authority
 from bcf_governance.tooling.ci_github_actions import ACTION_PINS
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
-from bcf_governance.tooling.ci_graph_execution import job_required_environment
+from bcf_governance.tooling.ci_graph_execution import (
+    exact_main_evaluation,
+    job_required_environment,
+)
 from bcf_governance.tooling.ci_graph_render import (
     check_ci_graph,
     render_ci_graph,
@@ -419,15 +422,10 @@ def test_exact_main_is_the_only_default_branch_producer() -> None:
     assert [job["id"] for job in _workflow("exact-main")["jobs"]] == [
         "admit", "governance", "trusted-controller-build",
     ]
-    admission = _job("exact-main", "admit")["executor"]
-    evaluation = {"evaluation_mode": admission["evaluation_mode"]}
-    if admission["evaluation_mode"] == "workitem":
-        target = admission.get("evaluation_target")
-        assert isinstance(target, str) and target
-        evaluation["evaluation_target"] = target
-    else:
-        assert admission["evaluation_mode"] == "closure"
-        assert "evaluation_target" not in admission
+    canonical_evaluation = exact_main_evaluation(compiled.workflows)
+    evaluation = {"evaluation_mode": canonical_evaluation.mode}
+    if canonical_evaluation.target is not None:
+        evaluation["evaluation_target"] = canonical_evaluation.target
     called = _job("exact-main", "governance")["executor"]
     inputs = called["inputs"]
     assert {key: inputs[key] for key in evaluation} == evaluation

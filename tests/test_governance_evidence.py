@@ -77,7 +77,11 @@ def test_active_phase_status_control_preserves_bytes_and_reaches_oracle(
         ledger["active_phase"]["log"],
     )
     after = log.read_text(encoding="utf-8")
-    assert after == before.replace("  status: completed", "  status: verified", 1)
+    prior_status = yaml.safe_load(before)["document"]["status"]
+    status_line = f"  status: {prior_status}\n"
+    assert prior_status != "verified"
+    assert before.count(status_line) == 1
+    assert after == before.replace(status_line, "  status: verified\n", 1)
 
     result = subprocess.run(
         [
