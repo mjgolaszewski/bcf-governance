@@ -55,6 +55,7 @@ class GitHubAPI:
         path: str,
         *,
         payload: dict[str, Any] | None = None,
+        not_found_none: bool = False,
     ) -> Any:
         if not path.startswith("/") or "\n" in path or "\r" in path:
             raise GitHubAPIError("GitHub API path is unsafe")
@@ -75,6 +76,8 @@ class GitHubAPI:
             with open_download(request, timeout=30) as response:
                 raw = response.read()
         except HTTPError as exc:
+            if not_found_none and method == "GET" and exc.code == 404:
+                return None
             raise GitHubAPIError(f"GitHub API {method} {path} returned {exc.code}") from exc
         except (OSError, URLError) as exc:
             raise GitHubAPIError(f"GitHub API {method} {path} failed") from exc

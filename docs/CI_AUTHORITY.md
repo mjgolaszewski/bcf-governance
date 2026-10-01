@@ -224,7 +224,9 @@ contracts, so adding, omitting, renaming, or escaping a file fails without a han
 shell argument list.
 
 Publication is separate. Immutable releases must already be enabled. The
-publisher authenticates an annotated unsigned tag at the certified commit,
+publisher mechanically creates an absent annotated unsigned tag only after
+authenticating the certified commit and exact attested assets, then reauthenticates
+that tag before publication; any existing conflicting tag fails closed. It
 creates a draft, attaches and attests only the certified wheel, sdist, and
 checksums, verifies their provider digests, and publishes the draft. It never
 rebuilds. Repository immutable-release inspection requires Administration read,

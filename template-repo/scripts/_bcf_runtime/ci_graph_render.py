@@ -115,7 +115,7 @@ def _command_step(
         **command["environment"],
     }
     for required in command["required_environment"]:
-        environment[required] = "${{ env." + required + " }}"
+        environment.setdefault(required, "${{ env." + required + " }}")
     return {
         "name": name,
         "shell": "bash",
