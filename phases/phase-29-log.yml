@@ -61,6 +61,7 @@ execution_evidence:
   - affected surfaces are canonical comparison context graph defaults and post-merge evaluation; generated workflows packs locks manifests and authority are reconciler consequences; regressions are test-only; truth finalizer publisher release and rotation semantics are inspected and unchanged
   - merged correction d8e6906948ea7b7f2762d9f050203393c3f6ad00 completed unified rotation 37011053947/1, but fresh exact-main 37010486449/2 failed job 110857891515 before fan-out because the reusable governance callee did not consume its declared comparison-base input
   - the canonical matrix now treats caller projection and callee consumption as one indivisible edge; renderer and required-artifact validation own the same event-aware comparison environment
+  - the PR-base negative control now mutates the canonical comparison-context primitive and is killed by an independent literal contract, replacing the renderer branch made unreachable by reusable-workflow consumption
 closeout_requirements:
   claims:
     workitems_closed:
