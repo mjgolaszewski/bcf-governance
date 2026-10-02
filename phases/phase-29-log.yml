@@ -55,6 +55,10 @@ execution_evidence:
   - the controller-install extraction retargeted release-verifier-controller-digest-must-fail to its canonical owner; its baseline oracle passed and the exact digest-check inversion failed that oracle
   - the focused graph preflight prospective local and profile matrix passed 191 tests in 256.49 seconds
   - the exact self test population completed once in 1718.06 seconds then exhausted the shared 1800-second gate deadline on a later clean run; the canonical test workload now declares a measured 2400-second deadline while outer-job containment remains mechanically enforced
+  - PR 350 merged as 5a57ad0713684de9f720ef4f237db2a1f9dca307 and unified controller rotation 36959382102/1 completed on both trusted runners
+  - exact-main 36959170779/2 failed job 110693815793 before evidence fan-out because the reusable governance caller omitted the authenticated outer push predecessor required by canonical comparison-context preflight
+  - the state matrix now owns that outer-to-inner transport edge; graph evaluation rejects an absent defaulted or wrong-source binding and canonical reconciliation projects the exact caller input
+  - affected surfaces are canonical comparison context graph defaults and post-merge evaluation; generated workflows packs locks manifests and authority are reconciler consequences; regressions are test-only; truth finalizer publisher release and rotation semantics are inspected and unchanged
 closeout_requirements:
   claims:
     workitems_closed:

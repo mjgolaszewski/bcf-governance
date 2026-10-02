@@ -649,7 +649,7 @@ workflows:
     executor:
       kind: reusable_workflow
       path: .github/workflows/governance.yml
-      inputs: {evaluation_mode: pr, use_prior_evidence: true}
+      inputs: {evaluation_mode: pr, use_prior_evidence: true, comparison_base_sha: '${{ github.event.before }}'}
       artifact_bindings: {prior-evidence-transport: use_prior_evidence}
     produces: []
     consumes: [prior-evidence-transport]

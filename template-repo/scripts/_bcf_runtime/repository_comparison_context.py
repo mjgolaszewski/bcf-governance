@@ -9,6 +9,7 @@ from typing import Iterator
 
 PROVIDER_EVENT_EXPRESSION = "${{ github.event_name }}"
 PULL_REQUEST_BASE_EXPRESSION = "${{ github.event.pull_request.base.sha }}"
+PUSH_COMPARISON_BASE_EXPRESSION = "${{ github.event.before }}"
 DIRECT_COMPARISON_BASE_EXPRESSION = (
     "${{ github.event_name == 'pull_request' && "
     "github.event.pull_request.base.sha || github.event_name == 'push' && "
@@ -18,6 +19,12 @@ DIRECT_EVENT_COMPARISON_BASE_EXPRESSION = (
     "${{ github.event_name == 'pull_request' && "
     "github.event.pull_request.base.sha || github.event.before }}"
 )
+
+
+def push_comparison_inputs(**inputs: object) -> dict[str, object]:
+    """Bind reusable execution inputs to the authenticated outer push."""
+
+    return {"comparison_base_sha": PUSH_COMPARISON_BASE_EXPRESSION, **inputs}
 
 
 def direct_comparison_environment(*, explicit_call: bool = True) -> dict[str, str]:

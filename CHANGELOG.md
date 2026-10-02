@@ -10,7 +10,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 - Separated provider-event comparison context from lifecycle evaluation intent,
   so direct protected-main progress uses its authenticated push predecessor
-  rather than a pull-request-only base; the same release train adds
+  rather than a pull-request-only base, including explicit transport of the
+  outer exact-main push predecessor through its reusable governance call; the
+  same release train adds
   deterministic selective reconciliation, bounded read-only provider retries,
   derived lifecycle projections, and explicitly non-authoritative progress and
   latency observations; measured gate-specific deadlines remain bounded by

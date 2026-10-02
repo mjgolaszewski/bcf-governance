@@ -7,6 +7,7 @@ from typing import Any
 
 from .evidence_shards import workflow_shard_matrix
 from .ci_graph_execution import direct_post_merge_mode
+from .repository_comparison_context import push_comparison_inputs
 
 
 EXTENSION_POINTS = [
@@ -414,7 +415,7 @@ def _apply_v3_proof_composition(graph: dict[str, Any], gates: list[str]) -> None
         admit["permissions"] = {"actions": "write", "contents": "read", "statuses": "write"}
         admit["produces"] = ["prior-evidence-transport"]
         producer = next(item for item in exact_main["jobs"] if item["id"] == "governance-producer")
-        producer["executor"]["inputs"] = {"evaluation_mode": "pr", "use_prior_evidence": True}
+        producer["executor"]["inputs"] = push_comparison_inputs(evaluation_mode="pr", use_prior_evidence=True)
         producer["executor"]["artifact_bindings"] = {"prior-evidence-transport": "use_prior_evidence"}
         producer["consumes"] = ["prior-evidence-transport"]
 
@@ -676,7 +677,7 @@ def build_reference_ci_graph(
                             executor={
                                 "kind": "reusable_workflow",
                                 "path": ".github/workflows/governance.yml",
-                                "inputs": {},
+                                "inputs": push_comparison_inputs(),
                             },
                             components=[],
                         ),

@@ -15,6 +15,7 @@ workitems:
   acceptance:
   - the provider-event evaluation-proposition and downstream consumer matrix is canonical and complete
   - pull request direct push and workflow-call contexts bind their exact authenticated base independently of lifecycle intent
+  - exact-main reusable governance calls bind the authenticated outer push predecessor and prospective validation rejects missing defaulted or wrong-source transport before evidence fan-out
   - prospective execution exercises the exact direct-push preflight and rejects missing moved unresolved or stranded lifecycle context before evidence fan-out
   - workflow expressions never enter shell source and typed evaluation inputs reach preflight and truth only through validated environment data
   - adversarial workflow-call evaluation input cannot alter argv execute shell text or change the canonical proposition

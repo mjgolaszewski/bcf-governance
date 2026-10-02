@@ -20,6 +20,7 @@ from .evidence_workitem_lifecycle import (
     WorkitemContractError,
     validate_workitem_dependencies,
 )
+from .repository_comparison_context import PUSH_COMPARISON_BASE_EXPRESSION
 
 
 CALLER_MODE = "${{ inputs.evaluation_mode || 'pr' }}"
@@ -115,6 +116,13 @@ def post_merge_evaluation(graph: dict[str, Any]) -> PostMergeEvaluation:
             job for job in exact[0]["jobs"]
             if job.get("semantic_role") == "exact-main-governance-producer"
         )
+        if producer.get("executor", {}).get("inputs", {}).get(
+            "comparison_base_sha"
+        ) != PUSH_COMPARISON_BASE_EXPRESSION:
+            raise CIGraphError(
+                "exact-main reusable governance comparison base is not "
+                "canonically bound to the outer push event"
+            )
         return PostMergeEvaluation(
             evaluation.mode,
             evaluation.target,
@@ -302,6 +310,9 @@ def reconcile_post_merge_scope(repo_root: Path, *, apply: bool) -> bool:
     )
     admission["executor"]["evaluation_mode"] = mode
     producer["executor"].setdefault("inputs", {})["evaluation_mode"] = mode
+    producer["executor"]["inputs"][
+        "comparison_base_sha"
+    ] = PUSH_COMPARISON_BASE_EXPRESSION
     if target is None:
         admission["executor"].pop("evaluation_target", None)
         producer["executor"]["inputs"].pop("evaluation_target", None)
