@@ -644,7 +644,7 @@ def _workflow(compiled: CompiledCIGraph, workflow: dict[str, Any]) -> bytes:
         event_types = {event["type"] for event in workflow["events"]}
         comparison_environment = (
             direct_comparison_environment()
-            if {"pull_request", "push", "workflow_call"}.issubset(event_types)
+            if "workflow_call" in event_types or "push" in event_types
             else {"BCF_PR_BASE_SHA": PULL_REQUEST_BASE_EXPRESSION}
         )
         workflow_environment = {

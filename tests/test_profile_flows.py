@@ -1459,6 +1459,9 @@ def test_full_profile_install_evidence_truth_flow(
         "${{ github.event_name == 'pull_request' }}"
     )
     assert workflow["env"]["BCF_PR_BASE_SHA"] == "${{ github.event.pull_request.base.sha }}"
+    assert workflow["env"]["BCF_COMPARISON_BASE_SHA"].endswith(
+        "inputs.comparison_base_sha || '' }}"
+    )
     assert len(governed_gates) == len(set(governed_gates))
     assert set(governed_gates) == set(contracts["gates"])
     subject = {"commit_sha": git(repo, "rev-parse", "HEAD"), "tree_sha": git(repo, "rev-parse", "HEAD^{tree}")}

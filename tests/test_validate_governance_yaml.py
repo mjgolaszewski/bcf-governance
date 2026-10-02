@@ -244,13 +244,9 @@ def test_direct_template_comparison_context_fails_in_structural_validation(
     target = tmp_path / "governance.yml"
     target.write_bytes(source.read_bytes())
     _validate_workflow_comparison_contract(target)
-    target.write_text(
-        target.read_text(encoding="utf-8").replace(
-            "  BCF_COMPARISON_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}\n",
-            "",
-        ),
-        encoding="utf-8",
-    )
+    workflow = yaml.safe_load(target.read_text(encoding="utf-8"))
+    workflow["env"].pop("BCF_COMPARISON_BASE_SHA")
+    target.write_text(yaml.safe_dump(workflow, sort_keys=False), encoding="utf-8")
     with pytest.raises(GovernanceValidationError, match="exact provider-event base"):
         _validate_workflow_comparison_contract(target)
 

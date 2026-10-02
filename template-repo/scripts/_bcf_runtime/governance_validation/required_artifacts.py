@@ -136,14 +136,14 @@ def _validate_workflow_comparison_contract(workflow_path: Path) -> None:
         workflow.get("on", workflow.get(True)),
         context=f"{display} on",
     )
-    direct_push = "push" in events
+    comparison_input = "push" in events or "workflow_call" in events
     expected = {
         "BCF_ENFORCE_PR_CHANGELOG": "${{ github.event_name == 'pull_request' }}",
         **(
             direct_comparison_environment(
                 explicit_call="workflow_call" in events
             )
-            if direct_push
+            if comparison_input
             else {"BCF_PR_BASE_SHA": PULL_REQUEST_BASE_EXPRESSION}
         ),
     }
