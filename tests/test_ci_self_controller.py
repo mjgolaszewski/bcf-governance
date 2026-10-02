@@ -460,10 +460,16 @@ def test_controller_bootstrap_is_cold_start_safe_and_interpreter_owned(
     invoke = steps[invoke_index]
     assert stage["env"]["BCF_PYTHON"] == "${{ env.pythonLocation }}/bin/python"
     assert str(stage["run"]).startswith('set -euo pipefail\n"$BCF_PYTHON" -I -c ')
-    assert "/bcf-controller-${{ github.run_id }}-${{ github.run_attempt }}/bin/bcf" in str(
-        invoke["run"]
+    assert invoke["env"]["BCF_RUN_EXPRESSION_0"] == "${{ runner.temp }}"
+    assert invoke["env"]["BCF_RUN_EXPRESSION_1"] == "${{ github.run_id }}"
+    assert invoke["env"]["BCF_RUN_EXPRESSION_2"] == "${{ github.run_attempt }}"
+    executable = str(invoke["run"]).split(" ci-github bootstrap", 1)[0]
+    assert (
+        "/bcf-controller-${BCF_RUN_EXPRESSION_1}-"
+        "${BCF_RUN_EXPRESSION_2}/bin/bcf"
+        in executable
     )
-    assert "/bcf-governance/" not in str(invoke["run"]).split(" ci-github bootstrap", 1)[0]
+    assert "/bcf-governance/" not in executable
 
 
 def test_recovery_reentry_allows_ordinary_target_then_expires_on_confirmation(

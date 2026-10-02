@@ -4,6 +4,7 @@ import copy
 import hashlib
 import json
 import os
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -28,6 +29,11 @@ from bcf_governance.tooling.ci_graph_execution import (
     resolve_local_job_environment,
     workflow_input_issues,
 )
+from bcf_governance.tooling.repository_comparison_context import (
+    DIRECT_COMPARISON_BASE_EXPRESSION,
+    PROVIDER_EVENT_EXPRESSION,
+    direct_comparison_environment,
+)
 from bcf_governance.tooling.ci_graph_post_merge import (
     authored_post_merge_scope,
     post_merge_evaluation,
@@ -43,16 +49,23 @@ from bcf_governance.tooling.ci_graph_locks import (
     check_ci_graph_locks,
 )
 from bcf_governance.tooling.ci_graph_render import (
+    _command_step,
     _executor_steps,
     _job as render_job,
+    _workflow as render_workflow,
     apply_ci_graph,
     check_ci_graph,
     render_ci_graph,
 )
+from bcf_governance.tooling.ci_graph_shell_projection import hoist_run_expressions
 from bcf_governance.tooling.ci_graph_values import resolve_graph_values
 from bcf_governance.tooling.ci_graph_workflow_run import (
     WorkflowRunTopologyError,
     validate_workflow_run_depth,
+)
+from bcf_governance.tooling.evaluation_scope import (
+    EvaluationScopeError,
+    evaluation_scope,
 )
 from bcf_governance.tooling.truth_workflow_graph import graph_workflow_gate_issues
 
@@ -74,6 +87,14 @@ def test_workflow_run_chain_cannot_exceed_provider_depth_limit() -> None:
     with pytest.raises(WorkflowRunTopologyError, match="three-level"):
         validate_workflow_run_depth(workflows)
     validate_workflow_run_depth(workflows[:4])
+
+
+def test_candidate_governance_rejects_pull_request_target_before_render() -> None:
+    graph = yaml.safe_load((REPO_ROOT / "governance/ci-graph.yml").read_text())
+    workflow = next(item for item in graph["workflows"] if item["role"] == "pull-request")
+    workflow["events"].append({"type": "pull_request_target"})
+    with pytest.raises(CIGraphError, match="cannot use pull_request_target"):
+        _validate_workflows(graph)
 
 
 def test_exact_main_evaluation_has_one_canonical_admission_and_truth_scope() -> None:
@@ -242,9 +263,28 @@ def test_reconcile_replaces_stale_adopter_closure_with_pr_progress(
     (tmp_path / "governance").mkdir()
     (tmp_path / "plans").mkdir()
     (tmp_path / "phases").mkdir()
-    (tmp_path / "governance/ci-graph.yml").write_bytes(
-        (REPO_ROOT / "governance/ci-graph.yml").read_bytes()
+    stale_graph = yaml.safe_load(
+        (REPO_ROOT / "governance/ci-graph.yml").read_text(encoding="utf-8")
     )
+    exact = next(item for item in stale_graph["workflows"] if item["id"] == "exact-main")
+    admission = next(
+        item for item in exact["jobs"]
+        if item["semantic_role"] == "exact-main-admission"
+    )
+    producer = next(
+        item for item in exact["jobs"]
+        if item["semantic_role"] == "exact-main-governance-producer"
+    )
+    admission["executor"]["evaluation_mode"] = "closure"
+    admission["executor"].pop("evaluation_target", None)
+    producer["executor"]["inputs"]["evaluation_mode"] = "closure"
+    producer["executor"]["inputs"].pop("evaluation_target", None)
+    argv = stale_graph["commands"]["exact-main-admit-effective"]["argv"]
+    argv[argv.index("--evaluation-mode") + 1] = "closure"
+    if "--evaluation-target" in argv:
+        target_index = argv.index("--evaluation-target")
+        del argv[target_index : target_index + 2]
+    (tmp_path / "governance/ci-graph.yml").write_bytes(render_yaml(stale_graph))
     (tmp_path / "plans/phase-ledger.yml").write_text(
         yaml.safe_dump(
             {
@@ -303,11 +343,41 @@ def test_v3_lite_starts_with_typed_direct_pr_progress() -> None:
         "workflow_id": "governance",
         "terminal_job_id": "governance-truthfulness",
     }
-    assert graph["commands"]["v3-truth"]["argv"][
-        graph["commands"]["v3-truth"]["argv"].index("--evaluation-mode") + 1
-    ] == direct_post_merge_mode("pr")
+    command = graph["commands"]["v3-truth"]
+    assert command["argv"][
+        command["argv"].index("--evaluation-mode") + 1
+    ] == "{env:BCF_EVALUATION_MODE}"
+    assert command["environment"]["BCF_EVALUATION_MODE"] == direct_post_merge_mode(
+        "pr"
+    )
     workflow = next(item for item in graph["workflows"] if item["id"] == "governance")
     assert workflow_input_issues(graph, workflow) == ()
+
+
+def test_direct_workflow_declares_event_owned_comparison_context() -> None:
+    graph = build_reference_ci_graph(
+        project_id="direct-adopter",
+        profile="lite",
+        profile_contract_version="3.0",
+        gates=["governance-validate"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    assert direct_comparison_environment() == {
+        "BCF_PROVIDER_EVENT": PROVIDER_EVENT_EXPRESSION,
+        "BCF_COMPARISON_BASE_SHA": DIRECT_COMPARISON_BASE_EXPRESSION,
+        "BCF_PR_BASE_SHA": "${{ github.event.pull_request.base.sha }}",
+    }
+    workflow = next(item for item in graph["workflows"] if item["id"] == "governance")
+    call = next(item for item in workflow["events"] if item["type"] == "workflow_call")
+    assert call["inputs"]["comparison_base_sha"] == {
+        "description": "Exact repository comparison base for explicit calls",
+        "required": False,
+        "default": "",
+        "type": "string",
+    }
 
 
 def test_reference_exact_main_evaluation_uses_unique_semantic_roles() -> None:
@@ -345,14 +415,15 @@ def test_direct_protected_main_rejects_pr_default_on_push() -> None:
         trusted_hosted=True,
     )
     for command in graph["commands"].values():
-        command["argv"] = [
-            value.replace(
+        command["environment"] = {
+            name: value.replace(
                 direct_post_merge_mode("pr"),
                 "${{ inputs.evaluation_mode || 'pr' }}",
             )
-            if isinstance(value, str) else value
-            for value in command["argv"]
-        ]
+            if isinstance(value, str)
+            else value
+            for name, value in command["environment"].items()
+        }
     with pytest.raises(CIGraphError, match="not canonically event-bound"):
         post_merge_evaluation(graph)
 
@@ -415,14 +486,15 @@ def test_reconcile_normalizes_direct_protected_main_scope_once(tmp_path: Path) -
         trusted_hosted=True,
     )
     for command in graph["commands"].values():
-        command["argv"] = [
-            value.replace(
+        command["environment"] = {
+            name: value.replace(
                 direct_post_merge_mode("pr"),
                 "${{ inputs.evaluation_mode || 'pr' }}",
             )
-            if isinstance(value, str) else value
-            for value in command["argv"]
-        ]
+            if isinstance(value, str)
+            else value
+            for name, value in command["environment"].items()
+        }
     path = tmp_path / "governance/ci-graph.yml"
     path.parent.mkdir(parents=True)
     path.write_bytes(render_yaml(graph))
@@ -827,6 +899,154 @@ def test_direct_event_command_inputs_require_mechanical_fallback() -> None:
         "direct-event workflow governance command preflight input "
         "evaluation_mode fallback must equal its declared workflow_call default",
     )
+
+
+def test_workflow_inputs_are_rendered_as_environment_data_not_shell_source(
+    tmp_path: Path,
+) -> None:
+    graph = _graph()
+    command_id = graph["workflows"][0]["jobs"][0]["executor"]["command"]
+    graph["commands"][command_id]["argv"].extend(
+        [
+            "${{ inputs.evaluation_mode || 'pr' }}",
+            "${{ inputs.evaluation_target || '' }}",
+        ]
+    )
+    _write_graph(tmp_path, graph)
+    workflow = yaml.safe_load(render_ci_graph(tmp_path)[".github/workflows/governance.yml"])
+    steps = [
+        step
+        for job in workflow["jobs"].values()
+        for step in job.get("steps", [])
+        if "run" in step
+    ]
+    assert steps
+    assert all("${{" not in step["run"] for step in steps)
+    projected = {
+        value
+        for step in steps
+        for value in step.get("env", {}).values()
+        if isinstance(value, str)
+    }
+    assert any("inputs.evaluation_mode" in value for value in projected)
+    assert any("inputs.evaluation_target" in value for value in projected)
+    assert "${{ inputs.evaluation_mode || 'pr' }}" in projected
+    assert "${{ inputs.evaluation_target || '' }}" in projected
+
+
+def test_evaluation_input_empty_and_whitespace_states_are_closed() -> None:
+    scope = evaluation_scope(
+        "pr", target=None, phase_id="P29", subject_commit="a" * 40
+    )
+    assert scope.intent.value == "pr"
+    for intent in ("", " ", "unknown"):
+        with pytest.raises(EvaluationScopeError, match="intent is unsupported"):
+            evaluation_scope(
+                intent, target=None, phase_id="P29", subject_commit="a" * 40
+            )
+    for target in (None, "", " "):
+        with pytest.raises(EvaluationScopeError, match="requires one exact target"):
+            evaluation_scope(
+                "workitem",
+                target=target,
+                phase_id="P29",
+                subject_commit="a" * 40,
+            )
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        'printf "%s" "${{ inputs.evaluation_target }}"',
+        'printf "%s" prefix-${{ inputs.evaluation_target }}',
+        "printf '%s' '${{ inputs.evaluation_target }}'",
+    ],
+)
+def test_expression_hoisting_keeps_malicious_input_one_inert_argument(
+    tmp_path: Path, source: str
+) -> None:
+    steps = [{"run": source}]
+    hoist_run_expressions(steps)
+    assert "${{" not in steps[0]["run"]
+    environment = os.environ.copy()
+    slot = next(iter(steps[0]["env"]))
+    payload = f"; touch {tmp_path / 'executed'}; $(printf injected) *"
+    environment[slot] = payload
+    result = subprocess.run(
+        ["bash", "-c", steps[0]["run"]],
+        cwd=tmp_path,
+        env=environment,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    assert result.stdout in {payload, f"prefix-{payload}"}
+    assert not (tmp_path / "executed").exists()
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        'eval "${{ inputs.evaluation_target }}"',
+        'source "${{ inputs.evaluation_target }}"',
+        'bash -c "${{ inputs.evaluation_target }}"',
+        'python -c "${{ inputs.evaluation_target }}"',
+    ],
+)
+def test_expression_projection_rejects_interpreter_source_sinks(source: str) -> None:
+    with pytest.raises(AssertionError, match="interpreter source sink"):
+        hoist_run_expressions([{"run": source}])
+
+
+def test_expression_projection_rejects_reserved_environment_collisions() -> None:
+    with pytest.raises(AssertionError, match="reserved BCF_RUN_EXPRESSION_"):
+        hoist_run_expressions([{
+            "run": 'printf "%s" "${{ inputs.evaluation_target }}"',
+            "env": {"BCF_RUN_EXPRESSION_0": "candidate-owned"},
+        }])
+
+    compiled = validate_ci_graph(REPO_ROOT)
+    command = compiled.commands["governance-truth"]
+    command["environment"]["BCF_COMMAND_ARG_0"] = "candidate-owned"
+    with pytest.raises(AssertionError, match="reserved BCF_COMMAND_ARG_"):
+        _command_step(compiled, "governance-truth", name="mutant")
+
+
+@pytest.mark.parametrize("surface", ["workflow", "job", "component"])
+def test_context_environment_ownership_cannot_be_overridden(surface: str) -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    workflow = next(item for item in compiled.workflows if item["id"] == "governance")
+    if surface == "workflow":
+        workflow["environment"]["BCF_PROVIDER_EVENT"] = "candidate-owned"
+    elif surface == "job":
+        workflow["jobs"][0]["environment"]["BCF_COMPARISON_BASE_SHA"] = (
+            "candidate-owned"
+        )
+    else:
+        compiled.graph["step_components"]["checkout-candidate"]["environment"][
+            "BCF_EVALUATION_MODE"
+        ] = "candidate-owned"
+    with pytest.raises(AssertionError, match="overrides reserved context"):
+        render_workflow(compiled, workflow)
+
+
+def test_controller_install_interpreter_reads_paths_only_as_environment_data() -> None:
+    rendered = yaml.safe_load(
+        render_ci_graph(REPO_ROOT)[".github/workflows/bcf-controller-rotation.yml"]
+    )
+    steps = [
+        step
+        for job in rendered["jobs"].values()
+        for step in job.get("steps", [])
+        if "BCF_CONTROLLER_ARTIFACT_DIR" in step.get("env", {})
+    ]
+    assert steps
+    for step in steps:
+        assert "${{" not in step["run"]
+        script = shlex.split("\n".join(step["run"].splitlines()[1:]))[3]
+        assert "os.environ['BCF_CONTROLLER_ARTIFACT_DIR']" in script
+        assert "os.environ['BCF_CONTROLLER_INSTALL_ROOT']" in script
+        assert "${{" in step["env"]["BCF_CONTROLLER_ARTIFACT_DIR"]
 
 
 def _write_graph(repo: Path, payload: dict[str, object] | None = None) -> Path:
@@ -1801,6 +2021,11 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
             )
         else:
             assert all(item["status"] == "DONE" for item in workitems)
+    elif evaluation_mode == "pr":
+        assert evaluation_target is None
+        assert any(
+            item["status"] in {"IN_PROGRESS", "BLOCKED"} for item in workitems
+        )
     else:
         assert evaluation_mode == "closure"
         assert evaluation_target is None
@@ -1900,14 +2125,21 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
             if step["name"] == "Upload exact prior evidence transport"
     )
     assert "prior-evidence transport" in transport["run"]
-    assert (
-        '--main-sha "$GITHUB_SHA"' in transport["run"]
-        or '--main-sha "${{ github.sha }}"' in transport["run"]
-    )
+    assert '--main-sha "$BCF_COMMAND_ARG_7"' in transport["run"]
     expected_transport_env = {
         "BCF_PYTHON": "${{ env.pythonLocation }}/bin/python",
         "BCF_CONTROLLER_EXECUTION_REQUIRED": "true",
         "GITHUB_TOKEN": "${{ github.token }}",
+        "BCF_COMMAND_ARG_0": (
+            "${{ runner.tool_cache }}/bcf-governance/"
+            "${{ needs.trusted-controller-build.outputs.target_commit }}/bin/bcf"
+        ),
+        "BCF_COMMAND_ARG_5": "${{ github.repository }}",
+        "BCF_COMMAND_ARG_7": "${{ github.sha }}",
+        "BCF_COMMAND_ARG_9": (
+            "${{ runner.temp }}/bcf-prior-evidence-"
+            "${{ github.run_id }}-${{ github.run_attempt }}"
+        ),
     }
     if admission["executor"].get("protection_inspection"):
         expected_transport_env.update({
@@ -1926,7 +2158,8 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         assert steps.index(mint) < steps.index(transport)
     assert transport["env"] == expected_transport_env
     assert upload["with"]["path"].startswith("${{ runner.temp }}/bcf-prior-evidence-")
-    assert f'--output "{upload["with"]["path"]}"' in transport["run"]
+    assert transport["env"]["BCF_COMMAND_ARG_9"] == upload["with"]["path"]
+    assert '--output "$BCF_COMMAND_ARG_9"' in transport["run"]
     assert exact_jobs["governance"]["with"] == {
         **evaluation, "use_prior_evidence": True,
     }
@@ -2093,19 +2326,22 @@ def test_exact_main_finalizer_uses_callback_identity_only_as_provider_locator() 
             ".github/workflows/bcf-trusted-finalizer.yml"
         ]
     )
-    command = next(
-        step["run"]
+    step = next(
+        step
         for step in rendered["jobs"]["finalize"]["steps"]
         if "exact-main finalize" in step.get("run", "")
     )
+    command = step["run"]
 
-    assert '--trigger-run-id "${{ github.event.workflow_run.id }}"' in command
-    assert (
-        '--trigger-run-attempt "${{ github.event.workflow_run.run_attempt }}"'
-        in command
+    assert '--trigger-run-id "$BCF_COMMAND_ARG_7"' in command
+    assert '--trigger-run-attempt "$BCF_COMMAND_ARG_9"' in command
+    assert step["env"]["BCF_COMMAND_ARG_7"] == "${{ github.event.workflow_run.id }}"
+    assert step["env"]["BCF_COMMAND_ARG_9"] == (
+        "${{ github.event.workflow_run.run_attempt }}"
     )
-    assert "github.event.workflow_run.head_sha" not in command
-    assert "github.event.workflow_run.conclusion" not in command
+    projected = "\n".join([command, *step["env"].values()])
+    assert "github.event.workflow_run.head_sha" not in projected
+    assert "github.event.workflow_run.conclusion" not in projected
     assert all(token not in command for token in ("sleep ", "poll ", "retry "))
 
 
@@ -2567,7 +2803,7 @@ def test_bcf_ci_authority_audit_reports_the_complete_effective_graph() -> None:
     ]
     assert report["timeout_contract"] == {
         "default_gate_seconds": 1800,
-        "per_gate_seconds": {},
+        "per_gate_seconds": {"test": 2400},
         "minimum_outer_headroom_seconds": 300,
     }
     assert {item["fact"] for item in report["authority_map"]} >= {

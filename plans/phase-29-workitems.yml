@@ -1,0 +1,75 @@
+document:
+  kind: execution_phase_workitem_ledger
+  name: Phase 29 Workitems
+  id: project-phase-29-workitems
+  version: 1.0.0
+  generated_at_utc: '2026-10-01T00:00:00Z'
+  status: active
+  path: plans/phase-29-workitems.yml
+  phase_id: P29
+workitems:
+- id: P29-P0-01
+  priority: P0
+  status: IN_PROGRESS
+  summary: persist the CI state matrix and repair evaluation-input projection
+  acceptance:
+  - the provider-event evaluation-proposition and downstream consumer matrix is canonical and complete
+  - pull request direct push and workflow-call contexts bind their exact authenticated base independently of lifecycle intent
+  - prospective execution exercises the exact direct-push preflight and rejects missing moved unresolved or stranded lifecycle context before evidence fan-out
+  - workflow expressions never enter shell source and typed evaluation inputs reach preflight and truth only through validated environment data
+  - adversarial workflow-call evaluation input cannot alter argv execute shell text or change the canonical proposition
+  - candidate governance rejects privileged pull-request-target context reserved environment collisions and expression-fed interpreter source sinks before execution
+  - self Lite and Standard v3 graph render runtime and pack projections remain exact
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P29-P0-02
+  priority: P0
+  status: TODO
+  summary: optimize deterministic fixed-point reconciliation
+  acceptance:
+  - requires-workitem-closure:P29-P0-01
+  - one canonical owner derives the dirty stage set from exact owner input and output digests and emits an ordered timing and convergence ledger
+  - clean stages are skipped without changing canonical bytes and forced recomputation proves byte equivalence
+  - gate-specific measured deadlines and outer-job headroom fail fast before execution and timeout or partial output never become evidence
+  - representative unchanged and selectively changed trees materially reduce median and p95 reconciliation wall clock
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P29-P0-03
+  priority: P0
+  status: TODO
+  summary: add bounded provider-read resilience
+  acceptance:
+  - requires-workitem-closure:P29-P0-02
+  - one GET-only transport retries only the closed transient taxonomy with bounded attempts backoff and Retry-After
+  - authorization absence schema digest identity and redirect violations remain terminal and mutation clients cannot consume the retry primitive
+  - exact post-rotation artifact custody succeeds after a transient provider failure without changing request or evidence identity
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P29-P0-04
+  priority: P0
+  status: TODO
+  summary: derive lifecycle projections and emit non-authoritative operational observations
+  acceptance:
+  - requires-workitem-closure:P29-P0-03
+  - lifecycle owners mechanically derive current predecessor successor and history projections and stale authored copies fail structurally
+  - prospective progress governance amplification and provider queue decomposition bind exact execution identities and explicitly carry no authority
+  - missing provider timestamps remain unknown and queued latency is not attributed to BCF or product execution
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P29-P0-05
+  priority: P0
+  status: TODO
+  summary: deliver prove self Lite and Standard v3 parity and publish immutable 2.1.7
+    custody
+  acceptance:
+  - requires-workitem-closure:P29-P0-04
+  - exact candidate bytes pass self Lite and Standard v3 adopter qualification before and after canonical gates
+  - public version contracts manifests documentation changelog and editorial custody identify 2.1.7 exact bytes
+  - terminal exact-main truth release build independent verification immutable publication and custody closeout authenticate one exact subject
+  acceptance_evidence:
+  - test
+  - contract-test

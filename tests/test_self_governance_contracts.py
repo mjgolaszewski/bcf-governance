@@ -15,7 +15,10 @@ import yaml
 from bcf_governance.tooling.ci_authority_pins import verify_workflow_authority
 from bcf_governance.tooling.ci_github_actions import ACTION_PINS
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
-from bcf_governance.tooling.ci_graph_execution import job_required_environment
+from bcf_governance.tooling.ci_graph_execution import (
+    exact_main_evaluation,
+    job_required_environment,
+)
 from bcf_governance.tooling.ci_graph_render import (
     check_ci_graph,
     render_ci_graph,
@@ -339,9 +342,13 @@ def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> N
         if "dispatch-certification" in step.get("run", "")
     )
     assert route_index < dispatch_index
-    assert "steps.controller-route.outputs.controller_commit_sha" in steps[
-        dispatch_index
-    ]["run"]
+    dispatch_step = steps[dispatch_index]
+    assert "${{" not in dispatch_step["run"]
+    assert '"$BCF_COMMAND_ARG_0"' in dispatch_step["run"]
+    assert (
+        "steps.controller-route.outputs.controller_commit_sha"
+        in dispatch_step["env"]["BCF_COMMAND_ARG_0"]
+    )
 
 
 def test_finalizer_preserves_exact_admission_custody_for_every_publisher_shape() -> None:
@@ -419,15 +426,10 @@ def test_exact_main_is_the_only_default_branch_producer() -> None:
     assert [job["id"] for job in _workflow("exact-main")["jobs"]] == [
         "admit", "governance", "trusted-controller-build",
     ]
-    admission = _job("exact-main", "admit")["executor"]
-    evaluation = {"evaluation_mode": admission["evaluation_mode"]}
-    if admission["evaluation_mode"] == "workitem":
-        target = admission.get("evaluation_target")
-        assert isinstance(target, str) and target
-        evaluation["evaluation_target"] = target
-    else:
-        assert admission["evaluation_mode"] == "closure"
-        assert "evaluation_target" not in admission
+    canonical_evaluation = exact_main_evaluation(compiled.workflows)
+    evaluation = {"evaluation_mode": canonical_evaluation.mode}
+    if canonical_evaluation.target is not None:
+        evaluation["evaluation_target"] = canonical_evaluation.target
     called = _job("exact-main", "governance")["executor"]
     inputs = called["inputs"]
     assert {key: inputs[key] for key in evaluation} == evaluation
@@ -805,12 +807,16 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
     assert "--mode" not in graph["commands"]["governance-preflight"]["argv"]
     assert graph["commands"]["governance-preflight"]["argv"][4:6] == [
         "--evaluation-mode",
-        "${{ inputs.evaluation_mode || 'pr' }}",
+        "{env:BCF_EVALUATION_MODE}",
     ]
     assert graph["commands"]["governance-preflight"]["argv"][6:8] == [
         "--evaluation-target",
-        "${{ inputs.evaluation_target || '' }}",
+        "{env:BCF_EVALUATION_TARGET}",
     ]
+    assert graph["commands"]["governance-preflight"]["environment"] == {
+        "BCF_EVALUATION_MODE": "${{ inputs.evaluation_mode || 'pr' }}",
+        "BCF_EVALUATION_TARGET": "${{ inputs.evaluation_target || '' }}",
+    }
     assert graph["step_components"]["run-governance-truth"]["condition"] == (
         "evidence-prerequisites-without-prior"
     )

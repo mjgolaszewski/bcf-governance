@@ -23,6 +23,7 @@ from .ci_graph_execution import (
     controller_command_ids,
     hosted_command_issues,
     job_execution_issues,
+    validate_workflow_event_contract,
 )
 from .ci_graph_authority_policy import validate_graph_authority_policy
 from .ci_graph_controller_lifecycle import (
@@ -445,14 +446,7 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                 artifact_producers[artifact] = (workflow["id"], job["id"])
     for workflow in workflows:
         workflow_gate_owners: set[str] = set()
-        if workflow["role"] == "scheduled" and any(
-            event["type"] in {"pull_request", "push"} for event in workflow["events"]
-        ):
-            raise CIGraphError(
-                "scheduled controls cannot be required by PR or push events",
-                kind="event",
-                identifier=workflow["id"],
-            )
+        validate_workflow_event_contract(workflow)
         by_id, dependencies = _job_graph(workflow)
         ancestor_map = {job_id: _ancestors(job_id, dependencies) for job_id in by_id}
         for job in workflow["jobs"]:

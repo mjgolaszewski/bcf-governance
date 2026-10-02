@@ -17,10 +17,20 @@ from .ci_graph_artifact_steps import (
     download_steps as _download_steps,
 )
 from .ci_graph_contracts import CompiledCIGraph, validate_ci_graph
+from .ci_graph_controller_install import controller_install_step
 from .ci_graph_controller_lifecycle import controller_requirement_condition
 from .ci_graph_execution import job_required_environment, job_requires_full_history
+from .repository_comparison_context import (
+    PULL_REQUEST_BASE_EXPRESSION,
+    direct_comparison_environment,
+)
 from .ci_graph_reusable_artifacts import reusable_artifact_binding
 from .ci_graph_routing import render_runner
+from .ci_graph_shell_projection import (
+    hoist_run_expressions,
+    require_available_environment_names,
+    require_available_generated_slots,
+)
 from .ci_graph_yaml import render_yaml
 from .governance_install.transaction import apply_transaction
 
@@ -92,7 +102,12 @@ def _command_step(
 ) -> dict[str, Any]:
     command = compiled.commands[command_id]
     argv: list[str] = []
-    for value in command["argv"]:
+    environment = {
+        "BCF_PYTHON": SELECTED_PYTHON,
+        **command["environment"],
+    }
+    require_available_generated_slots(environment, "BCF_COMMAND_ARG_")
+    for index, value in enumerate(command["argv"]):
         if value == "{python}":
             argv.append('"$BCF_PYTHON"')
         elif value == "{controller}":
@@ -104,16 +119,12 @@ def _command_step(
             if not env_name.replace("_", "A").isalnum() or env_name.upper() != env_name:
                 raise AssertionError(f"invalid governed environment placeholder {value}")
             argv.append(f'"${env_name}"')
+        elif "${{" in value and "}}" in value:
+            env_name = f"BCF_COMMAND_ARG_{index}"
+            environment[env_name] = value
+            argv.append(f'"${env_name}"')
         else:
-            argv.append(
-                '"' + value.replace('"', '\\"') + '"'
-                if "${{" in value and "}}" in value
-                else shlex.quote(value)
-            )
-    environment = {
-        "BCF_PYTHON": SELECTED_PYTHON,
-        **command["environment"],
-    }
+            argv.append(shlex.quote(value))
     for required in command["required_environment"]:
         environment.setdefault(required, "${{ env." + required + " }}")
     return {
@@ -166,72 +177,12 @@ def _component_steps(
             )
             continue
         if component["kind"] == "controller_install":
-            if "wheel_sha256" in component:
-                expected_digest = repr(component["wheel_sha256"])
-                digest_loader = ""
-            else:
-                expected_digest = "expected"
-                digest_loader = (
-                    f"authority=pathlib.Path({component['wheel_sha256_file']!r})\n"
-                    "assert authority.is_file() and not authority.is_symlink()\n"
-                    "payload=json.loads(authority.read_text())\n"
-                )
-                if "wheel_sha256_keys" in component:
-                    digest_loader += (
-                        f"keys={component['wheel_sha256_keys']!r}\n"
-                        "expected=payload\n"
-                        "for key in keys:\n"
-                        " assert isinstance(expected,dict) and key in expected\n"
-                        " expected=expected[key]\n"
-                        "assert isinstance(expected,str) and re.fullmatch(r'[a-f0-9]{64}',expected)\n"
-                    )
-                else:
-                    digest_loader += (
-                        f"key_paths={component['wheel_sha256_key_paths']!r}\n"
-                        "resolved=[]\n"
-                        "for keys in key_paths:\n"
-                        " value=payload\n"
-                        " for key in keys:\n"
-                        "  if not isinstance(value,dict) or key not in value:\n"
-                        "   value=None;break\n"
-                        "  value=value[key]\n"
-                        " if isinstance(value,str) and re.fullmatch(r'[a-f0-9]{64}',value):\n"
-                        "  resolved.append(value)\n"
-                        "assert len(resolved)==1\n"
-                        "expected=resolved[0]\n"
-                    )
-            script = (
-                "import hashlib,json,pathlib,re,subprocess,sys,venv\n"
-                f"source=pathlib.Path({component['artifact_dir']!r})\n"
-                f"target=pathlib.Path({component['install_root']!r})\n"
-                + digest_loader
-                + "inventory=source/'SHA256SUMS'\n"
-                "assert inventory.is_file() and not inventory.is_symlink()\n"
-                "declared={}\n"
-                "for line in inventory.read_text().splitlines():\n"
-                " digest,separator,name=line.partition('  ')\n"
-                " assert separator and len(digest)==64 and name and name not in declared\n"
-                " declared[name]=digest\n"
-                "actual={path.name:path for path in source.iterdir() if path.name!='SHA256SUMS'}\n"
-                "assert set(actual)==set(declared)\n"
-                "assert all(path.is_file() and not path.is_symlink() and hashlib.sha256(path.read_bytes()).hexdigest()==declared[name] for name,path in actual.items())\n"
-                "wheels=sorted(source.glob('bcf_governance-*.whl'))\n"
-                "assert len(wheels)==1 and not wheels[0].is_symlink()\n"
-                f"assert hashlib.sha256(wheels[0].read_bytes()).hexdigest()=={expected_digest}\n"
-                "venv.EnvBuilder(with_pip=True,clear=True).create(target)\n"
-                "subprocess.run([str(target/'bin/python'),'-m','pip','install','--no-index','--find-links',str(source),str(wheels[0])],check=True)\n"
-                "subprocess.run([str(target/'bin/bcf'),'ci-github','--help'],check=True)\n"
-            )
-            step = {
-                "name": component["name"],
-                "shell": "bash",
-                "env": {"BCF_PYTHON": SELECTED_PYTHON},
-                "run": "set -euo pipefail\n\"$BCF_PYTHON\" -I -c "
-                + shlex.quote(script),
-            }
-            if component["condition"] is not None:
-                step["if"] = _condition(compiled, component["condition"])
-            steps.append(step)
+            condition = component["condition"]
+            steps.append(controller_install_step(
+                component,
+                selected_python=SELECTED_PYTHON,
+                condition=_condition(compiled, condition) if condition else None,
+            ))
             continue
         if component["kind"] == "action":
             step: dict[str, Any] = {
@@ -245,12 +196,20 @@ def _component_steps(
                 compiled, component["command"], name=component["name"]
             )
             if component["environment"]:
+                require_available_environment_names(component["environment"])
+                require_available_generated_slots(
+                    component["environment"], "BCF_COMMAND_ARG_"
+                )
                 step["env"].update(component["environment"])
         if component["id"] is not None:
             step["id"] = component["id"]
         if component["condition"] is not None:
             step["if"] = _condition(compiled, component["condition"])
         if component["kind"] == "action" and component["environment"]:
+            require_available_environment_names(component["environment"])
+            require_available_generated_slots(
+                component["environment"], "BCF_RUN_EXPRESSION_"
+            )
             step["env"] = component["environment"]
         steps.append(step)
     return steps
@@ -569,6 +528,7 @@ def _job(
             "matrix": copy.deepcopy(job["matrix"]),
         }
     if job["environment"]:
+        require_available_environment_names(job["environment"])
         result["env"] = copy.deepcopy(job["environment"])
     durable_references = [
         (
@@ -673,15 +633,23 @@ def _job(
     result["steps"] = steps
     if job["trust"] == "trusted" and job["checkout"] is False:
         result = scope_runner_temp_value(result)
+    hoist_run_expressions(result["steps"])
     return result
 
 
 def _workflow(compiled: CompiledCIGraph, workflow: dict[str, Any]) -> bytes:
     workflow_environment = copy.deepcopy(workflow["environment"])
+    require_available_environment_names(workflow_environment)
     if any(event["type"] == "pull_request" for event in workflow["events"]):
+        event_types = {event["type"] for event in workflow["events"]}
+        comparison_environment = (
+            direct_comparison_environment()
+            if {"pull_request", "push", "workflow_call"}.issubset(event_types)
+            else {"BCF_PR_BASE_SHA": PULL_REQUEST_BASE_EXPRESSION}
+        )
         workflow_environment = {
             "BCF_ENFORCE_PR_CHANGELOG": "${{ github.event_name == 'pull_request' }}",
-            "BCF_PR_BASE_SHA": "${{ github.event.pull_request.base.sha }}",
+            **comparison_environment,
             **workflow_environment,
         }
     payload: dict[str, Any] = {

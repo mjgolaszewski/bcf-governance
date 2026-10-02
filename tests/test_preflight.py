@@ -10,6 +10,9 @@ from bcf_governance.tooling import preflight
 from bcf_governance.tooling.governance_validation.common import (
     GovernanceValidationError,
 )
+from bcf_governance.tooling.governance_validation.preflight_repository_context import (
+    pr_context,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -31,6 +34,102 @@ def _committed_repo(tmp_path: Path, relative: str, content: str) -> Path:
     _git(repo, "add", ".")
     _git(repo, "commit", "-m", "fixture")
     return repo
+
+
+def test_repository_context_separates_push_event_from_pr_evaluation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _committed_repo(tmp_path, "source.py", "VALUE = 1\n")
+    base = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, text=True,
+        capture_output=True, check=True,
+    ).stdout.strip()
+    (repo / "source.py").write_text("VALUE = 2\n", encoding="utf-8")
+    _git(repo, "add", "source.py")
+    _git(repo, "commit", "-m", "next")
+    monkeypatch.setenv("BCF_PROVIDER_EVENT", "push")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
+    monkeypatch.setenv("BCF_COMPARISON_BASE_SHA", base)
+    monkeypatch.delenv("BCF_PR_BASE_SHA", raising=False)
+
+    assert pr_context(repo, "pr") == {
+        "applicable": True,
+        "event": "push",
+        "base_sha": base,
+        "provenance": "push.before",
+    }
+
+
+@pytest.mark.parametrize("base", ["", "0" * 40, "f" * 40])
+def test_repository_context_rejects_missing_zero_or_unavailable_push_base(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, base: str
+) -> None:
+    repo = _committed_repo(tmp_path, "source.py", "VALUE = 1\n")
+    monkeypatch.setenv("BCF_PROVIDER_EVENT", "push")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
+    monkeypatch.setenv("BCF_COMPARISON_BASE_SHA", base)
+    with pytest.raises(ValueError, match="comparison base"):
+        pr_context(repo, "pr")
+
+
+def test_repository_context_rejects_event_mismatch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _committed_repo(tmp_path, "source.py", "VALUE = 1\n")
+    monkeypatch.setenv("BCF_PROVIDER_EVENT", "push")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
+    with pytest.raises(ValueError, match="does not match"):
+        pr_context(repo, "pr")
+
+
+def test_candidate_preflight_rejects_pull_request_target(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _committed_repo(tmp_path, "source.py", "VALUE = 1\n")
+    base = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, text=True,
+        capture_output=True, check=True,
+    ).stdout.strip()
+    monkeypatch.setenv("BCF_PROVIDER_EVENT", "pull_request_target")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request_target")
+    monkeypatch.setenv("BCF_COMPARISON_BASE_SHA", base)
+    monkeypatch.setenv("BCF_PR_BASE_SHA", base)
+
+    with pytest.raises(ValueError, match="event is not supported"):
+        pr_context(repo, "pr")
+
+
+def test_workflow_call_comparison_base_is_explicit_exact_and_available(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _committed_repo(tmp_path, "source.py", "VALUE = 1\n")
+    base = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, text=True,
+        capture_output=True, check=True,
+    ).stdout.strip()
+    monkeypatch.setenv("BCF_PROVIDER_EVENT", "workflow_call")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "workflow_call")
+    monkeypatch.setenv("BCF_COMPARISON_BASE_SHA", base)
+
+    assert pr_context(repo, "pr") == {
+        "applicable": True,
+        "event": "workflow_call",
+        "base_sha": base,
+        "provenance": "workflow_call.input",
+    }
+
+
+@pytest.mark.parametrize("base", ["", " ", "0" * 40, "f" * 40])
+def test_workflow_call_rejects_nonexact_comparison_base(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, base: str
+) -> None:
+    repo = _committed_repo(tmp_path, "source.py", "VALUE = 1\n")
+    monkeypatch.setenv("BCF_PROVIDER_EVENT", "workflow_call")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "workflow_call")
+    monkeypatch.setenv("BCF_COMPARISON_BASE_SHA", base)
+
+    with pytest.raises(ValueError, match="comparison base"):
+        pr_context(repo, "pr")
 
 
 def test_syntax_preflight_rejects_duplicate_yaml_keys(tmp_path: Path) -> None:

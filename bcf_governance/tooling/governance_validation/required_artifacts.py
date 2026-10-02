@@ -6,6 +6,10 @@ from __future__ import annotations
 import subprocess
 
 from ..release_versions import ReleaseVersionError, parse_release_version
+from ..repository_comparison_context import (
+    PULL_REQUEST_BASE_EXPRESSION,
+    direct_comparison_environment,
+)
 from .common import *  # noqa: F403,F405
 
 
@@ -114,19 +118,39 @@ def _validate_required_artifacts(repo_root: Path, manifest: dict[str, Any]) -> l
 
 
 def _validate_changelog_workflow_contract(repo_root: Path) -> None:
-    workflow_path = repo_root / ".github/workflows/governance.yml"
+    _validate_workflow_comparison_contract(
+        repo_root / ".github/workflows/governance.yml"
+    )
+    template_path = repo_root / "template-repo/.github/workflows/governance.yml"
+    if template_path.is_file() and not template_path.is_symlink():
+        _validate_workflow_comparison_contract(template_path)
+
+
+def _validate_workflow_comparison_contract(workflow_path: Path) -> None:
+    display = workflow_path.as_posix()
     workflow = _load_yaml(workflow_path)
     environment = _require_mapping(
-        workflow.get("env"), context=".github/workflows/governance.yml env"
+        workflow.get("env"), context=f"{display} env"
     )
+    events = _require_mapping(
+        workflow.get("on", workflow.get(True)),
+        context=f"{display} on",
+    )
+    direct_push = "push" in events
     expected = {
         "BCF_ENFORCE_PR_CHANGELOG": "${{ github.event_name == 'pull_request' }}",
-        "BCF_PR_BASE_SHA": "${{ github.event.pull_request.base.sha }}",
+        **(
+            direct_comparison_environment(
+                explicit_call="workflow_call" in events
+            )
+            if direct_push
+            else {"BCF_PR_BASE_SHA": PULL_REQUEST_BASE_EXPRESSION}
+        ),
     }
     if any(environment.get(name) != value for name, value in expected.items()):
         raise GovernanceValidationError(
-            ".github/workflows/governance.yml must enforce CHANGELOG.md against "
-            "the exact pull-request base SHA"
+            f"{display} must enforce CHANGELOG.md and repository comparison "
+            "against the exact provider-event base SHA"
         )
 
 

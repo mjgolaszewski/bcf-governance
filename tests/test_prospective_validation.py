@@ -267,7 +267,7 @@ def test_deterministic_walk_orders_reconcile_before_preflight_and_never_claims_a
         execute_evidence=False,
         runner=_runner,
     )
-    assert trace == ["reconcile", "preflight"]
+    assert trace == ["reconcile", "preflight", "preflight"]
     assert report["status"] == "deterministic_front_door_pass"
     assert report["provider_authority_substituted"] is False
     assert report["post_merge_evaluation"] == {
@@ -277,6 +277,46 @@ def test_deterministic_walk_orders_reconcile_before_preflight_and_never_claims_a
         "workflow_id": "exact-main",
         "terminal_job_id": "governance",
     }
+
+
+def test_prospective_train_executes_exact_direct_push_preflight_before_evidence(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    trace: list[str] = []
+    calls: list[dict[str, object]] = []
+    _front_door(monkeypatch, trace)
+
+    def preflight(*_args: object, **kwargs: object) -> dict[str, object]:
+        calls.append(dict(kwargs))
+        if len(calls) == 2:
+            assert kwargs["mode"] == "release"
+            assert kwargs["evaluation_mode"] == "workitem"
+            assert kwargs["evaluation_target"] == "P27-P0-03"
+            assert prospective.os.environ["BCF_PROVIDER_EVENT"] == "push"
+            assert prospective.os.environ["BCF_COMPARISON_BASE_SHA"] == BASE
+            raise prospective.PreflightError(
+                "bounded workitem target P27-P0-03 would strand unfinished workitems"
+            )
+        return {"status": "pass", "self_controller": 24}
+
+    monkeypatch.setattr(prospective, "run_preflight", preflight)
+    monkeypatch.setattr(
+        prospective,
+        "allocate_session",
+        lambda *_args, **_kwargs: pytest.fail("evidence allocated after push rejection"),
+    )
+    with pytest.raises(
+        prospective.ProspectiveValidationError,
+        match="direct-push preflight.*would strand unfinished workitems",
+    ):
+        prospective._run_prospective_train(
+            tmp_path,
+            **TRAIN,
+            python_executable=Path("/python"),
+            execute_evidence=True,
+            runner=_runner,
+        )
+    assert len(calls) == 2
 
 
 def test_provider_effective_controller_is_mechanically_bound_to_prospective_preflight(

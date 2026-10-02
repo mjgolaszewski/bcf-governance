@@ -19,6 +19,9 @@ from bcf_governance.tooling.release_runtime_verification import (
     is_release_sdist_test_context,
 )
 from bcf_governance.tooling.governance_validation import phase_catalog, release_gates
+from bcf_governance.tooling.governance_validation.required_artifacts import (
+    _validate_workflow_comparison_contract,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -234,6 +237,24 @@ def test_artifact_manifest_requires_standard_repository_artifact_contracts(
     validate_repo_root(repo_root)
 
 
+def test_direct_template_comparison_context_fails_in_structural_validation(
+    tmp_path: Path,
+) -> None:
+    source = TEMPLATE_REPO_ROOT / ".github/workflows/governance.yml"
+    target = tmp_path / "governance.yml"
+    target.write_bytes(source.read_bytes())
+    _validate_workflow_comparison_contract(target)
+    target.write_text(
+        target.read_text(encoding="utf-8").replace(
+            "  BCF_COMPARISON_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}\n",
+            "",
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(GovernanceValidationError, match="exact provider-event base"):
+        _validate_workflow_comparison_contract(target)
+
+
 @pytest.mark.parametrize("relative_path", ["README.md", "LICENSE", "CHANGELOG.md"])
 def test_validate_repo_root_rejects_missing_required_repository_artifact(
     tmp_path: Path, relative_path: str
@@ -361,7 +382,7 @@ def test_governance_workflow_must_wire_changelog_pr_enforcement(tmp_path: Path) 
 
     with pytest.raises(
         GovernanceValidationError,
-        match="must enforce CHANGELOG.md against the exact pull-request base SHA",
+        match="must enforce CHANGELOG.md and repository comparison against the exact provider-event base SHA",
     ):
         validate_repo_root(repo_root)
 
