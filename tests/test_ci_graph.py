@@ -2080,7 +2080,9 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert admission["produces"] == ["prior-evidence-transport"]
     assert admission["permissions"]["actions"] == "write"
     assert governance["executor"]["inputs"] == {
-        **evaluation, "use_prior_evidence": True,
+        **evaluation,
+        "comparison_base_sha": PUSH_COMPARISON_BASE_EXPRESSION,
+        "use_prior_evidence": True,
     }
     assert governance["executor"]["artifact_bindings"] == {
         "prior-evidence-transport": "use_prior_evidence"
@@ -2182,7 +2184,9 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert transport["env"]["BCF_COMMAND_ARG_9"] == upload["with"]["path"]
     assert '--output "$BCF_COMMAND_ARG_9"' in transport["run"]
     assert exact_jobs["governance"]["with"] == {
-        **evaluation, "use_prior_evidence": True,
+        **evaluation,
+        "comparison_base_sha": PUSH_COMPARISON_BASE_EXPRESSION,
+        "use_prior_evidence": True,
     }
     builder_projection = rendered[".github/workflows/bcf-exact-main.yml"]["jobs"][
         "trusted-controller-build"
