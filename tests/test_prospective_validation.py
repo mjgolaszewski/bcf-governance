@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -901,6 +902,55 @@ def test_graph_intent_mismatch_fails_before_evidence(
     with pytest.raises(
         prospective.ProspectiveValidationError,
         match="evaluation intents differ",
+    ):
+        prospective._run_prospective_train(
+            tmp_path,
+            **TRAIN,
+            python_executable=Path("/python"),
+            execute_evidence=False,
+            runner=_runner,
+        )
+
+
+def test_exact_main_missing_comparison_binding_fails_before_preflight(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    trace: list[str] = []
+    _front_door(monkeypatch, trace)
+    graph = build_reference_ci_graph(
+        project_id="comparison-binding-fixture",
+        profile="standard",
+        profile_contract_version="3.0",
+        gates=["governance-validate"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    exact = next(item for item in graph["workflows"] if item["id"] == "exact-main")
+    producer = next(
+        item for item in exact["jobs"]
+        if item["semantic_role"] == "exact-main-governance-producer"
+    )
+    producer["executor"]["inputs"].pop("comparison_base_sha")
+    monkeypatch.setattr(
+        prospective,
+        "validate_controller_custody_graph",
+        lambda *_args, **_kwargs: (
+            custody.post_merge_evaluation(copy.deepcopy(graph)),
+            {},
+        ),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "run_preflight",
+        lambda *_args, **_kwargs: pytest.fail(
+            "preflight ran without exact-main comparison-base binding"
+        ),
+    )
+    with pytest.raises(
+        prospective.ProspectiveValidationError,
+        match="comparison base is not canonically bound",
     ):
         prospective._run_prospective_train(
             tmp_path,

@@ -32,6 +32,7 @@ from bcf_governance.tooling.ci_graph_execution import (
 from bcf_governance.tooling.repository_comparison_context import (
     DIRECT_COMPARISON_BASE_EXPRESSION,
     PROVIDER_EVENT_EXPRESSION,
+    PUSH_COMPARISON_BASE_EXPRESSION,
     direct_comparison_environment,
 )
 from bcf_governance.tooling.ci_graph_post_merge import (
@@ -279,6 +280,7 @@ def test_reconcile_replaces_stale_adopter_closure_with_pr_progress(
     admission["executor"].pop("evaluation_target", None)
     producer["executor"]["inputs"]["evaluation_mode"] = "closure"
     producer["executor"]["inputs"].pop("evaluation_target", None)
+    producer["executor"]["inputs"].pop("comparison_base_sha", None)
     argv = stale_graph["commands"]["exact-main-admit-effective"]["argv"]
     argv[argv.index("--evaluation-mode") + 1] = "closure"
     if "--evaluation-target" in argv:
@@ -318,10 +320,17 @@ def test_reconcile_replaces_stale_adopter_closure_with_pr_progress(
     with pytest.raises(CIGraphError, match="scope is stale"):
         reconcile_post_merge_scope(tmp_path, apply=False)
     assert reconcile_post_merge_scope(tmp_path, apply=True) is True
-    evaluation = post_merge_evaluation(
-        yaml.safe_load((tmp_path / "governance/ci-graph.yml").read_text())
-    )
+    reconciled = yaml.safe_load((tmp_path / "governance/ci-graph.yml").read_text())
+    evaluation = post_merge_evaluation(reconciled)
     assert (evaluation.mode, evaluation.target) == ("pr", None)
+    exact = next(item for item in reconciled["workflows"] if item["id"] == "exact-main")
+    producer = next(
+        item for item in exact["jobs"]
+        if item["semantic_role"] == "exact-main-governance-producer"
+    )
+    assert producer["executor"]["inputs"]["comparison_base_sha"] == (
+        PUSH_COMPARISON_BASE_EXPRESSION
+    )
 
 
 def test_v3_lite_starts_with_typed_direct_pr_progress() -> None:
@@ -396,11 +405,23 @@ def test_reference_exact_main_evaluation_uses_unique_semantic_roles() -> None:
     assert evaluation.mode == "pr"
     assert evaluation.terminal_job_id == "governance-producer"
     workflow = next(item for item in graph["workflows"] if item["id"] == "exact-main")
+    producer = next(
+        item for item in workflow["jobs"]
+        if item["semantic_role"] == "exact-main-governance-producer"
+    )
+    assert producer["executor"]["inputs"]["comparison_base_sha"] == (
+        PUSH_COMPARISON_BASE_EXPRESSION
+    )
     duplicate = copy.deepcopy(workflow["jobs"][1])
     duplicate["id"] = "duplicate-producer"
     workflow["jobs"].append(duplicate)
     with pytest.raises(CIGraphError, match="semantic role.*not unique"):
         exact_main_evaluation(tuple(graph["workflows"]))
+    workflow["jobs"].pop()
+
+    producer["executor"]["inputs"].pop("comparison_base_sha")
+    with pytest.raises(CIGraphError, match="outer push event"):
+        post_merge_evaluation(graph)
 
 
 def test_direct_protected_main_rejects_pr_default_on_push() -> None:

@@ -43,6 +43,11 @@ provider evidence.
 13. Provider expressions are data, never executable shell source. Typed
     evaluation intent and target cross workflow boundaries through environment
     or structured inputs and are validated before they become command argv.
+14. Comparison context crosses every workflow boundary explicitly. A trusted
+    exact-main `push` forwards its authenticated `github.event.before` through
+    the reusable governance call's typed `comparison_base_sha`; neither the
+    callee nor a prospective executor may reconstruct or inject that edge out
+    of band.
 
 ## State matrix
 
@@ -76,9 +81,12 @@ Neither may infer or rewrite the other.
 | `pull_request` | `workitem:<id>` | authenticated PR base SHA | required | bounded candidate proof only |
 | `pull_request` | `closure` | authenticated PR base SHA | required | candidate terminal-closure proof |
 | `pull_request_target` | any proposition | none | none | reject from the candidate-governance lane; privileged automation has a separate event contract |
-| protected `push` | `pr` | authenticated event `before` SHA | inapplicable: `direct_push`, exact event/policy bound | merged-main progress proof |
-| protected `push` | `workitem:<id>` | authenticated event `before` SHA | inapplicable: `direct_push`, exact event/policy bound | bounded merged-main proof |
-| protected `push` | `closure` | authenticated event `before` SHA | inapplicable: `direct_push`, exact event/policy bound | merged-main terminal proof |
+| direct protected `push` | `pr` | authenticated event `before` SHA consumed in the same workflow | inapplicable: `direct_push`, exact event/policy bound | merged-main progress proof |
+| direct protected `push` | `workitem:<id>` | authenticated event `before` SHA consumed in the same workflow | inapplicable: `direct_push`, exact event/policy bound | bounded merged-main proof |
+| direct protected `push` | `closure` | authenticated event `before` SHA consumed in the same workflow | inapplicable: `direct_push`, exact event/policy bound | merged-main terminal proof |
+| trusted exact-main `push` -> reusable governance | `pr` | outer `github.event.before` forwarded as exact `comparison_base_sha` caller input | inapplicable: `direct_push`, exact outer event/policy bound | merged-main progress proof |
+| trusted exact-main `push` -> reusable governance | `workitem:<id>` | outer `github.event.before` forwarded as exact `comparison_base_sha` caller input | inapplicable: `direct_push`, exact outer event/policy bound | bounded merged-main proof |
+| trusted exact-main `push` -> reusable governance | `closure` | outer `github.event.before` forwarded as exact `comparison_base_sha` caller input | inapplicable: `direct_push`, exact outer event/policy bound | merged-main terminal proof |
 | `workflow_call` | any declared proposition | explicit caller-supplied exact base SHA | caller contract, never inferred | proof for the declared proposition |
 
 For every row, base and head must be exact commits in the checked-out history,
@@ -90,7 +98,11 @@ zero, malformed, unavailable, non-ancestor, wrong-repository, wrong-source, or
 event-conflicting bases all reject before evidence. The candidate-governance
 lane does not accept `pull_request_target`; BCF automation workflows that use
 that privileged event authenticate it under their separate fixed-purpose
-contract and never reinterpret it as candidate evidence.
+contract and never reinterpret it as candidate evidence. When exact-main calls
+the reusable governance workflow, the callee's provider event is
+`workflow_call`; therefore the authenticated outer push base must be an exact
+declared input. Empty, omitted, defaulted, or differently sourced caller input
+is a structural graph defect and fails prospective validation before evidence.
 
 ## Evaluation-input transport state machine
 
@@ -102,6 +114,7 @@ the runtime scope parser owns meaning. No shell owns interpretation.
 | --- | --- | --- | --- | --- |
 | direct `pull_request`, inputs absent | `pr` / none | canonical event default -> environment | comparison context then evaluation scope | PR progress only |
 | protected `push`, inputs absent | lifecycle-selected intent/target | canonical graph value -> environment | direct-push preflight then evaluation scope | exact merged-main proposition |
+| exact-main `push` invokes reusable governance | lifecycle-selected intent/target | `github.event.before` -> typed `comparison_base_sha` caller input -> comparison environment | graph caller-binding validation then repository comparison context | exact merged-main proposition |
 | `workflow_call(pr, '')` | `pr` / none | declared input -> environment | evaluation scope | PR progress only |
 | `workflow_call(workitem, exact-id)` | `workitem` / exact workitem | declared inputs -> environment | authored-ready workitem scope | bounded proposition only |
 | `workflow_call(closure, '')` | `closure` / none | declared input -> environment | phase-closure scope | terminal phase proposition only |
@@ -329,7 +342,7 @@ test-only, or inspected-no-impact before provider execution.
 
 | Contract | Preflight | Controller compatibility | PR evidence/certification | Merge/direct main | Exact-main/truth | Finalizer/publisher | Successor/release | Lite / Standard v3 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Event comparison context | canonical change | inspected-no-impact | exact PR base | exact push/caller base | exact subject/base | inspected-no-impact | inspected-no-impact | generated parity |
+| Event comparison context | canonical change | inspected-no-impact | exact PR base | exact push/caller base and explicit exact-main reusable binding | exact subject/base | inspected-no-impact | inspected-no-impact | generated parity |
 | Reconcile dirty set | structural check | exact runtime token | clean fixed point | clean generated bytes | clean generated bytes | inspected-no-impact | release byte parity | installed parity |
 | Gate execution deadline | measured contract check | inspected-no-impact | typed infrastructure failure, never evidence | same exact gate policy | same exact gate policy | no partial bundle accepted | no authority effect | packaged policy parity |
 | Provider GET retry | inspected-no-impact | exact artifact read | exact provider reads | exact provider reads | artifact reads | exact same request identity | custody reads | installed runtime parity |
@@ -346,6 +359,7 @@ test-only, or inspected-no-impact before provider execution.
 | graph input/default and command environment | canonical change | exact defaults, placeholders, no semantic drift |
 | graph renderer | canonical change | every expression-bearing command argument becomes one environment value; none enters shell source |
 | direct comparison-context resolver | inspected-no-impact | event-owned base remains independent of lifecycle scope |
+| exact-main reusable-governance caller | canonical change | outer push base is the exact typed caller input; missing or wrong binding fails prospectively |
 | evaluation-scope parser | inspected-no-impact | invalid intent/target combinations already fail closed |
 | preflight, truth, terminal observation | generated/consumer consequence | identical typed pair and malicious payload rejection |
 | finalizer, certification, publisher | inspected-no-impact plus regression | exact scope preserved; status cannot erase target |
@@ -362,7 +376,7 @@ intent
   -> reconcile(definition -> authority -> fixed point)
   -> PR preflight -> controller compatibility -> PR evidence -> PR certification
   -> protected merge
-  -> exact-main admission
+  -> exact-main admission (bind outer push `before` into reusable governance)
      -> [pending rotation: build N+1 -> bootstrap -> probe -> confirm -> normalize]
      -> exact-main evidence -> scoped truth -> trusted finalizer -> status publisher
   -> terminal-phase certification
