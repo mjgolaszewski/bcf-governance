@@ -684,7 +684,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "d1de90de4fd640b72dc49be4c96ba8dfd4875d81fbac91eeea204e35c86edde1"
+      "sha256": "c9192e4758f7a0629de55178a16d509ca247aba82149d6cb723057d6cb09cdf9"
     },
     "scripts/_bcf_runtime/ci_graph_reusable_artifacts.py": {
       "operation": "copy",
@@ -1030,7 +1030,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/required_artifacts.py": {
       "operation": "copy",
-      "sha256": "077cfd26d5bd54e58023ff9cd45fd0afd8ec42aafed55dc294bae8a697a9ab75"
+      "sha256": "e2bd8d2397cbf4a4ccbe3fe2217fbabbbf12561cae6ff0c0534d09d591fc0ba5"
     },
     "scripts/_bcf_runtime/governance_validation/runner.py": {
       "operation": "copy",

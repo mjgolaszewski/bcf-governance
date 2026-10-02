@@ -26,6 +26,7 @@ from bcf_governance.tooling.ci_graph_render import (
 )
 from bcf_governance.tooling.repository_comparison_context import (
     PUSH_COMPARISON_BASE_EXPRESSION,
+    direct_comparison_environment,
 )
 from bcf_governance.tooling import evidence_modes, evidence_shards
 from bcf_governance.tooling.governance_validation.runner import (
@@ -198,7 +199,7 @@ def test_changelog_pr_enforcement_is_wired_into_repository_ci() -> None:
         payload = yaml.safe_load(render_ci_graph(REPO_ROOT)[relative])
         assert payload["env"] == {
             "BCF_ENFORCE_PR_CHANGELOG": "${{ github.event_name == 'pull_request' }}",
-            "BCF_PR_BASE_SHA": "${{ github.event.pull_request.base.sha }}",
+            **direct_comparison_environment(),
         }
 
 

@@ -48,6 +48,9 @@ provider evidence.
     the reusable governance call's typed `comparison_base_sha`; neither the
     callee nor a prospective executor may reconstruct or inject that edge out
     of band.
+15. A declared comparison input is incomplete until the reusable callee
+    consumes that exact input through the canonical comparison environment.
+    Caller projection without callee consumption is rejected before evidence.
 
 ## State matrix
 
@@ -114,7 +117,7 @@ the runtime scope parser owns meaning. No shell owns interpretation.
 | --- | --- | --- | --- | --- |
 | direct `pull_request`, inputs absent | `pr` / none | canonical event default -> environment | comparison context then evaluation scope | PR progress only |
 | protected `push`, inputs absent | lifecycle-selected intent/target | canonical graph value -> environment | direct-push preflight then evaluation scope | exact merged-main proposition |
-| exact-main `push` invokes reusable governance | lifecycle-selected intent/target | `github.event.before` -> typed `comparison_base_sha` caller input -> comparison environment | graph caller-binding validation then repository comparison context | exact merged-main proposition |
+| exact-main `push` invokes reusable governance | lifecycle-selected intent/target | `github.event.before` -> typed `comparison_base_sha` caller input -> callee `BCF_COMPARISON_BASE_SHA` -> comparison environment | graph caller-and-callee binding validation then repository comparison context | exact merged-main proposition |
 | `workflow_call(pr, '')` | `pr` / none | declared input -> environment | evaluation scope | PR progress only |
 | `workflow_call(workitem, exact-id)` | `workitem` / exact workitem | declared inputs -> environment | authored-ready workitem scope | bounded proposition only |
 | `workflow_call(closure, '')` | `closure` / none | declared input -> environment | phase-closure scope | terminal phase proposition only |

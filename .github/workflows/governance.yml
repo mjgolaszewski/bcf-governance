@@ -12,7 +12,7 @@ name: governance
       evaluation_target: {description: Exact typed target required only for bounded workitem certification, required: false, default: '', type: string}
       use_prior_evidence: {description: Consume exact caller-bound prior evidence when present, required: false, default: false, type: boolean}
 permissions: {contents: read}
-env: {BCF_ENFORCE_PR_CHANGELOG: '${{ github.event_name == ''pull_request'' }}', BCF_PR_BASE_SHA: '${{ github.event.pull_request.base.sha }}'}
+env: {BCF_ENFORCE_PR_CHANGELOG: '${{ github.event_name == ''pull_request'' }}', BCF_PROVIDER_EVENT: '${{ github.event_name }}', BCF_COMPARISON_BASE_SHA: '${{ github.event_name == ''pull_request'' && github.event.pull_request.base.sha || github.event_name == ''push'' && github.event.before || inputs.comparison_base_sha || '''' }}', BCF_PR_BASE_SHA: '${{ github.event.pull_request.base.sha }}'}
 jobs:
   preflight:
     name: Validate governance front door
