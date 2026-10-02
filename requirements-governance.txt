@@ -1,4 +1,4 @@
-build==1.6.0
+build==1.6.1
 jsonschema>=4.21,<5
 packaging>=24,<27
 pip
