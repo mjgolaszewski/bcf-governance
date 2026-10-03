@@ -534,7 +534,7 @@ workflows:
   - {type: pull_request}
   - type: workflow_call
     inputs:
-      comparison_base_sha: {description: Exact repository comparison base for explicit calls, required: false, default: '', type: string}
+      comparison_base_sha: {description: Exact repository comparison base for explicit calls, required: true, type: string}
       evaluation_mode: {description: Exact truth evaluation mode selected by the trusted caller, required: false, default: pr, type: string}
       evaluation_target: {description: Exact typed target required only for bounded workitem certification, required: false, default: '', type: string}
       use_prior_evidence: {description: Consume exact caller-bound prior evidence when present, required: false, default: false, type: boolean}

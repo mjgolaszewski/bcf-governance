@@ -94,6 +94,9 @@ def _pr_environment_values(
 ) -> dict[str, str]:
     values = {
         "BCF_PROVIDER_EVENT": "pull_request",
+        "BCF_INVOCATION_KIND": "direct_event",
+        "BCF_CALLER_COMPARISON_BASE_SHA": "",
+        "BCF_ORIGIN_COMPARISON_BASE_SHA": context.base_sha,
         "BCF_COMPARISON_BASE_SHA": context.base_sha,
         "BCF_ENFORCE_PR_CHANGELOG": "true",
         "BCF_PR_BASE_SHA": context.base_sha,

@@ -30,7 +30,10 @@ from bcf_governance.tooling.ci_graph_execution import (
     workflow_input_issues,
 )
 from bcf_governance.tooling.repository_comparison_context import (
+    CALLER_COMPARISON_BASE_EXPRESSION,
     DIRECT_COMPARISON_BASE_EXPRESSION,
+    INVOCATION_KIND_EXPRESSION,
+    ORIGIN_COMPARISON_BASE_EXPRESSION,
     PROVIDER_EVENT_EXPRESSION,
     PUSH_COMPARISON_BASE_EXPRESSION,
     direct_comparison_environment,
@@ -406,6 +409,9 @@ def test_direct_workflow_declares_event_owned_comparison_context() -> None:
     )
     assert direct_comparison_environment() == {
         "BCF_PROVIDER_EVENT": PROVIDER_EVENT_EXPRESSION,
+        "BCF_INVOCATION_KIND": INVOCATION_KIND_EXPRESSION,
+        "BCF_CALLER_COMPARISON_BASE_SHA": CALLER_COMPARISON_BASE_EXPRESSION,
+        "BCF_ORIGIN_COMPARISON_BASE_SHA": ORIGIN_COMPARISON_BASE_EXPRESSION,
         "BCF_COMPARISON_BASE_SHA": DIRECT_COMPARISON_BASE_EXPRESSION,
         "BCF_PR_BASE_SHA": "${{ github.event.pull_request.base.sha }}",
     }
@@ -413,10 +419,41 @@ def test_direct_workflow_declares_event_owned_comparison_context() -> None:
     call = next(item for item in workflow["events"] if item["type"] == "workflow_call")
     assert call["inputs"]["comparison_base_sha"] == {
         "description": "Exact repository comparison base for explicit calls",
+        "required": True,
+        "type": "string",
+    }
+
+
+def test_reusable_base_precedes_origin() -> None:
+    assert DIRECT_COMPARISON_BASE_EXPRESSION.startswith(
+        "${{ inputs.comparison_base_sha || github.event_name == 'pull_request'"
+    )
+    assert direct_comparison_environment()["BCF_CALLER_COMPARISON_BASE_SHA"] == (
+        CALLER_COMPARISON_BASE_EXPRESSION
+    )
+
+
+def test_direct_workflow_rejects_optional_reusable_comparison_input() -> None:
+    graph = build_reference_ci_graph(
+        project_id="direct-adopter",
+        profile="lite",
+        profile_contract_version="3.0",
+        gates=["governance-validate"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    workflow = next(item for item in graph["workflows"] if item["id"] == "governance")
+    call = next(item for item in workflow["events"] if item["type"] == "workflow_call")
+    call["inputs"]["comparison_base_sha"] = {
+        "description": "Exact repository comparison base for explicit calls",
         "required": False,
         "default": "",
         "type": "string",
     }
+    with pytest.raises(CIGraphError, match="comparison input is not required"):
+        post_merge_evaluation(graph)
 
 
 def test_reference_exact_main_evaluation_uses_unique_semantic_roles() -> None:

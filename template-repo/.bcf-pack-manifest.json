@@ -246,7 +246,7 @@
     },
     "schemas/ci-graph.schema.json": {
       "operation": "copy",
-      "sha256": "856e4bb06daa73e64045b456f0ff1ccd9034579de20e7f09b56c6e54ea338fa3"
+      "sha256": "417bcf306fccec8d087b1e3f9d79908ff056726e11087d7bc6afb97ef9263aad"
     },
     "schemas/ci-provider-snapshot.schema.json": {
       "operation": "copy",
@@ -668,7 +668,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_defaults.py": {
       "operation": "copy",
-      "sha256": "208254b9ce356c81079531eae14d2cf2861f189567c2985f99912491277a5f69"
+      "sha256": "13487f4d8c64767fc7c6a9badb6a3db19acdce5ea6d623233e522675c847be1e"
     },
     "scripts/_bcf_runtime/ci_graph_diagnostics.py": {
       "operation": "copy",
@@ -692,7 +692,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_post_merge.py": {
       "operation": "copy",
-      "sha256": "259cd2a242292c776f419e47945ba22c0819f6b732e183de4a5bff1ce0aad7cb"
+      "sha256": "1a9716a28756b60a27a16cf449f65a4ffe05912b8007e84e0ba5aefcbe4755d3"
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
@@ -1020,7 +1020,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/preflight_repository_context.py": {
       "operation": "copy",
-      "sha256": "6043326d06ed982ab4af007e8d5793e39d5853ab2f51e08be987ecfa1a906469"
+      "sha256": "e99a39c4a4e546357d4d9f751a01f63eca430301143f845987c70062ab052e68"
     },
     "scripts/_bcf_runtime/governance_validation/product_certification.py": {
       "installation_scope": "self_authority",
@@ -1079,7 +1079,7 @@
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
-      "sha256": "1096cfaf379cb5a72c4ec8db680b2d7d71b99c76180d51b2dcdb15767485f6a5"
+      "sha256": "cc5429706610ad614796a10a9f2cc6b5fbc46ac4b24b046267b0703c00281da0"
     },
     "scripts/_bcf_runtime/migrate_contracts.py": {
       "operation": "copy",
@@ -1199,7 +1199,7 @@
     },
     "scripts/_bcf_runtime/repository_comparison_context.py": {
       "operation": "copy",
-      "sha256": "c87f7802a7849efcc879be8a84050ee6270bd6d3be163be359c721fff40b6069"
+      "sha256": "6906e248e3f0223b1fa2ee46862a4ceb4c175faa64631b878f40e1d8fe7e6ff2"
     },
     "scripts/_bcf_runtime/routine_controller_admission_custody.py": {
       "operation": "copy",

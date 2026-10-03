@@ -72,6 +72,12 @@ provider evidence.
 20. Operational progress, queue timing, and amplification records are typed
     observations with `authority:false`. Their absence or corruption may make
     telemetry unavailable but cannot weaken or satisfy truth.
+21. Origin event and invocation kind are separate typed facts. GitHub preserves
+    the caller's origin event inside a reusable workflow, so `push` cannot prove
+    direct invocation. A reusable call is identified by its required typed
+    comparison input; that input must equal both the selected comparison base
+    and the provider-native origin-event base. Direct events must carry no
+    caller comparison input.
 
 ## State matrix
 
@@ -96,8 +102,9 @@ provider evidence.
 
 ## Provider-event and evaluation matrix
 
-The provider event owns comparison context. The lifecycle owns the proposition.
-Neither may infer or rewrite the other.
+The provider origin event owns its native comparison context. The graph owns
+direct-event versus reusable-call invocation. The lifecycle owns the
+proposition. None may infer or rewrite another.
 
 | Provider event | Evaluation proposition | Exact comparison base | Changelog enforcement | Required result |
 | --- | --- | --- | --- | --- |
@@ -108,10 +115,10 @@ Neither may infer or rewrite the other.
 | direct protected `push` | `pr` | authenticated event `before` SHA consumed in the same workflow | inapplicable: `direct_push`, exact event/policy bound | merged-main progress proof |
 | direct protected `push` | `workitem:<id>` | authenticated event `before` SHA consumed in the same workflow | inapplicable: `direct_push`, exact event/policy bound | bounded merged-main proof |
 | direct protected `push` | `closure` | authenticated event `before` SHA consumed in the same workflow | inapplicable: `direct_push`, exact event/policy bound | merged-main terminal proof |
-| trusted exact-main `push` -> reusable governance | `pr` | outer `github.event.before` forwarded as exact `comparison_base_sha` caller input | inapplicable: `direct_push`, exact outer event/policy bound | merged-main progress proof |
-| trusted exact-main `push` -> reusable governance | `workitem:<id>` | outer `github.event.before` forwarded as exact `comparison_base_sha` caller input | inapplicable: `direct_push`, exact outer event/policy bound | bounded merged-main proof |
-| trusted exact-main `push` -> reusable governance | `closure` | outer `github.event.before` forwarded as exact `comparison_base_sha` caller input | inapplicable: `direct_push`, exact outer event/policy bound | merged-main terminal proof |
-| `workflow_call` | any declared proposition | explicit caller-supplied exact base SHA | caller contract, never inferred | proof for the declared proposition |
+| trusted exact-main origin `push`, reusable governance invocation | `pr` | required caller input exactly equals outer `github.event.before`; input wins selection | inapplicable: `direct_push`, exact outer event/policy bound | merged-main progress proof |
+| trusted exact-main origin `push`, reusable governance invocation | `workitem:<id>` | required caller input exactly equals outer `github.event.before`; input wins selection | inapplicable: `direct_push`, exact outer event/policy bound | bounded merged-main proof |
+| trusted exact-main origin `push`, reusable governance invocation | `closure` | required caller input exactly equals outer `github.event.before`; input wins selection | inapplicable: `direct_push`, exact outer event/policy bound | merged-main terminal proof |
+| any supported origin, reusable invocation | any declared proposition | required caller input equals the provider-native base for that origin | caller contract, never inferred | proof for the declared proposition |
 
 For every row, base and head must be exact commits in the checked-out history,
 base must be an ancestor of head, and event provenance must match the selected
@@ -123,10 +130,12 @@ event-conflicting bases all reject before evidence. The candidate-governance
 lane does not accept `pull_request_target`; BCF automation workflows that use
 that privileged event authenticate it under their separate fixed-purpose
 contract and never reinterpret it as candidate evidence. When exact-main calls
-the reusable governance workflow, the callee's provider event is
-`workflow_call`; therefore the authenticated outer push base must be an exact
-declared input. Empty, omitted, defaulted, or differently sourced caller input
-is a structural graph defect and fails prospective validation before evidence.
+the reusable governance workflow, GitHub retains the caller's origin event; it
+does not replace it with `workflow_call`. Invocation kind is therefore derived
+from the workflow-call contract's required comparison input, never from
+`github.event_name`. Empty, omitted, defaulted, differently sourced, or
+origin-mismatched caller input is a structural or cheap-preflight defect and
+fails before evidence.
 
 ## Evaluation-input transport state machine
 
@@ -138,7 +147,9 @@ the runtime scope parser owns meaning. No shell owns interpretation.
 | --- | --- | --- | --- | --- |
 | direct `pull_request`, inputs absent | `pr` / none | canonical event default -> environment | comparison context then evaluation scope | PR progress only |
 | protected `push`, inputs absent | lifecycle-selected intent/target | canonical graph value -> environment | direct-push preflight then evaluation scope | exact merged-main proposition |
-| exact-main `push` invokes reusable governance | lifecycle-selected intent/target | `github.event.before` -> typed `comparison_base_sha` caller input -> callee `BCF_COMPARISON_BASE_SHA` -> comparison environment | graph caller-and-callee binding validation then repository comparison context | exact merged-main proposition |
+| exact-main origin `push`, reusable invocation | lifecycle-selected intent/target | origin `github.event.before` -> required typed caller input -> raw caller-input environment + provider-native origin environment -> selected comparison environment | graph caller binding then equality of caller, origin, and selected identities | exact merged-main proposition |
+| origin `push`, reusable input absent | none | provider rejects required input; runtime fallback is not authoritative | workflow-call schema, then cheap comparison preflight defensively | reject before evidence; `github.event.before` cannot rescue omission |
+| origin `push`, reusable input wrong | none | exact wrong input remains visible beside provider-native origin base | cheap comparison preflight | reject before evidence even when both commits are valid ancestors |
 | `workflow_call(pr, '')` | `pr` / none | declared input -> environment | evaluation scope | PR progress only |
 | `workflow_call(workitem, exact-id)` | `workitem` / exact workitem | declared inputs -> environment | authored-ready workitem scope | bounded proposition only |
 | `workflow_call(closure, '')` | `closure` / none | declared input -> environment | phase-closure scope | terminal phase proposition only |

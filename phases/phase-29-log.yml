@@ -68,6 +68,8 @@ execution_evidence:
   - bounded read-only provider retry preserves the exact GET identity and records non-authoritative attempts while mutation methods, authorization failures, schema failures, and identity changes remain terminal
   - lifecycle progress, provider queue decomposition, and governance-amplification observations are schema-validated and explicitly non-authoritative; unknown provider timestamps remain unknown
   - the integrated authored DONE prefix P29-P0-01 through P29-P0-04 targets P29-P0-04 for one exact evidence session, leaves P29 active, and makes only P29-P0-05 eligible
+  - pre-gate adopter review proved GitHub retains the caller origin event inside reusable workflows; the canonical matrix now separates origin event from invocation kind, requires the reusable comparison input, and rejects any mismatch among caller input provider-native origin base and selected comparison base before evidence
+  - the pre-existing package preflight comparison-context mutant now targets reusable-input precedence at the same canonical projection owner; its old pull-request-base mutation was replaced rather than duplicated because the direct-event literal remains independently asserted and the new mutation preserves the broader event-context security invariant within the governed context budget
 closeout_requirements:
   claims:
     workitems_closed:
