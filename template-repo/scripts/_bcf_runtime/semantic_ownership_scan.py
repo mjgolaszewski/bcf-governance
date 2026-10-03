@@ -74,6 +74,18 @@ def _annotation_mentions(annotation: object, canonical: str) -> bool:
 
 
 def _function_mentions(function: dict[str, Any], entry: RegistryEntry) -> bool:
+    parameter_symbols = function.get("parameter_annotation_symbols")
+    return_symbols = function.get("return_annotation_symbols")
+    if isinstance(parameter_symbols, dict) and isinstance(return_symbols, list):
+        return entry.canonical_symbol in {
+            *[str(value) for value in return_symbols],
+            *[
+                str(value)
+                for values in parameter_symbols.values()
+                if isinstance(values, list)
+                for value in values
+            ],
+        }
     return _annotation_mentions(
         function.get("return_annotation", function.get("return_type")),
         entry.canonical_symbol,

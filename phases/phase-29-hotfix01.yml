@@ -4,7 +4,7 @@ document:
   id: project-phase-29-hotfix01
   version: 1.0.0
   generated_at_utc: '2026-10-03T00:00:00Z'
-  status: planned
+  status: active
   path: phases/phase-29-hotfix01.yml
 hotfix:
   id: P29-HF01
@@ -12,17 +12,35 @@ hotfix:
   related_phase_id: P29
   hotfix_number: 1
   summary: Remove self-authority requirements from ordinary adopter submit and prospective
-    admission
+    admission, and qualify semantic annotation identities
 execution_evidence:
   planned_commands:
   - /docker/bcf-governance/.venv/bin/python -m pytest -q tests/test_candidate_submit.py
     tests/test_local_execution_admission.py tests/test_prospective_validation.py
+    tests/test_semantic_import_roots.py tests/test_reconcile_governance.py
   - /docker/bcf-governance/.venv/bin/python scripts/validate_governance_yaml.py --repo-root
     .
-  executed_commands: []
+  executed_commands:
+  - command: /docker/bcf-governance/.venv/bin/python -m pytest -q tests/test_candidate_submit.py
+      tests/test_local_execution_admission.py tests/test_prospective_validation.py
+      tests/test_semantic_import_roots.py tests/test_reconcile_governance.py
+    result: 83 passed
+  - command: /docker/bcf-governance/.venv/bin/python -m bcf_governance.cli semantic-ownership
+      lock --repo-root . --apply
+    result: 102 projection outputs; no blocking semantic violation
+  - command: /docker/bcf-governance/.venv/bin/python -m pytest -q tests/test_profile_flows.py::test_full_profile_install_evidence_truth_flow[regulated]
+    result: mock Regulated v3 scaffold, install, evidence, and truth flow passed
   notes:
-  - record failing workflows, diagnosed root cause, remediation scope, and merge-back
-    status
+  - AgentBus 802ec5c proved direct-main submit incorrectly required BCF self-protection,
+    Python-only admission invoked the BCF-only TypeScript fixture, and an external
+    email.message.Message annotation collided with the adopter's canonical Message.
+  - The canonical CI state matrix now binds lane-specific repository authority,
+    graph-declared toolchain applicability, graph-value reconciliation inputs, and
+    source-qualified annotation identity through their complete consumer chains.
+  - The annotation resolver was extracted into the existing semantic-discovery
+    primitive boundary to retain the governed 800-line cap; canonical representation
+    registry ownership was inspected and is unaffected because pack/product parity
+    already owns helper runtime projection.
 closeout_requirements:
   claims:
     required_suites_green:

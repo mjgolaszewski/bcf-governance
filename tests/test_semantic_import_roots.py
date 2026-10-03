@@ -209,6 +209,75 @@ def test_multiple_disjoint_import_roots_resolve_without_suffix_guessing(
     }
 
 
+def test_external_annotation_name_cannot_acquire_project_semantic_identity(
+    tmp_path: Path,
+) -> None:
+    package = Path("src/demo")
+    _write(tmp_path / package / "domain.py", "class Message:\n    pass\n")
+    _write(
+        tmp_path / package / "factory.py",
+        "from demo.domain import Message\n\ndef create():\n    return Message()\n",
+    )
+    _write(
+        tmp_path / package / "provider.py",
+        "from email.message import Message\n\n"
+        "def retry_after(headers: Message | None):\n"
+        "    return headers.get('Retry-After') if headers else None\n",
+    )
+    inventory = _inventory(tmp_path, ("src",))
+    canonical = f"{package.as_posix()}/domain.py::Message"
+    owner = f"{package.as_posix()}/factory.py::create"
+    registry = Registry(
+        phase="P29",
+        mode="declared_families_blocking",
+        unresolved_dynamic_policy="fail_closed",
+        authoritative_python_roots=("src",),
+        generated_mirror_roots=(),
+        entries=(
+            RegistryEntry(
+                semantic_id="example.message.v1",
+                family="message",
+                lifecycle="enforced",
+                canonical_symbol=canonical,
+                owner_symbol=owner,
+                authorized_constructors=frozenset({owner}),
+                authorized_delegates=frozenset(),
+                blocking=True,
+                raw={},
+            ),
+        ),
+        raw={},
+    )
+
+    provider = next(
+        row for row in inventory["functions"] if row["symbol"].endswith("::retry_after")
+    )
+    assert provider["parameter_annotation_symbols"]["headers"] == [
+        "external:email.message::Message"
+    ]
+    assert evaluate_discovery(inventory, registry)["verdict"] == "conformant"
+
+    _write(
+        tmp_path / package / "consumer.py",
+        "from demo.domain import Message\n\n"
+        "def normalize(message: Message):\n"
+        "    return message.strip()\n",
+    )
+    with_consumer = _inventory(tmp_path, ("src",))
+    result = evaluate_discovery(with_consumer, registry)
+    assert result["verdict"] == "non_conformant"
+    assert any(
+        row["kind"] == "downstream_normalization"
+        and row["symbol"] == "src/demo/consumer.py::normalize"
+        for row in result["violations"]
+    )
+    assert not any(
+        row["kind"] == "downstream_normalization"
+        and row["symbol"] == "src/demo/provider.py::retry_after"
+        for row in result["violations"]
+    )
+
+
 def test_import_roots_reject_ambiguous_modules_and_overlaps(tmp_path: Path) -> None:
     _write(tmp_path / "one/demo/model.py", "class Record:\n    pass\n")
     _write(tmp_path / "two/demo/model.py", "class Record:\n    pass\n")

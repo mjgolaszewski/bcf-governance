@@ -14,7 +14,10 @@ All notable changes to BCF Governance are recorded here. This file follows
   repository authority instead of requiring BCF's self-controller protection
   declaration, and made local admission execute only the toolchain bootstrap
   declared by the adopter's validated CI graph. Python-only adopters no longer
-  inherit BCF's repository-specific Node/TypeScript fixture.
+  inherit BCF's repository-specific Node/TypeScript fixture. Semantic ownership
+  now resolves annotation identities through exact import bindings, preventing
+  dependency or installed-runtime types from colliding with same-named adopter
+  domain types.
 
 ## [2.1.7] - 2026-10-03
 

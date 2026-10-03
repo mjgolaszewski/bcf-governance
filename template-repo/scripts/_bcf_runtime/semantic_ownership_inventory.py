@@ -25,6 +25,10 @@ from .semantic_python_method_identity import (
     runtime_function_scopes,
     source_symbol,
 )
+from .semantic_python_annotation_identity import (
+    external_import_identity,
+    resolve_annotation_identities,
+)
 from .semantic_source_paths import candidate_source_files
 
 
@@ -722,8 +726,35 @@ def resolve_python_imports(
             return module_member(imported, attributes[len(remainder) :], seen)
         return module_member(imported_parts[0], attributes, seen)
 
+    def annotation_identities(path: str, annotation: object) -> list[str]:
+        def local_symbol(local: str, attributes: list[str]) -> str | None:
+            symbol = f"{path}::{'.'.join([local, *attributes])}"
+            return symbol if symbol in known_symbols else None
+
+        return resolve_annotation_identities(
+            annotation,
+            local_symbol=local_symbol,
+            binding_for=lambda local: bindings_by_path.get(path, {}).get(local),
+            binding_target=lambda binding, attributes: binding_target(
+                path, dict(binding), attributes
+            ),
+            external_binding_target=lambda binding, attributes: external_import_identity(
+                path, binding, attributes, module_by_path=module_by_path,
+                absolute_module=lambda value, module, package: _absolute_module(
+                    dict(value), module, is_package=package
+                ), error=SemanticInventoryError,
+            ),
+        )
+
     for function in resolved.get("functions", []):
         path = str(function["symbol"]).split("::", 1)[0]
+        function["parameter_annotation_symbols"] = {
+            name: annotation_identities(path, annotation)
+            for name, annotation in function.get("parameters", {}).items()
+        }
+        function["return_annotation_symbols"] = annotation_identities(
+            path, function.get("return_annotation")
+        )
         for collection in ("calls", "constructors"):
             for fact in function.get(collection, []):
                 reference = fact.get("import_reference")

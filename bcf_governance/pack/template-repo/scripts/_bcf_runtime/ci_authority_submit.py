@@ -62,12 +62,12 @@ def _remote_repository(remote_url: str) -> str:
 def _provider_repository(
     repo_root: Path,
     *,
-    context: LocalPRContext,
+    remote: str,
     provider_api: GitHubAPI,
     runner: Runner,
 ) -> str:
     result = runner(
-        ["git", "remote", "get-url", context.remote], cwd=repo_root
+        ["git", "remote", "get-url", remote], cwd=repo_root
     )
     if result.returncode:
         raise ProspectiveValidationError(
@@ -99,7 +99,7 @@ def _canonical_inputs(
     if evaluation.lane == "direct_protected_main":
         repository = _provider_repository(
             repo_root,
-            context=context,
+            remote=context.remote,
             provider_api=provider_api,
             runner=runner,
         )

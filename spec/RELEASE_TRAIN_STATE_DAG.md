@@ -90,6 +90,11 @@ provider evidence.
     artifact being projected. Graph lock/render stages derive their dependency
     closure from graph-declared value-source paths; a changed source can never
     be hidden by a stale stage ledger token.
+25. Semantic type identity is source-qualified before ownership evaluation.
+    An annotation's bare spelling is never sufficient to associate a runtime
+    or dependency type with an adopter-owned canonical type of the same name.
+    Unresolved or ambiguous project identities fail closed; external imported
+    identities remain distinct and cannot acquire adopter authority.
 
 ## State matrix
 
@@ -116,6 +121,8 @@ provider evidence.
 | Local Python-only admission | validated graph without a toolchain-bootstrap command, selected governed project Python | execute declared producer DAG | BCF self bootstrap invoked, undeclared setup synthesized, unsupported interpreter |
 | Local declared-toolchain admission | validated graph with an exact bootstrap command, selected governed project Python | execute that command once, then producer DAG | missing/malformed declared command, failed custody proof, agent-selected replacement |
 | Graph value source changed | raw graph, exact declared source paths and bytes, prior reconcile ledger | graph lock then render and authority projection | stage reported clean while any declared source digest differs, hand-ordered lock repair |
+| Runtime/adopter annotation names collide | exact source path, import binding, qualified annotation identities, canonical registry symbol | evaluate normalization only when exact qualified identity matches | bare-name matching, unresolved project import accepted, dependency/runtime type treated as adopter domain type |
+| Fresh Regulated adopter | immutable release/candidate assets, regulated profile, exact repository tree, generated catalog and declared toolchain | real scaffold/install then prospective train | self-authority inferred, undeclared setup, profile/catalog drift, simulated install success |
 
 ## Provider-event and evaluation matrix
 
@@ -257,6 +264,16 @@ declared and must represent its absence as typed Python-only applicability.
       - **Producer:** canonical reconciler stage dependency compiler.
         - **Consumers:** graph lock, renderer, workflow-authority projection,
           governance validation, prospective train.
+
+- **Semantic annotation identity invariant:** ownership follows exact source
+  identity, not a coincidental type spelling.
+  - **Primitive:** source-first annotation reference plus declared import-root
+    resolution and an explicit external-import identity.
+    - **Contract:** normalization relevance requires the registry's exact
+      canonical symbol among the function's qualified annotation identities.
+      - **Producer:** Python semantic inventory and import resolver.
+        - **Consumers:** semantic ownership scanner, preflight, release-check,
+          prospective train, and adopter qualification.
 
 ## Deterministic operational-state matrix
 
