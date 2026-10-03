@@ -68,6 +68,32 @@ def test_manifest_drift_reports_missing_and_extra_nodes(tmp_path: Path) -> None:
         check_gate(repo, "test", python_executable=sys.executable)
 
 
+@pytest.mark.parametrize(
+    "node, pattern",
+    [
+        (
+            "tests/test_sample.py::test_parameter[/docker/project-fixture]",
+            "local_workspace_path",
+        ),
+        (
+            "tests/test_sample.py::test_parameter[service.corp]",
+            "private_hostname",
+        ),
+    ],
+    ids=("local-path", "private-host"),
+)
+def test_manifest_producer_rejects_nonportable_collected_identity_before_write(
+    tmp_path: Path, node: str, pattern: str
+) -> None:
+    repo = _repo(tmp_path)
+    manifest = repo / "governance/test-manifests/test.txt"
+
+    with pytest.raises(ManifestError, match=pattern):
+        _selector_map_from_nodes("test", [node])
+
+    assert not manifest.exists()
+
+
 def test_manifest_collection_uses_selected_interpreter_not_host_path(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

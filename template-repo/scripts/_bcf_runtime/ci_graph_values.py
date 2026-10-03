@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import re
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
@@ -17,6 +17,38 @@ SOURCE_PATTERN = re.compile(
 
 class CIGraphValueError(ValueError):
     """Raised when a graph value projection is stale or not a scalar."""
+
+
+def declared_graph_value_source_paths(
+    repo_root: Path, *, graph_path: Path = Path("governance/ci-graph.yml")
+) -> tuple[str, ...]:
+    """Return the exact safe source paths that graph projection depends upon."""
+
+    try:
+        graph = load_yaml_path(repo_root / graph_path)
+    except GraphYAMLError as exc:
+        raise CIGraphValueError(str(exc)) from exc
+    sources = graph.get("value_sources")
+    if not isinstance(sources, dict):
+        raise CIGraphValueError("CI graph value_sources must be an object")
+    paths: list[str] = []
+    for source_id, contract in sources.items():
+        if not isinstance(source_id, str) or not isinstance(contract, dict):
+            raise CIGraphValueError("CI graph value source contract is malformed")
+        relative = contract.get("path")
+        if not isinstance(relative, str):
+            raise CIGraphValueError(
+                f"CI graph value source path is malformed: {source_id}"
+            )
+        candidate = PurePosixPath(relative)
+        if candidate.is_absolute() or ".." in candidate.parts or relative != candidate.as_posix():
+            raise CIGraphValueError(
+                f"CI graph value source path is unsafe: {relative}"
+            )
+        paths.append(relative)
+    if len(paths) != len(set(paths)):
+        raise CIGraphValueError("CI graph value source paths must be unique")
+    return tuple(sorted(paths))
 
 
 def _lookup(payload: dict[str, Any], selector: str) -> str | int | bool:

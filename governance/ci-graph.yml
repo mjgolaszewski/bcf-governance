@@ -6,8 +6,8 @@ default_branch: main
 trusted_controller: {kind: self_governance_policy, policy_path: governance/self-governance-policy.yml}
 evidence_storage: {path: governance/evidence-storage.yml, sha256: e7616b0c43cc0106779b5bab99ec9c1e5e8d30cbc51bff57a3698cb82454fdaa}
 value_sources:
-  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 184b5b6ce5db4b22c5fbd2b0fa3c33fcce1fe84c5d5d9ac6ea6774246dd97cfc}
-  release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: aa681ecfb26dd4b81c394dba87c32c59f72543c409bc8d5daee5046307821be9}
+  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 4ecfe3c988f31bfb87b71f746b2cc2276c4005a848b12fa66829e54e36aab37b}
+  release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: 8ca0f767b0d637580d9636b0db67120439a11728fbf33fc954d89bada1f024d2}
   protection-contract: {kind: yaml, path: governance/github-protection.yml, sha256: 5f8c6fcd0d569e17050f694571474faa0f7538d12a5d11cc51891cf01c59a53a}
   automation-contract: {kind: yaml, path: governance/automation-producers.yml, sha256: 74c02575f7599f9e4a82cacc60f6d60692ee81dd1f7bec20441e6b375cf77cce}
 extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]

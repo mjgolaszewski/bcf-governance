@@ -17,6 +17,7 @@ from .ci_authority_pins import verify_provider_workflow_authority
 from .ci_controller_policy import graph_controller_policy_path
 from .ci_authority_prospective_lanes import (
     ProspectiveLaneError,
+    ordinary_authority_applicability,
     prospective_policy_binding,
     provider_boundaries,
     terminal_boundaries,
@@ -214,6 +215,8 @@ def _run_prospective_train(
     python_executable: Path,
     execute_evidence: bool = True,
     controller_authority: Mapping[str, Any] | None = None,
+    repository: str | None = None,
+    provider_api: GitHubAPI | None = None,
     runner: Runner = _run,
     progress_sink: ProgressSink | None = None,
 ) -> dict[str, Any]:
@@ -319,6 +322,32 @@ def _run_prospective_train(
         )
     except ProspectiveLaneError as exc:
         raise ProspectiveValidationError(str(exc)) from exc
+    authority_applicability = None
+    if custody_state == "ordinary_executable_controller":
+        try:
+            authority_applicability = ordinary_authority_applicability(policy_identity)
+        except ProspectiveLaneError as exc:
+            raise ProspectiveValidationError(str(exc)) from exc
+    verify_provider_authority = repository is not None and (
+        custody_state != "ordinary_executable_controller"
+        or authority_applicability == "provider_verification_required"
+    )
+    if verify_provider_authority:
+        if provider_api is None:
+            raise ProspectiveValidationError(
+                "provider-authenticated prospective validation requires a provider API"
+            )
+        verify_provider_workflow_authority(
+            root,
+            authority_path=Path("governance/ci-authority.yml"),
+            api=provider_api,
+            repository=repository,
+        )
+        graph = validate_ci_graph(root).graph
+        if graph_controller_policy_path(graph) is not None:
+            controller_authority = effective_controller_authority(
+                provider_api, repository=repository
+            )
     boundaries: list[dict[str, Any]] = []
 
     with tempfile.TemporaryDirectory(prefix="bcf-prospective-") as temporary:
@@ -432,6 +461,11 @@ def _run_prospective_train(
                 ),
                 "release_authority": False,
                 "controller_custody_contract": custody_contract,
+                **(
+                    {"provider_authority_applicability": authority_applicability}
+                    if authority_applicability is not None
+                    else {}
+                ),
             }
         )
         if not execute_evidence:
@@ -671,32 +705,20 @@ def run_prospective_train(
         raise ProspectiveValidationError(str(exc)) from exc
     try:
         with local_gate_lease(subject_commit):
+            try:
+                compiled_graph = validate_ci_graph(repo_root.resolve())
+                graph = compiled_graph.graph
+                lane = post_merge_evaluation(graph).lane
+            except CIGraphError as exc:
+                raise ProspectiveValidationError(str(exc)) from exc
             admission = validate_local_toolchain(
-                repo_root.resolve(), python_executable
+                repo_root.resolve(),
+                python_executable,
+                toolchain_command=compiled_graph.commands.get(
+                    "bootstrap-test-toolchain"
+                ),
             )
             with selected_toolchain_environment(admission):
-                controller_authority = None
-                try:
-                    graph = validate_ci_graph(repo_root.resolve()).graph
-                    lane = post_merge_evaluation(graph).lane
-                except CIGraphError as exc:
-                    raise ProspectiveValidationError(str(exc)) from exc
-                if repository is not None and lane == "trusted_exact_main":
-                    if provider_api is None:
-                        raise ProspectiveValidationError(
-                            "provider-authenticated prospective validation requires a provider API"
-                        )
-                    verify_provider_workflow_authority(
-                        repo_root.resolve(),
-                        authority_path=Path("governance/ci-authority.yml"),
-                        api=provider_api,
-                        repository=repository,
-                    )
-                    if graph_controller_policy_path(graph) is not None:
-                        controller_authority = effective_controller_authority(
-                            provider_api, repository=repository
-                        )
-
                 result = _run_prospective_train(
                     repo_root,
                     semantic_intent=semantic_intent,
@@ -706,7 +728,8 @@ def run_prospective_train(
                     remote=remote,
                     python_executable=python_executable,
                     execute_evidence=True,
-                    controller_authority=controller_authority,
+                    repository=repository if lane == "trusted_exact_main" else None,
+                    provider_api=provider_api if lane == "trusted_exact_main" else None,
                     runner=runner,
                     progress_sink=progress_sink,
                 )

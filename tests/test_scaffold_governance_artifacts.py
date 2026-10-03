@@ -141,6 +141,54 @@ def test_scaffold_hotfix_log_uses_phase_numbered_filename_and_mode(tmp_path: Pat
     ]
 
 
+@pytest.mark.parametrize(
+    "command, pattern",
+    [
+        ("/docker/project/.venv/bin/python -m pytest", "local_workspace_path"),
+        ("curl http://service.corp/report", "private_hostname"),
+    ],
+    ids=("local-path", "private-host"),
+)
+def test_scaffold_hotfix_rejects_nonportable_commands_before_writing(
+    tmp_path: Path, command: str, pattern: str
+) -> None:
+    with pytest.raises(ValueError, match=pattern):
+        SCAFFOLD_MODULE.scaffold_hotfix_log(
+            repo_root=tmp_path,
+            project_id="demo",
+            hotfix_id="HF-002",
+            mode="full",
+            hotfix_number=2,
+            summary="repair validation output",
+            related_phase_id="P03",
+            date="2026-04-24",
+            validation_commands=[command],
+            force=False,
+        )
+    assert not (tmp_path / "phases").exists()
+
+
+def test_scaffold_phase_rejects_nonportable_commands_before_writing(
+    tmp_path: Path,
+) -> None:
+    with pytest.raises(ValueError, match="local_workspace_path"):
+        SCAFFOLD_MODULE.scaffold_phase_artifacts(
+            repo_root=tmp_path,
+            project_id="demo",
+            phase_id="P03",
+            build_block="portable-commands",
+            objective="reject local paths",
+            planner="codex",
+            date="2026-04-24",
+            hard_dependencies=[],
+            deliverables=["portable scaffold"],
+            workstreams=["validation"],
+            verification_commands=["/home/agent/project/.venv/bin/python -m pytest"],
+            force=False,
+        )
+    assert not (tmp_path / "plans").exists()
+
+
 def test_scaffold_hotfix_cli_prints_relative_log_path(tmp_path: Path) -> None:
     result = subprocess.run(
         [

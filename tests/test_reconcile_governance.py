@@ -180,6 +180,21 @@ def test_reconcile_declares_one_closed_dependency_order() -> None:
     assert ids[-1] == "editorial-audit"
 
 
+def test_graph_projection_stages_watch_every_declared_value_source() -> None:
+    root = Path(__file__).resolve().parents[1]
+    graph = yaml.safe_load((root / "governance/ci-graph.yml").read_text())
+    expected = {
+        str(contract["path"])
+        for contract in graph["value_sources"].values()
+    }
+    steps = reconcile_steps(root, Path(sys.executable))
+
+    for step_id in ("ci-graph-lock", "ci-graph-render"):
+        step = next(step for step in steps if step.step_id == step_id)
+        assert step.watch_paths is not None
+        assert expected <= set(step.watch_paths)
+
+
 def test_reconcile_owns_template_workflow_projection() -> None:
     reconcile_template_workflow(Path(__file__).resolve().parents[1], apply=False)
 

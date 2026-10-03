@@ -11,6 +11,7 @@ from typing import Any
 
 import yaml  # type: ignore[import-untyped]
 
+from .check_governance_exposure import PATTERNS as GOVERNANCE_EXPOSURE_PATTERNS
 from .evidence_execution import _selected_python
 
 
@@ -129,6 +130,18 @@ def _safe_pytest_node(value: str) -> str:
         or ".." in relative.parts
     ):
         raise TestManifestError(f"pytest collection returned an unsafe node {value!r}")
+    exposure = next(
+        (
+            name
+            for name, pattern in GOVERNANCE_EXPOSURE_PATTERNS.items()
+            if pattern.search(value)
+        ),
+        None,
+    )
+    if exposure is not None:
+        raise TestManifestError(
+            f"pytest collection returned a nonportable node ({exposure}): {value!r}"
+        )
     return value
 
 

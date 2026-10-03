@@ -11,6 +11,8 @@ from bcf_governance.tooling.local_execution_admission import (
     local_gate_lease,
     project_python_environment,
     resolve_local_project_python,
+    selected_toolchain_environment,
+    validate_local_toolchain,
 )
 from bcf_governance.tooling.runtime_capacity import (
     EXECUTION_STATE_ENVIRONMENT,
@@ -128,3 +130,64 @@ def test_project_python_environment_removes_controller_paths(tmp_path: Path) -> 
         "VIRTUAL_ENV": str(tmp_path / ".venv"),
         "KEPT": "exact",
     }
+
+
+def test_python_only_graph_does_not_invoke_self_toolchain_bootstrap(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    executable = tmp_path / "python"
+    executable.write_text("", encoding="utf-8")
+    calls: list[list[str]] = []
+
+    def run(argv: list[str], **_kwargs: object) -> object:
+        calls.append(argv)
+        return type("Result", (), {"returncode": 0, "stdout": "Python 3.12.9\n", "stderr": ""})()
+
+    monkeypatch.setattr("subprocess.run", run)
+    admission = validate_local_toolchain(
+        tmp_path, executable, toolchain_command=None
+    )
+
+    assert calls == [[str(executable), "--version"]]
+    assert admission.toolchain_scope == "python_only"
+    assert admission.node_executable is None
+    with selected_toolchain_environment(admission):
+        pass
+
+
+def test_declared_toolchain_command_is_the_only_bootstrap_authority(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    executable = tmp_path / "python"
+    executable.write_text("", encoding="utf-8")
+    calls: list[list[str]] = []
+
+    def run(argv: list[str], **_kwargs: object) -> object:
+        calls.append(argv)
+        if len(calls) == 1:
+            stdout = "Python 3.12.9\n"
+        else:
+            stdout = (
+                '{"status":"test_toolchain_ready","node_version":"v22.23.2",'
+                '"node_executable":"/tool/node","typescript_version":"6.0.3"}'
+            )
+        return type("Result", (), {"returncode": 0, "stdout": stdout, "stderr": ""})()
+
+    monkeypatch.setattr("subprocess.run", run)
+    admission = validate_local_toolchain(
+        tmp_path,
+        executable,
+        toolchain_command={
+            "argv": ["{python}", "tools/owned_bootstrap.py", "--repo-root", "."],
+            "cwd": ".",
+            "environment": {},
+        },
+    )
+
+    assert calls[1] == [
+        sys.executable,
+        "tools/owned_bootstrap.py",
+        "--repo-root",
+        ".",
+    ]
+    assert admission.toolchain_scope == "python_node_typescript"

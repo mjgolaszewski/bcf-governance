@@ -78,6 +78,37 @@ provider evidence.
     comparison input; that input must equal both the selected comparison base
     and the provider-native origin-event base. Direct events must carry no
     caller comparison input.
+22. Repository protection authority is lane-scoped. A self-managed trusted
+    controller authenticates its governed protection declaration; an ordinary
+    `direct_protected_main` adopter authenticates the exact GitHub repository
+    derived from its configured remote and provider response. Absence of a
+    self-controller declaration in the ordinary lane is not missing authority.
+23. Local toolchain admission executes only setup declared by the validated CI
+    graph. Python-only adopters require the selected governed interpreter but
+    never inherit BCF's self-repository Node/TypeScript bootstrap fixture.
+24. Reconcile-stage applicability includes every canonical input named by the
+    artifact being projected. Graph lock/render stages derive their dependency
+    closure from graph-declared value-source paths; a changed source can never
+    be hidden by a stale stage ledger token.
+25. Semantic type identity is source-qualified before ownership evaluation.
+    An annotation's bare spelling is never sufficient to associate a runtime
+    or dependency type with an adopter-owned canonical type of the same name.
+    Unresolved or ambiguous project identities fail closed; external imported
+    identities remain distinct and cannot acquire adopter authority.
+26. Prepublication qualification uses one isolated candidate runtime identity
+    for the entire subprocess tree. An ambient source overlay must not fall
+    through to an older installed CLI after environment normalization; every
+    nested generator and validator resolves the same candidate bytes.
+27. Provider workflow authority has a closed bootstrap lifecycle. Exact
+    source/candidate presence is classified before verification: absent to
+    absent permits only local prospective proof ending at provider-required;
+    present to absent is deletion and rejects; any present candidate contract
+    remains subject to exact provider workflow-ID verification. Absence never
+    supplies certification, merge, exact-main, controller, or release authority.
+28. Governed command records are portable repository contracts, never captures
+    of one agent workspace. Their canonical author must reject local absolute
+    workspace paths before writing a phase or hotfix artifact; downstream
+    exposure preflight remains defense in depth rather than first discovery.
 
 ## State matrix
 
@@ -100,6 +131,16 @@ provider evidence.
 | Publication conflict | any non-exact tag or release state | stop | mutation, deletion, force update, or treating conflict as absence |
 | Published custody | immutable non-draft release, exact tag/assets/digests/attestations | credential retirement and adopter qualification | mutable/draft release, missing asset, retained credential |
 | Qualified release | immutable custody plus adopter same-byte reports | phase/release closeout | unpublished package, different bytes, simulated adopter authority |
+| Ordinary adopter submit | validated direct-main graph, exact GitHub remote, authenticated provider repository, selected project Python | prospective train and exact push | remote/provider disagreement, malformed repository identity, self-controller declaration required by implication |
+| Local Python-only admission | validated graph without a toolchain-bootstrap command, selected governed project Python | execute declared producer DAG | BCF self bootstrap invoked, undeclared setup synthesized, unsupported interpreter |
+| Local declared-toolchain admission | validated graph with an exact bootstrap command, selected governed project Python | execute that command once, then producer DAG | missing/malformed declared command, failed custody proof, agent-selected replacement |
+| Graph value source changed | raw graph, exact declared source paths and bytes, prior reconcile ledger | graph lock then render and authority projection | stage reported clean while any declared source digest differs, hand-ordered lock repair |
+| Runtime/adopter annotation names collide | exact source path, import binding, qualified annotation identities, canonical registry symbol | evaluate normalization only when exact qualified identity matches | bare-name matching, unresolved project import accepted, dependency/runtime type treated as adopter domain type |
+| Fresh Regulated adopter | immutable release/candidate assets, regulated profile, exact repository tree, generated catalog and declared toolchain | real scaffold/install then prospective train | self-authority inferred, undeclared setup, profile/catalog drift, simulated install success |
+| Prepublication adopter qualification | candidate commit/tree, isolated interpreter, exact installed candidate package digest, adopter subject/tree | install/project and run prospective train with that interpreter only | ambient `PYTHONPATH`, older nested CLI, mixed runtime versions, release-upgrade claim before immutable assets |
+| Fresh Standard/Regulated provider-authority bootstrap | exact base/candidate policy identity proves `governance/ci-authority.yml` absent on both subjects; candidate graph and repository identity exact | complete local prospective evidence/truth, then stop at typed provider-proof-required boundary | provider verifier invoked on an absent file, authority fabricated locally, absence treated as certification, or a previously present authority disappears |
+| Candidate provider authority present | exact tracked authority bytes plus authenticated provider workflow path/ID inventory | verify every declared workflow identity before prospective evidence | missing/redacted/mismatched workflow, repository, path, or ID; source-present/candidate-absent deletion |
+| Authored governed validation command | repository-relative executable and arguments, canonical exposure-pattern registry | scaffold phase/hotfix artifact | local `/docker`, `/home`, user-profile, private-host, or private-address value rejects before artifact creation |
 
 ## Provider-event and evaluation matrix
 
@@ -211,6 +252,79 @@ value after the graph boundary.
 
 No consumer may infer scope from event kind, status name, missing target, or a
 shell fallback after the canonical graph has produced the typed pair.
+
+### Adopter-entrypoint construction tree
+
+- **Invariants:** repository authority and toolchain setup are exact,
+  lane-scoped, provider/graph-derived, and never inherited from BCF self
+  authority.
+  - **Primitives:** exact remote repository identity, authenticated provider
+    repository response, post-merge lane, validated graph command, selected
+    project interpreter, typed Python-only applicability.
+    - **Contracts:** direct-main repository binding, self-controller protection
+      declaration, graph-declared toolchain bootstrap, local admission report.
+      - **Producers:** CI graph compiler, git remote resolver, provider GET,
+        local toolchain admission.
+        - **Consumers:** canonical `bcf ci submit`, prospective train, evidence
+          planner, exact push, adopter qualification.
+
+The direct-main lane must reject malformed, moved, or provider-disagreeing
+remotes; it must not require or synthesize `governance/github-protection.yml`.
+The local admission owner must execute the graph's exact bootstrap command when
+declared and must represent its absence as typed Python-only applicability.
+
+- **Graph reconciliation invariant:** a projection stage owns the transitive
+  canonical inputs declared by the graph it projects.
+  - **Primitive:** exact normalized `value_sources[*].path` inventory from the
+    raw graph.
+    - **Contract:** graph lock and render watch the raw graph, extensions,
+      generated outputs, implementation owner, and every declared value source.
+      - **Producer:** canonical reconciler stage dependency compiler.
+        - **Consumers:** graph lock, renderer, workflow-authority projection,
+          governance validation, prospective train.
+
+- **Semantic annotation identity invariant:** ownership follows exact source
+  identity, not a coincidental type spelling.
+  - **Primitive:** source-first annotation reference plus declared import-root
+    resolution and an explicit external-import identity.
+    - **Contract:** normalization relevance requires the registry's exact
+      canonical symbol among the function's qualified annotation identities.
+      - **Producer:** Python semantic inventory and import resolver.
+        - **Consumers:** semantic ownership scanner, preflight, release-check,
+          prospective train, and adopter qualification.
+
+- **Candidate-runtime invariant:** one exact candidate runtime owns every local
+  pre-gate child process.
+  - **Primitive:** isolated interpreter plus exact candidate package projection
+    and resolved module identity.
+    - **Contract:** the candidate commit/tree and runtime digest are recorded;
+      ambient import overlays and older installed fallbacks are absent.
+      - **Producer:** bounded prepublication qualification setup.
+        - **Consumers:** installer, reconciler, graph renderer, preflight,
+          prospective train, and adopter report. This observation has no
+          release or publication authority.
+
+- **Provider-authority bootstrap invariant:** absence is a typed lifecycle
+  state, not malformed authority and not an alternate authority source.
+  - **Primitive:** exact source/candidate present-or-absent projection for the
+    canonical authority path, bound to both commit/tree identities.
+    - **Contract:** absent/absent permits local prospective execution only;
+      present/absent rejects deletion; candidate-present invokes the strict
+      provider workflow identity verifier.
+      - **Producer:** ordinary authority policy binding after local PR context
+        and candidate identity authentication.
+        - **Consumers:** prospective train authority applicability, optional
+          controller resolution, provider boundaries, submission, and adopter
+          qualification. No branch can emit certification or release authority.
+
+- **Portable governed-command invariant:** authored execution records cannot
+  depend on the machine that produced them.
+  - **Primitive:** the canonical governance-exposure pattern registry.
+    - **Contract:** every phase/hotfix scaffold validation command is checked
+      before any artifact is written; repository-relative commands pass.
+      - **Producer:** governance artifact scaffolder.
+        - **Consumers:** lifecycle readiness, governance-exposure preflight,
+          prospective submit, exact-main closure, and editorial custody.
 
 ## Deterministic operational-state matrix
 
@@ -562,6 +676,8 @@ test-only, or inspected-no-impact before provider execution.
 | Provider-effective controller transport | both PR and semantic preflight receive the same authenticated provider-effective commit/bundle pair | compatibility classifies that exact pair, never the stale source-policy baseline when an authenticated routine chain supersedes it | candidate evidence remains non-authoritative and exact-subject bound | protected merge cannot rewrite the effective controller identity | exact-main independently reauthenticates the same routine chain | finalizer/publisher consume exact custody, not candidate assertion | missing, malformed, wrong-repository, or unauthenticated provider authority fails before evidence and grants no release authority | packaged runtime preserves the typed transport contract |
 | Controller preflight ownership | structural budget validates the dedicated canonical controller-preflight primitive | identical installed-N compatibility inputs | PR/release callers consume one typed result | no workflow-local copy | pending/current state remains exact | no certification authority | no release authority | runtime mirrors generated from the same owner |
 | Profile template workflow projection | canonical reconcile owner | inspected-no-impact | direct PR origin/invocation contract | direct push origin/invocation contract | adopter truth receives exact base | no self finalizer authority | no release authority | Lite and Standard generated workflow parity |
+| Provider-authority bootstrap applicability | classify exact source/candidate authority presence before provider calls | ordinary executable-controller custody unchanged; managed self-controller authority remains mandatory | absent/absent permits local evidence and truth only; present authority is provider-verified | no merge or exact-main authority is inferred from absence | fresh provider execution must establish its own authority; established-authority deletion rejects | no finalizer or publisher input is synthesized | always provider-required and release authority false until authenticated provider custody exists | fresh Standard/Regulated absence is typed; existing adopters retain strict authority verification |
+| Governed command and test-identity portability | scaffold and test-manifest producer reject canonical exposure patterns before writing | inspected-no-impact | portable records and stable symbolic test identities enter ordinary evidence; no fixture-local path or private host reaches candidate bytes | protected merge receives repository-relative commands and exposure-free manifests only | closure preflight retains defense-in-depth exposure scan | no certification/status change | no authority or release effect | phase/hotfix scaffolding and test-manifest parity in packaged runtime |
 | Reconcile operation effect expansion | exact-base semantic migration required before evidence | installed-N parses unchanged runtime contract | migration binds the added projection port to exact base and phase owner | canonical reconcile alone emits template bytes | no truth proposition change | no certification/status change | no authority or release effect | generated template projection is the only new effect |
 | P29 terminal release candidate | exact predecessor workitem certification and authored terminal lifecycle validate before evidence | inspect exact candidate with installed controller; rotate only if trusted runtime bytes changed | exact candidate receives ordinary PR evidence/certification | protected merge preserves exact tree | terminal `phase_closed:P29` only | finalizer/publisher preserve terminal proposition | authorizer/build/verifier/collector/publisher authenticate one exact subject and immutable `v2.1.7` bytes | same candidate before gates; same immutable release after publication |
 
@@ -609,6 +725,7 @@ test-only, or inspected-no-impact before provider execution.
 ```text
 intent
   -> reconcile(definition -> authority -> fixed point)
+     -> reject nonportable governed commands and collected test identities
   -> authenticate provider-effective controller
   -> PR preflight(same exact controller) -> controller compatibility(same exact controller)
      -> semantic preflight(same exact controller) -> PR evidence -> PR certification
@@ -668,7 +785,9 @@ Every late correction records the following before its first push:
    wrong-attempt, wrong-producer, conflicting, and retry states where applicable.
 6. Run cheap structural budgets before semantic fan-out.
    This includes proving every tracked top-level source root is selected by the
-   source-distribution manifest.
+   source-distribution manifest, and proving generated test identities contain
+   no canonical governance-exposure pattern. Negative fixtures use stable
+   symbolic parameter IDs; raw fixture values never become governed identity.
 7. Reuse exact-input evidence where the applicability resolver proves it legal;
    otherwise state the changed binding that requires recomputation.
 8. Require generated parity and a clean fixed point before provider execution.
