@@ -4,7 +4,7 @@ document:
   id: project-phase-29-hotfix01
   version: 1.0.0
   generated_at_utc: '2026-10-03T00:00:00Z'
-  status: active
+  status: planned
   path: phases/phase-29-hotfix01.yml
 hotfix:
   id: P29-HF01
