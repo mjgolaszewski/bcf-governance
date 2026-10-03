@@ -23,7 +23,7 @@ delivery_contract:
   - optimize deterministic fixed-point reconciliation while mechanically admitting the exact local toolchain and expensive-gate lease before reconciliation
   - add bounded provider-read resilience
   - derive lifecycle projections and emit non-authoritative operational observations
-  - prove self Lite and Standard v3 parity and publish immutable 2.1.7 custody
+  - prove self Lite and Standard v3 parity and publish immutable 2.1.8 custody
   parallelizable_workstreams:
   - id: P29-WS1
     name: state matrix and evaluation-input projection repair

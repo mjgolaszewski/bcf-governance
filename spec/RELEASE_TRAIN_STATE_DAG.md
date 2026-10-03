@@ -377,18 +377,27 @@ post-merge proposition is terminal phase closure, never another bounded status.
 | State | Exact inputs | Deterministic transition | Authority/result |
 | --- | --- | --- | --- |
 | predecessor certified | `workitem_closed:P29-P0-04`, exact subject/tree/run/attempt, eligible successor `P29-P0-05` | admit release-candidate construction | candidate work only; no release authority |
-| candidate constructed | version `2.1.7`, all P29 workitems `DONE`, phase authored completed, exact docs/changelog/editorial custody | derive closure evaluation and prospective full chain | PR evidence only |
+| candidate constructed | version `2.1.8`, all P29 workitems `DONE`, phase authored completed, exact docs/changelog/editorial custody | derive closure evaluation and prospective full chain | PR evidence only |
 | candidate qualified before gates | exact candidate commit/tree plus Lite and Standard-v3 adopter reports | run the one canonical submit train | adopter observations do not certify |
 | protected PR certified | exact PR evidence, finalizer, publisher, protected status | normal protected merge | merge eligibility only |
 | merged terminal truth | exact merged commit/tree, complete applicable evidence, `phase_closed:P29` | trusted finalizer and exact-main publisher | release authorization may evaluate separately |
 | release authorized and built | terminal certification, current controller custody, exact version/tag, hosted build manifest | independent verifier then trusted collector | build remains untrusted until receipt collection |
-| immutable publication | authenticated receipt, exact assets/digests/attestations, exact or absent tag state | publisher creates/reuses the exact tag and publishes immutable bytes | immutable `v2.1.7` custody |
+| immutable publication | authenticated receipt, exact assets/digests/attestations, exact or absent tag state | publisher creates/reuses the exact tag and publishes immutable bytes | immutable `v2.1.8` custody |
 | post-gate adopter qualification | immutable release custody plus same-byte Lite and Standard-v3 reports | record custody closeout | release and phase may be archived; no new product bytes |
 
 Wrong or missing subject, tree, proposition, target, run, attempt, controller,
 asset, digest, tag, or adopter byte identity stops at its owning boundary. A
 bounded workitem status, local build, or adopter observation cannot substitute
 for terminal exact-main certification or immutable provider custody.
+
+The realized terminal state is release `402646106`, annotated tag object
+`21deafb6d452e0344f2ff84ec1ef684fa3478abb`, commit
+`030a38ed443ccb5b46f26b68f5ad271a12a2a48d`, and tree
+`a750de9a2cd3641afe82f07f418620e9f809b6fa`. TradeFlow Lite and AgentBus
+Standard-v3 qualified the immutable bytes. Racecar Standard-v3 qualified BCF's
+strict upgrade and repeated-byte idempotence, then independently failed closed
+on Racecar-owned product dependency findings. That product-security outcome is
+not BCF custody evidence and cannot be laundered into a BCF failure or success.
 
 ## Local admission and reconciliation state matrix
 

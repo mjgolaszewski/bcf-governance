@@ -33,7 +33,7 @@ workitems:
   summary: derive lifecycle projections and emit non-authoritative operational observations
 - id: P29-P0-05
   status: DONE
-  summary: deliver prove self Lite and Standard v3 parity and publish immutable 2.1.7
+  summary: deliver prove self Lite and Standard v3 parity and publish immutable 2.1.8
     custody
 execution_evidence:
   planned_commands:
@@ -82,6 +82,10 @@ execution_evidence:
   - exact-main 37097586639/2 on 452ce0b6044c1fc1b6fb279239ead2b319f6f1fe closed P29-P0-04 from complete authenticated evidence; finalizer 37099043221/1 published bcf/workitem-certification success, made only P29-P0-05 eligible, retained P29 active, and conferred no release authority
   - the P29-P0-05 release matrix was completed before version or lifecycle edits and traces the exact candidate through preflight controller compatibility PR evidence protected merge terminal truth release authorization build verification collection immutable publication adopter qualification and custody closeout
   - the first canonical terminal submit stopped before evidence because prospective preflight authenticated the stale source-policy controller while the later compatibility stage used the provider-effective controller installed by the routine transition; the state matrix and public preflight contract now make provider-effective authority one typed input shared by both preflight calls and compatibility, with competing prior-transport authority or missing and invalid provider authority remaining fail closed
+  - immutable v2.1.8 release 402646106 binds annotated tag object 21deafb6d452e0344f2ff84ec1ef684fa3478abb to certified main 030a38ed443ccb5b46f26b68f5ad271a12a2a48d and exact tree a750de9a2cd3641afe82f07f418620e9f809b6fa
+  - exact-main 37142475245/2, finalizer 37144051768/1, release build 37144651936/1, independent verifier 37145057959/1, and publisher 37145218749/2 preserve one exact terminal P29 subject through immutable publication
+  - TradeFlow Lite and AgentBus Standard-v3 completed same-byte post-publication qualification; Racecar Standard-v3 proved strict upgrade reconcile convergence and repeat-upgrade byte idempotence before its own dependency vulnerabilities correctly failed closed outside BCF authority
+  - the temporary release publication credential was retired immediately after publication and is absent from repository Actions secrets
 closeout_requirements:
   claims:
     workitems_closed:
@@ -114,4 +118,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify terminal P29 truth, publish immutable 2.1.7 bytes, qualify the exact release with Lite and Standard-v3 adopters, and record custody closeout
+- archive P29 under exact Git custody before any separately governed successor phase begins
