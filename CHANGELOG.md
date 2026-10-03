@@ -6,6 +6,16 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [2.1.8] - 2026-10-03
+
+### Fixed
+
+- Kept ordinary `direct_protected_main` adopters on their provider-authenticated
+  repository authority instead of requiring BCF's self-controller protection
+  declaration, and made local admission execute only the toolchain bootstrap
+  declared by the adopter's validated CI graph. Python-only adopters no longer
+  inherit BCF's repository-specific Node/TypeScript fixture.
+
 ## [2.1.7] - 2026-10-03
 
 ### Fixed
@@ -1371,7 +1381,8 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.7...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.8...HEAD
+[2.1.8]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.7...v2.1.8
 [2.1.7]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.6...v2.1.7
 [2.1.6]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.5...v2.1.6
 [2.1.5]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.4...v2.1.5

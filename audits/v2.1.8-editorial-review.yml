@@ -1,10 +1,10 @@
 schema_version: '1.0'
 document:
   kind: editorial_review
-  id: bcf-governance-v2.1.7-editorial-review
+  id: bcf-governance-v2.1.8-editorial-review
   status: completed
-  path: audits/v2.1.7-editorial-review.yml
-base_commit: 452ce0b6044c1fc1b6fb279239ead2b319f6f1fe
+  path: audits/v2.1.8-editorial-review.yml
+base_commit: 9edf6a7a79f71e47b55f41be25133f368b17d18a
 inventory_policy:
   source_documents: tracked Markdown and root LICENSE from base union current tree
   packaged_mirror_root: bcf_governance/pack/template-repo
@@ -32,8 +32,8 @@ documents:
   audience: adopters and release operators
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
-  before_sha256: 09554ce6f62bb8b70411ba3492135f5ca51baa19ec927f54a854330b270566bd
-  after_sha256: 4b445c81361ca1de956592d5882498280032eb279482ceb8be5306f4933230c3
+  before_sha256: 4b445c81361ca1de956592d5882498280032eb279482ceb8be5306f4933230c3
+  after_sha256: 3f8994537413c1f22d3a6aed6c891c08577e205e5b0756750c03f45e3ad5c57c
   findings:
   - collapsed the unpublished 2.0 candidate and 2.1 repair chronology into the released 2.1 product contract
   disposition: historical
@@ -59,8 +59,8 @@ documents:
   audience: BCF evaluators and adopters
   canonical_topic_owner: README.md
   topic_role: canonical
-  before_sha256: 8231701897132349774daa44b23ddcb105a44cb8ca201542501b416140d4f32e
-  after_sha256: fe13eb435086383bc87499916e55d98c7ac89154d33ea8455ee4c76c3b26aae4
+  before_sha256: fe13eb435086383bc87499916e55d98c7ac89154d33ea8455ee4c76c3b26aae4
+  after_sha256: fd844ed5b9ac7e5de604f02acdd3abc15c8edee63622b047b9799f45d4ec3ad5
   findings:
   - documented the 2.1 semantic-intent, selective-proof, optional-controller, and adopter-authority contract
   disposition: revised
@@ -113,8 +113,8 @@ documents:
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
-  before_sha256: 99fd24c2b68eac3890922e58a95e25df0cfbe6d1bc4bbb58e36002d4e200970f
-  after_sha256: a4387958327820fc5f17362f90621fa359bf4bddbd273c7dfc1f7464dd45e2af
+  before_sha256: a4387958327820fc5f17362f90621fa359bf4bddbd273c7dfc1f7464dd45e2af
+  after_sha256: 36e2bc62ba1c1fca9473fbf376b022374fca4d2c92fdda93d5a6e76c68b717df
   findings:
   - replaced obsolete controller ceremony with the canonical 2.1 adopter and semantic-intent operation
   disposition: revised
@@ -140,7 +140,7 @@ documents:
   audience: BCF evaluators and adopters
   canonical_topic_owner: spec/RELEASE_TRAIN_STATE_DAG.md
   topic_role: canonical
-  before_sha256: 9d6613a80905ae501da1bf339aff27a98766b06492975169881e8945be9cf45b
+  before_sha256: eb68d82b927aa834bba0f8c8f6d66b25115d75cf74e0ffc3503961a978f74af7
   after_sha256: d2146b3bb8467469b2d16cddca2ef2b4df4dd4abb8f2614425a11de37f28c172
   findings:
   - reviewed; no currency, consolidation, or pruning change required

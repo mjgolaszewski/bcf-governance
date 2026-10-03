@@ -11,7 +11,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
-from typing import Iterator, Mapping
+from typing import Any, Iterator, Mapping
 
 from .runtime_capacity import (
     RuntimeCapacityError,
@@ -86,16 +86,18 @@ class LocalExecutionAdmission:
     execution_id: str
     python_executable: str
     python_version: str
-    node_version: str
-    node_executable: str
-    typescript_version: str
+    toolchain_scope: str
+    node_version: str | None
+    node_executable: str | None
+    typescript_version: str | None
 
-    def as_dict(self) -> dict[str, str]:
+    def as_dict(self) -> dict[str, str | None]:
         return {
             "status": self.status,
             "execution_id": self.execution_id,
             "python_executable": self.python_executable,
             "python_version": self.python_version,
+            "toolchain_scope": self.toolchain_scope,
             "node_version": self.node_version,
             "node_executable": self.node_executable,
             "typescript_version": self.typescript_version,
@@ -103,9 +105,12 @@ class LocalExecutionAdmission:
 
 
 def validate_local_toolchain(
-    repo_root: Path, python_executable: Path
+    repo_root: Path,
+    python_executable: Path,
+    *,
+    toolchain_command: Mapping[str, Any] | None,
 ) -> LocalExecutionAdmission:
-    """Validate the selected interpreter and locked Node/TypeScript bytes once."""
+    """Validate the selected interpreter and only graph-declared setup bytes."""
 
     executable = python_executable.resolve()
     if not executable.is_file():
@@ -119,9 +124,33 @@ def validate_local_toolchain(
         raise LocalExecutionAdmissionError(
             f"selected project Python is outside the governed runtime: {observed_python}"
         )
-    bootstrap = repo_root / ".github/scripts/bootstrap_test_toolchain.py"
+    if toolchain_command is None:
+        return LocalExecutionAdmission(
+            status="ready",
+            execution_id="toolchain-only",
+            python_executable=str(executable),
+            python_version=match.group(1),
+            toolchain_scope="python_only",
+            node_version=None,
+            node_executable=None,
+            typescript_version=None,
+        )
+    argv = toolchain_command.get("argv")
+    cwd = toolchain_command.get("cwd")
+    environment = toolchain_command.get("environment")
+    if (
+        not isinstance(argv, list)
+        or not argv
+        or any(not isinstance(value, str) or not value for value in argv)
+        or cwd != "."
+        or environment != {}
+    ):
+        raise LocalExecutionAdmissionError(
+            "declared local toolchain command is malformed"
+        )
+    command = [sys.executable if value == "{python}" else value for value in argv]
     checked = subprocess.run(
-        [sys.executable, str(bootstrap), "--repo-root", str(repo_root)],
+        command,
         cwd=repo_root,
         capture_output=True,
         text=True,
@@ -141,6 +170,7 @@ def validate_local_toolchain(
         execution_id="toolchain-only",
         python_executable=str(executable),
         python_version=match.group(1),
+        toolchain_scope="python_node_typescript",
         node_version=str(payload["node_version"]),
         node_executable=str(payload["node_executable"]),
         typescript_version=str(payload["typescript_version"]),
@@ -153,6 +183,9 @@ def selected_toolchain_environment(
 ) -> Iterator[None]:
     """Project the mechanically selected Node binary for all downstream tools."""
 
+    if admission.node_executable is None:
+        yield
+        return
     previous = os.environ.get("PATH")
     node_directory = str(Path(admission.node_executable).parent)
     os.environ["PATH"] = node_directory + (os.pathsep + previous if previous else "")

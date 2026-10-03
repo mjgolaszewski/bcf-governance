@@ -78,6 +78,18 @@ provider evidence.
     comparison input; that input must equal both the selected comparison base
     and the provider-native origin-event base. Direct events must carry no
     caller comparison input.
+22. Repository protection authority is lane-scoped. A self-managed trusted
+    controller authenticates its governed protection declaration; an ordinary
+    `direct_protected_main` adopter authenticates the exact GitHub repository
+    derived from its configured remote and provider response. Absence of a
+    self-controller declaration in the ordinary lane is not missing authority.
+23. Local toolchain admission executes only setup declared by the validated CI
+    graph. Python-only adopters require the selected governed interpreter but
+    never inherit BCF's self-repository Node/TypeScript bootstrap fixture.
+24. Reconcile-stage applicability includes every canonical input named by the
+    artifact being projected. Graph lock/render stages derive their dependency
+    closure from graph-declared value-source paths; a changed source can never
+    be hidden by a stale stage ledger token.
 
 ## State matrix
 
@@ -100,6 +112,10 @@ provider evidence.
 | Publication conflict | any non-exact tag or release state | stop | mutation, deletion, force update, or treating conflict as absence |
 | Published custody | immutable non-draft release, exact tag/assets/digests/attestations | credential retirement and adopter qualification | mutable/draft release, missing asset, retained credential |
 | Qualified release | immutable custody plus adopter same-byte reports | phase/release closeout | unpublished package, different bytes, simulated adopter authority |
+| Ordinary adopter submit | validated direct-main graph, exact GitHub remote, authenticated provider repository, selected project Python | prospective train and exact push | remote/provider disagreement, malformed repository identity, self-controller declaration required by implication |
+| Local Python-only admission | validated graph without a toolchain-bootstrap command, selected governed project Python | execute declared producer DAG | BCF self bootstrap invoked, undeclared setup synthesized, unsupported interpreter |
+| Local declared-toolchain admission | validated graph with an exact bootstrap command, selected governed project Python | execute that command once, then producer DAG | missing/malformed declared command, failed custody proof, agent-selected replacement |
+| Graph value source changed | raw graph, exact declared source paths and bytes, prior reconcile ledger | graph lock then render and authority projection | stage reported clean while any declared source digest differs, hand-ordered lock repair |
 
 ## Provider-event and evaluation matrix
 
@@ -211,6 +227,36 @@ value after the graph boundary.
 
 No consumer may infer scope from event kind, status name, missing target, or a
 shell fallback after the canonical graph has produced the typed pair.
+
+### Adopter-entrypoint construction tree
+
+- **Invariants:** repository authority and toolchain setup are exact,
+  lane-scoped, provider/graph-derived, and never inherited from BCF self
+  authority.
+  - **Primitives:** exact remote repository identity, authenticated provider
+    repository response, post-merge lane, validated graph command, selected
+    project interpreter, typed Python-only applicability.
+    - **Contracts:** direct-main repository binding, self-controller protection
+      declaration, graph-declared toolchain bootstrap, local admission report.
+      - **Producers:** CI graph compiler, git remote resolver, provider GET,
+        local toolchain admission.
+        - **Consumers:** canonical `bcf ci submit`, prospective train, evidence
+          planner, exact push, adopter qualification.
+
+The direct-main lane must reject malformed, moved, or provider-disagreeing
+remotes; it must not require or synthesize `governance/github-protection.yml`.
+The local admission owner must execute the graph's exact bootstrap command when
+declared and must represent its absence as typed Python-only applicability.
+
+- **Graph reconciliation invariant:** a projection stage owns the transitive
+  canonical inputs declared by the graph it projects.
+  - **Primitive:** exact normalized `value_sources[*].path` inventory from the
+    raw graph.
+    - **Contract:** graph lock and render watch the raw graph, extensions,
+      generated outputs, implementation owner, and every declared value source.
+      - **Producer:** canonical reconciler stage dependency compiler.
+        - **Consumers:** graph lock, renderer, workflow-authority projection,
+          governance validation, prospective train.
 
 ## Deterministic operational-state matrix
 

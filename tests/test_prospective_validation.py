@@ -222,7 +222,9 @@ def _compiled(mode: str = "workitem", target: str | None = "P27-P0-03") -> Simpl
                 ],
             }
         ]
-    return SimpleNamespace(workflows=workflows, graph={"workflows": workflows})
+    return SimpleNamespace(
+        workflows=workflows, graph={"workflows": workflows}, commands={}
+    )
 
 
 def _evaluation(mode: str = "workitem", target: str | None = "P27-P0-03") -> SimpleNamespace:
@@ -359,7 +361,7 @@ def test_provider_effective_controller_is_mechanically_bound_to_prospective_pref
     monkeypatch.setattr(
         prospective,
         "validate_ci_graph",
-        lambda *_args: SimpleNamespace(graph={"workflows": []}),
+        lambda *_args: SimpleNamespace(graph={"workflows": []}, commands={}),
     )
     monkeypatch.setattr(
         prospective,
@@ -417,7 +419,7 @@ def test_direct_protected_main_lane_does_not_resolve_controller_authority(
     monkeypatch.setattr(
         prospective,
         "validate_ci_graph",
-        lambda *_args: SimpleNamespace(graph={"workflows": []}),
+        lambda *_args: SimpleNamespace(graph={"workflows": []}, commands={}),
     )
     monkeypatch.setattr(
         prospective,
@@ -555,7 +557,7 @@ def test_provider_workflow_identity_mismatch_stops_before_prospective_evidence(
     monkeypatch.setattr(
         prospective,
         "validate_ci_graph",
-        lambda *_args: SimpleNamespace(graph={"workflows": []}),
+        lambda *_args: SimpleNamespace(graph={"workflows": []}, commands={}),
     )
     monkeypatch.setattr(
         prospective,
@@ -595,7 +597,7 @@ def test_provider_bound_adopter_without_optional_controller_skips_controller_res
     monkeypatch.setattr(
         prospective,
         "validate_ci_graph",
-        lambda *_args: SimpleNamespace(graph=graph),
+        lambda *_args: SimpleNamespace(graph=graph, commands={}),
     )
     monkeypatch.setattr(
         prospective,

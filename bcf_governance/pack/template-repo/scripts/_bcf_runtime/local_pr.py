@@ -671,16 +671,21 @@ def run_prospective_train(
         raise ProspectiveValidationError(str(exc)) from exc
     try:
         with local_gate_lease(subject_commit):
+            try:
+                compiled_graph = validate_ci_graph(repo_root.resolve())
+                graph = compiled_graph.graph
+                lane = post_merge_evaluation(graph).lane
+            except CIGraphError as exc:
+                raise ProspectiveValidationError(str(exc)) from exc
             admission = validate_local_toolchain(
-                repo_root.resolve(), python_executable
+                repo_root.resolve(),
+                python_executable,
+                toolchain_command=compiled_graph.commands.get(
+                    "bootstrap-test-toolchain"
+                ),
             )
             with selected_toolchain_environment(admission):
                 controller_authority = None
-                try:
-                    graph = validate_ci_graph(repo_root.resolve()).graph
-                    lane = post_merge_evaluation(graph).lane
-                except CIGraphError as exc:
-                    raise ProspectiveValidationError(str(exc)) from exc
                 if repository is not None and lane == "trusted_exact_main":
                     if provider_api is None:
                         raise ProspectiveValidationError(

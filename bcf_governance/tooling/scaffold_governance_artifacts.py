@@ -33,6 +33,7 @@ from .semantic_authority_contracts import (
 )
 from .ci_graph_post_merge import reconcile_post_merge_scope
 from .ci_graph_contracts import validate_ci_graph
+from .ci_graph_values import declared_graph_value_source_paths
 from .ci_authority_pins import projected_workflow_paths, reconcile_workflow_authority
 from .release_version_projection import reconcile_release_version_surfaces
 from .reconcile_authority_transition import (
@@ -361,6 +362,11 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
     project_python = python.absolute()
     tool_python = Path(sys.executable).absolute()
     cli = [str(tool_python), "-m", "bcf_governance.cli"]
+    graph_value_sources = (
+        declared_graph_value_source_paths(repo_root)
+        if (repo_root / "governance/ci-graph.yml").is_file()
+        else ()
+    )
     steps: list[ReconcileStep] = [
         ReconcileStep(
             "structural-limits",
@@ -500,6 +506,7 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                     "governance/ci-extensions",
                     ".github/workflows",
                     "bcf_governance/tooling/ci_graph_",
+                    *graph_value_sources,
                 ),
             )
         )

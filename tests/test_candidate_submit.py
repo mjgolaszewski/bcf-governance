@@ -115,6 +115,83 @@ def test_submit_accepts_derived_pr_progress_without_terminal_target(
     assert result["branch"] == context.head_ref
 
 
+def test_direct_main_submit_authenticates_repository_without_self_protection(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    context = LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature")
+    monkeypatch.setattr(
+        submit,
+        "validate_ci_graph",
+        lambda *_a, **_k: SimpleNamespace(graph={"document": {"id": "adopter"}}),
+    )
+    monkeypatch.setattr(
+        submit,
+        "post_merge_evaluation",
+        lambda *_a, **_k: SimpleNamespace(
+            mode="workitem", target="P07-P0-03", lane="direct_protected_main"
+        ),
+    )
+    monkeypatch.setattr(
+        submit,
+        "load_protection",
+        lambda *_a, **_k: pytest.fail("ordinary adopter loaded self protection"),
+    )
+
+    class Provider:
+        def repository(self, repository: str) -> dict[str, object]:
+            assert repository == "owner/adopter"
+            return {"id": 17, "full_name": repository}
+
+    def runner(argv: list[str], **_kwargs: object) -> SimpleNamespace:
+        assert argv == ["git", "remote", "get-url", "origin"]
+        return SimpleNamespace(
+            returncode=0,
+            stdout="ssh://git@ssh.github.com:443/owner/adopter.git\n",
+            stderr="",
+        )
+
+    assert submit._canonical_inputs(
+        tmp_path,
+        context=context,
+        provider_api=Provider(),  # type: ignore[arg-type]
+        runner=runner,
+    ) == ("workitem", "P07-P0-03", "owner/adopter")
+
+
+def test_direct_main_submit_rejects_remote_provider_disagreement(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    context = LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature")
+    monkeypatch.setattr(
+        submit,
+        "validate_ci_graph",
+        lambda *_a, **_k: SimpleNamespace(graph={"document": {"id": "adopter"}}),
+    )
+    monkeypatch.setattr(
+        submit,
+        "post_merge_evaluation",
+        lambda *_a, **_k: SimpleNamespace(
+            mode="workitem", target="P07-P0-03", lane="direct_protected_main"
+        ),
+    )
+
+    class Provider:
+        def repository(self, _repository: str) -> dict[str, object]:
+            return {"id": 17, "full_name": "other/adopter"}
+
+    with pytest.raises(ProspectiveValidationError, match="provider repository"):
+        submit._canonical_inputs(
+            tmp_path,
+            context=context,
+            provider_api=Provider(),  # type: ignore[arg-type]
+            runner=lambda *_a, **_k: SimpleNamespace(
+                returncode=0,
+                stdout="git@github.com:owner/adopter.git\n",
+                stderr="",
+            ),
+        )
+
+
 def test_submit_never_pushes_after_failed_or_mutated_proof(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

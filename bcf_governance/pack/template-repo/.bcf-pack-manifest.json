@@ -422,7 +422,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "0402879cd94161db88021c6d84475448d1edc7e422d8b2fafc551a2a6e747a85"
+      "sha256": "fec38c4b5d4b63a9cc1264d675a062bc5ccf9220b7fe09ca5d4be204e1adf66c"
     },
     "scripts/_bcf_runtime/automation_changelog.py": {
       "operation": "copy",
@@ -496,7 +496,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "b04c7a781702137f9d481487f334aa1196044efc13104998fc0617dbf65720ab"
+      "sha256": "a894454370fb1c117e5d93cb5882d99e84e1639c220e67186d3d5647bf4d2a6d"
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
@@ -724,7 +724,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_values.py": {
       "operation": "copy",
-      "sha256": "7e762f547b73a726f9edab0680f43b78b42aa7ada74bb77814183b73ce9aba45"
+      "sha256": "8c194c9503e37fb4cf82d794f2ef5251a269d1fe1bab2089e259fb5ac3773f51"
     },
     "scripts/_bcf_runtime/ci_graph_workflow_run.py": {
       "operation": "copy",
@@ -1071,11 +1071,11 @@
     },
     "scripts/_bcf_runtime/local_execution_admission.py": {
       "operation": "copy",
-      "sha256": "80756133ffcbca17acbb5a2b47fdf49f011ab73d48716e5522e4dc8e0fd05e19"
+      "sha256": "2dd4a75418be4e0a7dcf3d102e9eebe5094b2ab918e299e06f8ee67915976bc7"
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "db9d93f6f3d07e3d4500132f22438f2a123a2b98244e087e822583e2277f9a02"
+      "sha256": "88d9678be38fc67dfef5d3f33ac9efd0c74ab4a085b49b194d00105b6181c08e"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
@@ -1235,7 +1235,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "f2010c1e985c22653a664bf28b5c12e88f558a1474d1f509ea331bca6534d4cb"
+      "sha256": "55247dd74983c724dc6c1a135ac3ed13172060f6afc591605c4aa4560507c34e"
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",
