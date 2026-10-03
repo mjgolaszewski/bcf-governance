@@ -21,6 +21,25 @@ def pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
         if mode != "pr":
             return {"applicable": False}
         event = "pull_request"
+    if event in {"schedule", "workflow_dispatch"}:
+        if mode != "release":
+            raise ValueError("non-comparison provider event requires release preflight mode")
+        forbidden = {
+            name: os.environ.get(name, "")
+            for name in (
+                "BCF_COMPARISON_BASE_SHA",
+                "BCF_ORIGIN_COMPARISON_BASE_SHA",
+                "BCF_CALLER_COMPARISON_BASE_SHA",
+                "BCF_PR_BASE_SHA",
+            )
+        }
+        if any(forbidden.values()):
+            raise ValueError("non-comparison provider event cannot carry comparison identity")
+        return {
+            "applicable": False,
+            "event": event,
+            "provenance": "authenticated_non_comparison_event",
+        }
     if event not in {"pull_request", "push"}:
         raise ValueError("repository comparison event is not supported")
     invocation = os.environ.get("BCF_INVOCATION_KIND", "")

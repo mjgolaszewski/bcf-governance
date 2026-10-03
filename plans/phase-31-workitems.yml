@@ -1,0 +1,68 @@
+document:
+  kind: execution_phase_workitem_ledger
+  name: Phase 31 Workitems
+  id: project-phase-31-workitems
+  version: 1.0.0
+  generated_at_utc: '2026-10-03T00:00:00Z'
+  status: planned
+  path: plans/phase-31-workitems.yml
+  phase_id: P31
+workitems:
+- id: P31-P0-01
+  priority: P0
+  status: TODO
+  summary: deliver project the consumer-owned assurance graph
+  acceptance:
+  - requires-phase-closure:P30
+  - adopter configuration maps application claims groups dependencies producers qualifications receipts invalidation reuse and partitions uniquely into the canonical graph
+  - Lite Standard-v3 Racecar and AgentBus prove complete closure and reject unrelated claim laundering
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P31-P0-02
+  priority: P0
+  status: TODO
+  summary: deliver project existing-repository protection through review apply and
+    verification
+  acceptance:
+  - requires-workitem-closure:P31-P0-01
+  - the existing install and adopt owner derives propose review apply and verify states without adding self controller recovery or release topology
+  - bypass omission redaction wrong repository stale provider state and unexpected actors fail closed
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P31-P0-03
+  priority: P0
+  status: TODO
+  summary: deliver classify and migrate evidence storage without changing truth
+  acceptance:
+  - requires-workitem-closure:P31-P0-02
+  - legacy mixed durable and unknown topologies produce deterministic immutable publication cold resolution retention and migration plans
+  - cache-empty reconstruction tamper stale garbage-collection and growth-bound scenarios preserve original evidence truth and retrievability
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P31-P0-04
+  priority: P0
+  status: TODO
+  summary: deliver authenticate a base-pinned independent evaluator
+  acceptance:
+  - requires-workitem-closure:P31-P0-03
+  - merge eligibility authenticates evaluator bytes from protected base or managed controller and binds candidate evidence paths and check identity
+  - candidate self-pass mutations remain non-authoritative across Lite Standard-v3 and managed-controller modes
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P31-P0-05
+  priority: P0
+  status: TODO
+  summary: deliver execute atomic publication and publish immutable 2.3.0 custody
+  acceptance:
+  - requires-workitem-closure:P31-P0-04
+  - one idempotent transaction derives exact tag assets attestations observation credential retirement independent verification and recovery from a certified receipt
+  - race conflict dispatch timeout partial publication retry and cleanup permutations never rebuild certified bytes or broaden authority
+  - exact candidate and immutable release bytes qualify on self Lite Standard-v3 Racecar and AgentBus paths
+  - terminal P31 truth and independently verified immutable v2.3.0 custody close release 26 and the two-phase train
+  acceptance_evidence:
+  - test
+  - contract-test

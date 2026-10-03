@@ -105,7 +105,7 @@ commands:
     cwd: .
     environment: {BCF_PREFLIGHT_RESULT: '${{ needs.preflight.result }}', BCF_EVIDENCE_RESULT: '${{ needs.evidence.result }}', BCF_EVALUATION_MODE: '${{ inputs.evaluation_mode || ''pr'' }}', BCF_EVALUATION_TARGET: '${{ inputs.evaluation_target || '''' }}'}
   scheduled-preflight:
-    argv: ['{python}', scripts/preflight_governance.py, --repo-root, ., --mode, release, --python, '{python}', --format, text]
+    argv: ['{python}', scripts/preflight_governance.py, --repo-root, ., --mode, release, --python, '{python}', --format, text, --output, .artifacts/scheduled-mutants/preflight.json]
     cwd: .
     environment: {}
   nightly-validator-mutants:
@@ -146,7 +146,7 @@ commands:
     cwd: .
     environment: {}
   exact-main-admit-effective:
-    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ needs.trusted-controller-build.outputs.target_commit }}/bin/bcf', ci-github, exact-main, admit, --repository, '${{ github.repository }}', --sha, '${{ github.sha }}', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}', --evaluation-mode, closure]
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ needs.trusted-controller-build.outputs.target_commit }}/bin/bcf', ci-github, exact-main, admit, --repository, '${{ github.repository }}', --sha, '${{ github.sha }}', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}', --evaluation-mode, pr]
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
   prior-evidence-effective:
@@ -630,7 +630,7 @@ workflows:
     executor:
       kind: component_sequence
       components: [setup-python, exact-main-admit-effective, protection-inspector-token, prior-evidence-effective, upload-prior-evidence-effective]
-      evaluation_mode: closure
+      evaluation_mode: pr
       protection_inspection: true
     produces: [prior-evidence-transport]
     consumes: []
@@ -649,7 +649,7 @@ workflows:
     executor:
       kind: reusable_workflow
       path: .github/workflows/governance.yml
-      inputs: {evaluation_mode: closure, use_prior_evidence: true, comparison_base_sha: '${{ github.event.before }}'}
+      inputs: {evaluation_mode: pr, use_prior_evidence: true, comparison_base_sha: '${{ github.event.before }}'}
       artifact_bindings: {prior-evidence-transport: use_prior_evidence}
     produces: []
     consumes: [prior-evidence-transport]

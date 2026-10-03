@@ -1,0 +1,55 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 31 Plan
+  id: project-phase-31-plan
+  version: 1.0.0
+  generated_at_utc: '2026-10-03T00:00:00Z'
+  status: planned
+  path: plans/phase-31-plan.yml
+phase:
+  id: P31
+  build_block: adopter-assurance-authority-and-publication-2.3.0
+  planner: codex
+  date: '2026-10-03'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - project the consumer-owned assurance graph
+  - project existing-repository protection through review apply and verification
+  - classify and migrate evidence storage without changing truth
+  - authenticate a base-pinned independent evaluator
+  - execute atomic publication and publish immutable 2.3.0 custody
+  parallelizable_workstreams:
+  - id: P31-WS1
+    name: adopter assurance and protection
+  - id: P31-WS2
+    name: evidence storage and migration
+  - id: P31-WS3
+    name: independent evaluation and publication
+  - id: P31-WS4
+    name: adopter parity and release custody
+  hard_dependencies:
+  - P30
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: keep the phase narrowly scoped to declared deliverables and update canonical
+    governed artifacts in the same change
+- order: 2
+  statement: P31 remains planned and cannot activate before independently verified immutable
+    BCF 2.2.0 custody closes P30
+- order: 3
+  statement: adopter configuration owns application assurance while BCF owns deterministic
+    planning execution and proof without adding self authority to ordinary adopters
+- order: 4
+  statement: issue 346 permits only characterized coherent extractions and adds no command
+    stage ceremony or authority
+verification_plan:
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest -q tests
