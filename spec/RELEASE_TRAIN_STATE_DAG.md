@@ -841,7 +841,7 @@ the missing derivation is a product defect and execution stops at that owner.
 | release transaction resumable | certified receipt, version/tag, asset digests, transaction token and credential capsule | resume the exact next publication edge | exact immutable release and credential retirement | conflict, rebuilt bytes, changed subject, ambiguous partial mutation |
 | release custody verified | immutable tag/assets/attestations, independent verification and adopter reports | close release/phase and activate the governed successor | P30 activates P31; P31 closes the train | missing adopter class, mutable/draft release, credential residue, inconsistent receipts |
 | scheduled control run | default-branch subject, scheduled workflow identity, declared toolchains and control profile | validate structural state, execute both mutant profiles, retain a typed terminal artifact | exact scheduled result with no certification authority | release proposition inferred from schedule, absent diagnostics, secondary artifact error obscuring first cause |
-| adopter qualification | exact candidate or immutable release bytes, adopter profile and repository identity | perform non-destructive install/upgrade and canonical proof | attributed compatibility observation only | cross-repository mutation, different bytes, adopter report treated as BCF authority |
+| adopter qualification | exact candidate or immutable release bytes, adopter profile and repository identity | treat the BCF self-release matrix guard as typed not-applicable, then perform non-destructive install/upgrade and canonical proof | attributed compatibility observation only | self repository missing its matrix, cross-repository mutation, different bytes, adopter report treated as BCF authority |
 
 ### P30 workitem DAG
 
@@ -943,6 +943,12 @@ exact-main, pending/current/no-transition controller, bounded/terminal truth,
 publication retry/conflict, and adopter profile permutations that can reach the
 changed contract. A structurally unreachable permutation is recorded with its
 canonical exclusion reason; it is not silently called inapplicable.
+
+The executable matrix-update guard is a self-governance contract. Presence of
+the self-governance policy makes the matrix mandatory and deletion fails
+closed. A packaged adopter runtime without that policy or document returns the
+closed typed result `not_applicable_to_adopter`; it does not acquire or invent
+BCF release-train authorship.
 
 Issue 346 applies as a construction constraint, not another phase or command.
 An extraction is permitted only for a measured ownership, dependency, or LOC

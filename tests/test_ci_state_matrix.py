@@ -47,3 +47,13 @@ def test_changed_ci_contract_requires_same_candidate_matrix_update(tmp_path: Pat
         stream.write("\nCandidate-specific transition coverage.\n")
     report = validate_ci_state_matrix(repo)
     assert report["changed_contracts"] == ["bcf_governance/tooling/preflight.py", "spec/RELEASE_TRAIN_STATE_DAG.md"]
+
+
+def test_matrix_guard_is_self_required_and_adopter_inapplicable(tmp_path: Path) -> None:
+    adopter = tmp_path / "adopter"
+    adopter.mkdir()
+    assert validate_ci_state_matrix(adopter)["status"] == "not_applicable_to_adopter"
+    (adopter / "governance").mkdir()
+    (adopter / "governance/self-governance-policy.yml").write_text("document: {}\n")
+    with pytest.raises(CIStateMatrixError, match="unavailable"):
+        validate_ci_state_matrix(adopter)

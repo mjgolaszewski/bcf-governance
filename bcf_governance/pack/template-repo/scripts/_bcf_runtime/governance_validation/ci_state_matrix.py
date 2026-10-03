@@ -62,6 +62,13 @@ def validate_ci_state_matrix(repo_root: Path) -> dict[str, Any]:
     """Require state/DAG coverage in every candidate changing CI semantics."""
 
     path = repo_root / MATRIX_PATH
+    self_governance = (repo_root / "governance/self-governance-policy.yml").is_file()
+    if not path.is_file() and not self_governance:
+        return {
+            "status": "not_applicable_to_adopter",
+            "comparison_base": None,
+            "changed_contracts": [],
+        }
     try:
         text = path.read_text(encoding="utf-8")
     except OSError as exc:

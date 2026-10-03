@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import subprocess
 import sys
+import json
 from pathlib import Path
 
 import pytest
@@ -17,6 +18,9 @@ from bcf_governance.tooling.governance_validation.preflight_repository_context i
 from bcf_governance.tooling.governance_validation.authored_phase_state import (
     AuthoredPhaseStateError,
     validate_authored_phase_state,
+)
+from bcf_governance.tooling.governance_validation.preflight_diagnostics import (
+    write_preflight_diagnostic,
 )
 
 
@@ -1117,6 +1121,38 @@ def test_authored_phase_state_rejects_completed_log_while_ledger_active(
     (repo / "phases/phase-30-log.yml").write_text(yaml.safe_dump(log, sort_keys=False))
     with pytest.raises(AuthoredPhaseStateError, match="declare completed together"):
         validate_authored_phase_state(repo)
+
+
+def test_scheduled_preflight_diagnostic_records_both_terminal_outcomes(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "scheduled/preflight.json"
+    write_preflight_diagnostic(
+        output,
+        mode="release",
+        evaluation_mode="pr",
+        error="typed failure",
+    )
+    failed = json.loads(output.read_text())
+    assert failed == {
+        "kind": "governance_preflight_diagnostic",
+        "status": "failure",
+        "mode": "release",
+        "evaluation_mode": "pr",
+        "error": "typed failure",
+    }
+    write_preflight_diagnostic(
+        output,
+        mode="release",
+        evaluation_mode="pr",
+        report={
+            "subject": {"commit_sha": "a" * 40, "tree_sha": "b" * 40},
+            "pr_context": {"applicable": False, "event": "schedule"},
+        },
+    )
+    succeeded = json.loads(output.read_text())
+    assert succeeded["status"] == "success"
+    assert succeeded["repository_context"]["event"] == "schedule"
 
 
 def test_semantic_ownership_failure_prevents_session_allocation(
