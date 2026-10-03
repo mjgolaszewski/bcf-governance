@@ -20,8 +20,7 @@ phase:
 delivery_contract:
   tightly_scoped_deliverables:
   - persist the CI state matrix and repair evaluation-input projection
-  - optimize deterministic fixed-point reconciliation
-  - admit the exact local toolchain and expensive-gate lease mechanically before reconciliation
+  - optimize deterministic fixed-point reconciliation while mechanically admitting the exact local toolchain and expensive-gate lease before reconciliation
   - add bounded provider-read resilience
   - derive lifecycle projections and emit non-authoritative operational observations
   - prove self Lite and Standard v3 parity and publish immutable 2.1.7 custody

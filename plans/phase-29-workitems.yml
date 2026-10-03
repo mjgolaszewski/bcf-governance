@@ -28,7 +28,7 @@ workitems:
 - id: P29-P0-02
   priority: P0
   status: DONE
-  summary: optimize deterministic fixed-point reconciliation
+  summary: optimize deterministic fixed-point reconciliation while mechanically admitting the exact local toolchain and expensive-gate lease before reconciliation
   acceptance:
   - requires-workitem-closure:P29-P0-01
   - one canonical owner derives the dirty stage set from exact owner input and output digests and emits an ordered timing and convergence ledger

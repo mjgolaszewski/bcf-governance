@@ -23,7 +23,7 @@ workitems:
   summary: persist the CI state matrix and repair evaluation-input projection
 - id: P29-P0-02
   status: DONE
-  summary: optimize deterministic fixed-point reconciliation
+  summary: optimize deterministic fixed-point reconciliation while mechanically admitting the exact local toolchain and expensive-gate lease before reconciliation
 - id: P29-P0-03
   status: DONE
   summary: add bounded provider-read resilience

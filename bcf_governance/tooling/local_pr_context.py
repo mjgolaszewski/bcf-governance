@@ -80,7 +80,10 @@ def resolve_local_pr_context(
     )
     base_sha = _checked(runner, ["git", "rev-parse", "--verify", remote_ref], cwd=repo_root)
     head_sha = _checked(runner, ["git", "rev-parse", "--verify", "HEAD"], cwd=repo_root)
-    if runner(["git", "merge-base", "--is-ancestor", base_sha, head_sha], cwd=repo_root).returncode:
+    ancestry = runner(
+        ["git", "merge-base", "--is-ancestor", base_sha, head_sha], cwd=repo_root
+    )
+    if ancestry.returncode != 0:
         raise LocalPRError("current HEAD does not descend from the fetched default branch")
     head_ref = _checked(runner, ["git", "branch", "--show-current"], cwd=repo_root) or "detached-head"
     return LocalPRContext(remote, default_branch, base_sha, head_sha, head_ref)
