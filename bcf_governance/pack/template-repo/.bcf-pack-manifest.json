@@ -422,7 +422,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "9d87c1ffb58e2f1f79912fd264dc5bd4145293d101bb253d80a9dc6913b80e78"
+      "sha256": "0402879cd94161db88021c6d84475448d1edc7e422d8b2fafc551a2a6e747a85"
     },
     "scripts/_bcf_runtime/automation_changelog.py": {
       "operation": "copy",

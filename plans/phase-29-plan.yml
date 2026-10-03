@@ -4,7 +4,7 @@ document:
   id: project-phase-29-plan
   version: 1.0.0
   generated_at_utc: '2026-10-01T00:00:00Z'
-  status: active
+  status: completed
   path: plans/phase-29-plan.yml
 phase:
   id: P29

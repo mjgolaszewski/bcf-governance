@@ -254,6 +254,28 @@ must retain every workitem observation and exact evidence reference. Finalizer,
 certification, and status publication preserve `workitem_closed:P29-P0-04`;
 release authorization and release receipts reject it even when successful.
 
+## P29 terminal release state machine
+
+P29-P0-05 begins only from provider-authenticated closure of P29-P0-04. The
+release candidate authors the final workitem and phase complete together so the
+post-merge proposition is terminal phase closure, never another bounded status.
+
+| State | Exact inputs | Deterministic transition | Authority/result |
+| --- | --- | --- | --- |
+| predecessor certified | `workitem_closed:P29-P0-04`, exact subject/tree/run/attempt, eligible successor `P29-P0-05` | admit release-candidate construction | candidate work only; no release authority |
+| candidate constructed | version `2.1.7`, all P29 workitems `DONE`, phase authored completed, exact docs/changelog/editorial custody | derive closure evaluation and prospective full chain | PR evidence only |
+| candidate qualified before gates | exact candidate commit/tree plus Lite and Standard-v3 adopter reports | run the one canonical submit train | adopter observations do not certify |
+| protected PR certified | exact PR evidence, finalizer, publisher, protected status | normal protected merge | merge eligibility only |
+| merged terminal truth | exact merged commit/tree, complete applicable evidence, `phase_closed:P29` | trusted finalizer and exact-main publisher | release authorization may evaluate separately |
+| release authorized and built | terminal certification, current controller custody, exact version/tag, hosted build manifest | independent verifier then trusted collector | build remains untrusted until receipt collection |
+| immutable publication | authenticated receipt, exact assets/digests/attestations, exact or absent tag state | publisher creates/reuses the exact tag and publishes immutable bytes | immutable `v2.1.7` custody |
+| post-gate adopter qualification | immutable release custody plus same-byte Lite and Standard-v3 reports | record custody closeout | release and phase may be archived; no new product bytes |
+
+Wrong or missing subject, tree, proposition, target, run, attempt, controller,
+asset, digest, tag, or adopter byte identity stops at its owning boundary. A
+bounded workitem status, local build, or adopter observation cannot substitute
+for terminal exact-main certification or immutable provider custody.
+
 ## Local admission and reconciliation state matrix
 
 | State | Exact inputs | Earliest deterministic action | Required outcome |
@@ -540,6 +562,7 @@ test-only, or inspected-no-impact before provider execution.
 | Controller preflight ownership | structural budget validates the dedicated canonical controller-preflight primitive | identical installed-N compatibility inputs | PR/release callers consume one typed result | no workflow-local copy | pending/current state remains exact | no certification authority | no release authority | runtime mirrors generated from the same owner |
 | Profile template workflow projection | canonical reconcile owner | inspected-no-impact | direct PR origin/invocation contract | direct push origin/invocation contract | adopter truth receives exact base | no self finalizer authority | no release authority | Lite and Standard generated workflow parity |
 | Reconcile operation effect expansion | exact-base semantic migration required before evidence | installed-N parses unchanged runtime contract | migration binds the added projection port to exact base and phase owner | canonical reconcile alone emits template bytes | no truth proposition change | no certification/status change | no authority or release effect | generated template projection is the only new effect |
+| P29 terminal release candidate | exact predecessor workitem certification and authored terminal lifecycle validate before evidence | inspect exact candidate with installed controller; rotate only if trusted runtime bytes changed | exact candidate receives ordinary PR evidence/certification | protected merge preserves exact tree | terminal `phase_closed:P29` only | finalizer/publisher preserve terminal proposition | authorizer/build/verifier/collector/publisher authenticate one exact subject and immutable `v2.1.7` bytes | same candidate before gates; same immutable release after publication |
 
 ### Evaluation-input affected-surface classification
 
@@ -577,6 +600,7 @@ test-only, or inspected-no-impact before provider execution.
 | manifests, locks, mirrors, editorial audit | generated consequence | canonical reconcile alone selects and updates them |
 | controller compatibility and lifecycle | inspected-no-impact unless trusted runtime bytes change | prospective installed-N parse, pending rotation noncertifying, exact N+1 route if required |
 | protection, App authority, Break Glass, release publisher semantics | inspected-no-impact | zero semantic diff and existing rejection tests remain green |
+| P29-P0-05 version, lifecycle, docs, changelog, editorial audit | canonical authored release state plus generated consequences | predecessor certification, terminal closure selection, exact version/tag projection, self Lite and Standard-v3 parity, immutable publication custody |
 
 ## Canonical DAG
 
