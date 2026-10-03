@@ -38,6 +38,10 @@ from .local_pr import (
     ProspectiveValidationError,
     run_prospective_train,
 )
+from .local_execution_admission import (
+    LocalExecutionAdmissionError,
+    resolve_local_project_python,
+)
 from .runtime_capacity import (
     RuntimeCapacityError,
     check_runtime_capacity,
@@ -50,20 +54,29 @@ from .trusted_controller_compatibility import (
 from .ci_controller_adoption import adopt_trusted_controller
 
 
-def _local_pr_command(command: tuple[str, ...]) -> tuple[str, ...]:
+def _local_pr_command(
+    command: tuple[str, ...],
+    *,
+    repo_root: Path = Path.cwd(),
+    project_python: Path | None = None,
+) -> tuple[str, ...]:
     if command and command[0] == "--":
         command = command[1:]
     if command:
         return command
+    selected_python = str(
+        project_python
+        or resolve_local_project_python(repo_root, Path(sys.executable))
+    )
     return (
-        sys.executable,
+        selected_python,
         "scripts/preflight_governance.py",
         "--repo-root",
         ".",
         "--mode",
         "pr",
         "--python",
-        sys.executable,
+        selected_python,
         "--format",
         "text",
     )
@@ -118,6 +131,7 @@ def _parser() -> argparse.ArgumentParser:
     local = subparsers.add_parser("local-pr", help="Run exact local PR validation.")
     local.add_argument("--repo-root", type=Path, default=Path.cwd())
     local.add_argument("--remote", default="origin")
+    local.add_argument("--python", type=Path)
     local.add_argument("command", nargs=argparse.REMAINDER)
     prospective = subparsers.add_parser(
         "prospective-train",
@@ -129,7 +143,7 @@ def _parser() -> argparse.ArgumentParser:
         "--repository",
         help="resolve the provider-authenticated effective controller for this repository",
     )
-    prospective.add_argument("--python", type=Path, default=Path(sys.executable))
+    prospective.add_argument("--python", type=Path)
     prospective.add_argument("--intent", choices=("pr", "workitem", "closure"), required=True)
     prospective.add_argument("--target")
     prospective.add_argument("--subject-commit", required=True)
@@ -141,7 +155,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     submit.add_argument("--repo-root", type=Path, default=Path.cwd())
     submit.add_argument("--remote", default="origin")
-    submit.add_argument("--python", type=Path, default=Path(sys.executable))
+    submit.add_argument("--python", type=Path)
     submit.add_argument(
         "--intent",
         choices=("pr", "workitem", "closure"),
@@ -292,6 +306,9 @@ def main(argv: list[str] | None = None) -> None:
             _print(report.as_dict(), args.format)
             return
         if args.operation == "prospective-train":
+            project_python = args.python or resolve_local_project_python(
+                args.repo_root, Path(sys.executable)
+            )
             provider_api = None
             if args.repository is not None:
                 from .ci_github_controller import environment_api
@@ -304,7 +321,7 @@ def main(argv: list[str] | None = None) -> None:
                 subject_commit=args.subject_commit,
                 subject_tree=args.subject_tree,
                 remote=args.remote,
-                python_executable=args.python,
+                python_executable=project_python,
                 repository=args.repository,
                 provider_api=provider_api,
                 progress_sink=lambda event: print(
@@ -316,10 +333,13 @@ def main(argv: list[str] | None = None) -> None:
         if args.operation == "submit":
             from .ci_github_controller import environment_api
 
+            project_python = args.python or resolve_local_project_python(
+                args.repo_root, Path(sys.executable)
+            )
             result = submit_candidate(
                 args.repo_root,
                 semantic_intent=args.intent,
-                python_executable=args.python,
+                python_executable=project_python,
                 provider_api=environment_api(),
                 remote=args.remote,
             )
@@ -386,9 +406,24 @@ def main(argv: list[str] | None = None) -> None:
             if args.check and result.status != "clean":
                 raise SystemExit(1)
             return
-        command = _local_pr_command(tuple(args.command))
+        explicit_command = bool(args.command)
+        project_python = (
+            resolve_local_project_python(
+                args.repo_root, Path(sys.executable), requested=args.python
+            )
+            if args.python is not None or not explicit_command
+            else None
+        )
+        command = _local_pr_command(
+            tuple(args.command),
+            repo_root=args.repo_root,
+            project_python=project_python,
+        )
         result = run_local_pr_validation(
-            args.repo_root.resolve(), command=command, remote=args.remote
+            args.repo_root.resolve(),
+            command=command,
+            remote=args.remote,
+            project_python=project_python,
         )
         if result.stdout:
             print(result.stdout, end="")
@@ -401,6 +436,7 @@ def main(argv: list[str] | None = None) -> None:
         CIGraphError,
         GitHubControllerError,
         GithubAdoptionError,
+        LocalExecutionAdmissionError,
         LocalPRError,
         ProspectiveValidationError,
         RuntimeCapacityError,

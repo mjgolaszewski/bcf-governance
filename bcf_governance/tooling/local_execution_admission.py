@@ -11,11 +11,68 @@ from pathlib import Path
 import re
 import subprocess
 import sys
-from typing import Iterator
+from typing import Iterator, Mapping
 
 
 class LocalExecutionAdmissionError(ValueError):
     """The local gate is mechanically unready or already owns the host slot."""
+
+
+def resolve_local_project_python(
+    repo_root: Path,
+    controller_python: Path,
+    *,
+    requested: Path | None = None,
+) -> Path:
+    """Select one project interpreter without conflating it with the BCF controller."""
+
+    local = (
+        requested.absolute()
+        if requested is not None
+        else repo_root.resolve() / ".venv/bin/python"
+    )
+    if local.exists() or local.is_symlink():
+        if not local.is_file() or not os.access(local, os.X_OK):
+            raise LocalExecutionAdmissionError(
+                "selected project Python is unavailable or non-executable"
+            )
+        try:
+            local.resolve(strict=True)
+        except OSError as exc:
+            raise LocalExecutionAdmissionError(
+                "selected project Python cannot be resolved"
+            ) from exc
+        return local
+    controller = controller_python.absolute()
+    try:
+        resolved_controller = controller.resolve(strict=True)
+    except OSError as exc:
+        raise LocalExecutionAdmissionError("selected project Python is unavailable") from exc
+    if not resolved_controller.is_file() or not os.access(controller, os.X_OK):
+        raise LocalExecutionAdmissionError("selected project Python is unavailable")
+    return controller
+
+
+def project_python_environment(
+    repo_root: Path,
+    project_python: Path,
+    source: Mapping[str, str],
+) -> dict[str, str]:
+    """Project a project-owned Python environment without controller leakage."""
+
+    environment = dict(source)
+    for name in ("PYTHONHOME", "PYTHONPATH", "VIRTUAL_ENV"):
+        environment.pop(name, None)
+    executable = project_python.absolute()
+    bin_directory = executable.parent
+    prefix = bin_directory.parent
+    if bin_directory.name == "bin" and prefix.name == ".venv":
+        environment["VIRTUAL_ENV"] = str(prefix)
+    previous_path = environment.get("PATH")
+    environment["PATH"] = str(bin_directory) + (
+        os.pathsep + previous_path if previous_path else ""
+    )
+    return environment
 
 
 @dataclass(frozen=True)

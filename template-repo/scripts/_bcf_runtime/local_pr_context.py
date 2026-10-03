@@ -11,6 +11,8 @@ import subprocess
 import tempfile
 from typing import Callable, Iterator
 
+from .local_execution_admission import project_python_environment
+
 
 class LocalPRError(ValueError):
     """Local and remote PR identity cannot agree."""
@@ -116,6 +118,7 @@ def run_local_pr_validation(
     command: tuple[str, ...],
     remote: str = "origin",
     runner: Runner = _run,
+    project_python: Path | None = None,
 ) -> subprocess.CompletedProcess[str]:
     """Run exact argv with the same base and event identity used by remote PR CI."""
 
@@ -132,7 +135,11 @@ def run_local_pr_validation(
     with tempfile.TemporaryDirectory(prefix="bcf-local-pr-") as temporary:
         event_path = Path(temporary) / "event.json"
         event_path.write_text(json.dumps(event, sort_keys=True) + "\n", encoding="utf-8")
-        environment = os.environ.copy()
+        environment = (
+            project_python_environment(repo_root, project_python, os.environ)
+            if project_python is not None
+            else os.environ.copy()
+        )
         environment.update(_pr_environment_values(context, event_path=str(event_path)))
         return runner(list(command), cwd=repo_root.resolve(), env=environment)
 

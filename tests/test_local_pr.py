@@ -8,6 +8,9 @@ import sys
 import pytest
 
 from bcf_governance.tooling.ci_commands import _local_pr_command
+from bcf_governance.tooling.local_execution_admission import (
+    resolve_local_project_python,
+)
 from bcf_governance.tooling.local_pr import (
     LocalPRError,
     resolve_local_pr_context,
@@ -43,8 +46,26 @@ def _repository(tmp_path: Path) -> tuple[Path, str]:
     return repo, base
 
 
-def test_local_pr_cli_defaults_to_canonical_selected_interpreter_preflight() -> None:
-    assert _local_pr_command(()) == (
+def test_local_pr_cli_defaults_to_canonical_selected_interpreter_preflight(
+    tmp_path: Path,
+) -> None:
+    project_python = tmp_path / ".venv/bin/python"
+    project_python.parent.mkdir(parents=True)
+    project_python.write_text("#!/bin/sh\n", encoding="utf-8")
+    project_python.chmod(0o755)
+    assert _local_pr_command((), repo_root=tmp_path) == (
+        str(project_python),
+        "scripts/preflight_governance.py",
+        "--repo-root",
+        ".",
+        "--mode",
+        "pr",
+        "--python",
+        str(project_python),
+        "--format",
+        "text",
+    )
+    assert _local_pr_command((), repo_root=Path("/nonexistent")) == (
         sys.executable,
         "scripts/preflight_governance.py",
         "--repo-root",
@@ -56,10 +77,29 @@ def test_local_pr_cli_defaults_to_canonical_selected_interpreter_preflight() -> 
         "--format",
         "text",
     )
-    assert _local_pr_command(("--", "python", "custom.py")) == (
+    assert _local_pr_command(
+        ("--", "python", "custom.py"), repo_root=tmp_path
+    ) == (
         "python",
         "custom.py",
     )
+
+
+def test_local_pr_default_accepts_one_external_project_python(tmp_path: Path) -> None:
+    external = tmp_path / "project-env/bin/python"
+    external.parent.mkdir(parents=True)
+    external.write_text("#!/bin/sh\n", encoding="utf-8")
+    external.chmod(0o755)
+
+    selected = resolve_local_project_python(
+        tmp_path / "checkout", Path(sys.executable), requested=external
+    )
+    command = _local_pr_command(
+        (), repo_root=tmp_path / "checkout", project_python=selected
+    )
+
+    assert command[0] == str(external)
+    assert command[command.index("--python") + 1] == str(external)
 
 
 def test_local_pr_context_fetches_default_branch_and_supplies_exact_event(tmp_path: Path) -> None:

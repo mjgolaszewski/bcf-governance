@@ -258,6 +258,11 @@ release authorization and release receipts reject it even when successful.
 | State | Exact inputs | Earliest deterministic action | Required outcome |
 | --- | --- | --- | --- |
 | selected Python missing or outside governed range | exact executable path and `--version` bytes | local execution admission | reject before reconcile |
+| controller Python differs from an exact repository-local `.venv/bin/python` | controller executable plus fixed repository-local project-interpreter path | local execution admission selects the repository interpreter for project preflight/evidence while retaining the controller interpreter only for BCF orchestration | accept only after the project interpreter satisfies the governed dependency/version contract |
+| project environment is intentionally outside the checkout | one explicit exact `--python` input on the canonical local entrypoint | validate and propagate that interpreter through admission, preflight, evidence, and truth | no later interpreter selection; missing dependencies reject before evidence |
+| no repository-local project interpreter exists | controller executable plus governed interpreter/dependency contract | validate the controller executable as the project interpreter | accept only when the same executable satisfies the project contract; otherwise reject before reconcile |
+| repository-local project interpreter is missing, non-executable, or fails its dependency contract | exact lexical path, resolved executable, version, and dependency inventory | local execution admission | reject before preflight/evidence; never fall back to another ambient Python |
+| controller is loaded through `PYTHONPATH` or another controller-only Python environment | exact controller environment plus selected project interpreter | project-environment projection removes controller import/home/venv state and binds the selected repository environment before spawning project validation | project imports resolve only from the adopter checkout and selected project environment; controller paths cannot shadow adopter modules |
 | ambient Node is declared version | resolved executable path, version, executable digest | locked toolchain owner | accept exact binary |
 | ambient Node differs but the toolchain manager exposes the declared sibling | resolved manager layout and declared version | locked toolchain owner selects sibling mechanically | prepend selected binary for the whole train; no agent PATH action |
 | declared Node unavailable | exact discovery inventory | local execution admission | reject before reconcile |
@@ -369,13 +374,14 @@ in structural preflight.
         - **Consumers:** P0-05 eligibility only; phase closure and release
           authorization explicitly reject the bounded proposition.
 - **Invariant: deterministic local defects fail before expensive work.**
-  - **Primitives:** selected Python identity, mechanically resolved Node binary,
+  - **Primitives:** distinct controller and project Python identities, fixed
+    repository-local project-interpreter selection, mechanically resolved Node binary,
     locked offline TypeScript tree, structural budgets, exclusive execution
     lease, typed `busy/deferred` result.
     - **Contracts:** one local-execution admission result consumed by the one
       canonical prospective/submit entrypoint.
-      - **Producers:** toolchain bootstrap/check, structural validator, local
-        lease owner.
+      - **Producers:** controller entrypoint, project-interpreter selector,
+        toolchain bootstrap/check, structural validator, local lease owner.
         - **Consumers:** reconciler and evidence executor; neither performs
           fallback setup or agent-selected recovery.
 - **Invariant: selective reconciliation is byte-equivalent to full reconcile.**
@@ -521,7 +527,9 @@ test-only, or inspected-no-impact before provider execution.
 | Evaluation-input projection | structural expression-in-run rejection | inspected-no-impact | typed environment data | direct-event default parity | exact scoped proposition | scope preserved | bounded certification cannot broaden | generated parity |
 | Integrated workitem prefix | authored dependency-prefix validation | inspected-no-impact | same exact evidence closes ordered prefix | terminal prefix target selected | all predecessor observations retained | terminal target/scope preserved | only next declared workitem eligible; release rejects | lifecycle parity |
 | Local toolchain/resource admission | first operation | no controller authority | prevents allocation when unready/busy | same selected environment | no semantic evidence on rejection | no bundle/status on rejection | no authority effect | adopter entrypoint parity |
+| Controller/project interpreter separation | fixed local selector and environment scrub before project preflight | no controller authority change | exact project interpreter runs adopter preflight and evidence without controller path leakage | unchanged provider-selected Python | no evidence from a mismatched environment | no bundle/status on rejection | no authority effect | self and adopter selection parity |
 | Profile template workflow projection | canonical reconcile owner | inspected-no-impact | direct PR origin/invocation contract | direct push origin/invocation contract | adopter truth receives exact base | no self finalizer authority | no release authority | Lite and Standard generated workflow parity |
+| Reconcile operation effect expansion | exact-base semantic migration required before evidence | installed-N parses unchanged runtime contract | migration binds the added projection port to exact base and phase owner | canonical reconcile alone emits template bytes | no truth proposition change | no certification/status change | no authority or release effect | generated template projection is the only new effect |
 
 ### Evaluation-input affected-surface classification
 

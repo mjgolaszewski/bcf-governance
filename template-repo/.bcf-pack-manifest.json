@@ -500,7 +500,7 @@
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "1f78532077a202aa1a092c73f879c48d5dbbd1307aa5167cdb8fcba4347c2356"
+      "sha256": "e17b50db23fbbc75eecd769f9443a1c6a69885a0825fa1950ebfe071bb3ed2a8"
     },
     "scripts/_bcf_runtime/ci_controller_adoption.py": {
       "operation": "copy",
@@ -1071,7 +1071,7 @@
     },
     "scripts/_bcf_runtime/local_execution_admission.py": {
       "operation": "copy",
-      "sha256": "b6620689c98e7da49104fd7f41fe140c6c0bbdd14c0a4b92ce65d257d488f136"
+      "sha256": "b185b0245da33686a22a1e1a73084a5920e74fd936edd1a579f874885838292e"
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
@@ -1079,7 +1079,7 @@
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
-      "sha256": "cc5429706610ad614796a10a9f2cc6b5fbc46ac4b24b046267b0703c00281da0"
+      "sha256": "96f1e93b2780f493695923b03038b50e5d2d8525da55997bdc233c388546e781"
     },
     "scripts/_bcf_runtime/migrate_contracts.py": {
       "operation": "copy",
