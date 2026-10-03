@@ -74,6 +74,7 @@ execution_evidence:
   - Racecar pre-gate qualification proved the controller interpreter and controller-only PYTHONPATH were leaking into adopter test collection; the matrix now separates controller and project Python identity, the canonical local entrypoint selects the exact repository environment, and the same unchanged Racecar head passed cheap preflight
   - the canonical prospective train passed PR preflight then rejected its semantic post-merge projection because it applied ordinary release controller strictness before classifying the already-proved pending rotation; the matrix now gives that non-authoritative simulation one closed pending-rotation lane while provider exact-main remains evidence-suppressed until N+1 installation
   - first-stage structural validation caught preflight.py at 810 lines before the retry; controller-state compilation now lives in the existing canonical controller-preflight owner and the 800-line policy remains unchanged
+  - cheap preflight then rejected three mutation selectors still bound to the pre-extraction module; each selector now targets the identical controller compatibility bootstrap topology or pending-rotation branch in the canonical controller-preflight owner with its original oracle unchanged
 closeout_requirements:
   claims:
     workitems_closed:
