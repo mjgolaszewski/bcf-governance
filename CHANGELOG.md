@@ -25,7 +25,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   exact evaluation intent and target remain bound through certification. Local
   validation now keeps the BCF controller interpreter separate from the exact
   adopter project environment, preventing controller paths or dependencies from
-  leaking into project preflight and evidence collection.
+  leaking into project preflight and evidence collection, and supplies one
+  authenticated provider-effective controller identity to every prospective
+  preflight and compatibility consumer.
 
 ## [2.1.6] - 2026-09-30
 

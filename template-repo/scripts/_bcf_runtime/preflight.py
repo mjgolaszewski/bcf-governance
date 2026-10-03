@@ -534,6 +534,7 @@ def run_preflight(
     evaluation_target: str | None = None,
     prior_receipts: list[Mapping[str, Any]] | None = None,
     prior_transport_dir: Path | None = None,
+    transported_authority: Mapping[str, Any] | None = None,
     controller_state_expectation: str | None = None,
     trace: Callable[[str], None] | None = None,
 ) -> dict[str, Any]:
@@ -561,10 +562,11 @@ def run_preflight(
     structural_limits = step(
         "structural-limits", lambda: validate_structural_limits(repo_root)
     )
-    transported_authority: Mapping[str, Any] | None = None
     if prior_transport_dir is not None:
-        if prior_receipts:
-            raise PreflightError("prior transport and legacy receipt inputs are ambiguous")
+        if prior_receipts or transported_authority is not None:
+            raise PreflightError(
+                "prior transport and explicit authority inputs are ambiguous"
+            )
         material = step(
             "prior-transport",
             lambda: load_provisional_transport(
