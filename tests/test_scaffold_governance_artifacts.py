@@ -147,6 +147,7 @@ def test_scaffold_hotfix_log_uses_phase_numbered_filename_and_mode(tmp_path: Pat
         ("/docker/project/.venv/bin/python -m pytest", "local_workspace_path"),
         ("curl http://service.corp/report", "private_hostname"),
     ],
+    ids=("local-path", "private-host"),
 )
 def test_scaffold_hotfix_rejects_nonportable_commands_before_writing(
     tmp_path: Path, command: str, pattern: str

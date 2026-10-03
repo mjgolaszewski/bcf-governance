@@ -1339,7 +1339,7 @@
     },
     "scripts/_bcf_runtime/test_manifests.py": {
       "operation": "copy",
-      "sha256": "094a63bd3f7c03e745247913c3bc1b26dc08857164745a122a864d96f66a7bee"
+      "sha256": "e517c03e64c28372e4cd1eaa27eefb558a6d03ddaf25f15be2a65bd0a9c82112"
     },
     "scripts/_bcf_runtime/trusted_controller_compatibility.py": {
       "operation": "copy",

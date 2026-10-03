@@ -677,7 +677,7 @@ test-only, or inspected-no-impact before provider execution.
 | Controller preflight ownership | structural budget validates the dedicated canonical controller-preflight primitive | identical installed-N compatibility inputs | PR/release callers consume one typed result | no workflow-local copy | pending/current state remains exact | no certification authority | no release authority | runtime mirrors generated from the same owner |
 | Profile template workflow projection | canonical reconcile owner | inspected-no-impact | direct PR origin/invocation contract | direct push origin/invocation contract | adopter truth receives exact base | no self finalizer authority | no release authority | Lite and Standard generated workflow parity |
 | Provider-authority bootstrap applicability | classify exact source/candidate authority presence before provider calls | ordinary executable-controller custody unchanged; managed self-controller authority remains mandatory | absent/absent permits local evidence and truth only; present authority is provider-verified | no merge or exact-main authority is inferred from absence | fresh provider execution must establish its own authority; established-authority deletion rejects | no finalizer or publisher input is synthesized | always provider-required and release authority false until authenticated provider custody exists | fresh Standard/Regulated absence is typed; existing adopters retain strict authority verification |
-| Governed command portability | scaffold rejects canonical exposure patterns before writing | inspected-no-impact | portable record enters ordinary evidence; no local path reaches candidate bytes | protected merge receives repository-relative commands only | closure preflight retains defense-in-depth exposure scan | no certification/status change | no authority or release effect | phase/hotfix scaffolding parity in packaged runtime |
+| Governed command and test-identity portability | scaffold and test-manifest producer reject canonical exposure patterns before writing | inspected-no-impact | portable records and stable symbolic test identities enter ordinary evidence; no fixture-local path or private host reaches candidate bytes | protected merge receives repository-relative commands and exposure-free manifests only | closure preflight retains defense-in-depth exposure scan | no certification/status change | no authority or release effect | phase/hotfix scaffolding and test-manifest parity in packaged runtime |
 | Reconcile operation effect expansion | exact-base semantic migration required before evidence | installed-N parses unchanged runtime contract | migration binds the added projection port to exact base and phase owner | canonical reconcile alone emits template bytes | no truth proposition change | no certification/status change | no authority or release effect | generated template projection is the only new effect |
 | P29 terminal release candidate | exact predecessor workitem certification and authored terminal lifecycle validate before evidence | inspect exact candidate with installed controller; rotate only if trusted runtime bytes changed | exact candidate receives ordinary PR evidence/certification | protected merge preserves exact tree | terminal `phase_closed:P29` only | finalizer/publisher preserve terminal proposition | authorizer/build/verifier/collector/publisher authenticate one exact subject and immutable `v2.1.7` bytes | same candidate before gates; same immutable release after publication |
 
@@ -725,6 +725,7 @@ test-only, or inspected-no-impact before provider execution.
 ```text
 intent
   -> reconcile(definition -> authority -> fixed point)
+     -> reject nonportable governed commands and collected test identities
   -> authenticate provider-effective controller
   -> PR preflight(same exact controller) -> controller compatibility(same exact controller)
      -> semantic preflight(same exact controller) -> PR evidence -> PR certification
@@ -784,7 +785,9 @@ Every late correction records the following before its first push:
    wrong-attempt, wrong-producer, conflicting, and retry states where applicable.
 6. Run cheap structural budgets before semantic fan-out.
    This includes proving every tracked top-level source root is selected by the
-   source-distribution manifest.
+   source-distribution manifest, and proving generated test identities contain
+   no canonical governance-exposure pattern. Negative fixtures use stable
+   symbolic parameter IDs; raw fixture values never become governed identity.
 7. Reuse exact-input evidence where the applicability resolver proves it legal;
    otherwise state the changed binding that requires recomputation.
 8. Require generated parity and a clean fixed point before provider execution.
