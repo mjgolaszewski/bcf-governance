@@ -15,6 +15,7 @@ from urllib.request import Request
 import zipfile
 
 from ..ci_github_downloads import open_download
+from ..provider_read import ProviderReadError, open_provider_get
 from ..ci_github_artifacts import provider_digest
 from ..release_asset_inventory import (
     exact_assets,
@@ -78,9 +79,11 @@ class ReadOnlyReleaseProvider:
             },
         )
         try:
-            with open_download(request, timeout=30) as response:
+            with open_provider_get(
+                request, timeout=30, opener=open_download
+            ) as response:
                 raw = response.read(4 * 1024 * 1024 + 1)
-        except (HTTPError, OSError, URLError) as exc:
+        except (HTTPError, OSError, URLError, ProviderReadError) as exc:
             raise ReleaseCustodyError(f"release custody GET failed: {path}") from exc
         if len(raw) > 4 * 1024 * 1024:
             raise ReleaseCustodyError("release custody response exceeds size limit")

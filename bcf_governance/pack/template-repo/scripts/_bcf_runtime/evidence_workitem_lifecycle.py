@@ -61,6 +61,7 @@ def validate_workitem_dependencies(entries: Iterable[dict[str, Any]]) -> list[st
             "duplicate workitem ids make dependencies ambiguous: " + ", ".join(duplicates)
         )
     positions = {item_id: index for index, item_id in enumerate(ids)}
+    statuses = {item_id: values[index].get("status") for index, item_id in enumerate(ids)}
     for index, entry in enumerate(values):
         item_id = ids[index]
         for predecessor in workitem_predecessors(entry):
@@ -71,6 +72,10 @@ def validate_workitem_dependencies(entries: Iterable[dict[str, Any]]) -> list[st
             if positions[predecessor] >= index:
                 raise WorkitemContractError(
                     f"workitem {item_id} predecessor {predecessor} is forward or cyclic"
+                )
+            if entry.get("status") == "DONE" and statuses[predecessor] != "DONE":
+                raise WorkitemContractError(
+                    f"workitem {item_id} is authored DONE before predecessor {predecessor}"
                 )
     return ids
 

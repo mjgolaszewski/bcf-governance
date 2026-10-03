@@ -16,18 +16,19 @@ summary:
     CI operations for BCF 2.1.7
   - phase artifacts were scaffolded from the governance template
   - issues 347 341 and 342 are the planned phase scope; shipped generator bug 348 was admitted into P29-P0-01 because it shares the canonical evaluation-input projection owner
+  - P29-P0-01 through P29-P0-04 are one integrated implementation prefix; exact-main will target P29-P0-04 after the same authenticated evidence closes every predecessor and will make only P29-P0-05 eligible
 workitems:
 - id: P29-P0-01
-  status: IN_PROGRESS
+  status: DONE
   summary: persist the CI state matrix and repair evaluation-input projection
 - id: P29-P0-02
-  status: TODO
+  status: DONE
   summary: optimize deterministic fixed-point reconciliation
 - id: P29-P0-03
-  status: TODO
+  status: DONE
   summary: add bounded provider-read resilience
 - id: P29-P0-04
-  status: TODO
+  status: DONE
   summary: derive lifecycle projections and emit non-authoritative operational observations
 - id: P29-P0-05
   status: TODO
@@ -62,6 +63,11 @@ execution_evidence:
   - merged correction d8e6906948ea7b7f2762d9f050203393c3f6ad00 completed unified rotation 37011053947/1, but fresh exact-main 37010486449/2 failed job 110857891515 before fan-out because the reusable governance callee did not consume its declared comparison-base input
   - the canonical matrix now treats caller projection and callee consumption as one indivisible edge; renderer and required-artifact validation own the same event-aware comparison environment
   - the PR-base negative control now mutates the canonical comparison-context primitive and is killed by an independent literal contract, replacing the renderer branch made unreachable by reusable-workflow consumption
+  - the P29 matrix now precedes implementation for local toolchain and resource admission selective reconciliation provider retry lifecycle projection operational observation and every downstream authority consumer
+  - one canonical local submission entrypoint derives lifecycle intent, selects the locked repository toolchain, acquires an execution-scoped lease, reconciles only invalidated canonical owners, walks the full prospective authority chain, and submits the exact unchanged commit
+  - bounded read-only provider retry preserves the exact GET identity and records non-authoritative attempts while mutation methods, authorization failures, schema failures, and identity changes remain terminal
+  - lifecycle progress, provider queue decomposition, and governance-amplification observations are schema-validated and explicitly non-authoritative; unknown provider timestamps remain unknown
+  - the integrated authored DONE prefix P29-P0-01 through P29-P0-04 targets P29-P0-04 for one exact evidence session, leaves P29 active, and makes only P29-P0-05 eligible
 closeout_requirements:
   claims:
     workitems_closed:
@@ -94,4 +100,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- implement scoped workitems and record execution evidence in this log
+- certify the integrated P29-P0-01 through P29-P0-04 prefix and begin only the eligible P29-P0-05 immutable 2.1.7 custody work

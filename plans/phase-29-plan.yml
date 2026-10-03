@@ -21,6 +21,7 @@ delivery_contract:
   tightly_scoped_deliverables:
   - persist the CI state matrix and repair evaluation-input projection
   - optimize deterministic fixed-point reconciliation
+  - admit the exact local toolchain and expensive-gate lease mechanically before reconciliation
   - add bounded provider-read resilience
   - derive lifecycle projections and emit non-authoritative operational observations
   - prove self Lite and Standard v3 parity and publish immutable 2.1.7 custody
@@ -45,6 +46,8 @@ scope_lock:
   statement: evaluation proposition and provider event remain separate typed facts and every event proposition permutation receives exact comparison context
 - order: 3
   statement: optimization and observation cannot confer authority skip assurance or delegate stage selection to an agent
+- order: 4
+  statement: P29-P0-01 through P29-P0-04 ship as one exact integrated dependency prefix and receive one bounded terminal-workitem custody train
 verification_plan:
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
 - .venv/bin/python -m pytest -q tests

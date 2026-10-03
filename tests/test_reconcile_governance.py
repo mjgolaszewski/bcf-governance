@@ -15,6 +15,7 @@ from bcf_governance.tooling.scaffold_governance_artifacts import (
     ReconcileStep,
     converge,
     reconcile_steps,
+    check_reconcile_steps,
 )
 from bcf_governance.tooling.release_version_projection import (
     ReleaseVersionProjectionError,
@@ -35,6 +36,51 @@ def _git(root: Path, *args: str) -> str:
         check=True,
     )
     return result.stdout.strip()
+
+
+def test_reconcile_ledger_skips_only_exact_clean_stage(tmp_path: Path) -> None:
+    _git(tmp_path, "init", "--quiet", "--initial-branch=main")
+    (tmp_path / "schemas").mkdir()
+    (tmp_path / "schemas/reconcile-ledger.schema.json").write_bytes(
+        (Path(__file__).resolve().parents[1] / "schemas/reconcile-ledger.schema.json").read_bytes()
+    )
+    source = tmp_path / "source.txt"
+    source.write_text("one\n", encoding="utf-8")
+    calls: list[str] = []
+    step = ReconcileStep(
+        "fixture",
+        lambda: calls.append("check"),
+        lambda: calls.append("apply"),
+        watch_paths=("source.txt",),
+    )
+    first = check_reconcile_steps(tmp_path, [step])
+    second = check_reconcile_steps(tmp_path, [step])
+    source.write_text("two\n", encoding="utf-8")
+    third = check_reconcile_steps(tmp_path, [step])
+    assert calls == ["check", "check"]
+    assert first["stages"][0]["state"] == "checked"
+    assert second["stages"][0]["state"] == "skipped_clean"
+    assert third["stages"][0]["state"] == "checked"
+
+
+def test_reconcile_forced_check_proves_cached_equivalence(tmp_path: Path) -> None:
+    _git(tmp_path, "init", "--quiet", "--initial-branch=main")
+    (tmp_path / "schemas").mkdir()
+    (tmp_path / "schemas/reconcile-ledger.schema.json").write_bytes(
+        (Path(__file__).resolve().parents[1] / "schemas/reconcile-ledger.schema.json").read_bytes()
+    )
+    (tmp_path / "source.txt").write_text("same\n", encoding="utf-8")
+    calls: list[str] = []
+    step = ReconcileStep(
+        "fixture",
+        lambda: calls.append("check"),
+        lambda: None,
+        watch_paths=("source.txt",),
+    )
+    selective = check_reconcile_steps(tmp_path, [step])
+    forced = check_reconcile_steps(tmp_path, [step], force=True)
+    assert calls == ["check", "check"]
+    assert selective["convergence_token"] == forced["convergence_token"]
 
 
 def _authority_transition_repository(tmp_path: Path) -> Path:

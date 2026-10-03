@@ -119,7 +119,7 @@ families:
   significance: authoritative
   ownership_required: true
   canonical_semantic_ids: [governance.local-pr-context.v1]
-  material_selectors: {source_paths: [bcf_governance/tooling/local_pr.py], symbols: [bcf_governance/tooling/local_pr.py::LocalPRContext]}
+  material_selectors: {source_paths: [bcf_governance/tooling/local_pr_context.py], symbols: [bcf_governance/tooling/local_pr_context.py::LocalPRContext]}
   responsibilities: {construction: [resolve_local_pr_context], decoding: [git_remote], transition: [], projection: [pr_event_context]}
 - id: runtime_capacity_decision
   significance: authoritative

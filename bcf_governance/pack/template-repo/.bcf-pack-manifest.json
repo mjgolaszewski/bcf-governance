@@ -320,6 +320,10 @@
       "operation": "copy",
       "sha256": "fd87d65939e09aa889dac0a31bc22bf491c525d9eb8580420c115bd9d27c5762"
     },
+    "schemas/operational-observation.schema.json": {
+      "operation": "copy",
+      "sha256": "cba2c9fe80ff55a1a839d41251c9b525b5f338319d72206132c8e25b1e77803e"
+    },
     "schemas/phase-history.schema.json": {
       "operation": "copy",
       "sha256": "24ec4489091f01f75ca11ee0dd5514924e0588e16a544b3ce788b625b753b555"
@@ -369,6 +373,10 @@
     "schemas/public-contracts.schema.json": {
       "operation": "copy",
       "sha256": "9d4ba185bbb2fb21442c810a8351762d6ab0fb55fd9db6c3a937827763acb3b7"
+    },
+    "schemas/reconcile-ledger.schema.json": {
+      "operation": "copy",
+      "sha256": "be21d6545c057029b797cbc92089731379c8490bba50bd749dfbf4278364a0b9"
     },
     "schemas/recovery-reentry-authorization.schema.json": {
       "installation_scope": "self_authority",
@@ -488,11 +496,11 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "7076262f531369ec1679f1a875a89b4609b681b9af4ebfff9dac32fe191d2ef9"
+      "sha256": "b04c7a781702137f9d481487f334aa1196044efc13104998fc0617dbf65720ab"
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "f60c98a886444a583286258e4cafa1473ed985c9ae97b79630948edf86944fa5"
+      "sha256": "414fc7e4fde44134d7ac63fd9a243fde21ce0ea2663e43ba78609e2ca0a95577"
     },
     "scripts/_bcf_runtime/ci_controller_adoption.py": {
       "operation": "copy",
@@ -532,7 +540,7 @@
     },
     "scripts/_bcf_runtime/ci_github_api.py": {
       "operation": "copy",
-      "sha256": "8f438e6350b733371d4a3b6a0af72f1346279c982c1e1a5aa261a9b9f326b18b"
+      "sha256": "4a0546ee97d0b5edf6d832bcc708b1893b37f5ef2f47a24cfe631cbce9e95191"
     },
     "scripts/_bcf_runtime/ci_github_artifact_inventory.py": {
       "operation": "copy",
@@ -621,6 +629,10 @@
     "scripts/_bcf_runtime/ci_github_status.py": {
       "operation": "copy",
       "sha256": "c247db4d4d986ef31690767bacb098411cba88523566aa945f113cd18c519249"
+    },
+    "scripts/_bcf_runtime/ci_github_transport.py": {
+      "operation": "copy",
+      "sha256": "242efca657e5d15b805f5b8947c7e9ac367397902a88cfaf82ffbaedd4e9f90d"
     },
     "scripts/_bcf_runtime/ci_graph_artifact_steps.py": {
       "operation": "copy",
@@ -832,7 +844,7 @@
     },
     "scripts/_bcf_runtime/evidence_storage_github_api.py": {
       "operation": "copy",
-      "sha256": "b6287cb9280e1f9508d9dbf7f6eba912a22b91bbcda8a110974fc817a4ffd69a"
+      "sha256": "4fa1db5e38e0f454951551eed10a8b89ff1d5b9465d2deb2768ae09ae8d9b3ab"
     },
     "scripts/_bcf_runtime/evidence_storage_github_releases.py": {
       "operation": "copy",
@@ -864,7 +876,7 @@
     },
     "scripts/_bcf_runtime/evidence_workitem_lifecycle.py": {
       "operation": "copy",
-      "sha256": "f5e319519c1b4037dde671301c4641311fdbe9976bd775521f4329df4b7e8d69"
+      "sha256": "b40334d9349b1f907daf4ba860b13e3863d9f2fe01834299c2cc13e3095e4059"
     },
     "scripts/_bcf_runtime/github_protection.py": {
       "operation": "copy",
@@ -928,7 +940,7 @@
     },
     "scripts/_bcf_runtime/governance_install/release_custody.py": {
       "operation": "copy",
-      "sha256": "ba82e6b79bcc6362b213d21a70d814401d13ee42ee304ad9a359d2c9649d5c07"
+      "sha256": "3a29717386274670fedcd4bb961056bf27540c592e34b37ffc609d653ad5bae3"
     },
     "scripts/_bcf_runtime/governance_install/reporting.py": {
       "operation": "copy",
@@ -1057,9 +1069,17 @@
       "operation": "copy",
       "sha256": "9727c893980b2cc1ef124ad71404e7af6541a5dad90d02199b6bfa6c94c039f4"
     },
+    "scripts/_bcf_runtime/local_execution_admission.py": {
+      "operation": "copy",
+      "sha256": "b6620689c98e7da49104fd7f41fe140c6c0bbdd14c0a4b92ce65d257d488f136"
+    },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "2f01d575a11f1f62544128e04500580c2fb7e1978b05fe61cd861775476baa39"
+      "sha256": "00e7623a63bfdd5794850d13fec5dac7ea3f96da53e79819ccbfc27c2b3b1d29"
+    },
+    "scripts/_bcf_runtime/local_pr_context.py": {
+      "operation": "copy",
+      "sha256": "9b7a74d37a1fee5e3c5eb31940b5ddf1da7a4d167e496699d89b172a2a2bc825"
     },
     "scripts/_bcf_runtime/migrate_contracts.py": {
       "operation": "copy",
@@ -1072,6 +1092,10 @@
     "scripts/_bcf_runtime/negative_control_execution.py": {
       "operation": "copy",
       "sha256": "84c5fc7a8b342fc2a42ecb3978d1501716210abf321224a38f9971e4dfa144a2"
+    },
+    "scripts/_bcf_runtime/operational_observations.py": {
+      "operation": "copy",
+      "sha256": "f860f8fbeb760096cd5e0f4d8ac2a78e56237b5eb56e1b893bd0405a9086e3cf"
     },
     "scripts/_bcf_runtime/pack_installation_scope.py": {
       "operation": "copy",
@@ -1117,6 +1141,10 @@
       "operation": "copy",
       "sha256": "31fdbc3b4b2eb9f3e7b29f50e08556add621c41ff01aef9d7cbcc3a86f62286e"
     },
+    "scripts/_bcf_runtime/provider_read.py": {
+      "operation": "copy",
+      "sha256": "47b72820593b6bec81f63a2b8bca3edabd684a3326eba8a7032373b97592b266"
+    },
     "scripts/_bcf_runtime/provider_reuse_closure.py": {
       "operation": "copy",
       "sha256": "97bfa742d9363089e89a1a77d42d629a490e7cba24b73210a690a5f5df06bb6f"
@@ -1132,6 +1160,10 @@
     "scripts/_bcf_runtime/reconcile_authority_transition.py": {
       "operation": "copy",
       "sha256": "8d49487b51be92057d5f61afaa15efedcdf99372b814432484549fb46b5cfbeb"
+    },
+    "scripts/_bcf_runtime/reconcile_stage_ledger.py": {
+      "operation": "copy",
+      "sha256": "e1e5b9bf4395f1a0789f0d2fb9099146ddd650f79fc79efbf7108700631b54a1"
     },
     "scripts/_bcf_runtime/release_asset_inventory.py": {
       "operation": "copy",
@@ -1203,7 +1235,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "5297c1079a7556a2765950e4a63079317313ddd18426e201c93d2386b8716683"
+      "sha256": "8d057b7f7199a57c88cf0470ce924be7c06b7157d20559a13a2d7740cac02ceb"
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",

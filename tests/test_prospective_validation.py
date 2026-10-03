@@ -67,6 +67,35 @@ def _authored_target_ready(monkeypatch: pytest.MonkeyPatch) -> None:
             },
         ),
     )
+    monkeypatch.setattr(
+        prospective,
+        "validate_local_toolchain",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            node_executable="/usr/bin/node",
+            as_dict=lambda: {
+                "status": "ready",
+                "execution_id": "toolchain-only",
+            },
+        ),
+    )
+    monkeypatch.setattr(
+        prospective, "validate_operational_observation", lambda *_args: None
+    )
+    monkeypatch.setattr(
+        prospective,
+        "lifecycle_projection",
+        lambda *_args: {
+            "schema_version": "1.0",
+            "kind": "lifecycle_projection",
+            "authority": "lifecycle",
+            "phase_id": "P27",
+            "completed_prefix": [],
+            "predecessor": None,
+            "current": "P27-P0-03",
+            "successor": None,
+            "history_owner": "plans/phase-history.yml",
+        },
+    )
 
 
 class Result:
@@ -369,7 +398,13 @@ def test_provider_effective_controller_is_mechanically_bound_to_prospective_pref
         repository="owner/repo",
         provider_api=object(),  # type: ignore[arg-type]
     )
-    assert result == {"status": "pass"}
+    assert result == {
+        "status": "pass",
+        "local_execution_admission": {
+            "status": "ready",
+            "execution_id": "toolchain-only",
+        },
+    }
     assert captured["controller_authority"] == {
         "controller_commit_sha": "a" * 40,
         "controller_bundle_sha256": "b" * 64,
@@ -411,7 +446,13 @@ def test_direct_protected_main_lane_does_not_resolve_controller_authority(
         repository="owner/repo",
         provider_api=object(),  # type: ignore[arg-type]
     )
-    assert report == {"controller_authority": None}
+    assert report == {
+        "controller_authority": None,
+        "local_execution_admission": {
+            "status": "ready",
+            "execution_id": "toolchain-only",
+        },
+    }
 
 
 def test_direct_adopter_custody_never_enters_controller_topology(
@@ -588,7 +629,13 @@ def test_provider_bound_adopter_without_optional_controller_skips_controller_res
     )
 
     assert authority_calls == ["governance/ci-authority.yml:owner/repo"]
-    assert report == {"controller_authority": None}
+    assert report == {
+        "controller_authority": None,
+        "local_execution_admission": {
+            "status": "ready",
+            "execution_id": "toolchain-only",
+        },
+    }
 
 
 def test_direct_protected_main_lane_is_closed_without_controller_or_release_authority() -> None:

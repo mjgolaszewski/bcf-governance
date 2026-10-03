@@ -13,8 +13,12 @@ import sys
 from typing import Any, Callable, Iterable
 
 import yaml  # type: ignore[import-untyped]
-
 from .runtime_capacity import executing_runtime_version
+from .reconcile_stage_ledger import (
+    ReconcileError,
+    check_reconcile_steps,
+    record_reconcile_steps,
+)
 
 
 __version__ = executing_runtime_version()
@@ -290,10 +294,6 @@ def scaffold_hotfix_log(
     return log_path
 
 
-class ReconcileError(ValueError):
-    """Governed projections cannot be checked or converged safely."""
-
-
 Action = Callable[[], None]
 
 
@@ -305,6 +305,7 @@ class ReconcileStep:
     check: Action
     apply: Action
     apply_verifies: bool = False
+    watch_paths: tuple[str, ...] | None = None
 
 
 def _run_reconcile_command(command: list[str], *, repo_root: Path, step_id: str) -> None:
@@ -375,6 +376,12 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 repo_root, version=__version__, apply=True
             ),
             apply_verifies=True,
+            watch_paths=(
+                "bcf_governance/__init__.py",
+                "bcf_governance/tooling/release_version_projection.py",
+                "manifest.yml",
+                "governance/public-contracts.yml",
+            ),
         ),
     ]
     if (repo_root / "governance/gate-contracts.yml").is_file():
@@ -383,6 +390,12 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 "profile-makefile",
                 lambda: reconcile_makefile(repo_root, apply=False),
                 lambda: reconcile_makefile(repo_root, apply=True),
+                watch_paths=(
+                    "governance/gate-contracts.yml",
+                    "Makefile.fragment",
+                    "bcf_governance/tooling/profile_surface_generation.py",
+                    "bcf_governance/tooling/profile_v2_surfaces.py",
+                ),
             )
         )
     steps.append(
@@ -390,6 +403,14 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
             "ci-graph-post-merge-scope",
             lambda: reconcile_post_merge_scope(repo_root, apply=False),
             lambda: reconcile_post_merge_scope(repo_root, apply=True),
+            watch_paths=(
+                "plans/phase-ledger.yml",
+                "plans/phase-29-workitems.yml",
+                "phases/phase-29-log.yml",
+                "governance/ci-graph.yml",
+                "bcf_governance/tooling/ci_graph_post_merge.py",
+                "bcf_governance/tooling/evidence_workitem_lifecycle.py",
+            ),
         )
     )
     pack = repo_root / ".github/scripts/build_pack_manifest.py"
@@ -399,6 +420,12 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 "pack-projection",
                 _reconcile_action(repo_root, "pack-projection", [str(tool_python), str(pack), "--check"]),
                 _reconcile_action(repo_root, "pack-projection", [str(tool_python), str(pack)]),
+                watch_paths=(
+                    ".github/scripts/build_pack_manifest.py",
+                    "bcf_governance",
+                    "template-repo",
+                    "bcf_governance/pack/template-repo",
+                ),
             )
         )
     semantic_states = capability_states(repo_root)
@@ -413,6 +440,14 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--check"]),
                 _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--apply"]),
                 apply_verifies=True,
+                watch_paths=(
+                    "bcf_governance/tooling/semantic_*",
+                    "governance/canonical-representations.yml",
+                    "governance/semantic-*",
+                    "governance/semantic-lock.yml",
+                    "src",
+                    "tests",
+                ),
             )
         )
     elif present := [path.as_posix() for path in semantic_runtime_paths if (repo_root / path).exists()]:
@@ -429,6 +464,12 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 _reconcile_action(repo_root, "test-manifests", [*common, "check", *suffix]),
                 _reconcile_action(repo_root, "test-manifests", [*common, "update", *suffix]),
                 apply_verifies=True,
+                watch_paths=(
+                    "tests",
+                    "governance/gate-contracts.yml",
+                    "governance/test-manifests",
+                    "bcf_governance/tooling/test_manifests.py",
+                ),
             )
         )
     for operation in ("lock", "render"):
@@ -437,6 +478,13 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 f"ci-graph-{operation}",
                 _reconcile_action(repo_root, f"ci-graph-{operation}", [*cli, "ci", "graph", operation, "--repo-root", str(repo_root), "--check"]),
                 _reconcile_action(repo_root, f"ci-graph-{operation}", [*cli, "ci", "graph", operation, "--repo-root", str(repo_root), "--apply"]),
+                watch_paths=(
+                    "governance/ci-graph.yml",
+                    "governance/ci-graph.lock.yml",
+                    "governance/ci-extensions",
+                    ".github/workflows",
+                    "bcf_governance/tooling/ci_graph_",
+                ),
             )
         )
     if (repo_root / "governance/ci-authority.yml").is_file():
@@ -445,6 +493,11 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 "workflow-authority",
                 lambda: _reconcile_workflow_authority(repo_root, apply=False),
                 lambda: _reconcile_workflow_authority(repo_root, apply=True),
+                watch_paths=(
+                    ".github/workflows",
+                    "governance/ci-authority.yml",
+                    "bcf_governance/tooling/ci_authority_pins.py",
+                ),
             )
         )
     checker = repo_root / ".github/scripts/check_editorial_contract.py"
@@ -457,6 +510,17 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 "editorial-audit",
                 _reconcile_action(repo_root, "editorial-audit", [str(tool_python), str(checker)]),
                 _reconcile_action(repo_root, "editorial-audit", [str(tool_python), str(builder), "--repo-root", str(repo_root), "--audit", str(audit), "--base-sha", base, "--apply"]),
+                watch_paths=(
+                    "README.md",
+                    "CHANGELOG.md",
+                    "docs",
+                    "spec",
+                    "plans",
+                    "phases",
+                    "audits",
+                    ".github/scripts/check_editorial_contract.py",
+                    ".github/scripts/build_editorial_audit.py",
+                ),
             )
         )
     return tuple(steps)
@@ -513,13 +577,20 @@ def reconcile_main(argv: list[str] | None = None) -> None:
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--check", action="store_true")
     mode.add_argument("--apply", action="store_true")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="recompute every check-stage as the selective-equivalence oracle",
+    )
     args = parser.parse_args(argv)
     root = args.repo_root.resolve()
     try:
         steps = reconcile_steps(root, args.python)
+        ledger = None
+        if args.force and not args.check:
+            raise ReconcileError("--force is valid only with --check")
         if args.check:
-            for step in steps:
-                step.check()
+            ledger = check_reconcile_steps(root, steps, force=args.force)
             rounds = 0
         else:
             transition = None
@@ -531,9 +602,11 @@ def reconcile_main(argv: list[str] | None = None) -> None:
                     snapshot=_reconcile_snapshot,
                 )
             if transition is not None:
+                record_reconcile_steps(root, reconcile_steps(root, args.python))
                 print(authority_transition_json(transition))
                 return
             rounds = converge(steps, lambda: _reconcile_snapshot(root))
+            ledger = record_reconcile_steps(root, steps)
     except (
         OSError,
         UnicodeError,
@@ -542,7 +615,7 @@ def reconcile_main(argv: list[str] | None = None) -> None:
         ValueError,
     ) as exc:
         raise SystemExit(f"governance-reconcile-failed: {exc}") from exc
-    print(json.dumps({"status": "clean" if args.check else "converged", "rounds": rounds, "steps": [step.step_id for step in steps]}, sort_keys=True))
+    print(json.dumps({"status": "clean" if args.check else "converged", "rounds": rounds, "steps": [step.step_id for step in steps], "reconciliation": ledger}, sort_keys=True))
 
 
 def _parser() -> argparse.ArgumentParser:

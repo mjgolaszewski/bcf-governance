@@ -140,7 +140,11 @@ def _parser() -> argparse.ArgumentParser:
     submit.add_argument("--repo-root", type=Path, default=Path.cwd())
     submit.add_argument("--remote", default="origin")
     submit.add_argument("--python", type=Path, default=Path(sys.executable))
-    submit.add_argument("--intent", choices=("pr", "workitem", "closure"), required=True)
+    submit.add_argument(
+        "--intent",
+        choices=("pr", "workitem", "closure"),
+        help="optional consistency assertion; canonical intent is derived from the graph",
+    )
     submit.add_argument("--format", choices=("text", "json"), default="json")
     runtime = subparsers.add_parser("runtime-check", help="Check capacity before heavy CI.")
     runtime.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -301,6 +305,9 @@ def main(argv: list[str] | None = None) -> None:
                 python_executable=args.python,
                 repository=args.repository,
                 provider_api=provider_api,
+                progress_sink=lambda event: print(
+                    json.dumps(event, sort_keys=True), file=sys.stderr, flush=True
+                ),
             )
             _print(result, args.format)
             return

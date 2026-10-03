@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import base64
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 import json
 from pathlib import Path
 import re
@@ -18,10 +18,11 @@ from .ci_github_artifact_inventory import (
 )
 from .ci_github_downloads import (
     GitHubDownloadKind,
-    build_download_request,
     open_download,
 )
 from .release_versions import ReleaseVersionError, parse_release_tag
+from .provider_read import ProviderReadAttempt
+from .ci_github_transport import GitHubTransportError, request_bytes, request_json
 
 
 REPOSITORY_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
@@ -48,6 +49,13 @@ class GitHubAPI:
             raise GitHubAPIError("GitHub API URL must use HTTPS")
         self._token = token
         self._api_url = api_url.rstrip("/")
+        self._provider_read_observations: list[ProviderReadAttempt] = []
+
+    @property
+    def provider_read_observations(self) -> tuple[dict[str, Any], ...]:
+        """Return non-authoritative immutable-GET attempt observations."""
+
+        return tuple(asdict(item) for item in self._provider_read_observations)
 
     def _request(
         self,
@@ -57,36 +65,19 @@ class GitHubAPI:
         payload: dict[str, Any] | None = None,
         not_found_none: bool = False,
     ) -> Any:
-        if not path.startswith("/") or "\n" in path or "\r" in path:
-            raise GitHubAPIError("GitHub API path is unsafe")
-        body = json.dumps(payload, separators=(",", ":")).encode() if payload is not None else None
-        request = Request(
-            self._api_url + path,
-            data=body,
-            method=method,
-            headers={
-                "Accept": "application/vnd.github+json",
-                "Authorization": f"Bearer {self._token}",
-                "User-Agent": "bcf-governance-trusted-control",
-                "X-GitHub-Api-Version": "2022-11-28",
-                "Content-Type": "application/json",
-            },
-        )
         try:
-            with open_download(request, timeout=30) as response:
-                raw = response.read()
-        except HTTPError as exc:
-            if not_found_none and method == "GET" and exc.code == 404:
-                return None
-            raise GitHubAPIError(f"GitHub API {method} {path} returned {exc.code}") from exc
-        except (OSError, URLError) as exc:
-            raise GitHubAPIError(f"GitHub API {method} {path} failed") from exc
-        if not raw:
-            return None
-        try:
-            return json.loads(raw)
-        except json.JSONDecodeError as exc:
-            raise GitHubAPIError("GitHub API returned invalid JSON") from exc
+            return request_json(
+                method=method,
+                api_url=self._api_url,
+                path=path,
+                token=self._token,
+                payload=payload,
+                not_found_none=not_found_none,
+                opener=open_download,
+                observations=self._provider_read_observations,
+            )
+        except GitHubTransportError as exc:
+            raise GitHubAPIError(str(exc)) from exc
 
     def _request_bytes(
         self,
@@ -95,27 +86,18 @@ class GitHubAPI:
         kind: GitHubDownloadKind,
         maximum_bytes: int,
     ) -> bytes:
-        if not path.startswith("/") or "\n" in path or "\r" in path:
-            raise GitHubAPIError("GitHub API path is unsafe")
-        if maximum_bytes < 1:
-            raise GitHubAPIError("GitHub byte response limit must be positive")
-        request = build_download_request(
-            api_url=self._api_url,
-            path=path,
-            token=self._token,
-            kind=kind,
-            user_agent="bcf-governance-trusted-control",
-        )
         try:
-            with open_download(request, timeout=30) as response:  # noqa: S310
-                raw = response.read(maximum_bytes + 1)
-        except HTTPError as exc:
-            raise GitHubAPIError(f"GitHub API GET {path} returned {exc.code}") from exc
-        except (OSError, URLError) as exc:
-            raise GitHubAPIError(f"GitHub API GET {path} failed") from exc
-        if len(raw) > maximum_bytes:
-            raise GitHubAPIError("GitHub artifact exceeds the closed size limit")
-        return raw
+            return request_bytes(
+                api_url=self._api_url,
+                path=path,
+                token=self._token,
+                kind=kind,
+                maximum_bytes=maximum_bytes,
+                opener=open_download,
+                observations=self._provider_read_observations,
+            )
+        except GitHubTransportError as exc:
+            raise GitHubAPIError(str(exc)) from exc
 
     def _upload_bytes(
         self, url: str, *, payload: bytes, media_type: str

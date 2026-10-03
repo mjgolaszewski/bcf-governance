@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "authority", "stages", "last_run", "convergence_token"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "authority": {"const": false},
+    "stages": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["digest"],
+        "properties": {"digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+      }
+    },
+    "last_run": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stage", "state", "duration_ms", "digest"],
+        "properties": {
+          "stage": {"type": "string", "minLength": 1},
+          "state": {"enum": ["checked", "skipped_clean", "applied"]},
+          "duration_ms": {"type": "integer", "minimum": 0},
+          "digest": {"oneOf": [{"type": "string", "pattern": "^[a-f0-9]{64}$"}, {"const": "uncacheable"}]}
+        }
+      }
+    },
+    "convergence_token": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

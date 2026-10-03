@@ -258,6 +258,36 @@ def test_post_merge_scope_selects_unique_done_frontier_amid_unrelated_active_wor
     )
 
 
+def test_post_merge_scope_selects_terminal_integrated_dependency_prefix(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "phases").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump({"active_phase": {
+            "id": "P29",
+            "workitems": "plans/phase-29-workitems.yml",
+            "log": "phases/phase-29-log.yml",
+        }}), encoding="utf-8"
+    )
+    workitems = []
+    for index in range(1, 6):
+        item_id = f"P29-P0-0{index}"
+        acceptance = [] if index == 1 else [f"requires-workitem-closure:P29-P0-0{index - 1}"]
+        workitems.append({
+            "id": item_id,
+            "status": "DONE" if index < 5 else "TODO",
+            "acceptance": acceptance,
+        })
+    (tmp_path / "plans/phase-29-workitems.yml").write_text(
+        yaml.safe_dump({"workitems": workitems}), encoding="utf-8"
+    )
+    (tmp_path / "phases/phase-29-log.yml").write_text(
+        yaml.safe_dump({"document": {"status": "active"}}), encoding="utf-8"
+    )
+    assert authored_post_merge_scope(tmp_path) == ("workitem", "P29-P0-04")
+
+
 def test_reconcile_replaces_stale_adopter_closure_with_pr_progress(
     tmp_path: Path,
 ) -> None:
