@@ -13,6 +13,7 @@ from urllib.request import Request
 import zipfile
 
 import pytest
+import yaml
 
 from bcf_governance import __version__
 from bcf_governance.tooling.governance_install import release_custody
@@ -21,6 +22,9 @@ from bcf_governance.tooling.governance_install.runtime_custody import (
     inspect_runtime_custody,
 )
 from bcf_governance.tooling.governance_install import cli as install_cli
+from bcf_governance.tooling.governance_install.upgrade import (
+    _upgrade_direct_comparison_input,
+)
 from bcf_governance.tooling.release_asset_inventory import exact_assets
 
 
@@ -414,6 +418,47 @@ def test_upgrade_atomically_projects_release_custody_with_runtime_bytes(
     assert lock["source_repository"] == release_custody.OFFICIAL_RELEASE_REPOSITORY
     runtime = "scripts/_bcf_runtime/install_governance_pack.py"
     assert lock["files"][runtime] == hashlib.sha256((target / runtime).read_bytes()).hexdigest()
+    graph = yaml.safe_load((target / "governance/ci-graph.yml").read_text(encoding="utf-8"))
+    call = next(
+        event
+        for event in graph["workflows"][0]["events"]
+        if event["type"] == "workflow_call"
+    )
+    assert call["inputs"]["comparison_base_sha"] == {
+        "description": "Exact repository comparison base for explicit calls",
+        "required": True,
+        "type": "string",
+    }
+
+
+def test_upgrade_rejects_malformed_existing_comparison_input(tmp_path: Path) -> None:
+    graph = tmp_path / "governance/ci-graph.yml"
+    graph.parent.mkdir(parents=True)
+    graph.write_text(
+        yaml.safe_dump(
+            {
+                "workflows": [
+                    {
+                        "id": "governance",
+                        "role": "exact-main",
+                        "events": [
+                            {"type": "pull_request"},
+                            {
+                                "type": "workflow_call",
+                                "inputs": {"comparison_base_sha": {"required": False}},
+                            },
+                            {"type": "push"},
+                        ],
+                    }
+                ]
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="comparison-base input is malformed"):
+        _upgrade_direct_comparison_input(tmp_path)
 
 
 def test_authenticated_upgrade_normalizes_exact_legacy_overlap(

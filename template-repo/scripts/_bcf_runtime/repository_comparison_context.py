@@ -30,6 +30,16 @@ DIRECT_EVENT_COMPARISON_BASE_EXPRESSION = (
 )
 
 
+def comparison_base_input_contract() -> dict[str, object]:
+    """Return the one reusable-workflow comparison input contract."""
+
+    return {
+        "description": "Exact repository comparison base for explicit calls",
+        "required": True,
+        "type": "string",
+    }
+
+
 def push_comparison_inputs(**inputs: object) -> dict[str, object]:
     """Bind reusable execution inputs to the authenticated outer push."""
 

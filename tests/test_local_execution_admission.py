@@ -12,6 +12,23 @@ from bcf_governance.tooling.local_execution_admission import (
     project_python_environment,
     resolve_local_project_python,
 )
+from bcf_governance.tooling.runtime_capacity import (
+    EXECUTION_STATE_ENVIRONMENT,
+    EXECUTION_STATE_POLICY,
+    allocate_execution_state,
+    retire_execution_state,
+)
+
+
+def _runtime_contract() -> dict[str, object]:
+    return {
+        "runtime_root": ".artifacts/runtime",
+        "database": {
+            "storage": "repository_bind_mount",
+            "relative_path": ".artifacts/runtime/database",
+        },
+        "execution_state": EXECUTION_STATE_POLICY,
+    }
 
 
 def test_competing_local_gate_fails_busy_before_work() -> None:
@@ -26,6 +43,51 @@ def test_competing_local_gate_fails_busy_before_work() -> None:
 def test_local_gate_requires_exact_execution_identity() -> None:
     with pytest.raises(LocalExecutionAdmissionError, match="identity"):
         with local_gate_lease("branch-name"):
+            pass
+
+
+def test_local_gate_uses_authenticated_execution_state_namespace(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    first = allocate_execution_state(
+        tmp_path,
+        _runtime_contract(),
+        session_id="session-one",
+        workload_id="test",
+        execution_id="positive",
+        invocation={},
+    )
+    second = allocate_execution_state(
+        tmp_path,
+        _runtime_contract(),
+        session_id="session-two",
+        workload_id="test",
+        execution_id="positive",
+        invocation={},
+    )
+    try:
+        for name, value in first.environment().items():
+            monkeypatch.setenv(name, value)
+        with local_gate_lease("a" * 40):
+            for name, value in second.environment().items():
+                monkeypatch.setenv(name, value)
+            with local_gate_lease("b" * 40):
+                with pytest.raises(LocalExecutionAdmissionError, match="busy_deferred"):
+                    with local_gate_lease("c" * 40):
+                        pass
+    finally:
+        retire_execution_state(first)
+        retire_execution_state(second)
+
+
+def test_local_gate_rejects_partial_execution_state_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for name in EXECUTION_STATE_ENVIRONMENT:
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv("BCF_EXECUTION_STATE_NAMESPACE", "bcf-forged-state")
+    with pytest.raises(LocalExecutionAdmissionError, match="incomplete"):
+        with local_gate_lease("a" * 40):
             pass
 
 

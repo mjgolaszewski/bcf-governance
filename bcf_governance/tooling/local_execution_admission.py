@@ -13,6 +13,11 @@ import subprocess
 import sys
 from typing import Iterator, Mapping
 
+from .runtime_capacity import (
+    RuntimeCapacityError,
+    authenticated_execution_state_namespace,
+)
+
 
 class LocalExecutionAdmissionError(ValueError):
     """The local gate is mechanically unready or already owns the host slot."""
@@ -166,7 +171,12 @@ def local_gate_lease(execution_id: str) -> Iterator[None]:
 
     if re.fullmatch(r"[a-f0-9]{40}", execution_id) is None:
         raise LocalExecutionAdmissionError("local gate execution identity is invalid")
-    path = Path(f"/tmp/bcf-local-gate-{os.getuid()}.lock")
+    try:
+        namespace = authenticated_execution_state_namespace(os.environ)
+    except RuntimeCapacityError as exc:
+        raise LocalExecutionAdmissionError(str(exc)) from exc
+    suffix = f"-{namespace}" if namespace is not None else ""
+    path = Path(f"/tmp/bcf-local-gate-{os.getuid()}{suffix}.lock")
     descriptor = path.open("a+", encoding="utf-8")
     try:
         try:

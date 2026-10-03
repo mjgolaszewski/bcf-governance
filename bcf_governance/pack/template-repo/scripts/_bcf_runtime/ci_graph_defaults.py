@@ -7,7 +7,10 @@ from typing import Any
 
 from .evidence_shards import workflow_shard_matrix
 from .ci_graph_execution import direct_post_merge_mode
-from .repository_comparison_context import push_comparison_inputs
+from .repository_comparison_context import (
+    comparison_base_input_contract,
+    push_comparison_inputs,
+)
 
 
 EXTENSION_POINTS = [
@@ -187,11 +190,7 @@ def _apply_legacy_direct_post_merge_scope(graph: dict[str, Any]) -> None:
     workflow = graph["workflows"][0]
     call = next(event for event in workflow["events"] if event["type"] == "workflow_call")
     call["inputs"] = {
-        "comparison_base_sha": {
-            "description": "Exact repository comparison base for explicit calls",
-            "required": True,
-            "type": "string",
-        },
+        "comparison_base_sha": comparison_base_input_contract(),
         "evaluation_mode": {
             "description": "Exact truth evaluation mode",
             "required": False,
@@ -363,7 +362,7 @@ def _apply_v3_proof_composition(graph: dict[str, Any], gates: list[str]) -> None
         {
             "type": "workflow_call",
             "inputs": {
-                "comparison_base_sha": {"description": "Exact repository comparison base for explicit calls", "required": True, "type": "string"},
+                "comparison_base_sha": comparison_base_input_contract(),
                 "evaluation_mode": {"description": "Exact truth evaluation mode", "required": False, "default": "pr", "type": "string"},
                 "evaluation_target": {"description": "Exact bounded target", "required": False, "default": "", "type": "string"},
                 "use_prior_evidence": {"description": "Consume exact caller-bound prior evidence", "required": False, "default": False, "type": "boolean"},

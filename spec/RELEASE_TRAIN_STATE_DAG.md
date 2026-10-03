@@ -271,6 +271,12 @@ release authorization and release receipts reject it even when successful.
 | TypeScript bytes stale or archive/lock differs | exact locked inputs and installed tree | canonical bootstrap | reject before reconcile; never download an alternate compiler |
 | expensive local slot free | exact candidate execution identity | acquire one host-local lease | hold through the complete prospective train |
 | expensive local slot owned by another execution | lock owner execution identity | local execution admission | emit typed `busy/deferred`; allocate no long gate |
+| isolated evidence process is executed beneath the prospective train lease | authenticated execution-state namespace, exact state root/database root, immutable ownership manifest | derive a namespace-scoped nested lease from the canonical execution-state owner | tests and nested local-entrypoint fixtures contend only inside their exact evidence namespace; they cannot observe or bypass the host-level candidate lease |
+| execution-state namespace is absent | no execution-state environment | use the one host-level candidate lease | distinct top-level candidates remain mutually exclusive |
+| execution-state environment is partial, malformed, moved, or lacks its exact ownership manifest | all three exported values plus manifest bytes | local execution admission | reject before nested work; never treat caller-authored environment as a lease namespace |
+| authenticated predecessor adopter graph predates a newly required direct-workflow comparison input | predecessor release custody, exact legacy workflow-call shape, current canonical input contract | upgrade migration projects the missing input before current-runtime graph reconciliation | preserve adopter-owned topology and semantics; current renderer then supplies the complete event-owned comparison environment |
+| predecessor graph already has the current exact comparison input | exact current field bytes | no migration | reconcile and validate normally |
+| predecessor comparison input is present but malformed or the direct workflow is ambiguous | authenticated predecessor graph plus current input contract | upgrade migration | reject rather than overwrite or guess adopter intent |
 | reconcile ledger absent or version unknown | ordered canonical stage inventory | recompute all stages | emit new non-authoritative ledger |
 | stage closure exact | owner token, declared input/upstream digests, output digests, algorithm version | verify and skip stage | `skipped_clean`; identical bytes |
 | owner/input/upstream/output differs | exact changed dependency | execute only the mechanically derived dirty stage and downstream dependents | record duration and new digests |
@@ -283,6 +289,7 @@ release authorization and release receipts reject it even when successful.
 
 ```text
 local execution admission
+  -> authenticated host-or-execution-state lease scope
   -> structural limits
   -> release-version projection
   -> profile/Makefile projection
