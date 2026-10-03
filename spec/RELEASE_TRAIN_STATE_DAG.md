@@ -95,6 +95,10 @@ provider evidence.
     or dependency type with an adopter-owned canonical type of the same name.
     Unresolved or ambiguous project identities fail closed; external imported
     identities remain distinct and cannot acquire adopter authority.
+26. Prepublication qualification uses one isolated candidate runtime identity
+    for the entire subprocess tree. An ambient source overlay must not fall
+    through to an older installed CLI after environment normalization; every
+    nested generator and validator resolves the same candidate bytes.
 
 ## State matrix
 
@@ -123,6 +127,7 @@ provider evidence.
 | Graph value source changed | raw graph, exact declared source paths and bytes, prior reconcile ledger | graph lock then render and authority projection | stage reported clean while any declared source digest differs, hand-ordered lock repair |
 | Runtime/adopter annotation names collide | exact source path, import binding, qualified annotation identities, canonical registry symbol | evaluate normalization only when exact qualified identity matches | bare-name matching, unresolved project import accepted, dependency/runtime type treated as adopter domain type |
 | Fresh Regulated adopter | immutable release/candidate assets, regulated profile, exact repository tree, generated catalog and declared toolchain | real scaffold/install then prospective train | self-authority inferred, undeclared setup, profile/catalog drift, simulated install success |
+| Prepublication adopter qualification | candidate commit/tree, isolated interpreter, exact installed candidate package digest, adopter subject/tree | install/project and run prospective train with that interpreter only | ambient `PYTHONPATH`, older nested CLI, mixed runtime versions, release-upgrade claim before immutable assets |
 
 ## Provider-event and evaluation matrix
 
@@ -274,6 +279,17 @@ declared and must represent its absence as typed Python-only applicability.
       - **Producer:** Python semantic inventory and import resolver.
         - **Consumers:** semantic ownership scanner, preflight, release-check,
           prospective train, and adopter qualification.
+
+- **Candidate-runtime invariant:** one exact candidate runtime owns every local
+  pre-gate child process.
+  - **Primitive:** isolated interpreter plus exact candidate package projection
+    and resolved module identity.
+    - **Contract:** the candidate commit/tree and runtime digest are recorded;
+      ambient import overlays and older installed fallbacks are absent.
+      - **Producer:** bounded prepublication qualification setup.
+        - **Consumers:** installer, reconciler, graph renderer, preflight,
+          prospective train, and adopter report. This observation has no
+          release or publication authority.
 
 ## Deterministic operational-state matrix
 

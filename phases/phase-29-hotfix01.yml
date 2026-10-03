@@ -41,6 +41,10 @@ execution_evidence:
     primitive boundary to retain the governed 800-line cap; canonical representation
     registry ownership was inspected and is unaffected because pack/product parity
     already owns helper runtime projection.
+  - A TradeFlow pre-gate attempt mixed a source-overlay candidate with the host's
+    installed 2.1.7 nested CLI after reconciliation removed ambient PYTHONPATH.
+    The resulting old workflow projection is not candidate evidence; qualification
+    now requires one isolated candidate-installed interpreter for the full process tree.
 closeout_requirements:
   claims:
     required_suites_green:
