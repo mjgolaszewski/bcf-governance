@@ -340,33 +340,6 @@ def _run_prospective_train(
                 raise ProspectiveValidationError(str(exc)) from exc
         if preflight.get("status") != "pass":
             raise ProspectiveValidationError("canonical PR preflight did not pass")
-        try:
-            with local_push_environment(
-                base_sha=context.base_sha, head_sha=context.head_sha
-            ):
-                post_merge_preflight = run_preflight(
-                    root,
-                    mode=preflight_mode_for_evaluation(post_merge_mode),
-                    python_executable=python_executable,
-                    evaluation_mode=post_merge_mode,
-                    evaluation_target=post_merge_target,
-                )
-        except (PreflightError, EvidenceError, ValueError) as exc:
-            raise ProspectiveValidationError(
-                f"canonical direct-push preflight rejected the candidate: {exc}"
-            ) from exc
-        if post_merge_preflight.get("status") != "pass":
-            raise ProspectiveValidationError(
-                "canonical direct-push preflight did not pass"
-            )
-        measurements.extend(
-            [
-                {"stage": "planning", "status": "observed", "duration_ms": preflight_duration},
-                {"stage": "reuse", "status": "included", "parent": "planning"},
-                {"stage": "setup", "status": "included", "parent": "planning"},
-            ]
-        )
-        boundaries.append({"id": "preflight", "state": "proved", "authority": "local"})
         controller = preflight.get("self_controller")
         controller_state = (
             "not_adopted"
@@ -387,6 +360,38 @@ def _run_prospective_train(
             raise ProspectiveValidationError(
                 f"controller compatibility is not admissible: {controller_state}"
             )
+        try:
+            with local_push_environment(
+                base_sha=context.base_sha, head_sha=context.head_sha
+            ):
+                post_merge_preflight = run_preflight(
+                    root,
+                    mode=preflight_mode_for_evaluation(post_merge_mode),
+                    python_executable=python_executable,
+                    evaluation_mode=post_merge_mode,
+                    evaluation_target=post_merge_target,
+                    controller_state_expectation=(
+                        "prospective_pending_rotation"
+                        if controller_state == "pending_rotation"
+                        else None
+                    ),
+                )
+        except (PreflightError, EvidenceError, ValueError) as exc:
+            raise ProspectiveValidationError(
+                f"canonical direct-push preflight rejected the candidate: {exc}"
+            ) from exc
+        if post_merge_preflight.get("status") != "pass":
+            raise ProspectiveValidationError(
+                "canonical direct-push preflight did not pass"
+            )
+        measurements.extend(
+            [
+                {"stage": "planning", "status": "observed", "duration_ms": preflight_duration},
+                {"stage": "reuse", "status": "included", "parent": "planning"},
+                {"stage": "setup", "status": "included", "parent": "planning"},
+            ]
+        )
+        boundaries.append({"id": "preflight", "state": "proved", "authority": "local"})
         transition_requirement = (
             "direct_protected_main"
             if controller_state == "not_adopted"

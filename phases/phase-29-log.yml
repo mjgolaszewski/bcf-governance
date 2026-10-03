@@ -72,6 +72,8 @@ execution_evidence:
   - the pre-existing package preflight comparison-context mutant now targets reusable-input precedence at the same canonical projection owner; its old pull-request-base mutation was replaced rather than duplicated because the direct-event literal remains independently asserted and the new mutation preserves the broader event-context security invariant within the governed context budget
   - cheap PR preflight rejected the new template-workflow reconcile port before evidence because the governed reconcile operation effect changed without an exact-base migration; the canonical matrix now classifies the transition and the phase-owned exact-base migration binds only that deterministic projection expansion
   - Racecar pre-gate qualification proved the controller interpreter and controller-only PYTHONPATH were leaking into adopter test collection; the matrix now separates controller and project Python identity, the canonical local entrypoint selects the exact repository environment, and the same unchanged Racecar head passed cheap preflight
+  - the canonical prospective train passed PR preflight then rejected its semantic post-merge projection because it applied ordinary release controller strictness before classifying the already-proved pending rotation; the matrix now gives that non-authoritative simulation one closed pending-rotation lane while provider exact-main remains evidence-suppressed until N+1 installation
+  - first-stage structural validation caught preflight.py at 810 lines before the retry; controller-state compilation now lives in the existing canonical controller-preflight owner and the 800-line policy remains unchanged
 closeout_requirements:
   claims:
     workitems_closed:

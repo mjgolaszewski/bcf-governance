@@ -520,7 +520,7 @@
     },
     "scripts/_bcf_runtime/ci_controller_preflight.py": {
       "operation": "copy",
-      "sha256": "3090034d1ae6d1007b764eff6c35d33c46b50fab95471a296179bf89c9713b88"
+      "sha256": "822ff9bff36563386fb98577317389ff7cdec40a8e21c61f1e73ac8b1957f8fa"
     },
     "scripts/_bcf_runtime/ci_controller_provider.py": {
       "operation": "copy",
@@ -1075,7 +1075,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "00e7623a63bfdd5794850d13fec5dac7ea3f96da53e79819ccbfc27c2b3b1d29"
+      "sha256": "11304abdc3fec7a41958db7801652267258c77c93e9e7c5697e7f80a3b450b8f"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
@@ -1103,7 +1103,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "2aff4c7a418548e5c3d3efda5dde58c0e744418334efc4d3d7f75342a0487d96"
+      "sha256": "8d28eb35815da5eadc93da81523047b541ef796cab2510ef92a19adfe312e9c3"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",

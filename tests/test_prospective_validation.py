@@ -1135,10 +1135,13 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
         assert gates == tuple(required)
         return session
     monkeypatch.setattr(prospective, "allocate_session", allocate)
-    monkeypatch.setattr(
-        prospective,
-        "run_preflight",
-        lambda *_args, **_kwargs: {
+    preflight_expectations: list[str | None] = []
+
+    def run_preflight(*_args: object, **kwargs: object) -> dict:
+        expectation = kwargs.get("controller_state_expectation")
+        assert expectation is None or isinstance(expectation, str)
+        preflight_expectations.append(expectation)
+        return {
             "status": "pass",
             "self_controller": {
                 "status": "pending_rotation",
@@ -1147,8 +1150,9 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
             "verification_plan": {
                 "execution_dag": {"nodes": [{"producer": "test", "assigned_shard": 0}]}
             },
-        },
-    )
+        }
+
+    monkeypatch.setattr(prospective, "run_preflight", run_preflight)
     monkeypatch.setattr(
         prospective,
         "_capture_planned_evidence",
@@ -1213,6 +1217,7 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
     assert publisher["status_context"] == "bcf/workitem-certification"
     assert eligibility["eligible_successors"] == ["P27-P0-04"]
     assert eligibility["release_authority"] is False
+    assert preflight_expectations == [None, "prospective_pending_rotation"]
 
 
 def test_prospective_callback_probe_executes_real_skipped_matrix_classifier() -> None:
