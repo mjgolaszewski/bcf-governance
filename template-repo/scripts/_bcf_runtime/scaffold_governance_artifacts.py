@@ -13,6 +13,7 @@ import sys
 from typing import Any, Callable, Iterable
 
 import yaml  # type: ignore[import-untyped]
+from .check_governance_exposure import PATTERNS as GOVERNANCE_EXPOSURE_PATTERNS
 from .runtime_capacity import executing_runtime_version
 from .reconcile_stage_ledger import (
     ReconcileError,
@@ -44,6 +45,23 @@ from .reconcile_authority_transition import (
 from .profile_surface_generation import reconcile_makefile, reconcile_template_workflow
 
 HOTFIX_MODES = {"lite", "full"}
+
+
+def _portable_governed_commands(commands: list[str]) -> list[str]:
+    """Reject machine-local command records before any artifact is written."""
+
+    for command in commands:
+        matched = sorted(
+            name
+            for name, pattern in GOVERNANCE_EXPOSURE_PATTERNS.items()
+            if pattern.search(command)
+        )
+        if matched:
+            raise ValueError(
+                "governed validation command exposes nonportable infrastructure: "
+                + ", ".join(matched)
+            )
+    return commands
 
 
 def _phase_number(phase_id: str) -> int:
@@ -106,6 +124,7 @@ def scaffold_phase_artifacts(
     verification_commands: list[str],
     force: bool,
 ) -> dict[str, Path]:
+    verification_commands = _portable_governed_commands(verification_commands)
     stem = _phase_stem(phase_id)
     phase_number = _phase_number(phase_id)
     plan_path = repo_root / "plans" / f"{stem}-plan.yml"
@@ -253,6 +272,7 @@ def scaffold_hotfix_log(
     validation_commands: list[str],
     force: bool,
 ) -> Path:
+    validation_commands = _portable_governed_commands(validation_commands)
     hotfix_stem = _hotfix_stem(related_phase_id, hotfix_number)
     log_path = repo_root / "phases" / f"{hotfix_stem}.yml"
     payload = {

@@ -105,6 +105,10 @@ provider evidence.
     present to absent is deletion and rejects; any present candidate contract
     remains subject to exact provider workflow-ID verification. Absence never
     supplies certification, merge, exact-main, controller, or release authority.
+28. Governed command records are portable repository contracts, never captures
+    of one agent workspace. Their canonical author must reject local absolute
+    workspace paths before writing a phase or hotfix artifact; downstream
+    exposure preflight remains defense in depth rather than first discovery.
 
 ## State matrix
 
@@ -136,6 +140,7 @@ provider evidence.
 | Prepublication adopter qualification | candidate commit/tree, isolated interpreter, exact installed candidate package digest, adopter subject/tree | install/project and run prospective train with that interpreter only | ambient `PYTHONPATH`, older nested CLI, mixed runtime versions, release-upgrade claim before immutable assets |
 | Fresh Standard/Regulated provider-authority bootstrap | exact base/candidate policy identity proves `governance/ci-authority.yml` absent on both subjects; candidate graph and repository identity exact | complete local prospective evidence/truth, then stop at typed provider-proof-required boundary | provider verifier invoked on an absent file, authority fabricated locally, absence treated as certification, or a previously present authority disappears |
 | Candidate provider authority present | exact tracked authority bytes plus authenticated provider workflow path/ID inventory | verify every declared workflow identity before prospective evidence | missing/redacted/mismatched workflow, repository, path, or ID; source-present/candidate-absent deletion |
+| Authored governed validation command | repository-relative executable and arguments, canonical exposure-pattern registry | scaffold phase/hotfix artifact | local `/docker`, `/home`, user-profile, private-host, or private-address value rejects before artifact creation |
 
 ## Provider-event and evaluation matrix
 
@@ -311,6 +316,15 @@ declared and must represent its absence as typed Python-only applicability.
         - **Consumers:** prospective train authority applicability, optional
           controller resolution, provider boundaries, submission, and adopter
           qualification. No branch can emit certification or release authority.
+
+- **Portable governed-command invariant:** authored execution records cannot
+  depend on the machine that produced them.
+  - **Primitive:** the canonical governance-exposure pattern registry.
+    - **Contract:** every phase/hotfix scaffold validation command is checked
+      before any artifact is written; repository-relative commands pass.
+      - **Producer:** governance artifact scaffolder.
+        - **Consumers:** lifecycle readiness, governance-exposure preflight,
+          prospective submit, exact-main closure, and editorial custody.
 
 ## Deterministic operational-state matrix
 
@@ -663,6 +677,7 @@ test-only, or inspected-no-impact before provider execution.
 | Controller preflight ownership | structural budget validates the dedicated canonical controller-preflight primitive | identical installed-N compatibility inputs | PR/release callers consume one typed result | no workflow-local copy | pending/current state remains exact | no certification authority | no release authority | runtime mirrors generated from the same owner |
 | Profile template workflow projection | canonical reconcile owner | inspected-no-impact | direct PR origin/invocation contract | direct push origin/invocation contract | adopter truth receives exact base | no self finalizer authority | no release authority | Lite and Standard generated workflow parity |
 | Provider-authority bootstrap applicability | classify exact source/candidate authority presence before provider calls | ordinary executable-controller custody unchanged; managed self-controller authority remains mandatory | absent/absent permits local evidence and truth only; present authority is provider-verified | no merge or exact-main authority is inferred from absence | fresh provider execution must establish its own authority; established-authority deletion rejects | no finalizer or publisher input is synthesized | always provider-required and release authority false until authenticated provider custody exists | fresh Standard/Regulated absence is typed; existing adopters retain strict authority verification |
+| Governed command portability | scaffold rejects canonical exposure patterns before writing | inspected-no-impact | portable record enters ordinary evidence; no local path reaches candidate bytes | protected merge receives repository-relative commands only | closure preflight retains defense-in-depth exposure scan | no certification/status change | no authority or release effect | phase/hotfix scaffolding parity in packaged runtime |
 | Reconcile operation effect expansion | exact-base semantic migration required before evidence | installed-N parses unchanged runtime contract | migration binds the added projection port to exact base and phase owner | canonical reconcile alone emits template bytes | no truth proposition change | no certification/status change | no authority or release effect | generated template projection is the only new effect |
 | P29 terminal release candidate | exact predecessor workitem certification and authored terminal lifecycle validate before evidence | inspect exact candidate with installed controller; rotate only if trusted runtime bytes changed | exact candidate receives ordinary PR evidence/certification | protected merge preserves exact tree | terminal `phase_closed:P29` only | finalizer/publisher preserve terminal proposition | authorizer/build/verifier/collector/publisher authenticate one exact subject and immutable `v2.1.7` bytes | same candidate before gates; same immutable release after publication |
 
