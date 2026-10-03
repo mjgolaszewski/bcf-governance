@@ -17,7 +17,10 @@ All notable changes to BCF Governance are recorded here. This file follows
   inherit BCF's repository-specific Node/TypeScript fixture. Semantic ownership
   now resolves annotation identities through exact import bindings, preventing
   dependency or installed-runtime types from colliding with same-named adopter
-  domain types.
+  domain types. Fresh Standard and Regulated adoption now treats absent
+  provider workflow authority as a typed bootstrap state that permits only
+  non-authoritative local proof; established-authority deletion still fails
+  closed and present authority remains provider-verified.
 
 ## [2.1.7] - 2026-10-03
 

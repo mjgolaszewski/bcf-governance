@@ -124,6 +124,37 @@ def ordinary_authority_policy_identity(
     }
 
 
+def ordinary_authority_applicability(policy_identity: dict[str, Any]) -> str:
+    """Classify the exact provider-authority bootstrap state or fail closed."""
+
+    try:
+        source = policy_identity["source"]["policy_paths"][
+            "governance/ci-authority.yml"
+        ]["state"]
+        candidate = policy_identity["candidate"]["policy_paths"][
+            "governance/ci-authority.yml"
+        ]["state"]
+    except (KeyError, TypeError) as exc:
+        raise ProspectiveLaneError(
+            "ordinary provider-authority applicability is incomplete"
+        ) from exc
+    if source not in {"absent", "present"} or candidate not in {
+        "absent", "present"
+    }:
+        raise ProspectiveLaneError(
+            "ordinary provider-authority applicability is invalid"
+        )
+    if source == "present" and candidate == "absent":
+        raise ProspectiveLaneError(
+            "candidate removes established provider workflow authority"
+        )
+    return (
+        "bootstrap_provider_authority_absent"
+        if candidate == "absent"
+        else "provider_verification_required"
+    )
+
+
 def prospective_policy_binding(
     repo_root: Path,
     *,

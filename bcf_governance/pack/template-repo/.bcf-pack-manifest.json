@@ -484,7 +484,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_prospective_lanes.py": {
       "operation": "copy",
-      "sha256": "69548d66a1ca09973aba5b8f8a4068950f27410a4fb989f88ffde85ce6941f64"
+      "sha256": "9fc6ba4bad93632e9680b7092c9e7148f5397b42af429fc78de7ff1ba6ffdaa6"
     },
     "scripts/_bcf_runtime/ci_authority_prospective_telemetry.py": {
       "operation": "copy",
@@ -1075,7 +1075,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "88d9678be38fc67dfef5d3f33ac9efd0c74ab4a085b49b194d00105b6181c08e"
+      "sha256": "a2cf787c50b01ef42e537b99671defd85205090827e78b144a1c0c54d1f6d600"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",

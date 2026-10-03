@@ -99,6 +99,12 @@ provider evidence.
     for the entire subprocess tree. An ambient source overlay must not fall
     through to an older installed CLI after environment normalization; every
     nested generator and validator resolves the same candidate bytes.
+27. Provider workflow authority has a closed bootstrap lifecycle. Exact
+    source/candidate presence is classified before verification: absent to
+    absent permits only local prospective proof ending at provider-required;
+    present to absent is deletion and rejects; any present candidate contract
+    remains subject to exact provider workflow-ID verification. Absence never
+    supplies certification, merge, exact-main, controller, or release authority.
 
 ## State matrix
 
@@ -128,6 +134,8 @@ provider evidence.
 | Runtime/adopter annotation names collide | exact source path, import binding, qualified annotation identities, canonical registry symbol | evaluate normalization only when exact qualified identity matches | bare-name matching, unresolved project import accepted, dependency/runtime type treated as adopter domain type |
 | Fresh Regulated adopter | immutable release/candidate assets, regulated profile, exact repository tree, generated catalog and declared toolchain | real scaffold/install then prospective train | self-authority inferred, undeclared setup, profile/catalog drift, simulated install success |
 | Prepublication adopter qualification | candidate commit/tree, isolated interpreter, exact installed candidate package digest, adopter subject/tree | install/project and run prospective train with that interpreter only | ambient `PYTHONPATH`, older nested CLI, mixed runtime versions, release-upgrade claim before immutable assets |
+| Fresh Standard/Regulated provider-authority bootstrap | exact base/candidate policy identity proves `governance/ci-authority.yml` absent on both subjects; candidate graph and repository identity exact | complete local prospective evidence/truth, then stop at typed provider-proof-required boundary | provider verifier invoked on an absent file, authority fabricated locally, absence treated as certification, or a previously present authority disappears |
+| Candidate provider authority present | exact tracked authority bytes plus authenticated provider workflow path/ID inventory | verify every declared workflow identity before prospective evidence | missing/redacted/mismatched workflow, repository, path, or ID; source-present/candidate-absent deletion |
 
 ## Provider-event and evaluation matrix
 
@@ -290,6 +298,19 @@ declared and must represent its absence as typed Python-only applicability.
         - **Consumers:** installer, reconciler, graph renderer, preflight,
           prospective train, and adopter report. This observation has no
           release or publication authority.
+
+- **Provider-authority bootstrap invariant:** absence is a typed lifecycle
+  state, not malformed authority and not an alternate authority source.
+  - **Primitive:** exact source/candidate present-or-absent projection for the
+    canonical authority path, bound to both commit/tree identities.
+    - **Contract:** absent/absent permits local prospective execution only;
+      present/absent rejects deletion; candidate-present invokes the strict
+      provider workflow identity verifier.
+      - **Producer:** ordinary authority policy binding after local PR context
+        and candidate identity authentication.
+        - **Consumers:** prospective train authority applicability, optional
+          controller resolution, provider boundaries, submission, and adopter
+          qualification. No branch can emit certification or release authority.
 
 ## Deterministic operational-state matrix
 

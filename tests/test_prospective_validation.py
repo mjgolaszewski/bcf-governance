@@ -15,6 +15,7 @@ from bcf_governance.tooling import controller_custody_prospective as custody
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
 from bcf_governance.tooling.ci_authority_prospective_lanes import (
     direct_policy_identity,
+    ordinary_authority_applicability,
     ordinary_authority_policy_identity,
 )
 from bcf_governance.tooling.routine_controller_rotation import (
@@ -351,13 +352,10 @@ def test_prospective_train_executes_exact_direct_push_preflight_before_evidence(
     assert len(calls) == 2
 
 
-def test_provider_effective_controller_is_mechanically_bound_to_prospective_preflight(
+def test_provider_context_is_mechanically_bound_to_exact_prospective_train(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    pin = {
-        "BCF_BOOTSTRAP_COMMIT_SHA": "a" * 40,
-        "BCF_BOOTSTRAP_WHEEL_SHA256": "b" * 64,
-    }
+    api = object()
     monkeypatch.setattr(
         prospective,
         "validate_ci_graph",
@@ -367,24 +365,6 @@ def test_provider_effective_controller_is_mechanically_bound_to_prospective_pref
         prospective,
         "post_merge_evaluation",
         lambda *_args: SimpleNamespace(lane="trusted_exact_main"),
-    )
-    monkeypatch.setattr(
-        prospective,
-        "graph_controller_policy_path",
-        lambda *_args: "governance/self-governance-policy.yml",
-    )
-    monkeypatch.setattr(
-        prospective,
-        "verify_provider_workflow_authority",
-        lambda *_args, **_kwargs: 1,
-    )
-    monkeypatch.setattr(
-        prospective,
-        "effective_controller_authority",
-        lambda api, *, repository: {
-            "controller_commit_sha": pin["BCF_BOOTSTRAP_COMMIT_SHA"],
-            "controller_bundle_sha256": pin["BCF_BOOTSTRAP_WHEEL_SHA256"],
-        },
     )
     captured: dict[str, object] = {}
 
@@ -398,7 +378,7 @@ def test_provider_effective_controller_is_mechanically_bound_to_prospective_pref
         **TRAIN,
         python_executable=Path("/python"),
         repository="owner/repo",
-        provider_api=object(),  # type: ignore[arg-type]
+        provider_api=api,  # type: ignore[arg-type]
     )
     assert result == {
         "status": "pass",
@@ -407,10 +387,8 @@ def test_provider_effective_controller_is_mechanically_bound_to_prospective_pref
             "execution_id": "toolchain-only",
         },
     }
-    assert captured["controller_authority"] == {
-        "controller_commit_sha": "a" * 40,
-        "controller_bundle_sha256": "b" * 64,
-    }
+    assert captured["repository"] == "owner/repo"
+    assert captured["provider_api"] is api
 
 
 def test_direct_protected_main_lane_does_not_resolve_controller_authority(
@@ -439,7 +417,10 @@ def test_direct_protected_main_lane_does_not_resolve_controller_authority(
     monkeypatch.setattr(
         prospective,
         "_run_prospective_train",
-        lambda *_args, **kwargs: {"controller_authority": kwargs["controller_authority"]},
+        lambda *_args, **kwargs: {
+            "repository": kwargs["repository"],
+            "provider_api": kwargs["provider_api"],
+        },
     )
     report = prospective.run_prospective_train(
         tmp_path,
@@ -449,7 +430,8 @@ def test_direct_protected_main_lane_does_not_resolve_controller_authority(
         provider_api=object(),  # type: ignore[arg-type]
     )
     assert report == {
-        "controller_authority": None,
+        "repository": None,
+        "provider_api": None,
         "local_execution_admission": {
             "status": "ready",
             "execution_id": "toolchain-only",
@@ -549,20 +531,115 @@ def test_fresh_ordinary_exact_main_authenticates_absent_optional_authority() -> 
     assert identity["source"]["policy_paths"]["governance/ci-graph.yml"]["state"] == "absent"
     assert identity["candidate"]["policy_paths"]["governance/ci-graph.yml"]["state"] == "present"
     assert identity["candidate"]["policy_paths"]["governance/ci-authority.yml"]["state"] == "absent"
+    assert ordinary_authority_applicability(identity) == "bootstrap_provider_authority_absent"
+
+
+def test_established_ordinary_authority_cannot_disappear() -> None:
+    blobs = {
+        (BASE, "governance/ci-graph.yml"): b"source graph\n",
+        (BASE, "governance/ci-authority.yml"): b"source authority\n",
+        (HEAD, "governance/ci-graph.yml"): b"candidate graph\n",
+    }
+    identity = ordinary_authority_policy_identity(
+        base_sha=BASE,
+        base_tree=BASE_TREE,
+        candidate_sha=HEAD,
+        candidate_tree=TREE,
+        read_blob=lambda ref, path: blobs.get((ref, path)),
+    )
+    with pytest.raises(
+        prospective.ProspectiveLaneError,
+        match="removes established provider workflow authority",
+    ):
+        ordinary_authority_applicability(identity)
+
+
+def test_fresh_ordinary_authority_bootstrap_reaches_local_proof_without_provider_file(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    trace: list[str] = []
+    _front_door(monkeypatch, trace)
+    blobs = {
+        (HEAD, "governance/ci-graph.yml"): b"candidate graph\n",
+    }
+    identity = ordinary_authority_policy_identity(
+        base_sha=BASE,
+        base_tree=BASE_TREE,
+        candidate_sha=HEAD,
+        candidate_tree=TREE,
+        read_blob=lambda ref, path: blobs.get((ref, path)),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "validate_controller_custody_graph",
+        lambda *_args, **_kwargs: (
+            _evaluation(),
+            {"status": "proved", "custody_state": "ordinary_executable_controller"},
+        ),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "prospective_policy_binding",
+        lambda *_args, **_kwargs: ("ordinary_authority_change", identity),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "verify_provider_workflow_authority",
+        lambda *_args, **_kwargs: pytest.fail("absent bootstrap authority was verified"),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "run_preflight",
+        lambda *_args, **_kwargs: {"status": "pass", "self_controller": None},
+    )
+
+    report = prospective._run_prospective_train(
+        tmp_path,
+        **TRAIN,
+        python_executable=Path("/python"),
+        execute_evidence=False,
+        repository="owner/repo",
+        provider_api=object(),  # type: ignore[arg-type]
+        runner=_runner,
+    )
+
+    assert report["status"] == "deterministic_front_door_pass"
+    assert report["boundaries"][1]["provider_authority_applicability"] == (
+        "bootstrap_provider_authority_absent"
+    )
+    assert report["provider_authority_substituted"] is False
 
 
 def test_provider_workflow_identity_mismatch_stops_before_prospective_evidence(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    monkeypatch.setattr(
-        prospective,
-        "validate_ci_graph",
-        lambda *_args: SimpleNamespace(graph={"workflows": []}, commands={}),
+    trace: list[str] = []
+    _front_door(monkeypatch, trace)
+    blobs = {
+        (BASE, "governance/ci-graph.yml"): b"source graph\n",
+        (BASE, "governance/ci-authority.yml"): b"source authority\n",
+        (HEAD, "governance/ci-graph.yml"): b"candidate graph\n",
+        (HEAD, "governance/ci-authority.yml"): b"candidate authority\n",
+    }
+    identity = ordinary_authority_policy_identity(
+        base_sha=BASE,
+        base_tree=BASE_TREE,
+        candidate_sha=HEAD,
+        candidate_tree=TREE,
+        read_blob=lambda ref, path: blobs.get((ref, path)),
     )
     monkeypatch.setattr(
         prospective,
-        "post_merge_evaluation",
-        lambda *_args: SimpleNamespace(lane="trusted_exact_main"),
+        "validate_controller_custody_graph",
+        lambda *_args, **_kwargs: (
+            _evaluation(),
+            {"status": "proved", "custody_state": "ordinary_executable_controller"},
+        ),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "prospective_policy_binding",
+        lambda *_args, **_kwargs: ("ordinary_runtime_only", identity),
     )
     monkeypatch.setattr(
         prospective,
@@ -573,27 +650,29 @@ def test_provider_workflow_identity_mismatch_stops_before_prospective_evidence(
     )
     monkeypatch.setattr(
         prospective,
-        "_run_prospective_train",
-        lambda *_args, **_kwargs: pytest.fail("evidence train was allocated"),
+        "run_preflight",
+        lambda *_args, **_kwargs: pytest.fail("preflight ran before authority verification"),
     )
 
     with pytest.raises(
         prospective.GitHubControllerError, match="provider workflow ID mismatched"
     ):
-        prospective.run_prospective_train(
+        prospective._run_prospective_train(
             tmp_path,
             **TRAIN,
             python_executable=Path("/python"),
+            execute_evidence=False,
             repository="owner/repo",
             provider_api=object(),  # type: ignore[arg-type]
+            runner=_runner,
         )
 
 
-def test_provider_bound_adopter_without_optional_controller_skips_controller_resolution(
+def test_provider_bound_adopter_delegates_authority_applicability_to_exact_train(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     graph = {"workflows": [], "trusted_controller": {"kind": "executable"}}
-    authority_calls: list[str] = []
+    train_calls: list[dict[str, object]] = []
     monkeypatch.setattr(
         prospective,
         "validate_ci_graph",
@@ -606,20 +685,8 @@ def test_provider_bound_adopter_without_optional_controller_skips_controller_res
     )
     monkeypatch.setattr(
         prospective,
-        "verify_provider_workflow_authority",
-        lambda _root, *, authority_path, api, repository: authority_calls.append(
-            f"{authority_path}:{repository}"
-        ),
-    )
-    monkeypatch.setattr(
-        prospective,
-        "effective_controller_authority",
-        lambda *_args, **_kwargs: pytest.fail("optional controller was resolved"),
-    )
-    monkeypatch.setattr(
-        prospective,
         "_run_prospective_train",
-        lambda *_args, **kwargs: {"controller_authority": kwargs["controller_authority"]},
+        lambda *_args, **kwargs: train_calls.append(kwargs) or {},
     )
 
     report = prospective.run_prospective_train(
@@ -630,9 +697,9 @@ def test_provider_bound_adopter_without_optional_controller_skips_controller_res
         provider_api=object(),  # type: ignore[arg-type]
     )
 
-    assert authority_calls == ["governance/ci-authority.yml:owner/repo"]
+    assert train_calls[0]["repository"] == "owner/repo"
+    assert train_calls[0]["provider_api"] is not None
     assert report == {
-        "controller_authority": None,
         "local_execution_admission": {
             "status": "ready",
             "execution_id": "toolchain-only",
