@@ -69,12 +69,12 @@ workitems:
 - id: P29-P0-05
   priority: P0
   status: DONE
-  summary: deliver prove self Lite and Standard v3 parity and publish immutable 2.1.7
+  summary: deliver prove self Lite and Standard v3 parity and publish immutable 2.1.8
     custody
   acceptance:
   - requires-workitem-closure:P29-P0-04
   - exact candidate bytes pass self Lite and Standard v3 adopter qualification before and after canonical gates
-  - public version contracts manifests documentation changelog and editorial custody identify 2.1.7 exact bytes
+  - public version contracts manifests documentation changelog and editorial custody identify 2.1.8 exact bytes
   - terminal exact-main truth release build independent verification immutable publication and custody closeout authenticate one exact subject
   acceptance_evidence:
   - test

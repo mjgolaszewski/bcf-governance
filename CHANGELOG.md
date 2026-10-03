@@ -6,6 +6,12 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Changed
+
+- Recorded immutable `v2.1.8` provider custody and same-byte Lite and
+  Standard-v3 adopter qualification; the temporary publication credential was
+  retired after successful publication.
+
 ## [2.1.8] - 2026-10-03
 
 ### Fixed
