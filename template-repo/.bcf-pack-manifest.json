@@ -2,7 +2,7 @@
   "files": {
     ".github/workflows/governance.yml": {
       "operation": "generate",
-      "sha256": "69ee31a595826c893b98d289091e82130b0775d9a4120d79ee1642e64646fe0a"
+      "sha256": "134eb1e3df828403e2a92f1b6ae06d391359108d94dfbe94a43b1ea592a4b461"
     },
     ".gitignore": {
       "operation": "merge",
@@ -500,7 +500,7 @@
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "414fc7e4fde44134d7ac63fd9a243fde21ce0ea2663e43ba78609e2ca0a95577"
+      "sha256": "1f78532077a202aa1a092c73f879c48d5dbbd1307aa5167cdb8fcba4347c2356"
     },
     "scripts/_bcf_runtime/ci_controller_adoption.py": {
       "operation": "copy",
@@ -1123,11 +1123,11 @@
     },
     "scripts/_bcf_runtime/profile_surface_generation.py": {
       "operation": "copy",
-      "sha256": "83ed319227c6be74d1a08b42710b02363b65ce99e510c595acdf4ccf8a43cc74"
+      "sha256": "562c1fa5983fb303fdd43add85d5b6a6e83b6b224a6e31b9136673f1d58532b1"
     },
     "scripts/_bcf_runtime/profile_v2_surfaces.py": {
       "operation": "copy",
-      "sha256": "e0056f7926ddaf1ded3d69a43af66bf2924f1d503a9a5ac33f735cb1acbf82d0"
+      "sha256": "430020d2de2c619f398630e898ec86effb4c92c35145c5368789c53a737ed177"
     },
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",
@@ -1235,7 +1235,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "8d057b7f7199a57c88cf0470ce924be7c06b7157d20559a13a2d7740cac02ceb"
+      "sha256": "f2010c1e985c22653a664bf28b5c12e88f558a1474d1f509ea331bca6534d4cb"
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",

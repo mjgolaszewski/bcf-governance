@@ -8,6 +8,7 @@ from typing import Any
 import yaml
 
 from .ci_github_actions import action_pin
+from .repository_comparison_context import direct_comparison_environment
 
 
 def selective_release_check_lines() -> list[str]:
@@ -64,6 +65,7 @@ def render_v2_workflow(contract: dict[str, Any], labels: list[str]) -> str:
     gates = list(contract["gates"])
     label_yaml = yaml.safe_dump(labels, default_flow_style=True).strip()
     matrix = "\n".join(f"          - {target}" for target in gates)
+    comparison = direct_comparison_environment(explicit_call=False)
     return f'''name: governance
 
 on:
@@ -76,9 +78,12 @@ permissions:
 
 env:
   BCF_ENFORCE_PR_CHANGELOG: ${{{{ github.event_name == 'pull_request' }}}}
-  BCF_PROVIDER_EVENT: ${{{{ github.event_name }}}}
-  BCF_COMPARISON_BASE_SHA: ${{{{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}}}
-  BCF_PR_BASE_SHA: ${{{{ github.event.pull_request.base.sha }}}}
+  BCF_PROVIDER_EVENT: {comparison["BCF_PROVIDER_EVENT"]}
+  BCF_INVOCATION_KIND: {comparison["BCF_INVOCATION_KIND"]}
+  BCF_CALLER_COMPARISON_BASE_SHA: {comparison["BCF_CALLER_COMPARISON_BASE_SHA"]}
+  BCF_ORIGIN_COMPARISON_BASE_SHA: {comparison["BCF_ORIGIN_COMPARISON_BASE_SHA"]}
+  BCF_COMPARISON_BASE_SHA: {comparison["BCF_COMPARISON_BASE_SHA"]}
+  BCF_PR_BASE_SHA: {comparison["BCF_PR_BASE_SHA"]}
   BCF_PREFLIGHT_MODE: ${{{{ github.event_name == 'pull_request' && 'pr' || 'release' }}}}
 
 jobs:

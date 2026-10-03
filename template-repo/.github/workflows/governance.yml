@@ -11,6 +11,9 @@ permissions:
 env:
   BCF_ENFORCE_PR_CHANGELOG: ${{ github.event_name == 'pull_request' }}
   BCF_PROVIDER_EVENT: ${{ github.event_name }}
+  BCF_INVOCATION_KIND: ${{ inputs.comparison_base_sha != '' && 'reusable_call' || 'direct_event' }}
+  BCF_CALLER_COMPARISON_BASE_SHA: ${{ inputs.comparison_base_sha || '' }}
+  BCF_ORIGIN_COMPARISON_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event_name == 'push' && github.event.before || '' }}
   BCF_COMPARISON_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
   BCF_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
 

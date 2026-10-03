@@ -21,7 +21,10 @@ from bcf_governance.tooling.release_version_projection import (
     ReleaseVersionProjectionError,
     reconcile_release_version_surfaces,
 )
-from bcf_governance.tooling.profile_surface_generation import reconcile_makefile
+from bcf_governance.tooling.profile_surface_generation import (
+    reconcile_makefile,
+    reconcile_template_workflow,
+)
 from bcf_governance.tooling.reconcile_authority_transition import (
     ReconcileAuthorityTransitionError,
     apply_workflow_authority_transition,
@@ -163,10 +166,11 @@ def test_reconcile_is_the_canonical_cli_surface() -> None:
 def test_reconcile_declares_one_closed_dependency_order() -> None:
     root = Path(__file__).resolve().parents[1]
     ids = [step.step_id for step in reconcile_steps(root, Path(sys.executable))]
-    assert ids[:6] == [
+    assert ids[:7] == [
         "structural-limits",
         "release-version-surfaces",
         "profile-makefile",
+        "profile-template-workflow",
         "ci-graph-post-merge-scope",
         "pack-projection",
         "semantic-lock",
@@ -174,6 +178,10 @@ def test_reconcile_declares_one_closed_dependency_order() -> None:
     assert ids.index("ci-graph-lock") < ids.index("ci-graph-render")
     assert ids.index("ci-graph-render") < ids.index("workflow-authority")
     assert ids[-1] == "editorial-audit"
+
+
+def test_reconcile_owns_template_workflow_projection() -> None:
+    reconcile_template_workflow(Path(__file__).resolve().parents[1], apply=False)
 
 
 def test_reconcile_owns_profile_makefile_projection(tmp_path: Path) -> None:

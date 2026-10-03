@@ -521,6 +521,7 @@ test-only, or inspected-no-impact before provider execution.
 | Evaluation-input projection | structural expression-in-run rejection | inspected-no-impact | typed environment data | direct-event default parity | exact scoped proposition | scope preserved | bounded certification cannot broaden | generated parity |
 | Integrated workitem prefix | authored dependency-prefix validation | inspected-no-impact | same exact evidence closes ordered prefix | terminal prefix target selected | all predecessor observations retained | terminal target/scope preserved | only next declared workitem eligible; release rejects | lifecycle parity |
 | Local toolchain/resource admission | first operation | no controller authority | prevents allocation when unready/busy | same selected environment | no semantic evidence on rejection | no bundle/status on rejection | no authority effect | adopter entrypoint parity |
+| Profile template workflow projection | canonical reconcile owner | inspected-no-impact | direct PR origin/invocation contract | direct push origin/invocation contract | adopter truth receives exact base | no self finalizer authority | no release authority | Lite and Standard generated workflow parity |
 
 ### Evaluation-input affected-surface classification
 

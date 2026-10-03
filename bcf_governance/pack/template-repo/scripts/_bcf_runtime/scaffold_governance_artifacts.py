@@ -40,7 +40,7 @@ from .reconcile_authority_transition import (
     apply_workflow_authority_transition,
     result_json as authority_transition_json,
 )
-from .profile_surface_generation import reconcile_makefile
+from .profile_surface_generation import reconcile_makefile, reconcile_template_workflow
 
 HOTFIX_MODES = {"lite", "full"}
 
@@ -395,6 +395,22 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                     "Makefile.fragment",
                     "bcf_governance/tooling/profile_surface_generation.py",
                     "bcf_governance/tooling/profile_v2_surfaces.py",
+                ),
+            )
+        )
+    if (repo_root / "template-repo/governance/gate-contracts.yml").is_file():
+        steps.append(
+            ReconcileStep(
+                "profile-template-workflow",
+                lambda: reconcile_template_workflow(repo_root, apply=False),
+                lambda: reconcile_template_workflow(repo_root, apply=True),
+                watch_paths=(
+                    "template-repo/governance/gate-contracts.yml",
+                    "template-repo/governance-profile.yml",
+                    "template-repo/.github/workflows/governance.yml",
+                    "bcf_governance/tooling/profile_surface_generation.py",
+                    "bcf_governance/tooling/profile_v2_surfaces.py",
+                    "bcf_governance/tooling/repository_comparison_context.py",
                 ),
             )
         )

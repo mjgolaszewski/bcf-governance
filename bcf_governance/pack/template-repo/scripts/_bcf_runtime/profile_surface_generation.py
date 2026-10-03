@@ -9,6 +9,7 @@ from typing import Any
 import yaml  # type: ignore[import-untyped]
 
 from .ci_github_actions import action_pin
+from .repository_comparison_context import direct_comparison_environment
 
 
 def render_makefile(contract: dict[str, Any]) -> str:
@@ -78,8 +79,9 @@ def reconcile_makefile(repo_root: Path, *, apply: bool) -> None:
         raise ValueError("Makefile.fragment differs from its canonical profile projection")
 
 
-def write_workflow(repo_root: Path, contract: dict[str, Any]) -> None:
-    """Render the profile-owned GitHub workflow."""
+def render_workflow(repo_root: Path, contract: dict[str, Any]) -> str:
+    """Return the exact profile-owned GitHub workflow."""
+
     gates = list(contract["gates"])
     profile = yaml.safe_load(
         (repo_root / "governance-profile.yml").read_text(encoding="utf-8")
@@ -88,12 +90,10 @@ def write_workflow(repo_root: Path, contract: dict[str, Any]) -> None:
     if contract.get("profile_contract_version") in {"2.0", "3.0"}:
         from .profile_v2_surfaces import render_v2_workflow
 
-        path = repo_root / ".github/workflows/governance.yml"
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(render_v2_workflow(contract, labels), encoding="utf-8")
-        return
+        return render_v2_workflow(contract, labels)
     label_yaml = yaml.safe_dump(labels, default_flow_style=True).strip()
     matrix = "\n".join(f"          - {target}" for target in gates)
+    comparison = direct_comparison_environment(explicit_call=False)
     text = f'''name: governance
 
 on:
@@ -106,9 +106,12 @@ permissions:
 
 env:
   BCF_ENFORCE_PR_CHANGELOG: ${{{{ github.event_name == 'pull_request' }}}}
-  BCF_PROVIDER_EVENT: ${{{{ github.event_name }}}}
-  BCF_COMPARISON_BASE_SHA: ${{{{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}}}
-  BCF_PR_BASE_SHA: ${{{{ github.event.pull_request.base.sha }}}}
+  BCF_PROVIDER_EVENT: {comparison["BCF_PROVIDER_EVENT"]}
+  BCF_INVOCATION_KIND: {comparison["BCF_INVOCATION_KIND"]}
+  BCF_CALLER_COMPARISON_BASE_SHA: {comparison["BCF_CALLER_COMPARISON_BASE_SHA"]}
+  BCF_ORIGIN_COMPARISON_BASE_SHA: {comparison["BCF_ORIGIN_COMPARISON_BASE_SHA"]}
+  BCF_COMPARISON_BASE_SHA: {comparison["BCF_COMPARISON_BASE_SHA"]}
+  BCF_PR_BASE_SHA: {comparison["BCF_PR_BASE_SHA"]}
 
 jobs:
   evidence:
@@ -150,6 +153,29 @@ jobs:
         uses: {action_pin("upload-artifact")}
         with: {{name: bcf-governance-truth, path: .artifacts/bcf/truth-report.json, if-no-files-found: error}}
 '''
+    return text
+
+
+def write_workflow(repo_root: Path, contract: dict[str, Any]) -> None:
+    """Render the profile-owned GitHub workflow."""
+
     path = repo_root / ".github/workflows/governance.yml"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
+    path.write_text(render_workflow(repo_root, contract), encoding="utf-8")
+
+
+def reconcile_template_workflow(repo_root: Path, *, apply: bool) -> None:
+    """Check or project the source template's profile-owned workflow."""
+
+    template = repo_root / "template-repo"
+    contract = yaml.safe_load(
+        (template / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    )
+    if not isinstance(contract, dict):
+        raise ValueError("template gate contract must deserialize to a mapping")
+    path = template / ".github/workflows/governance.yml"
+    expected = render_workflow(template, contract)
+    if apply:
+        path.write_text(expected, encoding="utf-8")
+    elif not path.is_file() or path.read_text(encoding="utf-8") != expected:
+        raise ValueError("template governance workflow differs from its profile projection")

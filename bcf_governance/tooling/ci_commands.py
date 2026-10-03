@@ -30,10 +30,12 @@ from .ci_authority_submit import submit_candidate
 from .ci_github_identity import GitHubControllerError
 from .ci_github_cli_io import github_output, github_output_path
 from .ci_self_controller import project_self_controller_pin
-from .local_pr import (
+from .local_pr_context import (
     LocalPRError,
-    ProspectiveValidationError,
     run_local_pr_validation,
+)
+from .local_pr import (
+    ProspectiveValidationError,
     run_prospective_train,
 )
 from .runtime_capacity import (
