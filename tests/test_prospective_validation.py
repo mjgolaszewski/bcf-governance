@@ -739,6 +739,7 @@ def test_prospective_lifecycle_uses_exact_provider_effective_controller(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     trace: list[str] = []
+    preflight_authorities: list[object] = []
     _front_door(monkeypatch, trace)
     authority = {
         "controller_commit_sha": "a" * 40,
@@ -746,6 +747,7 @@ def test_prospective_lifecycle_uses_exact_provider_effective_controller(
     }
 
     def preflight(*_args: object, **kwargs: object) -> dict[str, object]:
+        preflight_authorities.append(kwargs.get("transported_authority"))
         return {"status": "pass", "self_controller": 24}
 
     monkeypatch.setattr(prospective, "run_preflight", preflight)
@@ -766,6 +768,7 @@ def test_prospective_lifecycle_uses_exact_provider_effective_controller(
     assert compatibility["controller_state"] == "current"
     assert compatibility["transition_requirement"] == "no_transition"
     assert compatibility["effective_controller_source"] == "provider_authenticated"
+    assert preflight_authorities == [authority, authority]
 
 
 def test_stale_projection_fails_before_preflight_or_evidence(

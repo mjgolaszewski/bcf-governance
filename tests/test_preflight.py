@@ -426,6 +426,11 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     calls: list[str] = []
+    authority = {
+        "controller_commit_sha": "c" * 40,
+        "controller_bundle_sha256": "d" * 64,
+    }
+    observed_authority: list[object] = []
     repo = tmp_path / "repo"
     repo.mkdir()
 
@@ -442,7 +447,13 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         preflight, "validate_controller_contracts_preflight", lambda *_args, **_kwargs: 18
     )
     monkeypatch.setattr(preflight, "_workflow_authority", lambda _: 12)
-    monkeypatch.setattr(preflight, "_self_controller", lambda _, **__: 6)
+    monkeypatch.setattr(
+        preflight,
+        "_self_controller",
+        lambda _, **kwargs: (
+            observed_authority.append(kwargs.get("transported_authority")) or 6
+        ),
+    )
     monkeypatch.setattr(preflight, "_negative_control_targets", lambda _: 1)
     monkeypatch.setattr(
         preflight,
@@ -477,6 +488,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         mode="release",
         python_executable=sys.executable,
         artifact_root=tmp_path / "evidence",
+        transported_authority=authority,
         trace=calls.append,
     )
 
@@ -505,6 +517,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     assert report["session_manifest"] == (tmp_path / "session.json").as_posix()
     assert report["workflow_authority"] == 12
     assert report["self_controller"] == 6
+    assert observed_authority == [authority]
 
 
 def test_context_budget_failure_precedes_evidence_session_allocation(
@@ -908,6 +921,27 @@ def test_wrong_prior_transport_subject_stops_before_evidence_fanout(
             artifact_root=tmp_path / "evidence", trace=calls.append,
         )
     assert calls == ["git-state", "structural-limits", "prior-transport"]
+
+
+def test_explicit_controller_authority_cannot_compete_with_prior_transport(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(preflight, "_git_state", lambda _: {})
+    monkeypatch.setattr(preflight, "validate_structural_limits", lambda _: {})
+
+    with pytest.raises(
+        preflight.PreflightError,
+        match="prior transport and explicit authority inputs are ambiguous",
+    ):
+        preflight.run_preflight(
+            tmp_path,
+            mode="pr",
+            prior_transport_dir=tmp_path / "transport",
+            transported_authority={
+                "controller_commit_sha": "c" * 40,
+                "controller_bundle_sha256": "d" * 64,
+            },
+        )
 
 
 def test_interpreter_failure_prevents_session_allocation(

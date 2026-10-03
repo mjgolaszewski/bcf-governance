@@ -4,19 +4,20 @@ document:
   id: project-phase-29-log
   version: 1.0.0
   generated_at_utc: '2026-10-01T00:00:00Z'
-  status: active
+  status: completed
   path: phases/phase-29-log.yml
 phase:
   id: P29
   build_block: deterministic-ci-context-and-low-risk-operations-2.1.7
 summary:
-  outcome: active
+  outcome: completed
   highlights:
   - P29 is opened for repair direct-main event context and deliver deterministic low-risk
     CI operations for BCF 2.1.7
   - phase artifacts were scaffolded from the governance template
   - issues 347 341 and 342 are the planned phase scope; shipped generator bug 348 was admitted into P29-P0-01 because it shares the canonical evaluation-input projection owner
   - P29-P0-01 through P29-P0-04 are one integrated implementation prefix; exact-main will target P29-P0-04 after the same authenticated evidence closes every predecessor and will make only P29-P0-05 eligible
+  - P29-P0-05 follows the canonical terminal release state machine recorded in spec/RELEASE_TRAIN_STATE_DAG.md; exact predecessor certification gates candidate construction and the one exact subject must survive PR certification terminal phase truth independent release verification immutable publication and adopter qualification
 workitems:
 - id: P29-P0-01
   status: DONE
@@ -31,7 +32,7 @@ workitems:
   status: DONE
   summary: derive lifecycle projections and emit non-authoritative operational observations
 - id: P29-P0-05
-  status: TODO
+  status: DONE
   summary: deliver prove self Lite and Standard v3 parity and publish immutable 2.1.7
     custody
 execution_evidence:
@@ -78,6 +79,9 @@ execution_evidence:
   - the first complete prospective train reached the full test producer, where the host-level candidate lease incorrectly appeared inside the isolated evidence process and rejected eight lease-owning regression fixtures as competing executions
   - the state matrix now distinguishes the exclusive host candidate lease from an authenticated nested execution-state lease scope; nested scope is derived only from the canonical namespace roots and immutable ownership manifest, while partial forged or stale environment remains fail-closed
   - the same train exposed an authenticated 2.1.3 adopter upgrade whose preserved direct-workflow graph was checked by the new runtime before its new required comparison input was migrated; the matrix now owns exact legacy-to-current input projection before current graph reconciliation and rejects malformed or ambiguous predecessor state
+  - exact-main 37097586639/2 on 452ce0b6044c1fc1b6fb279239ead2b319f6f1fe closed P29-P0-04 from complete authenticated evidence; finalizer 37099043221/1 published bcf/workitem-certification success, made only P29-P0-05 eligible, retained P29 active, and conferred no release authority
+  - the P29-P0-05 release matrix was completed before version or lifecycle edits and traces the exact candidate through preflight controller compatibility PR evidence protected merge terminal truth release authorization build verification collection immutable publication adopter qualification and custody closeout
+  - the first canonical terminal submit stopped before evidence because prospective preflight authenticated the stale source-policy controller while the later compatibility stage used the provider-effective controller installed by the routine transition; the state matrix and public preflight contract now make provider-effective authority one typed input shared by both preflight calls and compatibility, with competing prior-transport authority or missing and invalid provider authority remaining fail closed
 closeout_requirements:
   claims:
     workitems_closed:
@@ -110,4 +114,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify the integrated P29-P0-01 through P29-P0-04 prefix and begin only the eligible P29-P0-05 immutable 2.1.7 custody work
+- certify terminal P29 truth, publish immutable 2.1.7 bytes, qualify the exact release with Lite and Standard-v3 adopters, and record custody closeout

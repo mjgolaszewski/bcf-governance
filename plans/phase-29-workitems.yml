@@ -4,7 +4,7 @@ document:
   id: project-phase-29-workitems
   version: 1.0.0
   generated_at_utc: '2026-10-01T00:00:00Z'
-  status: active
+  status: completed
   path: plans/phase-29-workitems.yml
   phase_id: P29
 workitems:
@@ -68,7 +68,7 @@ workitems:
   - contract-test
 - id: P29-P0-05
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver prove self Lite and Standard v3 parity and publish immutable 2.1.7
     custody
   acceptance:

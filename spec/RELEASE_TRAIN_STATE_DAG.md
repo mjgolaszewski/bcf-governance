@@ -254,6 +254,28 @@ must retain every workitem observation and exact evidence reference. Finalizer,
 certification, and status publication preserve `workitem_closed:P29-P0-04`;
 release authorization and release receipts reject it even when successful.
 
+## P29 terminal release state machine
+
+P29-P0-05 begins only from provider-authenticated closure of P29-P0-04. The
+release candidate authors the final workitem and phase complete together so the
+post-merge proposition is terminal phase closure, never another bounded status.
+
+| State | Exact inputs | Deterministic transition | Authority/result |
+| --- | --- | --- | --- |
+| predecessor certified | `workitem_closed:P29-P0-04`, exact subject/tree/run/attempt, eligible successor `P29-P0-05` | admit release-candidate construction | candidate work only; no release authority |
+| candidate constructed | version `2.1.7`, all P29 workitems `DONE`, phase authored completed, exact docs/changelog/editorial custody | derive closure evaluation and prospective full chain | PR evidence only |
+| candidate qualified before gates | exact candidate commit/tree plus Lite and Standard-v3 adopter reports | run the one canonical submit train | adopter observations do not certify |
+| protected PR certified | exact PR evidence, finalizer, publisher, protected status | normal protected merge | merge eligibility only |
+| merged terminal truth | exact merged commit/tree, complete applicable evidence, `phase_closed:P29` | trusted finalizer and exact-main publisher | release authorization may evaluate separately |
+| release authorized and built | terminal certification, current controller custody, exact version/tag, hosted build manifest | independent verifier then trusted collector | build remains untrusted until receipt collection |
+| immutable publication | authenticated receipt, exact assets/digests/attestations, exact or absent tag state | publisher creates/reuses the exact tag and publishes immutable bytes | immutable `v2.1.7` custody |
+| post-gate adopter qualification | immutable release custody plus same-byte Lite and Standard-v3 reports | record custody closeout | release and phase may be archived; no new product bytes |
+
+Wrong or missing subject, tree, proposition, target, run, attempt, controller,
+asset, digest, tag, or adopter byte identity stops at its owning boundary. A
+bounded workitem status, local build, or adopter observation cannot substitute
+for terminal exact-main certification or immutable provider custody.
+
 ## Local admission and reconciliation state matrix
 
 | State | Exact inputs | Earliest deterministic action | Required outcome |
@@ -537,9 +559,11 @@ test-only, or inspected-no-impact before provider execution.
 | Local toolchain/resource admission | first operation | no controller authority | prevents allocation when unready/busy | same selected environment | no semantic evidence on rejection | no bundle/status on rejection | no authority effect | adopter entrypoint parity |
 | Controller/project interpreter separation | fixed local selector and environment scrub before project preflight | no controller authority change | exact project interpreter runs adopter preflight and evidence without controller path leakage | unchanged provider-selected Python | no evidence from a mismatched environment | no bundle/status on rejection | no authority effect | self and adopter selection parity |
 | Prospective pending rotation | PR preflight authenticates stale-runtime routing first | installed N must parse/authorize exact candidate | local PR evidence remains non-authoritative | post-merge semantic projection is explicitly prospective and noncertifying | provider executes controller build only until N+1 installed | no finalizer/publisher before fresh exact-main | no successor/release authority before fresh exact-main | packaged runtime parity |
+| Provider-effective controller transport | both PR and semantic preflight receive the same authenticated provider-effective commit/bundle pair | compatibility classifies that exact pair, never the stale source-policy baseline when an authenticated routine chain supersedes it | candidate evidence remains non-authoritative and exact-subject bound | protected merge cannot rewrite the effective controller identity | exact-main independently reauthenticates the same routine chain | finalizer/publisher consume exact custody, not candidate assertion | missing, malformed, wrong-repository, or unauthenticated provider authority fails before evidence and grants no release authority | packaged runtime preserves the typed transport contract |
 | Controller preflight ownership | structural budget validates the dedicated canonical controller-preflight primitive | identical installed-N compatibility inputs | PR/release callers consume one typed result | no workflow-local copy | pending/current state remains exact | no certification authority | no release authority | runtime mirrors generated from the same owner |
 | Profile template workflow projection | canonical reconcile owner | inspected-no-impact | direct PR origin/invocation contract | direct push origin/invocation contract | adopter truth receives exact base | no self finalizer authority | no release authority | Lite and Standard generated workflow parity |
 | Reconcile operation effect expansion | exact-base semantic migration required before evidence | installed-N parses unchanged runtime contract | migration binds the added projection port to exact base and phase owner | canonical reconcile alone emits template bytes | no truth proposition change | no certification/status change | no authority or release effect | generated template projection is the only new effect |
+| P29 terminal release candidate | exact predecessor workitem certification and authored terminal lifecycle validate before evidence | inspect exact candidate with installed controller; rotate only if trusted runtime bytes changed | exact candidate receives ordinary PR evidence/certification | protected merge preserves exact tree | terminal `phase_closed:P29` only | finalizer/publisher preserve terminal proposition | authorizer/build/verifier/collector/publisher authenticate one exact subject and immutable `v2.1.7` bytes | same candidate before gates; same immutable release after publication |
 
 ### Evaluation-input affected-surface classification
 
@@ -567,6 +591,7 @@ test-only, or inspected-no-impact before provider execution.
 | workitem lifecycle resolver and evaluation scope | inspected-no-impact unless the documented prefix cannot be represented | P0-01..P0-04 close in order; target P0-04; P0-05 alone eligible; phase active |
 | truth/finalizer/certification/status/release consumers | inspected-no-impact plus end-to-end regression | target and subject preserved; bounded success rejected by both release consumers |
 | local prospective/submit entrypoint | must change | one admission selects toolchain/lease/reconcile/progress; no caller choreography |
+| provider-effective authority transport into prospective preflight | canonical correction | authenticate once through the existing provider resolver; pass the exact typed commit/bundle pair into both PR and semantic preflight; source-policy fallback is permitted only when no managed provider controller applies |
 | offline test-toolchain owner | must change | wrong ambient Node resolves declared sibling mechanically; unavailable/stale bytes reject before gates |
 | fixed-point reconciler and stage registry | must change | exact dependency closures, selective execution, forced byte equivalence, timing ledger |
 | GitHub GET transport | must change | closed retry taxonomy and unchanged request identity; mutation methods rejected |
@@ -577,13 +602,16 @@ test-only, or inspected-no-impact before provider execution.
 | manifests, locks, mirrors, editorial audit | generated consequence | canonical reconcile alone selects and updates them |
 | controller compatibility and lifecycle | inspected-no-impact unless trusted runtime bytes change | prospective installed-N parse, pending rotation noncertifying, exact N+1 route if required |
 | protection, App authority, Break Glass, release publisher semantics | inspected-no-impact | zero semantic diff and existing rejection tests remain green |
+| P29-P0-05 version, lifecycle, docs, changelog, editorial audit | canonical authored release state plus generated consequences | predecessor certification, terminal closure selection, exact version/tag projection, self Lite and Standard-v3 parity, immutable publication custody |
 
 ## Canonical DAG
 
 ```text
 intent
   -> reconcile(definition -> authority -> fixed point)
-  -> PR preflight -> controller compatibility -> PR evidence -> PR certification
+  -> authenticate provider-effective controller
+  -> PR preflight(same exact controller) -> controller compatibility(same exact controller)
+     -> semantic preflight(same exact controller) -> PR evidence -> PR certification
   -> protected merge
   -> exact-main admission (bind outer push `before` into reusable governance)
      -> [pending rotation: build N+1 -> bootstrap -> probe -> confirm -> normalize]
@@ -599,6 +627,13 @@ intent
 No edge may be skipped because a later node appears green. A retry retains prior
 evidence only when its consumer reauthenticates the original exact identity and
 the retry contract explicitly permits a new attempt.
+
+For a managed self-authority repository, the authenticated routine-transition
+chain supersedes the source-policy baseline for every prospective preflight and
+compatibility consumer. The source policy remains the deterministic fallback
+only when no authenticated provider-effective authority applies. A caller may
+not authenticate provider authority for compatibility and then silently run an
+earlier preflight against a different source-policy controller.
 
 ## Publication state machine
 
