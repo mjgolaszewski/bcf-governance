@@ -24,7 +24,6 @@ from .evidence_planning import load_prior_receipts, verification_plan as build_v
 from .evaluation_scope import EvaluationIntent, evaluation_scope
 from .ci_authority_pins import CIAuthorityPinError
 from .ci_authority_preflight import verify_workflow_authority_preflight
-from .ci_github_identity import GitHubControllerError
 from .ci_self_controller import verify_self_controller_projection
 from .check_governance_exposure import scan_exposures
 from .evidence_sessions import (
@@ -58,7 +57,10 @@ from .trusted_controller_compatibility import (
     verify_pr_bootstrap_compatibility,
     verify_trusted_controller_compatibility,
 )
-from .ci_controller_preflight import controller_preflight_projection
+from .ci_controller_preflight import (
+    ControllerPreflightError,
+    self_controller_preflight,
+)
 from .controller_custody_prospective import validate_controller_contracts_preflight
 
 
@@ -430,63 +432,19 @@ def _self_controller(
     pr_base_sha: str | None = None,
     transported_authority: Mapping[str, Any] | None = None,
 ) -> int | dict[str, Any]:
-    projection = controller_preflight_projection(
-        repo_root, self_verifier=verify_self_controller_projection
-    )
-    if projection is None:
-        return 0
-    payload, count = projection
-    runner = payload.get("runner_security") if isinstance(payload, dict) else None
-    if not isinstance(runner, dict) or "trusted_controller_artifact" not in runner:
-        return 0
     try:
-        target = str(runner["trusted_controller_artifact"]["BCF_BOOTSTRAP_COMMIT_SHA"])
-        if transported_authority is not None:
-            transported_commit = transported_authority.get("controller_commit_sha")
-            transported_bundle = transported_authority.get("controller_bundle_sha256")
-            if (
-                set(transported_authority) != {
-                    "controller_commit_sha", "controller_bundle_sha256"
-                }
-                or not isinstance(transported_commit, str)
-                or not re.fullmatch(r"[a-f0-9]{40}", transported_commit)
-                or not isinstance(transported_bundle, str)
-                or not re.fullmatch(r"[a-f0-9]{64}", transported_bundle)
-            ):
-                raise TrustedControllerCompatibilityError(
-                    "transported controller authority is invalid"
-                )
-            target = transported_commit
-        if pr_base_sha is not None:
-            verify_pr_bootstrap_compatibility(
-                repo_root, base_commit=pr_base_sha, target_commit=target
-            )
-        try:
-            verify_trusted_controller_compatibility(
-                repo_root, target_commit=target
-            )
-        except TrustedControllerRoutineRotationIncompatibleError:
-            if not allow_stale_runtime or not ordinary_alternate_lane_available(
-                repo_root
-            ):
-                raise
-            return {
-                "status": "pending_rotation",
-                "projection_count": count,
-                "transition_requirement": "alternate_lane_required",
-                "release_authority": False,
-            }
-        except TrustedControllerRuntimeStaleError:
-            if not allow_stale_runtime:
-                raise
-            return {
-                "status": "pending_rotation",
-                "projection_count": count,
-                "release_authority": False,
-            }
-        return count
-    except (GitHubControllerError, KeyError, TypeError, TrustedControllerCompatibilityError) as exc:
-        raise PreflightError(f"self-controller preflight failed: {exc}") from exc
+        return self_controller_preflight(
+            repo_root,
+            allow_stale_runtime=allow_stale_runtime,
+            pr_base_sha=pr_base_sha,
+            transported_authority=transported_authority,
+            self_verifier=verify_self_controller_projection,
+            compatibility_verifier=verify_trusted_controller_compatibility,
+            bootstrap_verifier=verify_pr_bootstrap_compatibility,
+            alternate_lane=ordinary_alternate_lane_available,
+        )
+    except ControllerPreflightError as exc:
+        raise PreflightError(str(exc)) from exc
 
 
 def _required_gates(repo_root: Path) -> list[str]:
@@ -576,6 +534,7 @@ def run_preflight(
     evaluation_target: str | None = None,
     prior_receipts: list[Mapping[str, Any]] | None = None,
     prior_transport_dir: Path | None = None,
+    controller_state_expectation: str | None = None,
     trace: Callable[[str], None] | None = None,
 ) -> dict[str, Any]:
     """Validate deterministic state, then optionally seed one fresh session."""
@@ -584,6 +543,12 @@ def run_preflight(
     selected_mode = evaluation_mode or "pr"
     if selected_mode in {"workitem", "closure"} and mode != "release":
         raise PreflightError("main evaluation requires release preflight mode")
+    if controller_state_expectation not in {None, "prospective_pending_rotation"}:
+        raise PreflightError("controller state expectation is invalid")
+    if controller_state_expectation is not None and mode != "release":
+        raise PreflightError(
+            "prospective pending rotation requires release preflight mode"
+        )
     repo_root = repo_root.resolve()
     python = _selected_python(python_executable)
 
@@ -655,7 +620,10 @@ def run_preflight(
         "self-controller",
         lambda: _self_controller(
             repo_root,
-            allow_stale_runtime=mode == "pr",
+            allow_stale_runtime=(
+                mode == "pr"
+                or controller_state_expectation == "prospective_pending_rotation"
+            ),
             pr_base_sha=(
                 str(pr_context["base_sha"])
                 if pr_context.get("applicable") is True
@@ -664,6 +632,14 @@ def run_preflight(
             transported_authority=transported_authority,
         ),
     )
+    if controller_state_expectation == "prospective_pending_rotation" and (
+        not isinstance(self_controller, dict)
+        or self_controller.get("status") != "pending_rotation"
+        or self_controller.get("release_authority") is not False
+    ):
+        raise PreflightError(
+            "prospective pending rotation did not preserve its exact noncertifying state"
+        )
     negative_controls = step(
         "negative-controls", lambda: _negative_control_targets(repo_root)
     )

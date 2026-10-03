@@ -18,6 +18,7 @@ from .ci_github_downloads import (
     build_download_request,
     open_download,
 )
+from .provider_read import ProviderReadError, open_provider_get
 
 
 EVIDENCE_TAG = re.compile(r"^bcf-evidence-[a-z0-9-]+-[a-f0-9]{64}$")
@@ -241,7 +242,9 @@ class GitHubEvidenceAPI(GitHubAPI):
         total = 0
         try:
             with os.fdopen(descriptor, "wb") as output:
-                with open_download(request, timeout=300) as response:  # noqa: S310
+                with open_provider_get(
+                    request, timeout=300, opener=open_download
+                ) as response:  # noqa: S310
                     for chunk in iter(lambda: response.read(1024 * 1024), b""):
                         total += len(chunk)
                         if total > maximum_bytes:
@@ -257,7 +260,7 @@ class GitHubEvidenceAPI(GitHubAPI):
             temporary.replace(destination)
         except HTTPError as exc:
             raise GitHubAPIError(f"GitHub evidence asset download returned {exc.code}") from exc
-        except (OSError, URLError) as exc:
+        except (OSError, URLError, ProviderReadError) as exc:
             raise GitHubAPIError("GitHub evidence asset download failed") from exc
         finally:
             if temporary.exists():

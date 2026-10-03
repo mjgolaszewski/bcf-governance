@@ -21,8 +21,11 @@ def pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
         if mode != "pr":
             return {"applicable": False}
         event = "pull_request"
-    if event not in {"pull_request", "push", "workflow_call"}:
+    if event not in {"pull_request", "push"}:
         raise ValueError("repository comparison event is not supported")
+    invocation = os.environ.get("BCF_INVOCATION_KIND", "")
+    if invocation not in {"direct_event", "reusable_call"}:
+        raise ValueError("repository comparison invocation kind is missing or unsupported")
     base = os.environ.get("BCF_COMPARISON_BASE_SHA", "")
     if not base and event == "pull_request":
         base = os.environ.get("BCF_PR_BASE_SHA", "")
@@ -30,6 +33,15 @@ def pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
         raise ValueError("repository preflight requires exact comparison base SHA")
     if set(base) == {"0"}:
         raise ValueError("repository comparison base SHA cannot be the zero object")
+    origin_base = os.environ.get("BCF_ORIGIN_COMPARISON_BASE_SHA", "")
+    caller_base = os.environ.get("BCF_CALLER_COMPARISON_BASE_SHA", "")
+    if origin_base != base:
+        raise ValueError("repository comparison base does not match provider origin")
+    if invocation == "reusable_call":
+        if not caller_base or caller_base != base:
+            raise ValueError("reusable comparison base does not match caller input")
+    elif caller_base:
+        raise ValueError("direct event cannot carry a reusable caller comparison base")
     if event == "pull_request":
         pr_base = os.environ.get("BCF_PR_BASE_SHA", "")
         if pr_base != base:
@@ -51,10 +63,13 @@ def pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
     return {
         "applicable": True,
         "event": event,
+        "invocation_kind": invocation,
         "base_sha": base,
         "provenance": (
             "pull_request.base.sha"
-            if event == "pull_request"
-            else "push.before" if event == "push" else "workflow_call.input"
+            if invocation == "direct_event" and event == "pull_request"
+            else "push.before"
+            if invocation == "direct_event"
+            else "workflow_call.input"
         ),
     }

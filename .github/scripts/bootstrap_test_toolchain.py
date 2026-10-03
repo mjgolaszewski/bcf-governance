@@ -90,6 +90,34 @@ def _install_package(target: Path, files: dict[str, bytes], *, check: bool) -> N
             raise
 
 
+def _node_executable() -> tuple[Path, str]:
+    """Resolve the declared Node version without requiring caller PATH choreography."""
+
+    ambient = shutil.which("node")
+    if ambient is None:
+        raise ValueError(f"test toolchain requires Node {NODE_VERSION}")
+    candidates = [Path(ambient).resolve()]
+    resolved = candidates[0]
+    # nvm's `current` path resolves under versions/node/<version>/bin/node.
+    if len(resolved.parents) >= 3 and resolved.parent.name == "bin":
+        version_root = resolved.parent.parent
+        versions_root = version_root.parent
+        if versions_root.name == "node":
+            candidates.append(versions_root / NODE_VERSION / "bin/node")
+    for candidate in dict.fromkeys(candidates):
+        if not candidate.is_file() or candidate.is_symlink():
+            continue
+        observed = subprocess.run(
+            [str(candidate), "--version"], capture_output=True, text=True, check=True
+        ).stdout.strip()
+        if observed == NODE_VERSION:
+            return candidate, observed
+    observed = subprocess.run(
+        [ambient, "--version"], capture_output=True, text=True, check=True
+    ).stdout.strip()
+    raise ValueError(f"test toolchain requires Node {NODE_VERSION}; observed {observed}")
+
+
 def bootstrap(repo_root: Path, *, check: bool = False) -> dict[str, object]:
     root = repo_root.resolve()
     fixture = root / FIXTURE
@@ -106,12 +134,7 @@ def bootstrap(repo_root: Path, *, check: bool = False) -> dict[str, object]:
             or row["resolved"] != f"https://registry.npmjs.org/typescript/-/typescript-{row['version']}.tgz"
             or lock["packages"][""]["dependencies"] != manifest["dependencies"]):
         raise ValueError("test compiler manifest and lock differ")
-    node = shutil.which("node")
-    if node is None:
-        raise ValueError(f"test toolchain requires Node {NODE_VERSION}")
-    version = subprocess.run([node, "--version"], capture_output=True, text=True, check=True).stdout.strip()
-    if version != NODE_VERSION:
-        raise ValueError(f"test toolchain requires Node {NODE_VERSION}; observed {version}")
+    node, version = _node_executable()
     archive = fixture / f"typescript-{row['version']}.tgz"
     files = _compiler_files(archive, row["integrity"])
     compiler = json.loads(files["package.json"])
@@ -134,7 +157,8 @@ def bootstrap(repo_root: Path, *, check: bool = False) -> dict[str, object]:
     return {
         "status": "test_toolchain_checked" if check else "test_toolchain_ready",
         "node_version": version,
-        "node_executable_sha256": hashlib.sha256(Path(node).resolve().read_bytes()).hexdigest(),
+        "node_executable": str(node),
+        "node_executable_sha256": hashlib.sha256(node.read_bytes()).hexdigest(),
         "typescript_version": row["version"],
         "archive_sha256": hashlib.sha256(_regular(archive)).hexdigest(),
         "lock_sha256": hashlib.sha256(lock_bytes).hexdigest(),

@@ -63,7 +63,7 @@ def _push_exact_candidate(
 def submit_candidate(
     repo_root: Path,
     *,
-    semantic_intent: str,
+    semantic_intent: str | None = None,
     python_executable: Path,
     provider_api: GitHubAPI,
     remote: str = "origin",
@@ -75,7 +75,7 @@ def submit_candidate(
     context = resolve_local_pr_context(root, remote=remote, runner=runner)
     identity = _candidate_identity(root, context, runner=runner)
     mode, target, repository = _canonical_inputs(root)
-    if semantic_intent != mode:
+    if semantic_intent is not None and semantic_intent != mode:
         raise ProspectiveValidationError(
             "submitted semantic intent does not match the canonical exact-main intent"
         )

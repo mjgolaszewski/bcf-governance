@@ -51,6 +51,33 @@ provider evidence.
 15. A declared comparison input is incomplete until the reusable callee
     consumes that exact input through the canonical comparison environment.
     Caller projection without callee consumption is rejected before evidence.
+16. One protected implementation PR may close an ordered prefix of dependent
+    workitems from one exact evidence session. The certified proposition names
+    the terminal workitem only; its closure is valid only when the lifecycle
+    resolver proves every predecessor in that prefix closed from the same
+    authenticated subject and applicable evidence.
+17. Local execution starts through one canonical admission owner. That owner
+    selects and validates the repository Python, locked Node and TypeScript
+    bytes, structural budgets, and the exclusive expensive-gate lease before
+    reconciliation or evidence. Agent PATH ordering and remembered setup
+    commands confer no authority.
+18. A reconcile stage is skippable only from a complete canonical dependency
+    closure: owner token, declared inputs or upstream tokens, owned outputs,
+    and algorithm version. An absent ledger means recompute; an incomplete
+    dependency declaration is a contract defect, never permission to skip.
+19. Provider retry is transport recovery, not evidence reuse. Every attempt
+    retains the exact method, URL, request, repository, subject, run, attempt,
+    artifact, and expected digest. Only the final authenticated bytes enter a
+    consumer.
+20. Operational progress, queue timing, and amplification records are typed
+    observations with `authority:false`. Their absence or corruption may make
+    telemetry unavailable but cannot weaken or satisfy truth.
+21. Origin event and invocation kind are separate typed facts. GitHub preserves
+    the caller's origin event inside a reusable workflow, so `push` cannot prove
+    direct invocation. A reusable call is identified by its required typed
+    comparison input; that input must equal both the selected comparison base
+    and the provider-native origin-event base. Direct events must carry no
+    caller comparison input.
 
 ## State matrix
 
@@ -61,6 +88,7 @@ provider evidence.
 | Certified PR | head/tree, governance run/attempt, complete producer receipts, PR certification | normal protected merge | missing/wrong producer, subject, session, control, or protection state |
 | Merged main | merge commit/tree, protected merge relationship | exact-main admission | non-authoritative main, stale workflow authority, malformed lifecycle intent |
 | Pending rotation | main identity, installed N, target N+1, exact provider-built artifact | bootstrap and probe | installed N cannot parse/authorize candidate, artifact mismatch, evidence fan-out |
+| Prospective candidate predicts pending rotation | exact PR preflight result `pending_rotation`, release authority false, installed-N compatibility, candidate subject/tree | run semantic post-merge preflight only through the typed `prospective_pending_rotation` lane, then project controller build/bootstrap/probe before fresh exact-main | ordinary release preflight accepts stale runtime, evidence is represented as authoritative before installation, or the typed state differs between the two checks |
 | Installed current | target equals installed, bootstrap/probe/confirmation custody, no recovery residue | fresh exact-main | runner disagreement, hand-authored pin, incomplete normalization |
 | Exact-main certified | current commit/tree, terminal proposition, complete truth/finalizer/publisher identity | release authorization | bounded scope, moved main, incomplete inventory, wrong controller |
 | Release authorized | exact certification, controller custody, owner dispatch run/attempt | hosted build | stale subject, candidate authority, copied artifact coordinates |
@@ -75,8 +103,9 @@ provider evidence.
 
 ## Provider-event and evaluation matrix
 
-The provider event owns comparison context. The lifecycle owns the proposition.
-Neither may infer or rewrite the other.
+The provider origin event owns its native comparison context. The graph owns
+direct-event versus reusable-call invocation. The lifecycle owns the
+proposition. None may infer or rewrite another.
 
 | Provider event | Evaluation proposition | Exact comparison base | Changelog enforcement | Required result |
 | --- | --- | --- | --- | --- |
@@ -87,10 +116,10 @@ Neither may infer or rewrite the other.
 | direct protected `push` | `pr` | authenticated event `before` SHA consumed in the same workflow | inapplicable: `direct_push`, exact event/policy bound | merged-main progress proof |
 | direct protected `push` | `workitem:<id>` | authenticated event `before` SHA consumed in the same workflow | inapplicable: `direct_push`, exact event/policy bound | bounded merged-main proof |
 | direct protected `push` | `closure` | authenticated event `before` SHA consumed in the same workflow | inapplicable: `direct_push`, exact event/policy bound | merged-main terminal proof |
-| trusted exact-main `push` -> reusable governance | `pr` | outer `github.event.before` forwarded as exact `comparison_base_sha` caller input | inapplicable: `direct_push`, exact outer event/policy bound | merged-main progress proof |
-| trusted exact-main `push` -> reusable governance | `workitem:<id>` | outer `github.event.before` forwarded as exact `comparison_base_sha` caller input | inapplicable: `direct_push`, exact outer event/policy bound | bounded merged-main proof |
-| trusted exact-main `push` -> reusable governance | `closure` | outer `github.event.before` forwarded as exact `comparison_base_sha` caller input | inapplicable: `direct_push`, exact outer event/policy bound | merged-main terminal proof |
-| `workflow_call` | any declared proposition | explicit caller-supplied exact base SHA | caller contract, never inferred | proof for the declared proposition |
+| trusted exact-main origin `push`, reusable governance invocation | `pr` | required caller input exactly equals outer `github.event.before`; input wins selection | inapplicable: `direct_push`, exact outer event/policy bound | merged-main progress proof |
+| trusted exact-main origin `push`, reusable governance invocation | `workitem:<id>` | required caller input exactly equals outer `github.event.before`; input wins selection | inapplicable: `direct_push`, exact outer event/policy bound | bounded merged-main proof |
+| trusted exact-main origin `push`, reusable governance invocation | `closure` | required caller input exactly equals outer `github.event.before`; input wins selection | inapplicable: `direct_push`, exact outer event/policy bound | merged-main terminal proof |
+| any supported origin, reusable invocation | any declared proposition | required caller input equals the provider-native base for that origin | caller contract, never inferred | proof for the declared proposition |
 
 For every row, base and head must be exact commits in the checked-out history,
 base must be an ancestor of head, and event provenance must match the selected
@@ -102,10 +131,12 @@ event-conflicting bases all reject before evidence. The candidate-governance
 lane does not accept `pull_request_target`; BCF automation workflows that use
 that privileged event authenticate it under their separate fixed-purpose
 contract and never reinterpret it as candidate evidence. When exact-main calls
-the reusable governance workflow, the callee's provider event is
-`workflow_call`; therefore the authenticated outer push base must be an exact
-declared input. Empty, omitted, defaulted, or differently sourced caller input
-is a structural graph defect and fails prospective validation before evidence.
+the reusable governance workflow, GitHub retains the caller's origin event; it
+does not replace it with `workflow_call`. Invocation kind is therefore derived
+from the workflow-call contract's required comparison input, never from
+`github.event_name`. Empty, omitted, defaulted, differently sourced, or
+origin-mismatched caller input is a structural or cheap-preflight defect and
+fails before evidence.
 
 ## Evaluation-input transport state machine
 
@@ -117,7 +148,9 @@ the runtime scope parser owns meaning. No shell owns interpretation.
 | --- | --- | --- | --- | --- |
 | direct `pull_request`, inputs absent | `pr` / none | canonical event default -> environment | comparison context then evaluation scope | PR progress only |
 | protected `push`, inputs absent | lifecycle-selected intent/target | canonical graph value -> environment | direct-push preflight then evaluation scope | exact merged-main proposition |
-| exact-main `push` invokes reusable governance | lifecycle-selected intent/target | `github.event.before` -> typed `comparison_base_sha` caller input -> callee `BCF_COMPARISON_BASE_SHA` -> comparison environment | graph caller-and-callee binding validation then repository comparison context | exact merged-main proposition |
+| exact-main origin `push`, reusable invocation | lifecycle-selected intent/target | origin `github.event.before` -> required typed caller input -> raw caller-input environment + provider-native origin environment -> selected comparison environment | graph caller binding then equality of caller, origin, and selected identities | exact merged-main proposition |
+| origin `push`, reusable input absent | none | provider rejects required input; runtime fallback is not authoritative | workflow-call schema, then cheap comparison preflight defensively | reject before evidence; `github.event.before` cannot rescue omission |
+| origin `push`, reusable input wrong | none | exact wrong input remains visible beside provider-native origin base | cheap comparison preflight | reject before evidence even when both commits are valid ancestors |
 | `workflow_call(pr, '')` | `pr` / none | declared input -> environment | evaluation scope | PR progress only |
 | `workflow_call(workitem, exact-id)` | `workitem` / exact workitem | declared inputs -> environment | authored-ready workitem scope | bounded proposition only |
 | `workflow_call(closure, '')` | `closure` / none | declared input -> environment | phase-closure scope | terminal phase proposition only |
@@ -199,6 +232,103 @@ shell fallback after the canonical graph has produced the typed pair.
 | Workflow evaluation input | declared default or explicit typed intent/target | environment/data projection then runtime validation | expression embedded in `run:` source, unknown intent, or malformed target | none |
 | Phase artifact identity | exact plan deliverable, workitem summary, and log summary | canonical phase-catalog validation | any authored identity differs across the triplet | none; reject before evidence |
 
+## Integrated workitem-prefix state machine
+
+This phase deliberately avoids one full custody train per internal workitem.
+The existing bounded-workitem proposition is sufficient when the canonical
+lifecycle resolver closes an ordered dependency prefix on one exact subject.
+No batch authority or synthetic aggregate certification is introduced.
+
+| Authored workitem state | Evidence state | Derived lifecycle result | Post-merge target | Authority/result |
+| --- | --- | --- | --- | --- |
+| no `DONE` prefix | any | first workitem active/planned | `pr` / exact subject | PR progress only; no successor eligibility |
+| P0-01 `DONE`, later open | applicable exact evidence closes P0-01 | P0-01 closed; P0-02 eligible | `workitem:P0-01` | only declared P0-02 eligibility |
+| P0-01..P0-04 `DONE`, P0-05 open | one exact session supplies every required claim; each predecessor closes before its successor | P0-01..P0-04 closed; P0-05 eligible; phase active | `workitem:P0-04` | P0-04 closure mechanically entails the exact predecessor chain; only P0-05 eligibility |
+| P0-04 `DONE` with any predecessor not closed | missing, invalid, stale, wrong subject/session/producer/claim, or inapplicable evidence | P0-04 completed but unverified | `workitem:P0-04` | fail `bounded_workitem_target_not_closed`; no eligibility |
+| dependent item `DONE` while any declared predecessor is not `DONE` | any | contradictory authored frontier | none | reject structurally before evidence; unrelated work islands remain independently classifiable |
+| every workitem `DONE`, phase still active | complete exact evidence | workitems closed; phase remains active | terminal workitem | bounded success only; no release authority |
+| every workitem `DONE`, phase authored completed | complete exact evidence and release gates | phase closed | `closure` / phase | terminal phase proposition; release may evaluate separately |
+
+The terminal workitem proposition does not erase its proof chain. Truth output
+must retain every workitem observation and exact evidence reference. Finalizer,
+certification, and status publication preserve `workitem_closed:P29-P0-04`;
+release authorization and release receipts reject it even when successful.
+
+## Local admission and reconciliation state matrix
+
+| State | Exact inputs | Earliest deterministic action | Required outcome |
+| --- | --- | --- | --- |
+| selected Python missing or outside governed range | exact executable path and `--version` bytes | local execution admission | reject before reconcile |
+| controller Python differs from an exact repository-local `.venv/bin/python` | controller executable plus fixed repository-local project-interpreter path | local execution admission selects the repository interpreter for project preflight/evidence while retaining the controller interpreter only for BCF orchestration | accept only after the project interpreter satisfies the governed dependency/version contract |
+| project environment is intentionally outside the checkout | one explicit exact `--python` input on the canonical local entrypoint | validate and propagate that interpreter through admission, preflight, evidence, and truth | no later interpreter selection; missing dependencies reject before evidence |
+| no repository-local project interpreter exists | controller executable plus governed interpreter/dependency contract | validate the controller executable as the project interpreter | accept only when the same executable satisfies the project contract; otherwise reject before reconcile |
+| repository-local project interpreter is missing, non-executable, or fails its dependency contract | exact lexical path, resolved executable, version, and dependency inventory | local execution admission | reject before preflight/evidence; never fall back to another ambient Python |
+| controller is loaded through `PYTHONPATH` or another controller-only Python environment | exact controller environment plus selected project interpreter | project-environment projection removes controller import/home/venv state and binds the selected repository environment before spawning project validation | project imports resolve only from the adopter checkout and selected project environment; controller paths cannot shadow adopter modules |
+| ambient Node is declared version | resolved executable path, version, executable digest | locked toolchain owner | accept exact binary |
+| ambient Node differs but the toolchain manager exposes the declared sibling | resolved manager layout and declared version | locked toolchain owner selects sibling mechanically | prepend selected binary for the whole train; no agent PATH action |
+| declared Node unavailable | exact discovery inventory | local execution admission | reject before reconcile |
+| TypeScript fixture absent but locked offline archive is exact | manifest, lock, archive integrity, declarations | canonical bootstrap | materialize locally, verify, then proceed without network |
+| TypeScript bytes stale or archive/lock differs | exact locked inputs and installed tree | canonical bootstrap | reject before reconcile; never download an alternate compiler |
+| expensive local slot free | exact candidate execution identity | acquire one host-local lease | hold through the complete prospective train |
+| expensive local slot owned by another execution | lock owner execution identity | local execution admission | emit typed `busy/deferred`; allocate no long gate |
+| isolated evidence process is executed beneath the prospective train lease | authenticated execution-state namespace, exact state root/database root, immutable ownership manifest | derive a namespace-scoped nested lease from the canonical execution-state owner | tests and nested local-entrypoint fixtures contend only inside their exact evidence namespace; they cannot observe or bypass the host-level candidate lease |
+| execution-state namespace is absent | no execution-state environment | use the one host-level candidate lease | distinct top-level candidates remain mutually exclusive |
+| execution-state environment is partial, malformed, moved, or lacks its exact ownership manifest | all three exported values plus manifest bytes | local execution admission | reject before nested work; never treat caller-authored environment as a lease namespace |
+| authenticated predecessor adopter graph predates a newly required direct-workflow comparison input | predecessor release custody, exact legacy workflow-call shape, current canonical input contract | upgrade migration projects the missing input before current-runtime graph reconciliation | preserve adopter-owned topology and semantics; current renderer then supplies the complete event-owned comparison environment |
+| predecessor graph already has the current exact comparison input | exact current field bytes | no migration | reconcile and validate normally |
+| predecessor comparison input is present but malformed or the direct workflow is ambiguous | authenticated predecessor graph plus current input contract | upgrade migration | reject rather than overwrite or guess adopter intent |
+| reconcile ledger absent or version unknown | ordered canonical stage inventory | recompute all stages | emit new non-authoritative ledger |
+| stage closure exact | owner token, declared input/upstream digests, output digests, algorithm version | verify and skip stage | `skipped_clean`; identical bytes |
+| owner/input/upstream/output differs | exact changed dependency | execute only the mechanically derived dirty stage and downstream dependents | record duration and new digests |
+| declared dependency incomplete | stage contract and discovered owner surface | structural validation | reject; never infer a safe skip |
+| forced recomputation | same candidate and complete stage inventory | execute every stage | output tree and convergence token must equal selective result |
+| check operation mutates bytes | before/after snapshot | reconcile owner | reject implementation defect |
+| timeout or partial output | exact stage/gate identity and deadline | execution owner | typed infrastructure failure; no evidence receipt |
+
+### Reconcile dependency DAG
+
+```text
+local execution admission
+  -> authenticated host-or-execution-state lease scope
+  -> structural limits
+  -> release-version projection
+  -> profile/Makefile projection
+  -> lifecycle-selected post-merge scope
+  -> runtime/pack projection
+  -> semantic lock
+  -> test manifests
+  -> graph lock
+  -> graph render
+  -> workflow authority
+  -> editorial audit
+  -> forced-equivalence oracle
+```
+
+Each edge is explicit in the canonical stage registry. A downstream stage may
+consume an upstream stage token instead of repeating its entire input closure.
+The local ledger lives outside tracked product bytes, carries no authority, and
+is useful only when its complete digest closure validates.
+
+## Provider-read and observation state matrix
+
+| State | Closed classification | Transition | Consumer rule |
+| --- | --- | --- | --- |
+| GET succeeds | exact immutable response | size/schema/digest/identity validation | return only authenticated bytes |
+| GET returns 429/502/503/504 | transient | bounded same-request backoff; validated `Retry-After` | no intermediate bytes or authority |
+| GET times out or connection resets | transient | bounded same-request backoff | no request mutation |
+| transient attempts exhausted | terminal infrastructure failure | stop | consumer receives no data |
+| GET returns 401/403 | authority failure | stop immediately | never retry as availability |
+| GET returns 404 | exact absence only where the endpoint contract permits absence | stop or typed absent | never reinterpret as transient |
+| redirect changes credential origin | security failure | stop | no credential forwarding |
+| schema/digest/repository/installation/subject/run/attempt/artifact differs | semantic identity failure | stop | never retry into acceptance |
+| POST/PATCH/PUT/DELETE offered to retry owner | mutation misuse | reject before transport | mutation clients cannot consume primitive |
+| progress event starts/completes/fails | exact execution, sequence, stage, monotonic time | append observation | truth ignores it |
+| progress duplicated/out of order | invalid observation | reject telemetry stream | terminal proof remains independently evaluated |
+| provider timestamps complete | exact run/attempt/job/labels | decompose queue/setup/execution | observation only |
+| provider timestamps absent | exact identity, missing field | report `unknown` | never synthesize zero latency |
+| amplification events unique | exact train/subject/event IDs | count PRs/jobs/transitions/compute/wall-clock/interventions | closeout only |
+| amplification event duplicated or missing identity | invalid observation | reject metric | no assurance effect |
+
 ### Reconciliation dependency contract
 
 Each reconcile stage declares its canonical owner token, complete input paths or
@@ -239,6 +369,56 @@ Missing provider timestamps are `unknown`; queued time is provider scheduling,
 not product or BCF execution. Lifecycle projections are different: they are
 deterministically derived contract state and contradictory authored copies fail
 in structural preflight.
+
+## P29 outward construction tree
+
+- **Invariant: one integrated candidate closes one exact dependent prefix.**
+  - **Primitives:** ordered workitem IDs, authored state, predecessor edges,
+    applicable receipt references, exact subject, terminal target.
+    - **Contracts:** workitem ledger, evidence-derived lifecycle observation,
+      evaluation scope, certified proposition.
+      - **Producers:** lifecycle resolver, truth producer, trusted finalizer,
+        scoped status publisher.
+        - **Consumers:** P0-05 eligibility only; phase closure and release
+          authorization explicitly reject the bounded proposition.
+- **Invariant: deterministic local defects fail before expensive work.**
+  - **Primitives:** distinct controller and project Python identities, fixed
+    repository-local project-interpreter selection, mechanically resolved Node binary,
+    locked offline TypeScript tree, structural budgets, exclusive execution
+    lease, typed `busy/deferred` result.
+    - **Contracts:** one local-execution admission result consumed by the one
+      canonical prospective/submit entrypoint.
+      - **Producers:** controller entrypoint, project-interpreter selector,
+        toolchain bootstrap/check, structural validator, local lease owner.
+        - **Consumers:** reconciler and evidence executor; neither performs
+          fallback setup or agent-selected recovery.
+- **Invariant: selective reconciliation is byte-equivalent to full reconcile.**
+  - **Primitives:** canonical stage registry, owner/input/upstream/output
+    digests, dirty set, duration, convergence token.
+    - **Contracts:** non-authoritative reconcile ledger and forced-equivalence
+      oracle.
+      - **Producers:** fixed-point orchestrator and existing stage owners.
+        - **Consumers:** prospective train, candidate submit, installer and
+          upgrader; agents never select stages.
+- **Invariant: provider availability recovery cannot change identity.**
+  - **Primitives:** exact GET request, closed transient taxonomy, bounded
+    schedule, validated `Retry-After`, immutable attempt observations.
+    - **Contracts:** one GET-only transport returning bytes or typed terminal
+      failure.
+      - **Producers:** GitHub API and artifact download adapters.
+        - **Consumers:** controller custody, exact-main, finalizer, publisher,
+          protection inspection, and prospective provider fixtures retain their
+          own schema/digest/identity validation.
+- **Invariant: observation never becomes authority.**
+  - **Primitives:** execution/session identity, stable stage IDs, sequence,
+    monotonic/provider timestamps, typed counters, `authority:false`.
+    - **Contracts:** progress, queue decomposition, amplification, and derived
+      lifecycle projection schemas.
+      - **Producers:** prospective orchestrator, read-only provider observer,
+        lifecycle projector.
+        - **Consumers:** CLI/UI and closeout reporting only; truth,
+          certification, protection, controller, publisher, and release
+          decisions do not consume observations.
 
 ## Construction tree
 
@@ -353,6 +533,13 @@ test-only, or inspected-no-impact before provider execution.
 | Derived planning/history | first-stage structural | lifecycle input only | exact lifecycle projection | successor selection | scoped target | scope preserved | release closure rejects stale state | installed parity |
 | Amplification/queue metrics | display only | display only | observation only | observation only | observation only | observation only | closeout only | schema parity |
 | Evaluation-input projection | structural expression-in-run rejection | inspected-no-impact | typed environment data | direct-event default parity | exact scoped proposition | scope preserved | bounded certification cannot broaden | generated parity |
+| Integrated workitem prefix | authored dependency-prefix validation | inspected-no-impact | same exact evidence closes ordered prefix | terminal prefix target selected | all predecessor observations retained | terminal target/scope preserved | only next declared workitem eligible; release rejects | lifecycle parity |
+| Local toolchain/resource admission | first operation | no controller authority | prevents allocation when unready/busy | same selected environment | no semantic evidence on rejection | no bundle/status on rejection | no authority effect | adopter entrypoint parity |
+| Controller/project interpreter separation | fixed local selector and environment scrub before project preflight | no controller authority change | exact project interpreter runs adopter preflight and evidence without controller path leakage | unchanged provider-selected Python | no evidence from a mismatched environment | no bundle/status on rejection | no authority effect | self and adopter selection parity |
+| Prospective pending rotation | PR preflight authenticates stale-runtime routing first | installed N must parse/authorize exact candidate | local PR evidence remains non-authoritative | post-merge semantic projection is explicitly prospective and noncertifying | provider executes controller build only until N+1 installed | no finalizer/publisher before fresh exact-main | no successor/release authority before fresh exact-main | packaged runtime parity |
+| Controller preflight ownership | structural budget validates the dedicated canonical controller-preflight primitive | identical installed-N compatibility inputs | PR/release callers consume one typed result | no workflow-local copy | pending/current state remains exact | no certification authority | no release authority | runtime mirrors generated from the same owner |
+| Profile template workflow projection | canonical reconcile owner | inspected-no-impact | direct PR origin/invocation contract | direct push origin/invocation contract | adopter truth receives exact base | no self finalizer authority | no release authority | Lite and Standard generated workflow parity |
+| Reconcile operation effect expansion | exact-base semantic migration required before evidence | installed-N parses unchanged runtime contract | migration binds the added projection port to exact base and phase owner | canonical reconcile alone emits template bytes | no truth proposition change | no certification/status change | no authority or release effect | generated template projection is the only new effect |
 
 ### Evaluation-input affected-surface classification
 
@@ -371,6 +558,25 @@ test-only, or inspected-no-impact before provider execution.
 | Lite and Standard-v3 templates/runtime pack | generated consequence | installed projection contains environment transport and identical validation |
 | manifests, mirrors, editorial inventory | generated consequence only when canonical reconciliation reports drift | fixed point and exact packaged bytes |
 | mutation controls and tests | test-only | expression-in-run mutant killed; defaults, explicit modes, malformed inputs, and shell payload covered |
+
+### P29 affected-surface classification
+
+| Surface | Classification | Required proof before push |
+| --- | --- | --- |
+| this state/DAG specification and P29 plan/workitem/log | must change | complete matrices, ordered-prefix closure, exact acceptance mapping |
+| workitem lifecycle resolver and evaluation scope | inspected-no-impact unless the documented prefix cannot be represented | P0-01..P0-04 close in order; target P0-04; P0-05 alone eligible; phase active |
+| truth/finalizer/certification/status/release consumers | inspected-no-impact plus end-to-end regression | target and subject preserved; bounded success rejected by both release consumers |
+| local prospective/submit entrypoint | must change | one admission selects toolchain/lease/reconcile/progress; no caller choreography |
+| offline test-toolchain owner | must change | wrong ambient Node resolves declared sibling mechanically; unavailable/stale bytes reject before gates |
+| fixed-point reconciler and stage registry | must change | exact dependency closures, selective execution, forced byte equivalence, timing ledger |
+| GitHub GET transport | must change | closed retry taxonomy and unchanged request identity; mutation methods rejected |
+| provider consumers | inspected-no-impact plus focused regression | consumer-specific size/schema/digest/identity checks remain terminal |
+| lifecycle/telemetry projector | must change | derived frontier; progress/queue/amplification are schema-valid and non-authoritative |
+| CI graph and generated workflows | generated consequence only if canonical owners require transport | render parity, authority reconciliation, no hand edits |
+| template runtime and pack | generated consequence | Lite and Standard-v3 installed bytes expose identical entrypoint behavior |
+| manifests, locks, mirrors, editorial audit | generated consequence | canonical reconcile alone selects and updates them |
+| controller compatibility and lifecycle | inspected-no-impact unless trusted runtime bytes change | prospective installed-N parse, pending rotation noncertifying, exact N+1 route if required |
+| protection, App authority, Break Glass, release publisher semantics | inspected-no-impact | zero semantic diff and existing rejection tests remain green |
 
 ## Canonical DAG
 

@@ -10,15 +10,34 @@ from typing import Iterator
 PROVIDER_EVENT_EXPRESSION = "${{ github.event_name }}"
 PULL_REQUEST_BASE_EXPRESSION = "${{ github.event.pull_request.base.sha }}"
 PUSH_COMPARISON_BASE_EXPRESSION = "${{ github.event.before }}"
-DIRECT_COMPARISON_BASE_EXPRESSION = (
+CALLER_COMPARISON_BASE_EXPRESSION = "${{ inputs.comparison_base_sha || '' }}"
+ORIGIN_COMPARISON_BASE_EXPRESSION = (
     "${{ github.event_name == 'pull_request' && "
     "github.event.pull_request.base.sha || github.event_name == 'push' && "
-    "github.event.before || inputs.comparison_base_sha || '' }}"
+    "github.event.before || '' }}"
+)
+INVOCATION_KIND_EXPRESSION = (
+    "${{ inputs.comparison_base_sha != '' && 'reusable_call' || 'direct_event' }}"
+)
+DIRECT_COMPARISON_BASE_EXPRESSION = (
+    "${{ inputs.comparison_base_sha || github.event_name == 'pull_request' && "
+    "github.event.pull_request.base.sha || github.event_name == 'push' && "
+    "github.event.before || '' }}"
 )
 DIRECT_EVENT_COMPARISON_BASE_EXPRESSION = (
     "${{ github.event_name == 'pull_request' && "
     "github.event.pull_request.base.sha || github.event.before }}"
 )
+
+
+def comparison_base_input_contract() -> dict[str, object]:
+    """Return the one reusable-workflow comparison input contract."""
+
+    return {
+        "description": "Exact repository comparison base for explicit calls",
+        "required": True,
+        "type": "string",
+    }
 
 
 def push_comparison_inputs(**inputs: object) -> dict[str, object]:
@@ -32,6 +51,9 @@ def direct_comparison_environment(*, explicit_call: bool = True) -> dict[str, st
 
     return {
         "BCF_PROVIDER_EVENT": PROVIDER_EVENT_EXPRESSION,
+        "BCF_INVOCATION_KIND": INVOCATION_KIND_EXPRESSION,
+        "BCF_CALLER_COMPARISON_BASE_SHA": CALLER_COMPARISON_BASE_EXPRESSION,
+        "BCF_ORIGIN_COMPARISON_BASE_SHA": ORIGIN_COMPARISON_BASE_EXPRESSION,
         "BCF_COMPARISON_BASE_SHA": (
             DIRECT_COMPARISON_BASE_EXPRESSION
             if explicit_call
@@ -47,6 +69,9 @@ def local_push_environment(*, base_sha: str, head_sha: str) -> Iterator[None]:
 
     values: dict[str, str | None] = {
         "BCF_PROVIDER_EVENT": "push",
+        "BCF_INVOCATION_KIND": "direct_event",
+        "BCF_CALLER_COMPARISON_BASE_SHA": None,
+        "BCF_ORIGIN_COMPARISON_BASE_SHA": base_sha,
         "BCF_COMPARISON_BASE_SHA": base_sha,
         "BCF_ENFORCE_PR_CHANGELOG": "false",
         "BCF_PR_BASE_SHA": None,

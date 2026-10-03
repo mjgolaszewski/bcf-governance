@@ -20,7 +20,10 @@ All notable changes to BCF Governance are recorded here. This file follows
   mechanically validated outer-job headroom, and timeout or partial output can
   never masquerade as evidence. Provider and caller expressions are projected
   as inert environment data rather than executable shell source while their
-  exact evaluation intent and target remain bound through certification.
+  exact evaluation intent and target remain bound through certification. Local
+  validation now keeps the BCF controller interpreter separate from the exact
+  adopter project environment, preventing controller paths or dependencies from
+  leaking into project preflight and evidence collection.
 - Made the trusted immutable publisher create and reauthenticate the exact
   annotated release tag after receipt and attestation validation, eliminating
   the ungoverned pre-dispatch tag step; generated commands now preserve

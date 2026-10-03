@@ -6,7 +6,7 @@ default_branch: main
 trusted_controller: {kind: self_governance_policy, policy_path: governance/self-governance-policy.yml}
 evidence_storage: {path: governance/evidence-storage.yml, sha256: e7616b0c43cc0106779b5bab99ec9c1e5e8d30cbc51bff57a3698cb82454fdaa}
 value_sources:
-  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 4e36668877a1cc56ec6fa037f1e7e6a95a9f5957ef187c72d73fdd78cafb1bc1}
+  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 184b5b6ce5db4b22c5fbd2b0fa3c33fcce1fe84c5d5d9ac6ea6774246dd97cfc}
   release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: c3ca445f6875c47e34fd7c7d6539233faf011289367a8601bdfc036c96d420b1}
   protection-contract: {kind: yaml, path: governance/github-protection.yml, sha256: 5f8c6fcd0d569e17050f694571474faa0f7538d12a5d11cc51891cf01c59a53a}
   automation-contract: {kind: yaml, path: governance/automation-producers.yml, sha256: 74c02575f7599f9e4a82cacc60f6d60692ee81dd1f7bec20441e6b375cf77cce}
@@ -146,7 +146,7 @@ commands:
     cwd: .
     environment: {}
   exact-main-admit-effective:
-    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ needs.trusted-controller-build.outputs.target_commit }}/bin/bcf', ci-github, exact-main, admit, --repository, '${{ github.repository }}', --sha, '${{ github.sha }}', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}', --evaluation-mode, pr]
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ needs.trusted-controller-build.outputs.target_commit }}/bin/bcf', ci-github, exact-main, admit, --repository, '${{ github.repository }}', --sha, '${{ github.sha }}', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}', --evaluation-mode, workitem, --evaluation-target, P29-P0-04]
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
   prior-evidence-effective:
@@ -534,7 +534,7 @@ workflows:
   - {type: pull_request}
   - type: workflow_call
     inputs:
-      comparison_base_sha: {description: Exact repository comparison base for explicit calls, required: false, default: '', type: string}
+      comparison_base_sha: {description: Exact repository comparison base for explicit calls, required: true, type: string}
       evaluation_mode: {description: Exact truth evaluation mode selected by the trusted caller, required: false, default: pr, type: string}
       evaluation_target: {description: Exact typed target required only for bounded workitem certification, required: false, default: '', type: string}
       use_prior_evidence: {description: Consume exact caller-bound prior evidence when present, required: false, default: false, type: boolean}
@@ -630,8 +630,9 @@ workflows:
     executor:
       kind: component_sequence
       components: [setup-python, exact-main-admit-effective, protection-inspector-token, prior-evidence-effective, upload-prior-evidence-effective]
-      evaluation_mode: pr
+      evaluation_mode: workitem
       protection_inspection: true
+      evaluation_target: P29-P0-04
     produces: [prior-evidence-transport]
     consumes: []
     required: true
@@ -649,7 +650,7 @@ workflows:
     executor:
       kind: reusable_workflow
       path: .github/workflows/governance.yml
-      inputs: {evaluation_mode: pr, use_prior_evidence: true, comparison_base_sha: '${{ github.event.before }}'}
+      inputs: {evaluation_mode: workitem, use_prior_evidence: true, comparison_base_sha: '${{ github.event.before }}', evaluation_target: P29-P0-04}
       artifact_bindings: {prior-evidence-transport: use_prior_evidence}
     produces: []
     consumes: [prior-evidence-transport]

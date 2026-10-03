@@ -10,7 +10,7 @@ document:
 workitems:
 - id: P29-P0-01
   priority: P0
-  status: IN_PROGRESS
+  status: DONE
   summary: persist the CI state matrix and repair evaluation-input projection
   acceptance:
   - the provider-event evaluation-proposition and downstream consumer matrix is canonical and complete
@@ -27,12 +27,14 @@ workitems:
   - contract-test
 - id: P29-P0-02
   priority: P0
-  status: TODO
-  summary: optimize deterministic fixed-point reconciliation
+  status: DONE
+  summary: optimize deterministic fixed-point reconciliation while mechanically admitting the exact local toolchain and expensive-gate lease before reconciliation
   acceptance:
   - requires-workitem-closure:P29-P0-01
   - one canonical owner derives the dirty stage set from exact owner input and output digests and emits an ordered timing and convergence ledger
   - clean stages are skipped without changing canonical bytes and forced recomputation proves byte equivalence
+  - the one canonical local entrypoint selects and validates repository Python locked Node and offline TypeScript custody before reconciliation without agent PATH choreography
+  - a competing expensive local execution is rejected as typed busy/deferred before long gates and the exact lease is retired on every terminal path
   - gate-specific measured deadlines and outer-job headroom fail fast before execution and timeout or partial output never become evidence
   - representative unchanged and selectively changed trees materially reduce median and p95 reconciliation wall clock
   acceptance_evidence:
@@ -40,7 +42,7 @@ workitems:
   - contract-test
 - id: P29-P0-03
   priority: P0
-  status: TODO
+  status: DONE
   summary: add bounded provider-read resilience
   acceptance:
   - requires-workitem-closure:P29-P0-02
@@ -52,13 +54,15 @@ workitems:
   - contract-test
 - id: P29-P0-04
   priority: P0
-  status: TODO
+  status: DONE
   summary: derive lifecycle projections and emit non-authoritative operational observations
   acceptance:
   - requires-workitem-closure:P29-P0-03
   - lifecycle owners mechanically derive current predecessor successor and history projections and stale authored copies fail structurally
   - prospective progress governance amplification and provider queue decomposition bind exact execution identities and explicitly carry no authority
   - missing provider timestamps remain unknown and queued latency is not attributed to BCF or product execution
+  - the integrated authored DONE prefix P29-P0-01 through P29-P0-04 resolves closed from one exact subject and evidence session while P29-P0-05 alone becomes eligible and P29 remains active
+  - finalizer certification and status publication preserve workitem_closed target P29-P0-04 and both release authority consumers reject it
   acceptance_evidence:
   - test
   - contract-test

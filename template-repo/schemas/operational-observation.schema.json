@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "kind", "authority", "execution_id", "sequence", "stage", "state", "monotonic_ms"],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "kind": {"const": "prospective_progress"},
+        "authority": {"const": false},
+        "execution_id": {"type": "string", "minLength": 1},
+        "sequence": {"type": "integer", "minimum": 1},
+        "stage": {"type": "string", "minLength": 1},
+        "state": {"enum": ["started", "complete", "failed"]},
+        "monotonic_ms": {"type": "integer", "minimum": 0}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "kind", "authority", "repository", "run_id", "run_attempt", "job_id", "runner_labels", "provider_queue_ms", "execution_ms"],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "kind": {"const": "provider_queue"},
+        "authority": {"const": false},
+        "repository": {"type": "string", "pattern": "^[^/]+/[^/]+$"},
+        "run_id": {"type": "integer", "minimum": 1},
+        "run_attempt": {"type": "integer", "minimum": 1},
+        "job_id": {"oneOf": [{"type": "integer", "minimum": 1}, {"const": "unknown"}]},
+        "runner_labels": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "provider_queue_ms": {"oneOf": [{"type": "integer", "minimum": 0}, {"const": "unknown"}]},
+        "execution_ms": {"oneOf": [{"type": "integer", "minimum": 0}, {"const": "unknown"}]}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "kind", "authority", "train_id", "subject", "counters", "wall_clock_ms", "compute_ms"],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "kind": {"const": "governance_amplification"},
+        "authority": {"const": false},
+        "train_id": {"type": "string", "minLength": 1},
+        "subject": {"type": "object", "additionalProperties": false, "required": ["commit_sha", "tree_sha"], "properties": {"commit_sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"}, "tree_sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"}}},
+        "counters": {"type": "object"},
+        "wall_clock_ms": {"type": "integer", "minimum": 0},
+        "compute_ms": {"type": "integer", "minimum": 0}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "kind", "authority", "phase_id", "completed_prefix", "predecessor", "current", "successor", "history_owner"],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "kind": {"const": "lifecycle_projection"},
+        "authority": {"const": "lifecycle"},
+        "phase_id": {"type": "string", "minLength": 1},
+        "completed_prefix": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "predecessor": {"type": ["string", "null"]},
+        "current": {"type": ["string", "null"]},
+        "successor": {"type": ["string", "null"]},
+        "history_owner": {"const": "plans/phase-history.yml"}
+      }
+    }
+  ]
+}

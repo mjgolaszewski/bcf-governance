@@ -177,6 +177,27 @@ def test_missing_or_wrong_node_fails_without_skipping_or_installing(repository: 
     assert not (repository / BOOTSTRAP.FIXTURE / "node_modules").exists()
 
 
+def test_wrong_ambient_node_selects_declared_manager_sibling_mechanically(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    versions = tmp_path / "versions/node"
+    ambient = versions / "v24.0.0/bin/node"
+    declared = versions / BOOTSTRAP.NODE_VERSION / "bin/node"
+    ambient.parent.mkdir(parents=True)
+    declared.parent.mkdir(parents=True)
+    ambient.write_bytes(b"ambient")
+    declared.write_bytes(b"declared")
+    monkeypatch.setattr(BOOTSTRAP.shutil, "which", lambda _name: str(ambient))
+
+    def version(command, **_kwargs):
+        executable = Path(command[0])
+        value = BOOTSTRAP.NODE_VERSION if executable == declared else "v24.0.0"
+        return subprocess.CompletedProcess(command, 0, stdout=value + "\n", stderr="")
+
+    monkeypatch.setattr(BOOTSTRAP.subprocess, "run", version)
+    assert BOOTSTRAP._node_executable() == (declared, BOOTSTRAP.NODE_VERSION)
+
+
 @pytest.mark.parametrize("relative", [
     "tests", "tests/fixtures", "tests/fixtures/typescript-toolchain",
     "tests/fixtures/typescript-toolchain/node_modules",

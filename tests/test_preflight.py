@@ -49,12 +49,16 @@ def test_repository_context_separates_push_event_from_pr_evaluation(
     _git(repo, "commit", "-m", "next")
     monkeypatch.setenv("BCF_PROVIDER_EVENT", "push")
     monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
+    monkeypatch.setenv("BCF_INVOCATION_KIND", "direct_event")
+    monkeypatch.setenv("BCF_CALLER_COMPARISON_BASE_SHA", "")
+    monkeypatch.setenv("BCF_ORIGIN_COMPARISON_BASE_SHA", base)
     monkeypatch.setenv("BCF_COMPARISON_BASE_SHA", base)
     monkeypatch.delenv("BCF_PR_BASE_SHA", raising=False)
 
     assert pr_context(repo, "pr") == {
         "applicable": True,
         "event": "push",
+        "invocation_kind": "direct_event",
         "base_sha": base,
         "provenance": "push.before",
     }
@@ -67,6 +71,9 @@ def test_repository_context_rejects_missing_zero_or_unavailable_push_base(
     repo = _committed_repo(tmp_path, "source.py", "VALUE = 1\n")
     monkeypatch.setenv("BCF_PROVIDER_EVENT", "push")
     monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
+    monkeypatch.setenv("BCF_INVOCATION_KIND", "direct_event")
+    monkeypatch.setenv("BCF_CALLER_COMPARISON_BASE_SHA", "")
+    monkeypatch.setenv("BCF_ORIGIN_COMPARISON_BASE_SHA", base)
     monkeypatch.setenv("BCF_COMPARISON_BASE_SHA", base)
     with pytest.raises(ValueError, match="comparison base"):
         pr_context(repo, "pr")
@@ -107,13 +114,17 @@ def test_workflow_call_comparison_base_is_explicit_exact_and_available(
         ["git", "rev-parse", "HEAD"], cwd=repo, text=True,
         capture_output=True, check=True,
     ).stdout.strip()
-    monkeypatch.setenv("BCF_PROVIDER_EVENT", "workflow_call")
-    monkeypatch.setenv("GITHUB_EVENT_NAME", "workflow_call")
+    monkeypatch.setenv("BCF_PROVIDER_EVENT", "push")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
+    monkeypatch.setenv("BCF_INVOCATION_KIND", "reusable_call")
+    monkeypatch.setenv("BCF_CALLER_COMPARISON_BASE_SHA", base)
+    monkeypatch.setenv("BCF_ORIGIN_COMPARISON_BASE_SHA", base)
     monkeypatch.setenv("BCF_COMPARISON_BASE_SHA", base)
 
     assert pr_context(repo, "pr") == {
         "applicable": True,
-        "event": "workflow_call",
+        "event": "push",
+        "invocation_kind": "reusable_call",
         "base_sha": base,
         "provenance": "workflow_call.input",
     }
@@ -124,11 +135,44 @@ def test_workflow_call_rejects_nonexact_comparison_base(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, base: str
 ) -> None:
     repo = _committed_repo(tmp_path, "source.py", "VALUE = 1\n")
-    monkeypatch.setenv("BCF_PROVIDER_EVENT", "workflow_call")
-    monkeypatch.setenv("GITHUB_EVENT_NAME", "workflow_call")
+    origin = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, text=True,
+        capture_output=True, check=True,
+    ).stdout.strip()
+    monkeypatch.setenv("BCF_PROVIDER_EVENT", "push")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
+    monkeypatch.setenv("BCF_INVOCATION_KIND", "reusable_call")
+    monkeypatch.setenv("BCF_CALLER_COMPARISON_BASE_SHA", base)
+    monkeypatch.setenv("BCF_ORIGIN_COMPARISON_BASE_SHA", origin)
     monkeypatch.setenv("BCF_COMPARISON_BASE_SHA", base)
 
     with pytest.raises(ValueError, match="comparison base"):
+        pr_context(repo, "pr")
+
+
+def test_reusable_push_rejects_valid_but_wrong_caller_base(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _committed_repo(tmp_path, "source.py", "VALUE = 1\n")
+    origin = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, text=True,
+        capture_output=True, check=True,
+    ).stdout.strip()
+    (repo / "source.py").write_text("VALUE = 2\n", encoding="utf-8")
+    _git(repo, "add", "source.py")
+    _git(repo, "commit", "-m", "next")
+    wrong = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, text=True,
+        capture_output=True, check=True,
+    ).stdout.strip()
+    monkeypatch.setenv("BCF_PROVIDER_EVENT", "push")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
+    monkeypatch.setenv("BCF_INVOCATION_KIND", "reusable_call")
+    monkeypatch.setenv("BCF_CALLER_COMPARISON_BASE_SHA", wrong)
+    monkeypatch.setenv("BCF_ORIGIN_COMPARISON_BASE_SHA", origin)
+    monkeypatch.setenv("BCF_COMPARISON_BASE_SHA", wrong)
+
+    with pytest.raises(ValueError, match="provider origin"):
         pr_context(repo, "pr")
 
 

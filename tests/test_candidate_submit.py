@@ -51,7 +51,6 @@ def test_submit_owns_prospective_train_then_pushes_only_proved_sha(
 
     result = submit.submit_candidate(
         tmp_path,
-        semantic_intent="workitem",
         python_executable=Path("/python"),
         provider_api=object(),  # type: ignore[arg-type]
         runner=runner,

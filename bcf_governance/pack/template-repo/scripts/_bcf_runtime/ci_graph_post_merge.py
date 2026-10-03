@@ -20,7 +20,10 @@ from .evidence_workitem_lifecycle import (
     WorkitemContractError,
     validate_workitem_dependencies,
 )
-from .repository_comparison_context import PUSH_COMPARISON_BASE_EXPRESSION
+from .repository_comparison_context import (
+    PUSH_COMPARISON_BASE_EXPRESSION,
+    comparison_base_input_contract,
+)
 
 
 CALLER_MODE = "${{ inputs.evaluation_mode || 'pr' }}"
@@ -89,6 +92,10 @@ def _workflow_call_defaults(workflow: dict[str, Any]) -> tuple[Any, Any]:
     if len(calls) != 1:
         raise CIGraphError("direct protected-main workflow_call contract is not unique")
     inputs = calls[0].get("inputs", {})
+    if inputs.get("comparison_base_sha") != comparison_base_input_contract():
+        raise CIGraphError(
+            "direct protected-main reusable comparison input is not required and exact"
+        )
     mode = inputs.get("evaluation_mode", {})
     target = inputs.get("evaluation_target", {})
     return mode.get("default"), target.get("default")

@@ -889,6 +889,46 @@ def test_bounded_workitem_certification_does_not_claim_parent_closure(
     assert report["release_readiness"]["effective_state"] == "completed"
 
 
+def test_integrated_dependency_prefix_closes_under_one_exact_bounded_truth(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path)
+    evidence = _enable_v3_grouped_session(repo, bounded_workitems=True)
+    path = repo / "plans/phase-01-workitems.yml"
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    first = payload["workitems"][0]
+    payload["workitems"] = [first]
+    for index in range(2, 6):
+        payload["workitems"].append({
+            "id": f"P01-W0{index}",
+            "status": "DONE" if index < 5 else "TODO",
+            "acceptance": [f"requires-workitem-closure:P01-W0{index - 1}"],
+            "acceptance_evidence": ["test", "contract-test", "runtime-smoke"],
+        })
+    path.write_text(yaml.safe_dump(payload), encoding="utf-8")
+    report = derive_truth(
+        repo,
+        evidence,
+        evaluation_mode="workitem",
+        evaluation_target="P01-W04",
+    )
+    items = {
+        item["id"]: item
+        for item in report["claims"]["workitems_closed"]["repository_observation"]["items"]
+    }
+    assert report["status"] == "pass", report["issues"]
+    assert [items[f"P01-W0{index}"]["effective_state"] for index in range(1, 5)] == [
+        "closed", "closed", "closed", "closed"
+    ]
+    assert items["P01-W05"]["eligible"] is True
+    assert items["P01-W05"]["effective_state"] == "planned"
+    assert report["effective_state"] == "active"
+    assert report["certified_proposition"]["target"] == {
+        "kind": "workitem", "id": "P01-W04"
+    }
+    assert report["certified_proposition"]["eligible_successors"] == ["P01-W05"]
+
+
 @pytest.mark.parametrize("target", [None, "P01-W99"])
 def test_bounded_workitem_certification_requires_exact_closed_target(
     tmp_path: Path, target: str | None

@@ -16,18 +16,19 @@ summary:
     CI operations for BCF 2.1.7
   - phase artifacts were scaffolded from the governance template
   - issues 347 341 and 342 are the planned phase scope; shipped generator bug 348 was admitted into P29-P0-01 because it shares the canonical evaluation-input projection owner
+  - P29-P0-01 through P29-P0-04 are one integrated implementation prefix; exact-main will target P29-P0-04 after the same authenticated evidence closes every predecessor and will make only P29-P0-05 eligible
 workitems:
 - id: P29-P0-01
-  status: IN_PROGRESS
+  status: DONE
   summary: persist the CI state matrix and repair evaluation-input projection
 - id: P29-P0-02
-  status: TODO
-  summary: optimize deterministic fixed-point reconciliation
+  status: DONE
+  summary: optimize deterministic fixed-point reconciliation while mechanically admitting the exact local toolchain and expensive-gate lease before reconciliation
 - id: P29-P0-03
-  status: TODO
+  status: DONE
   summary: add bounded provider-read resilience
 - id: P29-P0-04
-  status: TODO
+  status: DONE
   summary: derive lifecycle projections and emit non-authoritative operational observations
 - id: P29-P0-05
   status: TODO
@@ -62,6 +63,21 @@ execution_evidence:
   - merged correction d8e6906948ea7b7f2762d9f050203393c3f6ad00 completed unified rotation 37011053947/1, but fresh exact-main 37010486449/2 failed job 110857891515 before fan-out because the reusable governance callee did not consume its declared comparison-base input
   - the canonical matrix now treats caller projection and callee consumption as one indivisible edge; renderer and required-artifact validation own the same event-aware comparison environment
   - the PR-base negative control now mutates the canonical comparison-context primitive and is killed by an independent literal contract, replacing the renderer branch made unreachable by reusable-workflow consumption
+  - the P29 matrix now precedes implementation for local toolchain and resource admission selective reconciliation provider retry lifecycle projection operational observation and every downstream authority consumer
+  - one canonical local submission entrypoint derives lifecycle intent, selects the locked repository toolchain, acquires an execution-scoped lease, reconciles only invalidated canonical owners, walks the full prospective authority chain, and submits the exact unchanged commit
+  - bounded read-only provider retry preserves the exact GET identity and records non-authoritative attempts while mutation methods, authorization failures, schema failures, and identity changes remain terminal
+  - lifecycle progress, provider queue decomposition, and governance-amplification observations are schema-validated and explicitly non-authoritative; unknown provider timestamps remain unknown
+  - the integrated authored DONE prefix P29-P0-01 through P29-P0-04 targets P29-P0-04 for one exact evidence session, leaves P29 active, and makes only P29-P0-05 eligible
+  - pre-gate adopter review proved GitHub retains the caller origin event inside reusable workflows; the canonical matrix now separates origin event from invocation kind, requires the reusable comparison input, and rejects any mismatch among caller input provider-native origin base and selected comparison base before evidence
+  - the pre-existing package preflight comparison-context mutant now targets reusable-input precedence at the same canonical projection owner; its old pull-request-base mutation was replaced rather than duplicated because the direct-event literal remains independently asserted and the new mutation preserves the broader event-context security invariant within the governed context budget
+  - cheap PR preflight rejected the new template-workflow reconcile port before evidence because the governed reconcile operation effect changed without an exact-base migration; the canonical matrix now classifies the transition and the phase-owned exact-base migration binds only that deterministic projection expansion
+  - Racecar pre-gate qualification proved the controller interpreter and controller-only PYTHONPATH were leaking into adopter test collection; the matrix now separates controller and project Python identity, the canonical local entrypoint selects the exact repository environment, and the same unchanged Racecar head passed cheap preflight
+  - the canonical prospective train passed PR preflight then rejected its semantic post-merge projection because it applied ordinary release controller strictness before classifying the already-proved pending rotation; the matrix now gives that non-authoritative simulation one closed pending-rotation lane while provider exact-main remains evidence-suppressed until N+1 installation
+  - first-stage structural validation caught preflight.py at 810 lines before the retry; controller-state compilation now lives in the existing canonical controller-preflight owner and the 800-line policy remains unchanged
+  - cheap preflight then rejected three mutation selectors still bound to the pre-extraction module; each selector now targets the identical controller compatibility bootstrap topology or pending-rotation branch in the canonical controller-preflight owner with its original oracle unchanged
+  - the first complete prospective train reached the full test producer, where the host-level candidate lease incorrectly appeared inside the isolated evidence process and rejected eight lease-owning regression fixtures as competing executions
+  - the state matrix now distinguishes the exclusive host candidate lease from an authenticated nested execution-state lease scope; nested scope is derived only from the canonical namespace roots and immutable ownership manifest, while partial forged or stale environment remains fail-closed
+  - the same train exposed an authenticated 2.1.3 adopter upgrade whose preserved direct-workflow graph was checked by the new runtime before its new required comparison input was migrated; the matrix now owns exact legacy-to-current input projection before current graph reconciliation and rejects malformed or ambiguous predecessor state
 closeout_requirements:
   claims:
     workitems_closed:
@@ -94,4 +110,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- implement scoped workitems and record execution evidence in this log
+- certify the integrated P29-P0-01 through P29-P0-04 prefix and begin only the eligible P29-P0-05 immutable 2.1.7 custody work

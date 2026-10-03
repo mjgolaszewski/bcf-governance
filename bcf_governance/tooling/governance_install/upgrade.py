@@ -9,10 +9,12 @@ from typing import Any, Callable, Iterable, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
+from ..ci_graph_yaml import render_yaml
 from ..profile_contract_v2 import current_contract_version
 from ..profile_yaml import render_governance_profile
 from ..profile_v2_surfaces import selective_release_check_lines
 from ..runtime_capacity import EXECUTION_STATE_POLICY
+from ..repository_comparison_context import comparison_base_input_contract
 
 
 def retire_self_authority_pack_surfaces(
@@ -212,6 +214,53 @@ def _upgrade_runtime_contract(target_root: Path) -> list[Path]:
         raw.replace(marker, "schema_version: '1.1'", 1).rstrip() + "\n" + execution,
         encoding="utf-8",
     )
+    return [path]
+
+
+def _upgrade_direct_comparison_input(target_root: Path) -> list[Path]:
+    """Project the exact new reusable input into a preserved legacy direct graph."""
+
+    path = target_root / "governance/ci-graph.yml"
+    if not path.exists():
+        return []
+    payload = _load_yaml_mapping(path)
+    workflows = payload.get("workflows")
+    if not isinstance(workflows, list):
+        raise ValueError("upgrade CI graph workflow inventory is invalid")
+    if any(isinstance(item, dict) and item.get("id") == "exact-main" for item in workflows):
+        return []
+    direct = []
+    for item in workflows:
+        if not isinstance(item, dict) or item.get("role") != "exact-main":
+            continue
+        events = item.get("events")
+        if not isinstance(events, list):
+            continue
+        types = {
+            event.get("type") for event in events if isinstance(event, dict)
+        }
+        if {"pull_request", "workflow_call", "push"}.issubset(types):
+            direct.append(item)
+    if not direct:
+        return []
+    if len(direct) != 1:
+        raise ValueError("upgrade direct protected-main workflow is ambiguous")
+    calls = [
+        event
+        for event in direct[0]["events"]
+        if isinstance(event, dict) and event.get("type") == "workflow_call"
+    ]
+    if len(calls) != 1 or not isinstance(calls[0].get("inputs"), dict):
+        raise ValueError("upgrade direct workflow-call contract is invalid")
+    inputs = calls[0]["inputs"]
+    expected = comparison_base_input_contract()
+    current = inputs.get("comparison_base_sha")
+    if current == expected:
+        return []
+    if current is not None:
+        raise ValueError("upgrade comparison-base input is malformed")
+    calls[0]["inputs"] = {"comparison_base_sha": expected, **inputs}
+    path.write_bytes(render_yaml(payload))
     return [path]
 
 
@@ -586,6 +635,7 @@ def _upgrade_state_files(
     )
     _upgrade_makefile_fragment(target_root)
     created.extend(_upgrade_runtime_contract(target_root))
+    created.extend(_upgrade_direct_comparison_input(target_root))
     return created
 
 

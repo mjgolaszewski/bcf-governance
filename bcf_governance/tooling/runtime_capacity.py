@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 import re
 import shutil
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 
 import yaml
 
@@ -177,6 +177,40 @@ def _read_state_manifest(root: Path) -> dict[str, Any]:
     if set(payload) != expected or payload.get("schema_version") != "1.0":
         raise RuntimeCapacityError("execution-state namespace ownership is invalid")
     return payload
+
+
+def authenticated_execution_state_namespace(
+    environment: Mapping[str, str],
+) -> str | None:
+    """Return an exact active namespace or reject caller-authored state coordinates."""
+
+    present = {name for name in EXECUTION_STATE_ENVIRONMENT if environment.get(name)}
+    if not present:
+        return None
+    if present != set(EXECUTION_STATE_ENVIRONMENT):
+        raise RuntimeCapacityError("execution-state environment is incomplete")
+    namespace = environment["BCF_EXECUTION_STATE_NAMESPACE"]
+    if STATE_NAMESPACE.fullmatch(namespace) is None:
+        raise RuntimeCapacityError("execution-state namespace is unsafe")
+    root = Path(environment["BCF_EXECUTION_STATE_ROOT"])
+    database_root = Path(environment["BCF_EXECUTION_DATABASE_ROOT"])
+    if (
+        not root.is_absolute()
+        or not database_root.is_absolute()
+        or root.name != namespace
+        or database_root != root / "database"
+        or database_root.is_symlink()
+        or not database_root.is_dir()
+    ):
+        raise RuntimeCapacityError("execution-state environment does not match its namespace")
+    manifest = _read_state_manifest(root)
+    if (
+        manifest.get("namespace") != namespace
+        or manifest.get("lifecycle") not in {"ephemeral", "persistent_shared"}
+        or re.fullmatch(r"[a-f0-9]{64}", str(manifest.get("binding_sha256", ""))) is None
+    ):
+        raise RuntimeCapacityError("execution-state namespace ownership is invalid")
+    return namespace
 
 
 def _validate_existing_state(base: Path, target: Path, lifecycle: str) -> None:
