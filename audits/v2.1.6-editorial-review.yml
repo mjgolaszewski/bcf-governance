@@ -24,7 +24,7 @@ documents:
   canonical_topic_owner: AGENTS.yml
   topic_role: canonical
   before_sha256: 21166cba22791e694393d6eb0cdcdee37ac056c196e77a298ba0c9ca2e2cc1e5
-  after_sha256: 839688947e19185c44d5f20f3f80710c79cb1ca8fbeac98098712a0a97e8f4c6
+  after_sha256: ac6d73afffe53835aabb0704b64dfff7ac541d2736b83ea0af1766e71830ac9b
   findings:
   - reviewed canonical repository-agent guidance for current profile, lifecycle, and authority boundaries
   disposition: revised
@@ -141,7 +141,7 @@ documents:
   canonical_topic_owner: spec/RELEASE_TRAIN_STATE_DAG.md
   topic_role: canonical
   before_sha256: null
-  after_sha256: c3e2228d0c365838221ace6755ec8d291fa7dc776758cbaf5dab92297a48747f
+  after_sha256: 813a8005e405700f31c9cf5572547d0043dea5bdcbacf6fdaf0bf7881499b01b
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: revised
