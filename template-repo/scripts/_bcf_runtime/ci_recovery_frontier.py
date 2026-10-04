@@ -207,7 +207,7 @@ def protected_merge_frontier(
         operation="protected_merge",
         state=state,
         identity=identity,
-        owner="ci_protected_merge.merge_certified_pull_request",
+        owner="ci_github_pr_mutations.enable_pull_request_auto_merge",
         prerequisites=(
             "exact_pr_subject",
             "app_15368_certification",
