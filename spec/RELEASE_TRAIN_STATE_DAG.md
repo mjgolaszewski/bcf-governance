@@ -843,6 +843,18 @@ the missing derivation is a product defect and execution stops at that owner.
 | release transaction resumable | certified receipt, version/tag, asset digests, transaction token and credential capsule | resume the exact next publication edge | exact immutable release and credential retirement | conflict, rebuilt bytes, changed subject, ambiguous partial mutation |
 | release custody verified | immutable tag/assets/attestations, independent verification and adopter reports | close release/phase and activate the governed successor | P30 activates P31; P31 closes the train | missing adopter class, mutable/draft release, credential residue, inconsistent receipts |
 | scheduled control run | default-branch subject, scheduled workflow identity, declared toolchains and control profile, provider-authenticated effective controller commit/bundle | resolve current controller custody, validate structural state against that exact runtime, execute both mutant profiles, retain a typed terminal artifact | exact scheduled result with no certification authority | stale source-policy pin substituted for an active provider transition, incomplete controller pair, release proposition inferred from schedule, absent diagnostics, secondary artifact error obscuring first cause |
+| scheduled isolated mutant runtime | exact default-branch commit/tree, canonical runtime package bytes, projected runtime-version owner, mutation target, oracle node and profile identity | construct one importable candidate runtime, prove its bootstrap, then execute every declared profile and aggregate all terminal results | killed/survived/infrastructure result for every declared mutant; no certification authority | copied tooling without its version owner, baseline-only bootstrap success, first-profile short circuit, missing per-profile diagnostic |
+| exact clean candidate without provider proof | repository/base/head/commit/tree, lifecycle proposition, controller/policy/protection identities | run the one canonical submit operation | exact pushed candidate and provider-required frontier | caller-selected stage order, separate remembered prospective train, dirty tree, moved identity, ambiguous base |
+| bound PR pending | exact provider repository/PR/base/head/merge relationship, required checks and protection contract | observe the same immutable subject until a typed terminal edge exists | pending with no mutation authority | merge attempt, evidence relabel, check substitution, unrelated rerun |
+| bound PR certified and mergeable | exact provider PR/base/head/tree, authenticated certification, protection and allowed merge methods | derive and execute the sole legal protected merge operation | exact merged commit/tree and exact-main successor | caller-selected merge method, destructive ancestry, stale certification, bypass actor or missing required context |
+| prospectively proved PR with native auto-merge | exact provider repository/PR node/base/head/tree, canonical protection digest, repository auto-merge capability and merge-commit method | idempotently enable the provider setting when absent and bind `MERGE` auto-merge to the exact PR node | provider waits for the ordinary protected certification and performs one normal merge commit | manual merge timing, squash/rebase choice, bypass, moved head/base, duplicate PR, token retained after request |
+| certified predecessor with direct successor active | ordered workitem dependency, predecessor `DONE` plus authenticated bounded certification, direct successor `IN_PROGRESS` or `BLOCKED` | select PR-progress for the active successor; preserve predecessor custody without recertifying it | successor candidate remains nonterminal until it is authored `DONE` | repeatedly targeting predecessor, treating unrelated active work as the successor, or inferring parent-phase closure |
+| bound PR base advanced | exact provider base/head/merge base, candidate tree, certification subject and changed dependency closure | derive reconstruction/rebase or a typed superseded result; invalidate only subject- or base-bound proof | new exact candidate requiring the affected proof frontier | blind update-branch, stale proof reuse, ancestry destruction, ambiguous merge relationship |
+| provider transient before mutation | exact GET request identity, bounded retry taxonomy, attempt count, Retry-After and no observed mutation | retry the identical read within the declared bound | fresh exact observation or typed unavailable result | method/body/subject changes, authorization/schema/identity error retried, unbounded backoff |
+| provider mutation outcome unknown | exact operation idempotency key, request identity, pre-state and provider observation | reread authenticated provider state and classify committed/not-committed/conflict before any retry | exact existing result or one idempotent retry | blind mutation replay, new operation identity, unverifiable partial result |
+| terminal subject superseded | authenticated newer base/main/PR subject and prior evidence bindings | emit superseded and derive a fresh candidate frontier | prior evidence retained for audit but inapplicable unless exact applicability proves otherwise | relabeling run/attempt, stale status publication, treating supersession as success |
+| alternate governed lane | exact transition class, subject/policy identity, prerequisites, lane identity, ordered operation and terminal condition | invoke the one declared lane owner | exact terminal state or typed bounded failure | generic inapplicable, hand-authored steps, missing prerequisite, lane result used as unrelated authority |
+| mutation-bearing operation terminal | exact operation, subject, pre-state, requested proposition, provider result and produced artifacts | derive preserve/invalidate/retry/stop from the canonical recovery frontier | one typed terminal result and successor action | implicit progress, unbounded retry, unrelated invalidation, human-selected continuation |
 | local runtime supported | selected interpreter version and canonical runtime authority: self public Python-minor contract or adopter generated CI-graph resource set | admit the exact declared minor and bind authority plus version into execution evidence | local prospective train may execute | hard-coded subset, missing/ambiguous authority, undeclared minor, malformed version, interpreter/contract disagreement |
 | dependency advisory exact | exact installed package inventory, pinned scanner, authenticated advisory-service response, observation time and result digest | emit exact SBOM and fail or pass the existing dependency-audit claim | freshness-bound dependency assurance | scanner/service unavailable, partial inventory, malformed response, known vulnerability, unbound advisory result |
 | dependency advisory unavailable | exact inventory exists but advisory resolution cannot complete | fail the existing security gate with a typed diagnostic | none | treating unavailability as clean, relying on a future Dependabot update, SBOM-only success |
@@ -884,6 +896,92 @@ P30 planning occurs in this order:
 
 Later stages cannot compensate for omission or ambiguity in an earlier stage.
 Truth always rechecks complete required claims independently of optimization.
+
+### P30-P0-02 RECOVER state machine
+
+The recovery frontier is a closed projection of authenticated state, not an
+operator playbook. One exact input produces one exact action set and one
+successor for every terminal result:
+
+```text
+OBSERVE
+  repository + base + head + commit + tree
+  provider PR/run/attempt/check/protection state
+  lifecycle proposition + policy + controller custody
+  operation pre-state + idempotency identity
+    -> CLASSIFY
+       READY_TO_SUBMIT
+       PR_PENDING
+       READY_TO_MERGE
+       RECONSTRUCT_CANDIDATE
+       RETRY_IDENTICAL_READ
+       RESOLVE_UNKNOWN_MUTATION
+       CONTINUE_CONTROLLER_TRANSITION
+       SUPERSEDED
+       TERMINAL_BLOCKED
+    -> ACT
+       exactly one action owned by the matching canonical operation
+    -> OBSERVE_RESULT
+       exact subject/run/attempt/provider result and artifacts
+    -> PRESERVE_OR_INVALIDATE
+       preserve only proofs whose complete bindings remain applicable
+       invalidate every proof reachable from a changed binding
+    -> NEXT
+       one typed successor state or terminal result
+```
+
+The frontier identity binds schema version, repository/provider identities,
+base/head/candidate commit and tree, lifecycle proposition, controller and
+policy digests, protection digest, operation kind, transition class,
+prerequisites, legal action, idempotency identity, preservation/invalidation
+sets, terminal result, and successor action. Missing or ambiguous fields
+produce no action. `inapplicable` is not a result: an excluded operation must
+name its exact transition class and deterministic alternate governed lane.
+Candidate submission therefore ends by creating or reusing one exact PR and
+requesting GitHub native auto-merge with the governed merge-commit method. The
+requesting credential is needed only for that idempotent request; GitHub later
+performs the merge after the existing App 15368 certification and ruleset are
+satisfied, so no long-lived BCF merger credential, publisher mutation, bypass,
+or agent-timed merge step exists. Provider auto-merge being disabled is stale
+derived provider configuration and is reconciled by the same request owner.
+
+The outward construction is:
+
+```text
+invariants
+  only authenticated state selects a legal action
+  mutation uncertainty is observed before retry
+  recovery preserves applicable proof and cannot broaden authority
+    -> primitives
+       exact repository/PR/subject/policy/protection/controller identities
+       closed operation, transition, result, retry and successor enums
+       merge-base and legal-merge-method observations
+       idempotency key and preservation/invalidation closure
+         -> contracts
+            recovery-frontier schema and validator
+            provider observation and mutation-result contract
+            closed alternate-lane contract
+            proposition-preserving merge and submit contracts
+              -> producers
+                 prospective/submit state compiler
+                 provider PR/protection/run resolver
+                 controller and release lifecycle resolvers
+                 mutation-bearing operation result producers
+                   -> consumers
+                      submit and protected merge
+                      provider retry and reconciliation
+                      exact-main and controller transition
+                      finalizer, publisher and status projection
+                      bounded/phase/release successor eligibility
+```
+
+Scheduled controls consume the same rule at their execution boundary. Their
+isolated runtime must project the canonical version owner with the copied
+runtime package, and one scheduler-owned operation must execute both declared
+profiles before returning the aggregate result. A failed first profile cannot
+erase the second profile or its diagnostic. This correction belongs to
+P30-P0-02 because P30-P0-01 already proved provider-effective scheduled
+custody and retained the first failure artifacts.
 
 ### P31 workitem DAG
 

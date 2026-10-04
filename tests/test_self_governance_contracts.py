@@ -293,8 +293,9 @@ def test_scheduled_mutants_preflight_selected_interpreter_before_execution(
     job = _workflow(workflow_id)["jobs"][0]
     components = job["executor"]["components"]
     assert job["permissions"] == {"actions": "read", "contents": "read"}
+    executor = "nightly-mutants" if "nightly" in workflow_id else "weekly-mutants"
     assert components.index("scheduled-preflight") < components.index(
-        "nightly-validator-mutants" if "nightly" in workflow_id else "weekly-validator-mutants"
+        executor
     )
     assert components[-1] == (
         "upload-nightly-mutants" if "nightly" in workflow_id else "upload-weekly-mutants"

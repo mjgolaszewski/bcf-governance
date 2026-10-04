@@ -496,7 +496,11 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "52f5994fcdbe27244bfac411e98067f034e21c37e009a74abbd97180a2ed5a4b"
+      "sha256": "149c49aca69fdac9b18da007e72f30282b75d9bf0e1384ac58a325e0c021a107"
+    },
+    "scripts/_bcf_runtime/ci_candidate_pr.py": {
+      "operation": "copy",
+      "sha256": "1a4795805d56e32c4526f83c2e8b0b2c2c134a22ea715337c75a4d36f7aa5e93"
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
@@ -540,7 +544,7 @@
     },
     "scripts/_bcf_runtime/ci_github_api.py": {
       "operation": "copy",
-      "sha256": "4a0546ee97d0b5edf6d832bcc708b1893b37f5ef2f47a24cfe631cbce9e95191"
+      "sha256": "5d13d3ab91d3f1e90169d36508ba38db8ce25719d16bc032a9577facca916669"
     },
     "scripts/_bcf_runtime/ci_github_artifact_inventory.py": {
       "operation": "copy",
@@ -596,7 +600,7 @@
     },
     "scripts/_bcf_runtime/ci_github_extension_commands.py": {
       "operation": "copy",
-      "sha256": "fe80a9fcb9b9d62cd09916bcf6d9ce380316879e1fd5e6b8dd85859f25217b80"
+      "sha256": "c9d94a30d2e68a00e0aff5624b17197d48c7e74db6e1252ed08a6f4ebbfab56c"
     },
     "scripts/_bcf_runtime/ci_github_identity.py": {
       "operation": "copy",
@@ -609,6 +613,10 @@
     "scripts/_bcf_runtime/ci_github_pr.py": {
       "operation": "copy",
       "sha256": "0fe9c2a6d4684b1d019104ee85049fa997e7f8dd45c03c7c2ac1a7031e20a39a"
+    },
+    "scripts/_bcf_runtime/ci_github_pr_mutations.py": {
+      "operation": "copy",
+      "sha256": "1038bab8440fce11acd13d54903e26405d8e3c4a139b3e0ba94065a8d80cbc5d"
     },
     "scripts/_bcf_runtime/ci_github_release.py": {
       "operation": "copy",
@@ -633,6 +641,10 @@
     "scripts/_bcf_runtime/ci_github_transport.py": {
       "operation": "copy",
       "sha256": "242efca657e5d15b805f5b8947c7e9ac367397902a88cfaf82ffbaedd4e9f90d"
+    },
+    "scripts/_bcf_runtime/ci_github_values.py": {
+      "operation": "copy",
+      "sha256": "d7edd80bfeb38d10e5282a3bcef7b8073171b6f4768878f4c73a2a47eb10a8c9"
     },
     "scripts/_bcf_runtime/ci_graph_artifact_steps.py": {
       "operation": "copy",
@@ -692,7 +704,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_post_merge.py": {
       "operation": "copy",
-      "sha256": "4fd2db26b8606d2ed6a6807043d747ca1dd58721fa453bbe855f1d6498656453"
+      "sha256": "958c760e507d995fc47039bac6eb359136248d76c30cdafb7fddac93ed297cee"
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
@@ -741,6 +753,10 @@
     "scripts/_bcf_runtime/ci_prior_evidence_auth.py": {
       "operation": "copy",
       "sha256": "7b969964ab9f0ad9b2cee8ed19bd068e7c4cc6467b18f39cbe6b40af255cd7c6"
+    },
+    "scripts/_bcf_runtime/ci_recovery_frontier.py": {
+      "operation": "copy",
+      "sha256": "3f9acfa4022ab727e446c49657fa42e0cadde5c86bd6e56b82272a5947ea0dca"
     },
     "scripts/_bcf_runtime/ci_reuse_attestation_verifier.py": {
       "operation": "copy",
@@ -1163,7 +1179,7 @@
     },
     "scripts/_bcf_runtime/provider_read.py": {
       "operation": "copy",
-      "sha256": "47b72820593b6bec81f63a2b8bca3edabd684a3326eba8a7032373b97592b266"
+      "sha256": "5630be9bb55608354caea96ead16fb5bd25f13c8aad1428e163b3934480b151f"
     },
     "scripts/_bcf_runtime/provider_reuse_closure.py": {
       "operation": "copy",
@@ -1239,7 +1255,7 @@
     },
     "scripts/_bcf_runtime/routine_controller_materialization.py": {
       "operation": "copy",
-      "sha256": "31af0f3666ac8ab4a2c6760408e3d60e08a7c9e902fe277c119b90764f059b36"
+      "sha256": "4c3570e51858038961e3aa3fa77c63bb73424bd964627f4772bcabea4d6d8bc2"
     },
     "scripts/_bcf_runtime/routine_controller_provider.py": {
       "operation": "copy",
@@ -1256,6 +1272,10 @@
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
       "sha256": "462072930f9c1e4d64c6902afa028d1f414f652857e35e894385d6f0a2eb3d99"
+    },
+    "scripts/_bcf_runtime/scheduled_control_execution.py": {
+      "operation": "copy",
+      "sha256": "89fbb66c715244e09d669cc5d9e64bc082a1795458430f34ea55261fff2df1f6"
     },
     "scripts/_bcf_runtime/scheduled_control_preflight.py": {
       "operation": "copy",

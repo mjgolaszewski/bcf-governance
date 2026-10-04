@@ -427,6 +427,7 @@ def _copy_runtime_package(temp_dir: Path) -> None:
     package_root = temp_dir / "mutant_runtime"
     package_root.mkdir()
     (package_root / "__init__.py").write_text("\n", encoding="utf-8")
+    shutil.copy2(REPO_ROOT / "bcf_governance/_version.py", package_root / "_version.py")
     shutil.copytree(REPO_ROOT / "bcf_governance/tooling", package_root / "tooling")
 
 
