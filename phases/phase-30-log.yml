@@ -25,7 +25,7 @@ workitems:
   status: DONE
   summary: derive a bounded authenticated recovery frontier
 - id: P30-P0-03
-  status: TODO
+  status: IN_PROGRESS
   summary: derive the exact affected proof closure
 - id: P30-P0-04
   status: TODO
@@ -67,6 +67,8 @@ execution_evidence:
   - focused recovery and scheduled-control validation passed 81 nodes; the affected graph structural and semantic-authority slice passed 214 nodes in 534.44 seconds and was not recomputed unchanged
   - protected PR 362 merged normally as 5c8e951bf83692ffdf0891b0d65915e418946fd1 tree 0387ff14c7fd8d6aa12600a02d8ed8e5bb79fb00 after governance run 37226953300 finalizer 37229270952 and App 15368 certification
   - exact-main run 37229336123 completed ordinary provider-backed rotation to controller 5c8e951bf83692ffdf0891b0d65915e418946fd1 on both trusted runners; attempt 2 reused the authenticated unchanged evidence, finalizer 37231087170 succeeded, and no-transition run 37231086869 proved ordinary-current custody with release authority absent
+  - P30-P0-02 closed on main 6a9b4e6e6ee7665010067c4c551e3a03d3804b23 tree 29477153e9f663c0e5f0a98bd5f5de63a53924f7 through exact-main 37239398979 finalizer 37240128289 and App 15368 workitem certification; only P30-P0-03 became eligible and release authority remained absent
+  - P30-P0-03 begins with a dormant evidence-session v3 expansion and compatible affected-proof closure primitive so installed controller N can authorize N+1 before the hash-bound frontier is activated
 closeout_requirements:
   claims:
     workitems_closed:
@@ -99,4 +101,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify bounded P30-P0-02 closure before beginning affected-proof pruning in P30-P0-03
+- rotate the compatible expanded controller before activating affected-proof persistence and independent truth verification
