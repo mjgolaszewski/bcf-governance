@@ -23,9 +23,14 @@ from .ci_github_downloads import (
 from .release_versions import ReleaseVersionError, parse_release_tag
 from .provider_read import ProviderReadAttempt
 from .ci_github_transport import GitHubTransportError, request_bytes, request_json
-
-
-REPOSITORY_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
+from .ci_github_pr_mutations import GitHubPRMutationMixin
+from .ci_github_values import (
+    GitHubValueError,
+    positive_id as _provider_positive_id,
+    repository as _provider_repository,
+    sha as _provider_sha,
+    workflow_reference as _provider_workflow_reference,
+)
 
 
 class GitHubAPIError(ValueError):
@@ -39,7 +44,7 @@ class GitHubContent:
     content: bytes
 
 
-class GitHubAPI:
+class GitHubAPI(GitHubPRMutationMixin):
     """Small JSON-only client whose token is supplied by the trusted workflow."""
 
     def __init__(self, *, token: str, api_url: str = "https://api.github.com") -> None:
@@ -135,14 +140,10 @@ class GitHubAPI:
 
     @staticmethod
     def _repository(repository: str) -> str:
-        parts = repository.split("/")
-        if (
-            not REPOSITORY_PATTERN.fullmatch(repository)
-            or len(parts) != 2
-            or any(part in {".", ".."} for part in parts)
-        ):
-            raise GitHubAPIError("repository must be exact owner/name identity")
-        return repository
+        try:
+            return _provider_repository(repository)
+        except GitHubValueError as exc:
+            raise GitHubAPIError(str(exc)) from exc
 
     def repository(self, repository: str) -> dict[str, Any]:
         value = self._request("GET", f"/repos/{self._repository(repository)}")
@@ -759,23 +760,21 @@ class GitHubAPI:
 
 
 def _positive_id(value: object, *, field: str) -> str:
-    text = str(value)
-    if not text.isdigit() or int(text) < 1:
-        raise GitHubAPIError(f"{field} must be a positive numeric provider ID")
-    return text
+    try:
+        return _provider_positive_id(value, field=field)
+    except GitHubValueError as exc:
+        raise GitHubAPIError(str(exc)) from exc
 
 
 def _workflow_reference(value: object) -> str:
-    text = str(value)
-    if text.isdigit():
-        return _positive_id(text, field="workflow ID")
-    if not re.fullmatch(r"[A-Za-z0-9_.-]+\.ya?ml", text):
-        raise GitHubAPIError("workflow reference must be a numeric ID or exact file name")
-    return quote(text, safe="")
+    try:
+        return _provider_workflow_reference(value)
+    except GitHubValueError as exc:
+        raise GitHubAPIError(str(exc)) from exc
 
 
 def _sha(value: object, *, field: str) -> str:
-    text = str(value)
-    if not re.fullmatch(r"[a-f0-9]{40}", text):
-        raise GitHubAPIError(f"{field} must be an exact 40-character Git SHA")
-    return text
+    try:
+        return _provider_sha(value, field=field)
+    except GitHubValueError as exc:
+        raise GitHubAPIError(str(exc)) from exc

@@ -847,6 +847,7 @@ the missing derivation is a product defect and execution stops at that owner.
 | exact clean candidate without provider proof | repository/base/head/commit/tree, lifecycle proposition, controller/policy/protection identities | run the one canonical submit operation | exact pushed candidate and provider-required frontier | caller-selected stage order, separate remembered prospective train, dirty tree, moved identity, ambiguous base |
 | bound PR pending | exact provider repository/PR/base/head/merge relationship, required checks and protection contract | observe the same immutable subject until a typed terminal edge exists | pending with no mutation authority | merge attempt, evidence relabel, check substitution, unrelated rerun |
 | bound PR certified and mergeable | exact provider PR/base/head/tree, authenticated certification, protection and allowed merge methods | derive and execute the sole legal protected merge operation | exact merged commit/tree and exact-main successor | caller-selected merge method, destructive ancestry, stale certification, bypass actor or missing required context |
+| prospectively proved PR with native auto-merge | exact provider repository/PR node/base/head/tree, canonical protection digest, repository auto-merge capability and merge-commit method | idempotently enable the provider setting when absent and bind `MERGE` auto-merge to the exact PR node | provider waits for the ordinary protected certification and performs one normal merge commit | manual merge timing, squash/rebase choice, bypass, moved head/base, duplicate PR, token retained after request |
 | bound PR base advanced | exact provider base/head/merge base, candidate tree, certification subject and changed dependency closure | derive reconstruction/rebase or a typed superseded result; invalidate only subject- or base-bound proof | new exact candidate requiring the affected proof frontier | blind update-branch, stale proof reuse, ancestry destruction, ambiguous merge relationship |
 | provider transient before mutation | exact GET request identity, bounded retry taxonomy, attempt count, Retry-After and no observed mutation | retry the identical read within the declared bound | fresh exact observation or typed unavailable result | method/body/subject changes, authorization/schema/identity error retried, unbounded backoff |
 | provider mutation outcome unknown | exact operation idempotency key, request identity, pre-state and provider observation | reread authenticated provider state and classify committed/not-committed/conflict before any retry | exact existing result or one idempotent retry | blind mutation replay, new operation identity, unverifiable partial result |
@@ -935,6 +936,13 @@ prerequisites, legal action, idempotency identity, preservation/invalidation
 sets, terminal result, and successor action. Missing or ambiguous fields
 produce no action. `inapplicable` is not a result: an excluded operation must
 name its exact transition class and deterministic alternate governed lane.
+Candidate submission therefore ends by creating or reusing one exact PR and
+requesting GitHub native auto-merge with the governed merge-commit method. The
+requesting credential is needed only for that idempotent request; GitHub later
+performs the merge after the existing App 15368 certification and ruleset are
+satisfied, so no long-lived BCF merger credential, publisher mutation, bypass,
+or agent-timed merge step exists. Provider auto-merge being disabled is stale
+derived provider configuration and is reconciled by the same request owner.
 
 The outward construction is:
 

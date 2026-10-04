@@ -13,12 +13,12 @@ from .ci_self_controller import (
     compile_self_controller_pin,
     validate_controller_pin,
 )
+from .ci_recovery_frontier import controller_transition_frontier
 from .prior_evidence_transport import (
     authenticate_merged_pull,
     authenticate_pr_certification,
 )
 from .routine_controller_provider import (
-    RoutineDecision,
     _authorized_transition,
     resolve_effective_controller,
     validate_routine_decision,
@@ -35,9 +35,10 @@ def materialize_transition_authorization(
     """Materialize one exact transition from an installed-N rotation decision."""
 
     route = validate_routine_decision(decision)
-    if route["decision"] == RoutineDecision.ROUTINE_TRANSITION_AUTHORIZED.value:
+    action = controller_transition_frontier(route)["action"]["kind"]
+    if action == "invoke_routine_transition":
         return route
-    if route["decision"] != RoutineDecision.ALTERNATE_LANE_REQUIRED.value:
+    if action != "invoke_exact_alternate_lane":
         raise GitHubControllerError("materialization requires a rotation decision")
     main = resolve_main(api, repository)
     if route["subject"] != {

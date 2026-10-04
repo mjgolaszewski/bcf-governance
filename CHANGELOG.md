@@ -8,6 +8,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Derived candidate submission, provider retry, protected auto-merge,
+  controller transition, and scheduled-control recovery from one authenticated
+  frontier; scheduled mutant runtimes now project their version owner and run
+  every declared profile before returning a typed aggregate result.
 - Opened the governed P30 and P31 release train for deterministic authored-state
   fail-fast, bounded recovery, affected-proof pruning, exact proof reuse,
   critical-path splintering, adopter assurance projection, independent

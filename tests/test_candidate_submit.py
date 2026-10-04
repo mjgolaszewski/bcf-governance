@@ -23,6 +23,26 @@ def _state(monkeypatch: pytest.MonkeyPatch) -> tuple[LocalPRContext, CandidateId
         "_canonical_inputs",
         lambda *_a, **_k: ("workitem", "P28-P0-04", "owner/repo"),
     )
+    monkeypatch.setattr(submit, "_candidate_title", lambda *_a, **_k: "candidate")
+    monkeypatch.setattr(
+        submit,
+        "ensure_candidate_pull_request",
+        lambda *_a, **_k: {
+            "number": 7,
+            "node_id": "PR_exact7",
+            "state": "open",
+            "base_sha": identity.base_sha,
+            "head_sha": identity.commit_sha,
+        },
+    )
+    monkeypatch.setattr(
+        submit,
+        "_request_protected_auto_merge",
+        lambda *_a, **_k: (
+            {"status": "enabled", "pull_request": 7},
+            {"action": {"kind": "request_provider_auto_merge"}},
+        ),
+    )
     return context, identity
 
 
@@ -62,6 +82,9 @@ def test_submit_owns_prospective_train_then_pushes_only_proved_sha(
     ]
     assert result["status"] == "submitted"
     assert result["subject"] == identity.as_dict()
+    assert result["recovery_frontier"]["action"]["kind"] == "push_exact_candidate"
+    assert result["recovery_frontier"]["release_authority"] is False
+    assert result["pull_request"]["number"] == 7
 
 
 def test_submit_rejects_wrong_intent_before_proof_or_push(

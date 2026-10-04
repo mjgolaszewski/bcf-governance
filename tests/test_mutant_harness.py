@@ -5,6 +5,7 @@ import os
 import runpy
 import subprocess
 import sys
+import tempfile
 from dataclasses import replace
 from pathlib import Path
 
@@ -48,6 +49,23 @@ def test_every_mutant_targets_exactly_one_canonical_semantic_owner() -> None:
     assert harness["validate_mutant_targets"]() == len(
         (*harness["MUTANTS"], *harness["TRUTH_MUTANTS"])
     )
+
+
+def test_isolated_validator_mutant_projects_runtime_version_owner() -> None:
+    harness = runpy.run_path(HARNESS)
+    mutant = next(
+        value
+        for value in harness["MUTANTS"]
+        if value.mutant_id == "audit-code-classification"
+    )
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        mutated = harness["_mutate_source"](mutant, root)
+        assert (root / "mutant_runtime/_version.py").read_bytes() == (
+            REPO_ROOT / "bcf_governance/_version.py"
+        ).read_bytes()
+        result = harness["_run_tests"](mutant, mutated)
+    assert result.returncode == 1, result.stdout + result.stderr
 
 
 def test_scheduled_mutant_target_drift_fails_before_evidence() -> None:
