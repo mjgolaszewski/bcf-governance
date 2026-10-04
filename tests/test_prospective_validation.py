@@ -138,6 +138,51 @@ def test_planned_evidence_stops_on_first_failed_producer(
     assert seen == ["first"]
 
 
+def test_planned_evidence_reports_failed_control_when_command_passed(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    def capture(_root: Path, gate: str, output: Path, **_kwargs: object) -> Path:
+        output.mkdir(parents=True)
+        raw = output / f"{gate}.control.stderr.txt"
+        raw.write_text("owned invariant was not reached\n", encoding="utf-8")
+        receipt = output / f"{gate}.evidence.json"
+        receipt.write_text(
+            json.dumps(
+                {
+                    "result": "failed",
+                    "observations": {"exit_code": 0},
+                    "behavioral_probes": [
+                        {
+                            "id": "control",
+                            "oracle_observation": {"satisfied": False},
+                            "raw_artifacts": {"stderr": raw.name},
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        return receipt
+
+    monkeypatch.setattr(prospective, "capture_gate", capture)
+    with pytest.raises(
+        prospective.ProspectiveValidationError,
+        match=(
+            "producer passed-command failed with exit 0.*"
+            "behavioral_probe control: oracle_not_satisfied.*"
+            "owned invariant was not reached"
+        ),
+    ):
+        prospective._capture_planned_evidence(
+            tmp_path,
+            python_executable=Path("/python"),
+            session_manifest=tmp_path / "session.json",
+            session_root=tmp_path / "receipts",
+            producers=("passed-command",),
+            producer_environments={"passed-command": {}},
+        )
+
+
 def test_planned_evidence_projects_exact_graph_job_environment(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
