@@ -26,9 +26,30 @@ class LocalExecutionAdmissionError(ValueError):
 
 
 def _supported_python_minors(repo_root: Path) -> set[str]:
-    """Load the single public authority for supported project interpreters."""
+    """Load the canonical self or adopter authority for project interpreters."""
 
     path = repo_root / "governance/public-contracts.yml"
+    if not path.is_file():
+        from .ci_graph_contracts import CIGraphError, validate_ci_graph
+
+        try:
+            resources = validate_ci_graph(repo_root).graph["resource_classes"]
+            values = sorted(
+                {
+                    str(resource["python_version"])
+                    for resource in resources.values()
+                    if isinstance(resource, dict) and "python_version" in resource
+                }
+            )
+        except (CIGraphError, KeyError, TypeError, ValueError) as exc:
+            raise LocalExecutionAdmissionError(
+                "adopter Python runtime authority is unavailable"
+            ) from exc
+        if not values:
+            raise LocalExecutionAdmissionError(
+                "adopter Python runtime authority declares no Python minor"
+            )
+        return set(values)
     try:
         payload = yaml.safe_load(path.read_text(encoding="utf-8"))
         values = payload["package"]["python_minors"]

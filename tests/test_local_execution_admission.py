@@ -235,3 +235,28 @@ def test_local_python_admission_rejects_minor_absent_from_public_contract(
     )
     with pytest.raises(LocalExecutionAdmissionError, match="absent from the public"):
         validate_local_toolchain(tmp_path, executable, toolchain_command=None)
+
+
+def test_adopter_python_admission_derives_generated_graph_runtime(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    executable = tmp_path / "python"
+    executable.write_text("", encoding="utf-8")
+    compiled = type(
+        "Compiled",
+        (),
+        {"graph": {"resource_classes": {"hosted": {"python_version": "3.12"}}}},
+    )()
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_graph_contracts.validate_ci_graph",
+        lambda _repo: compiled,
+    )
+    monkeypatch.setattr(
+        "subprocess.run",
+        lambda *_args, **_kwargs: type(
+            "Result", (), {"returncode": 0, "stdout": "Python 3.12.11\n", "stderr": ""}
+        )(),
+    )
+    assert validate_local_toolchain(
+        tmp_path, executable, toolchain_command=None
+    ).python_version == "3.12.11"
