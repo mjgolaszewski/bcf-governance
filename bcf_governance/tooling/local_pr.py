@@ -40,7 +40,7 @@ from .evidence_workitem_lifecycle import (
 )
 from .governance_evidence import capture_gate
 from .governance_truth import TruthfulnessError, derive_truth
-from .preflight import PreflightError, preflight_mode_for_evaluation, run_preflight
+from .preflight import PreflightError, run_preflight
 from .ci_authority_prospective_telemetry import (
     ProspectiveTelemetryError,
     elapsed_ms as _elapsed_ms,
@@ -168,6 +168,43 @@ def _capture_planned_evidence(
                     ).strip()
                     if value:
                         diagnostics.append(f"{suffix}: {value[-20000:]}")
+            probes = payload.get("behavioral_probes")
+            for probe in probes if isinstance(probes, list) else []:
+                if not isinstance(probe, dict):
+                    continue
+                observation = probe.get("oracle_observation")
+                if (
+                    isinstance(observation, dict)
+                    and observation.get("satisfied") is True
+                ):
+                    continue
+                control_id = str(probe.get("id", "unknown"))
+                reason = (
+                    str(observation.get("reason", "oracle_not_satisfied"))
+                    if isinstance(observation, dict)
+                    else "oracle_observation_missing"
+                )
+                diagnostics.append(f"behavioral_probe {control_id}: {reason}")
+                raw_artifacts = probe.get("raw_artifacts")
+                if not isinstance(raw_artifacts, dict):
+                    continue
+                for stream in ("stderr", "stdout"):
+                    relative = raw_artifacts.get(stream)
+                    path = Path(str(relative)) if isinstance(relative, str) else None
+                    if (
+                        path is None
+                        or path.is_absolute()
+                        or ".." in path.parts
+                        or not (receipt.parent / path).is_file()
+                    ):
+                        continue
+                    value = (receipt.parent / path).read_text(
+                        encoding="utf-8", errors="replace"
+                    ).strip()
+                    if value:
+                        diagnostics.append(
+                            f"behavioral_probe {control_id} {stream}: {value[-20000:]}"
+                        )
             raise ProspectiveValidationError(
                 f"local evidence producer {producer} failed with exit {exit_code}"
                 + (": " + " | ".join(diagnostics) if diagnostics else "")
@@ -396,7 +433,7 @@ def _run_prospective_train(
             ):
                 post_merge_preflight = run_preflight(
                     root,
-                    mode=preflight_mode_for_evaluation(post_merge_mode),
+                    mode="release",
                     python_executable=python_executable,
                     evaluation_mode=post_merge_mode,
                     evaluation_target=post_merge_target,

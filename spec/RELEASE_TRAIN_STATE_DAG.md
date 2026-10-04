@@ -119,7 +119,7 @@ provider evidence.
 | Certified PR | head/tree, governance run/attempt, complete producer receipts, PR certification | normal protected merge | missing/wrong producer, subject, session, control, or protection state |
 | Merged main | merge commit/tree, protected merge relationship | exact-main admission | non-authoritative main, stale workflow authority, malformed lifecycle intent |
 | Pending rotation | main identity, installed N, target N+1, exact provider-built artifact | bootstrap and probe | installed N cannot parse/authorize candidate, artifact mismatch, evidence fan-out |
-| Prospective candidate predicts pending rotation | exact PR preflight result `pending_rotation`, release authority false, installed-N compatibility, candidate subject/tree | run semantic post-merge preflight only through the typed `prospective_pending_rotation` lane, then project controller build/bootstrap/probe before fresh exact-main | ordinary release preflight accepts stale runtime, evidence is represented as authoritative before installation, or the typed state differs between the two checks |
+| Prospective candidate predicts pending rotation | exact PR preflight result `pending_rotation`, release authority false, installed-N compatibility, candidate subject/tree | simulate the authenticated direct protected push through release preflight while preserving the graph-selected semantic intent and typed `prospective_pending_rotation` lane, then project controller build/bootstrap/probe before fresh exact-main | PR-mode authority is reused for the simulated push, ordinary release preflight accepts stale runtime without the typed expectation, evidence is represented as authoritative before installation, or the typed state differs between the two checks |
 | Installed current | target equals installed, bootstrap/probe/confirmation custody, no recovery residue | fresh exact-main | runner disagreement, hand-authored pin, incomplete normalization |
 | Exact-main certified | current commit/tree, terminal proposition, complete truth/finalizer/publisher identity | release authorization | bounded scope, moved main, incomplete inventory, wrong controller |
 | Release authorized | exact certification, controller custody, owner dispatch run/attempt | hosted build | stale subject, candidate authority, copied artifact coordinates |
@@ -804,3 +804,168 @@ Every late correction records the following before its first push:
 The provider record remains the authority for actual run state. This document
 prevents a correction from being evaluated only in the narrow state that first
 exposed it.
+
+## P30 and P31 autonomous release train
+
+The post-P29 train contains exactly two governed phases. P30 owns release 25
+and immutable `2.2.0` custody. P31 owns release 26 and immutable `2.3.0`
+custody. P31 is not active or eligible until P30 has terminal phase truth,
+independent release verification, immutable publication, adopter
+qualification, and a custody receipt for one exact subject.
+
+The normal agent interface remains one command, `bcf ci submit --repo-root .`.
+Authenticated state, rather than an agent-authored procedure, selects lifecycle
+intent and target, reconcile order, affected proof, reuse, partitioning,
+controller handling, merge eligibility, publication continuation, and the
+legal next action. If any of those choices requires remembered operator steps,
+the missing derivation is a product defect and execution stops at that owner.
+
+### P30/P31 state matrix
+
+| State | Authenticated inputs | Deterministic next action | Permitted result | Fail-closed cases |
+| --- | --- | --- | --- | --- |
+| P29 custody baseline | main commit/tree, completed P29 truth, `v2.1.8` tag object, release assets/digests, custody receipt | admit P30 authored-state construction | P30 may become active; P31 remains planned | missing custody, conflicting tag/assets, active predecessor, stale main |
+| authored phase exact | active phase identity, plan/workitem/log/ledger paths and lifecycle scalars agree | reconcile derived projections | fixed-point candidate | contradictory, missing, malformed, or cross-phase authored state |
+| authored phase invalid in diagnostic consumer | typed authored-state validation error from the earliest edge | canonical validator preserves the common governance-validation failure boundary | doctor/preflight reports one bounded blocker without a traceback | validator-specific exception escapes a shared consumer or starts later work |
+| authored phase contradictory | same authored inputs disagree before any generator or evidence allocation | stop with typed consistency reasons and zero mutation | none | any continuation, worktree mutation, commit, adopter request, or expensive subprocess |
+| stale projection only | authored state is exact; a derived digest differs | execute the dependency-ordered canonical reconcile closure | exact fixed point | caller-selected stage order, unresolved dependency, non-convergence |
+| PR candidate | repository/base/head/commit/tree, installed controller, policy, protection, lifecycle proposition | derive the prospective train and affected proof set | exact candidate proof requiring provider authority | moved base/head, dirty or changed candidate, ambiguous mapping, incompatible installed controller |
+| base advanced or stacked PR | provider base/head and merge-base classification | derive exact rebase/reconstruction or closed alternate lane | new exact candidate or typed terminal result | caller-selected base, destructive ancestry, ambiguous merge relationship |
+| controller current | installed and target controller identities are exact and normalized | continue ordinary evidence planning | certifying PR or exact-main path | identity disagreement, missing artifact custody, recovery residue |
+| controller pending rotation | installed N parses candidate state and authenticates exact N+1 target/artifact | invoke the single routine transition owner | bootstrap/probe/confirm/install/normalize outcome | manual pin/install, incompatible N, artifact/subject/run mismatch, evidence certification before normalization |
+| no controller transition | canonical applicability proves target equals installed and no recovery state exists | emit a typed no-transition result | ordinary evidence path | generic `inapplicable`, missing identity, alternate dispatcher without exact proposition |
+| PR evidence | affected proof set, exact proof bundles, partition plan, session and producer identities | reuse exact applicable proofs and execute only remaining partitions | complete authenticated claim inventory | broadened proposition, overlap/gap, stale proof, local authority substituted for provider authority |
+| PR certified | exact evidence, truth, finalizer, publisher and protected context | derive the legal merge method and protected merge action | merged exact tree | candidate self-certification, bypass, wrong run/attempt, unapproved merge method |
+| exact main | admitted merge commit/tree and authenticated predecessor | resolve reuse, controller lifecycle, bounded or terminal proposition | exact-main truth for the declared proposition | branch-head rewriting of admitted identity, stale/missing subject, incomplete claims |
+| bounded workitem truth | exact target, predecessor closure, evidence and eligible successor | finalizer and publisher preserve the bounded proposition | only the declared successor becomes eligible | phase/release authority inferred from bounded success, erased target, unrelated successor |
+| terminal phase truth | all workitems closed on one exact subject and lifecycle authored terminal | evaluate release authorization independently | release candidate may proceed | active phase, bounded certification, incomplete or reused-inapplicable evidence |
+| release transaction resumable | certified receipt, version/tag, asset digests, transaction token and credential capsule | resume the exact next publication edge | exact immutable release and credential retirement | conflict, rebuilt bytes, changed subject, ambiguous partial mutation |
+| release custody verified | immutable tag/assets/attestations, independent verification and adopter reports | close release/phase and activate the governed successor | P30 activates P31; P31 closes the train | missing adopter class, mutable/draft release, credential residue, inconsistent receipts |
+| scheduled control run | default-branch subject, scheduled workflow identity, declared toolchains and control profile | validate structural state, execute both mutant profiles, retain a typed terminal artifact | exact scheduled result with no certification authority | release proposition inferred from schedule, absent diagnostics, secondary artifact error obscuring first cause |
+| local runtime supported | selected interpreter version and canonical runtime authority: self public Python-minor contract or adopter generated CI-graph resource set | admit the exact declared minor and bind authority plus version into execution evidence | local prospective train may execute | hard-coded subset, missing/ambiguous authority, undeclared minor, malformed version, interpreter/contract disagreement |
+| dependency advisory exact | exact installed package inventory, pinned scanner, authenticated advisory-service response, observation time and result digest | emit exact SBOM and fail or pass the existing dependency-audit claim | freshness-bound dependency assurance | scanner/service unavailable, partial inventory, malformed response, known vulnerability, unbound advisory result |
+| dependency advisory unavailable | exact inventory exists but advisory resolution cannot complete | fail the existing security gate with a typed diagnostic | none | treating unavailability as clean, relying on a future Dependabot update, SBOM-only success |
+| interpreter requirements projection stale | governed project/build/optional/gate dependency declarations and canonical projection path | fixed-point reconcile derives and writes the exact bootstrap requirements before admission or evidence | one selected-interpreter dependency surface | separate remembered environment command, hand-maintained requirements, stale bootstrap discovered after prospective allocation |
+| interpreter gate requirement exact | one bounded PEP 508 distribution requirement without URL, marker, or extras | schema and compiler accept the same normalized name plus optional version specifier | pinned tool requirement enters the mechanical environment projection | schema/compiler disagreement, unpinned governed tool, URL/marker/extras, duplicate normalized distribution |
+| behavioral control reaches its declared oracle | exact mutation, runnable gate harness, declared oracle, raw control artifacts | preserve harness/bootstrap importability unless bootstrap failure is the explicit invariant; report the first unsatisfied control and its raw diagnostic | failed control receipt only; no evidence or authority | command exit success masking a failed control, mutation intercepted before the owned invariant, or local wrapper omitting the control diagnostic |
+| isolated candidate tool runtime | exact candidate package bytes, repository-selected interpreter, mechanically projected declared dependency environment | launch the candidate CLI from its isolated package while resolving dependencies only from the selected environment | local candidate-runtime observation only | copied package without dependency closure, ambient source path, older installed CLI, or undeclared dependency fallback |
+| authored computed phase status mutation | exact ledger/log identities and the authored log status | reject `verified` or `closed` as computed before cross-artifact lifecycle comparison | failed structural observation only | generic ledger/log mismatch masks the computed-state invariant or authored state reaches evidence execution |
+| adopter qualification | exact candidate or immutable release bytes, adopter profile and repository identity | treat the BCF self-release matrix guard as typed not-applicable, then perform non-destructive install/upgrade and canonical proof | attributed compatibility observation only | self repository missing its matrix, cross-repository mutation, different bytes, adopter report treated as BCF authority |
+| release-bound adopter candidate qualification | exact clean candidate commit/tree and pack digest, exact clean adopter commit/tree, predecessor immutable runtime-lock digest | canonical installer selects the typed non-authoritative qualification operation, projects exact candidate runtime custody, then runs the ordinary adopter proof path | attributed prepublication observation only; release and publication authority remain absent | ordinary local upgrade, release-custody claim, missing or dirty identity, mixed candidate bytes, unexplained lock removal, qualification marker committed as release custody |
+| adopter install transaction promotes generated graph | validated adopter graph plus exact current and retired generated workflow inventory | transaction allowlist derives from the graph renderer owner; final graph parity is checked inside rollback custody | promoted target equals the validated shadow | hand-maintained workflow paths, shadow-only success, partial promotion, unrelated workflow mutation |
+
+### P30 workitem DAG
+
+```text
+P30-P0-01 FAIL FAST
+  -> P30-P0-02 RECOVER
+     -> P30-P0-03 PRUNE
+        -> P30-P0-04 REUSE
+           -> P30-P0-05 SPLINTER
+              -> phase_closed:P30
+                 -> independently verified immutable v2.2.0 custody
+                    -> P31-P0-01 eligible
+```
+
+`P30-P0-01` also owns the existing scheduled-mutant defect and the exact
+`build==1.6.1` dependency reconciliation. A stale automation PR is never
+merged merely to close it: its dependency-only intent is reconstructed on the
+current certified base, reconciled mechanically, and the stale PR is closed as
+superseded only after the replacement is protected and certified.
+
+P30 planning occurs in this order:
+
+1. compare authored phase state before any mutating reconcile stage;
+2. derive the closed legal action/recovery frontier;
+3. derive all and only affected proofs;
+4. reuse only exact applicable proof propositions;
+5. partition only the remaining execution set.
+
+Later stages cannot compensate for omission or ambiguity in an earlier stage.
+Truth always rechecks complete required claims independently of optimization.
+
+### P31 workitem DAG
+
+```text
+immutable v2.2.0 custody
+  -> P31-P0-01 consumer-owned assurance graph
+     -> P31-P0-02 existing-repository protection projection
+        -> P31-P0-03 evidence-storage topology and migration
+           -> P31-P0-04 base-pinned independent evaluator
+              -> P31-P0-05 atomic publication transaction
+                 -> phase_closed:P31
+                    -> independently verified immutable v2.3.0 custody
+```
+
+P31 projects P30 planning, reuse, and partition semantics into adopter-owned
+application assurance without making BCF files the product. Provider
+protection is observational until an explicitly reviewed apply operation.
+Storage migration preserves proof truth and original retrievability. The
+merge-eligibility evaluator comes from protected base or managed controller,
+never candidate bytes. Publication is one idempotent transaction over exact
+certified bytes and retires its short-lived credential on every terminal path.
+
+### P30/P31 outward construction tree
+
+```text
+invariants
+  authenticated state exposes only legal next actions
+  deterministic facts fail before mutation or expensive work
+  optimization never changes truth or authority
+  candidates cannot define their evaluator or certify themselves
+  exact certified bytes alone can become an immutable release
+    -> primitives
+       phase consistency result and zero-mutation boundary
+       declared-runtime compatibility result
+       exact installed-package inventory and freshness-bound advisory result
+       typed state/action/result/recovery edge
+       semantic ownership and affected-proof closure
+       content-addressed proof bundle and applicability result
+       deterministic partition plan and execution observations
+       adopter assurance/protection/storage/evaluator/publication identities
+         -> contracts
+            single submit/front-door contract
+            closed recovery frontier
+            hash-bound affected-proof set
+            proposition-preserving reuse contract
+            union-complete partition contract
+            consumer-owned assurance and independent evaluation contracts
+            idempotent release transaction and custody contract
+              -> producers
+                 phase catalog and canonical reconcile owner
+                 prospective train and submit owner
+                 provider/controller/protection resolvers
+                 evidence planner, proof verifier and partition compiler
+                 adopter installer/upgrader and storage planner
+                 trusted finalizer, evaluator and publication orchestrator
+                   -> consumers
+                      local admission and provider fan-out
+                      PR and exact-main truth
+                      controller lifecycle and alternate dispatcher
+                      bounded/phase successor eligibility
+                      protection and release authorization
+                      Lite, Standard-v3 and regulated adopters
+                      independent verifier, publisher and custody closeout
+```
+
+### Changed-contract downstream permutation rule
+
+Every P30/P31 change first adds its reachable states and producer/consumer
+edges here. The candidate then proves PR, direct push, workflow-call, scheduled,
+exact-main, pending/current/no-transition controller, bounded/terminal truth,
+publication retry/conflict, and adopter profile permutations that can reach the
+changed contract. A structurally unreachable permutation is recorded with its
+canonical exclusion reason; it is not silently called inapplicable.
+
+The executable matrix-update guard is a self-governance contract. Presence of
+the self-governance policy makes the matrix mandatory and deletion fails
+closed. A packaged adopter runtime without that policy or document returns the
+closed typed result `not_applicable_to_adopter`; it does not acquire or invent
+BCF release-train authorship.
+
+Issue 346 applies as a construction constraint, not another phase or command.
+An extraction is permitted only for a measured ownership, dependency, or LOC
+violation; characterization precedes it; one governed change extracts at most
+one coherent existing responsibility; public CLI, authority, evidence,
+ordering, failures, and source/package/template parity remain compatible; and
+replaced code is deleted. No extraction may create a new agent-selected stage.

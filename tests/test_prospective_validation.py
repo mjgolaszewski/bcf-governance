@@ -138,6 +138,51 @@ def test_planned_evidence_stops_on_first_failed_producer(
     assert seen == ["first"]
 
 
+def test_planned_evidence_reports_failed_control_when_command_passed(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    def capture(_root: Path, gate: str, output: Path, **_kwargs: object) -> Path:
+        output.mkdir(parents=True)
+        raw = output / f"{gate}.control.stderr.txt"
+        raw.write_text("owned invariant was not reached\n", encoding="utf-8")
+        receipt = output / f"{gate}.evidence.json"
+        receipt.write_text(
+            json.dumps(
+                {
+                    "result": "failed",
+                    "observations": {"exit_code": 0},
+                    "behavioral_probes": [
+                        {
+                            "id": "control",
+                            "oracle_observation": {"satisfied": False},
+                            "raw_artifacts": {"stderr": raw.name},
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        return receipt
+
+    monkeypatch.setattr(prospective, "capture_gate", capture)
+    with pytest.raises(
+        prospective.ProspectiveValidationError,
+        match=(
+            "producer passed-command failed with exit 0.*"
+            "behavioral_probe control: oracle_not_satisfied.*"
+            "owned invariant was not reached"
+        ),
+    ):
+        prospective._capture_planned_evidence(
+            tmp_path,
+            python_executable=Path("/python"),
+            session_manifest=tmp_path / "session.json",
+            session_root=tmp_path / "receipts",
+            producers=("passed-command",),
+            producer_environments={"passed-command": {}},
+        )
+
+
 def test_planned_evidence_projects_exact_graph_job_environment(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -350,6 +395,57 @@ def test_prospective_train_executes_exact_direct_push_preflight_before_evidence(
             runner=_runner,
         )
     assert len(calls) == 2
+
+
+def test_pending_rotation_pr_projection_uses_direct_push_release_preflight(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    trace: list[str] = []
+    calls: list[dict[str, object]] = []
+    _front_door(monkeypatch, trace)
+    monkeypatch.setattr(
+        prospective,
+        "validate_controller_custody_graph",
+        lambda *_args, **_kwargs: (
+            _evaluation("pr", None),
+            {
+                "status": "proved",
+                "custody_state": "managed_controller",
+                "no_transition_callback_probe": "no_transition",
+            },
+        ),
+    )
+
+    def preflight(*_args: object, **kwargs: object) -> dict[str, object]:
+        calls.append(dict(kwargs))
+        return {
+            "status": "pass",
+            "self_controller": {
+                "status": "pending_rotation",
+                "release_authority": False,
+            },
+        }
+
+    monkeypatch.setattr(prospective, "run_preflight", preflight)
+    report = prospective._run_prospective_train(
+        tmp_path,
+        semantic_intent="pr",
+        evaluation_target=None,
+        subject_commit=HEAD,
+        subject_tree=TREE,
+        python_executable=Path("/python"),
+        execute_evidence=False,
+        runner=_runner,
+    )
+
+    assert report["status"] == "deterministic_front_door_pass"
+    assert [(call["mode"], call["evaluation_mode"]) for call in calls] == [
+        ("pr", "pr"),
+        ("release", "pr"),
+    ]
+    assert calls[1]["controller_state_expectation"] == (
+        "prospective_pending_rotation"
+    )
 
 
 def test_provider_context_is_mechanically_bound_to_exact_prospective_train(

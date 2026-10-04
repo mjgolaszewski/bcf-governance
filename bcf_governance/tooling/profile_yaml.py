@@ -41,9 +41,13 @@ def _compact_control_mappings(value: Any, scalars: dict[str, _SharedScalar]) -> 
         result = {}
         for key, item in value.items():
             compact = _compact_control_mappings(item, scalars)
-            if key == "negative_controls" and isinstance(compact, list):
+            if key in {
+                "negative_controls",
+                "output_requirements",
+                "environment_assertions",
+            } and isinstance(compact, list):
                 compact = [_FlowMapping(control) for control in compact]
-            elif key == "invocation" and isinstance(compact, dict):
+            elif key in {"invocation", "evidence"} and isinstance(compact, dict):
                 compact = _FlowMapping(compact)
             result[key] = compact
         return result

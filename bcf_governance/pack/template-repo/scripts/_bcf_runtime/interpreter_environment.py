@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml  # type: ignore[import-untyped]
+from packaging.requirements import InvalidRequirement, Requirement
 
 
 class InterpreterEnvironmentError(ValueError):
@@ -79,10 +80,17 @@ class InterpreterEnvironmentPlan:
 def _dependency_name(value: object) -> str:
     if not isinstance(value, str):
         raise InterpreterEnvironmentError("dependency declaration is not a string")
-    match = re.match(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)", value)
-    if match is None:
-        raise InterpreterEnvironmentError("dependency declaration has no distribution name")
-    return match.group(1)
+    try:
+        requirement = Requirement(value)
+    except InvalidRequirement as exc:
+        raise InterpreterEnvironmentError(
+            "dependency declaration is not a bounded package requirement"
+        ) from exc
+    if requirement.url or requirement.marker or requirement.extras:
+        raise InterpreterEnvironmentError(
+            "dependency declaration must not use URLs, markers, or extras"
+        )
+    return requirement.name
 
 
 def _normalized_name(value: object) -> str:
@@ -244,6 +252,20 @@ def apply_interpreter_environment_projection(
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(plan.rendered_requirements(), encoding="utf-8")
     return path
+
+
+def reconcile_interpreter_environment(
+    repo_root: Path, *, apply: bool
+) -> Path | None:
+    """Check or materialize the exact governed bootstrap dependency surface."""
+
+    plan = derive_interpreter_environment(repo_root)
+    if plan is None or plan.projection_path is None:
+        return None
+    if apply:
+        return apply_interpreter_environment_projection(plan)
+    verify_interpreter_environment_projection(plan)
+    return plan.projection_path
 
 
 def main(argv: list[str] | None = None) -> None:

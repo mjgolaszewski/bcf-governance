@@ -13,6 +13,7 @@ from jsonschema import Draft202012Validator
 
 
 RUNTIME_LOCK_PATH = "governance/bcf-runtime-lock.json"
+CANDIDATE_QUALIFICATION_PATH = "governance/bcf-candidate-qualification.json"
 LOCAL_INSTALLATION_MARKERS = (
     "governance-profile.yml",
     "scripts/_bcf_runtime/install_governance_pack.py",
@@ -27,6 +28,7 @@ class RuntimeCustodyState(StrEnum):
     PARTIAL_UNEXPLAINED = "partial_unexplained"
     NORMALIZED_EXACT = "normalized_exact"
     LEGACY_OVERLAP_EXACT = "legacy_overlap_exact"
+    CANDIDATE_QUALIFICATION_EXACT = "candidate_qualification_exact"
 
 
 class RuntimeCustodyFailure(StrEnum):
@@ -143,6 +145,104 @@ def inspect_runtime_custody(
     """Classify exact installed custody without granting operation authority."""
 
     lock_path = repo_root / RUNTIME_LOCK_PATH
+    qualification_path = repo_root / CANDIDATE_QUALIFICATION_PATH
+    if lock_path.exists() and qualification_path.exists():
+        raise RuntimeCustodyError(
+            RuntimeCustodyFailure.CONTRADICTORY_OVERLAP,
+            paths=(RUNTIME_LOCK_PATH, CANDIDATE_QUALIFICATION_PATH),
+        )
+    if qualification_path.exists():
+        payload, marker_bytes = _read_mapping(
+            qualification_path, label="candidate qualification marker"
+        )
+        required = {
+            "schema_version",
+            "kind",
+            "non_authoritative",
+            "runtime_version",
+            "candidate",
+            "adopter",
+            "predecessor_runtime_lock_sha256",
+            "files",
+            "preserved_consumer_files",
+        }
+        if (
+            set(payload) != required
+            or payload.get("schema_version") != "1.0"
+            or payload.get("kind") != "candidate_qualification"
+            or payload.get("non_authoritative") is not True
+            or not isinstance(payload.get("runtime_version"), str)
+            or not isinstance(payload.get("files"), dict)
+            or not isinstance(payload.get("preserved_consumer_files"), dict)
+        ):
+            raise RuntimeCustodyError(
+                RuntimeCustodyFailure.SCHEMA_INVALID,
+                detail="candidate qualification marker is malformed",
+            )
+        for label, identity in (
+            ("candidate", payload.get("candidate")),
+            ("adopter", payload.get("adopter")),
+        ):
+            expected_keys = (
+                {"commit_sha", "tree_sha", "pack_manifest_sha256"}
+                if label == "candidate"
+                else {"commit_sha", "tree_sha"}
+            )
+            if (
+                not isinstance(identity, dict)
+                or set(identity) != expected_keys
+                or any(
+                    not isinstance(value, str)
+                    or len(value) != (64 if key == "pack_manifest_sha256" else 40)
+                    or any(char not in "0123456789abcdef" for char in value)
+                    for key, value in identity.items()
+                )
+            ):
+                raise RuntimeCustodyError(
+                    RuntimeCustodyFailure.SCHEMA_INVALID,
+                    detail="candidate qualification identity is malformed",
+                )
+        predecessor_digest = payload.get("predecessor_runtime_lock_sha256")
+        if (
+            not isinstance(predecessor_digest, str)
+            or len(predecessor_digest) != 64
+            or any(char not in "0123456789abcdef" for char in predecessor_digest)
+        ):
+            raise RuntimeCustodyError(
+                RuntimeCustodyFailure.SCHEMA_INVALID,
+                detail="candidate qualification predecessor digest is malformed",
+            )
+        runtime_owned = dict(payload["files"])
+        preserved = dict(payload["preserved_consumer_files"])
+        overlap = tuple(sorted(set(runtime_owned) & set(preserved)))
+        if overlap:
+            raise RuntimeCustodyError(
+                RuntimeCustodyFailure.CONTRADICTORY_OVERLAP, paths=overlap
+            )
+        _verify_inventory(
+            repo_root,
+            runtime_owned,
+            failure=RuntimeCustodyFailure.RUNTIME_OWNED_DRIFT,
+        )
+        _verify_inventory(
+            repo_root,
+            preserved,
+            failure=RuntimeCustodyFailure.CONSUMER_PRESERVED_DRIFT,
+        )
+        return RuntimeCustodySnapshot(
+            state=RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT,
+            version=str(payload["runtime_version"]),
+            runtime_owned=dict(sorted(runtime_owned.items())),
+            consumer_preserved=dict(sorted(preserved.items())),
+            legacy_overlap=(),
+            provenance_claim={
+                "candidate": payload["candidate"],
+                "adopter": payload["adopter"],
+                "predecessor_runtime_lock_sha256": predecessor_digest,
+                "non_authoritative": True,
+            },
+            lock_bytes=marker_bytes,
+        )
     if not lock_path.exists():
         markers = tuple(repo_root / relative for relative in LOCAL_INSTALLATION_MARKERS)
         present = tuple(path.exists() or path.is_symlink() for path in markers)

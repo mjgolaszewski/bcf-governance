@@ -184,7 +184,7 @@
     },
     "requirements-governance.txt": {
       "operation": "copy",
-      "sha256": "5e1370bb1cddd07b8a65aec7d79a97a9e49d39954ecdaaad9a19c18b115539b5"
+      "sha256": "2d3f9f27b2c401aeb9530aeada21f355eaa7d4a09e261e2ce8963c257a2f4285"
     },
     "schemas/agents.schema.json": {
       "operation": "copy",
@@ -294,7 +294,7 @@
     },
     "schemas/gate-contracts.schema.json": {
       "operation": "copy",
-      "sha256": "9ef554b81a23b8e6c11daf290c267ef1edb403fd077881ef9d974a0a34bfe30a"
+      "sha256": "c434dc40561a8cb66bff6e9c727b7906843946efd81f43653dceb532aaa9f97e"
     },
     "schemas/github-ci-topology.schema.json": {
       "operation": "copy",
@@ -696,7 +696,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "c9192e4758f7a0629de55178a16d509ca247aba82149d6cb723057d6cb09cdf9"
+      "sha256": "5d24667201e9e8c436feea6a10377f505765a2f6005d80ec28c71051e3d6b72f"
     },
     "scripts/_bcf_runtime/ci_graph_reusable_artifacts.py": {
       "operation": "copy",
@@ -770,9 +770,13 @@
       "operation": "copy",
       "sha256": "c87db3bd2a74c4979bc0a2befb94553872dbada0a939f09555c10dc762aafd02"
     },
+    "scripts/_bcf_runtime/dependency_assurance.py": {
+      "operation": "copy",
+      "sha256": "69d56ad7db3ac78e82d4c584019944c719e7d89becfffa964195ec0dea40dab3"
+    },
     "scripts/_bcf_runtime/doctor_governance_pack.py": {
       "operation": "copy",
-      "sha256": "db708fae0d92a355dc46c428e0ad8b851e0f66653c4b8909bf6995518f4a45b8"
+      "sha256": "11253e611401e27912ee34ce51b33117aa0862e70078aa791d20a3135b24e529"
     },
     "scripts/_bcf_runtime/evaluation_scope.py": {
       "operation": "copy",
@@ -916,7 +920,7 @@
     },
     "scripts/_bcf_runtime/governance_install/args.py": {
       "operation": "copy",
-      "sha256": "bf66da083d0e8e283f955177efc812e33f9bb8dae5f073166d8d5362a0f9e693"
+      "sha256": "ff09a20b24d5aa11d5c18523861fcd55f4bbc7920aedb064480f36b78683c1b9"
     },
     "scripts/_bcf_runtime/governance_install/artifacts.py": {
       "operation": "copy",
@@ -940,7 +944,7 @@
     },
     "scripts/_bcf_runtime/governance_install/release_custody.py": {
       "operation": "copy",
-      "sha256": "3a29717386274670fedcd4bb961056bf27540c592e34b37ffc609d653ad5bae3"
+      "sha256": "4db3ef881518e872dff504a561ff94a4451ec94d81cfbe652668b3fbf3d0c410"
     },
     "scripts/_bcf_runtime/governance_install/reporting.py": {
       "operation": "copy",
@@ -948,19 +952,23 @@
     },
     "scripts/_bcf_runtime/governance_install/runtime_custody.py": {
       "operation": "copy",
-      "sha256": "27eb0b0264f902a0d0aa3773ad10ff92d8522d48e28919b33ce7765689241538"
+      "sha256": "20c41c6b1893782edf703859c84f6c8c685add3e39d4cd622e4980b2c5c5704a"
     },
     "scripts/_bcf_runtime/governance_install/runtime_custody_operations.py": {
       "operation": "copy",
-      "sha256": "ad445580c5c5f7c298fe777493d6c1fc8d3017fe3b8fe6fec0a4de5d1156f171"
+      "sha256": "8be902e9fca664605275978c5742d8717411efe6a02a81de79fda589b7b0ae8a"
     },
     "scripts/_bcf_runtime/governance_install/transaction.py": {
       "operation": "copy",
-      "sha256": "28c3421e230b81ce0bba20f59d682f8cf0fa926462e1b5e3f98a8618e63cf48f"
+      "sha256": "41dd653631a7cbd9581b9e05b0262fffbf192adae3851147fa14566ee5c2549b"
     },
     "scripts/_bcf_runtime/governance_install/upgrade.py": {
       "operation": "copy",
       "sha256": "9b3508feda5a58bae8e5a8f4469256e8154a97c2efe256f2bbef724f7a558364"
+    },
+    "scripts/_bcf_runtime/governance_install/validation.py": {
+      "operation": "copy",
+      "sha256": "c4d9cb733f4c87cbf853639f615923851496b355cfd30fcfb863764d44c1f9b0"
     },
     "scripts/_bcf_runtime/governance_profiles.py": {
       "operation": "copy",
@@ -990,6 +998,14 @@
       "operation": "copy",
       "sha256": "0a93820ac7203468085dee03e7af85e3dae650ad4a94dda4f4585267a7891ddc"
     },
+    "scripts/_bcf_runtime/governance_validation/authored_phase_state.py": {
+      "operation": "copy",
+      "sha256": "acbbf0d9bb3737f40758d486f63ec00f2fdc83c796c52510a2a7a60cd935fb46"
+    },
+    "scripts/_bcf_runtime/governance_validation/ci_state_matrix.py": {
+      "operation": "copy",
+      "sha256": "2b543347a63296dedd06a7551948511718b5d3783b3130ae3fe08ae2d9f6aeed"
+    },
     "scripts/_bcf_runtime/governance_validation/common.py": {
       "operation": "copy",
       "sha256": "af84a7e1f7f1948d938e84da7dfe0aa13085f25da8496af27970fb2c772b377f"
@@ -1014,13 +1030,17 @@
       "operation": "copy",
       "sha256": "a4300f9fc4d3b7ac350c8ffc75a37647dc190d9f3ca0b8ef722d0ffed4c4f3dd"
     },
+    "scripts/_bcf_runtime/governance_validation/preflight_diagnostics.py": {
+      "operation": "copy",
+      "sha256": "82338e9ddd038f06141bdccb532f51e455fc72ae4b92c8d032aad023f152e402"
+    },
     "scripts/_bcf_runtime/governance_validation/preflight_negative_controls.py": {
       "operation": "copy",
       "sha256": "3f9e87e1fac28fb80229154bea8571e5fd56c1a39cb6462d6d28c9aec196bf33"
     },
     "scripts/_bcf_runtime/governance_validation/preflight_repository_context.py": {
       "operation": "copy",
-      "sha256": "e99a39c4a4e546357d4d9f751a01f63eca430301143f845987c70062ab052e68"
+      "sha256": "755862e64224c3433f42e8b0088bccb3e043fdd0b97fc5a00e949d43ab21540e"
     },
     "scripts/_bcf_runtime/governance_validation/product_certification.py": {
       "installation_scope": "self_authority",
@@ -1046,11 +1066,11 @@
     },
     "scripts/_bcf_runtime/governance_validation/runner.py": {
       "operation": "copy",
-      "sha256": "b7ac80bf2dbb5ee5c4e531e3b4ba575b06a53f5742212bf0dde08e867157f31e"
+      "sha256": "3213ade7e312b4d3f81db1fed269023548ec2a56a4c8081ed8f0048d365a4183"
     },
     "scripts/_bcf_runtime/governance_validation/runtime_custody.py": {
       "operation": "copy",
-      "sha256": "de67d674699bd76a16b1d3e7abcb5ee50784c4b9d6bff1342e66974ed7187ebc"
+      "sha256": "93e920f0940afd4542685030527c9468e342822536a3ee9877808aa09628e762"
     },
     "scripts/_bcf_runtime/governance_validation/self_authority_overlays.py": {
       "installation_scope": "self_authority",
@@ -1063,19 +1083,19 @@
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
-      "sha256": "f68c675fbb16bf983ce0eade569298e2435e01ddbe5e2022a8a6cebcae493171"
+      "sha256": "c0ee23a567c4dd8267101939d2ea34119a3e087b670f146797dee5da831605bf"
     },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",
-      "sha256": "9727c893980b2cc1ef124ad71404e7af6541a5dad90d02199b6bfa6c94c039f4"
+      "sha256": "6f33e40c6f82fc7dbebf20a559588595f611b4a5803ac8260c13d56bcba6085e"
     },
     "scripts/_bcf_runtime/local_execution_admission.py": {
       "operation": "copy",
-      "sha256": "2dd4a75418be4e0a7dcf3d102e9eebe5094b2ab918e299e06f8ee67915976bc7"
+      "sha256": "a86eaeba75f64dd38d3940e71b26462e342eba19472ff26ce524efa15bfa288b"
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "a2cf787c50b01ef42e537b99671defd85205090827e78b144a1c0c54d1f6d600"
+      "sha256": "57b787e306deb5ae08b6bca61a20654221cba543e543026cf3d87839ca51bab9"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
@@ -1103,7 +1123,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "12244b10089f74c0f4f9d3653840fe053237866b466ecd940b0d20b75fd4540a"
+      "sha256": "9f0360197c9bdfeddcf87cc12dc370aaa986e6f8731ee498da410e32894dcdb5"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",
@@ -1131,7 +1151,7 @@
     },
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",
-      "sha256": "d989ffa1a2eee43a94ecdfd16d89270960bbd2fc244803c644a8eb7fe6603a7a"
+      "sha256": "9d2db288cd4b1eb266b6d91db8b44b318dc816b5f9fc321ba576f588200bd0f1"
     },
     "scripts/_bcf_runtime/protection_inspection_client.py": {
       "operation": "copy",
@@ -1235,7 +1255,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "453b955b2ca20b50f05b12e723f5e8d39aede610d5004bb05cf0f920ee7eeb7c"
+      "sha256": "462072930f9c1e4d64c6902afa028d1f414f652857e35e894385d6f0a2eb3d99"
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",

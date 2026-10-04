@@ -115,6 +115,44 @@ def test_normalized_exact_custody_partitions_runtime_and_consumer_bytes(
     assert snapshot.deletion_authorized is False
 
 
+def test_candidate_qualification_is_exact_and_explicitly_nonauthoritative(
+    tmp_path: Path,
+) -> None:
+    runtime = tmp_path / "scripts/_bcf_runtime/tool.py"
+    runtime.parent.mkdir(parents=True)
+    runtime.write_text("candidate runtime\n", encoding="utf-8")
+    marker = tmp_path / "governance/bcf-candidate-qualification.json"
+    marker.parent.mkdir(parents=True)
+    marker.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "kind": "candidate_qualification",
+                "non_authoritative": True,
+                "runtime_version": "2.1.8",
+                "candidate": {
+                    "commit_sha": "a" * 40,
+                    "tree_sha": "b" * 40,
+                    "pack_manifest_sha256": "c" * 64,
+                },
+                "adopter": {"commit_sha": "d" * 40, "tree_sha": "e" * 40},
+                "predecessor_runtime_lock_sha256": "f" * 64,
+                "files": {
+                    "scripts/_bcf_runtime/tool.py": _digest(runtime),
+                },
+                "preserved_consumer_files": {},
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    snapshot = inspect_runtime_custody(tmp_path, schema_path=SCHEMA)
+
+    assert snapshot.state is RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT
+    assert snapshot.provenance_claim["non_authoritative"] is True
+
+
 def test_exact_legacy_overlap_normalizes_toward_consumer_preservation(
     tmp_path: Path,
 ) -> None:

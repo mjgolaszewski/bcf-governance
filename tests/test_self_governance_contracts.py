@@ -302,6 +302,11 @@ def test_scheduled_mutants_preflight_selected_interpreter_before_execution(
     assert upload["condition"] == "always-step"
     checkout = validate_ci_graph(REPO_ROOT).graph["step_components"]["checkout-candidate"]
     assert checkout["with"] == {"fetch-depth": 0, "persist-credentials": False}
+    scheduled = validate_ci_graph(REPO_ROOT).graph["commands"]["scheduled-preflight"]
+    assert scheduled["argv"][-2:] == [
+        "--output",
+        ".artifacts/scheduled-mutants/preflight.json",
+    ]
 
 
 def test_trusted_callbacks_reject_prs_and_failed_finalizers_before_runner() -> None:

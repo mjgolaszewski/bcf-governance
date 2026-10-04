@@ -38,6 +38,15 @@ def _candidate_source_runtime(root: Path) -> tuple[Path, dict[str, str]]:
         capture_output=True,
         text=True,
     ).stdout.strip()
+    selected_purelib = subprocess.run(
+        [sys.executable, "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    (Path(purelib) / "_bcf_selected_environment.pth").write_text(
+        selected_purelib + "\n", encoding="utf-8"
+    )
     installed = Path(purelib) / "bcf_governance"
     shutil.copytree(
         REPO_ROOT / "bcf_governance",
@@ -45,14 +54,20 @@ def _candidate_source_runtime(root: Path) -> tuple[Path, dict[str, str]]:
         ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
     )
     resolved = subprocess.run(
-        [str(python), "-c", "import bcf_governance; print(bcf_governance.__file__)"],
+        [
+            str(python),
+            "-c",
+            "import bcf_governance, jsonschema; "
+            "print(bcf_governance.__file__); print(jsonschema.__file__)",
+        ],
         cwd=root,
         env=environment,
         check=True,
         capture_output=True,
         text=True,
-    ).stdout.strip()
-    assert Path(resolved).resolve() == (installed / "__init__.py").resolve()
+    ).stdout.splitlines()
+    assert Path(resolved[0]).resolve() == (installed / "__init__.py").resolve()
+    assert Path(resolved[1]).resolve().is_relative_to(Path(selected_purelib).resolve())
     return python, environment
 
 
@@ -961,3 +976,28 @@ def test_transaction_interrupt_restores_all_touched_files_byte_identically(
         path.name: (path.read_bytes(), path.stat().st_mode)
         for path in (first, second)
     } == before
+
+
+def test_transaction_final_projection_failure_rolls_back_exact_bytes(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "transaction-final"
+    repo.mkdir()
+    path = repo / "generated.yml"
+    path.write_bytes(b"before\n")
+
+    def mutate(shadow: Path) -> None:
+        (shadow / "generated.yml").write_bytes(b"after\n")
+
+    def reject_final() -> None:
+        raise ValueError("generated projection drift")
+
+    with pytest.raises(ValueError, match="generated projection drift"):
+        transaction.apply_transaction(
+            repo,
+            managed_paths=("generated.yml",),
+            mutate_shadow=mutate,
+            validate_final=reject_final,
+        )
+
+    assert path.read_bytes() == b"before\n"

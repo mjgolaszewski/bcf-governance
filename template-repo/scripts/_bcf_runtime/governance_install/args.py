@@ -103,6 +103,14 @@ def build_parser(
         ),
     )
     parser.add_argument(
+        "--candidate-qualification-source",
+        type=Path,
+        help=(
+            "Exact clean BCF source worktree for a typed non-authoritative "
+            "prepublication adopter qualification upgrade."
+        ),
+    )
+    parser.add_argument(
         "--reset-options",
         action="store_true",
         help="With --upgrade, reset profile, Makefile, and architecture option surfaces from current flags.",

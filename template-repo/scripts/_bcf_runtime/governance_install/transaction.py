@@ -127,6 +127,7 @@ def apply_transaction(
     mutate_shadow: Callable[[Path], None],
     preserve_git_history: bool = False,
     validate_promotion: Callable[[], None] | None = None,
+    validate_final: Callable[[], None] | None = None,
 ) -> None:
     """Mutate and validate a shadow, then atomically transfer only managed files."""
     repo_root = repo_root.resolve()
@@ -182,6 +183,8 @@ def apply_transaction(
                 applied.append(relative)
                 if validate_promotion is not None:
                     validate_promotion()
+            if validate_final is not None:
+                validate_final()
         except BaseException:
             for relative in reversed(applied):
                 destination = repo_root / relative

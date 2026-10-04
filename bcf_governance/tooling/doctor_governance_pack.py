@@ -183,7 +183,8 @@ def doctor_repo(repo_root: Path) -> dict[str, Any]:
     next_actions: list[str] = []
 
     runtime_lock = repo_root / "governance/bcf-runtime-lock.json"
-    if runtime_lock.exists():
+    candidate_qualification = repo_root / "governance/bcf-candidate-qualification.json"
+    if runtime_lock.exists() or candidate_qualification.exists():
         try:
             custody = inspect_runtime_custody(repo_root)
         except RuntimeCustodyError as exc:
@@ -204,6 +205,10 @@ def doctor_repo(repo_root: Path) -> dict[str, Any]:
                 warnings.append(
                     "runtime custody has exact legacy ownership overlap; "
                     "the next authenticated upgrade will preserve and normalize it"
+                )
+            if custody.state is RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT:
+                warnings.append(
+                    "runtime custody is an exact non-authoritative candidate qualification"
                 )
 
     placeholders = _scan_placeholders(repo_root)

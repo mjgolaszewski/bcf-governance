@@ -13,6 +13,8 @@ import subprocess
 import sys
 from typing import Any, Iterator, Mapping
 
+import yaml  # type: ignore[import-untyped]
+
 from .runtime_capacity import (
     RuntimeCapacityError,
     authenticated_execution_state_namespace,
@@ -21,6 +23,48 @@ from .runtime_capacity import (
 
 class LocalExecutionAdmissionError(ValueError):
     """The local gate is mechanically unready or already owns the host slot."""
+
+
+def _supported_python_minors(repo_root: Path) -> set[str]:
+    """Load the canonical self or adopter authority for project interpreters."""
+
+    path = repo_root / "governance/public-contracts.yml"
+    if not path.is_file():
+        from .ci_graph_contracts import CIGraphError, validate_ci_graph
+
+        try:
+            resources = validate_ci_graph(repo_root).graph["resource_classes"]
+            values = sorted(
+                {
+                    str(resource["python_version"])
+                    for resource in resources.values()
+                    if isinstance(resource, dict) and "python_version" in resource
+                }
+            )
+        except (CIGraphError, KeyError, TypeError, ValueError) as exc:
+            raise LocalExecutionAdmissionError(
+                "adopter Python runtime authority is unavailable"
+            ) from exc
+        if not values:
+            raise LocalExecutionAdmissionError(
+                "adopter Python runtime authority declares no Python minor"
+            )
+        return set(values)
+    try:
+        payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+        values = payload["package"]["python_minors"]
+    except (OSError, TypeError, KeyError, yaml.YAMLError) as exc:
+        raise LocalExecutionAdmissionError(
+            "public Python runtime contract is unavailable"
+        ) from exc
+    if (
+        not isinstance(values, list)
+        or not values
+        or any(not isinstance(value, str) or re.fullmatch(r"3\.[0-9]+", value) is None for value in values)
+        or len(values) != len(set(values))
+    ):
+        raise LocalExecutionAdmissionError("public Python runtime contract is malformed")
+    return set(values)
 
 
 def resolve_local_project_python(
@@ -119,10 +163,14 @@ def validate_local_toolchain(
         [str(executable), "--version"], capture_output=True, text=True, check=False
     )
     observed_python = (version.stdout or version.stderr).strip()
-    match = re.fullmatch(r"Python (3\.(?:12|13)\.[0-9]+)", observed_python)
+    match = re.fullmatch(r"Python ((3\.[0-9]+)\.[0-9]+)", observed_python)
     if version.returncode or match is None:
         raise LocalExecutionAdmissionError(
             f"selected project Python is outside the governed runtime: {observed_python}"
+        )
+    if match.group(2) not in _supported_python_minors(repo_root):
+        raise LocalExecutionAdmissionError(
+            f"selected project Python {match.group(2)} is absent from the public runtime contract"
         )
     if toolchain_command is None:
         return LocalExecutionAdmission(

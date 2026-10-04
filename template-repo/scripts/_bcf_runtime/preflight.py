@@ -33,6 +33,9 @@ from .evidence_sessions import (
 )
 from .governance_validation.runner import check_editorial, validate_repo_root
 from .governance_validation.structural_limits import validate_structural_limits
+from .governance_validation.authored_phase_state import validate_authored_phase_state
+from .governance_validation.ci_state_matrix import validate_ci_state_matrix
+from .governance_validation.preflight_diagnostics import write_preflight_diagnostic
 from .install_governance_pack import _pack_manifest_entries
 from .interpreter_environment import (
     InterpreterEnvironmentError,
@@ -559,6 +562,12 @@ def run_preflight(
         return operation()
 
     subject = step("git-state", lambda: _git_state(repo_root))
+    authored_phase_state = step(
+        "authored-phase-state", lambda: validate_authored_phase_state(repo_root)
+    )
+    ci_state_matrix = step(
+        "ci-state-matrix", lambda: validate_ci_state_matrix(repo_root)
+    )
     structural_limits = step(
         "structural-limits", lambda: validate_structural_limits(repo_root)
     )
@@ -683,6 +692,8 @@ def run_preflight(
         "mode": mode,
         "subject": subject,
         "structural_limits": structural_limits,
+        "authored_phase_state": authored_phase_state,
+        "ci_state_matrix": ci_state_matrix,
         "syntax": syntax,
         "exposure": exposure,
         "interpreter": interpreter,
@@ -731,7 +742,10 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--prior-evidence-dir", type=Path)
     parser.add_argument("--prior-evidence-digest")
     parser.add_argument("--format", choices=("text", "json"), default="text")
+    parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
+    effective_mode = args.mode or preflight_mode_for_evaluation(args.evaluation_mode)
+    effective_evaluation = args.evaluation_mode or "pr"
     try:
         prior_receipts = (
             load_prior_receipts(
@@ -740,7 +754,7 @@ def main(argv: list[str] | None = None) -> None:
         )
         report = run_preflight(
             args.repo_root,
-            mode=args.mode or preflight_mode_for_evaluation(args.evaluation_mode),
+            mode=effective_mode,
             python_executable=args.python,
             artifact_root=args.artifact_root,
             expected_producers=args.expected_producer,
@@ -757,7 +771,21 @@ def main(argv: list[str] | None = None) -> None:
             ),
         )
     except (OSError, subprocess.SubprocessError, ValueError) as exc:
+        if args.output is not None:
+            write_preflight_diagnostic(
+                args.output,
+                mode=effective_mode,
+                evaluation_mode=effective_evaluation,
+                error=str(exc),
+            )
         raise SystemExit(str(exc)) from exc
+    if args.output is not None:
+        write_preflight_diagnostic(
+            args.output,
+            mode=effective_mode,
+            evaluation_mode=effective_evaluation,
+            report=report,
+        )
     if args.format == "json":
         print(json.dumps(report, indent=2, sort_keys=True))
     else:

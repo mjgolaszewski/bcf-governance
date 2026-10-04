@@ -8,6 +8,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 import re
+import subprocess
 from typing import Any, Protocol
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
@@ -24,6 +25,8 @@ from ..release_asset_inventory import (
 )
 from ..runtime_capacity import executing_runtime_version
 from .runtime_custody import (
+    CANDIDATE_QUALIFICATION_PATH,
+    RUNTIME_LOCK_PATH,
     RuntimeCustodyError,
     RuntimeCustodyFailure,
     RuntimeCustodyState,
@@ -155,6 +158,7 @@ class UpgradeReleaseCustody:
 
     release: ReleaseCustody | None
     preserved: dict[str, str]
+    candidate: dict[str, Any] | None = None
 
     @property
     def excluded_paths(self) -> frozenset[str]:
@@ -170,11 +174,59 @@ class UpgradeReleaseCustody:
         project_upgrade_runtime_lock(
             target_root,
             custody=self.release,
+            candidate=self.candidate,
             manifest_entries=manifest_entries,
             upgrade_paths=upgrade_paths,
             preserved=self.preserved,
             placeholder_values=placeholder_values,
         )
+
+
+def _clean_git_identity(root: Path, *, label: str) -> dict[str, str]:
+    status = subprocess.run(
+        ["git", "-C", str(root), "status", "--porcelain=v1"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if status.returncode or status.stdout:
+        raise ReleaseCustodyError(f"{label} repository must be a clean Git worktree")
+    values: dict[str, str] = {}
+    for key, expression in (("commit_sha", "HEAD"), ("tree_sha", "HEAD^{tree}")):
+        result = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "--verify", expression],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        value = result.stdout.strip()
+        if result.returncode or re.fullmatch(r"[a-f0-9]{40}", value) is None:
+            raise ReleaseCustodyError(f"{label} Git identity is unavailable")
+        values[key] = value
+    return values
+
+
+def _candidate_qualification_identity(
+    source_root: Path, target_root: Path, template_root: Path
+) -> dict[str, Any]:
+    source_root = source_root.resolve()
+    candidate = _clean_git_identity(source_root, label="candidate source")
+    adopter = _clean_git_identity(target_root, label="adopter target")
+    relative = Path("bcf_governance/pack/template-repo/.bcf-pack-manifest.json")
+    source_manifest = source_root / relative
+    runtime_manifest = template_root / ".bcf-pack-manifest.json"
+    if (
+        not source_manifest.is_file()
+        or source_manifest.is_symlink()
+        or not runtime_manifest.is_file()
+        or runtime_manifest.is_symlink()
+        or source_manifest.read_bytes() != runtime_manifest.read_bytes()
+    ):
+        raise ReleaseCustodyError(
+            "executing candidate pack differs from the exact source worktree"
+        )
+    candidate["pack_manifest_sha256"] = _sha256_bytes(runtime_manifest.read_bytes())
+    return {"candidate": candidate, "adopter": adopter}
 
 
 def _positive_integer(value: object, label: str) -> int:
@@ -448,6 +500,10 @@ def validate_installed_runtime_lock(
         raise ReleaseCustodyError("BCF runtime lock or schema is unreadable")
     if snapshot.version != expected_version:
         raise ReleaseCustodyError("BCF runtime lock version differs from executing BCF")
+    if snapshot.state is RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT:
+        raise ReleaseCustodyError(
+            "candidate qualification has no immutable release authority"
+        )
     if snapshot.state is not RuntimeCustodyState.NORMALIZED_EXACT:
         raise ReleaseCustodyError("BCF runtime lock ownership inventories overlap")
     payload = json.loads(snapshot.lock_bytes)
@@ -468,11 +524,18 @@ def prepare_upgrade_release_custody(
     api: ReleaseProvider | None = None,
     *,
     force_rescaffold: bool = False,
+    candidate_qualification_source: Path | None = None,
 ) -> UpgradeReleaseCustody:
     """Fail before mutation unless an upgrade can advance existing custody."""
 
     if release_assets is not None and not upgrade:
         raise RuntimeError("--release-assets requires --upgrade")
+    if candidate_qualification_source is not None and (
+        not upgrade or release_assets is not None or force_rescaffold
+    ):
+        raise RuntimeError(
+            "--candidate-qualification-source requires local --upgrade only"
+        )
     snapshot = inspect_runtime_custody(
         target_root,
         schema_path=template_root / "schemas/bcf-runtime-lock.schema.json",
@@ -480,6 +543,8 @@ def prepare_upgrade_release_custody(
     operation = (
         RuntimeCustodyOperation.FORCE_RESCAFFOLD
         if force_rescaffold
+        else RuntimeCustodyOperation.CANDIDATE_QUALIFICATION
+        if candidate_qualification_source is not None
         else RuntimeCustodyOperation.RELEASE_UPGRADE_REQUEST
         if release_assets is not None
         else RuntimeCustodyOperation.FRESH_INSTALL
@@ -495,6 +560,14 @@ def prepare_upgrade_release_custody(
         raise RuntimeError(decision.disposition.value)
     if force_rescaffold:
         return UpgradeReleaseCustody(None, {})
+    if candidate_qualification_source is not None:
+        identity = _candidate_qualification_identity(
+            candidate_qualification_source, target_root, template_root
+        )
+        identity["predecessor_runtime_lock_sha256"] = _sha256_bytes(
+            snapshot.lock_bytes or b""
+        )
+        return UpgradeReleaseCustody(None, snapshot.consumer_preserved, identity)
     if release_assets is None:
         return UpgradeReleaseCustody(None, snapshot.consumer_preserved)
     release = prepare_release_custody(
@@ -511,6 +584,7 @@ def project_upgrade_runtime_lock(
     target_root: Path,
     *,
     custody: ReleaseCustody | None,
+    candidate: dict[str, Any] | None,
     manifest_entries: dict[str, dict[str, Any]],
     upgrade_paths: tuple[str, ...],
     preserved: dict[str, str],
@@ -518,6 +592,7 @@ def project_upgrade_runtime_lock(
 ) -> None:
     """Project custody only when exact release inputs authorized this upgrade."""
 
+    qualification_path = target_root / CANDIDATE_QUALIFICATION_PATH
     if custody is not None:
         write_runtime_lock(
             target_root,
@@ -526,4 +601,35 @@ def project_upgrade_runtime_lock(
             upgrade_paths=tuple(dict.fromkeys(upgrade_paths)),
             preserved=preserved,
             placeholder_values=placeholder_values,
+        )
+        qualification_path.unlink(missing_ok=True)
+    elif candidate is not None:
+        expected = selected_runtime_inventory_paths(
+            manifest_entries, upgrade_paths
+        ) - preserved.keys()
+        files: dict[str, str] = {}
+        for relative in sorted(expected):
+            path = target_root / relative
+            if not path.is_file() or path.is_symlink():
+                raise ReleaseCustodyError(
+                    f"candidate qualification runtime is incomplete: {relative}"
+                )
+            files[relative] = _sha256_bytes(path.read_bytes())
+        payload = {
+            "schema_version": "1.0",
+            "kind": "candidate_qualification",
+            "non_authoritative": True,
+            "runtime_version": executing_runtime_version(),
+            "candidate": candidate["candidate"],
+            "adopter": candidate["adopter"],
+            "predecessor_runtime_lock_sha256": candidate[
+                "predecessor_runtime_lock_sha256"
+            ],
+            "files": files,
+            "preserved_consumer_files": dict(sorted(preserved.items())),
+        }
+        (target_root / RUNTIME_LOCK_PATH).unlink(missing_ok=True)
+        qualification_path.parent.mkdir(parents=True, exist_ok=True)
+        qualification_path.write_text(
+            json.dumps(payload, indent=2, sort_keys=False) + "\n", encoding="utf-8"
         )

@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import subprocess
 import sys
+import json
 from pathlib import Path
 
 import pytest
+import yaml
 
 from bcf_governance.tooling import preflight
 from bcf_governance.tooling.governance_validation.common import (
@@ -13,9 +15,28 @@ from bcf_governance.tooling.governance_validation.common import (
 from bcf_governance.tooling.governance_validation.preflight_repository_context import (
     pr_context,
 )
+from bcf_governance.tooling.governance_validation.authored_phase_state import (
+    AuthoredPhaseStateError,
+    validate_authored_phase_state,
+)
+from bcf_governance.tooling.governance_validation.preflight_diagnostics import (
+    write_preflight_diagnostic,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+@pytest.fixture(autouse=True)
+def _stub_authored_phase_state_for_unit_fixtures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        preflight,
+        "validate_authored_phase_state",
+        lambda _: {"phase_id": "P00", "paths": []},
+    )
+    monkeypatch.setattr(preflight, "validate_ci_state_matrix", lambda _: {"status": "covered"})
 
 
 def _git(repo: Path, *args: str) -> None:
@@ -104,6 +125,40 @@ def test_candidate_preflight_rejects_pull_request_target(
 
     with pytest.raises(ValueError, match="event is not supported"):
         pr_context(repo, "pr")
+
+
+@pytest.mark.parametrize("event", ["schedule", "workflow_dispatch"])
+def test_release_preflight_types_non_comparison_provider_events(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, event: str
+) -> None:
+    repo = _committed_repo(tmp_path, "source.py", "VALUE = 1\n")
+    monkeypatch.setenv("BCF_PROVIDER_EVENT", event)
+    monkeypatch.setenv("GITHUB_EVENT_NAME", event)
+    for name in (
+        "BCF_COMPARISON_BASE_SHA",
+        "BCF_ORIGIN_COMPARISON_BASE_SHA",
+        "BCF_CALLER_COMPARISON_BASE_SHA",
+        "BCF_PR_BASE_SHA",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    assert pr_context(repo, "release") == {
+        "applicable": False,
+        "event": event,
+        "provenance": "authenticated_non_comparison_event",
+    }
+
+
+def test_non_comparison_event_rejects_pr_mode_and_comparison_identity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _committed_repo(tmp_path, "source.py", "VALUE = 1\n")
+    monkeypatch.setenv("BCF_PROVIDER_EVENT", "schedule")
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "schedule")
+    with pytest.raises(ValueError, match="requires release"):
+        pr_context(repo, "pr")
+    monkeypatch.setenv("BCF_COMPARISON_BASE_SHA", "a" * 40)
+    with pytest.raises(ValueError, match="cannot carry comparison identity"):
+        pr_context(repo, "release")
 
 
 def test_workflow_call_comparison_base_is_explicit_exact_and_available(
@@ -494,6 +549,8 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
 
     assert calls == [
         "git-state",
+        "authored-phase-state",
+        "ci-state-matrix",
         "structural-limits",
         "syntax",
         "exposure",
@@ -559,7 +616,7 @@ def test_context_budget_failure_precedes_evidence_session_allocation(
             trace=calls.append,
         )
 
-    assert calls == ["git-state", "structural-limits"]
+    assert calls == ["git-state", "authored-phase-state", "ci-state-matrix", "structural-limits"]
 
 
 def test_editorial_contract_rejection_is_a_preflight_failure(tmp_path: Path) -> None:
@@ -773,6 +830,8 @@ def test_workflow_authority_failure_prevents_session_allocation(
 
     assert calls == [
         "git-state",
+        "authored-phase-state",
+        "ci-state-matrix",
         "structural-limits",
         "syntax",
         "exposure",
@@ -920,7 +979,7 @@ def test_wrong_prior_transport_subject_stops_before_evidence_fanout(
             prior_transport_dir=transport_dir,
             artifact_root=tmp_path / "evidence", trace=calls.append,
         )
-    assert calls == ["git-state", "structural-limits", "prior-transport"]
+    assert calls == ["git-state", "authored-phase-state", "ci-state-matrix", "structural-limits", "prior-transport"]
 
 
 def test_explicit_controller_authority_cannot_compete_with_prior_transport(
@@ -975,7 +1034,7 @@ def test_interpreter_failure_prevents_session_allocation(
         )
 
     assert calls == [
-        "git-state", "structural-limits", "syntax", "exposure", "interpreter"
+        "git-state", "authored-phase-state", "ci-state-matrix", "structural-limits", "syntax", "exposure", "interpreter"
     ]
 
 
@@ -1008,7 +1067,7 @@ def test_undeclared_runtime_import_stops_full_preflight_before_evidence(
             trace=calls.append,
         )
     assert calls == [
-        "git-state", "structural-limits", "syntax", "exposure", "interpreter"
+        "git-state", "authored-phase-state", "ci-state-matrix", "structural-limits", "syntax", "exposure", "interpreter"
     ]
 
 
@@ -1038,7 +1097,93 @@ def test_deterministic_failure_prevents_session_allocation(
             trace=calls.append,
         )
 
-    assert calls == ["git-state", "structural-limits", "syntax"]
+    assert calls == ["git-state", "authored-phase-state", "ci-state-matrix", "structural-limits", "syntax"]
+
+
+def test_authored_phase_state_rejects_completed_log_while_ledger_active(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    for relative in (
+        "plans/product-spec.yml",
+        "plans/build-plan.yml",
+        "plans/phase-ledger.yml",
+        "plans/phase-30-plan.yml",
+        "plans/phase-30-workitems.yml",
+        "phases/phase-30-log.yml",
+        "MEMORY.yml",
+    ):
+        target = repo / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((REPO_ROOT / relative).read_bytes())
+    log = yaml.safe_load((repo / "phases/phase-30-log.yml").read_text())
+    log["document"]["status"] = "completed"
+    (repo / "phases/phase-30-log.yml").write_text(yaml.safe_dump(log, sort_keys=False))
+    with pytest.raises(AuthoredPhaseStateError, match="declare completed together"):
+        validate_authored_phase_state(repo)
+
+
+def test_authored_phase_state_reports_computed_status_before_pair_mismatch(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    for relative in (
+        "plans/product-spec.yml",
+        "plans/build-plan.yml",
+        "plans/phase-ledger.yml",
+        "plans/phase-30-plan.yml",
+        "plans/phase-30-workitems.yml",
+        "phases/phase-30-log.yml",
+        "MEMORY.yml",
+    ):
+        target = repo / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((REPO_ROOT / relative).read_bytes())
+    ledger = yaml.safe_load((repo / "plans/phase-ledger.yml").read_text())
+    ledger["active_phase"]["lifecycle_status"] = "completed"
+    (repo / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump(ledger, sort_keys=False)
+    )
+    log = yaml.safe_load((repo / "phases/phase-30-log.yml").read_text())
+    log["document"]["status"] = "verified"
+    (repo / "phases/phase-30-log.yml").write_text(
+        yaml.safe_dump(log, sort_keys=False)
+    )
+
+    with pytest.raises(AuthoredPhaseStateError, match="verified and closed are computed"):
+        validate_authored_phase_state(repo)
+
+
+def test_scheduled_preflight_diagnostic_records_both_terminal_outcomes(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "scheduled/preflight.json"
+    write_preflight_diagnostic(
+        output,
+        mode="release",
+        evaluation_mode="pr",
+        error="typed failure",
+    )
+    failed = json.loads(output.read_text())
+    assert failed == {
+        "kind": "governance_preflight_diagnostic",
+        "status": "failure",
+        "mode": "release",
+        "evaluation_mode": "pr",
+        "error": "typed failure",
+    }
+    write_preflight_diagnostic(
+        output,
+        mode="release",
+        evaluation_mode="pr",
+        report={
+            "subject": {"commit_sha": "a" * 40, "tree_sha": "b" * 40},
+            "pr_context": {"applicable": False, "event": "schedule"},
+        },
+    )
+    succeeded = json.loads(output.read_text())
+    assert succeeded["status"] == "success"
+    assert succeeded["repository_context"]["event"] == "schedule"
 
 
 def test_semantic_ownership_failure_prevents_session_allocation(

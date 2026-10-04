@@ -166,7 +166,10 @@ def test_reconcile_is_the_canonical_cli_surface() -> None:
 def test_reconcile_declares_one_closed_dependency_order() -> None:
     root = Path(__file__).resolve().parents[1]
     ids = [step.step_id for step in reconcile_steps(root, Path(sys.executable))]
-    assert ids[:7] == [
+    assert ids[:10] == [
+        "authored-phase-state",
+        "ci-state-matrix",
+        "interpreter-environment",
         "structural-limits",
         "release-version-surfaces",
         "profile-makefile",
@@ -175,6 +178,10 @@ def test_reconcile_declares_one_closed_dependency_order() -> None:
         "pack-projection",
         "semantic-lock",
     ]
+    phase_scope = next(step for step in reconcile_steps(root, Path(sys.executable)) if step.step_id == "ci-graph-post-merge-scope")
+    assert "plans/phase-30-workitems.yml" in (phase_scope.watch_paths or ())
+    assert "phases/phase-30-log.yml" in (phase_scope.watch_paths or ())
+    assert not any("phase-29" in path for path in (phase_scope.watch_paths or ()))
     assert ids.index("ci-graph-lock") < ids.index("ci-graph-render")
     assert ids.index("ci-graph-render") < ids.index("workflow-authority")
     assert ids[-1] == "editorial-audit"
