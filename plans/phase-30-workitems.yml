@@ -23,7 +23,7 @@ workitems:
   - contract-test
 - id: P30-P0-02
   priority: P0
-  status: IN_PROGRESS
+  status: DONE
   summary: derive a bounded authenticated recovery frontier
   acceptance:
   - requires-workitem-closure:P30-P0-01
