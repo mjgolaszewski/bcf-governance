@@ -1259,7 +1259,7 @@
     },
     "scripts/_bcf_runtime/scheduled_control_preflight.py": {
       "operation": "copy",
-      "sha256": "2aee2540d2c3d1f69b641155b002e13231f9a204939de8d8426e4ad37f851aae"
+      "sha256": "c5e37ef8fb1167ea22d8ba9d03eb1e70e419b3aca6f46fdc0590f6644d21c6cb"
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",

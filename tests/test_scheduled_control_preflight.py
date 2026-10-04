@@ -32,7 +32,13 @@ def test_scheduled_control_preflight_binds_one_provider_effective_pair(
 
     def fake_preflight(*_args: object, **kwargs: object) -> dict[str, object]:
         calls.append(kwargs)
-        return {"subject": {"commit_sha": COMMIT, "tree_sha": TREE}}
+        return {
+            "subject": {
+                "commit_sha": COMMIT,
+                "tree_sha": TREE,
+                "status_porcelain_sha256": "d" * 64,
+            }
+        }
 
     monkeypatch.setattr(scheduled, "run_preflight", fake_preflight)
     monkeypatch.setattr(

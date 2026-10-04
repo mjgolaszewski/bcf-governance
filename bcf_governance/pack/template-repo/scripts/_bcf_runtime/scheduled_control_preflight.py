@@ -40,7 +40,16 @@ def run_scheduled_control_preflight(
             evaluation_mode="pr",
             transported_authority=authority,
         )
-        if report["subject"] != effective["subject"]:
+        report_subject = report.get("subject")
+        report_identity = (
+            {
+                "commit_sha": report_subject.get("commit_sha"),
+                "tree_sha": report_subject.get("tree_sha"),
+            }
+            if isinstance(report_subject, dict)
+            else None
+        )
+        if report_identity != effective["subject"]:
             raise ScheduledControlPreflightError(
                 "scheduled checkout differs from provider-effective main subject"
             )
