@@ -944,7 +944,7 @@
     },
     "scripts/_bcf_runtime/governance_install/release_custody.py": {
       "operation": "copy",
-      "sha256": "5f863157930d9d77bf645ff8eedc6b486089242260933227866d5862b7db35bf"
+      "sha256": "4db3ef881518e872dff504a561ff94a4451ec94d81cfbe652668b3fbf3d0c410"
     },
     "scripts/_bcf_runtime/governance_install/reporting.py": {
       "operation": "copy",

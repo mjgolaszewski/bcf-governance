@@ -500,6 +500,10 @@ def validate_installed_runtime_lock(
         raise ReleaseCustodyError("BCF runtime lock or schema is unreadable")
     if snapshot.version != expected_version:
         raise ReleaseCustodyError("BCF runtime lock version differs from executing BCF")
+    if snapshot.state is RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT:
+        raise ReleaseCustodyError(
+            "candidate qualification has no immutable release authority"
+        )
     if snapshot.state is not RuntimeCustodyState.NORMALIZED_EXACT:
         raise ReleaseCustodyError("BCF runtime lock ownership inventories overlap")
     payload = json.loads(snapshot.lock_bytes)

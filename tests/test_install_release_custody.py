@@ -425,6 +425,15 @@ def test_release_bound_adopter_can_enter_exact_nonauthoritative_candidate_qualif
     assert snapshot.state is RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT
     assert snapshot.provenance_claim["non_authoritative"] is True
     assert not lock.exists()
+    with pytest.raises(
+        release_custody.ReleaseCustodyError,
+        match="no immutable release authority",
+    ):
+        release_custody.validate_installed_runtime_lock(
+            target,
+            expected_version=__version__,
+            schema_path=REPO_ROOT / "schemas/bcf-runtime-lock.schema.json",
+        )
 
 
 def test_upgrade_atomically_projects_release_custody_with_runtime_bytes(
