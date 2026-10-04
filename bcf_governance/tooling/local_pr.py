@@ -40,7 +40,7 @@ from .evidence_workitem_lifecycle import (
 )
 from .governance_evidence import capture_gate
 from .governance_truth import TruthfulnessError, derive_truth
-from .preflight import PreflightError, preflight_mode_for_evaluation, run_preflight
+from .preflight import PreflightError, run_preflight
 from .ci_authority_prospective_telemetry import (
     ProspectiveTelemetryError,
     elapsed_ms as _elapsed_ms,
@@ -396,7 +396,7 @@ def _run_prospective_train(
             ):
                 post_merge_preflight = run_preflight(
                     root,
-                    mode=preflight_mode_for_evaluation(post_merge_mode),
+                    mode="release",
                     python_executable=python_executable,
                     evaluation_mode=post_merge_mode,
                     evaluation_target=post_merge_target,

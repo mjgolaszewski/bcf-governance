@@ -352,6 +352,57 @@ def test_prospective_train_executes_exact_direct_push_preflight_before_evidence(
     assert len(calls) == 2
 
 
+def test_pending_rotation_pr_projection_uses_direct_push_release_preflight(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    trace: list[str] = []
+    calls: list[dict[str, object]] = []
+    _front_door(monkeypatch, trace)
+    monkeypatch.setattr(
+        prospective,
+        "validate_controller_custody_graph",
+        lambda *_args, **_kwargs: (
+            _evaluation("pr", None),
+            {
+                "status": "proved",
+                "custody_state": "managed_controller",
+                "no_transition_callback_probe": "no_transition",
+            },
+        ),
+    )
+
+    def preflight(*_args: object, **kwargs: object) -> dict[str, object]:
+        calls.append(dict(kwargs))
+        return {
+            "status": "pass",
+            "self_controller": {
+                "status": "pending_rotation",
+                "release_authority": False,
+            },
+        }
+
+    monkeypatch.setattr(prospective, "run_preflight", preflight)
+    report = prospective._run_prospective_train(
+        tmp_path,
+        semantic_intent="pr",
+        evaluation_target=None,
+        subject_commit=HEAD,
+        subject_tree=TREE,
+        python_executable=Path("/python"),
+        execute_evidence=False,
+        runner=_runner,
+    )
+
+    assert report["status"] == "deterministic_front_door_pass"
+    assert [(call["mode"], call["evaluation_mode"]) for call in calls] == [
+        ("pr", "pr"),
+        ("release", "pr"),
+    ]
+    assert calls[1]["controller_state_expectation"] == (
+        "prospective_pending_rotation"
+    )
+
+
 def test_provider_context_is_mechanically_bound_to_exact_prospective_train(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
