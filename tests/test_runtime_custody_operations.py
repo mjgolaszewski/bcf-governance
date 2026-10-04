@@ -181,6 +181,7 @@ def test_custody_operation_matrix_is_closed_and_typed(
         in {
             RuntimeCustodyDisposition.ALLOW_FRESH_INSTALL,
             RuntimeCustodyDisposition.ALLOW_LOCAL_NONAUTHORITATIVE,
+            RuntimeCustodyDisposition.ALLOW_ISOLATED_CANDIDATE_QUALIFICATION,
             RuntimeCustodyDisposition.REQUIRE_EXPLICIT_RESCAFFOLD_CONFIRMATION,
             RuntimeCustodyDisposition.REQUIRE_TARGET_RELEASE_AUTHENTICATION,
         }
@@ -191,6 +192,7 @@ def test_operation_contract_has_no_generic_inapplicable_outcome() -> None:
     assert {value.value for value in RuntimeCustodyDisposition} == {
         "allow_fresh_install",
         "allow_local_nonauthoritative",
+        "allow_isolated_candidate_qualification",
         "require_explicit_rescaffold_confirmation",
         "require_target_release_authentication",
         "reject_not_installed",
@@ -215,9 +217,34 @@ def test_operation_matrix_covers_every_declared_state_and_operation() -> None:
 
 
 @pytest.mark.parametrize(
+    "state",
+    [
+        RuntimeCustodyState.LOCAL_UNRELEASED,
+        RuntimeCustodyState.NORMALIZED_EXACT,
+        RuntimeCustodyState.LEGACY_OVERLAP_EXACT,
+        RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT,
+    ],
+)
+def test_candidate_qualification_is_one_explicit_nonauthoritative_lane(
+    state: RuntimeCustodyState,
+) -> None:
+    decision = decide_runtime_custody_operation(
+        _snapshot(state),
+        RuntimeCustodyOperation.CANDIDATE_QUALIFICATION,
+        target_version="2.1.5",
+    )
+
+    assert (
+        decision.disposition
+        is RuntimeCustodyDisposition.ALLOW_ISOLATED_CANDIDATE_QUALIFICATION
+    )
+
+
+@pytest.mark.parametrize(
     "operation",
     [
         RuntimeCustodyOperation.LOCAL_UPGRADE,
+        RuntimeCustodyOperation.CANDIDATE_QUALIFICATION,
         RuntimeCustodyOperation.RELEASE_UPGRADE_REQUEST,
     ],
 )

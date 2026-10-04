@@ -15,6 +15,7 @@ class RuntimeCustodyOperation(StrEnum):
     FRESH_INSTALL = "fresh_install"
     FORCE_RESCAFFOLD = "force_rescaffold"
     LOCAL_UPGRADE = "local_upgrade"
+    CANDIDATE_QUALIFICATION = "candidate_qualification"
     RELEASE_UPGRADE_REQUEST = "release_upgrade_request"
     REMOVE_RUNTIME = "remove_runtime"
 
@@ -24,6 +25,7 @@ class RuntimeCustodyDisposition(StrEnum):
 
     ALLOW_FRESH_INSTALL = "allow_fresh_install"
     ALLOW_LOCAL_NONAUTHORITATIVE = "allow_local_nonauthoritative"
+    ALLOW_ISOLATED_CANDIDATE_QUALIFICATION = "allow_isolated_candidate_qualification"
     REQUIRE_EXPLICIT_RESCAFFOLD_CONFIRMATION = (
         "require_explicit_rescaffold_confirmation"
     )
@@ -47,6 +49,7 @@ class RuntimeCustodyDecision:
         return self.disposition in {
             RuntimeCustodyDisposition.ALLOW_FRESH_INSTALL,
             RuntimeCustodyDisposition.ALLOW_LOCAL_NONAUTHORITATIVE,
+            RuntimeCustodyDisposition.ALLOW_ISOLATED_CANDIDATE_QUALIFICATION,
             RuntimeCustodyDisposition.REQUIRE_EXPLICIT_RESCAFFOLD_CONFIRMATION,
             RuntimeCustodyDisposition.REQUIRE_TARGET_RELEASE_AUTHENTICATION,
         }
@@ -57,6 +60,7 @@ _OPERATION_MATRIX = {
         RuntimeCustodyOperation.FRESH_INSTALL: RuntimeCustodyDisposition.ALLOW_FRESH_INSTALL,
         RuntimeCustodyOperation.FORCE_RESCAFFOLD: RuntimeCustodyDisposition.ALLOW_FRESH_INSTALL,
         RuntimeCustodyOperation.LOCAL_UPGRADE: RuntimeCustodyDisposition.REJECT_NOT_INSTALLED,
+        RuntimeCustodyOperation.CANDIDATE_QUALIFICATION: RuntimeCustodyDisposition.REJECT_NOT_INSTALLED,
         RuntimeCustodyOperation.RELEASE_UPGRADE_REQUEST: (
             RuntimeCustodyDisposition.REJECT_NOT_INSTALLED
         ),
@@ -71,6 +75,9 @@ _OPERATION_MATRIX = {
         ),
         RuntimeCustodyOperation.LOCAL_UPGRADE: (
             RuntimeCustodyDisposition.ALLOW_LOCAL_NONAUTHORITATIVE
+        ),
+        RuntimeCustodyOperation.CANDIDATE_QUALIFICATION: (
+            RuntimeCustodyDisposition.ALLOW_ISOLATED_CANDIDATE_QUALIFICATION
         ),
         RuntimeCustodyOperation.RELEASE_UPGRADE_REQUEST: (
             RuntimeCustodyDisposition.REQUIRE_TARGET_RELEASE_AUTHENTICATION
@@ -89,6 +96,9 @@ _OPERATION_MATRIX = {
         RuntimeCustodyOperation.LOCAL_UPGRADE: (
             RuntimeCustodyDisposition.REJECT_PARTIAL_INSTALLATION
         ),
+        RuntimeCustodyOperation.CANDIDATE_QUALIFICATION: (
+            RuntimeCustodyDisposition.REJECT_PARTIAL_INSTALLATION
+        ),
         RuntimeCustodyOperation.RELEASE_UPGRADE_REQUEST: (
             RuntimeCustodyDisposition.REJECT_PARTIAL_INSTALLATION
         ),
@@ -103,6 +113,9 @@ _OPERATION_MATRIX = {
         ),
         RuntimeCustodyOperation.LOCAL_UPGRADE: (
             RuntimeCustodyDisposition.REJECT_RELEASE_ASSETS_REQUIRED
+        ),
+        RuntimeCustodyOperation.CANDIDATE_QUALIFICATION: (
+            RuntimeCustodyDisposition.ALLOW_ISOLATED_CANDIDATE_QUALIFICATION
         ),
         RuntimeCustodyOperation.RELEASE_UPGRADE_REQUEST: (
             RuntimeCustodyDisposition.REQUIRE_TARGET_RELEASE_AUTHENTICATION
@@ -119,12 +132,23 @@ _OPERATION_MATRIX = {
         RuntimeCustodyOperation.LOCAL_UPGRADE: (
             RuntimeCustodyDisposition.REJECT_RELEASE_ASSETS_REQUIRED
         ),
+        RuntimeCustodyOperation.CANDIDATE_QUALIFICATION: (
+            RuntimeCustodyDisposition.ALLOW_ISOLATED_CANDIDATE_QUALIFICATION
+        ),
         RuntimeCustodyOperation.RELEASE_UPGRADE_REQUEST: (
             RuntimeCustodyDisposition.REQUIRE_TARGET_RELEASE_AUTHENTICATION
         ),
         RuntimeCustodyOperation.REMOVE_RUNTIME: (
             RuntimeCustodyDisposition.REJECT_DELETION_AUTHORITY_ABSENT
         ),
+    },
+    RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT: {
+        RuntimeCustodyOperation.FRESH_INSTALL: RuntimeCustodyDisposition.REJECT_ALREADY_INSTALLED,
+        RuntimeCustodyOperation.FORCE_RESCAFFOLD: RuntimeCustodyDisposition.REQUIRE_EXPLICIT_RESCAFFOLD_CONFIRMATION,
+        RuntimeCustodyOperation.LOCAL_UPGRADE: RuntimeCustodyDisposition.REJECT_RELEASE_ASSETS_REQUIRED,
+        RuntimeCustodyOperation.CANDIDATE_QUALIFICATION: RuntimeCustodyDisposition.ALLOW_ISOLATED_CANDIDATE_QUALIFICATION,
+        RuntimeCustodyOperation.RELEASE_UPGRADE_REQUEST: RuntimeCustodyDisposition.REQUIRE_TARGET_RELEASE_AUTHENTICATION,
+        RuntimeCustodyOperation.REMOVE_RUNTIME: RuntimeCustodyDisposition.REJECT_DELETION_AUTHORITY_ABSENT,
     },
 }
 
@@ -142,6 +166,7 @@ def decide_runtime_custody_operation(
         operation
         in {
             RuntimeCustodyOperation.LOCAL_UPGRADE,
+            RuntimeCustodyOperation.CANDIDATE_QUALIFICATION,
             RuntimeCustodyOperation.RELEASE_UPGRADE_REQUEST,
         }
         and snapshot.version is not None
@@ -154,11 +179,13 @@ def decide_runtime_custody_operation(
         operation
         in {
             RuntimeCustodyOperation.LOCAL_UPGRADE,
+            RuntimeCustodyOperation.CANDIDATE_QUALIFICATION,
             RuntimeCustodyOperation.RELEASE_UPGRADE_REQUEST,
         }
         and disposition
         in {
             RuntimeCustodyDisposition.ALLOW_LOCAL_NONAUTHORITATIVE,
+            RuntimeCustodyDisposition.ALLOW_ISOLATED_CANDIDATE_QUALIFICATION,
             RuntimeCustodyDisposition.REQUIRE_TARGET_RELEASE_AUTHENTICATION,
         }
         and target_version is None

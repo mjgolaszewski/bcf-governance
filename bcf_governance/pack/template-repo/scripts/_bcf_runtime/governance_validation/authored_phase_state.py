@@ -7,8 +7,10 @@ from typing import Any
 
 import yaml  # type: ignore[import-untyped]
 
+from .common import GovernanceValidationError
 
-class AuthoredPhaseStateError(ValueError):
+
+class AuthoredPhaseStateError(GovernanceValidationError):
     """Raised before reconciliation when authored phase state contradicts itself."""
 
 

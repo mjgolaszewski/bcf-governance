@@ -27,6 +27,7 @@ from .governance_install.artifacts import (  # noqa: E402
     merge_gitignore as _merge_gitignore,
 )
 from .governance_install.transaction import apply_transaction  # noqa: E402
+from .governance_install.validation import run_validation  # noqa: E402
 from .governance_install.upgrade import (  # noqa: E402
     copy_selected_template_paths,
     replace_placeholders_in_files,
@@ -106,6 +107,7 @@ INSTALL_MANAGED_PATHS = tuple(
             "LICENSE",
             "CHANGELOG.md",
             "governance/bcf-runtime-lock.json",
+            "governance/bcf-candidate-qualification.json",
         )
     )
 )
@@ -498,28 +500,6 @@ def _apply_adoption_mode_defaults(
         args.build_block = "existing_repo_adoption"
 
 
-def _run_validation(
-    target_root: Path,
-    *,
-    allow_placeholders: bool,
-    allow_release_gate_placeholders: bool,
-) -> subprocess.CompletedProcess[str]:
-    command = [
-        sys.executable,
-        str(target_root / "scripts" / "validate_governance_yaml.py"),
-        "--repo-root",
-        str(target_root),
-        "--format",
-        "json",
-        "--compact",
-    ]
-    if allow_placeholders:
-        command.append("--allow-placeholders")
-    if allow_release_gate_placeholders:
-        command.append("--allow-release-gate-placeholders")
-    return subprocess.run(command, capture_output=True, text=True)
-
-
 def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
     if not target_root.exists() or not target_root.is_dir():
         raise NotADirectoryError(f"{target_root} is not an existing directory; use install without --upgrade")
@@ -585,7 +565,7 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
     strict_output = ""
     bootstrap_output = ""
     if not args.skip_validation:
-        strict_result = _run_validation(
+        strict_result = run_validation(
             target_root,
             allow_placeholders=False,
             allow_release_gate_placeholders=False,
@@ -593,7 +573,7 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
         strict_validation_passed = strict_result.returncode == 0
         strict_output = (strict_result.stdout or strict_result.stderr).strip()
         if not strict_validation_passed:
-            bootstrap_result = _run_validation(
+            bootstrap_result = run_validation(
                 target_root,
                 allow_placeholders=True,
                 allow_release_gate_placeholders=True,
@@ -661,7 +641,7 @@ def _install_direct(args: argparse.Namespace, target_root: Path) -> InstallResul
     strict_output = ""
     bootstrap_output = ""
     if not args.skip_validation:
-        strict_result = _run_validation(
+        strict_result = run_validation(
             target_root,
             allow_placeholders=False,
             allow_release_gate_placeholders=False,
@@ -669,7 +649,7 @@ def _install_direct(args: argparse.Namespace, target_root: Path) -> InstallResul
         strict_validation_passed = strict_result.returncode == 0
         strict_output = (strict_result.stdout or strict_result.stderr).strip()
         if not strict_validation_passed:
-            bootstrap_result = _run_validation(
+            bootstrap_result = run_validation(
                 target_root,
                 allow_placeholders=True,
                 allow_release_gate_placeholders=True,
@@ -722,6 +702,9 @@ def install(args: argparse.Namespace) -> InstallResult:
         args.upgrade,
         _template_root(),
         force_rescaffold=getattr(args, "force_rescaffold", False),
+        candidate_qualification_source=getattr(
+            args, "candidate_qualification_source", None
+        ),
     )
     args.profile, contract_version = resolve_install_contract_version(
         target_root, args.profile, args.profile_contract_version, args.upgrade, args.reset_options)

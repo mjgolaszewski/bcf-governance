@@ -362,6 +362,71 @@ def test_release_bound_upgrade_cannot_silently_preserve_stale_custody(
         install_governance_pack.install(args)
 
 
+def test_release_bound_adopter_can_enter_exact_nonauthoritative_candidate_qualification(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "candidate-source"
+    source_manifest = source / "bcf_governance/pack/template-repo/.bcf-pack-manifest.json"
+    source_manifest.parent.mkdir(parents=True)
+    source_manifest.write_bytes((TEMPLATE_ROOT / ".bcf-pack-manifest.json").read_bytes())
+    subprocess.run(["git", "init", "--quiet"], cwd=source, check=True)
+    subprocess.run(["git", "add", "-A"], cwd=source, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=BCF Fixture", "-c", "user.email=fixture@example.invalid", "commit", "--quiet", "-m", "candidate"],
+        cwd=source,
+        check=True,
+    )
+
+    target = tmp_path / "adopter"
+    target.mkdir()
+    subprocess.run(["git", "init", "--quiet"], cwd=target, check=True)
+    relative = "scripts/_bcf_runtime/example.py"
+    runtime = target / relative
+    runtime.parent.mkdir(parents=True)
+    runtime.write_text("candidate runtime\n", encoding="utf-8")
+    _lock_payload = {
+        "schema_version": "1.0",
+        "version": __version__,
+        "source_commit": "a" * 40,
+        "release_id": 1,
+        "release_url": f"https://github.com/mjgolaszewski/bcf-governance/releases/tag/v{__version__}",
+        "wheel_sha256": "b" * 64,
+        "source_archive_sha256": "c" * 64,
+        "checksum_manifest_sha256": "d" * 64,
+        "official_installer_adaptations": {},
+        "files": {relative: hashlib.sha256(runtime.read_bytes()).hexdigest()},
+        "preserved_consumer_files": {},
+    }
+    lock = target / "governance/bcf-runtime-lock.json"
+    lock.parent.mkdir(parents=True)
+    lock.write_text(json.dumps(_lock_payload) + "\n", encoding="utf-8")
+    subprocess.run(["git", "add", "-A"], cwd=target, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=BCF Fixture", "-c", "user.email=fixture@example.invalid", "commit", "--quiet", "-m", "adopter"],
+        cwd=target,
+        check=True,
+    )
+
+    prepared = release_custody.prepare_upgrade_release_custody(
+        target,
+        None,
+        True,
+        TEMPLATE_ROOT,
+        candidate_qualification_source=source,
+    )
+    prepared.project(
+        target,
+        manifest_entries={relative: {"installation_scope": "ordinary_adopter"}},
+        upgrade_paths=("scripts/_bcf_runtime",),
+        placeholder_values={},
+    )
+
+    snapshot = inspect_runtime_custody(target, schema_path=REPO_ROOT / "schemas/bcf-runtime-lock.schema.json")
+    assert snapshot.state is RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT
+    assert snapshot.provenance_claim["non_authoritative"] is True
+    assert not lock.exists()
+
+
 def test_upgrade_atomically_projects_release_custody_with_runtime_bytes(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
