@@ -50,9 +50,11 @@ def test_repository_bootstrap_requirements_are_a_mechanical_projection() -> None
         "jsonschema",
         "packaging",
         "pip",
+        "pip-audit",
         "pytest",
         "pyyaml",
         "setuptools",
+        "urllib3",
         "wheel",
     }
 
