@@ -104,22 +104,11 @@ def test_candidate_governance_rejects_pull_request_target_before_render() -> Non
 def test_exact_main_evaluation_has_one_canonical_admission_and_truth_scope() -> None:
     compiled = validate_ci_graph(REPO_ROOT)
     evaluation = exact_main_evaluation(compiled.workflows)
-    ledger = yaml.safe_load((REPO_ROOT / "plans/phase-ledger.yml").read_text())
-    workitems = yaml.safe_load(
-        (REPO_ROOT / ledger["active_phase"]["workitems"]).read_text()
-    )["workitems"]
-    phase = yaml.safe_load(
-        (REPO_ROOT / ledger["active_phase"]["log"]).read_text()
+    expected_mode, expected_target = authored_post_merge_scope(REPO_ROOT)
+    assert (evaluation.mode, evaluation.target) == (
+        expected_mode,
+        expected_target,
     )
-    if phase["document"]["status"] == "completed":
-        assert evaluation.mode == "closure"
-        assert evaluation.target is None
-    elif any(item["status"] in {"IN_PROGRESS", "BLOCKED"} for item in workitems):
-        assert evaluation.mode == "pr"
-        assert evaluation.target is None
-    else:
-        assert evaluation.mode == "workitem"
-        assert evaluation.target is not None
     stale = copy.deepcopy(compiled)
     workflow = next(item for item in stale.workflows if item["id"] == "exact-main")
     governance = next(item for item in workflow["jobs"] if item["id"] == "governance")
@@ -259,6 +248,34 @@ def test_post_merge_scope_selects_unique_done_frontier_amid_unrelated_active_wor
         "workitem",
         "P02-CI-BCF-210-04",
     )
+
+
+def test_post_merge_scope_selects_pr_for_active_direct_successor(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "phases").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump({"active_phase": {
+            "id": "P02",
+            "workitems": "plans/phase-02-workitems.yml",
+            "log": "phases/phase-02-log.yml",
+        }}), encoding="utf-8"
+    )
+    (tmp_path / "plans/phase-02-workitems.yml").write_text(
+        yaml.safe_dump({"workitems": [
+            {"id": "P02-P0-01", "status": "DONE", "acceptance": []},
+            {
+                "id": "P02-P0-02",
+                "status": "IN_PROGRESS",
+                "acceptance": ["requires-workitem-closure:P02-P0-01"],
+            },
+        ]}), encoding="utf-8"
+    )
+    (tmp_path / "phases/phase-02-log.yml").write_text(
+        yaml.safe_dump({"document": {"status": "active"}}), encoding="utf-8"
+    )
+    assert authored_post_merge_scope(tmp_path) == ("pr", None)
 
 
 def test_post_merge_scope_selects_terminal_integrated_dependency_prefix(
