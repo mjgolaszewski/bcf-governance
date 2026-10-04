@@ -1353,8 +1353,8 @@ def test_validate_repo_root_rejects_authored_terminal_state_and_booleans(tmp_pat
 
     with pytest.raises(GovernanceValidationError) as excinfo:
         validate_repo_root(repo_root)
-    assert "failed structural schema" in str(excinfo.value)
-    assert "closed" in str(excinfo.value) or "unexpected" in str(excinfo.value)
+    assert "closed" in str(excinfo.value)
+    assert "verified and closed are computed" in str(excinfo.value)
 
 
 def test_validate_repo_root_rejects_phase_sequence_gaps(tmp_path: Path) -> None:
