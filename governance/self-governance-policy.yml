@@ -9,7 +9,7 @@ tooling_contexts:
   profiles: [governance_profiles.py, profile_]
   runtime: [runtime_capacity.py]
   semantic_ownership: [semantic_adoption_, semantic_source_discovery.py, semantic_source_paths.py, semantic_typescript_effects.mjs, semantic_authority_, semantic_derivations.py, semantic_locking.py, semantic_operation_, semantic_ownership_, semantic_python_annotation_identity.py, semantic_python_method_identity.py, semantic_yaml.py]
-  validation: [check_governance_exposure.py, dependency_assurance.py, doctor_governance_pack.py, interpreter_environment.py, preflight.py, public_contracts.py, self_workflow_contracts.py, validate_governance_yaml.py, yaml_mutations.py, governance_validation/]
+  validation: [check_governance_exposure.py, dependency_assurance.py, doctor_governance_pack.py, interpreter_environment.py, preflight.py, scheduled_control_preflight.py, public_contracts.py, self_workflow_contracts.py, validate_governance_yaml.py, yaml_mutations.py, governance_validation/]
 required_dependencies: {PyYAML: '>=6.0,<7', jsonschema: '>=4.21,<5', packaging: '>=24,<27'}
 sbom_format: CycloneDX
 dependency_advisory_audit: {scanner: pip-audit, version: 2.10.1, service: pypi}

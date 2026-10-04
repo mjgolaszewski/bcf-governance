@@ -20,6 +20,12 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Added one exact, non-authoritative candidate-qualification custody state so
   release-bound adopters can exercise unpublished bytes without weakening or
   impersonating immutable release custody.
+- Made post-rotation certification consume one authenticated controller-chain
+  resolution, preserving exact callback custody without repeating the complete
+  provider receipt scan before dispatch.
+- Bound scheduled mutation preflight to the exact provider-effective controller
+  identity, so an active provider transition cannot be mistaken for a stale
+  source-policy installation.
 - Recorded immutable `v2.1.8` provider custody and same-byte Lite and
   Standard-v3 adopter qualification; the temporary publication credential was
   retired after successful publication.

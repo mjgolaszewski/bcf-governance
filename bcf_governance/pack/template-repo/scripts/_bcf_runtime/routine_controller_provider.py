@@ -278,10 +278,10 @@ def _active_receipts(
     return tuple(receipts)
 
 
-def resolve_effective_controller(
+def _resolve_effective_controller_state(
     api: GitHubAPI, *, repository: str
-) -> dict[str, Any]:
-    """Resolve source baseline plus the unique provider-authenticated active chain."""
+) -> tuple[dict[str, Any], tuple[dict[str, Any], ...]]:
+    """Resolve the public controller projection and its authenticated chain once."""
 
     current = resolve_main(api, repository)
     baseline, installation, _ = _runner_policy(
@@ -290,16 +290,19 @@ def resolve_effective_controller(
     authority = load_authority(api, repository, current, required_version="1.1")
     roles = authority.get("roles")
     if not isinstance(roles, dict) or "controller_rotation" not in roles:
-        return {
-            "source": "source_policy",
-            "subject": {
-                "commit_sha": current.checkout_sha,
-                "tree_sha": current.tree_sha,
+        return (
+            {
+                "source": "source_policy",
+                "subject": {
+                    "commit_sha": current.checkout_sha,
+                    "tree_sha": current.tree_sha,
+                },
+                "normalization_subject": installation["subject_commit_sha"],
+                "pin": baseline,
+                "transition_ids": [],
             },
-            "normalization_subject": installation["subject_commit_sha"],
-            "pin": baseline,
-            "transition_ids": [],
-        }
+            (),
+        )
     receipts = _active_receipts(
         api,
         repository,
@@ -317,16 +320,28 @@ def resolve_effective_controller(
         ancestor_commits=ancestors,
     )
     pin = validate_controller_pin(effective_controller_pin(baseline, chain))
-    return {
-        "source": "provider_transition" if chain else "source_policy",
-        "subject": {
-            "commit_sha": current.checkout_sha,
-            "tree_sha": current.tree_sha,
+    return (
+        {
+            "source": "provider_transition" if chain else "source_policy",
+            "subject": {
+                "commit_sha": current.checkout_sha,
+                "tree_sha": current.tree_sha,
+            },
+            "normalization_subject": installation["subject_commit_sha"],
+            "pin": pin,
+            "transition_ids": [value["transition_id"] for value in chain],
         },
-        "normalization_subject": installation["subject_commit_sha"],
-        "pin": pin,
-        "transition_ids": [value["transition_id"] for value in chain],
-    }
+        tuple(chain),
+    )
+
+
+def resolve_effective_controller(
+    api: GitHubAPI, *, repository: str
+) -> dict[str, Any]:
+    """Resolve source baseline plus the unique provider-authenticated active chain."""
+
+    resolved, _ = _resolve_effective_controller_state(api, repository=repository)
+    return resolved
 
 
 def effective_controller_authority(
@@ -603,7 +618,9 @@ def dispatch_post_rotation_certification(
         run_id=rotation.run_id,
         run_attempt=rotation.run_attempt,
     )
-    resolved = resolve_effective_controller(api, repository=repository)
+    resolved, active_chain = _resolve_effective_controller_state(
+        api, repository=repository
+    )
     custody = compile_controller_custody(resolved, repository=repository)
     require_controller_execution(custody)
     raw_outcome = load_callback_outcome(
@@ -628,15 +645,9 @@ def dispatch_post_rotation_certification(
         }
     if resolved["source"] != "provider_transition":
         raise GitHubControllerError("no active provider controller transition exists")
-    receipts = _active_receipts(
-        api,
-        repository,
-        current=main,
-        normalization_subject=resolved["normalization_subject"],
-    )
     matching = [
         value
-        for value in receipts
+        for value in active_chain
         if value["transition_id"] == resolved["transition_ids"][-1]
     ]
     if len(matching) != 1 or matching[0]["activation"] != {

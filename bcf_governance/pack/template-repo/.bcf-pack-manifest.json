@@ -580,7 +580,7 @@
     },
     "scripts/_bcf_runtime/ci_github_commands.py": {
       "operation": "copy",
-      "sha256": "c6d4a88b19bbbfbdef4c2a15629abc3307114fb74e67acfa5ae5e539e4a83a13"
+      "sha256": "7117805010e5e329fa3e21a6ed77d98a36f42029c3012136706832d4cf4b39d4"
     },
     "scripts/_bcf_runtime/ci_github_controller.py": {
       "operation": "copy",
@@ -596,7 +596,7 @@
     },
     "scripts/_bcf_runtime/ci_github_extension_commands.py": {
       "operation": "copy",
-      "sha256": "79b423eff95b0cb6ff0c910cd183c21b9564bba6191b03bb1daf34abd3699866"
+      "sha256": "fe80a9fcb9b9d62cd09916bcf6d9ce380316879e1fd5e6b8dd85859f25217b80"
     },
     "scripts/_bcf_runtime/ci_github_identity.py": {
       "operation": "copy",
@@ -1243,7 +1243,7 @@
     },
     "scripts/_bcf_runtime/routine_controller_provider.py": {
       "operation": "copy",
-      "sha256": "7a024654058860f60ad451c76c4bfaeb8c6bc6d4ba8db07a690c21c1c71ce5c7"
+      "sha256": "24ff1d837ed82af8a171f25cd35b1fe560784b2591e68f31cbcfb5cfc36eca17"
     },
     "scripts/_bcf_runtime/routine_controller_rotation.py": {
       "operation": "copy",
@@ -1256,6 +1256,10 @@
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
       "sha256": "462072930f9c1e4d64c6902afa028d1f414f652857e35e894385d6f0a2eb3d99"
+    },
+    "scripts/_bcf_runtime/scheduled_control_preflight.py": {
+      "operation": "copy",
+      "sha256": "c5e37ef8fb1167ea22d8ba9d03eb1e70e419b3aca6f46fdc0590f6644d21c6cb"
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",
