@@ -57,6 +57,7 @@ execution_evidence:
   - protected PR 360 merged as 9ad4d1c3df94439b8f66b0462e07305981560924 and provider-backed rotation 37184098081 installed its exact controller on both trusted runners; the post-rotation callback then exposed a duplicate authenticated-chain scan whose 328-second measured path exceeded its five-minute deadline, while one exact scan measured 157 seconds
   - the callback now consumes the already-authenticated chain returned with the public controller projection, preserves whole-receipt equality and exact run/attempt/subject validation, and rejects any callback/chain disagreement without a second repository-wide scan
   - nightly run 37193736735 and weekly run 37196388380 retained their typed diagnostics but both stopped before mutants because scheduled release preflight used the stale source-policy pin instead of the installed provider transition; the canonical graph now resolves and transports the exact provider-effective commit and bundle pair under read-only Actions authority before scheduled preflight
+  - the single scheduled-control command passed in 309 seconds against an isolated clean clone of exact main 9ad4d1c3df94439b8f66b0462e07305981560924 tree d48727db3998f6068c4aa4e295a2dd28ea267675 using installed controller 9ad4d1c3df94439b8f66b0462e07305981560924 and bundle 8ce8e8174e270448927f534ba1abf3b30cf6ef608041a0a0d8262a4fa26367cb; the observation remained noncertifying with release authority false
 closeout_requirements:
   claims:
     workitems_closed:
