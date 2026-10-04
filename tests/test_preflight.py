@@ -1123,6 +1123,37 @@ def test_authored_phase_state_rejects_completed_log_while_ledger_active(
         validate_authored_phase_state(repo)
 
 
+def test_authored_phase_state_reports_computed_status_before_pair_mismatch(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    for relative in (
+        "plans/product-spec.yml",
+        "plans/build-plan.yml",
+        "plans/phase-ledger.yml",
+        "plans/phase-30-plan.yml",
+        "plans/phase-30-workitems.yml",
+        "phases/phase-30-log.yml",
+        "MEMORY.yml",
+    ):
+        target = repo / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((REPO_ROOT / relative).read_bytes())
+    ledger = yaml.safe_load((repo / "plans/phase-ledger.yml").read_text())
+    ledger["active_phase"]["lifecycle_status"] = "completed"
+    (repo / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump(ledger, sort_keys=False)
+    )
+    log = yaml.safe_load((repo / "phases/phase-30-log.yml").read_text())
+    log["document"]["status"] = "verified"
+    (repo / "phases/phase-30-log.yml").write_text(
+        yaml.safe_dump(log, sort_keys=False)
+    )
+
+    with pytest.raises(AuthoredPhaseStateError, match="verified and closed are computed"):
+        validate_authored_phase_state(repo)
+
+
 def test_scheduled_preflight_diagnostic_records_both_terminal_outcomes(
     tmp_path: Path,
 ) -> None:

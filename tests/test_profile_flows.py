@@ -1036,7 +1036,7 @@ def test_lite_profile_install_evidence_truth_flow(
         receipt = json.loads(
             capture_gate(repo, target, evidence / target).read_text(encoding="utf-8")
         )
-        assert receipt["result"] == "passed"
+        assert receipt["result"] == "passed", (target, receipt)
     report = derive_truth(repo, evidence)
     assert report["status"] == "pass", report["issues"]
     assert report["effective_state"] == "closed"

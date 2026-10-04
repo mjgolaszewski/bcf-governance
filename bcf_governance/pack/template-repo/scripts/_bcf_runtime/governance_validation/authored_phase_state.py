@@ -107,6 +107,10 @@ def validate_authored_phase_state(repo_root: Path) -> dict[str, Any]:
     lifecycle = _string(active.get("lifecycle_status"), context="active phase lifecycle_status")
     log_document = _mapping(payloads[2].get("document"), context=f"{paths[2]} document")
     log_status = _string(log_document.get("status"), context=f"{paths[2]} document.status")
+    if log_status in {"verified", "closed"}:
+        raise AuthoredPhaseStateError(
+            f"active phase log status {log_status!r} is invalid; verified and closed are computed"
+        )
     if (lifecycle == "completed") != (log_status == "completed"):
         raise AuthoredPhaseStateError("active phase ledger and log must declare completed together")
 

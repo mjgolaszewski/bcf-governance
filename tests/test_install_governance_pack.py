@@ -38,6 +38,15 @@ def _candidate_source_runtime(root: Path) -> tuple[Path, dict[str, str]]:
         capture_output=True,
         text=True,
     ).stdout.strip()
+    selected_purelib = subprocess.run(
+        [sys.executable, "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    (Path(purelib) / "_bcf_selected_environment.pth").write_text(
+        selected_purelib + "\n", encoding="utf-8"
+    )
     installed = Path(purelib) / "bcf_governance"
     shutil.copytree(
         REPO_ROOT / "bcf_governance",
@@ -45,14 +54,20 @@ def _candidate_source_runtime(root: Path) -> tuple[Path, dict[str, str]]:
         ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
     )
     resolved = subprocess.run(
-        [str(python), "-c", "import bcf_governance; print(bcf_governance.__file__)"],
+        [
+            str(python),
+            "-c",
+            "import bcf_governance, jsonschema; "
+            "print(bcf_governance.__file__); print(jsonschema.__file__)",
+        ],
         cwd=root,
         env=environment,
         check=True,
         capture_output=True,
         text=True,
-    ).stdout.strip()
-    assert Path(resolved).resolve() == (installed / "__init__.py").resolve()
+    ).stdout.splitlines()
+    assert Path(resolved[0]).resolve() == (installed / "__init__.py").resolve()
+    assert Path(resolved[1]).resolve().is_relative_to(Path(selected_purelib).resolve())
     return python, environment
 
 
