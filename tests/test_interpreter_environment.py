@@ -120,6 +120,43 @@ def test_fixed_point_reconcile_owns_environment_projection(tmp_path: Path) -> No
     reconcile_interpreter_environment(tmp_path, apply=False)
 
 
+def test_gate_requirement_pin_is_compiled_by_the_same_requirement_primitive(
+    tmp_path: Path,
+) -> None:
+    _fixture(tmp_path)
+    gate_contract = tmp_path / "governance/gate-contracts.yml"
+    gate_contract.write_text(
+        gate_contract.read_text(encoding="utf-8").replace(
+            "gate_requirements: {test: [pip]}",
+            "gate_requirements: {test: [pip==26.2.1]}",
+        ),
+        encoding="utf-8",
+    )
+
+    plan = derive_interpreter_environment(tmp_path)
+
+    assert plan is not None
+    assert "pip==26.2.1" in plan.requirements
+
+
+@pytest.mark.parametrize("requirement", ["pkg[extra]", "pkg; python_version>'3.11'", "pkg @ https://example.invalid/pkg.whl"])
+def test_gate_requirement_rejects_unbounded_alternate_resolution(
+    tmp_path: Path, requirement: str
+) -> None:
+    _fixture(tmp_path)
+    gate_contract = tmp_path / "governance/gate-contracts.yml"
+    gate_contract.write_text(
+        gate_contract.read_text(encoding="utf-8").replace(
+            "gate_requirements: {test: [pip]}",
+            f"gate_requirements: {{test: [{requirement!r}]}}",
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(InterpreterEnvironmentError, match="URLs, markers, or extras"):
+        derive_interpreter_environment(tmp_path)
+
+
 def test_normalized_duplicate_dependencies_are_rejected(tmp_path: Path) -> None:
     _fixture(tmp_path)
     pyproject = tmp_path / "pyproject.toml"

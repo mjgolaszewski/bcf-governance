@@ -993,7 +993,7 @@ def test_validate_repo_root_rejects_product_build_phase_mismatch(tmp_path: Path)
 
     with pytest.raises(GovernanceValidationError) as excinfo:
         validate_repo_root(repo_root)
-    assert "must declare the same phase ids" in str(excinfo.value)
+    assert "must declare the same phase identities" in str(excinfo.value)
 
 
 def test_validate_repo_root_accepts_archived_phase_history_entry(tmp_path: Path) -> None:
@@ -1226,7 +1226,7 @@ def test_validate_repo_root_rejects_stale_memory_active_artifacts(tmp_path: Path
 
     with pytest.raises(GovernanceValidationError) as excinfo:
         validate_repo_root(repo_root)
-    assert "MEMORY.yml active_artifacts.active_phase_log" in str(excinfo.value)
+    assert "MEMORY active_artifacts.active_phase_log" in str(excinfo.value)
 
 
 def test_validate_repo_root_rejects_workitems_missing_plan_deliverable(

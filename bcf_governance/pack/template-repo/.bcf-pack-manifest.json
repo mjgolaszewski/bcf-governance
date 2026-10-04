@@ -294,7 +294,7 @@
     },
     "schemas/gate-contracts.schema.json": {
       "operation": "copy",
-      "sha256": "9ef554b81a23b8e6c11daf290c267ef1edb403fd077881ef9d974a0a34bfe30a"
+      "sha256": "c434dc40561a8cb66bff6e9c727b7906843946efd81f43653dceb532aaa9f97e"
     },
     "schemas/github-ci-topology.schema.json": {
       "operation": "copy",
@@ -1087,7 +1087,7 @@
     },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",
-      "sha256": "abb56db1b9bee9c7b90135cbf77e3bd712fcb5866c3a511a79e922fb1843883a"
+      "sha256": "6f33e40c6f82fc7dbebf20a559588595f611b4a5803ac8260c13d56bcba6085e"
     },
     "scripts/_bcf_runtime/local_execution_admission.py": {
       "operation": "copy",
