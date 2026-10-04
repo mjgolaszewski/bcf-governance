@@ -151,7 +151,7 @@ def test_exact_main_evaluation_has_one_canonical_admission_and_truth_scope() -> 
         ("active", ["TODO", "TODO"], ("pr", None)),
         ("active", ["IN_PROGRESS", "TODO"], ("pr", None)),
         ("active", ["DONE", "TODO"], ("workitem", "P01-P0-01")),
-        ("active", ["DONE", "IN_PROGRESS"], ("workitem", "P01-P0-01")),
+        ("active", ["DONE", "IN_PROGRESS"], ("pr", None)),
         ("active", ["DONE", "DONE"], ("workitem", "P01-P0-02")),
         ("completed", ["DONE", "DONE"], ("closure", None)),
     ],

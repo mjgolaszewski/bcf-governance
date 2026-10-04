@@ -138,24 +138,3 @@ class GitHubPRMutationMixin:
         ):
             raise ValueError("provider did not bind exact protected auto-merge")
         return {"status": "enabled", "pull_request": int(numeric)}
-
-    def merge_pull_request(
-        self,
-        repository: str,
-        number: object,
-        *,
-        expected_head_sha: str,
-    ) -> dict[str, Any]:
-        numeric = positive_id(number, field="pull request number")
-        value = self._request(
-            "PUT",
-            f"/repos/{exact_repository(repository)}/pulls/{numeric}/merge",
-            payload={
-                "sha": sha(expected_head_sha, field="expected pull request head"),
-                "merge_method": "merge",
-            },
-        )
-        if not isinstance(value, dict) or value.get("merged") is not True:
-            raise ValueError("provider did not perform the exact protected merge")
-        sha(value.get("sha"), field="merge commit SHA")
-        return value
