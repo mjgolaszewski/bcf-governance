@@ -280,6 +280,10 @@
       "operation": "copy",
       "sha256": "244931ad558f52bc3603c8eba43cbd8bb30f395d848ed45afcc7472fdd61de44"
     },
+    "schemas/evidence-session-v3.schema.json": {
+      "operation": "copy",
+      "sha256": "86e72e16c33c8b78619fb1e21b80c39c62e8ff8e1fef4328402156e5f349a88e"
+    },
     "schemas/evidence-session.schema.json": {
       "operation": "copy",
       "sha256": "a5a611ce01b0fc332348f6a5258e6d3a034a7a22691d353eae039e73678f94cb"
@@ -424,6 +428,10 @@
       "operation": "copy",
       "sha256": "fec38c4b5d4b63a9cc1264d675a062bc5ccf9220b7fe09ca5d4be204e1adf66c"
     },
+    "scripts/_bcf_runtime/affected_proof_closure.py": {
+      "operation": "copy",
+      "sha256": "1b1d18b4099693d8bfa8aef74c9bc2e65c9bb9b405b8136ba3c49bd9239ba738"
+    },
     "scripts/_bcf_runtime/automation_changelog.py": {
       "operation": "copy",
       "sha256": "e2cc9cfb2fc831be0b4bca114f9cde1b645e7135c893729130e78e874b53085b"
@@ -464,7 +472,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_certification.py": {
       "operation": "copy",
-      "sha256": "2e8326fa35977100240354279c3923a758656003282f1a8d9846db92c99ed4d1"
+      "sha256": "fe4e2cf898b3c26fdd2f73e1485905505750067fe140ced330e7c7d990500a33"
     },
     "scripts/_bcf_runtime/ci_authority_contracts.py": {
       "operation": "copy",
@@ -760,7 +768,7 @@
     },
     "scripts/_bcf_runtime/ci_reuse_attestation_verifier.py": {
       "operation": "copy",
-      "sha256": "3a458a6d58c6751f6fe83f3f35f55e768b99deeba0aabb34cebcf5272486d5b9"
+      "sha256": "9809cda84bf550746fdb78804f2e2750d1c337f8ca614793fb1edb9d05dbc1f6"
     },
     "scripts/_bcf_runtime/ci_self_controller.py": {
       "operation": "copy",
@@ -838,9 +846,13 @@
       "operation": "copy",
       "sha256": "4e08e205604babc9594e1df9d885ab28a9c59afef2d64762caa368a49e2d2898"
     },
+    "scripts/_bcf_runtime/evidence_session_schema.py": {
+      "operation": "copy",
+      "sha256": "62ce74cebcf0fd85bae4881d0341922b933100c5e1bd8a573134d6d345d63093"
+    },
     "scripts/_bcf_runtime/evidence_sessions.py": {
       "operation": "copy",
-      "sha256": "b61e83dc92173cc39dd6eed895797305c1c74c415406de551dd1940ccff2df58"
+      "sha256": "fcb69050e57a67972f4ad4679395dfeee9842ece79c8f1914b1bc0befcf95f1a"
     },
     "scripts/_bcf_runtime/evidence_shards.py": {
       "operation": "copy",
@@ -1403,7 +1415,7 @@
     },
     "scripts/_bcf_runtime/truth_sessions.py": {
       "operation": "copy",
-      "sha256": "e8139553ed4fac21bef9580a80fd7959d9ae6d78a0513994b4cc0831a0e4850a"
+      "sha256": "d9073a639020c83ecd61968a255c5225bcadd9775eb26143cb1c8c766ff13b53"
     },
     "scripts/_bcf_runtime/truth_workflow_graph.py": {
       "operation": "copy",

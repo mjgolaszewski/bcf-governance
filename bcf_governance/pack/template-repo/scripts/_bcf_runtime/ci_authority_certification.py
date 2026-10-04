@@ -11,6 +11,11 @@ from typing import Any, Iterable
 
 from jsonschema import Draft202012Validator
 
+from .evidence_session_schema import (
+    EvidenceSessionSchemaError,
+    load_evidence_session_schema,
+)
+
 from .ci_authority_contracts import (
     CIAuthorityContractError,
     authority_role_workflow,
@@ -528,9 +533,10 @@ def _verify_session(
     if session_path.is_symlink() or not session_path.is_file():
         raise CICertificationError("evidence session manifest must be a regular file")
     payload = _load_json(session_path, label="evidence session manifest")
-    session_schema = json.loads(
-        (repo_root / "schemas/evidence-session.schema.json").read_text(encoding="utf-8")
-    )
+    try:
+        session_schema = load_evidence_session_schema(repo_root, payload)
+    except EvidenceSessionSchemaError as exc:
+        raise CICertificationError(str(exc)) from exc
     session_errors = sorted(
         Draft202012Validator(session_schema).iter_errors(payload),
         key=lambda error: ([str(value) for value in error.absolute_path], error.message),

@@ -371,8 +371,8 @@ def load_session(manifest_path: Path) -> EvidenceSession:
         payload = json.loads(encoded)
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise EvidenceError(f"evidence session manifest is invalid: {exc}") from exc
-    if not isinstance(payload, dict) or payload.get("schema_version") not in {"1.0", "2.0"}:
-        raise EvidenceError("evidence session manifest schema_version must be 1.0 or 2.0")
+    if not isinstance(payload, dict) or payload.get("schema_version") not in {"1.0", "2.0", "3.0"}:
+        raise EvidenceError("evidence session manifest schema_version must be 1.0, 2.0, or 3.0")
     session_id = payload.get("session_id")
     if (
         not isinstance(session_id, str)

@@ -9,6 +9,11 @@ from typing import Any, Iterable
 
 from jsonschema import Draft202012Validator
 
+from .evidence_session_schema import (
+    EvidenceSessionSchemaError,
+    load_evidence_session_schema,
+)
+
 
 SESSION_FILENAME = "evidence-session.json"
 SESSION_MEDIA_TYPE = "application/vnd.bcf.evidence-session+json"
@@ -163,13 +168,18 @@ def apply_session_validation(
     expected_gates: set[str],
 ) -> None:
     """Mutate receipt results with independently recomputed session failures."""
-    schema_path = repo_root / "schemas/evidence-session.schema.json"
-    try:
-        schema = json.loads(schema_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
-        schema = {}
     material: list[tuple[dict[str, Any], dict[str, Any] | None, str | None]] = []
     for result in results:
+        receipt = result.get("receipt")
+        receipt_path = Path(str(result.get("receipt_path", "")))
+        manifest_path, _ = _session_artifact(
+            receipt_path, receipt if isinstance(receipt, dict) else {}
+        )
+        try:
+            payload = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path else {}
+            schema = load_evidence_session_schema(repo_root, payload)
+        except (OSError, UnicodeError, json.JSONDecodeError, EvidenceSessionSchemaError):
+            schema = {"not": {}}
         issues, manifest, digest = _manifest_issues(
             repo_root,
             result,
