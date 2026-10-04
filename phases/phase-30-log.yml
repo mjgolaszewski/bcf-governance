@@ -22,7 +22,7 @@ workitems:
   status: DONE
   summary: fail fast on contradictory authored state and repair scheduled mutant custody
 - id: P30-P0-02
-  status: IN_PROGRESS
+  status: DONE
   summary: derive a bounded authenticated recovery frontier
 - id: P30-P0-03
   status: TODO
@@ -65,6 +65,8 @@ execution_evidence:
   - candidate submit now creates or reuses one exact PR and idempotently requests GitHub native MERGE auto-merge; the existing changelog-writer App remains unable to merge and no publisher mutation or long-lived merger credential was introduced
   - provider reads and uncertain auto-merge mutations observe exact state before bounded identical retry; moved base head repository or conflicting merge method fail closed
   - focused recovery and scheduled-control validation passed 81 nodes; the affected graph structural and semantic-authority slice passed 214 nodes in 534.44 seconds and was not recomputed unchanged
+  - protected PR 362 merged normally as 5c8e951bf83692ffdf0891b0d65915e418946fd1 tree 0387ff14c7fd8d6aa12600a02d8ed8e5bb79fb00 after governance run 37226953300 finalizer 37229270952 and App 15368 certification
+  - exact-main run 37229336123 completed ordinary provider-backed rotation to controller 5c8e951bf83692ffdf0891b0d65915e418946fd1 on both trusted runners; attempt 2 reused the authenticated unchanged evidence, finalizer 37231087170 succeeded, and no-transition run 37231086869 proved ordinary-current custody with release authority absent
 closeout_requirements:
   claims:
     workitems_closed:
@@ -97,4 +99,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- close P30-P0-02 authenticated recovery and scheduled isolated-runtime semantics before affected-proof pruning
+- certify bounded P30-P0-02 closure before beginning affected-proof pruning in P30-P0-03
