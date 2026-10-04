@@ -246,6 +246,20 @@ def apply_interpreter_environment_projection(
     return path
 
 
+def reconcile_interpreter_environment(
+    repo_root: Path, *, apply: bool
+) -> Path | None:
+    """Check or materialize the exact governed bootstrap dependency surface."""
+
+    plan = derive_interpreter_environment(repo_root)
+    if plan is None or plan.projection_path is None:
+        return None
+    if apply:
+        return apply_interpreter_environment_projection(plan)
+    verify_interpreter_environment_projection(plan)
+    return plan.projection_path
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         description="Check or apply the governed interpreter dependency projection."

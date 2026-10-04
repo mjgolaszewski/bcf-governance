@@ -8,7 +8,7 @@ interpreter_contract:
   requirements_projection: &id001 requirements-governance.txt
   optional_dependency_groups: [dev]
   gate_requirements:
-    security-dependency-audit: [pip]
+    security-dependency-audit: [pip==26.2.1]
 execution_policy: {default_timeout_seconds: 1800}
 claim_model:
   version: '1.0'

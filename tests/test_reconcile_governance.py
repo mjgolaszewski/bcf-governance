@@ -166,9 +166,10 @@ def test_reconcile_is_the_canonical_cli_surface() -> None:
 def test_reconcile_declares_one_closed_dependency_order() -> None:
     root = Path(__file__).resolve().parents[1]
     ids = [step.step_id for step in reconcile_steps(root, Path(sys.executable))]
-    assert ids[:9] == [
+    assert ids[:10] == [
         "authored-phase-state",
         "ci-state-matrix",
+        "interpreter-environment",
         "structural-limits",
         "release-version-surfaces",
         "profile-makefile",

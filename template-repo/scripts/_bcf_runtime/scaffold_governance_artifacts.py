@@ -43,6 +43,7 @@ from .reconcile_authority_transition import (
     result_json as authority_transition_json,
 )
 from .profile_surface_generation import reconcile_makefile, reconcile_template_workflow
+from .interpreter_environment import reconcile_interpreter_environment
 
 HOTFIX_MODES = {"lite", "full"}
 
@@ -424,6 +425,18 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
             ),
         ))
     steps.extend([
+        ReconcileStep(
+            "interpreter-environment",
+            lambda: reconcile_interpreter_environment(repo_root, apply=False),
+            lambda: reconcile_interpreter_environment(repo_root, apply=True),
+            apply_verifies=True,
+            watch_paths=(
+                "pyproject.toml",
+                "governance/gate-contracts.yml",
+                "requirements-governance.txt",
+                "bcf_governance/tooling/interpreter_environment.py",
+            ),
+        ),
         ReconcileStep(
             "structural-limits",
             lambda: validate_structural_limits(repo_root),

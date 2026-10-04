@@ -9,6 +9,7 @@ from bcf_governance.tooling.interpreter_environment import (
     apply_interpreter_environment_projection,
     derive_interpreter_environment,
     main,
+    reconcile_interpreter_environment,
     validate_runtime_import_dependencies,
     verify_interpreter_environment_projection,
 )
@@ -104,6 +105,17 @@ def test_apply_materializes_the_exact_derived_dependency_plan(tmp_path: Path) ->
         "wheel\n"
     )
     verify_interpreter_environment_projection(plan)
+
+
+def test_fixed_point_reconcile_owns_environment_projection(tmp_path: Path) -> None:
+    _fixture(tmp_path, projected="stale\n")
+
+    with pytest.raises(InterpreterEnvironmentError, match="projection drift"):
+        reconcile_interpreter_environment(tmp_path, apply=False)
+    path = reconcile_interpreter_environment(tmp_path, apply=True)
+
+    assert path == tmp_path / "requirements-governance.txt"
+    reconcile_interpreter_environment(tmp_path, apply=False)
 
 
 def test_normalized_duplicate_dependencies_are_rejected(tmp_path: Path) -> None:
