@@ -696,6 +696,13 @@ def _managed_generated_paths(repo_root: Path, desired: dict[str, bytes]) -> tupl
     return tuple(sorted(paths))
 
 
+def managed_generated_paths(repo_root: Path) -> tuple[str, ...]:
+    """Derive every current or retired generated workflow under graph custody."""
+
+    root = repo_root.resolve()
+    return _managed_generated_paths(root, render_ci_graph(root))
+
+
 def _changed(repo_root: Path, desired: dict[str, bytes]) -> tuple[str, ...]:
     managed = _managed_generated_paths(repo_root, desired)
     changed: list[str] = []

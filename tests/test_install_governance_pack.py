@@ -961,3 +961,28 @@ def test_transaction_interrupt_restores_all_touched_files_byte_identically(
         path.name: (path.read_bytes(), path.stat().st_mode)
         for path in (first, second)
     } == before
+
+
+def test_transaction_final_projection_failure_rolls_back_exact_bytes(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "transaction-final"
+    repo.mkdir()
+    path = repo / "generated.yml"
+    path.write_bytes(b"before\n")
+
+    def mutate(shadow: Path) -> None:
+        (shadow / "generated.yml").write_bytes(b"after\n")
+
+    def reject_final() -> None:
+        raise ValueError("generated projection drift")
+
+    with pytest.raises(ValueError, match="generated projection drift"):
+        transaction.apply_transaction(
+            repo,
+            managed_paths=("generated.yml",),
+            mutate_shadow=mutate,
+            validate_final=reject_final,
+        )
+
+    assert path.read_bytes() == b"before\n"

@@ -27,7 +27,7 @@ from .governance_install.artifacts import (  # noqa: E402
     merge_gitignore as _merge_gitignore,
 )
 from .governance_install.transaction import apply_transaction  # noqa: E402
-from .governance_install.validation import run_validation  # noqa: E402
+from .governance_install.validation import require_graph_parity, run_validation  # noqa: E402
 from .governance_install.upgrade import (  # noqa: E402
     copy_selected_template_paths,
     replace_placeholders_in_files,
@@ -43,7 +43,10 @@ from .profile_contract_v2 import resolve_install_contract_version  # noqa: E402
 from .semantic_authority_commands import _apply_config, _load_config  # noqa: E402
 from .ci_graph_locks import apply_ci_graph_locks  # noqa: E402
 from .ci_graph_post_merge import reconcile_post_merge_scope  # noqa: E402
-from .ci_graph_render import apply_ci_graph  # noqa: E402
+from .ci_graph_render import (  # noqa: E402
+    apply_ci_graph,
+    managed_generated_paths,
+)
 
 PROFILE_CHOICES = ("lite", "standard", "regulated")
 ADOPTION_MODE_CHOICES = ("fresh", "existing")
@@ -741,17 +744,27 @@ def install(args: argparse.Namespace) -> InstallResult:
     if args.force_rescaffold:
         _confirm_force_rescaffold(target_root, args.yes)
     result_box: list[InstallResult] = []
+    graph_path = target_root / "governance/ci-graph.yml"
+    transaction_paths = INSTALL_MANAGED_PATHS + (
+        managed_generated_paths(target_root) if graph_path.is_file() else ()
+    )
 
     def mutate(shadow: Path) -> None:
         result_box.append(
             _upgrade_pack(args, shadow) if args.upgrade else _install_direct(args, shadow)
         )
 
+    def validate_final() -> None:
+        if args.skip_validation or not graph_path.is_file():
+            return
+        require_graph_parity(target_root)
+
     apply_transaction(
         target_root,
-        managed_paths=INSTALL_MANAGED_PATHS,
+        managed_paths=transaction_paths,
         mutate_shadow=mutate,
         preserve_git_history=args.semantic_config_payload is not None,
+        validate_final=validate_final,
     )
     result = result_box[0]
     generated = {

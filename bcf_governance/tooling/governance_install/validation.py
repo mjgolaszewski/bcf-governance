@@ -6,6 +6,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+from ..ci_graph_render import check_ci_graph
+
 
 def run_validation(
     target_root: Path,
@@ -27,3 +29,14 @@ def run_validation(
     if allow_release_gate_placeholders:
         command.append("--allow-release-gate-placeholders")
     return subprocess.run(command, capture_output=True, text=True)
+
+
+def require_graph_parity(repo_root: Path) -> None:
+    """Reject a promoted target whose generated workflow bytes are incomplete."""
+
+    parity = check_ci_graph(repo_root)
+    if parity.status != "clean":
+        raise RuntimeError(
+            "generated CI workflow drift after install promotion: "
+            + ", ".join(parity.changed_paths)
+        )
