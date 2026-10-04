@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import ast
 import hashlib
+from importlib import metadata
 import json
 import os
 import subprocess
@@ -17,6 +18,13 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
+from bcf_governance.tooling.dependency_assurance import (  # noqa: E402
+    DependencyAssuranceError,
+    audit_envelope,
+    collect_installed_inventory,
+    cyclonedx_sbom,
+    write_frozen_requirements,
+)
 POLICY_PATH = REPO_ROOT / "governance/self-governance-policy.yml"
 GATE_CONTRACTS_PATH = REPO_ROOT / "governance/gate-contracts.yml"
 
@@ -125,19 +133,81 @@ def _dependency_audit(gate: str, policy: dict[str, object]) -> None:
     )
     if result.returncode:
         _fail(gate, result.stdout.strip())
+    contract = policy.get("dependency_advisory_audit")
+    if not isinstance(contract, dict):
+        _fail(gate, "dependency advisory audit contract is missing")
+    scanner = contract.get("scanner")
+    expected_version = contract.get("version")
+    service = contract.get("service")
+    if scanner != "pip-audit" or not isinstance(expected_version, str) or service != "pypi":
+        _fail(gate, "dependency advisory audit contract is invalid")
+    try:
+        observed_version = metadata.version("pip-audit")
+        inventory = collect_installed_inventory(REPO_ROOT)
+    except (metadata.PackageNotFoundError, DependencyAssuranceError) as exc:
+        _fail(gate, str(exc))
+    if observed_version != expected_version:
+        _fail(gate, f"pip-audit version must be {expected_version}, got {observed_version}")
+    artifact_root = REPO_ROOT / ".artifacts"
+    frozen = artifact_root / "dependency-audit-input.txt"
+    raw_path = artifact_root / "dependency-audit-raw.json"
+    output = artifact_root / "dependency-audit.json"
+    write_frozen_requirements(inventory, frozen)
+    command = [
+        sys.executable,
+        "-m",
+        "pip_audit",
+        "--requirement",
+        str(frozen),
+        "--no-deps",
+        "--disable-pip",
+        "--strict",
+        "--vulnerability-service",
+        service,
+        "--format",
+        "json",
+        "--output",
+        str(raw_path),
+        "--progress-spinner",
+        "off",
+    ]
+    try:
+        audited = subprocess.run(
+            command, cwd=REPO_ROOT, capture_output=True, text=True, check=False, timeout=120
+        )
+    except subprocess.TimeoutExpired as exc:
+        audited = subprocess.CompletedProcess(command, 2, "", f"scanner timeout: {exc}")
+    raw: dict[str, object] | None = None
+    try:
+        loaded = json.loads(raw_path.read_text(encoding="utf-8"))
+        raw = loaded if isinstance(loaded, dict) else None
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        pass
+    envelope = audit_envelope(
+        inventory=inventory,
+        scanner_version=observed_version,
+        service=service,
+        returncode=audited.returncode,
+        raw=raw,
+        diagnostic=(audited.stderr.strip() or audited.stdout.strip()),
+    )
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(envelope, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if envelope["status"] != "clean":
+        _fail(gate, f"dependency advisory status is {envelope['status']}")
 
 
 def _sbom(gate: str, policy: dict[str, object]) -> None:
     if policy.get("sbom_format") != "CycloneDX":
         _fail(gate, "unsupported SBOM format")
-    components = [
-        {"type": "library", "name": name, "version_constraint": constraint}
-        for name, constraint in policy["required_dependencies"].items()
-    ]
+    try:
+        inventory = collect_installed_inventory(REPO_ROOT)
+    except DependencyAssuranceError as exc:
+        _fail(gate, str(exc))
     output = REPO_ROOT / ".artifacts/sbom.json"
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(
-        json.dumps({"bomFormat": "CycloneDX", "specVersion": "1.5", "components": components}, sort_keys=True),
+        json.dumps(cyclonedx_sbom(inventory), indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
 

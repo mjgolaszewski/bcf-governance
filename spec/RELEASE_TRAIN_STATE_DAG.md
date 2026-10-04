@@ -841,6 +841,9 @@ the missing derivation is a product defect and execution stops at that owner.
 | release transaction resumable | certified receipt, version/tag, asset digests, transaction token and credential capsule | resume the exact next publication edge | exact immutable release and credential retirement | conflict, rebuilt bytes, changed subject, ambiguous partial mutation |
 | release custody verified | immutable tag/assets/attestations, independent verification and adopter reports | close release/phase and activate the governed successor | P30 activates P31; P31 closes the train | missing adopter class, mutable/draft release, credential residue, inconsistent receipts |
 | scheduled control run | default-branch subject, scheduled workflow identity, declared toolchains and control profile | validate structural state, execute both mutant profiles, retain a typed terminal artifact | exact scheduled result with no certification authority | release proposition inferred from schedule, absent diagnostics, secondary artifact error obscuring first cause |
+| local runtime supported | selected interpreter version and canonical public Python-minor contract | admit the exact declared minor and bind it into execution evidence | local prospective train may execute | hard-coded subset, undeclared minor, malformed version, interpreter/contract disagreement |
+| dependency advisory exact | exact installed package inventory, pinned scanner, authenticated advisory-service response, observation time and result digest | emit exact SBOM and fail or pass the existing dependency-audit claim | freshness-bound dependency assurance | scanner/service unavailable, partial inventory, malformed response, known vulnerability, unbound advisory result |
+| dependency advisory unavailable | exact inventory exists but advisory resolution cannot complete | fail the existing security gate with a typed diagnostic | none | treating unavailability as clean, relying on a future Dependabot update, SBOM-only success |
 | adopter qualification | exact candidate or immutable release bytes, adopter profile and repository identity | treat the BCF self-release matrix guard as typed not-applicable, then perform non-destructive install/upgrade and canonical proof | attributed compatibility observation only | self repository missing its matrix, cross-repository mutation, different bytes, adopter report treated as BCF authority |
 
 ### P30 workitem DAG
@@ -905,6 +908,8 @@ invariants
   exact certified bytes alone can become an immutable release
     -> primitives
        phase consistency result and zero-mutation boundary
+       declared-runtime compatibility result
+       exact installed-package inventory and freshness-bound advisory result
        typed state/action/result/recovery edge
        semantic ownership and affected-proof closure
        content-addressed proof bundle and applicability result

@@ -33,6 +33,15 @@ def _runtime_contract() -> dict[str, object]:
     }
 
 
+def _public_python_contract(repo: Path, *minors: str) -> None:
+    path = repo / "governance/public-contracts.yml"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "package:\n  python_minors: [" + ", ".join(repr(value) for value in minors) + "]\n",
+        encoding="utf-8",
+    )
+
+
 def test_competing_local_gate_fails_busy_before_work() -> None:
     first = "a" * 40
     second = "b" * 40
@@ -137,6 +146,7 @@ def test_python_only_graph_does_not_invoke_self_toolchain_bootstrap(
 ) -> None:
     executable = tmp_path / "python"
     executable.write_text("", encoding="utf-8")
+    _public_python_contract(tmp_path, "3.12")
     calls: list[list[str]] = []
 
     def run(argv: list[str], **_kwargs: object) -> object:
@@ -160,6 +170,7 @@ def test_declared_toolchain_command_is_the_only_bootstrap_authority(
 ) -> None:
     executable = tmp_path / "python"
     executable.write_text("", encoding="utf-8")
+    _public_python_contract(tmp_path, "3.12")
     calls: list[list[str]] = []
 
     def run(argv: list[str], **_kwargs: object) -> object:
@@ -191,3 +202,36 @@ def test_declared_toolchain_command_is_the_only_bootstrap_authority(
         ".",
     ]
     assert admission.toolchain_scope == "python_node_typescript"
+
+
+def test_local_python_admission_derives_every_supported_minor(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    executable = tmp_path / "python"
+    executable.write_text("", encoding="utf-8")
+    _public_python_contract(tmp_path, "3.11", "3.12", "3.13", "3.14")
+    monkeypatch.setattr(
+        "subprocess.run",
+        lambda *_args, **_kwargs: type(
+            "Result", (), {"returncode": 0, "stdout": "Python 3.14.5\n", "stderr": ""}
+        )(),
+    )
+    assert validate_local_toolchain(
+        tmp_path, executable, toolchain_command=None
+    ).python_version == "3.14.5"
+
+
+def test_local_python_admission_rejects_minor_absent_from_public_contract(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    executable = tmp_path / "python"
+    executable.write_text("", encoding="utf-8")
+    _public_python_contract(tmp_path, "3.12", "3.13")
+    monkeypatch.setattr(
+        "subprocess.run",
+        lambda *_args, **_kwargs: type(
+            "Result", (), {"returncode": 0, "stdout": "Python 3.14.5\n", "stderr": ""}
+        )(),
+    )
+    with pytest.raises(LocalExecutionAdmissionError, match="absent from the public"):
+        validate_local_toolchain(tmp_path, executable, toolchain_command=None)

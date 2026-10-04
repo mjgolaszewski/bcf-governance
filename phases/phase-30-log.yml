@@ -48,6 +48,10 @@ execution_evidence:
   - scheduled and manual-dispatch release preflight are typed non-comparison events and every terminal preflight outcome writes the artifact consumed by the existing always-upload edge
   - focused preflight, reconcile, state-matrix, and application-operation validation passed 78 nodes in 49.50 seconds before canonical projection
   - canonical reconciliation converged in two rounds with token c484f832945d9219cff9ab48d8c2264715ae763b3786ab10f8bdc80aa1c3e530
+  - the first prospective train exposed a hard-coded local Python subset that contradicted the public 3.11 through 3.14 support contract; admission now derives the accepted minors from that contract
+  - the same prospective review proved the dependency gate and constraint-only SBOM did not implement their advertised vulnerability assurance; the existing gate now uses pinned pip-audit 2.10.1 with a complete fail-closed observation over the exact installed closure and adds no stage or operator procedure
+  - the stale prospective execution was stopped when evidence began at 465288 milliseconds because corrected bytes require a new exact subject; no provider compute or authority was consumed
+  - focused runtime and dependency-assurance validation passed 13 nodes and the real SBOM and advisory gate passed over 42 exact components with inventory digest 991f86f3e6ea0e8050649e531121f8b9cc62484f010630fd4a7969a40e7ba099
 closeout_requirements:
   claims:
     workitems_closed:

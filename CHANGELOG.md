@@ -14,6 +14,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   evaluation, and atomic immutable publication targeting BCF 2.2.0 and 2.3.0.
 - Reconciled the governed `build` toolchain dependency from 1.6.0 to 1.6.1
   while opening the P30 foundation on the current certified base.
+- Derived local Python admission from the public runtime contract and upgraded
+  the existing dependency-audit and SBOM gates to bind an exact installed
+  dependency closure to a pinned, fail-closed advisory observation.
 - Recorded immutable `v2.1.8` provider custody and same-byte Lite and
   Standard-v3 adopter qualification; the temporary publication credential was
   retired after successful publication.
