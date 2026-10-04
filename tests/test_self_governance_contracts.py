@@ -292,6 +292,7 @@ def test_scheduled_mutants_preflight_selected_interpreter_before_execution(
 ) -> None:
     job = _workflow(workflow_id)["jobs"][0]
     components = job["executor"]["components"]
+    assert job["permissions"] == {"actions": "read", "contents": "read"}
     assert components.index("scheduled-preflight") < components.index(
         "nightly-validator-mutants" if "nightly" in workflow_id else "weekly-validator-mutants"
     )
@@ -303,6 +304,15 @@ def test_scheduled_mutants_preflight_selected_interpreter_before_execution(
     checkout = validate_ci_graph(REPO_ROOT).graph["step_components"]["checkout-candidate"]
     assert checkout["with"] == {"fetch-depth": 0, "persist-credentials": False}
     scheduled = validate_ci_graph(REPO_ROOT).graph["commands"]["scheduled-preflight"]
+    assert scheduled["argv"][:6] == [
+        "{python}",
+        "-m",
+        "bcf_governance.cli",
+        "ci-github",
+        "scheduled-control",
+        "preflight",
+    ]
+    assert scheduled["environment"] == {"GITHUB_TOKEN": "${{ github.token }}"}
     assert scheduled["argv"][-2:] == [
         "--output",
         ".artifacts/scheduled-mutants/preflight.json",

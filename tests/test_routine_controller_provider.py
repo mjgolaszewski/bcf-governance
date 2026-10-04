@@ -785,17 +785,18 @@ def test_callback_binds_completed_rotation_before_exact_admission_rerun(
     )
     monkeypatch.setattr(
         provider,
-        "resolve_effective_controller",
-        lambda *_args, **_kwargs: {
-            "source": "provider_transition",
-            "normalization_subject": OLD,
-            "subject": {"commit_sha": NEW, "tree_sha": TREE},
-            "pin": _pin(),
-            "transition_ids": [active["transition_id"]],
-        },
+        "_runner_policy",
+        lambda *_args, **_kwargs: (
+            _pin(OLD),
+            {"installed_commit_sha": OLD, "subject_commit_sha": OLD},
+            tuple(active["required_runners"]),
+        ),
     )
+    scans: list[bool] = []
     monkeypatch.setattr(
-        provider, "_active_receipts", lambda *_args, **_kwargs: (active,)
+        provider,
+        "_active_receipts",
+        lambda *_args, **_kwargs: (scans.append(True), (active,))[1],
     )
     _callback_outcome(monkeypatch, tmp_path, active)
     result = provider.dispatch_post_rotation_certification(
@@ -812,6 +813,7 @@ def test_callback_binds_completed_rotation_before_exact_admission_rerun(
     assert result["expected_run_attempt"] == 2
     assert result["release_authority"] is False
     assert reruns == ["10"]
+    assert scans == [True]
 
 
 def test_callback_rejects_another_rotation_run(
@@ -831,17 +833,17 @@ def test_callback_rejects_another_rotation_run(
     )
     monkeypatch.setattr(
         provider,
-        "resolve_effective_controller",
-        lambda *_args, **_kwargs: {
-            "source": "provider_transition",
-            "normalization_subject": OLD,
-            "subject": {"commit_sha": NEW, "tree_sha": TREE},
-            "pin": _pin(),
-            "transition_ids": [active["transition_id"]],
-        },
-    )
-    monkeypatch.setattr(
-        provider, "_active_receipts", lambda *_args, **_kwargs: (active,)
+        "_resolve_effective_controller_state",
+        lambda *_args, **_kwargs: (
+            {
+                "source": "provider_transition",
+                "normalization_subject": OLD,
+                "subject": {"commit_sha": NEW, "tree_sha": TREE},
+                "pin": _pin(),
+                "transition_ids": [active["transition_id"]],
+            },
+            (active,),
+        ),
     )
     _callback_outcome(monkeypatch, tmp_path, active)
     expected = [
@@ -879,7 +881,9 @@ def test_callback_closes_exact_no_transition_without_rerun(
     monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
     monkeypatch.setattr(provider, "load_authority", lambda *_args, **_kwargs: authority)
     monkeypatch.setattr(
-        provider, "resolve_effective_controller", lambda *_args, **_kwargs: _resolved()
+        provider,
+        "_resolve_effective_controller_state",
+        lambda *_args, **_kwargs: (_resolved(), ()),
     )
     monkeypatch.setattr(
         provider,

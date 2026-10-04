@@ -54,6 +54,9 @@ execution_evidence:
   - focused runtime and dependency-assurance validation passed 13 nodes and the real SBOM and advisory gate passed over 42 exact components with inventory digest 991f86f3e6ea0e8050649e531121f8b9cc62484f010630fd4a7969a40e7ba099
   - exact-byte Lite and Standard-v3 pre-gate qualification exposed one common release-custody gap before the expensive train; the canonical installer now derives a typed candidate-qualification operation that binds clean candidate/adopter identities and exact runtime bytes while remaining explicitly non-authoritative
   - candidate qualification preserves immutable-release rejection for ordinary local upgrades, records predecessor custody, and cannot supply release or publication authority
+  - protected PR 360 merged as 9ad4d1c3df94439b8f66b0462e07305981560924 and provider-backed rotation 37184098081 installed its exact controller on both trusted runners; the post-rotation callback then exposed a duplicate authenticated-chain scan whose 328-second measured path exceeded its five-minute deadline, while one exact scan measured 157 seconds
+  - the callback now consumes the already-authenticated chain returned with the public controller projection, preserves whole-receipt equality and exact run/attempt/subject validation, and rejects any callback/chain disagreement without a second repository-wide scan
+  - nightly run 37193736735 and weekly run 37196388380 retained their typed diagnostics but both stopped before mutants because scheduled release preflight used the stale source-policy pin instead of the installed provider transition; the canonical graph now resolves and transports the exact provider-effective commit and bundle pair under read-only Actions authority before scheduled preflight
 closeout_requirements:
   claims:
     workitems_closed:
