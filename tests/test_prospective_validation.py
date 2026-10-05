@@ -125,7 +125,7 @@ def test_planned_evidence_stops_on_first_failed_producer(
     (tmp_path / "session.json").write_text("{}")
     bindings = {gate: {} for gate in ("first", "second")}
     with pytest.raises(
-        prospective.ProspectiveValidationError,
+        local_proof_bundles.LocalProofBundleError,
         match="first failed with exit 3.*causal diagnostic",
     ):
         prospective._capture_planned_evidence(
@@ -167,7 +167,7 @@ def test_planned_evidence_reports_failed_control_when_command_passed(
 
     monkeypatch.setattr(local_proof_bundles, "capture_gate", capture)
     with pytest.raises(
-        prospective.ProspectiveValidationError,
+        local_proof_bundles.LocalProofBundleError,
         match=(
             "producer passed-command failed with exit 0.*"
             "behavioral_probe control: oracle_not_satisfied.*"
