@@ -274,3 +274,35 @@ def verify_affected_proof_set(
     digest = digest_payload.pop("affected_proof_set_sha256", None)
     if digest != canonical_sha256(digest_payload):
         raise EvidenceError("affected proof set digest is invalid")
+
+
+def verify_session_affected_proof_set(
+    repo_root: Path,
+    model: Mapping[str, Any],
+    session: Mapping[str, Any],
+    *,
+    current_subject: Mapping[str, str],
+    prior_receipts: Iterable[Mapping[str, Any]],
+) -> None:
+    """Recompute a v3 session frontier from authenticated source receipts."""
+
+    actual = session.get("affected_proof_set")
+    required = session.get("required_claims")
+    if not isinstance(actual, dict) or not isinstance(required, list):
+        raise EvidenceError("evidence session affected proof set is incomplete")
+    subjects: set[tuple[str, str]] = set()
+    for receipt in prior_receipts:
+        subject = receipt.get("subject")
+        commit = subject.get("commit_sha") if isinstance(subject, dict) else None
+        tree = subject.get("tree_sha") if isinstance(subject, dict) else None
+        if not isinstance(commit, str) or not isinstance(tree, str):
+            raise EvidenceError("prior receipt subject is invalid for affected proof closure")
+        subjects.add((commit, tree))
+    expected = derive_affected_proof_set(
+        repo_root,
+        model,
+        [str(value) for value in required],
+        current_subject=current_subject,
+        prior_subjects=subjects,
+    )
+    verify_affected_proof_set(expected, actual)

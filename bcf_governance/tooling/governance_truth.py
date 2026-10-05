@@ -28,6 +28,8 @@ from .governance_truth_support import (
 from .evidence_workitem_lifecycle import workitem_observation
 from .evidence_execution import EvidenceError
 from .evidence_reuse_attestations import compose_local_reuse
+from .affected_proof_closure import verify_session_affected_proof_set
+from .prior_evidence_receipts import load_provisional_transport, provisional_receipts
 from .truth_receipts import ReceiptError, load_receipts
 from .evidence_planning import load_claim_model
 from .truth_reporting import (
@@ -285,6 +287,26 @@ def derive_truth(
         if contract_version == "3.0"
         else {}
     )
+    if session_plan.get("schema_version") == "3.0":
+        try:
+            prior_receipts = (
+                provisional_receipts(load_provisional_transport(
+                    repo_root, prior_transport_dir, current_subject=current,
+                ))
+                if prior_transport_dir is not None
+                else []
+            )
+            verify_session_affected_proof_set(
+                repo_root,
+                claim_model,
+                session_plan,
+                current_subject=current,
+                prior_receipts=prior_receipts,
+            )
+        except (EvidenceError, OSError, ValueError) as exc:
+            raise TruthfulnessError(
+                "evidence session affected proof set is not canonical"
+            ) from exc
     reuse_session_binding = (
         exact_session_binding(evidence_dir, current, session_plan)
         if session_plan.get("reused_evidence") else None

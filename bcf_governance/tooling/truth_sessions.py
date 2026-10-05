@@ -11,6 +11,7 @@ from jsonschema import Draft202012Validator
 
 from .evidence_session_schema import (
     EvidenceSessionSchemaError,
+    is_planned_session,
     load_evidence_session_schema,
 )
 
@@ -106,7 +107,7 @@ def _manifest_issues(
         "commit_sha": current.get("commit_sha"),
         "tree_sha": current.get("tree_sha"),
     }
-    if manifest.get("schema_version") == "2.0":
+    if is_planned_session(manifest):
         receipt_subject = receipt.get("subject")
         if isinstance(receipt_subject, dict):
             expected_subject = {
@@ -120,7 +121,7 @@ def _manifest_issues(
     if manifest.get("profile_contract_version") != contract_version:
         issues.append("evidence_session_contract_version_mismatch")
     gate_inventory = manifest.get("expected_gate_inventory")
-    if manifest.get("schema_version") == "2.0":
+    if is_planned_session(manifest):
         dag = manifest.get("execution_dag")
         nodes = dag.get("nodes") if isinstance(dag, dict) else None
         planned = {

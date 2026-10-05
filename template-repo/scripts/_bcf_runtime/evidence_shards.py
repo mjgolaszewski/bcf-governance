@@ -16,6 +16,7 @@ from .ci_graph_execution import (
     resolve_local_job_environment,
 )
 from .evidence_sessions import load_session, select_session
+from .evidence_session_schema import is_planned_session
 from .evidence_test_adapters import captured_receipt_succeeded
 from .governance_evidence import capture_gate
 
@@ -208,12 +209,12 @@ def main(argv: list[str] | None = None) -> None:
         output_root = session.root
     planned = (
         [str(value) for value in session.payload.get("expected_gate_inventory", [])]
-        if session is not None and session.payload.get("schema_version") == "2.0"
+        if session is not None and is_planned_session(session.payload)
         else None
     )
     execution_dag = (
         session.payload.get("execution_dag")
-        if session is not None and session.payload.get("schema_version") == "2.0"
+        if session is not None and is_planned_session(session.payload)
         else None
     )
     if args.all_planned:

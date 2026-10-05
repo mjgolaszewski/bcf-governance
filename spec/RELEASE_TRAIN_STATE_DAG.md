@@ -1061,6 +1061,32 @@ The coherent #346 extraction is the changed-input and affected-proof closure
 responsibility currently embedded in `evidence_planning.py`; the extraction
 must reduce that owner's pressure without introducing another claim registry.
 
+#### PRUNE evidence-session N/N+1 compatibility matrix
+
+The affected-proof set crosses the evidence-session boundary.  Its contract is
+therefore expanded before activation: controller N continues to emit and
+validate active session v2; controller N+1 must understand the complete dormant
+session-v3 proposition before v3 can become active.  Merely loading the v3 JSON
+schema is insufficient—every trusted consumer of planned-session semantics must
+already preserve and validate the v3 plan.
+
+| State | Session producer | Trusted consumers | Required result | Forbidden result |
+| --- | --- | --- | --- | --- |
+| v2 active, v3 absent under N | active allocator emits v2 | schema dispatcher, receipt binding, truth session validator and current-plan selector consume v2 | ordinary-current behavior unchanged | implicit v3 activation |
+| v2 active, v3 dormant under N+1 candidate | allocator still emits v2 | N+1 schema dispatcher, receipt binding, truth session validator and current-plan selector can consume v2 and fully validate v3 | pending rotation remains noncertifying; provider-built N+1 is installable | treating v3 as legacy, ignoring its affected-proof set, or accepting it without independent plan checks |
+| v2 active after N+1 installation | allocator still emits v2 | installed N+1 preserves exact v2 behavior | ordinary-current exact-main succeeds before activation | activation inferred from installation |
+| v3 active under installed N+1 | allocator emits v3 with canonical affected-proof set | planner emits it; session binding preserves it; truth selects the exact v3 plan and independently recomputes reachability | affected proof omissions, digest drift, wrong subject/session/producer or inventory mismatch fail closed | a second runtime change or controller rotation needed merely to understand v3 |
+| v3 presented to incompatible N | candidate state names active v3 but installed controller lacks complete v3 semantics | installed-controller compatibility owner | reject before evidence fan-out | classifying as rotatable when N cannot authorize N+1 from the candidate state |
+| active v3 removed or mutated | active public contract/schema or required affected-proof field differs | compatibility, session schema and truth consumers | fail closed | fallback to v2 or legacy inventory semantics |
+
+The canonical planned-session consumer contract covers both v2 and v3.  For
+either version, gate inventory is derived from the bound execution DAG, the
+required-claim inventory is present, and current-plan selection binds the exact
+subject and rejects competing session bytes.  V3 additionally requires the
+hash-bound affected-proof set and independent truth recomputation.  Activation
+may change the public active-version projection and producer output only after
+N+1 is installed; it must not change these trusted consumer semantics.
+
 ### P31 workitem DAG
 
 ```text

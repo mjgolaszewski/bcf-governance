@@ -11,6 +11,15 @@ class EvidenceSessionSchemaError(ValueError):
     """Raised when a session version has no exact governed schema."""
 
 
+PLANNED_SESSION_VERSIONS = frozenset({"2.0", "3.0"})
+
+
+def is_planned_session(payload: Mapping[str, Any]) -> bool:
+    """Return whether *payload* carries the canonical verification plan."""
+
+    return payload.get("schema_version") in PLANNED_SESSION_VERSIONS
+
+
 def evidence_session_schema_path(root: Path, version: object) -> Path:
     names = {
         "1.0": "evidence-session.schema.json",

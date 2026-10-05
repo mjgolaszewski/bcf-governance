@@ -7,11 +7,40 @@ from pathlib import Path
 import pytest
 
 from bcf_governance.tooling.truth_reporting import (
+    current_session_plan,
     exact_session_binding,
     eligible_claim_receipts,
     eligible_receipts,
     failure_envelope,
 )
+
+
+@pytest.mark.parametrize("version", ["2.0", "3.0"])
+def test_current_session_plan_selects_exact_planned_versions(
+    tmp_path: Path, version: str,
+) -> None:
+    subject = {"commit_sha": "a" * 40, "tree_sha": "b" * 40}
+    plan = {"schema_version": version, "session_id": "c" * 32, "subject": subject}
+    directory = tmp_path / version
+    directory.mkdir()
+    (directory / "evidence-session.json").write_text(json.dumps(plan), encoding="utf-8")
+
+    assert current_session_plan(tmp_path, subject) == plan
+
+
+def test_current_session_plan_rejects_competing_v2_v3_bytes(tmp_path: Path) -> None:
+    subject = {"commit_sha": "a" * 40, "tree_sha": "b" * 40}
+    for version in ("2.0", "3.0"):
+        directory = tmp_path / version
+        directory.mkdir()
+        (directory / "evidence-session.json").write_text(json.dumps({
+            "schema_version": version,
+            "session_id": version.replace(".", "") * 16,
+            "subject": subject,
+        }), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="ambiguous verification plans"):
+        current_session_plan(tmp_path, subject)
 
 
 def test_reuse_truth_binds_exact_consumed_session_bytes(tmp_path: Path) -> None:
