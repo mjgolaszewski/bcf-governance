@@ -269,6 +269,7 @@ def validate_controller_custody_chain(
         or outcome.get("produces") != ["controller-rotation-outcome"]
         or set(outcome.get("consumes", []))
         != {
+            "controller-custody",
             "controller-transition-decision",
             "controller-transition-active-callback-source",
         }
