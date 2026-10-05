@@ -15,7 +15,11 @@ import pytest
 import yaml
 
 from scripts.governance_evidence import attest_bundle
-from bcf_governance.tooling.evidence_planning import build_dependency_manifest
+from bcf_governance.tooling.affected_proof_closure import derive_affected_proof_set
+from bcf_governance.tooling.evidence_planning import (
+    build_dependency_manifest,
+    load_claim_model,
+)
 from bcf_governance.tooling.evidence_workitem_lifecycle import (
     WorkitemContractError,
     validate_bounded_target_successor,
@@ -94,6 +98,9 @@ def _make_repo(
     )
     (repo / "schemas/evidence-session.schema.json").write_bytes(
         (REPO_ROOT / "template-repo/schemas/evidence-session.schema.json").read_bytes()
+    )
+    (repo / "schemas/evidence-session-v3.schema.json").write_bytes(
+        (REPO_ROOT / "template-repo/schemas/evidence-session-v3.schema.json").read_bytes()
     )
     _write_yaml(
         repo / "governance-profile.yml",
@@ -524,6 +531,7 @@ def _enable_v2_session(repo: Path) -> Path:
 def _enable_v3_grouped_session(
     repo: Path, *, second_test_receipt: bool = False, hotfix: bool = False,
     open_workitem: bool = False, bounded_workitems: bool = False,
+    session_version: str = "2.0",
 ) -> Path:
     profile_path = repo / "governance-profile.yml"
     profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
@@ -613,6 +621,7 @@ def _enable_v3_grouped_session(
             }
             for claim_id, (gate, group) in claims.items()
         },
+        **({"non_proof_dependencies": []} if session_version == "3.0" else {}),
     }
     _write_yaml(contracts_path, contracts)
 
@@ -738,7 +747,7 @@ def _enable_v3_grouped_session(
 
     session_id = "b" * 32
     manifest = {
-        "schema_version": "2.0",
+        "schema_version": session_version,
         "session_id": session_id,
         "subject": {
             "commit_sha": _git(repo, "rev-parse", "HEAD"),
@@ -792,6 +801,15 @@ def _enable_v3_grouped_session(
             "immutable_manifest": True,
         },
     }
+    if session_version == "3.0":
+        subject = manifest["subject"]
+        manifest["affected_proof_set"] = derive_affected_proof_set(
+            repo,
+            load_claim_model(repo),
+            sorted(claims),
+            current_subject=subject,
+            prior_subjects=[],
+        )
     manifest_path = evidence_dir / "evidence-session.json"
     manifest_path.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -830,6 +848,18 @@ def test_grouped_v3_receipt_closes_claims_workitems_and_hotfix(tmp_path: Path) -
     assert observation["missing_acceptance_evidence"] == []
     assert report["claims"]["required_suites_green"]["missing_or_invalid"] == []
     assert report["hotfixes"][0]["effective_state"] == "closed"
+
+
+def test_affected_proof_session_closes_through_full_truth(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+    report = derive_truth(
+        repo,
+        _enable_v3_grouped_session(repo, hotfix=True, session_version="3.0"),
+        evaluation_mode="closure",
+    )
+
+    assert report["status"] == "pass", report["issues"]
+    assert report["effective_state"] == "closed"
 
 
 def test_bounded_workitem_closes_while_parent_remains_active(tmp_path: Path) -> None:
