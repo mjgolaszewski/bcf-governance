@@ -14,7 +14,7 @@
     },
     "AGENTS.yml": {
       "operation": "copy",
-      "sha256": "7e0f1cfb2a643c9d3b9f233f4885e883203e2b690cc8e746030b8c1881eccefe"
+      "sha256": "be2a6391133b6424a5d41dc79723c8b8b52e6538511702097e8d3ac8e9ee4ed7"
     },
     "CHANGELOG.md": {
       "operation": "preserve",

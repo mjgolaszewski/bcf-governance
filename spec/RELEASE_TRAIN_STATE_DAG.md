@@ -1092,6 +1092,10 @@ Subject comparison uses the affected-proof owner's exact commit/tree
 projection.  Additive canonical subject metadata is preserved by its owning
 consumer but cannot alter this identity; missing, malformed or wrong
 commit/tree remains a closed failure.
+Both the active and dormant successor session schemas are members of the
+canonical controller schema inventory before rotation.  Their mutation or
+removal therefore changes trusted runtime closure and cannot be accepted under
+an older installed controller merely because the successor is still dormant.
 
 ### P31 workitem DAG
 

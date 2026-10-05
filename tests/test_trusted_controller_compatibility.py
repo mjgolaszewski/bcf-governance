@@ -125,6 +125,43 @@ def test_target_may_lag_unrelated_files_but_not_trusted_runtime(
         verify_trusted_controller_compatibility(root, target_commit=target)
 
 
+def test_dormant_successor_schema_remains_in_controller_runtime_closure(
+    tmp_path: Path,
+) -> None:
+    root, controller_n = _repository(tmp_path)
+    schema = root / "bcf_governance/pack/template-repo/schemas/evidence-session-v3.schema.json"
+    schema.write_text('{"version":"3.0"}\n', encoding="utf-8")
+    agents = root / "AGENTS.yml"
+    agents.write_text(
+        agents.read_text(encoding="utf-8").replace(
+            "schemas/ci-authority.schema.json]",
+            "schemas/ci-authority.schema.json, schemas/evidence-session-v3.schema.json]",
+        ),
+        encoding="utf-8",
+    )
+    _git(root, "add", ".")
+    _git(root, "commit", "-q", "-m", "expand dormant schema closure")
+    with pytest.raises(TrustedControllerRuntimeStaleError):
+        verify_trusted_controller_compatibility(root, target_commit=controller_n)
+
+    controller_n_plus_one = _git(root, "rev-parse", "HEAD")
+    schema.write_text('{"version":"mutated"}\n', encoding="utf-8")
+    _git(root, "commit", "-qam", "mutate active schema")
+    with pytest.raises(TrustedControllerRuntimeStaleError):
+        verify_trusted_controller_compatibility(
+            root, target_commit=controller_n_plus_one
+        )
+
+    schema.unlink()
+    _git(root, "commit", "-qam", "remove active schema")
+    with pytest.raises(
+        TrustedControllerCompatibilityError, match="schema is absent"
+    ):
+        verify_trusted_controller_compatibility(
+            root, target_commit=controller_n_plus_one
+        )
+
+
 def test_exact_main_applicability_is_derived_from_canonical_compatibility(
     tmp_path: Path,
 ) -> None:
