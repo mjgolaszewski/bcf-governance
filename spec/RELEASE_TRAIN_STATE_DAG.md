@@ -1134,6 +1134,7 @@ large evidence payloads are not copied into every run.
 | original bytes required for independent assurance | one immutable content-addressed object plus retention/reachability metadata | retrieve exact bytes; never rebuild or duplicate them per run | verifier sees the producer's original bytes |
 | reference stale, missing, ambiguous or unauthorized | typed inapplicability reason | execute the canonical proof and publish one new exact object if needed | no guessed reuse and no silent missing evidence |
 | unreachable retained object | deterministic retention/GC plan | retire only after every governed reference is unreachable | storage growth follows unique inputs and required outputs, not run count |
+| archive-only source requires path-based verification | one explicitly declared transient materialization port owned by the receipt decoder | materialize only the exact authenticated members, validate, then retire the temporary namespace | validation operations declare one reachable non-authoritative effect instead of hand-listing implementation writes |
 
 This invariant covers preflight diagnostics, recovery/controller custody,
 affected-proof plans, producer receipts, finalizer bundles and publication
