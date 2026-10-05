@@ -282,7 +282,7 @@
     },
     "schemas/evidence-session-v3.schema.json": {
       "operation": "copy",
-      "sha256": "86e72e16c33c8b78619fb1e21b80c39c62e8ff8e1fef4328402156e5f349a88e"
+      "sha256": "64cc217379b66072d22d1e8f71beb37dd75ff15ec918442890ba885f06bcbe77"
     },
     "schemas/evidence-session.schema.json": {
       "operation": "copy",
@@ -298,7 +298,7 @@
     },
     "schemas/gate-contracts.schema.json": {
       "operation": "copy",
-      "sha256": "c434dc40561a8cb66bff6e9c727b7906843946efd81f43653dceb532aaa9f97e"
+      "sha256": "7d9e17be6ff714ac2df72d74aa624b7da1c55e87d3de095b2b473d18685834f9"
     },
     "schemas/github-ci-topology.schema.json": {
       "operation": "copy",
@@ -430,7 +430,7 @@
     },
     "scripts/_bcf_runtime/affected_proof_closure.py": {
       "operation": "copy",
-      "sha256": "52eef8292e7edeb555316c41ecfe9aee1b801eb1bbd8c2d39364c6e4631726ff"
+      "sha256": "cb13e8b5c2853cf8f366944e9e54bf9e6c2bdf5468ecadef65e7f3fe380fe077"
     },
     "scripts/_bcf_runtime/automation_changelog.py": {
       "operation": "copy",
@@ -832,7 +832,7 @@
     },
     "scripts/_bcf_runtime/evidence_planning.py": {
       "operation": "copy",
-      "sha256": "d51dbfe8393ce8b16725f9504cfb7afc000109c2f78f5908d936818414b9518f"
+      "sha256": "5c88b311672e14c02d2b1f5a80f2a3d48d6024d74ef7732cb7285bbab008e777"
     },
     "scripts/_bcf_runtime/evidence_reuse_attestations.py": {
       "operation": "copy",
@@ -848,11 +848,11 @@
     },
     "scripts/_bcf_runtime/evidence_session_schema.py": {
       "operation": "copy",
-      "sha256": "2cc640b69e5e5eee8abc93118ebf2a86ddd0ac2a68e0aa01e28fb033e920ceee"
+      "sha256": "69eaa98a88e5ad8089c0d8112a11dde591a7e14d919a9aad782b77f62dfa99a6"
     },
     "scripts/_bcf_runtime/evidence_sessions.py": {
       "operation": "copy",
-      "sha256": "fcb69050e57a67972f4ad4679395dfeee9842ece79c8f1914b1bc0befcf95f1a"
+      "sha256": "54ecaeda324a24cd6e7904021bc214c6b39fbfa536753238d6947466047f25a3"
     },
     "scripts/_bcf_runtime/evidence_shards.py": {
       "operation": "copy",
@@ -1199,7 +1199,7 @@
     },
     "scripts/_bcf_runtime/public_contracts.py": {
       "operation": "copy",
-      "sha256": "49c7a94491c86307d3ea34b67a61470e322853cff7cba1e19d27ba5eb107612c"
+      "sha256": "e75c43c9bc994d97bfd5906861a83e391c096f3d32fecce025fefd4db2ce8bd9"
     },
     "scripts/_bcf_runtime/publish_audit.py": {
       "operation": "copy",

@@ -161,7 +161,9 @@ def derive_affected_proof_set(
         for dependency_class in DEPENDENCY_CLASSES
         for set_name in claim["dependencies"][dependency_class]
     }
-    non_proof_sets = {str(value) for value in model["non_proof_dependencies"]}
+    non_proof_sets = {
+        str(value) for value in model.get("non_proof_dependencies", [])
+    }
     all_declared_patterns = sorted({
         str(pattern)
         for set_name in referenced_sets | non_proof_sets

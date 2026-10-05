@@ -5,9 +5,11 @@ import hashlib
 from pathlib import Path
 
 import pytest
+import yaml
 
 from bcf_governance.tooling.evidence_session_schema import (
     EvidenceSessionSchemaError,
+    active_planned_session_version,
     evidence_session_schema_path,
     is_planned_session,
     load_evidence_session_schema,
@@ -22,6 +24,30 @@ def test_current_session_versions_keep_the_active_schema() -> None:
     active = REPO_ROOT / "schemas/evidence-session.schema.json"
     assert evidence_session_schema_path(REPO_ROOT, "1.0") == active
     assert evidence_session_schema_path(REPO_ROOT, "2.0") == active
+    assert active_planned_session_version(REPO_ROOT) == "2.0"
+
+
+def test_adopter_session_activation_is_derived_from_claim_capability(
+    tmp_path: Path,
+) -> None:
+    gate_path = tmp_path / "governance/gate-contracts.yml"
+    gate_path.parent.mkdir()
+    gate_path.write_text(
+        yaml.safe_dump({"claim_model": {"version": "1.0"}}), encoding="utf-8"
+    )
+    assert active_planned_session_version(tmp_path) == "2.0"
+
+    gate_path.write_text(yaml.safe_dump({
+        "claim_model": {"version": "1.0", "non_proof_dependencies": []},
+    }), encoding="utf-8")
+    assert active_planned_session_version(tmp_path) == "3.0"
+
+    public_path = tmp_path / "governance/public-contracts.yml"
+    public_path.write_text(yaml.safe_dump({
+        "contracts": {"evidence_session": {"active_version": "2.0"}},
+    }), encoding="utf-8")
+    with pytest.raises(EvidenceSessionSchemaError, match="differs"):
+        active_planned_session_version(tmp_path)
 
 
 def test_dormant_v3_session_uses_the_exact_successor_schema() -> None:
@@ -29,8 +55,10 @@ def test_dormant_v3_session_uses_the_exact_successor_schema() -> None:
     schema = load_evidence_session_schema(REPO_ROOT, {"schema_version": "3.0"})
 
     assert path == REPO_ROOT / "schemas/evidence-session-v3.schema.json"
-    assert schema["properties"]["schema_version"] == {"enum": ["3.0"]}
-    required = schema["allOf"][0]["then"]["required"]
+    assert schema["properties"]["schema_version"] == {
+        "enum": ["1.0", "2.0", "3.0"]
+    }
+    required = schema["allOf"][1]["then"]["required"]
     assert "affected_proof_set" in required
     assert "affected_proof_set" not in json.loads(
         (REPO_ROOT / "schemas/evidence-session.schema.json").read_text(encoding="utf-8")

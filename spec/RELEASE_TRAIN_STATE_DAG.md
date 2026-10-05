@@ -1084,8 +1084,10 @@ either version, gate inventory is derived from the bound execution DAG, the
 required-claim inventory is present, and current-plan selection binds the exact
 subject and rejects competing session bytes.  V3 additionally requires the
 hash-bound affected-proof set and independent truth recomputation.  Activation
-may change the public active-version projection and producer output only after
-N+1 is installed; it must not change these trusted consumer semantics.
+may change only the governed public active-version and claim-model data after
+N+1 is installed.  The already-installed selector then chooses the dormant v3
+planner and allocator; activation must not change trusted producer or consumer
+code bytes, nor require N+2 merely to execute the declared contract.
 
 ### P31 workitem DAG
 

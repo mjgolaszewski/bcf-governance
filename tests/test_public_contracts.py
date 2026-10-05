@@ -24,6 +24,7 @@ def _fixture(tmp_path: Path) -> Path:
     shutil.copytree(REPO_ROOT / "schemas", root / "schemas")
     for relative in (
         "governance/public-contracts.yml",
+        "governance/gate-contracts.yml",
         "governance/ci-graph.yml",
         "bcf_governance/_version.py",
         "bcf_governance/cli.py",
@@ -88,4 +89,15 @@ def test_schema_version_mutant_cannot_be_hidden_by_registry_edit(tmp_path: Path)
     )
     schema_path.write_text(text, encoding="utf-8")
     with pytest.raises(PublicContractError, match="ci_authority readable versions"):
+        validate_public_contracts(root)
+
+
+def test_session_activation_and_claim_capability_cannot_diverge(tmp_path: Path) -> None:
+    root = _fixture(tmp_path)
+    path = root / "governance/gate-contracts.yml"
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    payload["claim_model"]["non_proof_dependencies"] = []
+    path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(PublicContractError, match="differs"):
         validate_public_contracts(root)

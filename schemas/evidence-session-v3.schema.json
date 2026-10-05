@@ -17,6 +17,8 @@
   "properties": {
     "schema_version": {
       "enum": [
+        "1.0",
+        "2.0",
         "3.0"
       ]
     },
@@ -248,6 +250,31 @@
     }
   },
   "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "const": "2.0"
+          }
+        },
+        "required": [
+          "schema_version"
+        ]
+      },
+      "then": {
+        "required": [
+          "prior_subject",
+          "changed_paths",
+          "changed_domains",
+          "required_claims",
+          "preflight_satisfied_claims",
+          "reused_evidence",
+          "invalidated_evidence",
+          "execution_dag",
+          "decision_explanations"
+        ]
+      }
+    },
     {
       "if": {
         "properties": {
