@@ -1135,6 +1135,7 @@ large evidence payloads are not copied into every run.
 | reference stale, missing, ambiguous or unauthorized | typed inapplicability reason | execute the canonical proof and publish one new exact object if needed | no guessed reuse and no silent missing evidence |
 | unreachable retained object | deterministic retention/GC plan | retire only after every governed reference is unreachable | storage growth follows unique inputs and required outputs, not run count |
 | archive-only source requires path-based verification | one explicitly declared transient materialization port owned by the receipt decoder | materialize only the exact authenticated members, validate, then retire the temporary namespace | validation operations declare one reachable non-authoritative effect instead of hand-listing implementation writes |
+| receipt transport changes touch the preflight boundary | preflight remains a thin caller of the receipt decoder and supplies its already-authenticated subject | no materialization or proof-storage responsibility moves into preflight | structural LOC ownership fails before evidence if the boundary begins absorbing transport logic |
 
 This invariant covers preflight diagnostics, recovery/controller custody,
 affected-proof plans, producer receipts, finalizer bundles and publication
