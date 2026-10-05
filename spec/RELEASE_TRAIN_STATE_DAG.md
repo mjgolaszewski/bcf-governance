@@ -1097,6 +1097,43 @@ canonical controller schema inventory before rotation.  Their mutation or
 removal therefore changes trusted runtime closure and cannot be accepted under
 an older installed controller merely because the successor is still dormant.
 
+Activation is one governed data transition after ordinary-current N+1 custody:
+the public session contract selects v3, the claim model declares its closed
+non-proof dependency inventory, and the mechanically rendered exact-main edge
+changes from PR progress to `workitem:P30-P0-03`.  The installed N+1 must
+classify that candidate `current`; a new pending rotation would prove the
+dormant expansion incomplete.  PR evidence remains PR-progress evidence.  Only
+post-merge exact-main may produce the bounded P30-P0-03 proposition, which can
+make P30-P0-04 eligible but cannot close P30 or authorize release.
+Every active-v3 session allocator, including governance-control and adversarial
+fixtures, consumes the canonical version-selecting verification-plan entrypoint.
+The lower-level v2-compatible planner is not a valid active-session contract;
+passing its narrower shape to a v3 allocator must fail before execution.
+
+### P30-P0-04 REUSE cross-CI storage invariant
+
+All CI evidence transport uses compact authenticated manifests and immutable
+content-addressed references by default.  Commands, interpreter and toolchain
+locks, exact inputs, generated projections, subjects, policy/controller
+identity, qualification, authority class and artifact digests are carried as
+reproduction and applicability inputs; environments, repositories, images and
+large evidence payloads are not copied into every run.
+
+| Payload state | Canonical representation | Consumer action | Required result |
+| --- | --- | --- | --- |
+| deterministically reproducible | compact manifest plus exact input/toolchain digests | materialize only when execution or verification needs bytes | no stored environment or image copy |
+| already stored exact payload | immutable digest and canonical durable reference | authenticate identity, reachability, freshness and proposition before retrieval | one stored payload may serve many exact references |
+| original bytes required for independent assurance | one immutable content-addressed object plus retention/reachability metadata | retrieve exact bytes; never rebuild or duplicate them per run | verifier sees the producer's original bytes |
+| reference stale, missing, ambiguous or unauthorized | typed inapplicability reason | execute the canonical proof and publish one new exact object if needed | no guessed reuse and no silent missing evidence |
+| unreachable retained object | deterministic retention/GC plan | retire only after every governed reference is unreachable | storage growth follows unique inputs and required outputs, not run count |
+
+This invariant covers preflight diagnostics, recovery/controller custody,
+affected-proof plans, producer receipts, finalizer bundles and publication
+evidence.  A payload-specific exception is valid only when its assurance
+proposition requires original-byte preservation; it never permits unbounded
+per-run duplication.  P30-P0-04 begins with an audit of these existing
+producers before introducing persistent proof reuse.
+
 ### P31 workitem DAG
 
 ```text

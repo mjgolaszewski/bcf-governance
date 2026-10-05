@@ -20,11 +20,13 @@ from bcf_governance.tooling.truth_sessions import _manifest_issues
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_current_session_versions_keep_the_active_schema() -> None:
-    active = REPO_ROOT / "schemas/evidence-session.schema.json"
-    assert evidence_session_schema_path(REPO_ROOT, "1.0") == active
-    assert evidence_session_schema_path(REPO_ROOT, "2.0") == active
-    assert active_planned_session_version(REPO_ROOT) == "2.0"
+def test_current_session_versions_select_active_v3_without_rewriting_legacy() -> None:
+    legacy = REPO_ROOT / "schemas/evidence-session.schema.json"
+    active = REPO_ROOT / "schemas/evidence-session-v3.schema.json"
+    assert evidence_session_schema_path(REPO_ROOT, "1.0") == legacy
+    assert evidence_session_schema_path(REPO_ROOT, "2.0") == legacy
+    assert evidence_session_schema_path(REPO_ROOT, "3.0") == active
+    assert active_planned_session_version(REPO_ROOT) == "3.0"
 
 
 def test_adopter_session_activation_is_derived_from_claim_capability(

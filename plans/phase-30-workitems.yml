@@ -37,7 +37,7 @@ workitems:
   - contract-test
 - id: P30-P0-03
   priority: P0
-  status: IN_PROGRESS
+  status: DONE
   summary: derive the exact affected proof closure
   acceptance:
   - requires-workitem-closure:P30-P0-02

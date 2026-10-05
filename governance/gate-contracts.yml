@@ -21,6 +21,8 @@ claim_model:
     toolchain: [&id037 pyproject.toml, *id001, requirements-governance.lock]
     workflows: [.github/workflows/**, &id045 governance/ci-graph.yml, governance/ci-extensions/**, governance/ci-authority.yml, governance/github-ci-topology.yml, governance/github-protection.yml]
     evidence_runtime: [bcf_governance/tooling/governance_evidence.py, &id102 bcf_governance/tooling/evaluation_scope.py, bcf_governance/tooling/evidence_*.py, bcf_governance/tooling/truth_*.py, &id101 bcf_governance/tooling/governance_truth.py]
+    editorial: [CHANGELOG.md, README.md, docs/**, spec/**]
+  non_proof_dependencies: [editorial]
   execution_groups:
     preflight-structural:
       producer: preflight
