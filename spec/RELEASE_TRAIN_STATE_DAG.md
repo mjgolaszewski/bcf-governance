@@ -1105,6 +1105,10 @@ classify that candidate `current`; a new pending rotation would prove the
 dormant expansion incomplete.  PR evidence remains PR-progress evidence.  Only
 post-merge exact-main may produce the bounded P30-P0-03 proposition, which can
 make P30-P0-04 eligible but cannot close P30 or authorize release.
+Every active-v3 session allocator, including governance-control and adversarial
+fixtures, consumes the canonical version-selecting verification-plan entrypoint.
+The lower-level v2-compatible planner is not a valid active-session contract;
+passing its narrower shape to a v3 allocator must fail before execution.
 
 ### P30-P0-04 REUSE cross-CI storage invariant
 
