@@ -417,12 +417,7 @@ def _write_materialized(
         payload_files[archive_path.relative_to(root).as_posix()] = _sha256(raw)
         expanded_inventory: list[dict[str, Any]] = []
         for source_path, content in sorted(files.items()):
-            target = root / "expanded" / artifact_id / source_path
-            target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-            target.write_bytes(content)
-            relative = target.relative_to(root).as_posix()
             digest = _sha256(content)
-            payload_files[relative] = digest
             expanded_inventory.append(
                 {"path": source_path, "sha256": digest, "size": len(content)}
             )
@@ -644,8 +639,9 @@ def transport_prior_evidence(
             "controller authority cannot be supplied beside exact custody"
         )
     manifest = {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
         "kind": "prior_evidence_transport",
+        "storage": "archive_only",
         "repository": {
             "provider": "github", "full_name": repository,
             "repository_id": main.repository_id,

@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 from .ci_github_api import GitHubAPI
 from .ci_candidate_pr import ensure_candidate_pull_request
 from .ci_graph_contracts import validate_ci_graph
-from .ci_graph_post_merge import post_merge_evaluation
+from .ci_graph_post_merge import authored_candidate_title, post_merge_evaluation
 from .ci_recovery_frontier import protected_merge_frontier, submission_frontier
 from .github_protection import load_protection
 from .local_pr import (
@@ -136,18 +136,6 @@ def _push_exact_candidate(
         )
 
 
-def _candidate_title(
-    repo_root: Path, *, identity: CandidateIdentity, runner: Runner
-) -> str:
-    result = runner(
-        ["git", "show", "-s", "--format=%s", identity.commit_sha], cwd=repo_root
-    )
-    title = result.stdout.strip() if result.returncode == 0 else ""
-    if not title or "\n" in title or len(title) > 256:
-        raise ProspectiveValidationError("candidate commit has no safe PR title")
-    return title
-
-
 def _request_protected_auto_merge(
     repo_root: Path,
     *,
@@ -215,6 +203,10 @@ def submit_candidate(
         provider_api=provider_api,
         runner=runner,
     )
+    try:
+        candidate_title = authored_candidate_title(root, mode=mode, target=target)
+    except ValueError as exc:
+        raise ProspectiveValidationError(str(exc)) from exc
     recovery_identity = {
         "repository": repository,
         "base_sha": identity.base_sha,
@@ -273,7 +265,7 @@ def submit_candidate(
         base_sha=identity.base_sha,
         head_sha=identity.commit_sha,
         tree_sha=identity.tree_sha,
-        title=_candidate_title(root, identity=identity, runner=runner),
+        title=candidate_title,
         frontier_sha256=str(proved_frontier["frontier_sha256"]),
     )
     auto_merge, merge_frontier = _request_protected_auto_merge(

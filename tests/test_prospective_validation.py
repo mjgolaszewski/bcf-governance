@@ -11,6 +11,7 @@ import pytest
 
 from bcf_governance.tooling.local_pr import LocalPRContext
 from bcf_governance.tooling import local_pr as prospective
+from bcf_governance.tooling import local_proof_bundles
 from bcf_governance.tooling import controller_custody_prospective as custody
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
 from bcf_governance.tooling.ci_authority_prospective_lanes import (
@@ -120,7 +121,7 @@ def test_planned_evidence_stops_on_first_failed_producer(
             "observations": {"exit_code": 3},
         }))
         return receipt
-    monkeypatch.setattr(prospective, "capture_gate", capture)
+    monkeypatch.setattr(local_proof_bundles, "capture_gate", capture)
     (tmp_path / "session.json").write_text("{}")
     bindings = {gate: {} for gate in ("first", "second")}
     with pytest.raises(
@@ -164,7 +165,7 @@ def test_planned_evidence_reports_failed_control_when_command_passed(
         )
         return receipt
 
-    monkeypatch.setattr(prospective, "capture_gate", capture)
+    monkeypatch.setattr(local_proof_bundles, "capture_gate", capture)
     with pytest.raises(
         prospective.ProspectiveValidationError,
         match=(
@@ -212,7 +213,7 @@ def test_planned_evidence_projects_exact_graph_job_environment(
         )
         return receipt
 
-    monkeypatch.setattr(prospective, "capture_gate", capture)
+    monkeypatch.setattr(local_proof_bundles, "capture_gate", capture)
     (tmp_path / "session.json").write_text("{}")
     prospective._capture_planned_evidence(
         tmp_path,

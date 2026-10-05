@@ -8,6 +8,11 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Derived candidate titles from the unique governed lifecycle proposition and
+  introduced exact, content-addressed local proof reuse without upgrading local
+  authority; provider proof transport now retains original archives once and
+  materializes members only for verification, while a current-controller
+  exact-main run no longer rebuilds or republishes identical controller bytes.
 - Activated the version-dispatched evidence-session contract and canonical
   affected-proof closure only after installing its compatible controller, so
   every required proof is deterministically required, demonstrably unaffected,

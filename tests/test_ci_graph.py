@@ -40,6 +40,7 @@ from bcf_governance.tooling.repository_comparison_context import (
 )
 from bcf_governance.tooling.ci_graph_post_merge import (
     authored_post_merge_scope,
+    authored_candidate_title,
     post_merge_evaluation,
     reconcile_direct_post_merge_scope,
     reconcile_post_merge_scope,
@@ -196,6 +197,43 @@ def test_post_merge_scope_is_derived_from_authored_lifecycle(
     )
 
     assert authored_post_merge_scope(tmp_path) == expected
+
+
+def test_candidate_title_is_derived_from_unique_active_workitem(tmp_path: Path) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump({"active_phase": {
+            "id": "P30",
+            "workitems": "plans/phase-30-workitems.yml",
+        }}), encoding="utf-8"
+    )
+    (tmp_path / "plans/phase-30-workitems.yml").write_text(
+        yaml.safe_dump({"workitems": [
+            {"id": "P30-P0-03", "status": "DONE", "summary": "prune proof"},
+            {"id": "P30-P0-04", "status": "IN_PROGRESS", "summary": "reuse proof"},
+        ]}), encoding="utf-8"
+    )
+    assert authored_candidate_title(tmp_path, mode="pr", target=None) == (
+        "P30-P0-04: reuse proof"
+    )
+
+
+def test_candidate_title_rejects_ambiguous_active_workitems(tmp_path: Path) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump({"active_phase": {
+            "id": "P30",
+            "workitems": "plans/phase-30-workitems.yml",
+        }}), encoding="utf-8"
+    )
+    (tmp_path / "plans/phase-30-workitems.yml").write_text(
+        yaml.safe_dump({"workitems": [
+            {"id": "P30-P0-03", "status": "BLOCKED", "summary": "prune proof"},
+            {"id": "P30-P0-04", "status": "IN_PROGRESS", "summary": "reuse proof"},
+        ]}), encoding="utf-8"
+    )
+    with pytest.raises(CIGraphError, match="not unique"):
+        authored_candidate_title(tmp_path, mode="pr", target=None)
 
 
 def test_post_merge_scope_selects_unique_done_frontier_amid_unrelated_active_work(

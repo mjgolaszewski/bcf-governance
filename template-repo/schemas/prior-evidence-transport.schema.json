@@ -5,8 +5,9 @@
   "additionalProperties": false,
   "required": ["schema_version", "kind", "repository", "pull_request", "candidate", "main", "merge", "producer", "certification", "authority", "protection", "artifacts", "receipts", "bundle_sha256", "authenticated_at"],
   "properties": {
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"enum": ["1.0", "2.0"]},
     "kind": {"const": "prior_evidence_transport"},
+    "storage": {"const": "archive_only"},
     "repository": {
       "type": "object", "additionalProperties": false,
       "required": ["provider", "full_name", "repository_id"],
@@ -107,6 +108,13 @@
     },
     "authenticated_at": {"type": "string", "format": "date-time"}
   },
+  "allOf": [
+    {
+      "if": {"properties": {"schema_version": {"const": "2.0"}}, "required": ["schema_version"]},
+      "then": {"required": ["storage"]},
+      "else": {"not": {"required": ["storage"]}}
+    }
+  ],
   "$defs": {
     "controllerCustody": {
       "type": "object", "additionalProperties": false,

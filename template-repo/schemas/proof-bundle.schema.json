@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/proof-bundle.schema.json",
+  "title": "BCF local proof bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "lifecycle", "identity", "identity_sha256", "files", "authority", "bundle_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "governance.local-proof-bundle.v1"},
+    "lifecycle": {"const": "persistent_shared_acceleration_only"},
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "base", "candidate", "evaluation", "verification_plan_sha256", "controller", "policy", "toolchain", "producer_authority", "freshness"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "base": {"$ref": "#/$defs/subject"},
+        "candidate": {"$ref": "#/$defs/subject"},
+        "evaluation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "target"],
+          "properties": {
+            "mode": {"enum": ["pr", "workitem", "closure"]},
+            "target": {"type": ["string", "null"]}
+          }
+        },
+        "verification_plan_sha256": {"$ref": "#/$defs/digest"},
+        "controller": {"type": "object"},
+        "policy": {"type": "object"},
+        "toolchain": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["admission", "implementation", "executable_sha256"],
+          "properties": {
+            "admission": {"type": "object"},
+            "implementation": {"type": "string", "minLength": 1},
+            "executable_sha256": {"$ref": "#/$defs/digest"}
+          }
+        },
+        "producer_authority": {"const": "local_non_authoritative"},
+        "freshness": {"const": "exact_candidate_subject"}
+      }
+    },
+    "identity_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "size", "sha256"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "size": {"type": "integer", "minimum": 0},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["class", "provider_authority_substituted"],
+      "properties": {
+        "class": {"const": "local_non_authoritative"},
+        "provider_authority_substituted": {"const": false}
+      }
+    },
+    "bundle_sha256": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit_sha", "tree_sha"],
+      "properties": {
+        "commit_sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+        "tree_sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"}
+      }
+    }
+  }
+}

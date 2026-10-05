@@ -331,8 +331,11 @@ def test_transport_authenticates_and_preserves_exact_source_bytes(
     }
     source = _json(provider.receipt)
     receipt = manifest["receipts"][0]
-    preserved = output / "expanded" / receipt["artifact_id"] / receipt["path"]
-    assert preserved.read_bytes() == source
+    preserved = output / "archives" / f"{receipt['artifact_id']}.zip"
+    with zipfile.ZipFile(preserved) as archive:
+        assert archive.read(receipt["path"]) == source
+    assert not (output / "expanded").exists()
+    assert manifest["storage"] == "archive_only"
     schema = json.loads(
         (ROOT / "schemas/prior-evidence-transport.schema.json").read_text()
     )

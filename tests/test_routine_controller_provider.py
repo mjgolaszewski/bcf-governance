@@ -319,6 +319,9 @@ def test_authorization_binds_protected_merge_policy_and_exact_artifact(
         provider, "compile_self_controller_pin", lambda *_args, **_kwargs: _pin()
     )
     monkeypatch.setattr(
+        provider, "_materialize_provider_controller", lambda *_args, **_kwargs: None
+    )
+    monkeypatch.setattr(
         provider,
         "authenticate_merged_pull",
         lambda *_args, **_kwargs: (
@@ -437,6 +440,9 @@ def test_authorization_materializes_policy_change_as_governed_rotation(
     )
     monkeypatch.setattr(
         provider, "compile_self_controller_pin", lambda *_args, **_kwargs: _pin()
+    )
+    monkeypatch.setattr(
+        provider, "_materialize_provider_controller", lambda *_args, **_kwargs: None
     )
     monkeypatch.setattr(
         provider,
@@ -627,6 +633,9 @@ def test_authorization_rejects_self_selection(
         provider, "authenticate_admission_custody", lambda *_args, **_kwargs: _custody(NEW)
     )
     monkeypatch.setattr(provider, "compile_self_controller_pin", lambda *_args, **_kwargs: _pin())
+    monkeypatch.setattr(
+        provider, "_materialize_provider_controller", lambda *_args, **_kwargs: None
+    )
     with pytest.raises(GitHubControllerError, match="no new target"):
         provider.authorize_transition(
             object(), repository="mjgolaszewski/bcf-governance",
