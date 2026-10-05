@@ -20,7 +20,7 @@ from .evidence_workitem_lifecycle import (
     WorkitemContractError,
     validate_bounded_target_successor,
 )
-from .evidence_planning import load_prior_receipts, verification_plan as build_verification_plan
+from .evidence_planning import verification_plan as build_verification_plan
 from .evaluation_scope import EvaluationIntent, evaluation_scope
 from .ci_authority_pins import CIAuthorityPinError
 from .ci_authority_preflight import verify_workflow_authority_preflight
@@ -43,7 +43,7 @@ from .interpreter_environment import (
     validate_runtime_import_dependencies,
     verify_interpreter_environment_projection,
 )
-from .prior_evidence_receipts import load_provisional_transport, provisional_receipts
+from .prior_evidence_receipts import load_prior_receipts, load_provisional_transport, provisional_receipts
 from .governance_validation.preflight_repository_context import pr_context as _pr_context
 from .governance_validation.preflight_negative_controls import (
     NegativeControlPreflightError,
@@ -749,7 +749,8 @@ def main(argv: list[str] | None = None) -> None:
     try:
         prior_receipts = (
             load_prior_receipts(
-                args.repo_root, args.prior_evidence_dir, args.prior_evidence_digest
+                args.repo_root, args.prior_evidence_dir, args.prior_evidence_digest,
+                current_subject=_git_state(args.repo_root.resolve()),
             ) if args.prior_evidence_digest else []
         )
         report = run_preflight(

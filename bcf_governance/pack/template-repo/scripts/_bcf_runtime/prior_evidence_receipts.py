@@ -242,6 +242,22 @@ def validate_transport_material(
     materialize_transport_material(files, manifest, current_subject)
 
 
+def _materialize_receipt_view(
+    files: Mapping[str, bytes],
+) -> tuple[tempfile.TemporaryDirectory[str], Path]:
+    """Own the sole transient filesystem projection required by path verifiers."""
+
+    temporary = tempfile.TemporaryDirectory(prefix="bcf-prior-receipts-")
+    root = Path(temporary.name)
+    for name, raw in files.items():
+        if not name.startswith("expanded/"):
+            continue
+        path = root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(raw)
+    return temporary, root
+
+
 def load_prior_receipts(
     repo_root: Path, evidence_dir: Path | None, expected_digest: str | None,
     *, current_subject: Mapping[str, Any] | None,
@@ -297,22 +313,18 @@ def load_prior_receipts(
     }
     if current_subject is None:
         raise EvidenceError("prior evidence current subject is missing")
+    temporary, receipt_root = _materialize_receipt_view(raw_files)
     try:
-        with tempfile.TemporaryDirectory(prefix="bcf-prior-receipts-") as temporary:
-            receipt_root = Path(temporary)
-            for name, raw in raw_files.items():
-                if not name.startswith("expanded/"):
-                    continue
-                path = receipt_root / name
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_bytes(raw)
+        try:
             validated = load_receipts(
                 repo_root, receipt_root, dict(current_subject), require_negative_control=False,
                 tree_independent_allowlist=set(), expected_kinds=expected_kinds,
                 invocations=invocations, contract_version="3.0",
             )
-    except (ReceiptError, OSError, ValueError) as exc:
-        raise EvidenceError("prior evidence receipt validation failed") from exc
+        except (ReceiptError, OSError, ValueError) as exc:
+            raise EvidenceError("prior evidence receipt validation failed") from exc
+    finally:
+        temporary.cleanup()
     results = [result for values in validated.values() for result in values]
     structural_issues: set[str] = set()
     for result in results:
