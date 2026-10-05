@@ -25,7 +25,7 @@ workitems:
   status: DONE
   summary: derive a bounded authenticated recovery frontier
 - id: P30-P0-03
-  status: IN_PROGRESS
+  status: DONE
   summary: derive the exact affected proof closure
 - id: P30-P0-04
   status: TODO
@@ -69,6 +69,9 @@ execution_evidence:
   - exact-main run 37229336123 completed ordinary provider-backed rotation to controller 5c8e951bf83692ffdf0891b0d65915e418946fd1 on both trusted runners; attempt 2 reused the authenticated unchanged evidence, finalizer 37231087170 succeeded, and no-transition run 37231086869 proved ordinary-current custody with release authority absent
   - P30-P0-02 closed on main 6a9b4e6e6ee7665010067c4c551e3a03d3804b23 tree 29477153e9f663c0e5f0a98bd5f5de63a53924f7 through exact-main 37239398979 finalizer 37240128289 and App 15368 workitem certification; only P30-P0-03 became eligible and release authority remained absent
   - P30-P0-03 begins with a dormant evidence-session v3 expansion and compatible affected-proof closure primitive so installed controller N can authorize N+1 before the hash-bound frontier is activated
+  - protected PR 364 merged the dormant v3 contract as main 701f741de520e6db12cf1a43b0fba225e90a8ced tree 64777ae5e1ca087335e3c81541905bada455a089; exact-main 37252811730 attempt 1 built the exact N+1 controller and canonical operation 37253101916 installed it on both trusted runners
+  - post-rotation exact-main 37252811730 attempt 2 passed admission four evidence shards exact-tree truth and trusted finalization under installed controller 701f741de520e6db12cf1a43b0fba225e90a8ced; no-transition operation 37254539553 proved ordinary-current custody before activation
+  - P30-P0-03 activates evidence-session v3 only after ordinary-current custody; the planner binds every required claim to one required demonstrably-unaffected or ambiguous-requires-execution classification and truth independently recomputes the exact closure
 closeout_requirements:
   claims:
     workitems_closed:
@@ -101,4 +104,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- rotate the compatible expanded controller before activating affected-proof persistence and independent truth verification
+- certify bounded P30-P0-03 closure and P30-P0-04 eligibility before beginning exact proof reuse

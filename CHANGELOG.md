@@ -8,9 +8,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
-- Added a dormant, version-dispatched evidence-session contract and canonical
-  affected-proof closure primitive so exact proof pruning can be activated
-  only after the compatible controller is installed.
+- Activated the version-dispatched evidence-session contract and canonical
+  affected-proof closure only after installing its compatible controller, so
+  every required proof is deterministically required, demonstrably unaffected,
+  or conservatively executed while truth independently rejects omissions.
 - Derived candidate submission, provider retry, protected auto-merge,
   controller transition, and scheduled-control recovery from one authenticated
   frontier; scheduled mutant runtimes now project their version owner and run

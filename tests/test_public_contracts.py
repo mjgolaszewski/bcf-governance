@@ -96,7 +96,7 @@ def test_session_activation_and_claim_capability_cannot_diverge(tmp_path: Path) 
     root = _fixture(tmp_path)
     path = root / "governance/gate-contracts.yml"
     payload = yaml.safe_load(path.read_text(encoding="utf-8"))
-    payload["claim_model"]["non_proof_dependencies"] = []
+    payload["claim_model"].pop("non_proof_dependencies")
     path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
 
     with pytest.raises(PublicContractError, match="differs"):
