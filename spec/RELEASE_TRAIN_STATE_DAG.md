@@ -835,6 +835,8 @@ the missing derivation is a product defect and execution stops at that owner.
 | base advanced or stacked PR | provider base/head and merge-base classification | derive exact rebase/reconstruction or closed alternate lane | new exact candidate or typed terminal result | caller-selected base, destructive ancestry, ambiguous merge relationship |
 | controller current | installed and target controller identities are exact and normalized | continue ordinary evidence planning | certifying PR or exact-main path | identity disagreement, missing artifact custody, recovery residue |
 | controller pending rotation | installed N parses candidate state and authenticates exact N+1 target/artifact | invoke the single routine transition owner | bootstrap/probe/confirm/install/normalize outcome | manual pin/install, incompatible N, artifact/subject/run mismatch, evidence certification before normalization |
+| controller transport expansion under installed N | installed N requires the exact provider-built target as a pre-materialized directory while candidate N+1 also understands provider-resolved materialization | retain the legacy exact-run download/build projection until N+1 is installed; N+1 accepts and authenticates either exact pre-materialized custody or its provider-resolved equivalent | one ordinary N/N+1 rotation with identical target bytes and no candidate authority | removing the installed-N input before rotation, accepting unverified local bytes, downloading a different run/attempt, or activating optimized routing during expansion |
+| controller transport activation under installed N+1 | ordinary-current custody proves installed N+1 understands provider-resolved target materialization and typed no-transition before byte retrieval | data-only graph activation suppresses no-transition build/upload/download and lets the installed controller resolve exact pending target bytes | pending rotations still authenticate one exact provider artifact; current topology emits no-transition without target bytes | activation before N+1 installation, missing provider digest, candidate-selected target, or another trusted-runtime change hidden in activation |
 | controller active, post-rotation certification pending | immutable active-transition callback, exact rotation/admission run and attempt, current main, authenticated provider-effective chain | validate the callback transition against the already-resolved chain once, then request exactly one provider-native rerun of its bound admission | fresh exact-main attempt under installed N+1; release authority remains false | repository-wide duplicate receipt scans, callback/chain disagreement, superseded main, missing active receipt, dispatch exceeding its governed deadline |
 | no controller transition | canonical applicability proves target equals installed and no recovery state exists | emit a typed no-transition result | ordinary evidence path | generic `inapplicable`, missing identity, alternate dispatcher without exact proposition |
 | PR evidence | affected proof set, exact proof bundles, partition plan, session and producer identities | reuse exact applicable proofs and execute only remaining partitions | complete authenticated claim inventory | broadened proposition, overlap/gap, stale proof, local authority substituted for provider authority |
@@ -1219,6 +1221,14 @@ workitem during PR progress; the phase catalog supplies its summary.  Submit
 derives the PR title from those authenticated fields.  Commit order, branch
 names and free-form operator prose are never title authority, and ambiguity
 rejects before evidence or provider mutation.
+
+Controller transport follows the same expand-then-activate rule as every
+trusted-runtime contract.  The compatibility expansion must preserve installed
+N's pre-materialized artifact input while teaching N+1 to accept that exact
+provider-authenticated directory or resolve the same artifact itself.  Only
+after ordinary-current custody proves N+1 installed may canonical graph data
+stop unconditional no-transition build/download.  A workflow projection may
+not consume an N+1 runtime behavior while it still invokes installed N.
 
 #### Outward construction
 
