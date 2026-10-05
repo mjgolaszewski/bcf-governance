@@ -175,6 +175,7 @@ def test_cheap_custody_preflight_executes_real_no_transition_consumer() -> None:
         python_executable=Path(sys.executable),
     )
     assert proof["no_transition_callback_probe"] == "no_transition"
+    assert proof["managed_adopter_contracts"] == ["1.0", "3.0"]
 
 
 def _custody_archive(*, extra: bool = False) -> bytes:
