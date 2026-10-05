@@ -830,12 +830,20 @@ the missing derivation is a product defect and execution stops at that owner.
 | authored phase contradictory | same authored inputs disagree before any generator or evidence allocation | stop with typed consistency reasons and zero mutation | none | any continuation, worktree mutation, commit, adopter request, or expensive subprocess |
 | stale projection only | authored state is exact; a derived digest differs | execute the dependency-ordered canonical reconcile closure | exact fixed point | caller-selected stage order, unresolved dependency, non-convergence |
 | PR candidate | repository/base/head/commit/tree, installed controller, policy, protection, lifecycle proposition | derive the prospective train and affected proof set | exact candidate proof requiring provider authority | moved base/head, dirty or changed candidate, ambiguous mapping, incompatible installed controller |
+| governed candidate title | canonical lifecycle evaluation plus exactly one governed workitem identity and summary | derive `<workitem-id>: <summary>` from the authenticated phase catalog before provider mutation | one stable title independent of commit order or commit prose | free-form title authority, last-commit subject fallback, absent/ambiguous workitem, target/catalog mismatch, title truncation |
+| governed candidate title ambiguous | PR progress has zero or multiple active workitems, or bounded target metadata differs from the catalog | stop before prospective evidence or provider mutation | typed candidate-intent error only | asking the agent to invent prose, selecting the newest commit, branch-name heuristics, silently choosing one workitem |
 | base advanced or stacked PR | provider base/head and merge-base classification | derive exact rebase/reconstruction or closed alternate lane | new exact candidate or typed terminal result | caller-selected base, destructive ancestry, ambiguous merge relationship |
 | controller current | installed and target controller identities are exact and normalized | continue ordinary evidence planning | certifying PR or exact-main path | identity disagreement, missing artifact custody, recovery residue |
 | controller pending rotation | installed N parses candidate state and authenticates exact N+1 target/artifact | invoke the single routine transition owner | bootstrap/probe/confirm/install/normalize outcome | manual pin/install, incompatible N, artifact/subject/run mismatch, evidence certification before normalization |
 | controller active, post-rotation certification pending | immutable active-transition callback, exact rotation/admission run and attempt, current main, authenticated provider-effective chain | validate the callback transition against the already-resolved chain once, then request exactly one provider-native rerun of its bound admission | fresh exact-main attempt under installed N+1; release authority remains false | repository-wide duplicate receipt scans, callback/chain disagreement, superseded main, missing active receipt, dispatch exceeding its governed deadline |
 | no controller transition | canonical applicability proves target equals installed and no recovery state exists | emit a typed no-transition result | ordinary evidence path | generic `inapplicable`, missing identity, alternate dispatcher without exact proposition |
 | PR evidence | affected proof set, exact proof bundles, partition plan, session and producer identities | reuse exact applicable proofs and execute only remaining partitions | complete authenticated claim inventory | broadened proposition, overlap/gap, stale proof, local authority substituted for provider authority |
+| no prior proof bundle | exact affected-proof set has no authenticated source reference for a required proposition | execute the canonical producer once and emit one content-addressed proof bundle | new exact provider proof plus compact consumption accounting | treating absence as unaffected, creating a synthetic receipt, or repeating an unchanged proof after a concurrent exact bundle becomes available |
+| local proof bundle exact | exact command/toolchain/input/projection/dependency/subject digests match but authority class is local | reuse only for local prospective observation; retain provider-required disposition | local wall-clock may be avoided without creating provider, certification, merge, or release authority | local result satisfies a provider-authority claim, authority class omitted, consumer broadens proposition |
+| provider proof bundle exact and applicable | source receipt and immutable provider artifact reference, exact proof identity, current affected-proof closure, qualification/freshness and authority class all match | independently authenticate the source and consume the exact proposition without re-execution | provider-backed reuse receipt bound to the consuming session | candidate self-assertion, copied raw bytes without source custody, wrong command/toolchain/input/projection/dependency/subject/controller/policy/producer/verifier |
+| provider proof bundle exact but inapplicable | authenticated source exists but any applicability identity differs or the proposition is outside the affected-proof frontier | record one typed recomputation reason and execute the canonical producer | fresh proof for only the invalidated proposition | partial identity matching, broad gate-level reuse, stale qualification, guessed equivalence |
+| compact proof reference unresolved | immutable reference is missing, expired, redacted, unauthorized, ambiguous, digest-mismatched or unreachable | fail closed at the earliest consumer able to decide source custody; execute only when the contract classifies absence as ordinary cache miss | typed failure or canonical recomputation according to the closed applicability class | omission treated as empty, reference relabeling, reconstructed output accepted as original bytes |
+| proof consumption accounting | exact session plan, affected-proof set and selected source/new proof identities | emit every proposition as reused or recomputed with one canonical reason | exact union of required propositions with no overlap | aggregate-only counts, missing reason, duplicated proposition, timing used as authority |
 | affected-proof closure exact | base/candidate subjects, canonical claim model, semantic owners, generated projections, lifecycle edges, mutation controls and proof dependencies all have exact digests | classify every required proof as `required`, `demonstrably_unaffected`, or `ambiguous_requires_execution`, then close required groups over producer dependencies | one hash-bound complete affected-proof set consumed by planning and independently checked by truth | omitted proof, duplicate classification, stale owner/model digest, unknown path, unresolved projection, incomplete dependency edge, consumer-selected exemption |
 | affected-proof ownership ambiguous | an input path, generated projection, lifecycle transition, mutation control or proof edge cannot be mapped uniquely to canonical owners and claims | expand every reachable ambiguous proof to `ambiguous_requires_execution` before scheduling | conservative execution with no reuse authority inferred from ambiguity | treating ambiguity as unaffected, documentation-name heuristics, caller-authored affected list, silent fallback |
 | affected-proof omission at truth | authenticated evidence exists but the bound affected-proof set omits or marks unaffected a claim independently reachable from exact candidate inputs | reject the evidence session and certification | typed incomplete-affected-proof failure only | trusting planner completeness, laundering through another grouped receipt, release or successor authority |
@@ -1133,6 +1141,102 @@ evidence.  A payload-specific exception is valid only when its assurance
 proposition requires original-byte preservation; it never permits unbounded
 per-run duplication.  P30-P0-04 begins with an audit of these existing
 producers before introducing persistent proof reuse.
+
+#### Current artifact-flow audit and required correction
+
+The P30-P0-03 custody train provides the reference inventory for REUSE.  PR
+run `37263756475/1` stored the original four evidence shards once (about
+`907 KiB` compressed in aggregate), plus compact session and truth artifacts.
+Exact-main `37266301651/1` correctly reused those proofs semantically, but its
+prior-evidence transport stored both the original provider archives and
+expanded copies again (`1,709,935` bytes), and it built another controller
+bundle (`3,062,742` bytes) even though the authenticated controller decision
+was `controller_current/no_transition`.  Exact-main shard outputs were already
+compact reference receipts (about `2 KiB` each).  The duplicate transport and
+no-transition controller bundle are representation defects; the successful
+reuse decision is not.
+
+| Producer surface | Canonical bytes that must survive | Representation after REUSE | Consumer and authority boundary |
+| --- | --- | --- | --- |
+| local prospective producer | content-addressed receipt, invocation/input/dependency/projection digests and local authority class | local proof cache keyed by the complete proof identity; no provider claim | local prospective only; provider consumers reject local authority |
+| PR evidence producer | original receipt and only raw output whose proposition requires original-byte verification | one immutable provider artifact; compact proof-bundle manifest references exact artifact/member digests | trusted PR finalizer reauthenticates provider/source bytes before certification |
+| prior-evidence transport | source run/attempt/workflow/artifact/member identities, receipt digests, protection/controller custody and applicability inputs | manifest and immutable content references only; no embedded archive plus expanded duplicate | planner may use provisional materialization; trusted finalizer independently resolves and authenticates the same references |
+| exact-main evidence | consuming session, reuse attestations and any newly executed receipts | compact reuse/recompute accounting plus new bytes only for recomputed propositions | exact-main finalizer recomputes applicability from authenticated source and current subjects |
+| vulnerability/SBOM producer | normalized finding inventory, scanner/toolchain/database identity and result digest; original scanner output only when an independent verifier requires it | compact normalized receipt plus one content-addressed raw object when required | claim resolver consumes normalized truth; verifier resolves raw object by digest, never a per-run copied scanner tree |
+| current controller custody | installed controller identity, provider artifact coordinates and bundle digest | compact custody reference; do not rebuild/upload target bytes for a typed no-transition result | rotation owner resolves existing installed artifact; pending rotation alone produces a new bundle |
+| finalizer/publisher | exact certification proposition, subject, producer/source proof references, controller custody and run/attempt | compact bundle of manifests and digests; no copied evidence payload | publisher authenticates finalizer bundle and cannot broaden scope |
+
+The proof identity is one canonical tuple, not consumer-selected fields:
+
+```text
+proof identity
+  = proposition/claim and execution-group identity
+  + normalized command and environment contract
+  + interpreter/toolchain/database locks
+  + exact semantic inputs and generated projections
+  + dependency-closure and affected-proof digests
+  + source/base/candidate/tree identities
+  + controller/policy/protection identities where applicable
+  + producer/verifier workflow, run, attempt and artifact-member identities
+  + qualification, freshness and authority class
+```
+
+Applicability is closed: an exact tuple admits reuse; a known mismatch emits
+the one typed recomputation reason and executes; malformed, ambiguous,
+unresolvable or authority-conflicting identity fails closed.  Reuse never
+changes the proposition or authority class.
+
+#### REUSE producer-to-consumer DAG
+
+```text
+authenticated source proof artifacts
+  -> compact content-addressed proof-bundle compiler
+     -> affected-proof intersection and exact applicability resolver
+        -> local prospective planner (local authority only)
+        -> PR session planner (provisional decision)
+           -> remaining PR producers
+              -> PR truth
+                 -> trusted PR finalizer independently resolves source refs
+                    -> bcf/pr-certification
+        -> exact-main admission authenticates merged PR proof bundle
+           -> remaining exact-main producers
+              -> exact-main truth
+                 -> trusted finalizer independently recomputes applicability
+                    -> scoped status publisher
+```
+
+No consumer selects a utility or remembers an order.  The affected-proof set
+feeds the single applicability owner; its result feeds the existing planner,
+producer fan-out, truth and finalizers.  Candidate/local decisions are
+provisional.  Only the existing trusted finalizers may upgrade provider-backed
+proof references into certification authority.
+
+Candidate submission identity follows the same rule.  The canonical lifecycle
+evaluation identifies either the exact bounded target or the sole active
+workitem during PR progress; the phase catalog supplies its summary.  Submit
+derives the PR title from those authenticated fields.  Commit order, branch
+names and free-form operator prose are never title authority, and ambiguity
+rejects before evidence or provider mutation.
+
+#### Outward construction
+
+```text
+invariants
+  exact proposition; exact complete identity; authority never upgrades by copy;
+  ambiguity executes or fails closed; original bytes stored once
+    -> primitives
+       proof identity, content/member digest, immutable reference, authority class,
+       applicability decision/reason, consumption record
+      -> contracts
+         proof-bundle schema, reference materialization, closed applicability,
+         exact reuse/recompute accounting, canonical candidate intent/title
+        -> producers
+           local gates, PR producers, prior-evidence compiler, exact-main admission,
+           controller builder only when transition is required
+          -> consumers
+             prospective submit, PR planner/truth/finalizer, exact-main planner/truth/
+             finalizer/publisher, SPLINTER remainder planner
+```
 
 ### P31 workitem DAG
 
