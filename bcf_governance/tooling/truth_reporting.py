@@ -12,6 +12,7 @@ from typing import Any
 import yaml  # type: ignore[import-untyped]
 
 from .evidence_claim_resolution import eligible_claim_receipts, eligible_receipts, verified_candidate
+from .evidence_session_schema import is_planned_session
 
 
 REQUIRED_DIRECT_CLAIMS = {
@@ -48,7 +49,7 @@ def current_session_plan(evidence_dir: Path, current: dict[str, Any]) -> dict[st
             continue
         if (
             isinstance(payload, dict)
-            and payload.get("schema_version") == "2.0"
+            and is_planned_session(payload)
             and payload.get("subject")
             == {"commit_sha": current["commit_sha"], "tree_sha": current["tree_sha"]}
         ):

@@ -17,6 +17,10 @@ from .ci_github_identity import GitHubControllerError, MainIdentity
 from .ci_prior_evidence_auth import authenticate_prior_transport
 from .evidence_reuse_attestations import compose_reuse_attestations, planned_reuse
 from .evidence_execution import EvidenceError
+from .evidence_session_schema import (
+    EvidenceSessionSchemaError,
+    load_evidence_session_schema,
+)
 from .prior_evidence_transport import _archive_files
 from .provider_reuse_closure import trusted_main_claim_context
 
@@ -55,14 +59,11 @@ def _same_admission_plan(
         raise GitHubControllerError("reuse session manifest path is not exact")
     try:
         plan = json.loads(encoded)
-        schema = json.loads(
-            (packaged_repo_root() / "schemas/evidence-session.schema.json")
-            .read_text(encoding="utf-8")
-        )
+        schema = load_evidence_session_schema(packaged_repo_root(), plan)
         Draft202012Validator(schema).validate(plan)
-    except (OSError, ValueError, ValidationError) as exc:
+    except (OSError, ValueError, ValidationError, EvidenceSessionSchemaError) as exc:
         raise GitHubControllerError("reuse session manifest is invalid") from exc
-    if not isinstance(plan, dict) or plan.get("schema_version") != "2.0":
+    if not isinstance(plan, dict) or plan.get("schema_version") not in {"2.0", "3.0"}:
         raise GitHubControllerError("reuse session is not a v3 verification plan")
     producer = plan.get("producer")
     if (parts[0] != plan.get("session_id")

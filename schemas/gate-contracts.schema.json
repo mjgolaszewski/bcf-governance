@@ -68,6 +68,10 @@
             "items": {"$ref": "#/$defs/pathPattern"}
           }
         },
+        "non_proof_dependencies": {
+          "type": "array", "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
         "execution_groups": {
           "type": "object", "minProperties": 1,
           "additionalProperties": {

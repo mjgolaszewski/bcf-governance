@@ -14,6 +14,10 @@ import yaml
 
 from .release_versions import ReleaseVersionError, parse_release_version
 from .install_governance_pack import UPGRADE_PROJECT_OWNED_PATHS
+from .evidence_session_schema import (
+    EvidenceSessionSchemaError,
+    active_planned_session_version,
+)
 
 
 class PublicContractError(ValueError):
@@ -177,6 +181,10 @@ def validate_public_contracts(repo_root: Path) -> PublicContractInventory:
         migration = set(str(value) for value in contract["migration_only_versions"])
         if not migration.issubset(set(declared)) or contract["active_version"] in migration:
             raise PublicContractError(f"{contract_id} migration-only versions are inconsistent")
+    try:
+        active_planned_session_version(repo_root)
+    except EvidenceSessionSchemaError as exc:
+        raise PublicContractError(str(exc)) from exc
 
     graph = registry["ci_graph"]
     graph_payload = _mapping(_safe_path(repo_root, graph["canonical_path"]), yaml_document=True)

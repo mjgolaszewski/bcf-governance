@@ -7,17 +7,22 @@ module only evaluates those declarations; it is not a second claim registry.
 from __future__ import annotations
 
 from datetime import UTC, datetime
-import fnmatch
-import hashlib
-import json
 from pathlib import Path
-import re
 import subprocess
 from typing import Any, Iterable, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
 from .evidence_execution import EvidenceError
+from .affected_proof_closure import (
+    DEPENDENCY_CLASSES,
+    canonical_sha256 as _canonical_sha256,
+    changed_paths as _changed_paths,
+    derive_affected_proof_set,
+    matches as _matches,
+    patterns_for_claims as _patterns_for_claims,
+)
+from .evidence_session_schema import active_planned_session_version
 from .evidence_scheduling import (
     assign_duration_aware_shards,
     duration_estimates,
@@ -26,14 +31,6 @@ from .evidence_scheduling import (
     validate_group_dependencies,
 )
 
-
-DEPENDENCY_CLASSES = (
-    "subject",
-    "detector",
-    "test_population",
-    "toolchain",
-    "trust",
-)
 
 INVALIDATION_BY_CLASS = {
     "subject": ("subject_dependency_changed",),
@@ -56,13 +53,6 @@ def _git(repo_root: Path, *args: str, check: bool = True) -> str:
     return result.stdout.strip()
 
 
-def _canonical_sha256(value: object) -> str:
-    encoded = json.dumps(
-        value, sort_keys=True, separators=(",", ":"), ensure_ascii=True
-    ).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
-
-
 def load_claim_model(repo_root: Path) -> dict[str, Any]:
     path = repo_root / "governance/gate-contracts.yml"
     payload = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -80,6 +70,13 @@ def parse_claim_model(payload: object) -> dict[str, Any]:
     claims = model.get("claims")
     if not all(isinstance(value, dict) and value for value in (sets, groups, claims)):
         raise EvidenceError("claim model sets, groups, and claims must be nonempty")
+    non_proof = model.get("non_proof_dependencies", [])
+    if (
+        not isinstance(non_proof, list)
+        or len(non_proof) != len(set(non_proof))
+        or any(not isinstance(name, str) or name not in sets for name in non_proof)
+    ):
+        raise EvidenceError("claim model non-proof dependencies are invalid")
     claim_ids = set(claims)
     legacy_owners: dict[str, str] = {}
     grouped: set[str] = set()
@@ -201,21 +198,6 @@ def claims_for_legacy_gate(repo_root: Path, gate_id: str) -> list[str]:
     return sorted(direct)
 
 
-def _patterns_for_claims(
-    model: Mapping[str, Any], claim_ids: Iterable[str]
-) -> dict[str, list[str]]:
-    patterns: dict[str, set[str]] = {name: set() for name in DEPENDENCY_CLASSES}
-    sets = model["dependency_sets"]
-    for claim_id in claim_ids:
-        claim = model["claims"].get(claim_id)
-        if not isinstance(claim, dict):
-            raise EvidenceError(f"unknown claim {claim_id}")
-        for dependency_class in DEPENDENCY_CLASSES:
-            for set_name in claim["dependencies"][dependency_class]:
-                patterns[dependency_class].update(str(value) for value in sets[set_name])
-    return {name: sorted(values) for name, values in patterns.items()}
-
-
 def _tree_entries(repo_root: Path, ref: str = "HEAD") -> list[tuple[str, str]]:
     output = _git(repo_root, "ls-tree", "-r", "--full-tree", ref)
     entries: list[tuple[str, str]] = []
@@ -226,10 +208,6 @@ def _tree_entries(repo_root: Path, ref: str = "HEAD") -> list[tuple[str, str]]:
             raise EvidenceError("git tree inventory is malformed")
         entries.append((path, fields[2]))
     return entries
-
-
-def _matches(path: str, pattern: str) -> bool:
-    return pattern == "**" or fnmatch.fnmatchcase(path, pattern)
 
 
 def dependency_fingerprint(
@@ -485,51 +463,12 @@ def qualification_applicability(
     return True
 
 
-def _changed_paths(
-    repo_root: Path, prior_commit: str | None, prior_tree: str | None = None,
-) -> list[str] | None:
-    if not prior_commit:
-        return []
-    if prior_tree is not None and re.fullmatch(r"[a-f0-9]{40,64}", prior_tree) is None:
-        return None
-    source = prior_commit
-    commit_tree = subprocess.run(
-        ["git", "rev-parse", f"{prior_commit}^{{tree}}"], cwd=repo_root,
-        capture_output=True, text=True, check=False,
-    )
-    if commit_tree.returncode == 0:
-        if prior_tree is not None and commit_tree.stdout.strip() != prior_tree:
-            return None
-    else:
-        if prior_tree is None:
-            return None
-        tree_type = subprocess.run(
-            ["git", "cat-file", "-t", prior_tree], cwd=repo_root,
-            capture_output=True, text=True, check=False,
-        )
-        if tree_type.returncode or tree_type.stdout.strip() != "tree":
-            return None
-        # A transported receipt can name an execution commit absent from this
-        # clone.  Git tree identity still permits an exact path diff; this
-        # planning fact alone never certifies reuse or provider custody.
-        source = prior_tree
-    result = subprocess.run(
-        ["git", "diff", "--name-only", source, "HEAD"],
-        cwd=repo_root,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if result.returncode:
-        return None
-    return sorted(line for line in result.stdout.splitlines() if line)
-
-
 def plan_verification(
     repo_root: Path,
     prior_receipts: Iterable[Mapping[str, Any]] = (),
     *,
     preflight_claims: Iterable[str] = (),
+    affected_proof: bool = False,
 ) -> dict[str, Any]:
     model = load_claim_model(repo_root)
     required = required_claims(repo_root)
@@ -546,32 +485,57 @@ def plan_verification(
     }
     prior_commits = sorted({commit for commit, _ in prior_subjects})
     prior_subject = {"commit_sha": prior_commits[0]} if len(prior_commits) == 1 else None
-    change_sets = [
-        _changed_paths(repo_root, commit, tree)
-        for commit, tree in sorted(prior_subjects, key=lambda value: (value[0], value[1] or ""))
-    ]
-    changed = sorted({path for values in change_sets if values for path in values})
-    change_ambiguity = (
-        len(prior_subjects) != len(prior_commits)
-        or any(values is None for values in change_sets)
-    )
-    routable_claims = [
-        claim_id for claim_id in required
-        if model["execution_groups"][model["claims"][claim_id]["execution_group"]].get(
-            "captured_by_preflight"
-        ) is not True
-    ]
-    declared_patterns = _patterns_for_claims(model, routable_claims)
-    all_patterns = [pattern for values in declared_patterns.values() for pattern in values]
-    known_nonbehavior = lambda path: path.startswith(("docs/", "plans/", "phases/", "audits/")) or path in {
-        "README.md", "CHANGELOG.md", "MEMORY.yml"
-    }
-    unknown_paths = [
-        path for path in changed
-        if not any(_matches(path, pattern) for pattern in all_patterns)
-        and not known_nonbehavior(path)
-    ]
-    conservative_fallback = change_ambiguity or bool(unknown_paths)
+    affected = None
+    if affected_proof:
+        non_proof = model.get("non_proof_dependencies")
+        if not isinstance(non_proof, list):
+            raise EvidenceError(
+                "active affected-proof planning requires non-proof dependencies"
+            )
+        affected = derive_affected_proof_set(
+            repo_root,
+            model,
+            required,
+            current_subject=current,
+            prior_subjects=prior_subjects,
+        )
+        changed = list(affected["expanded_changed_paths"])
+        ambiguous_claims = {
+            str(row["claim_id"])
+            for row in affected["classifications"]
+            if row["classification"] == "ambiguous_requires_execution"
+        }
+        change_ambiguity = False
+        unknown_paths: list[str] = []
+    else:
+        change_sets = [
+            _changed_paths(repo_root, commit, tree)
+            for commit, tree in sorted(
+                prior_subjects, key=lambda value: (value[0], value[1] or "")
+            )
+        ]
+        changed = sorted({path for values in change_sets if values for path in values})
+        change_ambiguity = (
+            len(prior_subjects) != len(prior_commits)
+            or any(values is None for values in change_sets)
+        )
+        routable_claims = [
+            claim_id for claim_id in required
+            if model["execution_groups"][model["claims"][claim_id]["execution_group"]].get(
+                "captured_by_preflight"
+            ) is not True
+        ]
+        declared_patterns = _patterns_for_claims(model, routable_claims)
+        all_patterns = [pattern for values in declared_patterns.values() for pattern in values]
+        known_nonbehavior = lambda path: path.startswith(
+            ("docs/", "plans/", "phases/", "audits/")
+        ) or path in {"README.md", "CHANGELOG.md", "MEMORY.yml"}
+        unknown_paths = [
+            path for path in changed
+            if not any(_matches(path, pattern) for pattern in all_patterns)
+            and not known_nonbehavior(path)
+        ]
+        ambiguous_claims = set(required) if change_ambiguity or unknown_paths else set()
     identity_counts: dict[str, int] = {}
     for receipt in receipts:
         evidence_id = receipt.get("evidence_id")
@@ -599,7 +563,7 @@ def plan_verification(
             if receipt.get("evidence_id") in colliding_ids:
                 candidates.append((receipt, ["dependency_closure_ambiguous"]))
                 continue
-            if conservative_fallback:
+            if claim_id in ambiguous_claims:
                 candidates.append((receipt, ["dependency_closure_ambiguous"]))
                 continue
             applicable, reasons = receipt_applicability(repo_root, receipt, claim_id)
@@ -678,7 +642,7 @@ def plan_verification(
     nodes = assign_duration_aware_shards(
         nodes, duration_estimates(receipts, model)
     )
-    return {
+    result = {
         "current_subject": current,
         "prior_subject": prior_subject,
         "changed_paths": changed,
@@ -726,6 +690,14 @@ def plan_verification(
             ),
         ],
     }
+    if affected is not None:
+        result["affected_proof_set"] = affected
+        if ambiguous_claims:
+            result["decision_explanations"].append(
+                "expanded because affected-proof reachability was ambiguous for: "
+                + ", ".join(sorted(ambiguous_claims))
+            )
+    return result
 
 
 def load_prior_receipts(
@@ -764,6 +736,7 @@ def verification_plan(
                 "source-syntax-format",
                 "semantic-ownership-valid",
             ),
+            affected_proof=active_planned_session_version(repo_root) == "3.0",
         )
     release = profile.get("release_gate_profile") if isinstance(profile, dict) else None
     raw_gates = release.get("gates") if isinstance(release, dict) else None

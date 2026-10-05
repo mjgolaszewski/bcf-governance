@@ -836,6 +836,9 @@ the missing derivation is a product defect and execution stops at that owner.
 | controller active, post-rotation certification pending | immutable active-transition callback, exact rotation/admission run and attempt, current main, authenticated provider-effective chain | validate the callback transition against the already-resolved chain once, then request exactly one provider-native rerun of its bound admission | fresh exact-main attempt under installed N+1; release authority remains false | repository-wide duplicate receipt scans, callback/chain disagreement, superseded main, missing active receipt, dispatch exceeding its governed deadline |
 | no controller transition | canonical applicability proves target equals installed and no recovery state exists | emit a typed no-transition result | ordinary evidence path | generic `inapplicable`, missing identity, alternate dispatcher without exact proposition |
 | PR evidence | affected proof set, exact proof bundles, partition plan, session and producer identities | reuse exact applicable proofs and execute only remaining partitions | complete authenticated claim inventory | broadened proposition, overlap/gap, stale proof, local authority substituted for provider authority |
+| affected-proof closure exact | base/candidate subjects, canonical claim model, semantic owners, generated projections, lifecycle edges, mutation controls and proof dependencies all have exact digests | classify every required proof as `required`, `demonstrably_unaffected`, or `ambiguous_requires_execution`, then close required groups over producer dependencies | one hash-bound complete affected-proof set consumed by planning and independently checked by truth | omitted proof, duplicate classification, stale owner/model digest, unknown path, unresolved projection, incomplete dependency edge, consumer-selected exemption |
+| affected-proof ownership ambiguous | an input path, generated projection, lifecycle transition, mutation control or proof edge cannot be mapped uniquely to canonical owners and claims | expand every reachable ambiguous proof to `ambiguous_requires_execution` before scheduling | conservative execution with no reuse authority inferred from ambiguity | treating ambiguity as unaffected, documentation-name heuristics, caller-authored affected list, silent fallback |
+| affected-proof omission at truth | authenticated evidence exists but the bound affected-proof set omits or marks unaffected a claim independently reachable from exact candidate inputs | reject the evidence session and certification | typed incomplete-affected-proof failure only | trusting planner completeness, laundering through another grouped receipt, release or successor authority |
 | PR certified | exact evidence, truth, finalizer, publisher and protected context | derive the legal merge method and protected merge action | merged exact tree | candidate self-certification, bypass, wrong run/attempt, unapproved merge method |
 | exact main | admitted merge commit/tree and authenticated predecessor | resolve reuse, controller lifecycle, bounded or terminal proposition | exact-main truth for the declared proposition | branch-head rewriting of admitted identity, stale/missing subject, incomplete claims |
 | bounded workitem truth | exact target, predecessor closure, evidence and eligible successor | finalizer and publisher preserve the bounded proposition | only the declared successor becomes eligible | phase/release authority inferred from bounded success, erased target, unrelated successor |
@@ -983,6 +986,116 @@ profiles before returning the aggregate result. A failed first profile cannot
 erase the second profile or its diagnostic. This correction belongs to
 P30-P0-02 because P30-P0-01 already proved provider-effective scheduled
 custody and retained the first failure artifacts.
+
+### P30-P0-03 PRUNE affected-proof state machine
+
+PRUNE derives assurance reachability before receipt reuse. It does not decide
+whether an existing receipt is applicable; that remains the subsequent REUSE
+stage. One canonical closure binds the exact base and candidate subjects,
+claim-model digest, semantic-ownership digest, generated-projection digest,
+lifecycle graph, mutation-control inventory, and proof-dependency graph.
+
+```text
+EXACT INPUTS
+  base/candidate commit + tree
+  canonical claim/group/producer model
+  semantic owners + generated projection provenance
+  lifecycle/workitem edges + mutation controls + proof dependencies
+    -> MAP CHANGED INPUTS
+       unique canonical owner and every generated/dependent projection
+       unknown, stale, missing or competing ownership becomes ambiguity
+    -> CLOSE REACHABILITY
+       owner -> projection -> lifecycle/control -> claim -> execution group
+       execution group -> declared producer dependencies
+    -> CLASSIFY EVERY REQUIRED PROOF EXACTLY ONCE
+       required
+       demonstrably_unaffected
+       ambiguous_requires_execution
+    -> BIND
+       canonical input digests + sorted classifications + reasons + edges
+       one deterministic affected_proof_set_sha256
+    -> CONSUME
+       planner executes required and ambiguous groups
+       later REUSE may satisfy only propositions inside that frontier
+       truth independently recomputes reachability and rejects omissions
+```
+
+`demonstrably_unaffected` requires a complete non-reachability proof against
+the same exact canonical graph; absence of a mapping is never such a proof.
+Preflight-only observations remain structural inputs and cannot masquerade as
+behavioral evidence. Grouped receipts cannot satisfy unrelated claims, and a
+producer dependency expands the current-run group closure without changing
+the per-claim classification. The public verification plan keeps its existing
+fields while adding the bound affected-proof set; scheduling remains owned by
+`evidence_scheduling.py`, and receipt qualification/reuse remains a distinct
+consumer rather than an input to reachability.
+
+The outward construction is:
+
+```text
+invariants
+  every required proof is classified exactly once
+  uncertainty expands execution and never grants reuse or authority
+  truth independently rejects an omitted reachable claim
+    -> primitives
+       exact subject and canonical-model digests
+       owner/projection/lifecycle/control/claim/group dependency edges
+       closed classification enum and canonical affected-set digest
+         -> contracts
+            affected-proof input and output validators
+            total classification and non-reachability proof contract
+            planner/truth recomputation parity contract
+              -> producers
+                 canonical ownership and generated-provenance readers
+                 affected-proof closure compiler
+                 independent truth reachability verifier
+                   -> consumers
+                      prospective and PR evidence planners
+                      exact-main planning
+                      REUSE applicability frontier
+                      SPLINTER remainder partitioning
+                      truth, finalizer and successor/release consumers
+```
+
+The coherent #346 extraction is the changed-input and affected-proof closure
+responsibility currently embedded in `evidence_planning.py`; the extraction
+must reduce that owner's pressure without introducing another claim registry.
+
+#### PRUNE evidence-session N/N+1 compatibility matrix
+
+The affected-proof set crosses the evidence-session boundary.  Its contract is
+therefore expanded before activation: controller N continues to emit and
+validate active session v2; controller N+1 must understand the complete dormant
+session-v3 proposition before v3 can become active.  Merely loading the v3 JSON
+schema is insufficient—every trusted consumer of planned-session semantics must
+already preserve and validate the v3 plan.
+
+| State | Session producer | Trusted consumers | Required result | Forbidden result |
+| --- | --- | --- | --- | --- |
+| v2 active, v3 absent under N | active allocator emits v2 | schema dispatcher, receipt binding, truth session validator and current-plan selector consume v2 | ordinary-current behavior unchanged | implicit v3 activation |
+| v2 active, v3 dormant under N+1 candidate | allocator still emits v2 | N+1 schema dispatcher, receipt binding, truth session validator and current-plan selector can consume v2 and fully validate v3 | pending rotation remains noncertifying; provider-built N+1 is installable | treating v3 as legacy, ignoring its affected-proof set, or accepting it without independent plan checks |
+| v2 active after N+1 installation | allocator still emits v2 | installed N+1 preserves exact v2 behavior | ordinary-current exact-main succeeds before activation | activation inferred from installation |
+| v3 active under installed N+1 | allocator emits v3 with canonical affected-proof set | planner emits it; session binding preserves it; truth selects the exact v3 plan and independently recomputes reachability | affected proof omissions, digest drift, wrong subject/session/producer or inventory mismatch fail closed | a second runtime change or controller rotation needed merely to understand v3 |
+| v3 presented to incompatible N | candidate state names active v3 but installed controller lacks complete v3 semantics | installed-controller compatibility owner | reject before evidence fan-out | classifying as rotatable when N cannot authorize N+1 from the candidate state |
+| active v3 removed or mutated | active public contract/schema or required affected-proof field differs | compatibility, session schema and truth consumers | fail closed | fallback to v2 or legacy inventory semantics |
+
+The canonical planned-session consumer contract covers both v2 and v3.  For
+either version, gate inventory is derived from the bound execution DAG, the
+required-claim inventory is present, and current-plan selection binds the exact
+subject and rejects competing session bytes.  V3 additionally requires the
+hash-bound affected-proof set and independent truth recomputation.  Activation
+may change only the governed public active-version and claim-model data after
+N+1 is installed.  The already-installed selector then chooses the dormant v3
+planner and allocator; activation must not change trusted producer or consumer
+code bytes, nor require N+2 merely to execute the declared contract.
+Subject comparison uses the affected-proof owner's exact commit/tree
+projection.  Additive canonical subject metadata is preserved by its owning
+consumer but cannot alter this identity; missing, malformed or wrong
+commit/tree remains a closed failure.
+Both the active and dormant successor session schemas are members of the
+canonical controller schema inventory before rotation.  Their mutation or
+removal therefore changes trusted runtime closure and cannot be accepted under
+an older installed controller merely because the successor is still dormant.
 
 ### P31 workitem DAG
 

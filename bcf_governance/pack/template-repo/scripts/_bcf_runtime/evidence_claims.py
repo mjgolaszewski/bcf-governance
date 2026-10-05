@@ -18,6 +18,7 @@ from .evidence_planning import (
     parse_claim_model,
 )
 from .evidence_claim_resolution import claim_gate_projection, load_claim_gate_projection
+from .evidence_session_schema import is_planned_session
 
 
 def _qualification_digest(material: Any) -> str:
@@ -144,7 +145,7 @@ def claim_capture(
     if not claim_ids:
         raise EvidenceError(f"gate {target} does not produce a declared claim")
     references: list[dict[str, str]] = []
-    if session is not None and session.payload.get("schema_version") == "2.0":
+    if session is not None and is_planned_session(session.payload):
         dag = session.payload.get("execution_dag")
         nodes = dag.get("nodes") if isinstance(dag, dict) else []
         node = next((value for value in nodes if isinstance(value, dict)

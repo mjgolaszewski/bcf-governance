@@ -18,10 +18,15 @@ from bcf_governance.tooling.evidence_planning import (
     receipt_producing_legacy_gates,
     receipt_applicability,
     load_prior_receipts,
+    verification_plan,
 )
 from bcf_governance.tooling.evidence_execution import EvidenceError
 from bcf_governance.tooling.ci_github_bundle import canonical_json
 from bcf_governance.tooling.evidence_claims import qualification_equivalence
+from bcf_governance.tooling.evidence_sessions import (
+    allocate_session,
+    local_producer_identity,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -57,6 +62,14 @@ def _repo(tmp_path: Path, *, scope: str = "normal") -> Path:
         "profile": {"selected": "regulated" if scope == "regulated" else "standard"},
     }
     _write(root / "governance-profile.yml", yaml.safe_dump(profile))
+    _write(
+        root / "governance/public-contracts.yml",
+        yaml.safe_dump({
+            "contracts": {
+                "evidence_session": {"active_version": "2.0"},
+            },
+        }),
+    )
     claims = {
         "governance-valid": {
             "truth": "current preflight is valid",
@@ -130,6 +143,57 @@ def _repo(tmp_path: Path, *, scope: str = "normal") -> Path:
     subprocess.run(["git", "add", "."], cwd=root, check=True)
     subprocess.run(["git", "commit", "-qm", "base"], cwd=root, check=True)
     return root
+
+
+def test_active_session_contract_selects_dormant_affected_planner(
+    tmp_path: Path,
+) -> None:
+    root = _repo(tmp_path)
+    subject = {
+        "commit_sha": subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=root, text=True
+        ).strip(),
+        "tree_sha": subprocess.check_output(
+            ["git", "rev-parse", "HEAD^{tree}"], cwd=root, text=True
+        ).strip(),
+    }
+    assert "affected_proof_set" not in verification_plan(root, subject, [])
+
+    contracts_path = root / "governance/public-contracts.yml"
+    contracts = yaml.safe_load(contracts_path.read_text(encoding="utf-8"))
+    contracts["contracts"]["evidence_session"]["active_version"] = "3.0"
+    contracts_path.write_text(yaml.safe_dump(contracts), encoding="utf-8")
+    gate_path = root / "governance/gate-contracts.yml"
+    gates = yaml.safe_load(gate_path.read_text(encoding="utf-8"))
+    gates["claim_model"]["dependency_sets"]["editorial"] = ["docs/**"]
+    gates["claim_model"]["non_proof_dependencies"] = ["editorial"]
+    gate_path.write_text(yaml.safe_dump(gates, sort_keys=False), encoding="utf-8")
+    subprocess.run(["git", "commit", "-qam", "activate session v3"], cwd=root, check=True)
+    subject = {
+        "commit_sha": subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=root, text=True
+        ).strip(),
+        "tree_sha": subprocess.check_output(
+            ["git", "rev-parse", "HEAD^{tree}"], cwd=root, text=True
+        ).strip(),
+    }
+
+    plan = verification_plan(root, subject, [])
+    assert plan["affected_proof_set"]["current_subject"] == subject
+    assert {
+        row["claim_id"] for row in plan["affected_proof_set"]["classifications"]
+    } == set(plan["required_claims"])
+    targets = [str(node["producer"]) for node in plan["execution_dag"]["nodes"]]
+    session = allocate_session(
+        root,
+        tmp_path / "evidence",
+        targets,
+        expected_producers=["local"],
+        producer_identity=local_producer_identity(root),
+        verification_plan=plan,
+    )
+    assert session.payload["schema_version"] == "3.0"
+    assert session.payload["affected_proof_set"] == plan["affected_proof_set"]
 
 
 def _receipt(root: Path, claims: list[str], *, freshness: int | None = None) -> dict:
