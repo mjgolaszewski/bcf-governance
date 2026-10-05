@@ -23,7 +23,9 @@ def _state(monkeypatch: pytest.MonkeyPatch) -> tuple[LocalPRContext, CandidateId
         "_canonical_inputs",
         lambda *_a, **_k: ("workitem", "P28-P0-04", "owner/repo"),
     )
-    monkeypatch.setattr(submit, "_candidate_title", lambda *_a, **_k: "candidate")
+    monkeypatch.setattr(
+        submit, "authored_candidate_title", lambda *_a, **_k: "candidate"
+    )
     monkeypatch.setattr(
         submit,
         "ensure_candidate_pull_request",

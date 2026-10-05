@@ -354,7 +354,7 @@
     },
     "schemas/prior-evidence-transport.schema.json": {
       "operation": "copy",
-      "sha256": "f3e71477d71611ee4c290cc708c49aeda9c73ba3976db45886d500630fd1c35a"
+      "sha256": "0e938ebd2bf4d82d57bc7f50fc97bfe155f99e7dcddded297440f8a1da25e884"
     },
     "schemas/product-certification.schema.json": {
       "installation_scope": "self_authority",
@@ -369,6 +369,10 @@
     "schemas/product-spec.schema.json": {
       "operation": "copy",
       "sha256": "354a2404471958e066bbab7e36194e31101ac3dd67a0d8bb4013ada734aae4db"
+    },
+    "schemas/proof-bundle.schema.json": {
+      "operation": "copy",
+      "sha256": "4439084a5186ecaeaccff913662db3e7e16ac102f58ea60f65bb9f27b17ded00"
     },
     "schemas/prospective-train-telemetry.schema.json": {
       "operation": "copy",
@@ -504,7 +508,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "149c49aca69fdac9b18da007e72f30282b75d9bf0e1384ac58a325e0c021a107"
+      "sha256": "abf526453bf59f03c6aa1c212a7cde6d7b05ecb6090019b4df0cb9b8fd8d45e7"
     },
     "scripts/_bcf_runtime/ci_candidate_pr.py": {
       "operation": "copy",
@@ -712,7 +716,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_post_merge.py": {
       "operation": "copy",
-      "sha256": "958c760e507d995fc47039bac6eb359136248d76c30cdafb7fddac93ed297cee"
+      "sha256": "0997b7f57ff69203fe0961880b417e9a7a3d3fee21e0f6bf0709175eb0f86ffe"
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
@@ -760,7 +764,7 @@
     },
     "scripts/_bcf_runtime/ci_prior_evidence_auth.py": {
       "operation": "copy",
-      "sha256": "7b969964ab9f0ad9b2cee8ed19bd068e7c4cc6467b18f39cbe6b40af255cd7c6"
+      "sha256": "e8441f3ba3ce393bf7fdec38de28e090b09d8119b0483787ecc1e94be907151b"
     },
     "scripts/_bcf_runtime/ci_recovery_frontier.py": {
       "operation": "copy",
@@ -956,7 +960,7 @@
     },
     "scripts/_bcf_runtime/governance_install/ci_graph.py": {
       "operation": "copy",
-      "sha256": "0eb53a50ef63aac36d3fec0987b83fd2e9f0418d445309717b52fe2c4c6dbaed"
+      "sha256": "648b05187c33384866d480070ffba7cdaff49a4a8d83e843ac96fdd5760329cf"
     },
     "scripts/_bcf_runtime/governance_install/cli.py": {
       "operation": "copy",
@@ -1123,11 +1127,15 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "57b787e306deb5ae08b6bca61a20654221cba543e543026cf3d87839ca51bab9"
+      "sha256": "79fb2b22ade2741be2530a20b58f608b97dd298cfce26637f772a271298d8fb7"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
       "sha256": "96f1e93b2780f493695923b03038b50e5d2d8525da55997bdc233c388546e781"
+    },
+    "scripts/_bcf_runtime/local_proof_bundles.py": {
+      "operation": "copy",
+      "sha256": "a9675224090af718602ddf1b318e83984fd9a4dbc14c11b6e97014645f15687c"
     },
     "scripts/_bcf_runtime/migrate_contracts.py": {
       "operation": "copy",
@@ -1151,15 +1159,15 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "9f0360197c9bdfeddcf87cc12dc370aaa986e6f8731ee498da410e32894dcdb5"
+      "sha256": "fc530c368ba4cd8b1035a460ef91874237f52f7750611096cc127ed2f0891f69"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",
-      "sha256": "3e5a8f3675ab1db8deca9a26878e0317f7917a4f9164adb248b7c7381fe188c0"
+      "sha256": "9f65098fdf910829d3d3577a14d4242df83bc884808215f10f8df5043d544477"
     },
     "scripts/_bcf_runtime/prior_evidence_transport.py": {
       "operation": "copy",
-      "sha256": "a0f043e406c058c212b1a5930aed36f0ca27590e670e57ef2d31b335461e6cf6"
+      "sha256": "347b5e7f843120404c8698eae6f9b8a5d5922d7df47713a322099e4448cd9eb1"
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",
@@ -1271,7 +1279,7 @@
     },
     "scripts/_bcf_runtime/routine_controller_provider.py": {
       "operation": "copy",
-      "sha256": "24ff1d837ed82af8a171f25cd35b1fe560784b2591e68f31cbcfb5cfc36eca17"
+      "sha256": "9bdfd97581ec1ba9aadd21722ba6d78496e253175a981d4cde540f1ff4e0f3c9"
     },
     "scripts/_bcf_runtime/routine_controller_rotation.py": {
       "operation": "copy",

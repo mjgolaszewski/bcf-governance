@@ -236,6 +236,48 @@ def authored_post_merge_scope(repo_root: Path) -> tuple[str, str | None]:
     )
 
 
+def authored_candidate_title(
+    repo_root: Path, *, mode: str, target: str | None
+) -> str:
+    """Derive the candidate title from the exact governed lifecycle proposition."""
+
+    try:
+        ledger = load_yaml_path(repo_root / "plans/phase-ledger.yml")
+        active = ledger["active_phase"]
+        phase_id = str(active["id"])
+        workitems = load_yaml_path(repo_root / str(active["workitems"]))["workitems"]
+    except (KeyError, TypeError, OSError) as exc:
+        raise CIGraphError("candidate lifecycle identity is incomplete") from exc
+    if not isinstance(workitems, list) or not all(
+        isinstance(item, dict) for item in workitems
+    ):
+        raise CIGraphError("candidate workitem inventory is invalid")
+
+    if mode == "workitem":
+        selected = [item for item in workitems if item.get("id") == target]
+    elif mode == "pr" and target is None:
+        selected = [
+            item
+            for item in workitems
+            if item.get("status") in {"IN_PROGRESS", "BLOCKED"}
+        ]
+    elif mode == "closure" and target is None:
+        return f"{phase_id}: certify terminal phase closure"
+    else:
+        raise CIGraphError("candidate evaluation proposition is invalid")
+    if len(selected) != 1:
+        raise CIGraphError("candidate evaluation proposition is not unique")
+    identity = selected[0].get("id")
+    summary = selected[0].get("summary")
+    if not isinstance(identity, str) or not identity or not isinstance(summary, str):
+        raise CIGraphError("candidate workitem identity is incomplete")
+    summary = summary.strip()
+    title = f"{identity}: {summary}"
+    if not summary or "\n" in title or len(title) > 256:
+        raise CIGraphError("candidate workitem title is invalid")
+    return title
+
+
 def _replace_caller_scope(
     value: Any, *, mode: str, target: str | None
 ) -> tuple[Any, bool]:

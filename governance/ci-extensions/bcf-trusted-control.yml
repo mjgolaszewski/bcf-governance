@@ -161,7 +161,7 @@ step_components:
     with: {name: 'bcf-trusted-control-${{ github.event.workflow_run.head_sha }}-${{ github.event.workflow_run.run_attempt }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ github.event.workflow_run.id }}', path: '${{ runner.temp }}/bcf-trusted-control'}
     environment: {}
     produces: []
-    consumes: [trusted-controller-bundle]
+    consumes: []
   authorize-routine-transition:
     kind: command
     name: Authorize the exact protected-merge controller transition
@@ -448,7 +448,7 @@ workflows:
       target_commit_sha: '${{ steps.materialize-transition.outputs.target_commit_sha }}'
       target_tree_sha: '${{ steps.materialize-transition.outputs.target_tree_sha }}'
       target_wheel_sha256: '${{ steps.materialize-transition.outputs.target_wheel_sha256 }}'
-    executor: {kind: component_sequence, components: [setup-python, download-routine-controller, download-trigger-controller-custody, project-custody-controller-route, setup-routine-decision-directory, setup-routine-authorized-directory, authorize-routine-transition, upload-routine-decision, stage-routine-authorization-controller, materialize-routine-transition, upload-routine-authorized]}
+    executor: {kind: component_sequence, components: [setup-python, download-trigger-controller-custody, project-custody-controller-route, setup-routine-decision-directory, setup-routine-authorized-directory, authorize-routine-transition, upload-routine-decision, stage-routine-authorization-controller, materialize-routine-transition, upload-routine-authorized]}
     produces: [controller-transition-authorized, controller-transition-decision]
     consumes: [trusted-controller-bundle, controller-custody]
     required: true

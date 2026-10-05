@@ -28,7 +28,7 @@ workitems:
   status: DONE
   summary: derive the exact affected proof closure
 - id: P30-P0-04
-  status: TODO
+  status: IN_PROGRESS
   summary: reuse exact applicable proof propositions
 - id: P30-P0-05
   status: TODO
@@ -72,6 +72,8 @@ execution_evidence:
   - protected PR 364 merged the dormant v3 contract as main 701f741de520e6db12cf1a43b0fba225e90a8ced tree 64777ae5e1ca087335e3c81541905bada455a089; exact-main 37252811730 attempt 1 built the exact N+1 controller and canonical operation 37253101916 installed it on both trusted runners
   - post-rotation exact-main 37252811730 attempt 2 passed admission four evidence shards exact-tree truth and trusted finalization under installed controller 701f741de520e6db12cf1a43b0fba225e90a8ced; no-transition operation 37254539553 proved ordinary-current custody before activation
   - P30-P0-03 activates evidence-session v3 only after ordinary-current custody; the planner binds every required claim to one required demonstrably-unaffected or ambiguous-requires-execution classification and truth independently recomputes the exact closure
+  - P30-P0-03 closed through protected PR 365 and exact-main 37266301651; finalizer 37267300376 and App 15368 published bounded workitem success, P30-P0-04 became eligible, P30 remained active, and controller operation 37267300402 proved ordinary-current no-transition custody
+  - P30-P0-04 begins from a persisted cross-CI storage and applicability matrix; candidate titles derive from the unique lifecycle proposition, local proof bundles remain acceleration-only, provider transport preserves source archives once and materializes members transiently, and current-controller exact-main no longer rebuilds target bytes
 closeout_requirements:
   claims:
     workitems_closed:

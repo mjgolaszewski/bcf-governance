@@ -10,6 +10,7 @@ import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import re
+import tempfile
 from typing import Any, Mapping
 
 from jsonschema import Draft202012Validator, RefResolver, ValidationError
@@ -92,7 +93,7 @@ def load_provisional_transport(
     if not isinstance(manifest, dict):
         raise EvidenceError("prior evidence transport manifest is invalid")
     _transport_schema(manifest, repo_root / "schemas")
-    validate_transport_material(files, manifest, current_subject)
+    files = materialize_transport_material(files, manifest, current_subject)
     identities: set[str] = set()
     artifacts = {value["artifact_id"]: value for value in manifest["artifacts"]}
     if len(artifacts) != len(manifest["artifacts"]):
@@ -140,13 +141,16 @@ def provisional_receipts(material: ProvisionalPriorTransport) -> list[dict[str, 
     return receipts
 
 
-def validate_transport_material(
+def materialize_transport_material(
     files: Mapping[str, bytes], manifest: Mapping[str, Any],
     current_subject: Mapping[str, Any] | None,
-) -> None:
+) -> dict[str, bytes]:
     """Verify trusted transport's exact path/digest inventory and main binding."""
-    if manifest.get("schema_version") != "1.0" or manifest.get("kind") != "prior_evidence_transport":
+    version = manifest.get("schema_version")
+    if version not in {"1.0", "2.0"} or manifest.get("kind") != "prior_evidence_transport":
         raise EvidenceError("prior evidence transport contract is invalid")
+    if (version == "2.0") != (manifest.get("storage") == "archive_only"):
+        raise EvidenceError("prior evidence transport storage mode is invalid")
     main = manifest.get("main")
     if not isinstance(main, dict) or current_subject is None or any(
         main.get(field) != current_subject.get(field)
@@ -158,6 +162,7 @@ def validate_transport_material(
     if not isinstance(artifacts, list) or not artifacts or not isinstance(receipts, list):
         raise EvidenceError("prior evidence transport inventory is incomplete")
     declared: dict[str, str] = {}
+    materialized = dict(files)
     for artifact in artifacts:
         if not isinstance(artifact, dict):
             raise EvidenceError("prior evidence transport artifact is invalid")
@@ -181,10 +186,30 @@ def validate_transport_material(
             relative = f"expanded/{artifact_id}/{source.as_posix()}"
             if relative in declared or not isinstance(member.get("sha256"), str):
                 raise EvidenceError("prior evidence transport member is ambiguous")
-            declared[relative] = member["sha256"]
-            raw = files.get(relative)
-            if raw is None or len(raw) != member.get("size"):
-                raise EvidenceError("prior evidence transport member size differs")
+            if version == "1.0":
+                declared[relative] = member["sha256"]
+                raw = files.get(relative)
+                if raw is None or len(raw) != member.get("size"):
+                    raise EvidenceError("prior evidence transport member size differs")
+        if version == "2.0":
+            archive_raw = files.get(archive_path)
+            if archive_raw is None:
+                raise EvidenceError("prior evidence transport archive is missing")
+            from .prior_evidence_transport import _archive_files
+
+            expanded = _archive_files(archive_raw)
+            expected = {
+                str(member["path"]): (str(member["sha256"]), int(member["size"]))
+                for member in members
+            }
+            if set(expanded) != set(expected) or any(
+                _digest(raw) != expected[path][0] or len(raw) != expected[path][1]
+                for path, raw in expanded.items()
+            ):
+                raise EvidenceError("prior evidence transport archive members differ")
+            materialized.update(
+                {f"expanded/{artifact_id}/{path}": raw for path, raw in expanded.items()}
+            )
     actual = {name: _digest(raw) for name, raw in files.items()
               if name != "prior-evidence-transport.json"}
     if actual != declared or _digest(canonical_json(actual)) != manifest.get("bundle_sha256"):
@@ -199,9 +224,38 @@ def validate_transport_material(
             or not relative.endswith(".evidence.json")):
             raise EvidenceError("prior evidence transport receipt inventory differs")
         declared_receipts.add(relative)
-    actual_receipts = {name for name in actual if name.endswith(".evidence.json")}
+    actual_receipts = {
+        name for name in materialized
+        if name.startswith("expanded/") and name.endswith(".evidence.json")
+    }
     if declared_receipts != actual_receipts:
         raise EvidenceError("prior evidence transport receipt inventory differs")
+    return materialized
+
+
+def validate_transport_material(
+    files: Mapping[str, bytes], manifest: Mapping[str, Any],
+    current_subject: Mapping[str, Any] | None,
+) -> None:
+    """Compatibility wrapper for validation-only consumers."""
+
+    materialize_transport_material(files, manifest, current_subject)
+
+
+def _materialize_receipt_view(
+    files: Mapping[str, bytes],
+) -> tuple[tempfile.TemporaryDirectory[str], Path]:
+    """Own the sole transient filesystem projection required by path verifiers."""
+
+    temporary = tempfile.TemporaryDirectory(prefix="bcf-prior-receipts-")
+    root = Path(temporary.name)
+    for name, raw in files.items():
+        if not name.startswith("expanded/"):
+            continue
+        path = root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(raw)
+    return temporary, root
 
 
 def load_prior_receipts(
@@ -230,17 +284,17 @@ def load_prior_receipts(
             raise EvidenceError("prior evidence transport manifest is invalid") from exc
         if not isinstance(manifest, dict):
             raise EvidenceError("prior evidence transport manifest is invalid")
-        validate_transport_material(raw_files, manifest, current_subject)
-    receipt_files = [path for name, path in files.items() if name.endswith(".evidence.json")]
-    if not receipt_files:
+        raw_files = materialize_transport_material(raw_files, manifest, current_subject)
+    receipt_names = [name for name in raw_files if name.endswith(".evidence.json")]
+    if not receipt_names:
         return []
-    for path in receipt_files:
+    for name in receipt_names:
         try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-            raise EvidenceError(f"prior evidence receipt is invalid: {path.name}") from exc
+            payload = json.loads(raw_files[name])
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise EvidenceError(f"prior evidence receipt is invalid: {Path(name).name}") from exc
         if not isinstance(payload, dict):
-            raise EvidenceError(f"prior evidence receipt is not an object: {path.name}")
+            raise EvidenceError(f"prior evidence receipt is not an object: {Path(name).name}")
     from .truth_receipts import ReceiptError, load_receipts
 
     repo_root = repo_root.resolve()
@@ -259,14 +313,18 @@ def load_prior_receipts(
     }
     if current_subject is None:
         raise EvidenceError("prior evidence current subject is missing")
+    temporary, receipt_root = _materialize_receipt_view(raw_files)
     try:
-        validated = load_receipts(
-            repo_root, root, dict(current_subject), require_negative_control=False,
-            tree_independent_allowlist=set(), expected_kinds=expected_kinds,
-            invocations=invocations, contract_version="3.0",
-        )
-    except (ReceiptError, OSError, ValueError) as exc:
-        raise EvidenceError("prior evidence receipt validation failed") from exc
+        try:
+            validated = load_receipts(
+                repo_root, receipt_root, dict(current_subject), require_negative_control=False,
+                tree_independent_allowlist=set(), expected_kinds=expected_kinds,
+                invocations=invocations, contract_version="3.0",
+            )
+        except (ReceiptError, OSError, ValueError) as exc:
+            raise EvidenceError("prior evidence receipt validation failed") from exc
+    finally:
+        temporary.cleanup()
     results = [result for values in validated.values() for result in values]
     structural_issues: set[str] = set()
     for result in results:

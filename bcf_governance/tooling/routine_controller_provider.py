@@ -31,6 +31,7 @@ from .ci_github_membership import (
 )
 from .ci_self_controller import (
     compile_self_controller_pin,
+    resolve_self_controller_artifact,
     validate_controller_installation,
     validate_controller_pin,
 )
@@ -40,6 +41,7 @@ from .controller_transition_provider_custody import (
     receipt_from_zip as _receipt_from_zip,
 )
 from .prior_evidence_transport import (
+    _archive_files,
     authenticate_merged_pull,
     authenticate_pr_certification,
 )
@@ -363,6 +365,34 @@ def effective_controller_authority(
     }
 
 
+def _materialize_provider_controller(
+    api: GitHubAPI,
+    *,
+    repository: str,
+    admission_run_id: object,
+    admission_run_attempt: object,
+    artifact_dir: Path,
+) -> None:
+    """Fetch exact N+1 bytes only after installed N proves rotation is required."""
+
+    _, artifact = resolve_self_controller_artifact(
+        api,
+        repository=repository,
+        trigger_run_id=admission_run_id,
+        trigger_run_attempt=admission_run_attempt,
+    )
+    raw = api.artifact_bytes(repository, artifact.artifact_id, maximum_bytes=104_857_600)
+    if artifact.provider_digest != f"sha256:{_sha256(raw)}":
+        raise GitHubControllerError("routine controller artifact differs from provider digest")
+    if artifact_dir.exists() or artifact_dir.is_symlink():
+        raise GitHubControllerError("routine controller artifact directory already exists")
+    artifact_dir.mkdir(mode=0o700, parents=True)
+    for relative, content in _archive_files(raw).items():
+        target_path = artifact_dir / relative
+        target_path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        target_path.write_bytes(content)
+
+
 def project_effective_controller_custody_observation(
     api: GitHubAPI, *, repository: str
 ) -> dict[str, Any]:
@@ -437,6 +467,13 @@ def authorize_transition(
             admission_run_attempt=admission_run_attempt,
             controller_custody=custody,
         )
+    _materialize_provider_controller(
+        api,
+        repository=repository,
+        admission_run_id=admission_run_id,
+        admission_run_attempt=admission_run_attempt,
+        artifact_dir=artifact_dir,
+    )
     target = compile_self_controller_pin(
         api,
         repository=repository,
