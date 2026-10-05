@@ -145,6 +145,15 @@ def derive_affected_proof_set(
 ) -> dict[str, Any]:
     """Classify every required proof exactly once from canonical dependencies."""
 
+    current_identity = {
+        field: current_subject.get(field) for field in ("commit_sha", "tree_sha")
+    }
+    if any(
+        not isinstance(value, str)
+        or re.fullmatch(r"[a-f0-9]{40,64}", value) is None
+        for value in current_identity.values()
+    ):
+        raise EvidenceError("affected proof current subject identity is invalid")
     required_claims = sorted(set(str(value) for value in required_claim_ids))
     subjects = sorted(set(prior_subjects), key=lambda value: (value[0], value[1] or ""))
     changes = [changed_paths(repo_root, commit, tree) for commit, tree in subjects]
@@ -229,7 +238,7 @@ def derive_affected_proof_set(
                     row["reasons"] = ["current_run_dependency_required"]
     payload: dict[str, Any] = {
         "schema_version": "1.0",
-        "current_subject": dict(current_subject),
+        "current_subject": current_identity,
         "prior_subjects": [
             {"commit_sha": commit, **({"tree_sha": tree} if tree else {})}
             for commit, tree in subjects

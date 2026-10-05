@@ -1088,6 +1088,10 @@ may change only the governed public active-version and claim-model data after
 N+1 is installed.  The already-installed selector then chooses the dormant v3
 planner and allocator; activation must not change trusted producer or consumer
 code bytes, nor require N+2 merely to execute the declared contract.
+Subject comparison uses the affected-proof owner's exact commit/tree
+projection.  Additive canonical subject metadata is preserved by its owning
+consumer but cannot alter this identity; missing, malformed or wrong
+commit/tree remains a closed failure.
 
 ### P31 workitem DAG
 

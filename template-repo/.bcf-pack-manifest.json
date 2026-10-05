@@ -430,7 +430,7 @@
     },
     "scripts/_bcf_runtime/affected_proof_closure.py": {
       "operation": "copy",
-      "sha256": "cb13e8b5c2853cf8f366944e9e54bf9e6c2bdf5468ecadef65e7f3fe380fe077"
+      "sha256": "e9fc027fadb373a6e63c98e657071998941a5274791be79b73a519b4689aa656"
     },
     "scripts/_bcf_runtime/automation_changelog.py": {
       "operation": "copy",

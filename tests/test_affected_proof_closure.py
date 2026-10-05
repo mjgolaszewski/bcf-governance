@@ -81,12 +81,34 @@ def test_dormant_v3_truth_recomputes_exact_affected_proof_set(tmp_path: Path) ->
     receipt = {"subject": {"commit_sha": prior_commit, "tree_sha": prior_tree}}
 
     verify_session_affected_proof_set(
-        root, model, session, current_subject=_subject(root), prior_receipts=[receipt],
+        root,
+        model,
+        session,
+        current_subject={**_subject(root), "tracked_clean": True},
+        prior_receipts=[receipt],
     )
     session["affected_proof_set"] = {**affected, "classifications": []}
     with pytest.raises(EvidenceError, match="canonical reachability"):
         verify_session_affected_proof_set(
             root, model, session, current_subject=_subject(root), prior_receipts=[receipt],
+        )
+
+
+@pytest.mark.parametrize(
+    "subject",
+    [
+        {"commit_sha": "a" * 40},
+        {"commit_sha": "wrong", "tree_sha": "b" * 40},
+        {"commit_sha": "a" * 40, "tree_sha": None},
+    ],
+)
+def test_affected_proof_subject_identity_fails_closed(
+    tmp_path: Path, subject: dict[str, object],
+) -> None:
+    root, _, _, model = _repo(tmp_path)
+    with pytest.raises(EvidenceError, match="subject identity"):
+        derive_affected_proof_set(
+            root, model, ["app-valid"], current_subject=subject, prior_subjects=[],
         )
 
 
