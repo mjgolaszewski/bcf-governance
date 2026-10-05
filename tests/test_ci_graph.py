@@ -2315,6 +2315,26 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     ]
     assert "needs" not in builder_projection
     assert builder_projection["if"] == "${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}"
+    builder_steps = builder_projection["steps"]
+    transition_only = (
+        "${{ steps.exact-main-applicability.outputs.controller_state == "
+        "'pending_rotation' }}"
+    )
+    assert next(
+        step for step in builder_steps
+        if step["name"] == "Build the exact-main trusted controller bundle"
+    )["if"] == transition_only
+    assert next(
+        step for step in builder_steps
+        if step["name"] == "Upload the exact-main trusted controller bundle"
+    )["if"] == transition_only
+    rotation_steps = rendered[".github/workflows/bcf-controller-rotation.yml"][
+        "jobs"
+    ]["authorize"]["steps"]
+    assert not any(
+        step["name"] == "Download the exact provider-built routine controller"
+        for step in rotation_steps
+    )
     finalizer = rendered[".github/workflows/bcf-trusted-finalizer.yml"]["jobs"][
         "finalize"
     ]

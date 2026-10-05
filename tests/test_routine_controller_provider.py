@@ -391,6 +391,13 @@ def test_authorization_closes_current_controller_as_no_transition(
             "a current topology must not select a controller artifact"
         ),
     )
+    monkeypatch.setattr(
+        provider,
+        "_materialize_provider_controller",
+        lambda *_args, **_kwargs: pytest.fail(
+            "a current topology must not download controller bytes"
+        ),
+    )
 
     result = provider.authorize_transition(
         object(),
