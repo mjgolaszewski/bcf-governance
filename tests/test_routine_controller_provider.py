@@ -420,6 +420,84 @@ def test_authorization_closes_current_controller_as_no_transition(
     }
 
 
+def test_controller_materialization_accepts_installed_n_provider_directory(
+    tmp_path: Path,
+) -> None:
+    artifact_dir = tmp_path / "provider-controller"
+    artifact_dir.mkdir()
+    marker = artifact_dir / "SHA256SUMS"
+    marker.write_text("installed N provider bytes", encoding="utf-8")
+
+    provider._materialize_provider_controller(
+        SimpleNamespace(
+            artifact_bytes=lambda *_args, **_kwargs: pytest.fail(
+                "pre-materialized provider bytes must not be downloaded again"
+            )
+        ),
+        repository="mjgolaszewski/bcf-governance",
+        admission_run_id="10",
+        admission_run_attempt="1",
+        artifact_dir=artifact_dir,
+    )
+
+    assert marker.read_text(encoding="utf-8") == "installed N provider bytes"
+
+
+def test_controller_materialization_fetches_exact_n_plus_one_provider_artifact(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    archive = io.BytesIO()
+    with zipfile.ZipFile(archive, "w") as payload:
+        payload.writestr("SHA256SUMS", "exact inventory")
+        payload.writestr("CONTROL-METADATA.json", "{}")
+    raw = archive.getvalue()
+    artifact = SimpleNamespace(
+        artifact_id="20", provider_digest="sha256:" + provider._sha256(raw)
+    )
+    monkeypatch.setattr(
+        provider,
+        "resolve_self_controller_artifact",
+        lambda *_args, **_kwargs: ({}, artifact),
+    )
+    api = SimpleNamespace(
+        artifact_bytes=lambda repository, artifact_id, maximum_bytes: (
+            raw if (
+                repository == "mjgolaszewski/bcf-governance"
+                and artifact_id == "20"
+                and maximum_bytes == 104_857_600
+            ) else pytest.fail("provider artifact identity changed")
+        )
+    )
+    artifact_dir = tmp_path / "provider-controller"
+
+    provider._materialize_provider_controller(
+        api,
+        repository="mjgolaszewski/bcf-governance",
+        admission_run_id="10",
+        admission_run_attempt="1",
+        artifact_dir=artifact_dir,
+    )
+
+    assert (artifact_dir / "SHA256SUMS").read_text() == "exact inventory"
+    assert (artifact_dir / "CONTROL-METADATA.json").read_text() == "{}"
+
+
+def test_controller_materialization_rejects_non_directory_preexisting_root(
+    tmp_path: Path,
+) -> None:
+    artifact_dir = tmp_path / "provider-controller"
+    artifact_dir.write_text("not a directory", encoding="utf-8")
+
+    with pytest.raises(GitHubControllerError, match="root is not a directory"):
+        provider._materialize_provider_controller(
+            object(),
+            repository="mjgolaszewski/bcf-governance",
+            admission_run_id="10",
+            admission_run_attempt="1",
+            artifact_dir=artifact_dir,
+        )
+
+
 def test_authorization_materializes_policy_change_as_governed_rotation(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

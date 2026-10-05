@@ -16,7 +16,7 @@ extensions:
 - {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: adde42bee237d4da4a67a72d6d5e8600e63ed010486cea4084391f940b9d1bb0}
 - {id: bcf-evidence-storage, path: governance/ci-extensions/bcf-evidence-storage.yml, sha256: 41e40dad457efc53292249a211575505e9d6021d73d3fee2e52c4e9eede68eea}
 - {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 02baf98acec7dfe25a59f2673fcdb723afe99c58c79ccf3f3bf98e5307c7b06c}
-- {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: 9e9086643e9168da7f894cdd0ba23bfd3cf4ec47d2ee7232d61bb5b1ece84dd5}
+- {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: c55436da969ff31bed0e79cdd22b7d4eda05cf90bcf82f93c525d1ebf88d655a}
 resource_classes:
   hosted-python:
     runner: ubuntu-24.04
@@ -65,7 +65,7 @@ artifacts:
   controller-custody: {path: .artifacts/controller-custody, kind: control, scope: run-attempt, retention_days: 30}
   finalizer-controller-custody: {path: .artifacts/controller-custody, kind: control, scope: run-attempt, retention_days: 30}
   prior-evidence-transport: {path: .artifacts/bcf/prior-evidence, kind: control, scope: run-attempt, retention_days: 30}
-conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', prior-evidence-enabled: inputs.use_prior_evidence == true, prior-evidence-disabled: inputs.use_prior_evidence != true, evidence-prerequisites-with-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence == true, evidence-prerequisites-without-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence != true, exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-semantic-admission-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && needs.trusted-controller-build.outputs.semantic_evidence_applicable == 'true', exact-main-controller-build-required: steps.exact-main-applicability.outputs.controller_state == 'pending_rotation', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED
+conditions: {evidence-prerequisites-green: needs.preflight.result == 'success' && needs.evidence.result == 'success', prior-evidence-enabled: inputs.use_prior_evidence == true, prior-evidence-disabled: inputs.use_prior_evidence != true, evidence-prerequisites-with-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence == true, evidence-prerequisites-without-prior: needs.preflight.result == 'success' && needs.evidence.result == 'success' && inputs.use_prior_evidence != true, exact-main-authority-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true', exact-main-semantic-admission-enabled: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && needs.trusted-controller-build.outputs.semantic_evidence_applicable == 'true', exact-main-admitted: needs.admit.result == 'success', exact-main-finalizer-admitted: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main', exact-main-publisher-admitted: vars.BCF_CI_AUTHORITY_ENABLED
     == 'true' && github.event.workflow_run.name == 'bcf/trusted-evidence-finalizer' && github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main', always-step: always()}
 commands:
   install-governance-dependencies:
@@ -451,7 +451,6 @@ step_components:
   build-trusted-controller:
     kind: command
     name: Build the exact-main trusted controller bundle
-    condition: exact-main-controller-build-required
     command: build-trusted-controller
     environment: {}
     produces: [trusted-controller-bundle]
@@ -499,7 +498,6 @@ step_components:
   upload-trusted-controller:
     kind: action
     name: Upload the exact-main trusted controller bundle
-    condition: exact-main-controller-build-required
     action: upload-artifact
     with: {name: 'bcf-trusted-control-${{ github.sha }}-${{ github.run_attempt }}', path: .artifacts/trusted-control, if-no-files-found: error, retention-days: 30}
     environment: {}
