@@ -373,7 +373,12 @@ def _materialize_provider_controller(
     admission_run_attempt: object,
     artifact_dir: Path,
 ) -> None:
-    """Fetch exact N+1 bytes only after installed N proves rotation is required."""
+    """Use exact pre-materialized N bytes or fetch N+1 after rotation is required."""
+
+    if artifact_dir.is_dir() and not artifact_dir.is_symlink():
+        return
+    if artifact_dir.exists() or artifact_dir.is_symlink():
+        raise GitHubControllerError("routine controller artifact root is not a directory")
 
     _, artifact = resolve_self_controller_artifact(
         api,
@@ -384,8 +389,6 @@ def _materialize_provider_controller(
     raw = api.artifact_bytes(repository, artifact.artifact_id, maximum_bytes=104_857_600)
     if artifact.provider_digest != f"sha256:{_sha256(raw)}":
         raise GitHubControllerError("routine controller artifact differs from provider digest")
-    if artifact_dir.exists() or artifact_dir.is_symlink():
-        raise GitHubControllerError("routine controller artifact directory already exists")
     artifact_dir.mkdir(mode=0o700, parents=True)
     for relative, content in _archive_files(raw).items():
         target_path = artifact_dir / relative
