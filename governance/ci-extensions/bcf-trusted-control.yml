@@ -33,8 +33,9 @@ conditions:
   routine-stage-ready: success() && needs.authorize.outputs.applicable == 'true'
   routine-transition-required: steps.authorize-transition.outputs.decision != 'no_transition'
   routine-no-transition: steps.authorize-transition.outputs.decision == 'no_transition'
-  routine-outcome-no-transition: needs.authorize.outputs.applicable != 'true'
-  routine-outcome-active: needs.authorize.outputs.applicable == 'true'
+  routine-outcome-inapplicable: needs.authorize.result == 'skipped'
+  routine-outcome-no-transition: needs.authorize.result == 'success' && needs.authorize.outputs.applicable != 'true'
+  routine-outcome-active: needs.authorize.result == 'success' && needs.authorize.outputs.applicable == 'true'
   routine-transition-artifact-applicable: steps.materialize-transition.outputs.applicable == 'true'
   routine-callback-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.name == 'bcf/controller-rotation' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
 commands:
@@ -341,6 +342,15 @@ step_components:
     environment: {}
     produces: []
     consumes: [controller-transition-decision]
+  download-routine-inapplicable-outcome:
+    kind: action
+    name: Select the noncertifying admission custody outcome
+    condition: routine-outcome-inapplicable
+    action: download-artifact
+    with: {name: 'bcf-controller-custody-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ github.event.workflow_run.id }}', path: '${{ runner.temp }}/bcf-controller-transition/outcome'}
+    environment: {}
+    produces: []
+    consumes: [controller-custody]
   download-routine-active-outcome:
     kind: action
     name: Select the active-transition outcome
@@ -563,9 +573,9 @@ workflows:
     permissions: {actions: read, contents: read}
     checkout: false
     components: []
-    executor: {kind: component_sequence, components: [setup-python, download-routine-decision-outcome, download-routine-active-outcome, upload-routine-outcome]}
+    executor: {kind: component_sequence, components: [setup-python, download-routine-inapplicable-outcome, download-routine-decision-outcome, download-routine-active-outcome, upload-routine-outcome]}
     produces: [controller-rotation-outcome]
-    consumes: [controller-transition-decision, controller-transition-active-callback-source]
+    consumes: [controller-custody, controller-transition-decision, controller-transition-active-callback-source]
     required: true
 - id: authority-canary
   path: .github/workflows/bcf-authority-canary.yml

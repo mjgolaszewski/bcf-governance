@@ -210,17 +210,19 @@ def materialize_transport_material(
             materialized.update(
                 {f"expanded/{artifact_id}/{path}": raw for path, raw in expanded.items()}
             )
-    actual = {name: _digest(raw) for name, raw in files.items()
+    stored = {name: _digest(raw) for name, raw in files.items()
               if name != "prior-evidence-transport.json"}
-    if actual != declared or _digest(canonical_json(actual)) != manifest.get("bundle_sha256"):
+    if stored != declared or _digest(canonical_json(stored)) != manifest.get("bundle_sha256"):
         raise EvidenceError("prior evidence bundle digest mismatch")
+    verified = {name: _digest(raw) for name, raw in materialized.items()
+                if name != "prior-evidence-transport.json"}
     declared_receipts: set[str] = set()
     for receipt in receipts:
         if not isinstance(receipt, dict):
             raise EvidenceError("prior evidence transport receipt is invalid")
         relative = f"expanded/{receipt.get('artifact_id')}/{receipt.get('path')}"
-        if (relative in declared_receipts or relative not in actual
-            or actual[relative] != receipt.get("receipt_sha256")
+        if (relative in declared_receipts or relative not in verified
+            or verified[relative] != receipt.get("receipt_sha256")
             or not relative.endswith(".evidence.json")):
             raise EvidenceError("prior evidence transport receipt inventory differs")
         declared_receipts.add(relative)

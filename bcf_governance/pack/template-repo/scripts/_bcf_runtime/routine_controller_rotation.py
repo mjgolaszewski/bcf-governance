@@ -144,10 +144,6 @@ def classify_callback_topology(
         raise RoutineCallbackTopologyError(
             "rotation callback authority inventory is invalid"
         )
-    if normalized[AUTHORIZE_JOB].get("conclusion") != "success":
-        raise RoutineCallbackTopologyError(
-            "rotation callback authorization did not succeed"
-        )
     if normalized[OUTCOME_JOB].get("conclusion") != "success":
         raise RoutineCallbackTopologyError(
             "rotation callback outcome projection did not succeed"
@@ -156,6 +152,13 @@ def classify_callback_topology(
         str(normalized[name].get("conclusion"))
         for name in expected_jobs - {AUTHORIZE_JOB, OUTCOME_JOB}
     }
+    authorization = normalized[AUTHORIZE_JOB].get("conclusion")
+    if authorization == "skipped" and conclusions == {"skipped"}:
+        return "admission_noncertifying"
+    if authorization != "success":
+        raise RoutineCallbackTopologyError(
+            "rotation callback authorization did not succeed"
+        )
     if conclusions == {"skipped"}:
         return "no_transition"
     if conclusions == {"success"}:
