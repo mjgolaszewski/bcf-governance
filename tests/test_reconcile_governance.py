@@ -13,11 +13,11 @@ from bcf_governance.cli import COMMANDS
 from bcf_governance.tooling.scaffold_governance_artifacts import (
     ReconcileError,
     ReconcileStep,
-    _editorial_base,
     converge,
     reconcile_steps,
     check_reconcile_steps,
 )
+from bcf_governance.tooling.editorial_audit_projection import editorial_base
 from bcf_governance.tooling.release_version_projection import (
     ReleaseVersionProjectionError,
     reconcile_release_version_surfaces,
@@ -185,13 +185,13 @@ def test_new_release_editorial_base_is_derived_from_tracking_upstream(
     _git(root, "add", "candidate")
     _git(root, "commit", "--quiet", "-m", "candidate")
 
-    assert _editorial_base(root, root / "audits/v9.0.0-editorial-review.yml") == expected
+    assert editorial_base(root, root / "audits/v9.0.0-editorial-review.yml") == expected
 
 
 def test_new_release_editorial_base_rejects_untracked_branch(tmp_path: Path) -> None:
     _git(tmp_path, "init", "--quiet", "--initial-branch=main")
     with pytest.raises(ReconcileError, match="tracked upstream"):
-        _editorial_base(tmp_path, tmp_path / "audits/v9.0.0-editorial-review.yml")
+        editorial_base(tmp_path, tmp_path / "audits/v9.0.0-editorial-review.yml")
 
 
 def test_reconcile_declares_one_closed_dependency_order() -> None:
