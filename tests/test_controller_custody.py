@@ -154,6 +154,35 @@ def test_prospective_chain_rejects_unconditional_controller_bundle_production(
         )
 
 
+@pytest.mark.parametrize("mutation", ["unconditional", "controller_first"])
+def test_prospective_chain_rejects_rotation_materialization_before_custody(
+    mutation: str,
+) -> None:
+    root = Path(__file__).resolve().parents[1]
+    graph = copy.deepcopy(validate_ci_graph(root).graph)
+    if mutation == "unconditional":
+        graph["step_components"]["download-routine-controller"].pop("condition")
+    else:
+        workflow = next(
+            value for value in graph["workflows"]
+            if value["id"] == "controller-rotation"
+        )
+        authorize = next(
+            value for value in workflow["jobs"] if value["id"] == "authorize"
+        )
+        components = authorize["executor"]["components"]
+        components.remove("download-routine-controller")
+        components.insert(1, "download-routine-controller")
+    with pytest.raises(
+        GitHubControllerError,
+        match="custody-first and pending-rotation exact",
+    ):
+        validate_controller_custody_chain(
+            graph,
+            python_executable=Path(sys.executable),
+        )
+
+
 def test_prospective_chain_rejects_an_unowned_downstream_permutation() -> None:
     root = Path(__file__).resolve().parents[1]
     graph = copy.deepcopy(validate_ci_graph(root).graph)

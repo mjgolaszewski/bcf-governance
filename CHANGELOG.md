@@ -23,7 +23,10 @@ All notable changes to BCF Governance are recorded here. This file follows
   callbacks preserve custody, dispatch nothing, and grant no release authority.
   Current-controller exact-main runs now retain custody references without
   rebuilding or uploading controller bundles; the graph compiler rejects any
-  build/upload lane not exactly restricted to pending rotation.
+  build/upload lane not exactly restricted to pending rotation. Rotation now
+  consumes that custody before artifact materialization and downloads target
+  bytes only for pending rotation, so typed current/no-transition callbacks do
+  not require a bundle whose absence is intentional.
 - Activated the version-dispatched evidence-session contract and canonical
   affected-proof closure only after installing its compatible controller, so
   every required proof is deterministically required, demonstrably unaffected,

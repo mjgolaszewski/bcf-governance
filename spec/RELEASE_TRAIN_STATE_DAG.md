@@ -1182,6 +1182,17 @@ state retain the custody capsule while deterministically omitting controller
 bundle bytes.  Self and managed-adopter graph compilation must reject a
 missing, broadened, or one-sided build/upload condition before provider work.
 
+The rotation consumer applies the same state distinction before artifact
+materialization.  It must download and authenticate the always-present custody
+capsule first, project the installed-controller identity and exact custody
+state, and download target bundle bytes only for `pending_rotation`.  For
+`current`, the installed N authorizes the typed `no_transition` decision
+directly from custody; absence of a target bundle is required and cannot turn
+into a failed rotation.  Missing, malformed, or contradictory custody still
+fails closed before either path.  This ordering is part of self and adopter
+graph compatibility, so a controller-bundle download that precedes custody or
+lacks the exact pending-rotation condition is rejected prospectively.
+
 The proof identity is one canonical tuple, not consumer-selected fields:
 
 ```text
