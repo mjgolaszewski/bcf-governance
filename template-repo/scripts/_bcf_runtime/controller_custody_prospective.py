@@ -304,6 +304,20 @@ def validate_controller_custody_chain(
         raise GitHubControllerError(
             "publisher controller-custody pass-through contract is not closed"
         )
+    build_condition = "exact-main-controller-build-required"
+    if (
+        graph.get("conditions", {}).get(build_condition)
+        != "steps.exact-main-applicability.outputs.controller_state == 'pending_rotation'"
+        or graph.get("step_components", {}).get(
+            "build-trusted-controller", {}
+        ).get("condition") != build_condition
+        or graph.get("step_components", {}).get(
+            "upload-trusted-controller", {}
+        ).get("condition") != build_condition
+    ):
+        raise GitHubControllerError(
+            "controller bundle production is not pending-rotation exact"
+        )
     components = graph.get("step_components")
     upload = components.get("upload-finalizer-controller-custody", {})
     download = components.get("download-finalizer-controller-custody", {})

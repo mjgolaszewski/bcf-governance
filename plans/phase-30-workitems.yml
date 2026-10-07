@@ -49,7 +49,7 @@ workitems:
   - contract-test
 - id: P30-P0-04
   priority: P0
-  status: IN_PROGRESS
+  status: DONE
   summary: reuse exact applicable proof propositions
   acceptance:
   - requires-workitem-closure:P30-P0-03

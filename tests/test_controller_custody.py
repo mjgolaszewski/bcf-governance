@@ -137,6 +137,23 @@ def test_prospective_chain_rejects_unbound_finalizer_custody_transport() -> None
         )
 
 
+@pytest.mark.parametrize(
+    "component_id",
+    ["build-trusted-controller", "upload-trusted-controller"],
+)
+def test_prospective_chain_rejects_unconditional_controller_bundle_production(
+    component_id: str,
+) -> None:
+    root = Path(__file__).resolve().parents[1]
+    graph = copy.deepcopy(validate_ci_graph(root).graph)
+    graph["step_components"][component_id].pop("condition")
+    with pytest.raises(GitHubControllerError, match="pending-rotation exact"):
+        validate_controller_custody_chain(
+            graph,
+            python_executable=Path(sys.executable),
+        )
+
+
 def test_prospective_chain_rejects_an_unowned_downstream_permutation() -> None:
     root = Path(__file__).resolve().parents[1]
     graph = copy.deepcopy(validate_ci_graph(root).graph)
