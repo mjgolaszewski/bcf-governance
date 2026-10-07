@@ -45,6 +45,7 @@ from .reconcile_authority_transition import (
 from .profile_surface_generation import reconcile_makefile, reconcile_template_workflow
 from .interpreter_environment import reconcile_interpreter_environment
 from .test_duration_observations import reconcile_test_duration_observations
+from .editorial_audit_projection import editorial_base
 
 HOTFIX_MODES = {"lite", "full"}
 
@@ -367,17 +368,6 @@ def _reconcile_workflow_authority(repo_root: Path, *, apply: bool) -> None:
     )
 
 
-def _editorial_base(audit: Path) -> str:
-    try:
-        payload = yaml.safe_load(audit.read_text(encoding="utf-8"))
-        base = payload["base_commit"]
-    except (OSError, TypeError, KeyError, yaml.YAMLError) as exc:
-        raise ReconcileError("editorial audit does not expose an immutable base") from exc
-    if not isinstance(base, str) or len(base) != 40 or any(c not in "0123456789abcdef" for c in base):
-        raise ReconcileError("editorial audit base is not an exact commit")
-    return base
-
-
 def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
     """Return the closed canonical projection order for this repository."""
 
@@ -612,7 +602,7 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
     builder = repo_root / ".github/scripts/build_editorial_audit.py"
     if checker.is_file() and builder.is_file() and not checker.is_symlink() and not builder.is_symlink():
         audit = repo_root / f"audits/v{__version__}-editorial-review.yml"
-        base = _editorial_base(audit)
+        base = editorial_base(repo_root, audit)
         steps.append(
             ReconcileStep(
                 "editorial-audit",

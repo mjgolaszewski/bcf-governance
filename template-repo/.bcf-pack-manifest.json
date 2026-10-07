@@ -430,7 +430,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "fec38c4b5d4b63a9cc1264d675a062bc5ccf9220b7fe09ca5d4be204e1adf66c"
+      "sha256": "adaf0b243016ccebeb38bcc982871731f1e986374da8da1f356482bab7051939"
     },
     "scripts/_bcf_runtime/affected_proof_closure.py": {
       "operation": "copy",
@@ -805,6 +805,10 @@
     "scripts/_bcf_runtime/doctor_governance_pack.py": {
       "operation": "copy",
       "sha256": "11253e611401e27912ee34ce51b33117aa0862e70078aa791d20a3135b24e529"
+    },
+    "scripts/_bcf_runtime/editorial_audit_projection.py": {
+      "operation": "copy",
+      "sha256": "15412ec95deeaa4e9448791fa203e2a45816ab6c128482bf4bcfcb13057268a7"
     },
     "scripts/_bcf_runtime/evaluation_scope.py": {
       "operation": "copy",
@@ -1291,7 +1295,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "6cfa498092ae17fa0f0361f66c99dd89e16c6c4b1117e2bb299a316a9851c625"
+      "sha256": "72d7378b7eae0929bccbc8d1cf1622f9c3bf0abfe7760a9909cf97ebda156c62"
     },
     "scripts/_bcf_runtime/scheduled_control_execution.py": {
       "operation": "copy",
