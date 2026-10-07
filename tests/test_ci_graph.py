@@ -2324,8 +2324,12 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         step for step in builder_steps
         if step["name"] == "Upload the exact-main trusted controller bundle"
     )
-    assert "if" not in build
-    assert "if" not in upload
+    pending_rotation_only = (
+        "${{ steps.exact-main-applicability.outputs.controller_state == "
+        "'pending_rotation' }}"
+    )
+    assert build["if"] == pending_rotation_only
+    assert upload["if"] == pending_rotation_only
     rotation_steps = rendered[".github/workflows/bcf-controller-rotation.yml"][
         "jobs"
     ]["authorize"]["steps"]

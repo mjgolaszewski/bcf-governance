@@ -21,6 +21,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   exact-main admissions now yield one authenticated noncertifying rotation
   outcome rather than misclassifying missing authorization as no-transition;
   callbacks preserve custody, dispatch nothing, and grant no release authority.
+  Current-controller exact-main runs now retain custody references without
+  rebuilding or uploading controller bundles; the graph compiler rejects any
+  build/upload lane not exactly restricted to pending rotation.
 - Activated the version-dispatched evidence-session contract and canonical
   affected-proof closure only after installing its compatible controller, so
   every required proof is deterministically required, demonstrably unaffected,
