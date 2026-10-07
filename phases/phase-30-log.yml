@@ -31,7 +31,7 @@ workitems:
   status: DONE
   summary: reuse exact applicable proof propositions
 - id: P30-P0-05
-  status: TODO
+  status: IN_PROGRESS
   summary: partition remaining proof and publish immutable 2.2.0 custody
 execution_evidence:
   planned_commands:
