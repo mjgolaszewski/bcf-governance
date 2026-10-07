@@ -1282,6 +1282,73 @@ invariants
              finalizer/publisher, SPLINTER remainder planner
 ```
 
+### P30-P0-05 SPLINTER execution state matrix
+
+SPLINTER is an execution optimization over the exact PRUNE/REUSE remainder;
+it is not a new claim, producer, or authority.  The existing gate producer
+owns one immutable partition plan, isolated splinter executions, exact
+aggregation, negative controls, and the ordinary gate receipt.  No operator
+chooses nodes, ordering, concurrency, or fallback behavior.
+
+| State | Authenticated inputs | Deterministic action | Authoritative result | Fail-closed boundary |
+| --- | --- | --- | --- | --- |
+| Empty remainder | exact affected-proof and reuse decisions | execute no positive node and report the reused proposition through the existing planner | unchanged reuse authority | any unaccounted required node |
+| Splittable remainder with usable observations | exact node manifest, selectors, subject/session/policy, compatible resources and closed duration observations | stable longest-duration-first partition with lexical tie-break | one gate receipt only after exact aggregate closure | overlap, omission, wrong node, wrong namespace, or incomplete splinter |
+| Splittable remainder without observations | same exact inventory with absent observations | stable lexical balanced partition | one gate receipt only after exact aggregate closure | metrics may not affect truth or silently remove nodes |
+| Unsplittable or incompatible resources | exact inventory plus declared resource/lifecycle constraints | execute the existing monolithic gate | existing gate receipt | ad-hoc partial execution |
+| Bad, stale, ambiguous, or adversarial observations | observation identity/digest does not match exact inputs | deterministic monolithic fallback and typed reason | existing gate receipt | accepting observation authority or guessing a partition |
+| Any splinter terminal path | exact execution/session namespace per splinter | retire only that owned namespace and verify removal before aggregation | cleanup observation only | global prune, wildcard ownership, implicit persistence, or predecessor state visibility |
+| Complete positive aggregate | exact union, zero overlap, all successful results and canonical JUnit projection | run the unchanged applicable negative controls once, then emit the ordinary producer receipt | unchanged claim/receipt authority | a splinter result or timing observation becoming claim authority |
+
+The partition digest binds subject, session, policy, producer, exact ordered
+node inventory, resource contract, algorithm version, duration-input digest,
+assignments, and fallback reason.  Queue, setup, framework, and product time
+are separate non-authoritative observations.  The canonical receipt remains
+invalid unless the aggregated JUnit population exactly matches the governed
+manifest and every applicable negative control is killed.
+
+```text
+PRUNE exact affected-proof frontier
+  -> REUSE exact applicability decisions
+     -> exact unresolved node remainder
+        -> validate splittability and resource/lifecycle contract
+           -> derive immutable partition plan or monolithic fallback
+              -> allocate one exact ephemeral namespace per execution
+                 -> execute all assigned nodes once
+                    -> verify exact union, zero overlap and terminal cleanup
+                       -> aggregate canonical JUnit and timing observations
+                          -> execute unchanged applicable negative controls
+                             -> emit existing gate receipt
+                                -> truth/finalizer/certification unchanged
+```
+
+The outward construction is:
+
+```text
+invariants
+  partition only the exact unresolved remainder
+  timing never grants truth and uncertainty falls back safely
+  claim authority exists only after complete aggregate closure
+    -> primitives
+       exact node inventory, splittability, resource constraint, duration observation,
+       stable tie-break, partition digest, execution namespace, aggregate digest
+         -> contracts
+            immutable partition plan, exact-union validator, bounded fallback,
+            isolated execution result, canonical JUnit aggregation, typed timing
+              -> producers
+                 PRUNE/REUSE planner, existing test-manifest owner,
+                 existing gate runner and execution-state lifecycle owner
+                   -> consumers
+                      local prospective train, provider evidence fan-out,
+                      exact-main reuse, receipt capture, truth and telemetry
+```
+
+Every changed SPLINTER contract must be walked prospectively through local and
+provider gate execution, receipt capture, truth, finalization, certification,
+merge, exact-main reuse, terminal P30 closure, release publication, adopter
+qualification, and custody.  A generated workflow change is required only if
+the canonical graph cannot express the same single-producer contract.
+
 ### P31 workitem DAG
 
 ```text
