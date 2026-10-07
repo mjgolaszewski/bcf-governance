@@ -30,6 +30,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   authorization download is distinct from the unconditional post-authorization
   download used by bootstrap, probe, promotion, and activation, preventing
   job-local route outputs from leaking applicability into later lifecycle jobs.
+  Immutable provider GETs classify HTTP 500 with the existing bounded,
+  identity-preserving transient retry policy; mutation methods remain excluded.
 - Activated the version-dispatched evidence-session contract and canonical
   affected-proof closure only after installing its compatible controller, so
   every required proof is deterministically required, demonstrably unaffected,

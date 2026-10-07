@@ -1199,7 +1199,7 @@
     },
     "scripts/_bcf_runtime/provider_read.py": {
       "operation": "copy",
-      "sha256": "5630be9bb55608354caea96ead16fb5bd25f13c8aad1428e163b3934480b151f"
+      "sha256": "2218047ed63cc7c8826c117d62f0fedd8fb128419d8b8c3143854278595d66a9"
     },
     "scripts/_bcf_runtime/provider_reuse_closure.py": {
       "operation": "copy",
