@@ -585,19 +585,6 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 ),
             )
         )
-    if (repo_root / "governance/ci-authority.yml").is_file():
-        steps.append(
-            ReconcileStep(
-                "workflow-authority",
-                lambda: _reconcile_workflow_authority(repo_root, apply=False),
-                lambda: _reconcile_workflow_authority(repo_root, apply=True),
-                watch_paths=(
-                    ".github/workflows",
-                    "governance/ci-authority.yml",
-                    "bcf_governance/tooling/ci_authority_pins.py",
-                ),
-            )
-        )
     checker = repo_root / ".github/scripts/check_editorial_contract.py"
     builder = repo_root / ".github/scripts/build_editorial_audit.py"
     if checker.is_file() and builder.is_file() and not checker.is_symlink() and not builder.is_symlink():
@@ -618,6 +605,19 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                     "audits",
                     ".github/scripts/check_editorial_contract.py",
                     ".github/scripts/build_editorial_audit.py",
+                ),
+            )
+        )
+    if (repo_root / "governance/ci-authority.yml").is_file():
+        steps.append(
+            ReconcileStep(
+                "workflow-authority",
+                lambda: _reconcile_workflow_authority(repo_root, apply=False),
+                lambda: _reconcile_workflow_authority(repo_root, apply=True),
+                watch_paths=(
+                    ".github/workflows",
+                    "governance/ci-authority.yml",
+                    "bcf_governance/tooling/ci_authority_pins.py",
                 ),
             )
         )
