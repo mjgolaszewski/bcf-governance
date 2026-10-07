@@ -336,7 +336,7 @@ declared and must represent its absence as typed Python-only applicability.
 | Gate deadline sufficient | gate-specific measured lower bound, canonical deadline, outer-job headroom | execute once and record elapsed time | inner deadline is below the measured lower bound or outer job cannot contain deadline plus headroom | none |
 | Gate deadline exhausted | exact gate/session identity and timeout observation | emit typed infrastructure failure; no behavioral receipt | timeout represented as test failure or partial output treated as evidence | none |
 | Provider GET pending | immutable method/URL/repository/request identity | issue attempt | non-GET or mutable request | none |
-| Provider GET transient | 429/502/503/504, reset, or timeout | bounded backoff and retry same request | attempts exhausted or invalid `Retry-After` | none |
+| Provider GET transient | 429/500/502/503/504, reset, or timeout | bounded backoff and retry same request | attempts exhausted or invalid `Retry-After` | none |
 | Provider GET terminal | authenticated exact bytes and response metadata | digest/size/identity validation | 401/403/404, schema, digest, identity, or redirect violation | none until consumer authenticates |
 | Prospective stage running | execution identity, declared stage ID, monotonic sequence/time | emit `authority:false` progress | unknown stage or execution | none |
 | Prospective stage terminal | complete/fail plus terminal train result | render observation | progress used as proof | none |
@@ -459,7 +459,7 @@ is useful only when its complete digest closure validates.
 | State | Closed classification | Transition | Consumer rule |
 | --- | --- | --- | --- |
 | GET succeeds | exact immutable response | size/schema/digest/identity validation | return only authenticated bytes |
-| GET returns 429/502/503/504 | transient | bounded same-request backoff; validated `Retry-After` | no intermediate bytes or authority |
+| GET returns 429/500/502/503/504 | transient | bounded same-request backoff; validated `Retry-After` | no intermediate bytes or authority |
 | GET times out or connection resets | transient | bounded same-request backoff | no request mutation |
 | transient attempts exhausted | terminal infrastructure failure | stop | consumer receives no data |
 | GET returns 401/403 | authority failure | stop immediately | never retry as availability |
@@ -499,7 +499,7 @@ silently contracting the policy.
 ### Provider-read retry contract
 
 Only the canonical read-only transport may retry, and only an exact `GET` for
-429, 502, 503, 504, connection reset, or timeout. Attempts use one bounded
+429, 500, 502, 503, 504, connection reset, or timeout. Attempts use one bounded
 schedule and a bounded valid `Retry-After`; redirects remain credential-safe.
 Authentication, authorization, absence, schema, size, digest, repository,
 installation, subject, run, attempt, and artifact mismatches are terminal.
