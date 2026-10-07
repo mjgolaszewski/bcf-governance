@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from datetime import datetime
 from typing import Any, Iterable, Mapping
 
@@ -223,3 +225,164 @@ def assign_duration_aware_shards(
         }
         for group_id in ordered_ids
     ]
+
+
+def compile_test_splinter_plan(
+    nodes: Mapping[str, str],
+    durations_ms: Mapping[str, int],
+    *,
+    max_splinters: int,
+    identity: Mapping[str, str],
+    resources_compatible: bool = True,
+) -> dict[str, Any]:
+    """Compile one immutable exact-union test partition or safe fallback.
+
+    Normalized JUnit identities are authoritative inventory keys; pytest node
+    selectors are execution projections.  Timing is useful only when it is a
+    complete, positive observation over that exact inventory.
+    """
+
+    if (
+        not nodes
+        or any(not key or not value for key, value in nodes.items())
+        or len(set(nodes.values())) != len(nodes)
+    ):
+        raise ValueError("test splinter inventory must be non-empty and exact")
+    if max_splinters < 1:
+        raise ValueError("test splinter count must be positive")
+    required_identity = {"subject_commit", "subject_tree", "session", "policy_sha256", "producer"}
+    if set(identity) != required_identity or any(not identity[key] for key in required_identity):
+        raise ValueError("test splinter identity is incomplete")
+    ordered_nodes = sorted(nodes)
+    fallback_reason: str | None = None
+    duration_source = "lexical_default"
+    usable_durations: dict[str, int] = {}
+    if durations_ms:
+        if set(durations_ms) != set(nodes) or any(
+            isinstance(value, bool) or not isinstance(value, int) or value < 1
+            for value in durations_ms.values()
+        ):
+            fallback_reason = "duration_observations_invalid"
+        else:
+            usable_durations = dict(durations_ms)
+            duration_source = "exact_observations"
+    if not resources_compatible:
+        fallback_reason = "resources_incompatible"
+    splinter_count = (
+        1
+        if fallback_reason is not None
+        else min(max_splinters, len(ordered_nodes))
+    )
+    loads = [0] * splinter_count
+    assignments: list[list[str]] = [[] for _ in range(splinter_count)]
+    ranked = sorted(
+        ordered_nodes,
+        key=lambda node: (-usable_durations.get(node, 1), node),
+    )
+    for node in ranked:
+        selected = min(range(splinter_count), key=lambda index: (loads[index], index))
+        assignments[selected].append(node)
+        loads[selected] += usable_durations.get(node, 1)
+    splinters = [
+        {
+            "id": f"splinter-{index}",
+            "nodes": sorted(group),
+            "selectors": [nodes[node] for node in sorted(group)],
+            "estimated_duration_ms": loads[index],
+        }
+        for index, group in enumerate(assignments)
+    ]
+    duration_digest = hashlib.sha256(
+        json.dumps(
+            usable_durations,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    unsigned: dict[str, Any] = {
+        "schema_version": "1.0",
+        "algorithm": "stable_lpt_v1",
+        "identity": dict(sorted(identity.items())),
+        "node_inventory": ordered_nodes,
+        "duration_source": duration_source,
+        "duration_input_sha256": duration_digest,
+        "fallback_reason": fallback_reason,
+        "splinters": splinters,
+    }
+    unsigned["partition_sha256"] = hashlib.sha256(
+        json.dumps(unsigned, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return unsigned
+
+
+def validate_test_splinter_results(
+    plan: Mapping[str, Any], observed_nodes: Mapping[str, Iterable[str]]
+) -> None:
+    """Require every planned node exactly once and no unplanned result."""
+
+    splinters = plan.get("splinters")
+    inventory = plan.get("node_inventory")
+    if not isinstance(splinters, list) or not isinstance(inventory, list):
+        raise ValueError("test splinter plan is incomplete")
+    expected_ids = [
+        str(item.get("id")) for item in splinters if isinstance(item, Mapping)
+    ]
+    if len(expected_ids) != len(splinters) or set(observed_nodes) != set(expected_ids):
+        raise ValueError("test splinter result inventory differs from its plan")
+    flattened = [
+        node
+        for splinter_id in expected_ids
+        for node in observed_nodes[splinter_id]
+    ]
+    if len(flattened) != len(set(flattened)):
+        raise ValueError("test splinter results overlap")
+    if sorted(flattened) != sorted(str(node) for node in inventory):
+        raise ValueError("test splinter results do not cover the exact node inventory")
+
+
+def validate_test_splinter_plan(plan: Mapping[str, Any]) -> None:
+    """Authenticate the canonical plan digest and its exact assignment closure."""
+
+    expected = {
+        "schema_version",
+        "algorithm",
+        "identity",
+        "node_inventory",
+        "duration_source",
+        "duration_input_sha256",
+        "fallback_reason",
+        "splinters",
+        "partition_sha256",
+    }
+    if (
+        set(plan) != expected
+        or plan.get("schema_version") != "1.0"
+        or plan.get("algorithm") != "stable_lpt_v1"
+        or plan.get("duration_source") not in {"lexical_default", "exact_observations"}
+        or not isinstance(plan.get("partition_sha256"), str)
+        or not isinstance(plan.get("splinters"), list)
+        or not plan["splinters"]
+    ):
+        raise ValueError("test splinter plan contract is invalid")
+    unsigned = {key: value for key, value in plan.items() if key != "partition_sha256"}
+    digest = hashlib.sha256(
+        json.dumps(unsigned, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    if digest != plan["partition_sha256"]:
+        raise ValueError("test splinter plan digest is invalid")
+    assignments: dict[str, list[str]] = {}
+    for index, raw in enumerate(plan["splinters"]):
+        if (
+            not isinstance(raw, Mapping)
+            or set(raw) != {"id", "nodes", "selectors", "estimated_duration_ms"}
+            or raw.get("id") != f"splinter-{index}"
+            or not isinstance(raw.get("nodes"), list)
+            or not isinstance(raw.get("selectors"), list)
+            or len(raw["nodes"]) != len(raw["selectors"])
+            or isinstance(raw.get("estimated_duration_ms"), bool)
+            or not isinstance(raw.get("estimated_duration_ms"), int)
+            or raw["estimated_duration_ms"] < 1
+        ):
+            raise ValueError("test splinter assignment is invalid")
+        assignments[str(raw["id"])] = [str(value) for value in raw["nodes"]]
+    validate_test_splinter_results(plan, assignments)

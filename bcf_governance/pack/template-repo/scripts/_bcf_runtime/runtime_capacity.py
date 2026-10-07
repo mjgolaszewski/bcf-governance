@@ -213,6 +213,66 @@ def authenticated_execution_state_namespace(
     return namespace
 
 
+def allocate_child_execution_state(
+    environment: Mapping[str, str], *, execution_id: str
+) -> ExecutionStateLease | None:
+    """Derive one ephemeral child namespace from authenticated parent custody.
+
+    Direct, non-evidence gate execution has no parent and therefore allocates
+    no state.  A partial or caller-authored parent environment always rejects.
+    """
+
+    namespace = authenticated_execution_state_namespace(environment)
+    if namespace is None:
+        return None
+    parent_root = Path(environment["BCF_EXECUTION_STATE_ROOT"])
+    parent = _read_state_manifest(parent_root)
+    execution = _identity(execution_id, field="child_execution_id")
+    binding = {
+        "execution_id": execution,
+        "lifecycle": "ephemeral",
+        "parent_binding_sha256": str(parent["binding_sha256"]),
+        "workload_id": str(parent["workload_id"]),
+    }
+    binding_sha256 = _canonical_digest(binding)
+    child_namespace = f"bcf-{binding_sha256[:32]}"
+    base = parent_root.parent
+    root = base / child_namespace
+    _validate_existing_state(base, root, "ephemeral")
+    if root.exists() or root.is_symlink():
+        raise RuntimeCapacityError(
+            "execution-state namespace has unexplained pre-existing state"
+        )
+    root.mkdir(mode=0o700)
+    manifest = root / STATE_MANIFEST
+    manifest.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "namespace": child_namespace,
+                "lifecycle": "ephemeral",
+                "workload_id": str(parent["workload_id"]),
+                "binding_sha256": binding_sha256,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    manifest.chmod(0o400)
+    database_root = root / "database"
+    database_root.mkdir(mode=0o700)
+    return ExecutionStateLease(
+        namespace=child_namespace,
+        lifecycle="ephemeral",
+        root=root,
+        database_root=database_root,
+        binding_sha256=binding_sha256,
+        preexisting=False,
+    )
+
+
 def _validate_existing_state(base: Path, target: Path, lifecycle: str) -> None:
     for entry in base.iterdir():
         _read_state_manifest(entry)
