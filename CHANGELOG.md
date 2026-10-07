@@ -8,6 +8,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Made candidate submission authenticate and mechanically reproject an
+  existing pull request's exact lifecycle title and body, with semantic-effect
+  custody rebound to the current protected base after advancement.
 - Derived deterministic test splinters inside the existing gate producer from
   the exact governed node inventory and resource contract, with stable
   partitioning, isolated execution state, exact-union aggregation, safe
