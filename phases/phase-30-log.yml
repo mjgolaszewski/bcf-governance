@@ -4,13 +4,13 @@ document:
   id: project-phase-30-log
   version: 1.0.0
   generated_at_utc: '2026-10-03T00:00:00Z'
-  status: active
+  status: completed
   path: phases/phase-30-log.yml
 phase:
   id: P30
   build_block: fail-fast-recover-prune-reuse-splinter-2.2.0
 summary:
-  outcome: active
+  outcome: completed
   highlights:
   - P30 is opened for deliver deterministic interruption recovery and minimum-time
     proof composition through immutable BCF 2.2.0 custody
@@ -31,7 +31,7 @@ workitems:
   status: DONE
   summary: reuse exact applicable proof propositions
 - id: P30-P0-05
-  status: IN_PROGRESS
+  status: DONE
   summary: partition remaining proof and publish immutable 2.2.0 custody
 execution_evidence:
   planned_commands:
@@ -84,6 +84,10 @@ execution_evidence:
   - the corrective candidate submit encountered a provider HTTP 500 on an immutable comparison GET before evidence; the closed retry taxonomy now treats 500 like 429/502/503/504 and retries only the identical bounded read, with no mutation retry or authority effect
   - P30-P0-04 closed on main c87133625160b3aa03973ef3d11faf32890a76f7 through exact-main 37658691927 attempt 2, installed-controller finalizer 37663298743, App 15368 bounded certification, and ordinary-current rotation 37663298891; P30-P0-05 is now the sole active workitem
   - 'P30-P0-05 begins from a canonical splinter state matrix: the existing producer derives one immutable exact-node partition, isolated execution namespaces, exact aggregate and safe fallback while the ordinary gate receipt remains the sole claim authority'
+  - protected PR 372 merged the canonical splinter implementation as main 57a11fb9ade0cb428f781b7f42f89855a1fa81b2; PR 373 corrected only its mechanically derived lifecycle proposition and merged as main 131311b052561187447b2f592a1578737803246a tree 89ed1f898e48205f93b6b4c1ca7ed7d65bbc29ab
+  - exact-main 37695764025 attempt 2 reused applicable authenticated proof, finalizer 37698830355 and both App 15368 status publications succeeded, and controller operation 37698830456 proved ordinary-current custody on the exact merged subject
+  - the observed test producer critical path fell from approximately 26 minutes monolithic to 13 minutes 18 seconds across four exact isolated splinters; compact non-authoritative timing projection retains 2121 authenticated historical observations and assigns only four new nodes the canonical unknown default
+  - P30-P0-05 terminal candidate binds deterministic splintering, exact candidate qualification, BCF 2.2.0 version surfaces, terminal P30 truth, independent immutable publication, and custody as one release proposition
 closeout_requirements:
   claims:
     workitems_closed:
@@ -116,4 +120,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- complete deterministic proof splintering and immutable independently verified v2.2.0 custody without adding an operator procedure or authority stage
+- certify terminal P30 truth and publish independently verified immutable v2.2.0 custody before activating P31
