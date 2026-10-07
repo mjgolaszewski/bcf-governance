@@ -1193,6 +1193,15 @@ fails closed before either path.  This ordering is part of self and adopter
 graph compatibility, so a controller-bundle download that precedes custody or
 lacks the exact pending-rotation condition is rejected prospectively.
 
+Component applicability is consumer-scoped.  The authorization download is a
+distinct graph component because it alone owns the custody-route output used
+to select `pending_rotation`; bootstrap, probe, promotion, and activation use
+the already-authorized transition and therefore retain an unconditional exact
+bundle download.  Prospective compilation enumerates every bundle-download
+consumer and rejects a condition placed on their shared post-authorization
+component, a missing authorize-only condition, or either component appearing
+in the wrong lifecycle job.
+
 The proof identity is one canonical tuple, not consumer-selected fields:
 
 ```text
