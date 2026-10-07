@@ -456,7 +456,7 @@ def validate_controller_custody_chain(
         result = _route(
             argv, python_executable=python_executable, payload=payload,
             expected_commit=commit,
-            expected_state="current" if name in {
+            expected_state="pending_rotation" if name in {
                 "admission_custody", "certification",
                 "legacy_noncertifying_finalizer", "no_transition",
                 "release_receipt",

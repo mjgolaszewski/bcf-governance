@@ -108,7 +108,7 @@
     },
     "governance/ci-extensions/bcf-controller-rotation.yml": {
       "operation": "copy",
-      "sha256": "a6608f87979203cb4efb54c56bdce878ff7a56d8c3913998742bd95e0daf9630"
+      "sha256": "9710a28562043874cc5083a332945db133785595738153d0dee77c9d6aba8cea"
     },
     "governance/ci-runtime.yml": {
       "operation": "copy",
@@ -792,7 +792,7 @@
     },
     "scripts/_bcf_runtime/controller_custody_prospective.py": {
       "operation": "copy",
-      "sha256": "1d54b6bdb4bedbe49977fbc68e4b7d19b0738c826d1dd225056275cfc4aa1759"
+      "sha256": "babcdf307eae60be09b456455a6582f8d62fc7a9aa6249c815a1089a765d0d71"
     },
     "scripts/_bcf_runtime/controller_transition_provider_custody.py": {
       "operation": "copy",
