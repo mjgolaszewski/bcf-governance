@@ -214,8 +214,9 @@ def test_reconcile_declares_one_closed_dependency_order() -> None:
     assert "phases/phase-30-log.yml" in (phase_scope.watch_paths or ())
     assert not any("phase-29" in path for path in (phase_scope.watch_paths or ()))
     assert ids.index("ci-graph-lock") < ids.index("ci-graph-render")
-    assert ids.index("ci-graph-render") < ids.index("workflow-authority")
-    assert ids[-1] == "editorial-audit"
+    assert ids.index("ci-graph-render") < ids.index("editorial-audit")
+    assert ids.index("editorial-audit") < ids.index("workflow-authority")
+    assert ids[-1] == "workflow-authority"
 
 
 def test_graph_projection_stages_watch_every_declared_value_source() -> None:
