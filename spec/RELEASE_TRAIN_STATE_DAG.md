@@ -1295,6 +1295,7 @@ chooses nodes, ordering, concurrency, or fallback behavior.
 | Empty remainder | exact affected-proof and reuse decisions | execute no positive node and report the reused proposition through the existing planner | unchanged reuse authority | any unaccounted required node |
 | Splittable remainder with usable observations | exact node manifest, selectors, subject/session/policy, compatible resources and closed duration observations | stable longest-duration-first partition with lexical tie-break | one gate receipt only after exact aggregate closure | overlap, omission, wrong node, wrong namespace, or incomplete splinter |
 | Splittable remainder without observations | same exact inventory with absent observations | stable lexical balanced partition | one gate receipt only after exact aggregate closure | metrics may not affect truth or silently remove nodes |
+| Splittable remainder with repository-mutating fixtures | exact node inventory contains tests whose fixture lifecycle may mutate repository-local ignored or Git/worktree state | execute every splinter in a distinct detached worktree, bootstrap its exact locked test toolchain, and retain only declared result artifacts | one aggregate receipt after every isolated worktree is cleanly removed | concurrent splinters sharing one checkout, pytest temp root, ignored artifact root, or toolchain installation |
 | Unsplittable or incompatible resources | exact inventory plus declared resource/lifecycle constraints | execute the existing monolithic gate | existing gate receipt | ad-hoc partial execution |
 | Bad, stale, ambiguous, or adversarial observations | observation identity/digest does not match exact inputs | deterministic monolithic fallback and typed reason | existing gate receipt | accepting observation authority or guessing a partition |
 | Any splinter terminal path | exact execution/session namespace per splinter | retire only that owned namespace and verify removal before aggregation | cleanup observation only | global prune, wildcard ownership, implicit persistence, or predecessor state visibility |
@@ -1313,9 +1314,9 @@ PRUNE exact affected-proof frontier
      -> exact unresolved node remainder
         -> validate splittability and resource/lifecycle contract
            -> derive immutable partition plan or monolithic fallback
-              -> allocate one exact ephemeral namespace per execution
-                 -> execute all assigned nodes once
-                    -> verify exact union, zero overlap and terminal cleanup
+              -> allocate one exact ephemeral namespace and detached worktree per execution
+                 -> bootstrap exact locked toolchain and execute all assigned nodes once
+                    -> verify exact union, zero overlap, worktree removal and terminal cleanup
                        -> aggregate canonical JUnit and timing observations
                           -> execute unchanged applicable negative controls
                              -> emit existing gate receipt
