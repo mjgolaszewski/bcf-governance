@@ -132,5 +132,6 @@ def test_self_test_splinters_use_distinct_worktrees_and_locked_toolchains() -> N
     ).read_text(encoding="utf-8")
     assert '"worktree", "add", "--quiet",' in source
     assert 'cwd=worktree,' in source
+    assert 'Path(temporary.name) / f"pytest-{splinter_id}"' in source
     assert '".github/scripts/bootstrap_test_toolchain.py"' in source
     assert '"worktree", "remove", "--force",' in source

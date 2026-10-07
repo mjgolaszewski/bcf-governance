@@ -165,7 +165,7 @@ def _run_test_splinters(
             splinter_id = str(splinter["id"])
             splinter_junit = junit.with_name(f"{junit.stem}.{splinter_id}.xml")
             worktree = worktrees[splinter_id]
-            base_temp = worktree / ".artifacts" / "pytest"
+            base_temp = Path(temporary.name) / f"pytest-{splinter_id}"
             environment = dict(os.environ)
             environment["PYTHONPATH"] = str(worktree)
             environment["PYTHONDONTWRITEBYTECODE"] = "1"
