@@ -123,3 +123,14 @@ def test_splinters_receive_unique_owned_state_and_retire_exactly(tmp_path: Path)
     assert second.root.is_dir()
     assert retire_execution_state(second)["removal_verified"] is True
     assert retire_execution_state(parent)["removal_verified"] is True
+
+
+def test_self_test_splinters_use_distinct_worktrees_and_locked_toolchains() -> None:
+    source = (
+        Path(__file__).resolve().parents[1]
+        / ".github/scripts/run_self_governance_gate.py"
+    ).read_text(encoding="utf-8")
+    assert '"worktree", "add", "--quiet",' in source
+    assert 'cwd=worktree,' in source
+    assert '".github/scripts/bootstrap_test_toolchain.py"' in source
+    assert '"worktree", "remove", "--force",' in source

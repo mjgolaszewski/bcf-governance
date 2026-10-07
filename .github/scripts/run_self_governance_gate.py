@@ -11,6 +11,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -138,23 +139,62 @@ def _run_test_splinters(
         resources_compatible=resources_compatible,
     )
     leases = {}
+    worktrees: dict[str, Path] = {}
+    temporary = tempfile.TemporaryDirectory(prefix="bcf-test-splinters-")
     try:
         for splinter in plan["splinters"]:
+            splinter_id = str(splinter["id"])
             lease = allocate_child_execution_state(
-                os.environ, execution_id=f"test:{splinter['id']}"
+                os.environ, execution_id=f"test:{splinter_id}"
             )
-            leases[splinter["id"]] = lease
+            leases[splinter_id] = lease
+            worktree = Path(temporary.name) / splinter_id
+            added = subprocess.run(
+                [
+                    "git", "-C", str(REPO_ROOT), "worktree", "add", "--quiet",
+                    "--detach", str(worktree), "HEAD",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if added.returncode:
+                _fail(gate, added.stderr.strip() or "splinter worktree allocation failed")
+            worktrees[splinter_id] = worktree
         def execute(splinter: dict[str, object]) -> dict[str, object]:
             splinter_id = str(splinter["id"])
             splinter_junit = junit.with_name(f"{junit.stem}.{splinter_id}.xml")
-            base_temp = REPO_ROOT / ".artifacts" / "pytest" / splinter_id
+            worktree = worktrees[splinter_id]
+            base_temp = worktree / ".artifacts" / "pytest"
             environment = dict(os.environ)
-            environment["PYTHONPATH"] = str(REPO_ROOT)
+            environment["PYTHONPATH"] = str(worktree)
             environment["PYTHONDONTWRITEBYTECODE"] = "1"
             lease = leases[splinter_id]
             if lease is not None:
                 environment.update(lease.environment())
             started = time.monotonic_ns()
+            bootstrap = subprocess.run(
+                [
+                    sys.executable,
+                    str(worktree / ".github/scripts/bootstrap_test_toolchain.py"),
+                    "--repo-root",
+                    str(worktree),
+                ],
+                cwd=worktree,
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if bootstrap.returncode:
+                return {
+                    "id": splinter_id,
+                    "returncode": bootstrap.returncode,
+                    "duration_ms": max(1, (time.monotonic_ns() - started) // 1_000_000),
+                    "stdout": bootstrap.stdout,
+                    "stderr": bootstrap.stderr,
+                    "junit": splinter_junit,
+                }
             result = subprocess.run(
                 [
                     sys.executable,
@@ -167,7 +207,7 @@ def _run_test_splinters(
                     f"--basetemp={base_temp}",
                     f"--junitxml={splinter_junit}",
                 ],
-                cwd=REPO_ROOT,
+                cwd=worktree,
                 env=environment,
                 capture_output=True,
                 text=True,
@@ -188,6 +228,21 @@ def _run_test_splinters(
             splinter_id: retire_execution_state(lease) if lease is not None else None
             for splinter_id, lease in reversed(list(leases.items()))
         }
+        worktree_cleanup = {}
+        for splinter_id, worktree in reversed(list(worktrees.items())):
+            removed = subprocess.run(
+                [
+                    "git", "-C", str(REPO_ROOT), "worktree", "remove", "--force",
+                    str(worktree),
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            worktree_cleanup[splinter_id] = (
+                removed.returncode == 0 and not worktree.exists()
+            )
+        temporary.cleanup()
     results.sort(key=lambda item: str(item["id"]))
     for result in results:
         sys.stdout.write(str(result["stdout"]))
@@ -215,6 +270,7 @@ def _run_test_splinters(
                         "returncode": result["returncode"],
                         "duration_ms": result["duration_ms"],
                         "execution_state": cleanup[result["id"]],
+                        "worktree_removed": worktree_cleanup[result["id"]],
                     }
                     for result in results
                 ],
