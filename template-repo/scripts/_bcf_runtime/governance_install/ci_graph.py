@@ -45,6 +45,23 @@ def apply_trusted_controller_management(
     extension_path = target_root / ROTATION_EXTENSION
     if not extension_path.is_file() or extension_path.is_symlink():
         raise RuntimeError("canonical controller rotation extension is unavailable")
+    project_trusted_controller_management(
+        graph,
+        trusted_labels,
+        policy_sha256=hashlib.sha256(policy_path.read_bytes()).hexdigest(),
+        extension_sha256=hashlib.sha256(extension_path.read_bytes()).hexdigest(),
+    )
+
+
+def project_trusted_controller_management(
+    graph: dict[str, Any],
+    trusted_labels: list[str],
+    *,
+    policy_sha256: str,
+    extension_sha256: str,
+) -> None:
+    """Purely project validated managed-controller inputs into a CI graph."""
+
     graph["trusted_controller"] = {
         "kind": "governed_controller_policy",
         "policy_path": POLICY_PATH,
@@ -52,13 +69,13 @@ def apply_trusted_controller_management(
     graph["value_sources"]["controller-policy"] = {
         "kind": "yaml",
         "path": POLICY_PATH,
-        "sha256": hashlib.sha256(policy_path.read_bytes()).hexdigest(),
+        "sha256": policy_sha256,
     }
     graph["extensions"].append(
         {
             "id": "bcf-controller-rotation",
             "path": ROTATION_EXTENSION,
-            "sha256": hashlib.sha256(extension_path.read_bytes()).hexdigest(),
+            "sha256": extension_sha256,
         }
     )
     graph["resource_classes"]["trusted-control-instance"] = {
@@ -165,6 +182,20 @@ def apply_trusted_controller_management(
             ),
         }
     )
+    prior_evidence = graph.get("profile_contract_version") == "3.0"
+    if prior_evidence:
+        graph["commands"]["transport-prior-evidence-effective"] = _command(
+            [
+                "${{ runner.tool_cache }}/bcf-governance/${{ needs.trusted-controller-build.outputs.target_commit }}/bin/bcf",
+                "ci-github", "prior-evidence", "transport", "--repository",
+                "${{ github.repository }}", "--main-sha", "${{ github.sha }}",
+                "--output", "${{ runner.temp }}/bcf-prior-evidence",
+            ],
+            environment={
+                "GITHUB_TOKEN": "${{ github.token }}",
+                "BCF_CONTROLLER_EXECUTION_REQUIRED": "true",
+            },
+        )
     graph["commands"].setdefault(
         "install-governance-dependencies",
         _command(["{python}", "-m", "pip", "install", "-r", "requirements-governance.txt"]),
@@ -221,14 +252,49 @@ def apply_trusted_controller_management(
         environment={"GITHUB_TOKEN": "${{ github.token }}"},
     )
     components["exact-main-admit-effective"] = {"kind": "command", "name": "Authenticate exact-main admission with the effective controller", "command": "exact-main-admit-effective", "environment": {}, "produces": [], "consumes": []}
+    if prior_evidence:
+        components["transport-prior-evidence-effective"] = {
+            "kind": "command",
+            "name": "Authenticate and preserve prior merged-PR evidence",
+            "command": "transport-prior-evidence-effective",
+            "environment": {},
+            "produces": ["prior-evidence-transport"],
+            "consumes": [],
+        }
+        components["upload-prior-evidence-effective"] = {
+            "kind": "action",
+            "name": "Upload exact prior evidence transport",
+            "action": "upload-artifact",
+            "with": {
+                "name": "bcf-prior-evidence-transport-${{ github.run_id }}-${{ github.run_attempt }}",
+                "path": "${{ runner.temp }}/bcf-prior-evidence",
+                "if-no-files-found": "error",
+                "retention-days": 30,
+            },
+            "environment": {},
+            "produces": ["prior-evidence-transport"],
+            "consumes": [],
+        }
     admit.update(
         {
             "needs": ["trusted-controller-build"],
             "condition": "exact-main-semantic-admission-enabled",
             "controller_requirement": "current",
-            "executor": {"kind": "component_sequence", "components": ["setup-python", "exact-main-admit-effective"]},
+            "executor": {
+                "kind": "component_sequence",
+                "components": [
+                    "setup-python", "exact-main-admit-effective",
+                    *(
+                        [
+                            "transport-prior-evidence-effective",
+                            "upload-prior-evidence-effective",
+                        ]
+                        if prior_evidence else []
+                    ),
+                ],
+            },
             "permissions": {"actions": "write", "contents": "read", "statuses": "write"},
-            "produces": [],
+            "produces": ["prior-evidence-transport"] if prior_evidence else [],
             "consumes": [],
         }
     )

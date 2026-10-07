@@ -1018,6 +1018,68 @@ def test_callback_closes_exact_no_transition_without_rerun(
     assert reruns == []
 
 
+def test_callback_closes_noncertifying_admission_without_dispatch(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    authority = _rotation_authority()
+    expected, facades, jobs = _collapsed_noncertifying()
+    workflow = authority["workflow_registry"][authority["roles"]["controller_rotation"]]
+    raw = (ROOT / workflow["active_path"]).read_bytes()
+    reruns: list[object] = []
+    api = SimpleNamespace(
+        jobs=lambda *_args, **_kwargs: tuple(jobs),
+        content=lambda *_args, **_kwargs: SimpleNamespace(
+            content=raw, blob_oid=workflow["trusted_workflow_blob_oid"]
+        ),
+        rerun_workflow=lambda *_args, **_kwargs: reruns.append(True),
+    )
+    assert classify_callback_topology(
+        expected_jobs=expected, jobs=jobs, skipped_facades=facades
+    ) == "admission_noncertifying"
+    monkeypatch.setattr(provider, "resolve_main", lambda *_args, **_kwargs: MAIN)
+    monkeypatch.setattr(provider, "load_authority", lambda *_args, **_kwargs: authority)
+    monkeypatch.setattr(
+        provider,
+        "_resolve_effective_controller_state",
+        lambda *_args, **_kwargs: (_resolved(), ()),
+    )
+    monkeypatch.setattr(
+        provider,
+        "authenticate_role_run",
+        lambda *_args, role, **_kwargs: SimpleNamespace(
+            run_id="40" if role == "controller_rotation_callback" else "30",
+            run_attempt=1,
+        ),
+    )
+    _callback_outcome(monkeypatch, tmp_path, _custody())
+    assert provider.dispatch_post_rotation_certification(
+        api,
+        repository="mjgolaszewski/bcf-governance",
+        callback_run_id="40",
+        callback_run_attempt="1",
+        rotation_run_id="30",
+        rotation_run_attempt="1",
+    ) == {
+        "status": "admission_noncertifying",
+        "dispatched": False,
+        "subject": {"commit_sha": NEW, "tree_sha": TREE},
+        "rotation_run_id": "30",
+        "rotation_run_attempt": 1,
+        "release_authority": False,
+    }
+    assert reruns == []
+    _callback_outcome(monkeypatch, tmp_path, _custody("9" * 40))
+    with pytest.raises(GitHubControllerError, match="differs from controller custody"):
+        provider.dispatch_post_rotation_certification(
+            api,
+            repository="mjgolaszewski/bcf-governance",
+            callback_run_id="40",
+            callback_run_attempt="1",
+            rotation_run_id="30",
+            rotation_run_attempt="1",
+        )
+
+
 def _collapsed_no_transition() -> tuple[set[str], dict[str, set[str]], list[dict[str, str]]]:
     authority = _rotation_authority()
     workflow = authority["workflow_registry"][authority["roles"]["controller_rotation"]]
@@ -1039,6 +1101,14 @@ def _collapsed_no_transition() -> tuple[set[str], dict[str, set[str]], list[dict
         }
         for source, value in definitions.items()
     ]
+    return expected, facades, jobs
+
+
+def _collapsed_noncertifying() -> tuple[set[str], dict[str, set[str]], list[dict[str, str]]]:
+    expected, facades, jobs = _collapsed_no_transition()
+    next(value for value in jobs if value["name"] == AUTHORIZE_JOB)[
+        "conclusion"
+    ] = "skipped"
     return expected, facades, jobs
 
 

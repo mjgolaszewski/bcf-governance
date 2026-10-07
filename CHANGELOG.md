@@ -15,6 +15,12 @@ All notable changes to BCF Governance are recorded here. This file follows
   no-transition byte suppression through an explicit expand-rotate-activate
   boundary, preserving installed N's exact provider-built input until N+1 is
   installed rather than consuming successor-only behavior during rotation.
+  Archive-only receipt closure now distinguishes stored archive bytes from
+  their exact verified materialization, preserving compact transport while
+  rejecting missing, undeclared, or digest-mismatched evidence members. Failed
+  exact-main admissions now yield one authenticated noncertifying rotation
+  outcome rather than misclassifying missing authorization as no-transition;
+  callbacks preserve custody, dispatch nothing, and grant no release authority.
 - Activated the version-dispatched evidence-session contract and canonical
   affected-proof closure only after installing its compatible controller, so
   every required proof is deterministically required, demonstrably unaffected,

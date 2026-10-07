@@ -45,7 +45,11 @@ from .prior_evidence_transport import (
     authenticate_merged_pull,
     authenticate_pr_certification,
 )
-from .controller_custody import compile_controller_custody, require_controller_execution
+from .controller_custody import (
+    compile_controller_custody,
+    require_controller_execution,
+    validate_controller_custody,
+)
 from .routine_controller_rotation import (
     RoutineRotationError,
     advance_transition,
@@ -666,6 +670,21 @@ def dispatch_post_rotation_certification(
     raw_outcome = load_callback_outcome(
         Path(os.environ.get("BCF_CONTROLLER_CUSTODY_PATH", ""))
     )
+    if topology == "admission_noncertifying":
+        if validate_controller_custody(raw_outcome) != validate_controller_custody(
+            custody
+        ):
+            raise GitHubControllerError(
+                "noncertifying rotation outcome differs from controller custody"
+            )
+        return {
+            "status": "admission_noncertifying",
+            "dispatched": False,
+            "subject": dict(custody["subject"]),
+            "rotation_run_id": rotation.run_id,
+            "rotation_run_attempt": rotation.run_attempt,
+            "release_authority": False,
+        }
     if topology == "no_transition":
         validate_no_transition_outcome(
             raw_outcome,
