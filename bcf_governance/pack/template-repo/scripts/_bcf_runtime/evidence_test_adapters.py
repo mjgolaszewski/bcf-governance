@@ -227,9 +227,11 @@ def test_observations(
                 and all(
                     isinstance(item, dict)
                     and item.get("returncode") == 0
+                    and item.get("worktree_removed") is True
                     and item.get("execution_state") is None
                     or isinstance(item, dict)
                     and item.get("returncode") == 0
+                    and item.get("worktree_removed") is True
                     and isinstance(item.get("execution_state"), dict)
                     and item["execution_state"].get("retired") is True
                     and item["execution_state"].get("removal_verified") is True

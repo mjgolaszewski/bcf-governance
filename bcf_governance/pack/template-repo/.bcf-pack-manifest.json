@@ -908,7 +908,7 @@
     },
     "scripts/_bcf_runtime/evidence_test_adapters.py": {
       "operation": "copy",
-      "sha256": "ac62486eb3eaa56eb497645a30fb9a4ede7c9cda88b37b8d04fbc2a58093e629"
+      "sha256": "2cb425e5bb3fab6c1b66d541082c58fe88c7d172b7013ae91fc16efb4b0aa598"
     },
     "scripts/_bcf_runtime/evidence_workitem_lifecycle.py": {
       "operation": "copy",
