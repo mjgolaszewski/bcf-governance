@@ -1173,6 +1173,15 @@ reuse decision is not.
 | current controller custody | installed controller identity, provider artifact coordinates and bundle digest | compact custody reference; do not rebuild/upload target bytes for a typed no-transition result | rotation owner resolves existing installed artifact; pending rotation alone produces a new bundle |
 | finalizer/publisher | exact certification proposition, subject, producer/source proof references, controller custody and run/attempt | compact bundle of manifests and digests; no copied evidence payload | publisher authenticates finalizer bundle and cannot broaden scope |
 
+The exact-main controller-builder job always resolves and projects authenticated
+custody, but bundle construction and upload are one closed conditional lane.
+Both components consume the canonical
+`exact-main-controller-build-required` condition, whose sole true state is
+`controller_state == pending_rotation`.  `current` and every noncertifying
+state retain the custody capsule while deterministically omitting controller
+bundle bytes.  Self and managed-adopter graph compilation must reject a
+missing, broadened, or one-sided build/upload condition before provider work.
+
 The proof identity is one canonical tuple, not consumer-selected fields:
 
 ```text
