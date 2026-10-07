@@ -844,7 +844,7 @@
     },
     "scripts/_bcf_runtime/evidence_scheduling.py": {
       "operation": "copy",
-      "sha256": "b3e7cc378bc81c1074919e22ed99a7be89f8a4a862307d07ae8829a1ee0007fc"
+      "sha256": "43685cfb1758465056ba587eb03627731cfa6e72e6238069c76521bd7b7cd407"
     },
     "scripts/_bcf_runtime/evidence_session_cleanup.py": {
       "operation": "copy",
@@ -1403,7 +1403,7 @@
     },
     "scripts/_bcf_runtime/test_duration_observations.py": {
       "operation": "copy",
-      "sha256": "5d8e7eb43a2c4f3f4dcd1561dbfa509a18a9e8a0c82b2288e2b6ceb23ff91a49"
+      "sha256": "d9d1b204dd8723307af8f7e5e6a8e2dc88401f98cc317efe057cb26ca62b297e"
     },
     "scripts/_bcf_runtime/test_manifests.py": {
       "operation": "copy",

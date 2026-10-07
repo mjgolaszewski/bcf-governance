@@ -60,7 +60,7 @@ def test_splinter_plan_is_stable_exact_and_duration_aware() -> None:
     )
 
 
-def test_partial_metrics_retain_observations_and_invalid_metrics_fall_back() -> None:
+def test_bad_metrics_and_incompatible_resources_fall_back_monolithically() -> None:
     partial = compile_test_splinter_plan(
         _nodes(),
         {"tests.one::test_a": 1},
