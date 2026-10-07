@@ -1292,6 +1292,7 @@ chooses nodes, ordering, concurrency, or fallback behavior.
 
 | State | Authenticated inputs | Deterministic action | Authoritative result | Fail-closed boundary |
 | --- | --- | --- | --- | --- |
+| Predecessor closed, successor eligible but still authored TODO | exact bounded predecessor certification plus unique successor dependency | author the semantic successor activation before implementation; reconcile candidate and exact-main scope to PR progress | no closure authority; candidate title names the active successor | spending evidence for, or titling the candidate as, the already-closed predecessor |
 | Empty remainder | exact affected-proof and reuse decisions | execute no positive node and report the reused proposition through the existing planner | unchanged reuse authority | any unaccounted required node |
 | Splittable remainder with usable observations | exact node manifest, selectors, subject/session/policy, compatible resources and closed duration observations | stable longest-duration-first partition with lexical tie-break | one gate receipt only after exact aggregate closure | overlap, omission, wrong node, wrong namespace, or incomplete splinter |
 | Splittable remainder without observations | same exact inventory with absent observations | stable lexical balanced partition | one gate receipt only after exact aggregate closure | metrics may not affect truth or silently remove nodes |
