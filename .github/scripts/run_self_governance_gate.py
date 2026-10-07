@@ -38,6 +38,10 @@ from bcf_governance.tooling.runtime_capacity import (  # noqa: E402
     retire_execution_state,
 )
 from bcf_governance.tooling.test_manifests import collect_selector_map  # noqa: E402
+from bcf_governance.tooling.test_duration_observations import (  # noqa: E402
+    TestDurationObservationError,
+    load_test_duration_observations,
+)
 POLICY_PATH = REPO_ROOT / "governance/self-governance-policy.yml"
 GATE_CONTRACTS_PATH = REPO_ROOT / "governance/gate-contracts.yml"
 
@@ -131,9 +135,13 @@ def _run_test_splinters(
         "policy_sha256": hashlib.sha256(GATE_CONTRACTS_PATH.read_bytes()).hexdigest(),
         "producer": gate,
     }
+    try:
+        durations_ms = load_test_duration_observations(REPO_ROOT)
+    except TestDurationObservationError as exc:
+        _fail(gate, str(exc))
     plan = compile_test_splinter_plan(
         nodes,
-        {},
+        durations_ms,
         max_splinters=min(max_splinters, cpu_count),
         identity=identity,
         resources_compatible=resources_compatible,
