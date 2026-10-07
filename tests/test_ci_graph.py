@@ -2335,12 +2335,22 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     ]["authorize"]["steps"]
     download = next(
         step for step in rotation_steps
-        if step["name"] == "Download the exact provider-built routine controller"
+        if step["name"]
+        == "Download the exact provider-built routine controller for authorization"
+    )
+    route = next(
+        step for step in rotation_steps
+        if step["name"]
+        == "Project non-authoritative routing from authenticated controller custody"
     )
     authorize = next(
         step for step in rotation_steps
         if step["name"] == "Authorize the exact protected-merge controller transition"
     )
+    assert download["if"] == pending_rotation_only.replace(
+        "exact-main-applicability", "controller-route"
+    )
+    assert rotation_steps.index(route) < rotation_steps.index(download)
     assert rotation_steps.index(download) < rotation_steps.index(authorize)
     finalizer = rendered[".github/workflows/bcf-trusted-finalizer.yml"]["jobs"][
         "finalize"

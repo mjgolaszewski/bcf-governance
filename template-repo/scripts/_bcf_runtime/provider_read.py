@@ -13,7 +13,7 @@ from urllib.request import Request
 from .ci_recovery_frontier import provider_read_frontier
 
 
-RETRYABLE_HTTP = frozenset({429, 502, 503, 504})
+RETRYABLE_HTTP = frozenset({429, 500, 502, 503, 504})
 BACKOFF_SECONDS = (1.0, 2.0)
 MAX_RETRY_AFTER_SECONDS = 30.0
 

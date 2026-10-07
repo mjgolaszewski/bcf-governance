@@ -29,7 +29,8 @@ def _http(code: int, retry_after: str | None = None) -> HTTPError:
     return HTTPError("https://api.github.test/value", code, "failed", headers, None)
 
 
-def test_provider_get_retries_transient_without_rewriting_identity() -> None:
+@pytest.mark.parametrize("code", [500, 503])
+def test_provider_get_retries_transient_without_rewriting_identity(code: int) -> None:
     request = Request("https://api.github.test/value", method="GET")
     seen: list[Request] = []
     delays: list[float] = []
@@ -39,7 +40,7 @@ def test_provider_get_retries_transient_without_rewriting_identity() -> None:
         assert timeout == 30
         seen.append(value)
         if len(seen) == 1:
-            raise _http(503, "0")
+            raise _http(code, "0")
         return _Response(b"exact")
 
     with open_provider_get(
@@ -53,7 +54,7 @@ def test_provider_get_retries_transient_without_rewriting_identity() -> None:
     assert seen == [request, request]
     assert delays == [0.0]
     assert observations == [
-        ProviderReadAttempt(1, "http_503", observations[0].request_sha256, 0.0),
+        ProviderReadAttempt(1, f"http_{code}", observations[0].request_sha256, 0.0),
         ProviderReadAttempt(2, "success", observations[0].request_sha256),
     ]
     assert len(observations[0].request_sha256) == 64

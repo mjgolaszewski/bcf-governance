@@ -326,17 +326,32 @@ def validate_controller_custody_chain(
         graph.get("conditions", {}).get(rotation_bundle_condition)
         != "steps.controller-route.outputs.controller_state == 'pending_rotation'"
         or graph.get("step_components", {}).get(
-            "download-routine-controller", {}
+            "download-routine-controller-for-authorization", {}
         ).get("condition") != rotation_bundle_condition
+        or graph.get("step_components", {}).get(
+            "download-routine-controller", {}
+        ).get("condition") is not None
         or not _ordered(
             rotation_components,
             "project-custody-controller-route",
-            "download-routine-controller",
+            "download-routine-controller-for-authorization",
         )
     ):
         raise GitHubControllerError(
             "rotation controller materialization is not custody-first and pending-rotation exact"
         )
+    for lifecycle_job in (
+        "bootstrap", "advance-bootstrap", "probe", "advance-probe",
+        "promote", "activate",
+    ):
+        components = _components(_job(graph, rotation_id, lifecycle_job))
+        if (
+            "download-routine-controller" not in components
+            or "download-routine-controller-for-authorization" in components
+        ):
+            raise GitHubControllerError(
+                "post-authorization controller materialization inherited authorize routing"
+            )
     components = graph.get("step_components")
     upload = components.get("upload-finalizer-controller-custody", {})
     download = components.get("download-finalizer-controller-custody", {})
