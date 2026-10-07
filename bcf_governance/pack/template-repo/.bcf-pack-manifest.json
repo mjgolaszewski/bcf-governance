@@ -1291,7 +1291,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "462072930f9c1e4d64c6902afa028d1f414f652857e35e894385d6f0a2eb3d99"
+      "sha256": "6cfa498092ae17fa0f0361f66c99dd89e16c6c4b1117e2bb299a316a9851c625"
     },
     "scripts/_bcf_runtime/scheduled_control_execution.py": {
       "operation": "copy",
@@ -1400,6 +1400,10 @@
     "scripts/_bcf_runtime/semantic_yaml.py": {
       "operation": "copy",
       "sha256": "dd8c267d2cc8dbdffe47e94eb6e096355765ecb73265384d06ac80a4de13c0c4"
+    },
+    "scripts/_bcf_runtime/test_duration_observations.py": {
+      "operation": "copy",
+      "sha256": "5d8e7eb43a2c4f3f4dcd1561dbfa509a18a9e8a0c82b2288e2b6ceb23ff91a49"
     },
     "scripts/_bcf_runtime/test_manifests.py": {
       "operation": "copy",

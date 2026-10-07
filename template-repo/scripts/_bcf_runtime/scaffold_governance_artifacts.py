@@ -44,6 +44,7 @@ from .reconcile_authority_transition import (
 )
 from .profile_surface_generation import reconcile_makefile, reconcile_template_workflow
 from .interpreter_environment import reconcile_interpreter_environment
+from .test_duration_observations import reconcile_test_duration_observations
 
 HOTFIX_MODES = {"lite", "full"}
 
@@ -561,6 +562,20 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                     "governance/gate-contracts.yml",
                     "governance/test-manifests",
                     "bcf_governance/tooling/test_manifests.py",
+                ),
+            )
+        )
+        steps.append(
+            ReconcileStep(
+                "test-duration-observations",
+                lambda: reconcile_test_duration_observations(repo_root, apply=False),
+                lambda: reconcile_test_duration_observations(repo_root, apply=True),
+                apply_verifies=True,
+                watch_paths=(
+                    "governance/test-manifests/test.txt",
+                    "governance/test-duration-observations.json",
+                    "governance/gate-contracts.yml",
+                    "bcf_governance/tooling/test_duration_observations.py",
                 ),
             )
         )
