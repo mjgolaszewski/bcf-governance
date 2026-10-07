@@ -95,9 +95,10 @@ def _is_ancestor(repo_root: Path, commit: str) -> bool:
 
 def _candidate_sources(
     repo_root: Path, nodes: tuple[str, ...], policy_sha256: str
-) -> dict[str, list[tuple[str, dict[str, int], str, str]]]:
+) -> dict[str, list[tuple[str, dict[str, int], str, str, tuple[str, ...]]]]:
     root = _cache_root(repo_root)
-    sources: dict[str, list[tuple[str, dict[str, int], str, str]]] = {}
+    sources: dict[str, list[tuple[str, dict[str, int], str, str, tuple[str, ...]]]] = {}
+    current_nodes = set(nodes)
     if root is None:
         return sources
     for bundle in sorted(path for path in root.iterdir() if path.is_dir() and not path.is_symlink()):
@@ -114,6 +115,12 @@ def _candidate_sources(
         identity = partition_payload.get("identity")
         if not isinstance(identity, dict):
             continue
+        raw_inventory = partition_payload.get("node_inventory")
+        if not isinstance(raw_inventory, list) or any(
+            not isinstance(node, str) or not node for node in raw_inventory
+        ):
+            continue
+        source_nodes = tuple(raw_inventory)
         commit = identity.get("subject_commit")
         tree = identity.get("subject_tree")
         if (
@@ -121,7 +128,10 @@ def _candidate_sources(
             or not isinstance(tree, str)
             or identity.get("producer") != "test"
             or identity.get("policy_sha256") != policy_sha256
-            or tuple(partition_payload.get("node_inventory", ())) != nodes
+            or not source_nodes
+            or tuple(sorted(source_nodes)) != source_nodes
+            or len(set(source_nodes)) != len(source_nodes)
+            or not set(source_nodes).issubset(current_nodes)
             or not _is_ancestor(repo_root, commit)
         ):
             continue
@@ -129,7 +139,7 @@ def _candidate_sources(
             durations = _junit_durations(junit)
         except TestDurationObservationError:
             continue
-        if tuple(sorted(durations)) != nodes:
+        if tuple(sorted(durations)) != source_nodes:
             continue
         selected = evidence_payload.get("observations", {}).get("execution_environment", {}).get("selected_interpreter")
         bundle_digest = proof_payload.get("bundle_sha256")
@@ -138,7 +148,9 @@ def _candidate_sources(
         interpreter_digest = selected.get("binary_sha256")
         if not isinstance(interpreter_digest, str) or len(interpreter_digest) != 64:
             continue
-        sources.setdefault(commit, []).append((bundle_digest, durations, tree, interpreter_digest))
+        sources.setdefault(commit, []).append(
+            (bundle_digest, durations, tree, interpreter_digest, source_nodes)
+        )
     return sources
 
 
@@ -153,7 +165,7 @@ def _newest_ancestor(repo_root: Path, commits: Iterable[str]) -> str | None:
 
 
 def compile_test_duration_observations(repo_root: Path) -> dict[str, Any]:
-    """Compile the newest exact ancestor's complete JUnit into one compact vector."""
+    """Compile the newest applicable ancestor JUnit into one compact vector."""
 
     nodes = _manifest_nodes(repo_root)
     manifest_sha256 = _sha256(repo_root / MANIFEST_PATH)
@@ -177,20 +189,31 @@ def compile_test_duration_observations(repo_root: Path) -> dict[str, Any]:
         selected = sorted(sources[selected_commit], key=lambda item: item[0])
         trees = {item[2] for item in selected}
         interpreters = {item[3] for item in selected}
-        if len(trees) != 1 or len(interpreters) != 1:
+        inventories = {item[4] for item in selected}
+        if len(trees) != 1 or len(interpreters) != 1 or len(inventories) != 1:
             raise TestDurationObservationError("test duration source identity is ambiguous")
+        source_nodes = next(iter(inventories))
+        source_node_set = set(source_nodes)
         vector = [
-            sorted(item[1][node] for item in selected)[(len(selected) - 1) // 2]
+            (
+                sorted(item[1][node] for item in selected)[(len(selected) - 1) // 2]
+                if node in source_node_set
+                else 0
+            )
             for node in nodes
         ]
         payload.update(
             {
-                "status": "observed",
+                "status": "observed" if len(source_nodes) == len(nodes) else "observed_partial",
                 "source": {
                     "subject_commit": selected_commit,
                     "subject_tree": next(iter(trees)),
                     "proof_bundle_sha256": [item[0] for item in selected],
                     "interpreter_sha256": next(iter(interpreters)),
+                    "observed_node_count": len(source_nodes),
+                    "observed_node_inventory_sha256": hashlib.sha256(
+                        _canonical({"nodes": list(source_nodes)})
+                    ).hexdigest(),
                 },
                 "durations_ms": vector,
             }
@@ -213,7 +236,7 @@ def validate_test_duration_observations(repo_root: Path, payload: dict[str, Any]
         or payload.get("schema_version") != "1.0"
         or payload.get("kind") != "bcf.test-duration-observations.v1"
         or payload.get("authority") is not False
-        or payload.get("status") not in {"absent", "observed"}
+        or payload.get("status") not in {"absent", "observed", "observed_partial"}
         or payload.get("policy_sha256") != _sha256(repo_root / POLICY_PATH)
         or payload.get("test_manifest") != {
             "path": MANIFEST_PATH.as_posix(),
@@ -229,16 +252,36 @@ def validate_test_duration_observations(repo_root: Path, payload: dict[str, Any]
             raise TestDurationObservationError("absent test duration observation carries data")
         return {}
     source = payload.get("source")
+    source_keys = {
+        "subject_commit", "subject_tree", "proof_bundle_sha256", "interpreter_sha256",
+        "observed_node_count", "observed_node_inventory_sha256",
+    }
     if (
         not isinstance(source, dict)
-        or set(source) != {"subject_commit", "subject_tree", "proof_bundle_sha256", "interpreter_sha256"}
+        or set(source) != source_keys
         or not _is_ancestor(repo_root, str(source.get("subject_commit", "")))
         or not isinstance(durations, list)
         or len(durations) != len(nodes)
-        or any(isinstance(value, bool) or not isinstance(value, int) or value < 1 for value in durations)
+        or any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in durations)
     ):
         raise TestDurationObservationError("observed test duration source is invalid")
-    return dict(zip(nodes, durations, strict=True))
+    observed_nodes = tuple(
+        node for node, duration in zip(nodes, durations, strict=True) if duration > 0
+    )
+    if (
+        not observed_nodes
+        or source.get("observed_node_count") != len(observed_nodes)
+        or source.get("observed_node_inventory_sha256")
+        != hashlib.sha256(_canonical({"nodes": list(observed_nodes)})).hexdigest()
+        or (payload["status"] == "observed" and len(observed_nodes) != len(nodes))
+        or (payload["status"] == "observed_partial" and len(observed_nodes) >= len(nodes))
+    ):
+        raise TestDurationObservationError("observed test duration inventory is invalid")
+    return {
+        node: duration
+        for node, duration in zip(nodes, durations, strict=True)
+        if duration > 0
+    }
 
 
 def reconcile_test_duration_observations(repo_root: Path, *, apply: bool) -> None:

@@ -60,10 +60,20 @@ def test_splinter_plan_is_stable_exact_and_duration_aware() -> None:
     )
 
 
-def test_bad_metrics_and_incompatible_resources_fall_back_monolithically() -> None:
-    invalid = compile_test_splinter_plan(
+def test_partial_metrics_retain_observations_and_invalid_metrics_fall_back() -> None:
+    partial = compile_test_splinter_plan(
         _nodes(),
         {"tests.one::test_a": 1},
+        max_splinters=4,
+        identity=IDENTITY,
+    )
+    assert partial["duration_source"] == "partial_observations"
+    assert partial["fallback_reason"] is None
+    assert len(partial["splinters"]) == 4
+    validate_test_splinter_plan(partial)
+    invalid = compile_test_splinter_plan(
+        _nodes(),
+        {"tests.unknown::test_nope": 1},
         max_splinters=4,
         identity=IDENTITY,
     )

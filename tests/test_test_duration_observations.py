@@ -98,6 +98,23 @@ def test_missing_history_is_typed_absence_and_uses_lexical_fallback(tmp_path: Pa
     assert load_test_duration_observations(root) == {}
 
 
+def test_exact_ancestor_subset_is_retained_for_unchanged_nodes(tmp_path: Path) -> None:
+    root = _fixture(tmp_path)
+    _bundle(root, suffix="d" * 64, times=(0.010, 0.020))
+    manifest = root / "governance/test-manifests/test.txt"
+    manifest.write_text(manifest.read_text() + "tests.test_demo::test_new\n")
+    subprocess.run(["git", "-C", str(root), "add", "."], check=True)
+    subprocess.run(["git", "-C", str(root), "commit", "-qm", "add node"], check=True)
+
+    compiled = compile_test_duration_observations(root)
+
+    assert compiled["status"] == "observed_partial"
+    assert compiled["durations_ms"] == [10, 20, 0]
+    reconcile_test_duration_observations(root, apply=True)
+    assert load_test_duration_observations(root) == {NODES[0]: 10, NODES[1]: 20}
+    reconcile_test_duration_observations(root, apply=False)
+
+
 def test_duration_observation_tampering_fails_closed(tmp_path: Path) -> None:
     root = _fixture(tmp_path)
     _bundle(root, suffix="c" * 64, times=(0.010, 0.020))
