@@ -130,10 +130,18 @@ step_components:
   download-routine-controller:
     kind: action
     name: Download the exact provider-built routine controller
-    condition: routine-controller-bundle-required
     action: download-artifact
     with: {name: 'bcf-trusted-control-${{ github.event.workflow_run.head_sha }}-${{ github.event.workflow_run.run_attempt }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ github.event.workflow_run.id
         }}', path: '${{ runner.temp }}/bcf-trusted-control'}
+    environment: {}
+    produces: []
+    consumes: [trusted-controller-bundle]
+  download-routine-controller-for-authorization:
+    kind: action
+    name: Download the exact provider-built routine controller for authorization
+    condition: routine-controller-bundle-required
+    action: download-artifact
+    with: {name: 'bcf-trusted-control-${{ github.event.workflow_run.head_sha }}-${{ github.event.workflow_run.run_attempt }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ github.event.workflow_run.id }}', path: '${{ runner.temp }}/bcf-trusted-control'}
     environment: {}
     produces: []
     consumes: [trusted-controller-bundle]
@@ -390,7 +398,7 @@ workflows:
         }}', target_wheel_sha256: '${{ steps.materialize-transition.outputs.target_wheel_sha256 }}'}
     executor:
       kind: component_sequence
-      components: [setup-python, download-trigger-controller-custody, project-custody-controller-route, download-routine-controller, setup-routine-decision-directory, setup-routine-authorized-directory, authorize-routine-transition, upload-routine-decision, stage-routine-authorization-controller, materialize-routine-transition, upload-routine-authorized]
+      components: [setup-python, download-trigger-controller-custody, project-custody-controller-route, download-routine-controller-for-authorization, setup-routine-decision-directory, setup-routine-authorized-directory, authorize-routine-transition, upload-routine-decision, stage-routine-authorization-controller, materialize-routine-transition, upload-routine-authorized]
     produces: [controller-transition-authorized, controller-transition-decision]
     consumes: [trusted-controller-bundle, controller-custody]
     required: true

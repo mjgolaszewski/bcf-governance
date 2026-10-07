@@ -26,7 +26,10 @@ All notable changes to BCF Governance are recorded here. This file follows
   build/upload lane not exactly restricted to pending rotation. Rotation now
   consumes that custody before artifact materialization and downloads target
   bytes only for pending rotation, so typed current/no-transition callbacks do
-  not require a bundle whose absence is intentional.
+  not require a bundle whose absence is intentional. The conditional
+  authorization download is distinct from the unconditional post-authorization
+  download used by bootstrap, probe, promotion, and activation, preventing
+  job-local route outputs from leaking applicability into later lifecycle jobs.
 - Activated the version-dispatched evidence-session contract and canonical
   affected-proof closure only after installing its compatible controller, so
   every required proof is deterministically required, demonstrably unaffected,

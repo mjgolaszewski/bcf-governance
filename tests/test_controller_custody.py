@@ -161,7 +161,9 @@ def test_prospective_chain_rejects_rotation_materialization_before_custody(
     root = Path(__file__).resolve().parents[1]
     graph = copy.deepcopy(validate_ci_graph(root).graph)
     if mutation == "unconditional":
-        graph["step_components"]["download-routine-controller"].pop("condition")
+        graph["step_components"][
+            "download-routine-controller-for-authorization"
+        ].pop("condition")
     else:
         workflow = next(
             value for value in graph["workflows"]
@@ -171,8 +173,24 @@ def test_prospective_chain_rejects_rotation_materialization_before_custody(
             value for value in workflow["jobs"] if value["id"] == "authorize"
         )
         components = authorize["executor"]["components"]
-        components.remove("download-routine-controller")
-        components.insert(1, "download-routine-controller")
+        components.remove("download-routine-controller-for-authorization")
+        components.insert(1, "download-routine-controller-for-authorization")
+    with pytest.raises(
+        GitHubControllerError,
+        match="custody-first and pending-rotation exact",
+    ):
+        validate_controller_custody_chain(
+            graph,
+            python_executable=Path(sys.executable),
+        )
+
+
+def test_prospective_chain_rejects_authorize_condition_leaking_to_bootstrap() -> None:
+    root = Path(__file__).resolve().parents[1]
+    graph = copy.deepcopy(validate_ci_graph(root).graph)
+    graph["step_components"]["download-routine-controller"]["condition"] = (
+        "routine-controller-bundle-required"
+    )
     with pytest.raises(
         GitHubControllerError,
         match="custody-first and pending-rotation exact",
