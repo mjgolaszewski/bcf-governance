@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import argparse
 import ast
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 from importlib import metadata
 import json
 import os
 import subprocess
 import sys
+import time
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import yaml
@@ -25,6 +28,15 @@ from bcf_governance.tooling.dependency_assurance import (  # noqa: E402
     cyclonedx_sbom,
     write_frozen_requirements,
 )
+from bcf_governance.tooling.evidence_scheduling import (  # noqa: E402
+    compile_test_splinter_plan,
+    validate_test_splinter_results,
+)
+from bcf_governance.tooling.runtime_capacity import (  # noqa: E402
+    allocate_child_execution_state,
+    retire_execution_state,
+)
+from bcf_governance.tooling.test_manifests import collect_selector_map  # noqa: E402
 POLICY_PATH = REPO_ROOT / "governance/self-governance-policy.yml"
 GATE_CONTRACTS_PATH = REPO_ROOT / "governance/gate-contracts.yml"
 
@@ -47,6 +59,175 @@ def _tracked_files() -> list[Path]:
     ]
 
 
+def _junit_nodes(path: Path) -> list[str]:
+    nodes: list[str] = []
+    for case in ET.parse(path).getroot().iter("testcase"):
+        classname = case.attrib.get("classname", "")
+        name = case.attrib.get("name", "")
+        nodes.append(f"{classname}::{name}" if classname else name)
+    return sorted(nodes)
+
+
+def _merge_junit(paths: list[Path], output: Path) -> None:
+    root = ET.Element("testsuites")
+    totals = {"tests": 0, "failures": 0, "errors": 0, "skipped": 0}
+    elapsed = 0.0
+    for path in paths:
+        parsed = ET.parse(path).getroot()
+        suites = [parsed] if parsed.tag == "testsuite" else list(parsed.findall("testsuite"))
+        for suite in suites:
+            root.append(suite)
+            for name in totals:
+                totals[name] += int(suite.attrib.get(name, "0"))
+            elapsed += float(suite.attrib.get("time", "0"))
+    root.attrib.update({name: str(value) for name, value in totals.items()})
+    root.attrib["time"] = f"{elapsed:.6f}"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    ET.ElementTree(root).write(output, encoding="utf-8", xml_declaration=True)
+
+
+def _run_test_splinters(
+    gate: str, test_contract: dict[str, object], junit: Path
+) -> int:
+    raw = test_contract.get("splinter")
+    if not isinstance(raw, dict):
+        return -1
+    if set(raw) != {"algorithm", "max_splinters", "minimum_cpus", "report"}:
+        _fail(gate, "test splinter contract fields are invalid")
+    if raw.get("algorithm") != "stable_lpt_v1":
+        _fail(gate, "test splinter algorithm is unsupported")
+    max_splinters = raw.get("max_splinters")
+    minimum_cpus = raw.get("minimum_cpus")
+    report_value = raw.get("report")
+    if (
+        isinstance(max_splinters, bool)
+        or not isinstance(max_splinters, int)
+        or max_splinters < 1
+        or isinstance(minimum_cpus, bool)
+        or not isinstance(minimum_cpus, int)
+        or minimum_cpus < 1
+        or not isinstance(report_value, str)
+        or not report_value
+    ):
+        _fail(gate, "test splinter contract values are invalid")
+    report = REPO_ROOT / report_value
+    try:
+        report.resolve().relative_to(REPO_ROOT.resolve())
+    except ValueError:
+        _fail(gate, "test splinter report escapes the repository")
+    selector_map = collect_selector_map(REPO_ROOT, gate, python_executable=sys.executable)
+    nodes = dict(selector_map.entries)
+    cpu_count = os.cpu_count() or 1
+    resources_compatible = cpu_count >= minimum_cpus
+    identity = {
+        "subject_commit": subprocess.check_output(
+            ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"], text=True
+        ).strip(),
+        "subject_tree": subprocess.check_output(
+            ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD^{tree}"], text=True
+        ).strip(),
+        "session": os.environ.get("BCF_EXECUTION_STATE_NAMESPACE", "direct-gate"),
+        "policy_sha256": hashlib.sha256(GATE_CONTRACTS_PATH.read_bytes()).hexdigest(),
+        "producer": gate,
+    }
+    plan = compile_test_splinter_plan(
+        nodes,
+        {},
+        max_splinters=min(max_splinters, cpu_count),
+        identity=identity,
+        resources_compatible=resources_compatible,
+    )
+    leases = {}
+    try:
+        for splinter in plan["splinters"]:
+            lease = allocate_child_execution_state(
+                os.environ, execution_id=f"test:{splinter['id']}"
+            )
+            leases[splinter["id"]] = lease
+        def execute(splinter: dict[str, object]) -> dict[str, object]:
+            splinter_id = str(splinter["id"])
+            splinter_junit = junit.with_name(f"{junit.stem}.{splinter_id}.xml")
+            base_temp = REPO_ROOT / ".artifacts" / "pytest" / splinter_id
+            environment = dict(os.environ)
+            environment["PYTHONPATH"] = str(REPO_ROOT)
+            environment["PYTHONDONTWRITEBYTECODE"] = "1"
+            lease = leases[splinter_id]
+            if lease is not None:
+                environment.update(lease.environment())
+            started = time.monotonic_ns()
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "pytest",
+                    "-q",
+                    "-p",
+                    "no:cacheprovider",
+                    *[str(value) for value in splinter["selectors"]],
+                    f"--basetemp={base_temp}",
+                    f"--junitxml={splinter_junit}",
+                ],
+                cwd=REPO_ROOT,
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            return {
+                "id": splinter_id,
+                "returncode": result.returncode,
+                "duration_ms": max(1, (time.monotonic_ns() - started) // 1_000_000),
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "junit": splinter_junit,
+            }
+        with ThreadPoolExecutor(max_workers=len(plan["splinters"])) as executor:
+            results = list(executor.map(execute, plan["splinters"]))
+    finally:
+        cleanup = {
+            splinter_id: retire_execution_state(lease) if lease is not None else None
+            for splinter_id, lease in reversed(list(leases.items()))
+        }
+    results.sort(key=lambda item: str(item["id"]))
+    for result in results:
+        sys.stdout.write(str(result["stdout"]))
+        sys.stderr.write(str(result["stderr"]))
+    junit_paths = [Path(str(result["junit"])) for result in results]
+    if any(not path.is_file() for path in junit_paths):
+        _fail(gate, "test splinter did not emit its declared JUnit result")
+    observed = {
+        str(result["id"]): _junit_nodes(Path(str(result["junit"]))) for result in results
+    }
+    try:
+        validate_test_splinter_results(plan, observed)
+    except ValueError as exc:
+        _fail(gate, str(exc))
+    _merge_junit(junit_paths, junit)
+    report.parent.mkdir(parents=True, exist_ok=True)
+    report.write_text(
+        json.dumps(
+            {
+                **plan,
+                "resources": {"observed_cpus": cpu_count, "minimum_cpus": minimum_cpus},
+                "results": [
+                    {
+                        "id": result["id"],
+                        "returncode": result["returncode"],
+                        "duration_ms": result["duration_ms"],
+                        "execution_state": cleanup[result["id"]],
+                    }
+                    for result in results
+                ],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return 1 if any(result["returncode"] != 0 for result in results) else 0
+
+
 def _run_tests(gate: str) -> None:
     junit = REPO_ROOT / f".artifacts/junit/{gate}.xml"
     junit.parent.mkdir(parents=True, exist_ok=True)
@@ -56,6 +237,9 @@ def _run_tests(gate: str) -> None:
     selectors = test_contract.get("selectors")
     if not isinstance(selectors, list) or not selectors:
         _fail(gate, "governed test selectors are missing")
+    splintered = _run_test_splinters(gate, test_contract, junit)
+    if splintered >= 0:
+        raise SystemExit(splintered)
     nodes: list[str] = []
     for selector in selectors:
         if selector == "@test_roots":

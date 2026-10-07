@@ -11,6 +11,8 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
 
+from .evidence_scheduling import validate_test_splinter_plan
+
 
 def captured_receipt_succeeded(path: Path) -> bool:
     """Apply the one canonical capture-success predicate."""
@@ -175,6 +177,81 @@ def test_observations(
             )
     else:
         counts = _pytest_counts(result.stdout + "\n" + result.stderr)
+    splinter = test_contract.get("splinter")
+    partition_observation: dict[str, Any] | None = None
+    if isinstance(splinter, dict) and isinstance(splinter.get("report"), str):
+        report_source = repo_root / splinter["report"]
+        if not report_source.is_file():
+            partition_observation = {"satisfied": False, "reason": "report_missing"}
+        else:
+            try:
+                report = json.loads(report_source.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                report = None
+            plan = (
+                {
+                    key: report[key]
+                    for key in (
+                        "schema_version", "algorithm", "identity", "node_inventory",
+                        "duration_source", "duration_input_sha256", "fallback_reason",
+                        "splinters", "partition_sha256",
+                    )
+                }
+                if isinstance(report, dict)
+                and all(
+                    key in report
+                    for key in (
+                        "schema_version", "algorithm", "identity", "node_inventory",
+                        "duration_source", "duration_input_sha256", "fallback_reason",
+                        "splinters", "partition_sha256",
+                    )
+                )
+                else None
+            )
+            try:
+                if plan is None:
+                    raise ValueError("partition plan missing")
+                validate_test_splinter_plan(plan)
+                plan_valid = True
+            except ValueError:
+                plan_valid = False
+            valid = (
+                isinstance(report, dict)
+                and plan_valid
+                and isinstance(report.get("partition_sha256"), str)
+                and isinstance(report.get("node_inventory"), list)
+                and len(report["node_inventory"]) == len(set(report["node_inventory"]))
+                and isinstance(report.get("splinters"), list)
+                and isinstance(report.get("results"), list)
+                and len(report["splinters"]) == len(report["results"])
+                and all(
+                    isinstance(item, dict)
+                    and item.get("returncode") == 0
+                    and item.get("execution_state") is None
+                    or isinstance(item, dict)
+                    and item.get("returncode") == 0
+                    and isinstance(item.get("execution_state"), dict)
+                    and item["execution_state"].get("retired") is True
+                    and item["execution_state"].get("removal_verified") is True
+                    for item in report.get("results", [])
+                )
+            )
+            destination = output_dir / f"{contract['target']}.partition.json"
+            shutil.copy2(report_source, destination)
+            artifacts.append(
+                {
+                    "path": destination.name,
+                    "media_type": "application/json",
+                    "sha256": _sha256(destination),
+                }
+            )
+            partition_observation = {
+                "satisfied": valid,
+                "partition_sha256": report.get("partition_sha256") if isinstance(report, dict) else None,
+                "splinter_count": len(report.get("splinters", [])) if isinstance(report, dict) else 0,
+                "duration_source": report.get("duration_source") if isinstance(report, dict) else None,
+                "fallback_reason": report.get("fallback_reason") if isinstance(report, dict) else None,
+            }
     manifest_value = test_contract.get("expected_node_manifest")
     expected_nodes: list[str] = []
     if isinstance(manifest_value, str) and manifest_value:
@@ -185,8 +262,7 @@ def test_observations(
                 for line in manifest_path.read_text(encoding="utf-8").splitlines()
                 if line.strip() and not line.lstrip().startswith("#")
             )
-    return (
-        {
+    observations = {
             "test_counts": counts,
             "test_thresholds": thresholds,
             "test_node_ids": node_ids,
@@ -194,6 +270,7 @@ def test_observations(
             "expected_nodes_mode": str(
                 test_contract.get("expected_nodes_mode", "contains")
             ),
-        },
-        artifacts,
-    )
+        }
+    if partition_observation is not None:
+        observations["test_partition"] = partition_observation
+    return observations, artifacts

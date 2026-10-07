@@ -574,7 +574,7 @@ gates:
     - {id: evidence-input-reference-owner-must-fail, mutation: {path: *id095, yaml_path: 'representations[semantic_id=governance.evidence-input-reference.v1].authorized_constructors_and_factories', value: [*id096]}, oracle: {kind: *id091, exit_codes: [1], stream: stderr, regex: governance.evidence-input-reference.v1 owner must be an authorized constructor}}
   test:
     invocation: {argv: [python3, *id029, test], cwd: ., env: {}, required_env: [], timeout_seconds: 2400}
-    evidence: {kind: *id030, test_contract: {junit_xml: .artifacts/junit/test.xml, selectors: ['@test_roots'], expected_node_manifest: governance/test-manifests/test.txt, expected_nodes_mode: exact, min_collected: 1, min_executed: 1, max_skipped: 0, artifact_binding: *id031}}
+    evidence: {kind: *id030, test_contract: {junit_xml: .artifacts/junit/test.xml, selectors: ['@test_roots'], expected_node_manifest: governance/test-manifests/test.txt, expected_nodes_mode: exact, min_collected: 1, min_executed: 1, max_skipped: 0, artifact_binding: *id031, splinter: {algorithm: stable_lpt_v1, max_splinters: 4, minimum_cpus: 2, report: .artifacts/junit/test.partition.json}}}
     negative_controls:
     - {id: test-behavior-must-fail, mutation: {path: *id099, yaml_path: required_artifacts.readme.contract, value: broken_readme}, oracle: {kind: *id033, node_ids: [*id100]}}
     - {id: prior-candidate-subject-must-fail, mutation: {path: bcf_governance/tooling/prior_evidence_transport.py, search: inventory_subject_sha = candidate.checkout_sha, replace: inventory_subject_sha = source_main.checkout_sha}, oracle: {kind: *id033, node_ids: ['tests.test_prior_evidence_transport::test_transport_uses_candidate_inventory']}}

@@ -8,6 +8,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Derived deterministic test splinters inside the existing gate producer from
+  the exact governed node inventory and resource contract, with stable
+  partitioning, isolated execution state, exact-union aggregation, safe
+  monolithic fallback, and unchanged receipt and claim authority.
 - Derived candidate titles from the unique governed lifecycle proposition and
   introduced exact, content-addressed local proof reuse without upgrading local
   authority; provider proof transport now retains original archives once and

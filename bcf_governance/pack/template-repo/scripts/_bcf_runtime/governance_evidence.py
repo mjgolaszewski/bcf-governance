@@ -700,6 +700,10 @@ def capture_gate(
                 for value in observations.get("output_requirements", [])
                 if isinstance(value, dict)
             )
+            and (
+                not isinstance(observations.get("test_partition"), dict)
+                or observations["test_partition"].get("satisfied") is True
+            )
             and probes
             and all(probe.get("oracle_observation", {}).get("satisfied") is True for probe in probes)
             else "failed"

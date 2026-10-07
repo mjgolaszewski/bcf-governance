@@ -303,6 +303,11 @@ def _test_issues(receipt_path: Path, receipt: dict[str, Any]) -> list[str]:
         issues.append("test_max_skipped_exceeded")
     if counts["failed"] or counts["errors"]:
         issues.append("test_failures_present")
+    partition = observations.get("test_partition")
+    if partition is not None and (
+        not isinstance(partition, dict) or partition.get("satisfied") is not True
+    ):
+        issues.append("test_partition_incomplete")
     expected = observations.get("expected_test_node_ids", [])
     actual = observations.get("test_node_ids", [])
     if isinstance(expected, list) and expected:

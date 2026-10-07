@@ -270,7 +270,7 @@
     },
     "schemas/evidence-policy.schema.json": {
       "operation": "copy",
-      "sha256": "f2649305689ef44318667216776b5e27de01796e989ae052cfff8f03fa0c10ce"
+      "sha256": "40a63f9b0a50647e964ee612d96cfd6b3e82d44e97bb5a6464bfe8a77defee49"
     },
     "schemas/evidence-receipt.schema.json": {
       "operation": "copy",
@@ -844,7 +844,7 @@
     },
     "scripts/_bcf_runtime/evidence_scheduling.py": {
       "operation": "copy",
-      "sha256": "6c583e78bf11774fdb5fcdfb13e04f1b95b31c1028e092440c99258a82a33bab"
+      "sha256": "b3e7cc378bc81c1074919e22ed99a7be89f8a4a862307d07ae8829a1ee0007fc"
     },
     "scripts/_bcf_runtime/evidence_session_cleanup.py": {
       "operation": "copy",
@@ -908,7 +908,7 @@
     },
     "scripts/_bcf_runtime/evidence_test_adapters.py": {
       "operation": "copy",
-      "sha256": "d9373c772f8e5b8c93100463e60e5ffb5f2d9a756d3db4011d824066177c630d"
+      "sha256": "ac62486eb3eaa56eb497645a30fb9a4ede7c9cda88b37b8d04fbc2a58093e629"
     },
     "scripts/_bcf_runtime/evidence_workitem_lifecycle.py": {
       "operation": "copy",
@@ -944,7 +944,7 @@
     },
     "scripts/_bcf_runtime/governance_evidence.py": {
       "operation": "copy",
-      "sha256": "a683f0c595bc244158d932b05d1510c30fd2336f6dfde7c2a83e6a298f263013"
+      "sha256": "2273db26c1b3ab4264d5dde0e9e6fa1a49e6b6249d4858ebe07d7100667c5894"
     },
     "scripts/_bcf_runtime/governance_install/__init__.py": {
       "operation": "copy",
@@ -1287,7 +1287,7 @@
     },
     "scripts/_bcf_runtime/runtime_capacity.py": {
       "operation": "copy",
-      "sha256": "a49bbb13caf168e67e482dcd9f60958a629e6004017be9c1594ba4594af1710d"
+      "sha256": "733bdddc78224ba5813c2826c3d9d917634aab3736f1bec76c4bbecd08001084"
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
@@ -1415,7 +1415,7 @@
     },
     "scripts/_bcf_runtime/truth_receipts.py": {
       "operation": "copy",
-      "sha256": "921ca23ba4a68435194f793daba5f8d45c5fe5e448e47b560a69c0b3a3654749"
+      "sha256": "905fb9cf33d1d55c2353d68fd41650d245a29bee2d3c6a16d2e3954714b016c4"
     },
     "scripts/_bcf_runtime/truth_reporting.py": {
       "operation": "copy",

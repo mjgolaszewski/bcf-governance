@@ -82,6 +82,8 @@ execution_evidence:
   - protected PR 369 merged as dfc521254e77dfba572b8baf5ab0f64a01c9b27d and exact-main 37619398753 attempt 2 reused exact evidence, but rotation callback 37623043164 exposed that its authorize job downloaded the intentionally absent current-state target bundle before consuming authenticated custody; the state matrix now requires custody-first routing and pending-rotation-only target materialization
   - protected PR 370 merged as 19e1fd67ad87e98ba9f91172a77731d5b152ec87 and exact-main 37636991864 built its N+1 bundle; rotation 37637856242 then proved the conditional download component had leaked its authorize-only route dependency into bootstrap jobs, so the canonical graph now assigns distinct authorization and post-authorization component identities and validates every lifecycle consumer prospectively
   - the corrective candidate submit encountered a provider HTTP 500 on an immutable comparison GET before evidence; the closed retry taxonomy now treats 500 like 429/502/503/504 and retries only the identical bounded read, with no mutation retry or authority effect
+  - P30-P0-04 closed on main c87133625160b3aa03973ef3d11faf32890a76f7 through exact-main 37658691927 attempt 2, installed-controller finalizer 37663298743, App 15368 bounded certification, and ordinary-current rotation 37663298891; P30-P0-05 is now the sole active workitem
+  - 'P30-P0-05 begins from a canonical splinter state matrix: the existing producer derives one immutable exact-node partition, isolated execution namespaces, exact aggregate and safe fallback while the ordinary gate receipt remains the sole claim authority'
 closeout_requirements:
   claims:
     workitems_closed:
@@ -114,4 +116,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify bounded P30-P0-03 closure and P30-P0-04 eligibility before beginning exact proof reuse
+- complete deterministic proof splintering and immutable independently verified v2.2.0 custody without adding an operator procedure or authority stage
