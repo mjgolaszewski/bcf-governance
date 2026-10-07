@@ -49,6 +49,57 @@ class GitHubPRMutationMixin:
             raise ValueError("provider did not create an open pull request")
         return value
 
+    def update_pull_request_metadata(
+        self,
+        repository: str,
+        number: object,
+        *,
+        node_id: str,
+        expected_head_sha: str,
+        title: str,
+        body: str,
+    ) -> dict[str, Any]:
+        """Project exact candidate metadata onto one authenticated open PR."""
+
+        exact_repository(repository)
+        numeric = positive_id(number, field="pull request number")
+        if (
+            not re.fullmatch(r"PR_[A-Za-z0-9_-]+", node_id)
+            or not title.strip()
+            or len(title) > 256
+            or len(body) > 16_384
+        ):
+            raise ValueError("pull request metadata identity is unsafe")
+        expected_sha = sha(expected_head_sha, field="pull request metadata head")
+        observed = self.pull_request(repository, numeric)  # type: ignore[attr-defined]
+        head = observed.get("head") if isinstance(observed, dict) else None
+        if (
+            observed.get("state") != "open"
+            or observed.get("node_id") != node_id
+            or not isinstance(head, dict)
+            or head.get("sha") != expected_sha
+        ):
+            raise ValueError("pull request metadata subject is not exact")
+        if observed.get("title") == title and observed.get("body") == body:
+            return observed
+        updated = self._request(
+            "PATCH",
+            f"/repos/{exact_repository(repository)}/pulls/{numeric}",
+            payload={"title": title, "body": body},
+        )
+        updated_head = updated.get("head") if isinstance(updated, dict) else None
+        if (
+            not isinstance(updated, dict)
+            or updated.get("state") != "open"
+            or updated.get("node_id") != node_id
+            or updated.get("title") != title
+            or updated.get("body") != body
+            or not isinstance(updated_head, dict)
+            or updated_head.get("sha") != expected_sha
+        ):
+            raise ValueError("provider did not bind exact pull request metadata")
+        return updated
+
     def enable_pull_request_auto_merge(
         self,
         repository: str,

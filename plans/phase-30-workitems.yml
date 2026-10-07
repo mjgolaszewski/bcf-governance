@@ -61,7 +61,7 @@ workitems:
   - contract-test
 - id: P30-P0-05
   priority: P0
-  status: TODO
+  status: IN_PROGRESS
   summary: partition remaining proof and publish immutable 2.2.0 custody
   acceptance:
   - requires-workitem-closure:P30-P0-04

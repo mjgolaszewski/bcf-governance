@@ -22,6 +22,16 @@ class CandidatePRAPI(Protocol):
         base: str,
         body: str,
     ) -> dict[str, Any]: ...
+    def update_pull_request_metadata(
+        self,
+        repository: str,
+        number: object,
+        *,
+        node_id: str,
+        expected_head_sha: str,
+        title: str,
+        body: str,
+    ) -> dict[str, Any]: ...
 
 
 def _validate(
@@ -102,15 +112,15 @@ def ensure_candidate_pull_request(
         raise ProspectiveValidationError(
             "candidate branch has ambiguous open pull requests"
         )
+    body = (
+        "BCF canonical candidate submission.\n\n"
+        f"- Base: `{base_sha}`\n"
+        f"- Candidate: `{head_sha}`\n"
+        f"- Tree: `{tree_sha}`\n"
+        f"- Recovery frontier: `{frontier_sha256}`\n\n"
+        "Provider certification and protected merge remain authoritative."
+    )
     if not matches:
-        body = (
-            "BCF canonical candidate submission.\n\n"
-            f"- Base: `{base_sha}`\n"
-            f"- Candidate: `{head_sha}`\n"
-            f"- Tree: `{tree_sha}`\n"
-            f"- Recovery frontier: `{frontier_sha256}`\n\n"
-            "Provider certification and protected merge remain authoritative."
-        )
         try:
             created = api.create_pull_request(
                 repository,
@@ -124,6 +134,29 @@ def ensure_candidate_pull_request(
                 "provider did not create the exact candidate pull request"
             ) from exc
         matches = [created]
+    else:
+        existing = matches[0]
+        _validate(
+            existing,
+            repository_id=repository_id,
+            branch=branch,
+            base_ref=base_ref,
+            base_sha=base_sha,
+            head_sha=head_sha,
+        )
+        try:
+            matches = [api.update_pull_request_metadata(
+                repository,
+                existing.get("number"),
+                node_id=str(existing.get("node_id", "")),
+                expected_head_sha=head_sha,
+                title=title,
+                body=body,
+            )]
+        except ValueError as exc:
+            raise ProspectiveValidationError(
+                "provider did not project exact candidate pull request metadata"
+            ) from exc
     return _validate(
         matches[0],
         repository_id=repository_id,

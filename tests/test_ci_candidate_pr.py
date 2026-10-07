@@ -20,6 +20,7 @@ class API:
     def __init__(self, pull_requests: tuple[dict, ...] = ()) -> None:
         self.values = list(copy.deepcopy(pull_requests))
         self.created = 0
+        self.updated = 0
 
     def repository(self, repository: str) -> dict:
         assert repository == REPOSITORY
@@ -34,14 +35,23 @@ class API:
         assert values["head"] == "feature" and values["base"] == "main"
         assert HEAD in values["body"] and TREE in values["body"]
         self.created += 1
-        return _pull()
+        return _pull(title=values["title"], body=values["body"])
+
+    def update_pull_request_metadata(self, repository: str, number: object, **values: str) -> dict:
+        assert repository == REPOSITORY and number == 7
+        assert values["node_id"] == "PR_exact7"
+        assert values["expected_head_sha"] == HEAD
+        self.updated += 1
+        return _pull(title=values["title"], body=values["body"])
 
 
-def _pull() -> dict:
+def _pull(*, title: str = "stale", body: str = "stale") -> dict:
     return {
         "number": 7,
         "node_id": "PR_exact7",
         "state": "open",
+        "title": title,
+        "body": body,
         "head": {
             "ref": "feature",
             "sha": HEAD,
@@ -76,6 +86,13 @@ def test_candidate_pr_is_created_once_then_reused_by_exact_identity() -> None:
     existing = API((_pull(),))
     assert _ensure(existing)["head_sha"] == HEAD
     assert existing.created == 0
+    assert existing.updated == 1
+
+
+def test_existing_candidate_metadata_is_mechanically_reprojected() -> None:
+    existing = API((_pull(title="old proposition", body="old subject"),))
+    assert _ensure(existing)["number"] == 7
+    assert existing.updated == 1
 
 
 @pytest.mark.parametrize("field", ["head_sha", "base_sha", "head_repository"])
