@@ -79,6 +79,7 @@ execution_evidence:
   - the same failed exact-main attempt triggered derivative rotation 37329637129, whose skipped authorization was incorrectly routed as no-transition and attempted to download a decision that could not exist; the graph now transports the exact triggering controller custody as a typed admission-noncertifying outcome, and the callback authenticates the skipped topology without dispatch or authority
   - protected PR 368 merged as 8f8102104167ee0c54216975facded16a6b7489a; routine rotation 37591790499 installed its exact provider-built controller on both trusted runners, and fresh exact-main 37591185228/2 reused authenticated proof so all four evidence shards completed in 19-27 seconds while retaining exact truth
   - the same fresh run classified controller custody current but exposed missing self-graph build/upload applicability, so P30-P0-04 closes only after both controller-bundle components are mechanically restricted to pending_rotation and bounded exact-main certification proves the corrected final tree
+  - protected PR 369 merged as dfc521254e77dfba572b8baf5ab0f64a01c9b27d and exact-main 37619398753 attempt 2 reused exact evidence, but rotation callback 37623043164 exposed that its authorize job downloaded the intentionally absent current-state target bundle before consuming authenticated custody; the state matrix now requires custody-first routing and pending-rotation-only target materialization
 closeout_requirements:
   claims:
     workitems_closed:

@@ -178,7 +178,7 @@ def _custody(commit: str) -> dict[str, Any]:
 
 def _route(
     argv: Sequence[str], *, python_executable: Path, payload: Mapping[str, Any],
-    expected_commit: str,
+    expected_commit: str, expected_state: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
     with tempfile.TemporaryDirectory(prefix="bcf-controller-route-") as temporary:
         root = Path(temporary)
@@ -199,9 +199,10 @@ def _route(
             text=True,
             check=False,
         )
-        if result.returncode == 0 and output.read_text(encoding="utf-8") != (
-            f"controller_commit_sha={expected_commit}\n"
-        ):
+        expected = f"controller_commit_sha={expected_commit}\n"
+        if expected_state is not None:
+            expected += f"controller_state={expected_state}\n"
+        if result.returncode == 0 and output.read_text(encoding="utf-8") != expected:
             raise GitHubControllerError("controller route projected a different identity")
         return result
 
@@ -317,6 +318,24 @@ def validate_controller_custody_chain(
     ):
         raise GitHubControllerError(
             "controller bundle production is not pending-rotation exact"
+        )
+    rotation_bundle_condition = "routine-controller-bundle-required"
+    rotation_authorize = _job(graph, rotation_id, "authorize")
+    rotation_components = _components(rotation_authorize)
+    if (
+        graph.get("conditions", {}).get(rotation_bundle_condition)
+        != "steps.controller-route.outputs.controller_state == 'pending_rotation'"
+        or graph.get("step_components", {}).get(
+            "download-routine-controller", {}
+        ).get("condition") != rotation_bundle_condition
+        or not _ordered(
+            rotation_components,
+            "project-custody-controller-route",
+            "download-routine-controller",
+        )
+    ):
+        raise GitHubControllerError(
+            "rotation controller materialization is not custody-first and pending-rotation exact"
         )
     components = graph.get("step_components")
     upload = components.get("upload-finalizer-controller-custody", {})
@@ -437,6 +456,11 @@ def validate_controller_custody_chain(
         result = _route(
             argv, python_executable=python_executable, payload=payload,
             expected_commit=commit,
+            expected_state="current" if name in {
+                "admission_custody", "certification",
+                "legacy_noncertifying_finalizer", "no_transition",
+                "release_receipt",
+            } else None,
         )
         if result.returncode != 0:
             raise GitHubControllerError(
