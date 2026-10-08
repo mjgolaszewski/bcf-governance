@@ -502,6 +502,45 @@ def test_reconcile_mechanically_commits_definition_then_exact_authority(
     assert (root / ".github/workflows/admission.yml").read_text() == "name: new\n"
 
 
+def test_reconcile_decides_transition_only_after_ordered_projection_closure(
+    tmp_path: Path,
+) -> None:
+    root = _authority_transition_repository(tmp_path)
+    base = _git(root, "rev-parse", "HEAD")
+    (root / "intent").write_text("transient\n", encoding="utf-8")
+
+    def steps(candidate: Path) -> tuple[ReconcileStep, ...]:
+        workflow = candidate / ".github/workflows/admission.yml"
+        intent = candidate / "intent"
+
+        def canonical_owner() -> None:
+            intent.write_text("old\n", encoding="utf-8")
+
+        def render() -> None:
+            workflow.write_text(
+                f"name: {intent.read_text(encoding='utf-8').strip()}\n",
+                encoding="utf-8",
+            )
+
+        return (
+            ReconcileStep("release-version-surfaces", lambda: None, canonical_owner),
+            ReconcileStep("ci-graph-render", lambda: None, render),
+            _transition_steps(candidate)[-1],
+        )
+
+    result = apply_workflow_authority_transition(
+        root,
+        step_factory=steps,
+        converge=converge,
+        snapshot=_transition_snapshot,
+    )
+
+    assert result is None
+    assert _git(root, "rev-parse", "HEAD") == base
+    assert (root / "intent").read_text() == "transient\n"
+    assert (root / ".github/workflows/admission.yml").read_text() == "name: old\n"
+
+
 def test_reconcile_mechanical_commits_do_not_require_ambient_git_identity(
     tmp_path: Path,
 ) -> None:
