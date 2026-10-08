@@ -25,6 +25,9 @@ class ReleaseQualificationError(ValueError):
     """Exact release assets or an adopter qualification are incomplete."""
 
 
+_QUALIFICATION_BASE_REMOTE = "bcf-qualification-base"
+
+
 def dispatch_release_qualification(api: GitHubAPI, receipt: dict[str, Any]) -> None:
     """Continue the fixed publication train with no caller-selected routing."""
 
@@ -144,13 +147,16 @@ def run_candidate_qualification_train(
     from .local_pr import canonical_prospective_inputs, run_prospective_train
     from .local_pr_context import LocalValidationLane
 
-    canonical = canonical_prospective_inputs(repo_root)
+    canonical = canonical_prospective_inputs(
+        repo_root, remote=_QUALIFICATION_BASE_REMOTE
+    )
     return run_prospective_train(
         repo_root,
         semantic_intent=str(canonical["semantic_intent"]),
         evaluation_target=canonical["evaluation_target"],
         subject_commit=str(canonical["subject_commit"]),
         subject_tree=str(canonical["subject_tree"]),
+        remote=_QUALIFICATION_BASE_REMOTE,
         python_executable=project_python,
         validation_lane=LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION,
     )
@@ -304,6 +310,26 @@ def _commit(root: Path, message: str) -> None:
         raise ReleaseQualificationError("cannot inspect qualification candidate changes")
 
 
+def _project_qualification_base_remote(
+    candidate_root: Path, base_root: Path, base_commit: str
+) -> None:
+    """Materialize one immutable local remote for the captured adopter base."""
+
+    _run(["git", "init", "--bare", str(base_root)], cwd=base_root.parent)
+    _run(
+        ["git", "-C", str(base_root), "symbolic-ref", "HEAD", "refs/heads/main"],
+        cwd=base_root.parent,
+    )
+    _run(
+        ["git", "push", str(base_root), f"{base_commit}:refs/heads/main"],
+        cwd=candidate_root,
+    )
+    _run(
+        ["git", "remote", "add", _QUALIFICATION_BASE_REMOTE, str(base_root)],
+        cwd=candidate_root,
+    )
+
+
 def _isolated_project_python(
     source_root: Path,
     source_python: Path,
@@ -405,6 +431,11 @@ def qualify_release(
             remote = _run(["git", "remote", "get-url", "origin"], cwd=adopter_source)
             _run(["git", "remote", "set-url", "origin", remote], cwd=destination)
             _run(["git", "checkout", "-B", f"qualification/bcf-{version}", adopter_commit], cwd=destination)
+            _project_qualification_base_remote(
+                destination,
+                temporary_root / f"{required[repository]['id']}-base.git",
+                adopter_commit,
+            )
             project_python = _isolated_project_python(
                 adopter_source,
                 adopter_python,

@@ -4,6 +4,7 @@ import hashlib
 import copy
 import json
 from pathlib import Path
+import subprocess
 import sys
 import venv
 
@@ -396,7 +397,7 @@ def test_candidate_qualification_derives_the_closed_observation_lane(
     monkeypatch.setattr(
         local_pr,
         "canonical_prospective_inputs",
-        lambda _root: {
+        lambda _root, **_kwargs: {
             "semantic_intent": "pr",
             "evaluation_target": None,
             "subject_commit": "a" * 40,
@@ -419,6 +420,34 @@ def test_candidate_qualification_derives_the_closed_observation_lane(
         captured["validation_lane"]
         is LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION
     )
+    assert captured["remote"] == "bcf-qualification-base"
+
+
+def test_qualification_base_remote_is_immutable_at_captured_adopter_subject(
+    tmp_path: Path,
+) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    subprocess.run(["git", "init", "--quiet"], cwd=candidate, check=True)
+    subprocess.run(["git", "config", "user.name", "BCF Fixture"], cwd=candidate, check=True)
+    subprocess.run(["git", "config", "user.email", "fixture@example.invalid"], cwd=candidate, check=True)
+    (candidate / "README.md").write_text("base\n", encoding="utf-8")
+    subprocess.run(["git", "add", "."], cwd=candidate, check=True)
+    subprocess.run(["git", "commit", "--quiet", "-m", "base"], cwd=candidate, check=True)
+    commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=candidate, capture_output=True,
+        text=True, check=True,
+    ).stdout.strip()
+
+    qualification._project_qualification_base_remote(
+        candidate, tmp_path / "qualification-base.git", commit
+    )
+    observed = subprocess.run(
+        ["git", "ls-remote", "bcf-qualification-base", "HEAD"],
+        cwd=candidate, capture_output=True, text=True, check=True,
+    ).stdout.split()[0]
+
+    assert observed == commit
 
 
 def test_qualification_receipt_requires_exact_subject_assets_and_adopters(
