@@ -148,6 +148,29 @@ def _validate_train_telemetry(repo_root: Path, telemetry: dict[str, Any]) -> Non
         raise ProspectiveValidationError(str(exc)) from exc
 
 
+def canonical_prospective_inputs(
+    repo_root: Path,
+    *,
+    remote: str = "origin",
+    runner: Runner = _run,
+) -> dict[str, str | None]:
+    """Derive the immutable subject and proposition for a local train."""
+
+    root = repo_root.resolve()
+    context = resolve_local_pr_context(root, remote=remote, runner=runner)
+    identity = _candidate_identity(root, context, runner=runner)
+    try:
+        evaluation = post_merge_evaluation(validate_ci_graph(root).graph)
+    except CIGraphError as exc:
+        raise ProspectiveValidationError(str(exc)) from exc
+    return {
+        "semantic_intent": evaluation.mode,
+        "evaluation_target": evaluation.target,
+        "subject_commit": identity.commit_sha,
+        "subject_tree": identity.tree_sha,
+    }
+
+
 def _run_prospective_train(
     repo_root: Path,
     *,

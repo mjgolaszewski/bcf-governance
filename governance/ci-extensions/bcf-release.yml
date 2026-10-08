@@ -5,7 +5,7 @@ extension:
   owner: bcf-governance
   rationale: preserve authorization, isolated build, independent verification, trusted collection, and immutable publication roles
   attachment_point: release-role
-  applicability: [workflow_dispatch, workflow_run]
+  applicability: [workflow_dispatch, workflow_run, repository_dispatch]
   required_controls:
     positive: [bcf-release-authority-positive]
     negative: [bcf-release-custody-negative]
@@ -18,6 +18,7 @@ artifacts:
   release-receipt-bundle: {path: .artifacts/release-receipt, kind: release, scope: run-attempt, retention_days: 90}
 conditions:
   release-owner-main: github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main'
+  release-qualified-owner-main: github.event.action == 'bcf_release_qualified' && github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main'
   release-authorized: needs.authorize.result == 'success'
   release-trigger-success: github.event.workflow_run.event == 'workflow_dispatch' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
   release-runtime-green: needs.runtime.result == 'success'
@@ -50,8 +51,12 @@ commands:
     argv: ['${{ runner.tool_cache }}/bcf-governance/${{ needs.controller-route.outputs.target_commit }}/bin/bcf', ci-github, release, resolve-publication, --repository, '${{ github.repository }}', --output, '${{ runner.temp }}/bcf-publication/publication-inputs.json']
     cwd: .
     environment: {BCF_CONTROLLER_EXECUTION_REQUIRED: 'true'}
+  authenticate-release-qualification:
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ needs.controller-route.outputs.target_commit }}/bin/bcf', ci-github, release, authenticate-qualification, --repository, '${{ github.repository }}', --event, '${{ github.event_path }}', --output, '${{ runner.temp }}/bcf-publication/qualification.json']
+    cwd: .
+    environment: {BCF_CONTROLLER_EXECUTION_REQUIRED: 'true'}
   publish-release:
-    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ needs.controller-route.outputs.target_commit }}/bin/bcf', ci-github, release, publish, --repository, '${{ github.repository }}', --tag, 'v{source:release-contract:package.version}', --commit, '${{ steps.resolve.outputs.subject_commit }}', --release-artifact-dir, '${{ runner.temp }}/bcf-publication/receipt/assets', --release-notes-text, 'The attached wheel, source archive, and checksums are the exact mechanically certified BCF Governance release bytes.', --receipt, '${{ runner.temp }}/bcf-publication/receipt/release-receipt.json', --receipt-artifact-id, '${{ steps.resolve.outputs.receipt_artifact_id }}', --receipt-artifact-name, '${{ steps.resolve.outputs.receipt_artifact_name }}', --receipt-provider-digest, '${{ steps.resolve.outputs.receipt_provider_digest }}']
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ needs.controller-route.outputs.target_commit }}/bin/bcf', ci-github, release, publish, --repository, '${{ github.repository }}', --tag, 'v{source:release-contract:package.version}', --commit, '${{ steps.resolve.outputs.subject_commit }}', --release-artifact-dir, '${{ runner.temp }}/bcf-publication/receipt/assets', --release-notes-text, 'The attached wheel, source archive, and checksums are the exact mechanically certified BCF Governance release bytes.', --receipt, '${{ runner.temp }}/bcf-publication/receipt/release-receipt.json', --receipt-artifact-id, '${{ steps.resolve.outputs.receipt_artifact_id }}', --receipt-artifact-name, '${{ steps.resolve.outputs.receipt_artifact_name }}', --receipt-provider-digest, '${{ steps.resolve.outputs.receipt_provider_digest }}', --qualification, '${{ runner.temp }}/bcf-publication/qualification.json']
     cwd: .
     environment: {BCF_CONTROLLER_EXECUTION_REQUIRED: 'true'}
     required_environment: [BCF_RELEASE_ADMIN_TOKEN, BCF_CONTROLLER_EXECUTION_REQUIRED]
@@ -217,6 +222,13 @@ step_components:
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
     produces: []
     consumes: []
+  authenticate-release-qualification:
+    kind: command
+    name: Authenticate exact pre-publication adopter qualification
+    command: authenticate-release-qualification
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+    produces: []
+    consumes: []
   download-release-receipt:
     kind: action
     name: Download only the resolver-selected receipt and certified assets
@@ -264,9 +276,9 @@ workflows:
   path: .github/workflows/bcf-release-publisher.yml
   display_name: bcf/immutable-release-publisher
   role: release
-  events: [{type: workflow_dispatch}]
+  events: [{type: repository_dispatch, types: [bcf_release_qualified]}]
   permissions: {}
   jobs:
-  - {id: controller-route, display_name: Observe provider-effective controller for non-authoritative publication routing, semantic_role: release-publication-controller-routing, resource_class: hosted-python-latest, trust: candidate, needs: [], condition: release-owner-main, controller_requirement: null, timeout_minutes: 5, permissions: {actions: read, contents: read}, checkout: false, components: [], outputs: {target_commit: '${{ steps.candidate-effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}'}, executor: {kind: component_sequence, components: [checkout-candidate, setup-python, install-governance, resolve-effective-controller-candidate]}, produces: [], consumes: [], required: true}
-  - {id: publish, display_name: Publish pre-certified immutable release bytes, semantic_role: release-publisher, resource_class: trusted-control, trust: trusted, needs: [controller-route], condition: release-owner-main, controller_requirement: current, timeout_minutes: 10, permissions: {actions: read, attestations: write, contents: write, id-token: write}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-python, setup-publication-directories, resolve-release-publication, download-release-receipt, attest-release-assets, publish-release]}, produces: [], consumes: [], required: true}
+  - {id: controller-route, display_name: Observe provider-effective controller for non-authoritative publication routing, semantic_role: release-publication-controller-routing, resource_class: hosted-python-latest, trust: candidate, needs: [], condition: release-qualified-owner-main, controller_requirement: null, timeout_minutes: 5, permissions: {actions: read, contents: read}, checkout: false, components: [], outputs: {target_commit: '${{ steps.candidate-effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}'}, executor: {kind: component_sequence, components: [checkout-candidate, setup-python, install-governance, resolve-effective-controller-candidate]}, produces: [], consumes: [], required: true}
+  - {id: publish, display_name: Publish only after exact adopter qualification, semantic_role: release-publisher, resource_class: trusted-control, trust: trusted, needs: [controller-route], condition: release-qualified-owner-main, controller_requirement: current, timeout_minutes: 10, permissions: {actions: read, attestations: write, contents: write, id-token: write}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-python, setup-publication-directories, resolve-release-publication, authenticate-release-qualification, download-release-receipt, attest-release-assets, publish-release]}, produces: [], consumes: [], required: true}
 jobs: []

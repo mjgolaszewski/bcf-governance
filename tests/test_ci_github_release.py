@@ -263,6 +263,48 @@ def _json(path: Path, payload: dict[str, object]) -> Path:
     return path
 
 
+def _qualification(path: Path, assets: dict[str, str]) -> Path:
+    contract = yaml.safe_load(
+        (REPO_ROOT / "governance/release-qualification.yml").read_text()
+    )
+    adopters = []
+    for index, item in enumerate(contract["required_adopters"]):
+        identity = f"{index + 1}" * 40
+        adopters.append(
+            {
+                "id": item["id"],
+                "repository": item["repository"],
+                "profile": item["profile"],
+                "source_commit": identity,
+                "source_tree": identity,
+                "candidate_commit": identity,
+                "candidate_tree": identity,
+                "evaluation": {"intent": "pr", "target": None},
+                "status": "pass",
+            }
+        )
+    return _json(
+        path,
+        {
+            "schema_version": "1.0",
+            "kind": "release_adopter_qualification",
+            "authority": False,
+            "subject": {
+                "repository": "owner/repo",
+                "commit_sha": COMMIT,
+                "tree_sha": TREE,
+            },
+            "release": {"version": "0.7.1", "assets": assets},
+            "contract_sha256": _sha(
+                REPO_ROOT / "governance/release-qualification.yml"
+            ),
+            "adopters": adopters,
+            "status": "pass",
+            "publication_eligible_observation": True,
+        },
+    )
+
+
 def _release_inputs(tmp_path: Path) -> dict[str, object]:
     tmp_path.mkdir(parents=True, exist_ok=True)
     dependency = b"dependency-wheel"
@@ -1244,6 +1286,9 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
             },
         },
     )
+    qualification_path = _qualification(
+        tmp_path / "qualification.json", values["assets"]  # type: ignore[arg-type]
+    )
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release.resolve_main",
         lambda api, repository: MainIdentity("101", "main", COMMIT, TREE),
@@ -1264,6 +1309,10 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
         "bcf_governance.tooling.ci_github_release.publish_release",
         lambda *args, **kwargs: {"status": "published"},
     )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.packaged_repo_root",
+        lambda: REPO_ROOT,
+    )
     result = publish_certified_release(
         object(),  # type: ignore[arg-type]
         repository="owner/repo",
@@ -1275,6 +1324,7 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
         receipt_artifact_id="70",
         receipt_artifact_name="receipt",
         receipt_provider_digest=f"sha256:{'f' * 64}",
+        qualification_path=qualification_path,
         publisher_run_id="80",
         publisher_run_attempt="1",
     )
@@ -1294,6 +1344,7 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
             receipt_artifact_id="70",
             receipt_artifact_name="receipt",
             receipt_provider_digest=f"sha256:{'f' * 64}",
+            qualification_path=qualification_path,
             publisher_run_id="80",
             publisher_run_attempt="1",
         )
@@ -1317,6 +1368,7 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
             receipt_artifact_id="70",
             receipt_artifact_name="receipt",
             receipt_provider_digest=f"sha256:{'f' * 64}",
+            qualification_path=qualification_path,
             publisher_run_id="80",
             publisher_run_attempt="1",
         )

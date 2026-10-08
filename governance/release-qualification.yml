@@ -1,0 +1,26 @@
+document:
+  kind: release_qualification_contract
+  name: BCF release adopter qualification
+  id: bcf-release-adopter-qualification
+  version: 1.0.0
+  status: active
+  path: governance/release-qualification.yml
+schema_version: '1.0'
+required_adopters:
+- id: tradeflow-lite
+  repository: moranwm/tradeflow
+  profile: lite
+- id: racecar-standard-v3
+  repository: mjgolaszewski/racecar
+  profile: standard
+- id: agentbus-standard-v3
+  repository: mjgolaszewski/AgentBus
+  profile: standard
+qualification:
+  source: exact_clean_local_checkout
+  mutation_scope: disposable_clone_only
+  fixed_point: required
+  evaluation_scope: canonical_graph_derived
+  authority: local_non_authoritative
+  product_failure: blocks_custody_until_attributed
+  release_asset_identity: exact_sha256sums

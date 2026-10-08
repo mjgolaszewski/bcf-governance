@@ -38,6 +38,7 @@ from .release_asset_inventory import (
 from .release_closure import verify_archive, verify_release_lock, verify_wheelhouse
 from .release_receipts import build_trusted_release_receipt, emit_release_receipt
 from .release_runtime_verification import verify_runtime_evidence
+from .ci_github_release_qualification import require_publication_qualification
 from .release_source_bindings import (
     release_source_bindings,
     verify_release_source_bindings,
@@ -654,6 +655,7 @@ def publish_certified_release(
     receipt_artifact_id: object,
     receipt_artifact_name: object,
     receipt_provider_digest: object,
+    qualification_path: Path,
     publisher_run_id: object,
     publisher_run_attempt: object,
 ) -> dict[str, Any]:
@@ -717,6 +719,15 @@ def publish_certified_release(
     )
     paths = tuple(release_artifacts)
     expected_assets = exact_assets(paths)
+    require_publication_qualification(
+        qualification_path,
+        repo_root=packaged_repo_root(),
+        repository=repository,
+        commit_sha=main.checkout_sha,
+        tree_sha=main.tree_sha,
+        version=release_asset_version(paths).value,
+        assets=expected_assets,
+    )
     receipt_assets = receipt.get("observations", {}).get("release_artifacts")
     if not isinstance(receipt_assets, list) or any(
         not isinstance(value, dict) for value in receipt_assets

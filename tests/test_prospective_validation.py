@@ -107,6 +107,37 @@ class Result:
         self.returncode = returncode
 
 
+def test_canonical_prospective_inputs_derive_subject_and_scope_without_caller_choice(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    context = SimpleNamespace()
+    monkeypatch.setattr(
+        prospective, "resolve_local_pr_context", lambda *_args, **_kwargs: context
+    )
+    monkeypatch.setattr(
+        prospective,
+        "_candidate_identity",
+        lambda *_args, **_kwargs: SimpleNamespace(commit_sha=HEAD, tree_sha=TREE),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "validate_ci_graph",
+        lambda *_args: SimpleNamespace(graph={}),
+    )
+    monkeypatch.setattr(
+        prospective,
+        "post_merge_evaluation",
+        lambda *_args: SimpleNamespace(mode="workitem", target="P27-P0-03"),
+    )
+
+    assert prospective.canonical_prospective_inputs(tmp_path) == {
+        "semantic_intent": "workitem",
+        "evaluation_target": "P27-P0-03",
+        "subject_commit": HEAD,
+        "subject_tree": TREE,
+    }
+
+
 def test_planned_evidence_stops_on_first_failed_producer(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
