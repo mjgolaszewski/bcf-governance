@@ -43,6 +43,11 @@ execution_evidence:
     at the former 5:00 ceiling; the governed job window is 10 minutes so provider
     latency cannot cancel an otherwise unchanged fail-closed authorization at its
     demonstrated boundary.
+  - Exact-wheel adopter qualification no longer assumes a child virtual environment
+    inherits the invoking environment's admitted dependencies. It projects the
+    immutable wheel into a fresh import root, authenticates its distribution and
+    module origins, validates every active runtime requirement, and derives one
+    offline qualification command before any adopter clone is mutated.
 closeout_requirements:
   claims:
     required_suites_green:
