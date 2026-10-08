@@ -319,7 +319,7 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
     monkeypatch.setattr(qualification, "_run", run)
     monkeypatch.setattr(
         qualification, "_isolated_project_python",
-        lambda _source, source_python, _destination: source_python,
+        lambda _source, source_python, _destination, _environment: source_python,
     )
     monkeypatch.setattr(qualification, "_commit", lambda *_args, **_kwargs: None)
 
@@ -374,12 +374,16 @@ def test_repository_environment_is_copied_and_own_editable_path_is_rebound(
     hook.write_text(str(source / "src") + "\n", encoding="utf-8")
 
     projected = _isolated_project_python(
-        source, environment / "bin/python", destination
+        source,
+        environment / "bin/python",
+        destination,
+        tmp_path / "qualification-environment",
     )
 
-    assert projected == destination / ".bcf-qualification-venv/bin/python"
+    assert projected == tmp_path / "qualification-environment/bin/python"
+    assert not (destination / ".bcf-qualification-venv").exists()
     projected_hook = (
-        destination / ".bcf-qualification-venv/lib" / version
+        tmp_path / "qualification-environment/lib" / version
         / "site-packages/project.pth"
     )
     assert projected_hook.read_text(encoding="utf-8") == str(destination / "src") + "\n"

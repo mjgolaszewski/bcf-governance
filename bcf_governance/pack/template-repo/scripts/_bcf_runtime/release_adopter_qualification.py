@@ -305,7 +305,10 @@ def _commit(root: Path, message: str) -> None:
 
 
 def _isolated_project_python(
-    source_root: Path, source_python: Path, destination_root: Path
+    source_root: Path,
+    source_python: Path,
+    destination_root: Path,
+    projected_root: Path,
 ) -> Path:
     """Copy a repository-owned environment and rewrite only its own editable path."""
 
@@ -327,7 +330,6 @@ def _isolated_project_python(
             "repository-owned adopter interpreter must be ENV/bin/python"
         )
     environment_root = source_root / relative.parts[0]
-    projected_root = destination_root / ".bcf-qualification-venv"
     shutil.copytree(environment_root, projected_root, symlinks=True)
     projected_python = projected_root / "bin/python"
     source_text = str(source_root.resolve())
@@ -404,7 +406,10 @@ def qualify_release(
             _run(["git", "remote", "set-url", "origin", remote], cwd=destination)
             _run(["git", "checkout", "-B", f"qualification/bcf-{version}", adopter_commit], cwd=destination)
             project_python = _isolated_project_python(
-                adopter_source, adopter_python, destination
+                adopter_source,
+                adopter_python,
+                destination,
+                temporary_root / f"{required[repository]['id']}-environment",
             )
             _run([*bcf, "install", "--target", str(destination), "--upgrade", "--candidate-qualification-source", str(repo_root.resolve()), "--require-strict-validation"], cwd=destination, env=environment)
             _commit(destination, f"test: install immutable BCF {version}")
