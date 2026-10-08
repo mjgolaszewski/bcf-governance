@@ -6,6 +6,17 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [2.2.1] - 2026-10-08
+
+### Fixed
+
+- Made exact clean Lite and Standard-v3 adopter qualification of the certified
+  release assets a mechanically derived prerequisite to immutable publication.
+  The single qualification command derives lifecycle scope and Git identities,
+  tests only disposable clones, dispatches the fixed continuation, and leaves
+  the trusted publisher to reject any missing, stale, incomplete, or changed
+  qualification observation without granting that observation authority.
+
 ## [2.2.0] - 2026-10-07
 
 ### Changed
