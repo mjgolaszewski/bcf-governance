@@ -169,7 +169,7 @@ def test_exact_release_runtime_projects_wheel_over_admitted_dependencies(
     ]
     assert calls[1][0] == [
         str(controller / "bin/python"), "-m", "pip", "install",
-        "--disable-pip-version-check", "--no-deps", str(wheel),
+        "--disable-pip-version-check", "--no-deps", "--force-reinstall", str(wheel),
     ]
     assert command == (
         str(controller / "bin/python"), "-P", "-c",

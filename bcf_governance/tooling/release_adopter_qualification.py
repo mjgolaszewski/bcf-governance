@@ -194,6 +194,7 @@ def _exact_release_runtime(
             "install",
             "--disable-pip-version-check",
             "--no-deps",
+            "--force-reinstall",
             str(wheel),
         ],
         cwd=cwd,
