@@ -313,7 +313,9 @@ def validate_controller_custody_chain(
     evaluation_mode = str(admission.get("executor", {}).get("evaluation_mode", ""))
     try:
         expected_build_condition = exact_main_controller_artifact_condition(
-            evaluation_mode
+            evaluation_mode,
+            release_enabled={"release-authority", "release-publisher"}
+            <= workflow_ids,
         )
     except RuntimeError as exc:
         raise GitHubControllerError(str(exc)) from exc

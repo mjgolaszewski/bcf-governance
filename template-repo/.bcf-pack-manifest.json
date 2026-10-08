@@ -792,7 +792,7 @@
     },
     "scripts/_bcf_runtime/controller_custody_prospective.py": {
       "operation": "copy",
-      "sha256": "27e1fae0b6c6d569cc4fc24033d56bcb1ff32cdaba5163c9777e893eeb00a74c"
+      "sha256": "a5c00e0dbc7873f69161c4a1ccaa27a6b189b6794dc5f1e2098b1207dde0edbf"
     },
     "scripts/_bcf_runtime/controller_transition_provider_custody.py": {
       "operation": "copy",
@@ -964,7 +964,7 @@
     },
     "scripts/_bcf_runtime/governance_install/ci_graph.py": {
       "operation": "copy",
-      "sha256": "f4b59dfaf4469607eabfafb3e0dffca1dbbcc5978ecabe9c58a334f96c1b9a45"
+      "sha256": "4f5d9a985e9dc13d09cf4a5180248794307c71d7372afde688514c0e3b713bef"
     },
     "scripts/_bcf_runtime/governance_install/cli.py": {
       "operation": "copy",

@@ -21,15 +21,17 @@ def _command(argv: list[str], *, environment: dict[str, str] | None = None) -> d
     return {"argv": argv, "cwd": ".", "environment": environment or {}}
 
 
-def exact_main_controller_artifact_condition(evaluation_mode: str) -> str:
+def exact_main_controller_artifact_condition(
+    evaluation_mode: str, *, release_enabled: bool
+) -> str:
     """Derive when exact-main must materialize downloadable controller bytes."""
 
-    if evaluation_mode not in {"pr", "workitem", "closure"}:
+    if release_enabled and evaluation_mode not in {"pr", "workitem", "closure"}:
         raise RuntimeError("exact-main evaluation mode is unsupported")
     condition = (
         "steps.exact-main-applicability.outputs.controller_state == 'pending_rotation'"
     )
-    if evaluation_mode == "closure":
+    if release_enabled and evaluation_mode == "closure":
         condition += (
             " || steps.exact-main-applicability.outputs.controller_state == 'current'"
         )
@@ -256,7 +258,11 @@ def project_trusted_controller_management(
     mode = str(scope.get("evaluation_mode", "closure"))
     target = str(scope.get("evaluation_target", ""))
     graph["conditions"]["exact-main-controller-build-required"] = (
-        exact_main_controller_artifact_condition(mode)
+        exact_main_controller_artifact_condition(
+            mode,
+            release_enabled={str(item.get("id")) for item in graph["workflows"]}
+            >= {"release-authority", "release-publisher"},
+        )
     )
     graph["commands"]["exact-main-admit-effective"] = _command(
         [
