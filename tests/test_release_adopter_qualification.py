@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import hashlib
 import copy
+import json
 from pathlib import Path
 import sys
 import venv
 
 import pytest
 
+from bcf_governance.tooling import release_adopter_qualification as qualification
 from bcf_governance.tooling.ci_github_values import GitHubValueError, remote_repository
 from bcf_governance.tooling.release_adopter_qualification import (
     ReleaseQualificationError,
@@ -138,6 +140,88 @@ def test_missing_adopter_matrix_fails_before_environment_or_mutation(
             output=tmp_path / "receipt.json",
         )
     assert not (tmp_path / "receipt.json").exists()
+
+
+def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    contract = load_contract(REPO_ROOT)
+    assets = tmp_path / "assets"
+    assets.mkdir()
+    _assets(assets)
+    release_identity = ("mjgolaszewski/bcf-governance", "a" * 40, "b" * 40)
+    identities = {REPO_ROOT.resolve(): release_identity}
+    adopter_roots: list[Path] = []
+    adopter_pythons: dict[str, Path] = {}
+    profiles: dict[str, str] = {}
+    for index, item in enumerate(contract["required_adopters"], start=1):
+        root = tmp_path / item["id"]
+        root.mkdir()
+        python = root / ".venv/bin/python"
+        python.parent.mkdir(parents=True)
+        python.write_text("#!/bin/sh\n", encoding="utf-8")
+        python.chmod(0o755)
+        identity = str(index) * 40
+        identities[root.resolve()] = (item["repository"], identity, identity)
+        adopter_roots.append(root)
+        adopter_pythons[item["repository"]] = python
+        profiles[item["id"]] = item["profile"]
+
+    def source_identity(root: Path) -> tuple[str, str, str]:
+        return identities[root.resolve()]
+
+    def run(
+        argv: list[str], *, cwd: Path, env: object | None = None,
+    ) -> str:
+        del env
+        if argv[:2] == ["git", "clone"]:
+            destination = Path(argv[-1])
+            destination.mkdir()
+            (destination / "governance-profile.yml").write_text(
+                f"profile:\n  selected: {profiles[destination.name]}\n",
+                encoding="utf-8",
+            )
+        if argv[:3] == ["git", "remote", "get-url"]:
+            repository = identities[cwd.resolve()][0]
+            return f"https://github.com/{repository}.git"
+        if "prospective-train" in argv:
+            return json.dumps({
+                "status": "prospectively_admissible_provider_proof_required",
+                "subject": {"commit_sha": "c" * 40, "tree_sha": "d" * 40},
+                "post_merge_evaluation": {"intent": "pr", "target": None},
+            })
+        return ""
+
+    monkeypatch.setenv("GITHUB_TOKEN", "observation-only")
+    monkeypatch.setattr(qualification, "_source_identity", source_identity)
+    monkeypatch.setattr(qualification, "_run", run)
+    monkeypatch.setattr(
+        qualification, "_isolated_project_python",
+        lambda _source, source_python, _destination: source_python,
+    )
+    monkeypatch.setattr(qualification, "_commit", lambda *_args, **_kwargs: None)
+
+    receipt = qualify_release(
+        REPO_ROOT,
+        release_assets=assets,
+        adopter_roots=tuple(reversed(adopter_roots)),
+        adopter_pythons=adopter_pythons,
+        output=tmp_path / "receipt.json",
+    )
+
+    assert receipt["subject"] == {
+        "repository": release_identity[0],
+        "commit_sha": release_identity[1],
+        "tree_sha": release_identity[2],
+    }
+    assert {
+        item["repository"]: (item["source_commit"], item["source_tree"])
+        for item in receipt["adopters"]
+    } == {
+        repository: (commit, tree)
+        for repository, commit, tree in identities.values()
+        if repository != release_identity[0]
+    }
 
 
 def test_repository_environment_is_copied_and_own_editable_path_is_rebound(
