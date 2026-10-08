@@ -141,10 +141,10 @@ documents:
   canonical_topic_owner: spec/RELEASE_TRAIN_STATE_DAG.md
   topic_role: canonical
   before_sha256: fb551755d1a298cd3b30ad5df691ec8539e5c01b68643ff2251e39f5e8498bc1
-  after_sha256: fb551755d1a298cd3b30ad5df691ec8539e5c01b68643ff2251e39f5e8498bc1
+  after_sha256: 63ea7a1faf96c3fb996aba55c9d5f8e60cfd7dc181529bdd692c5d9fdbf1b107
   findings:
   - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  disposition: revised
 - path: template-repo/AGENTS.md
   audience: repository agents
   canonical_topic_owner: template-repo/AGENTS.yml
