@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
+import sysconfig
 import tempfile
 from typing import Any, Mapping, Sequence
 
@@ -84,6 +85,7 @@ _EXACT_RELEASE_PROBE = r"""
 import importlib.metadata as metadata
 import json
 from pathlib import Path
+import sys
 
 from packaging.requirements import Requirement
 
@@ -110,6 +112,7 @@ for value in distribution.requires or ():
     })
 print(json.dumps({
     "distribution_root": str(Path(distribution.locate_file(".")).resolve()),
+    "executable": str(Path(sys.executable).resolve()),
     "module_file": str(Path(bcf_governance.__file__).resolve()),
     "requirements": requirements,
     "version": distribution.version,
@@ -127,28 +130,45 @@ def _exact_release_runtime(
 ) -> tuple[tuple[str, ...], dict[str, str]]:
     """Project one exact wheel over the already-admitted invoking runtime."""
 
-    controller.mkdir(parents=True)
+    _run([sys.executable, "-m", "venv", str(controller)], cwd=cwd)
+    controller_python = controller / "bin/python"
+    site_packages = (
+        controller / "lib"
+        / f"python{sys.version_info.major}.{sys.version_info.minor}"
+        / "site-packages"
+    )
+    site_packages.mkdir(parents=True, exist_ok=True)
+    dependency_roots = sorted({
+        str(Path(value).resolve())
+        for key, value in sysconfig.get_paths().items()
+        if key in {"purelib", "platlib"} and Path(value).is_dir()
+    })
+    if not dependency_roots:
+        raise ReleaseQualificationError(
+            "invoking release runtime dependency roots are unavailable"
+        )
+    (site_packages / "bcf-admitted-runtime.pth").write_text(
+        "".join(f"{value}\n" for value in dependency_roots), encoding="utf-8"
+    )
     _run(
         [
-            sys.executable,
+            str(controller_python),
             "-m",
             "pip",
             "install",
             "--disable-pip-version-check",
             "--no-deps",
-            "--target",
-            str(controller),
             str(wheel),
         ],
         cwd=cwd,
     )
     runtime_environment = dict(environment)
     runtime_environment.pop("PYTHONHOME", None)
-    runtime_environment["PYTHONPATH"] = str(controller.resolve())
+    runtime_environment.pop("PYTHONPATH", None)
     try:
         observation = json.loads(
             _run(
-                [sys.executable, "-P", "-c", _EXACT_RELEASE_PROBE],
+                [str(controller_python), "-P", "-c", _EXACT_RELEASE_PROBE],
                 cwd=controller.parent,
                 env=runtime_environment,
             )
@@ -158,13 +178,14 @@ def _exact_release_runtime(
             "exact release runtime probe emitted invalid JSON"
         ) from exc
     if not isinstance(observation, dict) or set(observation) != {
-        "distribution_root", "module_file", "requirements", "version",
+        "distribution_root", "executable", "module_file", "requirements", "version",
     }:
         raise ReleaseQualificationError("exact release runtime identity is malformed")
     controller_root = controller.resolve()
     try:
         Path(observation["distribution_root"]).resolve().relative_to(controller_root)
         Path(observation["module_file"]).resolve().relative_to(controller_root)
+        observed_executable = Path(observation["executable"]).resolve()
     except (TypeError, ValueError) as exc:
         raise ReleaseQualificationError(
             "exact release runtime is shadowed by non-release BCF bytes"
@@ -172,6 +193,7 @@ def _exact_release_runtime(
     requirements = observation["requirements"]
     if (
         observation["version"] != version
+        or observed_executable != controller_python.resolve()
         or not isinstance(requirements, list)
         or any(
             not isinstance(item, dict)
@@ -184,7 +206,7 @@ def _exact_release_runtime(
             "exact release runtime dependencies are absent or incompatible"
         )
     return (
-        sys.executable,
+        str(controller_python),
         "-P",
         "-c",
         "from bcf_governance.cli import main; main()",

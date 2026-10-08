@@ -139,6 +139,7 @@ def test_exact_release_runtime_projects_wheel_over_admitted_dependencies(
         if len(argv) == 4 and list(argv)[1:3] == ["-P", "-c"]:
             return json.dumps({
                 "distribution_root": str(controller),
+                "executable": str(controller / "bin/python"),
                 "module_file": str(controller / "bcf_governance/__init__.py"),
                 "requirements": [
                     {
@@ -162,15 +163,23 @@ def test_exact_release_runtime_projects_wheel_over_admitted_dependencies(
     )
 
     assert calls[0][0] == [
-        sys.executable, "-m", "pip", "install", "--disable-pip-version-check",
-        "--no-deps", "--target", str(controller), str(wheel),
+        sys.executable, "-m", "venv", str(controller),
     ]
-    assert all("venv" not in call for call, _environment in calls)
+    assert calls[1][0] == [
+        str(controller / "bin/python"), "-m", "pip", "install",
+        "--disable-pip-version-check", "--no-deps", str(wheel),
+    ]
     assert command == (
-        sys.executable, "-P", "-c",
+        str(controller / "bin/python"), "-P", "-c",
         "from bcf_governance.cli import main; main()",
     )
-    assert environment["PYTHONPATH"] == str(controller.resolve())
+    assert "PYTHONPATH" not in environment
+    admitted = (
+        controller / "lib" / f"python{sys.version_info.major}.{sys.version_info.minor}"
+        / "site-packages/bcf-admitted-runtime.pth"
+    ).read_text(encoding="utf-8").splitlines()
+    assert admitted
+    assert all(Path(value).is_absolute() for value in admitted)
 
 
 @pytest.mark.parametrize(
@@ -192,6 +201,7 @@ def test_exact_release_runtime_rejects_shadowing_or_incompatible_dependencies(
     controller = tmp_path / "controller"
     observation: dict[str, object] = {
         "distribution_root": str(controller),
+        "executable": str(controller / "bin/python"),
         "module_file": str(controller / "bcf_governance/__init__.py"),
         "requirements": [],
         "version": "2.2.1",
@@ -270,9 +280,10 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
     ) -> str:
         calls.append(list(argv))
         if len(argv) == 4 and argv[1:3] == ["-P", "-c"]:
-            controller = Path(str(env["PYTHONPATH"]))  # type: ignore[index]
+            controller = Path(argv[0]).parents[1]
             return json.dumps({
                 "distribution_root": str(controller),
+                "executable": str(controller / "bin/python"),
                 "module_file": str(controller / "bcf_governance/__init__.py"),
                 "requirements": [],
                 "version": "2.2.1",

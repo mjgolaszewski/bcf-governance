@@ -52,6 +52,9 @@ execution_evidence:
     typed candidate-qualification installer operation, binding the clean BCF source,
     exact pack manifest, adopter subject, and predecessor runtime lock without
     querying or claiming custody from a release tag that does not yet exist.
+  - The exact-wheel runtime is a real isolated controller interpreter whose nested
+    governance subprocesses retain the exact wheel and mechanically projected
+    admitted dependency roots even after ambient import variables are scrubbed.
 closeout_requirements:
   claims:
     required_suites_green:
