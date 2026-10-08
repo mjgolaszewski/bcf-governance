@@ -15,7 +15,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   The single qualification command derives lifecycle scope and Git identities,
   tests only disposable clones, dispatches the fixed continuation, and leaves
   the trusted publisher to reject any missing, stale, incomplete, or changed
-  qualification observation without granting that observation authority.
+  qualification observation without granting that observation authority. The
+  receipt preserves the immutable BCF release subject independently from every
+  adopter source and candidate identity, regardless of evaluation order.
 
 ## [2.2.0] - 2026-10-07
 
