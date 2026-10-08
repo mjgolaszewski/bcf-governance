@@ -82,7 +82,8 @@ def authenticate_release_qualification(
 def require_publication_qualification(
     path: Path,
     *,
-    repo_root: Path,
+    contract_bytes: bytes,
+    schema_bytes: bytes,
     repository: str,
     commit_sha: str,
     tree_sha: str,
@@ -93,8 +94,6 @@ def require_publication_qualification(
 
     try:
         qualification = _json_object(path, "release qualification receipt")
-        contract_bytes = (repo_root / "governance/release-qualification.yml").read_bytes()
-        schema_bytes = (repo_root / "schemas/release-qualification.schema.json").read_bytes()
         validate_qualification_receipt(
             qualification,
             contract=parse_contract(contract_bytes, schema_bytes),
@@ -105,7 +104,7 @@ def require_publication_qualification(
             version=version,
             assets=assets,
         )
-    except (OSError, ReleaseQualificationError) as exc:
+    except ReleaseQualificationError as exc:
         raise GitHubControllerError(
             "publication requires exact passing adopter qualification"
         ) from exc

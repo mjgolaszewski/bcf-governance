@@ -721,7 +721,16 @@ def publish_certified_release(
     expected_assets = exact_assets(paths)
     require_publication_qualification(
         qualification_path,
-        repo_root=packaged_repo_root(),
+        contract_bytes=api.content(
+            repository,
+            "governance/release-qualification.yml",
+            ref=main.checkout_sha,
+        ).content,
+        schema_bytes=api.content(
+            repository,
+            "schemas/release-qualification.schema.json",
+            ref=main.checkout_sha,
+        ).content,
         repository=repository,
         commit_sha=main.checkout_sha,
         tree_sha=main.tree_sha,

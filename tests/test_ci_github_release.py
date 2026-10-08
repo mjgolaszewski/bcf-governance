@@ -1313,8 +1313,15 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
         "bcf_governance.tooling.ci_github_release.packaged_repo_root",
         lambda: REPO_ROOT,
     )
+    api = SimpleNamespace(
+        content=lambda _repository, path, **_kwargs: GitHubContent(
+            path,
+            "d" * 40,
+            (REPO_ROOT / path).read_bytes(),
+        )
+    )
     result = publish_certified_release(
-        object(),  # type: ignore[arg-type]
+        api,  # type: ignore[arg-type]
         repository="owner/repo",
         tag="v0.7.1",
         expected_commit=COMMIT,
@@ -1334,7 +1341,7 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
     _json(receipt_path, receipt)
     with pytest.raises(GitHubControllerError, match="bind exact publication assets"):
         publish_certified_release(
-            object(),  # type: ignore[arg-type]
+            api,  # type: ignore[arg-type]
             repository="owner/repo",
             tag="v0.7.1",
             expected_commit=COMMIT,
@@ -1358,7 +1365,7 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
     _json(receipt_path, receipt)
     with pytest.raises(GitHubControllerError, match="bind exact publication assets"):
         publish_certified_release(
-            object(),  # type: ignore[arg-type]
+            api,  # type: ignore[arg-type]
             repository="owner/repo",
             tag="v0.7.1",
             expected_commit=COMMIT,
