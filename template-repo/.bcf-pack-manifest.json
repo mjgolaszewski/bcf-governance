@@ -434,7 +434,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "adaf0b243016ccebeb38bcc982871731f1e986374da8da1f356482bab7051939"
+      "sha256": "c9e96c814f1f29fd6e0bd43025bef4b93e3bade609c8b2673309efaa3c42fd62"
     },
     "scripts/_bcf_runtime/affected_proof_closure.py": {
       "operation": "copy",
@@ -1227,7 +1227,7 @@
     },
     "scripts/_bcf_runtime/reconcile_authority_transition.py": {
       "operation": "copy",
-      "sha256": "8d49487b51be92057d5f61afaa15efedcdf99372b814432484549fb46b5cfbeb"
+      "sha256": "1ab41e1c61b6cbe0559ee4c4c6d92d0d1c31938a8f12581bbe08b8308e55747f"
     },
     "scripts/_bcf_runtime/reconcile_stage_ledger.py": {
       "operation": "copy",
@@ -1263,7 +1263,7 @@
     },
     "scripts/_bcf_runtime/release_version_projection.py": {
       "operation": "copy",
-      "sha256": "f44571e737bd8ab2707980d48bfebb63dae3df52d8514611abf04fb7e9531386"
+      "sha256": "9609544bdf996b209011a6177c3b09bbd126406b305bdfed34579c5ef9bc7c74"
     },
     "scripts/_bcf_runtime/release_versions.py": {
       "operation": "copy",
