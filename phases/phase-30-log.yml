@@ -88,6 +88,7 @@ execution_evidence:
   - exact-main 37695764025 attempt 2 reused applicable authenticated proof, finalizer 37698830355 and both App 15368 status publications succeeded, and controller operation 37698830456 proved ordinary-current custody on the exact merged subject
   - the observed test producer critical path fell from approximately 26 minutes monolithic to 13 minutes 18 seconds across four exact isolated splinters; compact non-authoritative timing projection retains 2121 authenticated historical observations and assigns only four new nodes the canonical unknown default
   - P30-P0-05 terminal candidate binds deterministic splintering, exact candidate qualification, BCF 2.2.0 version surfaces, terminal P30 truth, independent immutable publication, and custody as one release proposition
+  - release authority run 37713999327 failed before build because post-rotation exact-main attempt 2 correctly omitted an ordinary current-state controller bundle while GitHub had replaced attempt 1's artifact; terminal closure now derives one same-attempt release-controller materialization without changing ordinary no-transition or rotation semantics
 closeout_requirements:
   claims:
     workitems_closed:
