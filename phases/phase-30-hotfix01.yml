@@ -48,6 +48,10 @@ execution_evidence:
     immutable wheel into a fresh import root, authenticates its distribution and
     module origins, validates every active runtime requirement, and derives one
     offline qualification command before any adopter clone is mutated.
+  - Prepublication qualification routes exact wheel execution through the existing
+    typed candidate-qualification installer operation, binding the clean BCF source,
+    exact pack manifest, adopter subject, and predecessor runtime lock without
+    querying or claiming custody from a release tag that does not yet exist.
 closeout_requirements:
   claims:
     required_suites_green:

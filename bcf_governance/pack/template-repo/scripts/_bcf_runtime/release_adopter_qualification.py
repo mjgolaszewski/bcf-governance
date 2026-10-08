@@ -347,7 +347,7 @@ def qualify_release(
             project_python = _isolated_project_python(
                 adopter_source, adopter_python, destination
             )
-            _run([*bcf, "install", "--target", str(destination), "--upgrade", "--release-assets", str(release_assets.resolve()), "--require-strict-validation"], cwd=destination, env=environment)
+            _run([*bcf, "install", "--target", str(destination), "--upgrade", "--candidate-qualification-source", str(repo_root.resolve()), "--require-strict-validation"], cwd=destination, env=environment)
             _commit(destination, f"test: install immutable BCF {version}")
             _run([*bcf, "reconcile", "--repo-root", str(destination), "--python", str(project_python), "--apply"], cwd=destination, env=environment)
             _commit(destination, f"test: reconcile BCF {version} qualification")

@@ -23,7 +23,10 @@ All notable changes to BCF Governance are recorded here. This file follows
   Exact release qualification now projects the certified wheel over the
   already-admitted invoking runtime, verifies its distribution and module
   origins plus every declared runtime dependency, and derives one isolated BCF
-  command without network installation or operator environment repair.
+  command without network installation or operator environment repair. That
+  command routes unpublished exact assets through the existing typed,
+  non-authoritative candidate-qualification custody state, so qualification
+  never depends on a release tag that publication has not created yet.
 
 ## [2.2.0] - 2026-10-07
 
