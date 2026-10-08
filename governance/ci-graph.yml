@@ -15,7 +15,7 @@ extensions:
 - {id: bcf-break-glass-recovery, path: governance/ci-extensions/bcf-break-glass-recovery.yml, sha256: 831341d3ee3167c559aa83fd2eec5aea8adf94e6a5149c13b7c11c39ee3da874}
 - {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: adde42bee237d4da4a67a72d6d5e8600e63ed010486cea4084391f940b9d1bb0}
 - {id: bcf-evidence-storage, path: governance/ci-extensions/bcf-evidence-storage.yml, sha256: 41e40dad457efc53292249a211575505e9d6021d73d3fee2e52c4e9eede68eea}
-- {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: a4075a508790d41b844a0d7a65046bda17393c75e3f1040dd763caab835b31fe}
+- {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: add4df5dc467406e8ef247fa672096400e5b293b2561bf6f0c106b6d258f5d9f}
 - {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: f74e83267362b5e89760c406146ca2feafe24235ce91fb58225b048abf1683db}
 resource_classes:
   hosted-python:

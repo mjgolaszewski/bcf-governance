@@ -60,6 +60,7 @@ def test_release_authorizer_is_owner_dispatched_no_checkout_control_plane() -> N
     assert authorize["needs"] == ["controller-route"]
     assert authorize["controller_requirement"] == "current"
     assert authorize["condition"] == "release-owner-main"
+    assert authorize["timeout_minutes"] == 10
     assert validate_ci_graph(REPO_ROOT).graph["conditions"]["release-owner-main"] == (
         "github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main'"
     )
