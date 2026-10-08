@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import copy
 from pathlib import Path
 import sys
 import venv
@@ -14,6 +15,8 @@ from bcf_governance.tooling.release_adopter_qualification import (
     _isolated_project_python,
     load_contract,
     qualify_release,
+    dispatch_release_qualification,
+    validate_qualification_receipt,
 )
 
 
@@ -33,6 +36,40 @@ def _assets(root: Path) -> dict[str, str]:
         encoding="utf-8",
     )
     return digests
+
+
+def _receipt(contract: dict[str, object], assets: dict[str, str]) -> dict[str, object]:
+    adopters = []
+    for index, item in enumerate(contract["required_adopters"]):  # type: ignore[index]
+        identity = str(index + 1) * 40
+        adopters.append(
+            {
+                "id": item["id"],
+                "repository": item["repository"],
+                "profile": item["profile"],
+                "source_commit": identity,
+                "source_tree": identity,
+                "candidate_commit": identity,
+                "candidate_tree": identity,
+                "evaluation": {"intent": "pr", "target": None},
+                "status": "pass",
+            }
+        )
+    return {
+        "schema_version": "1.0",
+        "kind": "release_adopter_qualification",
+        "authority": False,
+        "subject": {
+            "repository": "owner/repo",
+            "commit_sha": "a" * 40,
+            "tree_sha": "b" * 40,
+        },
+        "release": {"version": "2.2.1", "assets": dict(sorted(assets.items()))},
+        "contract_sha256": "c" * 64,
+        "adopters": adopters,
+        "status": "pass",
+        "publication_eligible_observation": True,
+    }
 
 
 def test_release_qualification_contract_is_closed_and_unique() -> None:
@@ -126,3 +163,58 @@ def test_repository_environment_is_copied_and_own_editable_path_is_rebound(
         / "site-packages/project.pth"
     )
     assert projected_hook.read_text(encoding="utf-8") == str(destination / "src") + "\n"
+
+
+def test_qualification_receipt_requires_exact_subject_assets_and_adopters(
+    tmp_path: Path,
+) -> None:
+    contract = load_contract(REPO_ROOT)
+    assets = _assets(tmp_path)
+    receipt = _receipt(contract, assets)
+    kwargs = {
+        "contract": contract,
+        "contract_sha256": "c" * 64,
+        "repository": "owner/repo",
+        "commit_sha": "a" * 40,
+        "tree_sha": "b" * 40,
+        "version": "2.2.1",
+        "assets": assets,
+    }
+
+    assert validate_qualification_receipt(receipt, **kwargs) == receipt
+    mutations = []
+    for key, value in (
+        ("authority", True),
+        ("publication_eligible_observation", False),
+        ("status", "failed"),
+    ):
+        mutation = copy.deepcopy(receipt)
+        mutation[key] = value
+        mutations.append(mutation)
+    missing = copy.deepcopy(receipt)
+    missing["adopters"].pop()  # type: ignore[union-attr]
+    mutations.append(missing)
+    wrong = copy.deepcopy(receipt)
+    wrong["adopters"][0]["repository"] = "owner/unrelated"  # type: ignore[index]
+    mutations.append(wrong)
+    for mutation in mutations:
+        with pytest.raises(ReleaseQualificationError):
+            validate_qualification_receipt(mutation, **kwargs)
+
+
+def test_qualification_dispatch_has_one_derived_route() -> None:
+    calls: list[tuple[str, str, dict[str, object]]] = []
+
+    class API:
+        def dispatch(
+            self, repository: str, *, event_type: str,
+            client_payload: dict[str, object],
+        ) -> None:
+            calls.append((repository, event_type, client_payload))
+
+    receipt = {"subject": {"repository": "owner/repo"}}
+    dispatch_release_qualification(API(), receipt)  # type: ignore[arg-type]
+
+    assert calls == [
+        ("owner/repo", "bcf_release_qualified", {"qualification": receipt})
+    ]

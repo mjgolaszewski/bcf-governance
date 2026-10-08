@@ -29,6 +29,9 @@ from bcf_governance.tooling.ci_github_release import (
     verify_release_build,
     verify_release_build_provider,
 )
+from bcf_governance.tooling.ci_github_release_qualification import (
+    authenticate_release_qualification,
+)
 from bcf_governance.tooling.ci_github_release_inputs import (
     _release_version_at_main,
     load_release_authorization_inputs,
@@ -1380,6 +1383,51 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
             publisher_run_attempt="1",
         )
 
+
+def test_provider_qualification_event_binds_exact_repository_and_main(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    values = _release_inputs(tmp_path / "release")
+    receipt_path = _qualification(
+        tmp_path / "qualification.json", values["assets"]  # type: ignore[arg-type]
+    )
+    qualification = json.loads(receipt_path.read_text())
+    event = _json(
+        tmp_path / "event.json",
+        {
+            "action": "bcf_release_qualified",
+            "repository": {"id": 101, "full_name": "owner/repo"},
+            "client_payload": {"qualification": qualification},
+        },
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_qualification.resolve_main",
+        lambda api, repository: MainIdentity("101", "main", COMMIT, TREE),
+    )
+    api = SimpleNamespace(
+        content=lambda _repository, path, **_kwargs: GitHubContent(
+            path, "d" * 40, (REPO_ROOT / path).read_bytes()
+        )
+    )
+
+    result = authenticate_release_qualification(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        event_path=event,
+        output_path=tmp_path / "authenticated.json",
+    )
+    assert result == qualification
+
+    payload = json.loads(event.read_text())
+    payload["repository"]["id"] = 102
+    _json(event, payload)
+    with pytest.raises(GitHubControllerError, match="repository identity differs"):
+        authenticate_release_qualification(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            event_path=event,
+            output_path=tmp_path / "rejected.json",
+        )
 
 class _ReleaseAPI:
     def __init__(self) -> None:
