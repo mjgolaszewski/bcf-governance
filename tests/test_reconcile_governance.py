@@ -282,6 +282,18 @@ def test_reconcile_projects_all_derived_release_versions_before_pack_work(
         "document: {kind: public_contract_registry}\npackage:\n  version: 2.1.4\n",
         encoding="utf-8",
     )
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "README.md").write_text(
+        "Supported package version: `v2.1.4`.\n"
+        "python -m pip install releases/download/v2.1.4/"
+        "bcf_governance-2.1.4-py3-none-any.whl\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "docs/USAGE.md").write_text(
+        "gh release download v2.1.4 --dir /tmp/bcf-v2.1.4\n"
+        "  --release-assets /tmp/bcf-v2.1.4\n",
+        encoding="utf-8",
+    )
 
     with pytest.raises(ReleaseVersionProjectionError, match="manifest.yml"):
         reconcile_release_version_surfaces(tmp_path, version="2.1.5", apply=False)
@@ -290,9 +302,16 @@ def test_reconcile_projects_all_derived_release_versions_before_pack_work(
         tmp_path, version="2.1.5", apply=True
     )
 
-    assert changed == ("manifest.yml", "governance/public-contracts.yml")
+    assert changed == (
+        "manifest.yml",
+        "governance/public-contracts.yml",
+        "README.md",
+        "docs/USAGE.md",
+    )
     assert yaml.safe_load((tmp_path / "manifest.yml").read_text())["document"]["version"] == "2.1.5"
     assert yaml.safe_load(contracts.read_text())["package"]["version"] == "2.1.5"
+    assert "2.1.4" not in (tmp_path / "README.md").read_text()
+    assert "2.1.4" not in (tmp_path / "docs/USAGE.md").read_text()
     assert not reconcile_release_version_surfaces(
         tmp_path, version="2.1.5", apply=False
     )
