@@ -39,6 +39,10 @@ execution_evidence:
   - The exact-asset qualifier keeps the immutable BCF release subject in a distinct
     namespace from every adopter source/candidate identity; iteration order cannot
     substitute an adopter commit or tree into the release receipt subject.
+  - Trusted release authorization observed 4:35 on a successful run and terminated
+    at the former 5:00 ceiling; the governed job window is 10 minutes so provider
+    latency cannot cancel an otherwise unchanged fail-closed authorization at its
+    demonstrated boundary.
 closeout_requirements:
   claims:
     required_suites_green:

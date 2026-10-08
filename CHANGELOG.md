@@ -17,7 +17,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   the trusted publisher to reject any missing, stale, incomplete, or changed
   qualification observation without granting that observation authority. The
   receipt preserves the immutable BCF release subject independently from every
-  adopter source and candidate identity, regardless of evaluation order.
+  adopter source and candidate identity, regardless of evaluation order. The
+  trusted authorization window now retains explicit margin above measured
+  provider-bound runtime without weakening any release read or identity check.
 
 ## [2.2.0] - 2026-10-07
 
