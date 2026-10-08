@@ -50,6 +50,7 @@ from .runtime_capacity import (
 )
 from .release_adopter_qualification import (
     ReleaseQualificationError,
+    dispatch_release_qualification,
     qualify_release,
 )
 from .trusted_controller_compatibility import (
@@ -393,11 +394,7 @@ def main(argv: list[str] | None = None) -> None:
             )
             from .ci_github_controller import environment_api
 
-            environment_api().dispatch(
-                str(result["subject"]["repository"]),
-                event_type="bcf_release_qualified",
-                client_payload={"qualification": result},
-            )
+            dispatch_release_qualification(environment_api(), result)
             _print(result, args.format)
             return
         if args.operation == "submit":

@@ -17,10 +17,24 @@ import yaml  # type: ignore[import-untyped]
 from jsonschema import Draft202012Validator
 
 from .ci_github_values import GitHubValueError, remote_repository
+from .ci_github_api import GitHubAPI
 
 
 class ReleaseQualificationError(ValueError):
     """Exact release assets or an adopter qualification are incomplete."""
+
+
+def dispatch_release_qualification(api: GitHubAPI, receipt: dict[str, Any]) -> None:
+    """Continue the fixed publication train with no caller-selected routing."""
+
+    subject = receipt.get("subject")
+    if not isinstance(subject, dict) or not isinstance(subject.get("repository"), str):
+        raise ReleaseQualificationError("release qualification subject is absent")
+    api.dispatch(
+        subject["repository"],
+        event_type="bcf_release_qualified",
+        client_payload={"qualification": receipt},
+    )
 
 
 def _run(argv: Sequence[str], *, cwd: Path, env: Mapping[str, str] | None = None) -> str:
