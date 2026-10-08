@@ -248,6 +248,7 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
     adopter_roots: list[Path] = []
     adopter_pythons: dict[str, Path] = {}
     profiles: dict[str, str] = {}
+    calls: list[list[str]] = []
     for index, item in enumerate(contract["required_adopters"], start=1):
         root = tmp_path / item["id"]
         root.mkdir()
@@ -267,6 +268,7 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
     def run(
         argv: list[str], *, cwd: Path, env: object | None = None,
     ) -> str:
+        calls.append(list(argv))
         if len(argv) == 4 and argv[1:3] == ["-P", "-c"]:
             controller = Path(str(env["PYTHONPATH"]))  # type: ignore[index]
             return json.dumps({
@@ -323,6 +325,15 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
         for repository, commit, tree in identities.values()
         if repository != release_identity[0]
     }
+    install_calls = [call for call in calls if call[4:5] == ["install"]]
+    assert len(install_calls) == len(contract["required_adopters"])
+    assert all(
+        "--candidate-qualification-source" in call
+        and call[call.index("--candidate-qualification-source") + 1]
+        == str(REPO_ROOT.resolve())
+        and "--release-assets" not in call
+        for call in install_calls
+    )
 
 
 def test_repository_environment_is_copied_and_own_editable_path_is_rebound(
