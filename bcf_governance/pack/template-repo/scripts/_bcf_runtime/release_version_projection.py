@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 from typing import Any
 
 import yaml
@@ -12,6 +13,16 @@ SURFACES = (
     (Path("manifest.yml"), "document", "version"),
     (Path("governance/public-contracts.yml"), "package", "version"),
 )
+TEXT_SURFACES = (Path("README.md"), Path("docs/USAGE.md"))
+CURRENT_VERSION_MARKERS = (
+    "Supported package version:",
+    "Install the `v",
+    "releases/download/v",
+    "gh release download v",
+    "--dir /tmp/bcf-v",
+    "--release-assets /tmp/bcf-v",
+)
+_VERSION = re.compile(r"(?<![0-9])(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?![0-9])")
 
 
 class ReleaseVersionProjectionError(ValueError):
@@ -73,9 +84,33 @@ def reconcile_release_version_surfaces(
         nested = payload.get(parent)
         if not isinstance(nested, dict) or nested.get(key) != version:
             stale.append((path, parent, key))
+    if apply:
+        for path, parent, key in stale:
+            _replace_nested_scalar(path, parent, key, version)
+    changed = [path.relative_to(repo_root).as_posix() for path, _, _ in stale]
+    for relative in TEXT_SURFACES:
+        path = repo_root / relative
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        lines = text.splitlines()
+        projected = [
+            _VERSION.sub(version, line)
+            if any(marker in line for marker in CURRENT_VERSION_MARKERS)
+            else line
+            for line in lines
+        ]
+        rendered = "\n".join(projected) + ("\n" if text.endswith("\n") else "")
+        if rendered == text:
+            continue
+        if not apply:
+            stale.append((path, "", ""))
+            continue
+        path.write_text(rendered, encoding="utf-8")
+        changed.append(relative.as_posix())
     if stale and not apply:
-        names = ", ".join(path.relative_to(repo_root).as_posix() for path, _, _ in stale)
+        names = ", ".join(
+            dict.fromkeys(path.relative_to(repo_root).as_posix() for path, _, _ in stale)
+        )
         raise ReleaseVersionProjectionError(f"release version projection is stale: {names}")
-    for path, parent, key in stale:
-        _replace_nested_scalar(path, parent, key, version)
-    return tuple(path.relative_to(repo_root).as_posix() for path, _, _ in stale)
+    return tuple(changed)

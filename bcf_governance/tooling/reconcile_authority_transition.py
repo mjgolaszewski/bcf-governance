@@ -281,12 +281,10 @@ def apply_workflow_authority_transition(
         backup_commit = _snapshot_commit(backup)
         copy_repository_shadow(root, shadow, preserve_git_history=True)
         before_authority, authority_and_after = _split_steps(step_factory(shadow))
-        for step in _workflow_projection_steps(before_authority):
-            step.apply()
+        first_rounds = converge(before_authority, lambda: snapshot(shadow))
         _reject_unexplained_workflow_drift(root, shadow, head, paths)
         if not _changed_workflows(shadow, head, paths):
             return None
-        first_rounds = converge(before_authority, lambda: snapshot(shadow))
         definition_commit = _commit_all(shadow, _DEFINITION_MESSAGE)
         second_rounds = converge(authority_and_after, lambda: snapshot(shadow))
         authority_commit = _commit_all(shadow, _AUTHORITY_MESSAGE)

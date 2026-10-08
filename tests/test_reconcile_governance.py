@@ -282,6 +282,18 @@ def test_reconcile_projects_all_derived_release_versions_before_pack_work(
         "document: {kind: public_contract_registry}\npackage:\n  version: 2.1.4\n",
         encoding="utf-8",
     )
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "README.md").write_text(
+        "Supported package version: `v2.1.4`.\n"
+        "python -m pip install releases/download/v2.1.4/"
+        "bcf_governance-2.1.4-py3-none-any.whl\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "docs/USAGE.md").write_text(
+        "gh release download v2.1.4 --dir /tmp/bcf-v2.1.4\n"
+        "  --release-assets /tmp/bcf-v2.1.4\n",
+        encoding="utf-8",
+    )
 
     with pytest.raises(ReleaseVersionProjectionError, match="manifest.yml"):
         reconcile_release_version_surfaces(tmp_path, version="2.1.5", apply=False)
@@ -290,9 +302,16 @@ def test_reconcile_projects_all_derived_release_versions_before_pack_work(
         tmp_path, version="2.1.5", apply=True
     )
 
-    assert changed == ("manifest.yml", "governance/public-contracts.yml")
+    assert changed == (
+        "manifest.yml",
+        "governance/public-contracts.yml",
+        "README.md",
+        "docs/USAGE.md",
+    )
     assert yaml.safe_load((tmp_path / "manifest.yml").read_text())["document"]["version"] == "2.1.5"
     assert yaml.safe_load(contracts.read_text())["package"]["version"] == "2.1.5"
+    assert "2.1.4" not in (tmp_path / "README.md").read_text()
+    assert "2.1.4" not in (tmp_path / "docs/USAGE.md").read_text()
     assert not reconcile_release_version_surfaces(
         tmp_path, version="2.1.5", apply=False
     )
@@ -500,6 +519,45 @@ def test_reconcile_mechanically_commits_definition_then_exact_authority(
     ] == result.definition_commit
     assert _git(root, "status", "--porcelain") == ""
     assert (root / ".github/workflows/admission.yml").read_text() == "name: new\n"
+
+
+def test_reconcile_decides_transition_only_after_ordered_projection_closure(
+    tmp_path: Path,
+) -> None:
+    root = _authority_transition_repository(tmp_path)
+    base = _git(root, "rev-parse", "HEAD")
+    (root / "intent").write_text("transient\n", encoding="utf-8")
+
+    def steps(candidate: Path) -> tuple[ReconcileStep, ...]:
+        workflow = candidate / ".github/workflows/admission.yml"
+        intent = candidate / "intent"
+
+        def canonical_owner() -> None:
+            intent.write_text("old\n", encoding="utf-8")
+
+        def render() -> None:
+            workflow.write_text(
+                f"name: {intent.read_text(encoding='utf-8').strip()}\n",
+                encoding="utf-8",
+            )
+
+        return (
+            ReconcileStep("release-version-surfaces", lambda: None, canonical_owner),
+            ReconcileStep("ci-graph-render", lambda: None, render),
+            _transition_steps(candidate)[-1],
+        )
+
+    result = apply_workflow_authority_transition(
+        root,
+        step_factory=steps,
+        converge=converge,
+        snapshot=_transition_snapshot,
+    )
+
+    assert result is None
+    assert _git(root, "rev-parse", "HEAD") == base
+    assert (root / "intent").read_text() == "transient\n"
+    assert (root / ".github/workflows/admission.yml").read_text() == "name: old\n"
 
 
 def test_reconcile_mechanical_commits_do_not_require_ambient_git_identity(

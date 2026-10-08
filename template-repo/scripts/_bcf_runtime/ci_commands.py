@@ -36,6 +36,7 @@ from .local_pr_context import (
 )
 from .local_pr import (
     ProspectiveValidationError,
+    canonical_prospective_inputs,
     run_prospective_train,
 )
 from .local_execution_admission import (
@@ -46,6 +47,11 @@ from .runtime_capacity import (
     RuntimeCapacityError,
     check_runtime_capacity,
     load_runtime_contract,
+)
+from .release_adopter_qualification import (
+    ReleaseQualificationError,
+    dispatch_release_qualification,
+    qualify_release,
 )
 from .trusted_controller_compatibility import (
     TrustedControllerCompatibilityError,
@@ -144,11 +150,37 @@ def _parser() -> argparse.ArgumentParser:
         help="resolve the provider-authenticated effective controller for this repository",
     )
     prospective.add_argument("--python", type=Path)
-    prospective.add_argument("--intent", choices=("pr", "workitem", "closure"), required=True)
+    prospective.add_argument(
+        "--intent",
+        choices=("pr", "workitem", "closure"),
+        help="optional consistency assertion; canonical intent is derived from the graph",
+    )
     prospective.add_argument("--target")
-    prospective.add_argument("--subject-commit", required=True)
-    prospective.add_argument("--subject-tree", required=True)
+    prospective.add_argument(
+        "--subject-commit",
+        help="optional consistency assertion; the exact clean commit is derived from Git",
+    )
+    prospective.add_argument(
+        "--subject-tree",
+        help="optional consistency assertion; the exact clean tree is derived from Git",
+    )
     prospective.add_argument("--format", choices=("text", "json"), default="json")
+    qualify = subparsers.add_parser(
+        "qualify-release",
+        help="qualify exact release assets across the canonical adopter matrix",
+    )
+    qualify.add_argument("--repo-root", type=Path, default=Path.cwd())
+    qualify.add_argument("--release-assets", type=Path, required=True)
+    qualify.add_argument("--adopter-root", type=Path, action="append", required=True)
+    qualify.add_argument(
+        "--adopter-python",
+        action="append",
+        required=True,
+        metavar="OWNER/REPO=PATH",
+        help="environmental interpreter provisioning; repository semantics remain canonical",
+    )
+    qualify.add_argument("--output", type=Path, required=True)
+    qualify.add_argument("--format", choices=("text", "json"), default="json")
     submit = subparsers.add_parser(
         "submit",
         help="run the canonical prospective train and push only its exact proved commit",
@@ -309,6 +341,20 @@ def main(argv: list[str] | None = None) -> None:
             project_python = args.python or resolve_local_project_python(
                 args.repo_root, Path(sys.executable)
             )
+            canonical = canonical_prospective_inputs(
+                args.repo_root, remote=args.remote
+            )
+            supplied = {
+                "semantic_intent": args.intent,
+                "evaluation_target": args.target,
+                "subject_commit": args.subject_commit,
+                "subject_tree": args.subject_tree,
+            }
+            for key, value in supplied.items():
+                if value is not None and value != canonical[key]:
+                    raise ProspectiveValidationError(
+                        f"prospective {key} assertion differs from canonical state"
+                    )
             provider_api = None
             if args.repository is not None:
                 from .ci_github_controller import environment_api
@@ -316,10 +362,10 @@ def main(argv: list[str] | None = None) -> None:
                 provider_api = environment_api()
             result = run_prospective_train(
                 args.repo_root,
-                semantic_intent=args.intent,
-                evaluation_target=args.target,
-                subject_commit=args.subject_commit,
-                subject_tree=args.subject_tree,
+                semantic_intent=str(canonical["semantic_intent"]),
+                evaluation_target=canonical["evaluation_target"],
+                subject_commit=str(canonical["subject_commit"]),
+                subject_tree=str(canonical["subject_tree"]),
                 remote=args.remote,
                 python_executable=project_python,
                 repository=args.repository,
@@ -328,6 +374,27 @@ def main(argv: list[str] | None = None) -> None:
                     json.dumps(event, sort_keys=True), file=sys.stderr, flush=True
                 ),
             )
+            _print(result, args.format)
+            return
+        if args.operation == "qualify-release":
+            interpreters: dict[str, Path] = {}
+            for raw in args.adopter_python:
+                repository, separator, path = raw.partition("=")
+                if not separator or not repository or not path or repository in interpreters:
+                    raise ReleaseQualificationError(
+                        "--adopter-python requires unique OWNER/REPO=PATH values"
+                    )
+                interpreters[repository] = Path(path)
+            result = qualify_release(
+                args.repo_root,
+                release_assets=args.release_assets,
+                adopter_roots=tuple(args.adopter_root),
+                adopter_pythons=interpreters,
+                output=args.output,
+            )
+            from .ci_github_controller import environment_api
+
+            dispatch_release_qualification(environment_api(), result)
             _print(result, args.format)
             return
         if args.operation == "submit":
@@ -439,6 +506,7 @@ def main(argv: list[str] | None = None) -> None:
         LocalExecutionAdmissionError,
         LocalPRError,
         ProspectiveValidationError,
+        ReleaseQualificationError,
         RuntimeCapacityError,
         TrustedControllerCompatibilityError,
     ) as exc:

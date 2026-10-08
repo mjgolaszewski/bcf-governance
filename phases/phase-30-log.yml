@@ -121,4 +121,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify terminal P30 truth and publish independently verified immutable v2.2.0 custody before activating P31
+- complete P30-HF01 through exact prepublication adopter qualification and independently verified immutable v2.2.1 custody before activating P31; published v2.2.0 remains noncustodied

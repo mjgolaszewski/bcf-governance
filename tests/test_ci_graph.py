@@ -1038,6 +1038,9 @@ def test_direct_event_command_inputs_require_mechanical_fallback() -> None:
     )
     assert workflow_input_issues(graph, workflow) == ()
 
+    graph["commands"][command_id]["argv"].append("publication-inputs.json")
+    assert workflow_input_issues(graph, workflow) == ()
+
     graph["commands"][command_id]["argv"][-1] = (
         "${{ inputs.evaluation_mode == 'pr' && 'pr' || 'release' }}"
     )

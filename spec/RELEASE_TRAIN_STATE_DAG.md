@@ -109,6 +109,20 @@ provider evidence.
     of one agent workspace. Their canonical author must reject local absolute
     workspace paths before writing a phase or hotfix artifact; downstream
     exposure preflight remains defense in depth rather than first discovery.
+29. Release publication is downstream of exact-byte adopter qualification, not
+    its prerequisite. The independently verified release assets must satisfy
+    every required adopter class before the publisher can mutate provider
+    state. Post-publication custody reauthenticates the same asset digests and
+    may reuse those exact qualification propositions; it does not recompute
+    unchanged product evidence. Missing, failed, stale, differently scoped, or
+    operator-selected qualification makes publication structurally
+    unreachable.
+30. Installation, reconciliation, lifecycle selection, qualification, release
+    continuation, publication, credential retirement, and custody are one
+    derived transaction frontier. A successful installer cannot leave required
+    projections stale, emit a static next command, or require the caller to
+    choose evaluation intent or target. If authenticated state cannot derive
+    one legal successor, execution stops with a typed result before mutation.
 
 ## State matrix
 
@@ -126,11 +140,13 @@ provider evidence.
 | Release built | authorization, build manifest, wheelhouse lock, exact assets | independent runtime verification | unlocked input, source drift, build identity mismatch |
 | Release verified | build identity, runtime report, exact asset hashes | trusted collection | failed runtime, mismatched run/attempt, unbound asset |
 | Release collected | release receipt, certified assets, collector run/attempt, provider digest | trusted publication | receipt not current exact main, wrong assets/controller/role |
-| Publication ready, tag absent | immutable releases enabled, short-lived credential present, attestations complete | publisher creates tag and draft | any failed read-side check; tag creation before attestations |
+| Release assets awaiting qualification | collected release receipt, exact unpublished asset digests, required adopter classes and canonical qualification frontier | install the exact assets in isolated adopter subjects, reconcile to a fixed point, derive lifecycle intent/target, and execute the applicable proof | complete exact-byte qualification receipt set; no publication authority yet | missing adopter, caller-selected intent/target, stale projection, different assets, failed or ambiguous adopter proof |
+| Publication ready, tag absent | immutable releases enabled, short-lived credential present, attestations and complete exact-byte adopter qualifications | publisher creates tag and draft | any failed read-side check; tag creation before attestations or qualification |
 | Publication ready, tag exact | exact annotated unsigned tag to certified commit | publisher creates draft | lightweight, signed, malformed, or wrong-subject tag |
 | Publication conflict | any non-exact tag or release state | stop | mutation, deletion, force update, or treating conflict as absence |
-| Published custody | immutable non-draft release, exact tag/assets/digests/attestations | credential retirement and adopter qualification | mutable/draft release, missing asset, retained credential |
-| Qualified release | immutable custody plus adopter same-byte reports | phase/release closeout | unpublished package, different bytes, simulated adopter authority |
+| Published pending custody | immutable non-draft release, exact tag/assets/digests/attestations and prepublication qualification receipts | retire the exact credential and reauthenticate published assets against the already-qualified digests | same-byte custody observation only | mutable/draft release, missing/different asset, retained credential, recomputation of unchanged product evidence |
+| Published without prerequisite qualification | immutable release exists but the exact required qualification set was absent, incomplete, or failed before publication | freeze successor activation; preserve the immutable release as noncustodied and derive a superseding patch-release frontier | typed release-process defect only | calling publication custody, backfilling authority retrospectively, deleting/mutating the release, or activating the successor phase |
+| Qualified release | immutable custody plus authenticated same-byte qualification receipts for every required adopter class | phase/release closeout | different bytes, simulated adopter authority, postpublication evidence relabeled as a missing prepublication prerequisite |
 | Ordinary adopter submit | validated direct-main graph, exact GitHub remote, authenticated provider repository, selected project Python | prospective train and exact push | remote/provider disagreement, malformed repository identity, self-controller declaration required by implication |
 | Local Python-only admission | validated graph without a toolchain-bootstrap command, selected governed project Python | execute declared producer DAG | BCF self bootstrap invoked, undeclared setup synthesized, unsupported interpreter |
 | Local declared-toolchain admission | validated graph with an exact bootstrap command, selected governed project Python | execute that command once, then producer DAG | missing/malformed declared command, failed custody proof, agent-selected replacement |
@@ -808,10 +824,13 @@ exposed it.
 ## P30 and P31 autonomous release train
 
 The post-P29 train contains exactly two governed phases. P30 owns release 25
-and immutable `2.2.0` custody. P31 owns release 26 and immutable `2.3.0`
-custody. P31 is not active or eligible until P30 has terminal phase truth,
-independent release verification, immutable publication, adopter
-qualification, and a custody receipt for one exact subject.
+and immutable `2.2.x` custody. The prematurely published `2.2.0` bytes remain
+immutable but noncustodied; the mechanically derived recovery target is
+`2.2.1`. P31 owns release 26 and immutable `2.3.0` custody. P31 is not active
+or eligible until P30 has terminal phase truth, independent release
+verification, prepublication exact-asset adopter qualification, immutable
+publication, same-byte custody verification, and a custody receipt for one
+exact subject.
 
 The normal agent interface remains one command, `bcf ci submit --repo-root .`.
 Authenticated state, rather than an agent-authored procedure, selects lifecycle
@@ -857,6 +876,15 @@ the missing derivation is a product defect and execution stops at that owner.
 | terminal phase truth | all workitems closed on one exact subject and lifecycle authored terminal | evaluate release authorization independently | release candidate may proceed | active phase, bounded certification, incomplete or reused-inapplicable evidence |
 | release transaction resumable | certified receipt, version/tag, asset digests, transaction token and credential capsule | resume the exact next publication edge | exact immutable release and credential retirement | conflict, rebuilt bytes, changed subject, ambiguous partial mutation |
 | release custody verified | immutable tag/assets/attestations, independent verification and adopter reports | close release/phase and activate the governed successor | P30 activates P31; P31 closes the train | missing adopter class, mutable/draft release, credential residue, inconsistent receipts |
+| adopter upgrade installed but not reconciled | exact release/candidate runtime custody is projected but any canonical derived stage is stale | continue the same transaction through fixed-point reconciliation before reporting success | reconciled candidate only | `strict pass`, static next-command advice, evidence allocation, or provider mutation while required projections differ |
+| adopter qualification intent unresolved | reconciled adopter state and authenticated lifecycle/graph inputs do not select exactly one mode/target | stop with typed ambiguity before evidence | none | caller supplies or guesses `pr`, workitem, closure, or target |
+| direct-event input expression | graph command/action data contains a syntactically delimited `${{ inputs.<name> }}` reference | require a canonical fallback equal to the declared reusable-workflow default | one event-invariant semantic value | treating ordinary filenames such as `publication-inputs.json` as workflow inputs, or accepting an actual input expression without an exact fallback |
+| workflow authority transition candidate | every canonical pre-authority projection has converged in declared order on one exact committed subject | compare final workflow bytes with the committed authority, then emit the definition/pin pair only when final bytes differ | either no transition or one atomic definition/pin transition | deciding from a partial projection that an earlier canonical owner later reverses, empty authority commit, or agent-selected projection order |
+| release version authored | single runtime version owner plus manifest, public contract, and current operator-document projections | project every current-version surface before graph locking, workflow rendering, editorial audit, build, or qualification | one exact candidate release identity | editing a derived version surface, stale install/download examples, partial projection, or discovering version drift after long evidence |
+| adopter qualification intent exact | reconciled adopter state deterministically selects one mode/target and project interpreter | execute the prospective proof under the same transaction identity | attributed non-authoritative qualification receipt | CLI asks the agent to select intent/target, lifecycle changes between derivation and proof, or ambient interpreter/runtime differs |
+| verified release assets qualified before publication | exact receipt/assets plus complete Lite, Standard-v3, AgentBus and any declared profile reports bound to the same digests | make trusted publication eligible | publication frontier only; no release is yet published | any required adopter failure, external-input ambiguity, different asset, missing report, or qualification used as certification authority |
+| immutable release matches qualified assets | provider tag/release/assets exactly reproduce the prepublication-qualified digest set and publication credential is retired | reuse the exact qualification propositions and emit independent custody | release/phase closeout may proceed | rerunning unchanged product tests by default, digest mismatch, credential residue, mutable release, or postpublication report broadening scope |
+| immutable release lacks prepublication qualification | provider release exists but no complete prior exact-asset qualification set is authenticated | classify `published_without_custody`, freeze P31, and derive one superseding patch-release recovery | no custody or successor authority | retrospective qualification laundering, release deletion/mutation, P31 activation, or human-selected recovery sequence |
 | scheduled control run | default-branch subject, scheduled workflow identity, declared toolchains and control profile, provider-authenticated effective controller commit/bundle | resolve current controller custody, validate structural state against that exact runtime, execute both mutant profiles, retain a typed terminal artifact | exact scheduled result with no certification authority | stale source-policy pin substituted for an active provider transition, incomplete controller pair, release proposition inferred from schedule, absent diagnostics, secondary artifact error obscuring first cause |
 | scheduled isolated mutant runtime | exact default-branch commit/tree, canonical runtime package bytes, projected runtime-version owner, mutation target, oracle node and profile identity | construct one importable candidate runtime, prove its bootstrap, then execute every declared profile and aggregate all terminal results | killed/survived/infrastructure result for every declared mutant; no certification authority | copied tooling without its version owner, baseline-only bootstrap success, first-profile short circuit, missing per-profile diagnostic |
 | exact clean candidate without provider proof | repository/base/head/commit/tree, lifecycle proposition, controller/policy/protection identities | run the one canonical submit operation | exact pushed candidate and provider-required frontier | caller-selected stage order, separate remembered prospective train, dirty tree, moved identity, ambiguous base |
@@ -892,8 +920,58 @@ P30-P0-01 FAIL FAST
         -> P30-P0-04 REUSE
            -> P30-P0-05 SPLINTER
               -> phase_closed:P30
-                 -> independently verified immutable v2.2.0 custody
-                    -> P31-P0-01 eligible
+                 -> release build + independent verification
+                    -> exact-asset adopter qualification
+                       -> immutable publication
+                          -> same-byte custody verification
+                             -> P31-P0-01 eligible
+```
+
+The publication edge is deliberately after adopter qualification. Candidate
+source qualification and exact release-asset qualification are distinct: the
+first detects pack/runtime integration drift before provider gates; the second
+proves the independently built bytes that the publisher will make immutable.
+After publication, the custody verifier reauthenticates provider tag and asset
+digests and consumes the already-qualified propositions. It does not rerun
+unchanged adopter evidence. A published release that skipped the prerequisite
+is retained immutably but classified `published_without_custody`; its successor
+phase remains blocked and a mechanically derived patch-release transaction is
+the only recovery lane.
+
+### Release qualification and publication construction tree
+
+```text
+invariants
+  publication cannot precede complete exact-asset adopter qualification
+  postpublication custody proves byte identity and never backfills authority
+  one authenticated intent derives every step and exact successor
+    -> primitives
+       immutable release-asset identity and digest set
+       adopter repository/profile/interpreter identity
+       fixed-point reconciliation result
+       lifecycle-derived evaluation intent and target
+       qualification proposition, result and applicability digest
+       publication transaction and credential-capsule identity
+         -> contracts
+            release-qualification frontier schema
+            install-and-reconcile transaction contract
+            canonical prospective qualification contract
+            publication prerequisite contract
+            same-byte custody/reuse contract
+            published-without-custody recovery contract
+              -> producers
+                 independent release verifier/collector
+                 canonical installer and reconcile owner
+                 lifecycle/graph evaluation selector
+                 isolated adopter proof producer
+                 trusted publisher and credential retiree
+                 independent custody verifier
+                   -> consumers
+                      release authorization continuation
+                      publisher eligibility
+                      phase/release closeout
+                      P31 eligibility
+                      installer/operator diagnostics
 ```
 
 `P30-P0-01` also owns the existing scheduled-mutant defect and the exact
@@ -1311,12 +1389,16 @@ chooses nodes, ordering, concurrency, or fallback behavior.
 | Timing source is absent, stale, malformed, or ambiguous | current exact node manifest plus rejected or missing observation identity | reconcile projects the typed absence/fallback state and the gate uses stable lexical partitioning or the declared safe monolith; uncertainty never removes a node | unchanged gate receipt after exact aggregate closure | guessing durations, silently accepting malformed observations, or requiring an operator to repair timing state |
 | Exact ancestor timing covers a strict subset after test additions | authenticated ancestor proof, exact source inventory, current manifest, and a mechanically computed added-node set | retain exact observations only for unchanged identities and schedule unobserved nodes with the canonical unknown default; bind both sets in the partition digest | non-authoritative partial duration input with exact current-node union | carrying a removed/renamed node, inventing a duration for a new node, or allowing partial timing to alter proof applicability |
 | Exact release candidate requires adopter qualification | exact candidate commit/tree, locally built candidate wheel/runtime digests, clean isolated adopter snapshot, declared Lite or Standard-v3 profile | install and exercise candidate bytes in disposable copies of BCF self, TradeFlow, Racecar, and AgentBus without mutating maintained repositories | non-authoritative qualification observations bound to exact candidate bytes | treating local qualification as provider certification or changing another maintained repository |
+| Release CLI operation projected from provider event | canonical graph command plus the complete typed provider-event argument namespace, including the exact event payload path for qualification authentication | resolve every graph expression into the operation fixture before invoking the shared CLI parser/runtime owner | one fully modeled operation namespace for deterministic runtime verification | allowing a newly required graph argument to escape the shared operation fixture and fail only after evidence allocation |
+| Independently verified release assets require adopter qualification | exact terminal certification, collected receipt, wheel/sdist/checksum digests, clean isolated adopter snapshots and required profile inventory | one release transaction installs the exact wheel, reconciles every adopter to a fixed point, derives its canonical interpreter and lifecycle scope, and executes the applicable prospective proof | complete non-authoritative exact-asset qualification inventory makes publication eligible | static installer advice, stale generated bytes after `strict pass`, caller-selected intent/target, missing adopter class, failed adopter evidence, or different assets |
+| Adopter product proof fails after BCF integration succeeds | exact install/reconcile result plus retained first failing producer artifact and adopter-owned input identity | attribute the blocker to its canonical owner and keep publication/custody unavailable; do not mutate the adopter repository from BCF | typed external qualification failure only | classifying the adopter failure as BCF success, rerunning unchanged evidence, bypassing the adopter, or publishing without the required class |
 | Release version advances before its editorial audit exists | canonical version owner, exact branch upstream, and authenticated merge-base ancestry | the editorial-audit projection primitive derives the immutable comparison base from the branch's exact tracking upstream and reconciliation creates the version-named audit through the canonical builder before any workflow-authority shadow projection can change branch-local tracking context | mechanically complete editorial inventory bound to the exact base and candidate bytes | requiring an agent to seed an audit, guessing a base, accepting a detached/untracked branch, allowing the candidate to choose unrelated history, or expanding the orchestration owner beyond its governed module boundary |
 | Authored-state contradiction regression runs after the active phase becomes terminal | exact current phase catalog plus the contradiction class under test | derive the adversarial fixture from current canonical bytes and mutate the one owned lifecycle scalar into the contradictory state | the earliest authored-state validator rejects before reconciliation or evidence | hard-coding the former active/terminal baseline so a real contradiction silently becomes an exact fixture |
-| Terminal P30 closure requested | all five workitems authored DONE, exact authenticated phase evidence, release version 2.2.0, ordinary-current controller, and complete qualification inventory | evaluate `phase_closed:P30`, preserve exact release proposition through finalizer/publisher, and reject any bounded substitute | terminal phase certification only; publication remains separately authorized | closing P30 from PR progress, a bounded workitem status, or incomplete adopter inventory |
+| Terminal P30 closure requested | all five workitems authored DONE, exact authenticated phase evidence, current release_25 patch target, ordinary-current controller, and complete candidate qualification inventory | evaluate `phase_closed:P30`, preserve exact release proposition through finalizer/publisher, and reject any bounded substitute | terminal phase certification only; publication remains separately authorized | closing P30 from PR progress, a bounded workitem status, or incomplete adopter inventory |
 | Terminal certification follows controller rotation and a fresh exact-main attempt | exact terminal proposition, ordinary-current installed controller custody, current admission run/attempt, and the installed wheel digest | derive `release_materialization_required` from terminal closure and materialize one exact same-attempt provider controller bundle; independently require its subject and digest to equal installed custody | release authorizer receives downloadable exact controller bytes without changing target/install state; rotation remains `current/no_transition` | following a deleted prior-attempt artifact after GitHub rerun replacement, treating a compact custody reference as downloadable bytes, rebuilding on ordinary no-transition runs, or allowing materialization to imply rotation or release authority |
-| Certified 2.2.0 publication pending | terminal P30 certification, exact source commit/tree, independently rebuilt wheel/sdist and checksums, short-lived publisher credential | existing release owner publishes the pre-certified exact bytes and verifier independently authenticates tag, assets, attestations, and credential retirement | immutable v2.2.0 release custody | rebuilding after certification, mutable tag/assets, candidate credential use, or hand-authored custody facts |
-| Immutable 2.2.0 custody verified | provider tag/release/assets, independent verifier receipt, exact adopter post-publication results, and release_25 identity | canonical custody closeout records exact provider facts, closes P30/#344, and makes P31 uniquely eligible | P31 planned-to-eligible transition only | activating P31 before custody or borrowing candidate qualification as immutable-release proof |
+| Certified 2.2.x publication pending | terminal P30 certification, exact source commit/tree, independently rebuilt wheel/sdist/checksums, complete exact-asset qualification receipts and short-lived publisher credential | the release transaction admits publication once, independently reauthenticates tag/assets, retires the credential, and consumes same-byte qualification without product-test recomputation | immutable 2.2.x custody | rebuilding after certification, mutable tag/assets, candidate credential use, hand-authored custody facts, or qualification after publication |
+| Immutable 2.2.x custody verified | provider tag/release/assets, independent verifier receipt, reused exact-byte adopter qualification receipts, retired credential and release_25 identity | canonical custody closeout records exact provider facts, closes P30/#344, and makes P31 uniquely eligible | P31 planned-to-eligible transition only | activating P31 before custody, borrowing candidate-source qualification as exact-release proof, or rerunning unchanged evidence |
+| Immutable 2.2.0 published without prerequisite qualification | exact `v2.2.0` tag/assets and publication receipt exist, but no complete prepublication exact-asset adopter receipt set exists | preserve `v2.2.0` immutably as noncustodied; derive a 2.2.1 patch frontier that carries this orchestration repair and requires qualification before publication | P30 remains active; P31 remains blocked | retroactive custody, tag/release mutation, deleting provider history, or agent-authored recovery steps |
 
 The partition digest binds subject, session, policy, producer, exact ordered
 node inventory, resource contract, algorithm version, duration-input digest,
@@ -1341,8 +1423,10 @@ PRUNE exact affected-proof frontier
                                    -> reconcile next candidate from the newest exact ancestor timing observation
                                       -> isolated exact-candidate adopter qualification
                                          -> terminal phase_closed:P30 truth
-                                            -> independent build/publication/verifier
-                                               -> immutable 2.2.0 custody and P31 eligibility
+                                            -> independent build/verifier/collector
+                                               -> exact-asset adopter qualification
+                                                  -> immutable publication + credential retirement
+                                                     -> same-byte custody reuse and P31 eligibility
 ```
 
 The outward construction is:
@@ -1361,13 +1445,15 @@ invariants
          -> contracts
             immutable partition plan, exact-union validator, bounded fallback,
             isolated execution result, canonical JUnit aggregation, typed timing,
-            reconciled duration observation, candidate qualification,
-            exact same-attempt release-controller materialization, terminal release custody
+            reconciled duration observation, candidate and exact-asset qualification,
+            exact same-attempt release-controller materialization,
+            publication prerequisite and terminal release custody
               -> producers
                  PRUNE/REUSE planner, existing test-manifest owner,
                  existing gate runner and execution-state lifecycle owner,
                  canonical reconciler, exact-main controller builder, installer,
-                 release builder/verifier/publisher
+                 release builder/verifier/collector, qualification frontier,
+                 publisher/credential retiree/custody verifier
                    -> consumers
                       local prospective train, provider evidence fan-out,
                       exact-main reuse, receipt capture, truth and telemetry,
@@ -1383,7 +1469,7 @@ the canonical graph cannot express the same single-producer contract.
 ### P31 workitem DAG
 
 ```text
-immutable v2.2.0 custody
+immutable v2.2.x custody (2.2.1 after the noncustodied v2.2.0 publication)
   -> P31-P0-01 consumer-owned assurance graph
      -> P31-P0-02 existing-repository protection projection
         -> P31-P0-03 evidence-storage topology and migration

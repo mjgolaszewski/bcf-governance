@@ -29,6 +29,9 @@ from bcf_governance.tooling.ci_github_release import (
     verify_release_build,
     verify_release_build_provider,
 )
+from bcf_governance.tooling.ci_github_release_qualification import (
+    authenticate_release_qualification,
+)
 from bcf_governance.tooling.ci_github_release_inputs import (
     _release_version_at_main,
     load_release_authorization_inputs,
@@ -261,6 +264,48 @@ def _sha(path: Path) -> str:
 def _json(path: Path, payload: dict[str, object]) -> Path:
     path.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
     return path
+
+
+def _qualification(path: Path, assets: dict[str, str]) -> Path:
+    contract = yaml.safe_load(
+        (REPO_ROOT / "governance/release-qualification.yml").read_text()
+    )
+    adopters = []
+    for index, item in enumerate(contract["required_adopters"]):
+        identity = f"{index + 1}" * 40
+        adopters.append(
+            {
+                "id": item["id"],
+                "repository": item["repository"],
+                "profile": item["profile"],
+                "source_commit": identity,
+                "source_tree": identity,
+                "candidate_commit": identity,
+                "candidate_tree": identity,
+                "evaluation": {"intent": "pr", "target": None},
+                "status": "pass",
+            }
+        )
+    return _json(
+        path,
+        {
+            "schema_version": "1.0",
+            "kind": "release_adopter_qualification",
+            "authority": False,
+            "subject": {
+                "repository": "owner/repo",
+                "commit_sha": COMMIT,
+                "tree_sha": TREE,
+            },
+            "release": {"version": "0.7.1", "assets": assets},
+            "contract_sha256": _sha(
+                REPO_ROOT / "governance/release-qualification.yml"
+            ),
+            "adopters": adopters,
+            "status": "pass",
+            "publication_eligible_observation": True,
+        },
+    )
 
 
 def _release_inputs(tmp_path: Path) -> dict[str, object]:
@@ -1244,6 +1289,9 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
             },
         },
     )
+    qualification_path = _qualification(
+        tmp_path / "qualification.json", values["assets"]  # type: ignore[arg-type]
+    )
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release.resolve_main",
         lambda api, repository: MainIdentity("101", "main", COMMIT, TREE),
@@ -1264,8 +1312,19 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
         "bcf_governance.tooling.ci_github_release.publish_release",
         lambda *args, **kwargs: {"status": "published"},
     )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.packaged_repo_root",
+        lambda: REPO_ROOT,
+    )
+    api = SimpleNamespace(
+        content=lambda _repository, path, **_kwargs: GitHubContent(
+            path,
+            "d" * 40,
+            (REPO_ROOT / path).read_bytes(),
+        )
+    )
     result = publish_certified_release(
-        object(),  # type: ignore[arg-type]
+        api,  # type: ignore[arg-type]
         repository="owner/repo",
         tag="v0.7.1",
         expected_commit=COMMIT,
@@ -1275,6 +1334,7 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
         receipt_artifact_id="70",
         receipt_artifact_name="receipt",
         receipt_provider_digest=f"sha256:{'f' * 64}",
+        qualification_path=qualification_path,
         publisher_run_id="80",
         publisher_run_attempt="1",
     )
@@ -1284,7 +1344,7 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
     _json(receipt_path, receipt)
     with pytest.raises(GitHubControllerError, match="bind exact publication assets"):
         publish_certified_release(
-            object(),  # type: ignore[arg-type]
+            api,  # type: ignore[arg-type]
             repository="owner/repo",
             tag="v0.7.1",
             expected_commit=COMMIT,
@@ -1294,6 +1354,7 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
             receipt_artifact_id="70",
             receipt_artifact_name="receipt",
             receipt_provider_digest=f"sha256:{'f' * 64}",
+            qualification_path=qualification_path,
             publisher_run_id="80",
             publisher_run_attempt="1",
         )
@@ -1307,7 +1368,7 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
     _json(receipt_path, receipt)
     with pytest.raises(GitHubControllerError, match="bind exact publication assets"):
         publish_certified_release(
-            object(),  # type: ignore[arg-type]
+            api,  # type: ignore[arg-type]
             repository="owner/repo",
             tag="v0.7.1",
             expected_commit=COMMIT,
@@ -1317,10 +1378,56 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
             receipt_artifact_id="70",
             receipt_artifact_name="receipt",
             receipt_provider_digest=f"sha256:{'f' * 64}",
+            qualification_path=qualification_path,
             publisher_run_id="80",
             publisher_run_attempt="1",
         )
 
+
+def test_provider_qualification_event_binds_exact_repository_and_main(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    values = _release_inputs(tmp_path / "release")
+    receipt_path = _qualification(
+        tmp_path / "qualification.json", values["assets"]  # type: ignore[arg-type]
+    )
+    qualification = json.loads(receipt_path.read_text())
+    event = _json(
+        tmp_path / "event.json",
+        {
+            "action": "bcf_release_qualified",
+            "repository": {"id": 101, "full_name": "owner/repo"},
+            "client_payload": {"qualification": qualification},
+        },
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release_qualification.resolve_main",
+        lambda api, repository: MainIdentity("101", "main", COMMIT, TREE),
+    )
+    api = SimpleNamespace(
+        content=lambda _repository, path, **_kwargs: GitHubContent(
+            path, "d" * 40, (REPO_ROOT / path).read_bytes()
+        )
+    )
+
+    result = authenticate_release_qualification(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        event_path=event,
+        output_path=tmp_path / "authenticated.json",
+    )
+    assert result == qualification
+
+    payload = json.loads(event.read_text())
+    payload["repository"]["id"] = 102
+    _json(event, payload)
+    with pytest.raises(GitHubControllerError, match="repository identity differs"):
+        authenticate_release_qualification(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            event_path=event,
+            output_path=tmp_path / "rejected.json",
+        )
 
 class _ReleaseAPI:
     def __init__(self) -> None:
