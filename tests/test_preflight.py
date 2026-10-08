@@ -1117,8 +1117,12 @@ def test_authored_phase_state_rejects_completed_log_while_ledger_active(
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes((REPO_ROOT / relative).read_bytes())
     log = yaml.safe_load((repo / "phases/phase-30-log.yml").read_text())
-    log["document"]["status"] = "completed"
-    (repo / "phases/phase-30-log.yml").write_text(yaml.safe_dump(log, sort_keys=False))
+    assert log["document"]["status"] == "completed"
+    ledger = yaml.safe_load((repo / "plans/phase-ledger.yml").read_text())
+    ledger["active_phase"]["lifecycle_status"] = "active"
+    (repo / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump(ledger, sort_keys=False)
+    )
     with pytest.raises(AuthoredPhaseStateError, match="declare completed together"):
         validate_authored_phase_state(repo)
 
