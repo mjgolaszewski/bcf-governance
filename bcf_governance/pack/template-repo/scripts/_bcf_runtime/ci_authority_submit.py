@@ -6,9 +6,9 @@ from pathlib import Path
 import hashlib
 import re
 from typing import Any, Callable
-from urllib.parse import urlparse
 
 from .ci_github_api import GitHubAPI
+from .ci_github_values import GitHubValueError, remote_repository
 from .ci_candidate_pr import ensure_candidate_pull_request
 from .ci_graph_contracts import validate_ci_graph
 from .ci_graph_post_merge import authored_candidate_title, post_merge_evaluation
@@ -28,7 +28,6 @@ from .local_pr import (
 
 Runner = Callable[..., Any]
 _SAFE_BRANCH = re.compile(r"(?!.*\.\.)(?!.*@\{)[A-Za-z0-9][A-Za-z0-9._/-]*")
-_REPOSITORY = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 
 
 def _command_error(result: Any) -> str:
@@ -36,30 +35,12 @@ def _command_error(result: Any) -> str:
 
 
 def _remote_repository(remote_url: str) -> str:
-    value = remote_url.strip()
-    scp = re.fullmatch(
-        r"git@github\.com:(?P<repository>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?)(?:\.git)?",
-        value,
-    )
-    if scp is not None:
-        return scp.group("repository")
-    parsed = urlparse(value)
-    if (
-        parsed.scheme not in {"https", "ssh"}
-        or parsed.hostname not in {"github.com", "ssh.github.com"}
-        or parsed.query
-        or parsed.fragment
-        or parsed.password is not None
-    ):
+    try:
+        return remote_repository(remote_url)
+    except GitHubValueError as exc:
         raise ProspectiveValidationError(
             "candidate submission requires an exact GitHub remote"
-        )
-    repository = parsed.path.removeprefix("/").removesuffix(".git")
-    if _REPOSITORY.fullmatch(repository) is None:
-        raise ProspectiveValidationError(
-            "candidate submission remote does not identify exact owner/name"
-        )
-    return repository
+        ) from exc
 
 
 def _provider_repository(

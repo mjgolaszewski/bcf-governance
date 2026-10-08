@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 
 
 class GitHubValueError(ValueError):
@@ -23,6 +23,28 @@ def repository(value: object) -> str:
     ):
         raise GitHubValueError("repository must be exact owner/name identity")
     return text
+
+
+def remote_repository(value: object) -> str:
+    """Decode one exact GitHub Git remote into owner/name identity."""
+
+    text = str(value).strip()
+    scp = re.fullmatch(
+        r"git@github\.com:(?P<repository>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?)(?:\.git)?",
+        text,
+    )
+    if scp is not None:
+        return repository(scp.group("repository"))
+    parsed = urlparse(text)
+    if (
+        parsed.scheme not in {"https", "ssh"}
+        or parsed.hostname not in {"github.com", "ssh.github.com"}
+        or parsed.query
+        or parsed.fragment
+        or parsed.password is not None
+    ):
+        raise GitHubValueError("Git remote must identify an exact GitHub repository")
+    return repository(parsed.path.removeprefix("/").removesuffix(".git"))
 
 
 def positive_id(value: object, *, field: str) -> str:

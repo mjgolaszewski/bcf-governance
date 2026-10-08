@@ -32,6 +32,7 @@ _EFFECTIVE_RELEASE_OPERATIONS = frozenset(
 )
 _TRIGGER_RELEASE_OPERATIONS = frozenset({"runtime", "verify-evidence", "collect"})
 _INPUT_REFERENCE = re.compile(r"inputs\.([A-Za-z_][A-Za-z0-9_-]*)")
+_GITHUB_EXPRESSION = re.compile(r"\$\{\{([^}]*)\}\}")
 _LITERAL_INPUT_FALLBACK = re.compile(
     r"inputs\.([A-Za-z_][A-Za-z0-9_-]*)\s*\|\|\s*(['\"])(.*?)\2"
 )
@@ -525,7 +526,12 @@ def workflow_input_issues(
             surfaces.append(("reusable-workflow inputs", executor["inputs"]))
         for surface, payload in surfaces:
             for value in _strings(payload):
-                references = set(_INPUT_REFERENCE.findall(value))
+                expressions = _GITHUB_EXPRESSION.findall(value)
+                references = {
+                    name
+                    for expression in expressions
+                    for name in _INPUT_REFERENCE.findall(expression)
+                }
                 if references and "||" not in value:
                     issues.append(
                         f"direct-event workflow {workflow['id']} {surface} "
@@ -534,7 +540,8 @@ def workflow_input_issues(
                     continue
                 fallbacks = {
                     name: literal
-                    for name, _, literal in _LITERAL_INPUT_FALLBACK.findall(value)
+                    for expression in expressions
+                    for name, _, literal in _LITERAL_INPUT_FALLBACK.findall(expression)
                 }
                 for name in sorted(references):
                     contract = declared_inputs.get(name)
