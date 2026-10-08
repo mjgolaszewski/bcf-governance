@@ -235,6 +235,10 @@ def _release_cli_argv(operation: str, root: Path) -> list[str]:
         "resolve-publication": [
             "--repository", "owner/repo", "--output", str(root / "publication.json")
         ],
+        "authenticate-qualification": [
+            "--repository", "owner/repo", "--event", str(root / "event.json"),
+            "--output", str(root / "qualification.json"),
+        ],
         "authorize": [
             "--repository", "owner/repo", "--bundle", str(root / "certification"),
             "--controller-wheel", str(root / "controller.whl"),
@@ -310,6 +314,7 @@ def _canonical_release_cli_argv(operation: str, root: Path) -> list[str] | None:
             "${{ steps.resolve.outputs.receipt_provider_digest }}": "sha256:" + "b" * 64,
             "${{ github.event.workflow_run.id }}": "31",
             "${{ github.event.workflow_run.run_attempt }}": "2",
+            "${{ github.event_path }}": str(root / "event.json"),
             "${{ github.run_id }}": "41",
             "${{ github.run_attempt }}": "3",
             "{python}": str(root / "python"),
@@ -346,7 +351,8 @@ def _release_assets(root: Path) -> None:
     tuple(ci_github_commands._release_parser()._subparsers._group_actions[0].choices),
 )
 def test_every_release_cli_operation_has_a_complete_owned_namespace(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, operation: str,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+    operation: str,
 ) -> None:
     for name in (
         "bcf_governance-0.8.0-py3-none-any.whl",
@@ -370,14 +376,25 @@ def test_every_release_cli_operation_has_a_complete_owned_namespace(
         "run_release_runtime_verification",
         lambda **_: {"status": "passed", "evidence": []},
     )
+    def passed_operation(*_: object, _name: str, **kwargs: object) -> dict[str, str]:
+        result = {"status": "passed", "handler": _name}
+        output = kwargs.get("output_path")
+        if isinstance(output, Path):
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(json.dumps(result), encoding="utf-8")
+        return result
+
     for name in (
         "resolve_release_authorization_inputs", "resolve_release_publication_inputs",
+        "authenticate_release_qualification",
         "verify_release_build_provider", "record_release_build", "authorize_release",
         "collect_release", "inspect_release", "publish_certified_release",
     ):
         monkeypatch.setattr(
             ci_github_commands, name,
-            lambda *_, _name=name, **__: {"status": "passed", "handler": _name},
+            lambda *args, _name=name, **kwargs: passed_operation(
+                *args, _name=_name, **kwargs
+            ),
         )
     staged: list[str] = []
     monkeypatch.setattr(
@@ -408,7 +425,12 @@ def test_every_release_cli_operation_has_a_complete_owned_namespace(
     argv = _canonical_release_cli_argv(operation, tmp_path)
     ci_github_commands._release(argv or _release_cli_argv(operation, tmp_path))
 
-    assert "status=passed" in github_output.read_text(encoding="utf-8")
+    if operation == "authenticate-qualification":
+        assert json.loads(capsys.readouterr().out)["status"] == "passed"
+        qualification = tmp_path / "bcf-publication/qualification.json"
+        assert json.loads(qualification.read_text(encoding="utf-8"))["status"] == "passed"
+    else:
+        assert "status=passed" in github_output.read_text(encoding="utf-8")
     expected_staging = {
         "verify-evidence": ["verifier"],
         "collect": ["receipt"],
