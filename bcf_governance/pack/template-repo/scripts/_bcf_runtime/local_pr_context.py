@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
+from enum import Enum
 import json
 import os
 from pathlib import Path
@@ -20,6 +21,13 @@ class LocalPRError(ValueError):
 
 class ProspectiveValidationError(ValueError):
     """The exact candidate has a mechanically knowable downstream rejection."""
+
+
+class LocalValidationLane(str, Enum):
+    """Closed local validation contexts that cannot confer provider authority."""
+
+    PROVIDER_PR = "provider_pr"
+    ISOLATED_CANDIDATE_QUALIFICATION = "isolated_candidate_qualification"
 
 
 Runner = Callable[..., subprocess.CompletedProcess[str]]
@@ -92,7 +100,10 @@ def resolve_local_pr_context(
 
 
 def _pr_environment_values(
-    context: LocalPRContext, *, event_path: str | None = None
+    context: LocalPRContext,
+    *,
+    event_path: str | None = None,
+    validation_lane: LocalValidationLane = LocalValidationLane.PROVIDER_PR,
 ) -> dict[str, str]:
     values = {
         "BCF_PROVIDER_EVENT": "pull_request",
@@ -102,6 +113,7 @@ def _pr_environment_values(
         "BCF_COMPARISON_BASE_SHA": context.base_sha,
         "BCF_ENFORCE_PR_CHANGELOG": "true",
         "BCF_PR_BASE_SHA": context.base_sha,
+        "BCF_VALIDATION_LANE": validation_lane.value,
         "GITHUB_BASE_REF": context.default_branch,
         "GITHUB_EVENT_NAME": "pull_request",
         "GITHUB_HEAD_REF": context.head_ref,
@@ -162,8 +174,12 @@ def _candidate_identity(
 
 
 @contextmanager
-def _pr_environment(context: LocalPRContext) -> Iterator[None]:
-    values = _pr_environment_values(context)
+def _pr_environment(
+    context: LocalPRContext,
+    *,
+    validation_lane: LocalValidationLane = LocalValidationLane.PROVIDER_PR,
+) -> Iterator[None]:
+    values = _pr_environment_values(context, validation_lane=validation_lane)
     previous = {key: os.environ.get(key) for key in values}
     os.environ.update(values)
     try:

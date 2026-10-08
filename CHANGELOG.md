@@ -6,6 +6,13 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Distinguished isolated, non-authoritative adopter qualification from a real
+  provider pull request so exact release testing retains every prospective
+  proof while the provider-only changelog-delta rule remains mandatory for
+  actual pull requests.
+
 ## [2.2.1] - 2026-10-08
 
 ### Fixed

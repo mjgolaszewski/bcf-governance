@@ -9,8 +9,10 @@ import venv
 
 import pytest
 
+from bcf_governance.tooling import local_pr
 from bcf_governance.tooling import release_adopter_qualification as qualification
 from bcf_governance.tooling.ci_github_values import GitHubValueError, remote_repository
+from bcf_governance.tooling.local_pr_context import LocalValidationLane
 from bcf_governance.tooling.release_adopter_qualification import (
     ReleaseQualificationError,
     _exact_release_runtime,
@@ -288,6 +290,12 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
                 "requirements": [],
                 "version": "2.2.1",
             })
+        if len(argv) == 6 and argv[1:3] == ["-P", "-c"]:
+            return json.dumps({
+                "status": "prospectively_admissible_provider_proof_required",
+                "subject": {"commit_sha": "c" * 40, "tree_sha": "d" * 40},
+                "post_merge_evaluation": {"intent": "pr", "target": None},
+            })
         if argv[:2] == ["git", "clone"]:
             destination = Path(argv[-1])
             destination.mkdir()
@@ -345,6 +353,11 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
         and "--release-assets" not in call
         for call in install_calls
     )
+    qualification_calls = [
+        call for call in calls if len(call) == 6 and call[1:3] == ["-P", "-c"]
+    ]
+    assert len(qualification_calls) == len(contract["required_adopters"])
+    assert all("prospective-train" not in call for call in calls)
 
 
 def test_repository_environment_is_copied_and_own_editable_path_is_rebound(
@@ -370,6 +383,38 @@ def test_repository_environment_is_copied_and_own_editable_path_is_rebound(
         / "site-packages/project.pth"
     )
     assert projected_hook.read_text(encoding="utf-8") == str(destination / "src") + "\n"
+
+
+def test_candidate_qualification_derives_the_closed_observation_lane(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    captured: dict[str, object] = {}
+    monkeypatch.setattr(
+        local_pr,
+        "canonical_prospective_inputs",
+        lambda _root: {
+            "semantic_intent": "pr",
+            "evaluation_target": None,
+            "subject_commit": "a" * 40,
+            "subject_tree": "b" * 40,
+        },
+    )
+
+    def run(_root: Path, **kwargs: object) -> dict[str, str]:
+        captured.update(kwargs)
+        return {"status": "prospectively_admissible_provider_proof_required"}
+
+    monkeypatch.setattr(local_pr, "run_prospective_train", run)
+
+    result = qualification.run_candidate_qualification_train(
+        tmp_path, Path(sys.executable)
+    )
+
+    assert result["status"] == "prospectively_admissible_provider_proof_required"
+    assert (
+        captured["validation_lane"]
+        is LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION
+    )
 
 
 def test_qualification_receipt_requires_exact_subject_assets_and_adopters(

@@ -951,11 +951,13 @@ invariants
        fixed-point reconciliation result
        lifecycle-derived evaluation intent and target
        qualification proposition, result and applicability digest
+       typed validation context: provider PR or isolated candidate qualification
        publication transaction and credential-capsule identity
          -> contracts
             release-qualification frontier schema
             install-and-reconcile transaction contract
             canonical prospective qualification contract
+            pull-request editorial-delta applicability contract
             publication prerequisite contract
             same-byte custody/reuse contract
             published-without-custody recovery contract
@@ -973,6 +975,15 @@ invariants
                       P31 eligibility
                       installer/operator diagnostics
 ```
+
+The isolated qualification producer derives its validation context from the
+exact qualification transaction; an operator does not select it.  The context
+is observation-only and must bind the exact candidate-qualification marker,
+adopter base commit/tree, and release subject.  It makes only the real-provider
+PR changelog-delta rule inapplicable.  Provider PR execution continues to
+require the changelog delta even if candidate bytes contain a qualification
+marker, and every other governance, reconciliation, proof, and authority check
+is unchanged.
 
 `P30-P0-01` also owns the existing scheduled-mutant defect and the exact
 `build==1.6.1` dependency reconciliation. A stale automation PR is never
@@ -1392,6 +1403,7 @@ chooses nodes, ordering, concurrency, or fallback behavior.
 | Exact release wheel is exercised from a repository-owned qualification environment | exact wheel digest plus the already-admitted qualification interpreter and its runtime dependency inventory | install the wheel into a fresh isolated import root, mechanically inherit only the invoking interpreter's admitted dependencies, verify the imported BCF distribution and module resolve from that exact root, then use one derived command for every adopter | exact release code executes without ambient source shadowing or operator-created child-environment repair | assuming a child venv inherits its parent's packages, installing dependencies from the network, importing candidate/source BCF bytes, or requiring an operator to remember environment repair commands |
 | Exact release tooling spawns a governance subprocess that scrubs ambient import variables | exact release interpreter identity, exact wheel distribution/module roots, and mechanically projected admitted dependency roots | execute the entire qualification transaction from one isolated controller interpreter; make that interpreter the inherited `sys.executable` for every governance child while retaining exact-origin and dependency validation | reconcile and every nested governance command consume the same exact wheel without `PYTHONPATH` or current-working-directory authority | using an ambient editable install after environment scrubbing, selecting a second utility, restoring imports by hand, or allowing child processes to change BCF versions |
 | Exact prepublication wheel upgrades an adopter before an immutable tag exists | verified wheel/sdist/checksum digests, exact clean BCF source commit/tree whose pack manifest equals the executing wheel, exact clean adopter subject, and predecessor runtime-lock digest | route the installer through the existing typed candidate-qualification operation; bind exact candidate and adopter identities while retaining non-authoritative custody until publication | disposable adopter contains the exact candidate runtime and a non-authoritative candidate-qualification projection; immutable release authority remains absent | invoking published-release custody, querying a not-yet-created tag, treating local assets as immutable provider custody, omitting the exact source/pack identity, or requiring an operator-selected fallback |
+| Isolated candidate qualification executes the ordinary prospective proof without a provider PR | exact transaction-owned qualification context, validated candidate marker, adopter base commit/tree, and release subject | derive one observation-only validation context and make only the provider-PR changelog delta inapplicable; retain the complete governance and prospective chain | exact non-authoritative adopter compatibility observation | treating repository marker bytes or a caller-selected flag as authority, weakening provider PR changelog enforcement, manufacturing adopter changelog prose, or skipping any non-editorial proof |
 | Release CLI operation projected from provider event | canonical graph command plus the complete typed provider-event argument namespace, including the exact event payload path for qualification authentication | resolve every graph expression into the operation fixture before invoking the shared CLI parser/runtime owner | one fully modeled operation namespace for deterministic runtime verification | allowing a newly required graph argument to escape the shared operation fixture and fail only after evidence allocation |
 | Exact-asset qualification spans release and adopter subjects | immutable BCF release repository/commit/tree captured once before iteration plus a distinct repository/commit/tree tuple for every required adopter | preserve the release subject unchanged while each isolated adopter proof binds only its own source and candidate identities | one receipt whose top-level subject is exact BCF main and whose adopter inventory is exact and non-interchangeable | variable/namespace reuse, iteration-order dependence, an adopter identity substituted for the release subject, or a BCF subject copied into an adopter result |
 | Trusted release authorization is provider-latency bounded | exact certified main, installed controller custody, certification artifact and measured successful authorization duration | execute the unchanged fail-closed authorization under a governed timeout with explicit margin above observed provider-bound runtime | either one exact authorization bundle or a typed terminal timeout before build allocation | a ceiling at or below observed successful runtime, retrying an underprovisioned timeout, or weakening any authorization read to fit the clock |

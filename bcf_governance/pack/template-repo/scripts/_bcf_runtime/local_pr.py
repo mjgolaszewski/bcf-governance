@@ -79,6 +79,7 @@ from .local_pr_context import (
     CandidateIdentity,
     LocalPRContext,
     LocalPRError,
+    LocalValidationLane,
     ProspectiveValidationError,
     Runner,
     _checked,
@@ -185,6 +186,7 @@ def _run_prospective_train(
     repository: str | None = None,
     provider_api: GitHubAPI | None = None,
     toolchain_identity: Mapping[str, Any] | None = None,
+    validation_lane: LocalValidationLane = LocalValidationLane.PROVIDER_PR,
     runner: Runner = _run,
     progress_sink: ProgressSink | None = None,
 ) -> dict[str, Any]:
@@ -321,7 +323,7 @@ def _run_prospective_train(
 
     with tempfile.TemporaryDirectory(prefix="bcf-prospective-") as temporary:
         artifact_root = Path(temporary) / "evidence"
-        with _pr_environment(context):
+        with _pr_environment(context, validation_lane=validation_lane):
             try:
                 emit("preflight", "started")
                 preflight_started = time.monotonic_ns()
@@ -715,6 +717,7 @@ def run_prospective_train(
     python_executable: Path,
     repository: str | None = None,
     provider_api: GitHubAPI | None = None,
+    validation_lane: LocalValidationLane = LocalValidationLane.PROVIDER_PR,
     runner: Runner = _run,
     progress_sink: ProgressSink | None = None,
 ) -> dict[str, Any]:
@@ -760,6 +763,7 @@ def run_prospective_train(
                     repository=repository if lane == "trusted_exact_main" else None,
                     provider_api=provider_api if lane == "trusted_exact_main" else None,
                     toolchain_identity=admission.as_dict(),
+                    validation_lane=validation_lane,
                     runner=runner,
                     progress_sink=progress_sink,
                 )

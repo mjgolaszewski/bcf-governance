@@ -5,6 +5,12 @@ from __future__ import annotations
 
 import subprocess
 
+from ..governance_install.runtime_custody import (
+    RuntimeCustodyError,
+    RuntimeCustodyState,
+    inspect_runtime_custody,
+)
+from ..local_pr_context import LocalValidationLane
 from ..release_versions import ReleaseVersionError, parse_release_version
 from ..repository_comparison_context import (
     PULL_REQUEST_BASE_EXPRESSION,
@@ -167,6 +173,15 @@ def _validate_pull_request_changelog_update(repo_root: Path) -> None:
         raise GovernanceValidationError(
             "pull-request changelog enforcement requires BCF_PR_BASE_SHA"
         )
+    raw_lane = os.environ.get(
+        "BCF_VALIDATION_LANE", LocalValidationLane.PROVIDER_PR.value
+    )
+    try:
+        validation_lane = LocalValidationLane(raw_lane)
+    except ValueError as exc:
+        raise GovernanceValidationError(
+            "pull-request validation lane is not canonical"
+        ) from exc
     available = subprocess.run(
         ["git", "-C", str(repo_root), "cat-file", "-e", f"{base_sha}^{{commit}}"],
         capture_output=True,
@@ -177,6 +192,31 @@ def _validate_pull_request_changelog_update(repo_root: Path) -> None:
         raise GovernanceValidationError(
             "pull-request changelog base commit is unavailable; CI must checkout full history"
         )
+    if validation_lane is LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION:
+        try:
+            snapshot = inspect_runtime_custody(repo_root)
+        except RuntimeCustodyError as exc:
+            raise GovernanceValidationError(
+                "candidate qualification custody is invalid"
+            ) from exc
+        base_tree = subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", f"{base_sha}^{{tree}}"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        adopter = snapshot.provenance_claim.get("adopter")
+        if (
+            snapshot.state is not RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT
+            or base_tree.returncode != 0
+            or not isinstance(adopter, dict)
+            or adopter.get("commit_sha") != base_sha
+            or adopter.get("tree_sha") != base_tree.stdout.strip()
+        ):
+            raise GovernanceValidationError(
+                "candidate qualification validation lane does not bind the exact adopter base"
+            )
+        return
     changed = subprocess.run(
         [
             "git",

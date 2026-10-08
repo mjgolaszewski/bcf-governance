@@ -120,6 +120,42 @@ print(json.dumps({
 """
 
 
+_CANDIDATE_QUALIFICATION_TRAIN = r"""
+import json
+from pathlib import Path
+import sys
+
+from bcf_governance.tooling.release_adopter_qualification import (
+    run_candidate_qualification_train,
+)
+
+print(json.dumps(
+    run_candidate_qualification_train(Path(sys.argv[1]), Path(sys.argv[2])),
+    sort_keys=True,
+))
+"""
+
+
+def run_candidate_qualification_train(
+    repo_root: Path, project_python: Path
+) -> dict[str, Any]:
+    """Execute one typed, observation-only adopter qualification proof."""
+
+    from .local_pr import canonical_prospective_inputs, run_prospective_train
+    from .local_pr_context import LocalValidationLane
+
+    canonical = canonical_prospective_inputs(repo_root)
+    return run_prospective_train(
+        repo_root,
+        semantic_intent=str(canonical["semantic_intent"]),
+        evaluation_target=canonical["evaluation_target"],
+        subject_commit=str(canonical["subject_commit"]),
+        subject_tree=str(canonical["subject_tree"]),
+        python_executable=project_python,
+        validation_lane=LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION,
+    )
+
+
 def _exact_release_runtime(
     wheel: Path,
     controller: Path,
@@ -373,7 +409,18 @@ def qualify_release(
             _commit(destination, f"test: install immutable BCF {version}")
             _run([*bcf, "reconcile", "--repo-root", str(destination), "--python", str(project_python), "--apply"], cwd=destination, env=environment)
             _commit(destination, f"test: reconcile BCF {version} qualification")
-            result = _run([*bcf, "ci", "prospective-train", "--repo-root", str(destination), "--python", str(project_python), "--format", "json"], cwd=destination, env=environment)
+            result = _run(
+                [
+                    bcf[0],
+                    "-P",
+                    "-c",
+                    _CANDIDATE_QUALIFICATION_TRAIN,
+                    str(destination),
+                    str(project_python),
+                ],
+                cwd=destination,
+                env=environment,
+            )
             try:
                 report = json.loads(result)
             except json.JSONDecodeError as exc:

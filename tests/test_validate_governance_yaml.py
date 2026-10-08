@@ -9,16 +9,22 @@ import shutil
 import subprocess
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
 import yaml
 
 from bcf_governance.tooling import preflight
+from bcf_governance.tooling.governance_install.runtime_custody import RuntimeCustodyState
 from bcf_governance.tooling.release_runtime_verification import (
     is_release_sdist_test_context,
 )
-from bcf_governance.tooling.governance_validation import phase_catalog, release_gates
+from bcf_governance.tooling.governance_validation import (
+    phase_catalog,
+    release_gates,
+    required_artifacts,
+)
 from bcf_governance.tooling.governance_validation.required_artifacts import (
     _validate_workflow_comparison_contract,
 )
@@ -364,6 +370,56 @@ def test_pull_request_validation_requires_changelog_update(
 
     validate_repo_root(repo_root)
 
+
+def test_candidate_qualification_is_the_only_typed_non_pr_changelog_lane(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    subprocess.run(["git", "init", "--quiet"], cwd=repo_root, check=True)
+    subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=repo_root, check=True)
+    subprocess.run(["git", "config", "user.name", "Contract Test"], cwd=repo_root, check=True)
+    subprocess.run(["git", "add", "."], cwd=repo_root, check=True)
+    subprocess.run(["git", "commit", "--quiet", "-m", "baseline"], cwd=repo_root, check=True)
+    base_sha = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo_root, capture_output=True,
+        text=True, check=True,
+    ).stdout.strip()
+    base_tree = subprocess.run(
+        ["git", "rev-parse", "HEAD^{tree}"], cwd=repo_root, capture_output=True,
+        text=True, check=True,
+    ).stdout.strip()
+    (repo_root / "MEMORY.yml").write_text(
+        (repo_root / "MEMORY.yml").read_text(encoding="utf-8") + "\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "add", "MEMORY.yml"], cwd=repo_root, check=True)
+    subprocess.run(["git", "commit", "--quiet", "-m", "qualification"], cwd=repo_root, check=True)
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
+    monkeypatch.setenv("BCF_ENFORCE_PR_CHANGELOG", "true")
+    monkeypatch.setenv("BCF_PR_BASE_SHA", base_sha)
+    snapshot = SimpleNamespace(
+        state=RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT,
+        provenance_claim={
+            "adopter": {"commit_sha": base_sha, "tree_sha": base_tree}
+        },
+    )
+    monkeypatch.setattr(required_artifacts, "inspect_runtime_custody", lambda _root: snapshot)
+
+    monkeypatch.setenv("BCF_VALIDATION_LANE", "isolated_candidate_qualification")
+    required_artifacts._validate_pull_request_changelog_update(repo_root)
+
+    monkeypatch.setenv("BCF_VALIDATION_LANE", "provider_pr")
+    with pytest.raises(
+        GovernanceValidationError, match="every pull request must update CHANGELOG.md"
+    ):
+        required_artifacts._validate_pull_request_changelog_update(repo_root)
+
+    snapshot.provenance_claim["adopter"]["tree_sha"] = "f" * 40
+    monkeypatch.setenv("BCF_VALIDATION_LANE", "isolated_candidate_qualification")
+    with pytest.raises(
+        GovernanceValidationError, match="does not bind the exact adopter base"
+    ):
+        required_artifacts._validate_pull_request_changelog_update(repo_root)
 
 def test_governance_workflow_must_wire_changelog_pr_enforcement(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")

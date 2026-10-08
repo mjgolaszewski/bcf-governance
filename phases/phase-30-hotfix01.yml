@@ -55,6 +55,10 @@ execution_evidence:
   - The exact-wheel runtime is a real isolated controller interpreter whose nested
     governance subprocesses retain the exact wheel and mechanically projected
     admitted dependency roots even after ambient import variables are scrubbed.
+  - The qualification transaction now derives a closed observation-only validation
+    lane bound to the exact adopter base and candidate custody marker. Only the
+    real-provider PR changelog delta is inapplicable; ordinary provider PRs retain
+    mandatory changelog enforcement and every other prospective check is unchanged.
 closeout_requirements:
   claims:
     required_suites_green:
