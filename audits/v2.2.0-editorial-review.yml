@@ -1,10 +1,10 @@
 schema_version: '1.0'
 document:
   kind: editorial_review
-  id: bcf-governance-v2.1.8-editorial-review
+  id: bcf-governance-v2.2.0-editorial-review
   status: completed
-  path: audits/v2.1.8-editorial-review.yml
-base_commit: 9edf6a7a79f71e47b55f41be25133f368b17d18a
+  path: audits/v2.2.0-editorial-review.yml
+base_commit: 131311b052561187447b2f592a1578737803246a
 inventory_policy:
   source_documents: tracked Markdown and root LICENSE from base union current tree
   packaged_mirror_root: bcf_governance/pack/template-repo
@@ -23,17 +23,17 @@ documents:
   audience: repository agents
   canonical_topic_owner: AGENTS.yml
   topic_role: canonical
-  before_sha256: ac6d73afffe53835aabb0704b64dfff7ac541d2736b83ea0af1766e71830ac9b
+  before_sha256: 739a72af6a1e7a46d04d1f73928d7bfeb4e59108c584493cf04409773948a3d1
   after_sha256: 739a72af6a1e7a46d04d1f73928d7bfeb4e59108c584493cf04409773948a3d1
   findings:
-  - reviewed canonical repository-agent guidance for current profile, lifecycle, and authority boundaries
-  disposition: revised
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
 - path: CHANGELOG.md
   audience: adopters and release operators
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
-  before_sha256: 4b445c81361ca1de956592d5882498280032eb279482ceb8be5306f4933230c3
-  after_sha256: 3b450c675fc28a36d829cce9a8f5d2334d4330d8f1b81d54107c1e7f4b928056
+  before_sha256: 3b450c675fc28a36d829cce9a8f5d2334d4330d8f1b81d54107c1e7f4b928056
+  after_sha256: dacf0994e23342ae6a1d08fb2f6672a0f1309dd457cbad0bfb250f6429220274
   findings:
   - collapsed the unpublished 2.0 candidate and 2.1 repair chronology into the released 2.1 product contract
   disposition: historical
@@ -59,8 +59,8 @@ documents:
   audience: BCF evaluators and adopters
   canonical_topic_owner: README.md
   topic_role: canonical
-  before_sha256: fe13eb435086383bc87499916e55d98c7ac89154d33ea8455ee4c76c3b26aae4
-  after_sha256: fd844ed5b9ac7e5de604f02acdd3abc15c8edee63622b047b9799f45d4ec3ad5
+  before_sha256: fd844ed5b9ac7e5de604f02acdd3abc15c8edee63622b047b9799f45d4ec3ad5
+  after_sha256: be061cca762a3d4343cb3bcb831dc5f0ee0a42193854e56262708cfb316bc7da
   findings:
   - documented the 2.1 semantic-intent, selective-proof, optional-controller, and adopter-authority contract
   disposition: revised
@@ -113,8 +113,8 @@ documents:
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
-  before_sha256: a4387958327820fc5f17362f90621fa359bf4bddbd273c7dfc1f7464dd45e2af
-  after_sha256: 36e2bc62ba1c1fca9473fbf376b022374fca4d2c92fdda93d5a6e76c68b717df
+  before_sha256: 36e2bc62ba1c1fca9473fbf376b022374fca4d2c92fdda93d5a6e76c68b717df
+  after_sha256: 2d5ff9eec57518df57bcf589923a733b21cdad29aa3c06aed5ec44d67c95fe0c
   findings:
   - replaced obsolete controller ceremony with the canonical 2.1 adopter and semantic-intent operation
   disposition: revised
@@ -140,8 +140,8 @@ documents:
   audience: BCF evaluators and adopters
   canonical_topic_owner: spec/RELEASE_TRAIN_STATE_DAG.md
   topic_role: canonical
-  before_sha256: eb68d82b927aa834bba0f8c8f6d66b25115d75cf74e0ffc3503961a978f74af7
-  after_sha256: 85accacf0201955a206a615bfce89d3f02d44f48c05ac7d507f26e46e969596f
+  before_sha256: eb48687d286ead6585d49c646a4488b09b228f1d7a4e990c5009c4761a782f94
+  after_sha256: 054f19cc1f6c1bf9ce7ba6ad1be3477e6e8c990c927eef8f256a66e7f525bc9e
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: revised
@@ -158,11 +158,11 @@ documents:
   audience: repository agents
   canonical_topic_owner: template-repo/AGENTS.yml
   topic_role: canonical
-  before_sha256: 7e0f1cfb2a643c9d3b9f233f4885e883203e2b690cc8e746030b8c1881eccefe
+  before_sha256: be2a6391133b6424a5d41dc79723c8b8b52e6538511702097e8d3ac8e9ee4ed7
   after_sha256: be2a6391133b6424a5d41dc79723c8b8b52e6538511702097e8d3ac8e9ee4ed7
   findings:
-  - reviewed installed repository-agent guidance and retained its generated-template ownership
-  disposition: revised
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: retained
 - path: template-repo/CHANGELOG.md
   audience: adopters and release operators
   canonical_topic_owner: template-repo/CHANGELOG.md

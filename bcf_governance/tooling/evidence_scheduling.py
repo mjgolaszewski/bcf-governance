@@ -238,8 +238,8 @@ def compile_test_splinter_plan(
     """Compile one immutable exact-union test partition or safe fallback.
 
     Normalized JUnit identities are authoritative inventory keys; pytest node
-    selectors are execution projections.  Timing is useful only when it is a
-    complete, positive observation over that exact inventory.
+    selectors are execution projections. Applicable historical timing may be
+    a strict subset; newly introduced nodes receive the canonical 1 ms default.
     """
 
     if (
@@ -258,14 +258,18 @@ def compile_test_splinter_plan(
     duration_source = "lexical_default"
     usable_durations: dict[str, int] = {}
     if durations_ms:
-        if set(durations_ms) != set(nodes) or any(
+        if not set(durations_ms).issubset(nodes) or any(
             isinstance(value, bool) or not isinstance(value, int) or value < 1
             for value in durations_ms.values()
         ):
             fallback_reason = "duration_observations_invalid"
         else:
             usable_durations = dict(durations_ms)
-            duration_source = "exact_observations"
+            duration_source = (
+                "exact_observations"
+                if set(durations_ms) == set(nodes)
+                else "partial_observations"
+            )
     if not resources_compatible:
         fallback_reason = "resources_incompatible"
     splinter_count = (
@@ -358,7 +362,8 @@ def validate_test_splinter_plan(plan: Mapping[str, Any]) -> None:
         set(plan) != expected
         or plan.get("schema_version") != "1.0"
         or plan.get("algorithm") != "stable_lpt_v1"
-        or plan.get("duration_source") not in {"lexical_default", "exact_observations"}
+        or plan.get("duration_source")
+        not in {"lexical_default", "exact_observations", "partial_observations"}
         or not isinstance(plan.get("partition_sha256"), str)
         or not isinstance(plan.get("splinters"), list)
         or not plan["splinters"]

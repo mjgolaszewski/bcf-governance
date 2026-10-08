@@ -1303,6 +1303,15 @@ chooses nodes, ordering, concurrency, or fallback behavior.
 | Bad, stale, ambiguous, or adversarial observations | observation identity/digest does not match exact inputs | deterministic monolithic fallback and typed reason | existing gate receipt | accepting observation authority or guessing a partition |
 | Any splinter terminal path | exact execution/session namespace per splinter | retire only that owned namespace and verify removal before aggregation | cleanup observation only | global prune, wildcard ownership, implicit persistence, or predecessor state visibility |
 | Complete positive aggregate | exact union, zero overlap, all successful results and canonical JUnit projection | run the unchanged applicable negative controls once, then emit the ordinary producer receipt | unchanged claim/receipt authority | a splinter result or timing observation becoming claim authority |
+| Prior successful exact-node timing exists | content-addressed local proof manifest, ancestor subject/tree, exact test-manifest and policy digests, complete canonical JUnit node inventory | the ordinary reconciler selects the newest exact ancestor observation and projects a compact manifest-ordered millisecond vector; the gate reconstructs the mapping mechanically | non-authoritative duration input only | agent-selected source, partial inventory, unordered mapping, nonancestor subject, or timing affecting claim truth |
+| Timing source is absent, stale, malformed, or ambiguous | current exact node manifest plus rejected or missing observation identity | reconcile projects the typed absence/fallback state and the gate uses stable lexical partitioning or the declared safe monolith; uncertainty never removes a node | unchanged gate receipt after exact aggregate closure | guessing durations, silently accepting malformed observations, or requiring an operator to repair timing state |
+| Exact ancestor timing covers a strict subset after test additions | authenticated ancestor proof, exact source inventory, current manifest, and a mechanically computed added-node set | retain exact observations only for unchanged identities and schedule unobserved nodes with the canonical unknown default; bind both sets in the partition digest | non-authoritative partial duration input with exact current-node union | carrying a removed/renamed node, inventing a duration for a new node, or allowing partial timing to alter proof applicability |
+| Exact release candidate requires adopter qualification | exact candidate commit/tree, locally built candidate wheel/runtime digests, clean isolated adopter snapshot, declared Lite or Standard-v3 profile | install and exercise candidate bytes in disposable copies of BCF self, TradeFlow, Racecar, and AgentBus without mutating maintained repositories | non-authoritative qualification observations bound to exact candidate bytes | treating local qualification as provider certification or changing another maintained repository |
+| Release version advances before its editorial audit exists | canonical version owner, exact branch upstream, and authenticated merge-base ancestry | the editorial-audit projection primitive derives the immutable comparison base from the branch's exact tracking upstream and reconciliation creates the version-named audit through the canonical builder before any workflow-authority shadow projection can change branch-local tracking context | mechanically complete editorial inventory bound to the exact base and candidate bytes | requiring an agent to seed an audit, guessing a base, accepting a detached/untracked branch, allowing the candidate to choose unrelated history, or expanding the orchestration owner beyond its governed module boundary |
+| Authored-state contradiction regression runs after the active phase becomes terminal | exact current phase catalog plus the contradiction class under test | derive the adversarial fixture from current canonical bytes and mutate the one owned lifecycle scalar into the contradictory state | the earliest authored-state validator rejects before reconciliation or evidence | hard-coding the former active/terminal baseline so a real contradiction silently becomes an exact fixture |
+| Terminal P30 closure requested | all five workitems authored DONE, exact authenticated phase evidence, release version 2.2.0, ordinary-current controller, and complete qualification inventory | evaluate `phase_closed:P30`, preserve exact release proposition through finalizer/publisher, and reject any bounded substitute | terminal phase certification only; publication remains separately authorized | closing P30 from PR progress, a bounded workitem status, or incomplete adopter inventory |
+| Certified 2.2.0 publication pending | terminal P30 certification, exact source commit/tree, independently rebuilt wheel/sdist and checksums, short-lived publisher credential | existing release owner publishes the pre-certified exact bytes and verifier independently authenticates tag, assets, attestations, and credential retirement | immutable v2.2.0 release custody | rebuilding after certification, mutable tag/assets, candidate credential use, or hand-authored custody facts |
+| Immutable 2.2.0 custody verified | provider tag/release/assets, independent verifier receipt, exact adopter post-publication results, and release_25 identity | canonical custody closeout records exact provider facts, closes P30/#344, and makes P31 uniquely eligible | P31 planned-to-eligible transition only | activating P31 before custody or borrowing candidate qualification as immutable-release proof |
 
 The partition digest binds subject, session, policy, producer, exact ordered
 node inventory, resource contract, algorithm version, duration-input digest,
@@ -1324,6 +1333,11 @@ PRUNE exact affected-proof frontier
                           -> execute unchanged applicable negative controls
                              -> emit existing gate receipt
                                 -> truth/finalizer/certification unchanged
+                                   -> reconcile next candidate from the newest exact ancestor timing observation
+                                      -> isolated exact-candidate adopter qualification
+                                         -> terminal phase_closed:P30 truth
+                                            -> independent build/publication/verifier
+                                               -> immutable 2.2.0 custody and P31 eligibility
 ```
 
 The outward construction is:
@@ -1336,15 +1350,20 @@ invariants
     -> primitives
        exact node inventory, splittability, resource constraint, duration observation,
        stable tie-break, partition digest, execution namespace, aggregate digest
+       ancestor proof identity, manifest-ordered duration vector, qualification identity,
+       terminal phase proposition, immutable publication and custody identity
          -> contracts
             immutable partition plan, exact-union validator, bounded fallback,
-            isolated execution result, canonical JUnit aggregation, typed timing
+            isolated execution result, canonical JUnit aggregation, typed timing,
+            reconciled duration observation, candidate qualification, terminal release custody
               -> producers
                  PRUNE/REUSE planner, existing test-manifest owner,
-                 existing gate runner and execution-state lifecycle owner
+                 existing gate runner and execution-state lifecycle owner,
+                 canonical reconciler, installer, release builder/verifier/publisher
                    -> consumers
                       local prospective train, provider evidence fan-out,
-                      exact-main reuse, receipt capture, truth and telemetry
+                      exact-main reuse, receipt capture, truth and telemetry,
+                      adopter qualification, P30 closure, release publication and P31 eligibility
 ```
 
 Every changed SPLINTER contract must be walked prospectively through local and

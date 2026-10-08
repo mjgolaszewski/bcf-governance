@@ -6,6 +6,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-10-07
+
 ### Changed
 
 - Made candidate submission authenticate and mechanically reproject an

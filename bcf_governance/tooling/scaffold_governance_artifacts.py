@@ -44,6 +44,8 @@ from .reconcile_authority_transition import (
 )
 from .profile_surface_generation import reconcile_makefile, reconcile_template_workflow
 from .interpreter_environment import reconcile_interpreter_environment
+from .test_duration_observations import reconcile_test_duration_observations
+from .editorial_audit_projection import editorial_base
 
 HOTFIX_MODES = {"lite", "full"}
 
@@ -366,17 +368,6 @@ def _reconcile_workflow_authority(repo_root: Path, *, apply: bool) -> None:
     )
 
 
-def _editorial_base(audit: Path) -> str:
-    try:
-        payload = yaml.safe_load(audit.read_text(encoding="utf-8"))
-        base = payload["base_commit"]
-    except (OSError, TypeError, KeyError, yaml.YAMLError) as exc:
-        raise ReconcileError("editorial audit does not expose an immutable base") from exc
-    if not isinstance(base, str) or len(base) != 40 or any(c not in "0123456789abcdef" for c in base):
-        raise ReconcileError("editorial audit base is not an exact commit")
-    return base
-
-
 def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
     """Return the closed canonical projection order for this repository."""
 
@@ -564,6 +555,20 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 ),
             )
         )
+        steps.append(
+            ReconcileStep(
+                "test-duration-observations",
+                lambda: reconcile_test_duration_observations(repo_root, apply=False),
+                lambda: reconcile_test_duration_observations(repo_root, apply=True),
+                apply_verifies=True,
+                watch_paths=(
+                    "governance/test-manifests/test.txt",
+                    "governance/test-duration-observations.json",
+                    "governance/gate-contracts.yml",
+                    "bcf_governance/tooling/test_duration_observations.py",
+                ),
+            )
+        )
     for operation in ("lock", "render"):
         steps.append(
             ReconcileStep(
@@ -580,24 +585,11 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 ),
             )
         )
-    if (repo_root / "governance/ci-authority.yml").is_file():
-        steps.append(
-            ReconcileStep(
-                "workflow-authority",
-                lambda: _reconcile_workflow_authority(repo_root, apply=False),
-                lambda: _reconcile_workflow_authority(repo_root, apply=True),
-                watch_paths=(
-                    ".github/workflows",
-                    "governance/ci-authority.yml",
-                    "bcf_governance/tooling/ci_authority_pins.py",
-                ),
-            )
-        )
     checker = repo_root / ".github/scripts/check_editorial_contract.py"
     builder = repo_root / ".github/scripts/build_editorial_audit.py"
     if checker.is_file() and builder.is_file() and not checker.is_symlink() and not builder.is_symlink():
         audit = repo_root / f"audits/v{__version__}-editorial-review.yml"
-        base = _editorial_base(audit)
+        base = editorial_base(repo_root, audit)
         steps.append(
             ReconcileStep(
                 "editorial-audit",
@@ -613,6 +605,19 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                     "audits",
                     ".github/scripts/check_editorial_contract.py",
                     ".github/scripts/build_editorial_audit.py",
+                ),
+            )
+        )
+    if (repo_root / "governance/ci-authority.yml").is_file():
+        steps.append(
+            ReconcileStep(
+                "workflow-authority",
+                lambda: _reconcile_workflow_authority(repo_root, apply=False),
+                lambda: _reconcile_workflow_authority(repo_root, apply=True),
+                watch_paths=(
+                    ".github/workflows",
+                    "governance/ci-authority.yml",
+                    "bcf_governance/tooling/ci_authority_pins.py",
                 ),
             )
         )

@@ -17,6 +17,7 @@ from bcf_governance.tooling.scaffold_governance_artifacts import (
     reconcile_steps,
     check_reconcile_steps,
 )
+from bcf_governance.tooling.editorial_audit_projection import editorial_base
 from bcf_governance.tooling.release_version_projection import (
     ReleaseVersionProjectionError,
     reconcile_release_version_surfaces,
@@ -163,6 +164,36 @@ def test_reconcile_is_the_canonical_cli_surface() -> None:
     assert "reconcile" in COMMANDS
 
 
+def test_new_release_editorial_base_is_derived_from_tracking_upstream(
+    tmp_path: Path,
+) -> None:
+    remote = tmp_path / "remote.git"
+    root = tmp_path / "repo"
+    _git(tmp_path, "init", "--quiet", "--bare", str(remote))
+    _git(tmp_path, "init", "--quiet", "--initial-branch=main", str(root))
+    _git(root, "config", "user.name", "BCF Test")
+    _git(root, "config", "user.email", "bcf@example.invalid")
+    (root / "base").write_text("base\n", encoding="utf-8")
+    _git(root, "add", "base")
+    _git(root, "commit", "--quiet", "-m", "base")
+    expected = _git(root, "rev-parse", "HEAD")
+    _git(root, "remote", "add", "origin", str(remote))
+    _git(root, "push", "--quiet", "--set-upstream", "origin", "main")
+    _git(root, "switch", "--quiet", "-c", "release/next")
+    _git(root, "branch", "--set-upstream-to", "origin/main")
+    (root / "candidate").write_text("candidate\n", encoding="utf-8")
+    _git(root, "add", "candidate")
+    _git(root, "commit", "--quiet", "-m", "candidate")
+
+    assert editorial_base(root, root / "audits/v9.0.0-editorial-review.yml") == expected
+
+
+def test_new_release_editorial_base_rejects_untracked_branch(tmp_path: Path) -> None:
+    _git(tmp_path, "init", "--quiet", "--initial-branch=main")
+    with pytest.raises(ReconcileError, match="tracked upstream"):
+        editorial_base(tmp_path, tmp_path / "audits/v9.0.0-editorial-review.yml")
+
+
 def test_reconcile_declares_one_closed_dependency_order() -> None:
     root = Path(__file__).resolve().parents[1]
     ids = [step.step_id for step in reconcile_steps(root, Path(sys.executable))]
@@ -183,8 +214,9 @@ def test_reconcile_declares_one_closed_dependency_order() -> None:
     assert "phases/phase-30-log.yml" in (phase_scope.watch_paths or ())
     assert not any("phase-29" in path for path in (phase_scope.watch_paths or ()))
     assert ids.index("ci-graph-lock") < ids.index("ci-graph-render")
-    assert ids.index("ci-graph-render") < ids.index("workflow-authority")
-    assert ids[-1] == "editorial-audit"
+    assert ids.index("ci-graph-render") < ids.index("editorial-audit")
+    assert ids.index("editorial-audit") < ids.index("workflow-authority")
+    assert ids[-1] == "workflow-authority"
 
 
 def test_graph_projection_stages_watch_every_declared_value_source() -> None:
