@@ -80,6 +80,117 @@ def _release_assets(root: Path) -> tuple[str, dict[str, str]]:
     return version.group(1), dict(sorted(declared.items()))
 
 
+_EXACT_RELEASE_PROBE = r"""
+import importlib.metadata as metadata
+import json
+from pathlib import Path
+
+from packaging.requirements import Requirement
+
+import bcf_governance
+
+distribution = metadata.distribution("bcf-governance")
+requirements = []
+for value in distribution.requires or ():
+    requirement = Requirement(value)
+    if requirement.marker is not None and not requirement.marker.evaluate():
+        continue
+    try:
+        installed = metadata.version(requirement.name)
+    except metadata.PackageNotFoundError:
+        installed = None
+    requirements.append({
+        "name": requirement.name,
+        "required": str(requirement.specifier),
+        "installed": installed,
+        "satisfied": installed is not None and (
+            not requirement.specifier
+            or requirement.specifier.contains(installed, prereleases=True)
+        ),
+    })
+print(json.dumps({
+    "distribution_root": str(Path(distribution.locate_file(".")).resolve()),
+    "module_file": str(Path(bcf_governance.__file__).resolve()),
+    "requirements": requirements,
+    "version": distribution.version,
+}, sort_keys=True))
+"""
+
+
+def _exact_release_runtime(
+    wheel: Path,
+    controller: Path,
+    *,
+    version: str,
+    cwd: Path,
+    environment: Mapping[str, str],
+) -> tuple[tuple[str, ...], dict[str, str]]:
+    """Project one exact wheel over the already-admitted invoking runtime."""
+
+    controller.mkdir(parents=True)
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--disable-pip-version-check",
+            "--no-deps",
+            "--target",
+            str(controller),
+            str(wheel),
+        ],
+        cwd=cwd,
+    )
+    runtime_environment = dict(environment)
+    runtime_environment.pop("PYTHONHOME", None)
+    runtime_environment["PYTHONPATH"] = str(controller.resolve())
+    try:
+        observation = json.loads(
+            _run(
+                [sys.executable, "-P", "-c", _EXACT_RELEASE_PROBE],
+                cwd=controller.parent,
+                env=runtime_environment,
+            )
+        )
+    except json.JSONDecodeError as exc:
+        raise ReleaseQualificationError(
+            "exact release runtime probe emitted invalid JSON"
+        ) from exc
+    if not isinstance(observation, dict) or set(observation) != {
+        "distribution_root", "module_file", "requirements", "version",
+    }:
+        raise ReleaseQualificationError("exact release runtime identity is malformed")
+    controller_root = controller.resolve()
+    try:
+        Path(observation["distribution_root"]).resolve().relative_to(controller_root)
+        Path(observation["module_file"]).resolve().relative_to(controller_root)
+    except (TypeError, ValueError) as exc:
+        raise ReleaseQualificationError(
+            "exact release runtime is shadowed by non-release BCF bytes"
+        ) from exc
+    requirements = observation["requirements"]
+    if (
+        observation["version"] != version
+        or not isinstance(requirements, list)
+        or any(
+            not isinstance(item, dict)
+            or set(item) != {"installed", "name", "required", "satisfied"}
+            or item.get("satisfied") is not True
+            for item in requirements
+        )
+    ):
+        raise ReleaseQualificationError(
+            "exact release runtime dependencies are absent or incompatible"
+        )
+    return (
+        sys.executable,
+        "-P",
+        "-c",
+        "from bcf_governance.cli import main; main()",
+    ), runtime_environment
+
+
 def parse_contract(contract_bytes: bytes, schema_bytes: bytes) -> dict[str, Any]:
     """Decode the canonical qualification contract and its governing schema."""
 
@@ -215,10 +326,14 @@ def qualify_release(
     with tempfile.TemporaryDirectory(prefix="bcf-release-qualification-") as temporary:
         temporary_root = Path(temporary)
         controller = temporary_root / "controller"
-        _run([sys.executable, "-m", "venv", "--system-site-packages", str(controller)], cwd=repo_root)
         wheel = release_assets.resolve() / next(name for name in assets if name.endswith(".whl"))
-        _run([str(controller / "bin/python"), "-m", "pip", "install", "--no-deps", str(wheel)], cwd=repo_root)
-        bcf = controller / "bin/bcf"
+        bcf, environment = _exact_release_runtime(
+            wheel,
+            controller,
+            version=version,
+            cwd=repo_root,
+            environment=environment,
+        )
         for repository in sorted(required):
             adopter_source, adopter_commit, adopter_tree = supplied[repository]
             adopter_python = adopter_pythons[repository]
@@ -232,11 +347,11 @@ def qualify_release(
             project_python = _isolated_project_python(
                 adopter_source, adopter_python, destination
             )
-            _run([str(bcf), "install", "--target", str(destination), "--upgrade", "--release-assets", str(release_assets.resolve()), "--require-strict-validation"], cwd=destination, env=environment)
+            _run([*bcf, "install", "--target", str(destination), "--upgrade", "--release-assets", str(release_assets.resolve()), "--require-strict-validation"], cwd=destination, env=environment)
             _commit(destination, f"test: install immutable BCF {version}")
-            _run([str(bcf), "reconcile", "--repo-root", str(destination), "--python", str(project_python), "--apply"], cwd=destination, env=environment)
+            _run([*bcf, "reconcile", "--repo-root", str(destination), "--python", str(project_python), "--apply"], cwd=destination, env=environment)
             _commit(destination, f"test: reconcile BCF {version} qualification")
-            result = _run([str(bcf), "ci", "prospective-train", "--repo-root", str(destination), "--python", str(project_python), "--format", "json"], cwd=destination, env=environment)
+            result = _run([*bcf, "ci", "prospective-train", "--repo-root", str(destination), "--python", str(project_python), "--format", "json"], cwd=destination, env=environment)
             try:
                 report = json.loads(result)
             except json.JSONDecodeError as exc:

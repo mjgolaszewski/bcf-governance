@@ -20,6 +20,10 @@ All notable changes to BCF Governance are recorded here. This file follows
   adopter source and candidate identity, regardless of evaluation order. The
   trusted authorization window now retains explicit margin above measured
   provider-bound runtime without weakening any release read or identity check.
+  Exact release qualification now projects the certified wheel over the
+  already-admitted invoking runtime, verifies its distribution and module
+  origins plus every declared runtime dependency, and derives one isolated BCF
+  command without network installation or operator environment repair.
 
 ## [2.2.0] - 2026-10-07
 

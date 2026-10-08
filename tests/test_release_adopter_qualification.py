@@ -13,6 +13,7 @@ from bcf_governance.tooling import release_adopter_qualification as qualificatio
 from bcf_governance.tooling.ci_github_values import GitHubValueError, remote_repository
 from bcf_governance.tooling.release_adopter_qualification import (
     ReleaseQualificationError,
+    _exact_release_runtime,
     _release_assets,
     _isolated_project_python,
     load_contract,
@@ -121,6 +122,99 @@ def test_release_assets_require_exact_wheel_sdist_and_digests(tmp_path: Path) ->
         _release_assets(tmp_path)
 
 
+def test_exact_release_runtime_projects_wheel_over_admitted_dependencies(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    wheel = tmp_path / "bcf_governance-2.2.1-py3-none-any.whl"
+    wheel.write_bytes(b"wheel")
+    controller = tmp_path / "controller"
+    calls: list[tuple[list[str], dict[str, str] | None]] = []
+
+    def run(
+        argv: list[str] | tuple[str, ...], *, cwd: Path,
+        env: dict[str, str] | None = None,
+    ) -> str:
+        del cwd
+        calls.append((list(argv), env))
+        if len(argv) == 4 and list(argv)[1:3] == ["-P", "-c"]:
+            return json.dumps({
+                "distribution_root": str(controller),
+                "module_file": str(controller / "bcf_governance/__init__.py"),
+                "requirements": [
+                    {
+                        "installed": "6.0.2",
+                        "name": "PyYAML",
+                        "required": ">=6.0,<7",
+                        "satisfied": True,
+                    }
+                ],
+                "version": "2.2.1",
+            })
+        return ""
+
+    monkeypatch.setattr(qualification, "_run", run)
+    command, environment = _exact_release_runtime(
+        wheel,
+        controller,
+        version="2.2.1",
+        cwd=tmp_path,
+        environment={"GITHUB_TOKEN": "observation-only", "PYTHONPATH": "ambient"},
+    )
+
+    assert calls[0][0] == [
+        sys.executable, "-m", "pip", "install", "--disable-pip-version-check",
+        "--no-deps", "--target", str(controller), str(wheel),
+    ]
+    assert all("venv" not in call for call, _environment in calls)
+    assert command == (
+        sys.executable, "-P", "-c",
+        "from bcf_governance.cli import main; main()",
+    )
+    assert environment["PYTHONPATH"] == str(controller.resolve())
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        ({"module_file": "/ambient/bcf_governance/__init__.py"}, "shadowed"),
+        ({"requirements": [{"installed": None, "name": "PyYAML", "required": ">=6", "satisfied": False}]}, "dependencies"),
+        ({"version": "2.2.0"}, "dependencies"),
+    ],
+)
+def test_exact_release_runtime_rejects_shadowing_or_incompatible_dependencies(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    mutation: dict[str, object],
+    message: str,
+) -> None:
+    wheel = tmp_path / "bcf_governance-2.2.1-py3-none-any.whl"
+    wheel.write_bytes(b"wheel")
+    controller = tmp_path / "controller"
+    observation: dict[str, object] = {
+        "distribution_root": str(controller),
+        "module_file": str(controller / "bcf_governance/__init__.py"),
+        "requirements": [],
+        "version": "2.2.1",
+    }
+    observation.update(mutation)
+
+    monkeypatch.setattr(
+        qualification,
+        "_run",
+        lambda argv, **_kwargs: json.dumps(observation)
+        if len(argv) == 4 and list(argv)[1:3] == ["-P", "-c"] else "",
+    )
+
+    with pytest.raises(ReleaseQualificationError, match=message):
+        _exact_release_runtime(
+            wheel,
+            controller,
+            version="2.2.1",
+            cwd=tmp_path,
+            environment={},
+        )
+
+
 def test_missing_adopter_matrix_fails_before_environment_or_mutation(
     tmp_path: Path,
 ) -> None:
@@ -173,7 +267,14 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
     def run(
         argv: list[str], *, cwd: Path, env: object | None = None,
     ) -> str:
-        del env
+        if len(argv) == 4 and argv[1:3] == ["-P", "-c"]:
+            controller = Path(str(env["PYTHONPATH"]))  # type: ignore[index]
+            return json.dumps({
+                "distribution_root": str(controller),
+                "module_file": str(controller / "bcf_governance/__init__.py"),
+                "requirements": [],
+                "version": "2.2.1",
+            })
         if argv[:2] == ["git", "clone"]:
             destination = Path(argv[-1])
             destination.mkdir()
