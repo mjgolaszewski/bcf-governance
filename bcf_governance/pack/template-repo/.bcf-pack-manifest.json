@@ -1235,7 +1235,7 @@
     },
     "scripts/_bcf_runtime/release_adopter_qualification.py": {
       "operation": "copy",
-      "sha256": "0dd385e5ad34dc4819afdb903a74c643d6e3757a5f9931b40aeccb9c8e5c36a0"
+      "sha256": "ffad8cc7682e1d47c67f08dab5324756bfab3fdd92685425346e3322128f4885"
     },
     "scripts/_bcf_runtime/release_asset_inventory.py": {
       "operation": "copy",

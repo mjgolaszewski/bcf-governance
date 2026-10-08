@@ -26,7 +26,10 @@ All notable changes to BCF Governance are recorded here. This file follows
   command without network installation or operator environment repair. That
   command routes unpublished exact assets through the existing typed,
   non-authoritative candidate-qualification custody state, so qualification
-  never depends on a release tag that publication has not created yet.
+  never depends on a release tag that publication has not created yet. The
+  isolated controller interpreter also remains the runtime for nested
+  governance subprocesses, preventing environment scrubbing from falling back
+  to an ambient or older BCF installation.
 
 ## [2.2.0] - 2026-10-07
 
