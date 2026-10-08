@@ -36,6 +36,9 @@ execution_evidence:
     qualification observations.
   - v2.2.1 supersedes the noncustodied v2.2.0 bytes and must complete the corrected
     prepublication qualification edge before immutable publication.
+  - The exact-asset qualifier keeps the immutable BCF release subject in a distinct
+    namespace from every adopter source/candidate identity; iteration order cannot
+    substitute an adopter commit or tree into the release receipt subject.
 closeout_requirements:
   claims:
     required_suites_green:

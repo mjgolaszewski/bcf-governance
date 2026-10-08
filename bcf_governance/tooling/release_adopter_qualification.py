@@ -205,7 +205,9 @@ def qualify_release(
     required = {item["repository"]: item for item in contract["required_adopters"]}
     if set(supplied) != set(required) or set(adopter_pythons) != set(required):
         raise ReleaseQualificationError("supplied adopter roots/interpreters do not exactly match the contract")
-    source_repository, source_commit, source_tree = _source_identity(repo_root.resolve())
+    release_repository, release_commit, release_tree = _source_identity(
+        repo_root.resolve()
+    )
     environment = dict(os.environ)
     if not environment.get("GITHUB_TOKEN"):
         raise ReleaseQualificationError("GITHUB_TOKEN is required for release custody")
@@ -218,17 +220,17 @@ def qualify_release(
         _run([str(controller / "bin/python"), "-m", "pip", "install", "--no-deps", str(wheel)], cwd=repo_root)
         bcf = controller / "bin/bcf"
         for repository in sorted(required):
-            source, source_commit, source_tree = supplied[repository]
-            source_python = adopter_pythons[repository]
-            if not source_python.is_file() or not os.access(source_python, os.X_OK):
+            adopter_source, adopter_commit, adopter_tree = supplied[repository]
+            adopter_python = adopter_pythons[repository]
+            if not adopter_python.is_file() or not os.access(adopter_python, os.X_OK):
                 raise ReleaseQualificationError(f"adopter interpreter is unavailable: {repository}")
             destination = temporary_root / required[repository]["id"]
-            _run(["git", "clone", "--local", "--no-hardlinks", str(source), str(destination)], cwd=temporary_root)
-            remote = _run(["git", "remote", "get-url", "origin"], cwd=source)
+            _run(["git", "clone", "--local", "--no-hardlinks", str(adopter_source), str(destination)], cwd=temporary_root)
+            remote = _run(["git", "remote", "get-url", "origin"], cwd=adopter_source)
             _run(["git", "remote", "set-url", "origin", remote], cwd=destination)
-            _run(["git", "checkout", "-B", f"qualification/bcf-{version}", source_commit], cwd=destination)
+            _run(["git", "checkout", "-B", f"qualification/bcf-{version}", adopter_commit], cwd=destination)
             project_python = _isolated_project_python(
-                source, source_python, destination
+                adopter_source, adopter_python, destination
             )
             _run([str(bcf), "install", "--target", str(destination), "--upgrade", "--release-assets", str(release_assets.resolve()), "--require-strict-validation"], cwd=destination, env=environment)
             _commit(destination, f"test: install immutable BCF {version}")
@@ -253,8 +255,8 @@ def qualify_release(
                 "id": required[repository]["id"],
                 "repository": repository,
                 "profile": required[repository]["profile"],
-                "source_commit": source_commit,
-                "source_tree": source_tree,
+                "source_commit": adopter_commit,
+                "source_tree": adopter_tree,
                 "candidate_commit": report["subject"]["commit_sha"],
                 "candidate_tree": report["subject"]["tree_sha"],
                 "evaluation": report["post_merge_evaluation"],
@@ -265,9 +267,9 @@ def qualify_release(
         "kind": "release_adopter_qualification",
         "authority": False,
         "subject": {
-            "repository": source_repository,
-            "commit_sha": source_commit,
-            "tree_sha": source_tree,
+            "repository": release_repository,
+            "commit_sha": release_commit,
+            "tree_sha": release_tree,
         },
         "release": {"version": version, "assets": assets},
         "contract_sha256": _sha256(repo_root / "governance/release-qualification.yml"),
