@@ -15,7 +15,10 @@ from .ci_graph_contracts import validate_ci_graph
 from .ci_graph_defaults import build_reference_ci_graph
 from .ci_graph_yaml import render_yaml
 from .ci_graph_post_merge import post_merge_evaluation
-from .governance_install.ci_graph import project_trusted_controller_management
+from .governance_install.ci_graph import (
+    exact_main_controller_artifact_condition,
+    project_trusted_controller_management,
+)
 from .ci_controller_policy import validate_installed_controller_policy
 from .self_workflow_contracts import validate_self_workflow_contracts
 from .controller_custody import compile_controller_custody
@@ -306,9 +309,17 @@ def validate_controller_custody_chain(
             "publisher controller-custody pass-through contract is not closed"
         )
     build_condition = "exact-main-controller-build-required"
+    admission = _job(graph, "exact-main", "admit")
+    evaluation_mode = str(admission.get("executor", {}).get("evaluation_mode", ""))
+    try:
+        expected_build_condition = exact_main_controller_artifact_condition(
+            evaluation_mode
+        )
+    except RuntimeError as exc:
+        raise GitHubControllerError(str(exc)) from exc
     if (
         graph.get("conditions", {}).get(build_condition)
-        != "steps.exact-main-applicability.outputs.controller_state == 'pending_rotation'"
+        != expected_build_condition
         or graph.get("step_components", {}).get(
             "build-trusted-controller", {}
         ).get("condition") != build_condition
@@ -317,7 +328,7 @@ def validate_controller_custody_chain(
         ).get("condition") != build_condition
     ):
         raise GitHubControllerError(
-            "controller bundle production is not pending-rotation exact"
+            "controller bundle production is not transition/release-materialization exact"
         )
     rotation_bundle_condition = "routine-controller-bundle-required"
     rotation_authorize = _job(graph, rotation_id, "authorize")

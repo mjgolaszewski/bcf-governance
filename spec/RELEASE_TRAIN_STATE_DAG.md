@@ -1170,17 +1170,21 @@ reuse decision is not.
 | prior-evidence transport | source run/attempt/workflow/artifact/member identities, receipt digests, protection/controller custody and applicability inputs | manifest and immutable content references only; no embedded archive plus expanded duplicate | planner may use provisional materialization; trusted finalizer independently resolves and authenticates the same references |
 | exact-main evidence | consuming session, reuse attestations and any newly executed receipts | compact reuse/recompute accounting plus new bytes only for recomputed propositions | exact-main finalizer recomputes applicability from authenticated source and current subjects |
 | vulnerability/SBOM producer | normalized finding inventory, scanner/toolchain/database identity and result digest; original scanner output only when an independent verifier requires it | compact normalized receipt plus one content-addressed raw object when required | claim resolver consumes normalized truth; verifier resolves raw object by digest, never a per-run copied scanner tree |
-| current controller custody | installed controller identity, provider artifact coordinates and bundle digest | compact custody reference; do not rebuild/upload target bytes for a typed no-transition result | rotation owner resolves existing installed artifact; pending rotation alone produces a new bundle |
+| current controller custody | installed controller identity, provider artifact coordinates and bundle digest | compact custody reference; do not rebuild/upload target bytes for an ordinary typed no-transition result | rotation owner resolves existing installed artifact; pending rotation produces a transition bundle, while terminal release materialization is the sole separately typed exception below |
 | finalizer/publisher | exact certification proposition, subject, producer/source proof references, controller custody and run/attempt | compact bundle of manifests and digests; no copied evidence payload | publisher authenticates finalizer bundle and cannot broaden scope |
 
 The exact-main controller-builder job always resolves and projects authenticated
 custody, but bundle construction and upload are one closed conditional lane.
 Both components consume the canonical
-`exact-main-controller-build-required` condition, whose sole true state is
-`controller_state == pending_rotation`.  `current` and every noncertifying
-state retain the custody capsule while deterministically omitting controller
-bundle bytes.  Self and managed-adopter graph compilation must reject a
-missing, broadened, or one-sided build/upload condition before provider work.
+`exact-main-controller-build-required` condition.  Its ordinary true state is
+`controller_state == pending_rotation`.  A terminal phase-closure evaluation
+also materializes one same-attempt provider controller bundle when release
+authorization requires independently downloadable controller bytes.  This is
+typed release materialization, not a controller transition: rotation must
+still resolve `current/no_transition`, and bounded workitem, PR-progress and
+other ordinary-current exact-main runs omit the bytes.  Self and
+managed-adopter graph compilation must reject a missing, broadened, or
+one-sided build/upload condition before provider work.
 
 The rotation consumer applies the same state distinction before artifact
 materialization.  It must download and authenticate the always-present custody
@@ -1310,6 +1314,7 @@ chooses nodes, ordering, concurrency, or fallback behavior.
 | Release version advances before its editorial audit exists | canonical version owner, exact branch upstream, and authenticated merge-base ancestry | the editorial-audit projection primitive derives the immutable comparison base from the branch's exact tracking upstream and reconciliation creates the version-named audit through the canonical builder before any workflow-authority shadow projection can change branch-local tracking context | mechanically complete editorial inventory bound to the exact base and candidate bytes | requiring an agent to seed an audit, guessing a base, accepting a detached/untracked branch, allowing the candidate to choose unrelated history, or expanding the orchestration owner beyond its governed module boundary |
 | Authored-state contradiction regression runs after the active phase becomes terminal | exact current phase catalog plus the contradiction class under test | derive the adversarial fixture from current canonical bytes and mutate the one owned lifecycle scalar into the contradictory state | the earliest authored-state validator rejects before reconciliation or evidence | hard-coding the former active/terminal baseline so a real contradiction silently becomes an exact fixture |
 | Terminal P30 closure requested | all five workitems authored DONE, exact authenticated phase evidence, release version 2.2.0, ordinary-current controller, and complete qualification inventory | evaluate `phase_closed:P30`, preserve exact release proposition through finalizer/publisher, and reject any bounded substitute | terminal phase certification only; publication remains separately authorized | closing P30 from PR progress, a bounded workitem status, or incomplete adopter inventory |
+| Terminal certification follows controller rotation and a fresh exact-main attempt | exact terminal proposition, ordinary-current installed controller custody, current admission run/attempt, and the installed wheel digest | derive `release_materialization_required` from terminal closure and materialize one exact same-attempt provider controller bundle; independently require its subject and digest to equal installed custody | release authorizer receives downloadable exact controller bytes without changing target/install state; rotation remains `current/no_transition` | following a deleted prior-attempt artifact after GitHub rerun replacement, treating a compact custody reference as downloadable bytes, rebuilding on ordinary no-transition runs, or allowing materialization to imply rotation or release authority |
 | Certified 2.2.0 publication pending | terminal P30 certification, exact source commit/tree, independently rebuilt wheel/sdist and checksums, short-lived publisher credential | existing release owner publishes the pre-certified exact bytes and verifier independently authenticates tag, assets, attestations, and credential retirement | immutable v2.2.0 release custody | rebuilding after certification, mutable tag/assets, candidate credential use, or hand-authored custody facts |
 | Immutable 2.2.0 custody verified | provider tag/release/assets, independent verifier receipt, exact adopter post-publication results, and release_25 identity | canonical custody closeout records exact provider facts, closes P30/#344, and makes P31 uniquely eligible | P31 planned-to-eligible transition only | activating P31 before custody or borrowing candidate qualification as immutable-release proof |
 
@@ -1351,15 +1356,18 @@ invariants
        exact node inventory, splittability, resource constraint, duration observation,
        stable tie-break, partition digest, execution namespace, aggregate digest
        ancestor proof identity, manifest-ordered duration vector, qualification identity,
-       terminal phase proposition, immutable publication and custody identity
+       terminal phase proposition, release-materialization applicability,
+       immutable publication and custody identity
          -> contracts
             immutable partition plan, exact-union validator, bounded fallback,
             isolated execution result, canonical JUnit aggregation, typed timing,
-            reconciled duration observation, candidate qualification, terminal release custody
+            reconciled duration observation, candidate qualification,
+            exact same-attempt release-controller materialization, terminal release custody
               -> producers
                  PRUNE/REUSE planner, existing test-manifest owner,
                  existing gate runner and execution-state lifecycle owner,
-                 canonical reconciler, installer, release builder/verifier/publisher
+                 canonical reconciler, exact-main controller builder, installer,
+                 release builder/verifier/publisher
                    -> consumers
                       local prospective train, provider evidence fan-out,
                       exact-main reuse, receipt capture, truth and telemetry,

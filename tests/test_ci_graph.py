@@ -73,6 +73,9 @@ from bcf_governance.tooling.evaluation_scope import (
     evaluation_scope,
 )
 from bcf_governance.tooling.truth_workflow_graph import graph_workflow_gate_issues
+from bcf_governance.tooling.governance_install.ci_graph import (
+    exact_main_controller_artifact_condition,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -2328,8 +2331,15 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         "${{ steps.exact-main-applicability.outputs.controller_state == "
         "'pending_rotation' }}"
     )
-    assert build["if"] == pending_rotation_only
-    assert upload["if"] == pending_rotation_only
+    artifact_required = (
+        "${{ "
+        + exact_main_controller_artifact_condition(
+            evaluation_mode, release_enabled=True
+        )
+        + " }}"
+    )
+    assert build["if"] == artifact_required
+    assert upload["if"] == artifact_required
     rotation_steps = rendered[".github/workflows/bcf-controller-rotation.yml"][
         "jobs"
     ]["authorize"]["steps"]

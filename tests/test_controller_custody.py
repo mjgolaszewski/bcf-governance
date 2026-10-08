@@ -23,6 +23,9 @@ from bcf_governance.tooling.controller_custody_prospective import (
     validate_controller_custody_graph,
     validate_controller_custody_chain,
 )
+from bcf_governance.tooling.governance_install.ci_graph import (
+    exact_main_controller_artifact_condition,
+)
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
 
 
@@ -147,7 +150,42 @@ def test_prospective_chain_rejects_unconditional_controller_bundle_production(
     root = Path(__file__).resolve().parents[1]
     graph = copy.deepcopy(validate_ci_graph(root).graph)
     graph["step_components"][component_id].pop("condition")
-    with pytest.raises(GitHubControllerError, match="pending-rotation exact"):
+    with pytest.raises(
+        GitHubControllerError, match="transition/release-materialization exact"
+    ):
+        validate_controller_custody_chain(
+            graph,
+            python_executable=Path(sys.executable),
+        )
+
+
+def test_controller_artifact_materialization_is_terminal_scope_exact() -> None:
+    pending = (
+        "steps.exact-main-applicability.outputs.controller_state == "
+        "'pending_rotation'"
+    )
+    assert exact_main_controller_artifact_condition(
+        "pr", release_enabled=True
+    ) == pending
+    assert exact_main_controller_artifact_condition(
+        "workitem", release_enabled=True
+    ) == pending
+    assert exact_main_controller_artifact_condition(
+        "closure", release_enabled=False
+    ) == pending
+    assert exact_main_controller_artifact_condition(
+        "closure", release_enabled=True
+    ) == (
+        pending
+        + " || steps.exact-main-applicability.outputs.controller_state == 'current'"
+    )
+
+    root = Path(__file__).resolve().parents[1]
+    graph = copy.deepcopy(validate_ci_graph(root).graph)
+    graph["conditions"]["exact-main-controller-build-required"] = pending
+    with pytest.raises(
+        GitHubControllerError, match="transition/release-materialization exact"
+    ):
         validate_controller_custody_chain(
             graph,
             python_executable=Path(sys.executable),
