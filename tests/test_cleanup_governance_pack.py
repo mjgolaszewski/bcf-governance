@@ -6,9 +6,12 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any, Callable
 
 import pytest
 import yaml
+
+from bcf_governance.tooling.governance_cleanup.truth_reports import load_truth_reports
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CLEANUP = REPO_ROOT / "scripts" / "cleanup_governance_pack.py"
@@ -124,6 +127,94 @@ def _write_closed_truth_report(
         encoding="utf-8",
     )
     return path
+
+
+def _write_closed_truth_report_v3(repo: Path, phase_id: str) -> Path:
+    path = _write_closed_truth_report(repo, phase_id)
+    report = json.loads(path.read_text(encoding="utf-8"))
+    subject = {
+        "commit_sha": report["subject"]["commit_sha"],
+        "tree_sha": report["subject"]["tree_sha"],
+    }
+    target = {"kind": "phase", "id": phase_id}
+    report.update(
+        {
+            "schema_version": "3.0",
+            "evaluation_mode": "closure",
+            "evaluation_scope": {"intent": "closure", "target": target},
+            "certified_proposition": {
+                "predicate": "phase_closed",
+                "target": target,
+                "subject": subject,
+                "conclusion": "success",
+                "authorizes": [],
+                "eligible_successors": [],
+            },
+            # Schema 3 terminal authority is the typed proposition. These diagnostic
+            # fields can describe provisional receipt material without contradicting
+            # the independently authenticated closed claim inventory.
+            "checks": {
+                "evidence_integrity": "fail",
+                "exact_tree": "fail",
+                "workflow_execution": "pass",
+                "ci_certification": "not_applicable",
+            },
+        }
+    )
+    path.write_text(json.dumps(report, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def test_cleanup_authenticates_schema3_terminal_phase_truth(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "seed.txt").write_text("seed\n", encoding="utf-8")
+    _init_git_repo(repo)
+    report = _write_closed_truth_report_v3(repo, "P30")
+
+    loaded = load_truth_reports(repo, [report])
+
+    assert loaded["P30"]["verification_snapshot"]["commit_sha"] == subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda report: report["certified_proposition"].update(
+            {"predicate": "workitem_closed"}
+        ),
+        lambda report: report["certified_proposition"].update(
+            {"target": {"kind": "phase", "id": "P29"}}
+        ),
+        lambda report: report["certified_proposition"].update(
+            {"subject": {"commit_sha": "0" * 40, "tree_sha": "1" * 40}}
+        ),
+        lambda report: report["certified_proposition"].update(
+            {"authorizes": ["release_authority"]}
+        ),
+    ],
+    ids=["bounded-predicate", "wrong-phase", "wrong-subject", "broadened-authority"],
+)
+def test_cleanup_rejects_nonterminal_schema3_truth(
+    tmp_path: Path, mutation: Callable[[dict[str, Any]], None]
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "seed.txt").write_text("seed\n", encoding="utf-8")
+    _init_git_repo(repo)
+    path = _write_closed_truth_report_v3(repo, "P30")
+    report = json.loads(path.read_text(encoding="utf-8"))
+    mutation(report)
+    path.write_text(json.dumps(report, sort_keys=True) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="passing internally consistent closed"):
+        load_truth_reports(repo, [path])
 
 
 def test_cleanup_plan_reports_safe_moves_and_manual_work(tmp_path: Path) -> None:

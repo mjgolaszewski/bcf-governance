@@ -4,7 +4,7 @@ document:
   id: project-phase-31-workitems
   version: 1.0.0
   generated_at_utc: '2026-10-03T00:00:00Z'
-  status: planned
+  status: active
   path: plans/phase-31-workitems.yml
   phase_id: P31
 workitems:

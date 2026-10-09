@@ -6,8 +6,17 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Changed
+
+- Recorded independently verified immutable `v2.2.1` custody after exact-asset
+  Lite and Standard-v3 qualification, then retired its temporary publication
+  credential; published `v2.2.0` remains explicitly noncustodied and superseded.
+
 ### Fixed
 
+- Made phase-retention cleanup authenticate current schema-3 terminal truth through
+  its typed phase-closure proposition while retaining legacy schema-2 validation,
+  preventing a certified phase from falling back to authored-only history.
 - Derived adopter-qualified archives and the complete publication upload from
   one checksum-governed asset inventory, preventing trusted publication from
   broadening or misreading the exact qualification proposition.

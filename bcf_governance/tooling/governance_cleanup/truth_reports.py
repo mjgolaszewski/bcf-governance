@@ -9,6 +9,8 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from ..evaluation_scope import EvaluationScopeError, validate_certified_proposition
+
 
 def _file_sha256(path: Path) -> str:
     digest = hashlib.sha256()
@@ -16,6 +18,40 @@ def _file_sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _truth_scope_is_closed_phase(
+    report: dict[str, Any], *, phase_id: Any, subject: Any
+) -> bool:
+    if not isinstance(phase_id, str) or not isinstance(subject, dict):
+        return False
+    schema_version = report.get("schema_version")
+    checks = report.get("checks")
+    if schema_version == "2.0":
+        return (
+            isinstance(checks, dict)
+            and bool(checks)
+            and all(value == "pass" for value in checks.values())
+        )
+    if schema_version != "3.0" or not isinstance(checks, dict) or not checks:
+        return False
+    try:
+        proposition = validate_certified_proposition(
+            report,
+            subject={
+                "commit_sha": str(subject.get("commit_sha", "")),
+                "tree_sha": str(subject.get("tree_sha", "")),
+            },
+        )
+    except EvaluationScopeError:
+        return False
+    return (
+        proposition.get("predicate") == "phase_closed"
+        and proposition.get("target") == {"kind": "phase", "id": phase_id}
+        and proposition.get("conclusion") == "success"
+        and proposition.get("authorizes") == []
+        and proposition.get("eligible_successors") == []
+    )
 
 
 def load_truth_reports(
@@ -43,14 +79,14 @@ def load_truth_reports(
         durable_ref = report.get("durable_ref")
         valid = (
             isinstance(phase_id, str)
-            and report.get("schema_version") == "2.0"
+            and report.get("schema_version") in {"2.0", "3.0"}
             and report.get("engine") == "evidence_truthfulness"
             and report.get("status") == "pass"
             and report.get("effective_state") == "closed"
             and report.get("issues") == []
-            and isinstance(checks, dict)
-            and bool(checks)
-            and all(value == "pass" for value in checks.values())
+            and _truth_scope_is_closed_phase(
+                report, phase_id=phase_id, subject=subject
+            )
             and isinstance(claims, dict)
             and bool(claims)
             and all(

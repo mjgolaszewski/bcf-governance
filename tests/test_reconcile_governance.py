@@ -582,6 +582,35 @@ def test_reconcile_mechanical_commits_do_not_require_ambient_git_identity(
         )
 
 
+def test_reconcile_authority_transition_preserves_tracked_deletions(
+    tmp_path: Path,
+) -> None:
+    root = _authority_transition_repository(tmp_path)
+    obsolete = root / "obsolete-governed-record.yml"
+    obsolete.write_text("status: obsolete\n", encoding="utf-8")
+    _git(root, "add", obsolete.name)
+    _git(root, "commit", "--quiet", "-m", "add governed record")
+    (root / "intent").write_text("new\n", encoding="utf-8")
+    obsolete.unlink()
+    _git(root, "add", "--update")
+
+    result = apply_workflow_authority_transition(
+        root,
+        step_factory=_transition_steps,
+        converge=converge,
+        snapshot=_transition_snapshot,
+    )
+
+    assert result is not None
+    assert not obsolete.exists()
+    absent = subprocess.run(
+        ["git", "-C", str(root), "cat-file", "-e", f"{result.definition_commit}:{obsolete.name}"],
+        capture_output=True,
+        check=False,
+    )
+    assert absent.returncode != 0
+
+
 def test_reconcile_authority_failure_leaves_original_repository_byte_exact(
     tmp_path: Path,
 ) -> None:
