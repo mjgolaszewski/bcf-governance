@@ -390,6 +390,33 @@ def test_repository_environment_is_copied_and_own_editable_path_is_rebound(
     assert projected_hook.read_text(encoding="utf-8") == str(destination / "src") + "\n"
 
 
+def test_external_virtual_environment_preserves_lexical_package_custody(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "source"
+    destination = tmp_path / "destination"
+    external = tmp_path / "external/.venv/bin/python"
+    source.mkdir()
+    destination.mkdir()
+    external.parent.mkdir(parents=True)
+    external.symlink_to(sys.executable)
+    observed: list[list[str]] = []
+
+    def run(argv: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        observed.append(argv)
+        return subprocess.CompletedProcess(argv, 0, '["/isolated/site-packages"]\n', "")
+
+    monkeypatch.setattr(qualification.subprocess, "run", run)
+
+    selected = _isolated_project_python(
+        source, external, destination, tmp_path / "unused-copy"
+    )
+
+    assert selected == external.absolute()
+    assert observed[0][0] == str(external.absolute())
+
+
 def test_candidate_qualification_derives_the_closed_observation_lane(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

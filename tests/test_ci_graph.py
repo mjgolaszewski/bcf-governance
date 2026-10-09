@@ -285,10 +285,7 @@ def test_post_merge_scope_selects_unique_done_frontier_amid_unrelated_active_wor
         yaml.safe_dump({"document": {"status": "active"}}), encoding="utf-8"
     )
 
-    assert authored_post_merge_scope(tmp_path) == (
-        "workitem",
-        "P02-CI-BCF-210-04",
-    )
+    assert authored_post_merge_scope(tmp_path) == ("pr", None)
 
 
 def test_post_merge_scope_selects_pr_for_active_direct_successor(
@@ -347,6 +344,32 @@ def test_post_merge_scope_selects_terminal_integrated_dependency_prefix(
         yaml.safe_dump({"document": {"status": "active"}}), encoding="utf-8"
     )
     assert authored_post_merge_scope(tmp_path) == ("workitem", "P29-P0-04")
+
+
+def test_post_merge_scope_withholds_bounded_authority_without_explicit_successor(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "phases").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump({"active_phase": {
+            "id": "P02",
+            "workitems": "plans/phase-02-workitems.yml",
+            "log": "phases/phase-02-log.yml",
+        }}), encoding="utf-8"
+    )
+    (tmp_path / "plans/phase-02-workitems.yml").write_text(
+        yaml.safe_dump({"workitems": [
+            {"id": "P02-P0-01", "status": "DONE", "acceptance": []},
+            {"id": "P02-P0-02", "status": "DONE", "acceptance": []},
+            {"id": "P02-P0-03", "status": "BLOCKED", "acceptance": []},
+        ]}), encoding="utf-8"
+    )
+    (tmp_path / "phases/phase-02-log.yml").write_text(
+        yaml.safe_dump({"document": {"status": "active"}}), encoding="utf-8"
+    )
+
+    assert authored_post_merge_scope(tmp_path) == ("pr", None)
 
 
 def test_reconcile_replaces_stale_adopter_closure_with_pr_progress(
