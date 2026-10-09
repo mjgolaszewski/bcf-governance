@@ -8,6 +8,11 @@ from typing import Any
 
 import yaml  # type: ignore[import-untyped]
 
+from .application_assurance_graph import (
+    ApplicationAssuranceGraphError,
+    compile_application_assurance_graph,
+    compile_legacy_gate_catalog,
+)
 from .evidence_planning import parse_claim_model, receipt_producing_legacy_gates
 from .profile_surface_generation import (
     write_makefile as render_makefile,
@@ -351,51 +356,6 @@ def required_targets(
     return targets
 
 
-def _merged_gate_catalog(
-    template: dict[str, Any], payload: dict[str, Any], raw_gates: dict[str, Any]
-) -> dict[str, Any]:
-    """Merge exact adopter-owned gate metadata without overriding pack gates."""
-
-    configured = payload.get("gate_catalog", {})
-    if not isinstance(configured, dict):
-        raise ProfileContractError("profile config gate_catalog must be a mapping")
-    merged = dict(template)
-    known_targets = {
-        str(value.get("target"))
-        for value in template.values()
-        if isinstance(value, dict)
-    }
-    for gate_id, value in configured.items():
-        if not isinstance(gate_id, str) or not gate_id or not isinstance(value, dict):
-            raise ProfileContractError(
-                f"profile config gate_catalog entry {gate_id!r} is invalid or overrides a pack gate"
-            )
-        if gate_id in merged:
-            if merged[gate_id] != value:
-                raise ProfileContractError(
-                    f"profile config gate_catalog entry {gate_id!r} is invalid or overrides a pack gate"
-                )
-            continue
-        target = value.get("target")
-        if (
-            not isinstance(target, str)
-            or not target
-            or target in known_targets
-            or target not in raw_gates
-            or value.get("status") != "required"
-            or not isinstance(value.get("command_policy"), str)
-            or not value.get("command_policy")
-            or not isinstance(value.get("rationale"), str)
-            or not value.get("rationale")
-        ):
-            raise ProfileContractError(
-                f"profile config gate_catalog entry {gate_id!r} is not an exact required custom gate"
-            )
-        merged[gate_id] = dict(value)
-        known_targets.add(target)
-    return merged
-
-
 def load_contract(
     repo_root: Path,
     profile: str,
@@ -428,15 +388,39 @@ def load_contract(
             raise ProfileContractError(
                 "profile config profile_contract_version does not match requested version"
             )
+        assurance_graph = payload.get("application_assurance")
         candidate = payload.get("gates")
-        if not isinstance(candidate, dict):
-            raise ProfileContractError("profile config gates must be a mapping")
-        raw_gates = candidate
-        gate_catalog = _merged_gate_catalog(template_catalog, payload, raw_gates)
-        targets.update(
-            str(value["target"])
-            for value in payload.get("gate_catalog", {}).values()
-        )
+        if assurance_graph is not None:
+            if contract_version != "3.0" or candidate is not None or "claim_model" in payload:
+                raise ProfileContractError(
+                    "application_assurance requires contract 3.0 and replaces gates, gate_catalog, and claim_model"
+                )
+            try:
+                projection = compile_application_assurance_graph(
+                    assurance_graph,
+                    pack_gates={**_builtin_contracts(), **_v2_builtin_contracts()},
+                    pack_gate_catalog=template_catalog,
+                )
+            except ApplicationAssuranceGraphError as exc:
+                raise ProfileContractError(str(exc)) from exc
+            raw_gates = projection["gates"]
+            configured_claim_model = projection["claim_model"]
+            gate_catalog = {**template_catalog, **projection["gate_catalog"]}
+            targets.update(raw_gates)
+        else:
+            if not isinstance(candidate, dict):
+                raise ProfileContractError("profile config gates must be a mapping")
+            raw_gates = candidate
+            try:
+                gate_catalog = compile_legacy_gate_catalog(
+                    template_catalog, payload, raw_gates
+                )
+            except ApplicationAssuranceGraphError as exc:
+                raise ProfileContractError(str(exc)) from exc
+            targets.update(
+                str(value["target"])
+                for value in payload.get("gate_catalog", {}).values()
+            )
         if contract_version == "1.0":
             raw_gates = {
                 key: value

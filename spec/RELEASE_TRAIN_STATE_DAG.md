@@ -1522,6 +1522,51 @@ merge-eligibility evaluator comes from protected base or managed controller,
 never candidate bytes. Publication is one idempotent transaction over exact
 certified bytes and retires its short-lived credential on every terminal path.
 
+### P31-P0-01 consumer-owned assurance graph state matrix
+
+The consumer-owned assurance graph is the sole semantic source for an
+adopter's application claims.  One typed declaration owns dependency sets,
+producer execution and control contracts, execution-group dependencies, claim
+truth, qualification scope, and profile applicability.  The existing profile
+compiler projects `gate_catalog`, executable `gates`, and `claim_model` from
+that declaration in one transaction.  An agent never copies one control into
+three registries or chooses a planner/truth mapping.
+
+| State | Authenticated inputs | Deterministic action | Authoritative result | Fail-closed boundary |
+| --- | --- | --- | --- | --- |
+| Fresh Standard-v3 adopter declares application assurance | exact profile config, pack contract, application dependency sets, producer/group/claim records, invocation, evidence and negative controls | validate the complete graph, merge only non-colliding application owners with immutable pack owners, and project catalog/gates/claim model together | one canonical installed application assurance graph | duplicate claim/group/gate/producer ownership, unknown dependency, incomplete qualification, or separately authored projection |
+| One producer owns multiple application claims | one producer/group record plus exact claim membership and dependencies | emit one grouped producer contract and require receipts to bind the complete declared claim population | one producer receipt may satisfy only its exact declared claims | a sibling or unrelated claim entering through a valid receipt |
+| Application groups have prerequisites | exact acyclic group dependency edges | validate closure and schedule the complete dependency component through the existing planner | one topologically complete execution plan | unknown/self/cyclic/preflight-only dependency or reused prerequisite where current-run execution is required |
+| Existing Standard-v3 repository has an installed canonical graph but no retained source declaration | exact installed gate-contract bytes, runtime lock, selected profile and upgrade subject | preserve and validate the installed graph; do not infer, replace, or reverse-engineer application semantics during upgrade | backward-compatible exact installed assurance ownership | treating pack defaults, file names, or installer heuristics as adopter intent |
+| Source declaration and installed projection both exist | exact source and exact generated gate-contract bytes | recompile and require byte/semantic equality before planning | mechanically fresh graph | accepting drift, merging both registries, or preferring whichever copy is convenient |
+| Application source/dependency bytes change | exact base/candidate graphs and P30 ownership closure | derive affected claims, invalidations, reuse decisions and splinter remainder through the existing PRUNE/REUSE/SPLINTER owners | only reachable assurance executes; uncertainty expands execution | an unmapped change becoming demonstrably unaffected |
+| Exact applicable prior receipt exists | exact graph, dependency closure, subject/session/policy, producer/verifier, qualification and freshness | reuse only the identical proposition and record exact reused/recomputed accounting | unchanged claim proof without authority broadening | wrong producer/claim/subject/session/policy/toolchain/freshness or ambiguous receipt |
+| Lite-v1 adopter has only its declared required gates | exact Lite profile and gate contracts | preserve legacy exact-subject execution and resolve each required gate only from its own receipt | complete Lite closure without acquiring v3/self topology | cross-gate receipt laundering, inferred reuse, or silent profile promotion |
+| Standard-v3 adopter, Racecar, or AgentBus executes the projected graph | exact installed graph, candidate subject, session, policy, producer receipts and planner decisions | run the same planner, grouped receipt resolver, truth and certification consumers used by self-governance | application-software closure bound to adopter-owned claims | BCF implementation files becoming the product under test or self-controller/release authority entering the adopter |
+| Receipt names a valid producer but wrong/extra claim | exact graph and authenticated receipt bytes | reject before bounded or terminal truth | no claim or certification authority | producer identity laundering claim membership |
+| Graph declaration is missing, malformed, stale, or ambiguous | exact profile/version and source/projection inventory | reject before mutation, evidence allocation, or adopter qualification | typed closed diagnostic | falling back to a hand-authored gate, generic `inapplicable`, or broad execution that hides contradictory ownership |
+
+```text
+consumer-owned application assurance declaration
+  -> validate unique dependency / producer / group / claim ownership
+     -> compile gate catalog + executable gates + claim model once
+        -> install or reconcile exact generated bytes
+           -> PRUNE affected application claims
+              -> REUSE only exact applicable receipts
+                 -> SPLINTER the unresolved producer remainder
+                    -> emit authenticated grouped receipts
+                       -> resolve exact claims without laundering
+                          -> adopter truth
+                             -> PR certification / exact-main / upgrade closure
+```
+
+The consumer graph compiler is an existing-profile compilation responsibility,
+not a new command or lifecycle stage.  Existing installed graphs remain exact
+inputs on upgrade.  Only an explicit consumer declaration can add application
+semantics; BCF supplies deterministic compilation and proof mechanics, never
+application truth. Compilation is a pure projection and must not be classified
+or registered as an authority-conferring mutation effect.
+
 ### P30/P31 outward construction tree
 
 ```text

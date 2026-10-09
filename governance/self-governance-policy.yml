@@ -6,7 +6,7 @@ tooling_contexts:
   evidence: [affected_proof_closure.py, evaluation_scope.py, evidence_, governance_evidence.py, governance_truth.py, governance_truth_cli.py, governance_truth_support.py, negative_control_execution.py, prior_evidence_receipts.py, release_, test_duration_observations.py, test_manifests.py, truth_receipts.py, truth_reporting.py, truth_sessions.py]
   install: [install_governance_pack.py, pack_installation_scope.py, governance_install/]
   operations: [editorial_audit_projection.py, migrate_contracts.py, migrate_governance_evidence.py, operational_observations.py, publish_audit.py, reconcile_authority_transition.py, reconcile_stage_ledger.py, scaffold_governance_artifacts.py]
-  profiles: [governance_profiles.py, profile_]
+  profiles: [application_assurance_graph.py, governance_profiles.py, profile_]
   runtime: [runtime_capacity.py]
   semantic_ownership: [semantic_adoption_, semantic_source_discovery.py, semantic_source_paths.py, semantic_typescript_effects.mjs, semantic_authority_, semantic_derivations.py, semantic_locking.py, semantic_operation_, semantic_ownership_, semantic_python_annotation_identity.py, semantic_python_method_identity.py, semantic_yaml.py]
   validation: [check_governance_exposure.py, dependency_assurance.py, doctor_governance_pack.py, interpreter_environment.py, preflight.py, scheduled_control_, public_contracts.py, self_workflow_contracts.py, validate_governance_yaml.py, yaml_mutations.py, governance_validation/]
