@@ -8,6 +8,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Added deterministic provider-latency margin to exact-main admission and
+  finalization without changing their fail-closed evidence or authority rules.
 - Compiled privileged workflow event authority directly from canonical
   workflow triggers, rejecting producer/consumer event drift before provider
   execution and removing obsolete trigger authorization.
