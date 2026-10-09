@@ -210,9 +210,22 @@ def test_reconcile_declares_one_closed_dependency_order() -> None:
         "semantic-lock",
     ]
     phase_scope = next(step for step in reconcile_steps(root, Path(sys.executable)) if step.step_id == "ci-graph-post-merge-scope")
-    assert "plans/phase-30-workitems.yml" in (phase_scope.watch_paths or ())
-    assert "phases/phase-30-log.yml" in (phase_scope.watch_paths or ())
-    assert not any("phase-29" in path for path in (phase_scope.watch_paths or ()))
+    active = yaml.safe_load((root / "plans/phase-ledger.yml").read_text())[
+        "active_phase"
+    ]
+    watched = set(phase_scope.watch_paths or ())
+    assert active["workitems"] in watched
+    assert active["log"] in watched
+    assert {
+        path
+        for path in watched
+        if path.startswith("plans/phase-") and path.endswith("-workitems.yml")
+    } == {active["workitems"]}
+    assert {
+        path
+        for path in watched
+        if path.startswith("phases/phase-") and path.endswith("-log.yml")
+    } == {active["log"]}
     assert ids.index("ci-graph-lock") < ids.index("ci-graph-render")
     assert ids.index("ci-graph-render") < ids.index("editorial-audit")
     assert ids.index("editorial-audit") < ids.index("workflow-authority")
