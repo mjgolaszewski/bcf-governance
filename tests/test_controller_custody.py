@@ -27,6 +27,8 @@ from bcf_governance.tooling.governance_install.ci_graph import (
     exact_main_controller_artifact_condition,
 )
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
+from bcf_governance.tooling.ci_graph_post_merge import reconcile_post_merge_scope
+from bcf_governance.tooling.ci_graph_yaml import load_yaml_path
 
 
 COMMIT = "a" * 40
@@ -159,7 +161,9 @@ def test_prospective_chain_rejects_unconditional_controller_bundle_production(
         )
 
 
-def test_controller_artifact_materialization_is_terminal_scope_exact() -> None:
+def test_controller_artifact_materialization_is_terminal_scope_exact(
+    tmp_path: Path,
+) -> None:
     pending = (
         "steps.exact-main-applicability.outputs.controller_state == "
         "'pending_rotation'"
@@ -182,6 +186,39 @@ def test_controller_artifact_materialization_is_terminal_scope_exact() -> None:
 
     root = Path(__file__).resolve().parents[1]
     graph = copy.deepcopy(validate_ci_graph(root).graph)
+    (tmp_path / "governance").mkdir()
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "phases").mkdir()
+    (tmp_path / "governance/ci-graph.yml").write_text(
+        json.dumps(graph), encoding="utf-8"
+    )
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        json.dumps(
+            {
+                "active_phase": {
+                    "id": "P01",
+                    "workitems": "plans/phase-01-workitems.yml",
+                    "log": "phases/phase-01-log.yml",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "plans/phase-01-workitems.yml").write_text(
+        json.dumps(
+            {
+                "workitems": [
+                    {"id": "P01-P0-01", "status": "DONE", "acceptance": []}
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "phases/phase-01-log.yml").write_text(
+        json.dumps({"document": {"status": "completed"}}), encoding="utf-8"
+    )
+    assert reconcile_post_merge_scope(tmp_path, apply=True) is True
+    graph = load_yaml_path(tmp_path / "governance/ci-graph.yml")
     graph["conditions"]["exact-main-controller-build-required"] = pending
     with pytest.raises(
         GitHubControllerError, match="transition/release-materialization exact"

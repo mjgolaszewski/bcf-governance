@@ -4,7 +4,7 @@ document:
   id: project-phase-31-plan
   version: 1.0.0
   generated_at_utc: '2026-10-03T00:00:00Z'
-  status: planned
+  status: active
   path: plans/phase-31-plan.yml
 phase:
   id: P31
@@ -42,8 +42,8 @@ scope_lock:
   statement: keep the phase narrowly scoped to declared deliverables and update canonical
     governed artifacts in the same change
 - order: 2
-  statement: P31 remains planned and cannot activate before independently verified immutable
-    BCF 2.2.0 custody closes P30
+  statement: P31 activated only after independently verified immutable BCF 2.2.1
+    custody closed P30 and release 25
 - order: 3
   statement: adopter configuration owns application assurance while BCF owns deterministic
     planning execution and proof without adding self authority to ordinary adopters

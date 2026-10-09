@@ -4,13 +4,13 @@ document:
   id: project-phase-31-workitems
   version: 1.0.0
   generated_at_utc: '2026-10-03T00:00:00Z'
-  status: planned
+  status: active
   path: plans/phase-31-workitems.yml
   phase_id: P31
 workitems:
 - id: P31-P0-01
   priority: P0
-  status: TODO
+  status: IN_PROGRESS
   summary: deliver project the consumer-owned assurance graph
   acceptance:
   - requires-phase-closure:P30
@@ -39,6 +39,7 @@ workitems:
   - requires-workitem-closure:P31-P0-02
   - legacy mixed durable and unknown topologies produce deterministic immutable publication cold resolution retention and migration plans
   - cache-empty reconstruction tamper stale garbage-collection and growth-bound scenarios preserve original evidence truth and retrievability
+  - successful execution splinters persist exact input-bound acceleration proofs before aggregate fan-in so an unrelated sibling failure cannot force unchanged successful work to recompute
   acceptance_evidence:
   - test
   - contract-test

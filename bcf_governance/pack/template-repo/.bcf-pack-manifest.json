@@ -724,7 +724,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_post_merge.py": {
       "operation": "copy",
-      "sha256": "616e2e9cfc8e740766495f21042b5f916df8d8ffc09cd01dd0203168e1cc9a2b"
+      "sha256": "ba031791973d9a77dfa22a0c62d315e36627737e07cf7bffeb737d366a0094a5"
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
@@ -952,7 +952,7 @@
     },
     "scripts/_bcf_runtime/governance_cleanup/truth_reports.py": {
       "operation": "copy",
-      "sha256": "c06cd65e9cfd3ea9deb628d5dd28b8f2208a67511aca52237de2dd94f709d686"
+      "sha256": "602db4f40f75236a9fe2d9d51c3a9719fb761dae87e202ab266aeab4eb1085c2"
     },
     "scripts/_bcf_runtime/governance_evidence.py": {
       "operation": "copy",
@@ -1004,7 +1004,7 @@
     },
     "scripts/_bcf_runtime/governance_install/transaction.py": {
       "operation": "copy",
-      "sha256": "41dd653631a7cbd9581b9e05b0262fffbf192adae3851147fa14566ee5c2549b"
+      "sha256": "1aa8a1c4982699721b55afd57794795192bde9bdf23c3ab4a930f80ca354720c"
     },
     "scripts/_bcf_runtime/governance_install/upgrade.py": {
       "operation": "copy",

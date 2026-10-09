@@ -210,9 +210,22 @@ def test_reconcile_declares_one_closed_dependency_order() -> None:
         "semantic-lock",
     ]
     phase_scope = next(step for step in reconcile_steps(root, Path(sys.executable)) if step.step_id == "ci-graph-post-merge-scope")
-    assert "plans/phase-30-workitems.yml" in (phase_scope.watch_paths or ())
-    assert "phases/phase-30-log.yml" in (phase_scope.watch_paths or ())
-    assert not any("phase-29" in path for path in (phase_scope.watch_paths or ()))
+    active = yaml.safe_load((root / "plans/phase-ledger.yml").read_text())[
+        "active_phase"
+    ]
+    watched = set(phase_scope.watch_paths or ())
+    assert active["workitems"] in watched
+    assert active["log"] in watched
+    assert {
+        path
+        for path in watched
+        if path.startswith("plans/phase-") and path.endswith("-workitems.yml")
+    } == {active["workitems"]}
+    assert {
+        path
+        for path in watched
+        if path.startswith("phases/phase-") and path.endswith("-log.yml")
+    } == {active["log"]}
     assert ids.index("ci-graph-lock") < ids.index("ci-graph-render")
     assert ids.index("ci-graph-render") < ids.index("editorial-audit")
     assert ids.index("editorial-audit") < ids.index("workflow-authority")
@@ -580,6 +593,35 @@ def test_reconcile_mechanical_commits_do_not_require_ambient_git_identity(
         assert _git(root, "show", "-s", "--format=%an <%ae>", commit) == (
             "BCF Reconciler <bcf-reconciler@example.invalid>"
         )
+
+
+def test_reconcile_authority_transition_preserves_tracked_deletions(
+    tmp_path: Path,
+) -> None:
+    root = _authority_transition_repository(tmp_path)
+    obsolete = root / "obsolete-governed-record.yml"
+    obsolete.write_text("status: obsolete\n", encoding="utf-8")
+    _git(root, "add", obsolete.name)
+    _git(root, "commit", "--quiet", "-m", "add governed record")
+    (root / "intent").write_text("new\n", encoding="utf-8")
+    obsolete.unlink()
+    _git(root, "add", "--update")
+
+    result = apply_workflow_authority_transition(
+        root,
+        step_factory=_transition_steps,
+        converge=converge,
+        snapshot=_transition_snapshot,
+    )
+
+    assert result is not None
+    assert not obsolete.exists()
+    absent = subprocess.run(
+        ["git", "-C", str(root), "cat-file", "-e", f"{result.definition_commit}:{obsolete.name}"],
+        capture_output=True,
+        check=False,
+    )
+    assert absent.returncode != 0
 
 
 def test_reconcile_authority_failure_leaves_original_repository_byte_exact(

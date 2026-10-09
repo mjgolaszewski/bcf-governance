@@ -396,6 +396,11 @@ def test_reconcile_replaces_stale_adopter_closure_with_pr_progress(
     producer["executor"]["inputs"]["evaluation_mode"] = "closure"
     producer["executor"]["inputs"].pop("evaluation_target", None)
     producer["executor"]["inputs"].pop("comparison_base_sha", None)
+    stale_graph["conditions"]["exact-main-controller-build-required"] = (
+        exact_main_controller_artifact_condition(
+            "closure", release_enabled=True
+        )
+    )
     argv = stale_graph["commands"]["exact-main-admit-effective"]["argv"]
     argv[argv.index("--evaluation-mode") + 1] = "closure"
     if "--evaluation-target" in argv:
@@ -445,6 +450,9 @@ def test_reconcile_replaces_stale_adopter_closure_with_pr_progress(
     )
     assert producer["executor"]["inputs"]["comparison_base_sha"] == (
         PUSH_COMPARISON_BASE_EXPRESSION
+    )
+    assert reconciled["conditions"]["exact-main-controller-build-required"] == (
+        exact_main_controller_artifact_condition("pr", release_enabled=True)
     )
 
 

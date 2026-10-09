@@ -1100,26 +1100,35 @@ def test_deterministic_failure_prevents_session_allocation(
     assert calls == ["git-state", "authored-phase-state", "ci-state-matrix", "structural-limits", "syntax"]
 
 
-def test_authored_phase_state_rejects_completed_log_while_ledger_active(
-    tmp_path: Path,
-) -> None:
-    repo = tmp_path / "repo"
+def _copy_current_authored_phase_state(repo: Path) -> dict:
+    ledger = yaml.safe_load((REPO_ROOT / "plans/phase-ledger.yml").read_text())
+    active = ledger["active_phase"]
     for relative in (
         "plans/product-spec.yml",
         "plans/build-plan.yml",
         "plans/phase-ledger.yml",
-        "plans/phase-30-plan.yml",
-        "plans/phase-30-workitems.yml",
-        "phases/phase-30-log.yml",
+        str(active["plan"]),
+        str(active["workitems"]),
+        str(active["log"]),
         "MEMORY.yml",
     ):
         target = repo / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes((REPO_ROOT / relative).read_bytes())
-    log = yaml.safe_load((repo / "phases/phase-30-log.yml").read_text())
-    assert log["document"]["status"] == "completed"
+    return active
+
+
+def test_authored_phase_state_rejects_completed_log_while_ledger_active(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    active = _copy_current_authored_phase_state(repo)
+    log_path = repo / str(active["log"])
+    log = yaml.safe_load(log_path.read_text())
+    log["document"]["status"] = "completed"
+    log_path.write_text(yaml.safe_dump(log, sort_keys=False))
     ledger = yaml.safe_load((repo / "plans/phase-ledger.yml").read_text())
-    ledger["active_phase"]["lifecycle_status"] = "active"
+    assert ledger["active_phase"]["lifecycle_status"] == "active"
     (repo / "plans/phase-ledger.yml").write_text(
         yaml.safe_dump(ledger, sort_keys=False)
     )
@@ -1131,28 +1140,16 @@ def test_authored_phase_state_reports_computed_status_before_pair_mismatch(
     tmp_path: Path,
 ) -> None:
     repo = tmp_path / "repo"
-    for relative in (
-        "plans/product-spec.yml",
-        "plans/build-plan.yml",
-        "plans/phase-ledger.yml",
-        "plans/phase-30-plan.yml",
-        "plans/phase-30-workitems.yml",
-        "phases/phase-30-log.yml",
-        "MEMORY.yml",
-    ):
-        target = repo / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes((REPO_ROOT / relative).read_bytes())
+    active = _copy_current_authored_phase_state(repo)
     ledger = yaml.safe_load((repo / "plans/phase-ledger.yml").read_text())
     ledger["active_phase"]["lifecycle_status"] = "completed"
     (repo / "plans/phase-ledger.yml").write_text(
         yaml.safe_dump(ledger, sort_keys=False)
     )
-    log = yaml.safe_load((repo / "phases/phase-30-log.yml").read_text())
+    log_path = repo / str(active["log"])
+    log = yaml.safe_load(log_path.read_text())
     log["document"]["status"] = "verified"
-    (repo / "phases/phase-30-log.yml").write_text(
-        yaml.safe_dump(log, sort_keys=False)
-    )
+    log_path.write_text(yaml.safe_dump(log, sort_keys=False))
 
     with pytest.raises(AuthoredPhaseStateError, match="verified and closed are computed"):
         validate_authored_phase_state(repo)
