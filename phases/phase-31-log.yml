@@ -19,7 +19,7 @@ summary:
   - the canonical release train state and custody DAG owns every downstream P31 permutation before implementation
 workitems:
 - id: P31-P0-01
-  status: TODO
+  status: IN_PROGRESS
   summary: deliver project the consumer-owned assurance graph
 - id: P31-P0-02
   status: TODO
