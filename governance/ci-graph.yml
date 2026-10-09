@@ -603,7 +603,7 @@ workflows:
     controller_requirement: current-or-recovery-reentry
     needs: [trusted-controller-build]
     condition: exact-main-semantic-admission-enabled
-    timeout_minutes: 5
+    timeout_minutes: 10
     permissions: {actions: write, contents: read, statuses: write}
     checkout: false
     components: []
@@ -671,7 +671,7 @@ workflows:
     controller_requirement: current
     needs: []
     condition: exact-main-finalizer-admitted
-    timeout_minutes: 5
+    timeout_minutes: 10
     permissions: {actions: read, contents: read}
     checkout: false
     components: []

@@ -375,6 +375,9 @@ def test_finalizer_preserves_exact_admission_custody_for_every_publisher_shape()
     graph = validate_ci_graph(REPO_ROOT).graph
     finalizer = _job("exact-main-finalizer", "finalize")
     publisher = _job("exact-main-publisher", "publish")
+    admission = _job("exact-main", "admit")
+    assert admission["timeout_minutes"] == 10
+    assert finalizer["timeout_minutes"] == 10
     assert finalizer["executor"]["components"][-2:] == [
         "upload-exact-main-certification-effective",
         "upload-finalizer-controller-custody",
