@@ -39,6 +39,7 @@ workitems:
   - requires-workitem-closure:P31-P0-02
   - legacy mixed durable and unknown topologies produce deterministic immutable publication cold resolution retention and migration plans
   - cache-empty reconstruction tamper stale garbage-collection and growth-bound scenarios preserve original evidence truth and retrievability
+  - successful execution splinters persist exact input-bound acceleration proofs before aggregate fan-in so an unrelated sibling failure cannot force unchanged successful work to recompute
   acceptance_evidence:
   - test
   - contract-test
