@@ -724,7 +724,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_post_merge.py": {
       "operation": "copy",
-      "sha256": "0997b7f57ff69203fe0961880b417e9a7a3d3fee21e0f6bf0709175eb0f86ffe"
+      "sha256": "616e2e9cfc8e740766495f21042b5f916df8d8ffc09cd01dd0203168e1cc9a2b"
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
@@ -1235,7 +1235,7 @@
     },
     "scripts/_bcf_runtime/release_adopter_qualification.py": {
       "operation": "copy",
-      "sha256": "9d17fd53bc12367a8593a9495e406e9dd5b7d961a583d045ac5d51756f9bd400"
+      "sha256": "12ecbd18f12c590ef972e4a8178b988604d246f991b9a43b1cd84e7f64e3389a"
     },
     "scripts/_bcf_runtime/release_asset_inventory.py": {
       "operation": "copy",

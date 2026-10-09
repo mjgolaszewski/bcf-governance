@@ -8,6 +8,12 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Made dependency-incomplete legacy adopter lifecycles deterministically select
+  non-authoritative PR progress instead of requesting an impossible bounded
+  certification; stale bounded graph targets still fail before evidence.
+- Preserved the lexical executable of an admitted external virtual environment
+  so adopter gates retain its exact package custody instead of falling through
+  a symlink to an unprovisioned base interpreter.
 - Distinguished isolated, non-authoritative adopter qualification from a real
   provider pull request so exact release testing retains every prospective
   proof while the provider-only changelog-delta rule remains mandatory for

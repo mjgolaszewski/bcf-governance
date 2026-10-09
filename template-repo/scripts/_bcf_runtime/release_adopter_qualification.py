@@ -343,14 +343,14 @@ def _isolated_project_python(
         relative = source_python.absolute().relative_to(source_root.resolve())
     except ValueError:
         probe = subprocess.run(
-            [str(executable), "-c", "import json,sys; print(json.dumps(sys.path))"],
+            [str(source_python.absolute()), "-c", "import json,sys; print(json.dumps(sys.path))"],
             capture_output=True, text=True, check=False,
         )
         if probe.returncode or str(source_root.resolve()) in probe.stdout:
             raise ReleaseQualificationError(
                 "external adopter interpreter exposes the maintained checkout"
             )
-        return executable
+        return source_python.absolute()
     if len(relative.parts) < 3 or relative.parts[-2:] != ("bin", "python"):
         raise ReleaseQualificationError(
             "repository-owned adopter interpreter must be ENV/bin/python"

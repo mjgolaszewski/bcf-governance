@@ -224,10 +224,9 @@ def authored_post_merge_scope(repo_root: Path) -> tuple[str, str | None]:
     if completed_prefix and len(completed_prefix) < len(workitems):
         successor = workitems[len(completed_prefix)]
         dependency = f"requires-workitem-closure:{completed_prefix[-1]}"
-        if (
-            successor.get("status") in {"IN_PROGRESS", "BLOCKED"}
-            and dependency in successor.get("acceptance", [])
-        ):
+        if dependency not in successor.get("acceptance", []):
+            return "pr", None
+        if successor.get("status") in {"IN_PROGRESS", "BLOCKED"}:
             return "pr", None
     return (
         ("workitem", completed_prefix[-1])
