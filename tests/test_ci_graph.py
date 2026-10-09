@@ -62,6 +62,7 @@ from bcf_governance.tooling.ci_graph_render import (
     check_ci_graph,
     render_ci_graph,
 )
+from bcf_governance.tooling.ci_graph_timeouts import validate_component_job_timeouts
 from bcf_governance.tooling.ci_graph_shell_projection import hoist_run_expressions
 from bcf_governance.tooling.ci_graph_values import resolve_graph_values
 from bcf_governance.tooling.ci_graph_workflow_run import (
@@ -1569,23 +1570,24 @@ def test_evidence_job_timeout_must_contain_inner_gate_deadline_and_headroom(
 
 
 def test_component_minimum_timeout_rejects_every_underprovisioned_consumer(
-    tmp_path: Path,
 ) -> None:
-    graph = _graph()
-    job = next(
-        candidate
-        for workflow in graph["workflows"]
-        for candidate in workflow["jobs"]
-        if candidate["executor"]["kind"] == "component_sequence"
-        and candidate["executor"]["components"]
-    )
-    component_id = job["executor"]["components"][0]
-    graph["step_components"][component_id]["minimum_job_timeout_minutes"] = 11
-    job["timeout_minutes"] = 10
-    _write_graph(tmp_path, graph)
+    graph = {
+        "step_components": {"provider-route": {"minimum_job_timeout_minutes": 11}},
+        "workflows": [{
+            "id": "release",
+            "jobs": [{
+                "id": "route",
+                "timeout_minutes": 10,
+                "executor": {
+                    "kind": "component_sequence",
+                    "components": ["provider-route"],
+                },
+            }],
+        }],
+    }
 
     with pytest.raises(CIGraphError, match="cannot contain component.*minimum 11m"):
-        validate_ci_graph(tmp_path)
+        validate_component_job_timeouts(graph)
 
 
 def test_graph_growth_preserves_deterministic_gate_ownership_and_rendering(
