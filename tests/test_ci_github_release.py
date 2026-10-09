@@ -43,6 +43,7 @@ from bcf_governance.tooling.ci_github_release_inputs import (
 from bcf_governance.tooling.ci_authority_state import WorkflowIdentity
 from bcf_governance.tooling.release_closure import verify_release_lock
 from bcf_governance.tooling.release_asset_inventory import (
+    checksum_declared_assets,
     release_asset_paths,
     release_asset_version,
 )
@@ -297,7 +298,14 @@ def _qualification(path: Path, assets: dict[str, str]) -> Path:
                 "commit_sha": COMMIT,
                 "tree_sha": TREE,
             },
-            "release": {"version": "0.7.1", "assets": assets},
+            "release": {
+                "version": "0.7.1",
+                "assets": {
+                    name: digest
+                    for name, digest in assets.items()
+                    if name != "SHA256SUMS"
+                },
+            },
             "contract_sha256": _sha(
                 REPO_ROOT / "governance/release-qualification.yml"
             ),
@@ -463,7 +471,13 @@ def test_release_asset_directory_rejects_extra_or_unsafe_members(tmp_path: Path)
     for source in values["artifacts"]:  # type: ignore[union-attr]
         (root / source.name).write_bytes(source.read_bytes())
 
-    assert release_asset_paths(root) == tuple(sorted(root.iterdir()))
+    paths = release_asset_paths(root)
+    assert paths == tuple(sorted(root.iterdir()))
+    assert checksum_declared_assets(paths) == {
+        name: digest
+        for name, digest in values["assets"].items()  # type: ignore[union-attr]
+        if name != "SHA256SUMS"
+    }
 
     (root / "operator-added.txt").write_text("extra\n", encoding="utf-8")
     with pytest.raises(GitHubControllerError, match="one wheel"):
@@ -1292,6 +1306,10 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
     qualification_path = _qualification(
         tmp_path / "qualification.json", values["assets"]  # type: ignore[arg-type]
     )
+    assert set(json.loads(qualification_path.read_text())["release"]["assets"]) == {
+        "bcf_governance-0.7.1-py3-none-any.whl",
+        "bcf_governance-0.7.1.tar.gz",
+    }
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release.resolve_main",
         lambda api, repository: MainIdentity("101", "main", COMMIT, TREE),

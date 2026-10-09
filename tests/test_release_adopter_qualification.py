@@ -121,7 +121,7 @@ def test_release_assets_require_exact_wheel_sdist_and_digests(tmp_path: Path) ->
 
     assert _release_assets(tmp_path) == ("2.2.1", dict(sorted(expected.items())))
     (tmp_path / "bcf_governance-2.2.1.tar.gz").write_bytes(b"changed")
-    with pytest.raises(ReleaseQualificationError, match="digest mismatch"):
+    with pytest.raises(ReleaseQualificationError, match="checksum inventory is not exact"):
         _release_assets(tmp_path)
 
 
