@@ -19,6 +19,12 @@ from jsonschema import Draft202012Validator
 
 from .ci_github_values import GitHubValueError, remote_repository
 from .ci_github_api import GitHubAPI
+from .ci_github_identity import GitHubControllerError
+from .release_asset_inventory import (
+    checksum_declared_assets,
+    release_asset_paths,
+    release_asset_version,
+)
 
 
 class ReleaseQualificationError(ValueError):
@@ -61,27 +67,11 @@ def _sha256(path: Path) -> str:
 
 
 def _release_assets(root: Path) -> tuple[str, dict[str, str]]:
-    checksums = root / "SHA256SUMS"
-    if not checksums.is_file() or checksums.is_symlink():
-        raise ReleaseQualificationError("release assets lack regular SHA256SUMS")
-    declared: dict[str, str] = {}
-    for line in checksums.read_text(encoding="utf-8").splitlines():
-        match = re.fullmatch(r"([a-f0-9]{64})  ([A-Za-z0-9_.+-]+)", line)
-        if match is None or match.group(2) in declared:
-            raise ReleaseQualificationError("release checksum inventory is malformed")
-        declared[match.group(2)] = match.group(1)
-    wheels = sorted(name for name in declared if name.endswith("-py3-none-any.whl"))
-    sdists = sorted(name for name in declared if name.endswith(".tar.gz"))
-    if len(wheels) != 1 or len(sdists) != 1 or len(declared) != 2:
-        raise ReleaseQualificationError("release checksum inventory must bind one wheel and sdist")
-    for name, digest in declared.items():
-        path = root / name
-        if not path.is_file() or path.is_symlink() or _sha256(path) != digest:
-            raise ReleaseQualificationError(f"release asset digest mismatch: {name}")
-    version = re.fullmatch(r"bcf_governance-([0-9]+\.[0-9]+\.[0-9]+)-py3-none-any\.whl", wheels[0])
-    if version is None:
-        raise ReleaseQualificationError("release wheel name does not expose an exact version")
-    return version.group(1), dict(sorted(declared.items()))
+    try:
+        paths = release_asset_paths(root)
+        return release_asset_version(paths).value, checksum_declared_assets(paths)
+    except GitHubControllerError as exc:
+        raise ReleaseQualificationError(str(exc)) from exc
 
 
 _EXACT_RELEASE_PROBE = r"""

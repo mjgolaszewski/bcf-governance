@@ -31,6 +31,7 @@ from .ci_github_identity import GitHubControllerError, positive_int, resolve_mai
 from .ci_github_membership import select_latest_admission
 from .controller_custody import require_controller_execution, validate_controller_custody
 from .release_asset_inventory import (
+    checksum_declared_assets,
     exact_assets,
     release_asset_version,
     verify_checksum_inventory,
@@ -725,7 +726,7 @@ def publish_certified_release(
         main=main,
         repository=repository,
         version=release_asset_version(paths).value,
-        assets=expected_assets,
+        assets=checksum_declared_assets(paths),
     )
     receipt_assets = receipt.get("observations", {}).get("release_artifacts")
     if not isinstance(receipt_assets, list) or any(

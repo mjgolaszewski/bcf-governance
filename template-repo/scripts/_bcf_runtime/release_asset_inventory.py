@@ -79,6 +79,12 @@ def release_asset_version(paths: tuple[Path, ...]) -> ReleaseVersion:
 
 
 def verify_checksum_inventory(paths: tuple[Path, ...]) -> None:
+    checksum_declared_assets(paths)
+
+
+def checksum_declared_assets(paths: tuple[Path, ...]) -> dict[str, str]:
+    """Return the exact archive projection authenticated by ``SHA256SUMS``."""
+
     archives = tuple(
         path for path in paths if path.suffix == ".whl" or path.name.endswith(".tar.gz")
     )
@@ -100,3 +106,4 @@ def verify_checksum_inventory(paths: tuple[Path, ...]) -> None:
     expected = {path.name: _sha256(path) for path in archives}
     if declared != expected:
         raise GitHubControllerError("release checksum inventory is not exact")
+    return dict(sorted(expected.items()))

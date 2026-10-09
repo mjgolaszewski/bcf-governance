@@ -8,6 +8,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Derived adopter-qualified archives and the complete publication upload from
+  one checksum-governed asset inventory, preventing trusted publication from
+  broadening or misreading the exact qualification proposition.
 - Made provider controller-routing and successor-dispatch components declare
   their minimum job timeout, so graph validation rejects every underprovisioned
   consumer before provider execution.
