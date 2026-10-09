@@ -8,6 +8,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Compiled Standard-v3 adopter claims, execution groups, dependencies,
+  producers, qualifications, gates, and catalog metadata from one
+  consumer-owned assurance graph while preserving exact installed and Lite-v1
+  contracts and rejecting ambiguous ownership or cross-claim laundering.
 - Recorded independently verified immutable `v2.2.1` custody after exact-asset
   Lite and Standard-v3 qualification, then retired its temporary publication
   credential; published `v2.2.0` remains explicitly noncustodied and superseded.
