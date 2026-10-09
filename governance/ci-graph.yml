@@ -15,8 +15,8 @@ extensions:
 - {id: bcf-break-glass-recovery, path: governance/ci-extensions/bcf-break-glass-recovery.yml, sha256: 831341d3ee3167c559aa83fd2eec5aea8adf94e6a5149c13b7c11c39ee3da874}
 - {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: adde42bee237d4da4a67a72d6d5e8600e63ed010486cea4084391f940b9d1bb0}
 - {id: bcf-evidence-storage, path: governance/ci-extensions/bcf-evidence-storage.yml, sha256: 41e40dad457efc53292249a211575505e9d6021d73d3fee2e52c4e9eede68eea}
-- {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: add4df5dc467406e8ef247fa672096400e5b293b2561bf6f0c106b6d258f5d9f}
-- {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: f74e83267362b5e89760c406146ca2feafe24235ce91fb58225b048abf1683db}
+- {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: c050bad2e48154601bde05dbe0385c08aedc857e05df3b243c459353d1e18bf2}
+- {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: 40953727d5a36fe20361752310d5a3c5b6331c636a825e7096b0e109dbd0f46d}
 resource_classes:
   hosted-python:
     runner: ubuntu-24.04
@@ -461,6 +461,7 @@ step_components:
     kind: command
     name: Observe provider-effective controller for non-authoritative routing
     id: candidate-effective-controller
+    minimum_job_timeout_minutes: 10
     command: resolve-effective-controller-candidate
     environment: {}
     produces: []
@@ -717,7 +718,7 @@ workflows:
     controller_requirement: current
     needs: []
     condition: routine-callback-applicable
-    timeout_minutes: 5
+    timeout_minutes: 10
     permissions: {actions: write, contents: write}
     checkout: false
     components: []

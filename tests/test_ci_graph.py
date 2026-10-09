@@ -62,6 +62,7 @@ from bcf_governance.tooling.ci_graph_render import (
     check_ci_graph,
     render_ci_graph,
 )
+from bcf_governance.tooling.ci_graph_timeouts import validate_component_job_timeouts
 from bcf_governance.tooling.ci_graph_shell_projection import hoist_run_expressions
 from bcf_governance.tooling.ci_graph_values import resolve_graph_values
 from bcf_governance.tooling.ci_graph_workflow_run import (
@@ -1566,6 +1567,27 @@ def test_evidence_job_timeout_must_contain_inner_gate_deadline_and_headroom(
 
     with pytest.raises(CIGraphError, match="cannot contain.*gate timeout.*headroom"):
         validate_ci_graph(tmp_path)
+
+
+def test_component_minimum_timeout_rejects_every_underprovisioned_consumer(
+) -> None:
+    graph = {
+        "step_components": {"provider-route": {"minimum_job_timeout_minutes": 11}},
+        "workflows": [{
+            "id": "release",
+            "jobs": [{
+                "id": "route",
+                "timeout_minutes": 10,
+                "executor": {
+                    "kind": "component_sequence",
+                    "components": ["provider-route"],
+                },
+            }],
+        }],
+    }
+
+    with pytest.raises(CIGraphError, match="cannot contain component.*minimum 11m"):
+        validate_component_job_timeouts(graph)
 
 
 def test_graph_growth_preserves_deterministic_gate_ownership_and_rendering(
