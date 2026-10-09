@@ -56,6 +56,7 @@ def test_release_authorizer_is_owner_dispatched_no_checkout_control_plane() -> N
     ]
     assert route["trust"] == "candidate"
     assert route["controller_requirement"] is None
+    assert route["timeout_minutes"] == 10
     assert authorize["trust"] == "trusted" and authorize["checkout"] is False
     assert authorize["needs"] == ["controller-route"]
     assert authorize["controller_requirement"] == "current"
@@ -77,6 +78,14 @@ def test_release_authorizer_is_owner_dispatched_no_checkout_control_plane() -> N
     )
     assert compiled.commands["resolve-release-inputs"]["argv"][0] == routed
     assert compiled.commands["authorize-release"]["argv"][0] == routed
+
+
+def test_release_publication_controller_route_has_provider_latency_margin() -> None:
+    route = _job("release-publisher", "controller-route")
+    assert route["timeout_minutes"] == 10
+    assert route["executor"]["components"][-1] == (
+        "resolve-effective-controller-candidate"
+    )
 
 
 def test_release_builder_uses_exact_subject_closed_runtime_and_no_credentials() -> None:

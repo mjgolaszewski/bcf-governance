@@ -67,3 +67,25 @@ def validate_gate_job_timeouts(repo_root: Path, graph: dict[str, Any]) -> None:
                     f"CI graph evidence job {job['id']} timeout {available}s cannot contain "
                     f"the {maximum}s gate timeout plus {headroom}s headroom"
                 )
+
+
+def validate_component_job_timeouts(graph: dict[str, Any]) -> None:
+    """Reject jobs whose deadline cannot contain a declared component minimum."""
+
+    components = graph["step_components"]
+    for workflow in graph["workflows"]:
+        for job in workflow["jobs"]:
+            executor = job["executor"]
+            if executor["kind"] != "component_sequence":
+                continue
+            for component_id in executor["components"]:
+                minimum = components[component_id].get("minimum_job_timeout_minutes")
+                if minimum is None:
+                    continue
+                available = int(job["timeout_minutes"])
+                if available < int(minimum):
+                    raise CIGraphError(
+                        f"CI graph job {workflow['id']}/{job['id']} timeout "
+                        f"{available}m cannot contain component {component_id} minimum "
+                        f"{minimum}m"
+                    )

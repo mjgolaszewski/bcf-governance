@@ -1568,6 +1568,26 @@ def test_evidence_job_timeout_must_contain_inner_gate_deadline_and_headroom(
         validate_ci_graph(tmp_path)
 
 
+def test_component_minimum_timeout_rejects_every_underprovisioned_consumer(
+    tmp_path: Path,
+) -> None:
+    graph = _graph()
+    job = next(
+        candidate
+        for workflow in graph["workflows"]
+        for candidate in workflow["jobs"]
+        if candidate["executor"]["kind"] == "component_sequence"
+        and candidate["executor"]["components"]
+    )
+    component_id = job["executor"]["components"][0]
+    graph["step_components"][component_id]["minimum_job_timeout_minutes"] = 11
+    job["timeout_minutes"] = 10
+    _write_graph(tmp_path, graph)
+
+    with pytest.raises(CIGraphError, match="cannot contain component.*minimum 11m"):
+        validate_ci_graph(tmp_path)
+
+
 def test_graph_growth_preserves_deterministic_gate_ownership_and_rendering(
     tmp_path: Path,
 ) -> None:

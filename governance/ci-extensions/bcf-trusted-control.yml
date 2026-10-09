@@ -397,6 +397,7 @@ step_components:
   dispatch-routine-certification:
     kind: command
     name: Authenticate activation and request fresh exact-main certification
+    minimum_job_timeout_minutes: 10
     command: dispatch-routine-certification
     environment: {}
     produces: []

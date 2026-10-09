@@ -34,7 +34,7 @@ from .ci_graph_controller_lifecycle import (
 from .ci_controller_policy import TrustedControllerPolicyError, load_graph_controller_policy
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 from .ci_graph_values import CIGraphValueError, resolve_graph_values
-from .ci_graph_timeouts import validate_gate_job_timeouts
+from .ci_graph_timeouts import validate_component_job_timeouts, validate_gate_job_timeouts
 from .ci_graph_storage import validate_evidence_storage
 from .ci_graph_routing import validate_candidate_routing
 from .ci_graph_rotation_outputs import validate_rotation_output_directories
@@ -767,6 +767,7 @@ def validate_ci_graph(
     validate_candidate_routing(composed, storage_contract=storage_contract)
     _validate_workflows(composed)
     validate_gate_job_timeouts(repo_root, composed)
+    validate_component_job_timeouts(composed)
     validate_graph_authority_policy(repo_root, composed)
     hosted_issues = hosted_command_issues(composed)
     if hosted_issues:

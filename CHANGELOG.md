@@ -8,6 +8,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Made provider controller-routing and successor-dispatch components declare
+  their minimum job timeout, so graph validation rejects every underprovisioned
+  consumer before provider execution.
 - Added deterministic provider-latency margin to exact-main admission and
   finalization without changing their fail-closed evidence or authority rules.
 - Compiled privileged workflow event authority directly from canonical
