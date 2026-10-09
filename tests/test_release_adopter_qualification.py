@@ -4,13 +4,16 @@ import hashlib
 import copy
 import json
 from pathlib import Path
+import subprocess
 import sys
 import venv
 
 import pytest
 
+from bcf_governance.tooling import local_pr
 from bcf_governance.tooling import release_adopter_qualification as qualification
 from bcf_governance.tooling.ci_github_values import GitHubValueError, remote_repository
+from bcf_governance.tooling.local_pr_context import LocalValidationLane
 from bcf_governance.tooling.release_adopter_qualification import (
     ReleaseQualificationError,
     _exact_release_runtime,
@@ -167,7 +170,7 @@ def test_exact_release_runtime_projects_wheel_over_admitted_dependencies(
     ]
     assert calls[1][0] == [
         str(controller / "bin/python"), "-m", "pip", "install",
-        "--disable-pip-version-check", "--no-deps", str(wheel),
+        "--disable-pip-version-check", "--no-deps", "--force-reinstall", str(wheel),
     ]
     assert command == (
         str(controller / "bin/python"), "-P", "-c",
@@ -288,6 +291,12 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
                 "requirements": [],
                 "version": "2.2.1",
             })
+        if len(argv) == 6 and argv[1:3] == ["-P", "-c"]:
+            return json.dumps({
+                "status": "prospectively_admissible_provider_proof_required",
+                "subject": {"commit_sha": "c" * 40, "tree_sha": "d" * 40},
+                "post_merge_evaluation": {"intent": "pr", "target": None},
+            })
         if argv[:2] == ["git", "clone"]:
             destination = Path(argv[-1])
             destination.mkdir()
@@ -311,7 +320,7 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
     monkeypatch.setattr(qualification, "_run", run)
     monkeypatch.setattr(
         qualification, "_isolated_project_python",
-        lambda _source, source_python, _destination: source_python,
+        lambda _source, source_python, _destination, _environment: source_python,
     )
     monkeypatch.setattr(qualification, "_commit", lambda *_args, **_kwargs: None)
 
@@ -345,6 +354,11 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
         and "--release-assets" not in call
         for call in install_calls
     )
+    qualification_calls = [
+        call for call in calls if len(call) == 6 and call[1:3] == ["-P", "-c"]
+    ]
+    assert len(qualification_calls) == len(contract["required_adopters"])
+    assert all("prospective-train" not in call for call in calls)
 
 
 def test_repository_environment_is_copied_and_own_editable_path_is_rebound(
@@ -361,15 +375,79 @@ def test_repository_environment_is_copied_and_own_editable_path_is_rebound(
     hook.write_text(str(source / "src") + "\n", encoding="utf-8")
 
     projected = _isolated_project_python(
-        source, environment / "bin/python", destination
+        source,
+        environment / "bin/python",
+        destination,
+        tmp_path / "qualification-environment",
     )
 
-    assert projected == destination / ".bcf-qualification-venv/bin/python"
+    assert projected == tmp_path / "qualification-environment/bin/python"
+    assert not (destination / ".bcf-qualification-venv").exists()
     projected_hook = (
-        destination / ".bcf-qualification-venv/lib" / version
+        tmp_path / "qualification-environment/lib" / version
         / "site-packages/project.pth"
     )
     assert projected_hook.read_text(encoding="utf-8") == str(destination / "src") + "\n"
+
+
+def test_candidate_qualification_derives_the_closed_observation_lane(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    captured: dict[str, object] = {}
+    monkeypatch.setattr(
+        local_pr,
+        "canonical_prospective_inputs",
+        lambda _root, **_kwargs: {
+            "semantic_intent": "pr",
+            "evaluation_target": None,
+            "subject_commit": "a" * 40,
+            "subject_tree": "b" * 40,
+        },
+    )
+
+    def run(_root: Path, **kwargs: object) -> dict[str, str]:
+        captured.update(kwargs)
+        return {"status": "prospectively_admissible_provider_proof_required"}
+
+    monkeypatch.setattr(local_pr, "run_prospective_train", run)
+
+    result = qualification.run_candidate_qualification_train(
+        tmp_path, Path(sys.executable)
+    )
+
+    assert result["status"] == "prospectively_admissible_provider_proof_required"
+    assert (
+        captured["validation_lane"]
+        is LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION
+    )
+    assert captured["remote"] == "bcf-qualification-base"
+
+
+def test_qualification_base_remote_is_immutable_at_captured_adopter_subject(
+    tmp_path: Path,
+) -> None:
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    subprocess.run(["git", "init", "--quiet"], cwd=candidate, check=True)
+    subprocess.run(["git", "config", "user.name", "BCF Fixture"], cwd=candidate, check=True)
+    subprocess.run(["git", "config", "user.email", "fixture@example.invalid"], cwd=candidate, check=True)
+    (candidate / "README.md").write_text("base\n", encoding="utf-8")
+    subprocess.run(["git", "add", "."], cwd=candidate, check=True)
+    subprocess.run(["git", "commit", "--quiet", "-m", "base"], cwd=candidate, check=True)
+    commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=candidate, capture_output=True,
+        text=True, check=True,
+    ).stdout.strip()
+
+    qualification._project_qualification_base_remote(
+        candidate, tmp_path / "qualification-base.git", commit
+    )
+    observed = subprocess.run(
+        ["git", "ls-remote", "bcf-qualification-base", "HEAD"],
+        cwd=candidate, capture_output=True, text=True, check=True,
+    ).stdout.split()[0]
+
+    assert observed == commit
 
 
 def test_qualification_receipt_requires_exact_subject_assets_and_adopters(

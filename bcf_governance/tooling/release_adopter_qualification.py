@@ -25,6 +25,9 @@ class ReleaseQualificationError(ValueError):
     """Exact release assets or an adopter qualification are incomplete."""
 
 
+_QUALIFICATION_BASE_REMOTE = "bcf-qualification-base"
+
+
 def dispatch_release_qualification(api: GitHubAPI, receipt: dict[str, Any]) -> None:
     """Continue the fixed publication train with no caller-selected routing."""
 
@@ -120,6 +123,45 @@ print(json.dumps({
 """
 
 
+_CANDIDATE_QUALIFICATION_TRAIN = r"""
+import json
+from pathlib import Path
+import sys
+
+from bcf_governance.tooling.release_adopter_qualification import (
+    run_candidate_qualification_train,
+)
+
+print(json.dumps(
+    run_candidate_qualification_train(Path(sys.argv[1]), Path(sys.argv[2])),
+    sort_keys=True,
+))
+"""
+
+
+def run_candidate_qualification_train(
+    repo_root: Path, project_python: Path
+) -> dict[str, Any]:
+    """Execute one typed, observation-only adopter qualification proof."""
+
+    from .local_pr import canonical_prospective_inputs, run_prospective_train
+    from .local_pr_context import LocalValidationLane
+
+    canonical = canonical_prospective_inputs(
+        repo_root, remote=_QUALIFICATION_BASE_REMOTE
+    )
+    return run_prospective_train(
+        repo_root,
+        semantic_intent=str(canonical["semantic_intent"]),
+        evaluation_target=canonical["evaluation_target"],
+        subject_commit=str(canonical["subject_commit"]),
+        subject_tree=str(canonical["subject_tree"]),
+        remote=_QUALIFICATION_BASE_REMOTE,
+        python_executable=project_python,
+        validation_lane=LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION,
+    )
+
+
 def _exact_release_runtime(
     wheel: Path,
     controller: Path,
@@ -158,6 +200,7 @@ def _exact_release_runtime(
             "install",
             "--disable-pip-version-check",
             "--no-deps",
+            "--force-reinstall",
             str(wheel),
         ],
         cwd=cwd,
@@ -267,8 +310,31 @@ def _commit(root: Path, message: str) -> None:
         raise ReleaseQualificationError("cannot inspect qualification candidate changes")
 
 
+def _project_qualification_base_remote(
+    candidate_root: Path, base_root: Path, base_commit: str
+) -> None:
+    """Materialize one immutable local remote for the captured adopter base."""
+
+    _run(["git", "init", "--bare", str(base_root)], cwd=base_root.parent)
+    _run(
+        ["git", "-C", str(base_root), "symbolic-ref", "HEAD", "refs/heads/main"],
+        cwd=base_root.parent,
+    )
+    _run(
+        ["git", "push", str(base_root), f"{base_commit}:refs/heads/main"],
+        cwd=candidate_root,
+    )
+    _run(
+        ["git", "remote", "add", _QUALIFICATION_BASE_REMOTE, str(base_root)],
+        cwd=candidate_root,
+    )
+
+
 def _isolated_project_python(
-    source_root: Path, source_python: Path, destination_root: Path
+    source_root: Path,
+    source_python: Path,
+    destination_root: Path,
+    projected_root: Path,
 ) -> Path:
     """Copy a repository-owned environment and rewrite only its own editable path."""
 
@@ -290,7 +356,6 @@ def _isolated_project_python(
             "repository-owned adopter interpreter must be ENV/bin/python"
         )
     environment_root = source_root / relative.parts[0]
-    projected_root = destination_root / ".bcf-qualification-venv"
     shutil.copytree(environment_root, projected_root, symlinks=True)
     projected_python = projected_root / "bin/python"
     source_text = str(source_root.resolve())
@@ -366,14 +431,33 @@ def qualify_release(
             remote = _run(["git", "remote", "get-url", "origin"], cwd=adopter_source)
             _run(["git", "remote", "set-url", "origin", remote], cwd=destination)
             _run(["git", "checkout", "-B", f"qualification/bcf-{version}", adopter_commit], cwd=destination)
+            _project_qualification_base_remote(
+                destination,
+                temporary_root / f"{required[repository]['id']}-base.git",
+                adopter_commit,
+            )
             project_python = _isolated_project_python(
-                adopter_source, adopter_python, destination
+                adopter_source,
+                adopter_python,
+                destination,
+                temporary_root / f"{required[repository]['id']}-environment",
             )
             _run([*bcf, "install", "--target", str(destination), "--upgrade", "--candidate-qualification-source", str(repo_root.resolve()), "--require-strict-validation"], cwd=destination, env=environment)
             _commit(destination, f"test: install immutable BCF {version}")
             _run([*bcf, "reconcile", "--repo-root", str(destination), "--python", str(project_python), "--apply"], cwd=destination, env=environment)
             _commit(destination, f"test: reconcile BCF {version} qualification")
-            result = _run([*bcf, "ci", "prospective-train", "--repo-root", str(destination), "--python", str(project_python), "--format", "json"], cwd=destination, env=environment)
+            result = _run(
+                [
+                    bcf[0],
+                    "-P",
+                    "-c",
+                    _CANDIDATE_QUALIFICATION_TRAIN,
+                    str(destination),
+                    str(project_python),
+                ],
+                cwd=destination,
+                env=environment,
+            )
             try:
                 report = json.loads(result)
             except json.JSONDecodeError as exc:
