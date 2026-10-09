@@ -620,6 +620,63 @@ def add_custom_release_gate(
     config.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
 
 
+def compile_profile_config_source_graph(config: Path) -> None:
+    """Replace repeated v3 projections with one consumer-owned graph source."""
+
+    payload = yaml.safe_load(config.read_text(encoding="utf-8"))
+    claim_model = payload.pop("claim_model")
+    gates = payload.pop("gates")
+    gate_catalog = payload.pop("gate_catalog", {})
+    pack_targets = {
+        value["target"]
+        for value in yaml.safe_load(
+            (REPO_ROOT / "governance-profile.yml").read_text(encoding="utf-8")
+        )["release_gate_profile"]["gates"].values()
+    }
+    pack_gate_contracts = {
+        "governance-validate",
+        "governance-exposure-scan",
+        "semantic-ownership",
+    }
+    groups: dict[str, object] = {}
+    for group_id, group in claim_model["execution_groups"].items():
+        producer = group["producer"]
+        projected = {
+            "producer": producer,
+            "claims": {},
+            **(
+                {"captured_by_preflight": True}
+                if group.get("captured_by_preflight") is True
+                else {"depends_on": group.get("depends_on", [])}
+            ),
+        }
+        if group.get("captured_by_preflight") is not True and producer not in pack_gate_contracts:
+            projected["gate"] = gates[producer]
+            if producer not in pack_targets:
+                metadata = next(
+                    value
+                    for value in gate_catalog.values()
+                    if value["target"] == producer
+                )
+                projected["command_policy"] = metadata["command_policy"]
+                projected["rationale"] = metadata["rationale"]
+        for claim_id in group["claims"]:
+            claim = dict(claim_model["claims"][claim_id])
+            claim.pop("execution_group")
+            legacy_gate = claim["legacy_gate"]
+            if group.get("captured_by_preflight") is True and legacy_gate not in pack_gate_contracts:
+                claim["gate"] = gates[legacy_gate]
+            projected["claims"][claim_id] = claim
+        groups[group_id] = projected
+    payload["application_assurance"] = {
+        "version": "1.0",
+        "dependency_sets": claim_model["dependency_sets"],
+        "non_proof_dependencies": claim_model.get("non_proof_dependencies", []),
+        "groups": groups,
+    }
+    config.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+
 def test_fresh_profile_contract_admits_exact_declared_custom_gate_catalog(
     tmp_path: Path,
 ) -> None:
@@ -701,6 +758,50 @@ def test_fresh_v3_profile_uses_declared_custom_gate_claim_model_only_on_install(
             asset_root=repo,
             contract_version="3.0",
         )
+
+
+def test_fresh_v3_profile_compiles_one_consumer_owned_assurance_graph(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "consumer-graph-adopter"
+    repo.mkdir()
+    write_gate_runner(repo)
+    config = gate_config(repo, "standard", None, contract_version="3.0")
+    add_custom_release_gate(config)
+    compile_profile_config_source_graph(config)
+    source = yaml.safe_load(config.read_text(encoding="utf-8"))
+
+    assert "application_assurance" in source
+    assert not {"gates", "gate_catalog", "claim_model"}.intersection(source)
+    contract = load_contract(
+        REPO_ROOT / "template-repo",
+        "standard",
+        config,
+        asset_root=repo,
+        contract_version="3.0",
+        fresh_install=True,
+    )
+
+    assert contract["claim_model"]["claims"]["release-smoke"][
+        "execution_group"
+    ] == "release-smoke"
+    assert contract["claim_model"]["execution_groups"]["release-smoke"][
+        "producer"
+    ] == "release-smoke"
+    assert contract["gate_catalog"]["release-smoke"]["target"] == "release-smoke"
+    assert contract["gates"]["release-smoke"]["invocation"]["argv"][-1] == (
+        "release-smoke"
+    )
+    installed = tmp_path / "installed-consumer-graph"
+    shutil.copytree(REPO_ROOT / "template-repo", installed)
+    apply_profile_contract(installed, contract, write_workflow=False)
+    installed_contract = yaml.safe_load(
+        (installed / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    )
+    assert installed_contract["claim_model"] == contract["claim_model"]
+    assert installed_contract["gates"]["release-smoke"] == contract["gates"][
+        "release-smoke"
+    ]
 
 
 @pytest.mark.parametrize(
