@@ -250,6 +250,29 @@ def compiled_workflow_job_names(raw: bytes) -> tuple[str, ...]:
     )
 
 
+def compiled_workflow_events(raw: bytes) -> tuple[str, ...]:
+    """Compile the exact provider event inventory from workflow bytes."""
+
+    try:
+        workflow = yaml.safe_load(raw)
+    except yaml.YAMLError as exc:
+        raise CIAuthorityPinError("committed workflow is invalid YAML") from exc
+    if not isinstance(workflow, dict):
+        raise CIAuthorityPinError("committed workflow must be a mapping")
+    triggers = workflow.get("on", workflow.get(True))
+    if isinstance(triggers, str):
+        events = (triggers,)
+    elif isinstance(triggers, dict):
+        events = tuple(str(value) for value in triggers)
+    elif isinstance(triggers, list) and all(isinstance(value, str) for value in triggers):
+        events = tuple(triggers)
+    else:
+        raise CIAuthorityPinError("committed workflow has no exact event inventory")
+    if not events or any(not value for value in events) or len(set(events)) != len(events):
+        raise CIAuthorityPinError("committed workflow event inventory is invalid")
+    return events
+
+
 def _compile_inventories(
     payload: dict[str, Any], committed_workflows: dict[str, bytes]
 ) -> None:
@@ -264,6 +287,10 @@ def _compile_inventories(
         and isinstance(reference, str)
     }
     for reference, entry in registry.items():
+        if "allowed_events" in entry:
+            entry["allowed_events"] = list(
+                compiled_workflow_events(committed_workflows[str(reference)])
+            )
         if reference not in privileged_references and "expected_jobs" not in entry:
             continue
         roles = entry.get("job_roles")
@@ -416,7 +443,7 @@ def verify_workflow_authority(
     _compile_inventories(compiled, committed_workflows)
     if compiled != payload:
         raise CIAuthorityPinError(
-            "workflow job inventories are not mechanically compiled from authority bytes"
+            "workflow authority inventories are not mechanically compiled from workflow bytes"
         )
     return len(registry)
 

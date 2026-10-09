@@ -10,6 +10,7 @@ import yaml
 from bcf_governance.tooling.ci_authority_pins import (
     CIAuthorityPinError,
     _compile_inventories,
+    compiled_workflow_events,
     pin_workflow_authority,
     projected_workflow_paths,
     provider_workflow_ids,
@@ -87,6 +88,7 @@ def test_workflow_authority_pins_are_derived_from_exact_committed_bytes(
     )
     assert entry["trusted_workflow_sha256"] == hashlib.sha256(content).hexdigest()
     assert entry["trusted_workflow_definition_commit"] == commit
+    assert entry["allowed_events"] == ["push"]
     assert pin_workflow_authority(
         root,
         authority_path=Path("governance/ci-authority.yml"),
@@ -94,6 +96,38 @@ def test_workflow_authority_pins_are_derived_from_exact_committed_bytes(
         references=("admission",),
         apply=False,
     ).status == "clean"
+
+
+def test_workflow_authority_events_are_compiled_from_exact_workflow_bytes() -> None:
+    assert compiled_workflow_events(
+        b"name: publish\n'on':\n  repository_dispatch:\n    types: [qualified]\njobs:\n  publish:\n    runs-on: ubuntu-latest\n    steps: []\n"
+    ) == ("repository_dispatch",)
+
+
+def test_workflow_authority_event_drift_is_rejected_before_provider_execution(
+    tmp_path: Path,
+) -> None:
+    root, commit, _ = _repository(tmp_path)
+    pin_workflow_authority(
+        root,
+        authority_path=Path("governance/ci-authority.yml"),
+        definition_commit=commit,
+        references=("admission",),
+        apply=True,
+    )
+    authority = root / "governance/ci-authority.yml"
+    payload = yaml.safe_load(authority.read_text(encoding="utf-8"))
+    payload["workflow_registry"]["admission"]["allowed_events"] = [
+        "workflow_dispatch"
+    ]
+    authority.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    _git(root, "add", ".")
+    _git(root, "commit", "-m", "stale authority event")
+    with pytest.raises(CIAuthorityPinError, match="mechanically compiled"):
+        verify_workflow_authority(
+            root,
+            authority_path=Path("governance/ci-authority.yml"),
+        )
 
 
 def test_workflow_authority_pinning_rejects_uncommitted_definition_bytes(

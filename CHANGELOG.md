@@ -8,6 +8,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Compiled privileged workflow event authority directly from canonical
+  workflow triggers, rejecting producer/consumer event drift before provider
+  execution and removing obsolete trigger authorization.
 - Made dependency-incomplete legacy adopter lifecycles deterministically select
   non-authoritative PR progress instead of requesting an impossible bounded
   certification; stale bounded graph targets still fail before evidence.

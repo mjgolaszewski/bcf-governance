@@ -492,7 +492,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_pins.py": {
       "operation": "copy",
-      "sha256": "c809e3bf59e9ffdf23f719d771109d1ed0ffada3057c70f24b5820449ce6f9ed"
+      "sha256": "cc06aed54b4e839e676c1cbebd4ec6f969a8819c1df3b5ce32e6d2a1020b55ca"
     },
     "scripts/_bcf_runtime/ci_authority_preflight.py": {
       "operation": "copy",
