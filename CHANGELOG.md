@@ -13,6 +13,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   source declaration, and only exact protected-main bytes may be applied and
   verified. Missing or redacted bypass actors, repository drift, stale
   pre-state, ambiguous rulesets, and self-authority leakage fail closed.
+  Bounded lifecycle truth keeps this adopter capability separate from P31
+  closure and all release authority.
 - Compiled Standard-v3 adopter claims, execution groups, dependencies,
   producers, qualifications, gates, and catalog metadata from one
   consumer-owned assurance graph while preserving exact installed and Lite-v1
