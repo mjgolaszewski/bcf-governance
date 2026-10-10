@@ -8,6 +8,9 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
+from jsonschema import Draft202012Validator
+from referencing import Registry, Resource
+
 TOPOLOGY_STATES = {
     "available_not_adopted",
     "compact_run_evidence",
@@ -187,7 +190,7 @@ def compile_migration_plan(repo_root: Path) -> dict[str, Any]:
     graph = compiled.graph
     contract = compiled.evidence_storage
     contract_path = root / "governance/evidence-storage.yml"
-    return migration_plan(
+    plan = migration_plan(
         graph,
         contract,
         graph_digest=hashlib.sha256(
@@ -198,3 +201,16 @@ def compile_migration_plan(repo_root: Path) -> dict[str, Any]:
             if contract is not None else None
         ),
     )
+    schema_root = root / "schemas"
+    topology_schema = json.loads(
+        (schema_root / "evidence-storage-topology.schema.json").read_text()
+    )
+    plan_schema = json.loads(
+        (schema_root / "evidence-storage-migration-plan.schema.json").read_text()
+    )
+    Draft202012Validator(topology_schema).validate(plan["topology"])
+    registry = Registry().with_resource(
+        topology_schema["$id"], Resource.from_contents(topology_schema)
+    )
+    Draft202012Validator(plan_schema, registry=registry).validate(plan)
+    return plan

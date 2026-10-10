@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bcf-governance.invalid/schemas/evidence-storage-migration-plan.schema.json",
+  "title": "BCF graph-bound evidence-storage migration plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "graph_sha256", "storage_contract_sha256", "topology", "disposition", "actions", "truth_semantics_changed", "provider_mutation_authorized", "cleanup_authorized", "storage_accounting", "plan_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "governance.evidence-storage-migration-plan.v1"},
+    "graph_sha256": {"$ref": "#/$defs/sha256"},
+    "storage_contract_sha256": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+    "topology": {"$ref": "evidence-storage-topology.schema.json"},
+    "disposition": {"enum": ["blocked_unknown_topology", "review_required", "no_transition"]},
+    "actions": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/action"}},
+    "truth_semantics_changed": {"const": false},
+    "provider_mutation_authorized": {"const": false},
+    "cleanup_authorized": {"const": false},
+    "storage_accounting": {"$ref": "#/$defs/accounting"},
+    "plan_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "identifier": {"type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$"},
+    "safePath": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"},
+    "action": {
+      "type": "object", "additionalProperties": false,
+      "required": ["action", "artifact_id", "artifact_path", "producers", "consumers", "proposed_source_id", "proposed_reference_id", "requires_reviewed_object_declaration"],
+      "properties": {
+        "action": {"const": "declare_durable_input_boundary"},
+        "artifact_id": {"$ref": "#/$defs/identifier"},
+        "artifact_path": {"$ref": "#/$defs/safePath"},
+        "producers": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$"}},
+        "consumers": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$"}},
+        "proposed_source_id": {"$ref": "#/$defs/identifier"},
+        "proposed_reference_id": {"$ref": "#/$defs/identifier"},
+        "requires_reviewed_object_declaration": {"const": true}
+      }
+    },
+    "accounting": {
+      "type": "object", "additionalProperties": false,
+      "required": ["provider_observation", "dimensions", "authority_effect"],
+      "properties": {
+        "provider_observation": {"const": "required"},
+        "dimensions": {
+          "type": "array", "const": ["actions_artifact_bytes_per_run", "durable_unique_input_bytes", "run_output_bytes", "authenticated_duplicate_bytes", "upload_bytes", "download_bytes"]
+        },
+        "authority_effect": {"const": "none"}
+      }
+    }
+  }
+}

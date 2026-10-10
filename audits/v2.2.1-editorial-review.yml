@@ -24,10 +24,10 @@ documents:
   canonical_topic_owner: AGENTS.yml
   topic_role: canonical
   before_sha256: 739a72af6a1e7a46d04d1f73928d7bfeb4e59108c584493cf04409773948a3d1
-  after_sha256: 739a72af6a1e7a46d04d1f73928d7bfeb4e59108c584493cf04409773948a3d1
+  after_sha256: 69af80b4e6fc62d8275be39a52aa864364b0f89500bfd2a44324e6e263de670e
   findings:
-  - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  - reviewed canonical repository-agent guidance for current profile, lifecycle, and authority boundaries
+  disposition: revised
 - path: CHANGELOG.md
   audience: adopters and release operators
   canonical_topic_owner: CHANGELOG.md

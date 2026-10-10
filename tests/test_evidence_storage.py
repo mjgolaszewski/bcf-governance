@@ -422,6 +422,8 @@ class FakeEvidenceAPI:
         self.next_asset = 1000
         self.current_commit = COMMIT
         self.current_tree = TREE
+        self.upload_bytes = 0
+        self.download_bytes = 0
 
     def repository(self, repository: str) -> dict[str, Any]:
         assert repository == "owner/project"
@@ -519,6 +521,7 @@ class FakeEvidenceAPI:
     ) -> dict[str, Any]:
         data = path.read_bytes()
         assert len(data) <= maximum_bytes
+        self.upload_bytes += len(data)
         asset_id = self.next_asset
         self.next_asset += 1
         item = {
@@ -562,6 +565,7 @@ class FakeEvidenceAPI:
     ) -> None:
         data = self.assets[int(str(asset_id))]
         assert len(data) <= maximum_bytes
+        self.download_bytes += len(data)
         destination.write_bytes(data)
 
 
@@ -1083,6 +1087,7 @@ def test_content_objects_publish_once_and_cold_resolution_recovers_bytes(
     prepared.joinpath("scanner-copy.bin").write_bytes(b"exact scanner bytes")
     api = FakeEvidenceAPI(root)
     references: list[Path] = []
+    first_upload_bytes = 0
     for run_id in (1, 2):
         manifest_path = _bundle(root, tmp_path / f"bundle-{run_id}", run_id)
         reference_path = root / f".artifacts/reference-{run_id}.json"
@@ -1100,9 +1105,14 @@ def test_content_objects_publish_once_and_cold_resolution_recovers_bytes(
             output_path=reference_path,
         )
         references.append(reference_path)
+        if run_id == 1:
+            first_upload_bytes = api.upload_bytes
 
     assert len([tag for tag in api.releases if "-object-" in tag]) == 1
     assert len([tag for tag in api.releases if "-manifest-" in tag]) == 2
+    second_upload_bytes = api.upload_bytes - first_upload_bytes
+    assert second_upload_bytes > 0
+    assert second_upload_bytes < first_upload_bytes
     reference = load_input_reference(root, references[1])
     assert len(reference["assets"]) == 2
     output = root / ".artifacts/resolved"
@@ -1114,6 +1124,9 @@ def test_content_objects_publish_once_and_cold_resolution_recovers_bytes(
     )
     assert (output / "resolved/scanner.bin").read_bytes() == b"exact scanner bytes"
     assert (output / "resolved/scanner-copy.bin").read_bytes() == b"exact scanner bytes"
+    assert api.download_bytes == sum(
+        asset["size"] for asset in reference["assets"]
+    )
 
 
 def test_reusable_object_release_may_predate_the_current_subject(tmp_path: Path) -> None:

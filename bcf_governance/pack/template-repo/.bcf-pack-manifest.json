@@ -288,6 +288,14 @@
       "operation": "copy",
       "sha256": "a5a611ce01b0fc332348f6a5258e6d3a034a7a22691d353eae039e73678f94cb"
     },
+    "schemas/evidence-storage-migration-plan.schema.json": {
+      "operation": "copy",
+      "sha256": "02a0ff7da6d36cca2df2c848a4422fb7f93ed0777cdb5a261e072fd4a4fd556c"
+    },
+    "schemas/evidence-storage-topology.schema.json": {
+      "operation": "copy",
+      "sha256": "b1273aeededec7203786938d291b4138afa8d4720f60190f57f5405944591cee"
+    },
     "schemas/evidence-storage.schema.json": {
       "operation": "copy",
       "sha256": "200cf5466024ee361762697c5cca784493e0ca9b23cab428c90082e6a6775055"
@@ -932,7 +940,7 @@
     },
     "scripts/_bcf_runtime/evidence_storage_topology.py": {
       "operation": "copy",
-      "sha256": "159fa03c921f275adc52cbdcff397c16d67022e39421d32fd7efd14d8439feac"
+      "sha256": "cae12978b24b9024912929c83e4ec6d76f03b6b2cd269d9fff59292aebeaba45"
     },
     "scripts/_bcf_runtime/evidence_test_adapters.py": {
       "operation": "copy",
