@@ -95,8 +95,8 @@ during normal upgrade.
 Inspect that distinction before adoption or migration:
 
 ```bash
-bcf evidence-store classify --repo-root . --output .artifacts/evidence-storage-topology.json
-bcf evidence-store migration-plan --repo-root . --output .artifacts/evidence-storage-migration.json
+bcf evidence-store classify --repo-root . --output .artifacts/evidence-storage-topology.json # non-authoritative until retained by digest
+bcf evidence-store migration-plan --repo-root . --output .artifacts/evidence-storage-migration.json # non-authoritative until retained by digest
 ```
 
 Classification is derived from the canonical graph and contract as

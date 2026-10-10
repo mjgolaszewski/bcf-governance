@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import copy
 import hashlib
 import json
 from pathlib import Path
 from typing import Any, Mapping
 
 from jsonschema import Draft202012Validator
-from referencing import Registry, Resource
 
 TOPOLOGY_STATES = {
     "available_not_adopted",
@@ -209,8 +209,7 @@ def compile_migration_plan(repo_root: Path) -> dict[str, Any]:
         (schema_root / "evidence-storage-migration-plan.schema.json").read_text()
     )
     Draft202012Validator(topology_schema).validate(plan["topology"])
-    registry = Registry().with_resource(
-        topology_schema["$id"], Resource.from_contents(topology_schema)
-    )
-    Draft202012Validator(plan_schema, registry=registry).validate(plan)
+    resolved_plan_schema = copy.deepcopy(plan_schema)
+    resolved_plan_schema["properties"]["topology"] = topology_schema
+    Draft202012Validator(resolved_plan_schema).validate(plan)
     return plan
