@@ -48,12 +48,171 @@ from bcf_governance.tooling.evidence_storage_retention import (
     apply_actions_retention,
     plan_retention,
 )
+from bcf_governance.tooling.evidence_storage_topology import (
+    classify_storage_topology,
+    compile_migration_plan,
+    migration_plan,
+)
 from bcf_governance.tooling.governance_evidence import _install_durable_inputs
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMMIT = "1" * 40
 TREE = "2" * 40
+
+
+def _topology_graph(*, legacy: bool = False, durable: bool = False) -> dict[str, Any]:
+    artifacts: dict[str, Any] = {
+        "run-output": {
+            "path": ".artifacts/bcf/sessions", "kind": "lane-input",
+            "scope": "run-attempt", "retention_days": 30,
+        },
+    }
+    producer_outputs = ["run-output"]
+    consumer_inputs = ["run-output"]
+    if legacy:
+        artifacts["prepared-environment"] = {
+            "path": ".artifacts/prepared-environment", "kind": "lane-input",
+            "scope": "run-attempt", "retention_days": 30,
+            "storage_semantics": "reusable-input-handoff",
+        }
+        producer_outputs.append("prepared-environment")
+        consumer_inputs.append("prepared-environment")
+    if durable:
+        artifacts["prepared-durable-source"] = {
+            "path": ".artifacts/prepared-source", "kind": "durable-source",
+            "scope": "run-attempt", "retention_days": 1,
+        }
+        artifacts["prepared-durable-reference"] = {
+            "path": ".artifacts/prepared-reference", "kind": "durable-reference",
+            "scope": "run-attempt", "retention_days": 30,
+        }
+    return {
+        "artifacts": artifacts,
+        "workflows": [{
+            "id": "governance", "jobs": [
+                {"id": "prepare", "produces": producer_outputs, "consumes": []},
+                {"id": "verify", "produces": [], "consumes": consumer_inputs},
+            ],
+        }],
+    }
+
+
+@pytest.mark.parametrize(
+    ("legacy", "durable", "activation", "expected"),
+    [
+        (False, False, "disabled", "available_not_adopted"),
+        (False, False, "enabled", "compact_run_evidence"),
+        (True, False, "enabled", "legacy"),
+        (False, True, "enabled", "durable"),
+        (True, True, "enabled", "mixed"),
+    ],
+)
+def test_storage_topology_classification_is_closed(
+    legacy: bool, durable: bool, activation: str, expected: str,
+) -> None:
+    result = classify_storage_topology(
+        _topology_graph(legacy=legacy, durable=durable),
+        {"activation": activation},
+    )
+    assert result.state == expected
+    assert ("prepared-environment" in result.legacy_candidates) is legacy
+
+
+def test_storage_topology_rejects_partial_durable_contract() -> None:
+    graph = _topology_graph(durable=True)
+    del graph["artifacts"]["prepared-durable-reference"]
+    assert classify_storage_topology(graph, {"activation": "enabled"}).state == "unknown"
+
+
+def test_storage_topology_requires_semantics_for_ambiguous_lane_input() -> None:
+    graph = _topology_graph()
+    graph["artifacts"]["ambiguous"] = {
+        "path": ".artifacts/ambiguous",
+        "kind": "lane-input",
+        "scope": "run-attempt",
+        "retention_days": 30,
+    }
+    graph["workflows"][0]["jobs"][0]["produces"].append("ambiguous")
+    graph["workflows"][0]["jobs"][1]["consumes"].append("ambiguous")
+
+    result = classify_storage_topology(graph, {"activation": "enabled"})
+
+    assert result.state == "unknown"
+    assert result.reasons == ("incomplete_or_malformed_topology:ambiguous",)
+
+    graph["workflows"][0]["jobs"].append(
+        {"id": "second-consumer", "produces": [], "consumes": ["ambiguous"]}
+    )
+    assert classify_storage_topology(
+        graph, {"activation": "enabled"}
+    ).state == "unknown"
+
+
+def test_storage_capability_without_adopted_graph_is_typed_and_fail_closed() -> None:
+    empty_graph = {"artifacts": {}, "workflows": []}
+
+    dormant = classify_storage_topology(
+        empty_graph, {"activation": "disabled"}, graph_present=False
+    )
+    assert dormant.state == "available_not_adopted"
+    assert dormant.reasons == ("ci_graph_absent_capability_not_adopted",)
+
+    active = classify_storage_topology(
+        empty_graph, {"activation": "enabled"}, graph_present=False
+    )
+    assert active.state == "unknown"
+    assert active.reasons == ("ci_graph_absent_with_active_or_unknown_storage",)
+
+
+def test_compact_run_output_never_masquerades_as_reusable_input() -> None:
+    graph = _topology_graph(durable=True)
+    graph["artifacts"]["release-result"] = {
+        "path": ".artifacts/release-result",
+        "kind": "lane-input",
+        "scope": "run-attempt",
+        "retention_days": 30,
+        "storage_semantics": "compact-run-output",
+    }
+    graph["workflows"][0]["jobs"][0]["produces"].append("release-result")
+    graph["workflows"][0]["jobs"][1]["consumes"].append("release-result")
+
+    assert classify_storage_topology(graph, {"activation": "enabled"}).state == "durable"
+
+
+def test_self_storage_topology_uses_the_composed_graph() -> None:
+    plan = compile_migration_plan(REPO_ROOT)
+
+    assert plan["topology"]["state"] == "durable"
+    assert plan["disposition"] == "no_transition"
+    assert plan["actions"] == []
+
+
+def test_migration_plan_binds_graph_and_never_authorizes_cleanup() -> None:
+    graph = _topology_graph(legacy=True)
+    first = migration_plan(
+        graph, {"activation": "disabled"}, graph_digest="1" * 64,
+        contract_digest="2" * 64,
+    )
+    second = migration_plan(
+        graph, {"activation": "disabled"}, graph_digest="1" * 64,
+        contract_digest="2" * 64,
+    )
+    assert first == second
+    assert first["disposition"] == "review_required"
+    assert first["truth_semantics_changed"] is False
+    assert first["provider_mutation_authorized"] is False
+    assert first["cleanup_authorized"] is False
+    assert first["actions"] == [{
+        "action": "declare_durable_input_boundary",
+        "artifact_id": "prepared-environment",
+        "artifact_path": ".artifacts/prepared-environment",
+        "producers": ["governance/prepare"],
+        "consumers": ["governance/verify"],
+        "proposed_source_id": "prepared-environment-durable-source",
+        "proposed_reference_id": "prepared-environment-durable-reference",
+        "requires_reviewed_object_declaration": True,
+    }]
 
 
 class _DownloadResponse(io.BytesIO):
@@ -279,6 +438,8 @@ class FakeEvidenceAPI:
         self.next_asset = 1000
         self.current_commit = COMMIT
         self.current_tree = TREE
+        self.upload_bytes = 0
+        self.download_bytes = 0
 
     def repository(self, repository: str) -> dict[str, Any]:
         assert repository == "owner/project"
@@ -376,6 +537,7 @@ class FakeEvidenceAPI:
     ) -> dict[str, Any]:
         data = path.read_bytes()
         assert len(data) <= maximum_bytes
+        self.upload_bytes += len(data)
         asset_id = self.next_asset
         self.next_asset += 1
         item = {
@@ -419,6 +581,7 @@ class FakeEvidenceAPI:
     ) -> None:
         data = self.assets[int(str(asset_id))]
         assert len(data) <= maximum_bytes
+        self.download_bytes += len(data)
         destination.write_bytes(data)
 
 
@@ -940,6 +1103,7 @@ def test_content_objects_publish_once_and_cold_resolution_recovers_bytes(
     prepared.joinpath("scanner-copy.bin").write_bytes(b"exact scanner bytes")
     api = FakeEvidenceAPI(root)
     references: list[Path] = []
+    first_upload_bytes = 0
     for run_id in (1, 2):
         manifest_path = _bundle(root, tmp_path / f"bundle-{run_id}", run_id)
         reference_path = root / f".artifacts/reference-{run_id}.json"
@@ -957,9 +1121,14 @@ def test_content_objects_publish_once_and_cold_resolution_recovers_bytes(
             output_path=reference_path,
         )
         references.append(reference_path)
+        if run_id == 1:
+            first_upload_bytes = api.upload_bytes
 
     assert len([tag for tag in api.releases if "-object-" in tag]) == 1
     assert len([tag for tag in api.releases if "-manifest-" in tag]) == 2
+    second_upload_bytes = api.upload_bytes - first_upload_bytes
+    assert second_upload_bytes > 0
+    assert second_upload_bytes < first_upload_bytes
     reference = load_input_reference(root, references[1])
     assert len(reference["assets"]) == 2
     output = root / ".artifacts/resolved"
@@ -971,6 +1140,9 @@ def test_content_objects_publish_once_and_cold_resolution_recovers_bytes(
     )
     assert (output / "resolved/scanner.bin").read_bytes() == b"exact scanner bytes"
     assert (output / "resolved/scanner-copy.bin").read_bytes() == b"exact scanner bytes"
+    assert api.download_bytes == sum(
+        asset["size"] for asset in reference["assets"]
+    )
 
 
 def test_reusable_object_release_may_predate_the_current_subject(tmp_path: Path) -> None:

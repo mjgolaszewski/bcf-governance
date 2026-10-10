@@ -14,7 +14,7 @@ extension:
 artifacts:
   release-authorization: {path: .artifacts/release-authorization, kind: control, scope: run-attempt, retention_days: 30}
   release-build-bundle: {path: .artifacts/release-build, kind: release, scope: run-attempt, retention_days: 30}
-  release-runtime-evidence: {path: .artifacts/release-runtime, kind: lane-input, scope: run-attempt, retention_days: 30}
+  release-runtime-evidence: {path: .artifacts/release-runtime, kind: lane-input, scope: run-attempt, retention_days: 30, storage_semantics: compact-run-output}
   release-receipt-bundle: {path: .artifacts/release-receipt, kind: release, scope: run-attempt, retention_days: 90}
 conditions:
   release-owner-main: github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main'

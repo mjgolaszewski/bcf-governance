@@ -74,6 +74,7 @@ from .ci_controller_preflight import (
     self_controller_preflight,
 )
 from .controller_custody_prospective import validate_controller_contracts_preflight
+from .evidence_storage_topology import compile_migration_plan
 
 
 class PreflightError(ValueError):
@@ -637,6 +638,9 @@ def run_preflight(
     )
     source_locks = step("source-locks", lambda: _vendored_source_locks(repo_root))
     pack_manifest = step("pack-manifest", lambda: _pack_manifest(repo_root))
+    evidence_storage = step(
+        "evidence-storage-topology", lambda: compile_migration_plan(repo_root)
+    )
     editorial_contract = step("editorial-contract", lambda: check_editorial(repo_root, python))
     test_manifests = step(
         "test-manifests", lambda: check_all(repo_root, python_executable=python)
@@ -678,6 +682,7 @@ def run_preflight(
         "source_entrypoints": source_entrypoints,
         "source_locks": source_locks,
         "pack_manifest": pack_manifest,
+        "evidence_storage": evidence_storage,
         "editorial_contract": editorial_contract,
         "self_workflows": self_workflows,
         "workflow_authority": workflow_authority,

@@ -172,6 +172,7 @@
         "kind": {"enum": ["session", "lane-input", "terminal", "control", "release", "durable-source", "durable-reference"]},
         "scope": {"const": "run-attempt"},
         "retention_days": {"type": "integer", "minimum": 1, "maximum": 90},
+        "storage_semantics": {"enum": ["compact-run-output", "reusable-input-handoff"]},
         "durable_input": {"$ref": "#/$defs/durableInput"},
         "durable_source": {"$ref": "#/$defs/identifier"},
         "materialization_root": {"$ref": "#/$defs/safePath"}

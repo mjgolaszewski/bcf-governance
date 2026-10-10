@@ -92,6 +92,22 @@ freshness classes, reachability roots, and provider hard capability limits. Exis
 repositories retain their project-owned storage contract (or its absence)
 during normal upgrade.
 
+Inspect that distinction before adoption or migration:
+
+```bash
+bcf evidence-store classify --repo-root . --output .artifacts/evidence-storage-topology.json # non-authoritative until retained by digest
+bcf evidence-store migration-plan --repo-root . --output .artifacts/evidence-storage-migration.json # non-authoritative until retained by digest
+```
+
+Classification is derived from the canonical graph and contract as
+`available_not_adopted`, `compact_run_evidence`, `durable`, `legacy`, `mixed`,
+or `unknown`. Controller support alone never means adoption. The migration plan
+is graph-digest-bound and non-mutating; it identifies exact legacy producers and
+consumers but requires a reviewed object-boundary declaration where application
+semantics cannot be derived. `unknown` blocks migration, and no plan authorizes
+provider mutation or cleanup. Canonical preflight and reconcile run the same
+classifier before evidence allocation.
+
 The graph vocabulary is:
 
 - one `durable-source` artifact with exact source paths, materialization

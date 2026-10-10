@@ -518,6 +518,11 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     monkeypatch.setattr(preflight, "_vendored_source_locks", lambda _: 0)
     monkeypatch.setattr(preflight, "_pack_manifest", lambda _: {"applicable": False})
     monkeypatch.setattr(
+        preflight,
+        "compile_migration_plan",
+        lambda _: {"topology": {"state": "available_not_adopted"}},
+    )
+    monkeypatch.setattr(
         preflight, "check_editorial", lambda *_: {"applicable": False}
     )
     monkeypatch.setattr(preflight, "check_all", lambda *_, **__: {"test": 1})
@@ -563,9 +568,10 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         "self-controller",
         "negative-controls",
         "semantic-ownership",
-        "source-locks",
-        "pack-manifest",
-        "editorial-contract",
+            "source-locks",
+            "pack-manifest",
+            "evidence-storage-topology",
+            "editorial-contract",
         "test-manifests",
         "verification-plan",
         "session",
