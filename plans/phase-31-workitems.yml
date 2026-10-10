@@ -21,7 +21,7 @@ workitems:
   - contract-test
 - id: P31-P0-02
   priority: P0
-  status: TODO
+  status: IN_PROGRESS
   summary: deliver project existing-repository protection through review apply and
     verification
   acceptance:

@@ -22,7 +22,7 @@ workitems:
   status: DONE
   summary: deliver project the consumer-owned assurance graph
 - id: P31-P0-02
-  status: TODO
+  status: IN_PROGRESS
   summary: deliver project existing-repository protection through review apply and
     verification
 - id: P31-P0-03
@@ -49,6 +49,8 @@ execution_evidence:
   - exact-main 38001728570 attempt 2 authenticated the installed d1dce307 controller and reused 16 unchanged claims without recomputation; P31-P0-01 now declares its bounded terminal proposition for exact-main certification
   - bounded closeout moved mandatory changelog validation to the cheap front door, preserved every extracted Git consumer edge, and routed response-less TLS EOFs through the existing immutable provider-read retry frontier before provider submission
   - disposable candidate-source upgrades of TradeFlow Lite f7e9166 Racecar Standard-v3 73f99c6 and AgentBus Standard-v3 5ae0951 passed strict governance validation without mutating maintained repositories
+  - P31-P0-01 closed on main 3c54a69f4385e8ab78a72d6bed81459138ce893f tree 81bc181cbeccdbb93e48f555216430e9033c12b0 after routine rotation 38029234039/1 and exact-main 38028713836/2; finalizer 38031019582/1 published authenticated workitem certification and made only P31-P0-02 eligible
+  - P31-P0-02 begins from the canonical protection projection state matrix and extends the existing installer/adopt, scoped inspector, comparison, submit, prospective, and upgrade owners without adding self-controller, recovery, or release topology
 closeout_requirements:
   claims:
     workitems_closed:
@@ -81,4 +83,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify workitem_closed:P31-P0-01 on exact main before implementing P31-P0-02
+- complete P31-P0-02 reviewed ordinary-adopter protection projection and certify workitem_closed:P31-P0-02 before implementing P31-P0-03

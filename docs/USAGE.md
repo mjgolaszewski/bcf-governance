@@ -221,17 +221,33 @@ project-owned customizations preserved by repeated adoption. The trusted
 controller derives their bytes from authenticated provider blobs and includes
 them in the same compare-and-swap commit; candidate scripts are never run.
 
-After one current controlled automation canary has published the declared
-aggregate check, inspect and apply provider protection mechanically:
+For an ordinary Lite or Standard repository, compile the protection proposal
+through the existing GitHub adopter. The proposal preserves supported existing
+review and status policy, adds the BCF aggregate context when absent, and never
+mutates provider state:
+
+```bash
+bcf ci adopt github --repo-root . --repository owner/repo --apply
+```
+
+Review and merge the resulting `governance/github-protection.yml` normally.
+Only an exact clean checkout of that protected-main declaration may then apply
+and verify provider state:
 
 ```bash
 bcf ci-github protection inspect --repository owner/repo --repo-root .
 bcf ci-github protection apply --repository owner/repo --repo-root .
 ```
 
-Apply updates the canonical ruleset or the sole existing ruleset targeting the
-declared branch. It refuses ambiguous branch-target rulesets and never creates
-a second protection plane beside them.
+Apply compares the reviewed proposal's exact provider pre-state before updating
+the sole ruleset targeting the declared branch, then re-reads the complete
+ruleset through the GET-only inspector. It refuses ambiguous branch targets,
+stale proposals, omitted/redacted or unexpected bypass actors, and never
+creates a second protection plane. The ordinary projection contains no BCF
+self-controller, recovery, or release topology.
+
+BCF self-governance retains its controlled-automation canary prerequisite for
+the version-1.0 self-protection contract.
 
 Installation treats these artifacts as application-owned. Missing files are
 scaffolded; existing files are never placeholder-rewritten or overwritten. An

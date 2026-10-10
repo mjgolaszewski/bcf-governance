@@ -8,6 +8,7 @@ import re
 from typing import Any, Callable
 
 from .ci_github_api import GitHubAPI
+from .ci_github_identity import GitHubControllerError
 from .ci_github_values import GitHubValueError, remote_repository
 from .ci_candidate_pr import ensure_candidate_pull_request
 from .candidate_provider_recovery import (
@@ -28,6 +29,7 @@ from .local_pr import (
     resolve_local_pr_context,
     run_prospective_train,
 )
+from .ordinary_protection_projection import validate_ordinary_protection_submission
 
 
 Runner = Callable[..., Any]
@@ -94,6 +96,15 @@ def _canonical_inputs(
     else:
         protection = load_protection(repo_root)
         repository = str(protection["repository"]["full_name"])
+    try:
+        validate_ordinary_protection_submission(
+            provider_api,
+            repo_root=repo_root,
+            repository=repository,
+            base_sha=context.base_sha,
+        )
+    except GitHubControllerError as exc:
+        raise ProspectiveValidationError(str(exc)) from exc
     return (
         evaluation.mode,
         evaluation.target,

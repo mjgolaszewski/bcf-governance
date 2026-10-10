@@ -14,6 +14,7 @@ from .ci_adopt_github import (
     plan_github_adoption,
     render_github_adoption,
 )
+from .ordinary_protection_projection import project_ordinary_protection
 from .ci_graph_commands import add_graph_parser, run_graph_command
 from .automation_commands import adopt_dependabot
 from .automation_contracts import AutomationContractError, load_automation_registry
@@ -97,6 +98,10 @@ def _adopt_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser
     github.add_argument("--candidate-label", action="append")
     github.add_argument("--trusted-label", action="append")
     github.add_argument("--producer-arg", action="append")
+    github.add_argument(
+        "--repository",
+        help="compile the ordinary-adopter protection proposal from exact provider state",
+    )
     mode = github.add_mutually_exclusive_group(required=True)
     mode.add_argument("--check", action="store_true")
     mode.add_argument("--apply", action="store_true")
@@ -298,12 +303,36 @@ def main(argv: list[str] | None = None) -> None:
             graph_path = args.repo_root / "governance/ci-graph.yml"
             legacy_values = (args.candidate_label, args.trusted_label, args.producer_arg)
             if graph_path.is_file() and not any(legacy_values):
+                protection = None
+                if args.repository:
+                    protection = project_ordinary_protection(
+                        GitHubAPI(token=os.environ.get("GITHUB_TOKEN", "")),
+                        repo_root=args.repo_root,
+                        repository=args.repository,
+                        apply=False,
+                    )
                 result = apply_ci_graph(args.repo_root) if args.apply else check_ci_graph(args.repo_root)
+                if args.apply and args.repository:
+                    protection = project_ordinary_protection(
+                        GitHubAPI(token=os.environ.get("GITHUB_TOKEN", "")),
+                        repo_root=args.repo_root,
+                        repository=args.repository,
+                        apply=True,
+                    )
+                changed_paths = set(result.changed_paths)
+                if protection is not None:
+                    changed_paths.update(protection.changed_paths)
+                status = (
+                    "clean"
+                    if result.status == "clean"
+                    and (protection is None or protection.status == "clean")
+                    else ("changed" if args.apply else "actionable")
+                )
                 _print(
-                    {"status": result.status, "changed_paths": list(result.changed_paths)},
+                    {"status": status, "changed_paths": sorted(changed_paths)},
                     args.format,
                 )
-                if args.check and result.status != "clean":
+                if args.check and status != "clean":
                     raise SystemExit(1)
                 return
             if not all(legacy_values):
