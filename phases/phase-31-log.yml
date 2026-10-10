@@ -51,6 +51,7 @@ execution_evidence:
   - disposable candidate-source upgrades of TradeFlow Lite f7e9166 Racecar Standard-v3 73f99c6 and AgentBus Standard-v3 5ae0951 passed strict governance validation without mutating maintained repositories
   - P31-P0-01 closed on main 3c54a69f4385e8ab78a72d6bed81459138ce893f tree 81bc181cbeccdbb93e48f555216430e9033c12b0 after routine rotation 38029234039/1 and exact-main 38028713836/2; finalizer 38031019582/1 published authenticated workitem certification and made only P31-P0-02 eligible
   - P31-P0-02 begins from the canonical protection projection state matrix and extends the existing installer/adopt, scoped inspector, comparison, submit, prospective, and upgrade owners without adding self-controller, recovery, or release topology
+  - the candidate train preserves its exact content-addressed proof across one bounded transient immutable Git read retry; changed commands, references, authentication failures, and exhausted retries remain terminal
 closeout_requirements:
   claims:
     workitems_closed:

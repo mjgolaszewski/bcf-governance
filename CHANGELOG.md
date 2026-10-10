@@ -23,6 +23,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Retried one exact immutable Git remote read after a closed transient
+  disconnect so candidate submission preserves reusable proof rather than
+  requiring an agent-selected restart; authentication and semantic failures
+  remain terminal.
 - Made canonical candidate submission authenticate an exact failed provider
   run and derive the sole bounded retry when semantic truth succeeded but its
   terminal artifact upload failed with a closed transient transport error;
