@@ -2497,6 +2497,33 @@ def test_repository_artifact_inventory_rejects_persistent_concurrent_churn() -> 
         PersistentChurnAPI(token="test").repository_artifacts("owner/repo")
 
 
+def test_repository_artifact_prefix_projection_ignores_unrelated_concurrent_uploads() -> None:
+    class UnrelatedChurnAPI(GitHubAPI):
+        def __init__(self) -> None:
+            super().__init__(token="test")
+            self.request_count = 0
+
+        def _request(self, method: str, path: str, *, payload=None):  # type: ignore[no-untyped-def]
+            self.request_count += 1
+            artifacts = [{"id": 1, "name": "bcf-controller-transition-exact"}]
+            artifacts.extend(
+                {"id": 100 + value, "name": f"unrelated-{value}"}
+                for value in range(self.request_count)
+            )
+            return {"total_count": len(artifacts), "artifacts": artifacts}
+
+    api = UnrelatedChurnAPI()
+    artifacts = api.repository_artifacts(
+        "owner/repo", name_prefix="bcf-controller-transition-"
+    )
+
+    assert artifacts == ({"id": 1, "name": "bcf-controller-transition-exact"},)
+    assert api.request_count == 2
+
+    with pytest.raises(GitHubAPIError, match="mutually exclusive"):
+        api.repository_artifacts("owner/repo", name="exact", name_prefix="prefix-")
+
+
 @pytest.mark.parametrize("failure", ["changed-total", "missing", "duplicate"])
 def test_repository_artifact_pagination_fails_closed_on_inexact_inventory(
     failure: str,

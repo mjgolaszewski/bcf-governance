@@ -87,12 +87,17 @@ def complete_repository_artifacts(
     *,
     endpoint: str,
     name: str | None = None,
+    name_prefix: str | None = None,
 ) -> tuple[dict[str, Any], ...]:
     """Read one bounded, stable, identity-unique repository artifact inventory."""
 
+    if name is not None and name_prefix is not None:
+        raise ArtifactInventoryError("artifact name filters are mutually exclusive")
     if name is not None:
         if not re.fullmatch(r"[A-Za-z0-9_.-]+", name):
             raise ArtifactInventoryError("artifact name filter is unsafe")
+    if name_prefix is not None and not re.fullmatch(r"[A-Za-z0-9_.-]+", name_prefix):
+        raise ArtifactInventoryError("artifact name-prefix filter is unsafe")
     previous: tuple[dict[str, Any], ...] | None = None
     for _ in range(_MAX_STABLE_READ_ATTEMPTS):
         try:
@@ -104,9 +109,18 @@ def complete_repository_artifacts(
         except _ArtifactInventoryChanged:
             previous = None
             continue
-        fingerprint = _inventory_fingerprint(current)
+        relevant = (
+            tuple(
+                artifact
+                for artifact in current
+                if str(artifact.get("name", "")).startswith(name_prefix)
+            )
+            if name_prefix is not None
+            else current
+        )
+        fingerprint = _inventory_fingerprint(relevant)
         if fingerprint == previous:
-            return current
+            return relevant
         previous = fingerprint
     raise ArtifactInventoryError(
         "repository artifact inventory changed or did not stabilize across bounded reads"
