@@ -1284,6 +1284,33 @@ def test_reusable_artifact_binding_renders_exact_same_run_guard(tmp_path: Path) 
     assert "run-id" not in downloads[0]["with"]
 
 
+def test_reusable_caller_permissions_are_derived_from_callee(tmp_path: Path) -> None:
+    graph = _reusable_artifact_graph()
+    called = graph["workflows"][0]
+    called["jobs"][0]["permissions"] = {"actions": "read", "contents": "read"}
+    caller = graph["workflows"][1]["jobs"][-1]
+    assert caller["permissions"] == {"contents": "read"}
+    _write_graph(tmp_path, graph)
+
+    compiled = validate_ci_graph(tmp_path)
+    projected = next(
+        job
+        for workflow in compiled.workflows
+        for job in workflow["jobs"]
+        if job["semantic_role"] == "exact-main-governance-producer"
+    )
+    assert projected["permissions"] == {"actions": "read", "contents": "read"}
+
+
+def test_reusable_caller_cannot_hide_callee_write_authority(tmp_path: Path) -> None:
+    graph = _reusable_artifact_graph()
+    graph["workflows"][0]["jobs"][0]["permissions"] = {"contents": "write"}
+    _write_graph(tmp_path, graph)
+
+    with pytest.raises(CIGraphError, match="privileged write authority"):
+        validate_ci_graph(tmp_path)
+
+
 def test_reusable_artifact_binding_covers_explicit_preflight_components(tmp_path: Path) -> None:
     graph = _reusable_artifact_graph()
     graph["step_components"] = {
