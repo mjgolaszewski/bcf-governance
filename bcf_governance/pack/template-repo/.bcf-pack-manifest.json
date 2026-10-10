@@ -940,7 +940,7 @@
     },
     "scripts/_bcf_runtime/evidence_storage_topology.py": {
       "operation": "copy",
-      "sha256": "9a77857ffb796d22514dba3d41380b941009a7798b1bdb6e61f49e3ea46e405b"
+      "sha256": "9c3c793bd4e0f6907b7d8c6e1a294777ed18a3ce2a7e7615065892737034bcf5"
     },
     "scripts/_bcf_runtime/evidence_test_adapters.py": {
       "operation": "copy",

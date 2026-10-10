@@ -149,6 +149,22 @@ def test_storage_topology_requires_semantics_for_ambiguous_lane_input() -> None:
     ).state == "unknown"
 
 
+def test_storage_capability_without_adopted_graph_is_typed_and_fail_closed() -> None:
+    empty_graph = {"artifacts": {}, "workflows": []}
+
+    dormant = classify_storage_topology(
+        empty_graph, {"activation": "disabled"}, graph_present=False
+    )
+    assert dormant.state == "available_not_adopted"
+    assert dormant.reasons == ("ci_graph_absent_capability_not_adopted",)
+
+    active = classify_storage_topology(
+        empty_graph, {"activation": "enabled"}, graph_present=False
+    )
+    assert active.state == "unknown"
+    assert active.reasons == ("ci_graph_absent_with_active_or_unknown_storage",)
+
+
 def test_compact_run_output_never_masquerades_as_reusable_input() -> None:
     graph = _topology_graph(durable=True)
     graph["artifacts"]["release-result"] = {

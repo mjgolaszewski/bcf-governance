@@ -59,7 +59,8 @@ def _edges(graph: Mapping[str, Any], artifact_id: str, operation: str) -> tuple[
 
 
 def classify_storage_topology(
-    graph: Mapping[str, Any], contract: Mapping[str, Any] | None,
+    graph: Mapping[str, Any], contract: Mapping[str, Any] | None, *,
+    graph_present: bool = True,
 ) -> StorageTopology:
     """Derive one closed topology state without inferring adoption from capability."""
 
@@ -68,6 +69,16 @@ def classify_storage_topology(
     if not isinstance(artifacts, Mapping) or not isinstance(workflows, list):
         return StorageTopology("unknown", "unknown", (), (), (), ("graph_unreadable",))
     activation = "absent" if contract is None else str(contract.get("activation", "unknown"))
+    if not graph_present:
+        if activation in {"absent", "disabled"}:
+            return StorageTopology(
+                "available_not_adopted", activation, (), (), (),
+                ("ci_graph_absent_capability_not_adopted",),
+            )
+        return StorageTopology(
+            "unknown", activation, (), (), (),
+            ("ci_graph_absent_with_active_or_unknown_storage",),
+        )
     sources = tuple(sorted(
         str(key) for key, value in artifacts.items()
         if isinstance(value, Mapping) and value.get("kind") == "durable-source"
@@ -126,11 +137,13 @@ def classify_storage_topology(
 
 def migration_plan(
     graph: Mapping[str, Any], contract: Mapping[str, Any] | None, *,
-    graph_digest: str, contract_digest: str | None,
+    graph_digest: str, contract_digest: str | None, graph_present: bool = True,
 ) -> dict[str, Any]:
     """Compile exact graph-bound actions; never infer reusable object boundaries."""
 
-    topology = classify_storage_topology(graph, contract)
+    topology = classify_storage_topology(
+        graph, contract, graph_present=graph_present
+    )
     actions = []
     for artifact_id in topology.legacy_candidates:
         artifact = graph["artifacts"][artifact_id]
@@ -184,22 +197,33 @@ def compile_migration_plan(repo_root: Path) -> dict[str, Any]:
     """Compile from the canonical composed graph, including registered extensions."""
 
     from .ci_graph_contracts import validate_ci_graph
+    from .evidence_storage_contracts import load_storage_contract
 
     root = repo_root.resolve()
-    compiled = validate_ci_graph(root)
-    graph = compiled.graph
-    contract = compiled.evidence_storage
+    graph_path = root / "governance/ci-graph.yml"
     contract_path = root / "governance/evidence-storage.yml"
+    graph_present = graph_path.exists() or graph_path.is_symlink()
+    if graph_present:
+        compiled = validate_ci_graph(root)
+        graph = compiled.graph
+        contract = compiled.evidence_storage
+    else:
+        graph = {"artifacts": {}, "workflows": []}
+        contract = load_storage_contract(root) if contract_path.is_file() else None
+    graph_bytes = (
+        (json.dumps(graph, sort_keys=True, separators=(",", ":")) + "\n").encode()
+        if graph_present
+        else b"governance/ci-graph.yml:absent\n"
+    )
     plan = migration_plan(
         graph,
         contract,
-        graph_digest=hashlib.sha256(
-            (json.dumps(graph, sort_keys=True, separators=(",", ":")) + "\n").encode()
-        ).hexdigest(),
+        graph_digest=hashlib.sha256(graph_bytes).hexdigest(),
         contract_digest=(
             hashlib.sha256(contract_path.read_bytes()).hexdigest()
             if contract is not None else None
         ),
+        graph_present=graph_present,
     )
     schema_root = root / "schemas"
     topology_schema = json.loads(
