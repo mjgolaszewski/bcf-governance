@@ -39,7 +39,6 @@ jobs:
   required: true
 conditions:
   routine-rotation-applicable: vars.BCF_CI_AUTHORITY_ENABLED == 'true' && github.event.workflow_run.name == 'bcf/exact-main-admission' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
-  routine-controller-bundle-required: steps.controller-route.outputs.controller_state == 'pending_rotation'
   routine-stage-ready: success() && needs.authorize.outputs.applicable == 'true'
   routine-transition-required: steps.authorize-transition.outputs.decision != 'no_transition'
   routine-transition-artifact-applicable: steps.materialize-transition.outputs.applicable == 'true'
@@ -133,15 +132,6 @@ step_components:
     action: download-artifact
     with: {name: 'bcf-trusted-control-${{ github.event.workflow_run.head_sha }}-${{ github.event.workflow_run.run_attempt }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ github.event.workflow_run.id
         }}', path: '${{ runner.temp }}/bcf-trusted-control'}
-    environment: {}
-    produces: []
-    consumes: [trusted-controller-bundle]
-  download-routine-controller-for-authorization:
-    kind: action
-    name: Download the exact provider-built routine controller for authorization
-    condition: routine-controller-bundle-required
-    action: download-artifact
-    with: {name: 'bcf-trusted-control-${{ github.event.workflow_run.head_sha }}-${{ github.event.workflow_run.run_attempt }}', github-token: '${{ github.token }}', repository: '${{ github.repository }}', run-id: '${{ github.event.workflow_run.id }}', path: '${{ runner.temp }}/bcf-trusted-control'}
     environment: {}
     produces: []
     consumes: [trusted-controller-bundle]
@@ -398,7 +388,7 @@ workflows:
         }}', target_wheel_sha256: '${{ steps.materialize-transition.outputs.target_wheel_sha256 }}'}
     executor:
       kind: component_sequence
-      components: [setup-python, download-trigger-controller-custody, project-custody-controller-route, download-routine-controller-for-authorization, setup-routine-decision-directory, setup-routine-authorized-directory, authorize-routine-transition, upload-routine-decision, stage-routine-authorization-controller, materialize-routine-transition, upload-routine-authorized]
+      components: [setup-python, download-trigger-controller-custody, project-custody-controller-route, setup-routine-decision-directory, setup-routine-authorized-directory, authorize-routine-transition, upload-routine-decision, stage-routine-authorization-controller, materialize-routine-transition, upload-routine-authorized]
     produces: [controller-transition-authorized, controller-transition-decision]
     consumes: [trusted-controller-bundle, controller-custody]
     required: true

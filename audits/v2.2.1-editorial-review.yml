@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: aee92242b6c9026ec7b66747fb33fd287fd1801238cd347bc2faa6591196d7ff
-  after_sha256: e5ba6870e004ac9f66ba1b9251e22586c360d28cbef376d080ca6ae88ab95d37
+  after_sha256: 0e010bc747e07464531bdc8fc7e6e280e29fedf8c8fdd0178e516d629b6bdaf3
   findings:
   - collapsed the unpublished 2.0 candidate and 2.1 repair chronology into the released 2.1 product contract
   disposition: historical

@@ -54,6 +54,7 @@ execution_evidence:
   - the candidate train preserves its exact content-addressed proof across one bounded transient immutable Git read retry; changed commands, references, authentication failures, and exhausted retries remain terminal
   - PR 391 certified exact head 1bbe997bffe746ee1551e0d97449c6e575f73208 and merged as main 76295f8759061e963261c1f416092e6945e3d500 tree 8312a09ad23cf823cbceb31342e4cb3463edcb3e
   - exact-main 38041182549 attempt 2 authenticated the current installed controller and reused all four unchanged producer shards; finalizer 38043319264 attempt 1 preserved the exact subject without release authority
+  - P31-P0-02 closeout exposed and matrixed a redundant observer that inferred rotation from subject/controller inequality; typed routine authorization now exclusively classifies no-transition versus pending rotation and retrieves target bytes only for the latter
 closeout_requirements:
   claims:
     workitems_closed:

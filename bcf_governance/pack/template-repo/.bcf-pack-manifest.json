@@ -108,7 +108,7 @@
     },
     "governance/ci-extensions/bcf-controller-rotation.yml": {
       "operation": "copy",
-      "sha256": "2f60c394e59136aae80e9c53596f52b4faf363cca3b84c0ec08dd25a1598b607"
+      "sha256": "aa27a00615a22ea6eea4d2fb7c9e18aba9fb10c0c3477b92539549c38c6f4913"
     },
     "governance/ci-runtime.yml": {
       "operation": "copy",
