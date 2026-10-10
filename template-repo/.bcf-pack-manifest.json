@@ -720,7 +720,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_defaults.py": {
       "operation": "copy",
-      "sha256": "04e1198efc7f8ae800c96be7c0b0d9f519ae3d96658e3b048521a5678a6e77bc"
+      "sha256": "5ca1535aa58dd7e5dbfceb998bac545e4ce2570b0471b01c0480a03e9f89a82a"
     },
     "scripts/_bcf_runtime/ci_graph_diagnostics.py": {
       "operation": "copy",
@@ -892,7 +892,7 @@
     },
     "scripts/_bcf_runtime/evidence_shards.py": {
       "operation": "copy",
-      "sha256": "279495c939b5c5ac51fc012e2733051fde02c1ed5fb0a274e9db6e44ee4db668"
+      "sha256": "c67ffad0798b04f28aac605f8d0686b25e673b1f03094df8789f3278edb12b61"
     },
     "scripts/_bcf_runtime/evidence_storage_archives.py": {
       "operation": "copy",
@@ -944,7 +944,7 @@
     },
     "scripts/_bcf_runtime/evidence_test_adapters.py": {
       "operation": "copy",
-      "sha256": "2cb425e5bb3fab6c1b66d541082c58fe88c7d172b7013ae91fc16efb4b0aa598"
+      "sha256": "05b7e47d6303b02c8c2f626fc33944cbf9de155e14ba7694347b449acd5c5ea0"
     },
     "scripts/_bcf_runtime/evidence_workitem_lifecycle.py": {
       "operation": "copy",
@@ -1452,6 +1452,10 @@
     "scripts/_bcf_runtime/test_manifests.py": {
       "operation": "copy",
       "sha256": "e517c03e64c28372e4cd1eaa27eefb558a6d03ddaf25f15be2a65bd0a9c82112"
+    },
+    "scripts/_bcf_runtime/test_splinter_proofs.py": {
+      "operation": "copy",
+      "sha256": "1c42bff51e29aefc8b5a9fdc9cdc1f256281dd9070ea75c72f4f05a693040ce0"
     },
     "scripts/_bcf_runtime/trusted_controller_compatibility.py": {
       "operation": "copy",
