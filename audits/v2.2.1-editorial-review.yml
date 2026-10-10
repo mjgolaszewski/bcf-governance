@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: aee92242b6c9026ec7b66747fb33fd287fd1801238cd347bc2faa6591196d7ff
-  after_sha256: 0e010bc747e07464531bdc8fc7e6e280e29fedf8c8fdd0178e516d629b6bdaf3
+  after_sha256: c358ec247c32ee024a6bc99d89d6acc4ef3ae23632c5351d5765cb905b928995
   findings:
   - collapsed the unpublished 2.0 candidate and 2.1 repair chronology into the released 2.1 product contract
   disposition: historical
@@ -114,7 +114,7 @@ documents:
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
   before_sha256: 20c117d4b68fe68eb1d09f589aad1313db327e17aaf4350c75745b938c0b40c4
-  after_sha256: 3fe6c11619946d9e7507f7e79a3ae92aa4a95933f167cc9517e9265e0d8078dd
+  after_sha256: 3669e8d7c519ada295636cd45488d308dde1d90ab6db26c165eacc23194acc25
   findings:
   - replaced obsolete controller ceremony with the canonical 2.1 adopter and semantic-intent operation
   disposition: revised
@@ -141,7 +141,7 @@ documents:
   canonical_topic_owner: spec/RELEASE_TRAIN_STATE_DAG.md
   topic_role: canonical
   before_sha256: fb551755d1a298cd3b30ad5df691ec8539e5c01b68643ff2251e39f5e8498bc1
-  after_sha256: da51ac4027e00a0bc213176b691633597253dfd4332d592e6a4652ba15e563b2
+  after_sha256: 5c0567dd9715d6961ab70d141d118270f847419c30fd7bed8f89d431089c618f
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: revised

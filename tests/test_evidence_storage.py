@@ -48,12 +48,148 @@ from bcf_governance.tooling.evidence_storage_retention import (
     apply_actions_retention,
     plan_retention,
 )
+from bcf_governance.tooling.evidence_storage_topology import (
+    classify_storage_topology,
+    compile_migration_plan,
+    migration_plan,
+)
 from bcf_governance.tooling.governance_evidence import _install_durable_inputs
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMMIT = "1" * 40
 TREE = "2" * 40
+
+
+def _topology_graph(*, legacy: bool = False, durable: bool = False) -> dict[str, Any]:
+    artifacts: dict[str, Any] = {
+        "run-output": {
+            "path": ".artifacts/bcf/sessions", "kind": "lane-input",
+            "scope": "run-attempt", "retention_days": 30,
+        },
+    }
+    producer_outputs = ["run-output"]
+    consumer_inputs = ["run-output"]
+    if legacy:
+        artifacts["prepared-environment"] = {
+            "path": ".artifacts/prepared-environment", "kind": "lane-input",
+            "scope": "run-attempt", "retention_days": 30,
+            "storage_semantics": "reusable-input-handoff",
+        }
+        producer_outputs.append("prepared-environment")
+        consumer_inputs.append("prepared-environment")
+    if durable:
+        artifacts["prepared-durable-source"] = {
+            "path": ".artifacts/prepared-source", "kind": "durable-source",
+            "scope": "run-attempt", "retention_days": 1,
+        }
+        artifacts["prepared-durable-reference"] = {
+            "path": ".artifacts/prepared-reference", "kind": "durable-reference",
+            "scope": "run-attempt", "retention_days": 30,
+        }
+    return {
+        "artifacts": artifacts,
+        "workflows": [{
+            "id": "governance", "jobs": [
+                {"id": "prepare", "produces": producer_outputs, "consumes": []},
+                {"id": "verify", "produces": [], "consumes": consumer_inputs},
+            ],
+        }],
+    }
+
+
+@pytest.mark.parametrize(
+    ("legacy", "durable", "activation", "expected"),
+    [
+        (False, False, "disabled", "available_not_adopted"),
+        (False, False, "enabled", "compact_run_evidence"),
+        (True, False, "enabled", "legacy"),
+        (False, True, "enabled", "durable"),
+        (True, True, "enabled", "mixed"),
+    ],
+)
+def test_storage_topology_classification_is_closed(
+    legacy: bool, durable: bool, activation: str, expected: str,
+) -> None:
+    result = classify_storage_topology(
+        _topology_graph(legacy=legacy, durable=durable),
+        {"activation": activation},
+    )
+    assert result.state == expected
+    assert ("prepared-environment" in result.legacy_candidates) is legacy
+
+
+def test_storage_topology_rejects_partial_durable_contract() -> None:
+    graph = _topology_graph(durable=True)
+    del graph["artifacts"]["prepared-durable-reference"]
+    assert classify_storage_topology(graph, {"activation": "enabled"}).state == "unknown"
+
+
+def test_storage_topology_requires_semantics_for_ambiguous_lane_input() -> None:
+    graph = _topology_graph()
+    graph["artifacts"]["ambiguous"] = {
+        "path": ".artifacts/ambiguous",
+        "kind": "lane-input",
+        "scope": "run-attempt",
+        "retention_days": 30,
+    }
+    graph["workflows"][0]["jobs"][0]["produces"].append("ambiguous")
+    graph["workflows"][0]["jobs"][1]["consumes"].append("ambiguous")
+
+    result = classify_storage_topology(graph, {"activation": "enabled"})
+
+    assert result.state == "unknown"
+    assert result.reasons == ("incomplete_or_malformed_topology:ambiguous",)
+
+
+def test_compact_run_output_never_masquerades_as_reusable_input() -> None:
+    graph = _topology_graph(durable=True)
+    graph["artifacts"]["release-result"] = {
+        "path": ".artifacts/release-result",
+        "kind": "lane-input",
+        "scope": "run-attempt",
+        "retention_days": 30,
+        "storage_semantics": "compact-run-output",
+    }
+    graph["workflows"][0]["jobs"][0]["produces"].append("release-result")
+    graph["workflows"][0]["jobs"][1]["consumes"].append("release-result")
+
+    assert classify_storage_topology(graph, {"activation": "enabled"}).state == "durable"
+
+
+def test_self_storage_topology_uses_the_composed_graph() -> None:
+    plan = compile_migration_plan(REPO_ROOT)
+
+    assert plan["topology"]["state"] == "durable"
+    assert plan["disposition"] == "no_transition"
+    assert plan["actions"] == []
+
+
+def test_migration_plan_binds_graph_and_never_authorizes_cleanup() -> None:
+    graph = _topology_graph(legacy=True)
+    first = migration_plan(
+        graph, {"activation": "disabled"}, graph_digest="1" * 64,
+        contract_digest="2" * 64,
+    )
+    second = migration_plan(
+        graph, {"activation": "disabled"}, graph_digest="1" * 64,
+        contract_digest="2" * 64,
+    )
+    assert first == second
+    assert first["disposition"] == "review_required"
+    assert first["truth_semantics_changed"] is False
+    assert first["provider_mutation_authorized"] is False
+    assert first["cleanup_authorized"] is False
+    assert first["actions"] == [{
+        "action": "declare_durable_input_boundary",
+        "artifact_id": "prepared-environment",
+        "artifact_path": ".artifacts/prepared-environment",
+        "producers": ["governance/prepare"],
+        "consumers": ["governance/verify"],
+        "proposed_source_id": "prepared-environment-durable-source",
+        "proposed_reference_id": "prepared-environment-durable-reference",
+        "requires_reviewed_object_declaration": True,
+    }]
 
 
 class _DownloadResponse(io.BytesIO):

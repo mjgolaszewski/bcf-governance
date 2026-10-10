@@ -1630,6 +1630,59 @@ loss, post-apply verification, candidate submission, prospective validation,
 and upgrade.  The proposal is data projected by an existing owner, not a new
 workflow, command sequence, or source of authority.
 
+### P31-P0-03 evidence-storage topology and migration state matrix
+
+Evidence-storage migration extends the existing storage contract, immutable
+publisher/resolver, retention, reconcile, and upgrade owners. Reconstructability
+is proved from authenticated identity and retrievability, never from copy count.
+Capability does not imply adoption, migration does not change proof truth, and
+no plan may delete an object reachable from a protected retention root.
+
+| State | Authenticated inputs | Deterministic action | Authoritative result | Fail-closed boundary |
+| --- | --- | --- | --- | --- |
+| Legacy Actions-only repository | exact repository/profile, graph artifacts, run/attempt manifests, retention declarations, and provider inventory | classify `legacy`; compile a plan that preserves every original run output while publishing content-addressed immutable inputs before references | exact migration plan with zero truth change and explicit source receipts | guessing missing inventory, treating expiry as successful migration, or deleting original evidence |
+| Durable content-addressed repository | enabled storage contract, immutable releases/assets/attestations, exact references, run manifests, and provider byte observations | classify `durable`; verify exact bind, cold resolution, and retention reachability without republishing existing objects | clean/no-transition topology plus measured unique-input and run-output bytes | duplicate publish, cache-dependent success, mutable asset, missing attestation, or unbound reference |
+| Mixed legacy and durable repository | complete legacy and durable inventories plus exact cross-links | classify `mixed`; retain legacy originals, publish only absent unique inputs, and project exact references for migrated consumers | deterministic bounded migration plan with reused/published/preserved accounting | silently preferring either inventory, double-counting identical content, or changing prior outcomes |
+| Storage capability exists but repository has not adopted it | installed profile, graph, public contracts, and absent storage activation | classify capability as `available_not_adopted`; emit no provider mutation or storage graph | unchanged ordinary CI and typed adoption opportunity | capability interpreted as adoption, credentials required, or durable jobs projected early |
+| Required topology identity is incomplete or contradictory | partial contract/provider/run/reference observations | classify `unknown` and stop before publish, migration, retention, or evidence allocation | typed diagnostic identifying the missing/contradictory identities | best-effort classification, generic inapplicable, or caller-selected fallback |
+| New input content repeats an existing immutable object | canonical command/toolchain/input/projection closure and exact archive/member digests | reuse the existing immutable object and create only the exact run reference/output | growth equals new run outputs plus previously unseen inputs | uploading duplicate input bytes, digest-only trust without member verification, or cross-repository laundering |
+| New input content is absent | same exact proof-input identity plus publisher authority and provider limits | publish deterministic archive and manifest once, verify provider digest/attestation, then emit reference | one immutable object reachable from the run manifest | reference-before-publish, rebuilt bytes, race overwrite, or incomplete provider verification |
+| Resolver cache is empty | exact reference, storage contract digest, repository/subject/run/attempt identity, immutable release and asset digests | fetch immutable manifest/assets, materialize safely, and verify every archive/member before use | byte-identical cold reconstruction independent of cache | cache miss treated as evidence miss, network bytes trusted before digest, unsafe archive, or stale/wrong subject |
+| Cache contains matching materialization | same reference and complete verified local materialization receipt | reverify identity and bytes; use cache only as acceleration | same reconstruction proposition as cold resolution | cache confers authority, unverifiable local path, or stale partial materialization |
+| Durable object or reference is tampered, stale, wrong-subject, or wrong-repository | exact expected identities and observed bytes/provider metadata | reject at the earliest identity/digest/freshness boundary | typed non-applicability with no truth/certification authority | fallback to legacy bytes without declared migration edge or accepting a nearby object |
+| Retention snapshot includes live runs, active candidates, certified commits, product releases, findings, historical custody, and leases | authenticated complete root snapshot and exact object/reference graph | compute reachability; retain all reachable or leased objects; select only authenticated unreachable objects | deterministic retain/delete plan, with apply separately authorized and exact | unavailable/incomplete roots, wildcard ownership, global prune, deleting originals, or GC before lease expiry |
+| Provider inventory changes while planning | plan-bound observation digest and fresh pre-apply inventory | reject stale plan and recompute from authenticated state | no mutation and typed stale-plan result | applying an obsolete deletion/publication plan or merging observations from different instants |
+| Migration completes | exact before/after inventories, plan digest, immutable publication receipts, preserved legacy receipts, and cold-resolution result | verify outcome and storage accounting independently; leave truth/finalizer/certification propositions unchanged | migration receipt binding preserved outcomes and measured bytes/transfers | migration receipt certifies product behavior, changes claim conclusions, or hides missing originals |
+| Authored storage or extension bytes changed before reconciliation | candidate graph, extension bytes, storage contract, and stale graph locks | reconcile graph locks and rendered workflows first, then classify the exact composed graph in the same fixed-point transaction | topology report bound to the reconciled graph digest | classifying stale locks, requiring an agent to hand-order graph locking, or allocating evidence from an unreconciled topology |
+| Implemented storage workitem declares bounded closeout | exact `DONE` P31-P0-03, authenticated implementation/cold-resolution/tamper/retention evidence, active P31, current controller, and canonical successor edge | derive `workitem:P31-P0-03` and preserve it through truth/finalizer/publisher | `workitem_closed:P31-P0-03`; only P31-P0-04 becomes eligible | terminal phase/release authority, hand-selected target, stale evidence, or evaluator work begun early |
+
+```text
+invariants
+  reconstructability follows authenticated identity and availability;
+  originals remain retrievable; migration cannot alter truth or delete reachability
+    -> primitives
+       content identity, immutable object, run manifest, exact reference,
+       retention root/lease, closed topology class, provider byte/transfer observation
+      -> contracts
+         classify -> plan -> immutable publish/exact bind -> cold resolve ->
+         reachability-safe retention -> measured verified migration
+        -> producers
+           reconcile/upgrade classifier, migration planner, immutable publisher,
+           cold resolver, retention planner and provider observation adapter
+          -> consumers
+             CLI/reporting, graph projection, truth/finalizer/certification
+             (unchanged propositions), retention policy and adopter upgrade
+```
+
+Every implementation mutation must traverse legacy, durable, mixed,
+available-not-adopted, and unknown topology; cache-empty and cache-hit resolve;
+new and repeated content; concurrent provider drift; tamper/stale/wrong-subject/
+wrong-repository evidence; complete and incomplete retention roots; plan-only and
+apply; adopter upgrade; PR and exact-main; bounded truth, finalizer, publisher,
+successor eligibility, and release rejection. Storage accounting reports Actions
+bytes, durable unique-input bytes, run-output bytes, and transfer separately;
+those measurements confer no authority.
+
 ### P30/P31 outward construction tree
 
 ```text

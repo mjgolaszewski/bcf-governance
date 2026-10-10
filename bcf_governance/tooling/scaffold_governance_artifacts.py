@@ -46,6 +46,7 @@ from .profile_surface_generation import reconcile_makefile, reconcile_template_w
 from .interpreter_environment import reconcile_interpreter_environment
 from .test_duration_observations import reconcile_test_duration_observations
 from .editorial_audit_projection import editorial_base
+from .evidence_storage_topology import compile_migration_plan
 
 HOTFIX_MODES = {"lite", "full"}
 
@@ -585,6 +586,19 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 ),
             )
         )
+    steps.append(
+        ReconcileStep(
+            "evidence-storage-topology",
+            lambda: compile_migration_plan(repo_root),
+            lambda: compile_migration_plan(repo_root),
+            watch_paths=(
+                "governance/ci-graph.yml",
+                "governance/ci-extensions",
+                "governance/evidence-storage.yml",
+                "bcf_governance/tooling/evidence_storage_*",
+            ),
+        )
+    )
     checker = repo_root / ".github/scripts/check_editorial_contract.py"
     builder = repo_root / ".github/scripts/build_editorial_audit.py"
     if checker.is_file() and builder.is_file() and not checker.is_symlink() and not builder.is_symlink():

@@ -8,6 +8,12 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Added a closed evidence-storage topology classifier and graph-bound,
+  non-mutating migration plan. Preflight and canonical reconciliation now
+  distinguish capability from adoption, surface legacy/mixed/unknown storage
+  before evidence allocation, and never authorize cleanup or provider mutation
+  from classification alone.
+
 - Projected existing-repository protection through the ordinary installer and
   GitHub adoption owners: complete provider state now produces one reviewable
   source declaration, and only exact protected-main bytes may be applied and

@@ -19,6 +19,7 @@ from .evidence_storage_github import publish_action_handoff, resolve_input_refer
 from .evidence_storage_github_api import GitHubEvidenceAPI
 from .evidence_storage_graph import prepare_graph_artifact
 from .evidence_storage_retention import apply_actions_retention, plan_retention
+from .evidence_storage_topology import compile_migration_plan
 
 
 def _schemas(repo_root: Path | None = None) -> Path:
@@ -52,6 +53,12 @@ def _parser() -> argparse.ArgumentParser:
     operations = parser.add_subparsers(dest="operation", required=True)
     validate = operations.add_parser("validate")
     validate.add_argument("--repo-root", type=Path, default=Path("."))
+    classify = operations.add_parser("classify")
+    classify.add_argument("--repo-root", type=Path, default=Path("."))
+    classify.add_argument("--output", type=Path, required=True)
+    migration = operations.add_parser("migration-plan")
+    migration.add_argument("--repo-root", type=Path, default=Path("."))
+    migration.add_argument("--output", type=Path, required=True)
     prepare = operations.add_parser("prepare")
     prepare.add_argument("--repo-root", type=Path, default=Path("."))
     prepare.add_argument("--artifact", required=True)
@@ -81,6 +88,11 @@ def run(args: argparse.Namespace) -> None:
     if args.operation == "validate":
         load_storage_contract(args.repo_root.resolve())
         print("status: valid")
+    elif args.operation in {"classify", "migration-plan"}:
+        plan = compile_migration_plan(args.repo_root)
+        payload = plan if args.operation == "migration-plan" else plan["topology"]
+        write_canonical_json(args.output, payload)
+        print(args.output.resolve())
     elif args.operation == "prepare":
         path = prepare_graph_artifact(
             args.repo_root, artifact_id=args.artifact, output_dir=args.output
