@@ -8,6 +8,48 @@ from typing import Any
 from .ci_graph_errors import CIGraphError
 
 
+_PERMISSION_LEVEL = {"none": 0, "read": 1, "write": 2}
+
+
+def project_reusable_workflow_permissions(graph: dict[str, Any]) -> None:
+    """Derive each local reusable caller's least permission upper bound."""
+
+    workflows = {workflow["path"]: workflow for workflow in graph["workflows"]}
+    if len(workflows) != len(graph["workflows"]):
+        raise CIGraphError("CI graph workflow paths must be unique")
+    visiting: set[str] = set()
+    resolved: dict[str, dict[str, str]] = {}
+
+    def required(path: str) -> dict[str, str]:
+        if path in resolved:
+            return resolved[path]
+        if path in visiting or path not in workflows:
+            raise CIGraphError("CI graph reusable workflow call topology is invalid")
+        visiting.add(path)
+        result: dict[str, str] = {}
+        workflow = workflows[path]
+        for job in workflow["jobs"]:
+            executor = job["executor"]
+            permissions = (
+                required(executor["path"])
+                if executor["kind"] == "reusable_workflow"
+                else job["permissions"] or workflow["permissions"]
+            )
+            for name, level in permissions.items():
+                if level not in _PERMISSION_LEVEL:
+                    raise CIGraphError("CI graph permission level is invalid")
+                if _PERMISSION_LEVEL[level] > _PERMISSION_LEVEL.get(result.get(name, "none"), 0):
+                    result[name] = level
+            if executor["kind"] == "reusable_workflow":
+                job["permissions"] = dict(sorted(permissions.items()))
+        visiting.remove(path)
+        resolved[path] = dict(sorted(result.items()))
+        return resolved[path]
+
+    for workflow in graph["workflows"]:
+        required(workflow["path"])
+
+
 def reusable_artifact_binding(
     graph: dict[str, Any], called_workflow: dict[str, Any], artifact: str,
 ) -> tuple[str, tuple[tuple[dict[str, Any], dict[str, Any]], ...]] | None:

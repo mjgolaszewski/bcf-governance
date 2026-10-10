@@ -38,6 +38,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Derived each local reusable-workflow caller's least permission upper bound
+  from its callee graph before rendering, preventing provider startup failures
+  while preserving fail-closed candidate write-authority checks.
 - Scoped provider artifact stabilization to the controller-transition namespace,
   so unrelated concurrent evidence uploads cannot force an agent-timed routine
   rotation retry while exact transition receipts remain fully authenticated.

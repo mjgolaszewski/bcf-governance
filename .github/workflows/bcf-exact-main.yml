@@ -45,7 +45,7 @@ jobs:
     name: Run exact-main governance evidence
     needs: [admit]
     if: ${{ needs.admit.result == 'success' }}
-    permissions: {contents: read}
+    permissions: {actions: read, contents: read}
     uses: ./.github/workflows/governance.yml
     with: {evaluation_mode: workitem, use_prior_evidence: true, comparison_base_sha: '${{ github.event.before }}', evaluation_target: P31-P0-03}
   trusted-controller-build:
