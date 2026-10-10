@@ -14,7 +14,9 @@ class RepositoryContextError(ValueError):
     """Raised when the local Git subject is unsafe or ambiguous."""
 
 
-def _git(repo_root: Path, *args: str) -> str:
+def git_value(repo_root: Path, *args: str) -> str:
+    """Read one exact Git value for a preflight-owned consumer."""
+
     result = subprocess.run(
         ["git", *args], cwd=repo_root, capture_output=True, text=True, check=False
     )
@@ -44,15 +46,15 @@ def tracked_files(repo_root: Path) -> list[Path]:
 def git_state(repo_root: Path) -> dict[str, Any]:
     """Authenticate one clean committed subject and its contained symlinks."""
 
-    status_value = _git(
+    status_value = git_value(
         repo_root, "status", "--porcelain=v1", "--untracked-files=all", "--ignored=no"
     )
     if status_value:
         raise RepositoryContextError("preflight requires a clean committed HEAD")
-    commit = _git(repo_root, "rev-parse", "HEAD")
-    tree = _git(repo_root, "rev-parse", "HEAD^{tree}")
+    commit = git_value(repo_root, "rev-parse", "HEAD")
+    tree = git_value(repo_root, "rev-parse", "HEAD^{tree}")
     root = repo_root.resolve()
-    for line in _git(repo_root, "ls-files", "-s").splitlines():
+    for line in git_value(repo_root, "ls-files", "-s").splitlines():
         fields = line.split(maxsplit=3)
         if len(fields) != 4 or fields[0] != "120000":
             continue

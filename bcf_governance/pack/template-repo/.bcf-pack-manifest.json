@@ -1088,7 +1088,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/preflight_repository_context.py": {
       "operation": "copy",
-      "sha256": "1d3143b13f2b1005a594f2f65769d4fe06344195b6f7dfa9a3a1c0dbb788cc59"
+      "sha256": "81cba003754fbd54e7c405a26ca4cc390aebafe833d17ea32723eeda7c242d97"
     },
     "scripts/_bcf_runtime/governance_validation/product_certification.py": {
       "installation_scope": "self_authority",
@@ -1175,7 +1175,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "c14a04526989c38fad97955dc1445fad32db5d933c915becc0a83015a0a4e06a"
+      "sha256": "e20e05ecf75248bed9cb51a406a3f15ed96dcb2b0ee69324f66c4b4e9af29176"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",

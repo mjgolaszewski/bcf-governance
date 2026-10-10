@@ -49,6 +49,7 @@ from .interpreter_environment import (
 from .prior_evidence_receipts import load_prior_receipts, load_provisional_transport, provisional_receipts
 from .governance_validation.preflight_repository_context import (
     RepositoryContextError,
+    git_value as _git,
     git_state as _inspect_git_state,
     pr_context as _pr_context,
     tracked_files as _tracked_files,
