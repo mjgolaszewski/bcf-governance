@@ -35,6 +35,9 @@ from .governance_validation.runner import check_editorial, validate_repo_root
 from .governance_validation.structural_limits import validate_structural_limits
 from .governance_validation.authored_phase_state import validate_authored_phase_state
 from .governance_validation.ci_state_matrix import validate_ci_state_matrix
+from .governance_validation.required_artifacts import (
+    validate_pull_request_changelog_update,
+)
 from .governance_validation.preflight_diagnostics import write_preflight_diagnostic
 from .install_governance_pack import _pack_manifest_entries
 from .interpreter_environment import (
@@ -44,7 +47,12 @@ from .interpreter_environment import (
     verify_interpreter_environment_projection,
 )
 from .prior_evidence_receipts import load_prior_receipts, load_provisional_transport, provisional_receipts
-from .governance_validation.preflight_repository_context import pr_context as _pr_context
+from .governance_validation.preflight_repository_context import (
+    RepositoryContextError,
+    git_state as _inspect_git_state,
+    pr_context as _pr_context,
+    tracked_files as _tracked_files,
+)
 from .governance_validation.preflight_negative_controls import (
     NegativeControlPreflightError,
     inspect_negative_control_targets,
@@ -92,50 +100,11 @@ _UniqueKeyLoader.add_constructor(
 )
 
 
-def _git(repo_root: Path, *args: str) -> str:
-    result = subprocess.run(
-        ["git", *args], cwd=repo_root, capture_output=True, text=True, check=False
-    )
-    if result.returncode != 0:
-        raise PreflightError(result.stderr.strip() or f"git {' '.join(args)} failed")
-    return result.stdout.strip()
-
-
-def _tracked_files(repo_root: Path) -> list[Path]:
-    output = subprocess.run(
-        ["git", "ls-files", "-z"], cwd=repo_root, capture_output=True, check=True
-    ).stdout
-    return [
-        repo_root / value.decode("utf-8")
-        for value in output.split(b"\0")
-        if value and (repo_root / value.decode("utf-8")).is_file()
-    ]
-
-
 def _git_state(repo_root: Path) -> dict[str, Any]:
-    status_value = _git(
-        repo_root, "status", "--porcelain=v1", "--untracked-files=all", "--ignored=no"
-    )
-    if status_value:
-        raise PreflightError("preflight requires a clean committed HEAD")
-    commit = _git(repo_root, "rev-parse", "HEAD")
-    tree = _git(repo_root, "rev-parse", "HEAD^{tree}")
-    root = repo_root.resolve()
-    for line in _git(repo_root, "ls-files", "-s").splitlines():
-        fields = line.split(maxsplit=3)
-        if len(fields) != 4 or fields[0] != "120000":
-            continue
-        relative = Path(fields[3])
-        link = repo_root / relative
-        target = Path(os.readlink(link))
-        resolved = target if target.is_absolute() else (link.parent / target).resolve()
-        if target.is_absolute() or not resolved.is_relative_to(root):
-            raise PreflightError(f"tracked symlink escapes governed tree: {relative}")
-    return {
-        "commit_sha": commit,
-        "tree_sha": tree,
-        "status_porcelain_sha256": hashlib.sha256(status_value.encode()).hexdigest(),
-    }
+    try:
+        return _inspect_git_state(repo_root)
+    except RepositoryContextError as exc:
+        raise PreflightError(str(exc)) from exc
 
 
 def _syntax_checks(repo_root: Path) -> dict[str, int]:
@@ -568,6 +537,14 @@ def run_preflight(
     ci_state_matrix = step(
         "ci-state-matrix", lambda: validate_ci_state_matrix(repo_root)
     )
+    if mode == "pr" and os.environ.get("BCF_ENFORCE_PR_CHANGELOG", "").lower() in {
+        "1",
+        "true",
+    }:
+        step(
+            "pr-changelog",
+            lambda: validate_pull_request_changelog_update(repo_root),
+        )
     structural_limits = step(
         "structural-limits", lambda: validate_structural_limits(repo_root)
     )

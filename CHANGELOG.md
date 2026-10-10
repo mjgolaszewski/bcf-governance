@@ -18,6 +18,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Moved the mandatory pull-request changelog delta check to the first cheap
+  preflight boundary, before structural scans, full governance validation,
+  evidence planning, or provider submission.
 - Made phase-retention cleanup authenticate current schema-3 terminal truth through
   its typed phase-closure proposition while retaining legacy schema-2 validation,
   preventing a certified phase from falling back to authored-only history.

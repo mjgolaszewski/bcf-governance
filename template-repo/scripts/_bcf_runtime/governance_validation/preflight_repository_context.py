@@ -2,11 +2,73 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 from pathlib import Path
 import re
 import subprocess
 from typing import Any
+
+
+class RepositoryContextError(ValueError):
+    """Raised when the local Git subject is unsafe or ambiguous."""
+
+
+def _git(repo_root: Path, *args: str) -> str:
+    result = subprocess.run(
+        ["git", *args], cwd=repo_root, capture_output=True, text=True, check=False
+    )
+    if result.returncode != 0:
+        raise RepositoryContextError(
+            result.stderr.strip() or f"git {' '.join(args)} failed"
+        )
+    return result.stdout.strip()
+
+
+def tracked_files(repo_root: Path) -> list[Path]:
+    """Return exact tracked regular files for deterministic source checks."""
+
+    output = subprocess.run(
+        ["git", "ls-files", "-z"],
+        cwd=repo_root,
+        capture_output=True,
+        check=True,
+    ).stdout
+    return [
+        repo_root / value.decode("utf-8")
+        for value in output.split(b"\0")
+        if value and (repo_root / value.decode("utf-8")).is_file()
+    ]
+
+
+def git_state(repo_root: Path) -> dict[str, Any]:
+    """Authenticate one clean committed subject and its contained symlinks."""
+
+    status_value = _git(
+        repo_root, "status", "--porcelain=v1", "--untracked-files=all", "--ignored=no"
+    )
+    if status_value:
+        raise RepositoryContextError("preflight requires a clean committed HEAD")
+    commit = _git(repo_root, "rev-parse", "HEAD")
+    tree = _git(repo_root, "rev-parse", "HEAD^{tree}")
+    root = repo_root.resolve()
+    for line in _git(repo_root, "ls-files", "-s").splitlines():
+        fields = line.split(maxsplit=3)
+        if len(fields) != 4 or fields[0] != "120000":
+            continue
+        relative = Path(fields[3])
+        link = repo_root / relative
+        target = Path(os.readlink(link))
+        resolved = target if target.is_absolute() else (link.parent / target).resolve()
+        if target.is_absolute() or not resolved.is_relative_to(root):
+            raise RepositoryContextError(
+                f"tracked symlink escapes governed tree: {relative}"
+            )
+    return {
+        "commit_sha": commit,
+        "tree_sha": tree,
+        "status_porcelain_sha256": hashlib.sha256(status_value.encode()).hexdigest(),
+    }
 
 
 def pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
