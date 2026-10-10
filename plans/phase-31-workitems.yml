@@ -10,7 +10,7 @@ document:
 workitems:
 - id: P31-P0-01
   priority: P0
-  status: IN_PROGRESS
+  status: DONE
   summary: deliver project the consumer-owned assurance graph
   acceptance:
   - requires-phase-closure:P30

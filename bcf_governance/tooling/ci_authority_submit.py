@@ -10,6 +10,10 @@ from typing import Any, Callable
 from .ci_github_api import GitHubAPI
 from .ci_github_values import GitHubValueError, remote_repository
 from .ci_candidate_pr import ensure_candidate_pull_request
+from .candidate_provider_recovery import (
+    execute_candidate_provider_recovery,
+    resolve_candidate_provider_recovery,
+)
 from .ci_graph_contracts import validate_ci_graph
 from .ci_graph_post_merge import authored_candidate_title, post_merge_evaluation
 from .ci_recovery_frontier import protected_merge_frontier, submission_frontier
@@ -249,6 +253,19 @@ def submit_candidate(
         title=candidate_title,
         frontier_sha256=str(proved_frontier["frontier_sha256"]),
     )
+    provider_frontier = resolve_candidate_provider_recovery(
+        provider_api,
+        repository=repository,
+        pull_request=pull_request,
+        base_sha=identity.base_sha,
+        head_sha=identity.commit_sha,
+        tree_sha=identity.tree_sha,
+    )
+    provider_action = str(provider_frontier["action"]["kind"])
+    if provider_action == "stop":
+        raise ProspectiveValidationError(
+            "exact candidate provider execution has a terminal failure"
+        )
     auto_merge, merge_frontier = _request_protected_auto_merge(
         root,
         provider_api=provider_api,
@@ -257,8 +274,15 @@ def submit_candidate(
         pull_request=pull_request,
         prospective_frontier_sha256=str(proved_frontier["frontier_sha256"]),
     )
+    provider_retry_submitted = execute_candidate_provider_recovery(
+        provider_api,
+        repository=repository,
+        frontier=provider_frontier,
+    )
     return {
-        "status": "submitted",
+        "status": (
+            "provider_retry_submitted" if provider_retry_submitted else "submitted"
+        ),
         "subject": identity.as_dict(),
         "repository": repository,
         "branch": context.head_ref,
@@ -269,5 +293,7 @@ def submit_candidate(
         "recovery_frontier": proved_frontier,
         "pull_request": pull_request,
         "protected_merge_frontier": merge_frontier,
+        "candidate_provider_frontier": provider_frontier,
+        "provider_retry_submitted": provider_retry_submitted,
         "auto_merge": auto_merge,
     }

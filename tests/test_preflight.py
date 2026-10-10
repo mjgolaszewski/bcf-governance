@@ -619,6 +619,40 @@ def test_context_budget_failure_precedes_evidence_session_allocation(
     assert calls == ["git-state", "authored-phase-state", "ci-state-matrix", "structural-limits"]
 
 
+def test_required_pr_changelog_fails_before_structural_or_expensive_validation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[str] = []
+    monkeypatch.setenv("BCF_ENFORCE_PR_CHANGELOG", "true")
+    monkeypatch.setattr(preflight, "_git_state", lambda _: {})
+    monkeypatch.setattr(preflight, "validate_authored_phase_state", lambda _: {})
+    monkeypatch.setattr(preflight, "validate_ci_state_matrix", lambda _: {})
+    monkeypatch.setattr(
+        preflight,
+        "validate_pull_request_changelog_update",
+        lambda _: (_ for _ in ()).throw(
+            GovernanceValidationError("every pull request must update CHANGELOG.md")
+        ),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "validate_structural_limits",
+        lambda _: pytest.fail("structural validation ran after missing changelog"),
+    )
+
+    with pytest.raises(
+        GovernanceValidationError, match="every pull request must update CHANGELOG.md"
+    ):
+        preflight.run_preflight(tmp_path, mode="pr", trace=calls.append)
+
+    assert calls == [
+        "git-state",
+        "authored-phase-state",
+        "ci-state-matrix",
+        "pr-changelog",
+    ]
+
+
 def test_editorial_contract_rejection_is_a_preflight_failure(tmp_path: Path) -> None:
     checker = tmp_path / ".github/scripts/check_editorial_contract.py"
     checker.parent.mkdir(parents=True)

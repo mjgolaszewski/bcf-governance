@@ -1545,6 +1545,11 @@ three registries or chooses a planner/truth mapping.
 | Standard-v3 adopter, Racecar, or AgentBus executes the projected graph | exact installed graph, candidate subject, session, policy, producer receipts and planner decisions | run the same planner, grouped receipt resolver, truth and certification consumers used by self-governance | application-software closure bound to adopter-owned claims | BCF implementation files becoming the product under test or self-controller/release authority entering the adopter |
 | Receipt names a valid producer but wrong/extra claim | exact graph and authenticated receipt bytes | reject before bounded or terminal truth | no claim or certification authority | producer identity laundering claim membership |
 | Graph declaration is missing, malformed, stale, or ambiguous | exact profile/version and source/projection inventory | reject before mutation, evidence allocation, or adopter qualification | typed closed diagnostic | falling back to a hand-authored gate, generic `inapplicable`, or broad execution that hides contradictory ownership |
+| Implemented consumer-graph workitem declares bounded closeout | exact `DONE` workitem, active parent phase, authenticated implementation evidence, canonical successor edge, and current controller custody | mechanically project exact-main intent from PR progress to `workitem:P31-P0-01`, preserve the exact proposition through finalizer and publisher, and reuse only still-applicable proof | `workitem_closed:P31-P0-01`, P31 remains active, and P31-P0-02 alone becomes eligible | terminal phase or release authority, a hand-selected target, stale subject evidence, or starting successor implementation before authenticated bounded closure |
+| PR candidate omits its mandatory changelog delta | exact base/head comparison and pull-request validation lane | reject immediately after Git/authored-state/matrix checks and before structural scans, full governance validation, evidence planning, or provider submission | typed `every pull request must update CHANGELOG.md` failure with zero evidence or provider work | discovering the missing deterministic delta after semantic scans or any long-running gate |
+| Preflight repository-context responsibility is extracted | exact clean-subject reader, tracked-file inventory, symlink boundary, and every callable consumer edge | preserve one context-owned Git primitive for subject inspection and negative-control target resolution; characterization covers both consumers before projection | identical subject and negative-control behavior with the orchestration module below its LOC cap | moving bytes while dropping a callable dependency, duplicating Git semantics, or discovering an unbound consumer during the prospective train |
+| Immutable provider GET ends with a TLS EOF before any response | exact unchanged GET request identity, closed retry taxonomy, attempt ordinal, and bounded delays | classify `SSLEOFError` as transient transport and retry the identical read through the existing provider-read frontier; stop after the existing fixed attempt bound | either one exact authenticated response or typed exhausted-read failure with no mutation | asking an agent to resubmit the train, retrying a mutation/4xx/semantic failure, rewriting request identity, or retrying without a bound |
+| Exact candidate provider run finishes truth but transiently fails its terminal artifact upload | exact repository/PR/base/head/tree, protected-base workflow bytes and provider workflow/run/attempt/job/check identities, successful prerequisite and semantic-truth steps, absent terminal artifact, and one closed transient provider annotation | derive one bounded rerun of that exact authenticated workflow run through the candidate submit recovery frontier; the retry remains noncertifying until its own complete attempt succeeds | one provider-native retry of the same run identity, or a typed pending/terminal result with no agent-selected operation | rerunning a semantic failure, accepting a missing truth file as transport failure, changing subject/workflow, retrying more than once, manually choosing a run, or treating the prior failed attempt as evidence |
 
 ```text
 consumer-owned application assurance declaration
@@ -1559,6 +1564,14 @@ consumer-owned application assurance declaration
                           -> adopter truth
                              -> PR certification / exact-main / upgrade closure
 ```
+
+The candidate-provider recovery edge is owned by the same `bcf ci submit`
+entrypoint.  It authenticates the existing exact PR and protected-base workflow
+before classifying provider execution.  Absent or active runs are observations,
+successful runs continue toward certification, semantic or ambiguous failures
+stop, and only the closed terminal-upload transport state selects one exact
+provider retry.  Neither the agent nor a workflow-local heuristic chooses a run,
+attempt, failure class, or successor action.
 
 The consumer graph compiler is an existing-profile compilation responsibility,
 not a new command or lifecycle stage.  Existing installed graphs remain exact

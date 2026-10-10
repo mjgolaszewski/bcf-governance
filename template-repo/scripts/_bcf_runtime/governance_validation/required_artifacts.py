@@ -119,7 +119,7 @@ def _validate_required_artifacts(repo_root: Path, manifest: dict[str, Any]) -> l
     if len(parsed_versions) != len(set(parsed_versions)):
         raise GovernanceValidationError("CHANGELOG.md release versions must be unique")
     _validate_changelog_workflow_contract(repo_root)
-    _validate_pull_request_changelog_update(repo_root)
+    validate_pull_request_changelog_update(repo_root)
     return list(paths.values())
 
 
@@ -238,3 +238,9 @@ def _validate_pull_request_changelog_update(repo_root: Path) -> None:
         )
     if "CHANGELOG.md" not in changed.stdout.splitlines():
         raise GovernanceValidationError("every pull request must update CHANGELOG.md")
+
+
+def validate_pull_request_changelog_update(repo_root: Path) -> None:
+    """Run the canonical PR changelog delta check at cheap-preflight time."""
+
+    _validate_pull_request_changelog_update(repo_root)

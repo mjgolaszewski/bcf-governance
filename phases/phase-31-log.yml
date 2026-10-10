@@ -19,7 +19,7 @@ summary:
   - the canonical release train state and custody DAG owns every downstream P31 permutation before implementation
 workitems:
 - id: P31-P0-01
-  status: IN_PROGRESS
+  status: DONE
   summary: deliver project the consumer-owned assurance graph
 - id: P31-P0-02
   status: TODO
@@ -45,6 +45,10 @@ execution_evidence:
   - immutable v2.2.1 release 408165126 binds certified commit 7f18153d91b367c05f42a6c32a769fad586543cb and tree 239c193e9d4c374668147b30cd4ca671dad1f3b5 after exact-asset adopter qualification and credential retirement
   - P31-P0-01 introduces one pure consumer-graph compiler that projects the existing gate catalog, gate contracts, and claim model without adding a command, lifecycle stage, or authority boundary
   - focused graph, legacy-profile, installed-profile, runtime-mirror, manifest, context-ownership, and semantic-operation checks passed on the reconciled candidate
+  - PR 389 certified and merged exact candidate 4556a0d42234e703cf8af609e44302719c8175ef as main d1dce307233f36127a3d7a56cca2fe3ad8a9d47e with tree 4e6342da4fc202f8eae93323f0603b4aa49ea9a6
+  - exact-main 38001728570 attempt 2 authenticated the installed d1dce307 controller and reused 16 unchanged claims without recomputation; P31-P0-01 now declares its bounded terminal proposition for exact-main certification
+  - bounded closeout moved mandatory changelog validation to the cheap front door, preserved every extracted Git consumer edge, and routed response-less TLS EOFs through the existing immutable provider-read retry frontier before provider submission
+  - disposable candidate-source upgrades of TradeFlow Lite f7e9166 Racecar Standard-v3 73f99c6 and AgentBus Standard-v3 5ae0951 passed strict governance validation without mutating maintained repositories
 closeout_requirements:
   claims:
     workitems_closed:
@@ -77,4 +81,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- implement only P31-P0-01 from the canonical state matrix and consumer-owned assurance graph contract
+- certify workitem_closed:P31-P0-01 on exact main before implementing P31-P0-02

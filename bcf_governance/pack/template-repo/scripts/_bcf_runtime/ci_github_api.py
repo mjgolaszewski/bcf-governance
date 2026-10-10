@@ -24,6 +24,7 @@ from .release_versions import ReleaseVersionError, parse_release_tag
 from .provider_read import ProviderReadAttempt
 from .ci_github_transport import GitHubTransportError, request_bytes, request_json
 from .ci_github_pr_mutations import GitHubPRMutationMixin
+from .ci_github_check_observations import GitHubCheckObservationMixin
 from .ci_github_values import (
     GitHubValueError,
     positive_id as _provider_positive_id,
@@ -44,7 +45,7 @@ class GitHubContent:
     content: bytes
 
 
-class GitHubAPI(GitHubPRMutationMixin):
+class GitHubAPI(GitHubCheckObservationMixin, GitHubPRMutationMixin):
     """Small JSON-only client whose token is supplied by the trusted workflow."""
 
     def __init__(self, *, token: str, api_url: str = "https://api.github.com") -> None:
