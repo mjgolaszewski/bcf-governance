@@ -2383,10 +2383,6 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         step for step in builder_steps
         if step["name"] == "Upload the exact-main trusted controller bundle"
     )
-    pending_rotation_only = (
-        "${{ steps.exact-main-applicability.outputs.controller_state == "
-        "'pending_rotation' }}"
-    )
     artifact_required = (
         "${{ "
         + exact_main_controller_artifact_condition(
@@ -2399,11 +2395,6 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     rotation_steps = rendered[".github/workflows/bcf-controller-rotation.yml"][
         "jobs"
     ]["authorize"]["steps"]
-    download = next(
-        step for step in rotation_steps
-        if step["name"]
-        == "Download the exact provider-built routine controller for authorization"
-    )
     route = next(
         step for step in rotation_steps
         if step["name"]
@@ -2413,11 +2404,15 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
         step for step in rotation_steps
         if step["name"] == "Authorize the exact protected-merge controller transition"
     )
-    assert download["if"] == pending_rotation_only.replace(
-        "exact-main-applicability", "controller-route"
+    assert not any(
+        step["name"]
+        == "Download the exact provider-built routine controller for authorization"
+        for step in rotation_steps
     )
-    assert rotation_steps.index(route) < rotation_steps.index(download)
-    assert rotation_steps.index(download) < rotation_steps.index(authorize)
+    assert "controller_state=" not in route["run"]
+    assert "controller-rotation authorize" in authorize["run"]
+    assert "--artifact-dir" in authorize["run"]
+    assert rotation_steps.index(route) < rotation_steps.index(authorize)
     finalizer = rendered[".github/workflows/bcf-trusted-finalizer.yml"]["jobs"][
         "finalize"
     ]
