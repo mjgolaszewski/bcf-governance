@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 import json
 from pathlib import Path
 import re
+import subprocess
 from typing import Any
 
 from jsonschema import Draft202012Validator
@@ -18,6 +20,7 @@ from .automation_contracts import (
 )
 from .ci_github_api import GitHubAPI
 from .ci_github_identity import GitHubControllerError, positive_int
+from .ci_github_identity import resolve_main
 
 
 PROTECTION_PATH = Path("governance/github-protection.yml")
@@ -39,6 +42,20 @@ class ProtectionResult:
             "ruleset_id": self.ruleset_id,
             "differences": list(self.differences),
         }
+
+
+@dataclass(frozen=True)
+class ProviderProtectionSnapshot:
+    status: str
+    sha256: str
+    ruleset_id: int | None
+    detail: dict[str, Any] | None
+
+    def declaration_identity(self) -> dict[str, object]:
+        value: dict[str, object] = {"status": self.status, "sha256": self.sha256}
+        if self.ruleset_id is not None:
+            value["ruleset_id"] = self.ruleset_id
+        return value
 
 
 def _validate_protection(value: object, *, schema_path: Path) -> dict[str, Any]:
@@ -104,10 +121,16 @@ def desired_ruleset(declaration: dict[str, Any]) -> dict[str, Any]:
             {
                 "type": "pull_request",
                 "parameters": {
-                    "allowed_merge_methods": ["merge", "squash", "rebase"],
+                    "allowed_merge_methods": rule.get(
+                        "allowed_merge_methods", ["merge", "squash", "rebase"]
+                    ),
                     "dismiss_stale_reviews_on_push": rule["dismiss_stale_reviews_on_push"],
-                    "require_code_owner_review": False,
-                    "require_extra_approval_for_unattributed_changes": False,
+                    "require_code_owner_review": rule.get(
+                        "require_code_owner_review", False
+                    ),
+                    "require_extra_approval_for_unattributed_changes": rule.get(
+                        "require_extra_approval_for_unattributed_changes", False
+                    ),
                     "require_last_push_approval": rule["require_last_push_approval"],
                     "required_approving_review_count": rule["required_approving_review_count"],
                     "required_review_thread_resolution": rule["required_review_thread_resolution"],
@@ -178,8 +201,6 @@ def _select_declared_ruleset(
     ]
     if len(matches) > 1:
         raise GitHubControllerError("provider has duplicate canonical rulesets")
-    if matches:
-        return matches[0]
     branch = declaration["repository"]["branch"]
     overlaps = []
     for item in inventory:
@@ -191,6 +212,15 @@ def _select_declared_ruleset(
         raise GitHubControllerError(
             "provider has ambiguous rulesets targeting the declared branch"
         )
+    if matches:
+        matched_id = positive_int(matches[0].get("id"), field="ruleset ID")
+        if not overlaps or positive_int(
+            overlaps[0].get("id"), field="ruleset ID"
+        ) != matched_id:
+            raise GitHubControllerError(
+                "canonical ruleset does not target the declared branch"
+            )
+        return overlaps[0]
     return overlaps[0] if overlaps else None
 
 
@@ -202,6 +232,54 @@ def _targets_declared_branch(value: dict[str, Any], *, branch: str) -> bool:
     includes = ref_name.get("include") if isinstance(ref_name, dict) else None
     return isinstance(includes, list) and (
         f"refs/heads/{branch}" in includes or "~DEFAULT_BRANCH" in includes
+    )
+
+
+def provider_protection_snapshot(
+    api: GitHubAPI, *, repository: str, branch: str
+) -> ProviderProtectionSnapshot:
+    """Bind one complete branch-target ruleset observation or exact absence."""
+
+    matches: list[dict[str, Any]] = []
+    for item in api.repository_rulesets(repository):
+        ruleset_id = positive_int(item.get("id"), field="ruleset ID")
+        detail = api.ruleset(repository, ruleset_id)
+        if _targets_declared_branch(detail, branch=branch):
+            matches.append(detail)
+    if len(matches) > 1:
+        raise GitHubControllerError(
+            "provider has ambiguous rulesets targeting the declared branch"
+        )
+    detail = matches[0] if matches else None
+    if detail is not None and (
+        "bypass_actors" not in detail or not isinstance(detail["bypass_actors"], list)
+    ):
+        raise GitHubControllerError(
+            "protection inspection bypass actors are absent or redacted"
+        )
+    ruleset_id = (
+        positive_int(detail.get("id"), field="ruleset ID")
+        if detail is not None
+        else None
+    )
+    payload = {
+        "repository": repository,
+        "branch": branch,
+        "status": "present" if detail is not None else "missing",
+        "ruleset": (
+            {"id": ruleset_id, **_normalized_provider(detail)}
+            if detail is not None
+            else None
+        ),
+    }
+    digest = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    return ProviderProtectionSnapshot(
+        status=str(payload["status"]),
+        sha256=digest,
+        ruleset_id=ruleset_id,
+        detail=detail,
     )
 
 
@@ -231,7 +309,12 @@ def inspect_protection_declaration(
     if selected is None:
         return ProtectionResult("missing", repository, None, ("ruleset",))
     ruleset_id = str(positive_int(selected.get("id"), field="ruleset ID"))
-    actual = _normalized_provider(api.ruleset(repository, ruleset_id))
+    detail = selected
+    if "bypass_actors" not in detail or not isinstance(detail["bypass_actors"], list):
+        raise GitHubControllerError(
+            "protection inspection bypass actors are absent or redacted"
+        )
+    actual = _normalized_provider(detail)
     desired = _normalized_provider(desired_ruleset(declaration))
     differences = tuple(
         sorted(key for key in desired if actual.get(key) != desired.get(key))
@@ -305,16 +388,35 @@ def apply_protection(
     api: GitHubAPI, *, repo_root: Path, repository: str
 ) -> ProtectionResult:
     declaration = load_protection(repo_root)
-    _require_current_canary(
-        api,
-        repo_root=repo_root,
-        repository=repository,
-        declaration=declaration,
-    )
+    if declaration["schema_version"] == "1.1":
+        _require_reviewed_protection_source(
+            api,
+            repo_root=repo_root,
+            repository=repository,
+            declaration=declaration,
+        )
+    else:
+        _require_current_canary(
+            api,
+            repo_root=repo_root,
+            repository=repository,
+            declaration=declaration,
+        )
     current = inspect_protection(api, repo_root=repo_root, repository=repository)
     desired = desired_ruleset(declaration)
     if current.status == "clean":
         return current
+    if declaration["schema_version"] == "1.1":
+        expected = declaration["projection"]["provider_prestate"]
+        snapshot = provider_protection_snapshot(
+            api,
+            repository=repository,
+            branch=declaration["repository"]["branch"],
+        )
+        if snapshot.declaration_identity() != expected:
+            raise GitHubControllerError(
+                "provider protection changed after the reviewed proposal"
+            )
     if current.ruleset_id is None:
         updated = api.create_ruleset(repository, desired)
     else:
@@ -324,3 +426,41 @@ def apply_protection(
     if verified.status != "clean" or verified.ruleset_id != ruleset_id:
         raise GitHubControllerError("provider protection did not converge to the declaration")
     return ProtectionResult("applied", repository, ruleset_id, ())
+
+
+def _require_reviewed_protection_source(
+    api: GitHubAPI,
+    *,
+    repo_root: Path,
+    repository: str,
+    declaration: dict[str, Any],
+) -> None:
+    """Require an ordinary-adopter declaration from exact protected main."""
+
+    root = repo_root.resolve()
+    status = subprocess.run(
+        ["git", "status", "--porcelain"], cwd=root, capture_output=True, text=True,
+        check=False,
+    )
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=root, capture_output=True, text=True,
+        check=False,
+    )
+    if status.returncode or status.stdout or head.returncode:
+        raise GitHubControllerError(
+            "protection apply requires an exact clean reviewed source checkout"
+        )
+    main = resolve_main(api, repository)
+    if head.stdout.strip() != main.checkout_sha:
+        raise GitHubControllerError(
+            "protection declaration is not the current protected-main source"
+        )
+    remote = api.content(repository, PROTECTION_PATH.as_posix(), ref=main.checkout_sha)
+    local = (root / PROTECTION_PATH).read_bytes()
+    if remote.content != local:
+        raise GitHubControllerError(
+            "provider protected-main declaration differs from the reviewed source"
+        )
+    expected_repo = declaration["repository"]
+    if int(main.repository_id) != int(expected_repo["numeric_id"]):
+        raise GitHubControllerError("reviewed protection repository identity changed")

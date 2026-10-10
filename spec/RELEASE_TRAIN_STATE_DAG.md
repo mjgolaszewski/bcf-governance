@@ -1580,6 +1580,54 @@ semantics; BCF supplies deterministic compilation and proof mechanics, never
 application truth. Compilation is a pure projection and must not be classified
 or registered as an authority-conferring mutation effect.
 
+### P31-P0-02 existing-repository protection projection state matrix
+
+Protection projection extends the existing installer/adopter and protection
+comparison owners.  The provider snapshot is authenticated input, never source
+authority.  A source declaration becomes applicable only after its exact
+proposal has been reviewed in Git; provider mutation is then compare-before-
+apply and concludes only after a fresh GET-only observation matches the reviewed
+declaration.  Ordinary adopters never acquire BCF self-controller, recovery, or
+release topology through this contract.
+
+| State | Authenticated inputs | Deterministic action | Authoritative result | Fail-closed boundary |
+| --- | --- | --- | --- | --- |
+| Existing Lite or Standard-v3 repository has provider protection but no source declaration | exact repository numeric/full-name/default-branch identity, installed adopter profile/topology, GET-only complete ruleset inventory and detail including `bypass_actors`, protected context and publisher App identity | compile one proposal through the existing install/adopt transaction without mutating provider state | reviewable source declaration bound to the exact provider snapshot and adopter topology; no protection authority yet | wrong repository/branch/profile, redacted or omitted bypass actors, ambiguous overlapping rulesets, unsupported provider rule, or any self-only topology |
+| Ordinary-adopter protection contract becomes readable | exact public-contract registry, schema versions, v1.0 self declaration and v1.1 adopter declaration | activate v1.1 while retaining v1.0 as readable migration-only input | self and adopter declarations are each validated only by their typed branch | schema bytes advancing without the public registry, treating v1.0 self policy as an adopter proposal, or accepting an undeclared version |
+| New adopter has neither source declaration nor provider ruleset | exact repository identity, default branch, installed profile/topology, required certification context and publisher App identity, authenticated empty branch-target inventory | compile the canonical no-bypass proposal through the same owner | reviewable declaration describing one future ruleset; provider remains unchanged | treating missing inventory as redaction, creating a second protection plane, or deriving controller/recovery/release authority |
+| One adoption invocation compiles an exact provider proposal and applies its local projection | one immutable compiled declaration containing the complete provider pre-state identity | pass that exact plan to the existing transactional projection owner without rereading or recompiling provider state | local bytes equal the single reviewed in-memory plan; later provider drift is handled only by submit/apply comparison | compiling twice, mixing observations across provider instants, or silently replacing the plan between check and write |
+| Exact proposal is present but unreviewed | proposal digest, provider snapshot digest/identity, candidate commit/tree and protected-base relationship | require the declaration to enter protected main through ordinary PR review/certification | reviewed source declaration only | local proposal, dirty tree, candidate self-assertion, or provider mutation before protected merge |
+| Reviewed declaration and provider snapshot still match proposal base | protected-main declaration bytes/commit/tree, exact repository/default branch, current complete provider snapshot and proposal snapshot identity | derive compare-before-apply and update the sole selected ruleset only when bytes differ | one provider mutation bound to reviewed source and exact pre-state | stale provider snapshot, changed repository identity, bypass drift, ambiguous target, or unreviewed declaration |
+| Provider already matches reviewed declaration | same exact reviewed source plus fresh complete provider observation | emit clean/no-transition and perform no mutation | source/provider parity receipt | generic inapplicable, omission treated as empty, or redundant update |
+| Provider mutation returns success | exact mutation request/pre-state/result identity and reviewed declaration | re-read through the GET-only inspector and compare the complete normalized ruleset | verified source/provider parity | trusting mutation response alone, missing/redacted bypass data, unexpected actors/rules, or changed ruleset identity |
+| Existing source declaration is exact on upgrade | protected-main declaration, installed profile/topology, current complete provider snapshot | preserve declaration and verify equality; never replace adopter policy with pack defaults | stable ordinary-adopter protection contract | placeholder rewrite, reverse inference from provider state, silent policy broadening, or self overlay leakage |
+| Source/provider drift is observed | exact reviewed declaration and fresh complete provider state | report typed drift and derive only the reviewed apply lane | no certification or merge authority until parity | accepting drift, caller-selected exemption, or provider state becoming source authority |
+| Provider bypass data is absent, redacted, or unexpected | exact response envelope and reviewed expected empty bypass set | reject before proposal/apply/submit/prospective evidence | typed protection-inspection failure | interpreting omission as empty or tolerating an undeclared bypass actor |
+| Protection parity is consumed by submit/prospective/upgrade | reviewed declaration digest, verified provider snapshot/receipt, exact repository and subject/policy identities | authenticate parity and bind it to the consumer proposition | ordinary adopter validation may continue | stale receipt, wrong repository/subject/policy, self-only protection substituted, or protection observation conferring truth |
+| Exact candidate proof is complete and the final immutable default-branch fetch suffers a transport disconnect | unchanged fetch argv/refspec/remote, exact proved candidate identity, closed transient diagnostic, and bounded attempt ordinal | retry the identical read once through the local context owner, then reauthenticate base/head/tree before push | either one fresh exact context or a typed exhausted-read failure while the content-addressed proof remains reusable | rerunning evidence, retrying authentication/ref/semantic failures, changing refspec, pushing without the fresh observation, or unbounded agent retry |
+
+```text
+invariants
+  provider observation is not source authority; review precedes mutation;
+  complete bypass identity is mandatory; ordinary adopters gain no self authority
+    -> primitives
+       repository/default-branch/profile/topology identity, complete ruleset snapshot,
+       proposal digest, reviewed source subject, comparison and mutation receipts
+      -> contracts
+         compile proposal -> protected review -> compare-before-apply -> GET-only verify
+        -> producers
+           installer/adopt projection, scoped inspector, provider mutation adapter
+          -> consumers
+             submit, prospective train, Lite/Standard-v3 upgrade and validation
+```
+
+Every protection transition must be walked through fresh/existing Lite and
+Standard-v3 repositories, absent/exact/drifted/ambiguous rulesets, omitted or
+unexpected bypass actors, proposal review and base advancement, apply response
+loss, post-apply verification, candidate submission, prospective validation,
+and upgrade.  The proposal is data projected by an existing owner, not a new
+workflow, command sequence, or source of authority.
+
 ### P30/P31 outward construction tree
 
 ```text

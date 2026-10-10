@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: aee92242b6c9026ec7b66747fb33fd287fd1801238cd347bc2faa6591196d7ff
-  after_sha256: 88028885905973b0d3455fae9b00521f51864d5dd42959c38c66af1bcec21cbd
+  after_sha256: e87bd233e108c88c4c819679d6c2102a4e40632f83f6d8ed2f13a73122b27d95
   findings:
   - collapsed the unpublished 2.0 candidate and 2.1 repair chronology into the released 2.1 product contract
   disposition: historical
@@ -114,10 +114,10 @@ documents:
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
   before_sha256: 20c117d4b68fe68eb1d09f589aad1313db327e17aaf4350c75745b938c0b40c4
-  after_sha256: 20c117d4b68fe68eb1d09f589aad1313db327e17aaf4350c75745b938c0b40c4
+  after_sha256: 3fe6c11619946d9e7507f7e79a3ae92aa4a95933f167cc9517e9265e0d8078dd
   findings:
-  - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  - replaced obsolete controller ceremony with the canonical 2.1 adopter and semantic-intent operation
+  disposition: revised
 - path: docs/assets/bcf-governance-pack-hero.jpg
   audience: BCF evaluators and adopters
   canonical_topic_owner: README.md
@@ -141,7 +141,7 @@ documents:
   canonical_topic_owner: spec/RELEASE_TRAIN_STATE_DAG.md
   topic_role: canonical
   before_sha256: fb551755d1a298cd3b30ad5df691ec8539e5c01b68643ff2251e39f5e8498bc1
-  after_sha256: c2ca6883686c86e80ca9ef7b33fde242fc219d0a604c1c2a4fbff802c7da94a8
+  after_sha256: 223b4ffccf597c03542381f6bffb2a0b1182d2b72addc00e1b98e12a7369ced1
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: revised

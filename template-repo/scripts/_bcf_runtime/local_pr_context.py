@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
+import time
 from typing import Callable, Iterator
 
 from .local_execution_admission import project_python_environment
@@ -31,6 +32,13 @@ class LocalValidationLane(str, Enum):
 
 
 Runner = Callable[..., subprocess.CompletedProcess[str]]
+_REMOTE_READ_ATTEMPTS = 2
+_TRANSIENT_REMOTE_READ_MARKERS = (
+    "connection reset by peer",
+    "operation timed out",
+    "received disconnect",
+    "remote end hung up unexpectedly",
+)
 
 
 @dataclass(frozen=True)
@@ -67,13 +75,34 @@ def _checked(runner: Runner, command: list[str], *, cwd: Path) -> str:
     return result.stdout.strip()
 
 
+def _checked_remote_read(runner: Runner, command: list[str], *, cwd: Path) -> str:
+    """Run one immutable Git remote read with one closed transient retry."""
+
+    if command[:2] not in (["git", "ls-remote"], ["git", "fetch"]):
+        raise LocalPRError("remote-read retry accepts immutable Git reads only")
+    for attempt in range(_REMOTE_READ_ATTEMPTS):
+        result = runner(command, cwd=cwd)
+        if result.returncode == 0:
+            return result.stdout.strip()
+        detail = result.stderr.strip() or result.stdout.strip() or "command failed"
+        transient = any(
+            marker in detail.lower() for marker in _TRANSIENT_REMOTE_READ_MARKERS
+        )
+        if not transient or attempt + 1 == _REMOTE_READ_ATTEMPTS:
+            raise LocalPRError(f"{' '.join(command)}: {detail}")
+        time.sleep(1.0)
+    raise AssertionError("bounded remote read loop did not terminate")
+
+
 def resolve_local_pr_context(
     repo_root: Path, *, remote: str = "origin", runner: Runner = _run
 ) -> LocalPRContext:
     """Resolve/fetch remote default branch and prove current HEAD descends from it."""
 
     repo_root = repo_root.resolve()
-    symbolic = _checked(runner, ["git", "ls-remote", "--symref", remote, "HEAD"], cwd=repo_root)
+    symbolic = _checked_remote_read(
+        runner, ["git", "ls-remote", "--symref", remote, "HEAD"], cwd=repo_root
+    )
     prefix = "ref: refs/heads/"
     default_branch = ""
     for line in symbolic.splitlines():
@@ -83,7 +112,7 @@ def resolve_local_pr_context(
     if not default_branch or "/" in default_branch and default_branch.startswith("../"):
         raise LocalPRError("remote HEAD did not identify a safe default branch")
     remote_ref = f"refs/remotes/{remote}/{default_branch}"
-    _checked(
+    _checked_remote_read(
         runner,
         ["git", "fetch", "--no-tags", remote, f"refs/heads/{default_branch}:{remote_ref}"],
         cwd=repo_root,

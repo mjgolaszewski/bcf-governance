@@ -75,6 +75,10 @@ from .operational_observations import (
     validate_operational_observation,
     validate_progress_stream,
 )
+from .ordinary_protection_projection import (
+    validate_direct_protection_prospective,
+    validate_ordinary_protection_submission,
+)
 from .local_pr_context import (
     CandidateIdentity,
     LocalPRContext,
@@ -223,6 +227,16 @@ def _run_prospective_train(
         raise ProspectiveValidationError(
             "prospective train subject does not match the exact committed tree"
         )
+    if repository is not None and provider_api is not None:
+        try:
+            validate_ordinary_protection_submission(
+                provider_api,
+                repo_root=root,
+                repository=repository,
+                base_sha=context.base_sha,
+            )
+        except GitHubControllerError as exc:
+            raise ProspectiveValidationError(str(exc)) from exc
     try:
         requested_scope = evaluation_scope(
             semantic_intent,
@@ -742,6 +756,13 @@ def run_prospective_train(
                 graph = compiled_graph.graph
                 lane = post_merge_evaluation(graph).lane
             except CIGraphError as exc:
+                raise ProspectiveValidationError(str(exc)) from exc
+            try:
+                validate_direct_protection_prospective(
+                    provider_api, repo_root=repo_root, repository=repository,
+                    lane=lane, remote=remote, runner=runner,
+                )
+            except GitHubControllerError as exc:
                 raise ProspectiveValidationError(str(exc)) from exc
             admission = validate_local_toolchain(
                 repo_root.resolve(),

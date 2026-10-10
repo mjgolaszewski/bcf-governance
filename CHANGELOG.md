@@ -8,6 +8,11 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Projected existing-repository protection through the ordinary installer and
+  GitHub adoption owners: complete provider state now produces one reviewable
+  source declaration, and only exact protected-main bytes may be applied and
+  verified. Missing or redacted bypass actors, repository drift, stale
+  pre-state, ambiguous rulesets, and self-authority leakage fail closed.
 - Compiled Standard-v3 adopter claims, execution groups, dependencies,
   producers, qualifications, gates, and catalog metadata from one
   consumer-owned assurance graph while preserving exact installed and Lite-v1
@@ -18,6 +23,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Retried one exact immutable Git remote read after a closed transient
+  disconnect so candidate submission preserves reusable proof rather than
+  requiring an agent-selected restart; authentication and semantic failures
+  remain terminal.
 - Made canonical candidate submission authenticate an exact failed provider
   run and derive the sole bounded retry when semantic truth succeeded but its
   terminal artifact upload failed with a closed transient transport error;

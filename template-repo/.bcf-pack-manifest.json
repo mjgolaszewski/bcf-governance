@@ -306,7 +306,7 @@
     },
     "schemas/github-protection.schema.json": {
       "operation": "copy",
-      "sha256": "3ffffe503150f6d8cab3499b4cbca490bea3ad79ba6b7bbfbf49a388ee7d3d2a"
+      "sha256": "5a3114eb2c113cce9a16a5b3ef346fbae0e050e43f3af73b1cedb386ef8d8c2e"
     },
     "schemas/governance-profile.schema.json": {
       "operation": "copy",
@@ -520,7 +520,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "128759f181febd37a362744ea1b7b64deddd3f6be105a2b145723b35c9897ff7"
+      "sha256": "9169935db770e746277c760cee378b1ae2ad952924eb822b1f068ad0e35f5021"
     },
     "scripts/_bcf_runtime/ci_candidate_pr.py": {
       "operation": "copy",
@@ -528,7 +528,7 @@
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "5f9779779899ceba34cbb738780dcbfaa8a47829fb3722ae1d4a58ea056bba26"
+      "sha256": "3f659cab1cd48437f277f7b6b5c375bbf3b0b4cd3ea8ae59a74f67ca889b2ba5"
     },
     "scripts/_bcf_runtime/ci_controller_adoption.py": {
       "operation": "copy",
@@ -940,7 +940,7 @@
     },
     "scripts/_bcf_runtime/github_protection.py": {
       "operation": "copy",
-      "sha256": "da23affe3b24c0a683702576e99bf4d29a7d8a77d1feedb9f9289d06b2a669c6"
+      "sha256": "1a620e291c779df993c9df81004dfb3cbd0173754478d51ce0ad3136ece34671"
     },
     "scripts/_bcf_runtime/governance_cleanup/__init__.py": {
       "operation": "copy",
@@ -1151,11 +1151,11 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "9473846f969dc0985b5694d61f63c8a012232b1dda901a49142e91523980a69f"
+      "sha256": "66ac4c57f5a21dabf181a8434a24de8f5991e5021ca8a47de8041780f575ef58"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
-      "sha256": "7bd06e5a2a75d4c5e1ac3aa77915019374ab0d0a9da149d373bcd4491b83f52b"
+      "sha256": "c1ebacb90b5d05a89a1ec45b5879904a36f685b82aebfa0b4a7dd2939adb922c"
     },
     "scripts/_bcf_runtime/local_proof_bundles.py": {
       "operation": "copy",
@@ -1176,6 +1176,10 @@
     "scripts/_bcf_runtime/operational_observations.py": {
       "operation": "copy",
       "sha256": "f860f8fbeb760096cd5e0f4d8ac2a78e56237b5eb56e1b893bd0405a9086e3cf"
+    },
+    "scripts/_bcf_runtime/ordinary_protection_projection.py": {
+      "operation": "copy",
+      "sha256": "4ffcc6fb4b40f872ef33c0721699ea4400dd82cf892a1cb9a1fb8830fee8eee3"
     },
     "scripts/_bcf_runtime/pack_installation_scope.py": {
       "operation": "copy",

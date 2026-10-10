@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from types import SimpleNamespace
 
 import pytest
 
@@ -118,6 +119,58 @@ def test_local_pr_context_fetches_default_branch_and_supplies_exact_event(tmp_pa
     )
     result = run_local_pr_validation(repo, command=(sys.executable, "-c", script))
     assert result.returncode == 0, result.stderr
+
+
+def test_local_pr_context_retries_only_identical_transient_remote_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    commands: list[tuple[str, ...]] = []
+    fetches = 0
+
+    def runner(command: list[str], **_kwargs: object) -> SimpleNamespace:
+        nonlocal fetches
+        commands.append(tuple(command))
+        if command[:2] == ["git", "ls-remote"]:
+            return SimpleNamespace(
+                returncode=0, stdout="ref: refs/heads/main\tHEAD\n", stderr=""
+            )
+        if command[:2] == ["git", "fetch"]:
+            fetches += 1
+            if fetches == 1:
+                return SimpleNamespace(
+                    returncode=128,
+                    stdout="",
+                    stderr="Received disconnect from provider:11: Bye Bye",
+                )
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        if command[1:3] == ["rev-parse", "--verify"]:
+            return SimpleNamespace(returncode=0, stdout="a" * 40 + "\n", stderr="")
+        if command[1:3] == ["merge-base", "--is-ancestor"]:
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        if command[1:3] == ["branch", "--show-current"]:
+            return SimpleNamespace(returncode=0, stdout="feature\n", stderr="")
+        raise AssertionError(command)
+
+    monkeypatch.setattr("bcf_governance.tooling.local_pr_context.time.sleep", lambda _value: None)
+    context = resolve_local_pr_context(tmp_path, runner=runner)
+    fetch_commands = [command for command in commands if command[:2] == ("git", "fetch")]
+    assert fetch_commands == [fetch_commands[0], fetch_commands[0]]
+    assert context.base_sha == "a" * 40
+
+
+def test_local_pr_context_never_retries_nontransient_remote_failure(
+    tmp_path: Path,
+) -> None:
+    calls = 0
+
+    def runner(command: list[str], **_kwargs: object) -> SimpleNamespace:
+        nonlocal calls
+        calls += 1
+        return SimpleNamespace(returncode=128, stdout="", stderr="Permission denied")
+
+    with pytest.raises(LocalPRError, match="Permission denied"):
+        resolve_local_pr_context(tmp_path, runner=runner)
+    assert calls == 1
 
 
 def test_pr_only_changelog_rule_fails_locally_before_remote_ci(tmp_path: Path) -> None:
