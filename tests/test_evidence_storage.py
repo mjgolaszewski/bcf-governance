@@ -141,6 +141,13 @@ def test_storage_topology_requires_semantics_for_ambiguous_lane_input() -> None:
     assert result.state == "unknown"
     assert result.reasons == ("incomplete_or_malformed_topology:ambiguous",)
 
+    graph["workflows"][0]["jobs"].append(
+        {"id": "second-consumer", "produces": [], "consumes": ["ambiguous"]}
+    )
+    assert classify_storage_topology(
+        graph, {"activation": "enabled"}
+    ).state == "unknown"
+
 
 def test_compact_run_output_never_masquerades_as_reusable_input() -> None:
     graph = _topology_graph(durable=True)

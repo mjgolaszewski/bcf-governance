@@ -87,9 +87,7 @@ def classify_storage_topology(
         consumers = _edges(graph, str(key), "consumes")
         if kind == "lane-input" and producers and consumers and path not in _COMPACT_PATHS:
             semantics = value.get("storage_semantics")
-            if semantics == "reusable-input-handoff" or (
-                semantics is None and len(consumers) > 1
-            ):
+            if semantics == "reusable-input-handoff":
                 legacy.append(str(key))
             elif semantics != "compact-run-output":
                 ambiguous.append(str(key))
