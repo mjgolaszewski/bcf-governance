@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from email.message import Message
 import hashlib
+import ssl
 import time
 from typing import Any, Callable, ContextManager
 from urllib.error import HTTPError, URLError
@@ -45,7 +46,7 @@ def _retry_after(headers: Message | None, fallback: float) -> float:
 
 def _transient_url_error(exc: URLError) -> bool:
     reason = exc.reason
-    return isinstance(reason, (TimeoutError, ConnectionResetError)) or any(
+    return isinstance(reason, (TimeoutError, ConnectionResetError, ssl.SSLEOFError)) or any(
         marker in str(reason).lower()
         for marker in ("timed out", "connection reset")
     )

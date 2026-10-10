@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from email.message import Message
 from io import BytesIO
+import ssl
 from urllib.error import HTTPError, URLError
 from urllib.request import Request
 
@@ -102,6 +103,29 @@ def test_provider_get_exhaustion_and_invalid_retry_after_fail_closed() -> None:
             opener=lambda *_args, **_kwargs: (_ for _ in ()).throw(_http(503, "31")),
             sleeper=lambda _delay: None,
         )
+
+
+def test_provider_get_retries_exact_read_after_tls_eof() -> None:
+    request = Request("https://api.github.test/value", method="GET")
+    seen: list[Request] = []
+    delays: list[float] = []
+
+    def opener(value: Request, *, timeout: int) -> _Response:
+        assert timeout == 30
+        seen.append(value)
+        if len(seen) == 1:
+            raise URLError(ssl.SSLEOFError(8, "EOF occurred in violation of protocol"))
+        return _Response(b"exact")
+
+    with open_provider_get(
+        request,
+        timeout=30,
+        opener=opener,
+        sleeper=delays.append,
+    ) as response:
+        assert response.read() == b"exact"
+    assert seen == [request, request]
+    assert delays == [1.0]
 
 
 def test_provider_retry_rejects_mutation_method() -> None:

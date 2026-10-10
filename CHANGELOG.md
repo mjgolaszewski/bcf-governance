@@ -18,6 +18,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Classified response-less TLS EOFs on immutable provider GETs through the
+  existing bounded read retry frontier without retrying mutations, authority
+  failures, or semantic failures.
 - Moved the mandatory pull-request changelog delta check to the first cheap
   preflight boundary, before structural scans, full governance validation,
   evidence planning, or provider submission.
