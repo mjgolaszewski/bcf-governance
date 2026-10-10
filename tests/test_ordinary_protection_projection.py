@@ -16,6 +16,8 @@ from bcf_governance.tooling.github_protection import (
     load_protection,
 )
 from bcf_governance.tooling.ordinary_protection_projection import (
+    OrdinaryProtectionProjection,
+    apply_ordinary_protection_projection,
     compile_ordinary_protection_proposal,
     validate_ordinary_protection_submission,
 )
@@ -155,6 +157,34 @@ def test_new_repository_compiles_one_no_bypass_proposal() -> None:
     assert declaration["ruleset"]["required_status_checks"] == [
         {"context": "bcf/pr-certification", "integration_id": 15368}
     ]
+
+
+def test_apply_uses_exact_compiled_snapshot_without_provider_reread(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "adopter"
+    (root / "governance").mkdir(parents=True)
+    (root / "schemas").mkdir()
+    shutil.copy2(
+        ROOT / "schemas/github-protection.schema.json",
+        root / "schemas/github-protection.schema.json",
+    )
+    api = ProjectionAPI(_provider_ruleset())
+    planned = OrdinaryProtectionProjection(
+        "actionable",
+        ("governance/github-protection.yml",),
+        compile_ordinary_protection_proposal(
+            api, repo_root=ROOT, repository=REPOSITORY
+        ),
+    )
+    api.repository = lambda _repository: (_ for _ in ()).throw(  # type: ignore[method-assign]
+        AssertionError("provider state was reread after planning")
+    )
+    applied = apply_ordinary_protection_projection(
+        repo_root=root, projection=planned
+    )
+    assert applied.status == "changed"
+    assert load_protection(root) == planned.declaration
 
 
 @pytest.mark.parametrize("bypass", [[{"actor_id": 7}], "redacted"])

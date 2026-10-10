@@ -339,6 +339,38 @@ def _render(value: dict[str, Any]) -> bytes:
     return yaml.safe_dump(value, sort_keys=False, width=1000).encode("utf-8")
 
 
+def apply_ordinary_protection_projection(
+    *, repo_root: Path, projection: OrdinaryProtectionProjection
+) -> OrdinaryProtectionProjection:
+    """Write the exact previously compiled proposal without rereading provider state."""
+
+    root = repo_root.resolve()
+    if projection.status == "clean":
+        return projection
+    if projection.status != "actionable" or projection.changed_paths != (
+        PROTECTION_PATH.as_posix(),
+    ):
+        raise GitHubControllerError("ordinary protection projection plan is invalid")
+    declaration = projection.declaration
+
+    def mutate(shadow: Path) -> None:
+        target = shadow / PROTECTION_PATH
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(_render(declaration))
+
+    apply_transaction(
+        root, managed_paths=(PROTECTION_PATH.as_posix(),), mutate_shadow=mutate
+    )
+    loaded = load_protection(root)
+    if loaded != declaration:
+        raise GitHubControllerError(
+            "ordinary protection projection did not converge"
+        )
+    return OrdinaryProtectionProjection(
+        "changed", (PROTECTION_PATH.as_posix(),), declaration
+    )
+
+
 def project_ordinary_protection(
     api: GitHubAPI, *, repo_root: Path, repository: str, apply: bool
 ) -> OrdinaryProtectionProjection:
@@ -368,19 +400,9 @@ def project_ordinary_protection(
             "actionable", (PROTECTION_PATH.as_posix(),), declaration
         )
 
-    def mutate(shadow: Path) -> None:
-        target = shadow / PROTECTION_PATH
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(_render(declaration))
-
-    apply_transaction(
-        root, managed_paths=(PROTECTION_PATH.as_posix(),), mutate_shadow=mutate
-    )
-    loaded = load_protection(root)
-    if loaded != declaration:
-        raise GitHubControllerError(
-            "ordinary protection projection did not converge"
-        )
-    return OrdinaryProtectionProjection(
-        "changed", (PROTECTION_PATH.as_posix(),), declaration
+    return apply_ordinary_protection_projection(
+        repo_root=root,
+        projection=OrdinaryProtectionProjection(
+            "actionable", (PROTECTION_PATH.as_posix(),), declaration
+        ),
     )

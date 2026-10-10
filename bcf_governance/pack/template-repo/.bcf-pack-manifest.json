@@ -528,7 +528,7 @@
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "7603b01a61ac6023de46ec0bf003e276ec2fd9230448470f021e52cad982dd0f"
+      "sha256": "3f659cab1cd48437f277f7b6b5c375bbf3b0b4cd3ea8ae59a74f67ca889b2ba5"
     },
     "scripts/_bcf_runtime/ci_controller_adoption.py": {
       "operation": "copy",
@@ -1179,7 +1179,7 @@
     },
     "scripts/_bcf_runtime/ordinary_protection_projection.py": {
       "operation": "copy",
-      "sha256": "821b0071c57bfcaa2fabc265e022594006024837fef2a08b9d5e866cc3f40a4e"
+      "sha256": "4ffcc6fb4b40f872ef33c0721699ea4400dd82cf892a1cb9a1fb8830fee8eee3"
     },
     "scripts/_bcf_runtime/pack_installation_scope.py": {
       "operation": "copy",

@@ -14,7 +14,10 @@ from .ci_adopt_github import (
     plan_github_adoption,
     render_github_adoption,
 )
-from .ordinary_protection_projection import project_ordinary_protection
+from .ordinary_protection_projection import (
+    apply_ordinary_protection_projection,
+    project_ordinary_protection,
+)
 from .ci_graph_commands import add_graph_parser, run_graph_command
 from .automation_commands import adopt_dependabot
 from .automation_contracts import AutomationContractError, load_automation_registry
@@ -312,12 +315,10 @@ def main(argv: list[str] | None = None) -> None:
                         apply=False,
                     )
                 result = apply_ci_graph(args.repo_root) if args.apply else check_ci_graph(args.repo_root)
-                if args.apply and args.repository:
-                    protection = project_ordinary_protection(
-                        GitHubAPI(token=os.environ.get("GITHUB_TOKEN", "")),
+                if args.apply and protection is not None:
+                    protection = apply_ordinary_protection_projection(
                         repo_root=args.repo_root,
-                        repository=args.repository,
-                        apply=True,
+                        projection=protection,
                     )
                 changed_paths = set(result.changed_paths)
                 if protection is not None:

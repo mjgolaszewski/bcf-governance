@@ -22,7 +22,7 @@ contracts:
   ci_graph: {path: schemas/ci-graph.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
   ci_graph_extension: {path: schemas/ci-graph-extension.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
   automation_producers: {path: schemas/automation-producers.schema.json, version_field: schema_version, readable_versions: ['1.0', '1.1'], active_version: '1.1', migration_only_versions: []}
-  github_protection: {path: schemas/github-protection.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
+  github_protection: {path: schemas/github-protection.schema.json, version_field: schema_version, readable_versions: ['1.0', '1.1'], active_version: '1.1', migration_only_versions: ['1.0']}
   semantic_families: {path: schemas/semantic-families.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
   application_operations: {path: schemas/application-operations.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
   semantic_lock: {path: schemas/semantic-lock.schema.json, version_field: schema_version, readable_versions: ['1.0'], active_version: '1.0', migration_only_versions: []}
