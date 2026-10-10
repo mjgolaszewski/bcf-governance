@@ -22,6 +22,20 @@ _EDGES = {
     ("candidate_submission", "prospective_proved"): (
         "push_exact_candidate", "pr_provider_pending"
     ),
+    ("candidate_provider", "not_started"): (
+        "observe_exact_provider_run", "pr_provider_pending"
+    ),
+    ("candidate_provider", "active"): (
+        "observe_same_provider_run", "pr_provider_pending"
+    ),
+    ("candidate_provider", "succeeded"): (
+        "observe_pr_certification", "pr_certification_pending"
+    ),
+    ("candidate_provider", "retryable_terminal_transport"): (
+        "rerun_exact_provider_workflow", "pr_provider_pending"
+    ),
+    ("candidate_provider", "terminal_failure"): ("stop", "terminal_blocked"),
+    ("candidate_provider", "retry_exhausted"): ("stop", "terminal_blocked"),
     ("provider_read", "transient"): ("retry_identical_read", "provider_observation"),
     ("provider_read", "success"): ("consume_exact_read", "operation_continues"),
     ("provider_read", "terminal"): ("stop", "terminal_blocked"),
@@ -107,6 +121,38 @@ def compile_recovery_frontier(
             for name in required - {"repository"}
         ) or not str(identity["repository"]):
             raise RecoveryFrontierError("candidate recovery identity is not exact")
+    if operation == "candidate_provider":
+        common = {
+            "repository", "repository_id", "pull_request", "base_sha",
+            "head_sha", "tree_sha", "workflow_id", "workflow_path",
+        }
+        run_fields = {"run_id", "run_attempt"}
+        expected = common if state == "not_started" else common | run_fields
+        if state in {"retryable_terminal_transport", "retry_exhausted"}:
+            expected |= {"terminal_job_id"}
+        if set(identity) != expected or any(
+            _SHA.fullmatch(str(identity[name])) is None
+            for name in {"base_sha", "head_sha", "tree_sha"}
+        ):
+            raise RecoveryFrontierError(
+                "candidate provider recovery identity is not exact"
+            )
+        numeric = {"repository_id", "pull_request", "workflow_id"}
+        if state != "not_started":
+            numeric |= run_fields
+        if state in {"retryable_terminal_transport", "retry_exhausted"}:
+            numeric |= {"terminal_job_id"}
+        if (
+            not str(identity["repository"])
+            or str(identity["workflow_path"]) != ".github/workflows/governance.yml"
+            or any(
+                not str(identity[name]).isdigit() or int(str(identity[name])) < 1
+                for name in numeric
+            )
+        ):
+            raise RecoveryFrontierError(
+                "candidate provider recovery identity is invalid"
+            )
     if operation == "protected_merge":
         required = {
             "repository", "repository_id", "pull_request", "base_sha",
@@ -192,6 +238,33 @@ def submission_frontier(
         owner="ci_authority_submit.submit_candidate",
         prerequisites=("clean_tree", "base_ancestor", "exact_lifecycle_intent"),
         preserve=("exact_candidate_identity",),
+    )
+
+
+def candidate_provider_frontier(
+    *, identity: Mapping[str, Any], state: str
+) -> dict[str, Any]:
+    """Derive one action from the authenticated exact candidate provider state."""
+
+    return compile_recovery_frontier(
+        operation="candidate_provider",
+        state=state,
+        identity=identity,
+        owner="candidate_provider_recovery.resolve_candidate_provider_recovery",
+        prerequisites=(
+            "exact_pr_subject",
+            "protected_base_workflow",
+            "exact_run_attempt_inventory",
+            "closed_failure_classification",
+        ),
+        preserve=("exact_candidate_identity",),
+        invalidate=("failed_attempt_non_authority",)
+        if state == "retryable_terminal_transport" else (),
+        idempotency_key=(
+            f"{identity.get('repository')}:{identity.get('pull_request')}:"
+            f"{identity.get('head_sha')}:{identity.get('run_id', 'pending')}:"
+            f"{identity.get('run_attempt', 'pending')}"
+        ),
     )
 
 

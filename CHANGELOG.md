@@ -18,6 +18,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Made canonical candidate submission authenticate an exact failed provider
+  run and derive the sole bounded retry when semantic truth succeeded but its
+  terminal artifact upload failed with a closed transient transport error;
+  semantic, ambiguous, changed-subject, and repeated failures still stop.
 - Classified response-less TLS EOFs on immutable provider GETs through the
   existing bounded read retry frontier without retrying mutations, authority
   failures, or semantic failures.

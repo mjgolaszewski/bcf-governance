@@ -45,6 +45,19 @@ def _state(monkeypatch: pytest.MonkeyPatch) -> tuple[LocalPRContext, CandidateId
             {"action": {"kind": "request_provider_auto_merge"}},
         ),
     )
+    monkeypatch.setattr(
+        submit,
+        "resolve_candidate_provider_recovery",
+        lambda *_a, **_k: {
+            "operation": "candidate_provider",
+            "action": {"kind": "observe_exact_provider_run"},
+        },
+    )
+    monkeypatch.setattr(
+        submit,
+        "execute_candidate_provider_recovery",
+        lambda *_a, **_k: False,
+    )
     return context, identity
 
 
@@ -87,6 +100,47 @@ def test_submit_owns_prospective_train_then_pushes_only_proved_sha(
     assert result["recovery_frontier"]["action"]["kind"] == "push_exact_candidate"
     assert result["recovery_frontier"]["release_authority"] is False
     assert result["pull_request"]["number"] == 7
+    assert result["provider_retry_submitted"] is False
+
+
+def test_submit_executes_only_the_recovery_frontier_selected_provider_retry(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    _state(monkeypatch)
+    monkeypatch.setattr(
+        submit,
+        "run_prospective_train",
+        lambda *_a, **_k: {
+            "status": "prospectively_admissible_provider_proof_required"
+        },
+    )
+    monkeypatch.setattr(submit, "_confirm_unchanged", lambda *_a, **_k: None)
+    frontier = {
+        "operation": "candidate_provider",
+        "action": {"kind": "rerun_exact_provider_workflow"},
+    }
+    monkeypatch.setattr(
+        submit, "resolve_candidate_provider_recovery", lambda *_a, **_k: frontier
+    )
+    observed: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        submit,
+        "execute_candidate_provider_recovery",
+        lambda *_a, **kwargs: observed.append(kwargs["frontier"]) or True,
+    )
+
+    result = submit.submit_candidate(
+        tmp_path,
+        python_executable=Path("/python"),
+        provider_api=object(),  # type: ignore[arg-type]
+        runner=lambda *_a, **_k: SimpleNamespace(
+            returncode=0, stdout="", stderr=""
+        ),
+    )
+
+    assert result["status"] == "provider_retry_submitted"
+    assert result["provider_retry_submitted"] is True
+    assert observed == [frontier]
 
 
 def test_submit_rejects_wrong_intent_before_proof_or_push(
