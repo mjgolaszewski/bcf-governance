@@ -17,7 +17,8 @@ from jsonschema import Draft202012Validator
 from .ci_graph_errors import CIGraphError, execution_graph_error
 from .ci_graph_dag import ancestors as _ancestors, job_graph as _job_graph
 from .ci_graph_reusable_artifacts import (
-    reusable_artifact_binding, validate_reusable_binding_declarations,
+    project_reusable_workflow_permissions, reusable_artifact_binding,
+    validate_reusable_binding_declarations,
 )
 from .ci_graph_execution import (
     controller_command_ids,
@@ -265,6 +266,7 @@ def _apply_canonical_defaults(graph: dict[str, Any]) -> None:
             executor = job["executor"]
             if executor["kind"] == "reusable_workflow":
                 executor.setdefault("inputs", {})
+    project_reusable_workflow_permissions(graph)
 
 
 def _validate_step_components(graph: dict[str, Any]) -> None:
