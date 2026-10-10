@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from .evidence_scheduling import validate_test_splinter_plan
+from .test_splinter_proofs import load_test_splinter_proof
 
 
 def captured_receipt_succeeded(path: Path) -> bool:
@@ -39,6 +40,82 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _capture_splinter_proofs(
+    repo_root: Path,
+    output_dir: Path,
+    report: dict[str, Any],
+) -> tuple[bool, list[dict[str, str]]]:
+    proofs = report.get("proofs")
+    results = report.get("results")
+    splinters = report.get("splinters")
+    if not all(isinstance(value, list) for value in (proofs, results, splinters)):
+        return False, []
+    expected = [
+        str(value.get("id")) for value in splinters if isinstance(value, dict)
+    ]
+    if len(expected) != len(splinters) or len(proofs) != len(expected):
+        return False, []
+    result_by_id = {
+        str(value.get("id")): value for value in results if isinstance(value, dict)
+    }
+    proof_by_id = {
+        str(value.get("id")): value for value in proofs if isinstance(value, dict)
+    }
+    if set(result_by_id) != set(expected) or set(proof_by_id) != set(expected):
+        return False, []
+    captured: list[dict[str, str]] = []
+    try:
+        for splinter_id in expected:
+            result = result_by_id[splinter_id]
+            entry = proof_by_id[splinter_id]
+            if result.get("proof_status") != entry.get("status"):
+                return False, []
+            if result.get("returncode") != 0:
+                if any(entry.get(key) is not None for key in ("manifest", "junit", "proof_sha256")):
+                    return False, []
+                continue
+            if entry.get("status") not in {"fresh", "reused"}:
+                return False, []
+            paths: list[Path] = []
+            for key in ("manifest", "junit"):
+                relative = entry.get(key)
+                if (
+                    not isinstance(relative, str)
+                    or Path(relative).is_absolute()
+                    or ".." in Path(relative).parts
+                ):
+                    return False, []
+                source = (repo_root / relative).resolve()
+                source.relative_to(repo_root.resolve())
+                if not source.is_file():
+                    return False, []
+                paths.append(source)
+            manifest, junit = paths
+            decoded = load_test_splinter_proof(manifest)
+            if (
+                decoded["proof_sha256"] != entry.get("proof_sha256")
+                or decoded["applicability"]["splinter_id"] != splinter_id
+                or decoded["result"]["junit_sha256"] != _sha256(junit)
+            ):
+                return False, []
+            for source, suffix, media_type in (
+                (manifest, "proof.json", "application/json"),
+                (junit, "junit.xml", "application/junit+xml"),
+            ):
+                destination = output_dir / f"{splinter_id}.{suffix}"
+                shutil.copy2(source, destination)
+                captured.append(
+                    {
+                        "path": destination.name,
+                        "media_type": media_type,
+                        "sha256": _sha256(destination),
+                    }
+                )
+    except (KeyError, OSError, TypeError, ValueError):
+        return False, []
+    return True, captured
 
 
 def _pytest_counts(text: str) -> dict[str, int]:
@@ -215,9 +292,15 @@ def test_observations(
                 plan_valid = True
             except ValueError:
                 plan_valid = False
+            proofs_valid, proof_artifacts = (
+                _capture_splinter_proofs(repo_root, output_dir, report)
+                if isinstance(report, dict) else (False, [])
+            )
+            artifacts.extend(proof_artifacts)
             valid = (
                 isinstance(report, dict)
                 and plan_valid
+                and proofs_valid
                 and isinstance(report.get("partition_sha256"), str)
                 and isinstance(report.get("node_inventory"), list)
                 and len(report["node_inventory"]) == len(set(report["node_inventory"]))
@@ -253,6 +336,14 @@ def test_observations(
                 "splinter_count": len(report.get("splinters", [])) if isinstance(report, dict) else 0,
                 "duration_source": report.get("duration_source") if isinstance(report, dict) else None,
                 "fallback_reason": report.get("fallback_reason") if isinstance(report, dict) else None,
+                "fresh_proof_count": sum(
+                    1 for value in report.get("proofs", [])
+                    if isinstance(value, dict) and value.get("status") == "fresh"
+                ) if isinstance(report, dict) else 0,
+                "reused_proof_count": sum(
+                    1 for value in report.get("proofs", [])
+                    if isinstance(value, dict) and value.get("status") == "reused"
+                ) if isinstance(report, dict) else 0,
             }
     manifest_value = test_contract.get("expected_node_manifest")
     expected_nodes: list[str] = []

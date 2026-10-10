@@ -3,14 +3,18 @@
 from __future__ import annotations
 
 import argparse
+import json
+import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
 import yaml
 
 from .ci_graph_contracts import validate_ci_graph
+from .ci_github_api import GitHubAPI
 from .ci_graph_execution import (
     local_gate_job_environments,
     resolve_local_job_environment,
@@ -19,6 +23,7 @@ from .evidence_sessions import load_session, select_session
 from .evidence_session_schema import is_planned_session
 from .evidence_test_adapters import captured_receipt_succeeded
 from .governance_evidence import capture_gate
+from .test_splinter_proofs import materialize_prior_provider_proofs
 
 
 SHARD_DISPLAY_NAMES = tuple(f"Evidence shard {index}" for index in range(4))
@@ -236,42 +241,69 @@ def main(argv: list[str] | None = None) -> None:
             planned_targets=planned,
             execution_dag=execution_dag,
         )
-    for gate in gates:
-        if args.all_planned:
-            receipt = capture_gate(
-                repo_root,
-                gate,
-                output_root / gate,
-                python_executable=sys.executable,
-                session_manifest=session_manifest,
-                job_environment=resolve_local_job_environment(
-                    graph_environments[gate], repo_root
+    prior_temp: tempfile.TemporaryDirectory[str] | None = None
+    try:
+        if not args.all_planned and "test" in gates and os.environ.get("GITHUB_ACTIONS") == "true":
+            prior_temp = tempfile.TemporaryDirectory(prefix="bcf-prior-splinter-proofs-")
+            prior_root = Path(prior_temp.name)
+            report = materialize_prior_provider_proofs(
+                GitHubAPI(
+                    token=os.environ.get("GITHUB_TOKEN", ""),
+                    api_url=os.environ.get("GITHUB_API_URL", "https://api.github.com"),
                 ),
+                prior_root,
+                repository=os.environ.get("GITHUB_REPOSITORY", ""),
+                repository_id=os.environ.get("GITHUB_REPOSITORY_ID", ""),
+                head_sha=os.environ.get("GITHUB_SHA", ""),
+                run_id=os.environ.get("GITHUB_RUN_ID", ""),
+                current_attempt=int(os.environ.get("GITHUB_RUN_ATTEMPT", "0")),
+                job=os.environ.get("GITHUB_JOB", ""),
+                shard=int(args.shard_index),
             )
-            if not captured_receipt_succeeded(receipt):
-                raise SystemExit(1)
-            continue
-        result = subprocess.run(
-            [
-                sys.executable,
-                "scripts/governance_evidence.py",
-                "--repo-root",
-                ".",
-                "run",
-                "--gate",
-                gate,
-                "--output",
-                str(output_root / gate),
-                "--python",
-                sys.executable,
-                "--session-manifest",
-                str(session_manifest),
-            ],
-            cwd=repo_root,
-            check=False,
-        )
-        if result.returncode:
-            raise SystemExit(result.returncode)
+            (prior_root / "provider.json").write_text(
+                json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            )
+            os.environ["BCF_PRIOR_SPLINTER_PROOF_ROOT"] = str(prior_root)
+            os.environ["BCF_EVIDENCE_SHARD"] = str(args.shard_index)
+        for gate in gates:
+            if args.all_planned:
+                receipt = capture_gate(
+                    repo_root,
+                    gate,
+                    output_root / gate,
+                    python_executable=sys.executable,
+                    session_manifest=session_manifest,
+                    job_environment=resolve_local_job_environment(
+                        graph_environments[gate], repo_root
+                    ),
+                )
+                if not captured_receipt_succeeded(receipt):
+                    raise SystemExit(1)
+                continue
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "scripts/governance_evidence.py",
+                    "--repo-root",
+                    ".",
+                    "run",
+                    "--gate",
+                    gate,
+                    "--output",
+                    str(output_root / gate),
+                    "--python",
+                    sys.executable,
+                    "--session-manifest",
+                    str(session_manifest),
+                ],
+                cwd=repo_root,
+                check=False,
+            )
+            if result.returncode:
+                raise SystemExit(result.returncode)
+    finally:
+        if prior_temp is not None:
+            prior_temp.cleanup()
 
 
 if __name__ == "__main__":

@@ -223,13 +223,13 @@ def _apply_legacy_direct_post_merge_scope(graph: dict[str, Any]) -> None:
 
 def _component(
     *, kind: str, name: str, produces: list[str] | None = None,
-    consumes: list[str] | None = None, **values: Any,
+    consumes: list[str] | None = None, environment: dict[str, str] | None = None, **values: Any,
 ) -> dict[str, Any]:
     return {
         "kind": kind,
         "name": name,
         **values,
-        "environment": {},
+        "environment": environment or {},
         "produces": produces or [],
         "consumes": consumes or [],
     }
@@ -278,7 +278,7 @@ def _v3_components() -> dict[str, Any]:
             command="v3-restore-session-modes", restores_private_artifacts=["evidence-session"],
         ),
         "capture-shard": _component(
-            kind="command", name="Capture the mechanically derived evidence shard", command="v3-capture-shard",
+            kind="command", name="Capture the mechanically derived evidence shard", command="v3-capture-shard", environment={"GITHUB_TOKEN": "${{ github.token }}"},
         ),
         "upload-receipts": _component(
             kind="action", name="Upload this attempt's exact evidence shard", action="upload-artifact",
@@ -392,6 +392,7 @@ def _apply_v3_proof_composition(graph: dict[str, Any], gates: list[str]) -> None
                 produces=["governance-receipts"], consumes=["evidence-session"], components=[], checkout=False,
             ),
             "display_name": "Evidence / ${{ matrix.display_name }}",
+            "permissions": {"actions": "read", "contents": "read"},
             "strategy": {"fail_fast": False, "max_parallel": 4, "matrix": matrix},
         },
         _job(
