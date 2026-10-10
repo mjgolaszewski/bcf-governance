@@ -122,10 +122,12 @@ All notable changes to BCF Governance are recorded here. This file follows
   artifact without broadening controller transition applicability. Rotation now
   consumes that custody before artifact materialization and downloads target
   bytes only for pending rotation, so typed current/no-transition callbacks do
-  not require a bundle whose absence is intentional. The conditional
-  authorization download is distinct from the unconditional post-authorization
-  download used by bootstrap, probe, promotion, and activation, preventing
-  job-local route outputs from leaking applicability into later lifecycle jobs.
+  not require a bundle whose absence is intentional. The authenticated routine
+  authorization owner alone selects and retrieves exact target bytes after it
+  classifies pending rotation; current/no-transition never infers lifecycle
+  state from subject/controller inequality or performs artifact retrieval.
+  Bootstrap, probe, promotion, and activation retain their unconditional exact
+  post-authorization download without leaking job-local route observations.
   Immutable provider GETs classify HTTP 500 with the existing bounded,
   identity-preserving transient retry policy; mutation methods remain excluded.
 - Activated the version-dispatched evidence-session contract and canonical

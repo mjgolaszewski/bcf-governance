@@ -181,7 +181,7 @@ def _custody(commit: str) -> dict[str, Any]:
 
 def _route(
     argv: Sequence[str], *, python_executable: Path, payload: Mapping[str, Any],
-    expected_commit: str, expected_state: str | None = None,
+    expected_commit: str,
 ) -> subprocess.CompletedProcess[str]:
     with tempfile.TemporaryDirectory(prefix="bcf-controller-route-") as temporary:
         root = Path(temporary)
@@ -203,8 +203,6 @@ def _route(
             check=False,
         )
         expected = f"controller_commit_sha={expected_commit}\n"
-        if expected_state is not None:
-            expected += f"controller_state={expected_state}\n"
         if result.returncode == 0 and output.read_text(encoding="utf-8") != expected:
             raise GitHubControllerError("controller route projected a different identity")
         return result
@@ -332,26 +330,23 @@ def validate_controller_custody_chain(
         raise GitHubControllerError(
             "controller bundle production is not transition/release-materialization exact"
         )
-    rotation_bundle_condition = "routine-controller-bundle-required"
     rotation_authorize = _job(graph, rotation_id, "authorize")
     rotation_components = _components(rotation_authorize)
     if (
-        graph.get("conditions", {}).get(rotation_bundle_condition)
-        != "steps.controller-route.outputs.controller_state == 'pending_rotation'"
-        or graph.get("step_components", {}).get(
-            "download-routine-controller-for-authorization", {}
-        ).get("condition") != rotation_bundle_condition
+        "routine-controller-bundle-required" in graph.get("conditions", {})
+        or "download-routine-controller-for-authorization"
+        in graph.get("step_components", {})
         or graph.get("step_components", {}).get(
             "download-routine-controller", {}
         ).get("condition") is not None
         or not _ordered(
             rotation_components,
             "project-custody-controller-route",
-            "download-routine-controller-for-authorization",
+            "authorize-routine-transition",
         )
     ):
         raise GitHubControllerError(
-            "rotation controller materialization is not custody-first and pending-rotation exact"
+            "rotation artifact selection is not owned by typed authorization"
         )
     for lifecycle_job in (
         "bootstrap", "advance-bootstrap", "probe", "advance-probe",
@@ -484,11 +479,6 @@ def validate_controller_custody_chain(
         result = _route(
             argv, python_executable=python_executable, payload=payload,
             expected_commit=commit,
-            expected_state="pending_rotation" if name in {
-                "admission_custody", "certification",
-                "legacy_noncertifying_finalizer", "no_transition",
-                "release_receipt",
-            } else None,
         )
         if result.returncode != 0:
             raise GitHubControllerError(

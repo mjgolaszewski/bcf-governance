@@ -16,7 +16,7 @@ extensions:
 - {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: adde42bee237d4da4a67a72d6d5e8600e63ed010486cea4084391f940b9d1bb0}
 - {id: bcf-evidence-storage, path: governance/ci-extensions/bcf-evidence-storage.yml, sha256: 41e40dad457efc53292249a211575505e9d6021d73d3fee2e52c4e9eede68eea}
 - {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: c050bad2e48154601bde05dbe0385c08aedc857e05df3b243c459353d1e18bf2}
-- {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: 40953727d5a36fe20361752310d5a3c5b6331c636a825e7096b0e109dbd0f46d}
+- {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: 750cd322494c26215cb5c5ec5aef9d6745fa8aeba0e67fb359346ee27a8bf5f5}
 resource_classes:
   hosted-python:
     runner: ubuntu-24.04
@@ -129,8 +129,7 @@ commands:
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
   project-controller-route:
-    argv: ['{python}', -c, 'import json,os,pathlib,re;source=pathlib.Path(os.environ["BCF_CONTROLLER_ROUTE_FILE"]);files=[source] if source.is_file() else sorted(source.glob("*.json"));assert len(files)==1;p=json.loads(files[0].read_text());custody=p.get("controller_custody",p.get("observations",{}).get("controller_custody",p));candidates=(custody.get("controller",{}).get("commit_sha"),p.get("authority",{}).get("controller_commit_sha"),p.get("controller",{}).get("commit_sha"),p.get("artifact",{}).get("commit_sha"));values=[v for v in candidates if isinstance(v,str)];assert values and len(set(values))==1 and re.fullmatch(r"[a-f0-9]{40}",values[0]);subject=custody.get("subject",{}).get("commit_sha");assert subject is None or re.fullmatch(r"[a-f0-9]{40}",subject);state="" if subject is None else "current" if subject==values[0] else "pending_rotation";out=pathlib.Path(os.environ["GITHUB_OUTPUT"]);out.open("a").write("controller_commit_sha="+values[0]+"\n"+("controller_state="+state+"\n" if state
-        else ""))']
+    argv: ['{python}', -c, 'import json,os,pathlib,re;source=pathlib.Path(os.environ["BCF_CONTROLLER_ROUTE_FILE"]);files=[source] if source.is_file() else sorted(source.glob("*.json"));assert len(files)==1;p=json.loads(files[0].read_text());custody=p.get("controller_custody",p.get("observations",{}).get("controller_custody",p));candidates=(custody.get("controller",{}).get("commit_sha"),p.get("authority",{}).get("controller_commit_sha"),p.get("controller",{}).get("commit_sha"),p.get("artifact",{}).get("commit_sha"));values=[v for v in candidates if isinstance(v,str)];assert values and len(set(values))==1 and re.fullmatch(r"[a-f0-9]{40}",values[0]);out=pathlib.Path(os.environ["GITHUB_OUTPUT"]);out.open("a").write("controller_commit_sha="+values[0]+"\n")']
     cwd: .
     environment: {}
     required_environment: [BCF_CONTROLLER_ROUTE_FILE]
