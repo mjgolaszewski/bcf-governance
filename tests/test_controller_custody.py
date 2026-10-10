@@ -229,30 +229,15 @@ def test_controller_artifact_materialization_is_terminal_scope_exact(
         )
 
 
-@pytest.mark.parametrize("mutation", ["unconditional", "controller_first"])
-def test_prospective_chain_rejects_rotation_materialization_before_custody(
-    mutation: str,
-) -> None:
+def test_prospective_chain_rejects_artifact_selection_before_typed_authorization() -> None:
     root = Path(__file__).resolve().parents[1]
     graph = copy.deepcopy(validate_ci_graph(root).graph)
-    if mutation == "unconditional":
-        graph["step_components"][
-            "download-routine-controller-for-authorization"
-        ].pop("condition")
-    else:
-        workflow = next(
-            value for value in graph["workflows"]
-            if value["id"] == "controller-rotation"
-        )
-        authorize = next(
-            value for value in workflow["jobs"] if value["id"] == "authorize"
-        )
-        components = authorize["executor"]["components"]
-        components.remove("download-routine-controller-for-authorization")
-        components.insert(1, "download-routine-controller-for-authorization")
+    graph["conditions"]["routine-controller-bundle-required"] = (
+        "steps.controller-route.outputs.controller_state == 'pending_rotation'"
+    )
     with pytest.raises(
         GitHubControllerError,
-        match="custody-first and pending-rotation exact",
+        match="artifact selection is not owned by typed authorization",
     ):
         validate_controller_custody_chain(
             graph,
@@ -268,7 +253,7 @@ def test_prospective_chain_rejects_authorize_condition_leaking_to_bootstrap() ->
     )
     with pytest.raises(
         GitHubControllerError,
-        match="custody-first and pending-rotation exact",
+        match="artifact selection is not owned by typed authorization",
     ):
         validate_controller_custody_chain(
             graph,
